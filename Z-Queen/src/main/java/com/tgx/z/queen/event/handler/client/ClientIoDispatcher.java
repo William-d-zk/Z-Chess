@@ -32,6 +32,7 @@ import static com.tgx.z.queen.event.inf.IOperator.Type.WROTE;
 import java.nio.channels.AsynchronousSocketChannel;
 
 import com.lmax.disruptor.RingBuffer;
+import com.tgx.z.queen.base.log.Logger;
 import com.tgx.z.queen.base.util.Pair;
 import com.tgx.z.queen.event.inf.IOperator;
 import com.tgx.z.queen.event.inf.IPipeEventHandler;
@@ -45,10 +46,11 @@ public class ClientIoDispatcher
         implements
         IPipeEventHandler<QEvent, QEvent>
 {
-    final RingBuffer<QEvent> _LinkIo;
-    final RingBuffer<QEvent> _Worker;
-    final RingBuffer<QEvent> _Wrote;
-    final RingBuffer<QEvent> _Error;
+    private final RingBuffer<QEvent> _LinkIo;
+    private final RingBuffer<QEvent> _Worker;
+    private final RingBuffer<QEvent> _Wrote;
+    private final RingBuffer<QEvent> _Error;
+    private final Logger             _Log = Logger.getLogger(getClass().getName());
 
     public ClientIoDispatcher(RingBuffer<QEvent> linkIo, RingBuffer<QEvent> worker, RingBuffer<QEvent> wrote, RingBuffer<QEvent> error) {
         _LinkIo = linkIo;

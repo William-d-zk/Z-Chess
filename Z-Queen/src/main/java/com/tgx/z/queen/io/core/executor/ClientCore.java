@@ -97,13 +97,13 @@ public class ClientCore<E extends IStorage>
     
                                           ━━> _LocalSend    ║
      ━━> _AioProducerEvent ║               ┏> _LinkIoEvent| ║
-         _BizLocalClose    ║_IoDispatcher━━┫  _ReadEvent  ||║_WriteDispatcher┏>_EncodedEvent|║━┓
-    ┏━━> _ErrorEvent[2]    ║               ┃  _WroteBuffer  ║                ┗>_ErrorEvent━┓   ┃
-    ┃┏━> _ErrorEvent[1]    ║               ┗> _ErrorEvent━┓                                ┃   ┃
-    ┃┃┏> _ErrorEvent[0]    ║                              ┃                                ┃   ┃
-    ┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                ┃   ┃
-    ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛   ┃
-    ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+         _BizLocalClose    ║_IoDispatcher━━┫  _ReadEvent  ||║_WriteDispatcher┏>_EncodedEvent|_EncodedProcessor┳━║[Event Done]
+    ┏━━> _ErrorEvent[2]    ║               ┃  _WroteBuffer  ║                ┗>_ErrorEvent━┓                  ┗━>_ErrorEvent━┓
+    ┃┏━> _ErrorEvent[1]    ║               ┗> _ErrorEvent━┓                                ┃                                 ┃
+    ┃┃┏> _ErrorEvent[0]    ║                              ┃                                ┃                                 ┃
+    ┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                ┃                                 ┃
+    ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                 ┃
+    ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
     */
     @SuppressWarnings("unchecked")
     public void build(final EventHandler<QEvent> _LogicHandler) {

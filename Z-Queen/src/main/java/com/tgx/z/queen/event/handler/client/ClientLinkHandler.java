@@ -86,7 +86,7 @@ public class ClientLinkHandler
                     event.ignore();
                     break;
                 default:
-                    _Log.warning(String.format("link handler can't handle %s", event.getEventType()));
+                    _Log.warning(String.format("link encodeHandler can't handle %s", event.getEventType()));
                     break;
             }
         }

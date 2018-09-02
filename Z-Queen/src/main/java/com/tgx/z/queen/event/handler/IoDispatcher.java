@@ -32,6 +32,7 @@ import static com.tgx.z.queen.event.inf.IOperator.Type.WROTE;
 import java.nio.channels.AsynchronousSocketChannel;
 
 import com.lmax.disruptor.RingBuffer;
+import com.tgx.z.queen.base.log.Logger;
 import com.tgx.z.queen.base.util.Pair;
 import com.tgx.z.queen.event.inf.IError;
 import com.tgx.z.queen.event.inf.IOperator;
@@ -45,6 +46,7 @@ public class IoDispatcher
         extends
         BaseDispatcher
 {
+    private final Logger             _Log = Logger.getLogger(getClass().getName());
     private final RingBuffer<QEvent> _IoWrote;
 
     @SafeVarargs
@@ -69,8 +71,6 @@ public class IoDispatcher
                 dispatchError(connectActive.getMode(), errorType, throwable, connectActive, connectFailedOperator);
                 break;
             case ACCEPT_FAILED:
-
-
             case CLOSED:
             case READ_ZERO:
             case READ_EOF:
