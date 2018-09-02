@@ -127,11 +127,11 @@ public class TimeWheel
         _Timer.start();
     }
 
-    public int getCurrentLoop() {
+    private int getCurrentLoop() {
         return vCurrentLoop;
     }
 
-    public int getCurrentSlot() {
+    private int getCurrentSlot() {
         return vCurrentSlot;
     }
 
@@ -141,6 +141,7 @@ public class TimeWheel
         int tick = slots & _HashMod;
         if (Objects.nonNull(handler)) handler.attach(attachment);
         HandleTask task = new HandleTask<>(loop, tick, handler);
+        _Log.info("time wheel offer %s,", task);
         return _RequestQueue.offer(task) ? task : null;
     }
 
@@ -153,7 +154,8 @@ public class TimeWheel
         TickSlot<A> timeSlot = _ModHashEntriesArray[slot];
         int index = Collections.binarySearch(timeSlot, handleTask);
         if (index >= 0) {
-            _Log.warning(String.format(" %s exist in slot,drop it", handleTask));
+            if (timeSlot.get(index) == handleTask) _Log.warning(" %s exist in slot,drop it ", handleTask);
+            else timeSlot.add(index, handleTask);
         }
         else {
             timeSlot.add(-index - 1, handleTask);
@@ -237,6 +239,11 @@ public class TimeWheel
         private int                      loop;
         private int                      slot;
 
+        @Override
+        public String toString() {
+            return String.format(" acquire %d[%d] | wheel %d[%d] @%x", _Loop, _Tick, loop, slot, hashCode());
+        }
+
         HandleTask(int loop, int tick, ITimeoutHandler<V> handler) {
             super(handler);
             _Handler = handler;
@@ -248,7 +255,7 @@ public class TimeWheel
             return _Handler;
         }
 
-        public int getSlot() {
+        int getSlot() {
             return slot;
         }
 
@@ -256,11 +263,11 @@ public class TimeWheel
             return loop;
         }
 
-        public int getConstLoop() {
+        int getConstLoop() {
             return _Loop;
         }
 
-        public int getConstTick() {
+        int getConstTick() {
             return _Tick;
         }
 

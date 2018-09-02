@@ -25,13 +25,21 @@
 package com.tgx.z.queen.event.handler;
 
 import com.lmax.disruptor.RingBuffer;
+import com.tgx.z.queen.base.log.Logger;
+import com.tgx.z.queen.base.util.Pair;
+import com.tgx.z.queen.event.inf.IError;
+import com.tgx.z.queen.event.inf.IOperator;
 import com.tgx.z.queen.event.inf.IPipeEventHandler;
 import com.tgx.z.queen.event.processor.QEvent;
+import com.tgx.z.queen.io.core.inf.ISession;
 
 public class EncodedHandler
         implements
-        IPipeEventHandler<QEvent, QEvent>
+        IPipeEventHandler<QEvent, QEvent>,
+        ISessionHandler
 {
+    private final Logger             _Log = Logger.getLogger(getClass().getName());
+
     private final RingBuffer<QEvent> _Error;
 
     public EncodedHandler(RingBuffer<QEvent> error) {
@@ -40,6 +48,22 @@ public class EncodedHandler
 
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception {
-
+        _Log.info(event);
+        if (event.hasError()) {
+            switch (event.getErrorType()) {
+                case FILTER_ENCODE:
+                case ILLEGAL_STATE:
+                case ILLEGAL_BIZ_STATE:
+                default:
+                    IOperator<Throwable, ISession> errorOperator = event.getEventOp();
+                    Pair<Throwable, ISession> errorContent = event.getContent();
+                    ISession session = errorContent.second();
+                    Throwable throwable = errorContent.first();
+                    errorOperator.handle(throwable, session);
+                    error(_Error, IError.Type.CLOSED, throwable, session, errorOperator);
+                    break;
+            }
+        }
+        event.reset();
     }
 }

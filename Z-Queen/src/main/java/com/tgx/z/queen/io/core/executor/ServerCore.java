@@ -187,16 +187,16 @@ public class ServerCore<E extends IStorage>
     ┃┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓                                             ┏━|║_LinkProcessor━━━┻━>_LinkWriteEvent  ━━━━║
     ┃┃                                                      ┃ ━>_ConsistentResultEvent ━━━━━━━━━━━━━━━━━━━┫  ║              ━━>_BizLocalSendEvent  ━━━━║                ┏>_EncodedEvents[0]|║
     ┃┃ ━>_AioProducerEvents║                 ┏>_ErrorEvent ━┛ ━>_ConsistentSendEvent   ━━━━━━━━━━━━━━┓    ┃                                            ║                ┃ _EncodedEvents[1]|║
-    ┃┃ ━>_ClusterLocalClose║                 ┃ _LinkIoEvent    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━┫                                            ║_WriteDispatcher┫ _EncodedEvents[2]|║━━┓
-    ┃┃ ━>_BizLocalClose    ║                 ┃ _ClusterIoEvent ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫    ┃  ║              ━>_ClusterLocalSendEvent ━━║                ┃ _EncodedEvents[3]|║  ┃
-    ┃┗━> _ErrorEvent[3]    ║_IoDispatcher━━> ┫ _ReadEvents[0]|━║                  ┏>_ClusterDecoded ━┻━━━━╋━|║_ClusterProcessor┳━>_ClusterWriteEvent ━━║                ┗>_EncodedEvents[M]|║  ┃
-    ┗━━> _ErrorEvent[0]    ║                 ┃ _ReadEvents[1]|━║_DecodedDispatcher┫ _LinkDecoded    ━━━━━━┛  ║                 ┗━>_ErrorEvent━┓        ║                                       ┃
-    ┏━━> _ErrorEvent[4]    ║                 ┃ _ReadEvents[2]|━║                  ┃ _Logic          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━║                                       ┃
-    ┃┏━> _ErrorEvent[1]    ║                 ┃ _ReadEvents[N]|━║                  ┗>_ErrorEvent     ━━━━━━┓                                   ┃        ║                                       ┃
-    ┃┃┏> _ErrorEvent[2]    ║                 ┗>_WroteBuffer  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━║                                       ┃
-    ┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                   ┃                                                ┃
-    ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                                ┃
-    ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+    ┃┃ ━>_ClusterLocalClose║                 ┃ _LinkIoEvent    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━┫                                            ║_WriteDispatcher┫ _EncodedEvents[2]|║_EncodedProcessor┳━║[Event Done]
+    ┃┃ ━>_BizLocalClose    ║                 ┃ _ClusterIoEvent ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫    ┃  ║              ━>_ClusterLocalSendEvent ━━║                ┃ _EncodedEvents[3]|║                 ┗━>_ErrorEvent━┓
+    ┃┗━> _ErrorEvent[3]    ║_IoDispatcher━━> ┫ _ReadEvents[0]|━║                  ┏>_ClusterDecoded ━┻━━━━╋━|║_ClusterProcessor┳━>_ClusterWriteEvent ━━║                ┗>_EncodedEvents[M]|║                                ┃
+    ┗━━> _ErrorEvent[0]    ║                 ┃ _ReadEvents[1]|━║_DecodedDispatcher┫ _LinkDecoded    ━━━━━━┛  ║                 ┗━>_ErrorEvent━┓        ║                                                                     ┃
+    ┏━━> _ErrorEvent[4]    ║                 ┃ _ReadEvents[2]|━║                  ┃ _Logic          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━║                                                                     ┃
+    ┃┏━> _ErrorEvent[1]    ║                 ┃ _ReadEvents[N]|━║                  ┗>_ErrorEvent     ━━━━━━┓                                   ┃        ║                                                                     ┃
+    ┃┃┏> _ErrorEvent[2]    ║                 ┗>_WroteBuffer  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━║                                                                     ┃
+    ┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                   ┃                                                                              ┃
+    ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                                                              ┃
+    ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
     
      每一个 Dispatcher 都需要将之前发生的错误信息转换为 session close 事件传递回 IoBarrier，从而将 session close 事件归并到 _LinkIoEvent|_ClusterIoEvent  处理器上进行集中处理。
      (.*)IoEvent 只处理 Connected | Close 事件，所以平行需要一个_ErrorEvent 接受 IoDispatcher 获取的 READ_WRITE_DECODE_ENCODE_ENCRYPT_TIMEOUT_INTERRUPT_CANCEL等错误转换为

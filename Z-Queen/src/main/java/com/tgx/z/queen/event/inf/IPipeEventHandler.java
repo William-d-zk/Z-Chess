@@ -26,7 +26,6 @@ package com.tgx.z.queen.event.inf;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.InsufficientCapacityException;
 import com.lmax.disruptor.RingBuffer;
-import com.tgx.z.queen.base.log.Logger;
 
 /**
  * @author William.d.zk
@@ -35,8 +34,6 @@ public interface IPipeEventHandler<T extends IEvent, R extends IEvent>
         extends
         EventHandler<T>
 {
-
-    Logger _Log = Logger.getLogger(IPipeEventHandler.class.getSimpleName());
 
     default <V, A> boolean tryPublish(RingBuffer<R> publisher, IOperator.Type t, V v, A a, IOperator<V, A> operator) {
         if (publisher == null) return true;
@@ -52,7 +49,7 @@ public interface IPipeEventHandler<T extends IEvent, R extends IEvent>
             }
         }
         catch (InsufficientCapacityException e) {
-            _Log.fetal(" Content: " + v + " - " + a);
+            e.printStackTrace();
         }
         return false;
     }
@@ -83,7 +80,7 @@ public interface IPipeEventHandler<T extends IEvent, R extends IEvent>
             }
         }
         catch (InsufficientCapacityException e) {
-            _Log.fetal(" Content: " + v + " - " + a);
+            e.printStackTrace();
         }
         return false;
     }

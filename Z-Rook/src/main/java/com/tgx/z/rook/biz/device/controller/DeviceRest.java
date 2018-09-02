@@ -24,15 +24,13 @@
 
 package com.tgx.z.rook.biz.device.controller;
 
+import com.tgx.z.rook.biz.device.client.DeviceClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tgx.z.rook.biz.device.client.DeviceClient;
-
 @RestController
-public class DeviceRest
-{
+public class DeviceRest {
     @Autowired
     private DeviceClient _Client;
 
@@ -47,4 +45,17 @@ public class DeviceRest
         _Client.close();
         return "client close";
     }
+
+    @GetMapping("/client/heartbeat")
+    public String heartbeat() {
+
+        return "heartbeat";
+    }
+
+    @GetMapping("/client/handshake")
+    public String handshake() {
+        _Client.handshake();
+        return "handshake";
+    }
+
 }

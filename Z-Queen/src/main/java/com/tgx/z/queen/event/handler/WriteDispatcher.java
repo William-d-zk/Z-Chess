@@ -28,6 +28,7 @@ import static com.tgx.z.queen.event.inf.IOperator.Type.WRITE;
 import static com.tgx.z.queen.event.inf.IOperator.Type.WROTE;
 
 import com.lmax.disruptor.RingBuffer;
+import com.tgx.z.queen.base.log.Logger;
 import com.tgx.z.queen.base.util.Pair;
 import com.tgx.z.queen.event.inf.IPipeEventHandler;
 import com.tgx.z.queen.event.processor.QEvent;
@@ -40,6 +41,7 @@ public class WriteDispatcher
 {
     private final RingBuffer<QEvent>[] _Encoders;
     private final int                  _Mask;
+    private final Logger               _Log = Logger.getLogger(getClass().getName());
 
     @SafeVarargs
     public WriteDispatcher(RingBuffer<QEvent>... workers) {
@@ -54,32 +56,35 @@ public class WriteDispatcher
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception {
         _Log.info(event);
-        if (event.hasError()) {
-            switch (event.getErrorType()) {
-                case FILTER_DECODE:
-                case ILLEGAL_STATE:
-                case ILLEGAL_BIZ_STATE:
-                default:
-            }
-        }
-        else {
-            switch (event.getEventType()) {
-                case NULL://在前一个处理器event.reset().
-                case IGNORE://没有任何时间需要跨 Barrier 投递向下一层 Pipeline
-                    break;
-                case LOCAL://from biz local
-                case WRITE://from LinkIo
-                case LOGIC://from read->logic
-                    Pair<ICommand, ISession> writeContent = event.getContent();
-                    tryPublish(dispatchEncoder(sequence), WRITE, writeContent.first(), writeContent.second(), event.getEventOp());
-                    break;
-                case WROTE://from io-wrote
-                    Pair<Integer, ISession> wroteContent = event.getContent();
-                    tryPublish(dispatchEncoder(sequence), WROTE, wroteContent.first(), wroteContent.second(), event.getEventOp());
-                    break;
-                default:
-                    break;
-            }
+        /*
+         Write Dispatcher  不存在错误状态的输入,都已经处理完了
+         */
+        switch (event.getEventType()) {
+            case NULL://在前一个处理器event.reset().
+            case IGNORE://没有任何时间需要跨 Barrier 投递向下一层 Pipeline
+                break;
+            case LOCAL://from biz local
+            case WRITE://from LinkIo
+            case LOGIC://from read->logic
+                Pair<ICommand, ISession> writeContent = event.getContent();
+                ISession session = writeContent.second();
+                tryPublish(dispatchEncoder(session.isEmpty() ? sequence : session.getIndex()),
+                           WRITE,
+                           writeContent.first(),
+                           session,
+                           event.getEventOp());
+                break;
+            case WROTE://from io-wrote
+                Pair<Integer, ISession> wroteContent = event.getContent();
+                session = wroteContent.second();
+                tryPublish(dispatchEncoder(session.isEmpty() ? sequence : session.getIndex()),
+                           WROTE,
+                           wroteContent.first(),
+                           session,
+                           event.getEventOp());
+                break;
+            default:
+                break;
         }
     }
 }

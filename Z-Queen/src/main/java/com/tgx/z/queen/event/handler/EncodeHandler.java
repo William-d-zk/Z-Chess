@@ -24,23 +24,16 @@
 
 package com.tgx.z.queen.event.handler;
 
-import java.util.Objects;
-
-import com.lmax.disruptor.EventHandler;
 import com.tgx.z.queen.base.log.Logger;
 import com.tgx.z.queen.base.util.Pair;
-import com.tgx.z.queen.base.util.Triple;
-import com.tgx.z.queen.event.inf.IError.Type;
 import com.tgx.z.queen.event.inf.IOperator;
 import com.tgx.z.queen.event.processor.QEvent;
 import com.tgx.z.queen.io.core.inf.ICommand;
-import com.tgx.z.queen.io.core.inf.IContext;
-import com.tgx.z.queen.io.core.inf.IContext.EncodeState;
 import com.tgx.z.queen.io.core.inf.ISession;
 
 public class EncodeHandler
         implements
-        EventHandler<QEvent>
+        ISessionHandler
 {
     private final Logger _Log = Logger.getLogger(getClass().getName());
 
@@ -49,40 +42,33 @@ public class EncodeHandler
         _Log.info(event);
         if (event.hasError()) {
             switch (event.getErrorType()) {
-                case FILTER_DECODE:
+                case FILTER_ENCODE:
                 case ILLEGAL_STATE:
                 case ILLEGAL_BIZ_STATE:
                 default:
+                    /*
+                     透传到 EncodedHandler 去投递 _Error
+                     */
+                    break;
             }
         }
         else {
             switch (event.getEventType()) {
                 case WRITE:
                     IOperator<ICommand, ISession> writeOperator = event.getEventOp();
-                    Pair<ICommand, ISession> pairContent = event.getContent();
-                    ICommand cmd = pairContent.first();
-                    ISession session = pairContent.second();
-                    IContext context = session.getContext();
-                    if (context.getEncodeState()
-                               .equals(EncodeState.ENCODE_ERROR)
-                        || context.getEncodeState()
-                                  .equals(EncodeState.ENCODED_TLS_ERROR)) {
-                        //context has encode-error,drop the command
-                    }
-                    else {
-                        Triple<Throwable, ISession, IOperator<Throwable, ISession>> result = writeOperator.handle(cmd, session);
-                        if (Objects.nonNull(result)) {
-                            event.error(Type.FILTER_DECODE, result.first(), result.second(), result.third());
-                            context.setEncodeState(EncodeState.ENCODE_ERROR);
-                        }
-                        else {
-                            event.ignore();
-                        }
-                    }
+                    Pair<ICommand, ISession> pairWriteContent = event.getContent();
+                    ICommand cmd = pairWriteContent.first();
+                    ISession session = pairWriteContent.second();
+                    encodeHandler(event, cmd, session, writeOperator);
                     cmd.dispose();
                     break;
                 case WROTE:
-
+                    IOperator<Integer, ISession> wroteOperator = event.getEventOp();
+                    Pair<Integer, ISession> pairWroteContent = event.getContent();
+                    int wroteCnt = pairWroteContent.first();
+                    session = pairWroteContent.second();
+                    encodeHandler(event, wroteCnt, session, wroteOperator);
+                    break;
             }
         }
     }

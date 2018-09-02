@@ -30,6 +30,7 @@ import java.nio.channels.AsynchronousSocketChannel;
 import java.util.Objects;
 
 import com.lmax.disruptor.RingBuffer;
+import com.tgx.z.queen.base.log.Logger;
 import com.tgx.z.queen.base.util.Pair;
 import com.tgx.z.queen.base.util.Triple;
 import com.tgx.z.queen.event.inf.IOperator;
@@ -47,6 +48,7 @@ public class LinkHandler
         implements
         IPipeEventHandler<QEvent, QEvent>
 {
+    private final Logger             _Log = Logger.getLogger(getClass().getName());
     private final RingBuffer<QEvent> _Error;
     private final RingBuffer<QEvent> _Writer;
 
