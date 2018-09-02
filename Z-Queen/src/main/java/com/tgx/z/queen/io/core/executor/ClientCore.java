@@ -26,6 +26,7 @@ package com.tgx.z.queen.io.core.executor;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -42,6 +43,8 @@ import com.lmax.disruptor.YieldingWaitStrategy;
 import com.tgx.z.config.Config;
 import com.tgx.z.queen.base.db.inf.IStorage;
 import com.tgx.z.queen.base.log.Logger;
+import com.tgx.z.queen.base.schedule.ScheduleHandler;
+import com.tgx.z.queen.base.schedule.TimeWheel;
 import com.tgx.z.queen.base.util.IoUtil;
 import com.tgx.z.queen.event.handler.DecodeHandler;
 import com.tgx.z.queen.event.handler.EncodeHandler;
@@ -79,12 +82,15 @@ public class ClientCore<E extends IStorage>
                                                               }
                                                           };
     private final ReentrantLock      _LocalLock           = new ReentrantLock();
+    private final TimeWheel          _TimeWheel           = new TimeWheel(1, TimeUnit.SECONDS);
+    private final Future<Void>       _EventTimer;
 
     public ClientCore() {
         super(poolSize(), poolSize(), 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
         _AioProducerEvent = createPipelineYield(6);
         _BizLocalCloseEvent = createPipelineLite(5);
         _BizLocalSendEvent = createPipelineLite(5);
+        _EventTimer = _TimeWheel.acquire(1, TimeUnit.SECONDS, new ScheduleHandler<>(true));
     }
 
     /*  ║ barrier, ━> publish event, ━━ pipeline, | handle event
@@ -242,6 +248,10 @@ public class ClientCore<E extends IStorage>
         finally {
             _LocalLock.unlock();
         }
+    }
+
+    public TimeWheel getTimeWheel() {
+        return _TimeWheel;
     }
 
 }

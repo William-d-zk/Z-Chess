@@ -64,13 +64,13 @@ public interface IStorage
 
     enum Operation
     {
-        OP_NULL(Byte.parseByte("0", 2)),
-        OP_MODIFY(Byte.parseByte("1", 2)),
-        OP_INSERT(Byte.parseByte("101", 2)),
-        OP_APPEND(Byte.parseByte("111", 2)),
-        OP_REMOVE(Byte.parseByte("10001", 2)),
-        OP_DELETE(Byte.parseByte("11001", 2)),
-        OP_INVALID(Byte.parseByte("10000000", 2));
+        OP_NULL  (Byte.parseByte("00000000", 2)),
+        OP_MODIFY(Byte.parseByte("00000001", 2)),
+        OP_INSERT(Byte.parseByte("00000101", 2)),
+        OP_APPEND(Byte.parseByte("00000111", 2)),
+        OP_REMOVE(Byte.parseByte("00010001", 2)),
+        OP_DELETE(Byte.parseByte("00011001", 2)),
+       OP_INVALID(Byte.parseByte("10000000", 2));
 
         byte _Value;
 

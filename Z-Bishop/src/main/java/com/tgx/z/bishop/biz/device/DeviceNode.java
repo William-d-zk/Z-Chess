@@ -64,7 +64,8 @@ import com.tgx.z.queen.io.core.manager.QueenManager;
 import com.tgx.z.queen.io.external.websokcet.ZContext;
 
 @Service
-@PropertySource({ "classpath:device.properties" })
+@PropertySource({ "classpath:device.properties",
+                  "classpath:db.properties" })
 public class DeviceNode
         extends
         QueenManager
@@ -187,7 +188,7 @@ public class DeviceNode
             }
 
         };
-
+        _Log.info("Device Node Bean Load");
     }
 
     @PostConstruct

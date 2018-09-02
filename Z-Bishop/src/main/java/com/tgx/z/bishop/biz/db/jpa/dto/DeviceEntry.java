@@ -22,48 +22,30 @@
  * SOFTWARE.
  */
 
-package com.tgx.z.queen.base.schedule;
+package com.tgx.z.bishop.biz.db.jpa.dto;
 
-import java.util.Objects;
-import java.util.function.Consumer;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 
-import com.tgx.z.queen.base.schedule.TimeWheel.ITimeoutHandler;
-
-public class ScheduleHandler<A>
-        implements
-        ITimeoutHandler<A>
+@Entity
+@Table(name = "devices")
+public class DeviceEntry
+        extends
+        AuditModel
 {
-    private A             attach;
-    private final boolean _Cycle;
-    private Consumer<A>   _Callback;
+    @Id
+    @GeneratedValue(generator = "device_generator")
+    @SequenceGenerator(name = "device_generator", sequenceName = "device_sequence", initialValue = 1000)
+    private Long id;
 
-    public ScheduleHandler(boolean cycle, Consumer<A> callback) {
-        _Cycle = cycle;
-        _Callback = callback;
+    public Long getId() {
+        return id;
     }
 
-    public ScheduleHandler(boolean cycle) {
-        this(cycle, null);
-    }
-
-    @Override
-    public boolean isCycle() {
-        return _Cycle;
-    }
-
-    @Override
-    public A get() {
-        return attach;
-    }
-
-    @Override
-    public A call() throws Exception {
-        if (Objects.nonNull(_Callback)) _Callback.accept(attach);
-        return attach;
-    }
-
-    @Override
-    public void attach(A attachment) {
-        attach = attachment;
+    public void setId(Long id) {
+        this.id = id;
     }
 }

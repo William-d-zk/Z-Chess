@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
@@ -66,23 +67,34 @@ public class TimeWheel
             for (long align = 0, t; _Running.get();) {
                 t = System.currentTimeMillis();
                 long sleep = millisTick - align;
-                try {
-                    Thread.sleep(sleep);
+                if (sleep > 0) {
+                    try {
+                        Thread.sleep(sleep);
+                    }
+                    catch (InterruptedException e) {}
                 }
-                catch (InterruptedException e) {}
-                long duration = System.currentTimeMillis() - t;
+                else {
+                    sleep = 0;
+                }
+                current_millisecond = System.currentTimeMillis();
+                long duration = current_millisecond - t;
                 for (Iterator<HandleTask> iterator = getTimer(getCurrentSlot()); iterator.hasNext();) {
                     HandleTask handleTask = iterator.next();
-                    _Log.info(String.format("task loop:%d current loop:%d", handleTask.getLoop(), getCurrentLoop()));
                     if (handleTask.getLoop() <= getCurrentLoop()) {
                         iterator.remove();
                         if (handleTask.getHandler()
                                       .isCycle()) {
-                            _RequestQueue.offer(new HandleTask(handleTask.getConstLoop(),
-                                                               handleTask.getConstTick(),
-                                                               handleTask.getHandler()));
+                            if (!_RequestQueue.offer(new HandleTask(handleTask.getConstLoop(),
+                                                                    handleTask.getConstTick(),
+                                                                    handleTask.getHandler()))) {
+                                _Log.warning("%s,loop:%d slot%d",
+                                             Thread.currentThread()
+                                                   .getName(),
+                                             getCurrentLoop(),
+                                             getCurrentSlot());
+                            }
                         }
-                        executorService.execute(handleTask);
+                        executorService.submit(handleTask);
                     }
                 }
 
@@ -127,9 +139,13 @@ public class TimeWheel
         int slots = (int) (timeUnit.toMillis(time) / _Tick);
         int loop = slots >>> _SlotBitLeft;
         int tick = slots & _HashMod;
-        handler.attach(attachment);
+        if (Objects.nonNull(handler)) handler.attach(attachment);
         HandleTask task = new HandleTask<>(loop, tick, handler);
         return _RequestQueue.offer(task) ? task : null;
+    }
+
+    public Future<Void> acquire(long time, TimeUnit timeUnit, ITimeoutHandler<Void> handler) {
+        return acquire(time, timeUnit, null, handler);
     }
 
     @SuppressWarnings("unchecked")
@@ -168,7 +184,9 @@ public class TimeWheel
 
     interface ICycle
     {
-        boolean isCycle();
+        default boolean isCycle() {
+            return false;
+        }
     }
 
     public interface ITimeoutHandler<A>
@@ -177,8 +195,16 @@ public class TimeWheel
             Supplier<A>,
             ICycle
     {
-        void attach(A attachment);
+        default void attach(A attachment) {
+        }
 
+        default A call() throws Exception {
+            return null;
+        }
+
+        default A get() {
+            return null;
+        }
     }
 
     private class TickSlot<V>
@@ -205,10 +231,11 @@ public class TimeWheel
     {
 
         private final ITimeoutHandler<V> _Handler;
-        private int                      loop;
-        private int                      slot;
         private final int                _Loop;
         private final int                _Tick;
+
+        private int                      loop;
+        private int                      slot;
 
         HandleTask(int loop, int tick, ITimeoutHandler<V> handler) {
             super(handler);
@@ -259,6 +286,16 @@ public class TimeWheel
             }
         }
         while (running);
+    }
+
+    private volatile long current_millisecond;
+
+    public long getCurrentMillisecond() {
+        return current_millisecond;
+    }
+
+    public long getCurrentSecond() {
+        return TimeUnit.MILLISECONDS.toSeconds(current_millisecond);
     }
 
 }

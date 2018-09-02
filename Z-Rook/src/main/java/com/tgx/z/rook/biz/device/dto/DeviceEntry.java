@@ -22,48 +22,24 @@
  * SOFTWARE.
  */
 
-package com.tgx.z.queen.base.schedule;
+package com.tgx.z.rook.biz.device.dto;
 
-import java.util.Objects;
-import java.util.function.Consumer;
+import com.tgx.z.queen.base.db.inf.IStorage;
 
-import com.tgx.z.queen.base.schedule.TimeWheel.ITimeoutHandler;
-
-public class ScheduleHandler<A>
+public class DeviceEntry
         implements
-        ITimeoutHandler<A>
+        IStorage
 {
-    private A             attach;
-    private final boolean _Cycle;
-    private Consumer<A>   _Callback;
+    private final static int DEVICE_ENTRY_SERIAL = DB_SERIAL + 1;
 
-    public ScheduleHandler(boolean cycle, Consumer<A> callback) {
-        _Cycle = cycle;
-        _Callback = callback;
-    }
-
-    public ScheduleHandler(boolean cycle) {
-        this(cycle, null);
+    @Override
+    public int dataLength() {
+        return 0;
     }
 
     @Override
-    public boolean isCycle() {
-        return _Cycle;
+    public int getSerial() {
+        return DEVICE_ENTRY_SERIAL;
     }
 
-    @Override
-    public A get() {
-        return attach;
-    }
-
-    @Override
-    public A call() throws Exception {
-        if (Objects.nonNull(_Callback)) _Callback.accept(attach);
-        return attach;
-    }
-
-    @Override
-    public void attach(A attachment) {
-        attach = attachment;
-    }
 }

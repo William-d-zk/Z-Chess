@@ -26,6 +26,7 @@ package com.tgx.z.queen.io.core.executor;
 
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -41,6 +42,8 @@ import com.tgx.z.config.Config;
 import com.tgx.z.config.ConfigKey;
 import com.tgx.z.queen.base.db.inf.IStorage;
 import com.tgx.z.queen.base.log.Logger;
+import com.tgx.z.queen.base.schedule.ScheduleHandler;
+import com.tgx.z.queen.base.schedule.TimeWheel;
 import com.tgx.z.queen.base.util.IoUtil;
 import com.tgx.z.queen.event.handler.ClusterHandler;
 import com.tgx.z.queen.event.handler.DecodeHandler;
@@ -142,11 +145,12 @@ public class ServerCore<E extends IStorage>
                                                                                                                _ClusterCacheConcurrentQueue.poll());
                                                                                       }
                                                                                   };
+    private final TimeWheel                                 _TimeWheel            = new TimeWheel(1, TimeUnit.SECONDS);
+    private final Future<Void>                              _EventTimer;
 
     @SuppressWarnings("unchecked")
     public ServerCore() {
         super(poolSize(), poolSize(), 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
-
         /* Aio event producer  */
         _AioProducerEvents = new RingBuffer[_ServerCount + _ClusterCount];
         _AioProducerBarriers = new SequenceBarrier[_AioProducerEvents.length];
@@ -174,7 +178,9 @@ public class ServerCore<E extends IStorage>
 
         _ConsistentSendEvent = createPipelineYield(_InternalPower);
         _ConsistentResultEvent = createPipelineYield(_InternalPower);
+        _EventTimer = _TimeWheel.acquire(1, TimeUnit.SECONDS, new ScheduleHandler<>(true));
     }
+
     /*  ║ barrier, ━> publish event, ━━ pipeline,| handle event
     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
     ┃                                                                                                        ║                 ┏━>_ErrorEvent━┛
@@ -397,5 +403,9 @@ public class ServerCore<E extends IStorage>
 
     public ThreadFactory getClusterThreadFactory() {
         return _ClusterThreadFactory;
+    }
+
+    public TimeWheel getTimeWheel() {
+        return _TimeWheel;
     }
 }

@@ -1,0 +1,2 @@
+CREATE SCHEMA IF NOT EXISTS "tgx-chess-device"
+CREATE SCHEMA IF NOT EXISTS "tgx-chess"
