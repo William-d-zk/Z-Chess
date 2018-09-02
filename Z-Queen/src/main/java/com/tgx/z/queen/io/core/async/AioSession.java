@@ -36,9 +36,7 @@ import java.util.Objects;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import com.tgx.z.queen.base.log.Logger;
 import com.tgx.z.queen.base.util.ArrayUtil;
-import com.tgx.z.queen.base.util.TimeUtil;
 import com.tgx.z.queen.event.inf.IOperator;
 import com.tgx.z.queen.event.operator.MODE;
 import com.tgx.z.queen.io.core.inf.IConnectActive;
@@ -58,11 +56,8 @@ public class AioSession
         implements
         ISession
 {
-    static Logger                              _Log         = Logger.getLogger(AioSession.class.getSimpleName());
     /*--------------------------------------------------------------------------------------------------------------*/
-
     private final int                          _ReadTimeOut;
-    private final int                          _HeartBeatGap;
     private final int                          _WriteTimeOut;
     private final AsynchronousSocketChannel    _Channel;
     private final InetSocketAddress            _RemoteAddress, _LocalAddress;
@@ -130,7 +125,6 @@ public class AioSession
         sessionOption.setOptions(channel);
         _Ctx = contextCreator.createContext(sessionOption, _Mode);
         _ReadTimeOut = sessionOption.setReadTimeOut();
-        _HeartBeatGap = (_ReadTimeOut >> 1) - 1;
         _WriteTimeOut = sessionOption.setWriteTimeOut();
         _RecvBuf = ByteBuffer.allocate(sessionOption.setRCV());
         _QueueSizeMax = sessionOption.setQueueMax();
@@ -233,16 +227,6 @@ public class AioSession
     }
 
     @Override
-    public final int getReadTimeOut() {
-        return _ReadTimeOut;
-    }
-
-    @Override
-    public final int getHeartBeatSap() {
-        return _HeartBeatGap;
-    }
-
-    @Override
     public final void readNext(CompletionHandler<Integer, ISession> readHandler) throws NotYetConnectedException,
                                                                                  ShutdownChannelGroupException {
         if (isClosed()) return;
@@ -251,7 +235,6 @@ public class AioSession
     }
 
     public final ByteBuffer read(int length) {
-        mReadTimeStamp = TimeUtil.CURRENT_TIME_MILLIS_CACHE;
         if (length < 0) throw new IllegalArgumentException();
         if (length != _RecvBuf.position()) throw new ArrayIndexOutOfBoundsException();
         ByteBuffer read = ByteBuffer.allocate(length);
@@ -259,12 +242,6 @@ public class AioSession
         read.put(_RecvBuf);
         read.flip();
         return read;
-    }
-
-    @Override
-    public long nextBeat() {
-        long delta = TimeUtil.CURRENT_TIME_MILLIS_CACHE - mReadTimeStamp;
-        return delta >= TimeUnit.SECONDS.toMillis(_HeartBeatGap) ? -1 : TimeUnit.SECONDS.toMillis(_HeartBeatGap) - delta;
     }
 
     @Override

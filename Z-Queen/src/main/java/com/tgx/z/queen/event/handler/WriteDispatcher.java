@@ -24,36 +24,60 @@
 
 package com.tgx.z.queen.event.handler;
 
+import static com.tgx.z.queen.event.inf.IOperator.Type.WRITE;
+import static com.tgx.z.queen.event.inf.IOperator.Type.WROTE;
+
 import com.lmax.disruptor.RingBuffer;
+import com.tgx.z.queen.base.util.Pair;
 import com.tgx.z.queen.event.inf.IPipeEventHandler;
 import com.tgx.z.queen.event.processor.QEvent;
+import com.tgx.z.queen.io.core.inf.ICommand;
+import com.tgx.z.queen.io.core.inf.ISession;
 
 public class WriteDispatcher
         implements
         IPipeEventHandler<QEvent, QEvent>
 {
-    final RingBuffer<QEvent>[] _Workers;
-    final int                  _WorkerMask;
+    private final RingBuffer<QEvent>[] _Encoders;
+    private final int                  _Mask;
 
+    @SafeVarargs
     public WriteDispatcher(RingBuffer<QEvent>... workers) {
-        _Workers = workers;
-        _WorkerMask = _Workers.length - 1;
-
+        _Encoders = workers;
+        _Mask = _Encoders.length - 1;
     }
 
-    RingBuffer<QEvent> dispatchWorker(int seq) {
-        return _Workers[seq & _WorkerMask];
+    private RingBuffer<QEvent> dispatchEncoder(long seq) {
+        return _Encoders[(int) (seq & _Mask)];
     }
 
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception {
+        _Log.info(event);
         if (event.hasError()) {
-
+            switch (event.getErrorType()) {
+                case FILTER_DECODE:
+                case ILLEGAL_STATE:
+                case ILLEGAL_BIZ_STATE:
+                default:
+            }
         }
         else {
             switch (event.getEventType()) {
                 case NULL://在前一个处理器event.reset().
                 case IGNORE://没有任何时间需要跨 Barrier 投递向下一层 Pipeline
+                    break;
+                case LOCAL://from biz local
+                case WRITE://from LinkIo
+                case LOGIC://from read->logic
+                    Pair<ICommand, ISession> writeContent = event.getContent();
+                    tryPublish(dispatchEncoder(sequence), WRITE, writeContent.first(), writeContent.second(), event.getEventOp());
+                    break;
+                case WROTE://from io-wrote
+                    Pair<Integer, ISession> wroteContent = event.getContent();
+                    tryPublish(dispatchEncoder(sequence), WROTE, wroteContent.first(), wroteContent.second(), event.getEventOp());
+                    break;
+                default:
                     break;
             }
         }

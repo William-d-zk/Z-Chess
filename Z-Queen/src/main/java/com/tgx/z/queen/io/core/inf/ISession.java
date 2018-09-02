@@ -57,12 +57,6 @@ public interface ISession
 
     AsynchronousSocketChannel getChannel();
 
-    int getReadTimeOut();
-
-    int getHeartBeatSap();
-
-    long nextBeat();
-
     IOperator<IPacket, ISession> getDecodeOperator();
 
     IContext getContext();

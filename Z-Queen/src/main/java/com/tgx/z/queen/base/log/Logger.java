@@ -72,6 +72,10 @@ public class Logger
         _Logger.warn(String.format(formatter, msg), throwable);
     }
 
+    public void warning(String formatter, Object... msg) {
+        _Logger.warn(String.format(formatter, msg));
+    }
+
     public void debug(Object object) {
         _Logger.debug(object.toString());
     }

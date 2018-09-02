@@ -40,7 +40,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
-import com.tgx.z.bishop.biz.db.dto.DeviceEntry;
 import com.tgx.z.config.Config;
 import com.tgx.z.queen.base.log.Logger;
 import com.tgx.z.queen.base.schedule.ScheduleHandler;
@@ -65,6 +64,7 @@ import com.tgx.z.queen.io.core.inf.ISessionDismiss;
 import com.tgx.z.queen.io.core.inf.ISessionOption;
 import com.tgx.z.queen.io.external.websokcet.ZContext;
 import com.tgx.z.queen.io.external.websokcet.bean.control.X101_HandShake;
+import com.tgx.z.rook.biz.device.dto.DeviceEntry;
 
 @Component
 @PropertySource("classpath:client.properties")
@@ -84,8 +84,8 @@ public class DeviceClient
     private final ICommandCreator          _CommandCreator;
     private final IAioConnector            _DeviceConnector;
     private final AsynchronousChannelGroup _ChannelGroup;
-    private final TimeWheel                _TimeWheel  = new TimeWheel(3, TimeUnit.SECONDS);
     private final ClientCore<DeviceEntry>  _ClientCore = new ClientCore<>();
+    private final TimeWheel                _TimeWheel  = _ClientCore.getTimeWheel();
 
     private ISession                       clientSession;
 

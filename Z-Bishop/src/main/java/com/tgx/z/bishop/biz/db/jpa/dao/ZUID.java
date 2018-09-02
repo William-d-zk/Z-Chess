@@ -22,48 +22,45 @@
  * SOFTWARE.
  */
 
-package com.tgx.z.queen.base.schedule;
+package com.tgx.z.bishop.biz.db.jpa.dao;
 
-import java.util.Objects;
-import java.util.function.Consumer;
+import java.io.Serializable;
+import java.time.Instant;
 
-import com.tgx.z.queen.base.schedule.TimeWheel.ITimeoutHandler;
+import org.hibernate.HibernateException;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
+import org.hibernate.id.IdentifierGenerator;
 
-public class ScheduleHandler<A>
+/**
+ * 00-0000-000-0000000-0000000000000000000000000000000000000-000000000
+ * -2bit-
+ * 10 Client manager service
+ * 11 Cluster symmetry communication
+ * 01 Internal message queue broker
+ * 00 Device consumer connection
+ * -4bit-
+ * Cluster region
+ * -3bit-
+ * Cluster set identity
+ * -7bit-
+ * Endpoint identity
+ * -38bit-
+ * Timestamp gap 2019-01-01 00:00:00.000
+ * -10bit-
+ * sequence in one millisecond
+ */
+
+public class ZUID
         implements
-        ITimeoutHandler<A>
+        IdentifierGenerator
 {
-    private A             attach;
-    private final boolean _Cycle;
-    private Consumer<A>   _Callback;
+    private static final long TWEPOCH = Instant.parse("2019-01-01T00:00:00.00Z")
+                                               .toEpochMilli();
 
-    public ScheduleHandler(boolean cycle, Consumer<A> callback) {
-        _Cycle = cycle;
-        _Callback = callback;
-    }
 
-    public ScheduleHandler(boolean cycle) {
-        this(cycle, null);
-    }
 
     @Override
-    public boolean isCycle() {
-        return _Cycle;
-    }
-
-    @Override
-    public A get() {
-        return attach;
-    }
-
-    @Override
-    public A call() throws Exception {
-        if (Objects.nonNull(_Callback)) _Callback.accept(attach);
-        return attach;
-    }
-
-    @Override
-    public void attach(A attachment) {
-        attach = attachment;
+    public Serializable generate(SharedSessionContractImplementor session, Object object) throws HibernateException {
+        return null;
     }
 }
