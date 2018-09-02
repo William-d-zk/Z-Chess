@@ -6,6 +6,7 @@ dependencies {
     }
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-undertow', version: '2.0.4.RELEASE'
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-thymeleaf', version: '2.0.4.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: '2.0.4.RELEASE'
     compile group: 'org.thymeleaf.extras', name: 'thymeleaf-extras-springsecurity4', version: '3.0.2.RELEASE'
     compile project(':manange.z-bishop')
     compile project(':endpoint.z-rook')
