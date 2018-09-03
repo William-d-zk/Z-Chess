@@ -43,7 +43,6 @@ public interface IWritable<A>
                                                   ShutdownChannelGroupException,
                                                   RejectedExecutionException;
 
-    boolean isWroteFinish();
 
     enum WRITE_STATUS
     {

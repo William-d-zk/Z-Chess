@@ -35,12 +35,14 @@ abstract class BaseDispatcher
         implements
         IPipeEventHandler<QEvent, QEvent>
 {
-    final RingBuffer<QEvent>   _Link;
-    final RingBuffer<QEvent>   _Cluster;
-    final RingBuffer<QEvent>   _Error;
-    final RingBuffer<QEvent>[] _Workers;
-    final int                  _WorkerMask;
+    final RingBuffer<QEvent>           _Link;
+    final RingBuffer<QEvent>           _Cluster;
+    final RingBuffer<QEvent>           _Error;
 
+    private final RingBuffer<QEvent>[] _Workers;
+    private final int                  _WorkerMask;
+
+    @SafeVarargs
     BaseDispatcher(RingBuffer<QEvent> link, RingBuffer<QEvent> cluster, RingBuffer<QEvent> error, RingBuffer<QEvent>... workers) {
         _Link = link;
         _Cluster = cluster;
@@ -50,8 +52,8 @@ abstract class BaseDispatcher
         if (Integer.bitCount(_Workers.length) != 1) { throw new IllegalArgumentException("workers' length must be a power of 2"); }
     }
 
-    RingBuffer<QEvent> dispatchWorker(int seq) {
-        return _Workers[seq & _WorkerMask];
+    RingBuffer<QEvent> dispatchWorker(long seq) {
+        return _Workers[(int) (seq & _WorkerMask)];
     }
 
     <V, A> void dispatch(MODE mode, IOperator.Type type, V v, A a, IOperator<V, A> op) {
@@ -91,7 +93,5 @@ abstract class BaseDispatcher
                 break;
         }
     }
-
-
 
 }
