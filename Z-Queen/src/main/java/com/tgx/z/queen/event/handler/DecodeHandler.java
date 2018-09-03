@@ -23,13 +23,14 @@
  */
 package com.tgx.z.queen.event.handler;
 
+import static com.tgx.z.queen.event.inf.IError.Type.FILTER_DECODE;
+import static com.tgx.z.queen.event.inf.IOperator.Type.DISPATCH;
 import static com.tgx.z.queen.event.operator.OperatorHolder.ERROR_OPERATOR;
 
 import com.lmax.disruptor.EventHandler;
 import com.tgx.z.queen.base.log.Logger;
 import com.tgx.z.queen.base.util.Pair;
 import com.tgx.z.queen.base.util.Triple;
-import com.tgx.z.queen.event.inf.IError;
 import com.tgx.z.queen.event.inf.IOperator;
 import com.tgx.z.queen.event.processor.QEvent;
 import com.tgx.z.queen.io.core.inf.ICommand;
@@ -46,8 +47,8 @@ public class DecodeHandler
         implements
         EventHandler<QEvent>
 {
-    private final EncryptHandler _EncryptHandler = new EncryptHandler();
-    private final Logger         _Log            = Logger.getLogger(getClass().getName());
+    protected final Logger         _Log            = Logger.getLogger(getClass().getName());
+    protected final EncryptHandler _EncryptHandler = new EncryptHandler();
 
     /**
      * 错误由接下去的 Handler 负责投递 Close 事件给 IoDispatcher
@@ -71,17 +72,22 @@ public class DecodeHandler
                 //已经发生了解码异常，忽略此 session 的 decode 操作
                 break;
             default:
+                _Log.info(event);
                 try {
                     Triple<ICommand[], ISession, IOperator<ICommand[], ISession>> result = packetOperator.handle(packet, session);
-                    event.produce(IOperator.Type.DISPATCH, result.first(), session, result.third());
+                    transfer(event, result.first(), session, result.third());
                 }
                 catch (Exception e) {
                     _Log.warning(String.format("read decode error\n %s", session.toString()), e);
                     context.setDecodeState(DecodeState.DECODE_ERROR);
-                    event.error(IError.Type.FILTER_DECODE, e, session, ERROR_OPERATOR());
+                    event.error(FILTER_DECODE, e, session, ERROR_OPERATOR());
                 }
                 break;
         }
+    }
+
+    protected void transfer(QEvent event, ICommand[] commands, ISession session, IOperator<ICommand[], ISession> operator) {
+        event.produce(DISPATCH, commands, session, operator);
     }
 
 }

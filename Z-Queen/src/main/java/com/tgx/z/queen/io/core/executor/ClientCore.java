@@ -46,9 +46,9 @@ import com.tgx.z.queen.base.log.Logger;
 import com.tgx.z.queen.base.schedule.ScheduleHandler;
 import com.tgx.z.queen.base.schedule.TimeWheel;
 import com.tgx.z.queen.base.util.IoUtil;
-import com.tgx.z.queen.event.handler.DecodeHandler;
 import com.tgx.z.queen.event.handler.EncodeHandler;
 import com.tgx.z.queen.event.handler.EncodedHandler;
+import com.tgx.z.queen.event.handler.client.ClientDecodeHandler;
 import com.tgx.z.queen.event.handler.client.ClientIoDispatcher;
 import com.tgx.z.queen.event.handler.client.ClientLinkHandler;
 import com.tgx.z.queen.event.handler.client.ClientWriteDispatcher;
@@ -130,7 +130,7 @@ public class ClientCore<E extends IStorage>
             _DispatchIo[i].addGatingSequences(_IoDispatcher.getSequences()[i]);
         final BatchEventProcessor<QEvent> _DecodeProcessor = new BatchEventProcessor<>(_ReadAndLogicEvent,
                                                                                        _ReadAndLogicEvent.newBarrier(),
-                                                                                       new DecodeHandler());
+                                                                                       new ClientDecodeHandler());
         /* 相对 server core 做了精简，decode 错误将在 logic processor 中按照 Ignore 进行处理
            最终被
         */

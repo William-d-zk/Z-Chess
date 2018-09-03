@@ -94,7 +94,7 @@ public class OperatorHolder
                     session.close();
                 }
                 catch (IOException e) {
-                    LOG.warning("session close: " + session.toString(), e);
+                    LOG.warning("session close: %s", e, session.toString());
                 }
                 LOG.warning(session.toString());
                 return null;
@@ -109,7 +109,7 @@ public class OperatorHolder
         {
             @Override
             public Triple<Void, ISession, IOperator<Void, ISession>> handle(Throwable throwable, ISession session) {
-                LOG.warning(String.format("error session:%s", session), throwable);
+                LOG.warning("error session:%s", throwable, session);
                 return new Triple<>(null, session, close_operator);
             }
 
@@ -318,6 +318,24 @@ public class OperatorHolder
                 return "server_decoder";
             }
         };
+        cluster_decoder = new IDecoder()
+        {
+            final WsFrameFilter header = new WsFrameFilter();
+            {
+                header.linkFront(new ZCommandFilter(command_factory))
+                      .linkFront(new WsControlFilter());
+            }
+
+            @Override
+            public String toString() {
+                return "cluster_decoder";
+            }
+
+            @Override
+            public Triple<ICommand[], ISession, IOperator<ICommand[], ISession>> handle(IPacket inPackage, ISession session) {
+                return new Triple<>(filterRead(inPackage, header, (ZContext) session.getContext()), session, cluster_transfer);
+            }
+        };
         consumer_decoder = new IDecoder()
         {
             final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(MODE.CONSUMER);
@@ -339,42 +357,18 @@ public class OperatorHolder
                 return new Triple<>(filterRead(inPackage, handshakeFilter, (ZContext) session.getContext()), session, consumer_transfer);
             }
         };
-        cluster_decoder = new IDecoder()
-        {
-            final WsFrameFilter header = new WsFrameFilter();
-            {
-                header.linkFront(new ZCommandFilter(command_factory))
-                      .linkFront(new WsControlFilter());
-            }
 
-            @Override
-            public String toString() {
-                return "cluster_decoder";
-            }
-
-            @Override
-            public Triple<ICommand[], ISession, IOperator<ICommand[], ISession>> handle(IPacket inPackage, ISession session) {
-                return new Triple<>(filterRead(inPackage, header, (ZContext) session.getContext()), session, cluster_transfer);
-            }
-        };
         service_transfer = new IOperator<ICommand[], ISession>()
         {
 
             @Override
             public Triple<ICommand[], ISession, IOperator<ICommand, ISession>[]> handle(ICommand[] commands, ISession session) {
+
                 return null;
             }
 
         };
-        consumer_transfer = new IOperator<ICommand[], ISession>()
-        {
 
-            @Override
-            public Triple<ICommand[], ISession, IOperator<ICommand, ISession>[]> handle(ICommand[] commands, ISession session) {
-                return null;
-            }
-
-        };
         cluster_transfer = new IOperator<ICommand[], ISession>()
         {
 
@@ -384,6 +378,17 @@ public class OperatorHolder
             }
 
         };
+
+        consumer_transfer = new IOperator<ICommand[], ISession>()
+        {
+
+            @Override
+            public Triple<ICommand[], ISession, IOperator<ICommand, ISession>[]> handle(ICommand[] commands, ISession session) {
+                return null;
+            }
+
+        };
+
         command_factory = command -> {
             switch (command) {
                 default:

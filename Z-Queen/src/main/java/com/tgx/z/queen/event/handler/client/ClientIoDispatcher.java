@@ -34,6 +34,7 @@ import java.nio.channels.AsynchronousSocketChannel;
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.z.queen.base.log.Logger;
 import com.tgx.z.queen.base.util.Pair;
+import com.tgx.z.queen.base.util.Triple;
 import com.tgx.z.queen.event.inf.IOperator;
 import com.tgx.z.queen.event.inf.IPipeEventHandler;
 import com.tgx.z.queen.event.processor.QEvent;
@@ -71,8 +72,8 @@ public class ClientIoDispatcher
                 break;
             case CLOSED:
                 //transfer
-                IOperator<Throwable, ISession> closedOperator = event.getEventOp();
-                Pair<Throwable, ISession> closedContent = event.getContent();
+                IOperator<Void, ISession> closedOperator = event.getEventOp();
+                Pair<Void, ISession> closedContent = event.getContent();
                 error(_LinkIo, event.getErrorType(), closedContent.first(), closedContent.second(), closedOperator);
                 break;
             case READ_ZERO:
@@ -82,13 +83,19 @@ public class ClientIoDispatcher
             case WRITE_FAILED:
             case WRITE_ZERO:
             case TIME_OUT:
+            case FILTER_DECODE:
+            case FILTER_ENCODE:
+            case ILLEGAL_STATE:
+            case ILLEGAL_BIZ_STATE:
+            case OUT_OF_LENGTH:
+            case SSL_HANDSHAKE:
                 //convert & transfer
                 IOperator<Throwable, ISession> errorOperator = event.getEventOp();
                 Pair<Throwable, ISession> errorContent = event.getContent();
                 ISession session = errorContent.second();
                 throwable = errorContent.first();
-                errorOperator.handle(throwable, session);
-                error(_LinkIo, event.getErrorType(), throwable, session, errorOperator);
+                Triple<Void, ISession, IOperator<Void, ISession>> transferResult = errorOperator.handle(throwable, session);
+                error(_LinkIo, event.getErrorType(), transferResult.first(), session, transferResult.third());
                 break;
             case NO_ERROR: {
                 switch (event.getEventType()) {
@@ -108,8 +115,8 @@ public class ClientIoDispatcher
                         publish(_Wrote, WROTE, wroteContent.first(), wroteContent.second(), event.getEventOp());
                         break;
                     case CLOSE:
-                        IOperator<Throwable, ISession> closeOperator = event.getEventOp();
-                        Pair<Throwable, ISession> closeContent = event.getContent();
+                        IOperator<Void, ISession> closeOperator = event.getEventOp();
+                        Pair<Void, ISession> closeContent = event.getContent();
                         error(_Error, CLOSED, closeContent.first(), closeContent.second(), closeOperator);
                         break;
                     default:

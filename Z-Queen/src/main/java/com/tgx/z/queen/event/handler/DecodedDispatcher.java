@@ -24,9 +24,13 @@
 
 package com.tgx.z.queen.event.handler;
 
+import static com.tgx.z.queen.event.inf.IOperator.Type.LOGIC;
+
 import com.lmax.disruptor.RingBuffer;
-import com.tgx.z.queen.event.inf.IError;
+import com.tgx.z.queen.base.util.Pair;
 import com.tgx.z.queen.event.processor.QEvent;
+import com.tgx.z.queen.io.core.inf.ICommand;
+import com.tgx.z.queen.io.core.inf.ISession;
 
 public class DecodedDispatcher
         extends
@@ -39,19 +43,26 @@ public class DecodedDispatcher
 
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception {
-        IError.Type errorType = event.getErrorType();
-        switch (errorType) {
+        switch (event.getErrorType()) {
             case NO_ERROR:
                 switch (event.getEventType()) {
                     case TRANSFER:
-                    case LOCAL:
                     case LOGIC:
                     case DISPATCH:
+                        Pair<ICommand[], ISession> dispatchContent = event.getContent();
+                        ISession session = dispatchContent.second();
+                        ICommand[] commands = dispatchContent.first();
+                        for (ICommand cmd : commands) {
+                            //dispatch 到对应的 处理器里
+                            dispatch(session.getMode(), LOGIC, cmd, session, null);
+                        }
                 }
                 break;
             default:
                 //错误处理
-
+                Pair<Throwable, ISession> dispatchError = event.getContent();
+                ISession session = dispatchError.second();
+                dispatchError(session.getMode(), event.getErrorType(), dispatchError.first(), session, event.getEventOp());
                 break;
 
         }
