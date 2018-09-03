@@ -24,7 +24,7 @@
 
 package com.tgx.z.queen.event.handler;
 
-import static com.tgx.z.queen.event.inf.IOperator.Type.CLOSE;
+import static com.tgx.z.queen.event.inf.IError.Type.CLOSED;
 import static com.tgx.z.queen.event.inf.IOperator.Type.CONNECTED;
 import static com.tgx.z.queen.event.inf.IOperator.Type.TRANSFER;
 import static com.tgx.z.queen.event.inf.IOperator.Type.WROTE;
@@ -70,8 +70,14 @@ public class IoDispatcher
                 IConnectActive connectActive = connectFailedContent.second();
                 dispatchError(connectActive.getMode(), errorType, throwable, connectActive, connectFailedOperator);
                 break;
-            case ACCEPT_FAILED:
             case CLOSED:
+                //transfer
+                IOperator<Throwable, ISession> closedOperator = event.getEventOp();
+                Pair<Throwable, ISession> closedContent = event.getContent();
+                ISession session = closedContent.second();
+                dispatchError(session.getMode(), CLOSED, closedContent.first(), session, closedOperator);
+                break;
+            case ACCEPT_FAILED:
             case READ_ZERO:
             case READ_EOF:
             case READ_FAILED:
@@ -81,10 +87,10 @@ public class IoDispatcher
             case TIME_OUT:
                 IOperator<Throwable, ISession> errorOperator = event.getEventOp();
                 Pair<Throwable, ISession> errorContent = event.getContent();
-                ISession session = errorContent.second();
+                session = errorContent.second();
                 throwable = errorContent.first();
                 errorOperator.handle(throwable, session);
-                dispatchError(session.getMode(), IError.Type.CLOSED, throwable, session, errorOperator);
+                dispatchError(session.getMode(), CLOSED, throwable, session, errorOperator);
                 break;
             case NO_ERROR:
                 switch (event.getEventType()) {
@@ -92,8 +98,7 @@ public class IoDispatcher
                         IOperator<IConnectionContext, AsynchronousSocketChannel> connectOperator = event.getEventOp();
                         Pair<IConnectionContext, AsynchronousSocketChannel> connectContent = event.getContent();
                         IConnectionContext connectionContext = connectContent.first();
-                        AsynchronousSocketChannel channel = connectContent.second();
-                        dispatch(connectionContext.getMode(), CONNECTED, connectionContext, channel, connectOperator);
+                        dispatch(connectionContext.getMode(), CONNECTED, connectionContext, connectContent.second(), connectOperator);
                         break;
                     case READ:
                         Pair<IPacket, ISession> readContent = event.getContent();
@@ -108,12 +113,10 @@ public class IoDispatcher
                         Pair<Integer, ISession> wrote_content = event.getContent();
                         publish(_IoWrote, WROTE, wrote_content.first(), wrote_content.second(), event.getEventOp());
                         break;
-                    case CLOSE:// CLOSE_OPERATOR
+                    case CLOSE:// local close
                         IOperator<Throwable, ISession> closeOperator = event.getEventOp();
                         Pair<Throwable, ISession> closeContent = event.getContent();
-                        Throwable t = closeContent.first();
-                        session = closeContent.second();
-                        dispatch(session.getMode(), CLOSE, t, session, closeOperator);
+                        error(_Error, CLOSED, closeContent.first(), closeContent.second(), closeOperator);
                         break;
                     default:
                         _Log.warning(String.format(" wrong type %s in IoDispatcher", event.getEventType()));

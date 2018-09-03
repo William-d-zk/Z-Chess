@@ -65,7 +65,7 @@ public class Config
 {
 
     private final static long                        serialVersionUID       = 7432284958748032464L;
-    private final static Logger                      LOGGER                 = Logger.getLogger(Config.class.getName());
+    private final static Logger                      LOG                    = Logger.getLogger(Config.class.getName());
     private final static String                      PACKAGE_PREFIX_NAME    = Config.class.getPackage()
                                                                                           .getName();
     private final static String                      ROOT_OWNER             = "Environment";
@@ -151,7 +151,7 @@ public class Config
 
     private void load(ResourceBundle resourceBundle, String parent) {
         Objects.requireNonNull(resourceBundle);
-        LOGGER.info("service: " + parent + " Config name " + resourceBundle.getBaseBundleName());
+        LOG.info("service: " + parent + " Config name " + resourceBundle.getBaseBundleName());
         for (Enumeration<String> e = resourceBundle.getKeys(); e.hasMoreElements();) {
             String element = e.nextElement();
             Object value = ConfigReader.readObject(resourceBundle, element);
@@ -167,7 +167,7 @@ public class Config
                         .map(Pair::second)
                         .forEach(str -> _ValueStoreMap.put(str, value));
             _ValueStoreMap.put(element, value);
-            LOGGER.info(element + " = " + value);
+            LOG.debug(element + " = " + value);
         }
     }
 
@@ -176,10 +176,10 @@ public class Config
         ResourceBundle resourceBundle = null;
         try {
             resourceBundle = ResourceBundle.getBundle(Objects.isNull(parent) ? owner : parent.replaceAll("\\.", "_") + "/" + owner);
-            LOGGER.info("load resource " + owner + " parent: " + parent);
+            LOG.debug("load resource " + owner + " parent: " + parent);
         }
         catch (MissingResourceException e) {
-            LOGGER.info("biz path: \"" + parent + "\" is not exist,load from loader");
+            LOG.debug("biz path: \"" + parent + "\" is not exist,load from loader");
             if (Objects.nonNull(_ConfigExternal)) {
                 String dbKey = owner.toLowerCase();
                 if (!_ConfigExternal.isEmpty() && Objects.nonNull(_ConfigExternal.get(dbKey))) {
@@ -193,12 +193,12 @@ public class Config
                 }
             }
             if (Objects.isNull(resourceBundle)) {
-                LOGGER.warning("biz path: \"" + parent + "\" is not exist,load default: " + owner);
+                LOG.warning("biz path: \"" + parent + "\" is not exist,load default: " + owner);
                 resourceBundle = ResourceBundle.getBundle(owner);
             }
         }
         if (Objects.isNull(resourceBundle)) {
-            LOGGER.warning(" config miss " + owner);
+            LOG.warning(" config miss " + owner);
         }
         else {
             load(resourceBundle, parent);
@@ -214,7 +214,7 @@ public class Config
         Objects.requireNonNull(key);
         Object result = _ValueStoreMap.get(key);
         if (Objects.isNull(result)) {
-            LOGGER.warning("unknown config key!: " + key);
+            LOG.warning("unknown config key!: " + key);
         }
         return (T) result;
     }
@@ -232,7 +232,7 @@ public class Config
         if (revision >= 0) {
             configKey += String.format(".%d", revision);
         }
-        LOGGER.info("set config : " + configKey + " = " + value);
+        LOG.debug("set config : " + configKey + " = " + value);
         _ValueStoreMap.put(configKey, value);
     }
 
@@ -241,7 +241,7 @@ public class Config
                                       .filter(getKeyPattern(group, getConfigParent(), owner, null, key, -1).asPredicate())
                                       .findFirst()
                                       .orElse(getPackagePrefix() + "." + group + "." + owner + "." + key);
-        LOGGER.info("set config : " + configKey + " = " + value);
+        LOG.debug("set config : " + configKey + " = " + value);
         _ValueStoreMap.put(configKey, value);
     }
 

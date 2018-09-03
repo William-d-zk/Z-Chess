@@ -48,11 +48,20 @@ public class ClientLinkHandler
 
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception {
-        _Log.info(event);
         if (event.hasError()) {
+            switch (event.getErrorType()) {
+                case CONNECT_FAILED:
+                    event.ignore();
+                    break;
+                case READ_FAILED:
+                case CLOSED:
+
+                    default:break;
+            }
+
             if (event.getErrorType()
                      .equals(CONNECT_FAILED)) {
-                event.ignore();
+
             }
             else {
                 _Log.warning("io read error , transfer -> _ErrorEvent");
@@ -77,7 +86,7 @@ public class ClientLinkHandler
                                     .onCreate(session);
                     _Log.info(String.format("link handle %s,connected", session));
                     break;
-                case CLOSE:
+                case CLOSE://Local Close
                     Pair<Throwable, ISession> closeContent = event.getContent();
                     session = closeContent.second();
                     _Log.info(String.format("link handle %s,close", session));
