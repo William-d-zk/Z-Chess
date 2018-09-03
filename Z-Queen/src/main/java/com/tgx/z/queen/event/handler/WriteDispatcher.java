@@ -55,7 +55,6 @@ public class WriteDispatcher
 
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception {
-        _Log.info(event);
         /*
          Write Dispatcher  不存在错误状态的输入,都已经处理完了
          */
@@ -68,7 +67,7 @@ public class WriteDispatcher
             case LOGIC://from read->logic
                 Pair<ICommand, ISession> writeContent = event.getContent();
                 ISession session = writeContent.second();
-                tryPublish(dispatchEncoder(session.isEmpty() ? sequence : session.getIndex()),
+                tryPublish(dispatchEncoder(session.isEmpty() ? sequence : session.getHashKey()),
                            WRITE,
                            writeContent.first(),
                            session,
@@ -77,7 +76,7 @@ public class WriteDispatcher
             case WROTE://from io-wrote
                 Pair<Integer, ISession> wroteContent = event.getContent();
                 session = wroteContent.second();
-                tryPublish(dispatchEncoder(session.isEmpty() ? sequence : session.getIndex()),
+                tryPublish(dispatchEncoder(session.isEmpty() ? sequence : session.getHashKey()),
                            WROTE,
                            wroteContent.first(),
                            session,

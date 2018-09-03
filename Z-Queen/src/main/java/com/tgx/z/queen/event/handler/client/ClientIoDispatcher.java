@@ -24,7 +24,7 @@
 
 package com.tgx.z.queen.event.handler.client;
 
-import static com.tgx.z.queen.event.inf.IOperator.Type.CLOSE;
+import static com.tgx.z.queen.event.inf.IError.Type.CLOSED;
 import static com.tgx.z.queen.event.inf.IOperator.Type.CONNECTED;
 import static com.tgx.z.queen.event.inf.IOperator.Type.TRANSFER;
 import static com.tgx.z.queen.event.inf.IOperator.Type.WROTE;
@@ -47,14 +47,14 @@ public class ClientIoDispatcher
         IPipeEventHandler<QEvent, QEvent>
 {
     private final RingBuffer<QEvent> _LinkIo;
-    private final RingBuffer<QEvent> _Worker;
+    private final RingBuffer<QEvent> _Decoder;
     private final RingBuffer<QEvent> _Wrote;
     private final RingBuffer<QEvent> _Error;
     private final Logger             _Log = Logger.getLogger(getClass().getName());
 
-    public ClientIoDispatcher(RingBuffer<QEvent> linkIo, RingBuffer<QEvent> worker, RingBuffer<QEvent> wrote, RingBuffer<QEvent> error) {
+    public ClientIoDispatcher(RingBuffer<QEvent> linkIo, RingBuffer<QEvent> decoder, RingBuffer<QEvent> wrote, RingBuffer<QEvent> error) {
         _LinkIo = linkIo;
-        _Worker = worker;
+        _Decoder = decoder;
         _Wrote = wrote;
         _Error = error;
     }
@@ -70,6 +70,11 @@ public class ClientIoDispatcher
                 error(_LinkIo, event.getErrorType(), throwable, connectActive, connectFailedOperator);
                 break;
             case CLOSED:
+                //transfer
+                IOperator<Throwable, ISession> closedOperator = event.getEventOp();
+                Pair<Throwable, ISession> closedContent = event.getContent();
+                error(_LinkIo, event.getErrorType(), closedContent.first(), closedContent.second(), closedOperator);
+                break;
             case READ_ZERO:
             case READ_EOF:
             case READ_FAILED:
@@ -77,6 +82,7 @@ public class ClientIoDispatcher
             case WRITE_FAILED:
             case WRITE_ZERO:
             case TIME_OUT:
+                //convert & transfer
                 IOperator<Throwable, ISession> errorOperator = event.getEventOp();
                 Pair<Throwable, ISession> errorContent = event.getContent();
                 ISession session = errorContent.second();
@@ -95,7 +101,7 @@ public class ClientIoDispatcher
                         break;
                     case READ:
                         Pair<IPacket, ISession> readContent = event.getContent();
-                        publish(_Worker, TRANSFER, readContent.first(), readContent.second(), event.getEventOp());
+                        publish(_Decoder, TRANSFER, readContent.first(), readContent.second(), event.getEventOp());
                         break;
                     case WROTE:
                         Pair<Integer, ISession> wroteContent = event.getContent();
@@ -104,7 +110,7 @@ public class ClientIoDispatcher
                     case CLOSE:
                         IOperator<Throwable, ISession> closeOperator = event.getEventOp();
                         Pair<Throwable, ISession> closeContent = event.getContent();
-                        publish(_LinkIo, CLOSE, closeContent.first(), closeContent.second(), closeOperator);
+                        error(_Error, CLOSED, closeContent.first(), closeContent.second(), closeOperator);
                         break;
                     default:
                         _Log.warning(String.format(" wrong type %s in ClientIoDispatcher", event.getEventType()));

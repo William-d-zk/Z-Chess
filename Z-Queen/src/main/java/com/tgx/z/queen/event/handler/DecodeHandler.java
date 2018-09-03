@@ -23,7 +23,6 @@
  */
 package com.tgx.z.queen.event.handler;
 
-import static com.tgx.z.queen.event.inf.IOperator.Type.TRANSFER;
 import static com.tgx.z.queen.event.operator.OperatorHolder.ERROR_OPERATOR;
 
 import com.lmax.disruptor.EventHandler;
@@ -57,14 +56,9 @@ public class DecodeHandler
      */
     @Override
     public void onEvent(QEvent event, long sequence, boolean batch) throws Exception {
-        if (event.hasError()) {
-            _Log.warning("io read error , transfer -> _ErrorEvent");
-        }
-        if (!event.getEventType()
-                  .equals(TRANSFER)) {
-            _Log.warning(String.format("event type error: %s", event.getEventType()));
-            return;
-        }
+        /*
+        错误事件已在同级旁路中处理，此处不再关心错误处理
+         */
         IOperator<IPacket, ISession> packetOperator = event.getEventOp();
         Pair<IPacket, ISession> packetContent = event.getContent();
         ISession session = packetContent.second();
@@ -79,7 +73,6 @@ public class DecodeHandler
             default:
                 try {
                     Triple<ICommand[], ISession, IOperator<ICommand[], ISession>> result = packetOperator.handle(packet, session);
-                    //result.second() == session
                     event.produce(IOperator.Type.DISPATCH, result.first(), session, result.third());
                 }
                 catch (Exception e) {

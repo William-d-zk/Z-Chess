@@ -51,7 +51,6 @@ public class ClientWriteDispatcher
 
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception {
-        _Log.info(event);
         if (event.hasError()) {
             switch (event.getErrorType()) {
                 case FILTER_DECODE:
