@@ -44,9 +44,7 @@ public interface IOperator<V, A>
         TRANSFER,
         LOCAL,
         LOGIC,
-        MULTI_DISPATCH,
         DISPATCH,
-        BRANCH,
         IGNORE
     }
 }
