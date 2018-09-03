@@ -28,6 +28,7 @@ import static com.tgx.z.queen.event.inf.IOperator.Type.LOGIC;
 
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.z.queen.base.util.Pair;
+import com.tgx.z.queen.event.operator.MODE;
 import com.tgx.z.queen.event.processor.QEvent;
 import com.tgx.z.queen.io.core.inf.ICommand;
 import com.tgx.z.queen.io.core.inf.ISession;
@@ -54,7 +55,7 @@ public class DecodedDispatcher
                         ICommand[] commands = dispatchContent.first();
                         for (ICommand cmd : commands) {
                             //dispatch 到对应的 处理器里
-                            dispatch(session.getMode(), LOGIC, cmd, session, null);
+                            dispatch(session.getMode(), cmd, session);
                         }
                 }
                 break;
@@ -67,5 +68,27 @@ public class DecodedDispatcher
 
         }
         event.reset();
+    }
+
+    private void dispatch(MODE mode, ICommand cmd, ISession session) {
+        switch (mode) {
+            case CLUSTER_CONSUMER:
+            case CLUSTER_SERVER:
+                publish(_Cluster, LOGIC, cmd, session, null);
+                break;
+            case SERVER:
+            case SERVER_SSL:
+            case SYMMETRY:
+                if (cmd.isMappingCommand()) {
+                    publish(_Link, LOGIC, cmd, session, null);
+                }
+                else {
+                    publish(dispatchWorker(session.getHashKey()), LOGIC, cmd, session, null);
+                }
+                break;
+            default:
+                // ignore consumer event
+                break;
+        }
     }
 }

@@ -36,6 +36,10 @@ public interface ICommand
         IChannel,
         IDisposable
 {
+    default boolean isMappingCommand() {
+        return false;
+    }
+
     long _DEFAULT_TRANSACTION_KEY = -1;
 
     default IPacket translate() {

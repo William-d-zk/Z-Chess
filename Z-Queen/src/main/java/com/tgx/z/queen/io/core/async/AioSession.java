@@ -35,6 +35,7 @@ import java.util.LinkedList;
 import java.util.Objects;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.tgx.z.queen.base.util.ArrayUtil;
 import com.tgx.z.queen.event.inf.IOperator;
@@ -65,43 +66,83 @@ public class AioSession
      * 与系统的 SocketOption 的 RecvBuffer 相等大小， 至少可以一次性将系统 Buffer 中的数据全部转存
      */
     private final ByteBuffer                   _RecvBuf;
-    private final int                          _HashKey;
     private final IContext                     _Ctx;
+    private final int                          _HashCode;
     private final MODE                         _Mode;
     private final ISessionDismiss              _DismissCallback;
     private final IOperator<IPacket, ISession> _InOperator;
     private final int                          _QueueSizeMax;
     private final int                          _HaIndex, _PortIndex;
+    private final AtomicInteger                _Ctl       = new AtomicInteger(ctlOf(CONNECTED, 0));
     /*----------------------------------------------------------------------------------------------------------------*/
+    private static final int                   COUNT_BITS = Integer.SIZE - 3;
+    private static final int                   CAPACITY   = (1 << COUNT_BITS) - 1;
 
-    private long                               mIndex       = _DEFAULT_INDEX;
+    private static final int                   CONNECTED  = -3 << COUNT_BITS;
+    private static final int                   PENDING    = -2 << COUNT_BITS;
+    private static final int                   SENDING    = -1 << COUNT_BITS;
+    private static final int                   CLOSE      = 00 << COUNT_BITS;
+    private static final int                   TERMINATED = 01 << COUNT_BITS;
+
+    private static int runStateOf(int c) {
+        return c & ~CAPACITY;
+    }
+
+    private static int packetCountOf(int c) {
+        return c & CAPACITY;
+    }
+
+    private static int ctlOf(int rs, int wc) {
+        return rs | wc;
+    }
+
+    private static boolean runStateLessThan(int c, int s) {
+        return c < s;
+    }
+
+    private static boolean runStateAtLeast(int c, int s) {
+        return c >= s;
+    }
+
+    private static boolean isConnected(int c) {
+        return c < CLOSE;
+    }
+
+    private void advanceRunState(int targetState) {
+        for (;;) {
+            int c = _Ctl.get();
+            if (runStateAtLeast(c, targetState) || _Ctl.compareAndSet(c, ctlOf(targetState, packetCountOf(c)))) break;
+        }
+    }
+
+    /*----------------------------------------------------------------------------------------------------------------*/
+    private long       mIndex = _DEFAULT_INDEX;
     /*
      * 此处并不会进行空间初始化，完全依赖于 Context 的 WrBuf 初始化大小
      */
-    private ByteBuffer                         mSending;
+    private ByteBuffer mSending;
     /*
      * Session close 只能出现在 QueenManager 的工作线程中 所以关闭操作只需要做到全域线程可见即可，不需要处理写冲突
      */
-    private volatile boolean                   vClosed;
-    private long[]                             mPortChannels;
+    private long[]     mPortChannels;
 
-    private int                                mWroteExpect;
-    private int                                mSendingBlank;
-    private int                                mWaitWrite;
-    private boolean                            bWriteFinish = true;
-    private long                               mReadTimeStamp;
+    private int        mWroteExpect;
+    private int        mSendingBlank;
+    private int        mWaitWrite;
+    private long       mReadTimeStamp;
+    private long       hashKey;
 
     @Override
     public String toString() {
         return String.format("@%x %s->%s mode:%s HA:%x Port:%x Index:%x close:%s\nwait to write %d,queue size %d",
-                             _HashKey,
+                             _HashCode,
                              _LocalAddress,
                              _RemoteAddress,
                              _Mode,
                              _HaIndex,
                              _PortIndex,
                              mIndex,
-                             vClosed,
+                             isClosed(),
                              mWaitWrite,
                              size());
     }
@@ -119,7 +160,7 @@ public class AioSession
         _RemoteAddress = (InetSocketAddress) channel.getRemoteAddress();
         _LocalAddress = (InetSocketAddress) channel.getLocalAddress();
         _DismissCallback = sessionDismiss;
-        _HashKey = channel.hashCode();
+        _HashCode = channel.hashCode();
         _PortIndex = active.getPortIndex();
         _HaIndex = active.getHaIndex();
         sessionOption.setOptions(channel);
@@ -132,6 +173,7 @@ public class AioSession
         mSending = _Ctx.getWrBuffer();
         mSending.flip();
         mSendingBlank = mSending.capacity() - mSending.limit();
+        hashKey = _HashCode;
     }
 
     @Override
@@ -186,14 +228,14 @@ public class AioSession
     @Override
     public final void close() throws IOException {
         if (isClosed()) return;
-        vClosed = true;
+        advanceRunState(CLOSE);
         _Ctx.close();
         _Channel.close();
     }
 
     @Override
     public final boolean isClosed() {
-        return vClosed;
+        return runStateAtLeast(_Ctl.get(), CLOSE);
     }
 
     @Override
@@ -203,7 +245,10 @@ public class AioSession
 
     @Override
     public final void setIndex(long index) {
-        this.mIndex = index;
+        mIndex = index;
+        if (mIndex != -1L) {
+            hashKey = mIndex;
+        }
     }
 
     @Override
@@ -217,8 +262,8 @@ public class AioSession
     }
 
     @Override
-    public final int getHashKey() {
-        return _HashKey;
+    public final long getHashKey() {
+        return hashKey;
     }
 
     @Override
@@ -270,7 +315,7 @@ public class AioSession
                 case IN_SENDING:
                     ps.send();
                 default:
-                    if (mWaitWrite > 0 && bWriteFinish) flush(handler);
+                    if (mWaitWrite > 0 && runStateLessThan(_Ctl.get(), SENDING)) flush(handler);
                     return status;
             }
         }
@@ -284,7 +329,7 @@ public class AioSession
                 case IN_SENDING:
                     fps.send();
                 default:
-                    if (mWaitWrite > 0 && bWriteFinish) flush(handler);
+                    if (mWaitWrite > 0 && runStateLessThan(_Ctl.get(), SENDING)) flush(handler);
                     break;
             }
             offer(ps);
@@ -299,13 +344,23 @@ public class AioSession
                                                                                               RejectedExecutionException {
         if (isClosed()) { return WRITE_STATUS.CLOSED; }
         mWroteExpect -= wroteCnt;
-        bWriteFinish = true;
         if (mWroteExpect == 0) {
             mSending.clear();
             mSending.flip();
         }
-        if (isEmpty()) { return WRITE_STATUS.IGNORE; }
+
+        if (isEmpty()) {
+            advanceRunState(CONNECTED);
+            return WRITE_STATUS.IGNORE;
+        }
+        else {
+            advanceRunState(PENDING);
+        }
         IPacket fps;
+        /* 将待发的 packet 都写到 sending buffer 中，充满 sending buffer，
+           不会出现无限循环，writeChannel 中执行 remove 操作，由于都是在相同的线程中
+           不存在线程安全问题
+         */
         Loop:
         do {
             fps = peek();
@@ -355,13 +410,8 @@ public class AioSession
     private void flush(CompletionHandler<Integer, ISession> handler) throws WritePendingException,
                                                                      NotYetConnectedException,
                                                                      ShutdownChannelGroupException {
-        bWriteFinish = false;
+        advanceRunState(SENDING);
         _Channel.write(mSending, _WriteTimeOut, TimeUnit.SECONDS, this, handler);
-    }
-
-    @Override
-    public boolean isWroteFinish() {
-        return bWriteFinish;
     }
 
     @Override

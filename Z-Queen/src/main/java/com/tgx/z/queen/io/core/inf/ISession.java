@@ -53,7 +53,7 @@ public interface ISession
 
     void setIndex(long _Index);
 
-    int getHashKey();
+    long getHashKey();
 
     AsynchronousSocketChannel getChannel();
 

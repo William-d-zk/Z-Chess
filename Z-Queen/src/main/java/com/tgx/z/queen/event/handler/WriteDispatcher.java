@@ -67,20 +67,16 @@ public class WriteDispatcher
             case LOGIC://from read->logic
                 Pair<ICommand, ISession> writeContent = event.getContent();
                 ISession session = writeContent.second();
-                tryPublish(dispatchEncoder(session.isEmpty() ? sequence : session.getHashKey()),
-                           WRITE,
-                           writeContent.first(),
-                           session,
-                           event.getEventOp());
+                if (session.isValid()) {
+                    tryPublish(dispatchEncoder(session.getHashKey()), WRITE, writeContent.first(), session, event.getEventOp());
+                }
                 break;
             case WROTE://from io-wrote
                 Pair<Integer, ISession> wroteContent = event.getContent();
                 session = wroteContent.second();
-                tryPublish(dispatchEncoder(session.isEmpty() ? sequence : session.getHashKey()),
-                           WROTE,
-                           wroteContent.first(),
-                           session,
-                           event.getEventOp());
+                if (session.isValid()) {
+                    tryPublish(dispatchEncoder(session.getHashKey()), WROTE, wroteContent.first(), session, event.getEventOp());
+                }
                 break;
             default:
                 break;
