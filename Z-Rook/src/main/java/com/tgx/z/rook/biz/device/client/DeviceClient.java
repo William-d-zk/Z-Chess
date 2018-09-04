@@ -24,6 +24,22 @@
 
 package com.tgx.z.rook.biz.device.client;
 
+import static com.tgx.z.queen.event.operator.MODE.CONSUMER;
+import static com.tgx.z.queen.event.operator.OperatorHolder.CONNECTED_OPERATOR;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.nio.channels.AsynchronousChannelGroup;
+import java.nio.channels.AsynchronousSocketChannel;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.stereotype.Component;
+
 import com.tgx.z.config.Config;
 import com.tgx.z.queen.base.log.Logger;
 import com.tgx.z.queen.base.schedule.ScheduleHandler;
@@ -49,20 +65,6 @@ import com.tgx.z.queen.io.core.inf.ISessionOption;
 import com.tgx.z.queen.io.external.websokcet.ZContext;
 import com.tgx.z.queen.io.external.websokcet.bean.control.X101_HandShake;
 import com.tgx.z.rook.biz.device.dto.DeviceEntry;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.nio.channels.AsynchronousChannelGroup;
-import java.nio.channels.AsynchronousSocketChannel;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-
-import static com.tgx.z.queen.event.operator.MODE.CONSUMER;
-import static com.tgx.z.queen.event.operator.OperatorHolder.CONNECTED_OPERATOR;
 
 @Component
 @PropertySource("classpath:client.properties")
@@ -70,21 +72,22 @@ public class DeviceClient
         implements
         IAioClient,
         ISessionDismiss,
-        ISessionCreated {
-    private final Logger _Log = Logger.getLogger(getClass().getName());
+        ISessionCreated
+{
+    private final Logger                   _Log        = Logger.getLogger(getClass().getName());
 
-    private final String _TargetName;
-    private final String _TargetHost;
-    private final int _TargetPort;
-    private final Config _Config;
-    private final ISessionCreator _SessionCreator;
-    private final ICommandCreator _CommandCreator;
-    private final IAioConnector _DeviceConnector;
+    private final String                   _TargetName;
+    private final String                   _TargetHost;
+    private final int                      _TargetPort;
+    private final Config                   _Config;
+    private final ISessionCreator          _SessionCreator;
+    private final ICommandCreator          _CommandCreator;
+    private final IAioConnector            _DeviceConnector;
     private final AsynchronousChannelGroup _ChannelGroup;
-    private final ClientCore<DeviceEntry> _ClientCore = new ClientCore<>();
-    private final TimeWheel _TimeWheel = _ClientCore.getTimeWheel();
+    private final ClientCore<DeviceEntry>  _ClientCore = new ClientCore<>();
+    private final TimeWheel                _TimeWheel  = _ClientCore.getTimeWheel();
 
-    private ISession clientSession;
+    private ISession                       clientSession;
 
     public DeviceClient(@Value("${client.target.name}") String targetName,
                         @Value("${client.target.host}") String targetHost,
@@ -95,18 +98,20 @@ public class DeviceClient
         _TargetPort = targetPort;
         _Config = new Config("client");
         _ChannelGroup = AsynchronousChannelGroup.withFixedThreadPool(1, _ClientCore.getWorkerThreadFactory());
-        _SessionCreator = new AioCreator(_Config) {
+        _SessionCreator = new AioCreator(_Config)
+        {
             @Override
             public ISession createSession(AsynchronousSocketChannel socketChannel, IConnectActive active) {
                 try {
                     return new AioSession(socketChannel,
-                            active,
-                            this,
-                            this,
-                            DeviceClient.this,
-                            active.getMode()
-                                    .getInOperator());
-                } catch (IOException e) {
+                                          active,
+                                          this,
+                                          this,
+                                          DeviceClient.this,
+                                          active.getMode()
+                                                .getInOperator());
+                }
+                catch (IOException e) {
                     e.printStackTrace();
                     return null;
                 }
@@ -118,9 +123,10 @@ public class DeviceClient
             }
         };
         _CommandCreator = () -> new X101_HandShake(_TargetHost, "device-client", 13);
-        _DeviceConnector = new IAioConnector() {
+        _DeviceConnector = new IAioConnector()
+        {
             private final InetSocketAddress remote = new InetSocketAddress(_TargetHost, _TargetPort);
-            private InetSocketAddress localBind;
+            private InetSocketAddress       localBind;
 
             @Override
             public InetSocketAddress getRemoteAddress() {
@@ -139,7 +145,8 @@ public class DeviceClient
 
             @Override
             public IOperator<Throwable, IAioConnector> getErrorOperator() {
-                return new IOperator<Throwable, IAioConnector>() {
+                return new IOperator<Throwable, IAioConnector>()
+                {
                     @Override
                     @SuppressWarnings("unchecked")
                     public Triple<Throwable, IAioConnector, IOperator<Throwable, IAioConnector>> handle(Throwable throwable,
@@ -190,17 +197,20 @@ public class DeviceClient
             _TimeWheel.acquire(3, TimeUnit.SECONDS, _DeviceConnector, new ScheduleHandler<>(false, connector -> {
                 if (Objects.nonNull(clientSession)) {
                     _Log.info("connect status checked -> success");
-                } else {
+                }
+                else {
                     _Log.warning("connect status checked -> failed -> retry once");
                     try {
                         connect(connector, _ChannelGroup);
-                    } catch (IOException e) {
+                    }
+                    catch (IOException e) {
                         e.printStackTrace();
                         //terminate connect
                     }
                 }
             }));
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             e.printStackTrace();
             //terminate connect
         }
@@ -228,7 +238,6 @@ public class DeviceClient
     public void close() {
         _ClientCore.close(clientSession);
     }
-
 
     public void handshake() {
         sendLocal(_CommandCreator.createCommand());

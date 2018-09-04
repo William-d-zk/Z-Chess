@@ -27,6 +27,7 @@ package com.tgx.z.queen.event.handler;
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.z.queen.base.log.Logger;
 import com.tgx.z.queen.base.util.Pair;
+import com.tgx.z.queen.base.util.Triple;
 import com.tgx.z.queen.event.inf.IError;
 import com.tgx.z.queen.event.inf.IOperator;
 import com.tgx.z.queen.event.inf.IPipeEventHandler;
@@ -58,8 +59,8 @@ public class EncodedHandler
                     Pair<Throwable, ISession> errorContent = event.getContent();
                     ISession session = errorContent.second();
                     Throwable throwable = errorContent.first();
-                    errorOperator.handle(throwable, session);
-                    error(_Error, IError.Type.CLOSED, throwable, session, errorOperator);
+                    Triple<Void, ISession, IOperator<Void, ISession>> errorResult = errorOperator.handle(throwable, session);
+                    error(_Error, IError.Type.CLOSED, errorResult.first(), session, errorResult.third());
                     break;
             }
         }
