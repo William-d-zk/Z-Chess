@@ -73,18 +73,18 @@ public class LinkHandler
                     IOperator<IConnectionContext, AsynchronousSocketChannel> connectedOperator = event.getEventOp();
                     Pair<IConnectionContext, AsynchronousSocketChannel> connectedContent = event.getContent();
                     AsynchronousSocketChannel channel = connectedContent.second();
-                    Triple<ICommand,
+                    Triple<ICommand[],
                            ISession,
-                           IOperator<ICommand, ISession>> connectedHandled = connectedOperator.handle(connectedContent.first(), channel);
+                           IOperator<ICommand[], ISession>> connectedHandled = connectedOperator.handle(connectedContent.first(), channel);
                     //connectedHandled 不可能为 null
-                    ICommand waitToSend = connectedHandled.first();
+                    ICommand[] waitToSends = connectedHandled.first();
                     ISession session = connectedHandled.second();
                     ISessionCreated sessionCreated = connectedContent.first()
                                                                      .getSessionCreated();
                     sessionCreated.onCreate(session);
-                    IOperator<ICommand, ISession> sendOperator = connectedHandled.third();
-                    if (Objects.nonNull(waitToSend)) {
-                        publish(_Writer, WRITE, waitToSend, session, sendOperator);
+                    IOperator<ICommand[], ISession> sendOperator = connectedHandled.third();
+                    if (Objects.nonNull(waitToSends)) {
+                        publish(_Writer, WRITE, waitToSends, session, sendOperator);
                     }
                     break;
                 case CLOSE:

@@ -24,12 +24,6 @@
 
 package com.tgx.z.queen.io.core.inf;
 
-import java.nio.channels.CompletionHandler;
-import java.nio.channels.NotYetConnectedException;
-import java.nio.channels.ShutdownChannelGroupException;
-import java.nio.channels.WritePendingException;
-import java.util.concurrent.RejectedExecutionException;
-
 /**
  * @author William.d.zk
  */
@@ -56,25 +50,4 @@ public interface IPipeEncoder
         return output;
     }
 
-    default <C extends IContext> Throwable sessionWrite(IProtocol output,
-                                                        IFilterChain<C> filterChain,
-                                                        ISession session,
-                                                        CompletionHandler<Integer, ISession> writeHandler) {
-        if (output == null || filterChain == null || session == null || writeHandler == null) return new NullPointerException();
-        @SuppressWarnings("unchecked")
-        IProtocol out = filterWrite(output, filterChain, (C) session.getContext());
-        if (out instanceof IPacket) {
-            try {
-                session.write((IPacket) out, writeHandler);
-            }
-            catch (WritePendingException |
-                   NotYetConnectedException |
-                   ShutdownChannelGroupException |
-                   RejectedExecutionException e) {
-                return e;
-            }
-        }
-        else if (out != null) return new UnsupportedOperationException();
-        return null;
-    }
 }

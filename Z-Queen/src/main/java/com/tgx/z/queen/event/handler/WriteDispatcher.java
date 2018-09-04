@@ -27,9 +27,13 @@ package com.tgx.z.queen.event.handler;
 import static com.tgx.z.queen.event.inf.IOperator.Type.WRITE;
 import static com.tgx.z.queen.event.inf.IOperator.Type.WROTE;
 
+import java.util.Objects;
+
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.z.queen.base.log.Logger;
 import com.tgx.z.queen.base.util.Pair;
+import com.tgx.z.queen.base.util.Triple;
+import com.tgx.z.queen.event.inf.IOperator;
 import com.tgx.z.queen.event.inf.IPipeEventHandler;
 import com.tgx.z.queen.event.processor.QEvent;
 import com.tgx.z.queen.io.core.inf.ICommand;
@@ -63,12 +67,17 @@ public class WriteDispatcher
             case IGNORE://没有任何时间需要跨 Barrier 投递向下一层 Pipeline
                 break;
             case LOCAL://from biz local
-            case WRITE://from LinkIo
+            case WRITE://from LinkIo/Cluster
             case LOGIC://from read->logic
-                Pair<ICommand, ISession> writeContent = event.getContent();
+                Pair<ICommand[], ISession> writeContent = event.getContent();
                 ISession session = writeContent.second();
-                if (session.isValid()) {
-                    tryPublish(dispatchEncoder(session.getHashKey()), WRITE, writeContent.first(), session, event.getEventOp());
+                ICommand[] commands = writeContent.first();
+                if (session.isValid() && Objects.nonNull(commands)) {
+                    IOperator<ICommand[], ISession> transferOperator = event.getEventOp();
+                    Triple<ICommand, ISession, IOperator<ICommand, ISession>>[] triples = transferOperator.transfer(commands, session);
+                    for (Triple<ICommand, ISession, IOperator<ICommand, ISession>> triple : triples) {
+                        tryPublish(dispatchEncoder(session.getHashKey()), WRITE, triple.first(), session, triple.third());
+                    }
                 }
                 break;
             case WROTE://from io-wrote

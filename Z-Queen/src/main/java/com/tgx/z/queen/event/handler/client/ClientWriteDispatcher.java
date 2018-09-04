@@ -27,9 +27,13 @@ package com.tgx.z.queen.event.handler.client;
 import static com.tgx.z.queen.event.inf.IOperator.Type.WRITE;
 import static com.tgx.z.queen.event.inf.IOperator.Type.WROTE;
 
+import java.util.Objects;
+
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.z.queen.base.log.Logger;
 import com.tgx.z.queen.base.util.Pair;
+import com.tgx.z.queen.base.util.Triple;
+import com.tgx.z.queen.event.inf.IOperator;
 import com.tgx.z.queen.event.inf.IPipeEventHandler;
 import com.tgx.z.queen.event.processor.QEvent;
 import com.tgx.z.queen.io.core.inf.ICommand;
@@ -63,13 +67,24 @@ public class ClientWriteDispatcher
             switch (event.getEventType()) {
                 case LOCAL://from biz local
                 case WRITE://from LinkIo
-                case LOGIC://from read->logic 
-                    Pair<ICommand, ISession> writeContent = event.getContent();
-                    tryPublish(_Encoder, WRITE, writeContent.first(), writeContent.second(), event.getEventOp());
+                case LOGIC://from read->logic
+                    Pair<ICommand[], ISession> writeContent = event.getContent();
+                    ICommand[] commands = writeContent.first();
+                    ISession session = writeContent.second();
+                    if (session.isValid() && Objects.nonNull(commands)) {
+                        IOperator<ICommand[], ISession> transferOperator = event.getEventOp();
+                        Triple<ICommand, ISession, IOperator<ICommand, ISession>>[] triples = transferOperator.transfer(commands, session);
+                        for (Triple<ICommand, ISession, IOperator<ICommand, ISession>> triple : triples) {
+                            tryPublish(_Encoder, WRITE, triple.first(), session, triple.third());
+                        }
+                    }
                     break;
                 case WROTE://from io-wrote
                     Pair<Integer, ISession> wroteContent = event.getContent();
-                    tryPublish(_Encoder, WROTE, wroteContent.first(), wroteContent.second(), event.getEventOp());
+                    session = wroteContent.second();
+                    if (session.isValid()) {
+                        tryPublish(_Encoder, WROTE, wroteContent.first(), session, event.getEventOp());
+                    }
                     break;
                 default:
                     break;

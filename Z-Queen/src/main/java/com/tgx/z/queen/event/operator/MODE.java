@@ -26,8 +26,9 @@ package com.tgx.z.queen.event.operator;
 
 import static com.tgx.z.queen.event.operator.OperatorHolder.CLUSTER_DECODER;
 import static com.tgx.z.queen.event.operator.OperatorHolder.CONSUMER_DECODER;
-import static com.tgx.z.queen.event.operator.OperatorHolder.CONSUMER_ENCODER;
+import static com.tgx.z.queen.event.operator.OperatorHolder.CONSUMER_TRANSFER;
 import static com.tgx.z.queen.event.operator.OperatorHolder.SERVER_DECODER;
+import static com.tgx.z.queen.event.operator.OperatorHolder.SERVER_TRANSFER;
 
 import com.tgx.z.queen.event.inf.IOperator;
 import com.tgx.z.queen.io.core.inf.ICommand;
@@ -37,7 +38,7 @@ import com.tgx.z.queen.io.core.inf.ISession;
 
 public enum MODE
         implements
-        IOperatorSupplier<IPacket, ICommand, ISession>
+        IOperatorSupplier<IPacket, ICommand[], ISession>
 {
     CLUSTER_CONSUMER {},
     CLUSTER_SERVER {
@@ -47,7 +48,7 @@ public enum MODE
         }
 
         @Override
-        public IOperator<ICommand, ISession> getOutOperator() {
+        public IOperator<ICommand[], ISession> getOutOperator() {
             return null;
         }
     },
@@ -60,8 +61,8 @@ public enum MODE
         }
 
         @Override
-        public IOperator<ICommand, ISession> getOutOperator() {
-            return CONSUMER_ENCODER();
+        public IOperator<ICommand[], ISession> getOutOperator() {
+            return CONSUMER_TRANSFER();
         }
     },
     SERVER {
@@ -71,8 +72,8 @@ public enum MODE
         }
 
         @Override
-        public IOperator<ICommand, ISession> getOutOperator() {
-            return null;
+        public IOperator<ICommand[], ISession> getOutOperator() {
+            return SERVER_TRANSFER();
         }
     },
     CONSUMER_SSL,
@@ -85,7 +86,7 @@ public enum MODE
     }
 
     @Override
-    public IOperator<ICommand, ISession> getOutOperator() {
+    public IOperator<ICommand[], ISession> getOutOperator() {
         return null;
     }
 }

@@ -26,5 +26,5 @@ package com.tgx.z.queen.io.core.inf;
 
 public interface ICommandCreator
 {
-    ICommand createCommand();
+    ICommand[] createCommands(ISession session);
 }

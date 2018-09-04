@@ -24,6 +24,10 @@
 
 package com.tgx.z.queen.event.handler;
 
+import static com.tgx.z.queen.event.inf.IOperator.Type.LOGIC;
+
+import java.util.Objects;
+
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.z.queen.base.util.Pair;
 import com.tgx.z.queen.event.operator.MODE;
@@ -31,13 +35,10 @@ import com.tgx.z.queen.event.processor.QEvent;
 import com.tgx.z.queen.io.core.inf.ICommand;
 import com.tgx.z.queen.io.core.inf.ISession;
 
-import java.util.Objects;
-
-import static com.tgx.z.queen.event.inf.IOperator.Type.LOGIC;
-
 public class DecodedDispatcher
         extends
-        BaseDispatcher {
+        BaseDispatcher
+{
 
     public DecodedDispatcher(RingBuffer<QEvent> link, RingBuffer<QEvent> cluster, RingBuffer<QEvent> error, RingBuffer<QEvent>[] logic) {
         super(link, cluster, error, logic);
@@ -54,9 +55,11 @@ public class DecodedDispatcher
                         Pair<ICommand[], ISession> dispatchContent = event.getContent();
                         ISession session = dispatchContent.second();
                         ICommand[] commands = dispatchContent.first();
-                        if (Objects.nonNull(commands)) for (ICommand cmd : commands) {
-                            //dispatch 到对应的 处理器里
-                            dispatch(session.getMode(), cmd, session);
+                        if (Objects.nonNull(commands)) {
+                            for (ICommand cmd : commands) {
+                                //dispatch 到对应的 处理器里
+                                dispatch(session.getMode(), cmd, session);
+                            }
                         }
                 }
                 break;
@@ -82,7 +85,8 @@ public class DecodedDispatcher
             case SYMMETRY:
                 if (cmd.isMappingCommand()) {
                     publish(_Link, LOGIC, cmd, session, null);
-                } else {
+                }
+                else {
                     publish(dispatchWorker(session.getHashKey()), LOGIC, cmd, session, null);
                 }
                 break;

@@ -44,6 +44,7 @@ import com.tgx.z.config.Config;
 import com.tgx.z.queen.base.log.Logger;
 import com.tgx.z.queen.base.schedule.ScheduleHandler;
 import com.tgx.z.queen.base.schedule.TimeWheel;
+import com.tgx.z.queen.base.util.Pair;
 import com.tgx.z.queen.base.util.Triple;
 import com.tgx.z.queen.event.inf.IOperator;
 import com.tgx.z.queen.event.operator.MODE;
@@ -62,6 +63,7 @@ import com.tgx.z.queen.io.core.inf.ISessionCreated;
 import com.tgx.z.queen.io.core.inf.ISessionCreator;
 import com.tgx.z.queen.io.core.inf.ISessionDismiss;
 import com.tgx.z.queen.io.core.inf.ISessionOption;
+import com.tgx.z.queen.io.external.websokcet.WsContext;
 import com.tgx.z.queen.io.external.websokcet.ZContext;
 import com.tgx.z.queen.io.external.websokcet.bean.control.X101_HandShake;
 import com.tgx.z.rook.biz.device.dto.DeviceEntry;
@@ -122,7 +124,9 @@ public class DeviceClient
                 return new ZContext(option, mode);
             }
         };
-        _CommandCreator = () -> new X101_HandShake(_TargetHost, "device-client", 13);
+        _CommandCreator = (session) -> new ICommand[] { new X101_HandShake(_TargetHost,
+                                                                           ((WsContext) session.getContext()).getSeKey(),
+                                                                           13) };
         _DeviceConnector = new IAioConnector()
         {
             private final InetSocketAddress remote = new InetSocketAddress(_TargetHost, _TargetPort);
@@ -188,7 +192,26 @@ public class DeviceClient
 
     @PostConstruct
     private void init() {
-        _ClientCore.build(null);
+        _ClientCore.build((event, sequence, endOfBatch) -> {
+            switch (event.getEventType()) {
+                case LOGIC:
+                    Pair<ICommand[], ISession> logicContent = event.getContent();
+                    ICommand[] commands = logicContent.first();
+                    ISession session = logicContent.second();
+                    if (Objects.nonNull(commands)) for (ICommand cmd : commands)
+                        switch (cmd.getSerial()) {
+                            case X101_HandShake.COMMAND:
+                                _Log.info("handshake ok");
+                                event.ignore();
+                                break;
+                        }
+                    break;
+                default:
+                    _Log.warning("event type no handle %s", event.getEventType());
+                    break;
+            }
+
+        });
     }
 
     public void connect() {
@@ -231,8 +254,8 @@ public class DeviceClient
         }
     }
 
-    public boolean sendLocal(ICommand toSend) {
-        return _ClientCore.localSend(toSend, clientSession);
+    public boolean sendLocal(ICommand... toSends) {
+        return _ClientCore.localSend(clientSession, toSends);
     }
 
     public void close() {
@@ -240,6 +263,6 @@ public class DeviceClient
     }
 
     public void handshake() {
-        sendLocal(_CommandCreator.createCommand());
+        sendLocal(_CommandCreator.createCommands(clientSession));
     }
 }

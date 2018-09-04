@@ -38,6 +38,8 @@ import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
 import java.nio.channels.NotYetConnectedException;
 import java.nio.channels.ShutdownChannelGroupException;
+import java.util.Arrays;
+import java.util.Objects;
 
 import com.tgx.z.queen.base.log.Logger;
 import com.tgx.z.queen.base.util.IoUtil;
@@ -73,10 +75,11 @@ public class OperatorHolder
     private static IOperator<Integer, ISession>                             wrote_operator;
     private static IOperator<IPacket, ISession>                             server_decoder;
     private static IOperator<IPacket, ISession>                             cluster_decoder;
+    private static IOperator<ICommand, ISession>                            cluster_encoder;
     private static IOperator<IPacket, ISession>                             consumer_decoder;
     private static IOperator<ICommand, ISession>                            consumer_encoder;
     private static IOperator<ICommand, ISession>                            server_encoder;
-    private static IOperator<ICommand[], ISession>                          service_transfer;
+    private static IOperator<ICommand[], ISession>                          server_transfer;
     private static IOperator<ICommand[], ISession>                          consumer_transfer;
     private static IOperator<ICommand[], ISession>                          cluster_transfer;
     private static IOperator<IConnectionContext, AsynchronousSocketChannel> connected_operator;
@@ -125,6 +128,11 @@ public class OperatorHolder
             public <T, E> Triple<T, E, IOperator<T, E>> handle(Throwable throwable, ISession iSession) {
                 LOG.warning("ignore error", throwable);
                 return null;
+            }
+
+            @Override
+            public String toString() {
+                return "ignore_operator";
             }
         };
         wrote_operator = new IOperator<Integer, ISession>()
@@ -261,7 +269,7 @@ public class OperatorHolder
             public Triple<Throwable, ISession, IOperator<Throwable, ISession>> handle(ICommand command, ISession session) {
                 try {
                     IPacket send = (IPacket) filterWrite(command, handshakeFilter, (ZContext) session.getContext());
-                    LOG.info("consumer send:%s",
+                    LOG.info("server send:%s",
                              IoUtil.bin2Hex(send.getBuffer()
                                                 .array(),
                                             "."));
@@ -278,19 +286,50 @@ public class OperatorHolder
                 return "server_encoder";
             }
         };
+
+        cluster_encoder = new IEncoder()
+        {
+            final WsFrameFilter header = new WsFrameFilter();
+            {
+                header.linkFront(new ZCommandFilter(command_factory))
+                      .linkFront(new WsControlFilter());
+            }
+
+            @Override
+            public Triple<Throwable, ISession, IOperator<Throwable, ISession>> handle(ICommand command, ISession session) {
+                try {
+                    IPacket send = (IPacket) filterWrite(command, header, (ZContext) session.getContext());
+                    LOG.info("cluster send:%s",
+                             IoUtil.bin2Hex(send.getBuffer()
+                                                .array(),
+                                            "."));
+                    session.write(send, aio_writer);
+                }
+                catch (Exception e) {
+                    return new Triple<>(e, session, error_operator);
+                }
+                return null;
+            }
+
+            @Override
+            public String toString() {
+                return "cluster_encoder";
+            }
+
+        };
         connected_operator = new IOperator<IConnectionContext, AsynchronousSocketChannel>()
         {
 
             //都在 LinkIo-Processor 中处理
             @Override
-            public Triple<ICommand, ISession, IOperator<ICommand, ISession>> handle(IConnectionContext ctx,
-                                                                                    AsynchronousSocketChannel channel) {
+            public Triple<ICommand[], ISession, IOperator<ICommand[], ISession>> handle(IConnectionContext ctx,
+                                                                                        AsynchronousSocketChannel channel) {
                 ISession session = ctx.getSessionCreator()
                                       .createSession(channel, ctx.getConnectActive());
-                ICommand cmd = ctx.getCommandCreator()
-                                  .createCommand();
+                ICommand[] commands = ctx.getCommandCreator()
+                                         .createCommands(session);
                 session.readNext(aio_reader);
-                return new Triple<>(cmd,
+                return new Triple<>(commands,
                                     session,
                                     session.getMode()
                                            .getOutOperator());
@@ -344,7 +383,7 @@ public class OperatorHolder
 
             @Override
             public Triple<ICommand[], ISession, IOperator<ICommand[], ISession>> handle(IPacket inPackage, ISession session) {
-                return new Triple<>(filterRead(inPackage, handshakeFilter, (ZContext) session.getContext()), session, service_transfer);
+                return new Triple<>(filterRead(inPackage, handshakeFilter, (ZContext) session.getContext()), session, server_transfer);
             }
 
             @Override
@@ -355,7 +394,6 @@ public class OperatorHolder
         cluster_decoder = new IDecoder()
         {
             final WsFrameFilter header = new WsFrameFilter();
-
             {
                 header.linkFront(new ZCommandFilter(command_factory))
                       .linkFront(new WsControlFilter());
@@ -394,35 +432,55 @@ public class OperatorHolder
             }
         };
 
-        service_transfer = new IOperator<ICommand[], ISession>()
+        server_transfer = new IOperator<ICommand[], ISession>()
         {
 
             @Override
-            public Triple<ICommand[], ISession, IOperator<ICommand, ISession>[]> handle(ICommand[] commands, ISession session) {
-
-                return null;
+            public Triple<ICommand, ISession, IOperator<ICommand, ISession>>[] transfer(ICommand[] commands, ISession session) {
+                Objects.requireNonNull(commands);
+                Triple<ICommand, ISession, IOperator<ICommand, ISession>>[] triples = new Triple[commands.length];
+                Arrays.setAll(triples, slot -> new Triple<>(commands[slot], session, server_encoder));
+                return triples;
             }
 
+            @Override
+            public String toString() {
+                return "server_transfer";
+            }
         };
 
         cluster_transfer = new IOperator<ICommand[], ISession>()
         {
 
             @Override
-            public Triple<ICommand[], ISession, IOperator<ICommand, ISession>[]> handle(ICommand[] commands, ISession session) {
-                return null;
+            public Triple<ICommand, ISession, IOperator<ICommand, ISession>>[] transfer(ICommand[] commands, ISession session) {
+                Objects.requireNonNull(commands);
+                Triple<ICommand, ISession, IOperator<ICommand, ISession>>[] triples = new Triple[commands.length];
+                Arrays.setAll(triples, slot -> new Triple<>(commands[slot], session, cluster_encoder));
+                return triples;
             }
 
+            @Override
+            public String toString() {
+                return "cluster_transfer";
+            }
         };
 
         consumer_transfer = new IOperator<ICommand[], ISession>()
         {
 
             @Override
-            public Triple<ICommand[], ISession, IOperator<ICommand, ISession>[]> handle(ICommand[] commands, ISession session) {
-                return null;
+            public Triple<ICommand, ISession, IOperator<ICommand, ISession>>[] transfer(ICommand[] commands, ISession session) {
+                Objects.requireNonNull(commands);
+                Triple<ICommand, ISession, IOperator<ICommand, ISession>>[] triples = new Triple[commands.length];
+                Arrays.setAll(triples, slot -> new Triple<>(commands[slot], session, consumer_encoder));
+                return triples;
             }
 
+            @Override
+            public String toString() {
+                return "consumer_transfer";
+            }
         };
 
         command_factory = command -> {
@@ -489,12 +547,28 @@ public class OperatorHolder
         return consumer_decoder;
     }
 
-    static IOperator<ICommand, ISession> CONSUMER_ENCODER() {
+    public static IOperator<ICommand, ISession> CONSUMER_ENCODER() {
         return consumer_encoder;
+    }
+
+    static IOperator<ICommand[], ISession> CONSUMER_TRANSFER() {
+        return consumer_transfer;
     }
 
     public static IOperator<ICommand, ISession> SERVER_ENCODER() {
         return server_encoder;
+    }
+
+    public static IOperator<ICommand[], ISession> SERVER_TRANSFER() {
+        return server_transfer;
+    }
+
+    public static IOperator<ICommand, ISession> CLUSTER_ENCODER() {
+        return cluster_encoder;
+    }
+
+    static IOperator<ICommand[], ISession> CLUSTER_TRANSFER() {
+        return cluster_transfer;
     }
 
     public static CompletionHandler<AsynchronousSocketChannel, IAioServer> SERVER_ACCEPTOR() {
