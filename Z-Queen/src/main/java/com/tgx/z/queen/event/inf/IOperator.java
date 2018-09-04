@@ -28,10 +28,15 @@ import com.tgx.z.queen.base.util.Triple;
 /**
  * @author William.d.zk
  */
-@FunctionalInterface
 public interface IOperator<V, A>
 {
-    <T, E> Triple<T, E, IOperator<T, E>> handle(V v, A a);
+    default <T, E> Triple<T, E, IOperator<T, E>> handle(V v, A a) {
+        return null;
+    }
+
+    default <T, E> Triple<T, E, IOperator<T, E>>[] transfer(V v, A a) {
+        return null;
+    }
 
     enum Type
     {

@@ -208,15 +208,15 @@ public class ClientCore<E extends IStorage>
         return _WorkerThreadFactory;
     }
 
-    public boolean localSend(ICommand toSend, ISession session) {
-        Objects.requireNonNull(toSend);
+    public boolean localSend(ISession session, ICommand... toSends) {
+        Objects.requireNonNull(toSends);
         Objects.requireNonNull(session);
         if (_LocalLock.tryLock()) try {
             long sequence = _BizLocalSendEvent.next();
             try {
                 QEvent event = _BizLocalSendEvent.get(sequence);
                 event.produce(Type.LOCAL,
-                              toSend,
+                              toSends,
                               session,
                               session.getMode()
                                      .getOutOperator());

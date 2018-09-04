@@ -27,7 +27,7 @@ package com.tgx.z.bishop.biz.device;
 import static com.tgx.z.queen.event.inf.IOperator.Type.WRITE;
 import static com.tgx.z.queen.event.operator.OperatorHolder.CONNECTED_OPERATOR;
 import static com.tgx.z.queen.event.operator.OperatorHolder.SERVER_ACCEPTOR;
-import static com.tgx.z.queen.event.operator.OperatorHolder.SERVER_ENCODER;
+import static com.tgx.z.queen.event.operator.OperatorHolder.SERVER_TRANSFER;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -126,7 +126,7 @@ public class DeviceNode
                 return new ZContext(option, mode);
             }
         };
-        _CommandCreator = () -> null;
+        _CommandCreator = (session) -> null;
         _DeviceServer = new IAioServer()
         {
             private final InetSocketAddress _LocalBind = new InetSocketAddress(_ServerHost, _ServerPort);
@@ -202,7 +202,7 @@ public class DeviceNode
         ServerCore<DeviceEntry> core = new ServerCore<>();
         core.build(queenManager -> (event, sequence, endOfBatch) -> {
             switch (event.getEventType()) {
-                case LOGIC:
+                case LOGIC://前置的 dispatcher 将 ICommands 拆分了
                     Pair<ICommand, ISession> logicContent = event.getContent();
                     ICommand cmd = logicContent.first();
                     ISession session = logicContent.second();
@@ -216,7 +216,7 @@ public class DeviceNode
                             default:
                                 break;
                         }
-                        event.produce(WRITE, cmd, session, SERVER_ENCODER());
+                        event.produce(WRITE, new ICommand[] { cmd }, session, SERVER_TRANSFER());
                     }
                     break;
             }

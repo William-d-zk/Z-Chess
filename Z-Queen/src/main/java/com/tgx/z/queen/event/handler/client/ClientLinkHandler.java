@@ -56,7 +56,8 @@ public class ClientLinkHandler
                 case READ_FAILED:
                 case CLOSED:
 
-                    default:break;
+                default:
+                    break;
             }
 
             if (event.getErrorType()
@@ -72,15 +73,15 @@ public class ClientLinkHandler
                 case CONNECTED:
                     IOperator<IConnectionContext, AsynchronousSocketChannel> connectedOperator = event.getEventOp();
                     Pair<IConnectionContext, AsynchronousSocketChannel> connectedContent = event.getContent();
-                    Triple<ICommand,
+                    Triple<ICommand[],
                            ISession,
-                           IOperator<ICommand, ISession>> connectedHandled = connectedOperator.handle(connectedContent.first(),
-                                                                                                      connectedContent.second());
+                           IOperator<ICommand[], ISession>> connectedHandled = connectedOperator.handle(connectedContent.first(),
+                                                                                                        connectedContent.second());
                     //connectedHandled 不可能为 null
-                    ICommand waitToSend = connectedHandled.first();
+                    ICommand[] waitToSend = connectedHandled.first();
                     ISession session = connectedHandled.second();
-                    IOperator<ICommand, ISession> sendOperator = connectedHandled.third();
-                    event.produce(WRITE, waitToSend, session, sendOperator);
+                    IOperator<ICommand[], ISession> sendTransferOperator = connectedHandled.third();
+                    event.produce(WRITE, waitToSend, session, sendTransferOperator);
                     connectedContent.first()
                                     .getSessionCreated()
                                     .onCreate(session);
