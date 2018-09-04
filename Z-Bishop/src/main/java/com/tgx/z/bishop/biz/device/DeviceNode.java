@@ -24,8 +24,10 @@
 
 package com.tgx.z.bishop.biz.device;
 
+import static com.tgx.z.queen.event.inf.IOperator.Type.WRITE;
 import static com.tgx.z.queen.event.operator.OperatorHolder.CONNECTED_OPERATOR;
 import static com.tgx.z.queen.event.operator.OperatorHolder.SERVER_ACCEPTOR;
+import static com.tgx.z.queen.event.operator.OperatorHolder.SERVER_ENCODER;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -33,6 +35,7 @@ import java.net.StandardSocketOptions;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.util.Objects;
 
 import javax.annotation.PostConstruct;
 
@@ -44,6 +47,7 @@ import com.tgx.z.bishop.biz.db.dto.DeviceEntry;
 import com.tgx.z.config.Config;
 import com.tgx.z.config.QueenCode;
 import com.tgx.z.queen.base.log.Logger;
+import com.tgx.z.queen.base.util.Pair;
 import com.tgx.z.queen.base.util.Triple;
 import com.tgx.z.queen.event.inf.IOperator;
 import com.tgx.z.queen.event.operator.MODE;
@@ -51,6 +55,7 @@ import com.tgx.z.queen.io.core.async.AioCreator;
 import com.tgx.z.queen.io.core.async.AioSession;
 import com.tgx.z.queen.io.core.executor.ServerCore;
 import com.tgx.z.queen.io.core.inf.IAioServer;
+import com.tgx.z.queen.io.core.inf.ICommand;
 import com.tgx.z.queen.io.core.inf.ICommandCreator;
 import com.tgx.z.queen.io.core.inf.IConnectActive;
 import com.tgx.z.queen.io.core.inf.IConnectionContext;
@@ -62,6 +67,7 @@ import com.tgx.z.queen.io.core.inf.ISessionDismiss;
 import com.tgx.z.queen.io.core.inf.ISessionOption;
 import com.tgx.z.queen.io.core.manager.QueenManager;
 import com.tgx.z.queen.io.external.websokcet.ZContext;
+import com.tgx.z.queen.io.external.websokcet.bean.control.X101_HandShake;
 
 @Service
 @PropertySource({ "classpath:device.properties",
@@ -194,8 +200,27 @@ public class DeviceNode
     @PostConstruct
     private void start() throws IOException {
         ServerCore<DeviceEntry> core = new ServerCore<>();
-        core.build(queenManager -> {
-            return null;
+        core.build(queenManager -> (event, sequence, endOfBatch) -> {
+            switch (event.getEventType()) {
+                case LOGIC:
+                    Pair<ICommand, ISession> logicContent = event.getContent();
+                    ICommand cmd = logicContent.first();
+                    ISession session = logicContent.second();
+                    if (Objects.isNull(cmd)) {
+                        _Log.warning("cmd null");
+                    }
+                    else {
+                        _Log.info(cmd);
+                        switch (cmd.getSerial()) {
+                            case X101_HandShake.COMMAND:
+                            default:
+                                break;
+                        }
+                        event.produce(WRITE, cmd, session, SERVER_ENCODER());
+                    }
+                    break;
+            }
+
         }, this);
         _DeviceServer.bindAddress(new InetSocketAddress(_ServerHost, _ServerPort),
                                   AsynchronousChannelGroup.withFixedThreadPool(core.getServerCount(), core.getWorkerThreadFactory()));

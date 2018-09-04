@@ -75,6 +75,7 @@ public class OperatorHolder
     private static IOperator<IPacket, ISession>                             cluster_decoder;
     private static IOperator<IPacket, ISession>                             consumer_decoder;
     private static IOperator<ICommand, ISession>                            consumer_encoder;
+    private static IOperator<ICommand, ISession>                            server_encoder;
     private static IOperator<ICommand[], ISession>                          service_transfer;
     private static IOperator<ICommand[], ISession>                          consumer_transfer;
     private static IOperator<ICommand[], ISession>                          cluster_transfer;
@@ -234,7 +235,6 @@ public class OperatorHolder
                     session.write(send, aio_writer);
                 }
                 catch (Exception e) {
-
                     return new Triple<>(e, session, error_operator);
                 }
                 return null;
@@ -243,6 +243,39 @@ public class OperatorHolder
             @Override
             public String toString() {
                 return "consumer_encoder";
+            }
+        };
+
+        server_encoder = new IEncoder()
+        {
+            final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(MODE.SERVER);
+            {
+                IFilterChain<WsContext> header = new ZTlsFilter();
+                handshakeFilter.linkAfter(header);
+                handshakeFilter.linkFront(new WsFrameFilter())
+                               .linkFront(new ZCommandFilter(command_factory))
+                               .linkFront(new WsControlFilter());
+            }
+
+            @Override
+            public Triple<Throwable, ISession, IOperator<Throwable, ISession>> handle(ICommand command, ISession session) {
+                try {
+                    IPacket send = (IPacket) filterWrite(command, handshakeFilter, (ZContext) session.getContext());
+                    LOG.info("consumer send:%s",
+                             IoUtil.bin2Hex(send.getBuffer()
+                                                .array(),
+                                            "."));
+                    session.write(send, aio_writer);
+                }
+                catch (Exception e) {
+                    return new Triple<>(e, session, error_operator);
+                }
+                return null;
+            }
+
+            @Override
+            public String toString() {
+                return "server_encoder";
             }
         };
         connected_operator = new IOperator<IConnectionContext, AsynchronousSocketChannel>()
@@ -300,6 +333,7 @@ public class OperatorHolder
         {
 
             final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(MODE.SERVER);
+
             {
                 IFilterChain<WsContext> header = new ZTlsFilter();
                 handshakeFilter.linkAfter(header);
@@ -321,6 +355,7 @@ public class OperatorHolder
         cluster_decoder = new IDecoder()
         {
             final WsFrameFilter header = new WsFrameFilter();
+
             {
                 header.linkFront(new ZCommandFilter(command_factory))
                       .linkFront(new WsControlFilter());
@@ -339,6 +374,7 @@ public class OperatorHolder
         consumer_decoder = new IDecoder()
         {
             final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(MODE.CONSUMER);
+
             {
                 IFilterChain<WsContext> header = new ZTlsFilter();
                 handshakeFilter.linkAfter(header);
@@ -455,6 +491,10 @@ public class OperatorHolder
 
     static IOperator<ICommand, ISession> CONSUMER_ENCODER() {
         return consumer_encoder;
+    }
+
+    public static IOperator<ICommand, ISession> SERVER_ENCODER() {
+        return server_encoder;
     }
 
     public static CompletionHandler<AsynchronousSocketChannel, IAioServer> SERVER_ACCEPTOR() {
