@@ -215,8 +215,22 @@ public class Config
         Object result = _ValueStoreMap.get(key);
         if (Objects.isNull(result)) {
             LOG.warning("unknown config key!: " + key);
+            throw new NullPointerException(String.format("not contains key:%s", key));
         }
         return (T) result;
+    }
+
+    public boolean contains(String key) {
+        Objects.requireNonNull(key);
+        return _ValueStoreMap.containsKey(key) && Objects.nonNull(_ValueStoreMap.get(key));
+    }
+
+    public boolean contains(String group, String owner, String key) {
+        String configKey = getKeySet().stream()
+                                      .filter(getKeyPattern(group, getConfigParent(), owner, null, key, -1).asPredicate())
+                                      .findFirst()
+                                      .orElse(getPackagePrefix() + "." + group + "." + owner + "." + key);
+        return contains(configKey);
     }
 
     public <T> void setConfigValue(String group, String owner, String key, String extentsion, int revision, T value) {
