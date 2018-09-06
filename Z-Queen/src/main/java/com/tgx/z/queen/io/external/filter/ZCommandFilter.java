@@ -41,6 +41,8 @@ import com.tgx.z.queen.io.external.websokcet.bean.X03_Cipher;
 import com.tgx.z.queen.io.external.websokcet.bean.X04_EncryptConfirm;
 import com.tgx.z.queen.io.external.websokcet.bean.X05_EncryptStart;
 import com.tgx.z.queen.io.external.websokcet.bean.X06_PlainStart;
+import com.tgx.z.queen.io.external.websokcet.bean.control.X101_HandShake;
+import com.tgx.z.queen.io.external.websokcet.bean.control.X102_SslHandShake;
 import com.tgx.z.queen.io.external.zprotocol.Command;
 
 /**
@@ -66,25 +68,29 @@ public class ZCommandFilter<C extends AioContext>
     @Override
     public ResultType preEncode(C context, IProtocol output) {
         if (output == null || context == null) return ResultType.ERROR;
-        if (!context.isOutConvert()) return ResultType.IGNORE;
-        switch (output.getSuperSerial()) {
-            case Command.COMMAND_SERIAL:
-                return ResultType.NEXT_STEP;
-            case WsControl.CONTROL_SERIAL:
-            case WsFrame.FRAME_SERIAL:
-                return ResultType.IGNORE;
-            default:
-                return ResultType.ERROR;
+        if (context.isOutConvert()) {
+            switch (output.getSuperSerial()) {
+                case Command.COMMAND_SERIAL:
+                    return ResultType.NEXT_STEP;
+                case WsControl.CONTROL_SERIAL:
+                    switch (output.getSerial()) {
+                        case X101_HandShake.COMMAND:
+                        case X102_SslHandShake.COMMAND:
+                            return ResultType.ERROR;
+                    }
+                case WsFrame.FRAME_SERIAL:
+                    return ResultType.IGNORE;
+                default:
+                    return ResultType.ERROR;
+            }
         }
+        return ResultType.IGNORE;
     }
 
     @Override
     public ResultType preDecode(C context, IProtocol input) {
         if (context == null || input == null) return ResultType.ERROR;
-        if (!context.isInConvert()) return ResultType.IGNORE;
-        if (!(input instanceof WsFrame)) return ResultType.ERROR;
-        WsFrame frame = (WsFrame) input;
-        return frame.isNoCtrl() ? ResultType.HANDLED : ResultType.IGNORE;
+        return context.isInConvert() && input instanceof WsFrame && ((WsFrame) input).isNoCtrl() ? ResultType.HANDLED : ResultType.IGNORE;
     }
 
     @Override

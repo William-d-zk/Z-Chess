@@ -70,10 +70,10 @@ public class AioContext
     public void reset() {
         if (mInitFromHandshake) handshake();
         else {
-            _EncodeState.set(ctlOf(ENCODE_NULL, 0));
-            _DecodeState.set(ctlOf(DECODE_NULL, 0));
+            _EncodeState.set(ctlOf(ENCODE_FRAME, 0));
+            _DecodeState.set(ctlOf(DECODE_FRAME, 0));
         }
-        _ChannelState.set(ctlOf(SESSION_CONNECTED, 0));
+        _ChannelState.set(ctlOf(SESSION_IDLE, 0));
         mDecodingPosition = -1;
         mLackData = 1;
     }
@@ -103,12 +103,6 @@ public class AioContext
     public void transfer() {
         advanceState(_EncodeState, ENCODE_FRAME);
         advanceState(_DecodeState, DECODE_FRAME);
-    }
-
-    @Override
-    public void tls() {
-        advanceState(_EncodeState, ENCODE_TLS);
-        advanceState(_DecodeState, DECODE_TLS);
     }
 
     @Override

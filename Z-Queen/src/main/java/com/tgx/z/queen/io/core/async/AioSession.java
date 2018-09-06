@@ -310,6 +310,7 @@ public class AioSession
                                                                                               RejectedExecutionException {
         if (isClosed()) { return WRITE_STATUS.CLOSED; }
         mWroteExpect -= wroteCnt;
+        mWaitWrite -= wroteCnt;
         if (mWroteExpect == 0) {
             mSending.clear();
             mSending.flip();

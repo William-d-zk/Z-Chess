@@ -42,8 +42,6 @@ public interface IContext
 {
     void handshake();
 
-    void tls();
-
     void transfer();
 
     boolean needHandshake();
@@ -152,11 +150,11 @@ public interface IContext
     }
 
     default boolean isInConvert(int c) {
-        return stateLessThan(c, DECODE_TLS_ERROR) && stateAtLeast(c, DECODE_FRAME);
+        return stateAtLeast(c, DECODE_FRAME) && stateLessThan(c, DECODE_TLS_ERROR);
     }
 
     default boolean isOutConvert(int c) {
-        return stateLessThan(c, ENCODE_TLS_ERROR) && stateAtLeast(c, ENCODE_FRAME);
+        return stateAtLeast(c, ENCODE_FRAME) && stateLessThan(c, ENCODE_TLS_ERROR);
     }
 
     boolean isInConvert();

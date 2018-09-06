@@ -40,6 +40,7 @@ import com.tgx.z.queen.io.core.inf.ICommand;
 import com.tgx.z.queen.io.core.inf.IConnectionContext;
 import com.tgx.z.queen.io.core.inf.ISession;
 import com.tgx.z.queen.io.core.inf.ISessionCreated;
+import com.tgx.z.queen.io.core.inf.ISessionDismiss;
 
 /**
  * @author William.d.zk
@@ -64,7 +65,17 @@ public class LinkHandler
                 case ACCEPT_FAILED:
                 case CONNECT_FAILED:
                     _Log.info(String.format("error type %s,ignore ", event.getErrorType()));
+                    event.ignore();
                     break;
+                default:
+                    _Log.warning("server io error , do close session");
+                    IOperator<Void, ISession> closeOperator = event.getEventOp();
+                    Pair<Void, ISession> errorContent = event.getContent();
+                    ISession session = errorContent.second();
+                    ISessionDismiss dismiss = session.getDismissCallback();
+                    boolean closed = session.isClosed();
+                    closeOperator.handle(null, session);
+                    if (!closed) dismiss.onDismiss(session);
             }
         }
         else {
@@ -86,9 +97,6 @@ public class LinkHandler
                     if (Objects.nonNull(waitToSends)) {
                         publish(_Writer, WRITE, waitToSends, session, sendOperator);
                     }
-                    break;
-                case CLOSE:
-
                     break;
             }
         }

@@ -63,9 +63,10 @@ public class WsHandShakeFilter
     @Override
     public ResultType preEncode(WsContext context, IProtocol output) {
         if (context == null || output == null) return ResultType.ERROR;
-        if (context.needHandshake()
-            && context.outState() == ENCODE_HANDSHAKE
-            && output instanceof WsHandshake) { return ResultType.NEXT_STEP; }
+        if (context.needHandshake() && context.outState() == ENCODE_HANDSHAKE && output instanceof WsHandshake) {
+            return ResultType.NEXT_STEP;
+        }
+        else if (context.isOutConvert() && output instanceof WsHandshake) { return ResultType.ERROR; }
         return ResultType.IGNORE;
     }
 
@@ -151,7 +152,6 @@ public class WsHandShakeFilter
                                     break;
                                 case CRLF:
                                     if (context.checkState(WsContext.HS_State_CLIENT_OK)) {
-                                        context.setOutState(DECODE_FRAME);
                                         handshake.ahead("HTTP/1.1 101 Switching Protocols\r\n")
                                                  .append(CRLF);
                                     }

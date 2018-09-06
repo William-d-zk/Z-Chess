@@ -89,11 +89,8 @@ public class WsContext
                 break;
             case CONSUMER:
             case SERVER:
-                handshake();
-                break;
             case CONSUMER_SSL:
             case SERVER_SSL:
-                tls();
                 handshake();
                 break;
         }

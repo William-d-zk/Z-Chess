@@ -53,17 +53,18 @@ public class WsFrameFilter
     @Override
     public ResultType preEncode(WsContext context, IProtocol output) {
         if (Objects.isNull(context) || Objects.isNull(output)) return ResultType.ERROR;
-        if (!context.isOutConvert()) return ResultType.IGNORE;
-        switch (output.getSerial()) {
-            case X101_HandShake.COMMAND:
-            case X102_SslHandShake.COMMAND:
-                return ResultType.IGNORE;
-            case IFrame.FRAME_SERIAL:
-                return ResultType.NEXT_STEP;
-            default:
-                return ResultType.ERROR;
+        if (context.isOutConvert()) {
+            switch (output.getSerial()) {
+                case X101_HandShake.COMMAND:
+                case X102_SslHandShake.COMMAND:
+                    return ResultType.ERROR;
+                case IFrame.FRAME_SERIAL:
+                    return ResultType.NEXT_STEP;
+                default:
+                    return ResultType.ERROR;
+            }
         }
-
+        return ResultType.IGNORE;
     }
 
     @Override
