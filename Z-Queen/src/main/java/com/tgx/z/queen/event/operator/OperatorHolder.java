@@ -236,6 +236,7 @@ public class OperatorHolder
             public Triple<Throwable, ISession, IOperator<Throwable, ISession>> handle(ICommand command, ISession session) {
                 try {
                     IPacket send = (IPacket) filterWrite(command, handshakeFilter, (ZContext) session.getContext());
+                    Objects.requireNonNull(send);
                     LOG.info("consumer send:%s",
                              IoUtil.bin2Hex(send.getBuffer()
                                                 .array(),
@@ -269,6 +270,7 @@ public class OperatorHolder
             public Triple<Throwable, ISession, IOperator<Throwable, ISession>> handle(ICommand command, ISession session) {
                 try {
                     IPacket send = (IPacket) filterWrite(command, handshakeFilter, (ZContext) session.getContext());
+                    Objects.requireNonNull(send);
                     LOG.info("server send:%s",
                              IoUtil.bin2Hex(send.getBuffer()
                                                 .array(),
@@ -299,6 +301,7 @@ public class OperatorHolder
             public Triple<Throwable, ISession, IOperator<Throwable, ISession>> handle(ICommand command, ISession session) {
                 try {
                     IPacket send = (IPacket) filterWrite(command, header, (ZContext) session.getContext());
+                    Objects.requireNonNull(send);
                     LOG.info("cluster send:%s",
                              IoUtil.bin2Hex(send.getBuffer()
                                                 .array(),

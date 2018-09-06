@@ -49,23 +49,19 @@ public class ClientLinkHandler
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception {
         if (event.hasError()) {
-            switch (event.getErrorType()) {
-                case CONNECT_FAILED:
-                    event.ignore();
-                    break;
-                case READ_FAILED:
-                case CLOSED:
-
-                default:
-                    break;
-            }
-
             if (event.getErrorType()
                      .equals(CONNECT_FAILED)) {
-
+                event.ignore();
             }
             else {
-                _Log.warning("io read error , transfer -> _ErrorEvent");
+                _Log.warning("client io error , do close session");
+                IOperator<Void, ISession> closeOperator = event.getEventOp();
+                Pair<Void, ISession> errorContent = event.getContent();
+                ISession session = errorContent.second();
+                ISessionDismiss dismiss = session.getDismissCallback();
+                boolean closed = session.isClosed();
+                closeOperator.handle(null, session);
+                if (!closed) dismiss.onDismiss(session);
             }
         }
         else {
@@ -87,16 +83,8 @@ public class ClientLinkHandler
                                     .onCreate(session);
                     _Log.info(String.format("link handle %s,connected", session));
                     break;
-                case CLOSE://Local Close
-                    Pair<Throwable, ISession> closeContent = event.getContent();
-                    session = closeContent.second();
-                    _Log.info(String.format("link handle %s,close", session));
-                    ISessionDismiss sessionDismiss = session.getDismissCallback();
-                    sessionDismiss.onDismiss(session);
-                    event.ignore();
-                    break;
                 default:
-                    _Log.warning(String.format("link encodeHandler can't handle %s", event.getEventType()));
+                    _Log.warning(String.format("client link handle can't handle %s", event.getEventType()));
                     break;
             }
         }

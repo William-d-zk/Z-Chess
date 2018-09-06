@@ -23,9 +23,21 @@
  */
 package com.tgx.z.queen.event.handler;
 
+import static com.tgx.z.queen.event.inf.IOperator.Type.WRITE;
+
+import java.nio.channels.AsynchronousSocketChannel;
+
 import com.lmax.disruptor.RingBuffer;
+import com.tgx.z.queen.base.log.Logger;
+import com.tgx.z.queen.base.util.Pair;
+import com.tgx.z.queen.base.util.Triple;
+import com.tgx.z.queen.event.inf.IOperator;
 import com.tgx.z.queen.event.inf.IPipeEventHandler;
 import com.tgx.z.queen.event.processor.QEvent;
+import com.tgx.z.queen.io.core.inf.ICommand;
+import com.tgx.z.queen.io.core.inf.IConnectionContext;
+import com.tgx.z.queen.io.core.inf.ISession;
+import com.tgx.z.queen.io.core.inf.ISessionDismiss;
 import com.tgx.z.queen.io.core.manager.QueenManager;
 
 /**
@@ -39,6 +51,7 @@ public class ClusterHandler
     private final QueenManager       _QueenManager;
     private final RingBuffer<QEvent> _Error;
     private final RingBuffer<QEvent> _Writer;
+    private final Logger             _Log = Logger.getLogger(getClass().getName());
 
     public ClusterHandler(final QueenManager queenManager, RingBuffer<QEvent> error, RingBuffer<QEvent> writer) {
         _QueenManager = queenManager;
@@ -48,7 +61,48 @@ public class ClusterHandler
 
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception {
-
+        if (event.hasError()) {
+            switch (event.getErrorType()) {
+                case ACCEPT_FAILED:
+                case CONNECT_FAILED:
+                    _Log.info(String.format("error type %s,ignore ", event.getErrorType()));
+                    event.ignore();
+                    break;
+                default:
+                    _Log.warning("cluster io error , do close session");
+                    IOperator<Void, ISession> closeOperator = event.getEventOp();
+                    Pair<Void, ISession> errorContent = event.getContent();
+                    ISession session = errorContent.second();
+                    ISessionDismiss dismiss = session.getDismissCallback();
+                    boolean closed = session.isClosed();
+                    closeOperator.handle(null, session);
+                    if (!closed) dismiss.onDismiss(session);
+            }
+        }
+        else {
+            switch (event.getEventType()) {
+                case CONNECTED:
+                    IOperator<IConnectionContext, AsynchronousSocketChannel> connectedOperator = event.getEventOp();
+                    Pair<IConnectionContext, AsynchronousSocketChannel> connectedContent = event.getContent();
+                    Triple<ICommand[],
+                           ISession,
+                           IOperator<ICommand[], ISession>> connectedHandled = connectedOperator.handle(connectedContent.first(),
+                                                                                                        connectedContent.second());
+                    //connectedHandled 不可能为 null
+                    ICommand[] waitToSend = connectedHandled.first();
+                    ISession session = connectedHandled.second();
+                    IOperator<ICommand[], ISession> sendTransferOperator = connectedHandled.third();
+                    event.produce(WRITE, waitToSend, session, sendTransferOperator);
+                    connectedContent.first()
+                                    .getSessionCreated()
+                                    .onCreate(session);
+                    _Log.info(String.format("cluster link handle %s,connected", session));
+                    break;
+                default:
+                    _Log.warning(String.format("cluster link handle can't handle %s", event.getEventType()));
+                    break;
+            }
+        }
     }
 }
 /*        ,IConsistentWrite

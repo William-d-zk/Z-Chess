@@ -29,6 +29,8 @@ import com.tgx.z.queen.io.core.inf.IProtocol;
 import com.tgx.z.queen.io.external.websokcet.WsContext;
 import com.tgx.z.queen.io.external.websokcet.WsControl;
 import com.tgx.z.queen.io.external.websokcet.WsFrame;
+import com.tgx.z.queen.io.external.websokcet.bean.control.X101_HandShake;
+import com.tgx.z.queen.io.external.websokcet.bean.control.X102_SslHandShake;
 import com.tgx.z.queen.io.external.websokcet.bean.control.X103_Close;
 import com.tgx.z.queen.io.external.websokcet.bean.control.X104_Ping;
 import com.tgx.z.queen.io.external.websokcet.bean.control.X105_Pong;
@@ -51,17 +53,25 @@ public class WsControlFilter
     @Override
     public ResultType preEncode(WsContext context, IProtocol output) {
         if (context == null || output == null) return ResultType.ERROR;
-        if (!context.isOutConvert()) return ResultType.IGNORE;
-        switch (output.getSuperSerial()) {
-            case Command.COMMAND_SERIAL:
-                return ResultType.IGNORE;
-            case WsControl.CONTROL_SERIAL:
-                return ResultType.NEXT_STEP;
-            case WsFrame.FRAME_SERIAL:
-                return ResultType.IGNORE;
-            default:
-                return ResultType.ERROR;
+        if (context.isOutConvert()) {
+            switch (output.getSuperSerial()) {
+                case Command.COMMAND_SERIAL:
+                    return ResultType.IGNORE;
+                case WsControl.CONTROL_SERIAL:
+                    switch (output.getSerial()) {
+                        case X101_HandShake.COMMAND:
+                        case X102_SslHandShake.COMMAND:
+                            return ResultType.ERROR;
+                        default:
+                            return ResultType.NEXT_STEP;
+                    }
+                case WsFrame.FRAME_SERIAL:
+                    return ResultType.IGNORE;
+                default:
+                    return ResultType.ERROR;
+            }
         }
+        return ResultType.IGNORE;
     }
 
     @Override
