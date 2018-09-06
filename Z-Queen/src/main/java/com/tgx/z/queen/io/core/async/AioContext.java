@@ -25,6 +25,7 @@ package com.tgx.z.queen.io.core.async;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.tgx.z.queen.io.core.inf.IContext;
 import com.tgx.z.queen.io.core.inf.ISessionOption;
@@ -36,29 +37,29 @@ public class AioContext
         implements
         IContext
 {
-    private int          mDecodingPosition = -1, mLackData = 1;
-    private EncodeState  mEState           = EncodeState.NULL;
-    private DecodeState  mDState           = DecodeState.NULL;
-    private ChannelState mCState           = ChannelState.CLOSED;
+    private int                 mDecodingPosition = -1, mLackData = 1;
+    private final AtomicInteger _EncodeState      = new AtomicInteger(ENCODE_NULL);
+    private final AtomicInteger _DecodeState      = new AtomicInteger(DECODE_NULL);
+    private final AtomicInteger _ChannelState     = new AtomicInteger(SESSION_CONNECTED);
 
     /*
      * 用于写出的 ByteBuffer 属于4096及其倍数的对齐块，应与 SocketOption 中系统写出 Buffer 的大小进行调整，存在 一次性投递多个 ICommand 对象的可能性也是存在的 AioPacket 中的 ByteBuffer 仅用于串行化
      * ICommand 对象
      */
-    private ByteBuffer   mWrBuf;
+    private ByteBuffer          mWrBuf;
 
     /*
      * 用于缓存 IPoS 分块带入的 RecvBuffer 内容 由于 AioWorker 中 channel 的 read_buffer - protocol_buffer - 都以 SocketOption 设定为准，所以不存在 IPoS 带入一个包含多个分页的协议
      * 内容的情况
      */
-    private ByteBuffer   mRvBuf;
+    private ByteBuffer          mRvBuf;
 
-    private boolean      mInitFromHandshake;
+    private boolean             mInitFromHandshake;
 
-    private long         mClientStartTime;
-    private long         mServerArrivedTime;
-    private long         mServerResponseTime;
-    private long         mClientArrivedTime;
+    private long                mClientStartTime;
+    private long                mServerArrivedTime;
+    private long                mServerResponseTime;
+    private long                mClientArrivedTime;
 
     public AioContext(ISessionOption option) {
         mRvBuf = ByteBuffer.allocate(option.setRCV());
@@ -69,41 +70,45 @@ public class AioContext
     public void reset() {
         if (mInitFromHandshake) handshake();
         else {
-            mEState = EncodeState.NULL;
-            mDState = DecodeState.NULL;
+            _EncodeState.set(ctlOf(ENCODE_NULL, 0));
+            _DecodeState.set(ctlOf(DECODE_NULL, 0));
         }
-        mCState = ChannelState.CLOSED;
+        _ChannelState.set(ctlOf(SESSION_CONNECTED, 0));
         mDecodingPosition = -1;
         mLackData = 1;
     }
 
     @Override
     public void close() throws IOException {
-        mCState = ChannelState.CLOSED;
+        advanceState(_ChannelState, SESSION_CLOSE);
     }
 
     @Override
     public void handshake() {
-        mEState = mEState == EncodeState.NULL ? EncodeState.ENCODE_HANDSHAKE : mEState;
-        mDState = mDState == DecodeState.NULL ? DecodeState.DECODE_HANDSHAKE : mDState;
+        if (stateOf(_EncodeState.get()) == ENCODE_NULL) {
+            advanceState(_EncodeState, ENCODE_HANDSHAKE);
+        }
+        if (stateOf(_DecodeState.get()) == DECODE_NULL) {
+            advanceState(_DecodeState, DECODE_HANDSHAKE);
+        }
         mInitFromHandshake = true;
     }
 
     @Override
-    public final boolean hasHandshake() {
+    public final boolean needHandshake() {
         return mInitFromHandshake;
     }
 
     @Override
     public void transfer() {
-        mEState = EncodeState.ENCODING_FRAME;
-        mDState = DecodeState.DECODING_FRAME;
+        advanceState(_EncodeState, ENCODE_FRAME);
+        advanceState(_DecodeState, DECODE_FRAME);
     }
 
     @Override
     public void tls() {
-        mEState = EncodeState.ENCODED_TLS;
-        mDState = DecodeState.DECODED_TLS;
+        advanceState(_EncodeState, ENCODE_TLS);
+        advanceState(_DecodeState, DECODE_TLS);
     }
 
     @Override
@@ -130,36 +135,76 @@ public class AioContext
     }
 
     @Override
-    public IContext setEncodeState(EncodeState state) {
-        mEState = state;
+    public int outState() {
+        return stateOf(_EncodeState.get());
+    }
+
+    @Override
+    public void cryptOut() {
+        advanceState(_EncodeState, ENCODE_TLS);
+    }
+
+    @Override
+    public IContext setOutState(int state) {
+        advanceState(_EncodeState, state);
         return this;
     }
 
     @Override
-    public IContext setDecodeState(DecodeState state) {
-        mDState = state;
+    public int inState() {
+        return stateOf(_DecodeState.get());
+    }
+
+    @Override
+    public void cryptIn() {
+        advanceState(_DecodeState, DECODE_TLS);
+    }
+
+    @Override
+    public IContext setInState(int state) {
+        advanceState(_DecodeState, state);
         return this;
     }
 
     @Override
-    public IContext setChannelState(ChannelState state) {
-        mCState = state;
+    public IContext setChannelState(int state) {
+        advanceState(_ChannelState, state);
         return this;
     }
 
     @Override
-    public EncodeState getEncodeState() {
-        return mEState;
+    public int getChannelState() {
+        return stateOf(_ChannelState.get());
     }
 
     @Override
-    public DecodeState getDecodeState() {
-        return mDState;
+    public boolean isInConvert() {
+        return isInConvert(_DecodeState.get());
     }
 
     @Override
-    public ChannelState getChannelState() {
-        return mCState;
+    public boolean isOutConvert() {
+        return isOutConvert(_EncodeState.get());
+    }
+
+    @Override
+    public boolean isInErrorState() {
+        return isInErrorState(_DecodeState.get());
+    }
+
+    @Override
+    public boolean isOutErrorState() {
+        return isOutErrorState(_EncodeState.get());
+    }
+
+    @Override
+    public boolean channelStateLessThan(int targetState) {
+        return stateLessThan(_ChannelState.get(), targetState);
+    }
+
+    @Override
+    public void advanceChannelState(int state) {
+        advanceState(_ChannelState, state);
     }
 
     @Override
@@ -201,7 +246,17 @@ public class AioContext
     }
 
     @Override
-    public boolean isCrypt() {
-        return outState().equals(EncryptState.ENCRYPTED);
+    public boolean isInCrypt() {
+        return stateAtLeast(_DecodeState.get(), DECODE_TLS);
+    }
+
+    @Override
+    public boolean isOutCrypt() {
+        return stateAtLeast(_EncodeState.get(), ENCODE_TLS);
+    }
+
+    @Override
+    public boolean isClosed() {
+        return isClosed(_ChannelState.get());
     }
 }

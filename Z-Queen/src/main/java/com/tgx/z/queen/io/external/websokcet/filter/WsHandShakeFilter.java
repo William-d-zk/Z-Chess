@@ -24,6 +24,11 @@
 
 package com.tgx.z.queen.io.external.websokcet.filter;
 
+import static com.tgx.z.queen.io.core.inf.IContext.DECODE_FRAME;
+import static com.tgx.z.queen.io.core.inf.IContext.DECODE_HANDSHAKE;
+import static com.tgx.z.queen.io.core.inf.IContext.ENCODE_FRAME;
+import static com.tgx.z.queen.io.core.inf.IContext.ENCODE_HANDSHAKE;
+
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
@@ -31,7 +36,6 @@ import com.tgx.z.queen.base.log.Logger;
 import com.tgx.z.queen.event.operator.MODE;
 import com.tgx.z.queen.io.core.async.AioFilterChain;
 import com.tgx.z.queen.io.core.async.AioPacket;
-import com.tgx.z.queen.io.core.inf.IContext;
 import com.tgx.z.queen.io.core.inf.IPacket;
 import com.tgx.z.queen.io.core.inf.IProtocol;
 import com.tgx.z.queen.io.external.websokcet.WsContext;
@@ -59,9 +63,8 @@ public class WsHandShakeFilter
     @Override
     public ResultType preEncode(WsContext context, IProtocol output) {
         if (context == null || output == null) return ResultType.ERROR;
-        if (context.hasHandshake()
-            && context.getEncodeState()
-                      .equals(IContext.EncodeState.ENCODE_HANDSHAKE)
+        if (context.needHandshake()
+            && context.outState() == ENCODE_HANDSHAKE
             && output instanceof WsHandshake) { return ResultType.NEXT_STEP; }
         return ResultType.IGNORE;
     }
@@ -69,9 +72,7 @@ public class WsHandShakeFilter
     @Override
     public ResultType preDecode(WsContext context, IProtocol input) {
         if (context == null || !(input instanceof IPacket)) return ResultType.ERROR;
-        if (context.hasHandshake()
-            && context.getDecodeState()
-                      .equals(IContext.DecodeState.DECODE_HANDSHAKE)) {
+        if (context.needHandshake() && context.inState() == DECODE_HANDSHAKE) {
             WsHandshake handshake = context.getHandshake();
             ByteBuffer recvBuf = ((IPacket) input).getBuffer();
             ByteBuffer cRvBuf = context.getRvBuffer();
@@ -150,7 +151,7 @@ public class WsHandShakeFilter
                                     break;
                                 case CRLF:
                                     if (context.checkState(WsContext.HS_State_CLIENT_OK)) {
-                                        context.setDecodeState(IContext.DecodeState.DECODING_FRAME);
+                                        context.setOutState(DECODE_FRAME);
                                         handshake.ahead("HTTP/1.1 101 Switching Protocols\r\n")
                                                  .append(CRLF);
                                     }
@@ -197,11 +198,7 @@ public class WsHandShakeFilter
                                     context.updateHandshakeState(WsContext.HS_State_SEC_ACCEPT);
                                     break;
                                 case CRLF:
-                                    if (context.checkState(WsContext.HS_State_ACCEPT_OK)) {
-                                        context.setDecodeState(IContext.DecodeState.DECODING_FRAME);
-                                        context.setEncodeState(IContext.EncodeState.ENCODING_FRAME);
-                                        return ResultType.HANDLED;
-                                    }
+                                    if (context.checkState(WsContext.HS_State_ACCEPT_OK)) { return ResultType.HANDLED; }
                                     _Log.warning("client handshake error!");
                                     return ResultType.ERROR;
                             }
@@ -220,16 +217,16 @@ public class WsHandShakeFilter
 
     @Override
     public IProtocol encode(WsContext context, IProtocol output) {
-        if ((_Mode.equals(MODE.SERVER) || _Mode.equals(MODE.SERVER_SSL))
-            && context.getDecodeState()
-                      .equals(IContext.DecodeState.DECODING_FRAME)) context.setEncodeState(IContext.EncodeState.ENCODING_FRAME);
-        return new AioPacket(ByteBuffer.wrap(output.encode()));
+        AioPacket encoded = new AioPacket(ByteBuffer.wrap(output.encode()));
+        context.setOutState(ENCODE_FRAME);
+        return encoded;
     }
 
     @Override
     public IProtocol decode(WsContext context, IProtocol input) {
         WsHandshake handshake = context.getHandshake();
-        context.setHandshakeNull();
+        context.cleanHandshake();
+        context.setInState(DECODE_FRAME);
         return handshake;
     }
 

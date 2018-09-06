@@ -25,6 +25,7 @@ package com.tgx.z.queen.io.core.inf;
 
 import java.io.Closeable;
 import java.nio.ByteBuffer;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.tgx.z.queen.base.inf.IDisposable;
 import com.tgx.z.queen.base.inf.IReset;
@@ -39,15 +40,13 @@ public interface IContext
         IDisposable,
         Closeable
 {
-    boolean isCrypt();
-
     void handshake();
 
     void tls();
 
     void transfer();
 
-    boolean hasHandshake();
+    boolean needHandshake();
 
     int lackLength(int length, int target);
 
@@ -57,17 +56,25 @@ public interface IContext
 
     void finish();
 
-    EncodeState getEncodeState();
+    @Override
+    default int outState() {
+        return ENCODE_FRAME;
+    }
 
-    IContext setEncodeState(EncodeState state);
+    IContext setOutState(int state);
 
-    DecodeState getDecodeState();
+    @Override
+    default int inState() {
+        return DECODE_FRAME;
+    }
 
-    IContext setDecodeState(DecodeState state);
+    IContext setInState(int state);
 
-    ChannelState getChannelState();
+    int getChannelState();
 
-    IContext setChannelState(ChannelState state);
+    IContext setChannelState(int state);
+
+    boolean channelStateLessThan(int state);
 
     ByteBuffer getWrBuffer();
 
@@ -78,7 +85,6 @@ public interface IContext
     long getNetTransportDelay();
 
     /**
-     *
      * @return negative client ahead server , otherwise client behind server
      */
     long getDeltaTime();
@@ -87,32 +93,96 @@ public interface IContext
 
     long getNtpArrivedTime();
 
-    enum DecodeState
-    {
-        NULL,
-        DECODED_TLS,
-        DECODE_TLS_ERROR,
-        DECODE_HANDSHAKE,
-        DECODING_FRAME,
-        DECODE_ERROR
+    /*最多支持8种状态 -3~4 */
+    int COUNT_BITS         = Integer.SIZE - 3;
+    int CAPACITY           = (1 << COUNT_BITS) - 1;
+    int DECODE_NULL        = -2 << COUNT_BITS;
+    int DECODE_HANDSHAKE   = -1 << COUNT_BITS;
+    int DECODE_FRAME       = 00 << COUNT_BITS;
+    int DECODE_TLS         = 01 << COUNT_BITS;
+    int DECODE_TLS_ERROR   = 02 << COUNT_BITS;
+    int DECODE_ERROR       = 03 << COUNT_BITS;
+
+    int ENCODE_NULL        = -2 << COUNT_BITS;
+    int ENCODE_HANDSHAKE   = -1 << COUNT_BITS;
+    int ENCODE_FRAME       = 00 << COUNT_BITS;
+    int ENCODE_TLS         = 01 << COUNT_BITS;
+    int ENCODE_TLS_ERROR   = 02 << COUNT_BITS;
+    int ENCODE_ERROR       = 03 << COUNT_BITS;
+
+    /* 只有链接成功时才会创建 ISession 和 IContext */
+    int SESSION_CONNECTED  = -3 << COUNT_BITS;
+    /* 处于空闲状态 */
+    int SESSION_IDLE       = -2 << COUNT_BITS;
+    /* 有待发数据，尚未完成编码 */
+    int SESSION_PENDING    = -1 << COUNT_BITS;
+    /* 有编码完成的数据在发送，write->wrote 事件等待 */
+    int SESSION_SENDING    = 00 << COUNT_BITS;
+    /* 链路关闭，尚未完成清理 [any]->[close]*/
+    int SESSION_CLOSE      = 01 << COUNT_BITS;
+    /* 终态，清理结束*/
+    int SESSION_TERMINATED = 02 << COUNT_BITS;
+
+    default int stateOf(int c) {
+        return c & ~CAPACITY;
     }
 
-    enum EncodeState
-    {
-        NULL,
-        ENCODED_TLS,
-        ENCODED_TLS_ERROR,
-        ENCODE_HANDSHAKE,
-        ENCODING_FRAME,
-        ENCODE_ERROR
+    default int countOf(int c) {
+        return c & CAPACITY;
     }
 
-    enum ChannelState
-    {
-        CONNECTING,
-        NORMAL,
-        CLOSE_WAIT,
-        CLOSED,
-        PORTBINDING
+    default int ctlOf(int rs, int wc) {
+        return rs | wc;
     }
+
+    default boolean stateLessThan(int c, int s) {
+        return c < s;
+    }
+
+    default boolean stateAtLeast(int c, int s) {
+        return c >= s;
+    }
+
+    default boolean isConnected(int c) {
+        return c < SESSION_CLOSE;
+    }
+
+    default boolean isClosed(int c) {
+        return c >= SESSION_CLOSE;
+    }
+
+    default boolean isInConvert(int c) {
+        return stateLessThan(c, DECODE_TLS_ERROR) && stateAtLeast(c, DECODE_FRAME);
+    }
+
+    default boolean isOutConvert(int c) {
+        return stateLessThan(c, ENCODE_TLS_ERROR) && stateAtLeast(c, ENCODE_FRAME);
+    }
+
+    boolean isInConvert();
+
+    boolean isOutConvert();
+
+    default boolean isInErrorState(int c) {
+        return stateAtLeast(c, DECODE_ERROR) || inState() == DECODE_NULL;
+    }
+
+    default boolean isOutErrorState(int c) {
+        return stateAtLeast(c, ENCODE_ERROR) | inState() == ENCODE_NULL;
+    }
+
+    boolean isInErrorState();
+
+    boolean isOutErrorState();
+
+    boolean isClosed();
+
+    default void advanceState(AtomicInteger ctl, int targetState) {
+        for (;;) {
+            int c = ctl.get();
+            if (stateAtLeast(c, targetState) || ctl.compareAndSet(c, ctlOf(targetState, countOf(c)))) break;
+        }
+    }
+
+    void advanceChannelState(int targetState);
 }
