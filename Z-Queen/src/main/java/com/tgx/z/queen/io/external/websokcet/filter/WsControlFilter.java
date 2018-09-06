@@ -25,8 +25,6 @@ package com.tgx.z.queen.io.external.websokcet.filter;
 
 import com.tgx.z.queen.base.log.Logger;
 import com.tgx.z.queen.io.core.async.AioFilterChain;
-import com.tgx.z.queen.io.core.inf.IContext.DecodeState;
-import com.tgx.z.queen.io.core.inf.IContext.EncodeState;
 import com.tgx.z.queen.io.core.inf.IProtocol;
 import com.tgx.z.queen.io.external.websokcet.WsContext;
 import com.tgx.z.queen.io.external.websokcet.WsControl;
@@ -53,8 +51,7 @@ public class WsControlFilter
     @Override
     public ResultType preEncode(WsContext context, IProtocol output) {
         if (context == null || output == null) return ResultType.ERROR;
-        if (!context.getEncodeState()
-                    .equals(EncodeState.ENCODING_FRAME)) return ResultType.IGNORE;
+        if (!context.isOutConvert()) return ResultType.IGNORE;
         switch (output.getSuperSerial()) {
             case Command.COMMAND_SERIAL:
                 return ResultType.IGNORE;
@@ -79,8 +76,7 @@ public class WsControlFilter
     @Override
     public ResultType preDecode(WsContext context, IProtocol input) {
         if (context == null || input == null) return ResultType.ERROR;
-        if (!context.getDecodeState()
-                    .equals(DecodeState.DECODING_FRAME)) return ResultType.IGNORE;
+        if (!context.isInConvert()) return ResultType.IGNORE;
         if (!(input instanceof WsFrame)) return ResultType.ERROR;
         WsFrame frame = (WsFrame) input;
         if (frame.isNoCtrl()) return ResultType.IGNORE;

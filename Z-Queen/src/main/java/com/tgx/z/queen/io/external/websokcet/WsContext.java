@@ -69,7 +69,6 @@ public class WsContext
     public WsContext(ISessionOption option, MODE mode) {
         super(option);
         mMaxPayloadSize = option.setSNF() - 2;
-        setChannelState(ChannelState.NORMAL);
         if (mode.equals(MODE.CONSUMER) || mode.equals(MODE.CONSUMER_SSL)) {
             Random r = new Random(System.nanoTime());
             byte[] seed = new byte[17];
@@ -120,7 +119,7 @@ public class WsContext
         mHandshake = handshake;
     }
 
-    public void setHandshakeNull() {
+    public void cleanHandshake() {
         mHandshake = null;
     }
 

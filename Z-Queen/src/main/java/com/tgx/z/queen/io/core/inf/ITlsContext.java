@@ -23,8 +23,6 @@
  */
 package com.tgx.z.queen.io.core.inf;
 
-import static com.tgx.z.queen.io.core.inf.ITlsContext.EncryptState.PLAIN;
-
 import com.tgx.z.queen.base.crypt.inf.ISymmetric;
 
 /**
@@ -90,31 +88,23 @@ public interface ITlsContext
     default void setPubKeyId(int pubKeyId) {
     }
 
-    default EncryptState inState() {
-        return PLAIN;
-    }
+    int inState();
 
-    default EncryptState outState() {
-        return PLAIN;
-    }
+    int outState();
 
-    default void cryptIn() {
-    }
+    void cryptIn();
 
-    default void cryptOut() {
-    }
+    void cryptOut();
+
+    boolean isInCrypt();
+
+    boolean isOutCrypt();
 
     default IEncryptHandler getEncryptHandler() {
         return null;
     }
 
     default void setEncryptHandler(IEncryptHandler handler) {
-    }
-
-    enum EncryptState
-    {
-        PLAIN,
-        ENCRYPTED
     }
 
 }

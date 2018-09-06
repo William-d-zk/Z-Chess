@@ -23,6 +23,10 @@
  */
 package com.tgx.z.queen.io.core.async;
 
+import static com.tgx.z.queen.io.core.inf.IContext.SESSION_IDLE;
+import static com.tgx.z.queen.io.core.inf.IContext.SESSION_PENDING;
+import static com.tgx.z.queen.io.core.inf.IContext.SESSION_SENDING;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -35,7 +39,6 @@ import java.util.LinkedList;
 import java.util.Objects;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.tgx.z.queen.base.util.ArrayUtil;
 import com.tgx.z.queen.event.inf.IOperator;
@@ -73,64 +76,24 @@ public class AioSession
     private final IOperator<IPacket, ISession> _InOperator;
     private final int                          _QueueSizeMax;
     private final int                          _HaIndex, _PortIndex;
-    private final AtomicInteger                _Ctl       = new AtomicInteger(ctlOf(CONNECTED, 0));
     /*----------------------------------------------------------------------------------------------------------------*/
-    private static final int                   COUNT_BITS = Integer.SIZE - 3;
-    private static final int                   CAPACITY   = (1 << COUNT_BITS) - 1;
-
-    private static final int                   CONNECTED  = -3 << COUNT_BITS;
-    private static final int                   PENDING    = -2 << COUNT_BITS;
-    private static final int                   SENDING    = -1 << COUNT_BITS;
-    private static final int                   CLOSE      = 00 << COUNT_BITS;
-    private static final int                   TERMINATED = 01 << COUNT_BITS;
-
-    private static int runStateOf(int c) {
-        return c & ~CAPACITY;
-    }
-
-    private static int packetCountOf(int c) {
-        return c & CAPACITY;
-    }
-
-    private static int ctlOf(int rs, int wc) {
-        return rs | wc;
-    }
-
-    private static boolean runStateLessThan(int c, int s) {
-        return c < s;
-    }
-
-    private static boolean runStateAtLeast(int c, int s) {
-        return c >= s;
-    }
-
-    private static boolean isConnected(int c) {
-        return c < CLOSE;
-    }
-
-    private void advanceRunState(int targetState) {
-        for (;;) {
-            int c = _Ctl.get();
-            if (runStateAtLeast(c, targetState) || _Ctl.compareAndSet(c, ctlOf(targetState, packetCountOf(c)))) break;
-        }
-    }
 
     /*----------------------------------------------------------------------------------------------------------------*/
-    private long       mIndex = _DEFAULT_INDEX;
+    private long                               mIndex = _DEFAULT_INDEX;
     /*
      * 此处并不会进行空间初始化，完全依赖于 Context 的 WrBuf 初始化大小
      */
-    private ByteBuffer mSending;
+    private ByteBuffer                         mSending;
     /*
      * Session close 只能出现在 QueenManager 的工作线程中 所以关闭操作只需要做到全域线程可见即可，不需要处理写冲突
      */
-    private long[]     mPortChannels;
+    private long[]                             mPortChannels;
 
-    private int        mWroteExpect;
-    private int        mSendingBlank;
-    private int        mWaitWrite;
-    private long       mReadTimeStamp;
-    private long       hashKey;
+    private int                                mWroteExpect;
+    private int                                mSendingBlank;
+    private int                                mWaitWrite;
+    private long                               mReadTimeStamp;
+    private long                               hashKey;
 
     @Override
     public String toString() {
@@ -228,14 +191,13 @@ public class AioSession
     @Override
     public final void close() throws IOException {
         if (isClosed()) return;
-        advanceRunState(CLOSE);
         _Ctx.close();
         _Channel.close();
     }
 
     @Override
     public final boolean isClosed() {
-        return runStateAtLeast(_Ctl.get(), CLOSE);
+        return _Ctx.isClosed();
     }
 
     @Override
@@ -315,7 +277,9 @@ public class AioSession
                 case IN_SENDING:
                     ps.send();
                 default:
-                    if (mWaitWrite > 0 && runStateLessThan(_Ctl.get(), SENDING)) flush(handler);
+                    if (mWaitWrite > 0 && _Ctx.channelStateLessThan(SESSION_SENDING)) {
+                        flush(handler);
+                    }
                     return status;
             }
         }
@@ -329,7 +293,9 @@ public class AioSession
                 case IN_SENDING:
                     fps.send();
                 default:
-                    if (mWaitWrite > 0 && runStateLessThan(_Ctl.get(), SENDING)) flush(handler);
+                    if (mWaitWrite > 0 && _Ctx.stateLessThan(_Ctx.getChannelState(), SESSION_SENDING)) {
+                        flush(handler);
+                    }
                     break;
             }
             offer(ps);
@@ -350,11 +316,11 @@ public class AioSession
         }
 
         if (isEmpty()) {
-            advanceRunState(CONNECTED);
+            _Ctx.advanceChannelState(SESSION_IDLE);
             return WRITE_STATUS.IGNORE;
         }
         else {
-            advanceRunState(PENDING);
+            _Ctx.advanceChannelState(SESSION_PENDING);
         }
         IPacket fps;
         /* 将待发的 packet 都写到 sending buffer 中，充满 sending buffer，
@@ -378,7 +344,7 @@ public class AioSession
                 }
             }
         }
-        while (Objects.isNull(fps));
+        while (Objects.nonNull(fps));
         if (mWaitWrite > 0) {
             flush(handler);
             return WRITE_STATUS.FLUSHED;
@@ -388,7 +354,7 @@ public class AioSession
 
     private WRITE_STATUS writeChannel(IPacket ps) {
         ByteBuffer buf = ps.getBuffer();
-        if (buf != null && buf.hasRemaining()) {
+        if (Objects.nonNull(buf) && buf.hasRemaining()) {
             mWroteExpect += buf.remaining();
             mWaitWrite = mSending.remaining();
             mSendingBlank = mSending.capacity() - mSending.limit();
@@ -410,7 +376,7 @@ public class AioSession
     private void flush(CompletionHandler<Integer, ISession> handler) throws WritePendingException,
                                                                      NotYetConnectedException,
                                                                      ShutdownChannelGroupException {
-        advanceRunState(SENDING);
+        _Ctx.advanceChannelState(SESSION_SENDING);
         _Channel.write(mSending, _WriteTimeOut, TimeUnit.SECONDS, this, handler);
     }
 

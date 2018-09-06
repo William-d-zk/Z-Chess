@@ -30,7 +30,6 @@ import com.tgx.z.queen.io.core.async.AioContext;
 import com.tgx.z.queen.io.core.async.AioFilterChain;
 import com.tgx.z.queen.io.core.inf.IPacket;
 import com.tgx.z.queen.io.core.inf.IProtocol;
-import com.tgx.z.queen.io.core.inf.ITlsContext;
 
 /**
  * @author William.d.zk
@@ -44,13 +43,12 @@ public class ZTlsFilter<C extends AioContext>
         name = "queen-tls-filter";
     }
 
-    private  final Logger _Log = Logger.getLogger(getClass().getName());
+    private final Logger _Log = Logger.getLogger(getClass().getName());
 
     @Override
     public ResultType preEncode(C context, IProtocol output) {
         if (Objects.isNull(context) || Objects.isNull(output)) return ResultType.ERROR;
-        ResultType resultType = context.outState()
-                                       .equals(ITlsContext.EncryptState.PLAIN) ? ResultType.IGNORE : ResultType.NEXT_STEP;
+        ResultType resultType = context.isOutCrypt() ? ResultType.IGNORE : ResultType.NEXT_STEP;
         /* plain -> cipher X04/X05 encoded in command-filter */
         if (resultType.equals(ResultType.IGNORE) && context.needUpdateKeyOut()) {
             context.swapKeyOut(context.getReRollKey());
@@ -84,10 +82,7 @@ public class ZTlsFilter<C extends AioContext>
                    .reset();
             context.cryptIn();
         }
-        return context.inState()
-                      .equals(ITlsContext.EncryptState.PLAIN) ? ResultType.IGNORE
-                                                              : input.idempotent(getIdempotentBit()) ? ResultType.IGNORE
-                                                                                                     : ResultType.NEXT_STEP;
+        return context.isInCrypt() ? ResultType.IGNORE : input.idempotent(getIdempotentBit()) ? ResultType.IGNORE : ResultType.NEXT_STEP;
     }
 
     @Override

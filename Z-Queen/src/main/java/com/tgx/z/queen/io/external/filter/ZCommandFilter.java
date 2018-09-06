@@ -31,8 +31,6 @@ import com.tgx.z.queen.base.log.Logger;
 import com.tgx.z.queen.base.util.Pair;
 import com.tgx.z.queen.io.core.async.AioContext;
 import com.tgx.z.queen.io.core.async.AioFilterChain;
-import com.tgx.z.queen.io.core.inf.IContext.DecodeState;
-import com.tgx.z.queen.io.core.inf.IContext.EncodeState;
 import com.tgx.z.queen.io.core.inf.IEncryptHandler;
 import com.tgx.z.queen.io.core.inf.IProtocol;
 import com.tgx.z.queen.io.external.websokcet.WsControl;
@@ -68,8 +66,7 @@ public class ZCommandFilter<C extends AioContext>
     @Override
     public ResultType preEncode(C context, IProtocol output) {
         if (output == null || context == null) return ResultType.ERROR;
-        if (!context.getEncodeState()
-                    .equals(EncodeState.ENCODING_FRAME)) return ResultType.IGNORE;
+        if (!context.isOutConvert()) return ResultType.IGNORE;
         switch (output.getSuperSerial()) {
             case Command.COMMAND_SERIAL:
                 return ResultType.NEXT_STEP;
@@ -84,8 +81,7 @@ public class ZCommandFilter<C extends AioContext>
     @Override
     public ResultType preDecode(C context, IProtocol input) {
         if (context == null || input == null) return ResultType.ERROR;
-        if (!context.getDecodeState()
-                    .equals(DecodeState.DECODING_FRAME)) return ResultType.IGNORE;
+        if (!context.isInConvert()) return ResultType.IGNORE;
         if (!(input instanceof WsFrame)) return ResultType.ERROR;
         WsFrame frame = (WsFrame) input;
         return frame.isNoCtrl() ? ResultType.HANDLED : ResultType.IGNORE;

@@ -36,10 +36,8 @@ public class ZContext
         WsContext
 {
 
-    private int             mPubKeyId        = -2;
+    private int             mPubKeyId = -2;
     private boolean         mUpdateKeyIn, mUpdateKeyOut;
-    private EncryptState    mEncryptInState  = EncryptState.PLAIN;
-    private EncryptState    mEncryptOutState = EncryptState.PLAIN;
     private int             mSymmetricKeyId;
     private byte[]          mSymmetricKeyIn, mSymmetricKeyOut, mSymmetricKeyReroll;
     private Rc4             mEncryptRc4, mDecryptRc4;
@@ -52,7 +50,6 @@ public class ZContext
     @Override
     public void reset() {
         super.reset();
-        mEncryptInState = mEncryptOutState = EncryptState.PLAIN;
         mUpdateKeyIn = false;
         mUpdateKeyOut = false;
         mPubKeyId = -2;
@@ -130,26 +127,6 @@ public class ZContext
     @Override
     public void updateKeyOut() {
         mUpdateKeyOut = true;
-    }
-
-    @Override
-    public EncryptState inState() {
-        return mEncryptInState;
-    }
-
-    @Override
-    public EncryptState outState() {
-        return mEncryptOutState;
-    }
-
-    @Override
-    public void cryptIn() {
-        mEncryptInState = EncryptState.ENCRYPTED;
-    }
-
-    @Override
-    public void cryptOut() {
-        mEncryptOutState = EncryptState.ENCRYPTED;
     }
 
     @Override

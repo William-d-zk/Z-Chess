@@ -29,8 +29,6 @@ import java.util.Objects;
 import com.tgx.z.queen.base.log.Logger;
 import com.tgx.z.queen.io.core.async.AioFilterChain;
 import com.tgx.z.queen.io.core.async.AioPacket;
-import com.tgx.z.queen.io.core.inf.IContext.DecodeState;
-import com.tgx.z.queen.io.core.inf.IContext.EncodeState;
 import com.tgx.z.queen.io.core.inf.IFrame;
 import com.tgx.z.queen.io.core.inf.IPacket;
 import com.tgx.z.queen.io.core.inf.IProtocol;
@@ -55,8 +53,7 @@ public class WsFrameFilter
     @Override
     public ResultType preEncode(WsContext context, IProtocol output) {
         if (Objects.isNull(context) || Objects.isNull(output)) return ResultType.ERROR;
-        if (!context.getEncodeState()
-                    .equals(EncodeState.ENCODING_FRAME)) return ResultType.IGNORE;
+        if (!context.isOutConvert()) return ResultType.IGNORE;
         switch (output.getSerial()) {
             case X101_HandShake.COMMAND:
             case X102_SslHandShake.COMMAND:
@@ -89,8 +86,7 @@ public class WsFrameFilter
     @Override
     public ResultType preDecode(WsContext context, IProtocol input) {
         if (context == null || input == null) return ResultType.ERROR;
-        if (!context.getDecodeState()
-                    .equals(DecodeState.DECODING_FRAME)) return ResultType.IGNORE;
+        if (!context.isInConvert()) return ResultType.IGNORE;
         IPacket _package = (IPacket) input;
         ByteBuffer recvBuf = _package.getBuffer();
         ByteBuffer cRvBuf = context.getRvBuffer();

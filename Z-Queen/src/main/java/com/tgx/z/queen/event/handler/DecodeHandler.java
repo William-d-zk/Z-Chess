@@ -26,6 +26,7 @@ package com.tgx.z.queen.event.handler;
 import static com.tgx.z.queen.event.inf.IError.Type.FILTER_DECODE;
 import static com.tgx.z.queen.event.inf.IOperator.Type.DISPATCH;
 import static com.tgx.z.queen.event.operator.OperatorHolder.ERROR_OPERATOR;
+import static com.tgx.z.queen.io.core.inf.IContext.DECODE_ERROR;
 
 import com.lmax.disruptor.EventHandler;
 import com.tgx.z.queen.base.log.Logger;
@@ -35,7 +36,6 @@ import com.tgx.z.queen.event.inf.IOperator;
 import com.tgx.z.queen.event.processor.QEvent;
 import com.tgx.z.queen.io.core.inf.ICommand;
 import com.tgx.z.queen.io.core.inf.IContext;
-import com.tgx.z.queen.io.core.inf.IContext.DecodeState;
 import com.tgx.z.queen.io.core.inf.IPacket;
 import com.tgx.z.queen.io.core.inf.ISession;
 import com.tgx.z.queen.io.external.crypt.EncryptHandler;
@@ -66,23 +66,17 @@ public class DecodeHandler
         IContext context = session.getContext();
         context.setEncryptHandler(_EncryptHandler);
         IPacket packet = packetContent.first();
-        switch (context.getDecodeState()) {
-            case DECODE_TLS_ERROR:
-            case DECODE_ERROR:
-                //已经发生了解码异常，忽略此 session 的 decode 操作
-                break;
-            default:
-                _Log.info(event);
-                try {
-                    Triple<ICommand[], ISession, IOperator<ICommand[], ISession>> result = packetOperator.handle(packet, session);
-                    transfer(event, result.first(), session, result.third());
-                }
-                catch (Exception e) {
-                    _Log.warning(String.format("read decode error\n %s", session.toString()), e);
-                    context.setDecodeState(DecodeState.DECODE_ERROR);
-                    event.error(FILTER_DECODE, e, session, ERROR_OPERATOR());
-                }
-                break;
+        if (!context.isInErrorState()) {
+            _Log.info(event);
+            try {
+                Triple<ICommand[], ISession, IOperator<ICommand[], ISession>> result = packetOperator.handle(packet, session);
+                transfer(event, result.first(), session, result.third());
+            }
+            catch (Exception e) {
+                _Log.warning(String.format("read decode error\n %s", session.toString()), e);
+                context.setInState(DECODE_ERROR);
+                event.error(FILTER_DECODE, e, session, ERROR_OPERATOR());
+            }
         }
     }
 
