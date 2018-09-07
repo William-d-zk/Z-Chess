@@ -192,15 +192,11 @@ public class Config
                     }
                 }
             }
-            if (Objects.isNull(resourceBundle)) {
-                LOG.warning("biz path: \"" + parent + "\" is not exist,load default: " + owner);
-                resourceBundle = ResourceBundle.getBundle(owner);
-            }
         }
-        if (Objects.isNull(resourceBundle)) {
-            LOG.warning(" config miss " + owner);
-        }
-        else {
+        LOG.info(String.format("load default %s", owner));
+        load(ResourceBundle.getBundle(owner), parent);
+        if (Objects.nonNull(resourceBundle)) {
+            LOG.info(String.format("load parent %s %s", parent, owner));
             load(resourceBundle, parent);
         }
     }
