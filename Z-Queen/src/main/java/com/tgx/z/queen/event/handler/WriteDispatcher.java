@@ -90,5 +90,6 @@ public class WriteDispatcher
             default:
                 break;
         }
+        event.reset();
     }
 }

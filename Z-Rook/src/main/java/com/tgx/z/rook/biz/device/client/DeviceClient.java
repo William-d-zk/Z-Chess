@@ -65,6 +65,8 @@ import com.tgx.z.queen.io.core.inf.ISessionDismiss;
 import com.tgx.z.queen.io.core.inf.ISessionOption;
 import com.tgx.z.queen.io.external.websokcet.ZContext;
 import com.tgx.z.queen.io.external.websokcet.bean.control.X101_HandShake;
+import com.tgx.z.queen.io.external.websokcet.bean.control.X104_Ping;
+import com.tgx.z.queen.io.external.websokcet.bean.control.X105_Pong;
 import com.tgx.z.rook.biz.device.dto.DeviceEntry;
 
 @Component
@@ -123,12 +125,7 @@ public class DeviceClient
                 return new ZContext(option, mode);
             }
         };
-        /*
-        _CommandCreator = (session) -> new ICommand[] { new X101_HandShake(_TargetHost,
-                                                                           ((WsContext) session.getContext()).getSeKey(),
-                                                                           13) };
-        */
-        _CommandCreator = (session) -> null;
+        _CommandCreator = (session) -> new ICommand[] { new X101_HandShake(_TargetHost, ((ZContext) session.getContext()).getSeKey(), 13) };
         _DeviceConnector = new IAioConnector()
         {
             private final InetSocketAddress remote = new InetSocketAddress(_TargetHost, _TargetPort);
@@ -201,10 +198,13 @@ public class DeviceClient
                     ICommand[] commands = logicContent.first();
                     ISession session = logicContent.second();
                     if (Objects.nonNull(commands)) for (ICommand cmd : commands)
+
                         switch (cmd.getSerial()) {
                             case X101_HandShake.COMMAND:
                                 _Log.info("handshake ok");
-                                event.ignore();
+                                break;
+                            case X105_Pong.COMMAND:
+                                _Log.info("heartbeat ok");
                                 break;
                         }
                     break;
@@ -212,7 +212,7 @@ public class DeviceClient
                     _Log.warning("event type no handle %s", event.getEventType());
                     break;
             }
-
+            event.ignore();
         });
     }
 
@@ -267,5 +267,10 @@ public class DeviceClient
 
     public void handshake() {
         sendLocal(new X101_HandShake(_TargetHost, ((ZContext) clientSession.getContext()).getSeKey(), 13));
+    }
+
+    public void heartbeat(String msg) {
+        Objects.requireNonNull(msg);
+        sendLocal(new X104_Ping(msg.getBytes()));
     }
 }

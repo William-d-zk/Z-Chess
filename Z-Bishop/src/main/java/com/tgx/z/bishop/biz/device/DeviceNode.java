@@ -68,6 +68,8 @@ import com.tgx.z.queen.io.core.inf.ISessionOption;
 import com.tgx.z.queen.io.core.manager.QueenManager;
 import com.tgx.z.queen.io.external.websokcet.ZContext;
 import com.tgx.z.queen.io.external.websokcet.bean.control.X101_HandShake;
+import com.tgx.z.queen.io.external.websokcet.bean.control.X104_Ping;
+import com.tgx.z.queen.io.external.websokcet.bean.control.X105_Pong;
 
 @Service
 @PropertySource({ "classpath:device.properties",
@@ -210,17 +212,26 @@ public class DeviceNode
                         _Log.warning("cmd null");
                     }
                     else {
-                        _Log.info(cmd);
+                        _Log.info("device node logic handle %s", cmd);
                         switch (cmd.getSerial()) {
                             case X101_HandShake.COMMAND:
+                                break;
+                            case X104_Ping.COMMAND:
+                                cmd = new X105_Pong("Server pong".getBytes());
+                                break;
+                            case X105_Pong.COMMAND:
+                                cmd = null;
                             default:
                                 break;
                         }
-                        event.produce(WRITE, new ICommand[] { cmd }, session, SERVER_TRANSFER());
+                        if (Objects.nonNull(cmd)) {
+                            event.produce(WRITE, new ICommand[] { cmd }, session, SERVER_TRANSFER());
+                            return;
+                        }
                     }
                     break;
             }
-
+            event.ignore();
         }, this);
         _DeviceServer.bindAddress(new InetSocketAddress(_ServerHost, _ServerPort),
                                   AsynchronousChannelGroup.withFixedThreadPool(core.getServerCount(), core.getWorkerThreadFactory()));

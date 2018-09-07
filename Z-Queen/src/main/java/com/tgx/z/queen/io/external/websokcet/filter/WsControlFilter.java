@@ -35,7 +35,6 @@ import com.tgx.z.queen.io.external.websokcet.bean.control.X103_Close;
 import com.tgx.z.queen.io.external.websokcet.bean.control.X104_Ping;
 import com.tgx.z.queen.io.external.websokcet.bean.control.X105_Pong;
 import com.tgx.z.queen.io.external.websokcet.bean.control.X106_Identity;
-import com.tgx.z.queen.io.external.zprotocol.Command;
 
 /**
  * @author William.d.zk
@@ -55,9 +54,7 @@ public class WsControlFilter
         if (context == null || output == null) return ResultType.ERROR;
         if (context.isOutConvert()) {
             switch (output.getSuperSerial()) {
-                case Command.COMMAND_SERIAL:
-                    return ResultType.IGNORE;
-                case WsControl.CONTROL_SERIAL:
+                case IProtocol.CONTROL_SERIAL:
                     switch (output.getSerial()) {
                         case X101_HandShake.COMMAND:
                         case X102_SslHandShake.COMMAND:
@@ -65,7 +62,8 @@ public class WsControlFilter
                         default:
                             return ResultType.NEXT_STEP;
                     }
-                case WsFrame.FRAME_SERIAL:
+                case IProtocol.COMMAND_SERIAL:
+                case IProtocol.FRAME_SERIAL:
                     return ResultType.IGNORE;
                 default:
                     return ResultType.ERROR;
@@ -78,6 +76,7 @@ public class WsControlFilter
     public WsFrame encode(WsContext context, IProtocol output) {
         WsFrame frame = new WsFrame();
         WsControl control = (WsControl) output;
+        _Log.info("control %s", control);
         frame.setPayload(control.getPayload());
         frame.setCtrl(control.getControl());
         return frame;

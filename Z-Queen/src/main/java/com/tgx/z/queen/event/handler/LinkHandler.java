@@ -41,6 +41,7 @@ import com.tgx.z.queen.io.core.inf.IConnectionContext;
 import com.tgx.z.queen.io.core.inf.ISession;
 import com.tgx.z.queen.io.core.inf.ISessionCreated;
 import com.tgx.z.queen.io.core.inf.ISessionDismiss;
+import com.tgx.z.queen.io.core.manager.QueenManager;
 
 /**
  * @author William.d.zk
@@ -52,10 +53,12 @@ public class LinkHandler
     private final Logger             _Log = Logger.getLogger(getClass().getName());
     private final RingBuffer<QEvent> _Error;
     private final RingBuffer<QEvent> _Writer;
+    private final QueenManager       _QueenManager;
 
-    public LinkHandler(RingBuffer<QEvent> error, RingBuffer<QEvent> writer) {
+    public LinkHandler(QueenManager manager, RingBuffer<QEvent> error, RingBuffer<QEvent> writer) {
         _Error = error;
         _Writer = writer;
+        _QueenManager = manager;
     }
 
     @Override

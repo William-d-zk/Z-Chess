@@ -63,10 +63,9 @@ public class WsHandShakeFilter
     @Override
     public ResultType preEncode(WsContext context, IProtocol output) {
         if (context == null || output == null) return ResultType.ERROR;
-        if (context.needHandshake() && context.outState() == ENCODE_HANDSHAKE && output instanceof WsHandshake) {
-            return ResultType.NEXT_STEP;
-        }
-        else if (context.isOutConvert() && output instanceof WsHandshake) { return ResultType.ERROR; }
+        if (context.needHandshake()
+            && context.outState() == ENCODE_HANDSHAKE
+            && output instanceof WsHandshake) { return ResultType.NEXT_STEP; }
         return ResultType.IGNORE;
     }
 

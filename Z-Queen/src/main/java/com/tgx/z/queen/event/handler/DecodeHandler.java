@@ -67,7 +67,6 @@ public class DecodeHandler
         context.setEncryptHandler(_EncryptHandler);
         IPacket packet = packetContent.first();
         if (!context.isInErrorState()) {
-            _Log.info(event);
             try {
                 Triple<ICommand[], ISession, IOperator<ICommand[], ISession>> result = packetOperator.handle(packet, session);
                 transfer(event, result.first(), session, result.third());
