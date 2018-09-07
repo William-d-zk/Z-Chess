@@ -29,13 +29,10 @@ import java.util.Objects;
 import com.tgx.z.queen.base.log.Logger;
 import com.tgx.z.queen.io.core.async.AioFilterChain;
 import com.tgx.z.queen.io.core.async.AioPacket;
-import com.tgx.z.queen.io.core.inf.IFrame;
 import com.tgx.z.queen.io.core.inf.IPacket;
 import com.tgx.z.queen.io.core.inf.IProtocol;
 import com.tgx.z.queen.io.external.websokcet.WsContext;
 import com.tgx.z.queen.io.external.websokcet.WsFrame;
-import com.tgx.z.queen.io.external.websokcet.bean.control.X101_HandShake;
-import com.tgx.z.queen.io.external.websokcet.bean.control.X102_SslHandShake;
 
 /**
  * @author William.d.zk
@@ -54,11 +51,10 @@ public class WsFrameFilter
     public ResultType preEncode(WsContext context, IProtocol output) {
         if (Objects.isNull(context) || Objects.isNull(output)) return ResultType.ERROR;
         if (context.isOutConvert()) {
-            switch (output.getSerial()) {
-                case X101_HandShake.COMMAND:
-                case X102_SslHandShake.COMMAND:
-                    return ResultType.ERROR;
-                case IFrame.FRAME_SERIAL:
+            switch (output.getSuperSerial()) {
+                case IProtocol.CONTROL_SERIAL:
+                case IProtocol.COMMAND_SERIAL:
+                case IProtocol.FRAME_SERIAL:
                     return ResultType.NEXT_STEP;
                 default:
                     return ResultType.ERROR;

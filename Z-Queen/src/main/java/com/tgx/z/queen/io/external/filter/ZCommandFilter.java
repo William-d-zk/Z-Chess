@@ -33,7 +33,6 @@ import com.tgx.z.queen.io.core.async.AioContext;
 import com.tgx.z.queen.io.core.async.AioFilterChain;
 import com.tgx.z.queen.io.core.inf.IEncryptHandler;
 import com.tgx.z.queen.io.core.inf.IProtocol;
-import com.tgx.z.queen.io.external.websokcet.WsControl;
 import com.tgx.z.queen.io.external.websokcet.WsFrame;
 import com.tgx.z.queen.io.external.websokcet.bean.X01_EncryptRequest;
 import com.tgx.z.queen.io.external.websokcet.bean.X02_AsymmetricPub;
@@ -41,8 +40,6 @@ import com.tgx.z.queen.io.external.websokcet.bean.X03_Cipher;
 import com.tgx.z.queen.io.external.websokcet.bean.X04_EncryptConfirm;
 import com.tgx.z.queen.io.external.websokcet.bean.X05_EncryptStart;
 import com.tgx.z.queen.io.external.websokcet.bean.X06_PlainStart;
-import com.tgx.z.queen.io.external.websokcet.bean.control.X101_HandShake;
-import com.tgx.z.queen.io.external.websokcet.bean.control.X102_SslHandShake;
 import com.tgx.z.queen.io.external.zprotocol.Command;
 
 /**
@@ -70,15 +67,10 @@ public class ZCommandFilter<C extends AioContext>
         if (output == null || context == null) return ResultType.ERROR;
         if (context.isOutConvert()) {
             switch (output.getSuperSerial()) {
-                case Command.COMMAND_SERIAL:
+                case IProtocol.COMMAND_SERIAL:
                     return ResultType.NEXT_STEP;
-                case WsControl.CONTROL_SERIAL:
-                    switch (output.getSerial()) {
-                        case X101_HandShake.COMMAND:
-                        case X102_SslHandShake.COMMAND:
-                            return ResultType.ERROR;
-                    }
-                case WsFrame.FRAME_SERIAL:
+                case IProtocol.CONTROL_SERIAL:
+                case IProtocol.FRAME_SERIAL:
                     return ResultType.IGNORE;
                 default:
                     return ResultType.ERROR;

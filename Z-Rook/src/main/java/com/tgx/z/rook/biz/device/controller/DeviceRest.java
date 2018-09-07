@@ -24,13 +24,16 @@
 
 package com.tgx.z.rook.biz.device.controller;
 
-import com.tgx.z.rook.biz.device.client.DeviceClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tgx.z.rook.biz.device.client.DeviceClient;
+
 @RestController
-public class DeviceRest {
+public class DeviceRest
+{
     @Autowired
     private DeviceClient _Client;
 
@@ -47,8 +50,8 @@ public class DeviceRest {
     }
 
     @GetMapping("/client/heartbeat")
-    public String heartbeat() {
-
+    public String heartbeat(@RequestParam(name = "msg", defaultValue = "client heartbeat", required = false) String msg) {
+        _Client.heartbeat(msg);
         return "heartbeat";
     }
 
@@ -57,5 +60,4 @@ public class DeviceRest {
         _Client.handshake();
         return "handshake";
     }
-
 }

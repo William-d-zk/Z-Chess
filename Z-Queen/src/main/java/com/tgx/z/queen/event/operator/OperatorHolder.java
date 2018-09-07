@@ -166,6 +166,7 @@ public class OperatorHolder
                         worker.publishWroteError(error_operator, WRITE_ZERO, new IllegalArgumentException("wrote zero!"), session);
                         break;
                     default:
+                        LOG.info("wrote %d", result);
                         worker.publishWrote(wrote_operator, result, session);
                         break;
                 }

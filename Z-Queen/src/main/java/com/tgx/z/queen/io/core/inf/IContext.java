@@ -178,7 +178,7 @@ public interface IContext
     default void advanceState(AtomicInteger ctl, int targetState) {
         for (;;) {
             int c = ctl.get();
-            if (stateAtLeast(c, targetState) || ctl.compareAndSet(c, ctlOf(targetState, countOf(c)))) break;
+            if (stateOf(c) == targetState || ctl.compareAndSet(c, ctlOf(targetState, countOf(c)))) break;
         }
     }
 
