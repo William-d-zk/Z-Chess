@@ -322,7 +322,6 @@ public class OperatorHolder
         };
         connected_operator = new IOperator<IConnectionContext, AsynchronousSocketChannel>()
         {
-
             //都在 LinkIo-Processor 中处理
             @Override
             public Triple<ICommand[], ISession, IOperator<ICommand[], ISession>> handle(IConnectionContext ctx,

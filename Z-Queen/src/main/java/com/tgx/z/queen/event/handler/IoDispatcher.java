@@ -72,11 +72,11 @@ public class IoDispatcher
                 dispatchError(connectActive.getMode(), errorType, throwable, connectActive, connectFailedOperator);
                 break;
             case CLOSED:
-                //transfer
+                /* 将其他 Event Error 转换为 closed 进行定向分发 */
                 IOperator<Void, ISession> closedOperator = event.getEventOp();
                 Pair<Void, ISession> closedContent = event.getContent();
                 ISession session = closedContent.second();
-                dispatchError(session.getMode(), CLOSED, closedContent.first(), session, closedOperator);
+                if (!session.isClosed()) dispatchError(session.getMode(), CLOSED, closedContent.first(), session, closedOperator);
                 break;
             case ACCEPT_FAILED:
             case READ_ZERO:
@@ -95,9 +95,11 @@ public class IoDispatcher
                 IOperator<Throwable, ISession> errorOperator = event.getEventOp();
                 Pair<Throwable, ISession> errorContent = event.getContent();
                 session = errorContent.second();
-                throwable = errorContent.first();
-                Triple<Void, ISession, IOperator<Void, ISession>> transferResult = errorOperator.handle(throwable, session);
-                dispatchError(session.getMode(), CLOSED, transferResult.first(), session, transferResult.third());
+                if (!session.isClosed()) {
+                    throwable = errorContent.first();
+                    Triple<Void, ISession, IOperator<Void, ISession>> transferResult = errorOperator.handle(throwable, session);
+                    dispatchError(session.getMode(), CLOSED, transferResult.first(), session, transferResult.third());
+                }
                 break;
             case NO_ERROR:
                 switch (event.getEventType()) {
@@ -123,7 +125,8 @@ public class IoDispatcher
                     case CLOSE:// local close
                         IOperator<Void, ISession> closeOperator = event.getEventOp();
                         Pair<Void, ISession> closeContent = event.getContent();
-                        error(_Error, CLOSED, closeContent.first(), closeContent.second(), closeOperator);
+                        session = closeContent.second();
+                        if (!session.isClosed()) error(_Error, CLOSED, closeContent.first(), closeContent.second(), closeOperator);
                         break;
                     default:
                         _Log.warning(String.format(" wrong type %s in IoDispatcher", event.getEventType()));

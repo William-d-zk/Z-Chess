@@ -63,7 +63,6 @@ import com.tgx.z.queen.io.core.inf.ISessionCreated;
 import com.tgx.z.queen.io.core.inf.ISessionCreator;
 import com.tgx.z.queen.io.core.inf.ISessionDismiss;
 import com.tgx.z.queen.io.core.inf.ISessionOption;
-import com.tgx.z.queen.io.external.websokcet.WsContext;
 import com.tgx.z.queen.io.external.websokcet.ZContext;
 import com.tgx.z.queen.io.external.websokcet.bean.control.X101_HandShake;
 import com.tgx.z.rook.biz.device.dto.DeviceEntry;
@@ -124,9 +123,12 @@ public class DeviceClient
                 return new ZContext(option, mode);
             }
         };
+        /*
         _CommandCreator = (session) -> new ICommand[] { new X101_HandShake(_TargetHost,
                                                                            ((WsContext) session.getContext()).getSeKey(),
                                                                            13) };
+        */
+        _CommandCreator = (session) -> null;
         _DeviceConnector = new IAioConnector()
         {
             private final InetSocketAddress remote = new InetSocketAddress(_TargetHost, _TargetPort);
@@ -251,6 +253,7 @@ public class DeviceClient
         if (clientSession == session) {
             _Log.info("drop client session %s", session);
             clientSession = null;
+            connect();
         }
     }
 
@@ -263,6 +266,6 @@ public class DeviceClient
     }
 
     public void handshake() {
-        sendLocal(_CommandCreator.createCommands(clientSession));
+        sendLocal(new X101_HandShake(_TargetHost, ((ZContext) clientSession.getContext()).getSeKey(), 13));
     }
 }
