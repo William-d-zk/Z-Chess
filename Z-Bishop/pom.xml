@@ -24,7 +24,7 @@
             <artifactId>postgresql</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.oracle</groupId>
+            <groupId>com.sleepycat</groupId>
             <artifactId>je</artifactId>
         </dependency>
         <dependency>

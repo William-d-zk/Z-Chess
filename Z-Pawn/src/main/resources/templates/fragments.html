@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head (title)">
+    <title th:text="${title}">Fragments</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}"/>
+    <script th:src="@{/webjars/jquery/jquery.min.js}"></script>
+    <script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+</head>
+<body>
+<div class="container">
+    <nav th:fragment="navbar" class="navbar navbar-dark bg-primary navbar-expand-lg">
+        <a class="navbar-brand" href="http://www.baidu.com">baidu</a>
+        <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+            <li class="nav-item"><a class="nav-link" th:href="@{/}">Devices</a></li>
+        </ul>
+        <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+            <li class="nav-item"><a class="nav-link" th:href="@{/registration}">Registration</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+</body>
+</html>

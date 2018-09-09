@@ -26,13 +26,16 @@ package com.tgx.chess.pawn;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 /**
  * @author william.d.zk
  */
+@EnableJpaAuditing
 @SpringBootApplication(scanBasePackages = { "com.tgx.chess.pawn",
                                             "com.tgx.z.bishop",
                                             "com.tgx.z.rook" })
+
 public class Application
 {
     public static void main(String[] args) {

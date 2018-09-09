@@ -69,6 +69,7 @@ public class DecodeHandler
         if (!context.isInErrorState()) {
             try {
                 Triple<ICommand[], ISession, IOperator<ICommand[], ISession>> result = packetOperator.handle(packet, session);
+                _Log.info("decoded:%s", result.first());
                 transfer(event, result.first(), session, result.third());
             }
             catch (Exception e) {
@@ -77,6 +78,7 @@ public class DecodeHandler
                 event.error(FILTER_DECODE, e, session, ERROR_OPERATOR());
             }
         }
+        else event.ignore();
     }
 
     protected void transfer(QEvent event, ICommand[] commands, ISession session, IOperator<ICommand[], ISession> operator) {

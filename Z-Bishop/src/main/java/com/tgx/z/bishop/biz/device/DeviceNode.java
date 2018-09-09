@@ -70,6 +70,8 @@ import com.tgx.z.queen.io.external.websokcet.ZContext;
 import com.tgx.z.queen.io.external.websokcet.bean.control.X101_HandShake;
 import com.tgx.z.queen.io.external.websokcet.bean.control.X104_Ping;
 import com.tgx.z.queen.io.external.websokcet.bean.control.X105_Pong;
+import com.tgx.z.queen.io.external.websokcet.bean.device.X50_DeviceMsg;
+import com.tgx.z.queen.io.external.websokcet.bean.device.X51_DeviceMsgAck;
 
 @Service
 @PropertySource({ "classpath:device.properties",
@@ -221,6 +223,11 @@ public class DeviceNode
                                 break;
                             case X105_Pong.COMMAND:
                                 cmd = null;
+                                break;
+                            case X50_DeviceMsg.COMMAND:
+                                cmd = new X51_DeviceMsgAck(cmd.getUID());
+                                break;
+                            case X51_DeviceMsgAck.COMMAND:
                             default:
                                 break;
                         }
