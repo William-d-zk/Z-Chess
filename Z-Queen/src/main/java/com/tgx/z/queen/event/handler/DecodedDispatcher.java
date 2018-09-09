@@ -67,7 +67,7 @@ public class DecodedDispatcher
                 //错误处理
                 Pair<Throwable, ISession> dispatchError = event.getContent();
                 ISession session = dispatchError.second();
-                dispatchError(session.getMode(), event.getErrorType(), dispatchError.first(), session, event.getEventOp());
+                error(_Error, event.getErrorType(), dispatchError.first(), session, event.getEventOp());
                 break;
 
         }

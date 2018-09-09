@@ -60,6 +60,8 @@ import com.tgx.z.queen.io.external.filter.ZCommandFilter.CommandFactory;
 import com.tgx.z.queen.io.external.filter.ZTlsFilter;
 import com.tgx.z.queen.io.external.websokcet.WsContext;
 import com.tgx.z.queen.io.external.websokcet.ZContext;
+import com.tgx.z.queen.io.external.websokcet.bean.device.X50_DeviceMsg;
+import com.tgx.z.queen.io.external.websokcet.bean.device.X51_DeviceMsgAck;
 import com.tgx.z.queen.io.external.websokcet.filter.WsControlFilter;
 import com.tgx.z.queen.io.external.websokcet.filter.WsFrameFilter;
 import com.tgx.z.queen.io.external.websokcet.filter.WsHandShakeFilter;
@@ -89,6 +91,17 @@ public class OperatorHolder
     private static CommandFactory                                           command_factory;
 
     static {
+        command_factory = command -> {
+            switch (command) {
+                case X50_DeviceMsg.COMMAND:
+                    return new X50_DeviceMsg();
+                case X51_DeviceMsgAck.COMMAND:
+                    return new X51_DeviceMsgAck();
+                default:
+                    LOG.warning(String.format("command is not consistentHandle: %x", command));
+                    return null;
+            }
+        };
         close_operator = new IOperator<Void, ISession>()
         {
 
@@ -100,7 +113,7 @@ public class OperatorHolder
                 catch (IOException e) {
                     LOG.warning("session close: %s", e, session.toString());
                 }
-                LOG.warning(session.toString());
+                LOG.warning("closed operator %s", session.toString());
                 return null;
             }
 
@@ -483,14 +496,6 @@ public class OperatorHolder
             @Override
             public String toString() {
                 return "consumer_transfer";
-            }
-        };
-
-        command_factory = command -> {
-            switch (command) {
-                default:
-                    LOG.warning(String.format("command is not consistentHandle: %x", command));
-                    return null;
             }
         };
 

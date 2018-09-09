@@ -201,7 +201,7 @@ public class ZCommandFilter<C extends AioContext>
             case 0xFF:
                 throw new UnsupportedOperationException();
             default:
-                return factory != null ? factory.createCommand(command) : null;
+                return Objects.nonNull(factory) ? factory.createCommand(command) : null;
         }
     }
 

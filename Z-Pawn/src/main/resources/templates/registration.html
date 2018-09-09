@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Registration Form</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/login.css}"/>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}"/>
+    <script th:src="@{/webjars/jquery/jquery.min.js}"></script>
+    <script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+</head>
+<body>
+<div th:replace="fragments"/>
+<div class="container">
+    <form autocomplete="off" action="#" th:action="@{/registration}" method="POST" class="form-signin"
+          th:object="${user}" role="form">
+        <h2 class="form-signin-heading" th:text="Registration"></h2>
+        <div class="form-group">
+            <div>
+                <label th:if="${#fields.hasErrors('name')}" th:errors="*{name}"
+                       class="validation-message"></label>
+                <input type="text" th:field="*{name}" placeholder="Name"
+                       class="form-control"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <div>
+                <input type="text" th:field="*{email}" placeholder="Email"
+                       class="form-control"/> <label
+                    th:if="${#fields.hasErrors('email')}" th:errors="*{email}"
+                    class="validation-message"></label>
+            </div>
+        </div>
+        <div class="form-group">
+            <div>
+                <input type="password" th:field="*{password}"
+                       placeholder="Password" class="form-control"/> <label
+                    th:if="${#fields.hasErrors('password')}" th:errors="*{password}"
+                    class="validation-message"></label>
+            </div>
+        </div>
+        <div class="form-group">
+            <div>
+                <button type="submit" class="btn btn-primary btn-block">Register User</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+</body>
+</html>

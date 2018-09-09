@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments :: head(title=~{::title/text()})">
+    <title>Devices : View</title>
+</head>
+<body>
+<div class="container">
+    <div th:replace="fragments :: navbar"></div>
+    <div class="float-right mt-2">
+        <a class="btn btn-primary btn-sm" href="list.html" th:href="@{/}">Devices</a>
+    </div>
+    <h4 class="float-left mt-2">Devices : View</h4>
+    <div class="clearfix"></div>
+    <div class="alert alert-success" th:if="${globalMessage}" th:text="${globalMessage}">Some Success message
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title" th:text="${device.id + ': ' + device.summary}">123 - A short summary...</h4>
+            <h6 class="card-subtitle mb-2 text-muted" th:text="${#calendars.format(device.created)}">July 11, 2012
+                2:17:16 PM CDT</h6>
+            <p class="card-text" th:text="${device.text}">A detailed message that is longer than the summary.</p>
+            <a class="card-link" href="devices" th:href="@{'/delete/' + ${device.id}}">delete</a>
+            <a class="card-link" href="form.html" th:href="@{'/modify/' + ${device.id}}"> modify</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

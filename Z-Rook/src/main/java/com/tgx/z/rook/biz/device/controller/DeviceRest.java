@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tgx.z.queen.io.external.websokcet.bean.device.X50_DeviceMsg;
 import com.tgx.z.rook.biz.device.client.DeviceClient;
 
 @RestController
@@ -53,6 +54,14 @@ public class DeviceRest
     public String heartbeat(@RequestParam(name = "msg", defaultValue = "client heartbeat", required = false) String msg) {
         _Client.heartbeat(msg);
         return "heartbeat";
+    }
+
+    @GetMapping("/client/x50")
+    public String x50(@RequestParam(name = "msg", defaultValue = "test", required = false) String msg) {
+        X50_DeviceMsg x50 = new X50_DeviceMsg(System.currentTimeMillis());
+        x50.setPayload(msg.getBytes());
+        _Client.sendLocal(x50);
+        return "x50";
     }
 
     @GetMapping("/client/handshake")
