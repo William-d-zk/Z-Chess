@@ -51,6 +51,8 @@ public class SecurityConfig
             .authorizeRequests()
             .antMatchers("/", "/login", "/home", "/about", "/fragments/*", "/registration", "/webjars/**", "/client/**")
             .permitAll()
+            .antMatchers("/admin/**")
+            .hasAuthority("ADMIN")
             .anyRequest()
             .authenticated()
             .and()
