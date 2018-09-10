@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.tgx.z.bishop.biz.db.jpa.dto;
+package com.tgx.z.bishop.biz.db.dto;
 
 import java.io.Serializable;
 import java.util.Date;

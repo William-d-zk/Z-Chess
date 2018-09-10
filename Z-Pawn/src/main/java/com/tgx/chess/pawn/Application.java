@@ -26,15 +26,22 @@ package com.tgx.chess.pawn;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 /**
  * @author william.d.zk
  */
 @EnableJpaAuditing
-@SpringBootApplication(scanBasePackages = { "com.tgx.chess.pawn",
-                                            "com.tgx.z.bishop",
-                                            "com.tgx.z.rook" })
+@EnableJpaRepositories({ "com.tgx.z.bishop.biz.db.repository",
+                         "com.tgx.chess.pawn.login.repository" })
+@EntityScan({ "com.tgx.z.bishop.biz.db",
+              "com.tgx.chess.pawn.login.model" })
+@SpringBootApplication(
+                       scanBasePackages = { "com.tgx.z.bishop",
+                                            "com.tgx.z.rook",
+                                            "com.tgx.chess.pawn" })
 
 public class Application
 {

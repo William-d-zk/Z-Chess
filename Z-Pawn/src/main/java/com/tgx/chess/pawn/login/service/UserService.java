@@ -2,6 +2,7 @@ package com.tgx.chess.pawn.login.service;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -35,6 +36,11 @@ public class UserService
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         user.setActive(1);
         Role userRole = roleRepository.findByRole("ADMIN");
+        if (Objects.isNull(userRole)) {
+            Role role = new Role();
+            role.setRole("ADMIN");
+            roleRepository.save(role);
+        }
         user.setRoles(new HashSet<>(Collections.singletonList(userRole)));
         userRepository.save(user);
     }

@@ -7,7 +7,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import com.tgx.z.bishop.biz.db.jpa.dto.AuditModel;
+import com.tgx.z.bishop.biz.db.dto.AuditModel;
 
 @Entity
 @Table(name = "role")
@@ -16,7 +16,7 @@ public class Role
         AuditModel
 {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "role_id")
     private int    id;
     @Column(name = "role")

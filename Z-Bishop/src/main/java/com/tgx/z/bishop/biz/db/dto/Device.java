@@ -22,24 +22,29 @@
  * SOFTWARE.
  */
 
-package com.tgx.z.bishop.biz.db.jpa.dto;
+package com.tgx.z.bishop.biz.db.dto;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.validation.constraints.NotEmpty;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.validator.constraints.Length;
 
 @Entity
-@Table(name = "devices")
-public class DeviceEntry
+@Table(name = "device")
+public class Device
         extends
         AuditModel
 {
+    private static final long serialVersionUID = -6645586986057373344L;
+
     @Id
-    @GeneratedValue(generator = "device_generator")
-    @SequenceGenerator(name = "device_generator", sequenceName = "device_sequence", initialValue = 1000)
-    private Long id;
+    @GeneratedValue(generator = "ZUID")
+    @GenericGenerator(name = "ZUID", strategy = "com.tgx.z.bishop.biz.db.dto.ZUID")
+    private Long              id;
 
     public Long getId() {
         return id;
@@ -47,5 +52,29 @@ public class DeviceEntry
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    @Length(min = 64, max = 64, message = "device serial number [SHA256]")
+    @NotEmpty(message = "provide create device sn")
+    private String sn;
+
+    @Length(min = 5, message = "*Your password must have at least 5 characters")
+    @NotEmpty(message = "*Please provide your password")
+    private String password;
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getSn() {
+        return sn;
+    }
+
+    public void setSn(String sn) {
+        this.sn = sn;
     }
 }
