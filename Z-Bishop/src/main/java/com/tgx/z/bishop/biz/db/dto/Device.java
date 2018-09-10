@@ -35,6 +35,8 @@ import javax.validation.constraints.NotEmpty;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.validator.constraints.Length;
 
+import com.tgx.z.queen.base.util.IoUtil;
+
 @Entity
 @Table(name = "device")
 public class Device
@@ -79,5 +81,15 @@ public class Device
 
     public void setSn(byte[] sn) {
         this.sn = sn;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("device{id:%s,pass:%s,sn:%s,create:%s,update:%s}",
+                             getId(),
+                             getPassword(),
+                             IoUtil.bin2Hex(getSn()),
+                             getCreatedAt(),
+                             getUpdatedAt());
     }
 }
