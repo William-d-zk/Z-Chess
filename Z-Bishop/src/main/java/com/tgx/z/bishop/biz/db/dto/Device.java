@@ -24,7 +24,9 @@
 
 package com.tgx.z.bishop.biz.db.dto;
 
+import javax.persistence.Basic;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -54,9 +56,10 @@ public class Device
         this.id = id;
     }
 
-    @Length(min = 64, max = 64, message = "device serial number [SHA256]")
+    //    @Length(min = 32, max = 32, message = "device serial number [SHA256]")
     @NotEmpty(message = "provide create device sn")
-    private String sn;
+    @Basic(fetch = FetchType.LAZY)
+    private byte[] sn;
 
     @Length(min = 5, message = "*Your password must have at least 5 characters")
     @NotEmpty(message = "*Please provide your password")
@@ -70,11 +73,11 @@ public class Device
         this.password = password;
     }
 
-    public String getSn() {
+    public byte[] getSn() {
         return sn;
     }
 
-    public void setSn(String sn) {
+    public void setSn(byte[] sn) {
         this.sn = sn;
     }
 }
