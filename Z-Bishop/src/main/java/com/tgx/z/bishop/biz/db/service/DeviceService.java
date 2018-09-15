@@ -3,12 +3,14 @@ package com.tgx.z.bishop.biz.db.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 
 import com.tgx.z.bishop.biz.db.dto.Device;
 import com.tgx.z.bishop.biz.db.repository.DeviceRepository;
 
 @Service
+@PropertySource("classpath:db.properties")
 public class DeviceService
 {
     private final DeviceRepository deviceRepository;

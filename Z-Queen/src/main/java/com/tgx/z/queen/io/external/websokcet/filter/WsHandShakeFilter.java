@@ -32,7 +32,7 @@ import static com.tgx.z.queen.io.core.inf.IContext.ENCODE_HANDSHAKE;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
-import com.tgx.z.queen.base.log.Logger;
+import com.tgx.z.king.base.log.Logger;
 import com.tgx.z.queen.event.operator.MODE;
 import com.tgx.z.queen.io.core.async.AioFilterChain;
 import com.tgx.z.queen.io.core.async.AioPacket;
@@ -53,7 +53,7 @@ public class WsHandShakeFilter
     private final static String CRLF = "\r\n";
 
     private final MODE          _Mode;
-    private final Logger        _Log = Logger.getLogger(getClass().getName());
+    private final Logger _Log = Logger.getLogger(getClass().getName());
 
     public WsHandShakeFilter(MODE mode) {
         name = "web-socket-header-filter-" + mode.name();

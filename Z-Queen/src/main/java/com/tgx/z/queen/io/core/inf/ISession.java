@@ -29,8 +29,8 @@ import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
 import java.util.Queue;
 
-import com.tgx.z.queen.base.inf.IDisposable;
-import com.tgx.z.queen.base.inf.IReset;
+import com.tgx.z.king.base.inf.IDisposable;
+import com.tgx.z.king.base.inf.IReset;
 import com.tgx.z.queen.event.inf.IOperator;
 
 /**

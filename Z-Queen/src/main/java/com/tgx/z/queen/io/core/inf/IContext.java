@@ -27,8 +27,8 @@ import java.io.Closeable;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.tgx.z.queen.base.inf.IDisposable;
-import com.tgx.z.queen.base.inf.IReset;
+import com.tgx.z.king.base.inf.IDisposable;
+import com.tgx.z.king.base.inf.IReset;
 
 /**
  * @author William.d.zk

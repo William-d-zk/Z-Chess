@@ -23,7 +23,7 @@
  */
 package com.tgx.z.queen.io.core.inf;
 
-import com.tgx.z.queen.base.crypt.inf.ISymmetric;
+import com.tgx.z.king.base.crypt.inf.ISymmetric;
 
 /**
  * @author William.d.zk

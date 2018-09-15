@@ -30,8 +30,8 @@ import java.nio.channels.AsynchronousChannelGroup;
 
 import com.lmax.disruptor.InsufficientCapacityException;
 import com.lmax.disruptor.RingBuffer;
-import com.tgx.z.config.Config;
-import com.tgx.z.queen.base.log.Logger;
+import com.tgx.z.king.base.log.Logger;
+import com.tgx.z.king.config.Config;
 import com.tgx.z.queen.event.inf.IOperator;
 import com.tgx.z.queen.event.inf.IOperator.Type;
 import com.tgx.z.queen.event.processor.QEvent;
@@ -112,8 +112,5 @@ public abstract class QueenManager
     public void localSend(ICommand toSend, ISession session, IOperator<ICommand, ISession> write_operator) {
         _DomainSender[getSlot(session.getIndex())].localSend(toSend, session, write_operator);
     }
-
-
-
 
 }

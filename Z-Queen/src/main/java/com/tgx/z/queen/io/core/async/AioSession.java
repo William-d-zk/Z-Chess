@@ -40,7 +40,7 @@ import java.util.Objects;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import com.tgx.z.queen.base.util.ArrayUtil;
+import com.tgx.z.king.base.util.ArrayUtil;
 import com.tgx.z.queen.event.inf.IOperator;
 import com.tgx.z.queen.event.operator.MODE;
 import com.tgx.z.queen.io.core.inf.IConnectActive;

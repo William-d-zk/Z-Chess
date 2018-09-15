@@ -24,7 +24,7 @@
 
 package com.tgx.z.queen.io.core.inf;
 
-import com.tgx.z.queen.base.util.Pair;
+import com.tgx.z.king.base.util.Pair;
 
 /**
  * @author William.d.zk

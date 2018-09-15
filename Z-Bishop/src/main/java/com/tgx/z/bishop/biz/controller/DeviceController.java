@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tgx.z.bishop.biz.db.dto.Device;
 import com.tgx.z.bishop.biz.db.service.DeviceService;
-import com.tgx.z.queen.base.log.Logger;
-import com.tgx.z.queen.base.util.IoUtil;
+import com.tgx.z.king.base.log.Logger;
+import com.tgx.z.king.base.util.IoUtil;
 
 @RestController
 public class DeviceController

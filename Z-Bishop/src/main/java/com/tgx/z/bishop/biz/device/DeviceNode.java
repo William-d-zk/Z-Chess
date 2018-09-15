@@ -44,11 +44,11 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 
 import com.tgx.z.bishop.biz.db.dto.DeviceEntry;
-import com.tgx.z.config.Config;
-import com.tgx.z.config.QueenCode;
-import com.tgx.z.queen.base.log.Logger;
-import com.tgx.z.queen.base.util.Pair;
-import com.tgx.z.queen.base.util.Triple;
+import com.tgx.z.king.base.log.Logger;
+import com.tgx.z.king.base.util.Pair;
+import com.tgx.z.king.base.util.Triple;
+import com.tgx.z.king.config.Config;
+import com.tgx.z.queen.config.QueenCode;
 import com.tgx.z.queen.event.inf.IOperator;
 import com.tgx.z.queen.event.operator.MODE;
 import com.tgx.z.queen.io.core.async.AioCreator;
@@ -74,8 +74,7 @@ import com.tgx.z.queen.io.external.websokcet.bean.device.X50_DeviceMsg;
 import com.tgx.z.queen.io.external.websokcet.bean.device.X51_DeviceMsgAck;
 
 @Service
-@PropertySource({ "classpath:device.properties",
-                  "classpath:db.properties" })
+@PropertySource("classpath:device.properties")
 public class DeviceNode
         extends
         QueenManager
@@ -83,7 +82,7 @@ public class DeviceNode
         ISessionDismiss,
         ISessionCreated
 {
-    private Logger                _Log = Logger.getLogger(getClass().getName());
+    private final Logger          _Log = Logger.getLogger(getClass().getName());
     private final String          _ServerHost;
     private final int             _ServerPort;
     private final IAioServer      _DeviceServer;

@@ -5,7 +5,7 @@ import static com.tgx.z.queen.io.core.inf.IContext.ENCODE_ERROR;
 import java.util.Objects;
 
 import com.lmax.disruptor.EventHandler;
-import com.tgx.z.queen.base.util.Triple;
+import com.tgx.z.king.base.util.Triple;
 import com.tgx.z.queen.event.inf.IError.Type;
 import com.tgx.z.queen.event.inf.IOperator;
 import com.tgx.z.queen.event.processor.QEvent;

@@ -24,7 +24,7 @@
 
 package com.tgx.z.queen.io.core.inf;
 
-import com.tgx.z.queen.base.inf.IReset;
+import com.tgx.z.king.base.inf.IReset;
 
 public interface IFrame
         extends

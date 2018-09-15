@@ -12,7 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 
-import com.tgx.z.queen.base.log.Logger;
+import com.tgx.z.king.base.log.Logger;
 
 // handle 403 page
 @Component

@@ -1,38 +1,36 @@
-allprojects  {
-  apply plugin: 'maven'
+allprojects {
+    apply plugin: 'maven'
 
-  group = 'com.tgx.service'
-version = '1.0-SNAPSHOT'
+    group = 'com.tgx.service'
+    version = '1.0-SNAPSHOT'
 }
 
 subprojects {
-  apply plugin: 'java'
-  sourceCompatibility = 8
-  targetCompatibility = 8
-  tasks.withType(JavaCompile) {
-  	options.encoding = 'UTF-8'
-  }
+    apply plugin: 'java'
+    sourceCompatibility = 8
+    targetCompatibility = 8
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+    }
 
 
-  repositories {
-    mavenLocal()
-    mavenCentral()
-    //maven { url "http://tinygamex.com/mvn/repository" }
-  }
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
 
 
+    dependencies {
+        compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
+        compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+        compile group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
+        testCompile group: 'org.junit.platform', name: 'junit-platform-launcher', version: '1.2.0'
+        testCompile group: 'org.junit.platform', name: 'junit-platform-engine', version: '1.2.0'
+        testCompile group: 'org.junit.vintage', name: 'junit-vintage-engine', version: '5.2.0'
+        testCompile group: 'org.mockito', name: 'mockito-core', version: '2.18.3'
+        testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.2.0'
+        testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.2.0'
+    }
 
-  dependencies {
-    compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.25'
-    compile group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.3'
-    compile group: 'ch.qos.logback', name: 'logback-core', version:'1.2.3'
-    testCompile group: 'org.junit.platform', name: 'junit-platform-launcher', version:'1.2.0'
-    testCompile group: 'org.junit.platform', name: 'junit-platform-engine', version:'1.2.0'
-    testCompile group: 'org.junit.vintage', name: 'junit-vintage-engine', version:'5.2.0'
-    testCompile group: 'org.mockito', name: 'mockito-core', version:'2.18.3'
-    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version:'5.2.0'
-    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version:'5.2.0'
-}
 
-  
 }

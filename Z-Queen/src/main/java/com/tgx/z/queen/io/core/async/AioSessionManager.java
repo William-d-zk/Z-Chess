@@ -31,11 +31,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.tgx.z.config.Config;
-import com.tgx.z.config.ConfigKey;
-import com.tgx.z.config.QueenCode;
-import com.tgx.z.queen.base.log.Logger;
-import com.tgx.z.queen.base.util.ArrayUtil;
+import com.tgx.z.king.base.log.Logger;
+import com.tgx.z.king.base.util.ArrayUtil;
+import com.tgx.z.king.config.Config;
+import com.tgx.z.queen.config.QueenCode;
+import com.tgx.z.queen.config.QueenConfigKey;
 import com.tgx.z.queen.io.core.inf.ISession;
 import com.tgx.z.queen.io.core.inf.ISessionManager;
 
@@ -77,16 +77,16 @@ public abstract class AioSessionManager
         int power;
         switch (slot) {
             case CLIENT_SLOT:
-                power = config.getConfigValue(getConfigGroup(), ConfigKey.OWNER_QUEEN_POWER, ConfigKey.KEY_POWER_CLIENT);
+                power = config.getConfigValue(getConfigGroup(), QueenConfigKey.OWNER_QUEEN_POWER, QueenConfigKey.KEY_POWER_CLIENT);
                 break;
             case INTERNAL_SLOT:
-                power = config.getConfigValue(getConfigGroup(), ConfigKey.OWNER_QUEEN_POWER, ConfigKey.KEY_POWER_INTERNAL);
+                power = config.getConfigValue(getConfigGroup(), QueenConfigKey.OWNER_QUEEN_POWER, QueenConfigKey.KEY_POWER_INTERNAL);
                 break;
             case SERVER_SLOT:
-                power = config.getConfigValue(getConfigGroup(), ConfigKey.OWNER_QUEEN_POWER, ConfigKey.KEY_POWER_SERVER);
+                power = config.getConfigValue(getConfigGroup(), QueenConfigKey.OWNER_QUEEN_POWER, QueenConfigKey.KEY_POWER_SERVER);
                 break;
             case CLUSTER_SLOT:
-                power = config.getConfigValue(getConfigGroup(), ConfigKey.OWNER_QUEEN_POWER, ConfigKey.KEY_POWER_CLUSTER);
+                power = config.getConfigValue(getConfigGroup(), QueenConfigKey.OWNER_QUEEN_POWER, QueenConfigKey.KEY_POWER_CLUSTER);
                 break;
             default:
                 throw new IllegalArgumentException();
