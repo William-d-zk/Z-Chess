@@ -7,7 +7,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import com.tgx.z.bishop.biz.db.dto.AuditModel;
+import com.tgx.chess.spring.jpa.dto.AuditModel;
 
 @Entity
 @Table(name = "role")

@@ -35,6 +35,7 @@ import javax.validation.constraints.NotEmpty;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.validator.constraints.Length;
 
+import com.tgx.chess.spring.jpa.dto.AuditModel;
 import com.tgx.z.king.base.util.IoUtil;
 
 @Entity

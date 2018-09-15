@@ -5,3 +5,4 @@ gradle
 out
 *.iml
 target
+mvn_deploy.sh
