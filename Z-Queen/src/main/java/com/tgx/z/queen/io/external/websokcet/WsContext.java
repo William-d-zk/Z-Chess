@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.util.Base64;
 import java.util.Random;
 
-import com.tgx.z.queen.base.util.CryptUtil;
+import com.tgx.z.king.base.util.CryptUtil;
 import com.tgx.z.queen.event.operator.MODE;
 import com.tgx.z.queen.io.core.async.AioContext;
 import com.tgx.z.queen.io.core.inf.ISessionOption;

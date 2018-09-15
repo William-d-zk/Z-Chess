@@ -24,8 +24,8 @@
 
 package com.tgx.z.queen.io.core.inf;
 
-import com.tgx.z.queen.base.log.Logger;
-import com.tgx.z.queen.base.util.IoUtil;
+import com.tgx.z.king.base.log.Logger;
+import com.tgx.z.king.base.util.IoUtil;
 
 /**
  * @author William.d.zk

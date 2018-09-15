@@ -25,7 +25,7 @@
 
 package com.tgx.z.queen.io.external.websokcet.bean.device;
 
-import com.tgx.z.queen.base.util.IoUtil;
+import com.tgx.z.king.base.util.IoUtil;
 import com.tgx.z.queen.io.external.websokcet.WsContext;
 import com.tgx.z.queen.io.external.zprotocol.Command;
 

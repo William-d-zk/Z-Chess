@@ -23,7 +23,7 @@
  */
 package com.tgx.z.queen.io.external.websokcet;
 
-import com.tgx.z.queen.base.crypt.util.Rc4;
+import com.tgx.z.king.base.crypt.util.Rc4;
 import com.tgx.z.queen.event.operator.MODE;
 import com.tgx.z.queen.io.core.inf.IEncryptHandler;
 import com.tgx.z.queen.io.core.inf.ISessionOption;

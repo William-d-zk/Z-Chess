@@ -23,7 +23,7 @@
  */
 package com.tgx.z.queen.io.external.websokcet.bean.control;
 
-import com.tgx.z.queen.base.util.IoUtil;
+import com.tgx.z.king.base.util.IoUtil;
 import com.tgx.z.queen.io.external.websokcet.WsControl;
 import com.tgx.z.queen.io.external.websokcet.WsFrame;
 

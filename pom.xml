@@ -13,6 +13,8 @@
         <module>Z-Bishop</module>
         <module>Z-Rook</module>
         <module>Z-Pawn</module>
+        <module>Z-Knight</module>
+        <module>Z-King</module>
     </modules>
     <properties>
         <!--RT-->
@@ -24,9 +26,10 @@
         <logback.version>1.2.3</logback.version>
         <!--SPRING-BOOT-->
         <spring.version>5.0.8.RELEASE</spring.version>
-        <spring-security.version>5.0.7.RELEASE</spring-security.version>
-        <spring-boot.version>2.0.4.RELEASE</spring-boot.version>
-        <thymeleaf.extras.version>3.0.2.RELEASE</thymeleaf.extras.version>
+        <spring-security.version>5.0.8.RELEASE</spring-security.version>
+        <spring-boot.version>2.0.5.RELEASE</spring-boot.version>
+        <thymeleaf.extras.security4.version>3.0.2.RELEASE</thymeleaf.extras.security4.version>
+        <thymeleaf.extras.java8.version>3.0.1.RELEASE</thymeleaf.extras.java8.version>
         <!--DB-->
         <postgresql.driver.version>42.2.5</postgresql.driver.version>
         <bdb.je.version>7.5.11</bdb.je.version>
@@ -154,7 +157,12 @@
             <dependency>
                 <groupId>org.thymeleaf.extras</groupId>
                 <artifactId>thymeleaf-extras-springsecurity4</artifactId>
-                <version>${thymeleaf.extras.version}</version>
+                <version>${thymeleaf.extras.security4.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.thymeleaf.extras</groupId>
+                <artifactId>thymeleaf-extras-java8time</artifactId>
+                <version>${thymeleaf.extras.java8.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.postgresql</groupId>
@@ -243,6 +251,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>2.0.5.RELEASE</version>
             </plugin>
         </plugins>
     </build>

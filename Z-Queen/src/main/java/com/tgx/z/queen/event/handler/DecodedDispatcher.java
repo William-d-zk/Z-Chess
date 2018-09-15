@@ -29,7 +29,7 @@ import static com.tgx.z.queen.event.inf.IOperator.Type.LOGIC;
 import java.util.Objects;
 
 import com.lmax.disruptor.RingBuffer;
-import com.tgx.z.queen.base.util.Pair;
+import com.tgx.z.king.base.util.Pair;
 import com.tgx.z.queen.event.operator.MODE;
 import com.tgx.z.queen.event.processor.QEvent;
 import com.tgx.z.queen.io.core.inf.ICommand;

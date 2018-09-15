@@ -23,8 +23,8 @@
  */
 package com.tgx.z.queen.io.external.websokcet.bean;
 
-import com.tgx.z.config.Code;
-import com.tgx.z.queen.base.util.IoUtil;
+import com.tgx.z.king.base.util.IoUtil;
+import com.tgx.z.king.config.Code;
 import com.tgx.z.queen.io.external.websokcet.ZContext;
 import com.tgx.z.queen.io.external.zprotocol.Command;
 

@@ -36,7 +36,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.id.IdentifierGenerator;
 
-import com.tgx.z.queen.base.log.Logger;
+import com.tgx.z.king.base.log.Logger;
 
 /**
  * 00-0000-000-0000000-0000000000000000000000000000000000000-000000000

@@ -25,9 +25,9 @@ package com.tgx.z.queen.io.external.zprotocol;
 
 import java.util.Objects;
 
-import com.tgx.z.queen.base.util.CryptUtil;
-import com.tgx.z.queen.base.util.I18nUtil;
-import com.tgx.z.queen.base.util.IoUtil;
+import com.tgx.z.king.base.util.CryptUtil;
+import com.tgx.z.king.base.util.I18nUtil;
+import com.tgx.z.king.base.util.IoUtil;
 import com.tgx.z.queen.io.core.async.AioContext;
 import com.tgx.z.queen.io.core.inf.ICommand;
 import com.tgx.z.queen.io.core.inf.IRouteLv4;

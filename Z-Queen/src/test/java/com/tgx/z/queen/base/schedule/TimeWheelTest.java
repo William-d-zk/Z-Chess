@@ -31,7 +31,8 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.tgx.z.queen.base.schedule.TimeWheel.ITimeoutHandler;
+import com.tgx.z.king.base.schedule.TimeWheel;
+import com.tgx.z.king.base.schedule.TimeWheel.ITimeoutHandler;
 
 class TimeWheelTest
 {

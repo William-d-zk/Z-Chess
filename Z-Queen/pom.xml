@@ -15,5 +15,10 @@
             <groupId>com.lmax</groupId>
             <artifactId>disruptor</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.tgx.service</groupId>
+            <artifactId>core.z-king</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

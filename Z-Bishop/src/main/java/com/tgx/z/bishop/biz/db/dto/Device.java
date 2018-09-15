@@ -35,7 +35,7 @@ import javax.validation.constraints.NotEmpty;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.validator.constraints.Length;
 
-import com.tgx.z.queen.base.util.IoUtil;
+import com.tgx.z.king.base.util.IoUtil;
 
 @Entity
 @Table(name = "device")

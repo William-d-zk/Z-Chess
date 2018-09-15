@@ -26,10 +26,10 @@ package com.tgx.z.queen.io.external.crypt;
 
 import java.util.Random;
 
-import com.tgx.z.queen.base.util.CryptUtil;
-import com.tgx.z.queen.base.util.IoUtil;
-import com.tgx.z.queen.base.util.NtruUtil;
-import com.tgx.z.queen.base.util.Pair;
+import com.tgx.z.king.base.util.CryptUtil;
+import com.tgx.z.king.base.util.IoUtil;
+import com.tgx.z.king.base.util.NtruUtil;
+import com.tgx.z.king.base.util.Pair;
 import com.tgx.z.queen.io.core.inf.IEncryptHandler;
 
 /**
@@ -50,10 +50,10 @@ public class EncryptHandler
     private final int        _PairSizeMask             = _PairSize - 1;
     private final int        _VersionWidth             = 12;
     private final int        _VersionMask              = ((1 << _VersionWidth) - 1) << _TotalSizeWidth;
-    private final NtruUtil   _Ntru                     = new NtruUtil();
+    private final NtruUtil _Ntru                     = new NtruUtil();
     private final Random     _Random                   = new Random();
     private final byte[][][] _PublicKeyPair            = new byte[_PairSize][][];
-    private final CryptUtil  cryptUtil                 = new CryptUtil();
+    private final CryptUtil cryptUtil                 = new CryptUtil();
     private int              mIndexAdd;
 
     private boolean isPubKeyAvailable(int _ReqPubKeyId) {

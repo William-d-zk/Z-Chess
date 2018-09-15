@@ -38,13 +38,13 @@ import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.SequenceBarrier;
 import com.lmax.disruptor.WaitStrategy;
 import com.lmax.disruptor.YieldingWaitStrategy;
-import com.tgx.z.config.Config;
-import com.tgx.z.config.ConfigKey;
-import com.tgx.z.queen.base.db.inf.IStorage;
-import com.tgx.z.queen.base.log.Logger;
-import com.tgx.z.queen.base.schedule.ScheduleHandler;
-import com.tgx.z.queen.base.schedule.TimeWheel;
-import com.tgx.z.queen.base.util.IoUtil;
+import com.tgx.z.king.base.log.Logger;
+import com.tgx.z.king.base.schedule.ScheduleHandler;
+import com.tgx.z.king.base.schedule.TimeWheel;
+import com.tgx.z.king.base.util.IoUtil;
+import com.tgx.z.king.config.Config;
+import com.tgx.z.queen.db.inf.IStorage;
+import com.tgx.z.queen.config.QueenConfigKey;
 import com.tgx.z.queen.event.handler.ClusterHandler;
 import com.tgx.z.queen.event.handler.DecodeHandler;
 import com.tgx.z.queen.event.handler.DecodedDispatcher;
@@ -67,38 +67,38 @@ public class ServerCore<E extends IStorage>
 
     private static Config                                   _Config               = new Config().load(getConfigName());
     private final int                                       _ServerCount          = _Config.getConfigValue(getConfigGroup(),
-                                                                                                           ConfigKey.OWNER_PIPELINE_CORE,
-                                                                                                           ConfigKey.KEY_CORE_SERVER);
+                                                                                                           QueenConfigKey.OWNER_PIPELINE_CORE,
+                                                                                                           QueenConfigKey.KEY_CORE_SERVER);
     private final int                                       _ClusterCount         = _Config.getConfigValue(getConfigGroup(),
-                                                                                                           ConfigKey.OWNER_PIPELINE_CORE,
-                                                                                                           ConfigKey.KEY_CORE_CLUSTER);
+                                                                                                           QueenConfigKey.OWNER_PIPELINE_CORE,
+                                                                                                           QueenConfigKey.KEY_CORE_CLUSTER);
     private static int                                      DECODER_COUNT         = _Config.getConfigValue(getConfigGroup(),
-                                                                                                           ConfigKey.OWNER_PIPELINE_CORE,
-                                                                                                           ConfigKey.KEY_CORE_DECODER);
+                                                                                                           QueenConfigKey.OWNER_PIPELINE_CORE,
+                                                                                                           QueenConfigKey.KEY_CORE_DECODER);
     private static int                                      ENCODER_COUNT         = _Config.getConfigValue(getConfigGroup(),
-                                                                                                           ConfigKey.OWNER_PIPELINE_CORE,
-                                                                                                           ConfigKey.KEY_CORE_ENCODER);
+                                                                                                           QueenConfigKey.OWNER_PIPELINE_CORE,
+                                                                                                           QueenConfigKey.KEY_CORE_ENCODER);
     private static int                                      LOGIC_COUNT           = _Config.getConfigValue(getConfigGroup(),
-                                                                                                           ConfigKey.OWNER_PIPELINE_CORE,
-                                                                                                           ConfigKey.KEY_CORE_LOGIC);
+                                                                                                           QueenConfigKey.OWNER_PIPELINE_CORE,
+                                                                                                           QueenConfigKey.KEY_CORE_LOGIC);
     private final int                                       _AioQueuePower        = _Config.getConfigValue(getConfigGroup(),
-                                                                                                           ConfigKey.OWNER_QUEEN_POWER,
-                                                                                                           ConfigKey.KEY_POWER_SERVER);
+                                                                                                           QueenConfigKey.OWNER_QUEEN_POWER,
+                                                                                                           QueenConfigKey.KEY_POWER_SERVER);
     private final int                                       _ClusterPower         = _Config.getConfigValue(getConfigGroup(),
-                                                                                                           ConfigKey.OWNER_QUEEN_POWER,
-                                                                                                           ConfigKey.KEY_POWER_CLUSTER);
+                                                                                                           QueenConfigKey.OWNER_QUEEN_POWER,
+                                                                                                           QueenConfigKey.KEY_POWER_CLUSTER);
     private final int                                       _InternalPower        = _Config.getConfigValue(getConfigGroup(),
-                                                                                                           ConfigKey.OWNER_QUEEN_POWER,
-                                                                                                           ConfigKey.KEY_POWER_INTERNAL);
+                                                                                                           QueenConfigKey.OWNER_QUEEN_POWER,
+                                                                                                           QueenConfigKey.KEY_POWER_INTERNAL);
     private final int                                       _LinkPower            = _Config.getConfigValue(getConfigGroup(),
-                                                                                                           ConfigKey.OWNER_QUEEN_POWER,
-                                                                                                           ConfigKey.KEY_POWER_LINK);
+                                                                                                           QueenConfigKey.OWNER_QUEEN_POWER,
+                                                                                                           QueenConfigKey.KEY_POWER_LINK);
     private final int                                       _LogicPower           = _Config.getConfigValue(getConfigGroup(),
-                                                                                                           ConfigKey.OWNER_QUEEN_POWER,
-                                                                                                           ConfigKey.KEY_POWER_LOGIC);
+                                                                                                           QueenConfigKey.OWNER_QUEEN_POWER,
+                                                                                                           QueenConfigKey.KEY_POWER_LOGIC);
     private final int                                       _ErrorPower           = _Config.getConfigValue(getConfigGroup(),
-                                                                                                           ConfigKey.OWNER_QUEEN_POWER,
-                                                                                                           ConfigKey.KEY_POWER_ERROR);
+                                                                                                           QueenConfigKey.OWNER_QUEEN_POWER,
+                                                                                                           QueenConfigKey.KEY_POWER_ERROR);
 
     private final RingBuffer<QEvent>[]                      _AioProducerEvents;
     private final SequenceBarrier[]                         _AioProducerBarriers;

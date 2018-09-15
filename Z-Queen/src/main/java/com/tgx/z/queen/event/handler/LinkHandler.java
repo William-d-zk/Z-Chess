@@ -30,9 +30,9 @@ import java.nio.channels.AsynchronousSocketChannel;
 import java.util.Objects;
 
 import com.lmax.disruptor.RingBuffer;
-import com.tgx.z.queen.base.log.Logger;
-import com.tgx.z.queen.base.util.Pair;
-import com.tgx.z.queen.base.util.Triple;
+import com.tgx.z.king.base.log.Logger;
+import com.tgx.z.king.base.util.Pair;
+import com.tgx.z.king.base.util.Triple;
 import com.tgx.z.queen.event.inf.IOperator;
 import com.tgx.z.queen.event.inf.IPipeEventHandler;
 import com.tgx.z.queen.event.processor.QEvent;

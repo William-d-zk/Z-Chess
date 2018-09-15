@@ -25,8 +25,8 @@ package com.tgx.z.queen.io.core.async;
 
 import java.util.concurrent.TimeUnit;
 
-import com.tgx.z.config.Config;
-import com.tgx.z.config.ConfigKey;
+import com.tgx.z.king.config.Config;
+import com.tgx.z.queen.config.QueenConfigKey;
 import com.tgx.z.queen.io.core.inf.ISessionCreator;
 
 /**
@@ -44,32 +44,32 @@ public abstract class AioCreator
 
     @Override
     public int setSNF() {
-        return _Config.getConfigValue(getConfigGroup(), ConfigKey.OWNER_SOCKET_OPTION, ConfigKey.KEY_OPTION_SNF);
+        return _Config.getConfigValue(getConfigGroup(), QueenConfigKey.OWNER_SOCKET_OPTION, QueenConfigKey.KEY_OPTION_SNF);
     }
 
     @Override
     public int setRCV() {
-        return _Config.getConfigValue(getConfigGroup(), ConfigKey.OWNER_SOCKET_OPTION, ConfigKey.KEY_OPTION_RCV);
+        return _Config.getConfigValue(getConfigGroup(), QueenConfigKey.OWNER_SOCKET_OPTION, QueenConfigKey.KEY_OPTION_RCV);
     }
 
     @Override
     public int setQueueMax() {
-        return _Config.getConfigValue(getConfigGroup(), ConfigKey.OWNER_SOCKET_SEND, ConfigKey.KEY_SEND_QUEUE_SIZE);
+        return _Config.getConfigValue(getConfigGroup(), QueenConfigKey.OWNER_SOCKET_SEND, QueenConfigKey.KEY_SEND_QUEUE_SIZE);
     }
 
     @Override
     public int setReadTimeOut() {
-        int duration = _Config.getConfigValue(getConfigGroup(), ConfigKey.OWNER_SOCKET_IN, ConfigKey.KEY_IN_MINUTE);
+        int duration = _Config.getConfigValue(getConfigGroup(), QueenConfigKey.OWNER_SOCKET_IN, QueenConfigKey.KEY_IN_MINUTE);
         return (int) TimeUnit.MINUTES.toSeconds(duration);
     }
 
     @Override
     public int setWriteTimeOut() {
-        return _Config.getConfigValue(getConfigGroup(), ConfigKey.OWNER_SOCKET_OUT, ConfigKey.KEY_OUT_SECOND);
+        return _Config.getConfigValue(getConfigGroup(), QueenConfigKey.OWNER_SOCKET_OUT, QueenConfigKey.KEY_OUT_SECOND);
     }
 
     @Override
     public boolean setKeepAlive() {
-        return _Config.getConfigValue(getConfigGroup(), ConfigKey.OWNER_SOCKET_OPTION, ConfigKey.KEY_OPTION_KEEP_ALIVE);
+        return _Config.getConfigValue(getConfigGroup(), QueenConfigKey.OWNER_SOCKET_OPTION, QueenConfigKey.KEY_OPTION_KEEP_ALIVE);
     }
 }

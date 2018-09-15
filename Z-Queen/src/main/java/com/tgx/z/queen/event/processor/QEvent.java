@@ -26,9 +26,9 @@ package com.tgx.z.queen.event.processor;
 import java.util.List;
 
 import com.lmax.disruptor.EventFactory;
-import com.tgx.z.queen.base.inf.IReset;
-import com.tgx.z.queen.base.util.Pair;
-import com.tgx.z.queen.base.util.Triple;
+import com.tgx.z.king.base.inf.IReset;
+import com.tgx.z.king.base.util.Pair;
+import com.tgx.z.king.base.util.Triple;
 import com.tgx.z.queen.event.inf.IError;
 import com.tgx.z.queen.event.inf.IEvent;
 import com.tgx.z.queen.event.inf.IOperator;

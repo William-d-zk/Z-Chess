@@ -23,7 +23,7 @@
  */
 package com.tgx.z.queen.io.core.inf;
 
-import com.tgx.z.queen.base.inf.IDisposable;
+import com.tgx.z.king.base.inf.IDisposable;
 
 /**
  * @author William.d.zk

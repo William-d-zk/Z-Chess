@@ -23,7 +23,7 @@
  */
 package com.tgx.z.queen.event.inf;
 
-import com.tgx.z.queen.base.util.Triple;
+import com.tgx.z.king.base.util.Triple;
 
 /**
  * @author William.d.zk

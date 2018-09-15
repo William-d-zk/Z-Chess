@@ -24,7 +24,7 @@
 
 package com.tgx.z.bishop.biz.db.dto;
 
-import com.tgx.z.queen.base.db.inf.IStorage;
+import com.tgx.z.queen.db.inf.IStorage;
 
 public class DeviceEntry
         implements

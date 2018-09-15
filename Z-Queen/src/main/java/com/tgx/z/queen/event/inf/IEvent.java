@@ -25,8 +25,8 @@ package com.tgx.z.queen.event.inf;
 
 import java.util.List;
 
-import com.tgx.z.queen.base.util.Pair;
-import com.tgx.z.queen.base.util.Triple;
+import com.tgx.z.king.base.util.Pair;
+import com.tgx.z.king.base.util.Triple;
 import com.tgx.z.queen.event.inf.IError.Type;
 
 /**
