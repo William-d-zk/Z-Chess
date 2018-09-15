@@ -49,7 +49,7 @@ public class SecurityConfig
         http.csrf()
             .disable()
             .authorizeRequests()
-            .antMatchers("/", "/login", "/home", "/about", "/fragments/*", "/registration", "/webjars/**", "/client/**")
+            .antMatchers("/", "/login", "/home", "/about", "/fragments/*", "/registration", "/client/**")
             .permitAll()
             .antMatchers("/admin/**")
             .hasAuthority("ADMIN")
@@ -84,6 +84,6 @@ public class SecurityConfig
     @Override
     public void configure(WebSecurity web) throws Exception {
         web.ignoring()
-           .antMatchers("/resources/**", "/static/**", "/css/**", "/js/**", "/images/**");
+           .antMatchers("/resources/**", "/static/**", "/css/**", "/js/**", "/images/**", "/webjars/**");
     }
 }
