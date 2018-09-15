@@ -28,6 +28,8 @@ import static com.tgx.z.queen.event.inf.IOperator.Type.DISPATCH;
 import static com.tgx.z.queen.event.operator.OperatorHolder.ERROR_OPERATOR;
 import static com.tgx.z.queen.io.core.inf.IContext.DECODE_ERROR;
 
+import java.util.Arrays;
+
 import com.lmax.disruptor.EventHandler;
 import com.tgx.z.queen.base.log.Logger;
 import com.tgx.z.queen.base.util.Pair;
@@ -69,7 +71,7 @@ public class DecodeHandler
         if (!context.isInErrorState()) {
             try {
                 Triple<ICommand[], ISession, IOperator<ICommand[], ISession>> result = packetOperator.handle(packet, session);
-                _Log.info("decoded:%s", result.first());
+                _Log.info("decoded:%s", Arrays.toString(result.first()));
                 transfer(event, result.first(), session, result.third());
             }
             catch (Exception e) {
