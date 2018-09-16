@@ -34,14 +34,11 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
  * @author william.d.zk
  */
 @EnableJpaAuditing
-@EnableJpaRepositories({ "com.tgx.z.bishop.biz.db.repository",
-                         "com.tgx.chess.pawn.login.repository" })
-@EntityScan({ "com.tgx.z.bishop.biz.db",
-              "com.tgx.chess.pawn.login.model" })
-@SpringBootApplication(
-                       scanBasePackages = { "com.tgx.z.bishop",
-                                            "com.tgx.z.rook",
-                                            "com.tgx.chess.pawn" })
+@EnableJpaRepositories({ "com.tgx.chess.spring.login.repository",
+                         "com.tgx.chess.bishop.biz.db.repository" })
+@EntityScan({ "com.tgx.chess.bishop.biz.db.dto",
+              "com.tgx.chess.spring.login.model" })
+@SpringBootApplication(scanBasePackages = { "com.tgx.chess" })
 
 public class Application
 {

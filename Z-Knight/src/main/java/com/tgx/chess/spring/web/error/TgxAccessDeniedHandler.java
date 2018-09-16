@@ -12,7 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 
-import com.tgx.z.king.base.log.Logger;
+import com.tgx.chess.king.base.log.Logger;
 
 // handle 403 page
 @Component
@@ -32,7 +32,7 @@ public class TgxAccessDeniedHandler
                                                    .getAuthentication();
 
         if (Objects.nonNull(auth)) {
-            _Log.info("User '%s' attempted to access the protected URL: %s", auth.getName(), httpServletRequest.getRequestURI());
+            _Log.info("Account '%s' attempted to access the protected URL: %s", auth.getName(), httpServletRequest.getRequestURI());
         }
         httpServletResponse.sendRedirect(httpServletRequest.getContextPath() + "/403");
     }
