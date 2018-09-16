@@ -2,6 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org">
 <head th:fragment="head (title)">
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
     <title th:text="${title}">Fragments</title>
     <link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}"/>
     <script th:src="@{/webjars/jquery/jquery.min.js}"></script>
@@ -9,12 +10,15 @@
 </head>
 <body>
 <div class="container">
+
+
+
     <nav th:fragment="navbar" class="navbar navbar-dark bg-primary navbar-expand-lg">
         <a class="navbar-brand" href="http://www.baidu.com">baidu</a>
         <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
             <li class="nav-item"><a class="nav-link" th:href="@{/}">Devices</a></li>
         </ul>
-        <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+        <ul class="navbar-nav mr-auto mt-2 mt-lg-1">
             <li class="nav-item"><a class="nav-link" th:href="@{/registration}">Registration</a>
             </li>
         </ul>
