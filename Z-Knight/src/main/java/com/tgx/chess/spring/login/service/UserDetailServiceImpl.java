@@ -58,11 +58,12 @@ public class UserDetailServiceImpl
         if (StringUtils.isBlank(username)) { throw new UsernameNotFoundException("用户名为空"); }
 
         Account login = _AccountService.findByName(username)
-                                       .orElseThrow(() -> new UsernameNotFoundException("用户不存在"));
+                                       .orElse(_AccountService.findByEmail(username)
+                                                              .orElseThrow(() -> new UsernameNotFoundException("用户不存在")));
 
         Set<GrantedAuthority> authorities = new HashSet<>();
-        _RoleService.getRoles(login.getId())
-                    .forEach(r -> authorities.add(new SimpleGrantedAuthority(r.getRole())));
+        login.getRoles()
+             .forEach(r -> authorities.add(new SimpleGrantedAuthority(r.getRole())));
 
         return new User(username,
                         login.getPassword(),

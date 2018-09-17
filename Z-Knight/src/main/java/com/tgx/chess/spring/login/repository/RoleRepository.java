@@ -29,7 +29,7 @@ import org.springframework.stereotype.Repository;
 
 import com.tgx.chess.spring.login.model.Role;
 
-@Repository("roleRepository")
+@Repository
 public interface RoleRepository
         extends
         JpaRepository<Role, Integer>

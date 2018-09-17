@@ -1,28 +1,36 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:th="http://www.thymeleaf.org">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head th:fragment="head (title)">
     <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
     <title th:text="${title}">Fragments</title>
     <link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/login.css}">
+    <link rel="stylesheet" th:href="@{/css/registration.css}">
     <script th:src="@{/webjars/jquery/jquery.min.js}"></script>
+    <script th:src="@{/webjars/popper.js/umd/popper.min.js}"></script>
     <script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
 </head>
 <body>
-<div class="container">
-
-
-
-    <nav th:fragment="navbar" class="navbar navbar-dark bg-primary navbar-expand-lg">
-        <a class="navbar-brand" href="http://www.baidu.com">baidu</a>
-        <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
-            <li class="nav-item"><a class="nav-link" th:href="@{/}">Devices</a></li>
-        </ul>
-        <ul class="navbar-nav mr-auto mt-2 mt-lg-1">
-            <li class="nav-item"><a class="nav-link" th:href="@{/registration}">Registration</a>
+<div class="container" th:fragment="navbar">
+    <nav class="navbar navbar-expand-sm bg-primary navbar-dark">
+        <a class="navbar-brand" href="#"><img th:src="@{/images/svg/si-glyph-alien.svg}"
+                                              style="width: 32px;height: 32px;"/></a>
+        <ul class="navbar-nav">
+            <li class="nav-item"><a th:class="'nav-link '+ @{${#httpServletRequest.requestURI == '/login'}?'active'}"
+                                    th:href="@{/login}">Login</a>
+            </li>
+            <li class="nav-item"><a
+                    th:class="'nav-link '+ @{${#httpServletRequest.requestURI=='/registration'}?'active'}"
+                    th:href="@{/registration}">Registration</a>
             </li>
         </ul>
     </nav>
+    <script type="text/javascript" th:inline="javascript">
+        $(".nav.nav-link").on("click", function () {
+            $(".nav").find(".active").removeClass("active");
+            $(this).addClass("active");
+        });
+    </script>
 </div>
 </body>
 </html>

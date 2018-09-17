@@ -22,14 +22,13 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.security;
-
-import javax.sql.DataSource;
+package com.tgx.chess.spring.security.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -37,7 +36,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
+import com.tgx.chess.spring.login.service.UserDetailServiceImpl;
 import com.tgx.chess.spring.web.error.TgxAccessDeniedHandler;
 
 @Configuration
@@ -48,25 +49,32 @@ public class SecurityConfig
 {
 
     private final TgxAccessDeniedHandler _AccessDeniedHandler;
-    private final BCryptPasswordEncoder  _BCryptPasswordEncoder = new BCryptPasswordEncoder();
+    private final BCryptPasswordEncoder  _BCryptPasswordEncoder;
+    private final UserDetailServiceImpl  _UserDetailServiceImpl;
+
     @Autowired
-    private DataSource                   dataSource;
+    public SecurityConfig(TgxAccessDeniedHandler accessDeniedHandler,
+                          BCryptPasswordEncoder bCryptPasswordEncoder,
+                          UserDetailServiceImpl userDetailService) {
+        _AccessDeniedHandler = accessDeniedHandler;
+        _BCryptPasswordEncoder = bCryptPasswordEncoder;
+        _UserDetailServiceImpl = userDetailService;
+    }
 
     @Bean
-    BCryptPasswordEncoder getBCryptPasswordEncoder() {
-        return _BCryptPasswordEncoder;
+    public MessageSource validationMessageSource() {
+        ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+        messageSource.setBasename("classpath:validation");
+        messageSource.setDefaultEncoding("UTF-8");
+        return messageSource;
     }
 
-    @Autowired
-    public SecurityConfig(TgxAccessDeniedHandler accessDeniedHandler) {
-        _AccessDeniedHandler = accessDeniedHandler;
+    @Bean
+    public LocalValidatorFactoryBean validator() {
+        LocalValidatorFactoryBean bean = new LocalValidatorFactoryBean();
+        bean.setValidationMessageSource(validationMessageSource());
+        return bean;
     }
-
-    @Value("${spring.queries.users-query}")
-    private String usersQuery;
-
-    @Value("${spring.queries.roles-query}")
-    private String rolesQuery;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -98,10 +106,7 @@ public class SecurityConfig
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.jdbcAuthentication()
-            .usersByUsernameQuery(usersQuery)
-            .authoritiesByUsernameQuery(rolesQuery)
-            .dataSource(dataSource)
+        auth.userDetailsService(_UserDetailServiceImpl)
             .passwordEncoder(_BCryptPasswordEncoder);
     }
 

@@ -29,7 +29,7 @@ import org.springframework.stereotype.Repository;
 
 import com.tgx.chess.spring.login.model.Account;
 
-@Repository("userRepository")
+@Repository
 public interface AccountRepository
         extends
         JpaRepository<Account, Long>

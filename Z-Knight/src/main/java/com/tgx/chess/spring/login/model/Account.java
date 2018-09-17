@@ -28,6 +28,7 @@ import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -53,20 +54,21 @@ public class Account
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private int       id;
 
-    @Email(message = "*Please provide a valid Email")
-    @NotEmpty(message = "*Please provide an email")
+    @Email(message = "{email.valid}")
+    @NotEmpty(message = "{field.not.empty}")
     private String    email;
 
-    @Length(min = 5, message = "*Your password must have at least 5 characters")
-    @NotEmpty(message = "*Please provide your password")
+    @Length(min = 8, message = "{size.account.form.password}")
+    @NotEmpty(message = "{field.not.empty}")
     private String    password;
 
-    @NotEmpty(message = "*Please provide your name")
+    @NotEmpty(message = "{field.not.empty}")
+    @Length(min = 5, max = 32, message = "{size.account.form.name}")
     private String    name;
 
     private int       active;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     @JoinTable(name = "account_role", joinColumns = @JoinColumn(name = "account_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
 

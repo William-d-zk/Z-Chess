@@ -1,16 +1,12 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Registration Form</title>
-    <link rel="stylesheet" type="text/css" th:href="@{/css/login.css}"/>
-    <link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}"/>
-    <script th:src="@{/webjars/jquery/jquery.min.js}"></script>
-    <script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+<head th:replace="fragments::head(title=~{::title/text()})">
+    <title>Registration</title>
 </head>
 <body>
-<div th:replace="fragments"/>
 <div class="container">
+    <div th:include="fragments::navbar"/>
     <form autocomplete="off" action="#" th:action="@{/registration}" method="POST" class="form-signin"
           th:object="${account}" role="form">
         <h2 class="form-signin-heading" th:text="Registration"></h2>
