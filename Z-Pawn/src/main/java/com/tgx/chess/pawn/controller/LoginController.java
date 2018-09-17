@@ -26,7 +26,6 @@ package com.tgx.chess.pawn.controller;
 
 import javax.validation.Valid;
 
-import com.tgx.chess.spring.login.model.Account;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -36,19 +35,24 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.tgx.chess.spring.login.model.Account;
 import com.tgx.chess.spring.login.service.AccountService;
+import com.tgx.chess.spring.registration.AccountValidator;
 
 @Controller
 public class LoginController
 {
 
-    @Autowired
-    private AccountService accountService;
+    private final AccountService   _AccountService;
+    private final AccountValidator _AccountValidator;
 
-    @RequestMapping(
-                    value = { "/",
-                              "/login" },
-                    method = RequestMethod.GET)
+    @Autowired
+    public LoginController(AccountService accountService, AccountValidator accountValidator) {
+        _AccountService = accountService;
+        _AccountValidator = accountValidator;
+    }
+
+    @RequestMapping(value = { "/login" }, method = RequestMethod.GET)
     public ModelAndView login() {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName("login");
@@ -65,17 +69,14 @@ public class LoginController
     }
 
     @RequestMapping(value = "/registration", method = RequestMethod.POST)
-    public ModelAndView createNewUser(@Valid Account account, BindingResult bindingResult) {
+    public ModelAndView createNewAccount(@Valid Account account, BindingResult bindingResult) {
         ModelAndView modelAndView = new ModelAndView();
-        Account accountExists = accountService.findUserByEmail(account.getEmail());
-        if (accountExists != null) {
-            bindingResult.rejectValue("email", "error.account", "There is already a account registered with the email provided");
-        }
+        _AccountValidator.validate(account, bindingResult);
         if (bindingResult.hasErrors()) {
             modelAndView.setViewName("registration");
         }
         else {
-            accountService.saveUser(account);
+            _AccountService.saveAccount(account);
             modelAndView.addObject("successMessage", "Account has been registered successfully");
             modelAndView.addObject("account", new Account());
             modelAndView.setViewName("registration");
@@ -89,7 +90,8 @@ public class LoginController
         ModelAndView modelAndView = new ModelAndView();
         Authentication auth = SecurityContextHolder.getContext()
                                                    .getAuthentication();
-        Account account = accountService.findUserByEmail(auth.getName());
+        Account account = _AccountService.findByEmail(auth.getName())
+                                         .get();
         modelAndView.addObject("userName", "Welcome " + account.getName() + " (" + account.getEmail() + ")");
         modelAndView.addObject("adminMessage", "Content Available Only for Users with Admin Role");
         modelAndView.setViewName("admin/home");

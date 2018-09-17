@@ -30,6 +30,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -42,35 +43,40 @@ import com.tgx.chess.spring.login.repository.RoleRepository;
 public class AccountService
 {
 
-    private final AccountRepository     _AccountRepository;
-    private final RoleRepository        _RoleRepository;
-    private final BCryptPasswordEncoder _BCryptPasswordEncoder;
+    private final AccountRepository _AccountRepository;
+    private final RoleRepository    _RoleRepository;
+
+    @Bean
+    public BCryptPasswordEncoder get_BCryptPasswordEncoder() {
+        return _BCryptPasswordEncoder;
+    }
+
+    private final BCryptPasswordEncoder _BCryptPasswordEncoder = new BCryptPasswordEncoder();
 
     @Autowired
-    public AccountService(AccountRepository accountRepository, RoleRepository roleRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    public AccountService(AccountRepository accountRepository, RoleRepository roleRepository) {
         _AccountRepository = accountRepository;
         _RoleRepository = roleRepository;
-        _BCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
     public Optional<Account> findByEmail(String email) {
-        return Optional.of(_AccountRepository.findByEmail(email));
+        return Optional.ofNullable(_AccountRepository.findByEmail(email));
     }
 
     public Optional<Account> findByName(String name) {
-        return Optional.of(_AccountRepository.findByName(name));
+        return Optional.ofNullable(_AccountRepository.findByName(name));
     }
 
-    public void saveUser(Account account) {
+    public void saveAccount(Account account) {
         account.setPassword(_BCryptPasswordEncoder.encode(account.getPassword()));
         account.setActive(1);
-        Role userRole = _RoleRepository.findByRole("ADMIN");
-        if (Objects.isNull(userRole)) {
-            Role role = new Role();
+        Role role = _RoleRepository.findByRole("ADMIN");
+        if (Objects.isNull(role)) {
+            role = new Role();
             role.setRole("ADMIN");
             _RoleRepository.save(role);
         }
-        account.setRoles(new HashSet<>(Collections.singletonList(userRole)));
+        account.setRoles(new HashSet<>(Collections.singletonList(role)));
         _AccountRepository.save(account);
     }
 

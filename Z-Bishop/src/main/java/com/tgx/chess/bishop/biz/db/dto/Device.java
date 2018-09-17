@@ -39,7 +39,7 @@ import com.tgx.chess.spring.jpa.dto.AuditModel;
 import com.tgx.chess.king.base.util.IoUtil;
 
 @Entity
-@Table(name = "device")
+@Table
 public class Device
         extends
         AuditModel
