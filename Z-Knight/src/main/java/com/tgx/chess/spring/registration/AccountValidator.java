@@ -34,7 +34,6 @@ import com.tgx.chess.spring.login.model.Account;
 import com.tgx.chess.spring.login.service.AccountService;
 
 @Component
-@PropertySource("classpath:validation.properties")
 public class AccountValidator
         implements
         Validator
@@ -55,9 +54,9 @@ public class AccountValidator
     public void validate(Object o, Errors errors) {
         Account account = (Account) o;
         _AccountService.findByName(account.getName())
-                       .ifPresent(_account -> errors.rejectValue("name", "Duplicate.account.form.name"));
+                       .ifPresent(_account -> errors.rejectValue("name", "duplicate.account.form.name"));
         _AccountService.findByEmail(account.getEmail())
-                       .ifPresent(accountExists -> errors.rejectValue("email", "Duplicate.account.form.email"));
+                       .ifPresent(accountExists -> errors.rejectValue("email", "duplicate.account.form.email"));
 
     }
 }
