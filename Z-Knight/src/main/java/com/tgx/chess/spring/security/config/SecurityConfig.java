@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.DelegatingMessageSource;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -48,17 +49,20 @@ public class SecurityConfig
         WebSecurityConfigurerAdapter
 {
 
-    private final TgxAccessDeniedHandler _AccessDeniedHandler;
-    private final BCryptPasswordEncoder  _BCryptPasswordEncoder;
-    private final UserDetailServiceImpl  _UserDetailServiceImpl;
+    private final TgxAccessDeniedHandler  _AccessDeniedHandler;
+    private final BCryptPasswordEncoder   _BCryptPasswordEncoder;
+    private final UserDetailServiceImpl   _UserDetailServiceImpl;
+    private final DelegatingMessageSource _DelegatingMessageSource;
 
     @Autowired
     public SecurityConfig(TgxAccessDeniedHandler accessDeniedHandler,
                           BCryptPasswordEncoder bCryptPasswordEncoder,
-                          UserDetailServiceImpl userDetailService) {
+                          UserDetailServiceImpl userDetailService,
+                          DelegatingMessageSource delegatingMessageSource) {
         _AccessDeniedHandler = accessDeniedHandler;
         _BCryptPasswordEncoder = bCryptPasswordEncoder;
         _UserDetailServiceImpl = userDetailService;
+        _DelegatingMessageSource = delegatingMessageSource;
     }
 
     @Bean
@@ -66,6 +70,7 @@ public class SecurityConfig
         ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
         messageSource.setBasename("classpath:validation");
         messageSource.setDefaultEncoding("UTF-8");
+        _DelegatingMessageSource.setParentMessageSource(messageSource);
         return messageSource;
     }
 
@@ -81,7 +86,7 @@ public class SecurityConfig
         http.csrf()
             .disable()
             .authorizeRequests()
-            .antMatchers("/", "/login", "/home", "/about", "/fragments/*", "/registration", "/client/**")
+            .antMatchers("/", "/login", "/registration")
             .permitAll()
             .antMatchers("/admin/**")
             .hasAuthority("ADMIN")
@@ -98,7 +103,7 @@ public class SecurityConfig
             .and()
             .logout()
             .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-            .logoutSuccessUrl("/")
+            .logoutSuccessUrl("/login")
             .and()
             .exceptionHandling()
             .accessDeniedHandler(_AccessDeniedHandler);

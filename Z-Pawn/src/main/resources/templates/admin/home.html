@@ -1,25 +1,33 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org">
-
 <head>
     <title>Admin Page</title>
     <link rel="stylesheet" type="text/css" th:href="@{/css/home.css}"/>
     <link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}"/>
     <script th:src="@{/webjars/jquery/jquery.min.js}"></script>
+    <script th:src="@{/webjars/popper.js/umd/popper.min.js}"></script>
     <script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
 </head>
 
 <body>
 <div class="container">
-
-    <form th:action="@{/logout}" method="get">
-        <button class="btn btn-md btn-danger btn-block" name="registration"
+    <form th:action="@{/logout}" method="get" style="width: 80px" class="float-right">
+        <button class="btn btn-danger btn-block" name="logout"
                 type="Submit">Logout
         </button>
     </form>
+    <div class="container">
+        <h3>Tooltip Example</h3>
+        <a href="#" data-toggle="tooltip" title="Hooray!">Hover over me</a>
+    </div>
 
-    <div class="panel-group" style="margin-top:40px">
+    <script>
+        $(document).ready(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+    </script>
+    <div class="container-fluid" style="margin-top:40px">
         <div class="panel panel-primary">
             <div class="panel-heading">
                 <span th:utext="${name}"></span>
@@ -27,7 +35,6 @@
             <p class="admin-message-text text-center" th:utext="${message}"></p>
         </div>
     </div>
-
 </div>
 </body>
 </html>

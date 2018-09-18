@@ -44,23 +44,19 @@ public class UserDetailServiceImpl
         implements
         UserDetailsService
 {
-    private final RoleService    _RoleService;
     private final AccountService _AccountService;
 
     @Autowired
-    public UserDetailServiceImpl(AccountService accountService, RoleService roleService) {
-        _RoleService = roleService;
+    public UserDetailServiceImpl(AccountService accountService) {
         _AccountService = accountService;
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) {
         if (StringUtils.isBlank(username)) { throw new UsernameNotFoundException("用户名为空"); }
-
         Account login = _AccountService.findByName(username)
                                        .orElse(_AccountService.findByEmail(username)
                                                               .orElseThrow(() -> new UsernameNotFoundException("用户不存在")));
-
         Set<GrantedAuthority> authorities = new HashSet<>();
         login.getRoles()
              .forEach(r -> authorities.add(new SimpleGrantedAuthority(r.getRole())));
