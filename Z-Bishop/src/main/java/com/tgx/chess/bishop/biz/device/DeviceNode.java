@@ -37,13 +37,11 @@ import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.Objects;
 
-import javax.annotation.PostConstruct;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.stereotype.Service;
-
 import com.tgx.chess.bishop.biz.db.dto.DeviceEntry;
+import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.king.base.util.Pair;
+import com.tgx.chess.king.base.util.Triple;
+import com.tgx.chess.king.config.Config;
 import com.tgx.chess.queen.config.QueenCode;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.operator.MODE;
@@ -68,13 +66,7 @@ import com.tgx.chess.queen.io.external.websokcet.bean.control.X104_Ping;
 import com.tgx.chess.queen.io.external.websokcet.bean.control.X105_Pong;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X50_DeviceMsg;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X51_DeviceMsgAck;
-import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.king.base.util.Pair;
-import com.tgx.chess.king.base.util.Triple;
-import com.tgx.chess.king.config.Config;
 
-@Service
-@PropertySource("classpath:device.properties")
 public class DeviceNode
         extends
         QueenManager
@@ -101,7 +93,7 @@ public class DeviceNode
         addSession(session);
     }
 
-    public DeviceNode(@Value("${device.server.host}") String host, @Value("${device.server.port}") int port) {
+    public DeviceNode(String host, int port) {
         super(new Config("device"));
         _ServerHost = host;
         _ServerPort = port;
@@ -200,7 +192,6 @@ public class DeviceNode
         _Log.info("Device Node Bean Load");
     }
 
-    @PostConstruct
     private void start() throws IOException {
         ServerCore<DeviceEntry> core = new ServerCore<>();
         core.build(queenManager -> (event, sequence, endOfBatch) -> {

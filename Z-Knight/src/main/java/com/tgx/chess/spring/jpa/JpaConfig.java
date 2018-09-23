@@ -22,37 +22,24 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.bishop.biz.db.service;
+package com.tgx.chess.spring.jpa;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.stereotype.Service;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import com.tgx.chess.bishop.biz.db.dto.Device;
-import com.tgx.chess.bishop.biz.db.repository.DeviceRepository;
-
-@Service
-@PropertySource("classpath:db.properties")
-public class DeviceService
+@EnableJpaAuditing
+@EnableJpaRepositories({ "com.tgx.chess.spring.login.repository",
+                         "com.tgx.chess.spring.device.repository" })
+@EntityScan({ "com.tgx.chess.spring.device.model",
+              "com.tgx.chess.spring.login.model" })
+@EnableTransactionManagement
+@Configuration
+@PropertySource({ "classpath:db.properties" })
+public class JpaConfig
 {
-    private final DeviceRepository deviceRepository;
 
-    @Autowired
-    public DeviceService(DeviceRepository deviceRepository) {
-        this.deviceRepository = deviceRepository;
-    }
-
-    public Device findBySn(String sn) {
-        return deviceRepository.findBySn(sn);
-    }
-
-    public List<Device> findAll() {
-        return deviceRepository.findAll();
-    }
-
-    public Device saveDevice(Device device) {
-        return deviceRepository.save(device);
-    }
 }

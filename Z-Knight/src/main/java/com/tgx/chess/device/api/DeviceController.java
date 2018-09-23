@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.bishop.biz.controller;
+package com.tgx.chess.device.api;
 
 import java.util.List;
 import java.util.Random;
@@ -32,10 +32,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tgx.chess.bishop.biz.db.dto.Device;
-import com.tgx.chess.bishop.biz.db.service.DeviceService;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.IoUtil;
+import com.tgx.chess.spring.device.service.DeviceService;
+import com.tgx.chess.spring.device.model.Device;
 
 @RestController
 public class DeviceController

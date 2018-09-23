@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.bishop.biz.db.dto;
+package com.tgx.chess.spring.device.model;
 
 import javax.persistence.Basic;
 import javax.persistence.Entity;
@@ -35,8 +35,8 @@ import javax.validation.constraints.NotEmpty;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.validator.constraints.Length;
 
-import com.tgx.chess.spring.jpa.dto.AuditModel;
 import com.tgx.chess.king.base.util.IoUtil;
+import com.tgx.chess.spring.jpa.model.AuditModel;
 
 @Entity
 @Table
@@ -47,8 +47,8 @@ public class Device
     private static final long serialVersionUID = -6645586986057373344L;
 
     @Id
-    @GeneratedValue(generator = "ZUID")
-    @GenericGenerator(name = "ZUID", strategy = "com.tgx.chess.bishop.biz.db.dto.ZUID")
+    @GeneratedValue(generator = "ZGenerator")
+    @GenericGenerator(name = "ZGenerator", strategy = "com.tgx.chess.spring.jpa.generator.ZGenerator")
     private Long              id;
 
     public Long getId() {

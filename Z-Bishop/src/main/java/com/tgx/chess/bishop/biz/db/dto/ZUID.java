@@ -24,17 +24,12 @@
 
 package com.tgx.chess.bishop.biz.db.dto;
 
-import java.io.Serializable;
 import java.time.Instant;
 import java.util.MissingResourceException;
 import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.Supplier;
-
-import org.hibernate.HibernateException;
-import org.hibernate.engine.spi.SharedSessionContractImplementor;
-import org.hibernate.id.IdentifierGenerator;
 
 import com.tgx.chess.king.base.log.Logger;
 
@@ -57,8 +52,6 @@ import com.tgx.chess.king.base.log.Logger;
  * sequence in one millisecond
  */
 public class ZUID
-        implements
-        IdentifierGenerator
 {
     private final Logger         _Log               = Logger.getLogger(getClass().getName());
     private static final long    TWEPOCH            = Instant.parse("2018-06-01T00:00:00.00Z")
@@ -142,9 +135,4 @@ public class ZUID
                | sequence;
     }
 
-    @Override
-    public Serializable generate(SharedSessionContractImplementor session, Object object) throws HibernateException {
-        _Log.info("generate id %s", object);
-        return getId();
-    }
 }
