@@ -22,40 +22,30 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.login.model;
+package com.tgx.chess.spring.jpa.generator;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import java.io.Serializable;
 
-import com.tgx.chess.spring.jpa.model.AuditModel;
+import org.hibernate.HibernateException;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
+import org.hibernate.id.IdentifierGenerator;
 
-@Entity
-@Table
-public class Role
-        extends
-        AuditModel
+import com.tgx.chess.bishop.biz.db.dto.ZUID;
+import com.tgx.chess.king.base.log.Logger;
+
+public class ZGenerator
+        implements
+        IdentifierGenerator
 {
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private int    id;
-    private String role;
+    private final Logger _Log  = Logger.getLogger(getClass().getName());
+    private final ZUID   _Zuid = new ZUID();
 
-    public int getId() {
-        return id;
+    public ZGenerator() {
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
+    @Override
+    public Serializable generate(SharedSessionContractImplementor session, Object object) throws HibernateException {
+        _Log.info("generate id %s", object);
+        return _Zuid.getId();
     }
 }

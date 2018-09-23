@@ -22,17 +22,35 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.bishop.biz.db.repository;
+package com.tgx.chess.spring.device.service;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import java.util.List;
 
-import com.tgx.chess.bishop.biz.db.dto.Device;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-@Repository
-public interface DeviceRepository
-        extends
-        JpaRepository<Device, Long>
+import com.tgx.chess.spring.device.model.Device;
+import com.tgx.chess.spring.device.repository.DeviceRepository;
+
+@Service
+public class DeviceService
 {
-    Device findBySn(String sn);
+    private final DeviceRepository _DeviceRepository;
+
+    @Autowired
+    public DeviceService(DeviceRepository deviceRepository) {
+        _DeviceRepository = deviceRepository;
+    }
+
+    public Device findBySn(String sn) {
+        return _DeviceRepository.findBySn(sn);
+    }
+
+    public List<Device> findAll() {
+        return _DeviceRepository.findAll();
+    }
+
+    public Device saveDevice(Device device) {
+        return _DeviceRepository.save(device);
+    }
 }

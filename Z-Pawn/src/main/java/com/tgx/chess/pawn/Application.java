@@ -26,20 +26,12 @@ package com.tgx.chess.pawn;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 /**
  * @author william.d.zk
  */
-@EnableJpaAuditing
-@EnableJpaRepositories({ "com.tgx.chess.spring.login.repository",
-                         "com.tgx.chess.bishop.biz.db.repository" })
-@EntityScan({ "com.tgx.chess.bishop.biz.db.dto",
-              "com.tgx.chess.spring.login.model" })
-@SpringBootApplication(scanBasePackages = { "com.tgx.chess" })
 
+@SpringBootApplication(scanBasePackages = { "com.tgx.chess" })
 public class Application
 {
     public static void main(String[] args) {

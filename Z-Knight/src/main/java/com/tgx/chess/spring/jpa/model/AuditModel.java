@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.jpa.dto;
+package com.tgx.chess.spring.jpa.model;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -36,8 +36,10 @@ import javax.persistence.TemporalType;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)

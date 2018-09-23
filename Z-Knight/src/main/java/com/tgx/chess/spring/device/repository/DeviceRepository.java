@@ -22,40 +22,18 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.login.model;
+package com.tgx.chess.spring.device.repository;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-import com.tgx.chess.spring.jpa.model.AuditModel;
+import com.tgx.chess.spring.device.model.Device;
 
-@Entity
-@Table
-public class Role
+@Repository
+//@Transactional
+public interface DeviceRepository
         extends
-        AuditModel
+        JpaRepository<Device, Long>
 {
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private int    id;
-    private String role;
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
+    Device findBySn(String sn);
 }

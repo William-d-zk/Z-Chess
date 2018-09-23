@@ -13,7 +13,7 @@
     <dependencies>
         <dependency>
             <groupId>com.tgx.service</groupId>
-            <artifactId>core.z-king</artifactId>
+            <artifactId>manange.z-bishop</artifactId>
             <version>${project.version}</version>
         </dependency>
         <!--webjars-->
@@ -59,7 +59,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.thymeleaf.extras</groupId>
             <artifactId>thymeleaf-extras-springsecurity4</artifactId>
@@ -67,6 +70,15 @@
         <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
+        </dependency>
+        <!--DB-->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sleepycat</groupId>
+            <artifactId>je</artifactId>
         </dependency>
     </dependencies>
 

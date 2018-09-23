@@ -13,19 +13,6 @@
     <dependencies>
         <dependency>
             <groupId>com.tgx.service</groupId>
-            <artifactId>spring.z-knight</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sleepycat</groupId>
-            <artifactId>je</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.tgx.service</groupId>
             <artifactId>io.z-queen</artifactId>
             <version>${project.version}</version>
         </dependency>
