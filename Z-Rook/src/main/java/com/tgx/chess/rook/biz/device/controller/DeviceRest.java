@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tgx.chess.queen.io.external.websokcet.bean.X01_EncryptRequest;
+import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X01_EncryptRequest;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X50_DeviceMsg;
 import com.tgx.chess.rook.biz.device.client.DeviceClient;
 
