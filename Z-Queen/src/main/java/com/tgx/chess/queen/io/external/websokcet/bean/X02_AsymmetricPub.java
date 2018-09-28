@@ -45,6 +45,11 @@ public class X02_AsymmetricPub
     }
 
     @Override
+    public boolean isMappingCommand() {
+        return true;
+    }
+
+    @Override
     public int decodec(byte[] data, int pos) {
         pubKeyId = IoUtil.readInt(data, pos);
         pos += 4;

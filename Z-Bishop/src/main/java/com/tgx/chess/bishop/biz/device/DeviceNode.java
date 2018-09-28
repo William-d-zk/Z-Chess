@@ -192,7 +192,7 @@ public class DeviceNode
         _Log.info("Device Node Bean Load");
     }
 
-    private void start() throws IOException {
+    public void start() throws IOException {
         ServerCore<DeviceEntry> core = new ServerCore<>();
         core.build(queenManager -> (event, sequence, endOfBatch) -> {
             switch (event.getEventType()) {

@@ -24,22 +24,38 @@
 
 package com.tgx.chess.spring.device.service;
 
+import java.io.IOException;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 
+import com.tgx.chess.bishop.biz.device.DeviceNode;
 import com.tgx.chess.spring.device.model.Device;
 import com.tgx.chess.spring.device.repository.DeviceRepository;
 
 @Service
+@PropertySource("classpath:device.properties")
 public class DeviceService
 {
     private final DeviceRepository _DeviceRepository;
+    private final DeviceNode       _DeviceNode;
 
     @Autowired
-    public DeviceService(DeviceRepository deviceRepository) {
+    public DeviceService(DeviceRepository deviceRepository,
+                         @Value("${device.server.host}") String host,
+                         @Value("${device.server.port}") int port) {
         _DeviceRepository = deviceRepository;
+        _DeviceNode = new DeviceNode(host, port);
+    }
+
+    @PostConstruct
+    private void start() throws IOException {
+        _DeviceNode.start();
     }
 
     public Device findBySn(String sn) {

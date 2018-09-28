@@ -559,7 +559,7 @@ public class OperatorHolder
         return consumer_encoder;
     }
 
-    static IOperator<ICommand[], ISession> CONSUMER_TRANSFER() {
+    public static IOperator<ICommand[], ISession> CONSUMER_TRANSFER() {
         return consumer_transfer;
     }
 

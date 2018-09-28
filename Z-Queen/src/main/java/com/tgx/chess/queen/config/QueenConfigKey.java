@@ -37,4 +37,7 @@ public interface QueenConfigKey
     String KEY_IN_MINUTE          = "minute";
     String OWNER_SOCKET_OUT       = "out";
     String KEY_OUT_SECOND         = "second";
+
+    String OWNER_PROTOCOL_CRYPT   = "crypt";
+    String KEY_CRYPT_ENABLE       = "enable";
 }

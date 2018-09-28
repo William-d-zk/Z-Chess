@@ -40,11 +40,11 @@ import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.SequenceBarrier;
 import com.lmax.disruptor.WaitStrategy;
 import com.lmax.disruptor.YieldingWaitStrategy;
+import com.tgx.chess.king.base.disruptor.MultiBufferBatchEventProcessor;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.base.util.IoUtil;
-import com.tgx.chess.king.config.Config;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.handler.EncodeHandler;
 import com.tgx.chess.queen.event.handler.EncodedHandler;
@@ -54,7 +54,6 @@ import com.tgx.chess.queen.event.handler.client.ClientLinkHandler;
 import com.tgx.chess.queen.event.handler.client.ClientWriteDispatcher;
 import com.tgx.chess.queen.event.inf.IOperator.Type;
 import com.tgx.chess.queen.event.operator.OperatorHolder;
-import com.tgx.chess.king.base.disruptor.MultiBufferBatchEventProcessor;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.async.socket.AioWorker;
 import com.tgx.chess.queen.io.core.inf.ICommand;
@@ -66,7 +65,6 @@ public class ClientCore<E extends IStorage>
 
 {
     private static Logger            _Log                 = Logger.getLogger(ClientCore.class.getName());
-    private static Config            _Config              = new Config().load(getConfigName());
     private final RingBuffer<QEvent> _AioProducerEvent;
     private final RingBuffer<QEvent> _BizLocalCloseEvent;
     private final RingBuffer<QEvent> _BizLocalSendEvent;

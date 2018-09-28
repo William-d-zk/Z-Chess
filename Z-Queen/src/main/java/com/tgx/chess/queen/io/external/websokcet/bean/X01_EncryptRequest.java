@@ -42,6 +42,11 @@ public class X01_EncryptRequest
     }
 
     @Override
+    public boolean isMappingCommand() {
+        return true;
+    }
+
+    @Override
     public int decodec(byte[] data, int pos) {
         if (isEncrypt()) {
             pubKeyId = IoUtil.readInt(data, pos);

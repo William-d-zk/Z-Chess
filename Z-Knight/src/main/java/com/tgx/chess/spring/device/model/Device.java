@@ -39,7 +39,7 @@ import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.spring.jpa.model.AuditModel;
 
 @Entity
-@Table
+@Table(schema = "\"tgx-z-chess-device\"")
 public class Device
         extends
         AuditModel

@@ -26,7 +26,6 @@ package com.tgx.chess.bishop.biz.db.dto;
 
 import java.time.Instant;
 import java.util.MissingResourceException;
-import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.Supplier;
@@ -81,7 +80,7 @@ public class ZUID
     private long                 lastTimestamp;
 
     public ZUID() {
-        ResourceBundle bundle = null;
+        ResourceBundle bundle;
         try {
             bundle = ResourceBundle.getBundle("zuid");
             for (String key : bundle.keySet()) {
@@ -89,12 +88,12 @@ public class ZUID
             }
         }
         catch (MissingResourceException e) {
-            e.printStackTrace();
+            throw new RuntimeException("FETAL ERROR: ZUID properites is missing !");
         }
-        _IdcId = Objects.nonNull(bundle) ? Long.parseLong(bundle.getString("idc.id")) : 0;
-        _ClusterId = Objects.nonNull(bundle) ? Long.parseLong(bundle.getString("cluster.id")) : 0;
-        _NodeId = Objects.nonNull(bundle) ? Long.parseLong(bundle.getString("node.id")) : 0;
-        _Type = Objects.nonNull(bundle) ? Long.parseLong(bundle.getString("type")) : 0;
+        _IdcId = Long.parseLong(bundle.getString("idc.id"));
+        _ClusterId = Long.parseLong(bundle.getString("cluster.id"));
+        _NodeId = Long.parseLong(bundle.getString("node.id"));
+        _Type = Long.parseLong(bundle.getString("type"));
         _TimestampSupplier = System::currentTimeMillis;
     }
 
