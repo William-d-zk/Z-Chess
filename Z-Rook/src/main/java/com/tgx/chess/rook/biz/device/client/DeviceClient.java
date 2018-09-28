@@ -24,8 +24,10 @@
 
 package com.tgx.chess.rook.biz.device.client;
 
+import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 import static com.tgx.chess.queen.event.operator.MODE.CONSUMER;
 import static com.tgx.chess.queen.event.operator.OperatorHolder.CONNECTED_OPERATOR;
+import static com.tgx.chess.queen.event.operator.OperatorHolder.CONSUMER_TRANSFER;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -33,6 +35,7 @@ import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 
@@ -64,7 +67,10 @@ import com.tgx.chess.queen.io.core.inf.ISessionCreator;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 import com.tgx.chess.queen.io.external.websokcet.ZContext;
+import com.tgx.chess.queen.io.external.websokcet.bean.X03_Cipher;
+import com.tgx.chess.queen.io.external.websokcet.bean.X05_EncryptStart;
 import com.tgx.chess.queen.io.external.websokcet.bean.control.X101_HandShake;
+import com.tgx.chess.queen.io.external.websokcet.bean.control.X103_Close;
 import com.tgx.chess.queen.io.external.websokcet.bean.control.X104_Ping;
 import com.tgx.chess.queen.io.external.websokcet.bean.control.X105_Pong;
 import com.tgx.chess.rook.biz.device.dto.DeviceEntry;
@@ -99,7 +105,7 @@ public class DeviceClient
         _TargetName = targetName;
         _TargetHost = targetHost;
         _TargetPort = targetPort;
-        _Config = new Config("client");
+        _Config = new Config();
         _ChannelGroup = AsynchronousChannelGroup.withFixedThreadPool(1, _ClientCore.getWorkerThreadFactory());
         _SessionCreator = new AioCreator(_Config)
         {
@@ -192,27 +198,44 @@ public class DeviceClient
     @PostConstruct
     private void init() {
         _ClientCore.build((event, sequence, endOfBatch) -> {
+            ICommand[] commands = null;
+            ISession session = null;
             switch (event.getEventType()) {
                 case LOGIC:
+                    //与 Server Node 处理过程存在较大的差异，中间去掉一个decoded dispatcher 所以此处入参为 ICommand[]
                     Pair<ICommand[], ISession> logicContent = event.getContent();
-                    ICommand[] commands = logicContent.first();
-                    ISession session = logicContent.second();
-                    if (Objects.nonNull(commands)) for (ICommand cmd : commands)
-
-                        switch (cmd.getSerial()) {
-                            case X101_HandShake.COMMAND:
-                                _Log.info("handshake ok");
-                                break;
-                            case X105_Pong.COMMAND:
-                                _Log.info("heartbeat ok");
-                                break;
-                        }
+                    commands = logicContent.first();
+                    session = logicContent.second();
+                    if (Objects.nonNull(commands)) {
+                        commands = Stream.of(commands)
+                                         .map(cmd -> {
+                                             switch (cmd.getSerial()) {
+                                                 case X03_Cipher.COMMAND:
+                                                 case X05_EncryptStart.COMMAND:
+                                                     return cmd;
+                                                 case X101_HandShake.COMMAND:
+                                                     _Log.info("handshake ok");
+                                                     break;
+                                                 case X105_Pong.COMMAND:
+                                                     _Log.info("heartbeat ok");
+                                                     break;
+                                                 case X103_Close.COMMAND:
+                                                     return new X103_Close("client response close".getBytes());
+                                             }
+                                             return null;
+                                         })
+                                         .filter(Objects::nonNull)
+                                         .toArray(ICommand[]::new);
+                    }
                     break;
                 default:
                     _Log.warning("event type no handle %s", event.getEventType());
                     break;
             }
-            event.ignore();
+            if (Objects.nonNull(commands) && commands.length > 0 && Objects.nonNull(session)) {
+                event.produce(WRITE, commands, session, CONSUMER_TRANSFER());
+            }
+            else event.ignore();
         });
     }
 

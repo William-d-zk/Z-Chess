@@ -25,6 +25,7 @@
 package com.tgx.chess.queen.event.handler;
 
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
+import static com.tgx.chess.queen.event.operator.OperatorHolder.SERVER_TRANSFER;
 
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.Objects;
@@ -82,6 +83,9 @@ public class LinkHandler
             }
         }
         else {
+            ICommand[] waitToSends = null;
+            ISession session = null;
+            IOperator<ICommand[], ISession> sendOperator = null;
             switch (event.getEventType()) {
                 case CONNECTED:
                     IOperator<IConnectionContext, AsynchronousSocketChannel> connectedOperator = event.getEventOp();
@@ -91,16 +95,23 @@ public class LinkHandler
                            ISession,
                            IOperator<ICommand[], ISession>> connectedHandled = connectedOperator.handle(connectedContent.first(), channel);
                     //connectedHandled 不可能为 null
-                    ICommand[] waitToSends = connectedHandled.first();
-                    ISession session = connectedHandled.second();
+                    waitToSends = connectedHandled.first();
+                    session = connectedHandled.second();
                     ISessionCreated sessionCreated = connectedContent.first()
                                                                      .getSessionCreated();
                     sessionCreated.onCreate(session);
-                    IOperator<ICommand[], ISession> sendOperator = connectedHandled.third();
-                    if (Objects.nonNull(waitToSends)) {
-                        publish(_Writer, WRITE, waitToSends, session, sendOperator);
-                    }
+                    sendOperator = connectedHandled.third();
                     break;
+                case LOGIC:
+                    Pair<ICommand, ISession> logicContent = event.getContent();
+                    _Log.info("LinkHandler cmd: %s", logicContent.first());
+                    session = logicContent.second();
+                    waitToSends = new ICommand[] { logicContent.first() };
+                    sendOperator = SERVER_TRANSFER();
+                    break;
+            }
+            if (Objects.nonNull(waitToSends) && Objects.nonNull(session) && Objects.nonNull(sendOperator)) {
+                publish(_Writer, WRITE, waitToSends, session, sendOperator);
             }
         }
         event.reset();

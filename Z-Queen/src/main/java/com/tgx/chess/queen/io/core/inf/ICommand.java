@@ -36,6 +36,11 @@ public interface ICommand
         IChannel,
         IDisposable
 {
+    /**
+     * 当前 Command 是否对route-mapping 存在影响
+     * 
+     * @return
+     */
     default boolean isMappingCommand() {
         return false;
     }

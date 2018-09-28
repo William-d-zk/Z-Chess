@@ -38,13 +38,14 @@ import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.SequenceBarrier;
 import com.lmax.disruptor.WaitStrategy;
 import com.lmax.disruptor.YieldingWaitStrategy;
+import com.tgx.chess.king.base.disruptor.MultiBufferBatchEventProcessor;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.config.Config;
-import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.config.QueenConfigKey;
+import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.handler.ClusterHandler;
 import com.tgx.chess.queen.event.handler.DecodeHandler;
 import com.tgx.chess.queen.event.handler.DecodedDispatcher;
@@ -54,7 +55,6 @@ import com.tgx.chess.queen.event.handler.HandlerFactory;
 import com.tgx.chess.queen.event.handler.IoDispatcher;
 import com.tgx.chess.queen.event.handler.LinkHandler;
 import com.tgx.chess.queen.event.handler.WriteDispatcher;
-import com.tgx.chess.king.base.disruptor.MultiBufferBatchEventProcessor;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.async.socket.AioWorker;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
@@ -64,14 +64,7 @@ public class ServerCore<E extends IStorage>
         ThreadPoolExecutor
 {
     private static Logger                                   _Log                  = Logger.getLogger(ServerCore.class.getName());
-
     private static Config                                   _Config               = new Config().load(getConfigName());
-    private final int                                       _ServerCount          = _Config.getConfigValue(getConfigGroup(),
-                                                                                                           QueenConfigKey.OWNER_PIPELINE_CORE,
-                                                                                                           QueenConfigKey.KEY_CORE_SERVER);
-    private final int                                       _ClusterCount         = _Config.getConfigValue(getConfigGroup(),
-                                                                                                           QueenConfigKey.OWNER_PIPELINE_CORE,
-                                                                                                           QueenConfigKey.KEY_CORE_CLUSTER);
     private static int                                      DECODER_COUNT         = _Config.getConfigValue(getConfigGroup(),
                                                                                                            QueenConfigKey.OWNER_PIPELINE_CORE,
                                                                                                            QueenConfigKey.KEY_CORE_DECODER);
@@ -81,6 +74,12 @@ public class ServerCore<E extends IStorage>
     private static int                                      LOGIC_COUNT           = _Config.getConfigValue(getConfigGroup(),
                                                                                                            QueenConfigKey.OWNER_PIPELINE_CORE,
                                                                                                            QueenConfigKey.KEY_CORE_LOGIC);
+    private final int                                       _ServerCount          = _Config.getConfigValue(getConfigGroup(),
+                                                                                                           QueenConfigKey.OWNER_PIPELINE_CORE,
+                                                                                                           QueenConfigKey.KEY_CORE_SERVER);
+    private final int                                       _ClusterCount         = _Config.getConfigValue(getConfigGroup(),
+                                                                                                           QueenConfigKey.OWNER_PIPELINE_CORE,
+                                                                                                           QueenConfigKey.KEY_CORE_CLUSTER);
     private final int                                       _AioQueuePower        = _Config.getConfigValue(getConfigGroup(),
                                                                                                            QueenConfigKey.OWNER_QUEEN_POWER,
                                                                                                            QueenConfigKey.KEY_POWER_SERVER);

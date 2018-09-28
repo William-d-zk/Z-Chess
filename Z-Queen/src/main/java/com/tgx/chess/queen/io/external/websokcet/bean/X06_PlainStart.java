@@ -42,6 +42,11 @@ public class X06_PlainStart
         super(COMMAND, false);
     }
 
+    @Override
+    public boolean isMappingCommand() {
+        return true;
+    }
+
     public X06_PlainStart(int code) {
         super(COMMAND, false);
         this.code = code;

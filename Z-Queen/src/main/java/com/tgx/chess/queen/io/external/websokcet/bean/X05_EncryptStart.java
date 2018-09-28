@@ -43,6 +43,11 @@ public class X05_EncryptStart
     }
 
     @Override
+    public boolean isMappingCommand() {
+        return true;
+    }
+
+    @Override
     public int decodec(byte[] data, int pos) {
         symmetricKeyId = IoUtil.readUnsignedShort(data, pos);
         pos += 5;

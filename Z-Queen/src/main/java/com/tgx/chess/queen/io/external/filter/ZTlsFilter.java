@@ -83,7 +83,7 @@ public class ZTlsFilter<C extends AioContext>
                    .reset();
             context.cryptIn();
         }
-        return context.isInCrypt() && input.idempotent(getIdempotentBit()) ? ResultType.NEXT_STEP : ResultType.IGNORE;
+        return context.isInCrypt() && !input.idempotent(getIdempotentBit()) ? ResultType.NEXT_STEP : ResultType.IGNORE;
     }
 
     @Override

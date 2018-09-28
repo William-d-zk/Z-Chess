@@ -24,7 +24,6 @@
 package com.tgx.chess.queen.io.external.websokcet.bean;
 
 import com.tgx.chess.king.base.util.IoUtil;
-import com.tgx.chess.king.config.Code;
 import com.tgx.chess.queen.io.external.websokcet.ZContext;
 import com.tgx.chess.queen.io.external.zprotocol.Command;
 
@@ -43,6 +42,11 @@ public class X04_EncryptConfirm
 
     public X04_EncryptConfirm() {
         super(COMMAND, false);
+    }
+
+    @Override
+    public boolean isMappingCommand() {
+        return true;
     }
 
     public byte[] getSign() {
@@ -94,11 +98,6 @@ public class X04_EncryptConfirm
 
     @Override
     public String toString() {
-        return String.format("%s,code:%s,rc4-key: %d ,sign: %s",
-                             super.toString(),
-                             Code.valueOf("C" + code)
-                                 .getMsg(),
-                             symmetricKeyId,
-                             IoUtil.bin2Hex(mSign));
+        return String.format("%s,code:%s,rc4-key: %d ,sign: %s", super.toString(), code, symmetricKeyId, IoUtil.bin2Hex(mSign));
     }
 }
