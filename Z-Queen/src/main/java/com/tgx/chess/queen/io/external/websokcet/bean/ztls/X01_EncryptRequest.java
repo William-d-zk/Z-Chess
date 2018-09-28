@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.tgx.chess.queen.io.external.websokcet.bean;
+package com.tgx.chess.queen.io.external.websokcet.bean.ztls;
 
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.io.external.websokcet.ZContext;
@@ -30,17 +30,14 @@ import com.tgx.chess.queen.io.external.zprotocol.Command;
 /**
  * @author William.d.zk
  */
-public class X02_AsymmetricPub
+public class X01_EncryptRequest
         extends
         Command<ZContext>
 {
+    public final static int COMMAND  = 0x01;
+    public int              pubKeyId = -1;
 
-    public final static int COMMAND = 0x02;
-    public byte[]           pubKey;
-    public int              pubKeyId;
-    private int             mKeyLength;
-
-    public X02_AsymmetricPub() {
+    public X01_EncryptRequest() {
         super(COMMAND, false);
     }
 
@@ -51,34 +48,22 @@ public class X02_AsymmetricPub
 
     @Override
     public int decodec(byte[] data, int pos) {
-        pubKeyId = IoUtil.readInt(data, pos);
-        pos += 4;
-        mKeyLength = IoUtil.readUnsignedShort(data, pos);
-        pos += 2;
-        if (mKeyLength > 0) {
-            pubKey = new byte[mKeyLength];
-            pos = IoUtil.read(data, pos, pubKey);
+        if (isEncrypt()) {
+            pubKeyId = IoUtil.readInt(data, pos);
+            pos += 4;
         }
         return pos;
     }
 
     @Override
     public int encodec(byte[] data, int pos) {
-        pos += IoUtil.writeInt(pubKeyId, data, pos);
-        pos += IoUtil.writeShort(mKeyLength, data, pos);
-        pos += IoUtil.write(pubKey, 0, data, pos, mKeyLength);
+        if (isEncrypt()) pos += IoUtil.writeInt(pubKeyId, data, pos);
         return pos;
     }
 
     @Override
-    public void dispose() {
-        pubKey = null;
-        super.dispose();
-    }
-
-    @Override
     public int dataLength() {
-        return super.dataLength() + mKeyLength + 6;
+        return super.dataLength() + (isEncrypt() ? 4 : 0);
     }
 
     @Override
@@ -86,15 +71,8 @@ public class X02_AsymmetricPub
         return QOS_00_NETWORK_CONTROL;
     }
 
-    public X02_AsymmetricPub setPubKey(int _id, byte[] key) {
-        pubKey = key;
-        pubKeyId = _id;
-        mKeyLength = key == null ? 0 : key.length;
-        return this;
-    }
-
     @Override
     public String toString() {
-        return String.format("%s,public-key: %d | %s", super.toString(), pubKeyId, IoUtil.bin2Hex(pubKey));
+        return String.format("%s,public-key-id:%d", super.toString(), pubKeyId);
     }
 }

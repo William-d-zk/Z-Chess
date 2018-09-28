@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.tgx.chess.queen.io.external.websokcet.bean;
+package com.tgx.chess.queen.io.external.websokcet.bean.ztls;
 
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.io.external.websokcet.ZContext;

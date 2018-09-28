@@ -34,12 +34,12 @@ import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
 import com.tgx.chess.queen.io.external.websokcet.WsFrame;
-import com.tgx.chess.queen.io.external.websokcet.bean.X01_EncryptRequest;
-import com.tgx.chess.queen.io.external.websokcet.bean.X02_AsymmetricPub;
-import com.tgx.chess.queen.io.external.websokcet.bean.X03_Cipher;
-import com.tgx.chess.queen.io.external.websokcet.bean.X04_EncryptConfirm;
-import com.tgx.chess.queen.io.external.websokcet.bean.X05_EncryptStart;
-import com.tgx.chess.queen.io.external.websokcet.bean.X06_PlainStart;
+import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X01_EncryptRequest;
+import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X02_AsymmetricPub;
+import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X03_Cipher;
+import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X04_EncryptConfirm;
+import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X05_EncryptStart;
+import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X06_PlainStart;
 import com.tgx.chess.queen.io.external.zprotocol.Command;
 
 /**
