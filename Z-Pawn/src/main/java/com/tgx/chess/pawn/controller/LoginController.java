@@ -31,6 +31,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
@@ -85,17 +86,38 @@ public class LoginController
         return modelAndView;
     }
 
-    @RequestMapping(value = "/admin/home", method = RequestMethod.GET)
-    public ModelAndView home() {
+    @GetMapping(value = "/admin/home")
+    public ModelAndView adminHome() {
+        ModelAndView modelAndView = home();
+        return modelAndView;
+    }
+
+    @GetMapping("/account/home")
+    public ModelAndView accountHome() {
+        ModelAndView modelAndView = home();
+        return modelAndView;
+    }
+
+    private ModelAndView home() {
         ModelAndView modelAndView = new ModelAndView();
         Authentication auth = SecurityContextHolder.getContext()
                                                    .getAuthentication();
         Account account = _AccountService.findByEmail(auth.getName())
-                                         .get();
-        modelAndView.addObject("userName", "Welcome " + account.getName() + " (" + account.getEmail() + ")");
-        modelAndView.addObject("adminMessage", "Content Available Only for Users with Admin Role");
-        modelAndView.setViewName("admin/home");
+                                         .orElseThrow(IllegalStateException::new);
+        String role = auth.getAuthorities()
+                          .stream()
+                          .anyMatch(grantedAuthority -> grantedAuthority.getAuthority()
+                                                                        .equals("ADMIN")) ? "admin" : "account";
+
+        modelAndView.addObject("name", "Welcome " + account.getName() + " (" + account.getEmail() + ")");
+        modelAndView.setViewName(role + "/home");
         return modelAndView;
+    }
+
+    @GetMapping("/")
+    public ModelAndView init() {
+        _AccountService.initializeCheck();
+        return login();
     }
 
 }

@@ -59,6 +59,31 @@ public class AccountService
         _RoleRepository = roleRepository;
     }
 
+    public void initializeCheck() {
+        Role admin = _RoleRepository.findByRole("ADMIN");
+        Role user = _RoleRepository.findByRole("USER");
+        if (Objects.isNull(admin)) {
+            admin = new Role();
+            admin.setRole("ADMIN");
+            _RoleRepository.save(admin);
+        }
+        if (Objects.isNull(user)) {
+            user = new Role();
+            user.setRole("USER");
+            _RoleRepository.save(user);
+        }
+        Account test = _AccountRepository.findByName("root");
+        if (Objects.isNull(test)) {
+            Account root = new Account();
+            root.setActive(1);
+            root.setName("root");
+            root.setPassword(_BCryptPasswordEncoder.encode("root"));
+            root.setRoles(new HashSet<>(Collections.singletonList(admin)));
+            root.setEmail("z-chess@tgxstudio.com");
+            _AccountRepository.save(root);
+        }
+    }
+
     public Optional<Account> findByEmail(String email) {
         return Optional.ofNullable(_AccountRepository.findByEmail(email));
     }
@@ -70,12 +95,7 @@ public class AccountService
     public void saveAccount(Account account) {
         account.setPassword(_BCryptPasswordEncoder.encode(account.getPassword()));
         account.setActive(1);
-        Role role = _RoleRepository.findByRole("ADMIN");
-        if (Objects.isNull(role)) {
-            role = new Role();
-            role.setRole("ADMIN");
-            _RoleRepository.save(role);
-        }
+        Role role = _RoleRepository.findByRole("USER");
         account.setRoles(new HashSet<>(Collections.singletonList(role)));
         _AccountRepository.save(account);
     }
