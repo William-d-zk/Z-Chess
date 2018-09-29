@@ -63,12 +63,12 @@ public class Account
     private String    password;
 
     @NotEmpty(message = "{field.not.empty}")
-    @Length(min = 5, max = 32, message = "{size.account.form.name}")
+    @Length(min = 3, max = 32, message = "{size.account.form.name}")
     private String    name;
 
     private int       active;
 
-    @ManyToMany(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(name = "account_role", joinColumns = @JoinColumn(name = "account_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
 

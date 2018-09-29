@@ -36,6 +36,7 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
@@ -49,20 +50,23 @@ public class SecurityConfig
         WebSecurityConfigurerAdapter
 {
 
-    private final TgxAccessDeniedHandler  _AccessDeniedHandler;
-    private final BCryptPasswordEncoder   _BCryptPasswordEncoder;
-    private final UserDetailServiceImpl   _UserDetailServiceImpl;
-    private final DelegatingMessageSource _DelegatingMessageSource;
+    private final TgxAccessDeniedHandler       _AccessDeniedHandler;
+    private final BCryptPasswordEncoder        _BCryptPasswordEncoder;
+    private final UserDetailServiceImpl        _UserDetailServiceImpl;
+    private final DelegatingMessageSource      _DelegatingMessageSource;
+    private final AuthenticationSuccessHandler _AuthenticationSuccessHandler;
 
     @Autowired
     public SecurityConfig(TgxAccessDeniedHandler accessDeniedHandler,
                           BCryptPasswordEncoder bCryptPasswordEncoder,
                           UserDetailServiceImpl userDetailService,
-                          DelegatingMessageSource delegatingMessageSource) {
+                          DelegatingMessageSource delegatingMessageSource,
+                          AuthenticationSuccessHandler authenticationSuccessHandler) {
         _AccessDeniedHandler = accessDeniedHandler;
         _BCryptPasswordEncoder = bCryptPasswordEncoder;
         _UserDetailServiceImpl = userDetailService;
         _DelegatingMessageSource = delegatingMessageSource;
+        _AuthenticationSuccessHandler = authenticationSuccessHandler;
     }
 
     @Bean
@@ -88,17 +92,25 @@ public class SecurityConfig
             .authorizeRequests()
             .antMatchers("/", "/login", "/registration")
             .permitAll()
+            .and()
+            .authorizeRequests()
             .antMatchers("/admin/**")
             .hasAuthority("ADMIN")
+            .anyRequest()
+            .authenticated()
+            .and()
+            .authorizeRequests()
+            .antMatchers("/account/**")
+            .hasAuthority("USER")
             .anyRequest()
             .authenticated()
             .and()
             .formLogin()
             .loginPage("/login")
             .failureUrl("/login?error=true")
-            .defaultSuccessUrl("/admin/home")
             .usernameParameter("email")
             .passwordParameter("password")
+            .successHandler(_AuthenticationSuccessHandler)
             .permitAll()
             .and()
             .logout()

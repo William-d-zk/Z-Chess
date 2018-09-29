@@ -91,6 +91,7 @@ public class OperatorHolder
     private static CommandFactory                                           command_factory;
 
     static {
+        //TODO 这是一个很偷懒的做法，正常的抽象需要将指令注入过程划归不同的角色去执行
         command_factory = command -> {
             switch (command) {
                 case X50_DeviceMsg.COMMAND:
