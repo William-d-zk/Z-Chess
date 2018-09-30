@@ -46,6 +46,12 @@ import com.tgx.chess.queen.io.core.manager.QueenManager;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X20_SignUp;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X22_SignIn;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X24_UpdateToken;
+import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X01_EncryptRequest;
+import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X02_AsymmetricPub;
+import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X03_Cipher;
+import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X04_EncryptConfirm;
+import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X05_EncryptStart;
+import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X06_PlainStart;
 
 /**
  * @author William.d.zk
@@ -111,6 +117,14 @@ public class LinkHandler
                     session = logicContent.second();
                     ICommand cmd = logicContent.first();
                     switch (cmd.getSerial()) {
+                        case X01_EncryptRequest.COMMAND:
+                        case X02_AsymmetricPub.COMMAND:
+                        case X03_Cipher.COMMAND:
+                        case X04_EncryptConfirm.COMMAND:
+                        case X05_EncryptStart.COMMAND:
+                        case X06_PlainStart.COMMAND:
+                            waitToSends = new ICommand[] { cmd };
+                            break;
                         case X20_SignUp.COMMAND:
                             waitToSends = new ICommand[] { _QueenManager.save(cmd) };
                             break;
@@ -120,6 +134,7 @@ public class LinkHandler
                         case X24_UpdateToken.COMMAND:
                             waitToSends = new ICommand[] { _QueenManager.save(cmd) };
                             break;
+
                     }
                     sendOperator = SERVER_TRANSFER();
                     break;

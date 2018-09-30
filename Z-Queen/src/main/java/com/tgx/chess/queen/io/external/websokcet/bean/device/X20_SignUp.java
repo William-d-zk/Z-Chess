@@ -24,6 +24,8 @@
 
 package com.tgx.chess.queen.io.external.websokcet.bean.device;
 
+import java.util.Objects;
+
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.io.external.websokcet.WsContext;
 import com.tgx.chess.queen.io.external.zprotocol.Command;
@@ -54,7 +56,7 @@ public class X20_SignUp
 
     @Override
     public int dataLength() {
-        return super.dataLength() + 41;
+        return super.dataLength() + 41 + (Objects.nonNull(password) ? password.getBytes().length : 0);
     }
 
     @Override

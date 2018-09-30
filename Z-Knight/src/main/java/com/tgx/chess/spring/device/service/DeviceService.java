@@ -25,8 +25,12 @@
 package com.tgx.chess.spring.device.service;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
@@ -36,11 +40,14 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 
 import com.tgx.chess.bishop.biz.device.DeviceNode;
+import com.tgx.chess.king.base.util.CryptUtil;
+import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.db.inf.IRespository;
 import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X20_SignUp;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X21_SignUpResult;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X22_SignIn;
+import com.tgx.chess.queen.io.external.websokcet.bean.device.X23_SignInResult;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X24_UpdateToken;
 import com.tgx.chess.spring.device.model.Device;
 import com.tgx.chess.spring.device.repository.ClientRepository;
@@ -55,6 +62,8 @@ public class DeviceService
     private final DeviceRepository _DeviceRepository;
     private final ClientRepository _ClientRepository;
     private final DeviceNode       _DeviceNode;
+    private final Random           _Random    = new Random();
+    private final CryptUtil        _CryptUtil = new CryptUtil();
 
     @Autowired
     public DeviceService(DeviceRepository deviceRepository,
@@ -69,10 +78,6 @@ public class DeviceService
     @PostConstruct
     private void start() throws IOException {
         _DeviceNode.start();
-    }
-
-    public Device findBySn(byte[] sn) {
-        return _DeviceRepository.findBySn(sn);
     }
 
     public List<Device> findAll() {
@@ -93,21 +98,30 @@ public class DeviceService
                 long pwdId = x20.getPasswordId();
                 Device device = _DeviceRepository.findBySn(deviceSn);
                 X21_SignUpResult x21 = new X21_SignUpResult();
-                if (Objects.isNull(device) || device.getPasswordId() == pwdId) {
-                    x21.setSuccess();
-                    if (Objects.isNull(device)) {
-                        device = new Device();
-                        device.setSn(deviceSn);
-                        device.setPassword(devicePwd);
-                        device.setPasswordId(pwdId);
-                        _DeviceRepository.save(device);
+                success:
+                {
+                    if (Objects.isNull(device) || device.getPasswordId() == pwdId) {
+                        if (Objects.isNull(device)) {
+                            device = new Device();
+                            device.setSn(deviceSn);
+                            device.setPassword(devicePwd);
+                            device.setPasswordId(pwdId);
+                            device.setInvalidAt(Date.from(Instant.now()
+                                                                 .plusSeconds(TimeUnit.DAYS.toSeconds(41))));
+                            try {
+                                _DeviceRepository.save(device);
+                            }
+                            catch (Exception e) {
+                                e.printStackTrace();
+                                x21.setFailed();
+                                break success;
+                            }
+                        }
+                        x21.setSuccess();
                     }
                 }
-                else {
-                    x21.setFailed();
-                }
                 x21.setPasswordId(pwdId);
-                break;
+                return x21;
             case X24_UpdateToken.COMMAND:
                 X24_UpdateToken x24 = (X24_UpdateToken) tar;
                 break;
@@ -121,7 +135,32 @@ public class DeviceService
         switch (key.getSerial()) {
             case X22_SignIn.COMMAND:
                 X22_SignIn x22 = (X22_SignIn) key;
-                break;
+                X23_SignInResult x23 = new X23_SignInResult();
+                byte[] deviceSn = x22.getSn();
+                String devicePwd = x22.getPassword();
+                login:
+                {
+                    Device device = _DeviceRepository.findBySnAndPassword(deviceSn, devicePwd);
+                    if (Objects.nonNull(device)) {
+                        device.setInvalidAt(Date.from(Instant.now()
+                                                             .plusSeconds(TimeUnit.DAYS.toSeconds(41))));
+                        byte[] x = new byte[16];
+                        _Random.nextBytes(x);
+                        x = _CryptUtil.sha256(x);
+                        device.setToken(IoUtil.bin2Hex(x));
+                        try {
+                            _DeviceRepository.save(device);
+                            x23.setSuccess();
+                            x23.setToken(device.getToken());
+                            break login;
+                        }
+                        catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    x23.setFailed();
+                }
+                return x23;
         }
         return null;
     }

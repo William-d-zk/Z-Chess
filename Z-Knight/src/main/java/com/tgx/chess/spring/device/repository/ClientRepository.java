@@ -34,5 +34,5 @@ public interface ClientRepository
         extends
         JpaRepository<Client, Long>
 {
-    Client findByPhone(String phone);
+    Client findByAuth(String auth);
 }

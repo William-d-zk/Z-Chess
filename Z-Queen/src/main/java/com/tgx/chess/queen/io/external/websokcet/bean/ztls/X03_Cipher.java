@@ -23,6 +23,8 @@
  */
 package com.tgx.chess.queen.io.external.websokcet.bean.ztls;
 
+import java.util.Objects;
+
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.io.external.websokcet.ZContext;
 import com.tgx.chess.queen.io.external.zprotocol.Command;
@@ -61,7 +63,7 @@ public class X03_Cipher
 
     @Override
     public int dataLength() {
-        return super.dataLength() + 6 + (cipher == null ? 0 : cipher.length);
+        return super.dataLength() + 6 + (Objects.isNull(cipher) ? 0 : cipher.length);
     }
 
     @Override
