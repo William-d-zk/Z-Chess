@@ -26,7 +26,6 @@ package com.tgx.chess.spring.device.model;
 
 import java.util.Set;
 
-import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -34,6 +33,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
@@ -42,7 +42,7 @@ import javax.persistence.Table;
 import com.tgx.chess.spring.jpa.model.AuditModel;
 
 @Entity
-@Table(schema = "\"tgx-z-chess-device\"")
+@Table(schema = "\"tgx-z-chess-device\"", indexes = { @Index(name = "client_auth", columnList = "auth") })
 public class Client
         extends
         AuditModel
@@ -53,12 +53,11 @@ public class Client
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private int               id;
-    @Column(length = 20)
-    private String            phone;
+    @Column(length = 64)
+    private String            auth;
 
     @Column(length = 16)
-    @Basic
-    private byte[]            salt;
+    private String            salt;
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(schema = "\"tgx-z-chess-device\"",
@@ -75,12 +74,12 @@ public class Client
         this.id = id;
     }
 
-    public String getPhone() {
-        return phone;
+    public String getAuth() {
+        return auth;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public void setAuth(String auth) {
+        this.auth = auth;
     }
 
     public Set<Device> getDevices() {
@@ -91,11 +90,11 @@ public class Client
         this.devices = devices;
     }
 
-    public byte[] getSalt() {
+    public String getSalt() {
         return salt;
     }
 
-    public void setSalt(byte[] salt) {
+    public void setSalt(String salt) {
         this.salt = salt;
     }
 }

@@ -24,6 +24,9 @@
 
 package com.tgx.chess.queen.io.external.websokcet.bean.device;
 
+import java.util.Objects;
+
+import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.io.external.websokcet.WsContext;
 import com.tgx.chess.queen.io.external.zprotocol.Command;
 
@@ -40,5 +43,52 @@ public class X22_SignIn
     @Override
     public int getPriority() {
         return QOS_06_META_CREATE;
+    }
+
+    @Override
+    public boolean isMappingCommand() {
+        return true;
+    }
+
+    private byte[] sn = new byte[32];
+    private String password;
+
+    @Override
+    public int dataLength() {
+        return super.dataLength() + 33 + (Objects.nonNull(password) ? password.getBytes().length : 0);
+    }
+
+    @Override
+    public int decodec(byte[] data, int pos) {
+        pos = IoUtil.read(data, pos, sn);
+        int passwordBytesLength = data[pos++] & 0xFF;
+        password = IoUtil.readString(data, pos, passwordBytesLength);
+        pos += passwordBytesLength;
+        return pos;
+    }
+
+    @Override
+    public int encodec(byte[] data, int pos) {
+        pos += IoUtil.write(sn, data, pos);
+        byte[] passwordBytes = password.getBytes();
+        pos += IoUtil.writeByte(passwordBytes.length, data, pos);
+        pos += IoUtil.write(passwordBytes, data, pos);
+        return pos;
+    }
+
+    public byte[] getSn() {
+        return sn;
+    }
+
+    public void setSn(byte[] sn) {
+        this.sn = sn;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getPassword() {
+        return password;
     }
 }

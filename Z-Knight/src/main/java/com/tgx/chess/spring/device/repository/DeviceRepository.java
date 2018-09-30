@@ -35,5 +35,9 @@ public interface DeviceRepository
         extends
         JpaRepository<Device, Long>
 {
+    Device findBySnAndPassword(byte[] sn, String password);
+
     Device findBySn(byte[] sn);
+
+    Device findByToken(String token);
 }

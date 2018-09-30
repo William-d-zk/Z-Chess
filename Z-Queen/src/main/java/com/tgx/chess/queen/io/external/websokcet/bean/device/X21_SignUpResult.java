@@ -68,7 +68,7 @@ public class X21_SignUpResult
 
     @Override
     public int dataLength() {
-        return super.dataLength() + 1;
+        return super.dataLength() + 9;
     }
 
     @Override

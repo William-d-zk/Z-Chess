@@ -24,6 +24,7 @@
 
 package com.tgx.chess.queen.io.external.websokcet.bean.device;
 
+import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.io.external.websokcet.WsContext;
 import com.tgx.chess.queen.io.external.zprotocol.Command;
 
@@ -40,5 +41,49 @@ public class X23_SignInResult
     @Override
     public int getPriority() {
         return QOS_09_CONFIRM_MESSAGE;
+    }
+
+    private boolean success;
+
+    private String  token;
+
+    @Override
+    public int dataLength() {
+        return super.dataLength() + 65;
+    }
+
+    @Override
+    public int decodec(byte[] data, int pos) {
+        success = data[pos++] > 0;
+        token = IoUtil.readString(data, pos, 64);
+        pos += 64;
+        return pos;
+    }
+
+    @Override
+    public int encodec(byte[] data, int pos) {
+        pos += IoUtil.writeByte(isSuccess() ? 1 : 0, data, pos);
+        pos += IoUtil.write(token.getBytes(), data, pos);
+        return pos;
+    }
+
+    public void setSuccess() {
+        success = true;
+    }
+
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public void setFailed() {
+        success = false;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public String getToken() {
+        return token;
     }
 }

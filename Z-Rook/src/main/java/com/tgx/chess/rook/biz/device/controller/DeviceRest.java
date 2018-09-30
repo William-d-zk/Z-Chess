@@ -29,15 +29,23 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X01_EncryptRequest;
+import com.tgx.chess.king.base.util.CryptUtil;
+import com.tgx.chess.queen.io.external.websokcet.bean.device.X20_SignUp;
+import com.tgx.chess.queen.io.external.websokcet.bean.device.X22_SignIn;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X50_DeviceMsg;
+import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X01_EncryptRequest;
 import com.tgx.chess.rook.biz.device.client.DeviceClient;
 
 @RestController
 public class DeviceRest
 {
+    private final DeviceClient _Client;
+    private final CryptUtil    _CryptUtil = new CryptUtil();
+
     @Autowired
-    private DeviceClient _Client;
+    DeviceRest(DeviceClient client) {
+        _Client = client;
+    }
 
     @GetMapping("/client/start")
     public String start() {
@@ -63,6 +71,24 @@ public class DeviceRest
         x50.setPayload(msg.getBytes());
         _Client.sendLocal(x50);
         return "x50";
+    }
+
+    @GetMapping("/client/x20")
+    public String x20(@RequestParam(name = "msg", defaultValue = "password", required = false) String msg) {
+        X20_SignUp x20 = new X20_SignUp();
+        x20.setSn(_CryptUtil.sha256(msg.getBytes()));
+        x20.setPassword(msg);
+        _Client.sendLocal(x20);
+        return "x20";
+    }
+
+    @GetMapping("/client/x22")
+    public String x22(@RequestParam(name = "msg", defaultValue = "password", required = false) String msg) {
+        X22_SignIn x22 = new X22_SignIn();
+        x22.setSn(_CryptUtil.sha256(msg.getBytes()));
+        x22.setPassword(msg);
+        _Client.sendLocal(x22);
+        return "x22";
     }
 
     @GetMapping("/client/handshake")

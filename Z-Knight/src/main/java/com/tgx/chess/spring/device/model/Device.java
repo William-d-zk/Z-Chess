@@ -32,6 +32,7 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -45,7 +46,10 @@ import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.spring.jpa.model.AuditModel;
 
 @Entity
-@Table(schema = "\"tgx-z-chess-device\"")
+@Table(schema = "\"tgx-z-chess-device\"",
+       indexes = { @Index(name = "device_idx_sn_pwd", columnList = "sn,password"),
+                   @Index(name = "device_idx_token", columnList = "token"),
+                   @Index(name = "device_idx_sn", columnList = "sn") })
 public class Device
         extends
         AuditModel
