@@ -22,28 +22,50 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.login.model;
+package com.tgx.chess.spring.device.model;
 
+import java.util.Set;
+
+import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
 import com.tgx.chess.spring.jpa.model.AuditModel;
 
 @Entity
-@Table
-public class Role
+@Table(schema = "\"tgx-z-chess-device\"")
+public class Client
         extends
         AuditModel
 {
+
+    private static final long serialVersionUID = 770148829699352836L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private int    id;
+    private int               id;
+    @Column(length = 20)
+    private String            phone;
+
     @Column(length = 16)
-    private String role;
+    @Basic
+    private byte[]            salt;
+
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinTable(schema = "\"tgx-z-chess-device\"",
+               name = "client_device",
+               joinColumns = @JoinColumn(name = "client_id"),
+               inverseJoinColumns = @JoinColumn(name = "device_id"))
+    private Set<Device>       devices;
 
     public int getId() {
         return id;
@@ -53,11 +75,27 @@ public class Role
         this.id = id;
     }
 
-    public String getRole() {
-        return role;
+    public String getPhone() {
+        return phone;
     }
 
-    public void setRole(String role) {
-        this.role = role;
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public Set<Device> getDevices() {
+        return devices;
+    }
+
+    public void setDevices(Set<Device> devices) {
+        this.devices = devices;
+    }
+
+    public byte[] getSalt() {
+        return salt;
+    }
+
+    public void setSalt(byte[] salt) {
+        this.salt = salt;
     }
 }

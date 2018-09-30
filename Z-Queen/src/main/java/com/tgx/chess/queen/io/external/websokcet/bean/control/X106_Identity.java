@@ -37,18 +37,13 @@ public class X106_Identity
     public final static int COMMAND = 0x106;
 
     public X106_Identity(String nodeName) {
-        super(nodeName);
+        super(nodeName, COMMAND);
         mCtrlCode = WsFrame.frame_op_code_ctrl_cluster;
     }
 
     public X106_Identity(byte[] payload) {
-        super(payload);
+        super(COMMAND, payload);
         mCtrlCode = WsFrame.frame_op_code_ctrl_cluster;
-    }
-
-    @Override
-    public int getSerial() {
-        return COMMAND;
     }
 
     public long getIdentity() {
@@ -65,4 +60,8 @@ public class X106_Identity
         return null;
     }
 
+    @Override
+    public X106_Identity duplicate() {
+        return new X106_Identity(getPayload());
+    }
 }

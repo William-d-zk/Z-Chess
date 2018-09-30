@@ -43,6 +43,9 @@ import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionCreated;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
+import com.tgx.chess.queen.io.external.websokcet.bean.device.X20_SignUp;
+import com.tgx.chess.queen.io.external.websokcet.bean.device.X22_SignIn;
+import com.tgx.chess.queen.io.external.websokcet.bean.device.X24_UpdateToken;
 
 /**
  * @author William.d.zk
@@ -106,7 +109,18 @@ public class LinkHandler
                     Pair<ICommand, ISession> logicContent = event.getContent();
                     _Log.info("LinkHandler cmd: %s", logicContent.first());
                     session = logicContent.second();
-                    waitToSends = new ICommand[] { logicContent.first() };
+                    ICommand cmd = logicContent.first();
+                    switch (cmd.getSerial()) {
+                        case X20_SignUp.COMMAND:
+                            waitToSends = new ICommand[] { _QueenManager.save(cmd) };
+                            break;
+                        case X22_SignIn.COMMAND:
+                            waitToSends = new ICommand[] { _QueenManager.find(cmd) };
+                            break;
+                        case X24_UpdateToken.COMMAND:
+                            waitToSends = new ICommand[] { _QueenManager.save(cmd) };
+                            break;
+                    }
                     sendOperator = SERVER_TRANSFER();
                     break;
             }

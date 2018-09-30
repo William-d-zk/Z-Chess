@@ -24,11 +24,11 @@
 
 package com.tgx.chess.king.base.util;
 
+import static java.lang.System.arraycopy;
+
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Objects;
-
-import static java.lang.System.arraycopy;
 
 public interface IoUtil
 {
@@ -402,4 +402,7 @@ public interface IoUtil
         return src[off] & 0xFF;
     }
 
+    static String readString(byte[] data, int pos, int length) {
+        return new String(data, pos, length);
+    }
 }

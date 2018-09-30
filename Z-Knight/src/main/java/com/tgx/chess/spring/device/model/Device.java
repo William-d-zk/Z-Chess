@@ -24,17 +24,23 @@
 
 package com.tgx.chess.spring.device.model;
 
+import java.util.Date;
+
 import javax.persistence.Basic;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.validation.constraints.NotEmpty;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.validator.constraints.Length;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.spring.jpa.model.AuditModel;
 
@@ -51,6 +57,24 @@ public class Device
     @GenericGenerator(name = "ZGenerator", strategy = "com.tgx.chess.spring.jpa.generator.ZGenerator")
     private Long              id;
 
+    @NotEmpty(message = "provide create device sn")
+    @Basic(fetch = FetchType.LAZY)
+    @Column(length = 32)
+    private byte[]            sn;
+
+    @Column(length = 32)
+    @Length(min = 5, max = 32, message = "*Your password must have at least 5 characters less than 32 characters")
+    @NotEmpty(message = "*Please provide your password")
+    private String            password;
+    private long              passwordId;
+    @Column(length = 64)
+    private String            token;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "invalid_at", nullable = false)
+    @JsonIgnore
+    private Date              invalidAt;
+
     public Long getId() {
         return id;
     }
@@ -58,15 +82,6 @@ public class Device
     public void setId(Long id) {
         this.id = id;
     }
-
-    //    @Length(min = 32, max = 32, message = "device serial number [SHA256]")
-    @NotEmpty(message = "provide create device sn")
-    @Basic(fetch = FetchType.LAZY)
-    private byte[] sn;
-
-    @Length(min = 5, message = "*Your password must have at least 5 characters")
-    @NotEmpty(message = "*Please provide your password")
-    private String password;
 
     public String getPassword() {
         return password;
@@ -84,6 +99,14 @@ public class Device
         this.sn = sn;
     }
 
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
     @Override
     public String toString() {
         return String.format("device{id:%s,pass:%s,sn:%s,create:%s,update:%s}",
@@ -92,5 +115,21 @@ public class Device
                              IoUtil.bin2Hex(getSn()),
                              getCreatedAt(),
                              getUpdatedAt());
+    }
+
+    public long getPasswordId() {
+        return passwordId;
+    }
+
+    public void setPasswordId(long passwordId) {
+        this.passwordId = passwordId;
+    }
+
+    public Date getInvalidAt() {
+        return invalidAt;
+    }
+
+    public void setInvalidAt(Date invalidAt) {
+        this.invalidAt = invalidAt;
     }
 }

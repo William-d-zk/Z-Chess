@@ -23,35 +23,25 @@
  */
 package com.tgx.chess.queen.io.external.websokcet;
 
-import com.tgx.chess.queen.io.core.inf.ICommand;
+import java.util.Objects;
 
 /**
  * @author William.d.zk
  */
 public abstract class WsHandshake
-        implements
-        ICommand
+        extends
+        WsControl
 {
 
-    private final String _Msg;
-    private String       xMsg;
+    private String rMsg;
 
-    public WsHandshake(String msg) {
-        _Msg = msg;
-    }
-
-    @Override
-    public int getPriority() {
-        return QOS_00_NETWORK_CONTROL;
-    }
-
-    @Override
-    public int getSuperSerial() {
-        return CONTROL_SERIAL;
+    public WsHandshake(int command, String msg) {
+        super(msg, command);
     }
 
     public String getMessage() {
-        return _Msg != null ? _Msg : xMsg;
+        byte[] payload = getPayload();
+        return Objects.nonNull(payload) ? new String(payload) : rMsg;
     }
 
     public byte getControl() {
@@ -59,26 +49,26 @@ public abstract class WsHandshake
     }
 
     public byte[] getPayload() {
-        return _Msg == null ? xMsg == null ? null : xMsg.getBytes() : _Msg.getBytes();
+        byte[] payload = super.getPayload();
+        return Objects.isNull(payload) ? rMsg == null ? null : rMsg.getBytes() : payload;
     }
 
     @Override
     public String toString() {
-        return String.format("web socket handshake %s", _Msg);
+        return String.format("web socket handshake %s", getMessage());
     }
 
     @Override
     public int dataLength() {
-        return _Msg != null ? _Msg.getBytes().length : xMsg != null ? xMsg.getBytes().length : 0;
+        return Objects.nonNull(getPayload()) ? super.dataLength() : Objects.nonNull(rMsg) ? rMsg.getBytes().length : 0;
     }
 
-    public WsHandshake append(String x) {
-        xMsg = xMsg == null ? x : xMsg + x;
-        return this;
+    public void append(String x) {
+        rMsg = Objects.isNull(rMsg) ? x : rMsg + x;
     }
 
     public WsHandshake ahead(String x) {
-        xMsg = xMsg == null ? x : x + xMsg;
+        rMsg = rMsg == null ? x : x + rMsg;
         return this;
     }
 
@@ -89,6 +79,6 @@ public abstract class WsHandshake
 
     @Override
     public void dispose() {
-        xMsg = null;
+        rMsg = null;
     }
 }
