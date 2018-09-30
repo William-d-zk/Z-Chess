@@ -8,7 +8,7 @@
 <div class="container">
     <div th:include="fragments::navbar"/>
     <form autocomplete="off" action="#" th:action="@{/registration}" method="POST" class="form-signin"
-          th:object="${account}" role="form">
+          th:object="${account}" phone="form">
         <h2 class="form-signin-heading" th:text="Registration"></h2>
         <div class="form-group">
             <div>

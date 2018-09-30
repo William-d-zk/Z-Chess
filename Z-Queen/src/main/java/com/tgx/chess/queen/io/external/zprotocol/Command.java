@@ -343,5 +343,4 @@ public abstract class Command<C extends AioContext>
                              I18nUtil.getSerialType(mTypeByte & 0x0F));
 
     }
-
 }

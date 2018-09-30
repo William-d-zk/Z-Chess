@@ -43,6 +43,7 @@ import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.king.config.Config;
 import com.tgx.chess.queen.config.QueenCode;
+import com.tgx.chess.queen.db.inf.IRespository;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.operator.MODE;
 import com.tgx.chess.queen.io.core.async.AioCreator;
@@ -80,6 +81,7 @@ public class DeviceNode
     private final IAioServer      _DeviceServer;
     private final ISessionCreator _SessionCreator;
     private final ICommandCreator _CommandCreator;
+    private final IRespository    _Respository;
 
     @Override
     public void onDismiss(ISession session) {
@@ -93,7 +95,7 @@ public class DeviceNode
         addSession(session);
     }
 
-    public DeviceNode(String host, int port) {
+    public DeviceNode(String host, int port, IRespository respository) {
         super(new Config("device"));
         _ServerHost = host;
         _ServerPort = port;
@@ -189,6 +191,7 @@ public class DeviceNode
             }
 
         };
+        _Respository = respository;
         _Log.info("Device Node Bean Load");
     }
 
@@ -236,4 +239,13 @@ public class DeviceNode
         _Log.info(String.format("device node start %s:%d", _ServerHost, _ServerPort));
     }
 
+    @Override
+    public ICommand save(ICommand tar) {
+        return _Respository.save(tar);
+    }
+
+    @Override
+    public ICommand find(ICommand key) {
+        return _Respository.find(key);
+    }
 }

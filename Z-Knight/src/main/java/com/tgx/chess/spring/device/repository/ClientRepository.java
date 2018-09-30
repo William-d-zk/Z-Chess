@@ -21,33 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.tgx.chess.queen.io.external.websokcet.bean.control;
 
-import com.tgx.chess.queen.io.external.websokcet.WsHandshake;
+package com.tgx.chess.spring.device.repository;
 
-/**
- * @author William.d.zk
- */
-public class X101_HandShake
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.tgx.chess.spring.device.model.Client;
+
+@Repository
+public interface ClientRepository
         extends
-        WsHandshake
+        JpaRepository<Client, Long>
 {
-    public final static int COMMAND = 0x101;
-
-    public X101_HandShake(String host, String secKey, int version) {
-        this(String.format("GET /ws_service HTTP/1.1\r\nHost: %s\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: %s\r\nOrigin: http://%s\r\nSec-WebSocket-Protocol: z-push, z-chat\r\nSec-WebSocket-Version: %s\r\n\r\n",
-                           host,
-                           secKey,
-                           host,
-                           version));
-    }
-
-    public X101_HandShake(String handshake) {
-        super(COMMAND, handshake);
-    }
-
-    public X101_HandShake() {
-        this(null);
-    }
-
+    Client findByPhone(String phone);
 }

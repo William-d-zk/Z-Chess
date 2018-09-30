@@ -27,6 +27,7 @@ package com.tgx.chess.spring.login.model;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -56,16 +57,19 @@ public class Account
 
     @Email(message = "{email.valid}")
     @NotEmpty(message = "{field.not.empty}")
+    @Length(max = 64, message = "{size.email.over_length}")
+    @Column(length = 64)
     private String    email;
 
-    @Length(min = 8, message = "{size.account.form.password}")
+    @Length(min = 8, max = 32, message = "{size.account.form.password}")
     @NotEmpty(message = "{field.not.empty}")
+    @Column(length = 32)
     private String    password;
 
     @NotEmpty(message = "{field.not.empty}")
     @Length(min = 3, max = 32, message = "{size.account.form.name}")
+    @Column(length = 32)
     private String    name;
-
     private int       active;
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)

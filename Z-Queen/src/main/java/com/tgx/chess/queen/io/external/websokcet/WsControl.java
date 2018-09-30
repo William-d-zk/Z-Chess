@@ -38,21 +38,22 @@ public abstract class WsControl
         IRouteLv4
 {
 
-    protected final byte[] _Msg;
-    protected byte         mCtrlCode;
+    private final byte[] _Msg;
+    private final int    _Command;
+    protected byte       mCtrlCode;
+    private ISession     mSession;
 
-    private ISession       mSession;
-
-    public WsControl(String msg) {
-        _Msg = msg.getBytes();
-    }
-
-    public WsControl(byte[] msg) {
+    public WsControl(int command, byte[] msg) {
+        _Command = command;
         _Msg = msg;
     }
 
-    public WsControl() {
-        _Msg = null;
+    public WsControl(String msg, int command) {
+        this(command, Objects.nonNull(msg) ? msg.getBytes() : null);
+    }
+
+    public WsControl(int command) {
+        this(command, null);
     }
 
     public byte[] getPayload() {
@@ -67,6 +68,11 @@ public abstract class WsControl
     @Override
     public int getSuperSerial() {
         return CONTROL_SERIAL;
+    }
+
+    @Override
+    public int getSerial() {
+        return _Command;
     }
 
     public byte getControl() {

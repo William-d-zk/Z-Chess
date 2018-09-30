@@ -35,5 +35,5 @@ public interface DeviceRepository
         extends
         JpaRepository<Device, Long>
 {
-    Device findBySn(String sn);
+    Device findBySn(byte[] sn);
 }

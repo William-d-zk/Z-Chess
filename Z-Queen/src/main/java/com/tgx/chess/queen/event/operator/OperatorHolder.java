@@ -60,6 +60,12 @@ import com.tgx.chess.queen.io.external.filter.ZCommandFilter.CommandFactory;
 import com.tgx.chess.queen.io.external.filter.ZTlsFilter;
 import com.tgx.chess.queen.io.external.websokcet.WsContext;
 import com.tgx.chess.queen.io.external.websokcet.ZContext;
+import com.tgx.chess.queen.io.external.websokcet.bean.device.X20_SignUp;
+import com.tgx.chess.queen.io.external.websokcet.bean.device.X21_SignUpResult;
+import com.tgx.chess.queen.io.external.websokcet.bean.device.X22_SignIn;
+import com.tgx.chess.queen.io.external.websokcet.bean.device.X23_SignInResult;
+import com.tgx.chess.queen.io.external.websokcet.bean.device.X24_UpdateToken;
+import com.tgx.chess.queen.io.external.websokcet.bean.device.X25_AuthorisedToken;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X50_DeviceMsg;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X51_DeviceMsgAck;
 import com.tgx.chess.queen.io.external.websokcet.filter.WsControlFilter;
@@ -94,6 +100,18 @@ public class OperatorHolder
         //TODO 这是一个很偷懒的做法，正常的抽象需要将指令注入过程划归不同的角色去执行
         command_factory = command -> {
             switch (command) {
+                case X20_SignUp.COMMAND:
+                    return new X20_SignUp();
+                case X21_SignUpResult.COMMAND:
+                    return new X21_SignUpResult();
+                case X22_SignIn.COMMAND:
+                    return new X22_SignIn();
+                case X23_SignInResult.COMMAND:
+                    return new X23_SignInResult();
+                case X24_UpdateToken.COMMAND:
+                    return new X24_UpdateToken();
+                case X25_AuthorisedToken.COMMAND:
+                    return new X25_AuthorisedToken();
                 case X50_DeviceMsg.COMMAND:
                     return new X50_DeviceMsg();
                 case X51_DeviceMsgAck.COMMAND:

@@ -26,8 +26,6 @@ package com.tgx.chess.queen.io.core.manager;
 
 import static com.tgx.chess.queen.event.operator.OperatorHolder.CLOSE_OPERATOR;
 
-import java.nio.channels.AsynchronousChannelGroup;
-
 import com.lmax.disruptor.InsufficientCapacityException;
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.king.base.log.Logger;
@@ -51,20 +49,16 @@ public abstract class QueenManager
         super(config);
     }
 
-    public void add(long code, AsynchronousChannelGroup channelGroup, RingBuffer<QEvent> localBack, RingBuffer<QEvent> localSend) {
-        _DomainSender[getSlot(code)] = new Sender(channelGroup, localBack, localSend);
+    public void add(long code, RingBuffer<QEvent> localBack, RingBuffer<QEvent> localSend) {
+        _DomainSender[getSlot(code)] = new Sender(localBack, localSend);
     }
 
     private class Sender
     {
 
-        private final AsynchronousChannelGroup _ChannelGroup;
-        private final RingBuffer<QEvent>       _LocalBackPublisher, _LocalSendPublisher;
+        private final RingBuffer<QEvent> _LocalBackPublisher, _LocalSendPublisher;
 
-        private Sender(AsynchronousChannelGroup channelGroup,
-                       RingBuffer<QEvent> localBackPublisher,
-                       RingBuffer<QEvent> localSendPublisher) {
-            _ChannelGroup = channelGroup;
+        private Sender(RingBuffer<QEvent> localBackPublisher, RingBuffer<QEvent> localSendPublisher) {
             _LocalBackPublisher = localBackPublisher;
             _LocalSendPublisher = localSendPublisher;
         }
@@ -112,5 +106,9 @@ public abstract class QueenManager
     public void localSend(ICommand toSend, ISession session, IOperator<ICommand, ISession> write_operator) {
         _DomainSender[getSlot(session.getIndex())].localSend(toSend, session, write_operator);
     }
+
+    public abstract ICommand save(ICommand tar);
+
+    public abstract ICommand find(ICommand key);
 
 }

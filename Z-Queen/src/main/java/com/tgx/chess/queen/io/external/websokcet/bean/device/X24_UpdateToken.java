@@ -21,33 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.tgx.chess.queen.io.external.websokcet.bean.control;
 
-import com.tgx.chess.queen.io.external.websokcet.WsHandshake;
+package com.tgx.chess.queen.io.external.websokcet.bean.device;
 
-/**
- * @author William.d.zk
- */
-public class X101_HandShake
+import com.tgx.chess.queen.io.external.websokcet.WsContext;
+import com.tgx.chess.queen.io.external.zprotocol.Command;
+
+public class X24_UpdateToken
         extends
-        WsHandshake
+        Command<WsContext>
 {
-    public final static int COMMAND = 0x101;
+    public final static int COMMAND = 0x24;
 
-    public X101_HandShake(String host, String secKey, int version) {
-        this(String.format("GET /ws_service HTTP/1.1\r\nHost: %s\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: %s\r\nOrigin: http://%s\r\nSec-WebSocket-Protocol: z-push, z-chat\r\nSec-WebSocket-Version: %s\r\n\r\n",
-                           host,
-                           secKey,
-                           host,
-                           version));
+    public X24_UpdateToken() {
+        super(COMMAND, false);
     }
 
-    public X101_HandShake(String handshake) {
-        super(COMMAND, handshake);
+    @Override
+    public int getPriority() {
+        return QOS_06_META_CREATE;
     }
-
-    public X101_HandShake() {
-        this(null);
-    }
-
 }
