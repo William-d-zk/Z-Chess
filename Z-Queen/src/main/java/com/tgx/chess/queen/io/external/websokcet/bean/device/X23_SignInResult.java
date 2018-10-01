@@ -44,26 +44,25 @@ public class X23_SignInResult
     }
 
     private boolean success;
-
-    private String  token;
+    private long    invalidTime = -1;
 
     @Override
     public int dataLength() {
-        return super.dataLength() + 65;
+        return super.dataLength() + 9;
     }
 
     @Override
     public int decodec(byte[] data, int pos) {
         success = data[pos++] > 0;
-        token = IoUtil.readString(data, pos, 64);
-        pos += 64;
+        invalidTime = IoUtil.readLong(data, pos);
+        pos += 8;
         return pos;
     }
 
     @Override
     public int encodec(byte[] data, int pos) {
         pos += IoUtil.writeByte(isSuccess() ? 1 : 0, data, pos);
-        pos += IoUtil.write(token.getBytes(), data, pos);
+        pos += IoUtil.writeLong(invalidTime, data, pos);
         return pos;
     }
 
@@ -79,11 +78,11 @@ public class X23_SignInResult
         success = false;
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public long getInvalidTime() {
+        return invalidTime;
     }
 
-    public String getToken() {
-        return token;
+    public void setInvalidTime(long invalidTime) {
+        this.invalidTime = invalidTime;
     }
 }

@@ -29,13 +29,12 @@ import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.king.base.util.IoUtil;
-import com.tgx.chess.spring.device.service.DeviceService;
 import com.tgx.chess.spring.device.model.Device;
+import com.tgx.chess.spring.device.service.DeviceService;
 
 @RestController
 public class DeviceController
@@ -49,22 +48,11 @@ public class DeviceController
         this._DeviceService = deviceService;
     }
 
-    @GetMapping("/client/register")
-    public Object registrationDevice(@RequestParam(name = "sn") String sn) {
-        Device device = new Device();
-        device.setSn(IoUtil.hex2bin(sn));
-        byte[] password = new byte[6];
-        _Random.nextBytes(password);
-        device.setPassword(IoUtil.bin2Hex(password));
-        return _DeviceService.saveDevice(device);
-    }
-
-    @GetMapping("/client/device")
-    public Object getDevice() {
+    @GetMapping("/client/devices")
+    public @ResponseBody List<Device> getDevices() {
         List<Device> list = _DeviceService.findAll();
         for (Device device : list) {
-            String sn = IoUtil.bin2Hex(device.getSn(), ".");
-            _Log.info("device sn %s", sn);
+            _Log.info("device mac %s", device.getMac());
         }
         return list;
     }

@@ -50,18 +50,18 @@ public class X20_SignUp
         return QOS_06_META_CREATE;
     }
 
-    private byte[] sn = new byte[32];
+    private byte[] mac = new byte[6];
     private String password;
     private long   passwordId;
 
     @Override
     public int dataLength() {
-        return super.dataLength() + 41 + (Objects.nonNull(password) ? password.getBytes().length : 0);
+        return super.dataLength() + 15 + (Objects.nonNull(password) ? password.getBytes().length : 0);
     }
 
     @Override
     public int decodec(byte[] data, int pos) {
-        pos = IoUtil.read(data, pos, sn);
+        pos = IoUtil.read(data, pos, mac);
         passwordId = IoUtil.readLong(data, pos);
         pos += 8;
         int passwordBytesLength = data[pos++] & 0xFF;
@@ -72,7 +72,7 @@ public class X20_SignUp
 
     @Override
     public int encodec(byte[] data, int pos) {
-        pos += IoUtil.write(sn, data, pos);
+        pos += IoUtil.write(mac, data, pos);
         pos += IoUtil.writeLong(passwordId, data, pos);
         byte[] passwordBytes = password.getBytes();
         pos += IoUtil.writeByte(passwordBytes.length, data, pos);
@@ -80,12 +80,12 @@ public class X20_SignUp
         return pos;
     }
 
-    public byte[] getSn() {
-        return sn;
+    public byte[] getMac() {
+        return mac;
     }
 
-    public void setSn(byte[] sn) {
-        System.arraycopy(sn, 0, this.sn, 0, 32);
+    public void setMac(byte[] mac) {
+        System.arraycopy(mac, 0, this.mac, 0, 6);
     }
 
     public String getPassword() {

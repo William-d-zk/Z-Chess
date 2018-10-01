@@ -35,6 +35,7 @@ import com.tgx.chess.queen.io.external.websokcet.bean.control.X103_Close;
 import com.tgx.chess.queen.io.external.websokcet.bean.control.X104_Ping;
 import com.tgx.chess.queen.io.external.websokcet.bean.control.X105_Pong;
 import com.tgx.chess.queen.io.external.websokcet.bean.control.X106_Identity;
+import com.tgx.chess.queen.io.external.websokcet.bean.control.X107_Redirect;
 
 /**
  * @author William.d.zk
@@ -95,6 +96,7 @@ public class WsControlFilter
             case WsFrame.frame_op_code_ctrl_ping:
             case WsFrame.frame_op_code_ctrl_pong:
             case WsFrame.frame_op_code_ctrl_cluster:
+            case WsFrame.frame_op_code_ctrl_redirect:
                 return ResultType.HANDLED;
             default:
                 return ResultType.ERROR;
@@ -113,6 +115,8 @@ public class WsControlFilter
                 return new X105_Pong(wsFrame.getPayload());
             case WsFrame.frame_op_code_ctrl_cluster:
                 return new X106_Identity(wsFrame.getPayload());
+            case WsFrame.frame_op_code_ctrl_redirect:
+                return new X107_Redirect(wsFrame.getPayload());
             default:
                 return null;
         }

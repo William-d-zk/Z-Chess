@@ -33,6 +33,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
@@ -45,7 +46,8 @@ import org.hibernate.validator.constraints.Length;
 import com.tgx.chess.spring.jpa.model.AuditModel;
 
 @Entity
-@Table
+@Table(indexes = { @Index(name = "account_idx_email", columnList = "email"),
+                   @Index(name = "account_idx_name", columnList = "name") })
 public class Account
         extends
         AuditModel

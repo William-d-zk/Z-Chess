@@ -93,21 +93,25 @@ public class DeviceService
         switch (tar.getSerial()) {
             case X20_SignUp.COMMAND:
                 X20_SignUp x20 = (X20_SignUp) tar;
-                byte[] deviceSn = x20.getSn();
+                byte[] deviceMac = x20.getMac();
                 String devicePwd = x20.getPassword();
                 long pwdId = x20.getPasswordId();
-                Device device = _DeviceRepository.findBySn(deviceSn);
+                Device device = _DeviceRepository.findByMac(IoUtil.readMac(deviceMac));
                 X21_SignUpResult x21 = new X21_SignUpResult();
                 success:
                 {
                     if (Objects.isNull(device) || device.getPasswordId() == pwdId) {
                         if (Objects.isNull(device)) {
                             device = new Device();
-                            device.setSn(deviceSn);
+                            device.setMac(IoUtil.readMac(deviceMac));
                             device.setPassword(devicePwd);
                             device.setPasswordId(pwdId);
                             device.setInvalidAt(Date.from(Instant.now()
                                                                  .plusSeconds(TimeUnit.DAYS.toSeconds(41))));
+                            byte[] src = new byte[6 + devicePwd.getBytes().length];
+                            IoUtil.write(deviceMac, src, 0);
+                            IoUtil.write(devicePwd.getBytes(), src, 6);
+                            device.setToken(IoUtil.bin2Hex(_CryptUtil.sha256(src)));
                             try {
                                 _DeviceRepository.save(device);
                             }
@@ -118,7 +122,12 @@ public class DeviceService
                             }
                         }
                         x21.setSuccess();
+                        break success;
                     }
+                    x21.setFailed();
+                }
+                if (x21.isSuccess()) {
+                    x21.setToken(IoUtil.hex2bin(device.getToken()));
                 }
                 x21.setPasswordId(pwdId);
                 return x21;
@@ -136,27 +145,16 @@ public class DeviceService
             case X22_SignIn.COMMAND:
                 X22_SignIn x22 = (X22_SignIn) key;
                 X23_SignInResult x23 = new X23_SignInResult();
-                byte[] deviceSn = x22.getSn();
+                byte[] deviceToken = x22.getToken();
                 String devicePwd = x22.getPassword();
                 login:
                 {
-                    Device device = _DeviceRepository.findBySnAndPassword(deviceSn, devicePwd);
+                    Device device = _DeviceRepository.findByTokenAndPassword(IoUtil.bin2Hex(deviceToken), devicePwd);
                     if (Objects.nonNull(device)) {
-                        device.setInvalidAt(Date.from(Instant.now()
-                                                             .plusSeconds(TimeUnit.DAYS.toSeconds(41))));
-                        byte[] x = new byte[16];
-                        _Random.nextBytes(x);
-                        x = _CryptUtil.sha256(x);
-                        device.setToken(IoUtil.bin2Hex(x));
-                        try {
-                            _DeviceRepository.save(device);
-                            x23.setSuccess();
-                            x23.setToken(device.getToken());
-                            break login;
-                        }
-                        catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                        x23.setSuccess();
+                        Date date = device.getInvalidAt();
+                        x23.setInvalidTime(date.getTime());
+                        break login;
                     }
                     x23.setFailed();
                 }

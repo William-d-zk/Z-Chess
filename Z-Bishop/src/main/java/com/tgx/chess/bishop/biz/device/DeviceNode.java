@@ -63,6 +63,7 @@ import com.tgx.chess.queen.io.core.inf.ISessionOption;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
 import com.tgx.chess.queen.io.external.websokcet.ZContext;
 import com.tgx.chess.queen.io.external.websokcet.bean.control.X101_HandShake;
+import com.tgx.chess.queen.io.external.websokcet.bean.control.X103_Close;
 import com.tgx.chess.queen.io.external.websokcet.bean.control.X104_Ping;
 import com.tgx.chess.queen.io.external.websokcet.bean.control.X105_Pong;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X50_DeviceMsg;
@@ -210,6 +211,10 @@ public class DeviceNode
                         _Log.info("device node logic handle %s", cmd);
                         switch (cmd.getSerial()) {
                             case X101_HandShake.COMMAND:
+                                break;
+                            case X103_Close.COMMAND:
+                                cmd = null;
+                                core.localClose(session);
                                 break;
                             case X104_Ping.COMMAND:
                                 cmd = new X105_Pong("Server pong".getBytes());
