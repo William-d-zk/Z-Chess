@@ -1,8 +1,8 @@
-
 description = 'Z-Rook'
 dependencies {
-  compile project(':io.z-queen')
-    compile(group: 'org.springframework.boot', name: 'spring-boot-starter-web', version:'2.0.5.RELEASE') {
-exclude(module: 'spring-boot-starter-tomcat')
+    compile project(':io.z-queen')
+    compile(group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.0.5.RELEASE') {
+        exclude(module: 'spring-boot-starter-tomcat')
     }
+    compile group: 'com.google.maps', name: 'google-maps-services', version: '0.2.11'
 }

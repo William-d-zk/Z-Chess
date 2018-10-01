@@ -1,7 +1,5 @@
-
 description = 'Z-Pawn'
 dependencies {
-  compile project(':spring.z-knight')
-  compile project(':manange.z-bishop')
-  compile project(':endpoint.z-rook')
+    compile project(':spring.z-knight')
+    compile project(':endpoint.z-rook')
 }
