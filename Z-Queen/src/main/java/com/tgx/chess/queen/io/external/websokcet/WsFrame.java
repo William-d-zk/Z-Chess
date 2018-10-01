@@ -46,6 +46,7 @@ public class WsFrame
     public final static byte frame_op_code_ctrl_ping                  = 0x09;
     public final static byte frame_op_code_ctrl_pong                  = 0x0A;
     public final static byte frame_op_code_ctrl_cluster               = 0x0B;
+    public final static byte frame_op_code_ctrl_redirect              = 0x0C;
     public final static byte frame_op_code_ctrl_handshake             = 0x00;
     public final static byte frame_op_code_mask                       = 0x0F;
     public final static byte frame_fin_more                           = 0x00;

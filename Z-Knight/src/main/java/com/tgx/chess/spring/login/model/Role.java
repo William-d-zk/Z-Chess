@@ -29,12 +29,13 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.Table;
 
 import com.tgx.chess.spring.jpa.model.AuditModel;
 
 @Entity
-@Table
+@Table(indexes = { @Index(name = "role_idx_role", columnList = "role") })
 public class Role
         extends
         AuditModel

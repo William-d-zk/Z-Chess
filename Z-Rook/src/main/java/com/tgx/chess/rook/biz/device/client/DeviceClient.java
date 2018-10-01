@@ -33,8 +33,11 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
@@ -67,12 +70,15 @@ import com.tgx.chess.queen.io.core.inf.ISessionCreator;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 import com.tgx.chess.queen.io.external.websokcet.ZContext;
-import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X03_Cipher;
-import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X05_EncryptStart;
 import com.tgx.chess.queen.io.external.websokcet.bean.control.X101_HandShake;
 import com.tgx.chess.queen.io.external.websokcet.bean.control.X103_Close;
 import com.tgx.chess.queen.io.external.websokcet.bean.control.X104_Ping;
 import com.tgx.chess.queen.io.external.websokcet.bean.control.X105_Pong;
+import com.tgx.chess.queen.io.external.websokcet.bean.device.X21_SignUpResult;
+import com.tgx.chess.queen.io.external.websokcet.bean.device.X22_SignIn;
+import com.tgx.chess.queen.io.external.websokcet.bean.device.X23_SignInResult;
+import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X03_Cipher;
+import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X05_EncryptStart;
 import com.tgx.chess.rook.biz.device.dto.DeviceEntry;
 
 @Component
@@ -83,7 +89,7 @@ public class DeviceClient
         ISessionDismiss,
         ISessionCreated
 {
-    private final Logger                   _Log        = Logger.getLogger(getClass().getName());
+    private final Logger                   _Log            = Logger.getLogger(getClass().getName());
 
     private final String                   _TargetName;
     private final String                   _TargetHost;
@@ -93,10 +99,11 @@ public class DeviceClient
     private final ICommandCreator          _CommandCreator;
     private final IAioConnector            _DeviceConnector;
     private final AsynchronousChannelGroup _ChannelGroup;
-    private final ClientCore<DeviceEntry>  _ClientCore = new ClientCore<>();
-    private final TimeWheel                _TimeWheel  = _ClientCore.getTimeWheel();
+    private final ClientCore<DeviceEntry>  _ClientCore     = new ClientCore<>();
+    private final TimeWheel                _TimeWheel      = _ClientCore.getTimeWheel();
 
     private ISession                       clientSession;
+    private final AtomicReference<byte[]>  currentTokenRef = new AtomicReference<>();
 
     public DeviceClient(@Value("${client.target.name}") String targetName,
                         @Value("${client.target.host}") String targetHost,
@@ -213,6 +220,24 @@ public class DeviceClient
                                                  case X03_Cipher.COMMAND:
                                                  case X05_EncryptStart.COMMAND:
                                                      return cmd;
+                                                 case X21_SignUpResult.COMMAND:
+                                                     X21_SignUpResult x21 = (X21_SignUpResult) cmd;
+                                                     X22_SignIn x22 = new X22_SignIn();
+                                                     currentTokenRef.set(x21.getToken());
+                                                     x22.setToken(currentTokenRef.get());
+                                                     x22.setPassword("password");
+                                                     return x22;
+                                                 case X23_SignInResult.COMMAND:
+                                                     X23_SignInResult x23 = (X23_SignInResult) cmd;
+                                                     if (x23.isSuccess()) {
+                                                         _Log.info("sign in success token invalid @ %s",
+                                                                   Instant.ofEpochMilli(x23.getInvalidTime())
+                                                                          .atZone(ZoneId.of("GMT+8")));
+                                                     }
+                                                     else {
+                                                         return new X103_Close("sign in failed! close".getBytes());
+                                                     }
+                                                     break;
                                                  case X101_HandShake.COMMAND:
                                                      _Log.info("handshake ok");
                                                      break;
@@ -295,5 +320,9 @@ public class DeviceClient
     public void heartbeat(String msg) {
         Objects.requireNonNull(msg);
         sendLocal(new X104_Ping(msg.getBytes()));
+    }
+
+    public byte[] getToken() {
+        return currentTokenRef.get();
     }
 }

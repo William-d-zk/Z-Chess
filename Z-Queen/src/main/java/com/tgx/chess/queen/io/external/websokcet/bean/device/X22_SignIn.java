@@ -50,7 +50,7 @@ public class X22_SignIn
         return true;
     }
 
-    private byte[] sn = new byte[32];
+    private byte[] token = new byte[32];
     private String password;
 
     @Override
@@ -60,7 +60,7 @@ public class X22_SignIn
 
     @Override
     public int decodec(byte[] data, int pos) {
-        pos = IoUtil.read(data, pos, sn);
+        pos = IoUtil.read(data, pos, token);
         int passwordBytesLength = data[pos++] & 0xFF;
         password = IoUtil.readString(data, pos, passwordBytesLength);
         pos += passwordBytesLength;
@@ -69,19 +69,19 @@ public class X22_SignIn
 
     @Override
     public int encodec(byte[] data, int pos) {
-        pos += IoUtil.write(sn, data, pos);
+        pos += IoUtil.write(token, data, pos);
         byte[] passwordBytes = password.getBytes();
         pos += IoUtil.writeByte(passwordBytes.length, data, pos);
         pos += IoUtil.write(passwordBytes, data, pos);
         return pos;
     }
 
-    public byte[] getSn() {
-        return sn;
+    public byte[] getToken() {
+        return token;
     }
 
-    public void setSn(byte[] sn) {
-        this.sn = sn;
+    public void setToken(byte[] token) {
+        this.token = token;
     }
 
     public void setPassword(String password) {

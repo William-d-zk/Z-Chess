@@ -148,6 +148,20 @@ public interface IoUtil
         return String.format("%d.%d.%d.%d:%d", a, b, c, d, port);
     }
 
+    static String readInetAddr(byte[] inetAddr, int off) {
+        int a, b, c, d, port;
+        a = inetAddr[off] & 0xFF;
+        b = inetAddr[off + 1] & 0xFF;
+        c = inetAddr[off + 2] & 0xFF;
+        d = inetAddr[off + 3] & 0xFF;
+        port = readUnsignedShort(inetAddr, off + 4);
+        return String.format("%d.%d.%d.%d:%d", a, b, c, d, port);
+    }
+
+    static String readInetAddr(byte[] inetAddr) {
+        return readIpAdr(inetAddr, 0);
+    }
+
     static byte[] variableLength(int length) {
         if (length == 0) return new byte[] { 0 };
         int resLength = 0;
@@ -380,6 +394,10 @@ public interface IoUtil
         return read6BLong(src, off);
     }
 
+    static String readMac(byte[] src) {
+        return bin2Hex(src, 0, 6, ":");
+    }
+
     static String readIpAdr(byte[] src, int off) {
         StringBuilder buf = new StringBuilder();
         for (int i = 0; i < 4; i++) {
@@ -387,6 +405,10 @@ public interface IoUtil
             if (i < 3) buf.append('.');
         }
         return buf.toString();
+    }
+
+    static String readIpAdr(byte[] src) {
+        return readIpAdr(src, 0);
     }
 
     static int read(byte[] src, int src_off, byte[] dst, int dst_off, int len) {

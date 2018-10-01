@@ -26,10 +26,8 @@ package com.tgx.chess.spring.device.model;
 
 import java.util.Date;
 
-import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Index;
@@ -42,14 +40,13 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.validator.constraints.Length;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.spring.jpa.model.AuditModel;
 
 @Entity
 @Table(schema = "\"tgx-z-chess-device\"",
-       indexes = { @Index(name = "device_idx_sn_pwd", columnList = "sn,password"),
+       indexes = { @Index(name = "device_idx_token_pwd", columnList = "token,password"),
                    @Index(name = "device_idx_token", columnList = "token"),
-                   @Index(name = "device_idx_sn", columnList = "sn") })
+                   @Index(name = "device_idx_mac", columnList = "mac") })
 public class Device
         extends
         AuditModel
@@ -61,10 +58,9 @@ public class Device
     @GenericGenerator(name = "ZGenerator", strategy = "com.tgx.chess.spring.jpa.generator.ZGenerator")
     private Long              id;
 
-    @NotEmpty(message = "provide create device sn")
-    @Basic(fetch = FetchType.LAZY)
-    @Column(length = 32)
-    private byte[]            sn;
+    @NotEmpty(message = "provide create device lv2 mac")
+    @Column(length = 17)
+    private String            mac;
 
     @Column(length = 32)
     @Length(min = 5, max = 32, message = "*Your password must have at least 5 characters less than 32 characters")
@@ -95,14 +91,6 @@ public class Device
         this.password = password;
     }
 
-    public byte[] getSn() {
-        return sn;
-    }
-
-    public void setSn(byte[] sn) {
-        this.sn = sn;
-    }
-
     public String getToken() {
         return token;
     }
@@ -113,12 +101,14 @@ public class Device
 
     @Override
     public String toString() {
-        return String.format("device{id:%s,pass:%s,sn:%s,create:%s,update:%s}",
+        return String.format("device{id:%s,pass:%s,mac:%s,create:%s,update:%s,token:%s,invalid:%s}",
                              getId(),
                              getPassword(),
-                             IoUtil.bin2Hex(getSn()),
+                             getMac(),
                              getCreatedAt(),
-                             getUpdatedAt());
+                             getUpdatedAt(),
+                             getToken(),
+                             getInvalidAt());
     }
 
     public long getPasswordId() {
@@ -135,5 +125,13 @@ public class Device
 
     public void setInvalidAt(Date invalidAt) {
         this.invalidAt = invalidAt;
+    }
+
+    public String getMac() {
+        return mac;
+    }
+
+    public void setMac(String mac) {
+        this.mac = mac;
     }
 }

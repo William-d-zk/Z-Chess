@@ -24,6 +24,8 @@
 
 package com.tgx.chess.queen.io.core.executor;
 
+import static com.tgx.chess.queen.event.operator.OperatorHolder.CLOSE_OPERATOR;
+
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
@@ -55,8 +57,10 @@ import com.tgx.chess.queen.event.handler.HandlerFactory;
 import com.tgx.chess.queen.event.handler.IoDispatcher;
 import com.tgx.chess.queen.event.handler.LinkHandler;
 import com.tgx.chess.queen.event.handler.WriteDispatcher;
+import com.tgx.chess.queen.event.inf.IOperator.Type;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.async.socket.AioWorker;
+import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
 
 public class ServerCore<E extends IStorage>
@@ -405,4 +409,12 @@ public class ServerCore<E extends IStorage>
     public TimeWheel getTimeWheel() {
         return _TimeWheel;
     }
+
+    public synchronized void localClose(ISession session) {
+        long sequence = _BizLocalCloseEvent.next();
+        QEvent event = _BizLocalCloseEvent.get(sequence);
+        event.produce(Type.CLOSE, null, session, CLOSE_OPERATOR());
+        _BizLocalCloseEvent.publish(sequence);
+    }
+
 }

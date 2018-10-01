@@ -22,22 +22,33 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.device.repository;
+package com.tgx.chess.queen.io.external.websokcet.bean.control;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import com.tgx.chess.king.base.util.IoUtil;
+import com.tgx.chess.queen.io.external.websokcet.WsControl;
+import com.tgx.chess.queen.io.external.websokcet.WsFrame;
 
-import com.tgx.chess.spring.device.model.Device;
-
-@Repository
-//@Transactional
-public interface DeviceRepository
+public class X107_Redirect
         extends
-        JpaRepository<Device, Long>
+        WsControl
 {
-    Device findByTokenAndPassword(String token, String password);
+    public final static int COMMAND = 0x107;
 
-    Device findByMac(String mac);
+    public X107_Redirect(byte[] payload) {
+        super(COMMAND, payload);
+        mCtrlCode = WsFrame.frame_op_code_ctrl_redirect;
+    }
 
-    Device findByToken(String token);
+    public String getHost() {
+        return IoUtil.readIpAdr(getPayload());
+    }
+
+    public int getPort() {
+        return IoUtil.readUnsignedShort(getPayload(), 4);
+    }
+
+    @Override
+    public X107_Redirect duplicate() {
+        return new X107_Redirect(getPayload());
+    }
 }
