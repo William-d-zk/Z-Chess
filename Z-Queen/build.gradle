@@ -1,6 +1,4 @@
-
 description = 'Z-Queen'
 dependencies {
-    compile group: 'com.lmax', name: 'disruptor', version:'3.4.2'
-  compile project(':core.z-king')
+    compile project(':core.z-king')
 }
