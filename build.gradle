@@ -1,6 +1,5 @@
 allprojects {
     apply plugin: 'maven'
-
     group = 'com.tgx.service'
     version = '1.0.0-SNAPSHOT'
 }

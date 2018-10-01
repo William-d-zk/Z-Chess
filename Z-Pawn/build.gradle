@@ -1,5 +1,9 @@
+plugins {
+    id 'application'
+}
 description = 'Z-Pawn'
 dependencies {
     compile project(':spring.z-knight')
     compile project(':endpoint.z-rook')
 }
+mainClassName = 'com.tgx.chess.pawn.Application'
