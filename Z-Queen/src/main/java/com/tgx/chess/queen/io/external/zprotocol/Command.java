@@ -25,6 +25,7 @@ package com.tgx.chess.queen.io.external.zprotocol;
 
 import java.util.Objects;
 
+import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.king.base.util.I18nUtil;
 import com.tgx.chess.king.base.util.IoUtil;
@@ -43,6 +44,7 @@ public abstract class Command<C extends AioContext>
         IRouteLv4,
         IStreamProtocol<C>
 {
+    private final Logger     _Log                = Logger.getLogger(getClass().getName());
     public final static int  version             = 0x3;
     private final static int g_msg_uid_size      = 8;
     private final static int min_no_msg_uid_size = 1 + 1 + 1 + 4;
@@ -195,7 +197,10 @@ public abstract class Command<C extends AioContext>
         pos += IoUtil.writeByte(_Command, data, pos);
         if (isGlobalMsg()) pos += IoUtil.writeLong(mMsgUID, data, pos);
         pos += IoUtil.writeByte(mTypeByte, data, pos);
-        addCrc(data, encodec(data, pos));
+        int ppos = pos;
+        int dpos = encodec(data, pos);
+        _Log.info("command:0x%03X,payload:%s", _Command, IoUtil.bin2Hex(data, ppos, dpos - ppos, "."));
+        addCrc(data, dpos);
         return data;
     }
 
