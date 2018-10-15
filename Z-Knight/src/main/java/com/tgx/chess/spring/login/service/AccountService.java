@@ -30,8 +30,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.tgx.chess.spring.login.model.Account;
@@ -45,13 +43,6 @@ public class AccountService
 
     private final AccountRepository _AccountRepository;
     private final RoleRepository    _RoleRepository;
-
-    @Bean
-    public BCryptPasswordEncoder get_BCryptPasswordEncoder() {
-        return _BCryptPasswordEncoder;
-    }
-
-    private final BCryptPasswordEncoder _BCryptPasswordEncoder = new BCryptPasswordEncoder();
 
     @Autowired
     public AccountService(AccountRepository accountRepository, RoleRepository roleRepository) {
@@ -77,7 +68,7 @@ public class AccountService
             Account root = new Account();
             root.setActive(1);
             root.setName("root");
-            root.setPassword(_BCryptPasswordEncoder.encode("root"));
+            root.setPassword("root");
             root.setRoles(new HashSet<>(Collections.singletonList(admin)));
             root.setEmail("z-chess@tgxstudio.com");
             _AccountRepository.save(root);
@@ -93,7 +84,7 @@ public class AccountService
     }
 
     public void saveAccount(Account account) {
-        account.setPassword(_BCryptPasswordEncoder.encode(account.getPassword()));
+        account.setPassword(account.getPassword());
         account.setActive(1);
         Role role = _RoleRepository.findByRole("USER");
         account.setRoles(new HashSet<>(Collections.singletonList(role)));

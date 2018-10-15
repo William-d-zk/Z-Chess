@@ -26,6 +26,7 @@ package com.tgx.chess.pawn;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.stereotype.Controller;
 
 /**
  * @author william.d.zk
@@ -37,4 +38,5 @@ public class Application
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
     }
+
 }
