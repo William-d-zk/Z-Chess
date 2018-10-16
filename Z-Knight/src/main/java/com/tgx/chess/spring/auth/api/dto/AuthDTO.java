@@ -25,6 +25,7 @@
 package com.tgx.chess.spring.auth.api.dto;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 
 public class AuthDTO
@@ -51,5 +52,11 @@ public class AuthDTO
 
     public void setRoles(Collection<String> roles) {
         this.roles = roles;
+    }
+
+    public void setRole(String role) {
+        ArrayList<String> list = new ArrayList<>(1);
+        list.add(role);
+        setRoles(list);
     }
 }

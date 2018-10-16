@@ -22,27 +22,17 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.auth.service;
+package com.tgx.chess.spring.auth.repository;
 
-import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import com.tgx.chess.spring.auth.model.Profile;
 
-import com.tgx.chess.spring.auth.model.Role;
-import com.tgx.chess.spring.auth.repository.RoleRepository;
-
-@Service
-public class RoleService
+@Repository
+public interface ProfileRepository
+        extends
+        JpaRepository<Profile, Integer>
 {
-    private final RoleRepository _RoleRepository;
-
-    @Autowired
-    public RoleService(RoleRepository roleRepository) {
-        _RoleRepository = roleRepository;
-    }
-
-    public List<Role> getRoles(int id) {
-        return _RoleRepository.findAll();
-    }
+    Profile findByAccount(int accountId);
 }

@@ -22,27 +22,28 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.auth.service;
+package com.tgx.chess.spring.init;
 
-import java.util.List;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.tgx.chess.spring.auth.model.Role;
-import com.tgx.chess.spring.auth.repository.RoleRepository;
+import com.tgx.chess.spring.auth.service.AccountService;
 
-@Service
-public class RoleService
+@RestController
+public class InitService
 {
-    private final RoleRepository _RoleRepository;
+    private final AccountService _AccountService;
 
     @Autowired
-    public RoleService(RoleRepository roleRepository) {
-        _RoleRepository = roleRepository;
+    public InitService(AccountService accountService) {
+        _AccountService = accountService;
     }
 
-    public List<Role> getRoles(int id) {
-        return _RoleRepository.findAll();
+    @GetMapping("/local/init")
+    public void init(HttpSession session) {
+        _AccountService.initializeCheck();
     }
 }
