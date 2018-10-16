@@ -25,16 +25,17 @@
 package com.tgx.chess.spring.auth.api.dto;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 public class AuthDTO
         implements
         Serializable
 {
 
-    private static final long serialVersionUID = -9052656763177899443L;
+    private static final long  serialVersionUID = -9052656763177899443L;
 
-    private boolean           status;
-    private String            role;
+    private boolean            status;
+    private Collection<String> roles;
 
     public boolean isStatus() {
         return status;
@@ -44,11 +45,11 @@ public class AuthDTO
         this.status = status;
     }
 
-    public String getRole() {
-        return role;
+    public Collection<String> getRoles() {
+        return roles;
     }
 
-    public void setRole(String role) {
-        this.role = role;
+    public void setRoles(Collection<String> roles) {
+        this.roles = roles;
     }
 }

@@ -24,8 +24,9 @@
 
 package com.tgx.chess.spring.auth.api;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpSession;
 
@@ -37,6 +38,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tgx.chess.spring.auth.api.dto.AuthDTO;
+import com.tgx.chess.spring.auth.model.Account;
+import com.tgx.chess.spring.auth.model.Role;
 import com.tgx.chess.spring.auth.service.AccountService;
 
 @RestController
@@ -51,15 +55,27 @@ public class LoginService
     }
 
     @PostMapping(value = "/api/auth")
-    public @ResponseBody Object validate(@RequestBody Object param, HttpSession httpSession) {
+    public @ResponseBody AuthDTO validate(@RequestBody Map<String, String> param, HttpSession httpSession) {
         System.out.println(param);
-        Map<String, Object> response = new HashMap<>();
-        response.put("status", 200);
-        response.put("currentAuthority", "admin");
-        return response;
+        AuthDTO auth = new AuthDTO();
+        String username = param.get("username");
+        String password = param.get("password");
+        Account account = _AccountService.findByName(username)
+                                         .orElse(_AccountService.findByEmail(username)
+                                                                .orElse(null));
+        if (Objects.nonNull(password) && Objects.nonNull(account) && password.equals(account.getPassword())) {
+            auth.setStatus(true);
+            auth.setRoles(account.getRoles()
+                                 .stream()
+                                 .map(Role::getRole)
+                                 .collect(Collectors.toList()));
+        }
+        else {
+            auth.setStatus(false);
+        }
+
+        return auth;
     }
-
-
 
     @PostMapping(value = "/api/logout")
     public @ResponseBody Object logout(HttpSession httpSession) {
