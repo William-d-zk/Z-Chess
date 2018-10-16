@@ -22,24 +22,27 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.jpa;
+package com.tgx.chess.spring.auth.service;
 
-import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
+import java.util.List;
 
-@EnableJpaAuditing
-@EnableJpaRepositories({ "com.tgx.chess.spring.auth.repository",
-                         "com.tgx.chess.spring.device.repository" })
-@EntityScan({ "com.tgx.chess.spring.device.model",
-              "com.tgx.chess.spring.auth.model" })
-@EnableTransactionManagement
-@Configuration
-@PropertySource({ "classpath:db.properties" })
-public class JpaConfig
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.tgx.chess.spring.auth.model.Role;
+import com.tgx.chess.spring.auth.repository.RoleRepository;
+
+@Service
+public class RoleService
 {
+    private final RoleRepository _RoleRepository;
 
+    @Autowired
+    public RoleService(RoleRepository roleRepository) {
+        _RoleRepository = roleRepository;
+    }
+
+    List<Role> getRoles(int id) {
+        return _RoleRepository.findAll();
+    }
 }

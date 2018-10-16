@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.login.service;
+package com.tgx.chess.spring.auth.service;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -32,10 +32,10 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.tgx.chess.spring.login.model.Account;
-import com.tgx.chess.spring.login.model.Role;
-import com.tgx.chess.spring.login.repository.AccountRepository;
-import com.tgx.chess.spring.login.repository.RoleRepository;
+import com.tgx.chess.spring.auth.model.Account;
+import com.tgx.chess.spring.auth.model.Role;
+import com.tgx.chess.spring.auth.repository.AccountRepository;
+import com.tgx.chess.spring.auth.repository.RoleRepository;
 
 @Service
 public class AccountService

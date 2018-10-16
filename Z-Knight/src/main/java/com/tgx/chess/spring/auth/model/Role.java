@@ -22,24 +22,43 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.jpa;
+package com.tgx.chess.spring.auth.model;
 
-import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
 
-@EnableJpaAuditing
-@EnableJpaRepositories({ "com.tgx.chess.spring.auth.repository",
-                         "com.tgx.chess.spring.device.repository" })
-@EntityScan({ "com.tgx.chess.spring.device.model",
-              "com.tgx.chess.spring.auth.model" })
-@EnableTransactionManagement
-@Configuration
-@PropertySource({ "classpath:db.properties" })
-public class JpaConfig
+import com.tgx.chess.spring.jpa.model.AuditModel;
+
+@Entity
+@Table(indexes = { @Index(name = "role_idx_role", columnList = "role") })
+public class Role
+        extends
+        AuditModel
 {
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    private int    id;
+    @Column(length = 16)
+    private String role;
 
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
 }
