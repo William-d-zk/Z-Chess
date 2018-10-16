@@ -22,19 +22,17 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.login.repository;
+package com.tgx.chess.spring.auth.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.tgx.chess.spring.login.model.Account;
+import com.tgx.chess.spring.auth.model.Role;
 
 @Repository
-public interface AccountRepository
+public interface RoleRepository
         extends
-        JpaRepository<Account, Long>
+        JpaRepository<Role, Integer>
 {
-    Account findByEmail(String email);
-
-    Account findByName(String name);
+    Role findByRole(String role);
 }

@@ -22,17 +22,33 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.login.repository;
+package com.tgx.chess.spring.auth.api.dto;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import java.io.Serializable;
 
-import com.tgx.chess.spring.login.model.Role;
-
-@Repository
-public interface RoleRepository
-        extends
-        JpaRepository<Role, Integer>
+public class AuthDTO
+        implements
+        Serializable
 {
-    Role findByRole(String role);
+
+    private static final long serialVersionUID = -9052656763177899443L;
+
+    private boolean           status;
+    private String            role;
+
+    public boolean isStatus() {
+        return status;
+    }
+
+    public void setStatus(boolean status) {
+        this.status = status;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
 }

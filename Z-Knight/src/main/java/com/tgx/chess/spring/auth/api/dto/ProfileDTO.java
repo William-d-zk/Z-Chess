@@ -22,27 +22,33 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.login.service;
+package com.tgx.chess.spring.auth.api.dto;
 
-import java.util.List;
+import java.io.Serializable;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import com.tgx.chess.spring.login.model.Role;
-import com.tgx.chess.spring.login.repository.RoleRepository;
-
-@Service
-public class RoleService
+public class ProfileDTO
+        implements
+        Serializable
 {
-    private final RoleRepository _RoleRepository;
 
-    @Autowired
-    public RoleService(RoleRepository roleRepository) {
-        _RoleRepository = roleRepository;
+    private static final long serialVersionUID = 5409265243979234754L;
+
+    private String            name;
+    private String            avatar;
+
+    public String getName() {
+        return name;
     }
 
-    List<Role> getRoles(int id) {
-        return _RoleRepository.findAll();
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
     }
 }

@@ -22,41 +22,29 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.login.api;
+package com.tgx.chess.spring.auth.api;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpSession;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tgx.chess.spring.login.service.AccountService;
+import com.tgx.chess.spring.auth.service.AccountService;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:4444")
-public class LoginApi
+public class RegisterService
 {
-    private final AccountService accountService;
+    private final AccountService _AccountService;
 
-    @Autowired
-    public LoginApi(AccountService accountService) {
-        this.accountService = accountService;
-    }
-
-    @PostMapping(value = "/api/login")
-    public @ResponseBody Object validate(@RequestBody Object param, HttpSession httpSession) {
-        System.out.println(param);
-        Map<String, Object> response = new HashMap<>();
-        response.put("status", 200);
-        response.put("currentAuthority", "admin");
-        return response;
+    public RegisterService(AccountService accountService) {
+        _AccountService = accountService;
     }
 
     @PostMapping(value = "/api/register")
@@ -66,15 +54,5 @@ public class LoginApi
         response.put("status", 200);
         response.put("currentAuthority", "user");
         return response;
-    }
-
-    @PostMapping(value = "/logout")
-    public String logout(HttpSession httpSession) {
-        return "Admin";
-    }
-
-    @GetMapping(value = "/profile")
-    public String profile(HttpSession httpSession) {
-        return "Admin";
     }
 }

@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.login.model;
+package com.tgx.chess.spring.auth.model;
 
 import java.util.Set;
 
