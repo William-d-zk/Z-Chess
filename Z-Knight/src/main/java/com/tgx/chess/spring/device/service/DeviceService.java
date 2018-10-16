@@ -104,22 +104,23 @@ public class DeviceService
                         if (Objects.isNull(device)) {
                             device = new Device();
                             device.setMac(IoUtil.readMac(deviceMac));
-                            device.setPassword(devicePwd);
                             device.setPasswordId(pwdId);
-                            device.setInvalidAt(Date.from(Instant.now()
-                                                                 .plusSeconds(TimeUnit.DAYS.toSeconds(41))));
-                            byte[] src = new byte[6 + devicePwd.getBytes().length];
-                            IoUtil.write(deviceMac, src, 0);
-                            IoUtil.write(devicePwd.getBytes(), src, 6);
-                            device.setToken(IoUtil.bin2Hex(_CryptUtil.sha256(src)));
-                            try {
-                                _DeviceRepository.save(device);
-                            }
-                            catch (Exception e) {
-                                e.printStackTrace();
-                                x21.setFailed();
-                                break success;
-                            }
+
+                        }
+                        device.setPassword(devicePwd);
+                        device.setInvalidAt(Date.from(Instant.now()
+                                                             .plusSeconds(TimeUnit.DAYS.toSeconds(41))));
+                        byte[] src = new byte[6 + devicePwd.getBytes().length];
+                        IoUtil.write(deviceMac, src, 0);
+                        IoUtil.write(devicePwd.getBytes(), src, 6);
+                        device.setToken(IoUtil.bin2Hex(_CryptUtil.sha256(src)));
+                        try {
+                            _DeviceRepository.save(device);
+                        }
+                        catch (Exception e) {
+                            e.printStackTrace();
+                            x21.setFailed();
+                            break success;
                         }
                         x21.setSuccess();
                         break success;
@@ -145,16 +146,24 @@ public class DeviceService
             case X22_SignIn.COMMAND:
                 X22_SignIn x22 = (X22_SignIn) key;
                 X23_SignInResult x23 = new X23_SignInResult();
-                byte[] deviceToken = x22.getToken();
+                String deviceToken = IoUtil.bin2Hex(x22.getToken());
                 String devicePwd = x22.getPassword();
                 login:
                 {
-                    Device device = _DeviceRepository.findByTokenAndPassword(IoUtil.bin2Hex(deviceToken), devicePwd);
+                    byte[] password = devicePwd.getBytes();
+                    byte[] toSign = new byte[password.length + 6];
+                    IoUtil.write(password, toSign, 6);
+                    Device device = _DeviceRepository.findByTokenAndPassword(deviceToken, devicePwd);
                     if (Objects.nonNull(device)) {
-                        x23.setSuccess();
-                        Date date = device.getInvalidAt();
-                        x23.setInvalidTime(date.getTime());
-                        break login;
+                        byte[] macRaw = IoUtil.writeMacRaw(device.getMac());
+                        IoUtil.write(macRaw, toSign, 0);
+                        String sign = IoUtil.bin2Hex(_CryptUtil.sha256(toSign));
+                        if (sign.equals(deviceToken)) {
+                            x23.setSuccess();
+                            Date date = device.getInvalidAt();
+                            x23.setInvalidTime(date.getTime());
+                            break login;
+                        }
                     }
                     x23.setFailed();
                 }

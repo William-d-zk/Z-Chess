@@ -398,6 +398,10 @@ public interface IoUtil
         return bin2Hex(src, 0, 6, ":");
     }
 
+    static byte[] writeMacRaw(String mac) {
+        return hex2bin(mac.replaceAll(":", ""));
+    }
+
     static String readIpAdr(byte[] src, int off) {
         StringBuilder buf = new StringBuilder();
         for (int i = 0; i < 4; i++) {
