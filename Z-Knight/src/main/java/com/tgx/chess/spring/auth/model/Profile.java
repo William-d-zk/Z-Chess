@@ -22,27 +22,41 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.auth.service;
+package com.tgx.chess.spring.auth.model;
 
-import java.util.List;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToOne;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import com.tgx.chess.spring.jpa.model.AuditModel;
 
-import com.tgx.chess.spring.auth.model.Role;
-import com.tgx.chess.spring.auth.repository.RoleRepository;
-
-@Service
-public class RoleService
+@Entity
+public class Profile
+        extends
+        AuditModel
 {
-    private final RoleRepository _RoleRepository;
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    private int     id;
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "profile")
+    private Account account;
 
-    @Autowired
-    public RoleService(RoleRepository roleRepository) {
-        _RoleRepository = roleRepository;
+    public int getId() {
+        return id;
     }
 
-    public List<Role> getRoles(int id) {
-        return _RoleRepository.findAll();
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public Account getAccount() {
+        return account;
+    }
+
+    public void setAccount(Account account) {
+        this.account = account;
     }
 }

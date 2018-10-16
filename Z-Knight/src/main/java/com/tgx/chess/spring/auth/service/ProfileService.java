@@ -24,25 +24,23 @@
 
 package com.tgx.chess.spring.auth.service;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.tgx.chess.spring.auth.model.Role;
-import com.tgx.chess.spring.auth.repository.RoleRepository;
+import com.tgx.chess.spring.auth.model.Profile;
+import com.tgx.chess.spring.auth.repository.ProfileRepository;
 
 @Service
-public class RoleService
+public class ProfileService
 {
-    private final RoleRepository _RoleRepository;
+    private final ProfileRepository _ProfileRepository;
 
     @Autowired
-    public RoleService(RoleRepository roleRepository) {
-        _RoleRepository = roleRepository;
+    public ProfileService(ProfileRepository profileRepository) {
+        _ProfileRepository = profileRepository;
     }
 
-    public List<Role> getRoles(int id) {
-        return _RoleRepository.findAll();
+    public Profile getProfile(int userId) {
+        return _ProfileRepository.findByAccount(userId);
     }
 }

@@ -24,10 +24,8 @@
 
 package com.tgx.chess.spring.auth.api;
 
-import java.util.HashMap;
 import java.util.Map;
-
-import javax.servlet.http.HttpSession;
+import java.util.Optional;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,6 +33,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tgx.chess.spring.auth.api.dto.AuthDTO;
+import com.tgx.chess.spring.auth.model.Account;
 import com.tgx.chess.spring.auth.service.AccountService;
 
 @RestController
@@ -48,11 +48,28 @@ public class RegisterService
     }
 
     @PostMapping(value = "/api/register")
-    public @ResponseBody Object register(@RequestBody Object param, HttpSession httpSession) {
+    public @ResponseBody AuthDTO register(@RequestBody Map<String, String> param) {
         System.out.println(param);
-        Map<String, Object> response = new HashMap<>();
-        response.put("status", 200);
-        response.put("currentAuthority", "user");
-        return response;
+        String username = param.get("name");
+        String email = param.get("email");
+        String password = param.get("passwd");
+        Optional<Account> test = _AccountService.findByEmail(email);
+        if (test.isPresent()) {
+            throw new IllegalArgumentException("email exist");
+        }
+        else {
+            test = _AccountService.findByName(username);
+            if (test.isPresent()) { throw new IllegalArgumentException("username exist"); }
+        }
+        AuthDTO auth = new AuthDTO();
+        auth.setStatus(true);
+        auth.setRole("USER");
+        Account account = new Account();
+        account.setActive(1);
+        account.setName(username);
+        account.setEmail(email);
+        account.setPassword(password);
+        _AccountService.saveAccount(account);
+        return auth;
     }
 }

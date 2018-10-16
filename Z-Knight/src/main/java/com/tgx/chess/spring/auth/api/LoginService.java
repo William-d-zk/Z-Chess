@@ -39,6 +39,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tgx.chess.spring.auth.api.dto.AuthDTO;
+import com.tgx.chess.spring.auth.api.dto.ProfileDTO;
 import com.tgx.chess.spring.auth.model.Account;
 import com.tgx.chess.spring.auth.model.Role;
 import com.tgx.chess.spring.auth.service.AccountService;
@@ -54,8 +55,8 @@ public class LoginService
         _AccountService = accountService;
     }
 
-    @PostMapping(value = "/api/auth")
-    public @ResponseBody AuthDTO validate(@RequestBody Map<String, String> param, HttpSession httpSession) {
+    @PostMapping(value = "/api/login")
+    public @ResponseBody AuthDTO validate(@RequestBody Map<String, String> param) {
         System.out.println(param);
         AuthDTO auth = new AuthDTO();
         String username = param.get("username");
@@ -73,17 +74,20 @@ public class LoginService
         else {
             auth.setStatus(false);
         }
-
         return auth;
     }
 
     @PostMapping(value = "/api/logout")
-    public @ResponseBody Object logout(HttpSession httpSession) {
-        return "Admin";
+    public @ResponseBody AuthDTO logout() {
+        AuthDTO auth = new AuthDTO();
+        auth.setStatus(true);
+        return auth;
     }
 
     @GetMapping(value = "/api/profile")
-    public @ResponseBody Object profile(HttpSession httpSession) {
-        return "Admin";
+    public @ResponseBody ProfileDTO profile(HttpSession session) {
+        ProfileDTO profile = new ProfileDTO();
+        profile.setName("幂等");
+        return profile;
     }
 }
