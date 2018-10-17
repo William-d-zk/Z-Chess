@@ -79,8 +79,7 @@ public class Account
     @JoinTable(name = "account_role", joinColumns = @JoinColumn(name = "account_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinTable(name = "account_profile")
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "account")
     private Profile   profile;
 
     public int getId() {
@@ -138,4 +137,5 @@ public class Account
     public void setProfile(Profile profile) {
         this.profile = profile;
     }
+
 }

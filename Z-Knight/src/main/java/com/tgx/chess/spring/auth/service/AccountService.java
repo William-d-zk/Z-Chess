@@ -33,8 +33,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.tgx.chess.spring.auth.model.Account;
+import com.tgx.chess.spring.auth.model.Profile;
 import com.tgx.chess.spring.auth.model.Role;
 import com.tgx.chess.spring.auth.repository.AccountRepository;
+import com.tgx.chess.spring.auth.repository.ProfileRepository;
 import com.tgx.chess.spring.auth.repository.RoleRepository;
 
 @Service
@@ -43,11 +45,13 @@ public class AccountService
 
     private final AccountRepository _AccountRepository;
     private final RoleRepository    _RoleRepository;
+    private final ProfileRepository _ProfileRepository;
 
     @Autowired
-    public AccountService(AccountRepository accountRepository, RoleRepository roleRepository) {
+    public AccountService(AccountRepository accountRepository, RoleRepository roleRepository, ProfileRepository profileRepository) {
         _AccountRepository = accountRepository;
         _RoleRepository = roleRepository;
+        _ProfileRepository = profileRepository;
     }
 
     public void initializeCheck() {
@@ -65,13 +69,17 @@ public class AccountService
         }
         Account test = _AccountRepository.findByName("root");
         if (Objects.isNull(test)) {
+            Profile profile = new Profile();
             Account root = new Account();
             root.setActive(1);
             root.setName("root");
-            root.setPassword("root");
+            root.setPassword("root12345");
             root.setRoles(new HashSet<>(Collections.singletonList(admin)));
             root.setEmail("z-chess@tgxstudio.com");
+            root.setProfile(profile);
+            profile.setAccount(root);
             _AccountRepository.save(root);
+            profile.setAccount(null);
         }
     }
 
