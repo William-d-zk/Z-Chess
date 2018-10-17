@@ -74,6 +74,7 @@ public class LoginService
         else {
             auth.setStatus(false);
         }
+
         return auth;
     }
 
@@ -86,6 +87,7 @@ public class LoginService
 
     @GetMapping(value = "/api/profile")
     public @ResponseBody ProfileDTO profile(HttpSession session) {
+        System.out.println(session.getAttributeNames());
         ProfileDTO profile = new ProfileDTO();
         profile.setName("幂等");
         return profile;

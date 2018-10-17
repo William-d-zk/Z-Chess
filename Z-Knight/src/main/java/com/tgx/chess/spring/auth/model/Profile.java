@@ -29,11 +29,15 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
+import javax.persistence.Table;
 
 import com.tgx.chess.spring.jpa.model.AuditModel;
 
 @Entity
+@Table(indexes = { @Index(name = "profile_idx_account", columnList = "account_id") })
 public class Profile
         extends
         AuditModel
@@ -41,7 +45,9 @@ public class Profile
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private int     id;
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "profile")
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "account_id")
     private Account account;
 
     public int getId() {
@@ -59,4 +65,5 @@ public class Profile
     public void setAccount(Account account) {
         this.account = account;
     }
+
 }
