@@ -79,7 +79,6 @@ public class AccountService
             root.setProfile(profile);
             profile.setAccount(root);
             _AccountRepository.save(root);
-            profile.setAccount(null);
         }
     }
 
