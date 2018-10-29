@@ -38,9 +38,11 @@ public class EncodeHandler
     private final Logger _Log = Logger.getLogger(getClass().getName());
 
     @Override
-    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception {
+    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
+    {
         if (event.hasError()) {
-            switch (event.getErrorType()) {
+            switch (event.getErrorType())
+            {
                 case FILTER_ENCODE:
                 case ILLEGAL_STATE:
                 case ILLEGAL_BIZ_STATE:
@@ -52,7 +54,8 @@ public class EncodeHandler
             }
         }
         else {
-            switch (event.getEventType()) {
+            switch (event.getEventType())
+            {
                 case WRITE:
                     IOperator<ICommand, ISession> writeOperator = event.getEventOp();
                     Pair<ICommand, ISession> pairWriteContent = event.getContent();

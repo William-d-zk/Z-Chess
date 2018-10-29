@@ -37,7 +37,8 @@ public class FullPolynomial
      * @param coeffs
      *            the list of coefficients.
      */
-    public FullPolynomial(short coeffs[]) {
+    public FullPolynomial(short coeffs[])
+    {
         p = coeffs;
     }
 
@@ -47,7 +48,8 @@ public class FullPolynomial
      * @param n
      *            the degree of the polynomial.
      */
-    public FullPolynomial(int n) {
+    public FullPolynomial(int n)
+    {
         p = new short[n];
         java.util.Arrays.fill(p, (short) 0);
     }
@@ -64,7 +66,8 @@ public class FullPolynomial
      * @param newLowerLimit
      *            the new smallest coefficient value.
      */
-    public static final void recenterModQ(FullPolynomial a, int q, int newLowerLimit) {
+    public static final void recenterModQ(FullPolynomial a, int q, int newLowerLimit)
+    {
         int newUpperLimit = newLowerLimit + q;
         for (int i = 0; i < a.p.length; i++) {
             a.p[i] = (short) (a.p[i] % q);
@@ -83,7 +86,8 @@ public class FullPolynomial
      *            the second polynomial. It must be of the same degree as a.
      * @return a*b modulo X^N.
      */
-    public static FullPolynomial convolution(FullPolynomial a, FullPolynomial b) {
+    public static FullPolynomial convolution(FullPolynomial a, FullPolynomial b)
+    {
         if (a.p.length != b.p.length) return new FullPolynomial(0);
 
         FullPolynomial c = new FullPolynomial(a.p.length);
@@ -107,7 +111,8 @@ public class FullPolynomial
      *            resulting polynomial.
      * @return a*b modulo X^N.
      */
-    public static FullPolynomial convolution(FullPolynomial a, FullPolynomial b, int coefficientModulus) {
+    public static FullPolynomial convolution(FullPolynomial a, FullPolynomial b, int coefficientModulus)
+    {
         FullPolynomial c = convolution(a, b);
         recenterModQ(c, coefficientModulus, 0);
         return c;
@@ -126,7 +131,8 @@ public class FullPolynomial
      *            the modulus for the polynomial coefficients
      * @return the resulting polynomial.
      */
-    public static final FullPolynomial add(FullPolynomial a, FullPolynomial b, int coefficientModulus) {
+    public static final FullPolynomial add(FullPolynomial a, FullPolynomial b, int coefficientModulus)
+    {
         FullPolynomial c = new FullPolynomial(a.p.length);
         for (int i = 0; i < c.p.length; i++)
             c.p[i] = (short) (a.p[i] + b.p[i]);
@@ -149,7 +155,8 @@ public class FullPolynomial
      *            the smallest coefficient value of the result.
      * @return the resulting polynomial.
      */
-    public static final FullPolynomial addAndRecenter(FullPolynomial a, FullPolynomial b, int coefficientModulus, int newLowerLimit) {
+    public static final FullPolynomial addAndRecenter(FullPolynomial a, FullPolynomial b, int coefficientModulus, int newLowerLimit)
+    {
         FullPolynomial c = new FullPolynomial(a.p.length);
         for (int i = 0; i < c.p.length; i++)
             c.p[i] = (short) (a.p[i] + b.p[i]);
@@ -170,7 +177,8 @@ public class FullPolynomial
      *            the modulus for the polynomial coefficients.
      * @return the difference.
      */
-    public static final FullPolynomial subtract(FullPolynomial a, FullPolynomial b, int coefficientModulus) {
+    public static final FullPolynomial subtract(FullPolynomial a, FullPolynomial b, int coefficientModulus)
+    {
         FullPolynomial c = new FullPolynomial(a.p.length);
         for (int i = 0; i < c.p.length; i++)
             c.p[i] = (short) (a.p[i] - b.p[i]);
@@ -193,7 +201,8 @@ public class FullPolynomial
      *            the smallest coefficient value of the result.
      * @return the difference.
      */
-    public static final FullPolynomial subtractAndRecenter(FullPolynomial a, FullPolynomial b, int coefficientModulus, int newLowerLimit) {
+    public static final FullPolynomial subtractAndRecenter(FullPolynomial a, FullPolynomial b, int coefficientModulus, int newLowerLimit)
+    {
         FullPolynomial c = new FullPolynomial(a.p.length);
         for (int i = 0; i < c.p.length; i++)
             c.p[i] = (short) (a.p[i] - b.p[i]);
@@ -210,7 +219,8 @@ public class FullPolynomial
      *         this object and the respective coefficient lists contain the
      *         same values.
      */
-    public boolean equals(Object o) {
+    public boolean equals(Object o)
+    {
         try {
             FullPolynomial other = (FullPolynomial) o;
             return java.util.Arrays.equals(p, other.p);
@@ -222,7 +232,8 @@ public class FullPolynomial
     /**
      * Two polynomials have the same hash code if they are equal.
      */
-    public int hashCode() {
+    public int hashCode()
+    {
         return java.util.Arrays.hashCode(p);
     }
 }

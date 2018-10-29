@@ -39,7 +39,7 @@ import com.securityinnovation.jNeo.math.PolynomialInverterModPowerOfPrime;
  */
 public class KeyParams
 {
-    public final OID OIDEnum;
+    public final OID                OIDEnum;
     public final byte               OIDBytes[];
     public final short              N;
     public final short              p;
@@ -54,10 +54,10 @@ public class KeyParams
     public final short              dm0;
 
     // Mask generation params, used in the generation of mask from R mod 4.
-    public final DigestAlgorithm mgfHash;
+    public final DigestAlgorithm    mgfHash;
 
     // BPGM3 params
-    public final DigestAlgorithm igfHash;
+    public final DigestAlgorithm    igfHash;
     public final short              dr;
     public final short              c;
     public final short              minCallsR;
@@ -77,7 +77,8 @@ public class KeyParams
      * @throws ParamsetNotSupportedException
      *             if the OID is not known.
      */
-    public static KeyParams getKeyParams(byte[] paramSet) throws ParamSetNotSupportedException {
+    public static KeyParams getKeyParams(byte[] paramSet) throws ParamSetNotSupportedException
+    {
         if (numParamSets == 0) initParamSets();
         for (int i = 0; i < numParamSets; i++)
             if (java.util.Arrays.equals(paramSets[i].OIDBytes, paramSet)) return paramSets[i];
@@ -93,7 +94,8 @@ public class KeyParams
      * @throws ParamsetNotSupportedException
      *             if the OID is not known.
      */
-    public static KeyParams getKeyParams(OID paramSet) throws ParamSetNotSupportedException {
+    public static KeyParams getKeyParams(OID paramSet) throws ParamSetNotSupportedException
+    {
         if (numParamSets == 0) initParamSets();
         for (int i = 0; i < numParamSets; i++)
             if (paramSet == paramSets[i].OIDEnum) return paramSets[i];
@@ -121,31 +123,32 @@ public class KeyParams
                       int _c,
                       int _minCallsR,
                       int _minCallsMask,
-                      int _pkLen) {
-        OIDEnum = _oidEnum;
-        OIDBytes = OIDEnum.getOIDBytes();
-        N = (short) _N;
-        p = (short) _p;
-        q = (short) _q;
-        df = (short) _df;
-        dg = (short) _dg;
-        lLen = (short) _lLen;
-        db = (short) _db;
+                      int _pkLen)
+    {
+        OIDEnum        = _oidEnum;
+        OIDBytes       = OIDEnum.getOIDBytes();
+        N              = (short) _N;
+        p              = (short) _p;
+        q              = (short) _q;
+        df             = (short) _df;
+        dg             = (short) _dg;
+        lLen           = (short) _lLen;
+        db             = (short) _db;
         maxMsgLenBytes = (short) _maxMsgLenBytes;
-        bufferLenBits = (short) _bufferLenBits;
+        bufferLenBits  = (short) _bufferLenBits;
         bufferLenTrits = (short) _bufferLenTrits;
-        dm0 = (short) _dm0;
-        mgfHash = _mgfHash;
-        igfHash = _igfHash;
-        dr = (short) _dr;
-        c = (short) _c;
-        minCallsR = (short) _minCallsR;
-        minCallsMask = (short) _minCallsMask;
-        pkLen = _pkLen;
+        dm0            = (short) _dm0;
+        mgfHash        = _mgfHash;
+        igfHash        = _igfHash;
+        dr             = (short) _dr;
+        c              = (short) _c;
+        minCallsR      = (short) _minCallsR;
+        minCallsMask   = (short) _minCallsMask;
+        pkLen          = _pkLen;
 
         // This should be derived from q. But for now all parameter sets use
         // q = 2048.
-        polyInverter = inverterMod2048;
+        polyInverter   = inverterMod2048;
     }
 
     // An object to find the inverse of a polynomial mod 2048
@@ -155,11 +158,12 @@ public class KeyParams
     private static PolynomialInverter inverterMod2048 = new PolynomialInverterModPowerOfPrime(2048, 2, invMod2);
 
     // The master list of parameter sets.
-    private static KeyParams paramSets[];
+    private static KeyParams          paramSets[];
     private static byte               numParamSets    = 0;
 
-    private static void initParamSets() {
-        paramSets = new KeyParams[12];
+    private static void initParamSets()
+    {
+        paramSets                 = new KeyParams[12];
         paramSets[numParamSets++] = new KeyParams(OID.ees401ep1,
                                                   401,
                                                   3,
@@ -171,7 +175,7 @@ public class KeyParams
                                                   60, // maxMsgLenBytes,
                                                   600,
                                                   400, // bufferLenBits,
-                                                       // bufferLenTrits
+                                                  // bufferLenTrits
                                                   113, // dm0
                                                   sha1,
                                                   sha1, // mgfHash, igfHash
@@ -179,7 +183,7 @@ public class KeyParams
                                                   11,
                                                   32,
                                                   9, // dr, c, minCallsR,
-                                                     // minCallsMask
+                                                  // minCallsMask
                                                   112); // pkLen
         paramSets[numParamSets++] = new KeyParams(OID.ees449ep1,
                                                   449,
@@ -192,7 +196,7 @@ public class KeyParams
                                                   67, // maxMsgLenBytes,
                                                   672,
                                                   448, // bufferLenBits,
-                                                       // bufferLenTrits
+                                                  // bufferLenTrits
                                                   134, // dm0
                                                   sha1,
                                                   sha1, // mgfHash, igfHash
@@ -200,7 +204,7 @@ public class KeyParams
                                                   9,
                                                   31,
                                                   9, // dr, c, minCallsR,
-                                                     // minCallsMask
+                                                  // minCallsMask
                                                   128); // pkLen
         paramSets[numParamSets++] = new KeyParams(OID.ees677ep1,
                                                   677,
@@ -213,7 +217,7 @@ public class KeyParams
                                                   101, // maxMsgLenBytes,
                                                   1008,
                                                   676, // bufferLenBits,
-                                                       // bufferLenTrits
+                                                  // bufferLenTrits
                                                   157, // dm0
                                                   sha256,
                                                   sha256, // mgfHash, igfHash
@@ -221,7 +225,7 @@ public class KeyParams
                                                   11,
                                                   27,
                                                   9, // dr, c, minCallsR,
-                                                     // minCallsMask
+                                                  // minCallsMask
                                                   192); // pkLen
         paramSets[numParamSets++] = new KeyParams(OID.ees1087ep2,
                                                   1087,
@@ -234,7 +238,7 @@ public class KeyParams
                                                   170, // maxMsgLenBytes,
                                                   1624,
                                                   1086, // bufferLenBits,
-                                                        // bufferLenTrits
+                                                  // bufferLenTrits
                                                   120, // dm0
                                                   sha256,
                                                   sha256, // mgfHash, igfHash
@@ -242,7 +246,7 @@ public class KeyParams
                                                   13,
                                                   25,
                                                   14, // dr, c, minCallsR,
-                                                      // minCallsMask
+                                                  // minCallsMask
                                                   256); // pkLen
         paramSets[numParamSets++] = new KeyParams(OID.ees541ep1,
                                                   541,
@@ -255,7 +259,7 @@ public class KeyParams
                                                   86, // maxMsgLenBytes,
                                                   808,
                                                   540, // bufferLenBits,
-                                                       // bufferLenTrits
+                                                  // bufferLenTrits
                                                   49, // dm0
                                                   sha1,
                                                   sha1, // mgfHash, igfHash
@@ -263,7 +267,7 @@ public class KeyParams
                                                   12,
                                                   15,
                                                   11, // dr, c, minCallsR,
-                                                      // minCallsMask
+                                                  // minCallsMask
                                                   112); // pkLen
         paramSets[numParamSets++] = new KeyParams(OID.ees613ep1,
                                                   613,
@@ -276,7 +280,7 @@ public class KeyParams
                                                   97, // maxMsgLenBytes,
                                                   912,
                                                   612, // bufferLenBits,
-                                                       // bufferLenTrits
+                                                  // bufferLenTrits
                                                   55, // dm0
                                                   sha1,
                                                   sha1, // mgfHash, igfHash
@@ -284,7 +288,7 @@ public class KeyParams
                                                   11,
                                                   16,
                                                   13, // dr, c, minCallsR,
-                                                      // minCallsMask
+                                                  // minCallsMask
                                                   128); // pkLen
         paramSets[numParamSets++] = new KeyParams(OID.ees887ep1,
                                                   887,
@@ -297,7 +301,7 @@ public class KeyParams
                                                   141, // maxMsgLenBytes,
                                                   1328,
                                                   886, // bufferLenBits,
-                                                       // bufferLenTrits
+                                                  // bufferLenTrits
                                                   81, // dm0
                                                   sha256,
                                                   sha256, // mgfHash, igfHash
@@ -305,7 +309,7 @@ public class KeyParams
                                                   10,
                                                   13,
                                                   12, // dr, c, minCallsR,
-                                                      // minCallsMask
+                                                  // minCallsMask
                                                   192); // pkLen
         paramSets[numParamSets++] = new KeyParams(OID.ees1171ep1,
                                                   1171,
@@ -318,7 +322,7 @@ public class KeyParams
                                                   186, // maxMsgLenBytes,
                                                   1752,
                                                   1170, // bufferLenBits,
-                                                        // bufferLenTrits
+                                                  // bufferLenTrits
                                                   106, // dm0
                                                   sha256,
                                                   sha256, // mgfHash, igfHash
@@ -326,7 +330,7 @@ public class KeyParams
                                                   12,
                                                   20,
                                                   15, // dr, c, minCallsR,
-                                                      // minCallsMask
+                                                  // minCallsMask
                                                   256); // pkLen
         paramSets[numParamSets++] = new KeyParams(OID.ees659ep1,
                                                   659,
@@ -339,7 +343,7 @@ public class KeyParams
                                                   108, // maxMsgLenBytes,
                                                   984,
                                                   658, // bufferLenBits,
-                                                       // bufferLenTrits
+                                                  // bufferLenTrits
                                                   38, // dm0
                                                   sha1,
                                                   sha1, // mgfHash, igfHash
@@ -347,7 +351,7 @@ public class KeyParams
                                                   11,
                                                   11,
                                                   14, // dr, c, minCallsR,
-                                                      // minCallsMask
+                                                  // minCallsMask
                                                   112); // pkLen
         paramSets[numParamSets++] = new KeyParams(OID.ees761ep1,
                                                   761,
@@ -360,7 +364,7 @@ public class KeyParams
                                                   125, // maxMsgLenBytes,
                                                   1136,
                                                   760, // bufferLenBits,
-                                                       // bufferLenTrits
+                                                  // bufferLenTrits
                                                   42, // dm0
                                                   sha1,
                                                   sha1, // mgfHash, igfHash
@@ -368,7 +372,7 @@ public class KeyParams
                                                   12,
                                                   13,
                                                   16, // dr, c, minCallsR,
-                                                      // minCallsMask
+                                                  // minCallsMask
                                                   128); // pkLen
         paramSets[numParamSets++] = new KeyParams(OID.ees1087ep1,
                                                   1087,
@@ -381,7 +385,7 @@ public class KeyParams
                                                   178, // maxMsgLenBytes,
                                                   1624,
                                                   1086, // bufferLenBits,
-                                                        // bufferLenTrits
+                                                  // bufferLenTrits
                                                   63, // dm0
                                                   sha256,
                                                   sha256, // mgfHash, igfHash
@@ -389,7 +393,7 @@ public class KeyParams
                                                   13,
                                                   13,
                                                   14, // dr, c, minCallsR,
-                                                      // minCallsMask
+                                                  // minCallsMask
                                                   192); // pkLen
         paramSets[numParamSets++] = new KeyParams(OID.ees1499ep1,
                                                   1499,
@@ -402,7 +406,7 @@ public class KeyParams
                                                   247, // maxMsgLenBytes,
                                                   2240,
                                                   1498, // bufferLenBits,
-                                                        // bufferLenTrits
+                                                  // bufferLenTrits
                                                   79, // dm0
                                                   sha256,
                                                   sha256, // mgfHash, igfHash
@@ -410,7 +414,7 @@ public class KeyParams
                                                   13,
                                                   17,
                                                   19, // dr, c, minCallsR,
-                                                      // minCallsMask
+                                                  // minCallsMask
                                                   256); // pkLen
     }
 }

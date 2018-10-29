@@ -48,21 +48,25 @@ public class WriteDispatcher
     private final Logger               _Log = Logger.getLogger(getClass().getName());
 
     @SafeVarargs
-    public WriteDispatcher(RingBuffer<QEvent>... workers) {
+    public WriteDispatcher(RingBuffer<QEvent>... workers)
+    {
         _Encoders = workers;
-        _Mask = _Encoders.length - 1;
+        _Mask     = _Encoders.length - 1;
     }
 
-    private RingBuffer<QEvent> dispatchEncoder(long seq) {
+    private RingBuffer<QEvent> dispatchEncoder(long seq)
+    {
         return _Encoders[(int) (seq & _Mask)];
     }
 
     @Override
-    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception {
+    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
+    {
         /*
          Write Dispatcher  不存在错误状态的输入,都已经处理完了
          */
-        switch (event.getEventType()) {
+        switch (event.getEventType())
+        {
             case NULL://在前一个处理器event.reset().
             case IGNORE://没有任何时间需要跨 Barrier 投递向下一层 Pipeline
                 break;
@@ -73,8 +77,8 @@ public class WriteDispatcher
                 ISession session = writeContent.second();
                 ICommand[] commands = writeContent.first();
                 if (session.isValid() && Objects.nonNull(commands)) {
-                    IOperator<ICommand[], ISession> transferOperator = event.getEventOp();
-                    Triple<ICommand, ISession, IOperator<ICommand, ISession>>[] triples = transferOperator.transfer(commands, session);
+                    IOperator<ICommand[], ISession>                             transferOperator = event.getEventOp();
+                    Triple<ICommand, ISession, IOperator<ICommand, ISession>>[] triples          = transferOperator.transfer(commands, session);
                     for (Triple<ICommand, ISession, IOperator<ICommand, ISession>> triple : triples) {
                         tryPublish(dispatchEncoder(session.getHashKey()), WRITE, triple.first(), session, triple.third());
                     }

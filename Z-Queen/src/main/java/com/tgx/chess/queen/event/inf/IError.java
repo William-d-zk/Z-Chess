@@ -61,18 +61,21 @@ public interface IError
         private final int    _Code;
         private final String _MsgFormatter;
 
-        Type(int code, String formatter) {
-            _Code = code;
+        Type(int code, String formatter)
+        {
+            _Code         = code;
             _MsgFormatter = formatter;
         }
 
         @Override
-        public int getCode() {
+        public int getCode()
+        {
             return _Code;
         }
 
         @Override
-        public String getMsg(Object... args) {
+        public String getMsg(Object... args)
+        {
             return Objects.isNull(args) || args.length == 0 ? _MsgFormatter : String.format(_MsgFormatter, args);
         }
 

@@ -31,12 +31,7 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.tgx.chess.spring.auth.api.dto.AuthDTO;
 import com.tgx.chess.spring.auth.api.dto.ProfileDTO;
@@ -51,19 +46,21 @@ public class LoginService
     private final AccountService _AccountService;
 
     @Autowired
-    public LoginService(AccountService accountService) {
+    public LoginService(AccountService accountService)
+    {
         _AccountService = accountService;
     }
 
     @PostMapping(value = "/api/login")
-    public @ResponseBody AuthDTO validate(@RequestBody Map<String, String> param) {
+    public @ResponseBody AuthDTO validate(@RequestBody Map<String, String> param)
+    {
         System.out.println(param);
-        AuthDTO auth = new AuthDTO();
-        String username = param.get("username");
-        String password = param.get("password");
-        Account account = _AccountService.findByName(username)
-                                         .orElse(_AccountService.findByEmail(username)
-                                                                .orElse(null));
+        AuthDTO auth     = new AuthDTO();
+        String  username = param.get("username");
+        String  password = param.get("password");
+        Account account  = _AccountService.findByName(username)
+                                          .orElse(_AccountService.findByEmail(username)
+                                                                 .orElse(null));
         if (Objects.nonNull(password) && Objects.nonNull(account) && password.equals(account.getPassword())) {
             auth.setStatus(true);
             auth.setRoles(account.getRoles()
@@ -79,14 +76,16 @@ public class LoginService
     }
 
     @PostMapping(value = "/api/logout")
-    public @ResponseBody AuthDTO logout() {
+    public @ResponseBody AuthDTO logout()
+    {
         AuthDTO auth = new AuthDTO();
         auth.setStatus(true);
         return auth;
     }
 
     @GetMapping(value = "/api/profile")
-    public @ResponseBody ProfileDTO profile(HttpSession session) {
+    public @ResponseBody ProfileDTO profile(HttpSession session)
+    {
         System.out.println(session.getAttributeNames());
         ProfileDTO profile = new ProfileDTO();
         profile.setName("幂等");

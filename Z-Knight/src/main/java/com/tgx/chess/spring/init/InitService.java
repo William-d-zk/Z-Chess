@@ -38,12 +38,14 @@ public class InitService
     private final AccountService _AccountService;
 
     @Autowired
-    public InitService(AccountService accountService) {
+    public InitService(AccountService accountService)
+    {
         _AccountService = accountService;
     }
 
     @GetMapping("/local/init")
-    public void init(HttpSession session) {
+    public void init(HttpSession session)
+    {
         _AccountService.initializeCheck();
     }
 }

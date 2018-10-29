@@ -25,9 +25,7 @@
 package com.tgx.chess.queen.event.handler;
 
 import static com.tgx.chess.queen.event.inf.IError.Type.CLOSED;
-import static com.tgx.chess.queen.event.inf.IOperator.Type.CONNECTED;
-import static com.tgx.chess.queen.event.inf.IOperator.Type.TRANSFER;
-import static com.tgx.chess.queen.event.inf.IOperator.Type.WROTE;
+import static com.tgx.chess.queen.event.inf.IOperator.Type.*;
 
 import java.nio.channels.AsynchronousSocketChannel;
 
@@ -51,19 +49,18 @@ public class IoDispatcher
     private final RingBuffer<QEvent> _IoWrote;
 
     @SafeVarargs
-    public IoDispatcher(RingBuffer<QEvent> link,
-                        RingBuffer<QEvent> cluster,
-                        RingBuffer<QEvent> wrote,
-                        RingBuffer<QEvent> error,
-                        RingBuffer<QEvent>... read) {
+    public IoDispatcher(RingBuffer<QEvent> link, RingBuffer<QEvent> cluster, RingBuffer<QEvent> wrote, RingBuffer<QEvent> error, RingBuffer<QEvent>... read)
+    {
         super(link, cluster, error, read);
         _IoWrote = wrote;
     }
 
     @Override
-    public void onEvent(QEvent event, long sequence, boolean batch) throws Exception {
+    public void onEvent(QEvent event, long sequence, boolean batch) throws Exception
+    {
         IError.Type errorType = event.getErrorType();
-        switch (errorType) {
+        switch (errorType)
+        {
             case CONNECT_FAILED:
                 IOperator<Throwable, IConnectActive> connectFailedOperator = event.getEventOp();
                 Pair<Throwable, IConnectActive> connectFailedContent = event.getContent();
@@ -102,7 +99,8 @@ public class IoDispatcher
                 }
                 break;
             case NO_ERROR:
-                switch (event.getEventType()) {
+                switch (event.getEventType())
+                {
                     case CONNECTED:
                         IOperator<IConnectionContext, AsynchronousSocketChannel> connectOperator = event.getEventOp();
                         Pair<IConnectionContext, AsynchronousSocketChannel> connectContent = event.getContent();
@@ -112,11 +110,7 @@ public class IoDispatcher
                     case READ:
                         Pair<IPacket, ISession> readContent = event.getContent();
                         session = readContent.second();
-                        publish(dispatchWorker(session.getHashKey()),
-                                TRANSFER,
-                                readContent.first(),
-                                readContent.second(),
-                                event.getEventOp());
+                        publish(dispatchWorker(session.getHashKey()), TRANSFER, readContent.first(), readContent.second(), event.getEventOp());
                         break;
                     case WROTE:
                         Pair<Integer, ISession> wrote_content = event.getContent();

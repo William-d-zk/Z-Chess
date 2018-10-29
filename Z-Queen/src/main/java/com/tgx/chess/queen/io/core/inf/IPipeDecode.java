@@ -35,20 +35,22 @@ public interface IPipeDecode
 
     Logger _Logger = Logger.getLogger(IPipeDecode.class.getName());
 
-    default <C extends IContext> ICommand[] filterRead(IProtocol input, IFilterChain<C> filterChain, C context) {
+    default <C extends IContext> ICommand[] filterRead(IProtocol input, IFilterChain<C> filterChain, C context)
+    {
         _Logger.info("input %s ",
                      IoUtil.bin2Hex(((IPacket) input).getBuffer()
                                                      .array(),
                                     "."));
         final IFilterChain<C> _HeaderFilter = filterChain.getChainHead();
-        ICommand commands[] = null;
-        IFilter.ResultType resultType;
-        IProtocol protocol = input;
+        ICommand              commands[]    = null;
+        IFilter.ResultType    resultType;
+        IProtocol             protocol      = input;
         for (IFilterChain<C> nextFilter = _HeaderFilter;; nextFilter = _HeaderFilter, protocol = input) {
             Chain:
             while (nextFilter != null) {
                 resultType = nextFilter.preDecode(context, protocol);
-                switch (resultType) {
+                switch (resultType)
+                {
                     case ERROR:
                         return null;
                     case NEED_DATA:

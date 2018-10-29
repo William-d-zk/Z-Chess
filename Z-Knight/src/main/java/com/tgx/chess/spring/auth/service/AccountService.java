@@ -48,15 +48,17 @@ public class AccountService
     private final ProfileRepository _ProfileRepository;
 
     @Autowired
-    public AccountService(AccountRepository accountRepository, RoleRepository roleRepository, ProfileRepository profileRepository) {
+    public AccountService(AccountRepository accountRepository, RoleRepository roleRepository, ProfileRepository profileRepository)
+    {
         _AccountRepository = accountRepository;
-        _RoleRepository = roleRepository;
+        _RoleRepository    = roleRepository;
         _ProfileRepository = profileRepository;
     }
 
-    public void initializeCheck() {
+    public void initializeCheck()
+    {
         Role admin = _RoleRepository.findByRole("ADMIN");
-        Role user = _RoleRepository.findByRole("USER");
+        Role user  = _RoleRepository.findByRole("USER");
         if (Objects.isNull(admin)) {
             admin = new Role();
             admin.setRole("ADMIN");
@@ -70,7 +72,7 @@ public class AccountService
         Account test = _AccountRepository.findByName("root");
         if (Objects.isNull(test)) {
             Profile profile = new Profile();
-            Account root = new Account();
+            Account root    = new Account();
             root.setActive(1);
             root.setName("root");
             root.setPassword("root12345");
@@ -82,15 +84,18 @@ public class AccountService
         }
     }
 
-    public Optional<Account> findByEmail(String email) {
+    public Optional<Account> findByEmail(String email)
+    {
         return Optional.ofNullable(_AccountRepository.findByEmail(email));
     }
 
-    public Optional<Account> findByName(String name) {
+    public Optional<Account> findByName(String name)
+    {
         return Optional.ofNullable(_AccountRepository.findByName(name));
     }
 
-    public void saveAccount(Account account) {
+    public void saveAccount(Account account)
+    {
         account.setPassword(account.getPassword());
         account.setActive(1);
         Role role = _RoleRepository.findByRole("USER");

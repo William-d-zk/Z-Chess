@@ -26,18 +26,7 @@ package com.tgx.chess.spring.device.model;
 
 import java.util.Set;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import com.tgx.chess.spring.jpa.model.AuditModel;
 
@@ -60,41 +49,50 @@ public class Client
     private String            salt;
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinTable(schema = "\"tgx-z-chess-device\"",
+    @JoinTable(
+               schema = "\"tgx-z-chess-device\"",
                name = "client_device",
                joinColumns = @JoinColumn(name = "client_id"),
                inverseJoinColumns = @JoinColumn(name = "device_id"))
     private Set<Device>       devices;
 
-    public int getId() {
+    public int getId()
+    {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(int id)
+    {
         this.id = id;
     }
 
-    public String getAuth() {
+    public String getAuth()
+    {
         return auth;
     }
 
-    public void setAuth(String auth) {
+    public void setAuth(String auth)
+    {
         this.auth = auth;
     }
 
-    public Set<Device> getDevices() {
+    public Set<Device> getDevices()
+    {
         return devices;
     }
 
-    public void setDevices(Set<Device> devices) {
+    public void setDevices(Set<Device> devices)
+    {
         this.devices = devices;
     }
 
-    public String getSalt() {
+    public String getSalt()
+    {
         return salt;
     }
 
-    public void setSalt(String salt) {
+    public void setSalt(String salt)
+    {
         this.salt = salt;
     }
 }

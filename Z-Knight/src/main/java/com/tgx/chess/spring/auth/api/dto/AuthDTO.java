@@ -38,23 +38,28 @@ public class AuthDTO
     private boolean            status;
     private Collection<String> roles;
 
-    public boolean isStatus() {
+    public boolean isStatus()
+    {
         return status;
     }
 
-    public void setStatus(boolean status) {
+    public void setStatus(boolean status)
+    {
         this.status = status;
     }
 
-    public Collection<String> getRoles() {
+    public Collection<String> getRoles()
+    {
         return roles;
     }
 
-    public void setRoles(Collection<String> roles) {
+    public void setRoles(Collection<String> roles)
+    {
         this.roles = roles;
     }
 
-    public void setRole(String role) {
+    public void setRole(String role)
+    {
         ArrayList<String> list = new ArrayList<>(1);
         list.add(role);
         setRoles(list);

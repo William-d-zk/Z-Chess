@@ -33,17 +33,20 @@ import java.util.Objects;
  */
 public interface IAioClient
 {
-    default void connect(IAioConnector connector, AsynchronousChannelGroup channelGroup) throws IOException {
+    default void connect(IAioConnector connector, AsynchronousChannelGroup channelGroup) throws IOException
+    {
         Objects.requireNonNull(channelGroup);
         AsynchronousSocketChannel socketChannel = AsynchronousSocketChannel.open(channelGroup);
         socketChannel.connect(connector.getRemoteAddress(), socketChannel, connector);
     }
 
-    default String[] getHaRemoteAddressArray() {
+    default String[] getHaRemoteAddressArray()
+    {
         return null;
     }
 
-    default long[][][] getHaTimeTickArrayRef() {
+    default long[][][] getHaTimeTickArrayRef()
+    {
         return null;
     }
 

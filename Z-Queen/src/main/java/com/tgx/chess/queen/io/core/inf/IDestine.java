@@ -30,7 +30,8 @@ import com.tgx.chess.queen.event.operator.MODE;
  */
 public interface IDestine
 {
-    default RESULT trial(ICommand cmd, MODE mode) {
+    default RESULT trial(ICommand cmd, MODE mode)
+    {
         return RESULT.IGNORE;
     }
 

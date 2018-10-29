@@ -26,14 +26,7 @@ package com.tgx.chess.spring.device.model;
 
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 
 import org.hibernate.annotations.GenericGenerator;
@@ -43,7 +36,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tgx.chess.spring.jpa.model.AuditModel;
 
 @Entity
-@Table(schema = "\"tgx-z-chess-device\"",
+@Table(
+       schema = "\"tgx-z-chess-device\"",
        indexes = { @Index(name = "device_idx_token_pwd", columnList = "token,password"),
                    @Index(name = "device_idx_token", columnList = "token"),
                    @Index(name = "device_idx_mac", columnList = "mac") })
@@ -75,32 +69,39 @@ public class Device
     @JsonIgnore
     private Date              invalidAt;
 
-    public Long getId() {
+    public Long getId()
+    {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Long id)
+    {
         this.id = id;
     }
 
-    public String getPassword() {
+    public String getPassword()
+    {
         return password;
     }
 
-    public void setPassword(String password) {
+    public void setPassword(String password)
+    {
         this.password = password;
     }
 
-    public String getToken() {
+    public String getToken()
+    {
         return token;
     }
 
-    public void setToken(String token) {
+    public void setToken(String token)
+    {
         this.token = token;
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return String.format("device{id:%s,pass:%s,mac:%s,create:%s,update:%s,token:%s,invalid:%s}",
                              getId(),
                              getPassword(),
@@ -111,27 +112,33 @@ public class Device
                              getInvalidAt());
     }
 
-    public long getPasswordId() {
+    public long getPasswordId()
+    {
         return passwordId;
     }
 
-    public void setPasswordId(long passwordId) {
+    public void setPasswordId(long passwordId)
+    {
         this.passwordId = passwordId;
     }
 
-    public Date getInvalidAt() {
+    public Date getInvalidAt()
+    {
         return invalidAt;
     }
 
-    public void setInvalidAt(Date invalidAt) {
+    public void setInvalidAt(Date invalidAt)
+    {
         this.invalidAt = invalidAt;
     }
 
-    public String getMac() {
+    public String getMac()
+    {
         return mac;
     }
 
-    public void setMac(String mac) {
+    public void setMac(String mac)
+    {
         this.mac = mac;
     }
 }

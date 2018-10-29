@@ -31,61 +31,77 @@ import com.tgx.chess.king.base.crypt.inf.ISymmetric;
 public interface ITlsContext
 {
 
-    default boolean needUpdateKeyIn() {
+    default boolean needUpdateKeyIn()
+    {
         return false;
     }
 
-    default boolean needUpdateKeyOut() {
+    default boolean needUpdateKeyOut()
+    {
         return false;
     }
 
-    default void updateKeyIn() {
+    default void updateKeyIn()
+    {
     }
 
-    default void updateKeyOut() {
+    default void updateKeyOut()
+    {
     }
 
-    default int getSymmetricKeyId() {
+    default int getSymmetricKeyId()
+    {
         return -2;
     }
 
-    default void setSymmetricKeyId(int rc4KeyId) {
+    default void setSymmetricKeyId(int rc4KeyId)
+    {
     }
 
-    default byte[] getSymmetricKeyIn() {
+    default byte[] getSymmetricKeyIn()
+    {
         return null;
     }
 
-    default byte[] getSymmetricKeyOut() {
+    default byte[] getSymmetricKeyOut()
+    {
         return null;
     }
 
-    default byte[] getReRollKey() {
+    default byte[] getReRollKey()
+    {
         return null;
     }
 
-    default void reRollKey(byte[] key) {
+    default void reRollKey(byte[] key)
+    {
     }
 
-    default void swapKeyIn(byte[] key) {
+    default void swapKeyIn(byte[] key)
+    {
     }
 
-    default void swapKeyOut(byte[] key) {
+    default void swapKeyOut(byte[] key)
+    {
     }
 
-    default ISymmetric getSymmetricEncrypt() {
+    default ISymmetric getSymmetricEncrypt()
+    {
         return null;
     }
 
-    default ISymmetric getSymmetricDecrypt() {
+    default ISymmetric getSymmetricDecrypt()
+    {
         return null;
     }
 
-    default int getPubKeyId() {
+    default int getPubKeyId()
+    {
         return -2;
     }
 
-    default void setPubKeyId(int pubKeyId) {
+    default void setPubKeyId(int pubKeyId)
+    {
     }
 
     int inState();
@@ -100,11 +116,13 @@ public interface ITlsContext
 
     boolean isOutCrypt();
 
-    default IEncryptHandler getEncryptHandler() {
+    default IEncryptHandler getEncryptHandler()
+    {
         return null;
     }
 
-    default void setEncryptHandler(IEncryptHandler handler) {
+    default void setEncryptHandler(IEncryptHandler handler)
+    {
     }
 
 }

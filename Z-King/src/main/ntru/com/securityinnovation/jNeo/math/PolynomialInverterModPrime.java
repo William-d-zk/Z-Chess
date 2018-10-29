@@ -59,8 +59,9 @@ public class PolynomialInverterModPrime
      *            table should not be modified after it has been passed to the
      *            constructor.
      */
-    public PolynomialInverterModPrime(int _prime, short _invModPrime[]) {
-        prime = _prime;
+    public PolynomialInverterModPrime(int _prime, short _invModPrime[])
+    {
+        prime       = _prime;
         invModPrime = _invModPrime;
     }
 
@@ -69,12 +70,13 @@ public class PolynomialInverterModPrime
      * See NTRU Cryptosystems Tech Report #014 "Almost Inverses
      * and Fast NTRU Key Creation."
      */
-    public FullPolynomial invert(FullPolynomial a) {
-        int N = a.p.length;
+    public FullPolynomial invert(FullPolynomial a)
+    {
+        int            N = a.p.length;
 
         // Initialization:
         // k=0, b(X) = 1, c(X) = 0, f(X)=a(X), g(X)=X^N-1
-        int k = 0;
+        int            k = 0;
         FullPolynomial b = new FullPolynomial(N + 1);
         FullPolynomial c = new FullPolynomial(N + 1);
         FullPolynomial f = new FullPolynomial(N + 1);
@@ -120,16 +122,16 @@ public class PolynomialInverterModPrime
             if (df < dg) {
                 // swap(f,g), swap(b,c);
                 FullPolynomial tmpP;
-                int tmpD;
+                int            tmpD;
                 tmpP = f;
-                f = g;
-                g = tmpP;
+                f    = g;
+                g    = tmpP;
                 tmpP = b;
-                b = c;
-                c = tmpP;
+                b    = c;
+                c    = tmpP;
                 tmpD = df;
-                df = dg;
-                dg = tmpD;
+                df   = dg;
+                dg   = tmpD;
             }
 
             // u = f[0] * g[0]inv mod p
@@ -148,7 +150,8 @@ public class PolynomialInverterModPrime
     /**
      * Return the degree of a polynomial.
      */
-    protected final static int getDegree(FullPolynomial f) {
+    protected final static int getDegree(FullPolynomial f)
+    {
         int df = f.p.length - 1;
         while ((df > 0) && f.p[df] == 0)
             df--;
@@ -160,7 +163,8 @@ public class PolynomialInverterModPrime
      * This differs from the % operator by returning a
      * positive result when fed a negative number.
      */
-    protected final short modPrime(int x) {
+    protected final short modPrime(int x)
+    {
         x = x % prime;
         if (x < 0) x += prime;
         return (short) x;
@@ -170,7 +174,8 @@ public class PolynomialInverterModPrime
      * Divide f(X) by the polynomial g(X)=X. f(X) is updated in-place.
      * This effectively a "shift-left-with-wraparound" of the indices.
      */
-    protected final static void divideByX(FullPolynomial f) {
+    protected final static void divideByX(FullPolynomial f)
+    {
         short f0 = f.p[0];
         for (int i = 0; i < f.p.length - 1; i++)
             f.p[i] = f.p[i + 1];
@@ -181,7 +186,8 @@ public class PolynomialInverterModPrime
      * Mulitply f(X) by the polynomial g(X)=X. f(X) is updated in-place.
      * This effectively a "shift-right-with-wraparound" of the indices.
      */
-    protected final static void multiplyByX(FullPolynomial f) {
+    protected final static void multiplyByX(FullPolynomial f)
+    {
         short fn = f.p[f.p.length - 1];
         for (int i = f.p.length - 1; i > 0; i--)
             f.p[i] = f.p[i - 1];

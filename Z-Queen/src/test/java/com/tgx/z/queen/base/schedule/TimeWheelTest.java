@@ -40,35 +40,40 @@ class TimeWheelTest
     static Logger LOG = LoggerFactory.getLogger(TimeWheelTest.class.getName());
 
     @Test
-    void acquire() throws InterruptedException {
-        TimeWheel timeWheel = new TimeWheel(1000, TimeUnit.MILLISECONDS);
-        Future<String> future = timeWheel.acquire(3, TimeUnit.SECONDS, "timeout", new ITimeoutHandler<String>()
-        {
+    void acquire() throws InterruptedException
+    {
+        TimeWheel      timeWheel = new TimeWheel(1000, TimeUnit.MILLISECONDS);
+        Future<String> future    = timeWheel.acquire(3, TimeUnit.SECONDS, "timeout", new ITimeoutHandler<String>()
+                                 {
 
-            @Override
-            public void attach(String attachment) {
-                attach = attachment;
-            }
+                                     @Override
+                                     public void attach(String attachment)
+                                     {
+                                         attach = attachment;
+                                     }
 
-            String attach;
+                                     String attach;
 
-            @Override
-            public String get() {
-                return attach;
-            }
+                                     @Override
+                                     public String get()
+                                     {
+                                         return attach;
+                                     }
 
-            @Override
-            public String call() throws Exception {
-                LOG.info("time out encodeHandler");
-                return attach;
-            }
+                                     @Override
+                                     public String call() throws Exception
+                                     {
+                                         LOG.info("time out encodeHandler");
+                                         return attach;
+                                     }
 
-            @Override
-            public boolean isCycle() {
-                return true;
-            }
+                                     @Override
+                                     public boolean isCycle()
+                                     {
+                                         return true;
+                                     }
 
-        });
+                                 });
 
         Thread.sleep(TimeUnit.SECONDS.toMillis(100));
     }

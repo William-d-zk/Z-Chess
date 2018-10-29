@@ -24,10 +24,10 @@
 
 package com.tgx.chess.king.base.schedule;
 
-import com.tgx.chess.king.base.schedule.TimeWheel.ITimeoutHandler;
-
 import java.util.Objects;
 import java.util.function.Consumer;
+
+import com.tgx.chess.king.base.schedule.TimeWheel.ITimeoutHandler;
 
 public class ScheduleHandler<A>
         implements
@@ -37,33 +37,39 @@ public class ScheduleHandler<A>
     private final boolean _Cycle;
     private Consumer<A>   _Callback;
 
-    public ScheduleHandler(boolean cycle, Consumer<A> callback) {
-        _Cycle = cycle;
+    public ScheduleHandler(boolean cycle, Consumer<A> callback)
+    {
+        _Cycle    = cycle;
         _Callback = callback;
     }
 
-    public ScheduleHandler(boolean cycle) {
+    public ScheduleHandler(boolean cycle)
+    {
         this(cycle, null);
     }
 
     @Override
-    public boolean isCycle() {
+    public boolean isCycle()
+    {
         return _Cycle;
     }
 
     @Override
-    public A get() {
+    public A get()
+    {
         return attach;
     }
 
     @Override
-    public A call() throws Exception {
+    public A call() throws Exception
+    {
         if (Objects.nonNull(_Callback)) _Callback.accept(attach);
         return attach;
     }
 
     @Override
-    public void attach(A attachment) {
+    public void attach(A attachment)
+    {
         attach = attachment;
     }
 }

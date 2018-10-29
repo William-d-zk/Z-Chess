@@ -25,7 +25,8 @@ import com.securityinnovation.jNeo.inputstream.X982Drbg;
  */
 public class RandomExtractor
 {
-    public static X982Drbg extractRNG(Random r) {
+    public static X982Drbg extractRNG(Random r)
+    {
         return r.rng;
     }
 }

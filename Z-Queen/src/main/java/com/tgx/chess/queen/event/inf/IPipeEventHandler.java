@@ -35,7 +35,8 @@ public interface IPipeEventHandler<T extends IEvent, R extends IEvent>
         EventHandler<T>
 {
 
-    default <V, A> boolean tryPublish(RingBuffer<R> publisher, IOperator.Type t, V v, A a, IOperator<V, A> operator) {
+    default <V, A> boolean tryPublish(RingBuffer<R> publisher, IOperator.Type t, V v, A a, IOperator<V, A> operator)
+    {
         if (publisher == null) return true;
         try {
             long sequence = publisher.tryNext();
@@ -54,7 +55,8 @@ public interface IPipeEventHandler<T extends IEvent, R extends IEvent>
         return false;
     }
 
-    default <V, A> void publish(RingBuffer<R> publisher, IOperator.Type t, V v, A a, IOperator<V, A> operator) {
+    default <V, A> void publish(RingBuffer<R> publisher, IOperator.Type t, V v, A a, IOperator<V, A> operator)
+    {
         if (publisher == null) return;
         long sequence = publisher.next();
         try {
@@ -66,7 +68,8 @@ public interface IPipeEventHandler<T extends IEvent, R extends IEvent>
         }
     }
 
-    default <V, A> boolean tryError(RingBuffer<R> publisher, IError.Type t, V v, A a, IOperator<V, A> operator) {
+    default <V, A> boolean tryError(RingBuffer<R> publisher, IError.Type t, V v, A a, IOperator<V, A> operator)
+    {
         if (publisher == null) return true;
         try {
             long sequence = publisher.tryNext();
@@ -85,7 +88,8 @@ public interface IPipeEventHandler<T extends IEvent, R extends IEvent>
         return false;
     }
 
-    default <V, A> void error(RingBuffer<R> publisher, IError.Type t, V v, A a, IOperator<V, A> operator) {
+    default <V, A> void error(RingBuffer<R> publisher, IError.Type t, V v, A a, IOperator<V, A> operator)
+    {
         if (publisher == null) return;
         long sequence = publisher.next();
         try {

@@ -24,11 +24,7 @@
 
 package com.tgx.chess.queen.event.operator;
 
-import static com.tgx.chess.queen.event.operator.OperatorHolder.CLUSTER_DECODER;
-import static com.tgx.chess.queen.event.operator.OperatorHolder.CONSUMER_DECODER;
-import static com.tgx.chess.queen.event.operator.OperatorHolder.CONSUMER_TRANSFER;
-import static com.tgx.chess.queen.event.operator.OperatorHolder.SERVER_DECODER;
-import static com.tgx.chess.queen.event.operator.OperatorHolder.SERVER_TRANSFER;
+import static com.tgx.chess.queen.event.operator.OperatorHolder.*;
 
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.io.core.inf.ICommand;
@@ -40,39 +36,49 @@ public enum MODE
         implements
         IOperatorSupplier<IPacket, ICommand[], ISession>
 {
-    CLUSTER_CONSUMER {},
-    CLUSTER_SERVER {
+    CLUSTER_CONSUMER
+    {},
+    CLUSTER_SERVER
+    {
         @Override
-        public IOperator<IPacket, ISession> getInOperator() {
+        public IOperator<IPacket, ISession> getInOperator()
+        {
             return CLUSTER_DECODER();
         }
 
         @Override
-        public IOperator<ICommand[], ISession> getOutOperator() {
+        public IOperator<ICommand[], ISession> getOutOperator()
+        {
             return null;
         }
     },
     MQ_CONSUMER,
     MQ_SERVER,
-    CONSUMER {
+    CONSUMER
+    {
         @Override
-        public IOperator<IPacket, ISession> getInOperator() {
+        public IOperator<IPacket, ISession> getInOperator()
+        {
             return CONSUMER_DECODER();
         }
 
         @Override
-        public IOperator<ICommand[], ISession> getOutOperator() {
+        public IOperator<ICommand[], ISession> getOutOperator()
+        {
             return CONSUMER_TRANSFER();
         }
     },
-    SERVER {
+    SERVER
+    {
         @Override
-        public IOperator<IPacket, ISession> getInOperator() {
+        public IOperator<IPacket, ISession> getInOperator()
+        {
             return SERVER_DECODER();
         }
 
         @Override
-        public IOperator<ICommand[], ISession> getOutOperator() {
+        public IOperator<ICommand[], ISession> getOutOperator()
+        {
             return SERVER_TRANSFER();
         }
     },
@@ -81,12 +87,14 @@ public enum MODE
     SYMMETRY;
 
     @Override
-    public IOperator<IPacket, ISession> getInOperator() {
+    public IOperator<IPacket, ISession> getInOperator()
+    {
         return null;
     }
 
     @Override
-    public IOperator<ICommand[], ISession> getOutOperator() {
+    public IOperator<ICommand[], ISession> getOutOperator()
+    {
         return null;
     }
 }

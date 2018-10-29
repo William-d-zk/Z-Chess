@@ -34,7 +34,8 @@ public class X101_HandShake
 {
     public final static int COMMAND = 0x101;
 
-    public X101_HandShake(String host, String secKey, int version) {
+    public X101_HandShake(String host, String secKey, int version)
+    {
         this(String.format("GET /ws_service HTTP/1.1\r\nHost: %s\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: %s\r\nOrigin: http://%s\r\nSec-WebSocket-Protocol: z-push, z-chat\r\nSec-WebSocket-Version: %s\r\n\r\n",
                            host,
                            secKey,
@@ -42,11 +43,13 @@ public class X101_HandShake
                            version));
     }
 
-    public X101_HandShake(String handshake) {
+    public X101_HandShake(String handshake)
+    {
         super(COMMAND, handshake);
     }
 
-    public X101_HandShake() {
+    public X101_HandShake()
+    {
         this(null);
     }
 

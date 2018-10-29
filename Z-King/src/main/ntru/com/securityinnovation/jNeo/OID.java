@@ -392,8 +392,9 @@ public enum OID
      * Constructor. This constructor assumes there will be 3 bytes
      * in the OID.
      */
-    OID(int first, int second, int third) {
-        oidBytes = new byte[3];
+    OID(int first, int second, int third)
+    {
+        oidBytes    = new byte[3];
         oidBytes[0] = (byte) first;
         oidBytes[1] = (byte) second;
         oidBytes[2] = (byte) third;
@@ -407,7 +408,8 @@ public enum OID
     /**
      * Return the byte array identifying the OID.
      */
-    public byte[] getOIDBytes() {
+    public byte[] getOIDBytes()
+    {
         return oidBytes;
     }
 }

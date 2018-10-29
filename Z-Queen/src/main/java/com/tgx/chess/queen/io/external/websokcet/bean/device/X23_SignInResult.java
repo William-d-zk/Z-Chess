@@ -34,12 +34,14 @@ public class X23_SignInResult
 {
     public final static int COMMAND = 0x23;
 
-    public X23_SignInResult() {
+    public X23_SignInResult()
+    {
         super(COMMAND, false);
     }
 
     @Override
-    public int getPriority() {
+    public int getPriority()
+    {
         return QOS_09_CONFIRM_MESSAGE;
     }
 
@@ -47,42 +49,50 @@ public class X23_SignInResult
     private long    invalidTime = -1;
 
     @Override
-    public int dataLength() {
+    public int dataLength()
+    {
         return super.dataLength() + 9;
     }
 
     @Override
-    public int decodec(byte[] data, int pos) {
-        success = data[pos++] > 0;
-        invalidTime = IoUtil.readLong(data, pos);
-        pos += 8;
+    public int decodec(byte[] data, int pos)
+    {
+        success      = data[pos++] > 0;
+        invalidTime  = IoUtil.readLong(data, pos);
+        pos         += 8;
         return pos;
     }
 
     @Override
-    public int encodec(byte[] data, int pos) {
+    public int encodec(byte[] data, int pos)
+    {
         pos += IoUtil.writeByte(isSuccess() ? 1 : 0, data, pos);
         pos += IoUtil.writeLong(invalidTime, data, pos);
         return pos;
     }
 
-    public void setSuccess() {
+    public void setSuccess()
+    {
         success = true;
     }
 
-    public boolean isSuccess() {
+    public boolean isSuccess()
+    {
         return success;
     }
 
-    public void setFailed() {
+    public void setFailed()
+    {
         success = false;
     }
 
-    public long getInvalidTime() {
+    public long getInvalidTime()
+    {
         return invalidTime;
     }
 
-    public void setInvalidTime(long invalidTime) {
+    public void setInvalidTime(long invalidTime)
+    {
         this.invalidTime = invalidTime;
     }
 }

@@ -57,18 +57,7 @@ import com.tgx.chess.queen.event.operator.MODE;
 import com.tgx.chess.queen.io.core.async.AioCreator;
 import com.tgx.chess.queen.io.core.async.AioSession;
 import com.tgx.chess.queen.io.core.executor.ClientCore;
-import com.tgx.chess.queen.io.core.inf.IAioClient;
-import com.tgx.chess.queen.io.core.inf.IAioConnector;
-import com.tgx.chess.queen.io.core.inf.ICommand;
-import com.tgx.chess.queen.io.core.inf.ICommandCreator;
-import com.tgx.chess.queen.io.core.inf.IConnectActive;
-import com.tgx.chess.queen.io.core.inf.IConnectionContext;
-import com.tgx.chess.queen.io.core.inf.IContext;
-import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.inf.ISessionCreated;
-import com.tgx.chess.queen.io.core.inf.ISessionCreator;
-import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
-import com.tgx.chess.queen.io.core.inf.ISessionOption;
+import com.tgx.chess.queen.io.core.inf.*;
 import com.tgx.chess.queen.io.external.websokcet.ZContext;
 import com.tgx.chess.queen.io.external.websokcet.bean.control.X101_HandShake;
 import com.tgx.chess.queen.io.external.websokcet.bean.control.X103_Close;
@@ -108,106 +97,121 @@ public class DeviceClient
     public DeviceClient(@Value("${client.target.name}") String targetName,
                         @Value("${client.target.host}") String targetHost,
                         @Value("${client.target.port}") int targetPort)
-            throws IOException {
-        _TargetName = targetName;
-        _TargetHost = targetHost;
-        _TargetPort = targetPort;
-        _Config = new Config();
-        _ChannelGroup = AsynchronousChannelGroup.withFixedThreadPool(1, _ClientCore.getWorkerThreadFactory());
-        _SessionCreator = new AioCreator(_Config)
-        {
-            @Override
-            public ISession createSession(AsynchronousSocketChannel socketChannel, IConnectActive active) {
-                try {
-                    return new AioSession(socketChannel,
-                                          active,
-                                          this,
-                                          this,
-                                          DeviceClient.this,
-                                          active.getMode()
-                                                .getInOperator());
-                }
-                catch (IOException e) {
-                    e.printStackTrace();
-                    return null;
-                }
-            }
+            throws IOException
+    {
+        _TargetName      = targetName;
+        _TargetHost      = targetHost;
+        _TargetPort      = targetPort;
+        _Config          = new Config();
+        _ChannelGroup    = AsynchronousChannelGroup.withFixedThreadPool(1, _ClientCore.getWorkerThreadFactory());
+        _SessionCreator  = new AioCreator(_Config)
+                         {
+                             @Override
+                             public ISession createSession(AsynchronousSocketChannel socketChannel, IConnectActive active)
+                             {
+                                 try {
+                                     return new AioSession(socketChannel,
+                                                           active,
+                                                           this,
+                                                           this,
+                                                           DeviceClient.this,
+                                                           active.getMode()
+                                                                 .getInOperator());
+                                 }
+                                 catch (IOException e) {
+                                     e.printStackTrace();
+                                     return null;
+                                 }
+                             }
 
-            @Override
-            public IContext createContext(ISessionOption option, MODE mode) {
-                return new ZContext(option, mode);
-            }
-        };
-        _CommandCreator = (session) -> new ICommand[] { new X101_HandShake(_TargetHost, ((ZContext) session.getContext()).getSeKey(), 13) };
+                             @Override
+                             public IContext createContext(ISessionOption option, MODE mode)
+                             {
+                                 return new ZContext(option, mode);
+                             }
+                         };
+        _CommandCreator  = (session) -> new ICommand[] { new X101_HandShake(_TargetHost, ((ZContext) session.getContext()).getSeKey(), 13) };
         _DeviceConnector = new IAioConnector()
-        {
-            private final InetSocketAddress remote = new InetSocketAddress(_TargetHost, _TargetPort);
-            private InetSocketAddress       localBind;
+                         {
+                             private final InetSocketAddress remote = new InetSocketAddress(_TargetHost, _TargetPort);
+                             private InetSocketAddress       localBind;
 
-            @Override
-            public InetSocketAddress getRemoteAddress() {
-                return remote;
-            }
+                             @Override
+                             public InetSocketAddress getRemoteAddress()
+                             {
+                                 return remote;
+                             }
 
-            @Override
-            public InetSocketAddress getLocalAddress() {
-                return localBind;
-            }
+                             @Override
+                             public InetSocketAddress getLocalAddress()
+                             {
+                                 return localBind;
+                             }
 
-            @Override
-            public void setLocalAddress(InetSocketAddress address) {
-                localBind = address;
-            }
+                             @Override
+                             public void setLocalAddress(InetSocketAddress address)
+                             {
+                                 localBind = address;
+                             }
 
-            @Override
-            public IOperator<Throwable, IAioConnector> getErrorOperator() {
-                return new IOperator<Throwable, IAioConnector>()
-                {
-                    @Override
-                    @SuppressWarnings("unchecked")
-                    public Triple<Throwable, IAioConnector, IOperator<Throwable, IAioConnector>> handle(Throwable throwable,
-                                                                                                        IAioConnector connector) {
-                        _Log.warning("connect active failed %s", throwable, connector.toString());
-                        return new Triple<>(throwable, connector, this);
-                    }
-                };
-            }
+                             @Override
+                             public IOperator<Throwable, IAioConnector> getErrorOperator()
+                             {
+                                 return new IOperator<Throwable, IAioConnector>()
+                                                  {
+                                                      @Override
+                                                      @SuppressWarnings("unchecked")
+                                                      public Triple<Throwable, IAioConnector, IOperator<Throwable, IAioConnector>> handle(Throwable throwable,
+                                                                                                                                          IAioConnector connector)
+                                                      {
+                                                          _Log.warning("connect active failed %s", throwable, connector.toString());
+                                                          return new Triple<>(throwable, connector, this);
+                                                      }
+                                                  };
+                             }
 
-            @Override
-            public MODE getMode() {
-                return CONSUMER;
-            }
+                             @Override
+                             public MODE getMode()
+                             {
+                                 return CONSUMER;
+                             }
 
-            @Override
-            public IOperator<IConnectionContext, AsynchronousSocketChannel> getConnectedOperator() {
-                return CONNECTED_OPERATOR();
-            }
+                             @Override
+                             public IOperator<IConnectionContext, AsynchronousSocketChannel> getConnectedOperator()
+                             {
+                                 return CONNECTED_OPERATOR();
+                             }
 
-            @Override
-            public ISessionCreator getSessionCreator() {
-                return _SessionCreator;
-            }
+                             @Override
+                             public ISessionCreator getSessionCreator()
+                             {
+                                 return _SessionCreator;
+                             }
 
-            @Override
-            public ISessionCreated getSessionCreated() {
-                return DeviceClient.this;
-            }
+                             @Override
+                             public ISessionCreated getSessionCreated()
+                             {
+                                 return DeviceClient.this;
+                             }
 
-            @Override
-            public ICommandCreator getCommandCreator() {
-                return _CommandCreator;
-            }
+                             @Override
+                             public ICommandCreator getCommandCreator()
+                             {
+                                 return _CommandCreator;
+                             }
 
-        };
+                         };
 
     }
 
     @PostConstruct
-    private void init() {
+    private void init()
+    {
         _ClientCore.build((event, sequence, endOfBatch) -> {
             ICommand[] commands = null;
-            ISession session = null;
-            switch (event.getEventType()) {
+            ISession   session  = null;
+            switch (event.getEventType())
+            {
                 case LOGIC:
                     //与 Server Node 处理过程存在较大的差异，中间去掉一个decoded dispatcher 所以此处入参为 ICommand[]
                     Pair<ICommand[], ISession> logicContent = event.getContent();
@@ -215,8 +219,10 @@ public class DeviceClient
                     session = logicContent.second();
                     if (Objects.nonNull(commands)) {
                         commands = Stream.of(commands)
-                                         .map(cmd -> {
-                                             switch (cmd.getSerial()) {
+                                         .map(cmd ->
+                                         {
+                                             switch (cmd.getSerial())
+                                             {
                                                  case X03_Cipher.COMMAND:
                                                  case X05_EncryptStart.COMMAND:
                                                      return cmd;
@@ -264,7 +270,8 @@ public class DeviceClient
         });
     }
 
-    public void connect() {
+    public void connect()
+    {
         try {
             connect(_DeviceConnector, _ChannelGroup);
             _TimeWheel.acquire(3, TimeUnit.SECONDS, _DeviceConnector, new ScheduleHandler<>(false, connector -> {
@@ -290,13 +297,15 @@ public class DeviceClient
     }
 
     @Override
-    public void onCreate(ISession session) {
+    public void onCreate(ISession session)
+    {
         _Log.info("client connect:%s", session);
         clientSession = session;
     }
 
     @Override
-    public void onDismiss(ISession session) {
+    public void onDismiss(ISession session)
+    {
         _Log.info("dismiss:%s", session);
         if (clientSession == session) {
             _Log.info("drop client session %s", session);
@@ -305,24 +314,29 @@ public class DeviceClient
         }
     }
 
-    public boolean sendLocal(ICommand... toSends) {
+    public boolean sendLocal(ICommand... toSends)
+    {
         return _ClientCore.localSend(clientSession, toSends);
     }
 
-    public void close() {
+    public void close()
+    {
         _ClientCore.close(clientSession);
     }
 
-    public void handshake() {
+    public void handshake()
+    {
         sendLocal(new X101_HandShake(_TargetHost, ((ZContext) clientSession.getContext()).getSeKey(), 13));
     }
 
-    public void heartbeat(String msg) {
+    public void heartbeat(String msg)
+    {
         Objects.requireNonNull(msg);
         sendLocal(new X104_Ping(msg.getBytes()));
     }
 
-    public byte[] getToken() {
+    public byte[] getToken()
+    {
         return currentTokenRef.get();
     }
 }

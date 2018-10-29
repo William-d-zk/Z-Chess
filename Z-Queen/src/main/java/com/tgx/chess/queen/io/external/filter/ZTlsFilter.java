@@ -39,14 +39,16 @@ public class ZTlsFilter<C extends AioContext>
         AioFilterChain<C>
 {
 
-    public ZTlsFilter() {
+    public ZTlsFilter()
+    {
         name = "queen-tls-filter";
     }
 
     private final Logger _Log = Logger.getLogger(getClass().getName());
 
     @Override
-    public ResultType preEncode(C context, IProtocol output) {
+    public ResultType preEncode(C context, IProtocol output)
+    {
         if (Objects.isNull(context) || Objects.isNull(output)) return ResultType.ERROR;
         ResultType resultType = context.isOutCrypt() ? ResultType.NEXT_STEP : ResultType.IGNORE;
         /* plain -> cipher X04/X05 encoded in command-filter */
@@ -61,7 +63,8 @@ public class ZTlsFilter<C extends AioContext>
     }
 
     @Override
-    public IProtocol encode(C context, IProtocol output) {
+    public IProtocol encode(C context, IProtocol output)
+    {
         IPacket _package = (IPacket) output;
         context.getSymmetricEncrypt()
                .digest(_package.getBuffer(), context.getSymmetricKeyOut());
@@ -75,7 +78,8 @@ public class ZTlsFilter<C extends AioContext>
     }
 
     @Override
-    public ResultType preDecode(C context, IProtocol input) {
+    public ResultType preDecode(C context, IProtocol input)
+    {
         if (Objects.isNull(context) || Objects.isNull(input)) return ResultType.ERROR;
         if (context.needUpdateKeyIn()) {
             context.swapKeyIn(context.getReRollKey());
@@ -87,7 +91,8 @@ public class ZTlsFilter<C extends AioContext>
     }
 
     @Override
-    public IProtocol decode(C context, IProtocol input) {
+    public IProtocol decode(C context, IProtocol input)
+    {
         IPacket _package = (IPacket) input;
         context.getSymmetricDecrypt()
                .digest(_package.getBuffer(), context.getSymmetricKeyIn());

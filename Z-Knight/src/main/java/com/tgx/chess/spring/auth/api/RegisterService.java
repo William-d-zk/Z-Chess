@@ -27,11 +27,7 @@ package com.tgx.chess.spring.auth.api;
 import java.util.Map;
 import java.util.Optional;
 
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.tgx.chess.spring.auth.api.dto.AuthDTO;
 import com.tgx.chess.spring.auth.model.Account;
@@ -43,17 +39,19 @@ public class RegisterService
 {
     private final AccountService _AccountService;
 
-    public RegisterService(AccountService accountService) {
+    public RegisterService(AccountService accountService)
+    {
         _AccountService = accountService;
     }
 
     @PostMapping(value = "/api/register")
-    public @ResponseBody AuthDTO register(@RequestBody Map<String, String> param) {
+    public @ResponseBody AuthDTO register(@RequestBody Map<String, String> param)
+    {
         System.out.println(param);
-        String username = param.get("name");
-        String email = param.get("email");
-        String password = param.get("passwd");
-        Optional<Account> test = _AccountService.findByEmail(email);
+        String            username = param.get("name");
+        String            email    = param.get("email");
+        String            password = param.get("passwd");
+        Optional<Account> test     = _AccountService.findByEmail(email);
         if (test.isPresent()) {
             throw new IllegalArgumentException("email exist");
         }

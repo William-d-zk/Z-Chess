@@ -29,11 +29,13 @@ package com.tgx.chess.queen.io.core.inf;
  */
 public interface IValid
 {
-    default void setInValid() {
+    default void setInValid()
+    {
     }
 
     boolean isValid();
 
-    default void setValid() {
+    default void setValid()
+    {
     }
 }

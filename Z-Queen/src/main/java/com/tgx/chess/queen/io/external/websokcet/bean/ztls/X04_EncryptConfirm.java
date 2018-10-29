@@ -40,41 +40,48 @@ public class X04_EncryptConfirm
     /* SHA256 */
     private byte[]          mSign;
 
-    public X04_EncryptConfirm() {
+    public X04_EncryptConfirm()
+    {
         super(COMMAND, false);
     }
 
     @Override
-    public boolean isMappingCommand() {
+    public boolean isMappingCommand()
+    {
         return true;
     }
 
-    public byte[] getSign() {
+    public byte[] getSign()
+    {
         return mSign;
     }
 
-    public void setSign(byte[] sign) {
+    public void setSign(byte[] sign)
+    {
         mSign = sign;
     }
 
     @Override
-    public int dataLength() {
+    public int dataLength()
+    {
         return super.dataLength() + 36;
     }
 
     @Override
-    public int decodec(byte[] data, int pos) {
-        code = IoUtil.readShort(data, pos);
-        pos += 2;
-        symmetricKeyId = IoUtil.readUnsignedShort(data, pos);
-        pos += 2;
-        mSign = new byte[32];
-        pos = IoUtil.read(data, pos, mSign);
+    public int decodec(byte[] data, int pos)
+    {
+        code            = IoUtil.readShort(data, pos);
+        pos            += 2;
+        symmetricKeyId  = IoUtil.readUnsignedShort(data, pos);
+        pos            += 2;
+        mSign           = new byte[32];
+        pos             = IoUtil.read(data, pos, mSign);
         return pos;
     }
 
     @Override
-    public int encodec(byte[] data, int pos) {
+    public int encodec(byte[] data, int pos)
+    {
         pos += IoUtil.writeShort(code, data, pos);
         pos += IoUtil.writeShort(symmetricKeyId, data, pos);
         pos += IoUtil.write(mSign, data, pos);
@@ -82,22 +89,26 @@ public class X04_EncryptConfirm
     }
 
     @Override
-    public void afterEncode(ZContext ctx) {
+    public void afterEncode(ZContext ctx)
+    {
         ctx.updateKeyOut();
     }
 
     @Override
-    public void afterDecode(ZContext ctx) {
+    public void afterDecode(ZContext ctx)
+    {
         ctx.updateKeyIn();
     }
 
     @Override
-    public int getPriority() {
+    public int getPriority()
+    {
         return QOS_00_NETWORK_CONTROL;
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return String.format("%s,code:%s,rc4-key: %d ,sign: %s", super.toString(), code, symmetricKeyId, IoUtil.bin2Hex(mSign));
     }
 }

@@ -59,7 +59,8 @@ public abstract class Command<C extends AioContext>
     private long             mSequence           = -1;
     private transient long   tTransactionKey     = _DEFAULT_TRANSACTION_KEY;
 
-    protected Command(int command, boolean hasUID) {
+    protected Command(int command, boolean hasUID)
+    {
         _Command = command;
         initGUid(0, _HasUID = hasUID);
         setEncrypt();
@@ -68,7 +69,8 @@ public abstract class Command<C extends AioContext>
         setCharsetSerial(I18nUtil.CHARSET_UTF_8, I18nUtil.SERIAL_BINARY);
     }
 
-    public Command(int command, long uidWithoutSequence) {
+    public Command(int command, long uidWithoutSequence)
+    {
         this._Command = command;
         initGUid(uidWithoutSequence, _HasUID = true);
         setEncrypt();
@@ -77,122 +79,147 @@ public abstract class Command<C extends AioContext>
         setCharsetSerial(I18nUtil.CHARSET_UTF_8, I18nUtil.SERIAL_BINARY);
     }
 
-    public boolean isTypeBin() {
+    public boolean isTypeBin()
+    {
         return I18nUtil.isTypeBin(mTypeByte);
     }
 
-    public boolean isTypeTxt() {
+    public boolean isTypeTxt()
+    {
         return I18nUtil.isTypeTxt(mTypeByte);
     }
 
-    public boolean isTypeJson() {
+    public boolean isTypeJson()
+    {
         return I18nUtil.isTypeJson(mTypeByte);
     }
 
-    public boolean isTypeXml() {
+    public boolean isTypeXml()
+    {
         return I18nUtil.isTypeXml(mTypeByte);
     }
 
     @Override
-    public int getSerial() {
+    public int getSerial()
+    {
         return _Command;
     }
 
     @Override
-    public int getSuperSerial() {
+    public int getSuperSerial()
+    {
         return COMMAND_SERIAL;
     }
 
-    public int getVersion() {
+    public int getVersion()
+    {
         return mHAttr & 0x0F;
     }
 
-    public void setVersion(int version) {
+    public void setVersion(int version)
+    {
         mHAttr |= version;
     }
 
     @Override
-    public boolean isCluster() {
+    public boolean isCluster()
+    {
         return (mHAttr & 0x80) != 0;
 
     }
 
     @Override
-    public Command<C> setCluster(boolean b) {
+    public Command<C> setCluster(boolean b)
+    {
         mHAttr |= b ? 0x80 : 0;
         return this;
     }
 
-    public boolean isCompress() {
+    public boolean isCompress()
+    {
         return (mHAttr & 0x20) != 0;
     }
 
-    public boolean isEncrypt() {
+    public boolean isEncrypt()
+    {
         return (mHAttr & 0x10) != 0;
     }
 
-    public boolean isGlobalMsg() {
+    public boolean isGlobalMsg()
+    {
         return (mHAttr & 0x40) == 0;
     }
 
-    private void initGUid(long _uid, boolean flag) {
+    private void initGUid(long _uid, boolean flag)
+    {
         if (flag) mHAttr &= ~0x40;
         else mHAttr |= 0x40;
         mMsgUID = flag ? _uid : 0;
     }
 
-    public void setEncrypt() {
+    public void setEncrypt()
+    {
         mHAttr |= 0x10;
     }
 
-    public void setNoEncrypt() {
+    public void setNoEncrypt()
+    {
         mHAttr &= 0xEF;
     }
 
-    public void setCompress() {
+    public void setCompress()
+    {
         mHAttr |= 0x20;
     }
 
-    public void setEvent() {
+    public void setEvent()
+    {
         mHAttr |= 0x80;
     }
 
-    public final void setCharsetSerial(int charset_, int serial_) {
+    public final void setCharsetSerial(int charset_, int serial_)
+    {
         mTypeByte = I18nUtil.getCharsetSerial(charset_, serial_);
     }
 
-    public final void setCharsetSerial(byte type) {
+    public final void setCharsetSerial(byte type)
+    {
         this.mTypeByte = type;
     }
 
-    private int addCrc(byte[] data, int lastPos) {
+    private int addCrc(byte[] data, int lastPos)
+    {
         lastPos += IoUtil.writeInt(CryptUtil.crc32(data, 0, lastPos), data, lastPos);
         return lastPos;
     }
 
-    private int checkCrc(byte[] data, int lastPos) {
+    private int checkCrc(byte[] data, int lastPos)
+    {
         int l_crc = CryptUtil.crc32(data, 0, lastPos);
-        int crc = IoUtil.readInt(data, lastPos);
+        int crc   = IoUtil.readInt(data, lastPos);
         if (l_crc != crc) throw new SecurityException("crc check failed!  =" + data[1]);
         return lastPos + 4;
     }
 
-    public void decode(byte[] data, C ctx) {
+    public void decode(byte[] data, C ctx)
+    {
         decode(data);
         afterDecode(ctx);
     }
 
-    public byte[] encode(C ctx) {
+    public byte[] encode(C ctx)
+    {
         byte[] data = encode();
         afterEncode(ctx);
         return data;
     }
 
     @Override
-    public final byte[] encode() {
-        int length = dataLength();
-        byte[] data = new byte[length];
-        int pos = 0;
+    public final byte[] encode()
+    {
+        int    length = dataLength();
+        byte[] data   = new byte[length];
+        int    pos    = 0;
         pos += IoUtil.writeByte(mHAttr, data, pos);
         pos += IoUtil.writeByte(_Command, data, pos);
         if (isGlobalMsg()) pos += IoUtil.writeLong(mMsgUID, data, pos);
@@ -205,147 +232,162 @@ public abstract class Command<C extends AioContext>
     }
 
     @Override
-    public final int encode(byte[] buf, int pos, int length) {
+    public final int encode(byte[] buf, int pos, int length)
+    {
         int len = dataLength();
         if (len <= 0) throw new IllegalArgumentException("data length is negative or zero");
         if (buf == null) {
             buf = new byte[len];
             pos = 0;
         }
-        else if (len > length
-                 || buf.length < len
-                 || pos + length > buf.length) throw new ArrayIndexOutOfBoundsException("data length is too long for input buf");
+        else if (len > length || buf.length < len || pos + length > buf.length) throw new ArrayIndexOutOfBoundsException("data length is too long for input buf");
         pos += IoUtil.writeByte(mHAttr, buf, pos);
         pos += IoUtil.writeByte(_Command, buf, pos);
         if (isGlobalMsg()) pos += IoUtil.writeLong(mMsgUID, buf, pos);
         pos += IoUtil.writeByte(mTypeByte, buf, pos);
-        pos = addCrc(buf, encodec(buf, pos));
+        pos  = addCrc(buf, encodec(buf, pos));
         return pos;
     }
 
     @Override
-    public final int decode(byte[] data) {
+    public final int decode(byte[] data)
+    {
         if (data == null) throw new NullPointerException();
         if (data.length < dataLength()) throw new ArrayIndexOutOfBoundsException();
         mHAttr = data[0];
         int pos = 2;
         if (isGlobalMsg()) {
-            mMsgUID = IoUtil.readLong(data, pos);
-            pos += 8;
+            mMsgUID  = IoUtil.readLong(data, pos);
+            pos     += 8;
         }
         mTypeByte = data[pos++];
-        charset = getCharset(mTypeByte);
+        charset   = getCharset(mTypeByte);
         return checkCrc(data, decodec(data, pos));
     }
 
     @Override
-    public final int decode(byte[] data, int pos, int length) {
+    public final int decode(byte[] data, int pos, int length)
+    {
         if (data == null) throw new NullPointerException();
         if (data.length - length < dataLength()) throw new ArrayIndexOutOfBoundsException();
 
-        mHAttr = data[pos];
-        pos += 2;
+        mHAttr  = data[pos];
+        pos    += 2;
         if (isGlobalMsg()) {
-            mMsgUID = IoUtil.readLong(data, pos);
-            pos += 8;
+            mMsgUID  = IoUtil.readLong(data, pos);
+            pos     += 8;
         }
         mTypeByte = data[pos++];
-        charset = getCharset(mTypeByte);
+        charset   = getCharset(mTypeByte);
         return checkCrc(data, decodec(data, pos));
     }
 
-    private String getCharset(byte type_c) {
+    private String getCharset(byte type_c)
+    {
         return I18nUtil.getCharset(type_c);
     }
 
-    public String getCharset() {
+    public String getCharset()
+    {
         return charset;
     }
 
-    protected int getCharsetCode(String charset) {
+    protected int getCharsetCode(String charset)
+    {
         return I18nUtil.getCharsetCode(charset);
     }
 
     @Override
-    public int dataLength() {
+    public int dataLength()
+    {
         return isGlobalMsg() ? min_msg_uid_size : min_no_msg_uid_size;
     }
 
     @Override
-    public void dispose() {
-        charset = null;
+    public void dispose()
+    {
+        charset  = null;
         mSession = null;
     }
 
     @Override
-    public long getSequence() {
+    public long getSequence()
+    {
         return mSequence;
     }
 
     @Override
-    public void setSequence(long sequence) {
+    public void setSequence(long sequence)
+    {
         mSequence = mSequence < 0 ? sequence : mSequence;
     }
 
     @Override
-    public long getTransactionKey() {
+    public long getTransactionKey()
+    {
         return tTransactionKey;
     }
 
     @Override
-    public void setTransactionKey(long _key) {
+    public void setTransactionKey(long _key)
+    {
         tTransactionKey = tTransactionKey < 0 ? _key : tTransactionKey;
     }
 
-    public byte getTgxType() {
+    public byte getTgxType()
+    {
         return mTypeByte;
     }
 
-    public Command<C> setPType(byte type_b) {
+    public Command<C> setPType(byte type_b)
+    {
         this.mTypeByte = type_b;
         return this;
     }
 
-    public Command<C> setUID(String hexGUid, long longGUid) {
+    public Command<C> setUID(String hexGUid, long longGUid)
+    {
         if (longGUid != -1) setUID(longGUid);
         else if (Objects.nonNull(hexGUid)) setUID(Long.parseLong(hexGUid, 16));
         else throw new NullPointerException();
         return this;
     }
 
-    public long getUID() {
+    public long getUID()
+    {
         return mMsgUID;
     }
 
     @Override
-    public void setUID(long uid) {
+    public void setUID(long uid)
+    {
         if (!_HasUID) throw new UnsupportedOperationException();
         mMsgUID = uid;
     }
 
     @Override
-    public ISession getSession() {
+    public ISession getSession()
+    {
         return mSession;
     }
 
     @Override
-    public Command<C> setSession(ISession session) {
+    public Command<C> setSession(ISession session)
+    {
         this.mSession = session;
         return this;
     }
 
     @Override
-    public Command<C> duplicate() {
+    public Command<C> duplicate()
+    {
         return null;
     }
 
     @Override
-    public String toString() {
-        return String.format("CMD: 0x%X,version:%d,charset:%s,serial type:%s",
-                             _Command,
-                             getVersion(),
-                             getCharset(mTypeByte),
-                             I18nUtil.getSerialType(mTypeByte & 0x0F));
+    public String toString()
+    {
+        return String.format("CMD: 0x%X,version:%d,charset:%s,serial type:%s", _Command, getVersion(), getCharset(mTypeByte), I18nUtil.getSerialType(mTypeByte & 0x0F));
 
     }
 }

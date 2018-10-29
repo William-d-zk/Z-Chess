@@ -28,18 +28,22 @@ package com.tgx.chess.queen.io.core.inf;
  */
 public interface ISequence
 {
-    default long getSequence() {
+    default long getSequence()
+    {
         return -1;
     }
 
-    default void setSequence(long sequence) {
+    default void setSequence(long sequence)
+    {
     }
 
-    default boolean isOrder() {
+    default boolean isOrder()
+    {
         return false;
     }
 
-    default long getOrder() {
+    default long getOrder()
+    {
         return -1;
     }
 }

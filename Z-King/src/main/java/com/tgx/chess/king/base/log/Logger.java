@@ -24,11 +24,11 @@
 
 package com.tgx.chess.king.base.log;
 
-import org.slf4j.LoggerFactory;
-import org.slf4j.event.Level;
-
 import java.io.Serializable;
 import java.util.Objects;
+
+import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 
 public class Logger
         implements
@@ -39,65 +39,81 @@ public class Logger
     private final String           _Name;
     private final org.slf4j.Logger _Logger;
 
-    private Logger(String name) {
-        _Name = name;
+    private Logger(String name)
+    {
+        _Name   = name;
         _Logger = LoggerFactory.getLogger(name);
     }
 
-    public static Logger getLogger(String name) {
+    public static Logger getLogger(String name)
+    {
         return new Logger(name);
     }
 
-    public void info(String msg) {
+    public void info(String msg)
+    {
         _Logger.info(msg);
     }
 
-    public void info(Object object) {
+    public void info(Object object)
+    {
         _Logger.info(object.toString());
     }
 
-    public void info(String formatter, Object... content) {
+    public void info(String formatter, Object... content)
+    {
         _Logger.info(String.format(formatter, content));
     }
 
-    public void warning(String msg) {
+    public void warning(String msg)
+    {
         _Logger.warn(msg);
     }
 
-    public void warning(String msg, Throwable throwable) {
+    public void warning(String msg, Throwable throwable)
+    {
         _Logger.warn(msg, throwable);
     }
 
-    public void warning(String formatter, Throwable throwable, Object... msg) {
+    public void warning(String formatter, Throwable throwable, Object... msg)
+    {
         _Logger.warn(String.format(formatter, msg), throwable);
     }
 
-    public void warning(String formatter, Object... msg) {
+    public void warning(String formatter, Object... msg)
+    {
         _Logger.warn(String.format(formatter, msg));
     }
 
-    public void debug(Object object) {
+    public void debug(Object object)
+    {
         _Logger.debug(object.toString());
     }
 
-    public void debug(String msg) {
+    public void debug(String msg)
+    {
         _Logger.debug(msg);
     }
 
-    public void debug(String msg, Throwable throwable) {
+    public void debug(String msg, Throwable throwable)
+    {
         _Logger.debug(msg, throwable);
     }
 
-    public void fetal(String msg, Throwable throwable) {
+    public void fetal(String msg, Throwable throwable)
+    {
         _Logger.error(msg, throwable);
     }
 
-    public void fetal(String msg) {
+    public void fetal(String msg)
+    {
         _Logger.error(msg);
     }
 
-    public boolean isEnable(Level level) {
-        switch (level) {
+    public boolean isEnable(Level level)
+    {
+        switch (level)
+        {
             case INFO:
                 return _Logger.isInfoEnabled();
             case DEBUG:
@@ -113,7 +129,8 @@ public class Logger
         }
     }
 
-    public static String arrayToString(Object[] a) {
+    public static String arrayToString(Object[] a)
+    {
         if (Objects.isNull(a)) { return "[]"; }
         int iMax = a.length - 1;
         if (iMax == -1) { return "[]"; }
@@ -136,7 +153,8 @@ public class Logger
      *            读入的当前行
      * @return 是否跳过
      */
-    public static boolean skipLine(String line) {
+    public static boolean skipLine(String line)
+    {
         return Objects.isNull(line) || "".equals(line) || line.matches("\\s+");
     }
 }

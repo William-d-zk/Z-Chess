@@ -26,19 +26,7 @@ package com.tgx.chess.spring.auth.model;
 
 import java.util.Set;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 
@@ -47,7 +35,8 @@ import org.hibernate.validator.constraints.Length;
 import com.tgx.chess.spring.jpa.model.AuditModel;
 
 @Entity
-@Table(indexes = { @Index(name = "account_idx_email", columnList = "email"),
+@Table(
+       indexes = { @Index(name = "account_idx_email", columnList = "email"),
                    @Index(name = "account_idx_name", columnList = "name") })
 public class Account
         extends
@@ -82,59 +71,73 @@ public class Account
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "account")
     private Profile   profile;
 
-    public int getId() {
+    public int getId()
+    {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(int id)
+    {
         this.id = id;
     }
 
-    public String getEmail() {
+    public String getEmail()
+    {
         return email;
     }
 
-    public void setEmail(String email) {
+    public void setEmail(String email)
+    {
         this.email = email;
     }
 
-    public String getPassword() {
+    public String getPassword()
+    {
         return password;
     }
 
-    public void setPassword(String password) {
+    public void setPassword(String password)
+    {
         this.password = password;
     }
 
-    public String getName() {
+    public String getName()
+    {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(String name)
+    {
         this.name = name;
     }
 
-    public void setActive(int active) {
+    public void setActive(int active)
+    {
         this.active = active;
     }
 
-    public int getActive() {
+    public int getActive()
+    {
         return active;
     }
 
-    public Set<Role> getRoles() {
+    public Set<Role> getRoles()
+    {
         return roles;
     }
 
-    public void setRoles(Set<Role> roles) {
+    public void setRoles(Set<Role> roles)
+    {
         this.roles = roles;
     }
 
-    public Profile getProfile() {
+    public Profile getProfile()
+    {
         return profile;
     }
 
-    public void setProfile(Profile profile) {
+    public void setProfile(Profile profile)
+    {
         this.profile = profile;
     }
 

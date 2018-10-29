@@ -35,18 +35,21 @@ public class X103_Close
 {
     public final static int COMMAND = 0x103;
 
-    public X103_Close() {
+    public X103_Close()
+    {
         super(COMMAND);
         mCtrlCode = WsFrame.frame_op_code_ctrl_close;
     }
 
-    public X103_Close(byte[] payload) {
+    public X103_Close(byte[] payload)
+    {
         super(COMMAND, payload);
         mCtrlCode = WsFrame.frame_op_code_ctrl_close;
     }
 
     @Override
-    public X103_Close duplicate() {
+    public X103_Close duplicate()
+    {
         return new X103_Close(getPayload());
     }
 

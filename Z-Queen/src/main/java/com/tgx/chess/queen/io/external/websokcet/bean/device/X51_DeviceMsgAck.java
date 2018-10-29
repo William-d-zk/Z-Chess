@@ -36,15 +36,18 @@ public class X51_DeviceMsgAck
 {
     public final static int COMMAND = 0x51;
 
-    public X51_DeviceMsgAck() {
+    public X51_DeviceMsgAck()
+    {
         super(COMMAND, true);
     }
 
-    public X51_DeviceMsgAck(long msgUid) {
+    public X51_DeviceMsgAck(long msgUid)
+    {
         super(COMMAND, msgUid);
     }
 
-    public int getPriority() {
+    public int getPriority()
+    {
         return QOS_09_CONFIRM_MESSAGE;
     }
 }

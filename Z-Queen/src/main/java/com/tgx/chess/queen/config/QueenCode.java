@@ -103,8 +103,10 @@ public interface QueenCode
     int  MQ_REGISTER_TOPIC_MODE_CONFLICT      = 602;
     int  MQ_REGISTER_TOPIC_NULL               = 603;
 
-    public static String parseRCode(int code) {
-        switch (code) {
+    public static String parseRCode(int code)
+    {
+        switch (code)
+        {
             case DEVICE_OK:
                 return "DEVICE_OK";
             case USR_OK:

@@ -33,12 +33,14 @@ public class X25_AuthorisedToken
 {
     public final static int COMMAND = 0x25;
 
-    public X25_AuthorisedToken() {
+    public X25_AuthorisedToken()
+    {
         super(COMMAND, false);
     }
 
     @Override
-    public int getPriority() {
+    public int getPriority()
+    {
         return QOS_09_CONFIRM_MESSAGE;
     }
 }

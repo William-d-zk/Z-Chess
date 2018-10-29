@@ -33,7 +33,8 @@ public interface ISessionManager
 
     boolean mapSession(long index, ISession session);
 
-    default boolean mapSession(ISession session) {
+    default boolean mapSession(ISession session)
+    {
         return mapSession(session.getIndex(), session);
     }
 
@@ -45,7 +46,8 @@ public interface ISessionManager
 
     void clearSessionWithPort(long index, ISession session);
 
-    default void clearSession(ISession session) {
+    default void clearSession(ISession session)
+    {
         clearSessionWithPort(session.getIndex(), session);
     }
 

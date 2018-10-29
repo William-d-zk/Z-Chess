@@ -29,7 +29,8 @@ package com.tgx.chess.queen.io.core.inf;
  */
 public interface IDuplicate
 {
-    default IDuplicate duplicate() {
+    default IDuplicate duplicate()
+    {
         return this;
     }
 }

@@ -31,11 +31,13 @@ public interface IConnectActive
         IAddress,
         IConnectMode
 {
-    default int getHaIndex() {
+    default int getHaIndex()
+    {
         return 0;
     }
 
-    default int getPortIndex() {
+    default int getPortIndex()
+    {
         return 0;
     }
 

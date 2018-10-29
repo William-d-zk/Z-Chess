@@ -35,18 +35,21 @@ public class X105_Pong
 {
     public final static int COMMAND = 0x105;
 
-    public X105_Pong() {
+    public X105_Pong()
+    {
         super(COMMAND);
         mCtrlCode = WsFrame.frame_op_code_ctrl_pong;
     }
 
-    public X105_Pong(byte[] payload) {
+    public X105_Pong(byte[] payload)
+    {
         super(COMMAND, payload);
         mCtrlCode = WsFrame.frame_op_code_ctrl_pong;
     }
 
     @Override
-    public X105_Pong duplicate() {
+    public X105_Pong duplicate()
+    {
         return new X105_Pong(getPayload());
     }
 }

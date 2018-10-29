@@ -33,12 +33,14 @@ public class X24_UpdateToken
 {
     public final static int COMMAND = 0x24;
 
-    public X24_UpdateToken() {
+    public X24_UpdateToken()
+    {
         super(COMMAND, false);
     }
 
     @Override
-    public int getPriority() {
+    public int getPriority()
+    {
         return QOS_06_META_CREATE;
     }
 }

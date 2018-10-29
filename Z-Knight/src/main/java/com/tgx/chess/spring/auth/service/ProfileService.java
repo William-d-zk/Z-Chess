@@ -36,11 +36,13 @@ public class ProfileService
     private final ProfileRepository _ProfileRepository;
 
     @Autowired
-    public ProfileService(ProfileRepository profileRepository) {
+    public ProfileService(ProfileRepository profileRepository)
+    {
         _ProfileRepository = profileRepository;
     }
 
-    public Profile getProfile(int userId) {
+    public Profile getProfile(int userId)
+    {
         return _ProfileRepository.findByAccount(userId);
     }
 }

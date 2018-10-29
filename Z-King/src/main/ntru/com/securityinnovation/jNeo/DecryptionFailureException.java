@@ -40,7 +40,8 @@ public class DecryptionFailureException
     /**
      * Constructs a new exception a default message.
      */
-    public DecryptionFailureException() {
+    public DecryptionFailureException()
+    {
         super("Input ciphretext is not encrypted with this key");
     }
 }

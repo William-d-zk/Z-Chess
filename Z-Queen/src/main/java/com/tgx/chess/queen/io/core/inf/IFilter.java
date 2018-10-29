@@ -36,11 +36,13 @@ public interface IFilter<C extends IContext>
 
     IProtocol decode(C context, IProtocol input);
 
-    default int getIdempotentBit() {
+    default int getIdempotentBit()
+    {
         return -1;
     }
 
-    default void idempotentRightShift(int previous) {
+    default void idempotentRightShift(int previous)
+    {
     }
 
     enum ResultType

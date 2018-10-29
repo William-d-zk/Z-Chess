@@ -39,41 +39,48 @@ public class X50_DeviceMsg
     private byte[]          mPayload;
     private int             mPayloadLength;
 
-    public X50_DeviceMsg() {
+    public X50_DeviceMsg()
+    {
         super(COMMAND, true);
     }
 
-    public X50_DeviceMsg(long msgUid) {
+    public X50_DeviceMsg(long msgUid)
+    {
         super(COMMAND, msgUid);
     }
 
     @Override
-    public int getPriority() {
+    public int getPriority()
+    {
         return QOS_08_IMMEDIATE_MESSAGE;
     }
 
     @Override
-    public int dataLength() {
+    public int dataLength()
+    {
         return super.dataLength() + 2 + mPayloadLength;
     }
 
-    public void setPayload(byte[] payload) {
+    public void setPayload(byte[] payload)
+    {
         mPayload = payload;
         if (payload.length > 4096) { throw new IllegalArgumentException("payload length is over 4096"); }
         mPayloadLength = payload.length;
     }
 
     @Override
-    public int decodec(byte[] data, int pos) {
-        mPayloadLength = IoUtil.readShort(data, pos);
-        pos += 2;
-        mPayload = new byte[mPayloadLength];
-        pos = IoUtil.read(data, pos, mPayload);
+    public int decodec(byte[] data, int pos)
+    {
+        mPayloadLength  = IoUtil.readShort(data, pos);
+        pos            += 2;
+        mPayload        = new byte[mPayloadLength];
+        pos             = IoUtil.read(data, pos, mPayload);
         return pos;
     }
 
     @Override
-    public int encodec(byte[] data, int pos) {
+    public int encodec(byte[] data, int pos)
+    {
         pos += IoUtil.writeShort(mPayloadLength, data, pos);
         pos += IoUtil.write(mPayload, 0, data, pos, mPayload.length);
         return pos;

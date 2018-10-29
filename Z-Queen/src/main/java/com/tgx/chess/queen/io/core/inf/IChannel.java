@@ -30,10 +30,12 @@ package com.tgx.chess.queen.io.core.inf;
 public interface IChannel
 {
     /**
-     * @return 0 ignore channel dispatch operation , otherwise dispatch to target channel.
+     * @return 0 ignore channel dispatch operation , otherwise dispatch to
+     *         target channel.
      * 
      */
-    default int getChannel() {
+    default int getChannel()
+    {
         return 0;
     }
 }

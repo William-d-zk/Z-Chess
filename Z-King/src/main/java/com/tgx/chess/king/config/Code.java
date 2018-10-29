@@ -24,9 +24,9 @@
 
 package com.tgx.chess.king.config;
 
-import com.tgx.chess.king.base.inf.ICode;
-
 import java.util.Objects;
+
+import com.tgx.chess.king.base.inf.ICode;
 
 public enum Code
         implements
@@ -40,17 +40,20 @@ public enum Code
     private final String _Formatter;
 
     @Override
-    public int getCode() {
+    public int getCode()
+    {
         return _Code;
     }
 
     @Override
-    public String getMsg(Object... args) {
+    public String getMsg(Object... args)
+    {
         return Objects.isNull(args) || args.length == 0 ? _Formatter : String.format(_Formatter, args);
     }
 
-    Code(int code, String formatter) {
-        _Code = code;
+    Code(int code, String formatter)
+    {
+        _Code      = code;
         _Formatter = formatter;
     }
 }

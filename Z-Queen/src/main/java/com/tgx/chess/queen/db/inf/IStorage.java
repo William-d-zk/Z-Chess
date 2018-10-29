@@ -36,30 +36,37 @@ public interface IStorage
         IProtocol
 {
     @Override
-    default int getSuperSerial() {
+    default int getSuperSerial()
+    {
         return DB_SERIAL;
     }
 
-    default void override(IStorage src) {
+    default void override(IStorage src)
+    {
     }
 
-    default long getPrimaryKey() {
+    default long getPrimaryKey()
+    {
         return -1;
     }
 
-    default byte[] getSecondaryByteArrayKey() {
+    default byte[] getSecondaryByteArrayKey()
+    {
         return null;
     }
 
-    default long getSecondaryLongKey() {
+    default long getSecondaryLongKey()
+    {
         return -1;
     }
 
-    default Operation getOperation() {
+    default Operation getOperation()
+    {
         return Operation.OP_NULL;
     }
 
-    default void setOperation(Operation op) {
+    default void setOperation(Operation op)
+    {
     }
 
     enum Operation
@@ -74,19 +81,23 @@ public interface IStorage
 
         byte _Value;
 
-        Operation(byte value) {
+        Operation(byte value)
+        {
             _Value = value;
         }
 
-        public byte getValue() {
+        public byte getValue()
+        {
             return _Value;
         }
 
-        public Operation predicate(byte value) {
+        public Operation predicate(byte value)
+        {
             return _Value == value ? this : null;
         }
 
-        public static Operation parse(final byte value) {
+        public static Operation parse(final byte value)
+        {
             return Stream.of(Operation.values())
                          .map(op -> op.predicate(value))
                          .filter(Objects::nonNull)

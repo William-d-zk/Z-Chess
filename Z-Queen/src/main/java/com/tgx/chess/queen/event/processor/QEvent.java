@@ -50,14 +50,16 @@ public class QEvent
     private List<?>                          mContentList;
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return String.format("\nERR: %s\nTP:%s\nOP:%s\nCTL:\n%s\nCT:\n%s", mErrType, mType, mOperator, mContentList, mContent);
     }
 
     @Override
-    public void reset() {
-        mType = IOperator.Type.NULL;
-        mErrType = IError.Type.NO_ERROR;
+    public void reset()
+    {
+        mType     = IOperator.Type.NULL;
+        mErrType  = IError.Type.NO_ERROR;
         mOperator = null;
         if (mContent != null) {
             mContent.dispose();
@@ -69,74 +71,84 @@ public class QEvent
         }
     }
 
-    public void transfer(QEvent dest) {
-        dest.mType = mType;
-        dest.mErrType = mErrType;
-        dest.mOperator = mOperator;
-        dest.mContent = mContent.clone();
+    public void transfer(QEvent dest)
+    {
+        dest.mType        = mType;
+        dest.mErrType     = mErrType;
+        dest.mOperator    = mOperator;
+        dest.mContent     = mContent.clone();
         dest.mContentList = mContentList;
     }
 
     @Override
-    public IOperator.Type getEventType() {
+    public IOperator.Type getEventType()
+    {
         return mType;
     }
 
     @Override
-    public IError.Type getErrorType() {
+    public IError.Type getErrorType()
+    {
         return mErrType;
     }
 
     @Override
-    public <V, A> void produce(IOperator.Type t, V v, A a, IOperator<V, A> operator) {
-        mErrType = IError.Type.NO_ERROR;
-        mType = t;
-        mContent = new Pair<>(v, a);
-        mOperator = operator;
+    public <V, A> void produce(IOperator.Type t, V v, A a, IOperator<V, A> operator)
+    {
+        mErrType     = IError.Type.NO_ERROR;
+        mType        = t;
+        mContent     = new Pair<>(v, a);
+        mOperator    = operator;
         mContentList = null;
     }
 
     @Override
-    public <V, A> void produce(IOperator.Type t, List<Triple<V, A, IOperator<V, A>>> cp) {
-        mErrType = IError.Type.NO_ERROR;
-        mType = t;
-        mContent = null;
-        mOperator = null;
+    public <V, A> void produce(IOperator.Type t, List<Triple<V, A, IOperator<V, A>>> cp)
+    {
+        mErrType     = IError.Type.NO_ERROR;
+        mType        = t;
+        mContent     = null;
+        mOperator    = null;
         mContentList = cp;
     }
 
     @Override
-    public <E, H> void error(IError.Type t, E e, H h, IOperator<E, H> operator) {
-        mType = IOperator.Type.NULL;
-        mErrType = t;
-        mContent = new Pair<>(e, h);
-        mOperator = operator;
+    public <E, H> void error(IError.Type t, E e, H h, IOperator<E, H> operator)
+    {
+        mType        = IOperator.Type.NULL;
+        mErrType     = t;
+        mContent     = new Pair<>(e, h);
+        mOperator    = operator;
         mContentList = null;
     }
 
-    public void ignore() {
-        mType = Type.IGNORE;
-        mErrType = IError.Type.NO_ERROR;
-        mContent = null;
-        mOperator = null;
+    public void ignore()
+    {
+        mType        = Type.IGNORE;
+        mErrType     = IError.Type.NO_ERROR;
+        mContent     = null;
+        mOperator    = null;
         mContentList = null;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <V, A> IOperator<V, A> getEventOp() {
+    public <V, A> IOperator<V, A> getEventOp()
+    {
         return (IOperator<V, A>) mOperator;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <V, A> Pair<V, A> getContent() {
+    public <V, A> Pair<V, A> getContent()
+    {
         return (Pair<V, A>) mContent;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <V, A> List<Triple<V, A, IOperator<V, A>>> getContentList() {
+    public <V, A> List<Triple<V, A, IOperator<V, A>>> getContentList()
+    {
         return (List<Triple<V, A, IOperator<V, A>>>) mContentList;
     }
 
@@ -145,7 +157,8 @@ public class QEvent
             EventFactory<QEvent>
     {
         @Override
-        public QEvent newInstance() {
+        public QEvent newInstance()
+        {
             return new QEvent();
         }
     }

@@ -25,9 +25,9 @@ package com.tgx.chess.queen.event.inf;
 
 import java.util.List;
 
-import com.tgx.chess.queen.event.inf.IError.Type;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.base.util.Triple;
+import com.tgx.chess.queen.event.inf.IError.Type;
 
 /**
  * @author William.d.zk
@@ -50,7 +50,8 @@ public interface IEvent
 
     <V, A> void produce(IOperator.Type t, List<Triple<V, A, IOperator<V, A>>> cp);
 
-    default boolean hasError() {
+    default boolean hasError()
+    {
         return !getErrorType().equals(Type.NO_ERROR);
     }
 }

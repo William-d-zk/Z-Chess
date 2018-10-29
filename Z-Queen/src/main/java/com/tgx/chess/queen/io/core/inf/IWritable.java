@@ -33,16 +33,9 @@ import java.util.concurrent.RejectedExecutionException;
  */
 public interface IWritable<A>
 {
-    WRITE_STATUS write(IPacket ps, A attch) throws WritePendingException,
-                                         NotYetConnectedException,
-                                         ShutdownChannelGroupException,
-                                         RejectedExecutionException;
+    WRITE_STATUS write(IPacket ps, A attch) throws WritePendingException, NotYetConnectedException, ShutdownChannelGroupException, RejectedExecutionException;
 
-    WRITE_STATUS writeNext(int wroteCnt, A attch) throws WritePendingException,
-                                                  NotYetConnectedException,
-                                                  ShutdownChannelGroupException,
-                                                  RejectedExecutionException;
-
+    WRITE_STATUS writeNext(int wroteCnt, A attch) throws WritePendingException, NotYetConnectedException, ShutdownChannelGroupException, RejectedExecutionException;
 
     enum WRITE_STATUS
     {

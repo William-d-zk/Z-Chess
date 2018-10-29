@@ -25,11 +25,7 @@ package com.tgx.chess.queen.io.core.async;
 
 import static java.lang.System.arraycopy;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.ArrayUtil;
@@ -54,28 +50,34 @@ public abstract class AioSessionManager
     private final Map<Long, Integer>[]    _LoadFairMaps          = new Map[4];
     private final Config                  _Config;
 
-    public Config getConfig() {
+    public Config getConfig()
+    {
         return _Config;
     }
 
-    private static String getConfigGroup() {
+    private static String getConfigGroup()
+    {
         return "io";
     }
 
-    private static String getConfigName() {
+    private static String getConfigName()
+    {
         return "Io";
     }
 
-    public AioSessionManager(Config config) {
+    public AioSessionManager(Config config)
+    {
         _Config = config.load(getConfigName());
         Arrays.setAll(_SessionsSets, slot -> new HashSet<>(1 << getConfigPower(config, slot)));
         Arrays.setAll(_Index2SessionMaps, slot -> new HashMap<>(1 << getConfigPower(config, slot)));
         Arrays.setAll(_PortChannel2IndexMaps, slot -> new HashMap<>(23));
     }
 
-    private int getConfigPower(Config config, int slot) {
+    private int getConfigPower(Config config, int slot)
+    {
         int power;
-        switch (slot) {
+        switch (slot)
+        {
             case CLIENT_SLOT:
                 power = config.getConfigValue(getConfigGroup(), QueenConfigKey.OWNER_QUEEN_POWER, QueenConfigKey.KEY_POWER_CLIENT);
                 break;
@@ -94,24 +96,27 @@ public abstract class AioSessionManager
         return power;
     }
 
-    protected int getSlot(ISession session) {
+    protected int getSlot(ISession session)
+    {
         return (int) ((session.getIndex() & QueenCode.XID_MK) >>> 62);
     }
 
-    protected int getSlot(long index) {
+    protected int getSlot(long index)
+    {
         return (int) ((index & QueenCode.XID_MK) >>> 62);
     }
 
-    public void addSession(ISession session) {
+    public void addSession(ISession session)
+    {
         int slot = getSlot(session);
         _Log.info(String.format("add session ->set slot:%s",
-                                slot == CLIENT_SLOT ? "CLIENT"
-                                                    : slot == INTERNAL_SLOT ? "INTERNAL" : slot == SERVER_SLOT ? "SERVER" : "CLUSTER"));
+                                slot == CLIENT_SLOT ? "CLIENT" : slot == INTERNAL_SLOT ? "INTERNAL" : slot == SERVER_SLOT ? "SERVER" : "CLUSTER"));
         _SessionsSets[slot].add(session);
     }
 
     @Override
-    public void rmSession(ISession session) {
+    public void rmSession(ISession session)
+    {
         _SessionsSets[getSlot(session)].remove(session);
     }
 
@@ -120,7 +125,8 @@ public abstract class AioSessionManager
      *         PortChannel 的清理操作。
      */
     @Override
-    public boolean mapSession(long _Index, ISession session) {
+    public boolean mapSession(long _Index, ISession session)
+    {
         if (_Index == INVALID_INDEX || _Index == NULL_INDEX) return false;
         /*
          * 1:相同 Session 不同 _Index 进行登录，产生多个 _Index 对应 相同 Session 的情况 2:相同 _Index 在不同的 Session 上登录，产生覆盖 Session 的情况。
@@ -158,13 +164,14 @@ public abstract class AioSessionManager
     }
 
     @Override
-    public boolean mapSession(long index, ISession session, long... portIdArray) {
+    public boolean mapSession(long index, ISession session, long... portIdArray)
+    {
         if (mapSession(index, session)) {
             if (portIdArray != null) for (int size = portIdArray.length, lv = size - 1; lv > -1; lv--) {
                 long portId = portIdArray[lv];
                 if (portId == INVALID_INDEX || portId == NULL_INDEX) continue;
-                long[][] c = _PortChannel2IndexMaps[getSlot(session)].get(portId);
-                boolean put = c == null;
+                long[][] c   = _PortChannel2IndexMaps[getSlot(session)].get(portId);
+                boolean  put = c == null;
                 if (put) c = new long[2][];
                 if (c[0] == null) c[0] = new long[2];
                 _Index:
@@ -179,11 +186,11 @@ public abstract class AioSessionManager
                         long[] t = new long[cSize + 1];
                         arraycopy(c[0], 0, t, 1, cSize);
                         t[cSize] = cSize;
-                        t[0] = index;
-                        c[0] = t;
+                        t[0]     = index;
+                        c[0]     = t;
                     }
                     else {
-                        c[0][i] = index;
+                        c[0][i]          = index;
                         c[0][cSize - 1] += 1;
                     }
                 }
@@ -215,19 +222,20 @@ public abstract class AioSessionManager
     }
 
     @Override
-    public void clearSessionWithPort(long index, ISession session) {
+    public void clearSessionWithPort(long index, ISession session)
+    {
         // 未登录链接不在map管理范畴内，操作的_Index不一致也不行
         if (index != session.getIndex() && session.getIndex() != INVALID_INDEX || index == INVALID_INDEX || index == NULL_INDEX) return;
         _Index2SessionMaps[getSlot(session)].remove(index);
         long[] _cPortChannel = session.getPortChannels();
-        long rmf = NULL_INDEX;
+        long   rmf           = NULL_INDEX;
         if (_cPortChannel != null) for (long filter : _cPortChannel) {
             long[][] c = _PortChannel2IndexMaps[getSlot(session)].get(filter);
             if (c != null && c.length > 0 && c[0] != null) {
                 _Index:
                 {
                     long[] a = c[0];
-                    int k = -1, j = -1;
+                    int    k = -1, j = -1;
                     for (int i = 0; i < a.length - 1; i++) {
                         if (a[i] == index) k = i;
                         else if (a[i] == NULL_INDEX) {
@@ -239,7 +247,7 @@ public abstract class AioSessionManager
                     if (j < 0) j = a.length - 2;
                     for (int t = k; t < j; t++)
                         ArrayUtil.swap(a, t, t + 1);
-                    a[j] = 0;
+                    a[j]             = 0;
                     a[a.length - 1] -= 1;
                     if (a[a.length - 1] == 0) {
                         c[0] = null;
@@ -252,7 +260,7 @@ public abstract class AioSessionManager
                 _SubFilter:
                 {
                     long[] a = c[1];
-                    int k = -1, j = -1;
+                    int    k = -1, j = -1;
                     for (int i = 0; i < a.length; i++) {
                         if (a[i] == rmf) k = i;
                         else if (a[i] == NULL_INDEX) {
@@ -273,24 +281,28 @@ public abstract class AioSessionManager
     }
 
     @Override
-    public void clearSession(long index) {
+    public void clearSession(long index)
+    {
         _Index2SessionMaps[getSlot(index)].remove(index);
     }
 
     @Override
-    public ISession findSessionByIndex(long index) {
+    public ISession findSessionByIndex(long index)
+    {
         return _Index2SessionMaps[getSlot(index)].get(index);
     }
 
     @Override
-    public boolean findPort(long portMask) {
+    public boolean findPort(long portMask)
+    {
         return _PortChannel2IndexMaps[getSlot(portMask)].containsKey(portMask);
     }
 
     @Override
-    public int getSubPortCount(long portMask) {
-        long[][] c = _PortChannel2IndexMaps[getSlot(portMask)].get(portMask);
-        int size = 0;
+    public int getSubPortCount(long portMask)
+    {
+        long[][] c    = _PortChannel2IndexMaps[getSlot(portMask)].get(portMask);
+        int      size = 0;
         if (c != null && c.length > 1 && c[1] != null && c[1].length > 1) {
             for (long l : c[1]) {
                 if (l == NULL_INDEX) continue;
@@ -302,11 +314,12 @@ public abstract class AioSessionManager
     }
 
     @Override
-    public int getPortCount(long portMask) {
+    public int getPortCount(long portMask)
+    {
         long[][] c = _PortChannel2IndexMaps[getSlot(portMask)].get(portMask);
         if (c != null && c.length > 0 && c[0] != null && c[0].length > 1) {
             ISession session = null;
-            int size = (int) c[0][c[0].length - 1];
+            int      size    = (int) c[0][c[0].length - 1];
             _Log.info("port-size: " + size);
             if (size == 0) return 0;
             else {
@@ -325,26 +338,29 @@ public abstract class AioSessionManager
     }
 
     @Override
-    public long[][] portIndex(long portMask) {
+    public long[][] portIndex(long portMask)
+    {
         return _PortChannel2IndexMaps[getSlot(portMask)].get(portMask);
     }
 
     // 防止同种类型的连接在数量上造成困扰，如每个cm连接4个cm，每个cm之间有4个Session，每次调用会得到同一session
     // 获取Session,但是对应的loadFair不增长，防止因getPortSessionCount而造成loadFair的自增
-    private ISession findSessionByPortLoadFairKeepOld(long portMask) {
-        int loadFairOld = _LoadFairMaps[getSlot(portMask)].get(portMask) == null ? 0 : _LoadFairMaps[getSlot(portMask)].get(portMask);
-        ISession aioSession = findSessionByPort(portMask);
-        int loadFairAfter = _LoadFairMaps[getSlot(portMask)].get(portMask) == null ? 0 : _LoadFairMaps[getSlot(portMask)].get(portMask);
+    private ISession findSessionByPortLoadFairKeepOld(long portMask)
+    {
+        int      loadFairOld   = _LoadFairMaps[getSlot(portMask)].get(portMask) == null ? 0 : _LoadFairMaps[getSlot(portMask)].get(portMask);
+        ISession aioSession    = findSessionByPort(portMask);
+        int      loadFairAfter = _LoadFairMaps[getSlot(portMask)].get(portMask) == null ? 0 : _LoadFairMaps[getSlot(portMask)].get(portMask);
         if (loadFairAfter != 0) _LoadFairMaps[getSlot(portMask)].put(portMask, loadFairOld);
         return aioSession;
     }
 
     @Override
-    public ISession findSessionByPort(long portMask) {
+    public ISession findSessionByPort(long portMask)
+    {
         long[][] c = _PortChannel2IndexMaps[getSlot(portMask)].get(portMask);
         if (c != null && c.length > 0 && c[0] != null && c[0].length > 1) {
             ISession session;
-            int size = (int) c[0][c[0].length - 1];
+            int      size = (int) c[0][c[0].length - 1];
             _Log.info("port-size: " + size);
             if (size == 0) return null;
             else if (size == 1) {
@@ -355,8 +371,8 @@ public abstract class AioSessionManager
                 return session;
             }
             else {
-                int loadFair = _LoadFairMaps[getSlot(portMask)].get(portMask) == null ? 0 : _LoadFairMaps[getSlot(portMask)].get(portMask);
-                long idx = c[0][(loadFair++ & Integer.MAX_VALUE) % size];
+                int  loadFair = _LoadFairMaps[getSlot(portMask)].get(portMask) == null ? 0 : _LoadFairMaps[getSlot(portMask)].get(portMask);
+                long idx      = c[0][(loadFair++ & Integer.MAX_VALUE) % size];
                 _LoadFairMaps[getSlot(portMask)].put(portMask, loadFair);
                 _Log.info("session index: "
                           + Long.toHexString(idx)

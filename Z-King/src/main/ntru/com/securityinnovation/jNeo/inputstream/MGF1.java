@@ -86,8 +86,9 @@ public class MGF1
      * @param seedLength
      *            the length of the seed.
      */
-    public MGF1(DigestAlgorithm hashAlg, int _minNumRuns, boolean hashSeed, byte seed[], int seedOffset, int seedLength) {
-        hash = hashAlg.newInstance();
+    public MGF1(DigestAlgorithm hashAlg, int _minNumRuns, boolean hashSeed, byte seed[], int seedOffset, int seedLength)
+    {
+        hash       = hashAlg.newInstance();
 
         minNumRuns = _minNumRuns;
 
@@ -100,13 +101,13 @@ public class MGF1
             seedAndCounter = new byte[seedLength + 4];
             System.arraycopy(seed, seedOffset, seedAndCounter, 0, seedLength);
         }
-        seedAndCounter[seedLength] = 0;
+        seedAndCounter[seedLength]     = 0;
         seedAndCounter[seedLength + 1] = 0;
         seedAndCounter[seedLength + 2] = 0;
         seedAndCounter[seedLength + 3] = 0;
 
-        outputStream = new byte[hash.getDigestLen()];
-        outputUsed = outputStream.length;
+        outputStream                   = new byte[hash.getDigestLen()];
+        outputUsed                     = outputStream.length;
     }
 
     /**
@@ -114,19 +115,21 @@ public class MGF1
      * underlying hash function will have been called minNumRuns times
      * (see constructor)
      */
-    public void close() {
+    public void close()
+    {
         while (numRuns < minNumRuns)
             fillBuffer();
 
-        outputStream = null;
+        outputStream   = null;
         seedAndCounter = null;
-        hash = null;
+        hash           = null;
     }
 
     /**
      * Returns the next byte of data from the MGF-1 calculation.
      */
-    public int read() {
+    public int read()
+    {
         if (outputUsed >= outputStream.length) fillBuffer();
         return 0xff & outputStream[outputUsed++];
     }
@@ -134,7 +137,8 @@ public class MGF1
     /**
      * Returns the next len bytes of data from the MGF-1 calculation.
      */
-    public int read(byte[] out, int offset, int len) {
+    public int read(byte[] out, int offset, int len)
+    {
         int toread = len;
         while (toread > 0) {
             if (outputUsed >= outputStream.length) fillBuffer();
@@ -142,8 +146,8 @@ public class MGF1
             int n = Math.min(outputStream.length - outputUsed, toread);
             System.arraycopy(outputStream, outputUsed, out, offset, n);
             outputUsed += n;
-            offset += n;
-            toread -= n;
+            offset     += n;
+            toread     -= n;
         }
         return len;
     }
@@ -152,7 +156,8 @@ public class MGF1
      * Update the internal state with the next block of output from
      * the underlying hash algorithm..
      */
-    private void fillBuffer() {
+    private void fillBuffer()
+    {
         numRuns++;
         outputUsed = 0;
         hash.digest(seedAndCounter, 0, seedAndCounter.length, outputStream, 0);
@@ -162,7 +167,7 @@ public class MGF1
         for (int i = seedAndCounter.length - 1; i > seedAndCounter.length - 5; i--) {
             int x = (seedAndCounter[i] & 0xff) + carry;
             seedAndCounter[i] = (byte) (x & 0xff);
-            carry = (x >> 8);
+            carry             = (x >> 8);
         }
     }
 }

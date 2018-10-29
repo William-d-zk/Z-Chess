@@ -38,7 +38,8 @@ public enum DigestAlgorithm
     /**
      * Constructor.
      */
-    DigestAlgorithm(Class<? extends Digest> _clss) {
+    DigestAlgorithm(Class<? extends Digest> _clss)
+    {
         clss = _clss;
     }
 
@@ -50,7 +51,8 @@ public enum DigestAlgorithm
     /**
      * Return the byte array identifying the OID.
      */
-    public Digest newInstance() {
+    public Digest newInstance()
+    {
         try {
             return clss.newInstance();
         }

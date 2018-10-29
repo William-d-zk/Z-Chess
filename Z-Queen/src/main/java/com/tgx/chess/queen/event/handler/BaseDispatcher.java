@@ -43,21 +43,25 @@ abstract class BaseDispatcher
     private final int                  _WorkerMask;
 
     @SafeVarargs
-    BaseDispatcher(RingBuffer<QEvent> link, RingBuffer<QEvent> cluster, RingBuffer<QEvent> error, RingBuffer<QEvent>... workers) {
-        _Link = link;
-        _Cluster = cluster;
-        _Error = error;
-        _Workers = workers;
+    BaseDispatcher(RingBuffer<QEvent> link, RingBuffer<QEvent> cluster, RingBuffer<QEvent> error, RingBuffer<QEvent>... workers)
+    {
+        _Link       = link;
+        _Cluster    = cluster;
+        _Error      = error;
+        _Workers    = workers;
         _WorkerMask = _Workers.length - 1;
         if (Integer.bitCount(_Workers.length) != 1) { throw new IllegalArgumentException("workers' length must be a power of 2"); }
     }
 
-    RingBuffer<QEvent> dispatchWorker(long seq) {
+    RingBuffer<QEvent> dispatchWorker(long seq)
+    {
         return _Workers[(int) (seq & _WorkerMask)];
     }
 
-    <V, A> void dispatch(MODE mode, IOperator.Type type, V v, A a, IOperator<V, A> op) {
-        switch (mode) {
+    <V, A> void dispatch(MODE mode, IOperator.Type type, V v, A a, IOperator<V, A> op)
+    {
+        switch (mode)
+        {
             case CLUSTER_CONSUMER:
             case CLUSTER_SERVER:
                 publish(_Cluster, type, v, a, op);
@@ -75,8 +79,10 @@ abstract class BaseDispatcher
         }
     }
 
-    <V, A> void dispatchError(MODE mode, IError.Type type, V v, A a, IOperator<V, A> op) {
-        switch (mode) {
+    <V, A> void dispatchError(MODE mode, IError.Type type, V v, A a, IOperator<V, A> op)
+    {
+        switch (mode)
+        {
             case CLUSTER_CONSUMER:
             case CLUSTER_SERVER:
                 error(_Cluster, type, v, a, op);

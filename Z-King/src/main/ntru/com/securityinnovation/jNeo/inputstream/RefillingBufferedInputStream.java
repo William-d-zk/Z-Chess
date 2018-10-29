@@ -56,16 +56,18 @@ public class RefillingBufferedInputStream
      * @param size
      *            the buffer size.
      */
-    RefillingBufferedInputStream(InputStream in, int size) {
-        is = in;
-        buf = new byte[size];
+    RefillingBufferedInputStream(InputStream in, int size)
+    {
+        is   = in;
+        buf  = new byte[size];
         next = buf.length;
     }
 
     /**
      * Returns the next byte of input.
      */
-    public int read() throws IOException {
+    public int read() throws IOException
+    {
         if (next >= buf.length) refill();
         return (0xff & buf[next++]);
     }
@@ -83,14 +85,15 @@ public class RefillingBufferedInputStream
      *            See the parallel <code>read</code> method in
      *            <code>InputStream</code>.
      */
-    public int read(byte[] b, int off, int len) throws IOException {
+    public int read(byte[] b, int off, int len) throws IOException
+    {
         int origLen = len;
         while (len > 0) {
             if (next >= buf.length) refill();
             int count = Math.min(len, buf.length - next);
             System.arraycopy(buf, next, b, off, count);
-            off += count;
-            len -= count;
+            off  += count;
+            len  -= count;
             next += count;
         }
 
@@ -100,7 +103,8 @@ public class RefillingBufferedInputStream
     /**
      * Actually read the next block of data from the underlying stream.
      */
-    void refill() throws IOException {
+    void refill() throws IOException
+    {
         is.read(buf);
         next = 0;
     }

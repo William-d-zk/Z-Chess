@@ -31,7 +31,8 @@ public class NtruException
      */
     private static final long serialVersionUID = -2826094336297922523L;
 
-    public NtruException(String msg) {
+    public NtruException(String msg)
+    {
         super(msg);
     }
 }

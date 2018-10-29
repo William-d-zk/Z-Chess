@@ -30,9 +30,11 @@ public interface IStreamProtocol<C extends IContext>
         extends
         IProtocol
 {
-    default void afterEncode(C ctx) {
+    default void afterEncode(C ctx)
+    {
     }
 
-    default void afterDecode(C ctx) {
+    default void afterDecode(C ctx)
+    {
     }
 }

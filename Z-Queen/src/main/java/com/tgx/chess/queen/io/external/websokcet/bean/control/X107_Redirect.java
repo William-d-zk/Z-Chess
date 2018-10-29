@@ -34,21 +34,25 @@ public class X107_Redirect
 {
     public final static int COMMAND = 0x107;
 
-    public X107_Redirect(byte[] payload) {
+    public X107_Redirect(byte[] payload)
+    {
         super(COMMAND, payload);
         mCtrlCode = WsFrame.frame_op_code_ctrl_redirect;
     }
 
-    public String getHost() {
+    public String getHost()
+    {
         return IoUtil.readIpAdr(getPayload());
     }
 
-    public int getPort() {
+    public int getPort()
+    {
         return IoUtil.readUnsignedShort(getPayload(), 4);
     }
 
     @Override
-    public X107_Redirect duplicate() {
+    public X107_Redirect duplicate()
+    {
         return new X107_Redirect(getPayload());
     }
 }

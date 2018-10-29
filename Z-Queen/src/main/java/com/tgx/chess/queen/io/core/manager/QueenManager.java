@@ -45,11 +45,13 @@ public abstract class QueenManager
 
     private final Sender[] _DomainSender = new Sender[4];
 
-    public QueenManager(Config config) {
+    public QueenManager(Config config)
+    {
         super(config);
     }
 
-    public void add(long code, RingBuffer<QEvent> localBack, RingBuffer<QEvent> localSend) {
+    public void add(long code, RingBuffer<QEvent> localBack, RingBuffer<QEvent> localSend)
+    {
         _DomainSender[getSlot(code)] = new Sender(localBack, localSend);
     }
 
@@ -58,12 +60,14 @@ public abstract class QueenManager
 
         private final RingBuffer<QEvent> _LocalBackPublisher, _LocalSendPublisher;
 
-        private Sender(RingBuffer<QEvent> localBackPublisher, RingBuffer<QEvent> localSendPublisher) {
+        private Sender(RingBuffer<QEvent> localBackPublisher, RingBuffer<QEvent> localSendPublisher)
+        {
             _LocalBackPublisher = localBackPublisher;
             _LocalSendPublisher = localSendPublisher;
         }
 
-        void localClose(final ISession session) {
+        void localClose(final ISession session)
+        {
             if (session != null) try {
                 long sequence = _LocalBackPublisher.tryNext();
                 try {
@@ -80,7 +84,8 @@ public abstract class QueenManager
             }
         }
 
-        void localSend(ICommand toSend, ISession session, IOperator<ICommand, ISession> write_operator) {
+        void localSend(ICommand toSend, ISession session, IOperator<ICommand, ISession> write_operator)
+        {
             if (session != null) try {
                 long sequence = _LocalSendPublisher.tryNext();
                 try {
@@ -99,11 +104,13 @@ public abstract class QueenManager
 
     }
 
-    public void localClose(long index) {
+    public void localClose(long index)
+    {
         _DomainSender[getSlot(index)].localClose(findSessionByIndex(index));
     }
 
-    public void localSend(ICommand toSend, ISession session, IOperator<ICommand, ISession> write_operator) {
+    public void localSend(ICommand toSend, ISession session, IOperator<ICommand, ISession> write_operator)
+    {
         _DomainSender[getSlot(session.getIndex())].localSend(toSend, session, write_operator);
     }
 

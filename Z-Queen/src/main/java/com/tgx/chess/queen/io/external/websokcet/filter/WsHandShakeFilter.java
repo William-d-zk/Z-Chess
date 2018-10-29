@@ -24,10 +24,7 @@
 
 package com.tgx.chess.queen.io.external.websokcet.filter;
 
-import static com.tgx.chess.queen.io.core.inf.IContext.DECODE_FRAME;
-import static com.tgx.chess.queen.io.core.inf.IContext.DECODE_HANDSHAKE;
-import static com.tgx.chess.queen.io.core.inf.IContext.ENCODE_FRAME;
-import static com.tgx.chess.queen.io.core.inf.IContext.ENCODE_HANDSHAKE;
+import static com.tgx.chess.queen.io.core.inf.IContext.*;
 
 import java.nio.ByteBuffer;
 import java.util.Objects;
@@ -53,30 +50,31 @@ public class WsHandShakeFilter
     private final static String CRLF = "\r\n";
 
     private final MODE          _Mode;
-    private final Logger _Log = Logger.getLogger(getClass().getName());
+    private final Logger        _Log = Logger.getLogger(getClass().getName());
 
-    public WsHandShakeFilter(MODE mode) {
-        name = "web-socket-header-filter-" + mode.name();
+    public WsHandShakeFilter(MODE mode)
+    {
+        name  = "web-socket-header-filter-" + mode.name();
         _Mode = mode;
     }
 
     @Override
-    public ResultType preEncode(WsContext context, IProtocol output) {
+    public ResultType preEncode(WsContext context, IProtocol output)
+    {
         if (context == null || output == null) return ResultType.ERROR;
-        if (context.needHandshake()
-            && context.outState() == ENCODE_HANDSHAKE
-            && output instanceof WsHandshake) { return ResultType.NEXT_STEP; }
+        if (context.needHandshake() && context.outState() == ENCODE_HANDSHAKE && output instanceof WsHandshake) { return ResultType.NEXT_STEP; }
         return ResultType.IGNORE;
     }
 
     @Override
-    public ResultType preDecode(WsContext context, IProtocol input) {
+    public ResultType preDecode(WsContext context, IProtocol input)
+    {
         if (context == null || !(input instanceof IPacket)) return ResultType.ERROR;
         if (context.needHandshake() && context.inState() == DECODE_HANDSHAKE) {
             WsHandshake handshake = context.getHandshake();
-            ByteBuffer recvBuf = ((IPacket) input).getBuffer();
-            ByteBuffer cRvBuf = context.getRvBuffer();
-            byte c;
+            ByteBuffer  recvBuf   = ((IPacket) input).getBuffer();
+            ByteBuffer  cRvBuf    = context.getRvBuffer();
+            byte        c;
             while (recvBuf.hasRemaining()) {
                 c = recvBuf.get();
                 cRvBuf.put(c);
@@ -85,7 +83,8 @@ public class WsHandShakeFilter
                     String x = new String(cRvBuf.array(), cRvBuf.position(), cRvBuf.limit());
                     _Log.info(x);
                     cRvBuf.clear();
-                    switch (_Mode) {
+                    switch (_Mode)
+                    {
                         case SERVER:
                             if (Objects.isNull(handshake)) handshake = new X101_HandShake();
                         case SERVER_SSL:
@@ -93,7 +92,8 @@ public class WsHandShakeFilter
                             context.setHandshake(handshake);
                             String[] split = x.split(" ", 2);
                             String httpKey = split[0].toUpperCase();
-                            switch (httpKey) {
+                            switch (httpKey)
+                            {
                                 case "GET":
                                     split = x.split(" ");
                                     if (!split[2].equalsIgnoreCase("HTTP/1.1\r\n")) {
@@ -167,7 +167,8 @@ public class WsHandShakeFilter
                             context.setHandshake(handshake);
                             split = x.split(" ", 2);
                             httpKey = split[0].toUpperCase();
-                            switch (httpKey) {
+                            switch (httpKey)
+                            {
                                 case "HTTP/1.1":
                                     if (!split[1].contains("101 Switching Protocols\r\n")) {
                                         _Log.warning("handshake error !:");
@@ -215,14 +216,16 @@ public class WsHandShakeFilter
     }
 
     @Override
-    public IProtocol encode(WsContext context, IProtocol output) {
+    public IProtocol encode(WsContext context, IProtocol output)
+    {
         AioPacket encoded = new AioPacket(ByteBuffer.wrap(output.encode()));
         context.setOutState(ENCODE_FRAME);
         return encoded;
     }
 
     @Override
-    public IProtocol decode(WsContext context, IProtocol input) {
+    public IProtocol decode(WsContext context, IProtocol input)
+    {
         WsHandshake handshake = context.getHandshake();
         context.cleanHandshake();
         context.setInState(DECODE_FRAME);
