@@ -32,7 +32,8 @@ import java.util.SortedSet;
  */
 public interface CompareUtil
 {
-    static <E> boolean isDeepEquals(SortedSet<E> o, SortedSet<E> d) {
+    static <E> boolean isDeepEquals(SortedSet<E> o, SortedSet<E> d)
+    {
         if (o.size() != d.size()) return false;
         Iterator<E> iteratorO = o.iterator();
         Iterator<E> iteratorD = d.iterator();

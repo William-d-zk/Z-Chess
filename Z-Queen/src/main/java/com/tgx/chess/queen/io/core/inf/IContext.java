@@ -55,14 +55,16 @@ public interface IContext
     void finish();
 
     @Override
-    default int outState() {
+    default int outState()
+    {
         return ENCODE_FRAME;
     }
 
     IContext setOutState(int state);
 
     @Override
-    default int inState() {
+    default int inState()
+    {
         return DECODE_FRAME;
     }
 
@@ -121,39 +123,48 @@ public interface IContext
     /* 终态，清理结束*/
     int SESSION_TERMINATED = 02 << COUNT_BITS;
 
-    default int stateOf(int c) {
+    default int stateOf(int c)
+    {
         return c & ~CAPACITY;
     }
 
-    default int countOf(int c) {
+    default int countOf(int c)
+    {
         return c & CAPACITY;
     }
 
-    default int ctlOf(int rs, int wc) {
+    default int ctlOf(int rs, int wc)
+    {
         return rs | wc;
     }
 
-    default boolean stateLessThan(int c, int s) {
+    default boolean stateLessThan(int c, int s)
+    {
         return c < s;
     }
 
-    default boolean stateAtLeast(int c, int s) {
+    default boolean stateAtLeast(int c, int s)
+    {
         return c >= s;
     }
 
-    default boolean isConnected(int c) {
+    default boolean isConnected(int c)
+    {
         return c < SESSION_CLOSE;
     }
 
-    default boolean isClosed(int c) {
+    default boolean isClosed(int c)
+    {
         return c >= SESSION_CLOSE;
     }
 
-    default boolean isInConvert(int c) {
+    default boolean isInConvert(int c)
+    {
         return stateAtLeast(c, DECODE_FRAME) && stateLessThan(c, DECODE_TLS_ERROR);
     }
 
-    default boolean isOutConvert(int c) {
+    default boolean isOutConvert(int c)
+    {
         return stateAtLeast(c, ENCODE_FRAME) && stateLessThan(c, ENCODE_TLS_ERROR);
     }
 
@@ -161,11 +172,13 @@ public interface IContext
 
     boolean isOutConvert();
 
-    default boolean isInErrorState(int c) {
+    default boolean isInErrorState(int c)
+    {
         return stateAtLeast(c, DECODE_ERROR) || inState() == DECODE_NULL;
     }
 
-    default boolean isOutErrorState(int c) {
+    default boolean isOutErrorState(int c)
+    {
         return stateAtLeast(c, ENCODE_ERROR) | inState() == ENCODE_NULL;
     }
 
@@ -175,7 +188,8 @@ public interface IContext
 
     boolean isClosed();
 
-    default void advanceState(AtomicInteger ctl, int targetState) {
+    default void advanceState(AtomicInteger ctl, int targetState)
+    {
         for (;;) {
             int c = ctl.get();
             if (stateOf(c) == targetState || ctl.compareAndSet(c, ctlOf(targetState, countOf(c)))) break;

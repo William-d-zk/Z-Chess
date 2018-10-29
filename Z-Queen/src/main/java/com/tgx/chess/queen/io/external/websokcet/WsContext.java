@@ -66,20 +66,22 @@ public class WsContext
     private WsHandshake     mHandshake;
     private CryptUtil       mCryptUtil            = new CryptUtil();
 
-    public WsContext(ISessionOption option, MODE mode) {
+    public WsContext(ISessionOption option, MODE mode)
+    {
         super(option);
         mMaxPayloadSize = option.setSNF() - 2;
         if (mode.equals(MODE.CONSUMER) || mode.equals(MODE.CONSUMER_SSL)) {
-            Random r = new Random(System.nanoTime());
+            Random r    = new Random(System.nanoTime());
             byte[] seed = new byte[17];
             r.nextBytes(seed);
-            mSecKey = Base64.getEncoder()
-                            .encodeToString(mCryptUtil.sha1(seed));
+            mSecKey          = Base64.getEncoder()
+                                     .encodeToString(mCryptUtil.sha1(seed));
             mSecAcceptExpect = getSecAccept(mSecKey);
         }
         else mSecKey = mSecAcceptExpect = null;
 
-        switch (mode) {
+        switch (mode)
+        {
             case CLUSTER_SERVER:
             case CLUSTER_CONSUMER:
             case SYMMETRY:
@@ -96,74 +98,89 @@ public class WsContext
         }
     }
 
-    public WsFrame getCarrier() {
+    public WsFrame getCarrier()
+    {
         return mCarrier;
     }
 
-    public void setCarrier(WsFrame frame) {
+    public void setCarrier(WsFrame frame)
+    {
         mCarrier = frame;
     }
 
-    public void setCarrierNull() {
+    public void setCarrierNull()
+    {
         mCarrier = null;
     }
 
-    public WsHandshake getHandshake() {
+    public WsHandshake getHandshake()
+    {
         return mHandshake;
     }
 
-    public void setHandshake(WsHandshake handshake) {
+    public void setHandshake(WsHandshake handshake)
+    {
         mHandshake = handshake;
     }
 
-    public void cleanHandshake() {
+    public void cleanHandshake()
+    {
         mHandshake = null;
     }
 
-    public final int getMaxPayloadSize() {
+    public final int getMaxPayloadSize()
+    {
         return mMaxPayloadSize;
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() throws IOException
+    {
         super.close();
     }
 
     @Override
-    public void reset() {
+    public void reset()
+    {
         if (mCarrier != null) mCarrier.reset();
         if (mHandshake != null) mHandshake.dispose();
         mHandshake = null;
-        mCarrier = null;
+        mCarrier   = null;
         super.reset();
     }
 
     @Override
-    public void dispose() {
+    public void dispose()
+    {
         mCryptUtil = null;
         mHandshake = null;
-        mCarrier = null;
+        mCarrier   = null;
         super.dispose();
     }
 
-    public String getSecAccept(String sec_key) {
+    public String getSecAccept(String sec_key)
+    {
         return Base64.getEncoder()
                      .encodeToString(mCryptUtil.sha1((sec_key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11").getBytes()));
     }
 
-    public String getSeKey() {
+    public String getSeKey()
+    {
         return mSecKey;
     }
 
-    public final void updateHandshakeState(int state) {
+    public final void updateHandshakeState(int state)
+    {
         mHandshakeState |= state;
     }
 
-    public final boolean checkState(int state) {
+    public final boolean checkState(int state)
+    {
         return mHandshakeState == state || (mHandshakeState & state) == state;
     }
 
-    public final int getWsVersion() {
+    public final int getWsVersion()
+    {
         return mVersion;
     }
 

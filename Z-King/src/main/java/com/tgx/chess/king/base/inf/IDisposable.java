@@ -29,10 +29,12 @@ package com.tgx.chess.king.base.inf;
  */
 public interface IDisposable
 {
-    default void dispose() {
+    default void dispose()
+    {
     }
 
-    default boolean isDisposable() {
+    default boolean isDisposable()
+    {
         return true;
     }
 

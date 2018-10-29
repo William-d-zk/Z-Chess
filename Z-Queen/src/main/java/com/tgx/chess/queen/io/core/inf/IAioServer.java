@@ -47,7 +47,8 @@ public interface IAioServer
     void pendingAccept();
 
     @Override
-    default void completed(AsynchronousSocketChannel channel, IAioServer server) {
+    default void completed(AsynchronousSocketChannel channel, IAioServer server)
+    {
         AioWorker worker = (AioWorker) Thread.currentThread();
         worker.publishConnected(server.getConnectedOperator(),
                                 server.getMode(),
@@ -60,7 +61,8 @@ public interface IAioServer
     }
 
     @Override
-    default void failed(Throwable exc, IAioServer server) {
+    default void failed(Throwable exc, IAioServer server)
+    {
         AioWorker worker = (AioWorker) Thread.currentThread();
         worker.publishAcceptError(server.getErrorOperator(), exc, server);
         server.pendingAccept();

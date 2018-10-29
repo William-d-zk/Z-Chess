@@ -23,16 +23,17 @@
  */
 package com.tgx.chess.king.base.util;
 
-import java.util.Arrays;
-
 import static java.lang.System.arraycopy;
+
+import java.util.Arrays;
 
 /**
  * @author William.d.zk
  */
 public interface ArrayUtil
 {
-    static long[] setFiFoAdd(long _l, long[] a) {
+    static long[] setFiFoAdd(long _l, long[] a)
+    {
         if (a == null) throw new NullPointerException();
         int i = 0, size = a.length;
         for (; i < size; i++) {
@@ -52,7 +53,8 @@ public interface ArrayUtil
         }
     }
 
-    static long[] setSortAdd(long _l, long[] a) {
+    static long[] setSortAdd(long _l, long[] a)
+    {
         if (a == null) throw new NullPointerException();
         int pos = Arrays.binarySearch(a, _l);
         if (pos >= 0) return a;
@@ -70,7 +72,8 @@ public interface ArrayUtil
         }
     }
 
-    static long[] setNoZeroFiFoRm(long _l, final long[] a) {
+    static long[] setNoZeroFiFoRm(long _l, final long[] a)
+    {
         if (a == null) throw new NullPointerException();
         if (_l != 0) {
             int k = -1;
@@ -94,7 +97,8 @@ public interface ArrayUtil
         return a;
     }
 
-    static long[] setNoZeroSortRm(long _l, final long[] a) {
+    static long[] setNoZeroSortRm(long _l, final long[] a)
+    {
         if (a == null) throw new NullPointerException();
         if (_l != 0) {
             int k = Arrays.binarySearch(a, _l);
@@ -111,26 +115,30 @@ public interface ArrayUtil
         return a;
     }
 
-    static void swap(final long[] idx, int o, int p) {
+    static void swap(final long[] idx, int o, int p)
+    {
         if (o == p) return;
         long t = idx[o];
         idx[o] = idx[p];
         idx[p] = t;
     }
 
-    static void swap(int[] source, int a, int b) {
+    static void swap(int[] source, int a, int b)
+    {
         int tmp = source[a];
         source[a] = source[b];
         source[b] = tmp;
     }
 
-    static void swap(byte[] source, int a, int b) {
+    static void swap(byte[] source, int a, int b)
+    {
         byte tmp = source[a];
         source[a] = source[b];
         source[b] = tmp;
     }
 
-    static String toHexString(long[] var0) {
+    static String toHexString(long[] var0)
+    {
         if (var0 == null) {
             return "null";
         }
@@ -157,7 +165,8 @@ public interface ArrayUtil
         }
     }
 
-    static String toHexString(int[] var0) {
+    static String toHexString(int[] var0)
+    {
         if (var0 == null) {
             return "null";
         }
@@ -184,7 +193,8 @@ public interface ArrayUtil
         }
     }
 
-    static String toHexString(byte[] var0) {
+    static String toHexString(byte[] var0)
+    {
         if (var0 == null) {
             return "null";
         }

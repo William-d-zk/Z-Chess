@@ -28,11 +28,13 @@ package com.tgx.chess.queen.io.core.inf;
  */
 public interface IRouteLv4Cluster
 {
-    default boolean isCluster() {
+    default boolean isCluster()
+    {
         return false;
     }
 
-    default IRouteLv4Cluster setCluster(boolean b) {
+    default IRouteLv4Cluster setCluster(boolean b)
+    {
         return this;
     }
 }

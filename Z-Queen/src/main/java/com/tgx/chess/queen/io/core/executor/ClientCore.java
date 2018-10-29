@@ -26,20 +26,10 @@ package com.tgx.chess.queen.io.core.executor;
 
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.lmax.disruptor.BatchEventProcessor;
-import com.lmax.disruptor.EventHandler;
-import com.lmax.disruptor.LiteBlockingWaitStrategy;
-import com.lmax.disruptor.RingBuffer;
-import com.lmax.disruptor.SequenceBarrier;
-import com.lmax.disruptor.WaitStrategy;
-import com.lmax.disruptor.YieldingWaitStrategy;
+import com.lmax.disruptor.*;
 import com.tgx.chess.king.base.disruptor.MultiBufferBatchEventProcessor;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.schedule.ScheduleHandler;
@@ -73,22 +63,22 @@ public class ClientCore<E extends IStorage>
                                                               int count;
 
                                                               @Override
-                                                              public Thread newThread(Runnable r) {
-                                                                  return new AioWorker(r,
-                                                                                       String.format("AioWorker.client.%d", count++),
-                                                                                       _AioProducerEvent);
+                                                              public Thread newThread(Runnable r)
+                                                              {
+                                                                  return new AioWorker(r, String.format("AioWorker.client.%d", count++), _AioProducerEvent);
                                                               }
                                                           };
     private final ReentrantLock      _LocalLock           = new ReentrantLock();
     private final TimeWheel          _TimeWheel           = new TimeWheel(1, TimeUnit.SECONDS);
     private final Future<Void>       _EventTimer;
 
-    public ClientCore() {
+    public ClientCore()
+    {
         super(poolSize(), poolSize(), 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
-        _AioProducerEvent = createPipelineYield(6);
+        _AioProducerEvent   = createPipelineYield(6);
         _BizLocalCloseEvent = createPipelineLite(5);
-        _BizLocalSendEvent = createPipelineLite(5);
-        _EventTimer = _TimeWheel.acquire(1, TimeUnit.SECONDS, new ScheduleHandler<>(true));
+        _BizLocalSendEvent  = createPipelineLite(5);
+        _EventTimer         = _TimeWheel.acquire(1, TimeUnit.SECONDS, new ScheduleHandler<>(true));
     }
 
     /*  ║ barrier, ━> publish event, ━━ pipeline, | handle event
@@ -104,15 +94,16 @@ public class ClientCore<E extends IStorage>
     ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
     */
     @SuppressWarnings("unchecked")
-    public void build(final EventHandler<QEvent> _LogicHandler) {
-        final RingBuffer<QEvent> _WroteEvent = createPipelineYield(7);
-        final RingBuffer<QEvent> _LinkIoEvent = createPipelineLite(2);
-        final RingBuffer<QEvent>[] _ErrorEvents = new RingBuffer[3];
-        final RingBuffer<QEvent>[] _DispatchIo = new RingBuffer[5];
-        final RingBuffer<QEvent> _ReadAndLogicEvent = createPipelineLite(6);
-        final RingBuffer<QEvent> _EncodeEvent = createPipelineLite(7);
-        final SequenceBarrier[] _DispatchIoBarriers = new SequenceBarrier[_DispatchIo.length];
-        final SequenceBarrier[] _ErrorBarriers = new SequenceBarrier[_ErrorEvents.length];
+    public void build(final EventHandler<QEvent> _LogicHandler)
+    {
+        final RingBuffer<QEvent>   _WroteEvent         = createPipelineYield(7);
+        final RingBuffer<QEvent>   _LinkIoEvent        = createPipelineLite(2);
+        final RingBuffer<QEvent>[] _ErrorEvents        = new RingBuffer[3];
+        final RingBuffer<QEvent>[] _DispatchIo         = new RingBuffer[5];
+        final RingBuffer<QEvent>   _ReadAndLogicEvent  = createPipelineLite(6);
+        final RingBuffer<QEvent>   _EncodeEvent        = createPipelineLite(7);
+        final SequenceBarrier[]    _DispatchIoBarriers = new SequenceBarrier[_DispatchIo.length];
+        final SequenceBarrier[]    _ErrorBarriers      = new SequenceBarrier[_ErrorEvents.length];
         Arrays.setAll(_ErrorEvents, slot -> createPipelineLite(5));
         Arrays.setAll(_ErrorBarriers, slot -> _ErrorEvents[slot].newBarrier());
         IoUtil.addArray(_ErrorEvents, _DispatchIo, _AioProducerEvent, _BizLocalCloseEvent);
@@ -126,36 +117,31 @@ public class ClientCore<E extends IStorage>
         _IoDispatcher.setThreadName("IoDispatcher");
         for (int i = 0, size = _DispatchIo.length; i < size; i++)
             _DispatchIo[i].addGatingSequences(_IoDispatcher.getSequences()[i]);
-        final BatchEventProcessor<QEvent> _DecodeProcessor = new BatchEventProcessor<>(_ReadAndLogicEvent,
-                                                                                       _ReadAndLogicEvent.newBarrier(),
-                                                                                       new ClientDecodeHandler());
+        final BatchEventProcessor<QEvent>            _DecodeProcessor = new BatchEventProcessor<>(_ReadAndLogicEvent,
+                                                                                                  _ReadAndLogicEvent.newBarrier(),
+                                                                                                  new ClientDecodeHandler());
         /* 相对 server core 做了精简，decode 错误将在 logic processor 中按照 Ignore 进行处理
            最终被
         */
-        final BatchEventProcessor<QEvent> _LogicProcessor = new BatchEventProcessor<>(_ReadAndLogicEvent,
-                                                                                      _ReadAndLogicEvent.newBarrier(_DecodeProcessor.getSequence()),
-                                                                                      _LogicHandler);
-        final BatchEventProcessor<QEvent> _LinkProcessor = new BatchEventProcessor<>(_LinkIoEvent,
-                                                                                     _LinkIoEvent.newBarrier(),
-                                                                                     new ClientLinkHandler());
-        final RingBuffer<QEvent>[] _SendEvents = new RingBuffer[] { _BizLocalSendEvent,
-                                                                    _LinkIoEvent,
-                                                                    _ReadAndLogicEvent,
-                                                                    _WroteEvent };
-        final SequenceBarrier[] _SendBarriers = new SequenceBarrier[] { _BizLocalSendEvent.newBarrier(),
-                                                                        _LinkIoEvent.newBarrier(_LinkProcessor.getSequence()),
-                                                                        _ReadAndLogicEvent.newBarrier(_LogicProcessor.getSequence()),
-                                                                        _WroteEvent.newBarrier() };
+        final BatchEventProcessor<QEvent>            _LogicProcessor  = new BatchEventProcessor<>(_ReadAndLogicEvent,
+                                                                                                  _ReadAndLogicEvent.newBarrier(_DecodeProcessor.getSequence()),
+                                                                                                  _LogicHandler);
+        final BatchEventProcessor<QEvent>            _LinkProcessor   = new BatchEventProcessor<>(_LinkIoEvent, _LinkIoEvent.newBarrier(), new ClientLinkHandler());
+        final RingBuffer<QEvent>[]                   _SendEvents      = new RingBuffer[] { _BizLocalSendEvent,
+                                                                                           _LinkIoEvent,
+                                                                                           _ReadAndLogicEvent,
+                                                                                           _WroteEvent };
+        final SequenceBarrier[]                      _SendBarriers    = new SequenceBarrier[] { _BizLocalSendEvent.newBarrier(),
+                                                                                                _LinkIoEvent.newBarrier(_LinkProcessor.getSequence()),
+                                                                                                _ReadAndLogicEvent.newBarrier(_LogicProcessor.getSequence()),
+                                                                                                _WroteEvent.newBarrier() };
         final MultiBufferBatchEventProcessor<QEvent> _WriteDispatcher = new MultiBufferBatchEventProcessor<>(_SendEvents,
                                                                                                              _SendBarriers,
-                                                                                                             new ClientWriteDispatcher(_ErrorEvents[1],
-                                                                                                                                       _EncodeEvent));
+                                                                                                             new ClientWriteDispatcher(_ErrorEvents[1], _EncodeEvent));
         _WriteDispatcher.setThreadName("WriteDispatcher");
         for (int i = 0, size = _SendEvents.length; i < size; i++)
             _SendEvents[i].addGatingSequences(_WriteDispatcher.getSequences()[i]);
-        final BatchEventProcessor<QEvent> _EncodeProcessor = new BatchEventProcessor<>(_EncodeEvent,
-                                                                                       _EncodeEvent.newBarrier(),
-                                                                                       new EncodeHandler());
+        final BatchEventProcessor<QEvent> _EncodeProcessor  = new BatchEventProcessor<>(_EncodeEvent, _EncodeEvent.newBarrier(), new EncodeHandler());
         final BatchEventProcessor<QEvent> _EncodedProcessor = new BatchEventProcessor<>(_EncodeEvent,
                                                                                         _EncodeEvent.newBarrier(_EncodeProcessor.getSequence()),
                                                                                         new EncodedHandler(_ErrorEvents[2]));
@@ -171,19 +157,23 @@ public class ClientCore<E extends IStorage>
         submit(_EncodedProcessor);
     }
 
-    private RingBuffer<QEvent> createPipeline(int power, WaitStrategy waitStrategy) {
+    private RingBuffer<QEvent> createPipeline(int power, WaitStrategy waitStrategy)
+    {
         return RingBuffer.createSingleProducer(QEvent.EVENT_FACTORY, 1 << power, waitStrategy);
     }
 
-    private RingBuffer<QEvent> createPipelineYield(int power) {
+    private RingBuffer<QEvent> createPipelineYield(int power)
+    {
         return createPipeline(power, new YieldingWaitStrategy());
     }
 
-    private RingBuffer<QEvent> createPipelineLite(int power) {
+    private RingBuffer<QEvent> createPipelineLite(int power)
+    {
         return createPipeline(power, new LiteBlockingWaitStrategy());
     }
 
-    private static int poolSize() {
+    private static int poolSize()
+    {
         return 1// aioDispatch
                + 1// link
                + 1// read-decode
@@ -194,19 +184,23 @@ public class ClientCore<E extends IStorage>
         ;
     }
 
-    private static String getConfigName() {
+    private static String getConfigName()
+    {
         return "ClientPipeline";
     }
 
-    private static String getConfigGroup() {
+    private static String getConfigGroup()
+    {
         return "pipeline";
     }
 
-    public ThreadFactory getWorkerThreadFactory() {
+    public ThreadFactory getWorkerThreadFactory()
+    {
         return _WorkerThreadFactory;
     }
 
-    public boolean localSend(ISession session, ICommand... toSends) {
+    public boolean localSend(ISession session, ICommand... toSends)
+    {
         Objects.requireNonNull(toSends);
         Objects.requireNonNull(session);
         if (_LocalLock.tryLock()) try {
@@ -230,7 +224,8 @@ public class ClientCore<E extends IStorage>
         return false;
     }
 
-    public void close(ISession session) {
+    public void close(ISession session)
+    {
         Objects.requireNonNull(session);
         _LocalLock.lock();
         try {
@@ -248,7 +243,8 @@ public class ClientCore<E extends IStorage>
         }
     }
 
-    public TimeWheel getTimeWheel() {
+    public TimeWheel getTimeWheel()
+    {
         return _TimeWheel;
     }
 

@@ -41,90 +41,107 @@ public class AioPacket
     private boolean          isNoAbandon;
     private int              mIdempotentBit;
 
-    public AioPacket(int size, boolean direct) {
+    public AioPacket(int size, boolean direct)
+    {
         _Buf = size > 0 ? (direct ? ByteBuffer.allocateDirect(size) : ByteBuffer.allocate(size)) : null;
     }
 
-    public AioPacket(ByteBuffer buf) {
+    public AioPacket(ByteBuffer buf)
+    {
         _Buf = buf;
     }
 
     @Override
-    public ByteBuffer getBuffer() {
+    public ByteBuffer getBuffer()
+    {
         return _Buf;
     }
 
     @Override
-    public IPacket wrapper(ByteBuffer buffer) {
+    public IPacket wrapper(ByteBuffer buffer)
+    {
         return new AioPacket(buffer);
     }
 
     @Override
-    public boolean isSending() {
+    public boolean isSending()
+    {
         return mStatus.equals(Status.Sending);
     }
 
     @Override
-    public boolean isSent() {
+    public boolean isSent()
+    {
         return mStatus.equals(Status.Sent);
     }
 
     @Override
-    public IPacket send() {
+    public IPacket send()
+    {
         mStatus = Status.Sending;
         return this;
     }
 
     @Override
-    public IPacket waitSend() {
+    public IPacket waitSend()
+    {
         mStatus = Status.To_Send;
         return this;
     }
 
     @Override
-    public IPacket noSend() {
+    public IPacket noSend()
+    {
         mStatus = Status.No_Send;
         return this;
     }
 
     @Override
-    public IPacket sent() {
+    public IPacket sent()
+    {
         mStatus = Status.Sent;
         return this;
     }
 
     @Override
-    public Status getStatus() {
+    public Status getStatus()
+    {
         return mStatus;
     }
 
     @Override
-    public boolean isNoAbandon() {
+    public boolean isNoAbandon()
+    {
         return isNoAbandon;
     }
 
     @Override
-    public void setNoAbandon() {
+    public void setNoAbandon()
+    {
         isNoAbandon = true;
     }
 
     @Override
-    public int dataLength() {
+    public int dataLength()
+    {
         return _Buf.capacity();
     }
 
     @Override
-    public int getSerial() {
+    public int getSerial()
+    {
         return 0;
     }
 
     @Override
-    public int getSuperSerial() {
+    public int getSuperSerial()
+    {
         return 0;
     }
 
     @Override
-    public boolean idempotent(int bitIdempotent) {
+    public boolean idempotent(int bitIdempotent)
+    {
         boolean done = (bitIdempotent & mIdempotentBit) != 0;
         mIdempotentBit |= bitIdempotent;
         return done;

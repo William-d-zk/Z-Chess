@@ -36,17 +36,20 @@ public class X22_SignIn
 {
     public final static int COMMAND = 0x22;
 
-    public X22_SignIn() {
+    public X22_SignIn()
+    {
         super(COMMAND, false);
     }
 
     @Override
-    public int getPriority() {
+    public int getPriority()
+    {
         return QOS_06_META_CREATE;
     }
 
     @Override
-    public boolean isMappingCommand() {
+    public boolean isMappingCommand()
+    {
         return true;
     }
 
@@ -54,21 +57,24 @@ public class X22_SignIn
     private String password;
 
     @Override
-    public int dataLength() {
+    public int dataLength()
+    {
         return super.dataLength() + 33 + (Objects.nonNull(password) ? password.getBytes().length : 0);
     }
 
     @Override
-    public int decodec(byte[] data, int pos) {
+    public int decodec(byte[] data, int pos)
+    {
         pos = IoUtil.read(data, pos, token);
         int passwordBytesLength = data[pos++] & 0xFF;
-        password = IoUtil.readString(data, pos, passwordBytesLength);
-        pos += passwordBytesLength;
+        password  = IoUtil.readString(data, pos, passwordBytesLength);
+        pos      += passwordBytesLength;
         return pos;
     }
 
     @Override
-    public int encodec(byte[] data, int pos) {
+    public int encodec(byte[] data, int pos)
+    {
         pos += IoUtil.write(token, data, pos);
         byte[] passwordBytes = password.getBytes();
         pos += IoUtil.writeByte(passwordBytes.length, data, pos);
@@ -76,19 +82,23 @@ public class X22_SignIn
         return pos;
     }
 
-    public byte[] getToken() {
+    public byte[] getToken()
+    {
         return token;
     }
 
-    public void setToken(byte[] token) {
+    public void setToken(byte[] token)
+    {
         this.token = token;
     }
 
-    public void setPassword(String password) {
+    public void setPassword(String password)
+    {
         this.password = password;
     }
 
-    public String getPassword() {
+    public String getPassword()
+    {
         return password;
     }
 }

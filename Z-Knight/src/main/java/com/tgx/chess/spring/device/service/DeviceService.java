@@ -44,11 +44,7 @@ import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.db.inf.IRespository;
 import com.tgx.chess.queen.io.core.inf.ICommand;
-import com.tgx.chess.queen.io.external.websokcet.bean.device.X20_SignUp;
-import com.tgx.chess.queen.io.external.websokcet.bean.device.X21_SignUpResult;
-import com.tgx.chess.queen.io.external.websokcet.bean.device.X22_SignIn;
-import com.tgx.chess.queen.io.external.websokcet.bean.device.X23_SignInResult;
-import com.tgx.chess.queen.io.external.websokcet.bean.device.X24_UpdateToken;
+import com.tgx.chess.queen.io.external.websokcet.bean.device.*;
 import com.tgx.chess.spring.device.model.Device;
 import com.tgx.chess.spring.device.repository.ClientRepository;
 import com.tgx.chess.spring.device.repository.DeviceRepository;
@@ -69,28 +65,34 @@ public class DeviceService
     public DeviceService(DeviceRepository deviceRepository,
                          ClientRepository clientRepository,
                          @Value("${device.server.host}") String host,
-                         @Value("${device.server.port}") int port) {
+                         @Value("${device.server.port}") int port)
+    {
         _DeviceRepository = deviceRepository;
         _ClientRepository = clientRepository;
-        _DeviceNode = new DeviceNode(host, port, this);
+        _DeviceNode       = new DeviceNode(host, port, this);
     }
 
     @PostConstruct
-    private void start() throws IOException {
+    private void start() throws IOException
+    {
         _DeviceNode.start();
     }
 
-    public List<Device> findAll() {
+    public List<Device> findAll()
+    {
         return _DeviceRepository.findAll();
     }
 
-    public Device saveDevice(Device device) {
+    public Device saveDevice(Device device)
+    {
         return _DeviceRepository.save(device);
     }
 
     @Override
-    public ICommand save(ICommand tar) {
-        switch (tar.getSerial()) {
+    public ICommand save(ICommand tar)
+    {
+        switch (tar.getSerial())
+        {
             case X20_SignUp.COMMAND:
                 X20_SignUp x20 = (X20_SignUp) tar;
                 byte[] deviceMac = x20.getMac();
@@ -141,8 +143,10 @@ public class DeviceService
     }
 
     @Override
-    public ICommand find(ICommand key) {
-        switch (key.getSerial()) {
+    public ICommand find(ICommand key)
+    {
+        switch (key.getSerial())
+        {
             case X22_SignIn.COMMAND:
                 X22_SignIn x22 = (X22_SignIn) key;
                 X23_SignInResult x23 = new X23_SignInResult();
@@ -151,7 +155,7 @@ public class DeviceService
                 login:
                 {
                     byte[] password = devicePwd.getBytes();
-                    byte[] toSign = new byte[password.length + 6];
+                    byte[] toSign   = new byte[password.length + 6];
                     IoUtil.write(password, toSign, 6);
                     Device device = _DeviceRepository.findByTokenAndPassword(deviceToken, devicePwd);
                     if (Objects.nonNull(device)) {

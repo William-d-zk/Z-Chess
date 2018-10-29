@@ -33,7 +33,8 @@ public class NoPrivateKeyException
     /**
      * Constructs a new exception a default message.
      */
-    public NoPrivateKeyException() {
+    public NoPrivateKeyException()
+    {
         super("The key can only be used for public key operations");
     }
 }

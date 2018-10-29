@@ -40,11 +40,13 @@ public class ZGenerator
     private final Logger _Log  = Logger.getLogger(getClass().getName());
     private final ZUID   _Zuid = new ZUID();
 
-    public ZGenerator() {
+    public ZGenerator()
+    {
     }
 
     @Override
-    public Serializable generate(SharedSessionContractImplementor session, Object object) throws HibernateException {
+    public Serializable generate(SharedSessionContractImplementor session, Object object) throws HibernateException
+    {
         _Log.info("generate id %s", object);
         return _Zuid.getId();
     }

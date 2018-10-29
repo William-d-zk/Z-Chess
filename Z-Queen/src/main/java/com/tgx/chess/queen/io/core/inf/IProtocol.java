@@ -44,15 +44,18 @@ public interface IProtocol
 
     int getSuperSerial();
 
-    default int decodec(byte[] data, int pos) {
+    default int decodec(byte[] data, int pos)
+    {
         return pos;
     }
 
-    default int encodec(byte[] data, int pos) {
+    default int encodec(byte[] data, int pos)
+    {
         return pos;
     }
 
-    default byte[] encode() {
+    default byte[] encode()
+    {
         int len = dataLength();
         if (len < 0 || len == 0) throw new IllegalArgumentException("data length is negative or zero");
         byte[] a = new byte[len];
@@ -60,31 +63,33 @@ public interface IProtocol
         return a;
     }
 
-    default int encode(byte[] buf, int pos, int length) {
+    default int encode(byte[] buf, int pos, int length)
+    {
         int len = dataLength();
         if (len < 0 || len == 0) throw new IllegalArgumentException("data length is negative or zero");
         if (buf == null) throw new NullPointerException();
-        else if (len > length
-                 || buf.length < len
-                 || pos + length > buf.length) throw new ArrayIndexOutOfBoundsException("data length is too long for input buf");
+        else if (len > length || buf.length < len || pos + length > buf.length) throw new ArrayIndexOutOfBoundsException("data length is too long for input buf");
         pos = encodec(buf, pos);
         return pos;
     }
 
-    default int decode(byte[] data, int pos, int length) {
+    default int decode(byte[] data, int pos, int length)
+    {
         if (data == null) throw new NullPointerException();
         int len = dataLength();
         if (len > length || data.length < len || pos + length > data.length) throw new ArrayIndexOutOfBoundsException();
         return decodec(data, pos);
     }
 
-    default int decode(byte[] data) {
+    default int decode(byte[] data)
+    {
         if (data == null) throw new NullPointerException();
         if (data.length < dataLength()) throw new ArrayIndexOutOfBoundsException();
         return decodec(data, 0);
     }
 
-    default boolean idempotent(int bitIdempotent) {
+    default boolean idempotent(int bitIdempotent)
+    {
         return false;
     }
 }

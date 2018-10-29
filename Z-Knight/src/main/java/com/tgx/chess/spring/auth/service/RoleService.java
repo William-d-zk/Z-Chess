@@ -38,11 +38,13 @@ public class RoleService
     private final RoleRepository _RoleRepository;
 
     @Autowired
-    public RoleService(RoleRepository roleRepository) {
+    public RoleService(RoleRepository roleRepository)
+    {
         _RoleRepository = roleRepository;
     }
 
-    public List<Role> getRoles(int id) {
+    public List<Role> getRoles(int id)
+    {
         return _RoleRepository.findAll();
     }
 }

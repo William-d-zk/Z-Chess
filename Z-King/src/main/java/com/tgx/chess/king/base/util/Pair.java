@@ -36,39 +36,47 @@ public class Pair<FIRST, SECOND>
     private FIRST  first;
     private SECOND second;
 
-    public Pair(FIRST first, SECOND second) {
-        this.first = first;
+    public Pair(FIRST first, SECOND second)
+    {
+        this.first  = first;
         this.second = second;
     }
 
-    public FIRST first() {
+    public FIRST first()
+    {
         return first;
     }
 
-    public SECOND second() {
+    public SECOND second()
+    {
         return second;
     }
 
-    public void setFirst(FIRST f) {
+    public void setFirst(FIRST f)
+    {
         first = f;
     }
 
-    public void setSecond(SECOND s) {
+    public void setSecond(SECOND s)
+    {
         second = s;
     }
 
     @Override
-    public void dispose() {
-        first = null;
+    public void dispose()
+    {
+        first  = null;
         second = null;
     }
 
-    public Pair<FIRST, SECOND> clone() {
+    public Pair<FIRST, SECOND> clone()
+    {
         return new Pair<>(first, second);
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(Object obj)
+    {
         if (!(obj instanceof Pair)) { return false; }
         if (this != obj) {
             @SuppressWarnings("unchecked")
@@ -79,7 +87,8 @@ public class Pair<FIRST, SECOND>
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return String.format("< %s, %s >", first, second);
     }
 }

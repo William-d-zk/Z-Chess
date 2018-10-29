@@ -28,11 +28,13 @@ package com.tgx.chess.queen.io.core.inf;
  */
 public interface IRouteLv4PortChannel
 {
-    default long getPortIdx() {
+    default long getPortIdx()
+    {
         return -1;
     }
 
-    default IRouteLv4PortChannel setPortIdx(long filter) {
+    default IRouteLv4PortChannel setPortIdx(long filter)
+    {
         return this;
     }
 }

@@ -41,33 +41,38 @@ public class X03_Cipher
     public int              symmetricKeyId;
     public byte[]           cipher;
 
-    public X03_Cipher() {
+    public X03_Cipher()
+    {
         super(COMMAND, false);
     }
 
     @Override
-    public boolean isMappingCommand() {
+    public boolean isMappingCommand()
+    {
         return true;
     }
 
     @Override
-    public int decodec(byte[] data, int pos) {
-        pubKeyId = IoUtil.readInt(data, pos);
-        pos += 4;
-        symmetricKeyId = IoUtil.readUnsignedShort(data, pos);
-        pos += 2;
-        cipher = new byte[data.length - super.dataLength() - 6];
-        pos = IoUtil.read(data, pos, cipher);
+    public int decodec(byte[] data, int pos)
+    {
+        pubKeyId        = IoUtil.readInt(data, pos);
+        pos            += 4;
+        symmetricKeyId  = IoUtil.readUnsignedShort(data, pos);
+        pos            += 2;
+        cipher          = new byte[data.length - super.dataLength() - 6];
+        pos             = IoUtil.read(data, pos, cipher);
         return pos;
     }
 
     @Override
-    public int dataLength() {
+    public int dataLength()
+    {
         return super.dataLength() + 6 + (Objects.isNull(cipher) ? 0 : cipher.length);
     }
 
     @Override
-    public int encodec(byte[] data, int pos) {
+    public int encodec(byte[] data, int pos)
+    {
         pos += IoUtil.writeInt(pubKeyId, data, pos);
         pos += IoUtil.writeShort(symmetricKeyId, data, pos);
         pos += IoUtil.write(cipher, 0, data, pos, cipher.length);
@@ -75,18 +80,21 @@ public class X03_Cipher
     }
 
     @Override
-    public void dispose() {
+    public void dispose()
+    {
         cipher = null;
         super.dispose();
     }
 
     @Override
-    public int getPriority() {
+    public int getPriority()
+    {
         return QOS_00_NETWORK_CONTROL;
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return String.format("%s,public-key: %d | rc4-key: %d", super.toString(), pubKeyId, symmetricKeyId);
     }
 }

@@ -36,17 +36,20 @@ public class X20_SignUp
 {
     public final static int COMMAND = 0x20;
 
-    public X20_SignUp() {
+    public X20_SignUp()
+    {
         super(COMMAND, false);
     }
 
     @Override
-    public boolean isMappingCommand() {
+    public boolean isMappingCommand()
+    {
         return true;
     }
 
     @Override
-    public int getPriority() {
+    public int getPriority()
+    {
         return QOS_06_META_CREATE;
     }
 
@@ -55,23 +58,26 @@ public class X20_SignUp
     private long   passwordId;
 
     @Override
-    public int dataLength() {
+    public int dataLength()
+    {
         return super.dataLength() + 15 + (Objects.nonNull(password) ? password.getBytes().length : 0);
     }
 
     @Override
-    public int decodec(byte[] data, int pos) {
-        pos = IoUtil.read(data, pos, mac);
-        passwordId = IoUtil.readLong(data, pos);
-        pos += 8;
+    public int decodec(byte[] data, int pos)
+    {
+        pos         = IoUtil.read(data, pos, mac);
+        passwordId  = IoUtil.readLong(data, pos);
+        pos        += 8;
         int passwordBytesLength = data[pos++] & 0xFF;
-        password = IoUtil.readString(data, pos, passwordBytesLength);
-        pos += passwordBytesLength;
+        password  = IoUtil.readString(data, pos, passwordBytesLength);
+        pos      += passwordBytesLength;
         return pos;
     }
 
     @Override
-    public int encodec(byte[] data, int pos) {
+    public int encodec(byte[] data, int pos)
+    {
         pos += IoUtil.write(mac, data, pos);
         pos += IoUtil.writeLong(passwordId, data, pos);
         byte[] passwordBytes = password.getBytes();
@@ -80,27 +86,33 @@ public class X20_SignUp
         return pos;
     }
 
-    public byte[] getMac() {
+    public byte[] getMac()
+    {
         return mac;
     }
 
-    public void setMac(byte[] mac) {
+    public void setMac(byte[] mac)
+    {
         System.arraycopy(mac, 0, this.mac, 0, 6);
     }
 
-    public String getPassword() {
+    public String getPassword()
+    {
         return password;
     }
 
-    public void setPassword(String password) {
+    public void setPassword(String password)
+    {
         this.password = password;
     }
 
-    public long getPasswordId() {
+    public long getPasswordId()
+    {
         return passwordId;
     }
 
-    public void setPasswordId(long passwordId) {
+    public void setPasswordId(long passwordId)
+    {
         this.passwordId = passwordId;
     }
 }

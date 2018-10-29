@@ -36,21 +36,25 @@ public class X106_Identity
 {
     public final static int COMMAND = 0x106;
 
-    public X106_Identity(String nodeName) {
+    public X106_Identity(String nodeName)
+    {
         super(nodeName, COMMAND);
         mCtrlCode = WsFrame.frame_op_code_ctrl_cluster;
     }
 
-    public X106_Identity(byte[] payload) {
+    public X106_Identity(byte[] payload)
+    {
         super(COMMAND, payload);
         mCtrlCode = WsFrame.frame_op_code_ctrl_cluster;
     }
 
-    public long getIdentity() {
+    public long getIdentity()
+    {
         return IoUtil.readLong(getPayload(), 0);
     }
 
-    public long[] getIdentities() {
+    public long[] getIdentities()
+    {
         int size = (getPayload().length - 8) >>> 3;
         if (size > 0) {
             long[] result = new long[size];
@@ -61,7 +65,8 @@ public class X106_Identity
     }
 
     @Override
-    public X106_Identity duplicate() {
+    public X106_Identity duplicate()
+    {
         return new X106_Identity(getPayload());
     }
 }

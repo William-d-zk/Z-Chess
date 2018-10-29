@@ -56,7 +56,8 @@ public class PolynomialInverterModPowerOfPrime
      *            table should not be modified after it has been passed to the
      *            constructor.
      */
-    public PolynomialInverterModPowerOfPrime(int _powerOfPrime, int _prime, short _invModPrime[]) {
+    public PolynomialInverterModPowerOfPrime(int _powerOfPrime, int _prime, short _invModPrime[])
+    {
         super(_prime, _invModPrime);
         powerOfPrime = _powerOfPrime;
     }
@@ -66,7 +67,8 @@ public class PolynomialInverterModPowerOfPrime
      * See NTRU Cryptosystems Tech Report #014 "Almost Inverses
      * and Fast NTRU Key Creation."
      */
-    public FullPolynomial invert(FullPolynomial a) {
+    public FullPolynomial invert(FullPolynomial a)
+    {
         // b = a inverse mod prime
         FullPolynomial b = super.invert(a);
 

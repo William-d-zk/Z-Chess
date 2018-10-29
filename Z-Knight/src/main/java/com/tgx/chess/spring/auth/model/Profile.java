@@ -24,15 +24,7 @@
 
 package com.tgx.chess.spring.auth.model;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import com.tgx.chess.spring.jpa.model.AuditModel;
 
@@ -50,19 +42,23 @@ public class Profile
     @JoinColumn(name = "account_id")
     private Account account;
 
-    public int getId() {
+    public int getId()
+    {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(int id)
+    {
         this.id = id;
     }
 
-    public Account getAccount() {
+    public Account getAccount()
+    {
         return account;
     }
 
-    public void setAccount(Account account) {
+    public void setAccount(Account account)
+    {
         this.account = account;
     }
 

@@ -64,13 +64,15 @@ public class NtruEncryptKeyNativeEncoder
     /**
      * Encode a public key as a byte array.
      */
-    public byte[] encodePubKey(KeyParams keyParams, FullPolynomial h) {
+    public byte[] encodePubKey(KeyParams keyParams, FullPolynomial h)
+    {
         PubKeyFormatter_PUBLIC_KEY_v1 formatter = new PubKeyFormatter_PUBLIC_KEY_v1();
         return formatter.encode(keyParams, h);
     }
 
-    PrivKeyFormatter pickDefaultPrivKeyFormatter(KeyParams keyParams) {
-        int packedFLength = (keyParams.N + 4) / 5;
+    PrivKeyFormatter pickDefaultPrivKeyFormatter(KeyParams keyParams)
+    {
+        int packedFLength       = (keyParams.N + 4) / 5;
         int packedListedFLength = (keyParams.df * 2 * com.securityinnovation.jNeo.math.BitPack.countBits(keyParams.q + 7) / 8);
         if (packedFLength < packedListedFLength) return new PrivKeyFormatter_PrivateKeyPackedFv1();
         else return new PrivKeyFormatter_PrivateKeyListedFv1();
@@ -79,7 +81,8 @@ public class NtruEncryptKeyNativeEncoder
     /**
      * Encode a private key as a byte array.
      */
-    public byte[] encodePrivKey(KeyParams keyParams, FullPolynomial h, FullPolynomial f) {
+    public byte[] encodePrivKey(KeyParams keyParams, FullPolynomial h, FullPolynomial f)
+    {
         PrivKeyFormatter formatter = pickDefaultPrivKeyFormatter(keyParams);
         return formatter.encode(keyParams, h, f);
     }
@@ -87,13 +90,17 @@ public class NtruEncryptKeyNativeEncoder
     /**
      * Parse a public or private key blob.
      */
-    public RawKeyData decodeKeyBlob(byte keyBlob[]) throws FormatNotSupportedException, ParamSetNotSupportedException {
-        switch (keyBlob[0]) {
-            case (PUBLIC_KEY_v1): {
+    public RawKeyData decodeKeyBlob(byte keyBlob[]) throws FormatNotSupportedException, ParamSetNotSupportedException
+    {
+        switch (keyBlob[0])
+        {
+            case (PUBLIC_KEY_v1):
+            {
                 PubKeyFormatter_PUBLIC_KEY_v1 formatter = new PubKeyFormatter_PUBLIC_KEY_v1();
                 return formatter.decode(keyBlob);
             }
-            case (PRIVATE_KEY_DEFAULT_v1): {
+            case (PRIVATE_KEY_DEFAULT_v1):
+            {
                 PrivKeyFormatter formatter = pickDefaultPrivKeyFormatter(KeyFormatterUtil.parseOID(keyBlob, 1, 3));
                 return formatter.decode(keyBlob);
             }

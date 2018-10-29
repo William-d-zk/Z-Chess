@@ -43,14 +43,17 @@ public class EncodedHandler
 
     private final RingBuffer<QEvent> _Error;
 
-    public EncodedHandler(RingBuffer<QEvent> error) {
+    public EncodedHandler(RingBuffer<QEvent> error)
+    {
         _Error = error;
     }
 
     @Override
-    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception {
+    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
+    {
         if (event.hasError()) {
-            switch (event.getErrorType()) {
+            switch (event.getErrorType())
+            {
                 case FILTER_ENCODE:
                 case ILLEGAL_STATE:
                 case ILLEGAL_BIZ_STATE:

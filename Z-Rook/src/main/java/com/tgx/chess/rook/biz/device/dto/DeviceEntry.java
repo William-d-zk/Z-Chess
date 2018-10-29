@@ -33,12 +33,14 @@ public class DeviceEntry
     private final static int DEVICE_ENTRY_SERIAL = DB_SERIAL + 1;
 
     @Override
-    public int dataLength() {
+    public int dataLength()
+    {
         return 0;
     }
 
     @Override
-    public int getSerial() {
+    public int getSerial()
+    {
         return DEVICE_ENTRY_SERIAL;
     }
 

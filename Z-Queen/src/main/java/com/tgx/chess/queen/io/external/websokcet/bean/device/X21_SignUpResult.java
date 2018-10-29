@@ -34,12 +34,14 @@ public class X21_SignUpResult
 {
     public final static int COMMAND = 0x21;
 
-    public X21_SignUpResult() {
+    public X21_SignUpResult()
+    {
         super(COMMAND, false);
     }
 
     @Override
-    public int getPriority() {
+    public int getPriority()
+    {
         return QOS_09_CONFIRM_MESSAGE;
     }
 
@@ -47,45 +49,53 @@ public class X21_SignUpResult
     private byte[]  token;
     private long    passwordId;
 
-    public void setSuccess() {
+    public void setSuccess()
+    {
         success = true;
     }
 
-    public boolean isSuccess() {
+    public boolean isSuccess()
+    {
         return success;
     }
 
-    public void setFailed() {
+    public void setFailed()
+    {
         success = false;
     }
 
-    public long getPasswordId() {
+    public long getPasswordId()
+    {
         return passwordId;
     }
 
-    public void setPasswordId(long pwdId) {
+    public void setPasswordId(long pwdId)
+    {
         passwordId = pwdId;
     }
 
     @Override
-    public int dataLength() {
+    public int dataLength()
+    {
         return super.dataLength() + 9 + (isSuccess() ? 32 : 0);
     }
 
     @Override
-    public int decodec(byte[] data, int pos) {
-        success = data[pos++] > 0;
-        passwordId = IoUtil.readLong(data, pos);
-        pos += 8;
+    public int decodec(byte[] data, int pos)
+    {
+        success     = data[pos++] > 0;
+        passwordId  = IoUtil.readLong(data, pos);
+        pos        += 8;
         if (success) {
             token = new byte[32];
-            pos = IoUtil.read(data, pos, token);
+            pos   = IoUtil.read(data, pos, token);
         }
         return pos;
     }
 
     @Override
-    public int encodec(byte[] data, int pos) {
+    public int encodec(byte[] data, int pos)
+    {
         pos += IoUtil.writeByte(isSuccess() ? 1 : 0, data, pos);
         pos += IoUtil.writeLong(passwordId, data, pos);
         if (isSuccess()) {
@@ -94,11 +104,13 @@ public class X21_SignUpResult
         return pos;
     }
 
-    public byte[] getToken() {
+    public byte[] getToken()
+    {
         return token;
     }
 
-    public void setToken(byte[] token) {
+    public void setToken(byte[] token)
+    {
         this.token = token;
     }
 }

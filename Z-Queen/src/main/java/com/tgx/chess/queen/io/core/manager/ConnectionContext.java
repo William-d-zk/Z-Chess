@@ -25,11 +25,7 @@
 package com.tgx.chess.queen.io.core.manager;
 
 import com.tgx.chess.queen.event.operator.MODE;
-import com.tgx.chess.queen.io.core.inf.ICommandCreator;
-import com.tgx.chess.queen.io.core.inf.IConnectActive;
-import com.tgx.chess.queen.io.core.inf.IConnectionContext;
-import com.tgx.chess.queen.io.core.inf.ISessionCreated;
-import com.tgx.chess.queen.io.core.inf.ISessionCreator;
+import com.tgx.chess.queen.io.core.inf.*;
 
 public class ConnectionContext
         implements
@@ -41,40 +37,42 @@ public class ConnectionContext
     private final ICommandCreator _CommandCreator;
     private final ISessionCreated _SessionCreated;
 
-    public ConnectionContext(MODE mode,
-                             IConnectActive connectActive,
-                             ISessionCreator sessionCreator,
-                             ICommandCreator commandCreator,
-                             ISessionCreated sessionCreated) {
-        _Mode = mode;
-        _ConnectActive = connectActive;
+    public ConnectionContext(MODE mode, IConnectActive connectActive, ISessionCreator sessionCreator, ICommandCreator commandCreator, ISessionCreated sessionCreated)
+    {
+        _Mode           = mode;
+        _ConnectActive  = connectActive;
         _SessionCreator = sessionCreator;
         _CommandCreator = commandCreator;
         _SessionCreated = sessionCreated;
     }
 
     @Override
-    public ISessionCreator getSessionCreator() {
+    public ISessionCreator getSessionCreator()
+    {
         return _SessionCreator;
     }
 
     @Override
-    public ICommandCreator getCommandCreator() {
+    public ICommandCreator getCommandCreator()
+    {
         return _CommandCreator;
     }
 
     @Override
-    public ISessionCreated getSessionCreated() {
+    public ISessionCreated getSessionCreated()
+    {
         return _SessionCreated;
     }
 
     @Override
-    public MODE getMode() {
+    public MODE getMode()
+    {
         return _Mode;
     }
 
     @Override
-    public IConnectActive getConnectActive() {
+    public IConnectActive getConnectActive()
+    {
         return _ConnectActive;
     }
 

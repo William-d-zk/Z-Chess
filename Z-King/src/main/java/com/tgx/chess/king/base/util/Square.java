@@ -33,26 +33,31 @@ public class Square<FIRST, SECOND, THIRD, FOURTH>
     private THIRD  third;
     private FOURTH fourth;
 
-    public Square(FIRST first, SECOND second, THIRD third, FOURTH fourth) {
-        this.first = first;
+    public Square(FIRST first, SECOND second, THIRD third, FOURTH fourth)
+    {
+        this.first  = first;
         this.second = second;
-        this.third = third;
+        this.third  = third;
         this.fourth = fourth;
     }
 
-    public FIRST first() {
+    public FIRST first()
+    {
         return first;
     }
 
-    public SECOND second() {
+    public SECOND second()
+    {
         return second;
     }
 
-    public THIRD third() {
+    public THIRD third()
+    {
         return third;
     }
 
-    public FOURTH fourth() {
+    public FOURTH fourth()
+    {
         return fourth;
     }
 }

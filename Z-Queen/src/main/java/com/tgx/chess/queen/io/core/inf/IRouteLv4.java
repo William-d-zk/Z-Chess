@@ -32,23 +32,28 @@ public interface IRouteLv4
         IRouteLv4PortChannel
 {
 
-    default long getPortIdx() {
+    default long getPortIdx()
+    {
         return -1;
     }
 
-    default IRouteLv4 setPortIdx(long filter) {
+    default IRouteLv4 setPortIdx(long filter)
+    {
         return this;
     }
 
-    default boolean isCluster() {
+    default boolean isCluster()
+    {
         return false;
     }
 
-    default IRouteLv4 setCluster(boolean b) {
+    default IRouteLv4 setCluster(boolean b)
+    {
         return this;
     }
 
-    default IRouteLv4 duplicate() {
+    default IRouteLv4 duplicate()
+    {
         return this;
     }
 

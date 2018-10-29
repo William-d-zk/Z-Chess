@@ -30,11 +30,13 @@ public interface IMessage
         extends
         IDuplicate
 {
-    default ISession getSession() {
+    default ISession getSession()
+    {
         return null;
     }
 
-    default IMessage setSession(ISession session) {
+    default IMessage setSession(ISession session)
+    {
         return this;
     }
 

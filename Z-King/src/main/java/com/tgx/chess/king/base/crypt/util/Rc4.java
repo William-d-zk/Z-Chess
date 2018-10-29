@@ -24,11 +24,11 @@
 
 package com.tgx.chess.king.base.crypt.util;
 
-import com.tgx.chess.king.base.crypt.inf.ISymmetric;
-import com.tgx.chess.king.base.util.ArrayUtil;
-
 import java.nio.ByteBuffer;
 import java.util.Random;
+
+import com.tgx.chess.king.base.crypt.inf.ISymmetric;
+import com.tgx.chess.king.base.util.ArrayUtil;
 
 /**
  * @author William.d.zk
@@ -41,15 +41,18 @@ public class Rc4
     private int          i, j;
     private boolean      initialized;
 
-    public static byte[] decrypt(byte[] data, byte[] key) {
+    public static byte[] decrypt(byte[] data, byte[] key)
+    {
         return rc4(data, key);
     }
 
-    public static byte[] encrypt(byte[] data, byte[] key) {
+    public static byte[] encrypt(byte[] data, byte[] key)
+    {
         return rc4(data, key);
     }
 
-    private static byte[] rc4(byte[] data, byte[] key) {
+    private static byte[] rc4(byte[] data, byte[] key)
+    {
         if (!isKeyValid(key)) throw new IllegalArgumentException("key is fail!");
         if (data.length < 1) throw new IllegalArgumentException("data is fail!");
         int[] S = new int[256];
@@ -80,10 +83,11 @@ public class Rc4
         return encodeData;
     }
 
-    public static boolean isKeyValid(byte[] key) {
+    public static boolean isKeyValid(byte[] key)
+    {
         byte[] bKey = key;
-        int len = bKey.length;
-        int num = 0;// 0x0E计数
+        int    len  = bKey.length;
+        int    num  = 0;// 0x0E计数
         if (len > 0 && len <= 256) {
             for (int i = 0; i < len; i++) {
                 if ((bKey[i] & 0xFF) == 0x0E) {
@@ -97,11 +101,12 @@ public class Rc4
     }
 
     @Override
-    public byte[] createKey(String seed) {
-        long curTime = System.currentTimeMillis();
-        long code = hashCode();
-        long tick = curTime ^ (code << 31);
-        Random rd = new Random(tick);
+    public byte[] createKey(String seed)
+    {
+        long   curTime = System.currentTimeMillis();
+        long   code    = hashCode();
+        long   tick    = curTime ^ (code << 31);
+        Random rd      = new Random(tick);
         byte[] xc;
         if (seed == null || "".equals(seed.trim())) seed = "Tgx.Tina.Rc4" + System.nanoTime();
         xc = seed.getBytes();
@@ -116,7 +121,8 @@ public class Rc4
         return key;
     }
 
-    private void ksa(byte[] key) {
+    private void ksa(byte[] key)
+    {
         if (initialized || key == null) return;
         for (int i = 0; i < S.length; i++)
             S[i] = (byte) i;
@@ -128,7 +134,8 @@ public class Rc4
     }
 
     @Override
-    public void digest(ByteBuffer buffer, byte[] key) {
+    public void digest(ByteBuffer buffer, byte[] key)
+    {
         if (!buffer.hasRemaining() || key == null) return;
         ksa(key);
         int limit = buffer.limit();
@@ -142,7 +149,8 @@ public class Rc4
     }
 
     @Override
-    public void digest(byte[] dst, byte[] key) {
+    public void digest(byte[] dst, byte[] key)
+    {
         if (dst == null || key == null) return;
         ksa(key);
         int limit = dst.length;
@@ -156,7 +164,8 @@ public class Rc4
     }
 
     @Override
-    public final void reset() {
+    public final void reset()
+    {
         initialized = false;
     }
 

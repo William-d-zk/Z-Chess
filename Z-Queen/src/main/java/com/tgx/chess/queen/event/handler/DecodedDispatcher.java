@@ -40,15 +40,19 @@ public class DecodedDispatcher
         BaseDispatcher
 {
 
-    public DecodedDispatcher(RingBuffer<QEvent> link, RingBuffer<QEvent> cluster, RingBuffer<QEvent> error, RingBuffer<QEvent>[] logic) {
+    public DecodedDispatcher(RingBuffer<QEvent> link, RingBuffer<QEvent> cluster, RingBuffer<QEvent> error, RingBuffer<QEvent>[] logic)
+    {
         super(link, cluster, error, logic);
     }
 
     @Override
-    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception {
-        switch (event.getErrorType()) {
+    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
+    {
+        switch (event.getErrorType())
+        {
             case NO_ERROR:
-                switch (event.getEventType()) {
+                switch (event.getEventType())
+                {
                     case TRANSFER:
                     case LOGIC:
                     case DISPATCH:
@@ -74,8 +78,10 @@ public class DecodedDispatcher
         event.reset();
     }
 
-    private void dispatch(MODE mode, ICommand cmd, ISession session) {
-        switch (mode) {
+    private void dispatch(MODE mode, ICommand cmd, ISession session)
+    {
+        switch (mode)
+        {
             case CLUSTER_CONSUMER:
             case CLUSTER_SERVER:
                 publish(_Cluster, LOGIC, cmd, session, null);

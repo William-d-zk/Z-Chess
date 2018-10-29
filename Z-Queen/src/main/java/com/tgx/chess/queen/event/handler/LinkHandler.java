@@ -37,21 +37,12 @@ import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.ICommand;
-import com.tgx.chess.queen.io.core.inf.IConnectionContext;
-import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.inf.ISessionCreated;
-import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
+import com.tgx.chess.queen.io.core.inf.*;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X20_SignUp;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X22_SignIn;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X24_UpdateToken;
-import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X01_EncryptRequest;
-import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X02_AsymmetricPub;
-import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X03_Cipher;
-import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X04_EncryptConfirm;
-import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X05_EncryptStart;
-import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X06_PlainStart;
+import com.tgx.chess.queen.io.external.websokcet.bean.ztls.*;
 
 /**
  * @author William.d.zk
@@ -65,16 +56,19 @@ public class LinkHandler
     private final RingBuffer<QEvent> _Writer;
     private final QueenManager       _QueenManager;
 
-    public LinkHandler(QueenManager manager, RingBuffer<QEvent> error, RingBuffer<QEvent> writer) {
-        _Error = error;
-        _Writer = writer;
+    public LinkHandler(QueenManager manager, RingBuffer<QEvent> error, RingBuffer<QEvent> writer)
+    {
+        _Error        = error;
+        _Writer       = writer;
         _QueenManager = manager;
     }
 
     @Override
-    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception {
+    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
+    {
         if (event.hasError()) {
-            switch (event.getErrorType()) {
+            switch (event.getErrorType())
+            {
                 case ACCEPT_FAILED:
                 case CONNECT_FAILED:
                     _Log.info(String.format("error type %s,ignore ", event.getErrorType()));
@@ -92,17 +86,16 @@ public class LinkHandler
             }
         }
         else {
-            ICommand[] waitToSends = null;
-            ISession session = null;
+            ICommand[]                      waitToSends  = null;
+            ISession                        session      = null;
             IOperator<ICommand[], ISession> sendOperator = null;
-            switch (event.getEventType()) {
+            switch (event.getEventType())
+            {
                 case CONNECTED:
                     IOperator<IConnectionContext, AsynchronousSocketChannel> connectedOperator = event.getEventOp();
                     Pair<IConnectionContext, AsynchronousSocketChannel> connectedContent = event.getContent();
                     AsynchronousSocketChannel channel = connectedContent.second();
-                    Triple<ICommand[],
-                           ISession,
-                           IOperator<ICommand[], ISession>> connectedHandled = connectedOperator.handle(connectedContent.first(), channel);
+                    Triple<ICommand[], ISession, IOperator<ICommand[], ISession>> connectedHandled = connectedOperator.handle(connectedContent.first(), channel);
                     //connectedHandled 不可能为 null
                     waitToSends = connectedHandled.first();
                     session = connectedHandled.second();
@@ -116,7 +109,8 @@ public class LinkHandler
                     _Log.info("LinkHandler cmd: %s", logicContent.first());
                     session = logicContent.second();
                     ICommand cmd = logicContent.first();
-                    switch (cmd.getSerial()) {
+                    switch (cmd.getSerial())
+                    {
                         case X01_EncryptRequest.COMMAND:
                         case X02_AsymmetricPub.COMMAND:
                         case X03_Cipher.COMMAND:

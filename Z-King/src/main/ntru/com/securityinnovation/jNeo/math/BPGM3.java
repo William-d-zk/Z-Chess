@@ -37,18 +37,19 @@ public class BPGM3
      * coeffcients set to +1 and <code>numNegOnes</code> coefficients
      * set to -1, and all other coefficients set to 0.
      */
-    public static FullPolynomial genTrinomial(int N, int numOnes, int numNegOnes, IGF2 igf) {
+    public static FullPolynomial genTrinomial(int N, int numOnes, int numNegOnes, IGF2 igf)
+    {
         boolean isSet[] = new boolean[N];
         for (int i = 0; i < N; i++)
             isSet[i] = false;
 
         FullPolynomial p = new FullPolynomial(N);
-        int t = 0;
+        int            t = 0;
         while (t < numOnes) {
             int i = igf.nextIndex();
             if (isSet[i]) continue;
 
-            p.p[i] = 1;
+            p.p[i]   = 1;
             isSet[i] = true;
             t++;
         }
@@ -59,7 +60,7 @@ public class BPGM3
             if (isSet[i]) {
                 continue;
             }
-            p.p[i] = -1;
+            p.p[i]   = -1;
             isSet[i] = true;
             t++;
         }

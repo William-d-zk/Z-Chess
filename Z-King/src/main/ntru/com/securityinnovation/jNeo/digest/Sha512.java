@@ -24,32 +24,36 @@ class Sha512
     /**
      * Get the length of the hash output, in bytes.
      */
-    public int getDigestLen() {
+    public int getDigestLen()
+    {
         return HASH_LEN;
     }
 
     /**
      * Get the size of the input block for the core hash algorithm in bytes.
      */
-    public int getBlockLen() {
+    public int getBlockLen()
+    {
         return BLOCK_LEN;
     }
 
     /**
      * Constructor.
      */
-    public Sha512() {
+    public Sha512()
+    {
         reset();
     }
 
     /**
      * Reinitialize the digest operation, discarding any internal state.
      */
-    public void reset() {
+    public void reset()
+    {
         byteCount1 = 0;
         byteCount2 = 0;
 
-        xBufOff = 0;
+        xBufOff    = 0;
         java.util.Arrays.fill(xBuf, (byte) 0);
 
         wOff = 0;
@@ -80,7 +84,8 @@ class Sha512
      * @param length
      *            the number of bytes of data to add.
      */
-    public void update(byte[] data, int offset, int length) {
+    public void update(byte[] data, int offset, int length)
+    {
         byteCount1 += length;
 
         // Process any full blocks we get by combining cached input
@@ -89,9 +94,9 @@ class Sha512
             int todo = xBuf.length - xBufOff;
             System.arraycopy(data, offset, xBuf, xBufOff, todo);
             processWord(xBuf, 0);
-            length -= todo;
-            offset += todo;
-            xBufOff = 0;
+            length  -= todo;
+            offset  += todo;
+            xBufOff  = 0;
         }
 
         // Copy any extra data into the cached input buffer.
@@ -103,7 +108,8 @@ class Sha512
      * Completes the digest calculation and returns the result
      * in the supplied array.
      */
-    public void finishDigest(byte[] out, int outOffset) {
+    public void finishDigest(byte[] out, int outOffset)
+    {
         finish();
         unpackWord(H1, out, outOffset);
         unpackWord(H2, out, outOffset + 8);
@@ -135,7 +141,8 @@ class Sha512
     private long[]           W          = new long[80];
     private int              wOff;
 
-    private void update(byte in) {
+    private void update(byte in)
+    {
         xBuf[xBufOff++] = in;
 
         if (xBufOff == xBuf.length) {
@@ -146,11 +153,12 @@ class Sha512
         byteCount1++;
     }
 
-    public void finish() {
+    public void finish()
+    {
         adjustByteCounts();
 
         long lowBitLength = byteCount1 << 3;
-        long hiBitLength = byteCount2;
+        long hiBitLength  = byteCount2;
 
         // add the pad bytes.
         update((byte) 128);
@@ -160,7 +168,8 @@ class Sha512
         processBlock();
     }
 
-    protected void processWord(byte[] in, int inOff) {
+    protected void processWord(byte[] in, int inOff)
+    {
         W[wOff++] = (((long) (in[inOff] & 0xff) << 56)
                      | ((long) (in[inOff + 1] & 0xff) << 48)
                      | ((long) (in[inOff + 2] & 0xff) << 40)
@@ -173,8 +182,9 @@ class Sha512
         if (wOff == 16) processBlock();
     }
 
-    protected void unpackWord(long word, byte[] out, int outOff) {
-        out[outOff] = (byte) (word >>> 56);
+    protected void unpackWord(long word, byte[] out, int outOff)
+    {
+        out[outOff]     = (byte) (word >>> 56);
         out[outOff + 1] = (byte) (word >>> 48);
         out[outOff + 2] = (byte) (word >>> 40);
         out[outOff + 3] = (byte) (word >>> 32);
@@ -188,21 +198,24 @@ class Sha512
      * adjust the byte counts so that byteCount2 represents the
      * upper long (less 3 bits) word of the byte count.
      */
-    private void adjustByteCounts() {
+    private void adjustByteCounts()
+    {
         if (byteCount1 > 0x1fffffffffffffffL) {
             byteCount2 += (byteCount1 >>> 61);
             byteCount1 &= 0x1fffffffffffffffL;
         }
     }
 
-    protected void processLength(long lowW, long hiW) {
+    protected void processLength(long lowW, long hiW)
+    {
         if (wOff > 14) processBlock();
 
         W[14] = hiW;
         W[15] = lowW;
     }
 
-    protected void processBlock() {
+    protected void processBlock()
+    {
         adjustByteCounts();
 
         // expand 16 word block into 80 word blocks.
@@ -227,57 +240,64 @@ class Sha512
 
             T1 = h + Sum1(e) + Ch(e, f, g) + K[t] + W[t];
             T2 = Sum0(a) + Maj(a, b, c);
-            h = g;
-            g = f;
-            f = e;
-            e = d + T1;
-            d = c;
-            c = b;
-            b = a;
-            a = T1 + T2;
+            h  = g;
+            g  = f;
+            f  = e;
+            e  = d + T1;
+            d  = c;
+            c  = b;
+            b  = a;
+            a  = T1 + T2;
         }
 
-        H1 += a;
-        H2 += b;
-        H3 += c;
-        H4 += d;
-        H5 += e;
-        H6 += f;
-        H7 += g;
-        H8 += h;
+        H1   += a;
+        H2   += b;
+        H3   += c;
+        H4   += d;
+        H5   += e;
+        H6   += f;
+        H7   += g;
+        H8   += h;
 
         // reset the offset and clean out the word buffer.
-        wOff = 0;
+        wOff  = 0;
         for (int i = 0; i != W.length; i++)
             W[i] = 0;
     }
 
-    private long rotateRight(long x, int n) {
+    private long rotateRight(long x, int n)
+    {
         return (x >>> n) | (x << (64 - n));
     }
 
     /* sha-384 and sha-512 functions (as for sha-256 but for longs) */
-    private long Ch(long x, long y, long z) {
+    private long Ch(long x, long y, long z)
+    {
         return ((x & y) ^ ((~x) & z));
     }
 
-    private long Maj(long x, long y, long z) {
+    private long Maj(long x, long y, long z)
+    {
         return ((x & y) ^ (x & z) ^ (y & z));
     }
 
-    private long Sum0(long x) {
+    private long Sum0(long x)
+    {
         return rotateRight(x, 28) ^ rotateRight(x, 34) ^ rotateRight(x, 39);
     }
 
-    private long Sum1(long x) {
+    private long Sum1(long x)
+    {
         return rotateRight(x, 14) ^ rotateRight(x, 18) ^ rotateRight(x, 41);
     }
 
-    private long Sigma0(long x) {
+    private long Sigma0(long x)
+    {
         return rotateRight(x, 1) ^ rotateRight(x, 8) ^ (x >>> 7);
     }
 
-    private long Sigma1(long x) {
+    private long Sigma1(long x)
+    {
         return rotateRight(x, 19) ^ rotateRight(x, 61) ^ (x >>> 6);
     }
 

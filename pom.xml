@@ -25,11 +25,7 @@
         <slf4j.version>1.7.25</slf4j.version>
         <logback.version>1.2.3</logback.version>
         <!--SPRING-BOOT-->
-        <spring.version>5.0.8.RELEASE</spring.version>
-        <spring-security.version>5.0.8.RELEASE</spring-security.version>
-        <spring-boot.version>2.0.5.RELEASE</spring-boot.version>
-        <thymeleaf.extras.security4.version>3.0.2.RELEASE</thymeleaf.extras.security4.version>
-        <thymeleaf.extras.java8.version>3.0.1.RELEASE</thymeleaf.extras.java8.version>
+        <spring-boot.version>2.0.6.RELEASE</spring-boot.version>
         <!--DB-->
         <postgresql.driver.version>42.2.5</postgresql.driver.version>
         <bdb.je.version>7.5.11</bdb.je.version>

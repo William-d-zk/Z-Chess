@@ -46,36 +46,42 @@ public class DeviceRest
     private final CryptUtil    _CryptUtil = new CryptUtil();
 
     @Autowired
-    DeviceRest(DeviceClient client) {
+    DeviceRest(DeviceClient client)
+    {
         _Client = client;
     }
 
     @GetMapping("/client/start")
-    public String start() {
+    public String start()
+    {
         _Client.connect();
         return "async commit start client request";
     }
 
     @GetMapping("/client/end")
-    public String end() {
+    public String end()
+    {
         _Client.close();
         return "client end";
     }
 
     @GetMapping("/client/close")
-    public String close() {
+    public String close()
+    {
         _Client.sendLocal(new X103_Close("client close".getBytes()));
         return "client close";
     }
 
     @GetMapping("/client/heartbeat")
-    public String heartbeat(@RequestParam(name = "msg", defaultValue = "client heartbeat", required = false) String msg) {
+    public String heartbeat(@RequestParam(name = "msg", defaultValue = "client heartbeat", required = false) String msg)
+    {
         _Client.heartbeat(msg);
         return "heartbeat";
     }
 
     @GetMapping("/client/x50")
-    public String x50(@RequestParam(name = "msg", defaultValue = "test", required = false) String msg) {
+    public String x50(@RequestParam(name = "msg", defaultValue = "test", required = false) String msg)
+    {
         X50_DeviceMsg x50 = new X50_DeviceMsg(System.currentTimeMillis());
         x50.setPayload(msg.getBytes());
         _Client.sendLocal(x50);
@@ -83,7 +89,8 @@ public class DeviceRest
     }
 
     @GetMapping("/client/x20")
-    public String x20(@RequestParam(name = "msg", defaultValue = "password", required = false) String msg) {
+    public String x20(@RequestParam(name = "msg", defaultValue = "password", required = false) String msg)
+    {
         X20_SignUp x20 = new X20_SignUp();
         x20.setMac(new byte[] { (byte) 0xAE,
                                 (byte) 0xC3,
@@ -97,7 +104,8 @@ public class DeviceRest
     }
 
     @GetMapping("/client/x22")
-    public String x22(@RequestParam(name = "msg", defaultValue = "password", required = false) String msg) {
+    public String x22(@RequestParam(name = "msg", defaultValue = "password", required = false) String msg)
+    {
         Objects.requireNonNull(_Client.getToken());
         X22_SignIn x22 = new X22_SignIn();
         x22.setToken(_Client.getToken());
@@ -107,13 +115,15 @@ public class DeviceRest
     }
 
     @GetMapping("/client/handshake")
-    public String handshake() {
+    public String handshake()
+    {
         _Client.handshake();
         return "handshake";
     }
 
     @GetMapping("/client/ztls")
-    public String ztls() {
+    public String ztls()
+    {
         X01_EncryptRequest x01 = new X01_EncryptRequest();
         _Client.sendLocal(x01);
         return "ztls start";

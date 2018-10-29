@@ -72,7 +72,8 @@ public abstract class Digest
      *            should go. This will use getDigestLen() bytes
      *            following this index.
      */
-    public void digest(byte[] input, int inputOffset, int inputLength, byte[] output, int outputOffset) {
+    public void digest(byte[] input, int inputOffset, int inputLength, byte[] output, int outputOffset)
+    {
         reset();
         update(input, inputOffset, inputLength);
         finishDigest(output, outputOffset);
@@ -107,7 +108,8 @@ public abstract class Digest
      * Completes the digest calculation and returns the result
      * in a newly allocated array.
      */
-    public byte[] finishDigest() {
+    public byte[] finishDigest()
+    {
         byte dig[] = new byte[getDigestLen()];
         finishDigest(dig, 0);
         return dig;
@@ -116,6 +118,7 @@ public abstract class Digest
     /**
      * Default constructor. Hidden from the public API.
      */
-    protected Digest() {
+    protected Digest()
+    {
     }
 }

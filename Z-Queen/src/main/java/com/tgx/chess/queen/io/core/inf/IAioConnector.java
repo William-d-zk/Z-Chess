@@ -41,19 +41,15 @@ public interface IAioConnector
     IOperator<Throwable, IAioConnector> getErrorOperator();
 
     @Override
-    default void completed(Void result, AsynchronousSocketChannel channel) {
+    default void completed(Void result, AsynchronousSocketChannel channel)
+    {
         AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishConnected(getConnectedOperator(),
-                                getMode(),
-                                this,
-                                getSessionCreator(),
-                                getCommandCreator(),
-                                getSessionCreated(),
-                                channel);
+        worker.publishConnected(getConnectedOperator(), getMode(), this, getSessionCreator(), getCommandCreator(), getSessionCreated(), channel);
     }
 
     @Override
-    default void failed(Throwable exc, AsynchronousSocketChannel channel) {
+    default void failed(Throwable exc, AsynchronousSocketChannel channel)
+    {
         AioWorker worker = (AioWorker) Thread.currentThread();
         worker.publishConnectingError(getErrorOperator(), exc, this);
     }

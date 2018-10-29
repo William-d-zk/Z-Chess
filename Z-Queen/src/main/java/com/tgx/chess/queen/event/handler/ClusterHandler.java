@@ -51,18 +51,21 @@ public class ClusterHandler
     private final QueenManager       _QueenManager;
     private final RingBuffer<QEvent> _Error;
     private final RingBuffer<QEvent> _Writer;
-    private final Logger _Log = Logger.getLogger(getClass().getName());
+    private final Logger             _Log = Logger.getLogger(getClass().getName());
 
-    public ClusterHandler(final QueenManager queenManager, RingBuffer<QEvent> error, RingBuffer<QEvent> writer) {
+    public ClusterHandler(final QueenManager queenManager, RingBuffer<QEvent> error, RingBuffer<QEvent> writer)
+    {
         _QueenManager = queenManager;
-        _Error = error;
-        _Writer = writer;
+        _Error        = error;
+        _Writer       = writer;
     }
 
     @Override
-    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception {
+    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
+    {
         if (event.hasError()) {
-            switch (event.getErrorType()) {
+            switch (event.getErrorType())
+            {
                 case ACCEPT_FAILED:
                 case CONNECT_FAILED:
                     _Log.info(String.format("error type %s,ignore ", event.getErrorType()));
@@ -80,14 +83,14 @@ public class ClusterHandler
             }
         }
         else {
-            switch (event.getEventType()) {
+            switch (event.getEventType())
+            {
                 case CONNECTED:
                     IOperator<IConnectionContext, AsynchronousSocketChannel> connectedOperator = event.getEventOp();
                     Pair<IConnectionContext, AsynchronousSocketChannel> connectedContent = event.getContent();
                     Triple<ICommand[],
-                                               ISession,
-                                               IOperator<ICommand[], ISession>> connectedHandled = connectedOperator.handle(connectedContent.first(),
-                                                                                                        connectedContent.second());
+                           ISession,
+                           IOperator<ICommand[], ISession>> connectedHandled = connectedOperator.handle(connectedContent.first(), connectedContent.second());
                     //connectedHandled 不可能为 null
                     ICommand[] waitToSend = connectedHandled.first();
                     ISession session = connectedHandled.second();

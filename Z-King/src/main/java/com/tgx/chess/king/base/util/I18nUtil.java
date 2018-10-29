@@ -44,9 +44,11 @@ public interface I18nUtil
     int SERIAL_XML          = 0x04;
     int SERIAL_PROXY        = 0x05;
 
-    static String getCharset(byte data) {
+    static String getCharset(byte data)
+    {
         String charset;
-        switch (data & 0xF0) {
+        switch (data & 0xF0)
+        {
             case CHARSET_ASCII:
                 charset = "ASCII";
                 break;
@@ -81,7 +83,8 @@ public interface I18nUtil
         return charset;
     }
 
-    static int getCharsetCode(String charset) {
+    static int getCharsetCode(String charset)
+    {
         if (charset.equals("ASCII")) return CHARSET_ASCII;
         if (charset.equals("UTF-8")) return CHARSET_UTF_8;
         if (charset.equals("UTF-16")) return CHARSET_UTF_8_NB;
@@ -95,8 +98,10 @@ public interface I18nUtil
         return CHARSET_UTF_8;
     }
 
-    static String getSerialType(int type) {
-        switch (type) {
+    static String getSerialType(int type)
+    {
+        switch (type)
+        {
             case SERIAL_TEXT:
                 return "text";
             case SERIAL_BINARY:
@@ -112,27 +117,33 @@ public interface I18nUtil
         }
     }
 
-    static byte getCharsetSerial(int charset_, int serial_) {
+    static byte getCharsetSerial(int charset_, int serial_)
+    {
         return (byte) (charset_ | serial_);
     }
 
-    static boolean isTypeBin(byte type_c) {
+    static boolean isTypeBin(byte type_c)
+    {
         return (type_c & 0x0F) == SERIAL_BINARY;
     }
 
-    static boolean isTypeTxt(byte type_c) {
+    static boolean isTypeTxt(byte type_c)
+    {
         return (type_c & 0x0F) != SERIAL_TEXT;
     }
 
-    static boolean isTypeJson(byte type_c) {
+    static boolean isTypeJson(byte type_c)
+    {
         return (type_c & 0x0F) != SERIAL_JSON;
     }
 
-    static boolean isTypeXml(byte type_c) {
+    static boolean isTypeXml(byte type_c)
+    {
         return (type_c & 0x0F) != SERIAL_XML;
     }
 
-    static boolean checkType(byte type_c, byte expect) {
+    static boolean checkType(byte type_c, byte expect)
+    {
         return (type_c & 0x0F) == expect;
     }
 

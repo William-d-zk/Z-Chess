@@ -30,11 +30,13 @@ import com.tgx.chess.king.base.util.Triple;
  */
 public interface IOperator<V, A>
 {
-    default <T, E> Triple<T, E, IOperator<T, E>> handle(V v, A a) {
+    default <T, E> Triple<T, E, IOperator<T, E>> handle(V v, A a)
+    {
         return null;
     }
 
-    default <T, E> Triple<T, E, IOperator<T, E>>[] transfer(V v, A a) {
+    default <T, E> Triple<T, E, IOperator<T, E>>[] transfer(V v, A a)
+    {
         return null;
     }
 

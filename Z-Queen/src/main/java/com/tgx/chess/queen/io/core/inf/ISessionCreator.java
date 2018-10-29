@@ -39,17 +39,20 @@ public interface ISessionCreator
     ISession createSession(AsynchronousSocketChannel socketChannel, IConnectActive active);
 
     @Override
-    default int setSNF() {
+    default int setSNF()
+    {
         return INC_SEND_SIZE;
     }
 
     @Override
-    default int setRCV() {
+    default int setRCV()
+    {
         return INC_RECV_SIZE;
     }
 
     @Override
-    default void setOptions(AsynchronousSocketChannel channel) {
+    default void setOptions(AsynchronousSocketChannel channel)
+    {
         if (channel != null) try {
             channel.setOption(StandardSocketOptions.TCP_NODELAY, true);
             channel.setOption(StandardSocketOptions.SO_RCVBUF, setRCV());
@@ -62,23 +65,27 @@ public interface ISessionCreator
     }
 
     @Override
-    default int setQueueMax() {
+    default int setQueueMax()
+    {
         return INC_QUEUE_SIZE;
     }
 
     @Override
-    default int setReadTimeOut() {
+    default int setReadTimeOut()
+    {
         return (int) TimeUnit.MINUTES.toSeconds(15);
 
     }
 
     @Override
-    default int setWriteTimeOut() {
+    default int setWriteTimeOut()
+    {
         return 30;
     }
 
     @Override
-    default boolean setKeepAlive() {
+    default boolean setKeepAlive()
+    {
         return false;
     }
 }

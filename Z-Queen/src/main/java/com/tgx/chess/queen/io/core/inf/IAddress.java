@@ -33,12 +33,14 @@ public interface IAddress
 
     InetSocketAddress getRemoteAddress();
 
-    default void setRemoteAddress(InetSocketAddress address) {
+    default void setRemoteAddress(InetSocketAddress address)
+    {
     }
 
     InetSocketAddress getLocalAddress();
 
-    default void setLocalAddress(InetSocketAddress address) {
+    default void setLocalAddress(InetSocketAddress address)
+    {
     }
 
 }

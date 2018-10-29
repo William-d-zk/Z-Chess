@@ -25,9 +25,7 @@
 package com.tgx.chess.queen.event.handler.client;
 
 import static com.tgx.chess.queen.event.inf.IError.Type.CLOSED;
-import static com.tgx.chess.queen.event.inf.IOperator.Type.CONNECTED;
-import static com.tgx.chess.queen.event.inf.IOperator.Type.TRANSFER;
-import static com.tgx.chess.queen.event.inf.IOperator.Type.WROTE;
+import static com.tgx.chess.queen.event.inf.IOperator.Type.*;
 
 import java.nio.channels.AsynchronousSocketChannel;
 
@@ -53,16 +51,19 @@ public class ClientIoDispatcher
     private final RingBuffer<QEvent> _Error;
     private final Logger             _Log = Logger.getLogger(getClass().getName());
 
-    public ClientIoDispatcher(RingBuffer<QEvent> linkIo, RingBuffer<QEvent> decoder, RingBuffer<QEvent> wrote, RingBuffer<QEvent> error) {
-        _LinkIo = linkIo;
+    public ClientIoDispatcher(RingBuffer<QEvent> linkIo, RingBuffer<QEvent> decoder, RingBuffer<QEvent> wrote, RingBuffer<QEvent> error)
+    {
+        _LinkIo  = linkIo;
         _Decoder = decoder;
-        _Wrote = wrote;
-        _Error = error;
+        _Wrote   = wrote;
+        _Error   = error;
     }
 
     @Override
-    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception {
-        switch (event.getErrorType()) {
+    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
+    {
+        switch (event.getErrorType())
+        {
             case CONNECT_FAILED:
                 IOperator<Throwable, IConnectActive> connectFailedOperator = event.getEventOp();
                 Pair<Throwable, IConnectActive> connectFailedContent = event.getContent();
@@ -75,11 +76,7 @@ public class ClientIoDispatcher
                 IOperator<Void, ISession> closedOperator = event.getEventOp();
                 Pair<Void, ISession> closedContent = event.getContent();
                 ISession session = closedContent.second();
-                if (!session.isClosed()) error(_LinkIo,
-                                               event.getErrorType(),
-                                               closedContent.first(),
-                                               closedContent.second(),
-                                               closedOperator);
+                if (!session.isClosed()) error(_LinkIo, event.getErrorType(), closedContent.first(), closedContent.second(), closedOperator);
                 break;
             case READ_ZERO:
             case READ_EOF:
@@ -104,8 +101,10 @@ public class ClientIoDispatcher
                     error(_LinkIo, event.getErrorType(), transferResult.first(), session, transferResult.third());
                 }
                 break;
-            case NO_ERROR: {
-                switch (event.getEventType()) {
+            case NO_ERROR:
+            {
+                switch (event.getEventType())
+                {
                     case CONNECTED:
                         IOperator<IConnectionContext, AsynchronousSocketChannel> connectOperator = event.getEventOp();
                         Pair<IConnectionContext, AsynchronousSocketChannel> connectContent = event.getContent();

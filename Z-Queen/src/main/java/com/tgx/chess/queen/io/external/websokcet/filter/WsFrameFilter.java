@@ -26,13 +26,13 @@ package com.tgx.chess.queen.io.external.websokcet.filter;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
-import com.tgx.chess.queen.io.external.websokcet.WsContext;
-import com.tgx.chess.queen.io.external.websokcet.WsFrame;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.async.AioPacket;
 import com.tgx.chess.queen.io.core.inf.IPacket;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
+import com.tgx.chess.queen.io.external.websokcet.WsContext;
+import com.tgx.chess.queen.io.external.websokcet.WsFrame;
 
 /**
  * @author William.d.zk
@@ -43,15 +43,18 @@ public class WsFrameFilter
 {
     private final Logger _Log = Logger.getLogger(getClass().getName());
 
-    public WsFrameFilter() {
+    public WsFrameFilter()
+    {
         name = "web-socket-frame-filter-";
     }
 
     @Override
-    public ResultType preEncode(WsContext context, IProtocol output) {
+    public ResultType preEncode(WsContext context, IProtocol output)
+    {
         if (Objects.isNull(context) || Objects.isNull(output)) return ResultType.ERROR;
         if (context.isOutConvert()) {
-            switch (output.getSuperSerial()) {
+            switch (output.getSuperSerial())
+            {
                 case IProtocol.CONTROL_SERIAL:
                 case IProtocol.COMMAND_SERIAL:
                 case IProtocol.FRAME_SERIAL:
@@ -64,7 +67,8 @@ public class WsFrameFilter
     }
 
     @Override
-    public IProtocol encode(WsContext context, IProtocol output) {
+    public IProtocol encode(WsContext context, IProtocol output)
+    {
         WsFrame toEncode = (WsFrame) output;
         toEncode.setMask(null);
         ByteBuffer toWrite = ByteBuffer.allocate(toEncode.dataLength());
@@ -81,15 +85,17 @@ public class WsFrameFilter
     }
 
     @Override
-    public ResultType preDecode(WsContext context, IProtocol input) {
+    public ResultType preDecode(WsContext context, IProtocol input)
+    {
         if (context == null || input == null) return ResultType.ERROR;
         if (!context.isInConvert()) return ResultType.IGNORE;
-        IPacket _package = (IPacket) input;
-        ByteBuffer recvBuf = _package.getBuffer();
-        ByteBuffer cRvBuf = context.getRvBuffer();
-        WsFrame carrier = context.getCarrier();
-        int lack = context.lack();
-        switch (context.position()) {
+        IPacket    _package = (IPacket) input;
+        ByteBuffer recvBuf  = _package.getBuffer();
+        ByteBuffer cRvBuf   = context.getRvBuffer();
+        WsFrame    carrier  = context.getCarrier();
+        int        lack     = context.lack();
+        switch (context.position())
+        {
             case -1:
                 if (lack > 0 && !recvBuf.hasRemaining()) return ResultType.NEED_DATA;
                 context.setCarrier(carrier = new WsFrame());
@@ -117,7 +123,8 @@ public class WsFrameFilter
 
                     // decoding
                     if (carrier.getPayloadLength() < 0) {
-                        switch (target) {
+                        switch (target)
+                        {
                             case WsFrame.frame_payload_length_7_no_mask_position:
                                 carrier.setPayloadLength(cRvBuf.get());
                                 carrier.setMask(null);
@@ -153,7 +160,7 @@ public class WsFrameFilter
                         }
 
                         target = context.position() + (int) carrier.getPayloadLength();
-                        lack = context.lackLength(0, target);
+                        lack   = context.lackLength(0, target);
                         cRvBuf.clear();
                         if (carrier.getPayloadLength() > context.getMaxPayloadSize() - target) {
                             _Log.warning("payload is too large");
@@ -181,7 +188,8 @@ public class WsFrameFilter
     }
 
     @Override
-    public IProtocol decode(WsContext context, IProtocol input) {
+    public IProtocol decode(WsContext context, IProtocol input)
+    {
         WsFrame frame = context.getCarrier();
         context.setCarrierNull();
         return frame;

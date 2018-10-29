@@ -51,11 +51,13 @@ public interface ISessionOption
 
     boolean setKeepAlive();
 
-    default String getConfigName() {
+    default String getConfigName()
+    {
         return "SocketOption";
     }
 
-    default String getConfigGroup() {
+    default String getConfigGroup()
+    {
         return "socket";
     }
 }

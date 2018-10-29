@@ -50,7 +50,8 @@ public class RegExUtil
     public static Pattern STRING_PATTERN              = Pattern.compile(STRING_PATTERN_STRING);
     public static Pattern STRING_ARRAY_PATTERN        = Pattern.compile("\\{(\\s*" + STRING_PATTERN_STRING + "*)}");
 
-    public static Class<?> testType(String value) {
+    public static Class<?> testType(String value)
+    {
         if (value.matches(BOOLEAN_PATTERN_STRING)) {
             return Boolean.TYPE;
         }

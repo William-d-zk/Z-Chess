@@ -34,7 +34,8 @@ public class X102_SslHandShake
 {
     public final static int COMMAND = 0x102;
 
-    public X102_SslHandShake(String host, String secKey, int version) {
+    public X102_SslHandShake(String host, String secKey, int version)
+    {
         this(String.format("GET /ws_service HTTP/1.1\r\nHost: %s\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: %s\r\nOrigin: http://%s\r\nSec-WebSocket-Protocol: z-push, z-chat\r\nSec-WebSocket-Version: %s\r\n\r\n",
                            host,
                            secKey,
@@ -43,11 +44,13 @@ public class X102_SslHandShake
 
     }
 
-    public X102_SslHandShake(String handshake) {
+    public X102_SslHandShake(String handshake)
+    {
         super(COMMAND, handshake);
     }
 
-    public X102_SslHandShake() {
+    public X102_SslHandShake()
+    {
         this(null);
     }
 

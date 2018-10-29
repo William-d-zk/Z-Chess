@@ -42,8 +42,7 @@ public class IPParser
     private final static String ipv4segment         = "(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])";
 
     // 0-65535
-    private final static String portsegment         = ":(?:6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|"
-                                                      + "6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{1,3}|[0-9])";
+    private final static String portsegment         = ":(?:6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|" + "6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{1,3}|[0-9])";
     private final static String ipv4address         = "(" + ipv4segment + "\\.){3,3}" + ipv4segment;
     private final static String ipv4addressWithPort = ipv4address + portsegment + "?";
     private final static String ipv6segment         = "[a-fA-F0-9]{1,4}";
@@ -98,13 +97,15 @@ public class IPParser
     private final static String ipv6addressWithPort = "\\[" + ipv6address + "\\]" + portsegment + "?";
 
     /**
-     * Parses ipv4 and ipv6 addresses. Emits each described IP address as a hexadecimal integer representing the address, the address space,
+     * Parses ipv4 and ipv6 addresses. Emits each described IP address as a
+     * hexadecimal integer representing the address, the address space,
      * and the port number specified, if any.
      * 
      * @param address
      *            the address to analyze
      */
-    public static Pair<InetAddress, Integer> parse(String address) {
+    public static Pair<InetAddress, Integer> parse(String address)
+    {
 
         // Try to match the pattern with one of the 2 types, with or without a
         // port
@@ -119,7 +120,7 @@ public class IPParser
         }
         else if (Pattern.matches("^" + ipv4addressWithPort + "$", address)) {
             String[] parts = address.split("\\.");
-            int port = Integer.parseInt(parts[3].split(":")[1]);
+            int      port  = Integer.parseInt(parts[3].split(":")[1]);
             parts[3] = parts[3].split(":")[0];
 
             try {
@@ -141,7 +142,9 @@ public class IPParser
         }
         else if (Pattern.matches("^" + ipv6addressWithPort + "$", address)) {
             String[] parts = address.split(":");
-            address = address.replace("[", "").replace("]", "").replaceAll(portsegment + "$", "");
+            address = address.replace("[", "")
+                             .replace("]", "")
+                             .replaceAll(portsegment + "$", "");
             try {
                 return new Pair<>(Inet6Address.getByName(address), Integer.parseInt(parts[parts.length - 1]));
             }
@@ -161,13 +164,18 @@ public class IPParser
         return null;
     }
 
-    public final static String ipv4Join(String ip, int port) {
-        return new StringBuilder(ip).append(':').append(port).toString();
+    public final static String ipv4Join(String ip, int port)
+    {
+        return new StringBuilder(ip).append(':')
+                                    .append(port)
+                                    .toString();
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args)
+    {
         Pair<InetAddress, Integer> result = parse("localhost:5226");
-        System.out.println(result.first().getHostAddress());
+        System.out.println(result.first()
+                                 .getHostAddress());
     }
 
 }

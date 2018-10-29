@@ -24,9 +24,9 @@
 
 package com.tgx.chess.king.base.crypt.inf;
 
-import com.tgx.chess.king.base.inf.IReset;
-
 import java.nio.ByteBuffer;
+
+import com.tgx.chess.king.base.inf.IReset;
 
 /**
  * @author William.d.zk

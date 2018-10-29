@@ -90,10 +90,10 @@ public class ZUID
         catch (MissingResourceException e) {
             throw new RuntimeException("FETAL ERROR: ZUID properites is missing !");
         }
-        _IdcId = Long.parseLong(bundle.getString("idc.id"));
-        _ClusterId = Long.parseLong(bundle.getString("cluster.id"));
-        _NodeId = Long.parseLong(bundle.getString("node.id"));
-        _Type = Long.parseLong(bundle.getString("type"));
+        _IdcId             = Long.parseLong(bundle.getString("idc.id"));
+        _ClusterId         = Long.parseLong(bundle.getString("cluster.id"));
+        _NodeId            = Long.parseLong(bundle.getString("node.id"));
+        _Type              = Long.parseLong(bundle.getString("type"));
         _TimestampSupplier = System::currentTimeMillis;
     }
 
@@ -107,10 +107,10 @@ public class ZUID
         if (node_id > MAX_NODE_ID
             || node_id < 0) { throw new IllegalArgumentException(String.format("node Id can't be greater than %d or less than 0",
                                                                                MAX_NODE_ID)); }
-        _IdcId = idc_id;
-        _ClusterId = cluster_id;
-        _NodeId = node_id;
-        _Type = type;
+        _IdcId             = idc_id;
+        _ClusterId         = cluster_id;
+        _NodeId            = node_id;
+        _Type              = type;
         _TimestampSupplier = System::currentTimeMillis;
     }
 

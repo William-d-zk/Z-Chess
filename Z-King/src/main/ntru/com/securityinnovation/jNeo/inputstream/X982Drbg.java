@@ -37,7 +37,8 @@ public class X982Drbg
     /**
      * Constructor that takes a seed to start the RNG
      */
-    public X982Drbg(DigestAlgorithm hashAlgorithm, byte[] _seed) {
+    public X982Drbg(DigestAlgorithm hashAlgorithm, byte[] _seed)
+    {
         mHash = hashAlgorithm.newInstance();
         seed(_seed);
     }
@@ -117,7 +118,8 @@ public class X982Drbg
      * (the variable t). It also does not enforce the minimum entropy
      * requirements, or checks on the desired strength..
      */
-    public void seed(byte[] _seed) {
+    public void seed(byte[] _seed)
+    {
         // TBD: Sanity-check seed based on hash alg?
         // sha1 --> len>160/8
         // sha256 --> len>256/8
@@ -126,7 +128,7 @@ public class X982Drbg
         ctr = 1;
 
         // Set V = _seed
-        V = new byte[_seed.length];
+        V   = new byte[_seed.length];
         System.arraycopy(_seed, 0, V, 0, _seed.length);
 
         // Preallocate a temp buffer large enough to hold V, and
@@ -148,7 +150,8 @@ public class X982Drbg
      * (the variable t). It also does not enforce the minimum entropy
      * requirements.
      */
-    public void reseed(byte[] _seed) {
+    public void reseed(byte[] _seed)
+    {
         // Reset ctr to 1.
         ctr = 1;
 
@@ -169,9 +172,9 @@ public class X982Drbg
         // Allocate a buffer to hold the new V.
         // Do as many full blocks as we can directly into newV
         // then do a final update into tmp and extract a partial block.
-        int hashLen = mHash.getDigestLen();
-        byte[] newV = new byte[_seed.length];
-        int newVOffset = 0;
+        int    hashLen    = mHash.getDigestLen();
+        byte[] newV       = new byte[_seed.length];
+        int    newVOffset = 0;
         while (newVOffset + hashLen <= newV.length) {
             mHash.digest(tmp, 0, tmp.length, newV, newVOffset);
             plusEquals(tmp, 1);
@@ -204,7 +207,8 @@ public class X982Drbg
      * Implement the Hash_DRBG algorithm from the X9.82 spec.
      * This implementation does not support any user input.
      */
-    public int read() {
+    public int read()
+    {
         byte b[] = new byte[1];
         read(b, 0, 1);
         return b[0] & 0xff;
@@ -214,7 +218,8 @@ public class X982Drbg
      * Implement the Hash_DRBG algorithm from the X9.82 spec.
      * This implementation does not support any user input.
      */
-    public int read(byte[] out, int offset, int len) {
+    public int read(byte[] out, int offset, int len)
+    {
         if (out == null) throw new NullPointerException("Output buffer is null");
         if (offset + len > out.length) throw new IllegalArgumentException("Writing "
                                                                           + len
@@ -247,7 +252,8 @@ public class X982Drbg
      * algorithm: calculate H(V) | H(V+1) | H(V+2) | ...
      * until len bytes are generated. Store the result in out[offset...].
      */
-    void hashGen(byte[] out, int offset, int len) {
+    void hashGen(byte[] out, int offset, int len)
+    {
         int hashLen = mHash.getDigestLen();
 
         // Use Vtmp to hold a temp copy of V that will be incremented
@@ -259,7 +265,7 @@ public class X982Drbg
         while (len > hashLen) {
             mHash.digest(Vtmp, 0, V.length, out, offset);
             offset += hashLen;
-            len -= hashLen;
+            len    -= hashLen;
             plusEquals(Vtmp, 1);
         }
 
@@ -273,13 +279,14 @@ public class X982Drbg
      * Add two multi-byte big-endian integers: accum += in[offset..len-1].
      * Overflow is discarded.
      */
-    void plusEquals(byte accum[], byte in[], int offset, int len) {
+    void plusEquals(byte accum[], byte in[], int offset, int len)
+    {
         int carry = 0;
-        int i = len - 1, j = accum.length - 1;
+        int i     = len - 1, j = accum.length - 1;
         while ((i >= 0) && (j >= 0)) {
-            carry = (0xff & accum[j]) + (0xff & in[i]) + carry;
-            accum[j] = (byte) carry;
-            carry >>= 8;
+            carry      = (0xff & accum[j]) + (0xff & in[i]) + carry;
+            accum[j]   = (byte) carry;
+            carry    >>= 8;
             j--;
             i--;
         }
@@ -289,13 +296,14 @@ public class X982Drbg
      * Add x to a multi-byte big-endian integer: accum += x.
      * Overflow is discarded.
      */
-    void plusEquals(byte accum[], int x) {
+    void plusEquals(byte accum[], int x)
+    {
         int carry = 0;
-        int i = 0, j = accum.length - 1;
+        int i     = 0, j = accum.length - 1;
         while ((i < 4) && (j >= 0)) {
-            carry = (0xff & accum[j]) + (0xff & x) + carry;
-            accum[j] = (byte) carry;
-            carry >>= 8;
+            carry      = (0xff & accum[j]) + (0xff & x) + carry;
+            accum[j]   = (byte) carry;
+            carry    >>= 8;
             j--;
             i--;
             x >>= 8;

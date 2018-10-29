@@ -32,7 +32,8 @@ public class ObjectClosedException
     /**
      * Constructs a new exception a default message.
      */
-    public ObjectClosedException() {
+    public ObjectClosedException()
+    {
         super("Object has been closed");
     }
 }

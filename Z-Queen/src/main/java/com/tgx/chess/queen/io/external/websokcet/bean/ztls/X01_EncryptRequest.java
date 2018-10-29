@@ -37,42 +37,49 @@ public class X01_EncryptRequest
     public final static int COMMAND  = 0x01;
     public int              pubKeyId = -1;
 
-    public X01_EncryptRequest() {
+    public X01_EncryptRequest()
+    {
         super(COMMAND, false);
     }
 
     @Override
-    public boolean isMappingCommand() {
+    public boolean isMappingCommand()
+    {
         return true;
     }
 
     @Override
-    public int decodec(byte[] data, int pos) {
+    public int decodec(byte[] data, int pos)
+    {
         if (isEncrypt()) {
-            pubKeyId = IoUtil.readInt(data, pos);
-            pos += 4;
+            pubKeyId  = IoUtil.readInt(data, pos);
+            pos      += 4;
         }
         return pos;
     }
 
     @Override
-    public int encodec(byte[] data, int pos) {
+    public int encodec(byte[] data, int pos)
+    {
         if (isEncrypt()) pos += IoUtil.writeInt(pubKeyId, data, pos);
         return pos;
     }
 
     @Override
-    public int dataLength() {
+    public int dataLength()
+    {
         return super.dataLength() + (isEncrypt() ? 4 : 0);
     }
 
     @Override
-    public int getPriority() {
+    public int getPriority()
+    {
         return QOS_00_NETWORK_CONTROL;
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return String.format("%s,public-key-id:%d", super.toString(), pubKeyId);
     }
 }

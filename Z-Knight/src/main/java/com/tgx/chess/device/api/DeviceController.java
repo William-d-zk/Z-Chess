@@ -44,12 +44,14 @@ public class DeviceController
     private final Random        _Random = new Random();
 
     @Autowired
-    public DeviceController(DeviceService deviceService) {
+    public DeviceController(DeviceService deviceService)
+    {
         this._DeviceService = deviceService;
     }
 
     @GetMapping("/client/devices")
-    public @ResponseBody List<Device> getDevices() {
+    public @ResponseBody List<Device> getDevices()
+    {
         List<Device> list = _DeviceService.findAll();
         for (Device device : list) {
             _Log.info("device mac %s", device.getMac());

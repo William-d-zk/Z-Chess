@@ -35,7 +35,8 @@ public interface ICode
 
     String getMsg(Object... args);
 
-    static ICode parse(int code, ICode... codes) {
+    static ICode parse(int code, ICode... codes)
+    {
         return Stream.of(codes)
                      .filter(_Code -> _Code.getCode() == code)
                      .findAny()

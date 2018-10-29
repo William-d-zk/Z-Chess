@@ -43,65 +43,78 @@ public abstract class WsControl
     protected byte       mCtrlCode;
     private ISession     mSession;
 
-    public WsControl(int command, byte[] msg) {
+    public WsControl(int command, byte[] msg)
+    {
         _Command = command;
-        _Msg = msg;
+        _Msg     = msg;
     }
 
-    public WsControl(String msg, int command) {
+    public WsControl(String msg, int command)
+    {
         this(command, Objects.nonNull(msg) ? msg.getBytes() : null);
     }
 
-    public WsControl(int command) {
+    public WsControl(int command)
+    {
         this(command, null);
     }
 
-    public byte[] getPayload() {
+    public byte[] getPayload()
+    {
         return _Msg;
     }
 
     @Override
-    public int getPriority() {
+    public int getPriority()
+    {
         return QOS_00_NETWORK_CONTROL;
     }
 
     @Override
-    public int getSuperSerial() {
+    public int getSuperSerial()
+    {
         return CONTROL_SERIAL;
     }
 
     @Override
-    public int getSerial() {
+    public int getSerial()
+    {
         return _Command;
     }
 
-    public byte getControl() {
+    public byte getControl()
+    {
         return mCtrlCode;
     }
 
     @Override
-    public ISession getSession() {
+    public ISession getSession()
+    {
         return mSession;
     }
 
     @Override
-    public WsControl setSession(ISession session) {
+    public WsControl setSession(ISession session)
+    {
         mSession = session;
         return this;
     }
 
     @Override
-    public WsControl duplicate() {
+    public WsControl duplicate()
+    {
         return null;
     }
 
     @Override
-    public int dataLength() {
+    public int dataLength()
+    {
         return Objects.nonNull(_Msg) ? _Msg.length : 0;
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         int command = getSerial();
         return String.format("cmd: 0X%X", command);
     }

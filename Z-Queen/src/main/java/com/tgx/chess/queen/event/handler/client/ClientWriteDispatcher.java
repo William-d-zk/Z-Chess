@@ -48,15 +48,18 @@ public class ClientWriteDispatcher
     final RingBuffer<QEvent> _Error;
     final RingBuffer<QEvent> _Encoder;
 
-    public ClientWriteDispatcher(RingBuffer<QEvent> error, RingBuffer<QEvent> encoder) {
-        _Error = error;
+    public ClientWriteDispatcher(RingBuffer<QEvent> error, RingBuffer<QEvent> encoder)
+    {
+        _Error   = error;
         _Encoder = encoder;
     }
 
     @Override
-    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception {
+    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
+    {
         if (event.hasError()) {
-            switch (event.getErrorType()) {
+            switch (event.getErrorType())
+            {
                 case FILTER_DECODE:
                 case ILLEGAL_STATE:
                 case ILLEGAL_BIZ_STATE:
@@ -64,7 +67,8 @@ public class ClientWriteDispatcher
             }
         }
         else {
-            switch (event.getEventType()) {
+            switch (event.getEventType())
+            {
                 case LOCAL://from biz local
                 case WRITE://from LinkIo
                 case LOGIC://from read->logic
@@ -72,8 +76,8 @@ public class ClientWriteDispatcher
                     ICommand[] commands = writeContent.first();
                     ISession session = writeContent.second();
                     if (session.isValid() && Objects.nonNull(commands)) {
-                        IOperator<ICommand[], ISession> transferOperator = event.getEventOp();
-                        Triple<ICommand, ISession, IOperator<ICommand, ISession>>[] triples = transferOperator.transfer(commands, session);
+                        IOperator<ICommand[], ISession>                             transferOperator = event.getEventOp();
+                        Triple<ICommand, ISession, IOperator<ICommand, ISession>>[] triples          = transferOperator.transfer(commands, session);
                         for (Triple<ICommand, ISession, IOperator<ICommand, ISession>> triple : triples) {
                             tryPublish(_Encoder, WRITE, triple.first(), session, triple.third());
                         }

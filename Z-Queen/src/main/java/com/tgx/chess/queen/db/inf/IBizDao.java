@@ -33,12 +33,14 @@ public interface IBizDao<E extends IStorage>
 
     /**
      * DAO 将数据存入 KV-Storage
+     * 
      * @param entity
      */
     void put(E entity);
 
     /**
      * 将数据取回
+     * 
      * @param entity
      * @return
      */

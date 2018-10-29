@@ -23,32 +23,25 @@
  */
 package com.tgx.chess.king.base.util;
 
-import com.securityinnovation.jNeo.CiphertextBadLengthException;
-import com.securityinnovation.jNeo.DecryptionFailureException;
-import com.securityinnovation.jNeo.FormatNotSupportedException;
-import com.securityinnovation.jNeo.NoPrivateKeyException;
-import com.securityinnovation.jNeo.NtruException;
-import com.securityinnovation.jNeo.OID;
-import com.securityinnovation.jNeo.ObjectClosedException;
-import com.securityinnovation.jNeo.ParamSetNotSupportedException;
-import com.securityinnovation.jNeo.PlaintextBadLengthException;
-import com.securityinnovation.jNeo.Random;
+import com.securityinnovation.jNeo.*;
 import com.securityinnovation.jNeo.ntruencrypt.KeyParams;
 import com.securityinnovation.jNeo.ntruencrypt.NtruEncryptKey;
 
 /**
  * @author William.d.zk
  */
-public class NtruUtil {
+public class NtruUtil
+{
     private static boolean LOADED_LIB = false;
-    private static int CIPHER_BUFF_LEN;
-    private static int PLAIN_TEXT_MAX;
-    private static OID oid = OID.ees401ep1;
+    private static int     CIPHER_BUFF_LEN;
+    private static int     PLAIN_TEXT_MAX;
+    private static OID     oid        = OID.ees401ep1;
 
     static {
         try {
             LOADED_LIB = true;
-            switch (oid) {
+            switch (oid)
+            {
                 case ees401ep1:
                     CIPHER_BUFF_LEN = 552;
                     PLAIN_TEXT_MAX = 60;
@@ -57,53 +50,62 @@ public class NtruUtil {
                     break;
             }
             KeyParams.getKeyParams(oid);
-        } catch (Throwable e) {
+        }
+        catch (Throwable e) {
             // Ignore
         }
 
     }
 
-    public byte[] getCipherBuf() {
+    public byte[] getCipherBuf()
+    {
         return new byte[CIPHER_BUFF_LEN];
     }
 
-    public byte[][] getKeys(byte[] seed) throws NtruException {
-        Random prng = new Random(seed);
-        NtruEncryptKey key = NtruEncryptKey.genKey(oid, prng);
-        return new byte[][]{key.getPubKey(),
-                key.getPrivKey()
+    public byte[][] getKeys(byte[] seed) throws NtruException
+    {
+        Random         prng = new Random(seed);
+        NtruEncryptKey key  = NtruEncryptKey.genKey(oid, prng);
+        return new byte[][] { key.getPubKey(),
+                              key.getPrivKey()
 
         };
     }
 
-    public byte[] encrypt(byte[] message, byte[] pubKey) {// 客户端用的
-        byte[] seed = new byte[32];
-        java.util.Random rs = new java.util.Random();
+    public byte[] encrypt(byte[] message, byte[] pubKey)
+    {// 客户端用的
+        byte[]           seed = new byte[32];
+        java.util.Random rs   = new java.util.Random();
         rs.nextBytes(seed);
         Random prng = new Random(seed);
 
         try {
             NtruEncryptKey ntruKey = new NtruEncryptKey(pubKey);
             return ntruKey.encrypt(message, prng);
-        } catch (FormatNotSupportedException |
-                ParamSetNotSupportedException |
-                ObjectClosedException |
-                PlaintextBadLengthException e) {
+        }
+        catch (FormatNotSupportedException |
+               ParamSetNotSupportedException |
+               ObjectClosedException |
+               PlaintextBadLengthException e)
+        {
             e.printStackTrace();
             return null;
         }
     }
 
-    public byte[] decrypt(byte[] cipher, byte[] priKey) {
+    public byte[] decrypt(byte[] cipher, byte[] priKey)
+    {
         try {
             NtruEncryptKey ntruKey = new NtruEncryptKey(priKey);
             return ntruKey.decrypt(cipher);
-        } catch (FormatNotSupportedException |
-                ParamSetNotSupportedException |
-                ObjectClosedException |
-                NoPrivateKeyException |
-                CiphertextBadLengthException |
-                DecryptionFailureException e) {
+        }
+        catch (FormatNotSupportedException |
+               ParamSetNotSupportedException |
+               ObjectClosedException |
+               NoPrivateKeyException |
+               CiphertextBadLengthException |
+               DecryptionFailureException e)
+        {
             e.printStackTrace();
             return null;
         }

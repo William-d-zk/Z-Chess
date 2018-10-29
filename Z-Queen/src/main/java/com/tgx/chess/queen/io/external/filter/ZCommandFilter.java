@@ -34,12 +34,7 @@ import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
 import com.tgx.chess.queen.io.external.websokcet.WsFrame;
-import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X01_EncryptRequest;
-import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X02_AsymmetricPub;
-import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X03_Cipher;
-import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X04_EncryptConfirm;
-import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X05_EncryptStart;
-import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X06_PlainStart;
+import com.tgx.chess.queen.io.external.websokcet.bean.ztls.*;
 import com.tgx.chess.queen.io.external.zprotocol.Command;
 
 /**
@@ -53,20 +48,24 @@ public class ZCommandFilter<C extends AioContext>
     private final CommandFactory factory;
     private final Logger         _Log = Logger.getLogger(getClass().getName());
 
-    public ZCommandFilter() {
+    public ZCommandFilter()
+    {
         this(null);
     }
 
-    public ZCommandFilter(CommandFactory factory) {
+    public ZCommandFilter(CommandFactory factory)
+    {
         this.factory = factory;
-        name = "queen-command-filter";
+        name         = "queen-command-filter";
     }
 
     @Override
-    public ResultType preEncode(C context, IProtocol output) {
+    public ResultType preEncode(C context, IProtocol output)
+    {
         if (output == null || context == null) return ResultType.ERROR;
         if (context.isOutConvert()) {
-            switch (output.getSuperSerial()) {
+            switch (output.getSuperSerial())
+            {
                 case IProtocol.COMMAND_SERIAL:
                     return ResultType.NEXT_STEP;
                 case IProtocol.CONTROL_SERIAL:
@@ -80,14 +79,16 @@ public class ZCommandFilter<C extends AioContext>
     }
 
     @Override
-    public ResultType preDecode(C context, IProtocol input) {
+    public ResultType preDecode(C context, IProtocol input)
+    {
         if (context == null || input == null) return ResultType.ERROR;
         return context.isInConvert() && input instanceof WsFrame && ((WsFrame) input).isNoCtrl() ? ResultType.HANDLED : ResultType.IGNORE;
     }
 
     @Override
-    public IProtocol encode(C context, IProtocol output) {
-        WsFrame frame = new WsFrame();
+    public IProtocol encode(C context, IProtocol output)
+    {
+        WsFrame    frame   = new WsFrame();
         @SuppressWarnings("unchecked")
         Command<C> command = (Command<C>) output;
         frame.setPayload(command.encode(context));
@@ -96,14 +97,16 @@ public class ZCommandFilter<C extends AioContext>
     }
 
     @Override
-    public IProtocol decode(C context, IProtocol input) {
-        WsFrame frame = (WsFrame) input;
-        int command = frame.getPayload()[1] & 0xFF;
+    public IProtocol decode(C context, IProtocol input)
+    {
+        WsFrame    frame    = (WsFrame) input;
+        int        command  = frame.getPayload()[1] & 0xFF;
         @SuppressWarnings("unchecked")
         Command<C> _command = (Command<C>) createCommand(command);
         if (Objects.isNull(_command)) return null;
         _command.decode(frame.getPayload(), context);
-        switch (command) {
+        switch (command)
+        {
             case X01_EncryptRequest.COMMAND:
                 X01_EncryptRequest x01 = (X01_EncryptRequest) _command;
                 IEncryptHandler encryptHandler = context.getEncryptHandler();
@@ -129,9 +132,9 @@ public class ZCommandFilter<C extends AioContext>
                     context.setSymmetricKeyId(keyPair.first());
                     context.reRollKey(symmetricKey);
                     X03_Cipher x03 = new X03_Cipher();
-                    x03.pubKeyId = x02.pubKeyId;
+                    x03.pubKeyId       = x02.pubKeyId;
                     x03.symmetricKeyId = keyPair.first();
-                    x03.cipher = keyPair.second();
+                    x03.cipher         = keyPair.second();
                     return x03;
                 }
                 else throw new NullPointerException("encrypt symmetric-key failed!");
@@ -145,7 +148,7 @@ public class ZCommandFilter<C extends AioContext>
                     context.reRollKey(symmetricKey);
                     X04_EncryptConfirm x04 = new X04_EncryptConfirm();
                     x04.symmetricKeyId = x03.symmetricKeyId;
-                    x04.code = Code.SYMMETRIC_KEY_OK.getCode();
+                    x04.code           = Code.SYMMETRIC_KEY_OK.getCode();
                     x04.setSign(encryptHandler.getSymmetricKeySign(symmetricKey));
                     return x04;
                 }
@@ -162,11 +165,10 @@ public class ZCommandFilter<C extends AioContext>
             case X04_EncryptConfirm.COMMAND:
                 X04_EncryptConfirm x04 = (X04_EncryptConfirm) _command;
                 encryptHandler = context.getEncryptHandler();
-                if (x04.symmetricKeyId == context.getSymmetricKeyId()
-                    && Arrays.equals(encryptHandler.getSymmetricKeySign(context.getReRollKey()), x04.getSign())) {
+                if (x04.symmetricKeyId == context.getSymmetricKeyId() && Arrays.equals(encryptHandler.getSymmetricKeySign(context.getReRollKey()), x04.getSign())) {
                     X05_EncryptStart x05 = new X05_EncryptStart();
                     x05.symmetricKeyId = x04.symmetricKeyId;
-                    x05.salt = encryptHandler.nextRandomInt();
+                    x05.salt           = encryptHandler.nextRandomInt();
                     return x05;
                 }
                 else {
@@ -184,8 +186,10 @@ public class ZCommandFilter<C extends AioContext>
         }
     }
 
-    private Command<? extends AioContext> createCommand(int command) {
-        switch (command) {
+    private Command<? extends AioContext> createCommand(int command)
+    {
+        switch (command)
+        {
             case X01_EncryptRequest.COMMAND:
                 return new X01_EncryptRequest();
             case X02_AsymmetricPub.COMMAND:

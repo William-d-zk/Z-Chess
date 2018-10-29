@@ -38,40 +38,47 @@ public class X06_PlainStart
     public final static int COMMAND = 0x06;
     public int              code;
 
-    public X06_PlainStart() {
+    public X06_PlainStart()
+    {
         super(COMMAND, false);
     }
 
     @Override
-    public boolean isMappingCommand() {
+    public boolean isMappingCommand()
+    {
         return true;
     }
 
-    public X06_PlainStart(int code) {
+    public X06_PlainStart(int code)
+    {
         super(COMMAND, false);
         this.code = code;
     }
 
     @Override
-    public int getPriority() {
+    public int getPriority()
+    {
         return QOS_00_NETWORK_CONTROL;
     }
 
     @Override
-    public int decodec(byte[] data, int pos) {
-        code = IoUtil.readUnsignedShort(data, pos);
-        pos += 2;
+    public int decodec(byte[] data, int pos)
+    {
+        code  = IoUtil.readUnsignedShort(data, pos);
+        pos  += 2;
         return pos;
     }
 
     @Override
-    public int encodec(byte[] data, int pos) {
+    public int encodec(byte[] data, int pos)
+    {
         pos += IoUtil.writeShort(code, data, pos);
         return pos;
     }
 
     @Override
-    public int dataLength() {
+    public int dataLength()
+    {
         return super.dataLength() + 2;
     }
 }

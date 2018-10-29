@@ -61,13 +61,15 @@ public class AioContext
     private long                mServerResponseTime;
     private long                mClientArrivedTime;
 
-    public AioContext(ISessionOption option) {
+    public AioContext(ISessionOption option)
+    {
         mRvBuf = ByteBuffer.allocate(option.setRCV());
         mWrBuf = ByteBuffer.allocate(option.setSNF());
     }
 
     @Override
-    public void reset() {
+    public void reset()
+    {
         if (mInitFromHandshake) handshake();
         else {
             _EncodeState.set(ctlOf(ENCODE_FRAME, 0));
@@ -75,16 +77,18 @@ public class AioContext
         }
         _ChannelState.set(ctlOf(SESSION_IDLE, 0));
         mDecodingPosition = -1;
-        mLackData = 1;
+        mLackData         = 1;
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() throws IOException
+    {
         advanceState(_ChannelState, SESSION_CLOSE);
     }
 
     @Override
-    public void handshake() {
+    public void handshake()
+    {
         if (stateOf(_EncodeState.get()) == ENCODE_NULL) {
             advanceState(_EncodeState, ENCODE_HANDSHAKE);
         }
@@ -95,129 +99,153 @@ public class AioContext
     }
 
     @Override
-    public final boolean needHandshake() {
+    public final boolean needHandshake()
+    {
         return mInitFromHandshake;
     }
 
     @Override
-    public void transfer() {
+    public void transfer()
+    {
         advanceState(_EncodeState, ENCODE_FRAME);
         advanceState(_DecodeState, DECODE_FRAME);
     }
 
     @Override
-    public int lackLength(int length, int target) {
+    public int lackLength(int length, int target)
+    {
         mDecodingPosition += length;
-        mLackData = target - mDecodingPosition;
+        mLackData          = target - mDecodingPosition;
         return mLackData;
     }
 
     @Override
-    public int position() {
+    public int position()
+    {
         return mDecodingPosition;
     }
 
     @Override
-    public int lack() {
+    public int lack()
+    {
         return mLackData;
     }
 
     @Override
-    public void finish() {
+    public void finish()
+    {
         mDecodingPosition = -1;
-        mLackData = 1;
+        mLackData         = 1;
     }
 
     @Override
-    public int outState() {
+    public int outState()
+    {
         return stateOf(_EncodeState.get());
     }
 
     @Override
-    public void cryptOut() {
+    public void cryptOut()
+    {
         advanceState(_EncodeState, ENCODE_TLS);
     }
 
     @Override
-    public IContext setOutState(int state) {
+    public IContext setOutState(int state)
+    {
         advanceState(_EncodeState, state);
         return this;
     }
 
     @Override
-    public int inState() {
+    public int inState()
+    {
         return stateOf(_DecodeState.get());
     }
 
     @Override
-    public void cryptIn() {
+    public void cryptIn()
+    {
         advanceState(_DecodeState, DECODE_TLS);
     }
 
     @Override
-    public IContext setInState(int state) {
+    public IContext setInState(int state)
+    {
         advanceState(_DecodeState, state);
         return this;
     }
 
     @Override
-    public IContext setChannelState(int state) {
+    public IContext setChannelState(int state)
+    {
         advanceState(_ChannelState, state);
         return this;
     }
 
     @Override
-    public int getChannelState() {
+    public int getChannelState()
+    {
         return stateOf(_ChannelState.get());
     }
 
     @Override
-    public boolean isInConvert() {
+    public boolean isInConvert()
+    {
         return isInConvert(_DecodeState.get());
     }
 
     @Override
-    public boolean isOutConvert() {
+    public boolean isOutConvert()
+    {
         return isOutConvert(_EncodeState.get());
     }
 
     @Override
-    public boolean isInErrorState() {
+    public boolean isInErrorState()
+    {
         return isInErrorState(_DecodeState.get());
     }
 
     @Override
-    public boolean isOutErrorState() {
+    public boolean isOutErrorState()
+    {
         return isOutErrorState(_EncodeState.get());
     }
 
     @Override
-    public boolean channelStateLessThan(int targetState) {
+    public boolean channelStateLessThan(int targetState)
+    {
         return stateLessThan(_ChannelState.get(), targetState);
     }
 
     @Override
-    public void advanceChannelState(int state) {
+    public void advanceChannelState(int state)
+    {
         advanceState(_ChannelState, state);
     }
 
     @Override
-    public ByteBuffer getWrBuffer() {
+    public ByteBuffer getWrBuffer()
+    {
         return mWrBuf;
     }
 
     @Override
-    public ByteBuffer getRvBuffer() {
+    public ByteBuffer getRvBuffer()
+    {
         return mRvBuf;
     }
 
     @Override
-    public int getSendMaxSize() {
+    public int getSendMaxSize()
+    {
         return mWrBuf.capacity();
     }
 
     @Override
-    public void ntp(long clientStart, long serverArrived, long serverResponse, long clientArrived) {
+    public void ntp(long clientStart, long serverArrived, long serverResponse, long clientArrived)
+    {
         if (mClientStartTime != 0) mClientStartTime = clientStart;
         if (mServerArrivedTime != 0) mServerArrivedTime = serverArrived;
         if (mServerResponseTime != 0) mServerResponseTime = serverResponse;
@@ -225,32 +253,38 @@ public class AioContext
     }
 
     @Override
-    public long getNetTransportDelay() {
+    public long getNetTransportDelay()
+    {
         return (mClientArrivedTime - mClientStartTime - mServerResponseTime + mServerArrivedTime) >> 1;
     }
 
     @Override
-    public long getDeltaTime() {
+    public long getDeltaTime()
+    {
         return (mServerArrivedTime - mClientStartTime + mServerResponseTime - mClientArrivedTime) >> 1;
     }
 
     @Override
-    public long getNtpArrivedTime() {
+    public long getNtpArrivedTime()
+    {
         return mServerArrivedTime;
     }
 
     @Override
-    public boolean isInCrypt() {
+    public boolean isInCrypt()
+    {
         return stateAtLeast(_DecodeState.get(), DECODE_TLS);
     }
 
     @Override
-    public boolean isOutCrypt() {
+    public boolean isOutCrypt()
+    {
         return stateAtLeast(_EncodeState.get(), ENCODE_TLS);
     }
 
     @Override
-    public boolean isClosed() {
+    public boolean isClosed()
+    {
         return isClosed(_ChannelState.get());
     }
 }

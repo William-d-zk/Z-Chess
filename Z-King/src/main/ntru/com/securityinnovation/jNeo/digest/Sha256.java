@@ -28,7 +28,8 @@ class Sha256
     /**
      * Constructor.
      */
-    public Sha256() {
+    public Sha256()
+    {
         reset();
     }
 
@@ -36,7 +37,8 @@ class Sha256
      * Get the length of the hash output, in bytes.
      * For SHA-256, this will always return 32.
      */
-    public int getDigestLen() {
+    public int getDigestLen()
+    {
         return HASH_LEN;
     }
 
@@ -44,27 +46,29 @@ class Sha256
      * Get the size of the input block for the core hash algorithm, in bytes.
      * For SHA-256, this will always return 64.
      */
-    public int getBlockLen() {
+    public int getBlockLen()
+    {
         return BLOCK_LEN;
     }
 
     /**
      * Reinitialize the digest operation, discarding any internal state.
      */
-    public void reset() {
+    public void reset()
+    {
         java.util.Arrays.fill(buf, (byte) 0);
-        bufOff = 0;
+        bufOff    = 0;
         byteCount = 0;
 
         // initial values
-        state[0] = 0x6a09e667;
-        state[1] = 0xbb67ae85;
-        state[2] = 0x3c6ef372;
-        state[3] = 0xa54ff53a;
-        state[4] = 0x510e527f;
-        state[5] = 0x9b05688c;
-        state[6] = 0x1f83d9ab;
-        state[7] = 0x5be0cd19;
+        state[0]  = 0x6a09e667;
+        state[1]  = 0xbb67ae85;
+        state[2]  = 0x3c6ef372;
+        state[3]  = 0xa54ff53a;
+        state[4]  = 0x510e527f;
+        state[5]  = 0x9b05688c;
+        state[6]  = 0x1f83d9ab;
+        state[7]  = 0x5be0cd19;
     }
 
     /**
@@ -77,7 +81,8 @@ class Sha256
      * @param length
      *            the number of bytes of data to add.
      */
-    public void update(byte[] data, int offset, int length) {
+    public void update(byte[] data, int offset, int length)
+    {
         // Sanity check inputs
         if (data == null) throw new NullPointerException("Input data buffer is null");
         if (offset + length > data.length) throw new IllegalArgumentException("reading "
@@ -100,7 +105,7 @@ class Sha256
             transform(buf);
             length -= todo;
             offset += todo;
-            bufOff = 0;
+            bufOff  = 0;
         }
 
         // Copy any extra data into the cached input buffer.
@@ -114,7 +119,8 @@ class Sha256
      * bytes long. The object is reinialized (see
      * <code>reset()</code>).
      */
-    public void finishDigest(byte out[], int outOffset) {
+    public void finishDigest(byte out[], int outOffset)
+    {
         // Sanity check inputs
         if (out == null) throw new NullPointerException("output array is null");
         if (outOffset + getDigestLen() > out.length) throw new IllegalArgumentException("writing "
@@ -142,8 +148,8 @@ class Sha256
         java.util.Arrays.fill(buf, bufOff, buf.length - 8, (byte) 0);
         long bitCount = byteCount * 8;
         for (int i = 0; i < 8; i++) {
-            buf[buf.length - i - 1] = (byte) bitCount;
-            bitCount >>>= 8;
+            buf[buf.length - i - 1]    = (byte) bitCount;
+            bitCount                >>>= 8;
         }
 
         // Process the final block
@@ -189,13 +195,11 @@ class Sha256
      * Each output integer uses 4 input bytes. The number of input
      * bytes must be a multiple of 4.
      */
-    private static void byte2int(byte[] src, int srcOffset, int[] dst, int dstOffset, int numInts) {
+    private static void byte2int(byte[] src, int srcOffset, int[] dst, int dstOffset, int numInts)
+    {
         while (numInts-- > 0) {
             // Big endian
-            dst[dstOffset++] = (src[srcOffset++] << 24)
-                               | ((src[srcOffset++] & 0xFF) << 16)
-                               | ((src[srcOffset++] & 0xFF) << 8)
-                               | (src[srcOffset++] & 0xFF);
+            dst[dstOffset++] = (src[srcOffset++] << 24) | ((src[srcOffset++] & 0xFF) << 16) | ((src[srcOffset++] & 0xFF) << 8) | (src[srcOffset++] & 0xFF);
         }
     }
 
@@ -203,7 +207,8 @@ class Sha256
      * Convert an integer array into an byte array using the
      * big-endian encoing of the integers.
      */
-    protected void int2byte(int[] src, int srcOffset, byte[] dst, int dstOffset, int numInts) {
+    protected void int2byte(int[] src, int srcOffset, byte[] dst, int dstOffset, int numInts)
+    {
         int end = numInts + srcOffset;
         for (int i = srcOffset, j = dstOffset; i < end; i++) {
             int d = src[srcOffset + i];
@@ -214,287 +219,293 @@ class Sha256
         }
     }
 
-    private final static int RR(int a, int n) {
+    private final static int RR(int a, int n)
+    {
         return ((a >>> n) | (a << (32 - n)));
     }
 
-    private final static int S0(int a) {
+    private final static int S0(int a)
+    {
         return (RR(a, 2) ^ RR(a, 13) ^ RR(a, 22));
     }
 
-    private final static int S1(int a) {
+    private final static int S1(int a)
+    {
         return (RR(a, 6) ^ RR(a, 11) ^ RR(a, 25));
     }
 
-    private final static int s0(int a) {
+    private final static int s0(int a)
+    {
         return (RR(a, 7) ^ RR(a, 18) ^ (a >>> 3));
     }
 
-    private final static int s1(int a) {
+    private final static int s1(int a)
+    {
         return (RR(a, 17) ^ RR(a, 19) ^ (a >>> 10));
     }
 
-    protected void transform(byte[] block) {
+    protected void transform(byte[] block)
+    {
         byte2int(buf, 0, bufInts, 0, BLOCK_LEN / 4);
 
         int A, B, C, D, E, F, G, H;
 
         /* initLeader A - H */
 
-        A = state[0];
-        B = state[1];
-        C = state[2];
-        D = state[3];
-        E = state[4];
-        F = state[5];
-        G = state[6];
-        H = state[7];
+        A         = state[0];
+        B         = state[1];
+        C         = state[2];
+        D         = state[3];
+        E         = state[4];
+        F         = state[5];
+        G         = state[6];
+        H         = state[7];
 
         /* rounds 0 - 15 */
 
-        H += S1(E) + (E & (F ^ G) ^ G) + 0x428A2F98 + bufInts[0];
-        D += H;
-        H += S0(A) + ((A & B) | (C & (A | B)));
-        G += S1(D) + (D & (E ^ F) ^ F) + 0x71374491 + bufInts[1];
-        C += G;
-        G += S0(H) + ((H & A) | (B & (H | A)));
-        F += S1(C) + (C & (D ^ E) ^ E) + 0xB5C0FBCF + bufInts[2];
-        B += F;
-        F += S0(G) + ((G & H) | (A & (G | H)));
-        E += S1(B) + (B & (C ^ D) ^ D) + 0xE9B5DBA5 + bufInts[3];
-        A += E;
-        E += S0(F) + ((F & G) | (H & (F | G)));
-        D += S1(A) + (A & (B ^ C) ^ C) + 0x3956C25B + bufInts[4];
-        H += D;
-        D += S0(E) + ((E & F) | (G & (E | F)));
-        C += S1(H) + (H & (A ^ B) ^ B) + 0x59F111F1 + bufInts[5];
-        G += C;
-        C += S0(D) + ((D & E) | (F & (D | E)));
-        B += S1(G) + (G & (H ^ A) ^ A) + 0x923F82A4 + bufInts[6];
-        F += B;
-        B += S0(C) + ((C & D) | (E & (C | D)));
-        A += S1(F) + (F & (G ^ H) ^ H) + 0xAB1C5ED5 + bufInts[7];
-        E += A;
-        A += S0(B) + ((B & C) | (D & (B | C)));
-        H += S1(E) + (E & (F ^ G) ^ G) + 0xD807AA98 + bufInts[8];
-        D += H;
-        H += S0(A) + ((A & B) | (C & (A | B)));
-        G += S1(D) + (D & (E ^ F) ^ F) + 0x12835B01 + bufInts[9];
-        C += G;
-        G += S0(H) + ((H & A) | (B & (H | A)));
-        F += S1(C) + (C & (D ^ E) ^ E) + 0x243185BE + bufInts[10];
-        B += F;
-        F += S0(G) + ((G & H) | (A & (G | H)));
-        E += S1(B) + (B & (C ^ D) ^ D) + 0x550C7DC3 + bufInts[11];
-        A += E;
-        E += S0(F) + ((F & G) | (H & (F | G)));
-        D += S1(A) + (A & (B ^ C) ^ C) + 0x72BE5D74 + bufInts[12];
-        H += D;
-        D += S0(E) + ((E & F) | (G & (E | F)));
-        C += S1(H) + (H & (A ^ B) ^ B) + 0x80DEB1FE + bufInts[13];
-        G += C;
-        C += S0(D) + ((D & E) | (F & (D | E)));
-        B += S1(G) + (G & (H ^ A) ^ A) + 0x9BDC06A7 + bufInts[14];
-        F += B;
-        B += S0(C) + ((C & D) | (E & (C | D)));
-        A += S1(F) + (F & (G ^ H) ^ H) + 0xC19BF174 + bufInts[15];
-        E += A;
-        A += S0(B) + ((B & C) | (D & (B | C)));
+        H        += S1(E) + (E & (F ^ G) ^ G) + 0x428A2F98 + bufInts[0];
+        D        += H;
+        H        += S0(A) + ((A & B) | (C & (A | B)));
+        G        += S1(D) + (D & (E ^ F) ^ F) + 0x71374491 + bufInts[1];
+        C        += G;
+        G        += S0(H) + ((H & A) | (B & (H | A)));
+        F        += S1(C) + (C & (D ^ E) ^ E) + 0xB5C0FBCF + bufInts[2];
+        B        += F;
+        F        += S0(G) + ((G & H) | (A & (G | H)));
+        E        += S1(B) + (B & (C ^ D) ^ D) + 0xE9B5DBA5 + bufInts[3];
+        A        += E;
+        E        += S0(F) + ((F & G) | (H & (F | G)));
+        D        += S1(A) + (A & (B ^ C) ^ C) + 0x3956C25B + bufInts[4];
+        H        += D;
+        D        += S0(E) + ((E & F) | (G & (E | F)));
+        C        += S1(H) + (H & (A ^ B) ^ B) + 0x59F111F1 + bufInts[5];
+        G        += C;
+        C        += S0(D) + ((D & E) | (F & (D | E)));
+        B        += S1(G) + (G & (H ^ A) ^ A) + 0x923F82A4 + bufInts[6];
+        F        += B;
+        B        += S0(C) + ((C & D) | (E & (C | D)));
+        A        += S1(F) + (F & (G ^ H) ^ H) + 0xAB1C5ED5 + bufInts[7];
+        E        += A;
+        A        += S0(B) + ((B & C) | (D & (B | C)));
+        H        += S1(E) + (E & (F ^ G) ^ G) + 0xD807AA98 + bufInts[8];
+        D        += H;
+        H        += S0(A) + ((A & B) | (C & (A | B)));
+        G        += S1(D) + (D & (E ^ F) ^ F) + 0x12835B01 + bufInts[9];
+        C        += G;
+        G        += S0(H) + ((H & A) | (B & (H | A)));
+        F        += S1(C) + (C & (D ^ E) ^ E) + 0x243185BE + bufInts[10];
+        B        += F;
+        F        += S0(G) + ((G & H) | (A & (G | H)));
+        E        += S1(B) + (B & (C ^ D) ^ D) + 0x550C7DC3 + bufInts[11];
+        A        += E;
+        E        += S0(F) + ((F & G) | (H & (F | G)));
+        D        += S1(A) + (A & (B ^ C) ^ C) + 0x72BE5D74 + bufInts[12];
+        H        += D;
+        D        += S0(E) + ((E & F) | (G & (E | F)));
+        C        += S1(H) + (H & (A ^ B) ^ B) + 0x80DEB1FE + bufInts[13];
+        G        += C;
+        C        += S0(D) + ((D & E) | (F & (D | E)));
+        B        += S1(G) + (G & (H ^ A) ^ A) + 0x9BDC06A7 + bufInts[14];
+        F        += B;
+        B        += S0(C) + ((C & D) | (E & (C | D)));
+        A        += S1(F) + (F & (G ^ H) ^ H) + 0xC19BF174 + bufInts[15];
+        E        += A;
+        A        += S0(B) + ((B & C) | (D & (B | C)));
 
         /* rounds 16 - 63 */
 
-        w[0] = bufInts[0] + s0(bufInts[1]) + bufInts[9] + s1(bufInts[14]);
-        H += S1(E) + (E & (F ^ G) ^ G) + 0xE49B69C1 + w[0];
-        D += H;
-        H += S0(A) + ((A & B) | (C & (A | B)));
-        w[1] = bufInts[1] + s0(bufInts[2]) + bufInts[10] + s1(bufInts[15]);
-        G += S1(D) + (D & (E ^ F) ^ F) + 0xEFBE4786 + w[1];
-        C += G;
-        G += S0(H) + ((H & A) | (B & (H | A)));
-        w[2] = bufInts[2] + s0(bufInts[3]) + bufInts[11] + s1(w[0]);
-        F += S1(C) + (C & (D ^ E) ^ E) + 0x0FC19DC6 + w[2];
-        B += F;
-        F += S0(G) + ((G & H) | (A & (G | H)));
-        w[3] = bufInts[3] + s0(bufInts[4]) + bufInts[12] + s1(w[1]);
-        E += S1(B) + (B & (C ^ D) ^ D) + 0x240CA1CC + w[3];
-        A += E;
-        E += S0(F) + ((F & G) | (H & (F | G)));
-        w[4] = bufInts[4] + s0(bufInts[5]) + bufInts[13] + s1(w[2]);
-        D += S1(A) + (A & (B ^ C) ^ C) + 0x2DE92C6F + w[4];
-        H += D;
-        D += S0(E) + ((E & F) | (G & (E | F)));
-        w[5] = bufInts[5] + s0(bufInts[6]) + bufInts[14] + s1(w[3]);
-        C += S1(H) + (H & (A ^ B) ^ B) + 0x4A7484AA + w[5];
-        G += C;
-        C += S0(D) + ((D & E) | (F & (D | E)));
-        w[6] = bufInts[6] + s0(bufInts[7]) + bufInts[15] + s1(w[4]);
-        B += S1(G) + (G & (H ^ A) ^ A) + 0x5CB0A9DC + w[6];
-        F += B;
-        B += S0(C) + ((C & D) | (E & (C | D)));
-        w[7] = bufInts[7] + s0(bufInts[8]) + w[0] + s1(w[5]);
-        A += S1(F) + (F & (G ^ H) ^ H) + 0x76F988DA + w[7];
-        E += A;
-        A += S0(B) + ((B & C) | (D & (B | C)));
-        w[8] = bufInts[8] + s0(bufInts[9]) + w[1] + s1(w[6]);
-        H += S1(E) + (E & (F ^ G) ^ G) + 0x983E5152 + w[8];
-        D += H;
-        H += S0(A) + ((A & B) | (C & (A | B)));
-        w[9] = bufInts[9] + s0(bufInts[10]) + w[2] + s1(w[7]);
-        G += S1(D) + (D & (E ^ F) ^ F) + 0xA831C66D + w[9];
-        C += G;
-        G += S0(H) + ((H & A) | (B & (H | A)));
-        w[10] = bufInts[10] + s0(bufInts[11]) + w[3] + s1(w[8]);
-        F += S1(C) + (C & (D ^ E) ^ E) + 0xB00327C8 + w[10];
-        B += F;
-        F += S0(G) + ((G & H) | (A & (G | H)));
-        w[11] = bufInts[11] + s0(bufInts[12]) + w[4] + s1(w[9]);
-        E += S1(B) + (B & (C ^ D) ^ D) + 0xBF597FC7 + w[11];
-        A += E;
-        E += S0(F) + ((F & G) | (H & (F | G)));
-        w[12] = bufInts[12] + s0(bufInts[13]) + w[5] + s1(w[10]);
-        D += S1(A) + (A & (B ^ C) ^ C) + 0xC6E00BF3 + w[12];
-        H += D;
-        D += S0(E) + ((E & F) | (G & (E | F)));
-        w[13] = bufInts[13] + s0(bufInts[14]) + w[6] + s1(w[11]);
-        C += S1(H) + (H & (A ^ B) ^ B) + 0xD5A79147 + w[13];
-        G += C;
-        C += S0(D) + ((D & E) | (F & (D | E)));
-        w[14] = bufInts[14] + s0(bufInts[15]) + w[7] + s1(w[12]);
-        B += S1(G) + (G & (H ^ A) ^ A) + 0x06CA6351 + w[14];
-        F += B;
-        B += S0(C) + ((C & D) | (E & (C | D)));
-        w[15] = bufInts[15] + s0(w[0]) + w[8] + s1(w[13]);
-        A += S1(F) + (F & (G ^ H) ^ H) + 0x14292967 + w[15];
-        E += A;
-        A += S0(B) + ((B & C) | (D & (B | C)));
-        w[0] = w[0] + s0(w[1]) + w[9] + s1(w[14]);
-        H += S1(E) + (E & (F ^ G) ^ G) + 0x27B70A85 + w[0];
-        D += H;
-        H += S0(A) + ((A & B) | (C & (A | B)));
-        w[1] = w[1] + s0(w[2]) + w[10] + s1(w[15]);
-        G += S1(D) + (D & (E ^ F) ^ F) + 0x2E1B2138 + w[1];
-        C += G;
-        G += S0(H) + ((H & A) | (B & (H | A)));
-        w[2] = w[2] + s0(w[3]) + w[11] + s1(w[0]);
-        F += S1(C) + (C & (D ^ E) ^ E) + 0x4D2C6DFC + w[2];
-        B += F;
-        F += S0(G) + ((G & H) | (A & (G | H)));
-        w[3] = w[3] + s0(w[4]) + w[12] + s1(w[1]);
-        E += S1(B) + (B & (C ^ D) ^ D) + 0x53380D13 + w[3];
-        A += E;
-        E += S0(F) + ((F & G) | (H & (F | G)));
-        w[4] = w[4] + s0(w[5]) + w[13] + s1(w[2]);
-        D += S1(A) + (A & (B ^ C) ^ C) + 0x650A7354 + w[4];
-        H += D;
-        D += S0(E) + ((E & F) | (G & (E | F)));
-        w[5] = w[5] + s0(w[6]) + w[14] + s1(w[3]);
-        C += S1(H) + (H & (A ^ B) ^ B) + 0x766A0ABB + w[5];
-        G += C;
-        C += S0(D) + ((D & E) | (F & (D | E)));
-        w[6] = w[6] + s0(w[7]) + w[15] + s1(w[4]);
-        B += S1(G) + (G & (H ^ A) ^ A) + 0x81C2C92E + w[6];
-        F += B;
-        B += S0(C) + ((C & D) | (E & (C | D)));
-        w[7] = w[7] + s0(w[8]) + w[0] + s1(w[5]);
-        A += S1(F) + (F & (G ^ H) ^ H) + 0x92722C85 + w[7];
-        E += A;
-        A += S0(B) + ((B & C) | (D & (B | C)));
-        w[8] = w[8] + s0(w[9]) + w[1] + s1(w[6]);
-        H += S1(E) + (E & (F ^ G) ^ G) + 0xA2BFE8A1 + w[8];
-        D += H;
-        H += S0(A) + ((A & B) | (C & (A | B)));
-        w[9] = w[9] + s0(w[10]) + w[2] + s1(w[7]);
-        G += S1(D) + (D & (E ^ F) ^ F) + 0xA81A664B + w[9];
-        C += G;
-        G += S0(H) + ((H & A) | (B & (H | A)));
-        w[10] = w[10] + s0(w[11]) + w[3] + s1(w[8]);
-        F += S1(C) + (C & (D ^ E) ^ E) + 0xC24B8B70 + w[10];
-        B += F;
-        F += S0(G) + ((G & H) | (A & (G | H)));
-        w[11] = w[11] + s0(w[12]) + w[4] + s1(w[9]);
-        E += S1(B) + (B & (C ^ D) ^ D) + 0xC76C51A3 + w[11];
-        A += E;
-        E += S0(F) + ((F & G) | (H & (F | G)));
-        w[12] = w[12] + s0(w[13]) + w[5] + s1(w[10]);
-        D += S1(A) + (A & (B ^ C) ^ C) + 0xD192E819 + w[12];
-        H += D;
-        D += S0(E) + ((E & F) | (G & (E | F)));
-        w[13] = w[13] + s0(w[14]) + w[6] + s1(w[11]);
-        C += S1(H) + (H & (A ^ B) ^ B) + 0xD6990624 + w[13];
-        G += C;
-        C += S0(D) + ((D & E) | (F & (D | E)));
-        w[14] = w[14] + s0(w[15]) + w[7] + s1(w[12]);
-        B += S1(G) + (G & (H ^ A) ^ A) + 0xF40E3585 + w[14];
-        F += B;
-        B += S0(C) + ((C & D) | (E & (C | D)));
-        w[15] = w[15] + s0(w[0]) + w[8] + s1(w[13]);
-        A += S1(F) + (F & (G ^ H) ^ H) + 0x106AA070 + w[15];
-        E += A;
-        A += S0(B) + ((B & C) | (D & (B | C)));
-        w[0] = w[0] + s0(w[1]) + w[9] + s1(w[14]);
-        H += S1(E) + (E & (F ^ G) ^ G) + 0x19A4C116 + w[0];
-        D += H;
-        H += S0(A) + ((A & B) | (C & (A | B)));
-        w[1] = w[1] + s0(w[2]) + w[10] + s1(w[15]);
-        G += S1(D) + (D & (E ^ F) ^ F) + 0x1E376C08 + w[1];
-        C += G;
-        G += S0(H) + ((H & A) | (B & (H | A)));
-        w[2] = w[2] + s0(w[3]) + w[11] + s1(w[0]);
-        F += S1(C) + (C & (D ^ E) ^ E) + 0x2748774C + w[2];
-        B += F;
-        F += S0(G) + ((G & H) | (A & (G | H)));
-        w[3] = w[3] + s0(w[4]) + w[12] + s1(w[1]);
-        E += S1(B) + (B & (C ^ D) ^ D) + 0x34B0BCB5 + w[3];
-        A += E;
-        E += S0(F) + ((F & G) | (H & (F | G)));
-        w[4] = w[4] + s0(w[5]) + w[13] + s1(w[2]);
-        D += S1(A) + (A & (B ^ C) ^ C) + 0x391C0CB3 + w[4];
-        H += D;
-        D += S0(E) + ((E & F) | (G & (E | F)));
-        w[5] = w[5] + s0(w[6]) + w[14] + s1(w[3]);
-        C += S1(H) + (H & (A ^ B) ^ B) + 0x4ED8AA4A + w[5];
-        G += C;
-        C += S0(D) + ((D & E) | (F & (D | E)));
-        w[6] = w[6] + s0(w[7]) + w[15] + s1(w[4]);
-        B += S1(G) + (G & (H ^ A) ^ A) + 0x5B9CCA4F + w[6];
-        F += B;
-        B += S0(C) + ((C & D) | (E & (C | D)));
-        w[7] = w[7] + s0(w[8]) + w[0] + s1(w[5]);
-        A += S1(F) + (F & (G ^ H) ^ H) + 0x682E6FF3 + w[7];
-        E += A;
-        A += S0(B) + ((B & C) | (D & (B | C)));
-        w[8] = w[8] + s0(w[9]) + w[1] + s1(w[6]);
-        H += S1(E) + (E & (F ^ G) ^ G) + 0x748F82EE + w[8];
-        D += H;
-        H += S0(A) + ((A & B) | (C & (A | B)));
-        w[9] = w[9] + s0(w[10]) + w[2] + s1(w[7]);
-        G += S1(D) + (D & (E ^ F) ^ F) + 0x78A5636F + w[9];
-        C += G;
-        G += S0(H) + ((H & A) | (B & (H | A)));
-        w[10] = w[10] + s0(w[11]) + w[3] + s1(w[8]);
-        F += S1(C) + (C & (D ^ E) ^ E) + 0x84C87814 + w[10];
-        B += F;
-        F += S0(G) + ((G & H) | (A & (G | H)));
-        w[11] = w[11] + s0(w[12]) + w[4] + s1(w[9]);
-        E += S1(B) + (B & (C ^ D) ^ D) + 0x8CC70208 + w[11];
-        A += E;
-        E += S0(F) + ((F & G) | (H & (F | G)));
-        w[12] = w[12] + s0(w[13]) + w[5] + s1(w[10]);
-        D += S1(A) + (A & (B ^ C) ^ C) + 0x90BEFFFA + w[12];
-        H += D;
-        D += S0(E) + ((E & F) | (G & (E | F)));
-        w[13] = w[13] + s0(w[14]) + w[6] + s1(w[11]);
-        C += S1(H) + (H & (A ^ B) ^ B) + 0xA4506CEB + w[13];
-        G += C;
-        C += S0(D) + ((D & E) | (F & (D | E)));
-        w[14] = w[14] + s0(w[15]) + w[7] + s1(w[12]);
-        B += S1(G) + (G & (H ^ A) ^ A) + 0xBEF9A3F7 + w[14];
-        F += B;
-        B += S0(C) + ((C & D) | (E & (C | D)));
-        w[15] = w[15] + s0(w[0]) + w[8] + s1(w[13]);
-        A += S1(F) + (F & (G ^ H) ^ H) + 0xC67178F2 + w[15];
-        E += A;
-        A += S0(B) + ((B & C) | (D & (B | C)));
+        w[0]      = bufInts[0] + s0(bufInts[1]) + bufInts[9] + s1(bufInts[14]);
+        H        += S1(E) + (E & (F ^ G) ^ G) + 0xE49B69C1 + w[0];
+        D        += H;
+        H        += S0(A) + ((A & B) | (C & (A | B)));
+        w[1]      = bufInts[1] + s0(bufInts[2]) + bufInts[10] + s1(bufInts[15]);
+        G        += S1(D) + (D & (E ^ F) ^ F) + 0xEFBE4786 + w[1];
+        C        += G;
+        G        += S0(H) + ((H & A) | (B & (H | A)));
+        w[2]      = bufInts[2] + s0(bufInts[3]) + bufInts[11] + s1(w[0]);
+        F        += S1(C) + (C & (D ^ E) ^ E) + 0x0FC19DC6 + w[2];
+        B        += F;
+        F        += S0(G) + ((G & H) | (A & (G | H)));
+        w[3]      = bufInts[3] + s0(bufInts[4]) + bufInts[12] + s1(w[1]);
+        E        += S1(B) + (B & (C ^ D) ^ D) + 0x240CA1CC + w[3];
+        A        += E;
+        E        += S0(F) + ((F & G) | (H & (F | G)));
+        w[4]      = bufInts[4] + s0(bufInts[5]) + bufInts[13] + s1(w[2]);
+        D        += S1(A) + (A & (B ^ C) ^ C) + 0x2DE92C6F + w[4];
+        H        += D;
+        D        += S0(E) + ((E & F) | (G & (E | F)));
+        w[5]      = bufInts[5] + s0(bufInts[6]) + bufInts[14] + s1(w[3]);
+        C        += S1(H) + (H & (A ^ B) ^ B) + 0x4A7484AA + w[5];
+        G        += C;
+        C        += S0(D) + ((D & E) | (F & (D | E)));
+        w[6]      = bufInts[6] + s0(bufInts[7]) + bufInts[15] + s1(w[4]);
+        B        += S1(G) + (G & (H ^ A) ^ A) + 0x5CB0A9DC + w[6];
+        F        += B;
+        B        += S0(C) + ((C & D) | (E & (C | D)));
+        w[7]      = bufInts[7] + s0(bufInts[8]) + w[0] + s1(w[5]);
+        A        += S1(F) + (F & (G ^ H) ^ H) + 0x76F988DA + w[7];
+        E        += A;
+        A        += S0(B) + ((B & C) | (D & (B | C)));
+        w[8]      = bufInts[8] + s0(bufInts[9]) + w[1] + s1(w[6]);
+        H        += S1(E) + (E & (F ^ G) ^ G) + 0x983E5152 + w[8];
+        D        += H;
+        H        += S0(A) + ((A & B) | (C & (A | B)));
+        w[9]      = bufInts[9] + s0(bufInts[10]) + w[2] + s1(w[7]);
+        G        += S1(D) + (D & (E ^ F) ^ F) + 0xA831C66D + w[9];
+        C        += G;
+        G        += S0(H) + ((H & A) | (B & (H | A)));
+        w[10]     = bufInts[10] + s0(bufInts[11]) + w[3] + s1(w[8]);
+        F        += S1(C) + (C & (D ^ E) ^ E) + 0xB00327C8 + w[10];
+        B        += F;
+        F        += S0(G) + ((G & H) | (A & (G | H)));
+        w[11]     = bufInts[11] + s0(bufInts[12]) + w[4] + s1(w[9]);
+        E        += S1(B) + (B & (C ^ D) ^ D) + 0xBF597FC7 + w[11];
+        A        += E;
+        E        += S0(F) + ((F & G) | (H & (F | G)));
+        w[12]     = bufInts[12] + s0(bufInts[13]) + w[5] + s1(w[10]);
+        D        += S1(A) + (A & (B ^ C) ^ C) + 0xC6E00BF3 + w[12];
+        H        += D;
+        D        += S0(E) + ((E & F) | (G & (E | F)));
+        w[13]     = bufInts[13] + s0(bufInts[14]) + w[6] + s1(w[11]);
+        C        += S1(H) + (H & (A ^ B) ^ B) + 0xD5A79147 + w[13];
+        G        += C;
+        C        += S0(D) + ((D & E) | (F & (D | E)));
+        w[14]     = bufInts[14] + s0(bufInts[15]) + w[7] + s1(w[12]);
+        B        += S1(G) + (G & (H ^ A) ^ A) + 0x06CA6351 + w[14];
+        F        += B;
+        B        += S0(C) + ((C & D) | (E & (C | D)));
+        w[15]     = bufInts[15] + s0(w[0]) + w[8] + s1(w[13]);
+        A        += S1(F) + (F & (G ^ H) ^ H) + 0x14292967 + w[15];
+        E        += A;
+        A        += S0(B) + ((B & C) | (D & (B | C)));
+        w[0]      = w[0] + s0(w[1]) + w[9] + s1(w[14]);
+        H        += S1(E) + (E & (F ^ G) ^ G) + 0x27B70A85 + w[0];
+        D        += H;
+        H        += S0(A) + ((A & B) | (C & (A | B)));
+        w[1]      = w[1] + s0(w[2]) + w[10] + s1(w[15]);
+        G        += S1(D) + (D & (E ^ F) ^ F) + 0x2E1B2138 + w[1];
+        C        += G;
+        G        += S0(H) + ((H & A) | (B & (H | A)));
+        w[2]      = w[2] + s0(w[3]) + w[11] + s1(w[0]);
+        F        += S1(C) + (C & (D ^ E) ^ E) + 0x4D2C6DFC + w[2];
+        B        += F;
+        F        += S0(G) + ((G & H) | (A & (G | H)));
+        w[3]      = w[3] + s0(w[4]) + w[12] + s1(w[1]);
+        E        += S1(B) + (B & (C ^ D) ^ D) + 0x53380D13 + w[3];
+        A        += E;
+        E        += S0(F) + ((F & G) | (H & (F | G)));
+        w[4]      = w[4] + s0(w[5]) + w[13] + s1(w[2]);
+        D        += S1(A) + (A & (B ^ C) ^ C) + 0x650A7354 + w[4];
+        H        += D;
+        D        += S0(E) + ((E & F) | (G & (E | F)));
+        w[5]      = w[5] + s0(w[6]) + w[14] + s1(w[3]);
+        C        += S1(H) + (H & (A ^ B) ^ B) + 0x766A0ABB + w[5];
+        G        += C;
+        C        += S0(D) + ((D & E) | (F & (D | E)));
+        w[6]      = w[6] + s0(w[7]) + w[15] + s1(w[4]);
+        B        += S1(G) + (G & (H ^ A) ^ A) + 0x81C2C92E + w[6];
+        F        += B;
+        B        += S0(C) + ((C & D) | (E & (C | D)));
+        w[7]      = w[7] + s0(w[8]) + w[0] + s1(w[5]);
+        A        += S1(F) + (F & (G ^ H) ^ H) + 0x92722C85 + w[7];
+        E        += A;
+        A        += S0(B) + ((B & C) | (D & (B | C)));
+        w[8]      = w[8] + s0(w[9]) + w[1] + s1(w[6]);
+        H        += S1(E) + (E & (F ^ G) ^ G) + 0xA2BFE8A1 + w[8];
+        D        += H;
+        H        += S0(A) + ((A & B) | (C & (A | B)));
+        w[9]      = w[9] + s0(w[10]) + w[2] + s1(w[7]);
+        G        += S1(D) + (D & (E ^ F) ^ F) + 0xA81A664B + w[9];
+        C        += G;
+        G        += S0(H) + ((H & A) | (B & (H | A)));
+        w[10]     = w[10] + s0(w[11]) + w[3] + s1(w[8]);
+        F        += S1(C) + (C & (D ^ E) ^ E) + 0xC24B8B70 + w[10];
+        B        += F;
+        F        += S0(G) + ((G & H) | (A & (G | H)));
+        w[11]     = w[11] + s0(w[12]) + w[4] + s1(w[9]);
+        E        += S1(B) + (B & (C ^ D) ^ D) + 0xC76C51A3 + w[11];
+        A        += E;
+        E        += S0(F) + ((F & G) | (H & (F | G)));
+        w[12]     = w[12] + s0(w[13]) + w[5] + s1(w[10]);
+        D        += S1(A) + (A & (B ^ C) ^ C) + 0xD192E819 + w[12];
+        H        += D;
+        D        += S0(E) + ((E & F) | (G & (E | F)));
+        w[13]     = w[13] + s0(w[14]) + w[6] + s1(w[11]);
+        C        += S1(H) + (H & (A ^ B) ^ B) + 0xD6990624 + w[13];
+        G        += C;
+        C        += S0(D) + ((D & E) | (F & (D | E)));
+        w[14]     = w[14] + s0(w[15]) + w[7] + s1(w[12]);
+        B        += S1(G) + (G & (H ^ A) ^ A) + 0xF40E3585 + w[14];
+        F        += B;
+        B        += S0(C) + ((C & D) | (E & (C | D)));
+        w[15]     = w[15] + s0(w[0]) + w[8] + s1(w[13]);
+        A        += S1(F) + (F & (G ^ H) ^ H) + 0x106AA070 + w[15];
+        E        += A;
+        A        += S0(B) + ((B & C) | (D & (B | C)));
+        w[0]      = w[0] + s0(w[1]) + w[9] + s1(w[14]);
+        H        += S1(E) + (E & (F ^ G) ^ G) + 0x19A4C116 + w[0];
+        D        += H;
+        H        += S0(A) + ((A & B) | (C & (A | B)));
+        w[1]      = w[1] + s0(w[2]) + w[10] + s1(w[15]);
+        G        += S1(D) + (D & (E ^ F) ^ F) + 0x1E376C08 + w[1];
+        C        += G;
+        G        += S0(H) + ((H & A) | (B & (H | A)));
+        w[2]      = w[2] + s0(w[3]) + w[11] + s1(w[0]);
+        F        += S1(C) + (C & (D ^ E) ^ E) + 0x2748774C + w[2];
+        B        += F;
+        F        += S0(G) + ((G & H) | (A & (G | H)));
+        w[3]      = w[3] + s0(w[4]) + w[12] + s1(w[1]);
+        E        += S1(B) + (B & (C ^ D) ^ D) + 0x34B0BCB5 + w[3];
+        A        += E;
+        E        += S0(F) + ((F & G) | (H & (F | G)));
+        w[4]      = w[4] + s0(w[5]) + w[13] + s1(w[2]);
+        D        += S1(A) + (A & (B ^ C) ^ C) + 0x391C0CB3 + w[4];
+        H        += D;
+        D        += S0(E) + ((E & F) | (G & (E | F)));
+        w[5]      = w[5] + s0(w[6]) + w[14] + s1(w[3]);
+        C        += S1(H) + (H & (A ^ B) ^ B) + 0x4ED8AA4A + w[5];
+        G        += C;
+        C        += S0(D) + ((D & E) | (F & (D | E)));
+        w[6]      = w[6] + s0(w[7]) + w[15] + s1(w[4]);
+        B        += S1(G) + (G & (H ^ A) ^ A) + 0x5B9CCA4F + w[6];
+        F        += B;
+        B        += S0(C) + ((C & D) | (E & (C | D)));
+        w[7]      = w[7] + s0(w[8]) + w[0] + s1(w[5]);
+        A        += S1(F) + (F & (G ^ H) ^ H) + 0x682E6FF3 + w[7];
+        E        += A;
+        A        += S0(B) + ((B & C) | (D & (B | C)));
+        w[8]      = w[8] + s0(w[9]) + w[1] + s1(w[6]);
+        H        += S1(E) + (E & (F ^ G) ^ G) + 0x748F82EE + w[8];
+        D        += H;
+        H        += S0(A) + ((A & B) | (C & (A | B)));
+        w[9]      = w[9] + s0(w[10]) + w[2] + s1(w[7]);
+        G        += S1(D) + (D & (E ^ F) ^ F) + 0x78A5636F + w[9];
+        C        += G;
+        G        += S0(H) + ((H & A) | (B & (H | A)));
+        w[10]     = w[10] + s0(w[11]) + w[3] + s1(w[8]);
+        F        += S1(C) + (C & (D ^ E) ^ E) + 0x84C87814 + w[10];
+        B        += F;
+        F        += S0(G) + ((G & H) | (A & (G | H)));
+        w[11]     = w[11] + s0(w[12]) + w[4] + s1(w[9]);
+        E        += S1(B) + (B & (C ^ D) ^ D) + 0x8CC70208 + w[11];
+        A        += E;
+        E        += S0(F) + ((F & G) | (H & (F | G)));
+        w[12]     = w[12] + s0(w[13]) + w[5] + s1(w[10]);
+        D        += S1(A) + (A & (B ^ C) ^ C) + 0x90BEFFFA + w[12];
+        H        += D;
+        D        += S0(E) + ((E & F) | (G & (E | F)));
+        w[13]     = w[13] + s0(w[14]) + w[6] + s1(w[11]);
+        C        += S1(H) + (H & (A ^ B) ^ B) + 0xA4506CEB + w[13];
+        G        += C;
+        C        += S0(D) + ((D & E) | (F & (D | E)));
+        w[14]     = w[14] + s0(w[15]) + w[7] + s1(w[12]);
+        B        += S1(G) + (G & (H ^ A) ^ A) + 0xBEF9A3F7 + w[14];
+        F        += B;
+        B        += S0(C) + ((C & D) | (E & (C | D)));
+        w[15]     = w[15] + s0(w[0]) + w[8] + s1(w[13]);
+        A        += S1(F) + (F & (G ^ H) ^ H) + 0xC67178F2 + w[15];
+        E        += A;
+        A        += S0(B) + ((B & C) | (D & (B | C)));
 
         /* update H0 - H7 */
 
@@ -509,7 +520,7 @@ class Sha256
 
         /* clear temp variables */
 
-        A = B = C = D = E = F = G = H = 0;
+        A         = B = C = D = E = F = G = H = 0;
         java.util.Arrays.fill(bufInts, 0);
         java.util.Arrays.fill(w, 0);
     }

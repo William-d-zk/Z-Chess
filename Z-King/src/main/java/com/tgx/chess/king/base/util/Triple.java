@@ -36,49 +36,59 @@ public class Triple<FIRST, SECOND, THIRD>
     private SECOND second;
     private THIRD  third;
 
-    public Triple(FIRST first, SECOND second, THIRD third) {
-        this.first = first;
+    public Triple(FIRST first, SECOND second, THIRD third)
+    {
+        this.first  = first;
         this.second = second;
-        this.third = third;
+        this.third  = third;
     }
 
-    public FIRST first() {
+    public FIRST first()
+    {
         return first;
     }
 
-    public SECOND second() {
+    public SECOND second()
+    {
         return second;
     }
 
-    public THIRD third() {
+    public THIRD third()
+    {
         return third;
     }
 
-    public void setFirst(FIRST f) {
+    public void setFirst(FIRST f)
+    {
         first = f;
     }
 
-    public void setSecond(SECOND s) {
+    public void setSecond(SECOND s)
+    {
         second = s;
     }
 
-    public void setThird(THIRD t) {
+    public void setThird(THIRD t)
+    {
         third = t;
     }
 
     @Override
-    public void dispose() {
-        first = null;
+    public void dispose()
+    {
+        first  = null;
         second = null;
-        third = null;
+        third  = null;
     }
 
-    public Triple<FIRST, SECOND, THIRD> clone() {
+    public Triple<FIRST, SECOND, THIRD> clone()
+    {
         return new Triple<>(first, second, third);
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(Object obj)
+    {
         if (!(obj instanceof Triple)) { return false; }
         if (this != obj) {
             @SuppressWarnings("unchecked")
@@ -89,7 +99,8 @@ public class Triple<FIRST, SECOND, THIRD>
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return String.format("<%s,%s,%s>", first, second, third);
     }
 }

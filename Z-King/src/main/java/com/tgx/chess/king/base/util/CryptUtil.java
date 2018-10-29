@@ -51,7 +51,8 @@ public class CryptUtil
      * @param xor_e
      *            key_2
      */
-    public static byte xorArrays(byte[] src, byte xor, byte xor_s, byte xor_e) {
+    public static byte xorArrays(byte[] src, byte xor, byte xor_s, byte xor_e)
+    {
         if (src == null || src.length == 0) return xor;
         if ((xor_s & 0xFF) == 0xFF && (xor_e & 0xFF) == 0xFF) return xor;
         else {
@@ -64,7 +65,8 @@ public class CryptUtil
         }
     }
 
-    public static int adler32(byte[] buf, int off, int len) {
+    public static int adler32(byte[] buf, int off, int len)
+    {
         int s1 = 1 & 0xFFFF;
         int s2 = (1 >> 16) & 0xFFFF;
         len += off;
@@ -77,14 +79,15 @@ public class CryptUtil
         return (s2 << 16) & 0xFFFF0000 | s1 & 0xFFFF;
     }
 
-    public static int crc32(byte[] buf, int off, int len) {
+    public static int crc32(byte[] buf, int off, int len)
+    {
         int crc = 0xFFFFFFFF;
         while (len-- != 0) {
             crc ^= buf[off++] & 0xFF;
             for (int i = 0; i < 8; i++) {
                 if ((crc & 1) > 0) {
                     crc >>>= 1;
-                    crc ^= 0xEDB88320;
+                    crc   ^= 0xEDB88320;
                 }
                 else crc >>>= 1;
             }
@@ -92,14 +95,15 @@ public class CryptUtil
         return crc ^ 0xFFFFFFFF;
     }
 
-    public static long crc64(byte[] buf, int off, int len) {
+    public static long crc64(byte[] buf, int off, int len)
+    {
         long crc = 0xFFFFFFFFFFFFFFFFL;
         while (len-- != 0) {
             crc ^= buf[off++] & 0xFF;
             for (int i = 0; i < 8; i++) {
                 if ((crc & 1) == 1) {
                     crc >>>= 1;
-                    crc ^= 0x95AC9329AC4BC9B5L;
+                    crc   ^= 0x95AC9329AC4BC9B5L;
                 }
                 else crc >>>= 1;
             }
@@ -107,13 +111,14 @@ public class CryptUtil
         return crc ^ 0xFFFFFFFFFFFFFFFFL;
     }
 
-    public static byte[] base64Decoder(char[] src, int start) throws IOException {
+    public static byte[] base64Decoder(char[] src, int start) throws IOException
+    {
         if (src == null || src.length == 0) return null;
-        char[] four = new char[4];
-        int i, l, aux;
-        char c;
-        boolean padded;
-        ByteArrayOutputStream dst = new ByteArrayOutputStream(src.length >> 1);
+        char[]                four = new char[4];
+        int                   i, l, aux;
+        char                  c;
+        boolean               padded;
+        ByteArrayOutputStream dst  = new ByteArrayOutputStream(src.length >> 1);
         while (start < src.length) {
             i = 0;
             do {
@@ -148,14 +153,16 @@ public class CryptUtil
         return result;
     }
 
-    public static String base64Encoder(byte[] src, int start, int wrapAt) {
+    public static String base64Encoder(byte[] src, int start, int wrapAt)
+    {
         return base64Encoder(src, start, src.length, wrapAt);
     }
 
-    private static String base64Encoder(byte[] src, int start, int length, int wrapAt) {
+    private static String base64Encoder(byte[] src, int start, int length, int wrapAt)
+    {
         if (src == null || src.length == 0) return null;
-        StringBuffer encodeDst = new StringBuffer();
-        int lineCounter = 0;
+        StringBuffer encodeDst   = new StringBuffer();
+        int          lineCounter = 0;
         length = start + length > src.length ? src.length : start + length;
         while (start < length) {
             int buffer = 0, byteCounter;
@@ -169,19 +176,23 @@ public class CryptUtil
             char b2 = chars.charAt((buffer << 14) >>> 26);
             char b3 = (byteCounter < 2) ? pad : chars.charAt((buffer << 20) >>> 26);
             char b4 = (byteCounter < 3) ? pad : chars.charAt((buffer << 26) >>> 26);
-            encodeDst.append(b1).append(b2).append(b3).append(b4);
+            encodeDst.append(b1)
+                     .append(b2)
+                     .append(b3)
+                     .append(b4);
             lineCounter += 4;
         }
         return encodeDst.toString();
     }
 
-    public static String quoted_print_Encoding(String src, String charSet) {
+    public static String quoted_print_Encoding(String src, String charSet)
+    {
         if (src == null || src.equals("")) return null;
         int maxLine = 76;
         try {
-            byte[] encodeData = src.getBytes(charSet);
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            char[] charArry;
+            byte[]                encodeData = src.getBytes(charSet);
+            ByteArrayOutputStream buffer     = new ByteArrayOutputStream();
+            char[]                charArry;
             for (int i = 0, l = 0; i < encodeData.length; i++) {
 
                 if (encodeData[i] >= '!' && encodeData[i] <= '~' && encodeData[i] != '=') {
@@ -198,7 +209,9 @@ public class CryptUtil
                         l = 0;
                     }
                     buffer.write('=');
-                    charArry = Integer.toHexString(encodeData[i] & 0xFF).toUpperCase().toCharArray();
+                    charArry = Integer.toHexString(encodeData[i] & 0xFF)
+                                      .toUpperCase()
+                                      .toCharArray();
                     if (charArry.length < 2) buffer.write('0');
                     for (char c : charArry)
                         buffer.write(c);
@@ -218,16 +231,17 @@ public class CryptUtil
         return src;
     }
 
-    public static String quoted_print_Decoding(String src, String charSet) {
+    public static String quoted_print_Decoding(String src, String charSet)
+    {
         if (src == null || src.equals("")) return null;
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        int length = src.length();
+        ByteArrayOutputStream baos   = new ByteArrayOutputStream();
+        int                   length = src.length();
         try {
             boolean canIntParse;
-            String encode;
-            int wr;
+            String  encode;
+            int     wr;
             for (int i = 0, k; i < length;) {
-                k = i + 1;
+                k           = i + 1;
                 canIntParse = src.charAt(i) == '=';
                 if (canIntParse) {
                     encode = src.substring(k, i += 3);
@@ -259,15 +273,18 @@ public class CryptUtil
         return null;
     }
 
-    private byte[] digest(String digestName, byte[] input) {
+    private byte[] digest(String digestName, byte[] input)
+    {
         return digest(digestName, input, 0, input.length);
     }
 
-    private byte[] digest(String digestName, byte[] input, int offset, int len) {
+    private byte[] digest(String digestName, byte[] input, int offset, int len)
+    {
         if (input == null || digestName == null) throw new NullPointerException();
         if (input.length < len || len <= 0 || offset < 0 || offset >= len) throw new ArrayIndexOutOfBoundsException();
         MessageDigest md;
-        switch (digestName.toUpperCase()) {
+        switch (digestName.toUpperCase())
+        {
             case "MD5":
                 md = MD5;
                 break;
@@ -285,7 +302,8 @@ public class CryptUtil
         return md.digest();
     }
 
-    private MessageDigest create(String name) {
+    private MessageDigest create(String name)
+    {
         try {
             return MessageDigest.getInstance(name);
         }
@@ -294,27 +312,33 @@ public class CryptUtil
         }
     }
 
-    public final byte[] md5(byte[] input, int offset, int len) {
+    public final byte[] md5(byte[] input, int offset, int len)
+    {
         return digest("MD5", input, offset, len);
     }
 
-    public final byte[] md5(byte[] input) {
+    public final byte[] md5(byte[] input)
+    {
         return digest("MD5", input);
     }
 
-    public final byte[] sha1(byte[] input, int offset, int len) {
+    public final byte[] sha1(byte[] input, int offset, int len)
+    {
         return digest("SHA-1", input, offset, len);
     }
 
-    public final byte[] sha1(byte[] input) {
+    public final byte[] sha1(byte[] input)
+    {
         return digest("SHA-1", input);
     }
 
-    public final byte[] sha256(byte[] input, int offset, int len) {
+    public final byte[] sha256(byte[] input, int offset, int len)
+    {
         return digest("SHA-256", input, offset, len);
     }
 
-    public final byte[] sha256(byte[] input) {
+    public final byte[] sha256(byte[] input)
+    {
         return digest("SHA-256", input);
     }
 

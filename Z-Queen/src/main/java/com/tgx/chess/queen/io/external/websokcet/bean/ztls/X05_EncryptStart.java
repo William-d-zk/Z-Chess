@@ -38,29 +38,34 @@ public class X05_EncryptStart
     public int              symmetricKeyId;
     public int              salt;
 
-    public X05_EncryptStart() {
+    public X05_EncryptStart()
+    {
         super(COMMAND, false);
     }
 
     @Override
-    public boolean isMappingCommand() {
+    public boolean isMappingCommand()
+    {
         return true;
     }
 
     @Override
-    public int decodec(byte[] data, int pos) {
-        symmetricKeyId = IoUtil.readUnsignedShort(data, pos);
-        pos += 5;
+    public int decodec(byte[] data, int pos)
+    {
+        symmetricKeyId  = IoUtil.readUnsignedShort(data, pos);
+        pos            += 5;
         return pos;
     }
 
     @Override
-    public int dataLength() {
+    public int dataLength()
+    {
         return super.dataLength() + 5;
     }
 
     @Override
-    public int encodec(byte[] data, int pos) {
+    public int encodec(byte[] data, int pos)
+    {
         pos += IoUtil.writeShort(symmetricKeyId, data, pos);
         pos += IoUtil.writeByte(salt, data, pos);
         pos += IoUtil.writeByte(salt >> 8, data, pos);
@@ -69,22 +74,26 @@ public class X05_EncryptStart
     }
 
     @Override
-    public void afterDecode(ZContext ctx) {
+    public void afterDecode(ZContext ctx)
+    {
         ctx.updateKeyIn();
     }
 
     @Override
-    public void afterEncode(ZContext ctx) {
+    public void afterEncode(ZContext ctx)
+    {
         ctx.updateKeyOut();
     }
 
     @Override
-    public int getPriority() {
+    public int getPriority()
+    {
         return QOS_00_NETWORK_CONTROL;
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return String.format("%s,rc4-key:%d", super.toString(), symmetricKeyId);
     }
 }

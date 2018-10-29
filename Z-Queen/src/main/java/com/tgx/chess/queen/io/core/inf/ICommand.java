@@ -41,41 +41,50 @@ public interface ICommand
      * 
      * @return
      */
-    default boolean isMappingCommand() {
+    default boolean isMappingCommand()
+    {
         return false;
     }
 
     long _DEFAULT_TRANSACTION_KEY = -1;
 
-    default IPacket translate() {
+    default IPacket translate()
+    {
         return null;
     }
 
-    default long getUID() {
+    default long getUID()
+    {
         return -1;
     }
 
-    default void setUID(long _uid) {
+    default void setUID(long _uid)
+    {
     }
 
-    default long getTransactionKey() {
+    default long getTransactionKey()
+    {
         return -1;
     }
 
-    default void setTransactionKey(long _key) {
+    default void setTransactionKey(long _key)
+    {
     }
 
-    default ICommand duplicate() {
+    default ICommand duplicate()
+    {
         return this;
     }
 
     @Override
-    default ICommand setSession(ISession session) {
+    default ICommand setSession(ISession session)
+    {
         return this;
     }
 
     @Override
-    default int getSuperSerial() {
+    default int getSuperSerial()
+    {
         return COMMAND_SERIAL;
     }
 }

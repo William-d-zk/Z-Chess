@@ -50,14 +50,16 @@ public interface IoUtil
                           'E',
                           'F' };
 
-    static String bin2Hex(byte[] b, String... split) {
+    static String bin2Hex(byte[] b, String... split)
+    {
         return bin2Hex(b, 0, b.length, split);
     }
 
-    static String bin2Hex(byte[] b, int pos, int length, String... split) {
+    static String bin2Hex(byte[] b, int pos, int length, String... split)
+    {
         if (length < 0 || length > b.length || pos + length > b.length) throw new ArrayIndexOutOfBoundsException();
         StringBuilder sb = new StringBuilder(length * 2);
-        String s = Objects.nonNull(split) && split.length > 0 ? split[0] : "";
+        String        s  = Objects.nonNull(split) && split.length > 0 ? split[0] : "";
         for (int i = pos, size = pos + length; i < size; i++) {
             sb.append(HEX_DIGITS[(b[i] & 0xf0) >>> 4]);
             sb.append(HEX_DIGITS[b[i] & 0x0f]);
@@ -68,15 +70,17 @@ public interface IoUtil
         return sb.toString();
     }
 
-    static byte[] hex2bin(String hex) {
+    static byte[] hex2bin(String hex)
+    {
         return hex2bin(hex, null, 0);
     }
 
-    static byte[] hex2bin(String hex, byte[] b, int pos) {
+    static byte[] hex2bin(String hex, byte[] b, int pos)
+    {
         int len = hex.length() >> 1;
         if (len > 0) {
             if (b == null) {
-                b = new byte[len];
+                b   = new byte[len];
                 pos = 0;
             }
             else if (b.length - pos < len) return null;
@@ -88,7 +92,8 @@ public interface IoUtil
         return null;
     }
 
-    static String longToMacStr(long mac) {
+    static String longToMacStr(long mac)
+    {
         StringBuilder sb = new StringBuilder();
         sb.append(Long.toHexString((mac >> 40) & 0xFF));
         sb.append(Long.toHexString((mac >> 32) & 0xFF));
@@ -100,28 +105,31 @@ public interface IoUtil
         return sb.toString();
     }
 
-    static int writeIp(String ipAddr) {
+    static int writeIp(String ipAddr)
+    {
         if (ipAddr == null) return 0;
         String[] ipx = ipAddr.split("\\p{Punct}");
-        int a = Integer.parseInt(ipx[0]);
-        int b = Integer.parseInt(ipx[1]);
-        int c = Integer.parseInt(ipx[2]);
-        int d = Integer.parseInt(ipx[3]);
+        int      a   = Integer.parseInt(ipx[0]);
+        int      b   = Integer.parseInt(ipx[1]);
+        int      c   = Integer.parseInt(ipx[2]);
+        int      d   = Integer.parseInt(ipx[3]);
         return a << 24 | b << 16 | c << 8 | d;
     }
 
-    static long writeInetAddr(String ipAddr, int port) {
+    static long writeInetAddr(String ipAddr, int port)
+    {
         if (ipAddr == null) return 0;
         String[] ipx = ipAddr.split("\\p{Punct}");
-        int a = Integer.parseInt(ipx[0]);
-        int b = Integer.parseInt(ipx[1]);
-        int c = Integer.parseInt(ipx[2]);
-        int d = Integer.parseInt(ipx[3]);
-        long ip = a << 24 | b << 16 | c << 8 | d | 0xFFFFFFFFL;
+        int      a   = Integer.parseInt(ipx[0]);
+        int      b   = Integer.parseInt(ipx[1]);
+        int      c   = Integer.parseInt(ipx[2]);
+        int      d   = Integer.parseInt(ipx[3]);
+        long     ip  = a << 24 | b << 16 | c << 8 | d | 0xFFFFFFFFL;
         return ip << 16 | port;
     }
 
-    static long writeInet4Addr(byte[] ipAddr, int port) {
+    static long writeInet4Addr(byte[] ipAddr, int port)
+    {
         if (ipAddr == null) return 0;
         long ip = ipAddr[0] & 0xFF;
         for (int i = 1; i < 4; i++)
@@ -129,7 +137,8 @@ public interface IoUtil
         return (ip << 16) | (port & 0xFFFF);
     }
 
-    static String readIp(int ip) {
+    static String readIp(int ip)
+    {
         int a, b, c, d;
         a = (ip >>> 24) & 0xFF;
         b = (ip >>> 16) & 0xFF;
@@ -138,77 +147,83 @@ public interface IoUtil
         return String.format("%d.%d.%d.%d", a, b, c, d);
     }
 
-    static String readInetAddr(long inetAddr) {
+    static String readInetAddr(long inetAddr)
+    {
         int a, b, c, d, port;
-        a = (int) (inetAddr >> 40) & 0xFF;
-        b = (int) (inetAddr >> 32) & 0xFF;
-        c = (int) (inetAddr >> 24) & 0xFF;
-        d = (int) (inetAddr >> 16) & 0xFF;
+        a    = (int) (inetAddr >> 40) & 0xFF;
+        b    = (int) (inetAddr >> 32) & 0xFF;
+        c    = (int) (inetAddr >> 24) & 0xFF;
+        d    = (int) (inetAddr >> 16) & 0xFF;
         port = (int) (inetAddr & 0xFFFF);
         return String.format("%d.%d.%d.%d:%d", a, b, c, d, port);
     }
 
-    static String readInetAddr(byte[] inetAddr, int off) {
+    static String readInetAddr(byte[] inetAddr, int off)
+    {
         int a, b, c, d, port;
-        a = inetAddr[off] & 0xFF;
-        b = inetAddr[off + 1] & 0xFF;
-        c = inetAddr[off + 2] & 0xFF;
-        d = inetAddr[off + 3] & 0xFF;
+        a    = inetAddr[off] & 0xFF;
+        b    = inetAddr[off + 1] & 0xFF;
+        c    = inetAddr[off + 2] & 0xFF;
+        d    = inetAddr[off + 3] & 0xFF;
         port = readUnsignedShort(inetAddr, off + 4);
         return String.format("%d.%d.%d.%d:%d", a, b, c, d, port);
     }
 
-    static String readInetAddr(byte[] inetAddr) {
+    static String readInetAddr(byte[] inetAddr)
+    {
         return readIpAdr(inetAddr, 0);
     }
 
-    static byte[] variableLength(int length) {
+    static byte[] variableLength(int length)
+    {
         if (length == 0) return new byte[] { 0 };
         int resLength = 0;
-        int result = 0;
+        int result    = 0;
         do {
-            result |= (length & 0x7F) << 24;
+            result   |= (length & 0x7F) << 24;
             length >>>= 7;
             resLength++;
             if (length > 0) {
                 result >>>= 8;
-                result |= 0x80000000;
+                result   |= 0x80000000;
             }
         }
         while (length > 0);
         byte[] res = new byte[resLength];
         for (int i = 0, move = 24; i < resLength; i++) {
-            res[i] = (byte) (result >>> move);
-            move -= 8;
+            res[i]  = (byte) (result >>> move);
+            move   -= 8;
         }
         return res;
     }
 
-    static byte[] variableLength(long length) {
+    static byte[] variableLength(long length)
+    {
         if (length == 0) return new byte[] { 0 };
-        int resLength = 0;
-        long result = 0;
+        int  resLength = 0;
+        long result    = 0;
         do {
-            result |= (length & 0x7F) << 56;
+            result   |= (length & 0x7F) << 56;
             length >>>= 7;
             resLength++;
             if (length > 0) {
                 result >>>= 8;
-                result |= 0x80000000;
+                result   |= 0x80000000;
             }
         }
         while (length > 0);
         byte[] res = new byte[resLength];
         for (int i = 0, move = 56; i < resLength; i++) {
-            res[i] = (byte) (result >>> move);
-            move -= 8;
+            res[i]  = (byte) (result >>> move);
+            move   -= 8;
         }
         return res;
     }
 
-    static long readVariableLongLength(InputStream is) {
+    static long readVariableLongLength(InputStream is)
+    {
         long length = 0;
-        int cur;
+        int  cur;
         try {
             do {
                 cur = is.read();
@@ -224,11 +239,12 @@ public interface IoUtil
         }
     }
 
-    static long readVariableLongLength(ByteBuffer buf) {
+    static long readVariableLongLength(ByteBuffer buf)
+    {
         long length = 0;
-        int cur;
+        int  cur;
         if (buf.hasRemaining()) do {
-            cur = buf.get();
+            cur     = buf.get();
             length |= (cur & 0x7F);
             if ((cur & 0x80) != 0) length <<= 7;
         }
@@ -236,22 +252,25 @@ public interface IoUtil
         return length;
     }
 
-    static int writeLongArray(long[] v, byte[] b, int off) {
+    static int writeLongArray(long[] v, byte[] b, int off)
+    {
         if (v == null) return 0;
         for (long aV : v)
             off += writeLong(aV, b, off);
         return v.length << 3;
     }
 
-    static int writeShortArray(short[] v, byte[] b, int off) {
+    static int writeShortArray(short[] v, byte[] b, int off)
+    {
         if (v == null) return 0;
         for (int i = 0; i < v.length; i++)
             off += writeShort(v[i] & 0xFFFF, b, off);
         return v.length << 1;
     }
 
-    static int writeLong(long v, byte[] b, int off) {
-        b[off] = (byte) (0xFF & (v >>> 56));
+    static int writeLong(long v, byte[] b, int off)
+    {
+        b[off]     = (byte) (0xFF & (v >>> 56));
         b[off + 1] = (byte) (0xFF & (v >>> 48));
         b[off + 2] = (byte) (0xFF & (v >>> 40));
         b[off + 3] = (byte) (0xFF & (v >>> 32));
@@ -262,12 +281,14 @@ public interface IoUtil
         return 8;
     }
 
-    static int writeMac(long v, byte[] b, int off) {
+    static int writeMac(long v, byte[] b, int off)
+    {
         return write6BLong(v, b, off);
     }
 
-    static int write6BLong(long v, byte[] b, int off) {
-        b[off] = (byte) (0xFF & (v >> 40));
+    static int write6BLong(long v, byte[] b, int off)
+    {
+        b[off]     = (byte) (0xFF & (v >> 40));
         b[off + 1] = (byte) (0xFF & (v >> 32));
         b[off + 2] = (byte) (0xFF & (v >> 24));
         b[off + 3] = (byte) (0xFF & (v >> 16));
@@ -276,31 +297,36 @@ public interface IoUtil
         return 6;
     }
 
-    static int writeInt(int v, byte[] b, int off) {
-        b[off] = (byte) (0xFF & (v >>> 24));
+    static int writeInt(int v, byte[] b, int off)
+    {
+        b[off]     = (byte) (0xFF & (v >>> 24));
         b[off + 1] = (byte) (0xFF & (v >>> 16));
         b[off + 2] = (byte) (0xFF & (v >>> 8));
         b[off + 3] = (byte) (0xFF & v);
         return 4;
     }
 
-    static int writeShort(int v, byte[] b, int off) {
-        b[off] = (byte) (0xFF & (v >>> 8));
+    static int writeShort(int v, byte[] b, int off)
+    {
+        b[off]     = (byte) (0xFF & (v >>> 8));
         b[off + 1] = (byte) (0xFF & v);
         return 2;
     }
 
-    static int writeByte(int v, byte[] b, int off) {
+    static int writeByte(int v, byte[] b, int off)
+    {
         b[off] = (byte) v;
         return 1;
     }
 
-    static int writeByte(byte v, byte[] b, int off) {
+    static int writeByte(byte v, byte[] b, int off)
+    {
         b[off] = v;
         return 1;
     }
 
-    static int write(byte[] v, int src_off, byte[] b, int off, int len) {
+    static int write(byte[] v, int src_off, byte[] b, int off, int len)
+    {
         if (v == null || v.length == 0 || len == 0) return 0;
         else if (len > b.length) throw new ArrayIndexOutOfBoundsException();
         if (len > v.length) len = v.length;
@@ -308,11 +334,13 @@ public interface IoUtil
         return len;
     }
 
-    static int write(byte[] v, byte[] data, int pos) {
+    static int write(byte[] v, byte[] data, int pos)
+    {
         return write(v, 0, data, pos, v.length);
     }
 
-    static int writeIpAdr(String ipAdr, byte[] b, int off) {
+    static int writeIpAdr(String ipAdr, byte[] b, int off)
+    {
         String[] split = ipAdr.split("\\p{Punct}", 4);
         for (int i = 0; i < 4; i++)
             writeByte(Integer.parseInt(split[i]), b, off++);
@@ -320,32 +348,39 @@ public interface IoUtil
     }
 
     @SafeVarargs
-    static <T> void addArray(T[] src, T[] dst, T... add) {
+    static <T> void addArray(T[] src, T[] dst, T... add)
+    {
         arraycopy(src, 0, dst, 0, src.length);
         if (add != null) arraycopy(add, 0, dst, src.length, add.length);
     }
 
-    static void addArray(Object[] src, Object[] dst, int pos) {
+    static void addArray(Object[] src, Object[] dst, int pos)
+    {
         if (src != null) arraycopy(src, 0, dst, pos, src.length);
     }
 
-    static void addArray(Object[] dst, int pos, Object... add) {
+    static void addArray(Object[] dst, int pos, Object... add)
+    {
         if (add != null) arraycopy(add, 0, dst, pos, add.length);
     }
 
-    static short readShort(byte[] src, int off) {
+    static short readShort(byte[] src, int off)
+    {
         return (short) ((src[off] & 0xFF) << 8 | (src[off + 1] & 0xFF));
     }
 
-    static int readUnsignedShort(byte[] src, int off) {
+    static int readUnsignedShort(byte[] src, int off)
+    {
         return ((src[off] & 0xFF) << 8 | (src[off + 1] & 0xFF));
     }
 
-    static int readInt(byte[] src, int off) {
+    static int readInt(byte[] src, int off)
+    {
         return (src[off] & 0xFF) << 24 | (src[off + 1] & 0xFF) << 16 | (src[off + 2] & 0xFF) << 8 | (src[off + 3] & 0xFF);
     }
 
-    static long readLong(byte[] src, int off) {
+    static long readLong(byte[] src, int off)
+    {
         return (src[off] & 0xFFL) << 56
                | (src[off + 1] & 0xFFL) << 48
                | (src[off + 2] & 0xFFL) << 40
@@ -356,7 +391,8 @@ public interface IoUtil
                | (src[off + 7] & 0xFFL);
     }
 
-    static int readLongArray(byte[] src, int src_off, long[] dst) {
+    static int readLongArray(byte[] src, int src_off, long[] dst)
+    {
         if (dst == null) return src_off;
         if ((dst.length << 3) + src_off > src.length) throw new ArrayIndexOutOfBoundsException();
         for (int i = 0; i < dst.length; i++, src_off += 8)
@@ -364,7 +400,8 @@ public interface IoUtil
         return src_off;
     }
 
-    static int readShortArray(byte[] src, int src_off, short[] dst) {
+    static int readShortArray(byte[] src, int src_off, short[] dst)
+    {
         if (dst == null) return src_off;
         if ((dst.length << 1) + src_off > src.length) throw new ArrayIndexOutOfBoundsException();
         for (int i = 0; i < dst.length; i++, src_off += 2)
@@ -372,7 +409,8 @@ public interface IoUtil
         return src_off;
     }
 
-    static int readUnsignedShortArray(byte[] src, int src_off, int[] dst) {
+    static int readUnsignedShortArray(byte[] src, int src_off, int[] dst)
+    {
         if (dst == null) return src_off;
         if ((dst.length << 1) + src_off > src.length) throw new ArrayIndexOutOfBoundsException();
         for (int i = 0; i < dst.length; i++, src_off += 2)
@@ -380,7 +418,8 @@ public interface IoUtil
         return src_off;
     }
 
-    static long read6BLong(byte[] src, int off) {
+    static long read6BLong(byte[] src, int off)
+    {
         return (src[off] & 0xFFL) << 40
                | (src[off + 1] & 0xFFL) << 32
                | (src[off + 2] & 0xFFL) << 24
@@ -390,19 +429,23 @@ public interface IoUtil
 
     }
 
-    static long readMac(byte[] src, int off) {
+    static long readMac(byte[] src, int off)
+    {
         return read6BLong(src, off);
     }
 
-    static String readMac(byte[] src) {
+    static String readMac(byte[] src)
+    {
         return bin2Hex(src, 0, 6, ":");
     }
 
-    static byte[] writeMacRaw(String mac) {
+    static byte[] writeMacRaw(String mac)
+    {
         return hex2bin(mac.replaceAll(":", ""));
     }
 
-    static String readIpAdr(byte[] src, int off) {
+    static String readIpAdr(byte[] src, int off)
+    {
         StringBuilder buf = new StringBuilder();
         for (int i = 0; i < 4; i++) {
             buf.append(src[off++] & 0xFF);
@@ -411,28 +454,34 @@ public interface IoUtil
         return buf.toString();
     }
 
-    static String readIpAdr(byte[] src) {
+    static String readIpAdr(byte[] src)
+    {
         return readIpAdr(src, 0);
     }
 
-    static int read(byte[] src, int src_off, byte[] dst, int dst_off, int len) {
+    static int read(byte[] src, int src_off, byte[] dst, int dst_off, int len)
+    {
         arraycopy(src, src_off, dst, dst_off, len);
         return src_off + len;
     }
 
-    static int read(byte[] src, int src_off, byte[] dst) {
+    static int read(byte[] src, int src_off, byte[] dst)
+    {
         return read(src, src_off, dst, 0, dst.length);
     }
 
-    static int readUnsignedByte(byte[] src, int off) {
+    static int readUnsignedByte(byte[] src, int off)
+    {
         return src[off] & 0xFF;
     }
 
-    static String readString(byte[] data, int pos, int length) {
+    static String readString(byte[] data, int pos, int length)
+    {
         return new String(data, pos, length);
     }
 
-    static boolean isBlank(final CharSequence cs) {
+    static boolean isBlank(final CharSequence cs)
+    {
         int strLen;
         if (cs == null || (strLen = cs.length()) == 0) { return true; }
         for (int i = 0; i < strLen; i++) {
