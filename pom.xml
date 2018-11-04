@@ -30,7 +30,7 @@
         <postgresql.driver.version>42.2.5</postgresql.driver.version>
         <bdb.je.version>7.5.11</bdb.je.version>
         <!--PIPELINE-->
-        <disruptor.version>3.4.2</disruptor.version>
+        <disruptor.version>3.4.3</disruptor.version>
         <!--TOOLS-->
         <httpcore.version>4.4.9</httpcore.version>
         <!--TEST TOOLS VERSION-->
@@ -84,7 +84,6 @@
             <artifactId>junit-jupiter-engine</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>

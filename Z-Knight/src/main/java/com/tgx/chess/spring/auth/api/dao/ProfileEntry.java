@@ -22,46 +22,37 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.auth.api.dto;
+package com.tgx.chess.spring.auth.api.dao;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
 
-public class AuthDTO
+public class ProfileEntry
         implements
         Serializable
 {
 
-    private static final long  serialVersionUID = -9052656763177899443L;
+    private static final long serialVersionUID = 5409265243979234754L;
 
-    private boolean            status;
-    private Collection<String> roles;
+    private String            name;
+    private String            avatar;
 
-    public boolean isStatus()
+    public String getName()
     {
-        return status;
+        return name;
     }
 
-    public void setStatus(boolean status)
+    public void setName(String name)
     {
-        this.status = status;
+        this.name = name;
     }
 
-    public Collection<String> getRoles()
+    public String getAvatar()
     {
-        return roles;
+        return avatar;
     }
 
-    public void setRoles(Collection<String> roles)
+    public void setAvatar(String avatar)
     {
-        this.roles = roles;
-    }
-
-    public void setRole(String role)
-    {
-        ArrayList<String> list = new ArrayList<>(1);
-        list.add(role);
-        setRoles(list);
+        this.avatar = avatar;
     }
 }

@@ -30,7 +30,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.id.IdentifierGenerator;
 
-import com.tgx.chess.bishop.biz.db.dto.ZUID;
+import com.tgx.chess.bishop.biz.db.dao.ZUID;
 import com.tgx.chess.king.base.log.Logger;
 
 public class ZGenerator

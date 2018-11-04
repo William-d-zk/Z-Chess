@@ -27,12 +27,12 @@ package com.tgx.chess.spring.auth.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.tgx.chess.spring.auth.model.Role;
+import com.tgx.chess.spring.auth.model.RoleEntity;
 
 @Repository
 public interface RoleRepository
         extends
-        JpaRepository<Role, Integer>
+        JpaRepository<RoleEntity, Integer>
 {
-    Role findByRole(String role);
+    RoleEntity findByRole(String role);
 }

@@ -27,14 +27,14 @@ package com.tgx.chess.spring.auth.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.tgx.chess.spring.auth.model.Account;
+import com.tgx.chess.spring.auth.model.AccountEntity;
 
 @Repository
 public interface AccountRepository
         extends
-        JpaRepository<Account, Long>
+        JpaRepository<AccountEntity, Long>
 {
-    Account findByEmail(String email);
+    AccountEntity findByEmail(String email);
 
-    Account findByName(String name);
+    AccountEntity findByName(String name);
 }

@@ -27,7 +27,7 @@ package com.tgx.chess.spring.auth.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.tgx.chess.spring.auth.model.Profile;
+import com.tgx.chess.spring.auth.model.ProfileEntity;
 import com.tgx.chess.spring.auth.repository.ProfileRepository;
 
 @Service
@@ -41,7 +41,7 @@ public class ProfileService
         _ProfileRepository = profileRepository;
     }
 
-    public Profile getProfile(int userId)
+    public ProfileEntity getProfile(int userId)
     {
         return _ProfileRepository.findByAccount(userId);
     }

@@ -22,37 +22,41 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.auth.api.dto;
+package com.tgx.chess.spring.auth.model;
 
-import java.io.Serializable;
+import javax.persistence.*;
 
-public class ProfileDTO
-        implements
-        Serializable
+import com.tgx.chess.spring.jpa.model.AuditModel;
+
+@Entity
+@Table(indexes = { @Index(name = "role_idx_role", columnList = "role") })
+public class RoleEntity
+        extends
+        AuditModel
 {
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    private int    id;
+    @Column(length = 16)
+    private String role;
 
-    private static final long serialVersionUID = 5409265243979234754L;
-
-    private String            name;
-    private String            avatar;
-
-    public String getName()
+    public int getId()
     {
-        return name;
+        return id;
     }
 
-    public void setName(String name)
+    public void setId(int id)
     {
-        this.name = name;
+        this.id = id;
     }
 
-    public String getAvatar()
+    public String getRole()
     {
-        return avatar;
+        return role;
     }
 
-    public void setAvatar(String avatar)
+    public void setRole(String role)
     {
-        this.avatar = avatar;
+        this.role = role;
     }
 }

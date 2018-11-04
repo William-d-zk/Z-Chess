@@ -29,8 +29,8 @@ import java.util.Optional;
 
 import org.springframework.web.bind.annotation.*;
 
-import com.tgx.chess.spring.auth.api.dto.AuthDTO;
-import com.tgx.chess.spring.auth.model.Account;
+import com.tgx.chess.spring.auth.api.dao.AuthEntry;
+import com.tgx.chess.spring.auth.model.AccountEntity;
 import com.tgx.chess.spring.auth.service.AccountService;
 
 @RestController
@@ -45,13 +45,14 @@ public class RegisterService
     }
 
     @PostMapping(value = "/api/register")
-    public @ResponseBody AuthDTO register(@RequestBody Map<String, String> param)
+    public @ResponseBody
+    AuthEntry register(@RequestBody Map<String, String> param)
     {
         System.out.println(param);
         String            username = param.get("name");
         String            email    = param.get("email");
         String            password = param.get("passwd");
-        Optional<Account> test     = _AccountService.findByEmail(email);
+        Optional<AccountEntity> test     = _AccountService.findByEmail(email);
         if (test.isPresent()) {
             throw new IllegalArgumentException("email exist");
         }
@@ -59,10 +60,10 @@ public class RegisterService
             test = _AccountService.findByName(username);
             if (test.isPresent()) { throw new IllegalArgumentException("username exist"); }
         }
-        AuthDTO auth = new AuthDTO();
+        AuthEntry auth = new AuthEntry();
         auth.setStatus(true);
         auth.setRole("USER");
-        Account account = new Account();
+        AccountEntity account = new AccountEntity();
         account.setActive(1);
         account.setName(username);
         account.setEmail(email);

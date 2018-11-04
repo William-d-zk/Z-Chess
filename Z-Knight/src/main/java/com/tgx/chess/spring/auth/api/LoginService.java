@@ -33,10 +33,10 @@ import javax.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import com.tgx.chess.spring.auth.api.dto.AuthDTO;
-import com.tgx.chess.spring.auth.api.dto.ProfileDTO;
-import com.tgx.chess.spring.auth.model.Account;
-import com.tgx.chess.spring.auth.model.Role;
+import com.tgx.chess.spring.auth.api.dao.AuthEntry;
+import com.tgx.chess.spring.auth.api.dao.ProfileEntry;
+import com.tgx.chess.spring.auth.model.AccountEntity;
+import com.tgx.chess.spring.auth.model.RoleEntity;
 import com.tgx.chess.spring.auth.service.AccountService;
 
 @RestController
@@ -52,20 +52,21 @@ public class LoginService
     }
 
     @PostMapping(value = "/api/login")
-    public @ResponseBody AuthDTO validate(@RequestBody Map<String, String> param)
+    public @ResponseBody
+    AuthEntry validate(@RequestBody Map<String, String> param)
     {
         System.out.println(param);
-        AuthDTO auth     = new AuthDTO();
+        AuthEntry auth     = new AuthEntry();
         String  username = param.get("username");
         String  password = param.get("password");
-        Account account  = _AccountService.findByName(username)
+        AccountEntity account  = _AccountService.findByName(username)
                                           .orElse(_AccountService.findByEmail(username)
                                                                  .orElse(null));
         if (Objects.nonNull(password) && Objects.nonNull(account) && password.equals(account.getPassword())) {
             auth.setStatus(true);
             auth.setRoles(account.getRoles()
                                  .stream()
-                                 .map(Role::getRole)
+                                 .map(RoleEntity::getRole)
                                  .collect(Collectors.toList()));
         }
         else {
@@ -76,18 +77,20 @@ public class LoginService
     }
 
     @PostMapping(value = "/api/logout")
-    public @ResponseBody AuthDTO logout()
+    public @ResponseBody
+    AuthEntry logout()
     {
-        AuthDTO auth = new AuthDTO();
+        AuthEntry auth = new AuthEntry();
         auth.setStatus(true);
         return auth;
     }
 
     @GetMapping(value = "/api/profile")
-    public @ResponseBody ProfileDTO profile(HttpSession session)
+    public @ResponseBody
+    ProfileEntry profile(HttpSession session)
     {
         System.out.println(session.getAttributeNames());
-        ProfileDTO profile = new ProfileDTO();
+        ProfileEntry profile = new ProfileEntry();
         profile.setName("幂等");
         return profile;
     }

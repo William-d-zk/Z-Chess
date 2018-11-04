@@ -68,7 +68,7 @@ import com.tgx.chess.queen.io.external.websokcet.bean.device.X22_SignIn;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X23_SignInResult;
 import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X03_Cipher;
 import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X05_EncryptStart;
-import com.tgx.chess.rook.biz.device.dto.DeviceEntry;
+import com.tgx.chess.rook.biz.device.dao.DeviceEntry;
 
 @Component
 @PropertySource("classpath:client.properties")

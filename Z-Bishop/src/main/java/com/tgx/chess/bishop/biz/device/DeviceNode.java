@@ -35,13 +35,13 @@ import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.Objects;
 
-import com.tgx.chess.bishop.biz.db.dto.DeviceEntry;
+import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.king.config.Config;
 import com.tgx.chess.queen.config.QueenCode;
-import com.tgx.chess.queen.db.inf.IRespository;
+import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.operator.MODE;
 import com.tgx.chess.queen.io.core.async.AioCreator;
@@ -70,7 +70,7 @@ public class DeviceNode
     private final IAioServer      _DeviceServer;
     private final ISessionCreator _SessionCreator;
     private final ICommandCreator _CommandCreator;
-    private final IRespository    _Respository;
+    private final IRepository _Respository;
 
     @Override
     public void onDismiss(ISession session)
@@ -86,7 +86,7 @@ public class DeviceNode
         addSession(session);
     }
 
-    public DeviceNode(String host, int port, IRespository respository)
+    public DeviceNode(String host, int port, IRepository respository)
     {
         super(new Config("device"));
         _ServerHost     = host;

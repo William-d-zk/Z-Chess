@@ -35,41 +35,40 @@ import org.hibernate.validator.constraints.Length;
 import com.tgx.chess.spring.jpa.model.AuditModel;
 
 @Entity
-@Table(
-       indexes = { @Index(name = "account_idx_email", columnList = "email"),
+@Table(indexes = { @Index(name = "account_idx_email", columnList = "email"),
                    @Index(name = "account_idx_name", columnList = "name") })
-public class Account
+public class AccountEntity
         extends
         AuditModel
 {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private int       id;
+    private int             id;
 
     @Email(message = "{email.valid}")
     @NotEmpty(message = "{field.not.empty}")
     @Length(max = 64, message = "{size.email.over_length}")
     @Column(length = 64)
-    private String    email;
+    private String          email;
 
     @Length(min = 8, max = 32, message = "{size.account.form.password}")
     @NotEmpty(message = "{field.not.empty}")
     @Column(length = 32)
-    private String    password;
+    private String          password;
 
     @NotEmpty(message = "{field.not.empty}")
     @Length(min = 3, max = 32, message = "{size.account.form.name}")
     @Column(length = 32)
-    private String    name;
-    private int       active;
+    private String          name;
+    private int             active;
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(name = "account_role", joinColumns = @JoinColumn(name = "account_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<Role> roles;
+    private Set<RoleEntity> roles;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "account")
-    private Profile   profile;
+    private ProfileEntity   profile;
 
     public int getId()
     {
@@ -121,22 +120,22 @@ public class Account
         return active;
     }
 
-    public Set<Role> getRoles()
+    public Set<RoleEntity> getRoles()
     {
         return roles;
     }
 
-    public void setRoles(Set<Role> roles)
+    public void setRoles(Set<RoleEntity> roles)
     {
         this.roles = roles;
     }
 
-    public Profile getProfile()
+    public ProfileEntity getProfile()
     {
         return profile;
     }
 
-    public void setProfile(Profile profile)
+    public void setProfile(ProfileEntity profile)
     {
         this.profile = profile;
     }

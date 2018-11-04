@@ -30,7 +30,7 @@ import com.tgx.chess.spring.jpa.model.AuditModel;
 
 @Entity
 @Table(indexes = { @Index(name = "profile_idx_account", columnList = "account_id") })
-public class Profile
+public class ProfileEntity
         extends
         AuditModel
 {
@@ -40,7 +40,7 @@ public class Profile
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "account_id")
-    private Account account;
+    private AccountEntity account;
 
     public int getId()
     {
@@ -52,12 +52,12 @@ public class Profile
         this.id = id;
     }
 
-    public Account getAccount()
+    public AccountEntity getAccount()
     {
         return account;
     }
 
-    public void setAccount(Account account)
+    public void setAccount(AccountEntity account)
     {
         this.account = account;
     }

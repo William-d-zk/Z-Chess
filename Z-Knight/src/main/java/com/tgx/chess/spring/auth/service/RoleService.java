@@ -29,7 +29,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.tgx.chess.spring.auth.model.Role;
+import com.tgx.chess.spring.auth.model.RoleEntity;
 import com.tgx.chess.spring.auth.repository.RoleRepository;
 
 @Service
@@ -43,7 +43,7 @@ public class RoleService
         _RoleRepository = roleRepository;
     }
 
-    public List<Role> getRoles(int id)
+    public List<RoleEntity> getRoles(int id)
     {
         return _RoleRepository.findAll();
     }
