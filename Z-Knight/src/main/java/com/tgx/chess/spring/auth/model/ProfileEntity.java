@@ -36,7 +36,7 @@ public class ProfileEntity
 {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private int     id;
+    private int           id;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "account_id")

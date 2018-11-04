@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.spring.device.model.Device;
+import com.tgx.chess.spring.device.model.DeviceEntity;
 import com.tgx.chess.spring.device.service.DeviceService;
 
 @RestController
@@ -51,17 +51,17 @@ public class DeviceController
     }
 
     @GetMapping("/client/devices")
-    public @ResponseBody List<Device> getDevices()
+    public @ResponseBody List<DeviceEntity> getDevices()
     {
-        List<Device> list = _DeviceService.findAll();
-        for (Device device : list) {
+        List<DeviceEntity> list = _DeviceService.findAll();
+        for (DeviceEntity device : list) {
             _Log.info("device mac %s", device.getMac());
         }
         return list;
     }
 
     @GetMapping("/client/device")
-    public @ResponseBody Device getDevice(@RequestParam(name = "mac") String deviceMac)
+    public @ResponseBody DeviceEntity getDevice(@RequestParam(name = "mac") String deviceMac)
     {
         return _DeviceService.findDevice(deviceMac);
     }
