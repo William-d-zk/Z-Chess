@@ -36,12 +36,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tgx.chess.spring.jpa.model.AuditModel;
 
 @Entity
-@Table(
-       schema = "\"tgx-z-chess-device\"",
+@Table(schema = "\"tgx-z-chess-device\"",
        indexes = { @Index(name = "device_idx_token_pwd", columnList = "token,password"),
                    @Index(name = "device_idx_token", columnList = "token"),
                    @Index(name = "device_idx_mac", columnList = "mac") })
-public class Device
+public class DeviceEntity
         extends
         AuditModel
 {

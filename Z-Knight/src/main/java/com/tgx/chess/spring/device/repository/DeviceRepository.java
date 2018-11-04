@@ -27,17 +27,17 @@ package com.tgx.chess.spring.device.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.tgx.chess.spring.device.model.Device;
+import com.tgx.chess.spring.device.model.DeviceEntity;
 
 @Repository
 //@Transactional
 public interface DeviceRepository
         extends
-        JpaRepository<Device, Long>
+        JpaRepository<DeviceEntity, Long>
 {
-    Device findByTokenAndPassword(String token, String password);
+    DeviceEntity findByTokenAndPassword(String token, String password);
 
-    Device findByMac(String mac);
+    DeviceEntity findByMac(String mac);
 
-    Device findByToken(String token);
+    DeviceEntity findByToken(String token);
 }

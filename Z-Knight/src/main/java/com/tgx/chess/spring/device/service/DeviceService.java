@@ -45,7 +45,7 @@ import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.*;
-import com.tgx.chess.spring.device.model.Device;
+import com.tgx.chess.spring.device.model.DeviceEntity;
 import com.tgx.chess.spring.device.repository.ClientRepository;
 import com.tgx.chess.spring.device.repository.DeviceRepository;
 
@@ -78,17 +78,17 @@ public class DeviceService
         _DeviceNode.start();
     }
 
-    public List<Device> findAll()
+    public List<DeviceEntity> findAll()
     {
         return _DeviceRepository.findAll();
     }
 
-    public Device saveDevice(Device device)
+    public DeviceEntity saveDevice(DeviceEntity device)
     {
         return _DeviceRepository.save(device);
     }
 
-    public Device findDevice(String mac)
+    public DeviceEntity findDevice(String mac)
     {
         return _DeviceRepository.findByMac(mac);
     }
@@ -103,13 +103,13 @@ public class DeviceService
                 byte[] deviceMac = x20.getMac();
                 String devicePwd = x20.getPassword();
                 long pwdId = x20.getPasswordId();
-                Device device = _DeviceRepository.findByMac(IoUtil.readMac(deviceMac));
+                DeviceEntity device = _DeviceRepository.findByMac(IoUtil.readMac(deviceMac));
                 X21_SignUpResult x21 = new X21_SignUpResult();
                 success:
                 {
                     if (Objects.isNull(device) || device.getPasswordId() == pwdId) {
                         if (Objects.isNull(device)) {
-                            device = new Device();
+                            device = new DeviceEntity();
                             device.setMac(IoUtil.readMac(deviceMac));
                             device.setPasswordId(pwdId);
 
@@ -162,7 +162,7 @@ public class DeviceService
                     byte[] password = devicePwd.getBytes();
                     byte[] toSign   = new byte[password.length + 6];
                     IoUtil.write(password, toSign, 6);
-                    Device device = _DeviceRepository.findByTokenAndPassword(deviceToken, devicePwd);
+                    DeviceEntity device = _DeviceRepository.findByTokenAndPassword(deviceToken, devicePwd);
                     if (Objects.nonNull(device)) {
                         byte[] macRaw = IoUtil.writeMacRaw(device.getMac());
                         IoUtil.write(macRaw, toSign, 0);

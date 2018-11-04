@@ -70,7 +70,7 @@ public class DeviceNode
     private final IAioServer      _DeviceServer;
     private final ISessionCreator _SessionCreator;
     private final ICommandCreator _CommandCreator;
-    private final IRepository _Respository;
+    private final IRepository     _Respository;
 
     @Override
     public void onDismiss(ISession session)

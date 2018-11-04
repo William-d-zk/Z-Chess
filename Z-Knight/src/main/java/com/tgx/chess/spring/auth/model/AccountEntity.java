@@ -46,7 +46,7 @@ public class AccountEntity
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private int             id;
 
-    @Email(message = "{email.valid}")
+    @Email(message = "{valid.email}")
     @NotEmpty(message = "{field.not.empty}")
     @Length(max = 64, message = "{size.email.over_length}")
     @Column(length = 64)

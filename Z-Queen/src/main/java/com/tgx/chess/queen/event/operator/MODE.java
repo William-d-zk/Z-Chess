@@ -37,7 +37,8 @@ public enum MODE
         IOperatorSupplier<IPacket, ICommand[], ISession>
 {
     CLUSTER_CONSUMER
-    {},
+    {
+    },
     CLUSTER_SERVER
     {
         @Override

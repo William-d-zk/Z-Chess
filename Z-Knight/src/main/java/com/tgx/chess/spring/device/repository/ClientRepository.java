@@ -27,12 +27,12 @@ package com.tgx.chess.spring.device.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.tgx.chess.spring.device.model.Client;
+import com.tgx.chess.spring.device.model.ClientEntity;
 
 @Repository
 public interface ClientRepository
         extends
-        JpaRepository<Client, Long>
+        JpaRepository<ClientEntity, Long>
 {
-    Client findByAuth(String auth);
+    ClientEntity findByAuth(String auth);
 }

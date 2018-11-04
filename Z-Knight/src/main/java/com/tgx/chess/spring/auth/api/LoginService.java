@@ -52,16 +52,15 @@ public class LoginService
     }
 
     @PostMapping(value = "/api/login")
-    public @ResponseBody
-    AuthEntry validate(@RequestBody Map<String, String> param)
+    public @ResponseBody AuthEntry validate(@RequestBody Map<String, String> param)
     {
         System.out.println(param);
-        AuthEntry auth     = new AuthEntry();
-        String  username = param.get("username");
-        String  password = param.get("password");
+        AuthEntry     auth     = new AuthEntry();
+        String        username = param.get("username");
+        String        password = param.get("password");
         AccountEntity account  = _AccountService.findByName(username)
-                                          .orElse(_AccountService.findByEmail(username)
-                                                                 .orElse(null));
+                                                .orElse(_AccountService.findByEmail(username)
+                                                                       .orElse(null));
         if (Objects.nonNull(password) && Objects.nonNull(account) && password.equals(account.getPassword())) {
             auth.setStatus(true);
             auth.setRoles(account.getRoles()
@@ -77,8 +76,7 @@ public class LoginService
     }
 
     @PostMapping(value = "/api/logout")
-    public @ResponseBody
-    AuthEntry logout()
+    public @ResponseBody AuthEntry logout()
     {
         AuthEntry auth = new AuthEntry();
         auth.setStatus(true);
@@ -86,8 +84,7 @@ public class LoginService
     }
 
     @GetMapping(value = "/api/profile")
-    public @ResponseBody
-    ProfileEntry profile(HttpSession session)
+    public @ResponseBody ProfileEntry profile(HttpSession session)
     {
         System.out.println(session.getAttributeNames());
         ProfileEntry profile = new ProfileEntry();

@@ -32,7 +32,7 @@ import com.tgx.chess.spring.jpa.model.AuditModel;
 
 @Entity
 @Table(schema = "\"tgx-z-chess-device\"", indexes = { @Index(name = "client_auth", columnList = "auth") })
-public class Client
+public class ClientEntity
         extends
         AuditModel
 {
@@ -49,12 +49,11 @@ public class Client
     private String            salt;
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinTable(
-               schema = "\"tgx-z-chess-device\"",
+    @JoinTable(schema = "\"tgx-z-chess-device\"",
                name = "client_device",
                joinColumns = @JoinColumn(name = "client_id"),
                inverseJoinColumns = @JoinColumn(name = "device_id"))
-    private Set<Device>       devices;
+    private Set<DeviceEntity> devices;
 
     public int getId()
     {
@@ -76,12 +75,12 @@ public class Client
         this.auth = auth;
     }
 
-    public Set<Device> getDevices()
+    public Set<DeviceEntity> getDevices()
     {
         return devices;
     }
 
-    public void setDevices(Set<Device> devices)
+    public void setDevices(Set<DeviceEntity> devices)
     {
         this.devices = devices;
     }
