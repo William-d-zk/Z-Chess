@@ -22,24 +22,13 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.bishop.biz.db.dto;
+package com.tgx.chess.queen.db.inf;
 
-import com.tgx.chess.queen.db.inf.IStorage;
+import com.tgx.chess.queen.io.core.inf.ICommand;
 
-public class DeviceEntry
-        implements
-        IStorage
+public interface IRepository
 {
-    private final static int DEVICE_ENTRY_SERIAL = DB_SERIAL + 1;
+    ICommand save(ICommand target);
 
-    @Override
-    public int dataLength() {
-        return 0;
-    }
-
-    @Override
-    public int getSerial() {
-        return DEVICE_ENTRY_SERIAL;
-    }
-
+    ICommand find(ICommand key);
 }

@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.bishop.biz.db.dto;
+package com.tgx.chess.bishop.biz.db.dao;
 
 import java.time.Instant;
 import java.util.MissingResourceException;
@@ -79,7 +79,8 @@ public class ZUID
     private long                 sequence;
     private long                 lastTimestamp;
 
-    public ZUID() {
+    public ZUID()
+    {
         ResourceBundle bundle;
         try {
             bundle = ResourceBundle.getBundle("zuid");
@@ -97,16 +98,12 @@ public class ZUID
         _TimestampSupplier = System::currentTimeMillis;
     }
 
-    public ZUID(long idc_id, long cluster_id, long node_id, long type) {
-        if (idc_id > MAX_IDC_ID
-            || idc_id < 0) { throw new IllegalArgumentException(String.format("idc region Id can't be greater than %d or less than 0",
-                                                                              MAX_IDC_ID)); }
+    public ZUID(long idc_id, long cluster_id, long node_id, long type)
+    {
+        if (idc_id > MAX_IDC_ID || idc_id < 0) { throw new IllegalArgumentException(String.format("idc region Id can't be greater than %d or less than 0", MAX_IDC_ID)); }
         if (cluster_id > MAX_CLUSTER_SET_ID
-            || cluster_id < 0) { throw new IllegalArgumentException(String.format("cluster Id can't be greater than %d or less than 0",
-                                                                                  MAX_CLUSTER_SET_ID)); }
-        if (node_id > MAX_NODE_ID
-            || node_id < 0) { throw new IllegalArgumentException(String.format("node Id can't be greater than %d or less than 0",
-                                                                               MAX_NODE_ID)); }
+            || cluster_id < 0) { throw new IllegalArgumentException(String.format("cluster Id can't be greater than %d or less than 0", MAX_CLUSTER_SET_ID)); }
+        if (node_id > MAX_NODE_ID || node_id < 0) { throw new IllegalArgumentException(String.format("node Id can't be greater than %d or less than 0", MAX_NODE_ID)); }
         _IdcId             = idc_id;
         _ClusterId         = cluster_id;
         _NodeId            = node_id;
@@ -114,7 +111,8 @@ public class ZUID
         _TimestampSupplier = System::currentTimeMillis;
     }
 
-    public synchronized long getId() {
+    public synchronized long getId()
+    {
         long timestamp = _TimestampSupplier.get();
         if (lastTimestamp == timestamp) {
             sequence = (sequence + 1) & SEQUENCE_MASK;

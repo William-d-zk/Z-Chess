@@ -22,41 +22,26 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.auth.model;
+package com.tgx.chess.rook.biz.device.dao;
 
-import javax.persistence.*;
+import com.tgx.chess.queen.db.inf.IStorage;
 
-import com.tgx.chess.spring.jpa.model.AuditModel;
-
-@Entity
-@Table(indexes = { @Index(name = "role_idx_role", columnList = "role") })
-public class Role
-        extends
-        AuditModel
+public class DeviceEntry
+        implements
+        IStorage
 {
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private int    id;
-    @Column(length = 16)
-    private String role;
+    private final static int DEVICE_ENTRY_SERIAL = DB_SERIAL + 1;
 
-    public int getId()
+    @Override
+    public int dataLength()
     {
-        return id;
+        return 0;
     }
 
-    public void setId(int id)
+    @Override
+    public int getSerial()
     {
-        this.id = id;
+        return DEVICE_ENTRY_SERIAL;
     }
 
-    public String getRole()
-    {
-        return role;
-    }
-
-    public void setRole(String role)
-    {
-        this.role = role;
-    }
 }

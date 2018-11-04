@@ -29,6 +29,7 @@ import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -46,7 +47,7 @@ public class DeviceController
     @Autowired
     public DeviceController(DeviceService deviceService)
     {
-        this._DeviceService = deviceService;
+        _DeviceService = deviceService;
     }
 
     @GetMapping("/client/devices")
@@ -59,4 +60,9 @@ public class DeviceController
         return list;
     }
 
+    @GetMapping("/client/device")
+    public @ResponseBody Device getDevice(@RequestParam(name = "mac") String deviceMac)
+    {
+        return _DeviceService.findDevice(deviceMac);
+    }
 }

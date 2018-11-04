@@ -42,7 +42,7 @@ import org.springframework.stereotype.Service;
 import com.tgx.chess.bishop.biz.device.DeviceNode;
 import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.king.base.util.IoUtil;
-import com.tgx.chess.queen.db.inf.IRespository;
+import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.*;
 import com.tgx.chess.spring.device.model.Device;
@@ -53,7 +53,7 @@ import com.tgx.chess.spring.device.repository.DeviceRepository;
 @PropertySource("classpath:device.properties")
 public class DeviceService
         implements
-        IRespository
+        IRepository
 {
     private final DeviceRepository _DeviceRepository;
     private final ClientRepository _ClientRepository;
@@ -86,6 +86,11 @@ public class DeviceService
     public Device saveDevice(Device device)
     {
         return _DeviceRepository.save(device);
+    }
+
+    public Device findDevice(String mac)
+    {
+        return _DeviceRepository.findByMac(mac);
     }
 
     @Override

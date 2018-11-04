@@ -32,9 +32,9 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.tgx.chess.spring.auth.model.Account;
-import com.tgx.chess.spring.auth.model.Profile;
-import com.tgx.chess.spring.auth.model.Role;
+import com.tgx.chess.spring.auth.model.AccountEntity;
+import com.tgx.chess.spring.auth.model.ProfileEntity;
+import com.tgx.chess.spring.auth.model.RoleEntity;
 import com.tgx.chess.spring.auth.repository.AccountRepository;
 import com.tgx.chess.spring.auth.repository.ProfileRepository;
 import com.tgx.chess.spring.auth.repository.RoleRepository;
@@ -57,22 +57,22 @@ public class AccountService
 
     public void initializeCheck()
     {
-        Role admin = _RoleRepository.findByRole("ADMIN");
-        Role user  = _RoleRepository.findByRole("USER");
+        RoleEntity admin = _RoleRepository.findByRole("ADMIN");
+        RoleEntity user  = _RoleRepository.findByRole("USER");
         if (Objects.isNull(admin)) {
-            admin = new Role();
+            admin = new RoleEntity();
             admin.setRole("ADMIN");
             _RoleRepository.save(admin);
         }
         if (Objects.isNull(user)) {
-            user = new Role();
+            user = new RoleEntity();
             user.setRole("USER");
             _RoleRepository.save(user);
         }
-        Account test = _AccountRepository.findByName("root");
+        AccountEntity test = _AccountRepository.findByName("root");
         if (Objects.isNull(test)) {
-            Profile profile = new Profile();
-            Account root    = new Account();
+            ProfileEntity profile = new ProfileEntity();
+            AccountEntity root    = new AccountEntity();
             root.setActive(1);
             root.setName("root");
             root.setPassword("root12345");
@@ -84,21 +84,21 @@ public class AccountService
         }
     }
 
-    public Optional<Account> findByEmail(String email)
+    public Optional<AccountEntity> findByEmail(String email)
     {
         return Optional.ofNullable(_AccountRepository.findByEmail(email));
     }
 
-    public Optional<Account> findByName(String name)
+    public Optional<AccountEntity> findByName(String name)
     {
         return Optional.ofNullable(_AccountRepository.findByName(name));
     }
 
-    public void saveAccount(Account account)
+    public void saveAccount(AccountEntity account)
     {
         account.setPassword(account.getPassword());
         account.setActive(1);
-        Role role = _RoleRepository.findByRole("USER");
+        RoleEntity role = _RoleRepository.findByRole("USER");
         account.setRoles(new HashSet<>(Collections.singletonList(role)));
         _AccountRepository.save(account);
     }

@@ -27,12 +27,12 @@ package com.tgx.chess.spring.auth.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.tgx.chess.spring.auth.model.Profile;
+import com.tgx.chess.spring.auth.model.ProfileEntity;
 
 @Repository
 public interface ProfileRepository
         extends
-        JpaRepository<Profile, Integer>
+        JpaRepository<ProfileEntity, Integer>
 {
-    Profile findByAccount(int accountId);
+    ProfileEntity findByAccount(int accountId);
 }

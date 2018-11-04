@@ -22,26 +22,46 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.rook.biz.device.dto;
+package com.tgx.chess.spring.auth.api.dao;
 
-import com.tgx.chess.queen.db.inf.IStorage;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 
-public class DeviceEntry
+public class AuthEntry
         implements
-        IStorage
+        Serializable
 {
-    private final static int DEVICE_ENTRY_SERIAL = DB_SERIAL + 1;
 
-    @Override
-    public int dataLength()
+    private static final long  serialVersionUID = -9052656763177899443L;
+
+    private boolean            status;
+    private Collection<String> roles;
+
+    public boolean isStatus()
     {
-        return 0;
+        return status;
     }
 
-    @Override
-    public int getSerial()
+    public void setStatus(boolean status)
     {
-        return DEVICE_ENTRY_SERIAL;
+        this.status = status;
     }
 
+    public Collection<String> getRoles()
+    {
+        return roles;
+    }
+
+    public void setRoles(Collection<String> roles)
+    {
+        this.roles = roles;
+    }
+
+    public void setRole(String role)
+    {
+        ArrayList<String> list = new ArrayList<>(1);
+        list.add(role);
+        setRoles(list);
+    }
 }
