@@ -32,12 +32,9 @@ public class AuthEntry
         implements
         Serializable
 {
-
     private static final long  serialVersionUID = -9052656763177899443L;
-
     private boolean            status;
     private Collection<String> roles;
-
     public boolean isStatus()
     {
         return status;
