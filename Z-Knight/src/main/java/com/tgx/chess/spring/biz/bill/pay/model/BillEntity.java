@@ -22,66 +22,67 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.auth.model;
+package com.tgx.chess.spring.biz.bill.pay.model;
 
-import java.util.Set;
+import com.tgx.chess.spring.jpa.model.AuditModel;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
-import com.tgx.chess.spring.device.model.ClientEntity;
-import com.tgx.chess.spring.jpa.model.AuditModel;
-
 @Entity
-@Table(indexes = { @Index(name = "profile_idx_account", columnList = "account_id") })
-public class ProfileEntity
+@Table(schema = "\"tgx-z-chess-bill-pay\"",
+       indexes = { @Index(name = "bill_idx_bill", columnList = "bill"),
+                   @Index(name = "bill_idx_mac", columnList = "mac"),
+                   @Index(name = "bill_idx_open_id", columnList = "openId") })
+public class BillEntity
         extends
         AuditModel
 {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private int               id;
+    private long   id;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "account_id")
-    private AccountEntity     account;
+    @Column(length = 64, nullable = false)
+    private String bill;
 
     @Column(length = 64)
-    private String            openId;
+    private String openId;
 
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinTable(name = "profile_client", joinColumns = @JoinColumn(name = "profile_id"), inverseJoinColumns = @JoinColumn(name = "client_id"))
-    private Set<ClientEntity> clients;
+    @Column(length = 17, nullable = false)
+    private String mac;
 
-    public int getId()
+    @Column
+    private double amount;
+
+    @Column(length = 16)
+    private String type;
+
+    @Column(length = 20)
+    private String result;
+
+    public long getId()
     {
         return id;
     }
 
-    public void setId(int id)
+    public void setId(long id)
     {
         this.id = id;
     }
 
-    public AccountEntity getAccount()
+    public String getBill()
     {
-        return account;
+        return bill;
     }
 
-    public void setAccount(AccountEntity account)
+    public void setBill(String bill)
     {
-        this.account = account;
+        this.bill = bill;
     }
 
     public String getOpenId()
@@ -94,13 +95,43 @@ public class ProfileEntity
         this.openId = openId;
     }
 
-    public Set<ClientEntity> getClients()
+    public String getMac()
     {
-        return clients;
+        return mac;
     }
 
-    public void setClients(Set<ClientEntity> clients)
+    public void setMac(String mac)
     {
-        this.clients = clients;
+        this.mac = mac;
+    }
+
+    public double getAmount()
+    {
+        return amount;
+    }
+
+    public void setAmount(double amount)
+    {
+        this.amount = amount;
+    }
+
+    public String getType()
+    {
+        return type;
+    }
+
+    public void setType(String type)
+    {
+        this.type = type;
+    }
+
+    public String getResult()
+    {
+        return result;
+    }
+
+    public void setResult(String result)
+    {
+        this.result = result;
     }
 }
