@@ -24,7 +24,7 @@
 
 package com.tgx.chess.spring.device.model;
 
-import java.util.Set;
+import com.tgx.chess.spring.jpa.model.AuditModel;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -38,10 +38,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
+import java.util.Set;
 
-import com.tgx.chess.spring.jpa.model.AuditModel;
-
-@Entity
+@Entity(name = "Client")
 @Table(schema = "\"tgx-z-chess-device\"", indexes = { @Index(name = "client_auth", columnList = "auth") })
 public class ClientEntity
         extends

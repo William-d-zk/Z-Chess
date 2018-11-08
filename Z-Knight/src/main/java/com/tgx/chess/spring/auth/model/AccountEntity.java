@@ -24,7 +24,8 @@
 
 package com.tgx.chess.spring.auth.model;
 
-import java.util.Set;
+import com.tgx.chess.spring.jpa.model.AuditModel;
+import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -41,12 +42,9 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
+import java.util.Set;
 
-import org.hibernate.validator.constraints.Length;
-
-import com.tgx.chess.spring.jpa.model.AuditModel;
-
-@Entity
+@Entity(name = "Account")
 @Table(indexes = { @Index(name = "account_idx_email", columnList = "email"),
                    @Index(name = "account_idx_name", columnList = "name") })
 public class AccountEntity
