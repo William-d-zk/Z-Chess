@@ -66,6 +66,7 @@ public class BillController
         billEntity.setResult(Result.PENDING.name());
         billEntity.setType(type.name());
         _BillService.saveBill(billEntity);
+        _Log.info(billEntity.toString());
         BillEntry billEntry = new BillEntry();
         billEntry.setBill(bill);
         billEntry.setMac(mac);
