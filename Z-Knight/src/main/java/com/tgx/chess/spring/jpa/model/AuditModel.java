@@ -77,4 +77,10 @@ public abstract class AuditModel
     {
         this.updatedAt = updatedAt;
     }
+
+    @Override
+    public String toString()
+    {
+        return String.format("create@ %s update@ %s", getCreatedAt(), getUpdatedAt());
+    }
 }

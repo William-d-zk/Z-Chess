@@ -134,4 +134,10 @@ public class BillEntity
     {
         this.result = result;
     }
+
+    @Override
+    public String toString()
+    {
+        return String.format("bill:%s mac:%s openId:%s amount:%s %s type:%s result:%s", bill, mac, openId, amount, super.toString(), type, result);
+    }
 }
