@@ -22,26 +22,23 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.jpa;
+package com.tgx.chess.spring.biz.bill.pay.repository;
 
-import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-@EnableJpaAuditing
-@EnableJpaRepositories({ "com.tgx.chess.spring.auth.repository",
-                         "com.tgx.chess.spring.device.repository",
-                         "com.tgx.chess.spring.biz.bill.pay.repository" })
-@EntityScan({ "com.tgx.chess.spring.device.model",
-              "com.tgx.chess.spring.auth.model",
-              "com.tgx.chess.spring.biz.bill.pay.model" })
-@EnableTransactionManagement
-@Configuration
-@PropertySource({ "classpath:db.properties" })
-public class JpaConfig
+import com.tgx.chess.spring.biz.bill.pay.model.BillEntity;
+
+@Repository
+public interface BillRepository
+        extends
+        JpaRepository<BillEntity, Long>
 {
+
+    BillEntity findByMac(String mac);
+
+    BillEntity findByOpenId(String openId);
+
+    BillEntity findByBill(String bill);
 
 }
