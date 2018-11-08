@@ -22,47 +22,24 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.auth.model;
+package com.tgx.chess;
 
-import com.tgx.chess.spring.jpa.model.AuditModel;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.Table;
-
-@Entity(name = "Role")
-@Table(indexes = { @Index(name = "role_idx_role", columnList = "role") })
-public class RoleEntity
+public class ZApiExecption
         extends
-        AuditModel
+        RuntimeException
 {
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private int    id;
-    @Column(length = 16)
-    private String role;
-
-    public int getId()
+    public ZApiExecption(String message)
     {
-        return id;
+        super(message);
     }
 
-    public void setId(int id)
+    public ZApiExecption(String message, Throwable cause)
     {
-        this.id = id;
+        super(message, cause);
     }
 
-    public String getRole()
+    public ZApiExecption(Throwable cause)
     {
-        return role;
-    }
-
-    public void setRole(String role)
-    {
-        this.role = role;
+        super(cause);
     }
 }

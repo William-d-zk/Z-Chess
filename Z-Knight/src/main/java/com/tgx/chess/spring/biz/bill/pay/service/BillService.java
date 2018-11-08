@@ -66,11 +66,7 @@ public class BillService
 
     public void saveBill(BillEntity bill)
     {
-        //        account.setPassword(account.getPassword());
-        //        account.setActive(1);
-        //        RoleEntity role = _RoleRepository.findByRole("USER");
-        //        account.setRoles(new HashSet<>(Collections.singletonList(role)));
-        //        _AccountRepository.save(account);
+        _BillRepository.save(bill);
     }
 
 }

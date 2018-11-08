@@ -24,7 +24,8 @@
 
 package com.tgx.chess.spring.auth.model;
 
-import java.util.Set;
+import com.tgx.chess.spring.device.model.ClientEntity;
+import com.tgx.chess.spring.jpa.model.AuditModel;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -39,11 +40,9 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import java.util.Set;
 
-import com.tgx.chess.spring.device.model.ClientEntity;
-import com.tgx.chess.spring.jpa.model.AuditModel;
-
-@Entity
+@Entity(name = "Profile")
 @Table(indexes = { @Index(name = "profile_idx_account", columnList = "account_id") })
 public class ProfileEntity
         extends

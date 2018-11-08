@@ -24,8 +24,6 @@
 
 package com.tgx.chess.spring.biz.bill.pay.model;
 
-import com.tgx.chess.spring.jpa.model.AuditModel;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -34,7 +32,9 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
 
-@Entity
+import com.tgx.chess.spring.jpa.model.AuditModel;
+
+@Entity(name = "Bill")
 @Table(schema = "\"tgx-z-chess-bill-pay\"",
        indexes = { @Index(name = "bill_idx_bill", columnList = "bill"),
                    @Index(name = "bill_idx_mac", columnList = "mac"),

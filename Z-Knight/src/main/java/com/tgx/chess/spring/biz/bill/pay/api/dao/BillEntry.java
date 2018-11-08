@@ -22,47 +22,35 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.auth.model;
+package com.tgx.chess.spring.biz.bill.pay.api.dao;
 
-import com.tgx.chess.spring.jpa.model.AuditModel;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.Table;
-
-@Entity(name = "Role")
-@Table(indexes = { @Index(name = "role_idx_role", columnList = "role") })
-public class RoleEntity
-        extends
-        AuditModel
+public class BillEntry
+        implements
+        java.io.Serializable
 {
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private int    id;
-    @Column(length = 16)
-    private String role;
+    private static final long serialVersionUID = -1254601378280176438L;
 
-    public int getId()
+    private String            mac;
+    private String            bill;
+
+    public String getMac()
     {
-        return id;
+        return mac;
     }
 
-    public void setId(int id)
+    public void setMac(String mac)
     {
-        this.id = id;
+        this.mac = mac;
     }
 
-    public String getRole()
+    public String getBill()
     {
-        return role;
+        return bill;
     }
 
-    public void setRole(String role)
+    public void setBill(String bill)
     {
-        this.role = role;
+        this.bill = bill;
     }
+
 }
