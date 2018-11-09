@@ -47,7 +47,7 @@ public class BillEntity
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private long   id;
 
-    @Column(length = 64, nullable = false)
+    @Column(length = 64, nullable = false, unique = true)
     private String bill;
 
     @Column(length = 64)
@@ -58,6 +58,9 @@ public class BillEntity
 
     @Column
     private double amount;
+
+    @Column(length = 6, nullable = false)
+    private String currency = "RMB";
 
     @Column(length = 16)
     private String type;
