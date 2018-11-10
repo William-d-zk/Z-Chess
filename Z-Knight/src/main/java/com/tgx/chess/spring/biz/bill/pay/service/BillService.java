@@ -64,6 +64,11 @@ public class BillService
         return Optional.ofNullable(_ClientRepository.findByAuth(name));
     }
 
+    public Optional<BillEntity> findByBill(String bill)
+    {
+        return Optional.ofNullable(_BillRepository.findByBill(bill));
+    }
+
     public void saveBill(BillEntity bill)
     {
         _BillRepository.save(bill);

@@ -22,45 +22,34 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.biz.bill.pay.api.dao;
+package com.tgx.chess.spring.biz.bill.pay.service;
 
-public class BillEntry
-        implements
-        java.io.Serializable
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.tgx.chess.spring.biz.bill.pay.model.ItemEntity;
+import com.tgx.chess.spring.biz.bill.pay.repository.ItemsRepository;
+
+@Service
+public class ItemsService
 {
-    private static final long serialVersionUID = -1254601378280176438L;
+    private final ItemsRepository _ItemsRepository;
 
-    private String            mac;
-    private String            bill;
-    private String            status;
-
-    public String getMac()
+    @Autowired
+    public ItemsService(ItemsRepository itemsRepository)
     {
-        return mac;
+        _ItemsRepository = itemsRepository;
     }
 
-    public void setMac(String mac)
+    public void addItem(ItemEntity itemEntity)
     {
-        this.mac = mac;
+        _ItemsRepository.save(itemEntity);
     }
 
-    public String getBill()
+    public List<ItemEntity> listItems()
     {
-        return bill;
-    }
-
-    public void setBill(String bill)
-    {
-        this.bill = bill;
-    }
-
-    public String getStatus()
-    {
-        return status;
-    }
-
-    public void setStatus(String status)
-    {
-        this.status = status;
+        return _ItemsRepository.findAll();
     }
 }

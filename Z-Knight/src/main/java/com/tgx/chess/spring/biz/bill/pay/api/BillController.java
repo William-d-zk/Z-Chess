@@ -63,7 +63,8 @@ public class BillController
                                        @RequestParam("bill") String bill,
                                        @RequestParam("mac") String mac,
                                        @RequestParam("oid") String openId,
-                                       @RequestParam("amount") double amount) throws ZApiExecption
+                                       @RequestParam("amount") double amount,
+                                       @RequestParam("item") String item) throws ZApiExecption
     {
         BillEntity billEntity = new BillEntity();
         billEntity.setAmount(amount);
@@ -92,7 +93,28 @@ public class BillController
         BillEntry billEntry = new BillEntry();
         billEntry.setBill(bill);
         billEntry.setMac(mac);
+        billEntry.setStatus(Result.PENDING.name());
         return billEntry;
+    }
+
+    @GetMapping("/bill/confirm")
+    public @ResponseBody BillEntry confirm(@RequestParam("bill") String bill, @RequestParam("result") boolean result) throws ZApiExecption
+    {
+        BillEntity billEntity = _BillService.findByBill(bill)
+                                            .orElseThrow(() -> new ZApiExecption(String.format("bill %s not exist!", bill)));
+        billEntity.setResult(result ? Result.SUCCESS.name() : Result.FAILED.name());
+        _BillService.saveBill(billEntity);
+        BillEntry billEntry = new BillEntry();
+        billEntry.setBill(bill);
+        billEntry.setMac(billEntity.getMac());
+        billEntry.setStatus(billEntity.getResult());
+        return billEntry;
+    }
+
+    @GetMapping("/bill/query")
+    public @ResponseBody BillEntry query(@RequestParam("mac") String mac) throws ZApiExecption
+    {
+        return null;
     }
 
 }
