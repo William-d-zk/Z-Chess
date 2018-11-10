@@ -25,6 +25,7 @@
 package com.tgx.chess.spring.biz.bill.pay.api;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,6 +75,7 @@ public class ItemsController
     {
         return _ItemsService.listItems()
                             .stream()
+                            .filter(Objects::nonNull)
                             .map(itemEntity ->
                             {
                                 ItemEntry itemEntry = new ItemEntry();
