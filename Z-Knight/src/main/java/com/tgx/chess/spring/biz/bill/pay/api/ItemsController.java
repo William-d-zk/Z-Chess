@@ -22,45 +22,15 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.biz.bill.pay.api.dao;
+package com.tgx.chess.spring.biz.bill.pay.api;
 
-public class BillEntry
-        implements
-        java.io.Serializable
+import org.springframework.web.bind.annotation.RestController;
+
+import com.tgx.chess.king.base.log.Logger;
+
+@RestController
+public class ItemsController
 {
-    private static final long serialVersionUID = -1254601378280176438L;
+    private final Logger _Log = Logger.getLogger(getClass().getName());
 
-    private String            mac;
-    private String            bill;
-    private String            status;
-
-    public String getMac()
-    {
-        return mac;
-    }
-
-    public void setMac(String mac)
-    {
-        this.mac = mac;
-    }
-
-    public String getBill()
-    {
-        return bill;
-    }
-
-    public void setBill(String bill)
-    {
-        this.bill = bill;
-    }
-
-    public String getStatus()
-    {
-        return status;
-    }
-
-    public void setStatus(String status)
-    {
-        this.status = status;
-    }
 }

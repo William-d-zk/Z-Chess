@@ -22,45 +22,17 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.biz.bill.pay.api.dao;
+package com.tgx.chess.spring.biz.bill.pay.repository;
 
-public class BillEntry
-        implements
-        java.io.Serializable
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.tgx.chess.spring.biz.bill.pay.model.ItemEntity;
+
+@Repository
+public interface ItemsRepository
+        extends
+        JpaRepository<ItemEntity, Long>
 {
-    private static final long serialVersionUID = -1254601378280176438L;
-
-    private String            mac;
-    private String            bill;
-    private String            status;
-
-    public String getMac()
-    {
-        return mac;
-    }
-
-    public void setMac(String mac)
-    {
-        this.mac = mac;
-    }
-
-    public String getBill()
-    {
-        return bill;
-    }
-
-    public void setBill(String bill)
-    {
-        this.bill = bill;
-    }
-
-    public String getStatus()
-    {
-        return status;
-    }
-
-    public void setStatus(String status)
-    {
-        this.status = status;
-    }
+    ItemEntity findBySku(String sku);
 }

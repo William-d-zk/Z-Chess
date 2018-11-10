@@ -26,10 +26,13 @@ package com.tgx.chess.spring.biz.bill.pay.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import com.tgx.chess.spring.jpa.model.AuditModel;
@@ -45,28 +48,31 @@ public class BillEntity
 {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private long   id;
+    private long        id;
 
     @Column(length = 64, nullable = false, unique = true)
-    private String bill;
+    private String      bill;
 
     @Column(length = 64)
-    private String openId;
+    private String      openId;
 
     @Column(length = 17, nullable = false)
-    private String mac;
+    private String      mac;
 
-    @Column
-    private double amount;
+    private double      amount;
 
     @Column(length = 6, nullable = false)
-    private String currency = "RMB";
+    private String      currency = "RMB";
 
     @Column(length = 16)
-    private String type;
+    private String      type;
 
     @Column(length = 20)
-    private String result;
+    private String      result;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "itemId")
+    private ItemEntity item;
 
     public long getId()
     {
@@ -142,5 +148,13 @@ public class BillEntity
     public String toString()
     {
         return String.format("bill:%s mac:%s openId:%s amount:%s %s type:%s result:%s", bill, mac, openId, amount, super.toString(), type, result);
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
     }
 }
