@@ -42,6 +42,7 @@ import com.tgx.chess.spring.biz.bill.pay.Result;
 import com.tgx.chess.spring.biz.bill.pay.api.dao.BillEntry;
 import com.tgx.chess.spring.biz.bill.pay.model.BillEntity;
 import com.tgx.chess.spring.biz.bill.pay.service.BillService;
+import com.tgx.chess.spring.biz.bill.pay.service.ItemsService;
 
 @RestController
 public class BillController
@@ -51,28 +52,30 @@ public class BillController
     private final Logger         _Log                        = Logger.getLogger(getClass().getName());
 
     private final BillService    _BillService;
+    private final ItemsService   _ItemsService;
 
     @Autowired
-    public BillController(BillService billService)
+    public BillController(BillService billService, ItemsService itemsService)
     {
-        _BillService = billService;
+        _BillService  = billService;
+        _ItemsService = itemsService;
     }
 
     @GetMapping("/bill/pay")
     public @ResponseBody BillEntry pay(@RequestParam("type") String type,
                                        @RequestParam("bill") String bill,
                                        @RequestParam("mac") String mac,
-                                       @RequestParam("oid") String openId,
                                        @RequestParam("amount") double amount,
-                                       @RequestParam("item") String item) throws ZApiExecption
+                                       @RequestParam("item") long id) throws ZApiExecption
     {
         BillEntity billEntity = new BillEntity();
         billEntity.setAmount(amount);
         billEntity.setBill(bill);
         billEntity.setMac(mac);
-        billEntity.setOpenId(openId);
         billEntity.setResult(Result.PENDING.name());
         billEntity.setType(type);
+        billEntity.setItem(_ItemsService.findById(id)
+                                        .orElseThrow(() -> new ZApiExecption(String.format("undefine item %d", id))));
         try {
             _BillService.saveBill(billEntity);
         }
@@ -98,11 +101,14 @@ public class BillController
     }
 
     @GetMapping("/bill/confirm")
-    public @ResponseBody BillEntry confirm(@RequestParam("bill") String bill, @RequestParam("result") boolean result) throws ZApiExecption
+    public @ResponseBody BillEntry confirm(@RequestParam("bill") String bill,
+                                           @RequestParam("oid") String openId,
+                                           @RequestParam("result") boolean result) throws ZApiExecption
     {
         BillEntity billEntity = _BillService.findByBill(bill)
                                             .orElseThrow(() -> new ZApiExecption(String.format("bill %s not exist!", bill)));
         billEntity.setResult(result ? Result.SUCCESS.name() : Result.FAILED.name());
+        billEntity.setOpenId(openId);
         _BillService.saveBill(billEntity);
         BillEntry billEntry = new BillEntry();
         billEntry.setBill(bill);

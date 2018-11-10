@@ -32,6 +32,7 @@ public class ItemEntry
 {
     private static final long serialVersionUID = 800707260027704202L;
 
+    private long              id;
     private String            sku;
     private double            price;
     private String            currency;
@@ -39,7 +40,7 @@ public class ItemEntry
     @Override
     public String toString()
     {
-        return String.format("Item %s @ %.3f %s", sku, price, currency);
+        return String.format("Item %d %s @ %.3f %s", id, sku, price, currency);
     }
 
     public String getSku()
@@ -70,5 +71,15 @@ public class ItemEntry
     public void setCurrency(String currency)
     {
         this.currency = currency;
+    }
+
+    public long getId()
+    {
+        return id;
+    }
+
+    public void setId(long id)
+    {
+        this.id = id;
     }
 }
