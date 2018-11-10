@@ -26,14 +26,9 @@ package com.tgx.chess.spring.biz.bill.pay.api;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.hibernate.exception.ConstraintViolationException;
-import org.postgresql.util.PSQLException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -50,12 +45,10 @@ import com.tgx.chess.spring.biz.bill.pay.service.ItemsService;
 @RestController
 public class BillController
 {
-    private final static Pattern PGSQL_DUPLICATE_KEY_PATTERN = Pattern.compile("ERROR: duplicate key value violates unique constraint\\s+.*\\n.*\\(bill\\)=\\((.+)\\) already exists.*");
+    private final Logger       _Log = Logger.getLogger(getClass().getName());
 
-    private final Logger         _Log                        = Logger.getLogger(getClass().getName());
-
-    private final BillService    _BillService;
-    private final ItemsService   _ItemsService;
+    private final BillService  _BillService;
+    private final ItemsService _ItemsService;
 
     @Autowired
     public BillController(BillService billService, ItemsService itemsService)
@@ -84,18 +77,11 @@ public class BillController
         }
         catch (Exception pse) {
             pse.printStackTrace();
-            if (pse instanceof DataIntegrityViolationException) {
-                ConstraintViolationException cve     = (ConstraintViolationException) pse.getCause();
-                PSQLException                psqle   = (PSQLException) cve.getCause();
-                String                       msg     = psqle.getMessage();
-                Matcher                      matcher = PGSQL_DUPLICATE_KEY_PATTERN.matcher(msg);
-                if (matcher.matches()) {
-                    String errorMatcher = matcher.group(1);
-                    if (errorMatcher.equals(bill)) { throw new ZApiExecption(String.format("duplicate key - bill %s", bill)); }
-                }
-            }
+            throw new ZApiExecption(String.format("duplicate key - bill %s", bill));
+
         }
         _Log.info(billEntity.toString());
+
         BillEntry billEntry = new BillEntry();
         billEntry.setBill(bill);
         billEntry.setMac(mac);
