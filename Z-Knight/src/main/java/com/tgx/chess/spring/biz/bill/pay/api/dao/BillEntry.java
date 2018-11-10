@@ -25,6 +25,7 @@
 package com.tgx.chess.spring.biz.bill.pay.api.dao;
 
 import java.io.Serializable;
+import java.util.Date;
 
 public class BillEntry
         implements
@@ -35,6 +36,8 @@ public class BillEntry
     private String            mac;
     private String            bill;
     private String            status;
+    private long              item;
+    private Date              timestamp;
 
     public String getMac()
     {
@@ -64,5 +67,25 @@ public class BillEntry
     public void setStatus(String status)
     {
         this.status = status;
+    }
+
+    public Date getTimestamp()
+    {
+        return timestamp;
+    }
+
+    public void setTimestamp(Date timestamp)
+    {
+        this.timestamp = timestamp;
+    }
+
+    public long getItem()
+    {
+        return item;
+    }
+
+    public void setItem(long item)
+    {
+        this.item = item;
     }
 }

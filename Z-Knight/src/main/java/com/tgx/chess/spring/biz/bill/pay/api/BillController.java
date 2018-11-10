@@ -24,8 +24,11 @@
 
 package com.tgx.chess.spring.biz.bill.pay.api;
 
+import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.hibernate.exception.ConstraintViolationException;
 import org.postgresql.util.PSQLException;
@@ -109,18 +112,33 @@ public class BillController
                                             .orElseThrow(() -> new ZApiExecption(String.format("bill %s not exist!", bill)));
         billEntity.setResult(result ? Result.SUCCESS.name() : Result.FAILED.name());
         billEntity.setOpenId(openId);
-        _BillService.saveBill(billEntity);
+        billEntity = _BillService.saveBill(billEntity);
         BillEntry billEntry = new BillEntry();
         billEntry.setBill(bill);
         billEntry.setMac(billEntity.getMac());
         billEntry.setStatus(billEntity.getResult());
+        billEntry.setTimestamp(billEntity.getUpdatedAt());
         return billEntry;
     }
 
     @GetMapping("/bill/query")
-    public @ResponseBody BillEntry query(@RequestParam("mac") String mac) throws ZApiExecption
+    public @ResponseBody List<BillEntry> query(@RequestParam("mac") String mac) throws ZApiExecption
     {
-        return null;
+        return _BillService.findAllByMac(mac)
+                           .stream()
+                           .filter(Objects::nonNull)
+                           .map(billEntity ->
+                           {
+                               BillEntry billEntry = new BillEntry();
+                               billEntry.setStatus(billEntity.getResult());
+                               billEntry.setMac(mac);
+                               billEntry.setBill(billEntity.getBill());
+                               billEntry.setItem(billEntity.getItem()
+                                                           .getId());
+                               billEntry.setTimestamp(billEntity.getUpdatedAt());
+                               return billEntry;
+                           })
+                           .collect(Collectors.toList());
     }
 
 }

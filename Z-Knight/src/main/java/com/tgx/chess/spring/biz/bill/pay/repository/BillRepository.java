@@ -24,6 +24,8 @@
 
 package com.tgx.chess.spring.biz.bill.pay.repository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -35,9 +37,9 @@ public interface BillRepository
         JpaRepository<BillEntity, Long>
 {
 
-    BillEntity findByMac(String mac);
+    List<BillEntity> findAllByMac(String mac);
 
-    BillEntity findByOpenId(String openId);
+    List<BillEntity> findAllByOpenId(String openId);
 
     BillEntity findByBill(String bill);
 

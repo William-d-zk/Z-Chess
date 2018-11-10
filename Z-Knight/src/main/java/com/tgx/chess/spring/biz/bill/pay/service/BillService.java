@@ -24,6 +24,7 @@
 
 package com.tgx.chess.spring.biz.bill.pay.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,9 +70,14 @@ public class BillService
         return Optional.ofNullable(_BillRepository.findByBill(bill));
     }
 
-    public void saveBill(BillEntity bill)
+    public List<BillEntity> findAllByMac(String mac)
     {
-        _BillRepository.save(bill);
+        return _BillRepository.findAllByMac(mac);
+    }
+
+    public BillEntity saveBill(BillEntity bill)
+    {
+        return _BillRepository.save(bill);
     }
 
 }
