@@ -24,13 +24,64 @@
 
 package com.tgx.chess.spring.biz.bill.pay.api;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tgx.chess.ZApiExecption;
 import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.spring.biz.bill.pay.api.dao.ItemEntry;
+import com.tgx.chess.spring.biz.bill.pay.model.ItemEntity;
+import com.tgx.chess.spring.biz.bill.pay.service.ItemsService;
 
 @RestController
 public class ItemsController
 {
-    private final Logger _Log = Logger.getLogger(getClass().getName());
+    private final Logger       _Log = Logger.getLogger(getClass().getName());
 
+    private final ItemsService _ItemsService;
+
+    @Autowired
+    public ItemsController(ItemsService itemsService)
+    {
+        _ItemsService = itemsService;
+    }
+
+    @GetMapping("/items/add")
+    public @ResponseBody ItemEntry addSku(@RequestParam(name = "sku") String sku,
+                                          @RequestParam(name = "price") double price,
+                                          @RequestParam(name = "currency", defaultValue = "RMB") String currency) throws ZApiExecption
+    {
+        ItemEntity itemEntity = new ItemEntity();
+        itemEntity.setPrice(price);
+        itemEntity.setSku(sku);
+        _ItemsService.addItem(itemEntity);
+        ItemEntry itemEntry = new ItemEntry();
+        itemEntry.setCurrency(currency);
+        itemEntry.setPrice(price);
+        itemEntry.setSku(sku);
+        return itemEntry;
+    }
+
+    @GetMapping("/items/list")
+    public @ResponseBody List<ItemEntry> listSku() throws ZApiExecption
+    {
+        return _ItemsService.listItems()
+                            .stream()
+                            .map(itemEntity ->
+                            {
+                                ItemEntry itemEntry = new ItemEntry();
+                                itemEntry.setSku(itemEntity.getSku());
+                                itemEntry.setPrice(itemEntity.getPrice());
+                                itemEntry.setCurrency(itemEntity.getCurrency());
+                                return itemEntry;
+                            })
+                            .collect(Collectors.toList());
+
+    }
 }

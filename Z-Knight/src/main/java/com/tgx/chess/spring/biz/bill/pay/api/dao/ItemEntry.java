@@ -26,43 +26,49 @@ package com.tgx.chess.spring.biz.bill.pay.api.dao;
 
 import java.io.Serializable;
 
-public class BillEntry
+public class ItemEntry
         implements
         Serializable
 {
-    private static final long serialVersionUID = -1254601378280176438L;
+    private static final long serialVersionUID = 800707260027704202L;
 
-    private String            mac;
-    private String            bill;
-    private String            status;
+    private String            sku;
+    private double            price;
+    private String            currency;
 
-    public String getMac()
+    @Override
+    public String toString()
     {
-        return mac;
+        return String.format("Item %s @ %.3f %s", sku, price, currency);
     }
 
-    public void setMac(String mac)
+    public String getSku()
     {
-        this.mac = mac;
+        return sku;
     }
 
-    public String getBill()
+    public void setSku(String sku)
     {
-        return bill;
+        this.sku = sku;
     }
 
-    public void setBill(String bill)
+    public double getPrice()
     {
-        this.bill = bill;
+        return price;
     }
 
-    public String getStatus()
+    public void setPrice(double price)
     {
-        return status;
+        this.price = price;
     }
 
-    public void setStatus(String status)
+    public String getCurrency()
     {
-        this.status = status;
+        return currency;
+    }
+
+    public void setCurrency(String currency)
+    {
+        this.currency = currency;
     }
 }
