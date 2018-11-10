@@ -103,6 +103,8 @@ public class BillController
         billEntity.setOpenId(openId);
         billEntity = _BillService.saveBill(billEntity);
         BillEntry billEntry = new BillEntry();
+        billEntry.setItem(billEntity.getItem()
+                                    .getId());
         billEntry.setBill(bill);
         billEntry.setMac(billEntity.getMac());
         billEntry.setStatus(billEntity.getResult());
