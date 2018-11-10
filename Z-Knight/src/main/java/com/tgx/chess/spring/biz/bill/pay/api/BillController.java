@@ -100,6 +100,9 @@ public class BillController
         billEntry.setBill(bill);
         billEntry.setMac(mac);
         billEntry.setStatus(Result.PENDING.name());
+        billEntry.setTimestamp(billEntity.getUpdatedAt());
+        billEntry.setItem(billEntity.getItem()
+                                    .getId());
         return billEntry;
     }
 
