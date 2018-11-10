@@ -25,6 +25,7 @@
 package com.tgx.chess.spring.biz.bill.pay.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,13 +44,18 @@ public class ItemsService
         _ItemsRepository = itemsRepository;
     }
 
-    public void addItem(ItemEntity itemEntity)
+    public ItemEntity addItem(ItemEntity itemEntity)
     {
-        _ItemsRepository.save(itemEntity);
+        return _ItemsRepository.save(itemEntity);
     }
 
     public List<ItemEntity> listItems()
     {
         return _ItemsRepository.findAll();
+    }
+
+    public Optional<ItemEntity> findById(long id)
+    {
+        return _ItemsRepository.findById(id);
     }
 }

@@ -60,8 +60,9 @@ public class ItemsController
         ItemEntity itemEntity = new ItemEntity();
         itemEntity.setPrice(price);
         itemEntity.setSku(sku);
-        _ItemsService.addItem(itemEntity);
+        itemEntity = _ItemsService.addItem(itemEntity);
         ItemEntry itemEntry = new ItemEntry();
+        itemEntry.setId(itemEntity.getId());
         itemEntry.setCurrency(currency);
         itemEntry.setPrice(price);
         itemEntry.setSku(sku);

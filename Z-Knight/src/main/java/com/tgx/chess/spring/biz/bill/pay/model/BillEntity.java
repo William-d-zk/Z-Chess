@@ -48,27 +48,27 @@ public class BillEntity
 {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private long        id;
+    private long       id;
 
     @Column(length = 64, nullable = false, unique = true)
-    private String      bill;
+    private String     bill;
 
     @Column(length = 64)
-    private String      openId;
+    private String     openId;
 
     @Column(length = 17, nullable = false)
-    private String      mac;
+    private String     mac;
 
-    private double      amount;
+    private double     amount;
 
     @Column(length = 6, nullable = false)
-    private String      currency = "RMB";
+    private String     currency = "RMB";
 
     @Column(length = 16)
-    private String      type;
+    private String     type;
 
     @Column(length = 20)
-    private String      result;
+    private String     result;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "itemId")
@@ -150,11 +150,23 @@ public class BillEntity
         return String.format("bill:%s mac:%s openId:%s amount:%s %s type:%s result:%s", bill, mac, openId, amount, super.toString(), type, result);
     }
 
-    public String getCurrency() {
+    public String getCurrency()
+    {
         return currency;
     }
 
-    public void setCurrency(String currency) {
+    public void setCurrency(String currency)
+    {
         this.currency = currency;
+    }
+
+    public ItemEntity getItem()
+    {
+        return item;
+    }
+
+    public void setItem(ItemEntity item)
+    {
+        this.item = item;
     }
 }
