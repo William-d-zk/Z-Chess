@@ -39,6 +39,7 @@ import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.spring.biz.bill.pay.Result;
 import com.tgx.chess.spring.biz.bill.pay.api.dao.BillEntry;
 import com.tgx.chess.spring.biz.bill.pay.model.BillEntity;
+import com.tgx.chess.spring.biz.bill.pay.model.ItemEntity;
 import com.tgx.chess.spring.biz.bill.pay.service.BillService;
 import com.tgx.chess.spring.biz.bill.pay.service.ItemsService;
 
@@ -112,7 +113,7 @@ public class BillController
         return billEntry;
     }
 
-    @GetMapping("/bill/query")
+    @GetMapping("/bill/list")
     public @ResponseBody List<BillEntry> query(@RequestParam("mac") String mac) throws ZApiExecption
     {
         return _BillService.findAllByMac(mac)
@@ -130,6 +131,23 @@ public class BillController
                                return billEntry;
                            })
                            .collect(Collectors.toList());
+    }
+
+    @GetMapping("/bill/query")
+    public @ResponseBody BillEntry queryLastBillByItem(@RequestParam("mac") String mac, @RequestParam("item") long item)
+    {
+        ItemEntity itemEntity = _ItemsService.findById(item)
+                                             .orElseThrow(() -> new ZApiExecption(String.format("item not define %d", item)));
+        BillEntity billEntity = _BillService.findLastByMacAndItem(mac, itemEntity);
+        if (Objects.isNull(billEntity)) { throw new ZApiExecption(String.format("not found bill entity by mac:%s ", mac)); }
+        BillEntry billEntry = new BillEntry();
+        billEntry.setMac(billEntity.getMac());
+        billEntry.setBill(billEntity.getBill());
+        billEntry.setStatus(billEntity.getResult());
+        billEntry.setItem(billEntity.getItem()
+                                    .getId());
+        billEntry.setTimestamp(billEntity.getUpdatedAt());
+        return billEntry;
     }
 
 }

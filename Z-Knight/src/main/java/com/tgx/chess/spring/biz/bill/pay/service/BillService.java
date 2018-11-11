@@ -28,10 +28,12 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.tgx.chess.spring.auth.repository.ProfileRepository;
 import com.tgx.chess.spring.biz.bill.pay.model.BillEntity;
+import com.tgx.chess.spring.biz.bill.pay.model.ItemEntity;
 import com.tgx.chess.spring.biz.bill.pay.repository.BillRepository;
 import com.tgx.chess.spring.device.model.ClientEntity;
 import com.tgx.chess.spring.device.model.DeviceEntity;
@@ -73,6 +75,11 @@ public class BillService
     public List<BillEntity> findAllByMac(String mac)
     {
         return _BillRepository.findAllByMac(mac);
+    }
+
+    public BillEntity findLastByMacAndItem(String mac, ItemEntity item)
+    {
+        return _BillRepository.findFirstByMacAndItem(mac, item, Sort.by("updatedAt").descending());
     }
 
     public BillEntity saveBill(BillEntity bill)

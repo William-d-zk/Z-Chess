@@ -26,10 +26,12 @@ package com.tgx.chess.spring.biz.bill.pay.repository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.tgx.chess.spring.biz.bill.pay.model.BillEntity;
+import com.tgx.chess.spring.biz.bill.pay.model.ItemEntity;
 
 @Repository
 public interface BillRepository
@@ -42,5 +44,7 @@ public interface BillRepository
     List<BillEntity> findAllByOpenId(String openId);
 
     BillEntity findByBill(String bill);
+
+    BillEntity findFirstByMacAndItem(String mac, ItemEntity item, Sort sort);
 
 }
