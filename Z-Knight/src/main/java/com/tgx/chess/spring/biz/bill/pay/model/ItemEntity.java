@@ -40,8 +40,8 @@ public class ItemEntity
     private long   id;
 
     private double price;
-    @Column(length = 6, nullable = false)
-    private String currency = "RMB";
+    @Column(length = 3, nullable = false)
+    private String currency = "CNY";
     @Column(length = 80, nullable = false)
     private String sku;
 

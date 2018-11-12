@@ -56,7 +56,7 @@ public class ItemsController
     @GetMapping("/items/add")
     public @ResponseBody ItemEntry addSku(@RequestParam(name = "sku") String sku,
                                           @RequestParam(name = "price") double price,
-                                          @RequestParam(name = "currency", defaultValue = "RMB") String currency) throws ZApiExecption
+                                          @RequestParam(name = "currency", defaultValue = "CNY") String currency) throws ZApiExecption
     {
         ItemEntity itemEntity = new ItemEntity();
         itemEntity.setPrice(price);
