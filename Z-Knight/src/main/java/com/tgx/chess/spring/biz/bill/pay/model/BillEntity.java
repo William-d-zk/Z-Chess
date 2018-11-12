@@ -61,8 +61,8 @@ public class BillEntity
 
     private double     amount;
 
-    @Column(length = 6, nullable = false)
-    private String     currency = "RMB";
+    @Column(length = 3, nullable = false)
+    private String     currency = "CNY";
 
     @Column(length = 16)
     private String     type;
