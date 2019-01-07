@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2018 Z-Chess
+ * Copyright (c) 2016~2019 Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,9 +41,9 @@ public class X51_DeviceMsgAck
         super(COMMAND, true);
     }
 
-    public X51_DeviceMsgAck(long msgUid)
+    public X51_DeviceMsgAck(long msgUID)
     {
-        super(COMMAND, msgUid);
+        super(COMMAND, msgUID);
     }
 
     public int getPriority()

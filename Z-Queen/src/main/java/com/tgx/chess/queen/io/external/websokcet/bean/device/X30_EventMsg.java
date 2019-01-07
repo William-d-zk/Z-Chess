@@ -28,71 +28,106 @@ import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.io.external.websokcet.WsContext;
 import com.tgx.chess.queen.io.external.zprotocol.Command;
 
-public class X23_SignInResult
+public class X30_EventMsg
         extends
         Command<WsContext>
 {
-    public final static int COMMAND = 0x23;
 
-    public X23_SignInResult()
+    public final static int COMMAND = 0x30;
+
+    public X30_EventMsg()
     {
-        super(COMMAND, false);
+        super(COMMAND, true);
+    }
+
+    public X30_EventMsg(long msgUID)
+    {
+        super(COMMAND, msgUID);
     }
 
     @Override
     public int getPriority()
     {
-        return QOS_09_CONFIRM_MESSAGE;
+        return QOS_08_IMMEDIATE_MESSAGE;
     }
 
-    private boolean success;
-    private long    invalidTime = -1;
+    private byte[] token = new byte[32];
+    /*
+    -128 ~127 ;
+    -127-> script
+    0-> text
+    */
+    private byte   ctrl;
+    private int    payloadLength;
+    private byte[] payload;
 
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 9;
+        return super.dataLength() + 35 + payloadLength;
     }
 
     @Override
     public int decodec(byte[] data, int pos)
     {
-        success      = data[pos++] > 0;
-        invalidTime  = IoUtil.readLong(data, pos);
-        pos         += 8;
+        pos = IoUtil.read(data, pos, token);
+        ctrl = data[pos++];
+        payloadLength = IoUtil.readShort(data, pos);
+        pos += 2;
+        pos = IoUtil.read(data, pos, payload);
         return pos;
     }
 
     @Override
     public int encodec(byte[] data, int pos)
     {
-        pos += IoUtil.writeByte(isSuccess() ? 1 : 0, data, pos);
-        pos += IoUtil.writeLong(invalidTime, data, pos);
+        pos += IoUtil.write(token, data, pos);
+        pos += IoUtil.writeByte(ctrl, data, pos);
+        pos += IoUtil.writeShort(payload.length, data, pos);
+        pos += IoUtil.write(payload, data, pos);
         return pos;
     }
 
-    public void setSuccess()
+    public void setPayload(byte[] payload)
     {
-        success = true;
+        this.payload = payload;
     }
 
-    public boolean isSuccess()
+    public byte[] getPayload()
     {
-        return success;
+        return payload;
     }
 
-    public void setFailed()
+    public void setToken(byte[] token)
     {
-        success = false;
+        IoUtil.read(token, 0, this.token);
     }
 
-    public long getInvalidTime()
+    public void setToken(String hexToken)
     {
-        return invalidTime;
+        IoUtil.hex2bin(hexToken, token, 0);
     }
 
-    public void setInvalidTime(long invalidTime)
+    public byte[] getToken()
     {
-        this.invalidTime = invalidTime;
+        return token;
     }
+
+    public boolean isScript()
+    {
+        return ctrl == CTRL_SCRIPT;
+    }
+
+    public boolean isText()
+    {
+        return ctrl == CTRL_TEXT;
+    }
+
+    public void setCtrl(byte ctrl)
+    {
+        this.ctrl = ctrl;
+    }
+
+    public final static byte CTRL_SCRIPT = -127;
+    public final static byte CTRL_TEXT   = 0;
 }

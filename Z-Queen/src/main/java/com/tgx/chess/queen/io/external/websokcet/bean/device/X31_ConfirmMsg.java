@@ -28,23 +28,18 @@ import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.io.external.websokcet.WsContext;
 import com.tgx.chess.queen.io.external.zprotocol.Command;
 
-/**
- * @author William.d.zk
- */
-public class X50_DeviceMsg
+public class X31_ConfirmMsg
         extends
         Command<WsContext>
 {
-    public final static int COMMAND = 0x50;
-    private byte[]          payload;
-    private int             payloadLength;//MAX:64K
+    public final static int COMMAND = 0x31;
 
-    public X50_DeviceMsg()
+    public X31_ConfirmMsg()
     {
         super(COMMAND, true);
     }
 
-    public X50_DeviceMsg(long msgUID)
+    public X31_ConfirmMsg(long msgUID)
     {
         super(COMMAND, msgUID);
     }
@@ -52,38 +47,90 @@ public class X50_DeviceMsg
     @Override
     public int getPriority()
     {
-        return QOS_08_IMMEDIATE_MESSAGE;
+        return QOS_09_CONFIRM_MESSAGE;
     }
+
+    private byte   status;
+    private int    retryCount;
+    private byte[] token = new byte[32];
 
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 2 + payloadLength;
+        return super.dataLength() + 35;
     }
 
-    public void setPayload(byte[] payload)
+    public void setToken(byte[] token)
     {
-        this.payload = payload;
-        if (payload.length > 4096) { throw new IllegalArgumentException("payload length is over 4096"); }
-        payloadLength = payload.length;
+        IoUtil.read(token, 0, this.token);
     }
+
+    public void setToken(String hexToken)
+    {
+        IoUtil.hex2bin(hexToken, token, 0);
+    }
+
+    public byte[] getToken()
+    {
+        return token;
+    }
+
+    public int getRetryCount()
+    {
+        return retryCount;
+    }
+
+    public void setRetryCount(int count)
+    {
+        retryCount = count;
+    }
+
+    public void setStatus(byte status)
+    {
+        this.status = status;
+    }
+
+    public boolean isReceived()
+    {
+        return status == STATUS_RECEIVED;
+    }
+
+    public boolean isPending()
+    {
+        return status == STATUS_PENDING;
+    }
+
+    public boolean isAction()
+    {
+        return status == STATUS_ACTION;
+    }
+
+    public boolean isConfirm()
+    {
+        return status == STATUS_CONFIRM;
+    }
+
+    public final static byte STATUS_RECEIVED = -127;
+    public final static byte STATUS_PENDING  = -126;
+    public final static byte STATUS_ACTION   = -125;
+    public final static byte STATUS_CONFIRM  = 0;
 
     @Override
     public int decodec(byte[] data, int pos)
     {
-        payloadLength = IoUtil.readShort(data, pos);
+        pos = IoUtil.read(data, pos, token);
+        status = data[pos++];
+        retryCount = IoUtil.readUnsignedShort(data, pos);
         pos += 2;
-        payload = new byte[payloadLength];
-        pos = IoUtil.read(data, pos, payload);
         return pos;
     }
 
     @Override
     public int encodec(byte[] data, int pos)
     {
-        pos += IoUtil.writeShort(payloadLength, data, pos);
-        pos += IoUtil.write(payload, 0, data, pos, payload.length);
+        pos += IoUtil.write(token, data, pos);
+        pos += IoUtil.writeByte(status, data, pos);
+        pos += IoUtil.writeShort(retryCount, data, pos);
         return pos;
     }
-
 }

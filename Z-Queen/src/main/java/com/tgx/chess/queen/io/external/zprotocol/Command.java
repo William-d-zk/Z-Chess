@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2018 Z-Chess
+ * Copyright (c) 2016~2019 Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,7 +44,8 @@ public abstract class Command<C extends AioContext>
         IRouteLv4,
         IStreamProtocol<C>
 {
-    private final Logger     _Log                = Logger.getLogger(getClass().getName());
+    private final static Logger _Log = Logger.getLogger(Command.class.getName());
+
     public final static int  version             = 0x3;
     private final static int g_msg_uid_size      = 8;
     private final static int min_no_msg_uid_size = 1 + 1 + 1 + 4;
@@ -59,7 +60,8 @@ public abstract class Command<C extends AioContext>
     private long             mSequence           = -1;
     private transient long   tTransactionKey     = _DEFAULT_TRANSACTION_KEY;
 
-    protected Command(int command, boolean hasUID)
+    protected Command(int command,
+                      boolean hasUID)
     {
         _Command = command;
         initGUid(0, _HasUID = hasUID);
@@ -69,9 +71,10 @@ public abstract class Command<C extends AioContext>
         setCharsetSerial(I18nUtil.CHARSET_UTF_8, I18nUtil.SERIAL_BINARY);
     }
 
-    public Command(int command, long uidWithoutSequence)
+    public Command(int command,
+                   long uidWithoutSequence)
     {
-        this._Command = command;
+        _Command = command;
         initGUid(uidWithoutSequence, _HasUID = true);
         setEncrypt();
         setCompress();
@@ -131,7 +134,8 @@ public abstract class Command<C extends AioContext>
     @Override
     public Command<C> setCluster(boolean b)
     {
-        mHAttr |= b ? 0x80 : 0;
+        mHAttr |= b ? 0x80
+                    : 0;
         return this;
     }
 
@@ -154,7 +158,8 @@ public abstract class Command<C extends AioContext>
     {
         if (flag) mHAttr &= ~0x40;
         else mHAttr |= 0x40;
-        mMsgUID = flag ? _uid : 0;
+        mMsgUID = flag ? _uid
+                       : 0;
     }
 
     public void setEncrypt()
@@ -196,7 +201,7 @@ public abstract class Command<C extends AioContext>
     private int checkCrc(byte[] data, int lastPos)
     {
         int l_crc = CryptUtil.crc32(data, 0, lastPos);
-        int crc   = IoUtil.readInt(data, lastPos);
+        int crc = IoUtil.readInt(data, lastPos);
         if (l_crc != crc) throw new SecurityException("crc check failed!  =" + data[1]);
         return lastPos + 4;
     }
@@ -217,9 +222,9 @@ public abstract class Command<C extends AioContext>
     @Override
     public final byte[] encode()
     {
-        int    length = dataLength();
-        byte[] data   = new byte[length];
-        int    pos    = 0;
+        int length = dataLength();
+        byte[] data = new byte[length];
+        int pos = 0;
         pos += IoUtil.writeByte(mHAttr, data, pos);
         pos += IoUtil.writeByte(_Command, data, pos);
         if (isGlobalMsg()) pos += IoUtil.writeLong(mMsgUID, data, pos);
@@ -240,12 +245,14 @@ public abstract class Command<C extends AioContext>
             buf = new byte[len];
             pos = 0;
         }
-        else if (len > length || buf.length < len || pos + length > buf.length) throw new ArrayIndexOutOfBoundsException("data length is too long for input buf");
+        else if (len > length
+                 || buf.length < len
+                 || pos + length > buf.length) throw new ArrayIndexOutOfBoundsException("data length is too long for input buf");
         pos += IoUtil.writeByte(mHAttr, buf, pos);
         pos += IoUtil.writeByte(_Command, buf, pos);
         if (isGlobalMsg()) pos += IoUtil.writeLong(mMsgUID, buf, pos);
         pos += IoUtil.writeByte(mTypeByte, buf, pos);
-        pos  = addCrc(buf, encodec(buf, pos));
+        pos = addCrc(buf, encodec(buf, pos));
         return pos;
     }
 
@@ -257,11 +264,11 @@ public abstract class Command<C extends AioContext>
         mHAttr = data[0];
         int pos = 2;
         if (isGlobalMsg()) {
-            mMsgUID  = IoUtil.readLong(data, pos);
-            pos     += 8;
+            mMsgUID = IoUtil.readLong(data, pos);
+            pos += 8;
         }
         mTypeByte = data[pos++];
-        charset   = getCharset(mTypeByte);
+        charset = getCharset(mTypeByte);
         return checkCrc(data, decodec(data, pos));
     }
 
@@ -271,14 +278,14 @@ public abstract class Command<C extends AioContext>
         if (data == null) throw new NullPointerException();
         if (data.length - length < dataLength()) throw new ArrayIndexOutOfBoundsException();
 
-        mHAttr  = data[pos];
-        pos    += 2;
+        mHAttr = data[pos];
+        pos += 2;
         if (isGlobalMsg()) {
-            mMsgUID  = IoUtil.readLong(data, pos);
-            pos     += 8;
+            mMsgUID = IoUtil.readLong(data, pos);
+            pos += 8;
         }
         mTypeByte = data[pos++];
-        charset   = getCharset(mTypeByte);
+        charset = getCharset(mTypeByte);
         return checkCrc(data, decodec(data, pos));
     }
 
@@ -300,13 +307,14 @@ public abstract class Command<C extends AioContext>
     @Override
     public int dataLength()
     {
-        return isGlobalMsg() ? min_msg_uid_size : min_no_msg_uid_size;
+        return isGlobalMsg() ? min_msg_uid_size
+                             : min_no_msg_uid_size;
     }
 
     @Override
     public void dispose()
     {
-        charset  = null;
+        charset = null;
         mSession = null;
     }
 
@@ -319,7 +327,8 @@ public abstract class Command<C extends AioContext>
     @Override
     public void setSequence(long sequence)
     {
-        mSequence = mSequence < 0 ? sequence : mSequence;
+        mSequence = mSequence < 0 ? sequence
+                                  : mSequence;
     }
 
     @Override
@@ -331,7 +340,8 @@ public abstract class Command<C extends AioContext>
     @Override
     public void setTransactionKey(long _key)
     {
-        tTransactionKey = tTransactionKey < 0 ? _key : tTransactionKey;
+        tTransactionKey = tTransactionKey < 0 ? _key
+                                              : tTransactionKey;
     }
 
     public byte getTgxType()
@@ -387,7 +397,11 @@ public abstract class Command<C extends AioContext>
     @Override
     public String toString()
     {
-        return String.format("CMD: 0x%X,version:%d,charset:%s,serial type:%s", _Command, getVersion(), getCharset(mTypeByte), I18nUtil.getSerialType(mTypeByte & 0x0F));
+        return String.format("CMD: 0x%X,version:%d,charset:%s,serial type:%s",
+                             _Command,
+                             getVersion(),
+                             getCharset(mTypeByte),
+                             I18nUtil.getSerialType(mTypeByte & 0x0F));
 
     }
 }
