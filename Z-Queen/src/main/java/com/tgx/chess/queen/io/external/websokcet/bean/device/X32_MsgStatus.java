@@ -24,27 +24,27 @@
 
 package com.tgx.chess.queen.io.external.websokcet.bean.device;
 
+import static com.tgx.chess.queen.io.external.websokcet.bean.device.X31_ConfirmMsg.STATUS_ACTION;
+import static com.tgx.chess.queen.io.external.websokcet.bean.device.X31_ConfirmMsg.STATUS_CONFIRM;
+import static com.tgx.chess.queen.io.external.websokcet.bean.device.X31_ConfirmMsg.STATUS_PENDING;
+import static com.tgx.chess.queen.io.external.websokcet.bean.device.X31_ConfirmMsg.STATUS_RECEIVED;
+
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.io.external.websokcet.WsContext;
 import com.tgx.chess.queen.io.external.zprotocol.Command;
 
-/**
- * @author William.d.zk
- */
-public class X50_DeviceMsg
+public class X32_MsgStatus
         extends
         Command<WsContext>
 {
-    public final static int COMMAND = 0x50;
-    private byte[]          payload;
-    private int             payloadLength;//MAX:64K
+    public final static int COMMAND = 0x32;
 
-    public X50_DeviceMsg()
+    public X32_MsgStatus()
     {
         super(COMMAND, true);
     }
 
-    public X50_DeviceMsg(long msgUID)
+    public X32_MsgStatus(long msgUID)
     {
         super(COMMAND, msgUID);
     }
@@ -55,35 +55,68 @@ public class X50_DeviceMsg
         return QOS_08_IMMEDIATE_MESSAGE;
     }
 
+    private byte   status;
+    private byte[] token = new byte[32];
+
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 2 + payloadLength;
+        return super.dataLength() + 33;
     }
 
-    public void setPayload(byte[] payload)
+    public void setToken(byte[] token)
     {
-        this.payload = payload;
-        if (payload.length > 4096) { throw new IllegalArgumentException("payload length is over 4096"); }
-        payloadLength = payload.length;
+        IoUtil.read(token, 0, this.token);
+    }
+
+    public void setToken(String hexToken)
+    {
+        IoUtil.hex2bin(hexToken, token, 0);
+    }
+
+    public byte[] getToken()
+    {
+        return token;
+    }
+
+    public void setStatus(byte status)
+    {
+        this.status = status;
+    }
+
+    public boolean isReceived()
+    {
+        return status == STATUS_RECEIVED;
+    }
+
+    public boolean isPending()
+    {
+        return status == STATUS_PENDING;
+    }
+
+    public boolean isAction()
+    {
+        return status == STATUS_ACTION;
+    }
+
+    public boolean isConfirm()
+    {
+        return status == STATUS_CONFIRM;
     }
 
     @Override
     public int decodec(byte[] data, int pos)
     {
-        payloadLength = IoUtil.readShort(data, pos);
-        pos += 2;
-        payload = new byte[payloadLength];
-        pos = IoUtil.read(data, pos, payload);
+        pos = IoUtil.read(data, pos, token);
+        status = data[pos++];
         return pos;
     }
 
     @Override
     public int encodec(byte[] data, int pos)
     {
-        pos += IoUtil.writeShort(payloadLength, data, pos);
-        pos += IoUtil.write(payload, 0, data, pos, payload.length);
+        pos += IoUtil.write(token, data, pos);
+        pos += IoUtil.writeByte(status, data, pos);
         return pos;
     }
-
 }
