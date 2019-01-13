@@ -71,6 +71,29 @@ public class DeviceController
         return _DeviceService.findDeviceByMac(deviceMac);
     }
 
+    @GetMapping("/client/close/all")
+    public String closeAll()
+    {
+        List<DeviceEntity> list = _DeviceService.findAll();
+        StringBuffer sb = new StringBuffer();
+        for (DeviceEntity device : list) {
+            _Log.info("device mac %s", device.getToken());
+            sb.append(String.format("token:%s\n", device.getToken()));
+            _DeviceService.localBizClose(device.getId());
+        }
+        return sb.toString();
+    }
+
+    @GetMapping("/client/close/device")
+    public String close(@RequestParam(name = "token") String token)
+    {
+        DeviceEntity device = _DeviceService.findDeviceByToken(token);
+        if (Objects.nonNull(device)) {
+            _DeviceService.localBizClose(device.getId());
+        }
+        return token;
+    }
+
     @GetMapping("/event/x30/broadcast")
     public String x30Broadcast(@RequestParam(name = "msg") String msg, @RequestParam(name = "ctrl", defaultValue = "0") int ctrl)
     {

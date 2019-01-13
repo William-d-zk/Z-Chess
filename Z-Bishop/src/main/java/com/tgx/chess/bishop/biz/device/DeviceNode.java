@@ -360,7 +360,11 @@ public class DeviceNode
 
     public void localBizSend(long deviceId, ICommand... toSends)
     {
-        ISession session = findSessionByIndex(deviceId);
+        localSend(findSessionByIndex(deviceId), toSends);
+    }
 
+    public void localBizClose(long deviceId)
+    {
+        localClose(findSessionByIndex(deviceId));
     }
 }
