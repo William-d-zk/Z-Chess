@@ -37,29 +37,41 @@ import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.*;
+import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IConnectionContext;
+import com.tgx.chess.queen.io.core.inf.ISession;
+import com.tgx.chess.queen.io.core.inf.ISessionCreated;
+import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X20_SignUp;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X22_SignIn;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X24_UpdateToken;
-import com.tgx.chess.queen.io.external.websokcet.bean.ztls.*;
+import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X01_EncryptRequest;
+import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X02_AsymmetricPub;
+import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X03_Cipher;
+import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X04_EncryptConfirm;
+import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X05_EncryptStart;
+import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X06_PlainStart;
 
 /**
  * @author William.d.zk
  */
 public class LinkHandler
         implements
-        IPipeEventHandler<QEvent, QEvent>
+        IPipeEventHandler<QEvent,
+                          QEvent>
 {
     private final Logger             _Log = Logger.getLogger(getClass().getName());
     private final RingBuffer<QEvent> _Error;
     private final RingBuffer<QEvent> _Writer;
     private final QueenManager       _QueenManager;
 
-    public LinkHandler(QueenManager manager, RingBuffer<QEvent> error, RingBuffer<QEvent> writer)
+    public LinkHandler(QueenManager manager,
+                       RingBuffer<QEvent> error,
+                       RingBuffer<QEvent> writer)
     {
-        _Error        = error;
-        _Writer       = writer;
+        _Error = error;
+        _Writer = writer;
         _QueenManager = manager;
     }
 
@@ -76,8 +88,10 @@ public class LinkHandler
                     break;
                 default:
                     _Log.warning("server io error , do close session");
-                    IOperator<Void, ISession> closeOperator = event.getEventOp();
-                    Pair<Void, ISession> errorContent = event.getContent();
+                    IOperator<Void,
+                              ISession> closeOperator = event.getEventOp();
+                    Pair<Void,
+                         ISession> errorContent = event.getContent();
                     ISession session = errorContent.second();
                     ISessionDismiss dismiss = session.getDismissCallback();
                     boolean closed = session.isClosed();
@@ -86,16 +100,22 @@ public class LinkHandler
             }
         }
         else {
-            ICommand[]                      waitToSends  = null;
-            ISession                        session      = null;
-            IOperator<ICommand[], ISession> sendOperator = null;
+            ICommand[] waitToSends = null;
+            ISession session = null;
+            IOperator<ICommand[],
+                      ISession> sendOperator = null;
             switch (event.getEventType())
             {
                 case CONNECTED:
-                    IOperator<IConnectionContext, AsynchronousSocketChannel> connectedOperator = event.getEventOp();
-                    Pair<IConnectionContext, AsynchronousSocketChannel> connectedContent = event.getContent();
+                    IOperator<IConnectionContext,
+                              AsynchronousSocketChannel> connectedOperator = event.getEventOp();
+                    Pair<IConnectionContext,
+                         AsynchronousSocketChannel> connectedContent = event.getContent();
                     AsynchronousSocketChannel channel = connectedContent.second();
-                    Triple<ICommand[], ISession, IOperator<ICommand[], ISession>> connectedHandled = connectedOperator.handle(connectedContent.first(), channel);
+                    Triple<ICommand[],
+                           ISession,
+                           IOperator<ICommand[],
+                                     ISession>> connectedHandled = connectedOperator.handle(connectedContent.first(), channel);
                     //connectedHandled 不可能为 null
                     waitToSends = connectedHandled.first();
                     session = connectedHandled.second();
@@ -105,7 +125,8 @@ public class LinkHandler
                     sendOperator = connectedHandled.third();
                     break;
                 case LOGIC:
-                    Pair<ICommand, ISession> logicContent = event.getContent();
+                    Pair<ICommand,
+                         ISession> logicContent = event.getContent();
                     _Log.info("LinkHandler cmd: %s", logicContent.first());
                     session = logicContent.second();
                     ICommand cmd = logicContent.first();
@@ -120,13 +141,13 @@ public class LinkHandler
                             waitToSends = new ICommand[] { cmd };
                             break;
                         case X20_SignUp.COMMAND:
-                            waitToSends = new ICommand[] { _QueenManager.save(cmd) };
+                            waitToSends = new ICommand[] { _QueenManager.save(cmd, session) };
                             break;
                         case X22_SignIn.COMMAND:
-                            waitToSends = new ICommand[] { _QueenManager.find(cmd) };
+                            waitToSends = new ICommand[] { _QueenManager.find(cmd, session) };
                             break;
                         case X24_UpdateToken.COMMAND:
-                            waitToSends = new ICommand[] { _QueenManager.save(cmd) };
+                            waitToSends = new ICommand[] { _QueenManager.save(cmd, session) };
                             break;
 
                     }

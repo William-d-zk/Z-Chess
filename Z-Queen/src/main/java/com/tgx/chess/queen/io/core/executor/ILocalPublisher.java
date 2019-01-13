@@ -24,10 +24,71 @@
 
 package com.tgx.chess.queen.io.core.executor;
 
+import static com.tgx.chess.queen.event.operator.OperatorHolder.CLOSE_OPERATOR;
+
+import java.util.Objects;
+import java.util.concurrent.locks.ReentrantLock;
+
 import com.lmax.disruptor.RingBuffer;
+import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
+import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.ISession;
 
 public interface ILocalPublisher
 {
-    RingBuffer<QEvent> getLocalPublisher();
+    RingBuffer<QEvent> getLocalPublisher(ISession session);
+
+    RingBuffer<QEvent> getLocalCloser(ISession session);
+
+    ReentrantLock getLocalLock();
+
+    default boolean localSend(ISession session, ICommand... toSends)
+    {
+        Objects.requireNonNull(toSends);
+        Objects.requireNonNull(session);
+        final RingBuffer<QEvent> _BizLocalSendEvent = getLocalPublisher(session);
+        final ReentrantLock _LocalLock = getLocalLock();
+        if (_LocalLock.tryLock()) try {
+            long sequence = _BizLocalSendEvent.next();
+            try {
+                QEvent event = _BizLocalSendEvent.get(sequence);
+                event.produce(IOperator.Type.LOCAL,
+                              toSends,
+                              session,
+                              session.getMode()
+                                     .getOutOperator());
+                return true;
+            }
+            finally {
+                _BizLocalSendEvent.publish(sequence);
+            }
+        }
+        finally {
+            _LocalLock.unlock();
+        }
+        return false;
+    }
+
+    default void localClose(ISession session)
+    {
+        Objects.requireNonNull(session);
+        final RingBuffer<QEvent> _BizLocalCloseEvent = getLocalCloser(session);
+        final ReentrantLock _LocalLock = getLocalLock();
+        _LocalLock.lock();
+        try {
+            long sequence = _BizLocalCloseEvent.next();
+            try {
+                QEvent event = _BizLocalCloseEvent.get(sequence);
+                event.produce(IOperator.Type.CLOSE, null, session, CLOSE_OPERATOR());
+            }
+            finally {
+                _BizLocalCloseEvent.publish(sequence);
+            }
+        }
+        finally {
+            _LocalLock.unlock();
+        }
+
+    }
 }

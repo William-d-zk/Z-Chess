@@ -26,9 +26,9 @@ package com.tgx.chess.queen.db.inf;
 
 import com.tgx.chess.queen.io.core.inf.ICommand;
 
-public interface IRepository
+public interface IRepository<T>
 {
-    ICommand save(ICommand target);
+    T save(ICommand target);
 
-    ICommand find(ICommand key);
+    T find(ICommand key);
 }

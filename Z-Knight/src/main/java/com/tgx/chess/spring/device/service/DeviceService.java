@@ -39,15 +39,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 
+import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
 import com.tgx.chess.bishop.biz.device.DeviceNode;
 import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X20_SignUp;
-import com.tgx.chess.queen.io.external.websokcet.bean.device.X21_SignUpResult;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X22_SignIn;
-import com.tgx.chess.queen.io.external.websokcet.bean.device.X23_SignInResult;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X24_UpdateToken;
 import com.tgx.chess.spring.device.model.DeviceEntity;
 import com.tgx.chess.spring.device.repository.ClientRepository;
@@ -57,7 +56,7 @@ import com.tgx.chess.spring.device.repository.DeviceRepository;
 @PropertySource("classpath:device.properties")
 public class DeviceService
         implements
-        IRepository
+        IRepository<DeviceEntry>
 {
     private final DeviceRepository _DeviceRepository;
     private final ClientRepository _ClientRepository;
@@ -73,7 +72,7 @@ public class DeviceService
     {
         _DeviceRepository = deviceRepository;
         _ClientRepository = clientRepository;
-        _DeviceNode       = new DeviceNode(host, port, this);
+        _DeviceNode = new DeviceNode(host, port, this);
     }
 
     @PostConstruct
@@ -92,13 +91,18 @@ public class DeviceService
         return _DeviceRepository.save(device);
     }
 
-    public DeviceEntity findDevice(String mac)
+    public DeviceEntity findDeviceByMac(String mac)
     {
         return _DeviceRepository.findByMac(mac);
     }
 
+    public DeviceEntity findDeviceByToken(String token)
+    {
+        return _DeviceRepository.findByToken(token);
+    }
+
     @Override
-    public ICommand save(ICommand tar)
+    public DeviceEntry save(ICommand tar)
     {
         switch (tar.getSerial())
         {
@@ -107,42 +111,30 @@ public class DeviceService
                 byte[] deviceMac = x20.getMac();
                 String devicePwd = x20.getPassword();
                 long pwdId = x20.getPasswordId();
-                DeviceEntity device = _DeviceRepository.findByMac(IoUtil.readMac(deviceMac));
-                X21_SignUpResult x21 = new X21_SignUpResult();
-                success:
-                {
-                    if (Objects.isNull(device) || device.getPasswordId() == pwdId) {
-                        if (Objects.isNull(device)) {
-                            device = new DeviceEntity();
-                            device.setMac(IoUtil.readMac(deviceMac));
-                            device.setPasswordId(pwdId);
+                DeviceEntity deviceEntity = _DeviceRepository.findByMac(IoUtil.readMac(deviceMac));
+                if (Objects.isNull(deviceEntity) || deviceEntity.getPasswordId() == pwdId) {
+                    if (Objects.isNull(deviceEntity)) {
+                        deviceEntity = new DeviceEntity();
+                        deviceEntity.setMac(IoUtil.readMac(deviceMac));
+                        deviceEntity.setPasswordId(pwdId);
 
-                        }
-                        device.setPassword(devicePwd);
-                        device.setInvalidAt(Date.from(Instant.now()
-                                                             .plusSeconds(TimeUnit.DAYS.toSeconds(41))));
-                        byte[] src = new byte[6 + devicePwd.getBytes().length];
-                        IoUtil.write(deviceMac, src, 0);
-                        IoUtil.write(devicePwd.getBytes(), src, 6);
-                        device.setToken(IoUtil.bin2Hex(_CryptUtil.sha256(src)));
-                        try {
-                            _DeviceRepository.save(device);
-                        }
-                        catch (Exception e) {
-                            e.printStackTrace();
-                            x21.setFailed();
-                            break success;
-                        }
-                        x21.setSuccess();
-                        break success;
                     }
-                    x21.setFailed();
+                    deviceEntity.setPassword(devicePwd);
+                    deviceEntity.setInvalidAt(Date.from(Instant.now()
+                                                               .plusSeconds(TimeUnit.DAYS.toSeconds(41))));
+                    byte[] src = new byte[6 + devicePwd.getBytes().length];
+                    IoUtil.write(deviceMac, src, 0);
+                    IoUtil.write(devicePwd.getBytes(), src, 6);
+                    deviceEntity.setToken(IoUtil.bin2Hex(_CryptUtil.sha256(src)));
+                    try {
+                        _DeviceRepository.save(deviceEntity);
+                        return convertDevice(deviceEntity);
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
-                if (x21.isSuccess()) {
-                    x21.setToken(IoUtil.hex2bin(device.getToken()));
-                }
-                x21.setPasswordId(pwdId);
-                return x21;
+                break;
             case X24_UpdateToken.COMMAND:
                 X24_UpdateToken x24 = (X24_UpdateToken) tar;
                 break;
@@ -152,36 +144,38 @@ public class DeviceService
     }
 
     @Override
-    public ICommand find(ICommand key)
+    public DeviceEntry find(ICommand key)
     {
         switch (key.getSerial())
         {
             case X22_SignIn.COMMAND:
                 X22_SignIn x22 = (X22_SignIn) key;
-                X23_SignInResult x23 = new X23_SignInResult();
                 String deviceToken = IoUtil.bin2Hex(x22.getToken());
                 String devicePwd = x22.getPassword();
-                login:
-                {
-                    byte[] password = devicePwd.getBytes();
-                    byte[] toSign   = new byte[password.length + 6];
-                    IoUtil.write(password, toSign, 6);
-                    DeviceEntity device = _DeviceRepository.findByTokenAndPassword(deviceToken, devicePwd);
-                    if (Objects.nonNull(device)) {
-                        byte[] macRaw = IoUtil.writeMacRaw(device.getMac());
-                        IoUtil.write(macRaw, toSign, 0);
-                        String sign = IoUtil.bin2Hex(_CryptUtil.sha256(toSign));
-                        if (sign.equals(deviceToken)) {
-                            x23.setSuccess();
-                            Date date = device.getInvalidAt();
-                            x23.setInvalidTime(date.getTime());
-                            break login;
-                        }
-                    }
-                    x23.setFailed();
-                }
-                return x23;
+                byte[] password = devicePwd.getBytes();
+                byte[] toSign = new byte[password.length + 6];
+                IoUtil.write(password, toSign, 6);
+                DeviceEntity deviceEntity = _DeviceRepository.findByTokenAndPassword(deviceToken, devicePwd);
+                if (Objects.nonNull(deviceEntity)) { return convertDevice(deviceEntity); }
+                break;
         }
         return null;
     }
+
+    private DeviceEntry convertDevice(DeviceEntity entity)
+    {
+        DeviceEntry deviceEntry = new DeviceEntry();
+        deviceEntry.setDeviceUID(entity.getId());
+        deviceEntry.setMac(entity.getMac());
+        deviceEntry.setToken(entity.getToken());
+        deviceEntry.setInvalidTime(entity.getInvalidAt()
+                                         .getTime());
+        return deviceEntry;
+    }
+
+    public void localBizSend(long deviceId, ICommand... toSends)
+    {
+        _DeviceNode.localBizSend(deviceId, toSends);
+    }
+
 }

@@ -34,76 +34,81 @@ public interface QueenCode
      * ClientManager
      * Accept devices' connection request
      */
-    long CM_XID                               = 0x8000000000000000L;
+    long CM_XID = 0x8000000000000000L;
     /**
      * Cluster Manager
      * symmetry communication
      */
-    long RM_XID                               = 0xC000000000000000L;
+    long RM_XID = 0xC000000000000000L;
     /**
      * Internal system message queue
      */
-    long MQ_XID                               = 0x4000000000000000L;
+    long MQ_XID = 0x4000000000000000L;
     /**
      * device connection
      */
-    long CU_XID                               = 0x0000000000000000L;
+    long CU_XID = 0x0000000000000000L;
 
-    long XID_MK                               = 0xC000000000000000L;
-    long XID_N_MK                             = 0x3FFF000000000000L;
-    long STP_MK                               = 0xFFFF000000000000L;
-    int  XID_N_MK_S                           = 0x00003FFF;
-    int  XID_MK_S                             = 0x0000C000;
-    long UID_TIME_27_MK                       = ((1L << 27) - 1) << 21;
-    long UID_SEQ_21_MK                        = (1L << 21) - 1;
-    long UID_TIME_28_MK                       = ((1L << 28) - 1) << 20;
-    long UID_SEQ_20_MK                        = (1L << 20) - 1;
-    long UID_SEQ_20_1_MK                      = ((1L << 20) - 1) << 1;
-    long UID_SEQ_18_3_MK                      = ((1L << 18) - 1) << 3;
-    long UID_SEQ_17_4_MK                      = ((1L << 17) - 1) << 4;
+    int CU_XID_LOW = 0;
+    int MQ_XID_LOW = 1;
+    int CM_XID_LOW = 2;
+    int RM_XID_LOW = 3;
 
-    long UID_MK                               = 0x0000FFFFFFFFFFFFL;
+    long XID_MK          = 0xC000000000000000L;
+    long XID_N_MK        = 0x3FFF000000000000L;
+    long STP_MK          = 0xFFFF000000000000L;
+    int  XID_N_MK_S      = 0x00003FFF;
+    int  XID_MK_S        = 0x0000C000;
+    long UID_TIME_27_MK  = ((1L << 27) - 1) << 21;
+    long UID_SEQ_21_MK   = (1L << 21) - 1;
+    long UID_TIME_28_MK  = ((1L << 28) - 1) << 20;
+    long UID_SEQ_20_MK   = (1L << 20) - 1;
+    long UID_SEQ_20_1_MK = ((1L << 20) - 1) << 1;
+    long UID_SEQ_18_3_MK = ((1L << 18) - 1) << 3;
+    long UID_SEQ_17_4_MK = ((1L << 17) - 1) << 4;
 
-    long _IndexMask                           = 0x0000FFFFFFFFFFFFL;
-    long _IndexHighMask                       = 0xFFFF000000000000L;
-    long _IndexPortMask                       = 0xFFFFFFFFFFFF0000L;
-    long _UsrIndexMask                        = 0x0000FFFFFFFFFFFEL;
+    long UID_MK = 0x0000FFFFFFFFFFFFL;
+
+    long _IndexMask     = 0x0000FFFFFFFFFFFFL;
+    long _IndexHighMask = 0xFFFF000000000000L;
+    long _IndexPortMask = 0xFFFFFFFFFFFF0000L;
+    long _UsrIndexMask  = 0x0000FFFFFFFFFFFEL;
 
     /* HA address max size 256 */
-    int  _HA_ROUTER_REMOTE_ADDRESS_INDEX_MASK = 0xFF;
-    int  DEAULT_USR_BIND_SIZE                 = 3;
+    int _HA_ROUTER_REMOTE_ADDRESS_INDEX_MASK = 0xFF;
+    int DEAULT_USR_BIND_SIZE                 = 3;
 
-    int  EXIT_CODE_NO_ARGUMENT                = 404;
-    int  EXIT_CODE_START_FAILED               = 900;
+    int EXIT_CODE_NO_ARGUMENT  = 404;
+    int EXIT_CODE_START_FAILED = 900;
 
-    int  UNKNOWN                              = -1;
-    int  PLAIN_UNSUPPORTED                    = 103;
-    int  PLAIN_VERSION_LOWER                  = 104;
-    int  SYMMETRIC_KEY_OK                     = 110;
-    int  SYMMETRIC_KEY_REROLL                 = 111;
-    int  DEVICE_OK                            = 300;
-    int  DEVICE_AUTHORING_KEY_ERROR           = 301;
-    int  DEVICE_AUTHORING_KEY_OUT_OF_DATE     = 302;
-    int  DEVICE_DUPLICATE                     = 303;
-    int  DEVICE_FORBIDDEN                     = 304;
-    int  DEVICE_NOT_FOUND                     = 305;
-    int  USR_OK                               = 400;
-    int  USR_FORBIDDEN                        = 401;
-    int  USR_NOT_FOUND                        = 402;
-    int  USR_AUTHORING_KEY_ERROR              = 403;
-    int  USR_AUTHORING_KEY_OUT_OF_DATE        = 404;
-    int  USR_DUPLICATE                        = 405;
-    int  USR_FAILED                           = 406;
-    int  USR_DELETE                           = 407;
-    int  SERVICE_ERROR                        = 502;
-    int  DEVICE_CLUSTER_ERROR                 = 503;
-    int  ROUTER_CLUSTER_ERROR                 = 504;
-    int  MQ_REGISTER_TOPIC_OK                 = 600;
-    int  MQ_REGISTER_TOPIC_DUPLICATE          = 601;
-    int  MQ_REGISTER_TOPIC_MODE_CONFLICT      = 602;
-    int  MQ_REGISTER_TOPIC_NULL               = 603;
+    int UNKNOWN                          = -1;
+    int PLAIN_UNSUPPORTED                = 103;
+    int PLAIN_VERSION_LOWER              = 104;
+    int SYMMETRIC_KEY_OK                 = 110;
+    int SYMMETRIC_KEY_REROLL             = 111;
+    int DEVICE_OK                        = 300;
+    int DEVICE_AUTHORING_KEY_ERROR       = 301;
+    int DEVICE_AUTHORING_KEY_OUT_OF_DATE = 302;
+    int DEVICE_DUPLICATE                 = 303;
+    int DEVICE_FORBIDDEN                 = 304;
+    int DEVICE_NOT_FOUND                 = 305;
+    int USR_OK                           = 400;
+    int USR_FORBIDDEN                    = 401;
+    int USR_NOT_FOUND                    = 402;
+    int USR_AUTHORING_KEY_ERROR          = 403;
+    int USR_AUTHORING_KEY_OUT_OF_DATE    = 404;
+    int USR_DUPLICATE                    = 405;
+    int USR_FAILED                       = 406;
+    int USR_DELETE                       = 407;
+    int SERVICE_ERROR                    = 502;
+    int DEVICE_CLUSTER_ERROR             = 503;
+    int ROUTER_CLUSTER_ERROR             = 504;
+    int MQ_REGISTER_TOPIC_OK             = 600;
+    int MQ_REGISTER_TOPIC_DUPLICATE      = 601;
+    int MQ_REGISTER_TOPIC_MODE_CONFLICT  = 602;
+    int MQ_REGISTER_TOPIC_NULL           = 603;
 
-    public static String parseRCode(int code)
+    static String parseRCode(int code)
     {
         switch (code)
         {
