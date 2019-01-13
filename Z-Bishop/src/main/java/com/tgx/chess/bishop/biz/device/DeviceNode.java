@@ -25,7 +25,9 @@
 package com.tgx.chess.bishop.biz.device;
 
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
-import static com.tgx.chess.queen.event.operator.OperatorHolder.*;
+import static com.tgx.chess.queen.event.operator.OperatorHolder.CONNECTED_OPERATOR;
+import static com.tgx.chess.queen.event.operator.OperatorHolder.SERVER_ACCEPTOR;
+import static com.tgx.chess.queen.event.operator.OperatorHolder.SERVER_TRANSFER;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -35,8 +37,10 @@ import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.Objects;
 
+import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
 import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.king.config.Config;
@@ -44,16 +48,34 @@ import com.tgx.chess.queen.config.QueenCode;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.operator.MODE;
+import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.async.AioCreator;
 import com.tgx.chess.queen.io.core.async.AioSession;
 import com.tgx.chess.queen.io.core.executor.ServerCore;
-import com.tgx.chess.queen.io.core.inf.*;
+import com.tgx.chess.queen.io.core.inf.IAioServer;
+import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.ICommandCreator;
+import com.tgx.chess.queen.io.core.inf.IConnectActive;
+import com.tgx.chess.queen.io.core.inf.IConnectionContext;
+import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.io.core.inf.ISession;
+import com.tgx.chess.queen.io.core.inf.ISessionCreated;
+import com.tgx.chess.queen.io.core.inf.ISessionCreator;
+import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
+import com.tgx.chess.queen.io.core.inf.ISessionOption;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
 import com.tgx.chess.queen.io.external.websokcet.ZContext;
 import com.tgx.chess.queen.io.external.websokcet.bean.control.X101_HandShake;
 import com.tgx.chess.queen.io.external.websokcet.bean.control.X103_Close;
 import com.tgx.chess.queen.io.external.websokcet.bean.control.X104_Ping;
 import com.tgx.chess.queen.io.external.websokcet.bean.control.X105_Pong;
+import com.tgx.chess.queen.io.external.websokcet.bean.device.X20_SignUp;
+import com.tgx.chess.queen.io.external.websokcet.bean.device.X21_SignUpResult;
+import com.tgx.chess.queen.io.external.websokcet.bean.device.X22_SignIn;
+import com.tgx.chess.queen.io.external.websokcet.bean.device.X23_SignInResult;
+import com.tgx.chess.queen.io.external.websokcet.bean.device.X30_EventMsg;
+import com.tgx.chess.queen.io.external.websokcet.bean.device.X31_ConfirmMsg;
+import com.tgx.chess.queen.io.external.websokcet.bean.device.X32_MsgStatus;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X50_DeviceMsg;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X51_DeviceMsgAck;
 
@@ -64,13 +86,13 @@ public class DeviceNode
         ISessionDismiss,
         ISessionCreated
 {
-    private final Logger          _Log = Logger.getLogger(getClass().getName());
-    private final String          _ServerHost;
-    private final int             _ServerPort;
-    private final IAioServer      _DeviceServer;
-    private final ISessionCreator _SessionCreator;
-    private final ICommandCreator _CommandCreator;
-    private final IRepository     _Respository;
+    private final Logger                   _Log = Logger.getLogger(getClass().getName());
+    private final String                   _ServerHost;
+    private final int                      _ServerPort;
+    private final IAioServer               _DeviceServer;
+    private final ISessionCreator          _SessionCreator;
+    private final ICommandCreator          _CommandCreator;
+    private final IRepository<DeviceEntry> _Repository;
 
     @Override
     public void onDismiss(ISession session)
@@ -86,128 +108,164 @@ public class DeviceNode
         addSession(session);
     }
 
-    public DeviceNode(String host, int port, IRepository respository)
+    public DeviceNode(String host,
+                      int port,
+                      IRepository respository)
     {
-        super(new Config("device"));
-        _ServerHost     = host;
-        _ServerPort     = port;
+        super(new Config("device"), new ServerCore()
+        {
+
+            @Override
+            public RingBuffer<QEvent> getLocalPublisher(ISession session)
+            {
+                switch (getSlot(session))
+                {
+                    case QueenCode.CM_XID_LOW:
+                    case QueenCode.RM_XID_LOW:
+                        return getClusterLocalSendEvent();
+                    default:
+                        return getBizLocalSendEvent();
+                }
+            }
+
+            @Override
+            public RingBuffer<QEvent> getLocalCloser(ISession session)
+            {
+                switch (getSlot(session))
+                {
+                    case QueenCode.CM_XID_LOW:
+                    case QueenCode.RM_XID_LOW:
+                        return getClusterLocalCloseEvent();
+                    default:
+                        return getBizLocalCloseEvent();
+                }
+            }
+        });
+        _ServerHost = host;
+        _ServerPort = port;
         _SessionCreator = new AioCreator(getConfig())
-                        {
-                            @Override
-                            public ISession createSession(AsynchronousSocketChannel socketChannel, IConnectActive active)
-                            {
-                                try {
-                                    return new AioSession(socketChannel,
-                                                          active,
-                                                          this,
-                                                          this,
-                                                          DeviceNode.this,
-                                                          active.getMode()
-                                                                .getInOperator());
-                                }
-                                catch (IOException e) {
-                                    e.printStackTrace();
-                                    return null;
-                                }
-                            }
+        {
+            @Override
+            public ISession createSession(AsynchronousSocketChannel socketChannel, IConnectActive active)
+            {
+                try {
+                    return new AioSession(socketChannel,
+                                          active,
+                                          this,
+                                          this,
+                                          DeviceNode.this,
+                                          active.getMode()
+                                                .getInOperator());
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            }
 
-                            @Override
-                            public IContext createContext(ISessionOption option, MODE mode)
-                            {
-                                return new ZContext(option, mode);
-                            }
-                        };
+            @Override
+            public IContext createContext(ISessionOption option, MODE mode)
+            {
+                return new ZContext(option, mode);
+            }
+        };
         _CommandCreator = (session) -> null;
-        _DeviceServer   = new IAioServer()
-                        {
-                            private final InetSocketAddress _LocalBind = new InetSocketAddress(_ServerHost, _ServerPort);
+        _DeviceServer = new IAioServer()
+        {
+            private final InetSocketAddress _LocalBind = new InetSocketAddress(_ServerHost, _ServerPort);
 
-                            @Override
-                            public InetSocketAddress getRemoteAddress()
-                            {
-                                throw new UnsupportedOperationException(" server hasn't remote address");
-                            }
+            @Override
+            public InetSocketAddress getRemoteAddress()
+            {
+                throw new UnsupportedOperationException(" server hasn't remote address");
+            }
 
-                            @Override
-                            public InetSocketAddress getLocalAddress()
-                            {
-                                return _LocalBind;
-                            }
+            @Override
+            public InetSocketAddress getLocalAddress()
+            {
+                return _LocalBind;
+            }
 
-                            @Override
-                            public IOperator<Throwable, IAioServer> getErrorOperator()
-                            {
-                                return new IOperator<Throwable, IAioServer>()
-                                                {
-                                                    @Override
-                                                    @SuppressWarnings("unchecked")
-                                                    public Triple<Throwable, IAioServer, IOperator<Throwable, IAioServer>> handle(Throwable throwable, IAioServer active)
-                                                    {
-                                                        _Log.warning(String.format("accept  failed%s", active.toString()), throwable);
-                                                        return new Triple<>(throwable, active, this);
-                                                    }
-                                                };
-                            }
+            @Override
+            public IOperator<Throwable,
+                             IAioServer> getErrorOperator()
+            {
+                return new IOperator<Throwable,
+                                     IAioServer>()
+                {
+                    @Override
+                    @SuppressWarnings("unchecked")
+                    public Triple<Throwable,
+                                  IAioServer,
+                                  IOperator<Throwable,
+                                            IAioServer>> handle(Throwable throwable, IAioServer active)
+                    {
+                        _Log.warning(String.format("accept  failed%s", active.toString()), throwable);
+                        return new Triple<>(throwable, active, this);
+                    }
+                };
+            }
 
-                            @Override
-                            public IOperator<IConnectionContext, AsynchronousSocketChannel> getConnectedOperator()
-                            {
-                                return CONNECTED_OPERATOR();
-                            }
+            @Override
+            public IOperator<IConnectionContext,
+                             AsynchronousSocketChannel> getConnectedOperator()
+            {
+                return CONNECTED_OPERATOR();
+            }
 
-                            private AsynchronousServerSocketChannel mServerChannel;
+            private AsynchronousServerSocketChannel mServerChannel;
 
-                            @Override
-                            public void bindAddress(InetSocketAddress address, AsynchronousChannelGroup channelGroup) throws IOException
-                            {
-                                mServerChannel = AsynchronousServerSocketChannel.open(channelGroup);
-                                mServerChannel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
-                                mServerChannel.bind(address, 1 << 6);
-                            }
+            @Override
+            public void bindAddress(InetSocketAddress address, AsynchronousChannelGroup channelGroup) throws IOException
+            {
+                mServerChannel = AsynchronousServerSocketChannel.open(channelGroup);
+                mServerChannel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
+                mServerChannel.bind(address, 1 << 6);
+            }
 
-                            @Override
-                            public void pendingAccept()
-                            {
-                                if (mServerChannel.isOpen()) mServerChannel.accept(this, SERVER_ACCEPTOR());
-                            }
+            @Override
+            public void pendingAccept()
+            {
+                if (mServerChannel.isOpen()) mServerChannel.accept(this, SERVER_ACCEPTOR());
+            }
 
-                            @Override
-                            public MODE getMode()
-                            {
-                                return MODE.SERVER;
-                            }
+            @Override
+            public MODE getMode()
+            {
+                return MODE.SERVER;
+            }
 
-                            @Override
-                            public ISessionCreator getSessionCreator()
-                            {
-                                return _SessionCreator;
-                            }
+            @Override
+            public ISessionCreator getSessionCreator()
+            {
+                return _SessionCreator;
+            }
 
-                            @Override
-                            public ISessionCreated getSessionCreated()
-                            {
-                                return DeviceNode.this;
-                            }
+            @Override
+            public ISessionCreated getSessionCreated()
+            {
+                return DeviceNode.this;
+            }
 
-                            @Override
-                            public ICommandCreator getCommandCreator()
-                            {
-                                return _CommandCreator;
-                            }
+            @Override
+            public ICommandCreator getCommandCreator()
+            {
+                return _CommandCreator;
+            }
 
-                        };
-        _Respository    = respository;
+        };
+        _Repository = respository;
         _Log.info("Device Node Bean Load");
     }
 
     public void start() throws IOException
     {
-        ServerCore<DeviceEntry> core = new ServerCore<>();
-        core.build(queenManager -> (event, sequence, endOfBatch) -> {
+        _ServerCore.build(queenManager -> (event, sequence, endOfBatch) -> {
             switch (event.getEventType())
             {
                 case LOGIC://前置的 dispatcher 将 ICommands 拆分了
-                    Pair<ICommand, ISession> logicContent = event.getContent();
+                    Pair<ICommand,
+                         ISession> logicContent = event.getContent();
                     ICommand cmd = logicContent.first();
                     ISession session = logicContent.second();
                     if (Objects.isNull(cmd)) {
@@ -217,11 +275,22 @@ public class DeviceNode
                         _Log.info("device node logic handle %s", cmd);
                         switch (cmd.getSerial())
                         {
+                            case X30_EventMsg.COMMAND:
+                                cmd = new X31_ConfirmMsg(cmd.getUID());
+                                break;
+                            case X31_ConfirmMsg.COMMAND:
+                                cmd = new X32_MsgStatus(cmd.getUID());
+                                break;
+                            case X50_DeviceMsg.COMMAND:
+                                cmd = new X51_DeviceMsgAck(cmd.getUID());
+                                break;
+                            case X51_DeviceMsgAck.COMMAND:
+                                break;
                             case X101_HandShake.COMMAND:
                                 break;
                             case X103_Close.COMMAND:
                                 cmd = null;
-                                core.localClose(session);
+                                localClose(session);
                                 break;
                             case X104_Ping.COMMAND:
                                 cmd = new X105_Pong("Server pong".getBytes());
@@ -229,10 +298,6 @@ public class DeviceNode
                             case X105_Pong.COMMAND:
                                 cmd = null;
                                 break;
-                            case X50_DeviceMsg.COMMAND:
-                                cmd = new X51_DeviceMsgAck(cmd.getUID());
-                                break;
-                            case X51_DeviceMsgAck.COMMAND:
                             default:
                                 break;
                         }
@@ -246,20 +311,56 @@ public class DeviceNode
             event.ignore();
         }, this);
         _DeviceServer.bindAddress(new InetSocketAddress(_ServerHost, _ServerPort),
-                                  AsynchronousChannelGroup.withFixedThreadPool(core.getServerCount(), core.getWorkerThreadFactory()));
+                                  AsynchronousChannelGroup.withFixedThreadPool(_ServerCore.getServerCount(), _ServerCore.getWorkerThreadFactory()));
         _DeviceServer.pendingAccept();
         _Log.info(String.format("device node start %s:%d", _ServerHost, _ServerPort));
     }
 
     @Override
-    public ICommand save(ICommand tar)
+    public ICommand save(ICommand tar, ISession session)
     {
-        return _Respository.save(tar);
+        DeviceEntry deviceEntry = _Repository.save(tar);
+        switch (tar.getSerial())
+        {
+            case X20_SignUp.COMMAND:
+                X21_SignUpResult x21 = new X21_SignUpResult();
+                if (Objects.nonNull(deviceEntry)) {
+                    x21.setSuccess();
+                    x21.setToken(IoUtil.hex2bin(deviceEntry.getToken()));
+                    x21.setPasswordId(deviceEntry.getPasswordId());
+                    mapSession(deviceEntry.getDeviceUID(), session);
+                }
+                else x21.setFailed();
+                return x21;
+            default:
+                return null;
+        }
+
     }
 
     @Override
-    public ICommand find(ICommand key)
+    public ICommand find(ICommand key, ISession session)
     {
-        return _Respository.find(key);
+        DeviceEntry deviceEntry = _Repository.find(key);
+        switch (key.getSerial())
+        {
+            case X22_SignIn.COMMAND:
+                X23_SignInResult x23 = new X23_SignInResult();
+                if (Objects.nonNull(deviceEntry)) {
+                    x23.setSuccess();
+                    x23.setInvalidTime(deviceEntry.getInvalidTime());
+                    mapSession(deviceEntry.getDeviceUID(), session);
+                }
+                else x23.setFailed();
+                return x23;
+            default:
+                return null;
+        }
+    }
+
+    public void localBizSend(long deviceId, ICommand... toSends)
+    {
+        ISession session = findSessionByIndex(deviceId);
+
     }
 }

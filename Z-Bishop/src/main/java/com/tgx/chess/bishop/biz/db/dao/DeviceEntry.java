@@ -44,4 +44,71 @@ public class DeviceEntry
         return DEVICE_ENTRY_SERIAL;
     }
 
+    private long   deviceUID;
+    private long   passwordId;
+    private String token;
+    private String mac;
+    private long   invalidTime;
+
+    @Override
+    public long getPrimaryKey()
+    {
+        return deviceUID;
+    }
+
+    @Override
+    public long getSecondaryLongKey()
+    {
+        return passwordId;
+    }
+
+    public void setDeviceUID(long deviceUID)
+    {
+        this.deviceUID = deviceUID;
+    }
+
+    public long getDeviceUID()
+    {
+        return deviceUID;
+    }
+
+    public String getToken()
+    {
+        return token;
+    }
+
+    public void setToken(String token)
+    {
+        this.token = token;
+    }
+
+    public String getMac()
+    {
+        return mac;
+    }
+
+    public void setMac(String mac)
+    {
+        this.mac = mac;
+    }
+
+    public long getPasswordId()
+    {
+        return passwordId;
+    }
+
+    public void setPasswordId(long passwordId)
+    {
+        this.passwordId = passwordId;
+    }
+
+    public long getInvalidTime()
+    {
+        return invalidTime;
+    }
+
+    public void setInvalidTime(long invalidTime)
+    {
+        this.invalidTime = invalidTime;
+    }
 }

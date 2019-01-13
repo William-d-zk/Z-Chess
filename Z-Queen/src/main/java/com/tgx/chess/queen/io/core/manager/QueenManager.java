@@ -24,16 +24,10 @@
 
 package com.tgx.chess.queen.io.core.manager;
 
-import static com.tgx.chess.queen.event.operator.OperatorHolder.CLOSE_OPERATOR;
-
-import com.lmax.disruptor.InsufficientCapacityException;
-import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.config.Config;
-import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.event.inf.IOperator.Type;
-import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.async.AioSessionManager;
+import com.tgx.chess.queen.io.core.executor.ServerCore;
 import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
@@ -41,81 +35,28 @@ public abstract class QueenManager
         extends
         AioSessionManager
 {
-    private final Logger   _Logger       = Logger.getLogger(getClass().getName());
+    private final Logger       _Logger = Logger.getLogger(getClass().getName());
+    protected final ServerCore _ServerCore;
 
-    private final Sender[] _DomainSender = new Sender[4];
-
-    public QueenManager(Config config)
+    public QueenManager(Config config,
+                        ServerCore serverCore)
     {
         super(config);
+        _ServerCore = serverCore;
     }
 
-    public void add(long code, RingBuffer<QEvent> localBack, RingBuffer<QEvent> localSend)
+    public void localClose(ISession session)
     {
-        _DomainSender[getSlot(code)] = new Sender(localBack, localSend);
+        _ServerCore.localClose(session);
     }
 
-    private class Sender
+    public boolean localSend(ISession session, ICommand... commands)
     {
-
-        private final RingBuffer<QEvent> _LocalBackPublisher, _LocalSendPublisher;
-
-        private Sender(RingBuffer<QEvent> localBackPublisher, RingBuffer<QEvent> localSendPublisher)
-        {
-            _LocalBackPublisher = localBackPublisher;
-            _LocalSendPublisher = localSendPublisher;
-        }
-
-        void localClose(final ISession session)
-        {
-            if (session != null) try {
-                long sequence = _LocalBackPublisher.tryNext();
-                try {
-                    QEvent event = _LocalBackPublisher.get(sequence);
-                    event.produce(Type.CLOSE, null, session, CLOSE_OPERATOR());
-                }
-                finally {
-                    _LocalBackPublisher.publish(sequence);
-                }
-
-            }
-            catch (InsufficientCapacityException e) {
-                _Logger.warning("local close -> full", e);
-            }
-        }
-
-        void localSend(ICommand toSend, ISession session, IOperator<ICommand, ISession> write_operator)
-        {
-            if (session != null) try {
-                long sequence = _LocalSendPublisher.tryNext();
-                try {
-                    QEvent event = _LocalSendPublisher.get(sequence);
-                    event.produce(Type.WRITE, toSend, session, write_operator);
-                }
-                finally {
-                    _LocalSendPublisher.publish(sequence);
-                }
-
-            }
-            catch (InsufficientCapacityException e) {
-                _Logger.warning("local send -> full", e);
-            }
-        }
-
+        return _ServerCore.localSend(session, commands);
     }
 
-    public void localClose(long index)
-    {
-        _DomainSender[getSlot(index)].localClose(findSessionByIndex(index));
-    }
+    public abstract ICommand save(ICommand tar, ISession session);
 
-    public void localSend(ICommand toSend, ISession session, IOperator<ICommand, ISession> write_operator)
-    {
-        _DomainSender[getSlot(session.getIndex())].localSend(toSend, session, write_operator);
-    }
-
-    public abstract ICommand save(ICommand tar);
-
-    public abstract ICommand find(ICommand key);
+    public abstract ICommand find(ICommand key, ISession session);
 
 }

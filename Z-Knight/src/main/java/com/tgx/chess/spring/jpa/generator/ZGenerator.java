@@ -37,8 +37,8 @@ public class ZGenerator
         implements
         IdentifierGenerator
 {
-    private final Logger _Log  = Logger.getLogger(getClass().getName());
-    private final ZUID   _Zuid = new ZUID();
+    private final Logger      _Log  = Logger.getLogger(getClass().getName());
+    private final static ZUID _ZUID = new ZUID();
 
     public ZGenerator()
     {
@@ -48,6 +48,11 @@ public class ZGenerator
     public Serializable generate(SharedSessionContractImplementor session, Object object) throws HibernateException
     {
         _Log.info("generate id %s", object);
-        return _Zuid.getId();
+        return next();
+    }
+
+    public long next()
+    {
+        return _ZUID.getId();
     }
 }
