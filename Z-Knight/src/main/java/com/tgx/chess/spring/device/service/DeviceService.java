@@ -178,4 +178,9 @@ public class DeviceService
         _DeviceNode.localBizSend(deviceId, toSends);
     }
 
+    public void localBizClose(long deviceId)
+    {
+        _DeviceNode.localBizClose(deviceId);
+    }
+
 }
