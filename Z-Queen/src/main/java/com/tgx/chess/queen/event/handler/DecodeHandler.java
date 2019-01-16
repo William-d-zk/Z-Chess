@@ -63,16 +63,21 @@ public class DecodeHandler
         /*
         错误事件已在同级旁路中处理，此处不再关心错误处理
          */
-        IOperator<IPacket, ISession> packetOperator = event.getEventOp();
-        Pair<IPacket, ISession>      packetContent  = event.getContent();
-        ISession                     session        = packetContent.second();
-        IContext                     context        = session.getContext();
+        IOperator<IPacket,
+                  ISession> packetOperator = event.getEventOp();
+        Pair<IPacket,
+             ISession> packetContent = event.getContent();
+        ISession session = packetContent.second();
+        IContext context = session.getContext();
         context.setEncryptHandler(_EncryptHandler);
         IPacket packet = packetContent.first();
         if (!context.isInErrorState()) {
             try {
-                Triple<ICommand[], ISession, IOperator<ICommand[], ISession>> result = packetOperator.handle(packet, session);
-                _Log.info("decoded:%s", Arrays.toString(result.first()));
+                Triple<ICommand[],
+                       ISession,
+                       IOperator<ICommand[],
+                                 ISession>> result = packetOperator.handle(packet, session);
+                _Log.info("decoded commands:%s", Arrays.toString(result.first()));
                 transfer(event, result.first(), session, result.third());
             }
             catch (Exception e) {
@@ -84,7 +89,11 @@ public class DecodeHandler
         else event.ignore();
     }
 
-    protected void transfer(QEvent event, ICommand[] commands, ISession session, IOperator<ICommand[], ISession> operator)
+    protected void transfer(QEvent event,
+                            ICommand[] commands,
+                            ISession session,
+                            IOperator<ICommand[],
+                                      ISession> operator)
     {
         event.produce(DISPATCH, commands, session, operator);
     }

@@ -77,7 +77,7 @@ public interface IStorage
         OP_APPEND(Byte.parseByte("00000111", 2)),
         OP_REMOVE(Byte.parseByte("00010001", 2)),
         OP_DELETE(Byte.parseByte("00011001", 2)),
-        OP_INVALID(Byte.parseByte("10000000", 2));
+        OP_INVALID((byte) Integer.parseInt("10000000", 2));
 
         byte _Value;
 
@@ -93,7 +93,8 @@ public interface IStorage
 
         public Operation predicate(byte value)
         {
-            return _Value == value ? this : null;
+            return _Value == value ? this
+                                   : null;
         }
 
         public static Operation parse(final byte value)

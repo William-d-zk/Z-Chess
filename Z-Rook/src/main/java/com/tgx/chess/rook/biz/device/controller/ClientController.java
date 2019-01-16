@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tgx.chess.king.base.util.CryptUtil;
+import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.io.external.websokcet.bean.control.X103_Close;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X20_SignUp;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X22_SignIn;
@@ -40,13 +41,14 @@ import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X01_EncryptRequest;
 import com.tgx.chess.rook.biz.device.client.DeviceClient;
 
 @RestController
-public class DeviceRest
+
+public class ClientController
 {
     private final DeviceClient _Client;
     private final CryptUtil    _CryptUtil = new CryptUtil();
 
     @Autowired
-    DeviceRest(DeviceClient client)
+    ClientController(DeviceClient client)
     {
         _Client = client;
     }
@@ -88,30 +90,29 @@ public class DeviceRest
         return "x50";
     }
 
-    @GetMapping("/client/x20")
-    public String x20(@RequestParam(name = "msg", defaultValue = "password", required = false) String msg)
+    @GetMapping("/client/sign-up")
+    public String x20(@RequestParam(name = "password", defaultValue = "password", required = false) String password,
+                      @RequestParam(name = "mac", defaultValue = "AE:C3:33:44:56:09") String mac)
     {
+
         X20_SignUp x20 = new X20_SignUp();
-        x20.setMac(new byte[] { (byte) 0xAE,
-                                (byte) 0xC3,
-                                0x33,
-                                0x44,
-                                0x56,
-                                0x09 });
-        x20.setPassword(msg);
+        x20.setMac(IoUtil.writeMacRaw(mac));
+        x20.setPassword(password);
         _Client.sendLocal(x20);
-        return "x20";
+        return String.format("send x20 to sign up, mac{ %s }password{ %s }", mac, password);
     }
 
-    @GetMapping("/client/x22")
-    public String x22(@RequestParam(name = "msg", defaultValue = "password", required = false) String msg)
+    @GetMapping("/client/sign-in")
+    public String x22(@RequestParam(name = "password", defaultValue = "password", required = false) String password, @RequestParam(name = "token") String token)
     {
-        Objects.requireNonNull(_Client.getToken());
         X22_SignIn x22 = new X22_SignIn();
+        if (Objects.nonNull(_Client.getToken())) throw new IllegalStateException(String.format("client already login with %s ",
+                                                                                               IoUtil.bin2Hex(_Client.getToken())));
+        _Client.setToken(token);
         x22.setToken(_Client.getToken());
-        x22.setPassword(msg);
+        x22.setPassword(password);
         _Client.sendLocal(x22);
-        return "x22";
+        return String.format("login %s : %s", IoUtil.bin2Hex(_Client.getToken()), password);
     }
 
     @GetMapping("/client/handshake")

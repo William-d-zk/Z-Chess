@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -81,9 +82,14 @@ public class DeviceService
         _DeviceNode.start();
     }
 
-    public List<DeviceEntity> findAll()
+    public List<DeviceEntry> findAll()
     {
-        return _DeviceRepository.findAll();
+        List<DeviceEntity> entities = _DeviceRepository.findAll();
+        return Objects.nonNull(entities) ? entities.stream()
+                                                   .map(this::convertDevice)
+                                                   .peek(entry -> entry.setOnline(Objects.nonNull(_DeviceNode.findSessionByIndex(entry.getDeviceUID()))))
+                                                   .collect(Collectors.toList())
+                                         : null;
     }
 
     public DeviceEntity saveDevice(DeviceEntity device)

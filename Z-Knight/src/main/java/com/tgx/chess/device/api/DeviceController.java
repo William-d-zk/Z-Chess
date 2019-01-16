@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X30_EventMsg;
 import com.tgx.chess.spring.device.model.DeviceEntity;
@@ -56,13 +57,11 @@ public class DeviceController
     }
 
     @GetMapping("/client/devices")
-    public @ResponseBody List<DeviceEntity> getDevices()
+    public @ResponseBody Object getDevices()
     {
-        List<DeviceEntity> list = _DeviceService.findAll();
-        for (DeviceEntity device : list) {
-            _Log.info("device mac %s", device.getMac());
-        }
-        return list;
+        List<DeviceEntry> list = _DeviceService.findAll();
+        return Objects.nonNull(list) ? list
+                                     : "no devices";
     }
 
     @GetMapping("/client/device")
@@ -74,12 +73,12 @@ public class DeviceController
     @GetMapping("/client/close/all")
     public String closeAll()
     {
-        List<DeviceEntity> list = _DeviceService.findAll();
+        List<DeviceEntry> list = _DeviceService.findAll();
         StringBuffer sb = new StringBuffer();
-        for (DeviceEntity device : list) {
+        for (DeviceEntry device : list) {
             _Log.info("device mac %s", device.getToken());
             sb.append(String.format("token:%s\n", device.getToken()));
-            _DeviceService.localBizClose(device.getId());
+            _DeviceService.localBizClose(device.getDeviceUID());
         }
         return sb.toString();
     }
@@ -97,12 +96,12 @@ public class DeviceController
     @GetMapping("/event/x30/broadcast")
     public String x30Broadcast(@RequestParam(name = "msg") String msg, @RequestParam(name = "ctrl", defaultValue = "0") int ctrl)
     {
-        List<DeviceEntity> list = _DeviceService.findAll();
+        List<DeviceEntry> list = _DeviceService.findAll();
         StringBuffer sb = new StringBuffer();
-        for (DeviceEntity device : list) {
+        for (DeviceEntry device : list) {
             _Log.info("device mac %s", device.getToken());
             sb.append(String.format("token:%s\n", device.getToken()));
-            sendX30(device, msg, ctrl);
+            sendX30(device.getToken(), device.getDeviceUID(), msg, ctrl);
         }
         return sb.toString();
     }
@@ -114,17 +113,17 @@ public class DeviceController
     {
         DeviceEntity device = _DeviceService.findDeviceByToken(token);
         if (Objects.nonNull(device)) {
-            sendX30(device, msg, ctrl);
+            sendX30(device.getToken(), device.getId(), msg, ctrl);
         }
         return String.format("not found device %s", token);
     }
 
-    private void sendX30(DeviceEntity device, String msg, int ctrl)
+    private void sendX30(String token, long deviceId, String msg, int ctrl)
     {
         X30_EventMsg x30 = new X30_EventMsg(_ZGenerator.next());
         x30.setCtrl(X30_EventMsg.CTRL_TEXT);
-        x30.setToken(device.getToken());
+        x30.setToken(token);
         x30.setPayload(msg.getBytes(StandardCharsets.UTF_8));
-        _DeviceService.localBizSend(device.getId(), x30);
+        _DeviceService.localBizSend(deviceId, x30);
     }
 }
