@@ -114,6 +114,7 @@ public class DeviceController
         DeviceEntity device = _DeviceService.findDeviceByToken(token);
         if (Objects.nonNull(device)) {
             sendX30(device.getToken(), device.getId(), msg, ctrl);
+            return String.format("push %s -> device %s", msg, token);
         }
         return String.format("not found device %s", token);
     }

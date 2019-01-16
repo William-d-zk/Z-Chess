@@ -74,7 +74,10 @@ public class X30_EventMsg
         ctrl = data[pos++];
         payloadLength = IoUtil.readShort(data, pos);
         pos += 2;
-        pos = IoUtil.read(data, pos, payload);
+        if (payloadLength > 0) {
+            payload = new byte[payloadLength];
+            pos = IoUtil.read(data, pos, payload);
+        }
         return pos;
     }
 
@@ -91,6 +94,7 @@ public class X30_EventMsg
     public void setPayload(byte[] payload)
     {
         this.payload = payload;
+        payloadLength = payload.length;
     }
 
     public byte[] getPayload()

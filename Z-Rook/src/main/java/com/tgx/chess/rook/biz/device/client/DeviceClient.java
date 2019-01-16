@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Objects;
@@ -78,6 +79,8 @@ import com.tgx.chess.queen.io.external.websokcet.bean.control.X105_Pong;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X21_SignUpResult;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X22_SignIn;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X23_SignInResult;
+import com.tgx.chess.queen.io.external.websokcet.bean.device.X30_EventMsg;
+import com.tgx.chess.queen.io.external.websokcet.bean.device.X31_ConfirmMsg;
 import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X03_Cipher;
 import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X05_EncryptStart;
 
@@ -238,6 +241,7 @@ public class DeviceClient
                         commands = Stream.of(commands)
                                          .map(cmd ->
                                          {
+                                             _Log.info("recv:%x ", cmd.getSerial());
                                              switch (cmd.getSerial())
                                              {
                                                  case X03_Cipher.COMMAND:
@@ -261,6 +265,13 @@ public class DeviceClient
                                                          return new X103_Close("sign in failed! close".getBytes());
                                                      }
                                                      break;
+                                                 case X30_EventMsg.COMMAND:
+                                                     X30_EventMsg x30 = (X30_EventMsg) cmd;
+                                                     _Log.info("x30 payload: %s", new String(x30.getPayload(), StandardCharsets.UTF_8));
+                                                     X31_ConfirmMsg x31 = new X31_ConfirmMsg(x30.getUID());
+                                                     x31.setStatus(X31_ConfirmMsg.STATUS_RECEIVED);
+                                                     x31.setToken(x30.getToken());
+                                                     return x31;
                                                  case X101_HandShake.COMMAND:
                                                      _Log.info("handshake ok");
                                                      break;

@@ -106,8 +106,9 @@ public class ClientController
     public String x22(@RequestParam(name = "password", defaultValue = "password", required = false) String password, @RequestParam(name = "token") String token)
     {
         X22_SignIn x22 = new X22_SignIn();
-        if (Objects.nonNull(_Client.getToken())) throw new IllegalStateException(String.format("client already login with %s ",
-                                                                                               IoUtil.bin2Hex(_Client.getToken())));
+        if (Objects.nonNull(_Client.getToken())
+            && !IoUtil.bin2Hex(_Client.getToken())
+                      .equals(token)) throw new IllegalStateException(String.format("client already login with %s ", IoUtil.bin2Hex(_Client.getToken())));
         _Client.setToken(token);
         x22.setToken(_Client.getToken());
         x22.setPassword(password);
