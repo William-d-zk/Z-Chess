@@ -44,11 +44,12 @@ public class DeviceEntry
         return DEVICE_ENTRY_SERIAL;
     }
 
-    private long   deviceUID;
-    private long   passwordId;
-    private String token;
-    private String mac;
-    private long   invalidTime;
+    private long    deviceUID;
+    private long    passwordId;
+    private String  token;
+    private String  mac;
+    private long    invalidTime;
+    private boolean isOnline;
 
     @Override
     public long getPrimaryKey()
@@ -110,5 +111,15 @@ public class DeviceEntry
     public void setInvalidTime(long invalidTime)
     {
         this.invalidTime = invalidTime;
+    }
+
+    public boolean isOnline()
+    {
+        return isOnline;
+    }
+
+    public void setOnline(boolean online)
+    {
+        isOnline = online;
     }
 }

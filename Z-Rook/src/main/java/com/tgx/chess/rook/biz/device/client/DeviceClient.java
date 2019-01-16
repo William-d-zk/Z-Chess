@@ -49,6 +49,7 @@ import org.springframework.stereotype.Component;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.schedule.TimeWheel;
+import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.king.config.Config;
@@ -330,8 +331,19 @@ public class DeviceClient
         }
     }
 
+    public boolean isOnline()
+    {
+        return Objects.nonNull(clientSession);
+    }
+
+    public boolean isOffline()
+    {
+        return Objects.isNull(clientSession);
+    }
+
     public boolean sendLocal(ICommand... toSends)
     {
+        if (isOffline()) throw new IllegalStateException("client is offline");
         return _ClientCore.localSend(clientSession, toSends);
     }
 
@@ -354,5 +366,10 @@ public class DeviceClient
     public byte[] getToken()
     {
         return currentTokenRef.get();
+    }
+
+    public void setToken(String token)
+    {
+        currentTokenRef.set(IoUtil.hex2bin(token));
     }
 }
