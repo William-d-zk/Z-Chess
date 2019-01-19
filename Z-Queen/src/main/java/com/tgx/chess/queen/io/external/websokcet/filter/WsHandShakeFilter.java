@@ -54,7 +54,7 @@ public class WsHandShakeFilter
 
     public WsHandShakeFilter(MODE mode)
     {
-        name  = "web-socket-header-filter-" + mode.name();
+        name  = "web-socket-header-zfilter-" + mode.name();
         _Mode = mode;
     }
 

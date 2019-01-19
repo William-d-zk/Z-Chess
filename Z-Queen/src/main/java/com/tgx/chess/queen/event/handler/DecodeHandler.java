@@ -40,7 +40,7 @@ import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IPacket;
 import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.external.crypt.EncryptHandler;
+import com.tgx.chess.queen.io.external.zcrypt.EncryptHandler;
 
 /**
  * @author William.d.zk

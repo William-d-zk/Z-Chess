@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.tgx.chess.queen.io.external.filter;
+package com.tgx.chess.queen.io.external.zfilter;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -56,7 +56,7 @@ public class ZCommandFilter<C extends AioContext>
     public ZCommandFilter(CommandFactory factory)
     {
         this.factory = factory;
-        name         = "queen-command-filter";
+        name         = "queen-command-zfilter";
     }
 
     @Override
