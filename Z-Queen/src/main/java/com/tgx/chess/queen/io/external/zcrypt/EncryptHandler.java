@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.queen.io.external.crypt;
+package com.tgx.chess.queen.io.external.zcrypt;
 
 import java.util.Random;
 

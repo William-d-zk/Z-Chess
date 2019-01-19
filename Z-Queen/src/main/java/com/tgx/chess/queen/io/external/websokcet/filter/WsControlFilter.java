@@ -42,7 +42,7 @@ public class WsControlFilter
 
     public WsControlFilter()
     {
-        name = "network-control-filter";
+        name = "network-control-zfilter";
     }
 
     @Override

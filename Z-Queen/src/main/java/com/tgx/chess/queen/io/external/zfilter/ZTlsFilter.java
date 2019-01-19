@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.tgx.chess.queen.io.external.filter;
+package com.tgx.chess.queen.io.external.zfilter;
 
 import java.util.Objects;
 
@@ -41,7 +41,7 @@ public class ZTlsFilter<C extends AioContext>
 
     public ZTlsFilter()
     {
-        name = "queen-tls-filter";
+        name = "queen-tls-zfilter";
     }
 
     private final Logger _Log = Logger.getLogger(getClass().getName());
@@ -51,7 +51,7 @@ public class ZTlsFilter<C extends AioContext>
     {
         if (Objects.isNull(context) || Objects.isNull(output)) return ResultType.ERROR;
         ResultType resultType = context.isOutCrypt() ? ResultType.NEXT_STEP : ResultType.IGNORE;
-        /* plain -> cipher X04/X05 encoded in command-filter */
+        /* plain -> cipher X04/X05 encoded in command-zfilter */
         if (!context.isOutCrypt() && context.needUpdateKeyOut()) {
             _Log.info("X04/X05 done,change state from plain to cipher in next encoding conversion");
             context.swapKeyOut(context.getReRollKey());
