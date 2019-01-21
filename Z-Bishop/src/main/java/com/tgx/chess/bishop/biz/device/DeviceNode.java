@@ -26,7 +26,6 @@ package com.tgx.chess.bishop.biz.device;
 
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 import static com.tgx.chess.queen.event.operator.OperatorHolder.CONNECTED_OPERATOR;
-import static com.tgx.chess.queen.event.operator.OperatorHolder.SERVER_ACCEPTOR;
 import static com.tgx.chess.queen.event.operator.OperatorHolder.SERVER_TRANSFER;
 
 import java.io.IOException;
@@ -110,7 +109,7 @@ public class DeviceNode
 
     public DeviceNode(String host,
                       int port,
-                      IRepository respository)
+                      IRepository<DeviceEntry> respository)
     {
         super(new Config("device"), new ServerCore()
         {
@@ -226,7 +225,7 @@ public class DeviceNode
             @Override
             public void pendingAccept()
             {
-                if (mServerChannel.isOpen()) mServerChannel.accept(this, SERVER_ACCEPTOR());
+                if (mServerChannel.isOpen()) mServerChannel.accept(this, this);
             }
 
             @Override
@@ -261,52 +260,50 @@ public class DeviceNode
     public void start() throws IOException
     {
         _ServerCore.build(queenManager -> (event, sequence, endOfBatch) -> {
-            switch (event.getEventType())
-            {
-                case LOGIC://前置的 dispatcher 将 ICommands 拆分了
-                    Pair<ICommand,
-                         ISession> logicContent = event.getContent();
-                    ICommand cmd = logicContent.first();
-                    ISession session = logicContent.second();
-                    if (Objects.isNull(cmd)) {
-                        _Log.warning("cmd null");
+            //前置的 dispatcher 将 ICommands 拆分了
+            if (IOperator.Type.LOGIC.equals(event.getEventType())) {
+                Pair<ICommand,
+                     ISession> logicContent = event.getContent();
+                ICommand cmd = logicContent.first();
+                ISession session = logicContent.second();
+                if (Objects.isNull(cmd)) {
+                    _Log.warning("cmd null");
+                }
+                else {
+                    _Log.info("device node logic handle %s", cmd);
+                    switch (cmd.getSerial())
+                    {
+                        case X30_EventMsg.COMMAND:
+                            cmd = new X31_ConfirmMsg(cmd.getUID());
+                            break;
+                        case X31_ConfirmMsg.COMMAND:
+                            cmd = new X32_MsgStatus(cmd.getUID());
+                            break;
+                        case X50_DeviceMsg.COMMAND:
+                            cmd = new X51_DeviceMsgAck(cmd.getUID());
+                            break;
+                        case X51_DeviceMsgAck.COMMAND:
+                            break;
+                        case X101_HandShake.COMMAND:
+                            break;
+                        case X103_Close.COMMAND:
+                            cmd = null;
+                            localClose(session);
+                            break;
+                        case X104_Ping.COMMAND:
+                            cmd = new X105_Pong("Server pong".getBytes());
+                            break;
+                        case X105_Pong.COMMAND:
+                            cmd = null;
+                            break;
+                        default:
+                            break;
                     }
-                    else {
-                        _Log.info("device node logic handle %s", cmd);
-                        switch (cmd.getSerial())
-                        {
-                            case X30_EventMsg.COMMAND:
-                                cmd = new X31_ConfirmMsg(cmd.getUID());
-                                break;
-                            case X31_ConfirmMsg.COMMAND:
-                                cmd = new X32_MsgStatus(cmd.getUID());
-                                break;
-                            case X50_DeviceMsg.COMMAND:
-                                cmd = new X51_DeviceMsgAck(cmd.getUID());
-                                break;
-                            case X51_DeviceMsgAck.COMMAND:
-                                break;
-                            case X101_HandShake.COMMAND:
-                                break;
-                            case X103_Close.COMMAND:
-                                cmd = null;
-                                localClose(session);
-                                break;
-                            case X104_Ping.COMMAND:
-                                cmd = new X105_Pong("Server pong".getBytes());
-                                break;
-                            case X105_Pong.COMMAND:
-                                cmd = null;
-                                break;
-                            default:
-                                break;
-                        }
-                        if (Objects.nonNull(cmd)) {
-                            event.produce(WRITE, new ICommand[] { cmd }, session, SERVER_TRANSFER());
-                            return;
-                        }
+                    if (Objects.nonNull(cmd)) {
+                        event.produce(WRITE, new ICommand[] { cmd }, session, SERVER_TRANSFER());
+                        return;
                     }
-                    break;
+                }
             }
             event.ignore();
         }, this);
