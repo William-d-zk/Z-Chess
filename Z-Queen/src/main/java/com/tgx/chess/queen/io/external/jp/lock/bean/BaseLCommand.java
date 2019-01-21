@@ -30,5 +30,10 @@ public abstract class BaseLCommand
         implements
         ICommand
 {
+    private final int _Command;
 
+    protected BaseLCommand(int cmd)
+    {
+        _Command = cmd;
+    }
 }
