@@ -24,6 +24,34 @@
 
 package com.tgx.chess.queen.io.external.jp.lock.bean;
 
-public class LHeartBeat extends BaseLCommand {
+import com.tgx.chess.king.base.util.IoUtil;
 
+public class LHeartBeat
+        extends
+        BaseLCommand
+{
+    public final static int JP_LOCK_HEARTBEAT = IoUtil.readInt("TJPL".getBytes(), 0) + 1;
+
+    protected LHeartBeat()
+    {
+        super(JP_LOCK_HEARTBEAT);
+    }
+
+    @Override
+    public int dataLength()
+    {
+        return 5;
+    }
+
+    @Override
+    public int getSerial()
+    {
+        return JP_LOCK_HEARTBEAT;
+    }
+
+    @Override
+    public int getPriority()
+    {
+        return QOS_00_NETWORK_CONTROL;
+    }
 }
