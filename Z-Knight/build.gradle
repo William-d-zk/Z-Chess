@@ -25,12 +25,12 @@
 description = 'Z-Knight'
 dependencies {
     compile project(':manange.z-bishop')
-    compile(group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.0.6.RELEASE') {
+    compile(group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.1.RELEASE') {
         exclude(module: 'spring-boot-starter-tomcat')
     }
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-undertow', version: '2.0.6.RELEASE'
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: '2.0.6.RELEASE'
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: '2.0.6.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-undertow', version: '2.1.1.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: '2.1.1.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: '2.1.1.RELEASE'
     compile group: 'net.bytebuddy', name: 'byte-buddy', version: '1.7.11'
     compile group: 'org.postgresql', name: 'postgresql', version: '42.2.5'
     compile group: 'com.sleepycat', name: 'je', version: '7.5.11'
