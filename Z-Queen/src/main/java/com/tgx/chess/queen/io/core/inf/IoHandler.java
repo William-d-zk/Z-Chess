@@ -41,17 +41,20 @@ import java.nio.channels.ShutdownChannelGroupException;
 
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Triple;
-import com.tgx.chess.queen.event.inf.IDispatch;
 import com.tgx.chess.queen.event.inf.IOperator;
+import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.io.core.async.AioPacket;
 import com.tgx.chess.queen.io.core.async.socket.AioWorker;
 
 @SuppressWarnings("unchecked")
-public interface IDispatcher
+public interface IoHandler
         extends
-        IDispatch
+        ISort,
+        IOperatorSupplier<IPacket,
+                          ICommand[],
+                          ISession>
 {
-    Logger                         LOG             = Logger.getLogger(IDispatcher.class.getName());
+    Logger                         LOG             = Logger.getLogger(IoHandler.class.getName());
     IOperator<Void,
               ISession>            close_operator  = new IOperator<Void,
                                                                    ISession>()
@@ -262,7 +265,7 @@ public interface IDispatcher
                       session.readNext(aio_reader);
                       return new Triple<>(commands,
                                           session,
-                                          session.getDispatcher()
+                                          session.getHandler()
                                                  .getOutOperator());
                   }
 
@@ -315,4 +318,19 @@ public interface IDispatcher
         return aio_reader;
     }
 
+    interface IEncoder
+            extends
+            IOperator<ICommand,
+                      ISession>,
+            IPipeEncoder
+    {
+    }
+
+    interface IDecoder
+            extends
+            IOperator<IPacket,
+                      ISession>,
+            IPipeDecode
+    {
+    }
 }

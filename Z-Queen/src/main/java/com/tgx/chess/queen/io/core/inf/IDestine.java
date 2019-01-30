@@ -23,14 +23,12 @@
  */
 package com.tgx.chess.queen.io.core.inf;
 
-import com.tgx.chess.queen.event.operator.ZDispatcher;
-
 /**
  * @author William.d.zk
  */
 public interface IDestine
 {
-    default RESULT trial(ICommand cmd, ZDispatcher mode)
+    default RESULT trial(ICommand cmd, IoHandler handler)
     {
         return RESULT.IGNORE;
     }

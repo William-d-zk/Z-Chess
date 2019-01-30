@@ -24,7 +24,7 @@
 package com.tgx.chess.queen.io.external.websokcet;
 
 import com.tgx.chess.king.base.crypt.util.Rc4;
-import com.tgx.chess.queen.io.core.inf.IDispatcher;
+import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 
@@ -44,9 +44,9 @@ public class ZContext
     private IEncryptHandler mEncryptHandler;
 
     public ZContext(ISessionOption option,
-                    IDispatcher dispatcher)
+                    ISort sorter)
     {
-        super(option, dispatcher);
+        super(option, sorter);
     }
 
     @Override

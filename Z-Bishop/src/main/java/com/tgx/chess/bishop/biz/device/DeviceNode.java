@@ -25,8 +25,8 @@
 package com.tgx.chess.bishop.biz.device;
 
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
-import static com.tgx.chess.queen.event.operator.ZDispatcher.SERVER_TRANSFER;
-import static com.tgx.chess.queen.io.core.inf.IDispatcher.CONNECTED_OPERATOR;
+import static com.tgx.chess.queen.io.core.inf.IoHandler.CONNECTED_OPERATOR;
+import static com.tgx.chess.queen.io.external.zoperator.ZOperators.SERVER_TRANSFER;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -46,7 +46,7 @@ import com.tgx.chess.king.config.Config;
 import com.tgx.chess.queen.config.QueenCode;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.event.operator.ZDispatcher;
+import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.async.AioCreator;
 import com.tgx.chess.queen.io.core.async.AioSession;
@@ -57,7 +57,6 @@ import com.tgx.chess.queen.io.core.inf.ICommandCreator;
 import com.tgx.chess.queen.io.core.inf.IConnectActive;
 import com.tgx.chess.queen.io.core.inf.IConnectionContext;
 import com.tgx.chess.queen.io.core.inf.IContext;
-import com.tgx.chess.queen.io.core.inf.IDispatcher;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionCreated;
 import com.tgx.chess.queen.io.core.inf.ISessionCreator;
@@ -78,6 +77,7 @@ import com.tgx.chess.queen.io.external.websokcet.bean.device.X31_ConfirmMsg;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X32_MsgStatus;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X50_DeviceMsg;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X51_DeviceMsgAck;
+import com.tgx.chess.queen.io.external.zoperator.ZOperators;
 
 public class DeviceNode
         extends
@@ -154,7 +154,7 @@ public class DeviceNode
                                           this,
                                           this,
                                           DeviceNode.this,
-                                          active.getDispatcher()
+                                          active.getHandler()
                                                 .getInOperator());
                 }
                 catch (IOException e) {
@@ -164,10 +164,10 @@ public class DeviceNode
             }
 
             @Override
-            public IContext createContext(ISessionOption option, IDispatcher dispatcher)
+            public IContext createContext(ISessionOption option, ISort ioHandler)
             {
-                return dispatcher instanceof ZDispatcher ? new ZContext(option, (ZDispatcher) dispatcher)
-                                                         : null;
+                return new ZContext(option, ioHandler);
+
             }
         };
         _CommandCreator = (session) -> null;
@@ -231,9 +231,9 @@ public class DeviceNode
             }
 
             @Override
-            public ZDispatcher getDispatcher()
+            public ZOperators getHandler()
             {
-                return ZDispatcher.SERVER;
+                return ZOperators.SERVER;
             }
 
             @Override

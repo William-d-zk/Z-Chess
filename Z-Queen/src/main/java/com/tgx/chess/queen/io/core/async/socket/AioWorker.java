@@ -29,10 +29,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.lmax.disruptor.RingBuffer;
-import com.tgx.chess.queen.event.inf.IDispatch;
 import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IError.Type;
 import com.tgx.chess.queen.event.inf.IOperator;
+import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.IAioConnector;
 import com.tgx.chess.queen.io.core.inf.IAioServer;
@@ -141,7 +141,7 @@ public class AioWorker
 
     public void publishConnected(final IOperator<IConnectionContext,
                                                  AsynchronousSocketChannel> op,
-                                 final IDispatch dispatcher,
+                                 final ISort sorter,
                                  final IConnectActive active,
                                  final ISessionCreator sessionCreator,
                                  final ICommandCreator commandCreator,
@@ -151,7 +151,7 @@ public class AioWorker
         publish(op,
                 IError.Type.NO_ERROR,
                 IOperator.Type.CONNECTED,
-                new ConnectionContext(dispatcher, active, sessionCreator, commandCreator, sessionCreated),
+                new ConnectionContext(sorter, active, sessionCreator, commandCreator, sessionCreated),
                 channel);
     }
 

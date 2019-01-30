@@ -65,14 +65,6 @@ public interface ISessionManager
 
     long[][] portIndex(long portMask);
 
-    //    Collection<Long> getIndexSet();
-    //
-    //    int sessionCount();
-    //
-    //    Iterator<ISession> iterator();
-    //
-    //    boolean checkMode(IConnectMode.ZDispatcher... modes);
-
     //-2bit- 类型 10 server 11 cluster 01 internal 00 client
     int CLIENT_SLOT   = 0;
     int INTERNAL_SLOT = 1;

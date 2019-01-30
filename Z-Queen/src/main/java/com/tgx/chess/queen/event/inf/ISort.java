@@ -24,7 +24,7 @@
 
 package com.tgx.chess.queen.event.inf;
 
-public interface IDispatch
+public interface ISort
 {
     enum Mode
     {
@@ -41,10 +41,13 @@ public interface IDispatch
 
     /**
      *
-     * @return true : cluster
-     *         false : link
+     * 用于区分当前处理过程属于哪个Pipeline
      */
     Mode getMode();
 
+    /**
+     * 
+     * 用于区分 IO 的角色，是服务端还是客户端，或者是对称式
+     */
     Type getType();
 }

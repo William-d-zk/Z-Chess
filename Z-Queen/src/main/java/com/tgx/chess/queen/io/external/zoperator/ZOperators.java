@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.queen.event.operator;
+package com.tgx.chess.queen.io.external.zoperator;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -32,13 +32,11 @@ import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.io.core.inf.ICommand;
-import com.tgx.chess.queen.io.core.inf.IDispatcher;
 import com.tgx.chess.queen.io.core.inf.IFilterChain;
 import com.tgx.chess.queen.io.core.inf.IOperatorSupplier;
 import com.tgx.chess.queen.io.core.inf.IPacket;
-import com.tgx.chess.queen.io.core.inf.IPipeDecode;
-import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
 import com.tgx.chess.queen.io.core.inf.ISession;
+import com.tgx.chess.queen.io.core.inf.IoHandler;
 import com.tgx.chess.queen.io.external.websokcet.WsContext;
 import com.tgx.chess.queen.io.external.websokcet.ZContext;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X20_SignUp;
@@ -59,12 +57,10 @@ import com.tgx.chess.queen.io.external.zfilter.ZCommandFilter;
 import com.tgx.chess.queen.io.external.zfilter.ZTlsFilter;
 
 @SuppressWarnings("unchecked")
-public enum ZDispatcher
+public enum ZOperators
         implements
-        IOperatorSupplier<IPacket,
-                          ICommand[],
-                          ISession>,
-        IDispatcher
+
+        IoHandler
 {
     CLUSTER_CONSUMER
     {
@@ -224,7 +220,7 @@ public enum ZDispatcher
         return Type.SERVER;
     }
 
-    private static Logger LOG = Logger.getLogger(ZDispatcher.class.getName());
+    private static Logger LOG = Logger.getLogger(ZOperators.class.getName());
 
     private static IOperator<IPacket,
                              ISession>             server_decoder;
@@ -282,7 +278,7 @@ public enum ZDispatcher
 
         consumer_encoder = new IEncoder()
         {
-            final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(ZDispatcher.CONSUMER);
+            final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(ZOperators.CONSUMER);
             {
                 IFilterChain<WsContext> header = new ZTlsFilter();
                 handshakeFilter.linkAfter(header);
@@ -321,7 +317,7 @@ public enum ZDispatcher
 
         server_encoder = new IEncoder()
         {
-            final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(ZDispatcher.SERVER);
+            final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(ZOperators.SERVER);
             {
                 IFilterChain<WsContext> header = new ZTlsFilter();
                 handshakeFilter.linkAfter(header);
@@ -398,7 +394,7 @@ public enum ZDispatcher
         server_decoder = new IDecoder()
         {
 
-            final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(ZDispatcher.SERVER);
+            final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(ZOperators.SERVER);
 
             {
                 IFilterChain<WsContext> header = new ZTlsFilter();
@@ -448,7 +444,7 @@ public enum ZDispatcher
         };
         consumer_decoder = new IDecoder()
         {
-            final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(ZDispatcher.CONSUMER);
+            final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(ZOperators.CONSUMER);
 
             {
                 IFilterChain<WsContext> header = new ZTlsFilter();
@@ -525,22 +521,6 @@ public enum ZDispatcher
             Arrays.setAll(triples, slot -> new Triple<>(commands[slot], session, server_encoder));
             return triples;
         }
-    }
-
-    private interface IEncoder
-            extends
-            IOperator<ICommand,
-                      ISession>,
-            IPipeEncoder
-    {
-    }
-
-    private interface IDecoder
-            extends
-            IOperator<IPacket,
-                      ISession>,
-            IPipeDecode
-    {
     }
 
     static IOperator<IPacket,
