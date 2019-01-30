@@ -34,22 +34,26 @@ public class LockFilter
 {
 
     @Override
-    public ResultType preEncode(LContext context, IProtocol output) {
+    public ResultType preEncode(LContext context, IProtocol output)
+    {
         return null;
     }
 
     @Override
-    public ResultType preDecode(LContext context, IProtocol input) {
+    public ResultType preDecode(LContext context, IProtocol input)
+    {
         return null;
     }
 
     @Override
-    public IProtocol encode(LContext context, IProtocol output) {
+    public IProtocol encode(LContext context, IProtocol output)
+    {
         return null;
     }
 
     @Override
-    public IProtocol decode(LContext context, IProtocol input) {
+    public IProtocol decode(LContext context, IProtocol input)
+    {
         return null;
     }
 }
