@@ -57,15 +57,16 @@ public class LoginService
     }
 
     @PostMapping(value = "/api/login")
-    public @ResponseBody AuthEntry validate(@RequestBody Map<String, String> param)
+    public @ResponseBody AuthEntry validate(@RequestBody Map<String,
+                                                             String> param)
     {
         System.out.println(param);
-        AuthEntry     auth     = new AuthEntry();
-        String        username = param.get("username");
-        String        password = param.get("password");
-        AccountEntity account  = _AccountService.findByName(username)
-                                                .orElse(_AccountService.findByEmail(username)
-                                                                       .orElse(null));
+        AuthEntry auth = new AuthEntry();
+        String username = param.get("username");
+        String password = param.get("password");
+        AccountEntity account = _AccountService.findByName(username)
+                                               .orElse(_AccountService.findByEmail(username)
+                                                                      .orElse(null));
         if (Objects.nonNull(password) && Objects.nonNull(account) && password.equals(account.getPassword())) {
             auth.setStatus(true);
             auth.setRoles(account.getRoles()

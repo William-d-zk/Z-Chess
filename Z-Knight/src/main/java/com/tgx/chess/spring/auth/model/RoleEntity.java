@@ -24,8 +24,6 @@
 
 package com.tgx.chess.spring.auth.model;
 
-import com.tgx.chess.spring.jpa.model.AuditModel;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -33,6 +31,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
+
+import com.tgx.chess.spring.jpa.model.AuditModel;
 
 @Entity(name = "Role")
 @Table(indexes = { @Index(name = "role_idx_role", columnList = "role") })

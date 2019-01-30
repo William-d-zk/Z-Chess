@@ -33,7 +33,8 @@ import com.tgx.chess.queen.event.inf.IOperator;
  */
 public interface IConnected
 {
-    IOperator<IConnectionContext, AsynchronousSocketChannel> getConnectedOperator();
+    IOperator<IConnectionContext,
+              AsynchronousSocketChannel> getConnectedOperator();
 
     ISessionCreator getSessionCreator();
 

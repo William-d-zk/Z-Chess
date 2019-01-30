@@ -41,7 +41,7 @@ public class NtruEncryptKeyNativeEncoder
      * <> bytes OID
      * <> bytes h, bit packed.
      */
-    public final static byte PUBLIC_KEY_v1           = 1;
+    public final static byte PUBLIC_KEY_v1 = 1;
 
     /**
      * The format for the private key blob where the private
@@ -56,7 +56,7 @@ public class NtruEncryptKeyNativeEncoder
      * out[i] = F[5*i]*3^4 + F[5*i+1]*3^3 + F[5*i+2]*3^2 +
      * F[5*i+3]*3 + F[5*i+4]
      */
-    public final static byte PRIVATE_KEY_DEFAULT_v1  = 2;
+    public final static byte PRIVATE_KEY_DEFAULT_v1 = 2;
 
     /**
      * The format for the private key blob where the private key is
@@ -79,7 +79,7 @@ public class NtruEncryptKeyNativeEncoder
 
     PrivKeyFormatter pickDefaultPrivKeyFormatter(KeyParams keyParams)
     {
-        int packedFLength       = (keyParams.N + 4) / 5;
+        int packedFLength = (keyParams.N + 4) / 5;
         int packedListedFLength = (keyParams.df * 2 * com.securityinnovation.jNeo.math.BitPack.countBits(keyParams.q + 7) / 8);
         if (packedFLength < packedListedFLength) return new PrivKeyFormatter_PrivateKeyPackedFv1();
         else return new PrivKeyFormatter_PrivateKeyListedFv1();

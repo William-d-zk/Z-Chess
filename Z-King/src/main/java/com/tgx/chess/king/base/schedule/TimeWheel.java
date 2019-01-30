@@ -24,8 +24,18 @@
 
 package com.tgx.chess.king.base.schedule;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Objects;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
@@ -33,86 +43,87 @@ import com.tgx.chess.king.base.log.Logger;
 
 public class TimeWheel
 {
-    private Logger                                  _Log            = Logger.getLogger(getClass().getName());
-    private final int                               _SlotBitLeft    = 3;
-    private final TickSlot[]                        _ModHashEntriesArray;
-    private final int                               _HashMod;
-    private final Thread                            _Timer;
-    private final long                              _Tick;
-    private final ExecutorService                   executorService = Executors.newWorkStealingPool(3);
+    private Logger                _Log            = Logger.getLogger(getClass().getName());
+    private final int             _SlotBitLeft    = 3;
+    private final TickSlot[]      _ModHashEntriesArray;
+    private final int             _HashMod;
+    private final Thread          _Timer;
+    private final long            _Tick;
+    private final ExecutorService executorService = Executors.newWorkStealingPool(3);
 
-    private final AtomicBoolean                     _Running        = new AtomicBoolean();
-    private final ConcurrentLinkedQueue<HandleTask> _RequestQueue   = new ConcurrentLinkedQueue<>();
+    private final AtomicBoolean                     _Running      = new AtomicBoolean();
+    private final ConcurrentLinkedQueue<HandleTask> _RequestQueue = new ConcurrentLinkedQueue<>();
     private volatile int                            vCurrentSlot, vCurrentLoop;
 
     @SuppressWarnings("unchecked")
-    public TimeWheel(long tick, TimeUnit timeUnit)
+    public TimeWheel(long tick,
+                     TimeUnit timeUnit)
     {
-        _Tick                = timeUnit.toMillis(tick);
+        _Tick = timeUnit.toMillis(tick);
         _ModHashEntriesArray = new TickSlot[1 << _SlotBitLeft];
         Arrays.setAll(_ModHashEntriesArray, TickSlot::new);
         _HashMod = _ModHashEntriesArray.length - 1;
-        _Timer   = new Thread(() -> {
-                     _Running.set(true);
-                     long millisTick = timeUnit.toMillis(tick);
-                     for (long align = 0, t; _Running.get();) {
-                         t = System.currentTimeMillis();
-                         long sleep = millisTick - align;
-                         if (sleep > 0) {
-                             try {
-                                 Thread.sleep(sleep);
-                             }
-                             catch (InterruptedException e) {}
-                         }
-                         else {
-                             sleep = 0;
-                         }
-                         current_millisecond = System.currentTimeMillis();
-                         long duration = current_millisecond - t;
-                         for (Iterator<HandleTask> iterator = getTimer(getCurrentSlot()); iterator.hasNext();) {
-                             HandleTask handleTask = iterator.next();
-                             if (handleTask.getLoop() <= getCurrentLoop()) {
-                                 iterator.remove();
-                                 if (handleTask.getHandler()
-                                               .isCycle())
+        _Timer = new Thread(() -> {
+            _Running.set(true);
+            long millisTick = timeUnit.toMillis(tick);
+            for (long align = 0, t; _Running.get();) {
+                t = System.currentTimeMillis();
+                long sleep = millisTick - align;
+                if (sleep > 0) {
+                    try {
+                        Thread.sleep(sleep);
+                    }
+                    catch (InterruptedException e) {}
+                }
+                else {
+                    sleep = 0;
+                }
+                current_millisecond = System.currentTimeMillis();
+                long duration = current_millisecond - t;
+                for (Iterator<HandleTask> iterator = getTimer(getCurrentSlot()); iterator.hasNext();) {
+                    HandleTask handleTask = iterator.next();
+                    if (handleTask.getLoop() <= getCurrentLoop()) {
+                        iterator.remove();
+                        if (handleTask.getHandler()
+                                      .isCycle())
                         {
-                                     if (!_RequestQueue.offer(new HandleTask(handleTask.getConstLoop(), handleTask.getConstTick(), handleTask.getHandler()))) {
-                                         _Log.warning("%s,loop:%d slot%d",
-                                                      Thread.currentThread()
-                                                            .getName(),
-                                                      getCurrentLoop(),
-                                                      getCurrentSlot());
-                                     }
-                                 }
-                                 executorService.submit(handleTask);
-                             }
-                         }
+                            if (!_RequestQueue.offer(new HandleTask(handleTask.getConstLoop(), handleTask.getConstTick(), handleTask.getHandler()))) {
+                                _Log.warning("%s,loop:%d slot%d",
+                                             Thread.currentThread()
+                                                   .getName(),
+                                             getCurrentLoop(),
+                                             getCurrentSlot());
+                            }
+                        }
+                        executorService.submit(handleTask);
+                    }
+                }
 
-                         for (Iterator<HandleTask> iterator = _RequestQueue.iterator(); iterator.hasNext();) {
-                             HandleTask task = iterator.next();
-                             task.acquire(vCurrentLoop, vCurrentSlot);
-                             acquire(task.getSlot(), task);
-                             iterator.remove();
-                         }
+                for (Iterator<HandleTask> iterator = _RequestQueue.iterator(); iterator.hasNext();) {
+                    HandleTask task = iterator.next();
+                    task.acquire(vCurrentLoop, vCurrentSlot);
+                    acquire(task.getSlot(), task);
+                    iterator.remove();
+                }
 
-                         if (duration >= sleep) {
-                             if (vCurrentSlot == _HashMod) {
-                                 vCurrentSlot = 0;
-                                 vCurrentLoop++;
-                             }
-                             else {
-                                 vCurrentSlot++;
-                             }
-                             //此处-sleep 计算当期这次过程的偏差值
-                             align = System.currentTimeMillis() - t - sleep;
-                         }
-                         else {
-                             //Thread.sleep interrupt
-                             align = sleep + t - System.currentTimeMillis();
-                         }
-                         //sleep 代表当前轮次已被修正过的值，如果使用millisTick 将引入新的系统误差
-                     }
-                 });
+                if (duration >= sleep) {
+                    if (vCurrentSlot == _HashMod) {
+                        vCurrentSlot = 0;
+                        vCurrentLoop++;
+                    }
+                    else {
+                        vCurrentSlot++;
+                    }
+                    //此处-sleep 计算当期这次过程的偏差值
+                    align = System.currentTimeMillis() - t - sleep;
+                }
+                else {
+                    //Thread.sleep interrupt
+                    align = sleep + t - System.currentTimeMillis();
+                }
+                //sleep 代表当前轮次已被修正过的值，如果使用millisTick 将引入新的系统误差
+            }
+        });
         _Timer.setName(String.format("T-%d-TimerWheel", _Timer.getId()));
         _Timer.start();
     }
@@ -130,12 +141,13 @@ public class TimeWheel
     public <A> Future<A> acquire(long time, TimeUnit timeUnit, A attachment, ITimeoutHandler<A> handler)
     {
         int slots = (int) (timeUnit.toMillis(time) / _Tick);
-        int loop  = slots >>> _SlotBitLeft;
-        int tick  = slots & _HashMod;
+        int loop = slots >>> _SlotBitLeft;
+        int tick = slots & _HashMod;
         if (Objects.nonNull(handler)) handler.attach(attachment);
         HandleTask task = new HandleTask<>(loop, tick, handler);
         _Log.info("time wheel offer %s,", task);
-        return _RequestQueue.offer(task) ? task : null;
+        return _RequestQueue.offer(task) ? task
+                                         : null;
     }
 
     public Future<Void> acquire(long time, TimeUnit timeUnit, ITimeoutHandler<Void> handler)
@@ -147,7 +159,7 @@ public class TimeWheel
     private <A> void acquire(int slot, HandleTask<A> handleTask)
     {
         TickSlot<A> timeSlot = _ModHashEntriesArray[slot];
-        int         index    = Collections.binarySearch(timeSlot, handleTask);
+        int index = Collections.binarySearch(timeSlot, handleTask);
         if (index >= 0) {
             if (timeSlot.get(index) == handleTask) _Log.warning(" %s exist in slot,drop it ", handleTask);
             else timeSlot.add(index, handleTask);
@@ -239,8 +251,8 @@ public class TimeWheel
         private final int                _Loop;
         private final int                _Tick;
 
-        private int                      loop;
-        private int                      slot;
+        private int loop;
+        private int slot;
 
         @Override
         public String toString()
@@ -248,12 +260,14 @@ public class TimeWheel
             return String.format(" acquire %d[%d] | wheel %d[%d] @%x", _Loop, _Tick, loop, slot, hashCode());
         }
 
-        HandleTask(int loop, int tick, ITimeoutHandler<V> handler)
+        HandleTask(int loop,
+                   int tick,
+                   ITimeoutHandler<V> handler)
         {
             super(handler);
             _Handler = handler;
-            _Loop    = loop;
-            _Tick    = tick;
+            _Loop = loop;
+            _Tick = tick;
         }
 
         ITimeoutHandler<V> getHandler()

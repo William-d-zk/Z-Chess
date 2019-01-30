@@ -67,7 +67,7 @@ public class KeyFormatterUtil
 
     static public byte[] packListedCoefficients(FullPolynomial F, int numOnes, int numNegOnes)
     {
-        int  len = packListedCoefficients(F, numOnes, numNegOnes, null, 0);
+        int len = packListedCoefficients(F, numOnes, numNegOnes, null, 0);
         byte b[] = new byte[len];
         packListedCoefficients(F, numOnes, numNegOnes, b, 0);
         return b;
@@ -78,7 +78,7 @@ public class KeyFormatterUtil
         if (out == null) return BitPack.pack(numOnes + numNegOnes, F.p.length);
 
         short coefficients[] = new short[numOnes + numNegOnes];
-        int   ones           = 0, negOnes = numOnes;
+        int ones = 0, negOnes = numOnes;
         for (int i = 0; i < F.p.length; i++)
             if (F.p[i] == 1) coefficients[ones++] = (short) i;
             else if (F.p[i] == -1) coefficients[negOnes++] = (short) i;
@@ -90,7 +90,7 @@ public class KeyFormatterUtil
     static public int unpackListedCoefficients(FullPolynomial F, int N, int numOnes, int numNegOnes, byte in[], int offset)
     {
         short coefficients[] = new short[numOnes + numNegOnes];
-        int   len            = BitPack.unpack(coefficients.length, N, in, offset, coefficients, 0);
+        int len = BitPack.unpack(coefficients.length, N, in, offset, coefficients, 0);
         java.util.Arrays.fill(F.p, (short) 0);
         for (int i = 0; i < numOnes; i++)
             F.p[coefficients[i]] = 1;

@@ -32,10 +32,10 @@ public class ItemEntry
 {
     private static final long serialVersionUID = 800707260027704202L;
 
-    private long              id;
-    private String            sku;
-    private double            price;
-    private String            currency;
+    private long   id;
+    private String sku;
+    private double price;
+    private String currency;
 
     @Override
     public String toString()

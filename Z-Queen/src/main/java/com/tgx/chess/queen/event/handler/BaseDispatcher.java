@@ -28,27 +28,31 @@ import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
-import com.tgx.chess.queen.event.operator.MODE;
+import com.tgx.chess.queen.event.operator.ZMode;
 import com.tgx.chess.queen.event.processor.QEvent;
 
 abstract class BaseDispatcher
         implements
-        IPipeEventHandler<QEvent, QEvent>
+        IPipeEventHandler<QEvent,
+                          QEvent>
 {
-    final RingBuffer<QEvent>           _Link;
-    final RingBuffer<QEvent>           _Cluster;
-    final RingBuffer<QEvent>           _Error;
+    final RingBuffer<QEvent> _Link;
+    final RingBuffer<QEvent> _Cluster;
+    final RingBuffer<QEvent> _Error;
 
     private final RingBuffer<QEvent>[] _Workers;
     private final int                  _WorkerMask;
 
     @SafeVarargs
-    BaseDispatcher(RingBuffer<QEvent> link, RingBuffer<QEvent> cluster, RingBuffer<QEvent> error, RingBuffer<QEvent>... workers)
+    BaseDispatcher(RingBuffer<QEvent> link,
+                   RingBuffer<QEvent> cluster,
+                   RingBuffer<QEvent> error,
+                   RingBuffer<QEvent>... workers)
     {
-        _Link       = link;
-        _Cluster    = cluster;
-        _Error      = error;
-        _Workers    = workers;
+        _Link = link;
+        _Cluster = cluster;
+        _Error = error;
+        _Workers = workers;
         _WorkerMask = _Workers.length - 1;
         if (Integer.bitCount(_Workers.length) != 1) { throw new IllegalArgumentException("workers' length must be a power of 2"); }
     }
@@ -58,7 +62,13 @@ abstract class BaseDispatcher
         return _Workers[(int) (seq & _WorkerMask)];
     }
 
-    <V, A> void dispatch(MODE mode, IOperator.Type type, V v, A a, IOperator<V, A> op)
+    <V,
+     A> void dispatch(ZMode mode,
+                      IOperator.Type type,
+                      V v,
+                      A a,
+                      IOperator<V,
+                                A> op)
     {
         switch (mode)
         {
@@ -79,7 +89,13 @@ abstract class BaseDispatcher
         }
     }
 
-    <V, A> void dispatchError(MODE mode, IError.Type type, V v, A a, IOperator<V, A> op)
+    <V,
+     A> void dispatchError(ZMode mode,
+                           IError.Type type,
+                           V v,
+                           A a,
+                           IOperator<V,
+                                     A> op)
     {
         switch (mode)
         {

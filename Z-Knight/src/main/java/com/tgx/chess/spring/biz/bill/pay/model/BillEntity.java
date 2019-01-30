@@ -48,27 +48,27 @@ public class BillEntity
 {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private long       id;
+    private long id;
 
     @Column(length = 64, nullable = false, unique = true)
-    private String     bill;
+    private String bill;
 
     @Column(length = 64)
-    private String     openId;
+    private String openId;
 
     @Column(length = 17, nullable = false)
-    private String     mac;
+    private String mac;
 
-    private double     amount;
+    private double amount;
 
     @Column(length = 3, nullable = false)
-    private String     currency = "CNY";
+    private String currency = "CNY";
 
     @Column(length = 16)
-    private String     type;
+    private String type;
 
     @Column(length = 20)
-    private String     result;
+    private String result;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "itemId")

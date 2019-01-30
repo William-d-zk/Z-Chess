@@ -61,9 +61,10 @@ public interface IError
         private final int    _Code;
         private final String _MsgFormatter;
 
-        Type(int code, String formatter)
+        Type(int code,
+             String formatter)
         {
-            _Code         = code;
+            _Code = code;
             _MsgFormatter = formatter;
         }
 
@@ -76,7 +77,8 @@ public interface IError
         @Override
         public String getMsg(Object... args)
         {
-            return Objects.isNull(args) || args.length == 0 ? _MsgFormatter : String.format(_MsgFormatter, args);
+            return Objects.isNull(args) || args.length == 0 ? _MsgFormatter
+                                                            : String.format(_MsgFormatter, args);
         }
 
     }

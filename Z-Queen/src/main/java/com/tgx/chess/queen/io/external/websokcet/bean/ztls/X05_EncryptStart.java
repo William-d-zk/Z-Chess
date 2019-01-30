@@ -52,8 +52,8 @@ public class X05_EncryptStart
     @Override
     public int decodec(byte[] data, int pos)
     {
-        symmetricKeyId  = IoUtil.readUnsignedShort(data, pos);
-        pos            += 5;
+        symmetricKeyId = IoUtil.readUnsignedShort(data, pos);
+        pos += 5;
         return pos;
     }
 

@@ -46,7 +46,8 @@ public class PlaintextBadLengthException
      * @param maxMsgLen
      *            the actual maximum allowed plaintext length.
      */
-    public PlaintextBadLengthException(int msgLen, int maxMsgLen)
+    public PlaintextBadLengthException(int msgLen,
+                                       int maxMsgLen)
     {
         super("Input plaintext too long (" + msgLen + " bytes, should be less than " + maxMsgLen + " bytes)");
     }

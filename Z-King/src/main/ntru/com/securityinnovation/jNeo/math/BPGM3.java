@@ -51,12 +51,12 @@ public class BPGM3
             isSet[i] = false;
 
         FullPolynomial p = new FullPolynomial(N);
-        int            t = 0;
+        int t = 0;
         while (t < numOnes) {
             int i = igf.nextIndex();
             if (isSet[i]) continue;
 
-            p.p[i]   = 1;
+            p.p[i] = 1;
             isSet[i] = true;
             t++;
         }
@@ -67,7 +67,7 @@ public class BPGM3
             if (isSet[i]) {
                 continue;
             }
-            p.p[i]   = -1;
+            p.p[i] = -1;
             isSet[i] = true;
             t++;
         }

@@ -57,16 +57,20 @@ public class EncodeHandler
             switch (event.getEventType())
             {
                 case WRITE:
-                    IOperator<ICommand, ISession> writeOperator = event.getEventOp();
-                    Pair<ICommand, ISession> pairWriteContent = event.getContent();
+                    IOperator<ICommand,
+                              ISession> writeOperator = event.getEventOp();
+                    Pair<ICommand,
+                         ISession> pairWriteContent = event.getContent();
                     ICommand cmd = pairWriteContent.first();
                     ISession session = pairWriteContent.second();
                     encodeHandler(event, cmd, session, writeOperator);
                     cmd.dispose();
                     break;
                 case WROTE:
-                    IOperator<Integer, ISession> wroteOperator = event.getEventOp();
-                    Pair<Integer, ISession> pairWroteContent = event.getContent();
+                    IOperator<Integer,
+                              ISession> wroteOperator = event.getEventOp();
+                    Pair<Integer,
+                         ISession> pairWroteContent = event.getContent();
                     int wroteCnt = pairWroteContent.first();
                     session = pairWroteContent.second();
                     encodeHandler(event, wroteCnt, session, wroteOperator);

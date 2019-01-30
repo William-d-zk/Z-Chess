@@ -32,7 +32,8 @@ import com.tgx.chess.spring.auth.model.ProfileEntity;
 @Repository
 public interface ProfileRepository
         extends
-        JpaRepository<ProfileEntity, Integer>
+        JpaRepository<ProfileEntity,
+                      Integer>
 {
     ProfileEntity findByAccount(int accountId);
 }

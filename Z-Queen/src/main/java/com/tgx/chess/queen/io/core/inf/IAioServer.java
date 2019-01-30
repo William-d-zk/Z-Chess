@@ -40,7 +40,8 @@ public interface IAioServer
         IConnected,
         IConnectActive,
         IConnectError,
-        CompletionHandler<AsynchronousSocketChannel, IAioServer>
+        CompletionHandler<AsynchronousSocketChannel,
+                          IAioServer>
 {
     void bindAddress(InetSocketAddress address, AsynchronousChannelGroup channelGroup) throws IOException;
 
@@ -69,5 +70,6 @@ public interface IAioServer
     }
 
     @Override
-    IOperator<Throwable, IAioServer> getErrorOperator();
+    IOperator<Throwable,
+              IAioServer> getErrorOperator();
 }

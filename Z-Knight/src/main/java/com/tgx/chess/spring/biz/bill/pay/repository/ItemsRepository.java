@@ -32,7 +32,8 @@ import com.tgx.chess.spring.biz.bill.pay.model.ItemEntity;
 @Repository
 public interface ItemsRepository
         extends
-        JpaRepository<ItemEntity, Long>
+        JpaRepository<ItemEntity,
+                      Long>
 {
     ItemEntity findBySku(String sku);
 }

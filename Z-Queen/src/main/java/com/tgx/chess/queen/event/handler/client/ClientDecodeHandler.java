@@ -38,7 +38,11 @@ public class ClientDecodeHandler
 {
 
     @Override
-    protected void transfer(QEvent event, ICommand[] commands, ISession session, IOperator<ICommand[], ISession> operator)
+    protected void transfer(QEvent event,
+                            ICommand[] commands,
+                            ISession session,
+                            IOperator<ICommand[],
+                                      ISession> operator)
     {
         event.produce(LOGIC, commands, session, operator);
     }

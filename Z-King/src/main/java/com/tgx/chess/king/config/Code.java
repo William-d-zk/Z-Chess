@@ -48,12 +48,14 @@ public enum Code
     @Override
     public String getMsg(Object... args)
     {
-        return Objects.isNull(args) || args.length == 0 ? _Formatter : String.format(_Formatter, args);
+        return Objects.isNull(args) || args.length == 0 ? _Formatter
+                                                        : String.format(_Formatter, args);
     }
 
-    Code(int code, String formatter)
+    Code(int code,
+         String formatter)
     {
-        _Code      = code;
+        _Code = code;
         _Formatter = formatter;
     }
 }

@@ -77,18 +77,21 @@ public class X21_SignUpResult
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 9 + (isSuccess() ? 32 : 0);
+        return super.dataLength()
+               + 9
+               + (isSuccess() ? 32
+                              : 0);
     }
 
     @Override
     public int decodec(byte[] data, int pos)
     {
-        success     = data[pos++] > 0;
-        passwordId  = IoUtil.readLong(data, pos);
-        pos        += 8;
+        success = data[pos++] > 0;
+        passwordId = IoUtil.readLong(data, pos);
+        pos += 8;
         if (success) {
             token = new byte[32];
-            pos   = IoUtil.read(data, pos, token);
+            pos = IoUtil.read(data, pos, token);
         }
         return pos;
     }
@@ -96,7 +99,10 @@ public class X21_SignUpResult
     @Override
     public int encodec(byte[] data, int pos)
     {
-        pos += IoUtil.writeByte(isSuccess() ? 1 : 0, data, pos);
+        pos += IoUtil.writeByte(isSuccess() ? 1
+                                            : 0,
+                                data,
+                                pos);
         pos += IoUtil.writeLong(passwordId, data, pos);
         if (isSuccess()) {
             pos += IoUtil.write(token, data, pos);

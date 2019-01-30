@@ -38,7 +38,7 @@ public class X04_EncryptConfirm
     public int              code;
     public int              symmetricKeyId;
     /* SHA256 */
-    private byte[]          mSign;
+    private byte[] mSign;
 
     public X04_EncryptConfirm()
     {
@@ -70,12 +70,12 @@ public class X04_EncryptConfirm
     @Override
     public int decodec(byte[] data, int pos)
     {
-        code            = IoUtil.readShort(data, pos);
-        pos            += 2;
-        symmetricKeyId  = IoUtil.readUnsignedShort(data, pos);
-        pos            += 2;
-        mSign           = new byte[32];
-        pos             = IoUtil.read(data, pos, mSign);
+        code = IoUtil.readShort(data, pos);
+        pos += 2;
+        symmetricKeyId = IoUtil.readUnsignedShort(data, pos);
+        pos += 2;
+        mSign = new byte[32];
+        pos = IoUtil.read(data, pos, mSign);
         return pos;
     }
 

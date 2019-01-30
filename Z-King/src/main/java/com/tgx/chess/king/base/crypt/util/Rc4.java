@@ -86,8 +86,8 @@ public class Rc4
     public static boolean isKeyValid(byte[] key)
     {
         byte[] bKey = key;
-        int    len  = bKey.length;
-        int    num  = 0;// 0x0E计数
+        int len = bKey.length;
+        int num = 0;// 0x0E计数
         if (len > 0 && len <= 256) {
             for (int i = 0; i < len; i++) {
                 if ((bKey[i] & 0xFF) == 0x0E) {
@@ -103,10 +103,10 @@ public class Rc4
     @Override
     public byte[] createKey(String seed)
     {
-        long   curTime = System.currentTimeMillis();
-        long   code    = hashCode();
-        long   tick    = curTime ^ (code << 31);
-        Random rd      = new Random(tick);
+        long curTime = System.currentTimeMillis();
+        long code = hashCode();
+        long tick = curTime ^ (code << 31);
+        Random rd = new Random(tick);
         byte[] xc;
         if (seed == null || "".equals(seed.trim())) seed = "Tgx.Tina.Rc4" + System.nanoTime();
         xc = seed.getBytes();

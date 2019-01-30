@@ -24,8 +24,7 @@
 
 package com.tgx.chess.spring.auth.model;
 
-import com.tgx.chess.spring.device.model.ClientEntity;
-import com.tgx.chess.spring.jpa.model.AuditModel;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -40,7 +39,9 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import java.util.Set;
+
+import com.tgx.chess.spring.device.model.ClientEntity;
+import com.tgx.chess.spring.jpa.model.AuditModel;
 
 @Entity(name = "Profile")
 @Table(indexes = { @Index(name = "profile_idx_account", columnList = "account_id") })
@@ -50,14 +51,14 @@ public class ProfileEntity
 {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private int               id;
+    private int id;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "account_id")
-    private AccountEntity     account;
+    private AccountEntity account;
 
     @Column(length = 64)
-    private String            openId;
+    private String openId;
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(name = "profile_client", joinColumns = @JoinColumn(name = "profile_id"), inverseJoinColumns = @JoinColumn(name = "client_id"))

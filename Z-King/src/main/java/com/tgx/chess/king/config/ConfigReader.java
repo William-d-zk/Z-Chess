@@ -104,8 +104,8 @@ public class ConfigReader
 
     public static int[] readConfigIntegerArray(String name, String fileName) throws MissingResourceException, ClassCastException
     {
-        String[] result   = readConfigArray(name, fileName, RegExUtil.INTEGER_ARRAY_PATTERN, RegExUtil.INTEGER_PATTERN);
-        int[]    intArray = new int[result.length];
+        String[] result = readConfigArray(name, fileName, RegExUtil.INTEGER_ARRAY_PATTERN, RegExUtil.INTEGER_PATTERN);
+        int[] intArray = new int[result.length];
         if (result.length > 0) {
             for (int i = 0, size = result.length; i < size; i++) {
                 intArray[i] = Integer.parseInt(result[i]);
@@ -116,8 +116,8 @@ public class ConfigReader
 
     public static long[] readConfigLongArray(String name, String fileName) throws MissingResourceException, ClassCastException
     {
-        String[] result    = readConfigArray(name, fileName, RegExUtil.INTEGER_ARRAY_PATTERN, RegExUtil.INTEGER_PATTERN);
-        long[]   longArray = new long[result.length];
+        String[] result = readConfigArray(name, fileName, RegExUtil.INTEGER_ARRAY_PATTERN, RegExUtil.INTEGER_PATTERN);
+        long[] longArray = new long[result.length];
         if (result.length > 0) {
             for (int i = 0, size = result.length; i < size; i++) {
                 longArray[i] = Long.parseLong(result[i]);
@@ -128,7 +128,7 @@ public class ConfigReader
 
     public static double[] readConfigDoubleArray(String name, String fileName) throws MissingResourceException, ClassCastException
     {
-        String[] result      = readConfigArray(name, fileName, RegExUtil.DOUBLE_ARRAY_PATTERN, RegExUtil.DOUBLE_PATTERN);
+        String[] result = readConfigArray(name, fileName, RegExUtil.DOUBLE_ARRAY_PATTERN, RegExUtil.DOUBLE_PATTERN);
         double[] doubleArray = new double[result.length];
         if (result.length > 0) {
             for (int i = 0, size = result.length; i < size; i++) {
@@ -140,8 +140,8 @@ public class ConfigReader
 
     public static float[] readConfigFloatArray(String name, String fileName) throws MissingResourceException, ClassCastException
     {
-        String[] result     = readConfigArray(name, fileName, RegExUtil.DOUBLE_ARRAY_PATTERN, RegExUtil.DOUBLE_PATTERN);
-        float[]  floatArray = new float[result.length];
+        String[] result = readConfigArray(name, fileName, RegExUtil.DOUBLE_ARRAY_PATTERN, RegExUtil.DOUBLE_PATTERN);
+        float[] floatArray = new float[result.length];
         if (result.length > 0) {
             for (int i = 0, size = result.length; i < size; i++) {
                 floatArray[i] = Float.parseFloat(result[i]);
@@ -150,16 +150,17 @@ public class ConfigReader
         return floatArray;
     }
 
-    private static String[] readConfigArray(String name, String fileName, Pattern pattern, Pattern innerPattern) throws MissingResourceException, ClassCastException
+    private static String[] readConfigArray(String name, String fileName, Pattern pattern, Pattern innerPattern) throws MissingResourceException,
+                                                                                                                 ClassCastException
     {
-        ResourceBundle rb      = ResourceBundle.getBundle(fileName);
-        String         line    = rb.getString(name);
-        Matcher        matcher = pattern.matcher(line);
+        ResourceBundle rb = ResourceBundle.getBundle(fileName);
+        String line = rb.getString(name);
+        Matcher matcher = pattern.matcher(line);
         if (matcher.matches()) {
-            String   matched = matcher.group()
-                                      .replace("{", "")
-                                      .replace("}", "");
-            String[] splits  = matched.split(",");
+            String matched = matcher.group()
+                                    .replace("{", "")
+                                    .replace("}", "");
+            String[] splits = matched.split(",");
             for (String x : splits) {
                 if (!innerPattern.matcher(x)
                                  .matches()) { throw new IllegalArgumentException("Check " + name + " @ " + x); }
@@ -173,7 +174,8 @@ public class ConfigReader
     {
         String value = resourceBundle.getString(name);
         if (value.matches(RegExUtil.BOOLEAN_PATTERN_STRING)) {
-            return value.matches(RegExUtil.BOOLEAN_TRUE_PATTERN_STRING) ? Boolean.TRUE : Boolean.FALSE;
+            return value.matches(RegExUtil.BOOLEAN_TRUE_PATTERN_STRING) ? Boolean.TRUE
+                                                                        : Boolean.FALSE;
         }
         else if (value.matches(RegExUtil.INTEGER_PATTERN_STRING)) {
             return Integer.parseInt(value);

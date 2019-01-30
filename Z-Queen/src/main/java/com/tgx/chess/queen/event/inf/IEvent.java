@@ -38,17 +38,40 @@ public interface IEvent
 
     IError.Type getErrorType();
 
-    <V, A> IOperator<V, A> getEventOp();
+    <V,
+     A> IOperator<V,
+                  A> getEventOp();
 
-    <V, A> Pair<V, A> getContent();
+    <V,
+     A> Pair<V,
+             A> getContent();
 
-    <V, A> List<Triple<V, A, IOperator<V, A>>> getContentList();
+    <V,
+     A> List<Triple<V,
+                    A,
+                    IOperator<V,
+                              A>>> getContentList();
 
-    <V, A> void produce(IOperator.Type t, V v, A a, IOperator<V, A> operator);
+    <V,
+     A> void produce(IOperator.Type t,
+                     V v,
+                     A a,
+                     IOperator<V,
+                               A> operator);
 
-    <E, H> void error(IError.Type t, E e, H h, IOperator<E, H> operator);
+    <E,
+     H> void error(IError.Type t,
+                   E e,
+                   H h,
+                   IOperator<E,
+                             H> operator);
 
-    <V, A> void produce(IOperator.Type t, List<Triple<V, A, IOperator<V, A>>> cp);
+    <V,
+     A> void produce(IOperator.Type t,
+                     List<Triple<V,
+                                 A,
+                                 IOperator<V,
+                                           A>>> cp);
 
     default boolean hasError()
     {

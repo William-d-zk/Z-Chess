@@ -53,8 +53,11 @@ public interface IQoS
     @Override
     default int compareTo(IQoS o)
     {
-        long seqDiff      = getSequence() - o.getSequence();
-        int  priorityDiff = getPriority() - o.getPriority();
-        return priorityDiff == 0 ? (seqDiff == 0 ? hashCode() - o.hashCode() : (seqDiff > 0 ? 1 : -1)) : priorityDiff;
+        long seqDiff = getSequence() - o.getSequence();
+        int priorityDiff = getPriority() - o.getPriority();
+        return priorityDiff == 0 ? (seqDiff == 0 ? hashCode() - o.hashCode()
+                                                 : (seqDiff > 0 ? 1
+                                                                : -1))
+                                 : priorityDiff;
     }
 }

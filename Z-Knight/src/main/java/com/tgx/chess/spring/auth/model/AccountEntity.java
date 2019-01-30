@@ -24,8 +24,7 @@
 
 package com.tgx.chess.spring.auth.model;
 
-import com.tgx.chess.spring.jpa.model.AuditModel;
-import org.hibernate.validator.constraints.Length;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -42,7 +41,10 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
-import java.util.Set;
+
+import org.hibernate.validator.constraints.Length;
+
+import com.tgx.chess.spring.jpa.model.AuditModel;
 
 @Entity(name = "Account")
 @Table(indexes = { @Index(name = "account_idx_email", columnList = "email"),
@@ -54,33 +56,33 @@ public class AccountEntity
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private int             id;
+    private int id;
 
     @Email(message = "{valid.email}")
     @NotEmpty(message = "{field.not.empty}")
     @Length(max = 64, message = "{size.email.over_length}")
     @Column(length = 64)
-    private String          email;
+    private String email;
 
     @Length(min = 8, max = 32, message = "{size.account.form.password}")
     @NotEmpty(message = "{field.not.empty}")
     @Column(length = 32)
-    private String          password;
+    private String password;
 
     @NotEmpty(message = "{field.not.empty}")
     @Length(min = 3, max = 32, message = "{size.account.form.name}")
     @Column(length = 32)
-    private String          name;
+    private String name;
 
     @Column
-    private int             active;
+    private int active;
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(name = "account_role", joinColumns = @JoinColumn(name = "account_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<RoleEntity> roles;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "account")
-    private ProfileEntity   profile;
+    private ProfileEntity profile;
 
     public int getId()
     {

@@ -45,7 +45,8 @@ import com.tgx.chess.queen.io.core.manager.QueenManager;
  */
 public class ClusterHandler
         implements
-        IPipeEventHandler<QEvent, QEvent>
+        IPipeEventHandler<QEvent,
+                          QEvent>
 {
 
     private final QueenManager       _QueenManager;
@@ -53,11 +54,13 @@ public class ClusterHandler
     private final RingBuffer<QEvent> _Writer;
     private final Logger             _Log = Logger.getLogger(getClass().getName());
 
-    public ClusterHandler(final QueenManager queenManager, RingBuffer<QEvent> error, RingBuffer<QEvent> writer)
+    public ClusterHandler(final QueenManager queenManager,
+                          RingBuffer<QEvent> error,
+                          RingBuffer<QEvent> writer)
     {
         _QueenManager = queenManager;
-        _Error        = error;
-        _Writer       = writer;
+        _Error = error;
+        _Writer = writer;
     }
 
     @Override
@@ -73,8 +76,10 @@ public class ClusterHandler
                     break;
                 default:
                     _Log.warning("cluster io error , do close session");
-                    IOperator<Void, ISession> closeOperator = event.getEventOp();
-                    Pair<Void, ISession> errorContent = event.getContent();
+                    IOperator<Void,
+                              ISession> closeOperator = event.getEventOp();
+                    Pair<Void,
+                         ISession> errorContent = event.getContent();
                     ISession session = errorContent.second();
                     ISessionDismiss dismiss = session.getDismissCallback();
                     boolean closed = session.isClosed();
@@ -86,15 +91,19 @@ public class ClusterHandler
             switch (event.getEventType())
             {
                 case CONNECTED:
-                    IOperator<IConnectionContext, AsynchronousSocketChannel> connectedOperator = event.getEventOp();
-                    Pair<IConnectionContext, AsynchronousSocketChannel> connectedContent = event.getContent();
+                    IOperator<IConnectionContext,
+                              AsynchronousSocketChannel> connectedOperator = event.getEventOp();
+                    Pair<IConnectionContext,
+                         AsynchronousSocketChannel> connectedContent = event.getContent();
                     Triple<ICommand[],
                            ISession,
-                           IOperator<ICommand[], ISession>> connectedHandled = connectedOperator.handle(connectedContent.first(), connectedContent.second());
+                           IOperator<ICommand[],
+                                     ISession>> connectedHandled = connectedOperator.handle(connectedContent.first(), connectedContent.second());
                     //connectedHandled 不可能为 null
                     ICommand[] waitToSend = connectedHandled.first();
                     ISession session = connectedHandled.second();
-                    IOperator<ICommand[], ISession> sendTransferOperator = connectedHandled.third();
+                    IOperator<ICommand[],
+                              ISession> sendTransferOperator = connectedHandled.third();
                     event.produce(WRITE, waitToSend, session, sendTransferOperator);
                     connectedContent.first()
                                     .getSessionCreated()
@@ -125,10 +134,10 @@ public class ClusterHandler
         {
             switch (event.getEventType()) {
                 case CONNECTED:
-                    IEventOp<Pair<ClusterNode<E, D, N>, IConnectMode.MODE>,
+                    IEventOp<Pair<ClusterNode<E, D, N>, IConnectMode.ZMode>,
                              AsynchronousSocketChannel> cOperator = event.getEventOp();// NODE_CONNECTED
-                    Pair<Pair<ClusterNode<E, D, N>, IConnectMode.MODE>, AsynchronousSocketChannel> cContent = event.getContent();
-                    Pair<ClusterNode<E, D, N>, IConnectMode.MODE> nmPair = cContent.first();
+                    Pair<Pair<ClusterNode<E, D, N>, IConnectMode.ZMode>, AsynchronousSocketChannel> cContent = event.getContent();
+                    Pair<ClusterNode<E, D, N>, IConnectMode.ZMode> nmPair = cContent.first();
                     // 集群至少2台机器的时候才需要进行诸多网络操作。
                     AsynchronousSocketChannel channel = cContent.second();
                     Triple<ICommand, ISession, IEventOp<ICommand, ISession>> cResult = cOperator.handle(nmPair, channel);
@@ -314,8 +323,8 @@ public class ClusterHandler
     }
 
     @Override
-    public final RESULT trial(ICommand cmd, IConnectMode.MODE mode) {
-        if (mode.equals(MODE.CLUSTER_CONSUMER) || mode.equals(MODE.CLUSTER_SERVER)) {
+    public final RESULT trial(ICommand cmd, IConnectMode.ZMode mode) {
+        if (mode.equals(ZMode.CLUSTER_CONSUMER) || mode.equals(ZMode.CLUSTER_SERVER)) {
             switch (cmd.getSerialNum()) {
                 case X10_StartElection.COMMAND:
                 case X11_Ballot.COMMAND:

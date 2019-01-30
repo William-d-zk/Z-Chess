@@ -60,18 +60,21 @@ public class X20_SignUp
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 15 + (Objects.nonNull(password) ? password.getBytes().length : 0);
+        return super.dataLength()
+               + 15
+               + (Objects.nonNull(password) ? password.getBytes().length
+                                            : 0);
     }
 
     @Override
     public int decodec(byte[] data, int pos)
     {
-        pos         = IoUtil.read(data, pos, mac);
-        passwordId  = IoUtil.readLong(data, pos);
-        pos        += 8;
+        pos = IoUtil.read(data, pos, mac);
+        passwordId = IoUtil.readLong(data, pos);
+        pos += 8;
         int passwordBytesLength = data[pos++] & 0xFF;
-        password  = IoUtil.readString(data, pos, passwordBytesLength);
-        pos      += passwordBytesLength;
+        password = IoUtil.readString(data, pos, passwordBytesLength);
+        pos += passwordBytesLength;
         return pos;
     }
 

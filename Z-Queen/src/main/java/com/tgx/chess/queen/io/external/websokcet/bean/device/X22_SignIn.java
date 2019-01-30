@@ -59,7 +59,10 @@ public class X22_SignIn
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 33 + (Objects.nonNull(password) ? password.getBytes().length : 0);
+        return super.dataLength()
+               + 33
+               + (Objects.nonNull(password) ? password.getBytes().length
+                                            : 0);
     }
 
     @Override
@@ -67,8 +70,8 @@ public class X22_SignIn
     {
         pos = IoUtil.read(data, pos, token);
         int passwordBytesLength = data[pos++] & 0xFF;
-        password  = IoUtil.readString(data, pos, passwordBytesLength);
-        pos      += passwordBytesLength;
+        password = IoUtil.readString(data, pos, passwordBytesLength);
+        pos += passwordBytesLength;
         return pos;
     }
 

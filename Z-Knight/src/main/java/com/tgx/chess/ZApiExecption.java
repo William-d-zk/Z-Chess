@@ -33,7 +33,8 @@ public class ZApiExecption
         super(message);
     }
 
-    public ZApiExecption(String message, Throwable cause)
+    public ZApiExecption(String message,
+                         Throwable cause)
     {
         super(message, cause);
     }
