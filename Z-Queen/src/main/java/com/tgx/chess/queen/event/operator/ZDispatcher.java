@@ -24,8 +24,6 @@
 
 package com.tgx.chess.queen.event.operator;
 
-import java.nio.channels.AsynchronousSocketChannel;
-import java.nio.channels.CompletionHandler;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -34,7 +32,6 @@ import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.io.core.inf.ICommand;
-import com.tgx.chess.queen.io.core.inf.IConnectionContext;
 import com.tgx.chess.queen.io.core.inf.IDispatcher;
 import com.tgx.chess.queen.io.core.inf.IFilterChain;
 import com.tgx.chess.queen.io.core.inf.IOperatorSupplier;
@@ -69,7 +66,14 @@ public enum ZDispatcher
                           ISession>,
         IDispatcher
 {
-    CLUSTER_CONSUMER,
+    CLUSTER_CONSUMER
+    {
+        @Override
+        public Type getType()
+        {
+            return Type.CONSUMER;
+        }
+    },
     CLUSTER_SERVER
     {
         @Override
@@ -86,7 +90,14 @@ public enum ZDispatcher
             return null;
         }
     },
-    MQ_CONSUMER,
+    MQ_CONSUMER
+    {
+        @Override
+        public Type getType()
+        {
+            return Type.CONSUMER;
+        }
+    },
     MQ_SERVER,
     CONSUMER
     {
@@ -108,6 +119,12 @@ public enum ZDispatcher
         public Mode getMode()
         {
             return Mode.LINK;
+        }
+
+        @Override
+        public Type getType()
+        {
+            return Type.CONSUMER;
         }
     },
     SERVER
@@ -131,6 +148,12 @@ public enum ZDispatcher
         {
             return Mode.LINK;
         }
+
+        @Override
+        public Type getType()
+        {
+            return Type.SERVER;
+        }
     },
     CONSUMER_SSL
     {
@@ -138,6 +161,12 @@ public enum ZDispatcher
         public Mode getMode()
         {
             return Mode.LINK;
+        }
+
+        @Override
+        public Type getType()
+        {
+            return Type.CONSUMER;
         }
     },
     SERVER_SSL
@@ -147,6 +176,12 @@ public enum ZDispatcher
         {
             return Mode.LINK;
         }
+
+        @Override
+        public Type getType()
+        {
+            return Type.SERVER;
+        }
     },
     SYMMETRY
     {
@@ -155,6 +190,13 @@ public enum ZDispatcher
         {
             return Mode.LINK;
         }
+
+        @Override
+        public Type getType()
+        {
+            return Type.SYMMETRY;
+        }
+
     };
 
     @Override
@@ -175,6 +217,11 @@ public enum ZDispatcher
     public Mode getMode()
     {
         return Mode.CLUSTER;
+    }
+
+    public Type getType()
+    {
+        return Type.SERVER;
     }
 
     private static Logger LOG = Logger.getLogger(ZDispatcher.class.getName());
@@ -495,7 +542,6 @@ public enum ZDispatcher
             IPipeDecode
     {
     }
-
 
     static IOperator<IPacket,
                      ISession> SERVER_DECODER()

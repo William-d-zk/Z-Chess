@@ -32,10 +32,19 @@ public interface IDispatch
         LINK
     }
 
+    enum Type
+    {
+        SERVER,
+        CONSUMER,
+        SYMMETRY
+    }
+
     /**
      *
      * @return true : cluster
      *         false : link
      */
     Mode getMode();
+
+    Type getType();
 }

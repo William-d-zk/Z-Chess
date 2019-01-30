@@ -28,8 +28,9 @@ import java.util.Base64;
 import java.util.Random;
 
 import com.tgx.chess.king.base.util.CryptUtil;
-import com.tgx.chess.queen.event.operator.ZDispatcher;
+import com.tgx.chess.queen.event.inf.IDispatch;
 import com.tgx.chess.queen.io.core.async.AioContext;
+import com.tgx.chess.queen.io.core.inf.IDispatcher;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 
 /**
@@ -67,11 +68,13 @@ public class WsContext
     private CryptUtil       mCryptUtil           = new CryptUtil();
 
     public WsContext(ISessionOption option,
-                     ZDispatcher mode)
+                     IDispatcher dispatcher)
     {
         super(option);
         mMaxPayloadSize = option.setSNF() - 2;
-        if (mode.equals(ZDispatcher.CONSUMER) || mode.equals(ZDispatcher.CONSUMER_SSL)) {
+        if (dispatcher.getType()
+                      .equals(IDispatch.Type.CONSUMER))
+        {
             Random r = new Random(System.nanoTime());
             byte[] seed = new byte[17];
             r.nextBytes(seed);
@@ -81,19 +84,12 @@ public class WsContext
         }
         else mSecKey = mSecAcceptExpect = null;
 
-        switch (mode)
+        switch (dispatcher.getMode())
         {
-            case CLUSTER_SERVER:
-            case CLUSTER_CONSUMER:
-            case SYMMETRY:
-            case MQ_SERVER:
-            case MQ_CONSUMER:
+            case CLUSTER:
                 transfer();
                 break;
-            case CONSUMER:
-            case SERVER:
-            case CONSUMER_SSL:
-            case SERVER_SSL:
+            case LINK:
                 handshake();
                 break;
         }
