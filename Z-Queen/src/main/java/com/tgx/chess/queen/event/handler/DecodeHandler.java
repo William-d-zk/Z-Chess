@@ -25,7 +25,7 @@ package com.tgx.chess.queen.event.handler;
 
 import static com.tgx.chess.queen.event.inf.IError.Type.FILTER_DECODE;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.DISPATCH;
-import static com.tgx.chess.queen.event.operator.OperatorHolder.ERROR_OPERATOR;
+import static com.tgx.chess.queen.event.operator.ZOperatorHolder.ERROR_OPERATOR;
 import static com.tgx.chess.queen.io.core.inf.IContext.DECODE_ERROR;
 
 import java.util.Arrays;

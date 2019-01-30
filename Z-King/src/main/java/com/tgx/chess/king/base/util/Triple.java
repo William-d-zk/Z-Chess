@@ -28,7 +28,9 @@ import com.tgx.chess.king.base.inf.IDisposable;
 /**
  * @author William.d.zk
  */
-public class Triple<FIRST, SECOND, THIRD>
+public class Triple<FIRST,
+                    SECOND,
+                    THIRD>
         implements
         IDisposable
 {
@@ -36,11 +38,13 @@ public class Triple<FIRST, SECOND, THIRD>
     private SECOND second;
     private THIRD  third;
 
-    public Triple(FIRST first, SECOND second, THIRD third)
+    public Triple(FIRST first,
+                  SECOND second,
+                  THIRD third)
     {
-        this.first  = first;
+        this.first = first;
         this.second = second;
-        this.third  = third;
+        this.third = third;
     }
 
     public FIRST first()
@@ -76,12 +80,14 @@ public class Triple<FIRST, SECOND, THIRD>
     @Override
     public void dispose()
     {
-        first  = null;
+        first = null;
         second = null;
-        third  = null;
+        third = null;
     }
 
-    public Triple<FIRST, SECOND, THIRD> clone()
+    public Triple<FIRST,
+                  SECOND,
+                  THIRD> clone()
     {
         return new Triple<>(first, second, third);
     }
@@ -92,7 +98,11 @@ public class Triple<FIRST, SECOND, THIRD>
         if (!(obj instanceof Triple)) { return false; }
         if (this != obj) {
             @SuppressWarnings("unchecked")
-            Triple<FIRST, SECOND, THIRD> other = (Triple<FIRST, SECOND, THIRD>) obj;
+            Triple<FIRST,
+                   SECOND,
+                   THIRD> other = (Triple<FIRST,
+                                          SECOND,
+                                          THIRD>) obj;
             return first.equals(other.first) && second.equals(other.second) && third.equals(other.third);
         }
         return true;

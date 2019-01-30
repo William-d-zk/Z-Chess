@@ -32,7 +32,8 @@ import com.tgx.chess.spring.auth.model.AccountEntity;
 @Repository
 public interface AccountRepository
         extends
-        JpaRepository<AccountEntity, Long>
+        JpaRepository<AccountEntity,
+                      Long>
 {
     AccountEntity findByEmail(String email);
 

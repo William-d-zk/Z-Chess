@@ -74,8 +74,8 @@ public class WsFrame
     private byte[]           mPayload;
     private long             mPayloadLength                           = -1;
     // mask | first payload_length
-    private byte             mPayload_Mask;
-    private int              mMaskLength                              = -1;
+    private byte mPayload_Mask;
+    private int  mMaskLength = -1;
 
     public WsFrame()
     {
@@ -127,8 +127,9 @@ public class WsFrame
 
     public void setPayload(byte[] payload)
     {
-        mPayload       = payload;
-        mPayloadLength = payload == null ? 0 : payload.length;
+        mPayload = payload;
+        mPayloadLength = payload == null ? 0
+                                         : payload.length;
 
     }
 
@@ -139,8 +140,9 @@ public class WsFrame
 
     public void setMask(byte[] mask)
     {
-        mMask       = mask;
-        mMaskLength = mask == null ? 0 : mask.length;
+        mMask = mask;
+        mMaskLength = mask == null ? 0
+                                   : mask.length;
     }
 
     public long getPayloadLength()
@@ -160,9 +162,12 @@ public class WsFrame
 
     public byte[] getPayloadLengthArray()
     {
-        if (mPayloadLength <= 0) return new byte[] { (byte) (mMask == null ? 0 : 0x80) };
-        int    t_size = mPayloadLength > 0xFFFF ? 9 : mPayloadLength > 0x7D ? 3 : 1;
-        byte[] x      = new byte[t_size];
+        if (mPayloadLength <= 0) return new byte[] { (byte) (mMask == null ? 0
+                                                                           : 0x80) };
+        int t_size = mPayloadLength > 0xFFFF ? 9
+                                             : mPayloadLength > 0x7D ? 3
+                                                                     : 1;
+        byte[] x = new byte[t_size];
         if (mPayloadLength > 0xFFFF) {
             x[0] = 0x7F;
             IoUtil.writeLong(mPayloadLength, x, 1);
@@ -203,13 +208,19 @@ public class WsFrame
     @Override
     public int dataLength()
     {
-        return 1 + mMaskLength + (int) mPayloadLength + (mPayloadLength > 0xFFFF ? 9 : mPayloadLength > 0x7D ? 3 : 1);
+        return 1
+               + mMaskLength
+               + (int) mPayloadLength
+               + (mPayloadLength > 0xFFFF ? 9
+                                          : mPayloadLength > 0x7D ? 3
+                                                                  : 1);
 
     }
 
     public int payloadLengthLack()
     {
-        int result = (mPayload_Mask & 0x80) != 0 ? 4 : 0;
+        int result = (mPayload_Mask & 0x80) != 0 ? 4
+                                                 : 0;
         switch (mPayload_Mask & 0x7F)
         {
             case 0x7F:
@@ -233,7 +244,8 @@ public class WsFrame
 
     public byte getFrameFin()
     {
-        if (frame_fragment) return frame_fin ? getFragmentEndFrame() : getFragmentFrame();
+        if (frame_fragment) return frame_fin ? getFragmentEndFrame()
+                                             : getFragmentFrame();
         else return getFrame(frame_op_code);
     }
 
@@ -288,14 +300,14 @@ public class WsFrame
     @Override
     public void reset()
     {
-        mMask          = null;
-        mPayload       = null;
+        mMask = null;
+        mPayload = null;
         mPayloadLength = -1;
-        mMaskLength    = -1;
-        mPayload_Mask  = 0;
-        frame_op_code  = 0;
+        mMaskLength = -1;
+        mPayload_Mask = 0;
+        frame_op_code = 0;
         frame_fragment = false;
-        frame_fin      = false;
+        frame_fin = false;
     }
 
     @Override
@@ -303,7 +315,7 @@ public class WsFrame
     {
         byte attr = data[pos++];
         frame_op_code = getOpCode(attr);
-        frame_fin     = isFrameFin(attr);
+        frame_fin = isFrameFin(attr);
         mPayload_Mask = data[pos++];
         int p = payloadLengthLack();
         switch (p)

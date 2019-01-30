@@ -48,17 +48,19 @@ public class AccountService
     private final ProfileRepository _ProfileRepository;
 
     @Autowired
-    public AccountService(AccountRepository accountRepository, RoleRepository roleRepository, ProfileRepository profileRepository)
+    public AccountService(AccountRepository accountRepository,
+                          RoleRepository roleRepository,
+                          ProfileRepository profileRepository)
     {
         _AccountRepository = accountRepository;
-        _RoleRepository    = roleRepository;
+        _RoleRepository = roleRepository;
         _ProfileRepository = profileRepository;
     }
 
     public void initializeCheck()
     {
         RoleEntity admin = _RoleRepository.findByRole("ADMIN");
-        RoleEntity user  = _RoleRepository.findByRole("USER");
+        RoleEntity user = _RoleRepository.findByRole("USER");
         if (Objects.isNull(admin)) {
             admin = new RoleEntity();
             admin.setRole("ADMIN");
@@ -72,7 +74,7 @@ public class AccountService
         AccountEntity test = _AccountRepository.findByName("root");
         if (Objects.isNull(test)) {
             ProfileEntity profile = new ProfileEntity();
-            AccountEntity root    = new AccountEntity();
+            AccountEntity root = new AccountEntity();
             root.setActive(1);
             root.setName("root");
             root.setPassword("root12345");

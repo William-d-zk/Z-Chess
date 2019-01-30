@@ -32,9 +32,18 @@ import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IError.Type;
 import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.event.operator.MODE;
+import com.tgx.chess.queen.event.operator.ZMode;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.*;
+import com.tgx.chess.queen.io.core.inf.IAioConnector;
+import com.tgx.chess.queen.io.core.inf.IAioServer;
+import com.tgx.chess.queen.io.core.inf.IAvailable;
+import com.tgx.chess.queen.io.core.inf.ICommandCreator;
+import com.tgx.chess.queen.io.core.inf.IConnectActive;
+import com.tgx.chess.queen.io.core.inf.IConnectionContext;
+import com.tgx.chess.queen.io.core.inf.IPacket;
+import com.tgx.chess.queen.io.core.inf.ISession;
+import com.tgx.chess.queen.io.core.inf.ISessionCreated;
+import com.tgx.chess.queen.io.core.inf.ISessionCreator;
 import com.tgx.chess.queen.io.core.manager.ConnectionContext;
 
 /**
@@ -49,7 +58,10 @@ public class AioWorker
     private final IAvailable<RingBuffer<QEvent>> _Available;
     private final RingBuffer<QEvent>             _Producer;
 
-    public AioWorker(Runnable r, String name, IAvailable<RingBuffer<QEvent>> available, RingBuffer<QEvent> producer)
+    public AioWorker(Runnable r,
+                     String name,
+                     IAvailable<RingBuffer<QEvent>> available,
+                     RingBuffer<QEvent> producer)
     {
         super(r, name);
         _Available = available;
@@ -57,7 +69,9 @@ public class AioWorker
         _Producer = producer;
     }
 
-    public AioWorker(Runnable r, String name, RingBuffer<QEvent> producer)
+    public AioWorker(Runnable r,
+                     String name,
+                     RingBuffer<QEvent> producer)
     {
         this(r, name, null, producer);
     }
@@ -76,7 +90,13 @@ public class AioWorker
         }
     }
 
-    public <T, A> void publish(final IOperator<T, A> op, final IError.Type eType, final IOperator.Type type, final T t, final A a)
+    public <T,
+            A> void publish(final IOperator<T,
+                                            A> op,
+                            final IError.Type eType,
+                            final IOperator.Type type,
+                            final T t,
+                            final A a)
     {
         long sequence = _Producer.next();
         try {
@@ -94,43 +114,68 @@ public class AioWorker
         }
     }
 
-    public void publishRead(final IOperator<IPacket, ISession> op, IPacket pack, final ISession session)
+    public void publishRead(final IOperator<IPacket,
+                                            ISession> op,
+                            IPacket pack,
+                            final ISession session)
     {
         publish(op, IError.Type.NO_ERROR, IOperator.Type.READ, pack, session);
     }
 
-    public void publishWrote(final IOperator<Integer, ISession> op, final int wroteCnt, final ISession session)
+    public void publishWrote(final IOperator<Integer,
+                                             ISession> op,
+                             final int wroteCnt,
+                             final ISession session)
     {
         publish(op, IError.Type.NO_ERROR, IOperator.Type.WROTE, wroteCnt, session);
     }
 
-    public <T> void publishWroteError(final IOperator<T, ISession> op, final IError.Type eType, final T t, final ISession session)
+    public <T> void publishWroteError(final IOperator<T,
+                                                      ISession> op,
+                                      final IError.Type eType,
+                                      final T t,
+                                      final ISession session)
     {
         publish(op, eType, IOperator.Type.NULL, t, session);
     }
 
-    public void publishConnected(final IOperator<IConnectionContext, AsynchronousSocketChannel> op,
-                                 final MODE mode,
+    public void publishConnected(final IOperator<IConnectionContext,
+                                                 AsynchronousSocketChannel> op,
+                                 final ZMode mode,
                                  final IConnectActive active,
                                  final ISessionCreator sessionCreator,
                                  final ICommandCreator commandCreator,
                                  final ISessionCreated sessionCreated,
                                  final AsynchronousSocketChannel channel)
     {
-        publish(op, IError.Type.NO_ERROR, IOperator.Type.CONNECTED, new ConnectionContext(mode, active, sessionCreator, commandCreator, sessionCreated), channel);
+        publish(op,
+                IError.Type.NO_ERROR,
+                IOperator.Type.CONNECTED,
+                new ConnectionContext(mode, active, sessionCreator, commandCreator, sessionCreated),
+                channel);
     }
 
-    public void publishConnectingError(final IOperator<Throwable, IAioConnector> op, final Throwable e, final IAioConnector cActive)
+    public void publishConnectingError(final IOperator<Throwable,
+                                                       IAioConnector> op,
+                                       final Throwable e,
+                                       final IAioConnector cActive)
     {
         publish(op, IError.Type.CONNECT_FAILED, IOperator.Type.NULL, e, cActive);
     }
 
-    public void publishAcceptError(final IOperator<Throwable, IAioServer> op, final Throwable e, final IAioServer cActive)
+    public void publishAcceptError(final IOperator<Throwable,
+                                                   IAioServer> op,
+                                   final Throwable e,
+                                   final IAioServer cActive)
     {
         publish(op, Type.ACCEPT_FAILED, IOperator.Type.NULL, e, cActive);
     }
 
-    public <T> void publishReadError(final IOperator<T, ISession> op, final IError.Type eType, final T t, final ISession session)
+    public <T> void publishReadError(final IOperator<T,
+                                                     ISession> op,
+                                     final IError.Type eType,
+                                     final T t,
+                                     final ISession session)
     {
         publish(op, eType, IOperator.Type.NULL, t, session);
     }

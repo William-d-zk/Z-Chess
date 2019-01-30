@@ -26,18 +26,24 @@ package com.tgx.chess.king.base.util;
 /**
  * @author William.d.zk
  */
-public class Square<FIRST, SECOND, THIRD, FOURTH>
+public class Square<FIRST,
+                    SECOND,
+                    THIRD,
+                    FOURTH>
 {
     private FIRST  first;
     private SECOND second;
     private THIRD  third;
     private FOURTH fourth;
 
-    public Square(FIRST first, SECOND second, THIRD third, FOURTH fourth)
+    public Square(FIRST first,
+                  SECOND second,
+                  THIRD third,
+                  FOURTH fourth)
     {
-        this.first  = first;
+        this.first = first;
         this.second = second;
-        this.third  = third;
+        this.third = third;
         this.fourth = fourth;
     }
 

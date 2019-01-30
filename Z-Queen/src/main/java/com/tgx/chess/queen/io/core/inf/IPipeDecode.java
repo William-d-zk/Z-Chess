@@ -42,9 +42,9 @@ public interface IPipeDecode
                                                      .array(),
                                     "."));
         final IFilterChain<C> _HeaderFilter = filterChain.getChainHead();
-        ICommand              commands[]    = null;
-        IFilter.ResultType    resultType;
-        IProtocol             protocol      = input;
+        ICommand commands[] = null;
+        IFilter.ResultType resultType;
+        IProtocol protocol = input;
         for (IFilterChain<C> nextFilter = _HeaderFilter;; nextFilter = _HeaderFilter, protocol = input) {
             Chain:
             while (nextFilter != null) {

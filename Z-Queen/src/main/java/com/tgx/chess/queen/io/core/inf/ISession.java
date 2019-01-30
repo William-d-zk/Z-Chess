@@ -44,8 +44,10 @@ public interface ISession
         IDisposable,
         IConnectActive,
         IValid,
-        IReadable<CompletionHandler<Integer, ISession>>,
-        IWritable<CompletionHandler<Integer, ISession>>
+        IReadable<CompletionHandler<Integer,
+                                    ISession>>,
+        IWritable<CompletionHandler<Integer,
+                                    ISession>>
 {
     long _DEFAULT_INDEX = -1;
 
@@ -57,7 +59,8 @@ public interface ISession
 
     AsynchronousSocketChannel getChannel();
 
-    IOperator<IPacket, ISession> getDecodeOperator();
+    IOperator<IPacket,
+              ISession> getDecodeOperator();
 
     IContext getContext();
 

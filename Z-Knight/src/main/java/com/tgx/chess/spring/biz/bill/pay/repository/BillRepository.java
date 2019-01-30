@@ -36,7 +36,8 @@ import com.tgx.chess.spring.biz.bill.pay.model.ItemEntity;
 @Repository
 public interface BillRepository
         extends
-        JpaRepository<BillEntity, Long>
+        JpaRepository<BillEntity,
+                      Long>
 {
 
     List<BillEntity> findAllByMac(String mac);

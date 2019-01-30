@@ -28,7 +28,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.LockSupport;
 
-import com.lmax.disruptor.*;
+import com.lmax.disruptor.AlertException;
+import com.lmax.disruptor.DataProvider;
+import com.lmax.disruptor.EventHandler;
+import com.lmax.disruptor.EventProcessor;
+import com.lmax.disruptor.Sequence;
+import com.lmax.disruptor.SequenceBarrier;
+import com.lmax.disruptor.TimeoutException;
 
 /**
  * @author William.d.zk
@@ -44,12 +50,14 @@ public class MultiBufferBatchEventProcessor<T>
     private final Sequence[]        _Sequences;
     private String                  threadName;
 
-    public MultiBufferBatchEventProcessor(DataProvider<T>[] providers, SequenceBarrier[] barriers, EventHandler<T> handler)
+    public MultiBufferBatchEventProcessor(DataProvider<T>[] providers,
+                                          SequenceBarrier[] barriers,
+                                          EventHandler<T> handler)
     {
         if (providers.length != barriers.length) { throw new IllegalArgumentException(); }
         _Providers = providers;
-        _Barriers  = barriers;
-        _Handler   = handler;
+        _Barriers = barriers;
+        _Handler = handler;
         _Sequences = new Sequence[providers.length];
         for (int i = 0; i < _Sequences.length; i++) {
             _Sequences[i] = new Sequence(-1);
@@ -72,23 +80,23 @@ public class MultiBufferBatchEventProcessor<T>
         }
 
         final int barrierLength = _Barriers.length;
-        int       barrier_total_count;
-        long      delta;
+        int barrier_total_count;
+        long delta;
         while (true) {
             barrier_total_count = 0;
             try {
                 for (int i = 0; i < barrierLength; i++) {
 
-                    long     available    = _Barriers[i].waitFor(-1);
-                    Sequence sequence     = _Sequences[i];
+                    long available = _Barriers[i].waitFor(-1);
+                    Sequence sequence = _Sequences[i];
 
-                    long     nextSequence = sequence.get() + 1;
+                    long nextSequence = sequence.get() + 1;
                     for (long l = nextSequence; l <= available; l++) {
                         _Handler.onEvent(_Providers[i].get(l), l, nextSequence == available);
                     }
 
                     sequence.set(available);
-                    delta                = available - nextSequence + 1;
+                    delta = available - nextSequence + 1;
                     barrier_total_count += delta;
                 }
                 //没有任何 前置生产者的存在事件的时候暂停 5ms 释放 CPU，不超过100个事件，将释放 CPU  

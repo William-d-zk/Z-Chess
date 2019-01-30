@@ -37,9 +37,10 @@ public class ScheduleHandler<A>
     private final boolean _Cycle;
     private Consumer<A>   _Callback;
 
-    public ScheduleHandler(boolean cycle, Consumer<A> callback)
+    public ScheduleHandler(boolean cycle,
+                           Consumer<A> callback)
     {
-        _Cycle    = cycle;
+        _Cycle = cycle;
         _Callback = callback;
     }
 

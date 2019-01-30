@@ -89,11 +89,11 @@ public class WsFrameFilter
     {
         if (context == null || input == null) return ResultType.ERROR;
         if (!context.isInConvert()) return ResultType.IGNORE;
-        IPacket    _package = (IPacket) input;
-        ByteBuffer recvBuf  = _package.getBuffer();
-        ByteBuffer cRvBuf   = context.getRvBuffer();
-        WsFrame    carrier  = context.getCarrier();
-        int        lack     = context.lack();
+        IPacket _package = (IPacket) input;
+        ByteBuffer recvBuf = _package.getBuffer();
+        ByteBuffer cRvBuf = context.getRvBuffer();
+        WsFrame carrier = context.getCarrier();
+        int lack = context.lack();
         switch (context.position())
         {
             case -1:
@@ -160,7 +160,7 @@ public class WsFrameFilter
                         }
 
                         target = context.position() + (int) carrier.getPayloadLength();
-                        lack   = context.lackLength(0, target);
+                        lack = context.lackLength(0, target);
                         cRvBuf.clear();
                         if (carrier.getPayloadLength() > context.getMaxPayloadSize() - target) {
                             _Log.warning("payload is too large");

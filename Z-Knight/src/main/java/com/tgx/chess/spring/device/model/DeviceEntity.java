@@ -24,10 +24,7 @@
 
 package com.tgx.chess.spring.device.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.tgx.chess.spring.jpa.model.AuditModel;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.validator.constraints.Length;
+import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -38,7 +35,12 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.NotEmpty;
-import java.util.Date;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.validator.constraints.Length;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.tgx.chess.spring.jpa.model.AuditModel;
 
 @Entity(name = "Device")
 @Table(schema = "\"tgx-z-chess-device\"",
@@ -54,24 +56,24 @@ public class DeviceEntity
     @Id
     @GeneratedValue(generator = "ZGenerator")
     @GenericGenerator(name = "ZGenerator", strategy = "com.tgx.chess.spring.jpa.generator.ZGenerator")
-    private Long              id;
+    private Long id;
 
     @NotEmpty(message = "provide create device lv2 mac")
     @Column(length = 17)
-    private String            mac;
+    private String mac;
 
     @Column(length = 32)
     @Length(min = 5, max = 32, message = "*Your password must have at least 5 characters less than 32 characters")
     @NotEmpty(message = "*Please provide your password")
-    private String            password;
-    private long              passwordId;
+    private String password;
+    private long   passwordId;
     @Column(length = 64)
-    private String            token;
+    private String token;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "invalid_at", nullable = false)
     @JsonIgnore
-    private Date              invalidAt;
+    private Date invalidAt;
 
     public Long getId()
     {

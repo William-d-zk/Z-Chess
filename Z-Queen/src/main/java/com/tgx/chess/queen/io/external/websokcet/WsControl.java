@@ -43,15 +43,19 @@ public abstract class WsControl
     protected byte       mCtrlCode;
     private ISession     mSession;
 
-    public WsControl(int command, byte[] msg)
+    public WsControl(int command,
+                     byte[] msg)
     {
         _Command = command;
-        _Msg     = msg;
+        _Msg = msg;
     }
 
-    public WsControl(String msg, int command)
+    public WsControl(String msg,
+                     int command)
     {
-        this(command, Objects.nonNull(msg) ? msg.getBytes() : null);
+        this(command,
+             Objects.nonNull(msg) ? msg.getBytes()
+                                  : null);
     }
 
     public WsControl(int command)
@@ -109,7 +113,8 @@ public abstract class WsControl
     @Override
     public int dataLength()
     {
-        return Objects.nonNull(_Msg) ? _Msg.length : 0;
+        return Objects.nonNull(_Msg) ? _Msg.length
+                                     : 0;
     }
 
     @Override

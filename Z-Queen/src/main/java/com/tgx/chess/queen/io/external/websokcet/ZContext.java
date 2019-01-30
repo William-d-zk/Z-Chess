@@ -24,7 +24,7 @@
 package com.tgx.chess.queen.io.external.websokcet;
 
 import com.tgx.chess.king.base.crypt.util.Rc4;
-import com.tgx.chess.queen.event.operator.MODE;
+import com.tgx.chess.queen.event.operator.ZMode;
 import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 
@@ -43,7 +43,8 @@ public class ZContext
     private Rc4             mEncryptRc4, mDecryptRc4;
     private IEncryptHandler mEncryptHandler;
 
-    public ZContext(ISessionOption option, MODE mode)
+    public ZContext(ISessionOption option,
+                    ZMode mode)
     {
         super(option, mode);
     }
@@ -52,9 +53,9 @@ public class ZContext
     public void reset()
     {
         super.reset();
-        mUpdateKeyIn    = false;
-        mUpdateKeyOut   = false;
-        mPubKeyId       = -2;
+        mUpdateKeyIn = false;
+        mUpdateKeyOut = false;
+        mPubKeyId = -2;
         mSymmetricKeyId = 0;
     }
 
@@ -72,13 +73,15 @@ public class ZContext
     @Override
     public Rc4 getSymmetricDecrypt()
     {
-        return mDecryptRc4 == null ? mDecryptRc4 = new Rc4() : mDecryptRc4;
+        return mDecryptRc4 == null ? mDecryptRc4 = new Rc4()
+                                   : mDecryptRc4;
     }
 
     @Override
     public Rc4 getSymmetricEncrypt()
     {
-        return mEncryptRc4 == null ? mEncryptRc4 = new Rc4() : mEncryptRc4;
+        return mEncryptRc4 == null ? mEncryptRc4 = new Rc4()
+                                   : mEncryptRc4;
     }
 
     @Override

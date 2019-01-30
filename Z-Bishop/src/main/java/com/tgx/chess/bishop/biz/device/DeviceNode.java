@@ -25,8 +25,8 @@
 package com.tgx.chess.bishop.biz.device;
 
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
-import static com.tgx.chess.queen.event.operator.OperatorHolder.CONNECTED_OPERATOR;
-import static com.tgx.chess.queen.event.operator.OperatorHolder.SERVER_TRANSFER;
+import static com.tgx.chess.queen.event.operator.ZOperatorHolder.CONNECTED_OPERATOR;
+import static com.tgx.chess.queen.event.operator.ZOperatorHolder.SERVER_TRANSFER;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -46,7 +46,7 @@ import com.tgx.chess.king.config.Config;
 import com.tgx.chess.queen.config.QueenCode;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.event.operator.MODE;
+import com.tgx.chess.queen.event.operator.ZMode;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.async.AioCreator;
 import com.tgx.chess.queen.io.core.async.AioSession;
@@ -163,7 +163,7 @@ public class DeviceNode
             }
 
             @Override
-            public IContext createContext(ISessionOption option, MODE mode)
+            public IContext createContext(ISessionOption option, ZMode mode)
             {
                 return new ZContext(option, mode);
             }
@@ -229,9 +229,9 @@ public class DeviceNode
             }
 
             @Override
-            public MODE getMode()
+            public ZMode getMode()
             {
-                return MODE.SERVER;
+                return ZMode.SERVER;
             }
 
             @Override

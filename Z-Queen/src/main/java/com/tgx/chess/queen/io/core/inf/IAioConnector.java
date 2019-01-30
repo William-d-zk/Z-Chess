@@ -32,13 +32,15 @@ import com.tgx.chess.queen.io.core.async.socket.AioWorker;
 
 public interface IAioConnector
         extends
-        CompletionHandler<Void, AsynchronousSocketChannel>,
+        CompletionHandler<Void,
+                          AsynchronousSocketChannel>,
         IConnectActive,
         IConnected,
         IConnectError
 {
     @Override
-    IOperator<Throwable, IAioConnector> getErrorOperator();
+    IOperator<Throwable,
+              IAioConnector> getErrorOperator();
 
     @Override
     default void completed(Void result, AsynchronousSocketChannel channel)

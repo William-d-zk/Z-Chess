@@ -49,7 +49,9 @@ public abstract class AioFilterChain<C extends IContext>
     public void idempotentRightShift(int previous)
     {
         if (previous == 1) throw new IllegalArgumentException();
-        mIdempotent = previous == 0 && mIdempotent == 0x80000000 ? 1 : previous != 0 ? previous >>> 1 : mIdempotent;
+        mIdempotent = previous == 0 && mIdempotent == 0x80000000 ? 1
+                                                                 : previous != 0 ? previous >>> 1
+                                                                                 : mIdempotent;
     }
 
     @Override
@@ -82,7 +84,8 @@ public abstract class AioFilterChain<C extends IContext>
         IFilterChain<C> filter = preFilter;
         while (filter != null && filter.getPrevious() != null)
             filter = filter.getPrevious();
-        return filter == null ? this : filter;
+        return filter == null ? this
+                              : filter;
     }
 
     @Override
@@ -91,7 +94,8 @@ public abstract class AioFilterChain<C extends IContext>
         IFilterChain<C> filter = nextFilter;
         while (filter != null && filter.getNext() != null)
             filter = filter.getNext();
-        return filter == null ? this : filter;
+        return filter == null ? this
+                              : filter;
     }
 
     @Override

@@ -33,11 +33,11 @@ public class BillEntry
 {
     private static final long serialVersionUID = -1254601378280176438L;
 
-    private String            mac;
-    private String            bill;
-    private String            status;
-    private long              item;
-    private Date              timestamp;
+    private String mac;
+    private String bill;
+    private String status;
+    private long   item;
+    private Date   timestamp;
 
     public String getMac()
     {
