@@ -63,7 +63,9 @@ public class PolynomialInverterModPowerOfPrime
      *            table should not be modified after it has been passed to the
      *            constructor.
      */
-    public PolynomialInverterModPowerOfPrime(int _powerOfPrime, int _prime, short _invModPrime[])
+    public PolynomialInverterModPowerOfPrime(int _powerOfPrime,
+                                             int _prime,
+                                             short _invModPrime[])
     {
         super(_prime, _invModPrime);
         powerOfPrime = _powerOfPrime;

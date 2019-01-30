@@ -35,7 +35,8 @@ public abstract class WsHandshake
 
     private String rMsg;
 
-    public WsHandshake(int command, String msg)
+    public WsHandshake(int command,
+                       String msg)
     {
         super(msg, command);
     }
@@ -43,7 +44,8 @@ public abstract class WsHandshake
     public String getMessage()
     {
         byte[] payload = getPayload();
-        return Objects.nonNull(payload) ? new String(payload) : rMsg;
+        return Objects.nonNull(payload) ? new String(payload)
+                                        : rMsg;
     }
 
     public byte getControl()
@@ -54,7 +56,9 @@ public abstract class WsHandshake
     public byte[] getPayload()
     {
         byte[] payload = super.getPayload();
-        return Objects.isNull(payload) ? rMsg == null ? null : rMsg.getBytes() : payload;
+        return Objects.isNull(payload) ? rMsg == null ? null
+                                                      : rMsg.getBytes()
+                                       : payload;
     }
 
     @Override
@@ -66,17 +70,21 @@ public abstract class WsHandshake
     @Override
     public int dataLength()
     {
-        return Objects.nonNull(getPayload()) ? super.dataLength() : Objects.nonNull(rMsg) ? rMsg.getBytes().length : 0;
+        return Objects.nonNull(getPayload()) ? super.dataLength()
+                                             : Objects.nonNull(rMsg) ? rMsg.getBytes().length
+                                                                     : 0;
     }
 
     public void append(String x)
     {
-        rMsg = Objects.isNull(rMsg) ? x : rMsg + x;
+        rMsg = Objects.isNull(rMsg) ? x
+                                    : rMsg + x;
     }
 
     public WsHandshake ahead(String x)
     {
-        rMsg = rMsg == null ? x : x + rMsg;
+        rMsg = rMsg == null ? x
+                            : x + rMsg;
         return this;
     }
 

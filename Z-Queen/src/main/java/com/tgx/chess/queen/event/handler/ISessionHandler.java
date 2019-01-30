@@ -40,11 +40,18 @@ public interface ISessionHandler
         extends
         EventHandler<QEvent>
 {
-    default <A> void encodeHandler(QEvent event, A a, ISession session, IOperator<A, ISession> operator)
+    default <A> void encodeHandler(QEvent event,
+                                   A a,
+                                   ISession session,
+                                   IOperator<A,
+                                             ISession> operator)
     {
         IContext context = session.getContext();
         if (!context.isOutErrorState()) {
-            Triple<Throwable, ISession, IOperator<Throwable, ISession>> result = operator.handle(a, session);
+            Triple<Throwable,
+                   ISession,
+                   IOperator<Throwable,
+                             ISession>> result = operator.handle(a, session);
             if (Objects.nonNull(result)) {
                 event.error(Type.FILTER_DECODE, result.first(), result.second(), result.third());
                 context.setOutState(ENCODE_ERROR);

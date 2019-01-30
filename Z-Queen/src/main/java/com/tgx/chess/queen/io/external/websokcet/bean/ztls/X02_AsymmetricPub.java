@@ -54,13 +54,13 @@ public class X02_AsymmetricPub
     @Override
     public int decodec(byte[] data, int pos)
     {
-        pubKeyId    = IoUtil.readInt(data, pos);
-        pos        += 4;
-        mKeyLength  = IoUtil.readUnsignedShort(data, pos);
-        pos        += 2;
+        pubKeyId = IoUtil.readInt(data, pos);
+        pos += 4;
+        mKeyLength = IoUtil.readUnsignedShort(data, pos);
+        pos += 2;
         if (mKeyLength > 0) {
             pubKey = new byte[mKeyLength];
-            pos    = IoUtil.read(data, pos, pubKey);
+            pos = IoUtil.read(data, pos, pubKey);
         }
         return pos;
     }
@@ -95,9 +95,10 @@ public class X02_AsymmetricPub
 
     public X02_AsymmetricPub setPubKey(int _id, byte[] key)
     {
-        pubKey     = key;
-        pubKeyId   = _id;
-        mKeyLength = key == null ? 0 : key.length;
+        pubKey = key;
+        pubKeyId = _id;
+        mKeyLength = key == null ? 0
+                                 : key.length;
         return this;
     }
 

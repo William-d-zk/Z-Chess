@@ -33,7 +33,8 @@ import com.tgx.chess.spring.device.model.DeviceEntity;
 //@Transactional
 public interface DeviceRepository
         extends
-        JpaRepository<DeviceEntity, Long>
+        JpaRepository<DeviceEntity,
+                      Long>
 {
     DeviceEntity findByTokenAndPassword(String token, String password);
 

@@ -32,7 +32,8 @@ import com.tgx.chess.spring.auth.model.RoleEntity;
 @Repository
 public interface RoleRepository
         extends
-        JpaRepository<RoleEntity, Integer>
+        JpaRepository<RoleEntity,
+                      Integer>
 {
     RoleEntity findByRole(String role);
 }

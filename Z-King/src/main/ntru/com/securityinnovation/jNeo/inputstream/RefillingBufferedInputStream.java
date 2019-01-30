@@ -63,10 +63,11 @@ public class RefillingBufferedInputStream
      * @param size
      *            the buffer size.
      */
-    RefillingBufferedInputStream(InputStream in, int size)
+    RefillingBufferedInputStream(InputStream in,
+                                 int size)
     {
-        is   = in;
-        buf  = new byte[size];
+        is = in;
+        buf = new byte[size];
         next = buf.length;
     }
 
@@ -99,8 +100,8 @@ public class RefillingBufferedInputStream
             if (next >= buf.length) refill();
             int count = Math.min(len, buf.length - next);
             System.arraycopy(buf, next, b, off, count);
-            off  += count;
-            len  -= count;
+            off += count;
+            len -= count;
             next += count;
         }
 

@@ -31,11 +31,13 @@ import com.tgx.chess.king.base.util.Pair;
  */
 public interface IEncryptHandler
 {
-    Pair<Integer, byte[]> getAsymmetricPubKey(int _InPubKeyId);
+    Pair<Integer,
+         byte[]> getAsymmetricPubKey(int _InPubKeyId);
 
     byte[] getSymmetricKey(int _InPubKeyId, byte[] encryption);
 
-    Pair<Integer, byte[]> getCipher(byte[] pubKey, byte[] symmetricKey);
+    Pair<Integer,
+         byte[]> getCipher(byte[] pubKey, byte[] symmetricKey);
 
     byte[] getSymmetricKeySign(byte[] symmetricKey);
 

@@ -60,7 +60,7 @@ class Sha512
         byteCount1 = 0;
         byteCount2 = 0;
 
-        xBufOff    = 0;
+        xBufOff = 0;
         java.util.Arrays.fill(xBuf, (byte) 0);
 
         wOff = 0;
@@ -101,9 +101,9 @@ class Sha512
             int todo = xBuf.length - xBufOff;
             System.arraycopy(data, offset, xBuf, xBufOff, todo);
             processWord(xBuf, 0);
-            length  -= todo;
-            offset  += todo;
-            xBufOff  = 0;
+            length -= todo;
+            offset += todo;
+            xBufOff = 0;
         }
 
         // Copy any extra data into the cached input buffer.
@@ -133,20 +133,20 @@ class Sha512
     // SHA-512 block transform routines
     // ......................................................................
 
-    private static final int HASH_LEN   = 64;
+    private static final int HASH_LEN = 64;
 
-    private static final int BLOCK_LEN  = 128;
+    private static final int BLOCK_LEN = 128;
 
-    private byte[]           xBuf       = new byte[8];
-    private int              xBufOff    = 0;
+    private byte[] xBuf    = new byte[8];
+    private int    xBufOff = 0;
 
-    private long             byteCount1 = 0;
-    private long             byteCount2 = 0;
+    private long byteCount1 = 0;
+    private long byteCount2 = 0;
 
-    private long             H1, H2, H3, H4, H5, H6, H7, H8;
+    private long H1, H2, H3, H4, H5, H6, H7, H8;
 
-    private long[]           W          = new long[80];
-    private int              wOff;
+    private long[] W = new long[80];
+    private int    wOff;
 
     private void update(byte in)
     {
@@ -165,7 +165,7 @@ class Sha512
         adjustByteCounts();
 
         long lowBitLength = byteCount1 << 3;
-        long hiBitLength  = byteCount2;
+        long hiBitLength = byteCount2;
 
         // add the pad bytes.
         update((byte) 128);
@@ -191,7 +191,7 @@ class Sha512
 
     protected void unpackWord(long word, byte[] out, int outOff)
     {
-        out[outOff]     = (byte) (word >>> 56);
+        out[outOff] = (byte) (word >>> 56);
         out[outOff + 1] = (byte) (word >>> 48);
         out[outOff + 2] = (byte) (word >>> 40);
         out[outOff + 3] = (byte) (word >>> 32);
@@ -247,27 +247,27 @@ class Sha512
 
             T1 = h + Sum1(e) + Ch(e, f, g) + K[t] + W[t];
             T2 = Sum0(a) + Maj(a, b, c);
-            h  = g;
-            g  = f;
-            f  = e;
-            e  = d + T1;
-            d  = c;
-            c  = b;
-            b  = a;
-            a  = T1 + T2;
+            h = g;
+            g = f;
+            f = e;
+            e = d + T1;
+            d = c;
+            c = b;
+            b = a;
+            a = T1 + T2;
         }
 
-        H1   += a;
-        H2   += b;
-        H3   += c;
-        H4   += d;
-        H5   += e;
-        H6   += f;
-        H7   += g;
-        H8   += h;
+        H1 += a;
+        H2 += b;
+        H3 += c;
+        H4 += d;
+        H5 += e;
+        H6 += f;
+        H7 += g;
+        H8 += h;
 
         // reset the offset and clean out the word buffer.
-        wOff  = 0;
+        wOff = 0;
         for (int i = 0; i != W.length; i++)
             W[i] = 0;
     }

@@ -38,7 +38,9 @@ public class TgxResourceBundle
 
     private final String _Name;
 
-    TgxResourceBundle(String name, Reader reader) throws IOException
+    TgxResourceBundle(String name,
+                      Reader reader)
+            throws IOException
     {
         super(reader);
         _Name = name;

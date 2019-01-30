@@ -43,7 +43,7 @@ import com.tgx.chess.spring.biz.bill.pay.service.ItemsService;
 @RestController
 public class ItemsController
 {
-    private final Logger       _Log = Logger.getLogger(getClass().getName());
+    private final Logger _Log = Logger.getLogger(getClass().getName());
 
     private final ItemsService _ItemsService;
 

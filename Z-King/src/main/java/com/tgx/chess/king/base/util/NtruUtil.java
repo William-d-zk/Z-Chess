@@ -23,7 +23,16 @@
  */
 package com.tgx.chess.king.base.util;
 
-import com.securityinnovation.jNeo.*;
+import com.securityinnovation.jNeo.CiphertextBadLengthException;
+import com.securityinnovation.jNeo.DecryptionFailureException;
+import com.securityinnovation.jNeo.FormatNotSupportedException;
+import com.securityinnovation.jNeo.NoPrivateKeyException;
+import com.securityinnovation.jNeo.NtruException;
+import com.securityinnovation.jNeo.OID;
+import com.securityinnovation.jNeo.ObjectClosedException;
+import com.securityinnovation.jNeo.ParamSetNotSupportedException;
+import com.securityinnovation.jNeo.PlaintextBadLengthException;
+import com.securityinnovation.jNeo.Random;
 import com.securityinnovation.jNeo.ntruencrypt.KeyParams;
 import com.securityinnovation.jNeo.ntruencrypt.NtruEncryptKey;
 
@@ -64,8 +73,8 @@ public class NtruUtil
 
     public byte[][] getKeys(byte[] seed) throws NtruException
     {
-        Random         prng = new Random(seed);
-        NtruEncryptKey key  = NtruEncryptKey.genKey(oid, prng);
+        Random prng = new Random(seed);
+        NtruEncryptKey key = NtruEncryptKey.genKey(oid, prng);
         return new byte[][] { key.getPubKey(),
                               key.getPrivKey()
 
@@ -74,8 +83,8 @@ public class NtruUtil
 
     public byte[] encrypt(byte[] message, byte[] pubKey)
     {// 客户端用的
-        byte[]           seed = new byte[32];
-        java.util.Random rs   = new java.util.Random();
+        byte[] seed = new byte[32];
+        java.util.Random rs = new java.util.Random();
         rs.nextBytes(seed);
         Random prng = new Random(seed);
 

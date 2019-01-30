@@ -25,7 +25,9 @@
 package com.tgx.chess.queen.event.handler;
 
 import static com.tgx.chess.queen.event.inf.IError.Type.CLOSED;
-import static com.tgx.chess.queen.event.inf.IOperator.Type.*;
+import static com.tgx.chess.queen.event.inf.IOperator.Type.CONNECTED;
+import static com.tgx.chess.queen.event.inf.IOperator.Type.TRANSFER;
+import static com.tgx.chess.queen.event.inf.IOperator.Type.WROTE;
 
 import java.nio.channels.AsynchronousSocketChannel;
 
@@ -49,7 +51,11 @@ public class IoDispatcher
     private final RingBuffer<QEvent> _IoWrote;
 
     @SafeVarargs
-    public IoDispatcher(RingBuffer<QEvent> link, RingBuffer<QEvent> cluster, RingBuffer<QEvent> wrote, RingBuffer<QEvent> error, RingBuffer<QEvent>... read)
+    public IoDispatcher(RingBuffer<QEvent> link,
+                        RingBuffer<QEvent> cluster,
+                        RingBuffer<QEvent> wrote,
+                        RingBuffer<QEvent> error,
+                        RingBuffer<QEvent>... read)
     {
         super(link, cluster, error, read);
         _IoWrote = wrote;
@@ -62,16 +68,20 @@ public class IoDispatcher
         switch (errorType)
         {
             case CONNECT_FAILED:
-                IOperator<Throwable, IConnectActive> connectFailedOperator = event.getEventOp();
-                Pair<Throwable, IConnectActive> connectFailedContent = event.getContent();
+                IOperator<Throwable,
+                          IConnectActive> connectFailedOperator = event.getEventOp();
+                Pair<Throwable,
+                     IConnectActive> connectFailedContent = event.getContent();
                 Throwable throwable = connectFailedContent.first();
                 IConnectActive connectActive = connectFailedContent.second();
                 dispatchError(connectActive.getMode(), errorType, throwable, connectActive, connectFailedOperator);
                 break;
             case CLOSED:
                 /* 将其他 Event Error 转换为 closed 进行定向分发 */
-                IOperator<Void, ISession> closedOperator = event.getEventOp();
-                Pair<Void, ISession> closedContent = event.getContent();
+                IOperator<Void,
+                          ISession> closedOperator = event.getEventOp();
+                Pair<Void,
+                     ISession> closedContent = event.getContent();
                 ISession session = closedContent.second();
                 if (!session.isClosed()) dispatchError(session.getMode(), CLOSED, closedContent.first(), session, closedOperator);
                 break;
@@ -89,12 +99,17 @@ public class IoDispatcher
             case ILLEGAL_BIZ_STATE:
             case OUT_OF_LENGTH:
             case SSL_HANDSHAKE:
-                IOperator<Throwable, ISession> errorOperator = event.getEventOp();
-                Pair<Throwable, ISession> errorContent = event.getContent();
+                IOperator<Throwable,
+                          ISession> errorOperator = event.getEventOp();
+                Pair<Throwable,
+                     ISession> errorContent = event.getContent();
                 session = errorContent.second();
                 if (!session.isClosed()) {
                     throwable = errorContent.first();
-                    Triple<Void, ISession, IOperator<Void, ISession>> transferResult = errorOperator.handle(throwable, session);
+                    Triple<Void,
+                           ISession,
+                           IOperator<Void,
+                                     ISession>> transferResult = errorOperator.handle(throwable, session);
                     dispatchError(session.getMode(), CLOSED, transferResult.first(), session, transferResult.third());
                 }
                 break;
@@ -102,23 +117,29 @@ public class IoDispatcher
                 switch (event.getEventType())
                 {
                     case CONNECTED:
-                        IOperator<IConnectionContext, AsynchronousSocketChannel> connectOperator = event.getEventOp();
-                        Pair<IConnectionContext, AsynchronousSocketChannel> connectContent = event.getContent();
+                        IOperator<IConnectionContext,
+                                  AsynchronousSocketChannel> connectOperator = event.getEventOp();
+                        Pair<IConnectionContext,
+                             AsynchronousSocketChannel> connectContent = event.getContent();
                         IConnectionContext connectionContext = connectContent.first();
                         dispatch(connectionContext.getMode(), CONNECTED, connectionContext, connectContent.second(), connectOperator);
                         break;
                     case READ:
-                        Pair<IPacket, ISession> readContent = event.getContent();
+                        Pair<IPacket,
+                             ISession> readContent = event.getContent();
                         session = readContent.second();
                         publish(dispatchWorker(session.getHashKey()), TRANSFER, readContent.first(), readContent.second(), event.getEventOp());
                         break;
                     case WROTE:
-                        Pair<Integer, ISession> wrote_content = event.getContent();
+                        Pair<Integer,
+                             ISession> wrote_content = event.getContent();
                         publish(_IoWrote, WROTE, wrote_content.first(), wrote_content.second(), event.getEventOp());
                         break;
                     case CLOSE:// local close
-                        IOperator<Void, ISession> closeOperator = event.getEventOp();
-                        Pair<Void, ISession> closeContent = event.getContent();
+                        IOperator<Void,
+                                  ISession> closeOperator = event.getEventOp();
+                        Pair<Void,
+                             ISession> closeContent = event.getContent();
                         session = closeContent.second();
                         if (!session.isClosed()) error(_Error, CLOSED, closeContent.first(), closeContent.second(), closeOperator);
                         break;

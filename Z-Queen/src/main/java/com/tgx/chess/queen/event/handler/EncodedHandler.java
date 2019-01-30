@@ -36,10 +36,11 @@ import com.tgx.chess.queen.io.core.inf.ISession;
 
 public class EncodedHandler
         implements
-        IPipeEventHandler<QEvent, QEvent>,
+        IPipeEventHandler<QEvent,
+                          QEvent>,
         ISessionHandler
 {
-    private final Logger             _Log = Logger.getLogger(getClass().getName());
+    private final Logger _Log = Logger.getLogger(getClass().getName());
 
     private final RingBuffer<QEvent> _Error;
 
@@ -58,11 +59,16 @@ public class EncodedHandler
                 case ILLEGAL_STATE:
                 case ILLEGAL_BIZ_STATE:
                 default:
-                    IOperator<Throwable, ISession> errorOperator = event.getEventOp();
-                    Pair<Throwable, ISession> errorContent = event.getContent();
+                    IOperator<Throwable,
+                              ISession> errorOperator = event.getEventOp();
+                    Pair<Throwable,
+                         ISession> errorContent = event.getContent();
                     ISession session = errorContent.second();
                     Throwable throwable = errorContent.first();
-                    Triple<Void, ISession, IOperator<Void, ISession>> errorResult = errorOperator.handle(throwable, session);
+                    Triple<Void,
+                           ISession,
+                           IOperator<Void,
+                                     ISession>> errorResult = errorOperator.handle(throwable, session);
                     error(_Error, IError.Type.CLOSED, errorResult.first(), session, errorResult.third());
                     break;
             }

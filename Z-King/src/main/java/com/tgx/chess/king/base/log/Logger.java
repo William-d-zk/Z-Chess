@@ -34,14 +34,14 @@ public class Logger
         implements
         Serializable
 {
-    private static final long      serialVersionUID = 6165161241382365689L;
+    private static final long serialVersionUID = 6165161241382365689L;
 
     private final String           _Name;
     private final org.slf4j.Logger _Logger;
 
     private Logger(String name)
     {
-        _Name   = name;
+        _Name = name;
         _Logger = LoggerFactory.getLogger(name);
     }
 

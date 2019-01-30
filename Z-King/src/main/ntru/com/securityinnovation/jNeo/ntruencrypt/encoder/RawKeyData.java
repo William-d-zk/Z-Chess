@@ -39,17 +39,20 @@ public class RawKeyData
     public FullPolynomial h;
     public FullPolynomial f;
 
-    public RawKeyData(KeyParams _keyParams, FullPolynomial _h)
+    public RawKeyData(KeyParams _keyParams,
+                      FullPolynomial _h)
     {
         keyParams = _keyParams;
-        h         = _h;
-        f         = null;
+        h = _h;
+        f = null;
     }
 
-    public RawKeyData(KeyParams _keyParams, FullPolynomial _h, FullPolynomial _f)
+    public RawKeyData(KeyParams _keyParams,
+                      FullPolynomial _h,
+                      FullPolynomial _f)
     {
         keyParams = _keyParams;
-        h         = _h;
-        f         = _f;
+        h = _h;
+        f = _f;
     }
 }

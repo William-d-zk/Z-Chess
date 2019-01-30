@@ -25,7 +25,7 @@
 package com.tgx.chess.queen.event.handler;
 
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
-import static com.tgx.chess.queen.event.operator.OperatorHolder.SERVER_TRANSFER;
+import static com.tgx.chess.queen.event.operator.ZOperatorHolder.SERVER_TRANSFER;
 
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.Objects;
@@ -176,9 +176,9 @@ public class LinkHandler
         if (event.noError()) {
             switch (event.getEventType()) {
                 case CONNECTED:
-                    IEventOp<Pair<N, MODE>, AsynchronousSocketChannel> cOperator = event.getEventOp();
-                    Pair<Pair<N, IConnectMode.MODE>, AsynchronousSocketChannel> cContent = event.getContent();
-                    Pair<N, IConnectMode.MODE> nmPair = cContent.first();
+                    IEventOp<Pair<N, ZMode>, AsynchronousSocketChannel> cOperator = event.getEventOp();
+                    Pair<Pair<N, IConnectMode.ZMode>, AsynchronousSocketChannel> cContent = event.getContent();
+                    Pair<N, IConnectMode.ZMode> nmPair = cContent.first();
                     AsynchronousSocketChannel channel = cContent.second();
                     Triple<ICommand, AioSession, IEventOp<ICommand, AioSession>> cResult = cOperator.handle(nmPair, channel);
                     ICommand cmd = cResult.first();
@@ -346,15 +346,15 @@ public class LinkHandler
     }
 
     @Override
-    public RESULT trial(ICommand cmd, IConnectMode.MODE mode) {
-        if (mode.equals(IConnectMode.MODE.SYMMETRY)) {
+    public RESULT trial(ICommand cmd, IConnectMode.ZMode mode) {
+        if (mode.equals(IConnectMode.ZMode.SYMMETRY)) {
             switch (cmd.getSerialNum()) {
                 case X103_Close.COMMAND:
                 case X104_ExchangeIdentity.COMMAND:
                     return RESULT.HANDLE;
             }
         }
-        else if (mode.equals(MODE.ACCEPT_SERVER) || mode.equals(MODE.ACCEPT_SERVER_SSL)) {
+        else if (mode.equals(ZMode.ACCEPT_SERVER) || mode.equals(ZMode.ACCEPT_SERVER_SSL)) {
             if (cmd.getSerialNum() == X103_Close.COMMAND) return RESULT.HANDLE;
         }
         else if (_BizNode.getMqServer()

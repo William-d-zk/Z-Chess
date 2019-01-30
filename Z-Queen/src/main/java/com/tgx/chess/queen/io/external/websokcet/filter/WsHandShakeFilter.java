@@ -24,13 +24,16 @@
 
 package com.tgx.chess.queen.io.external.websokcet.filter;
 
-import static com.tgx.chess.queen.io.core.inf.IContext.*;
+import static com.tgx.chess.queen.io.core.inf.IContext.DECODE_FRAME;
+import static com.tgx.chess.queen.io.core.inf.IContext.DECODE_HANDSHAKE;
+import static com.tgx.chess.queen.io.core.inf.IContext.ENCODE_FRAME;
+import static com.tgx.chess.queen.io.core.inf.IContext.ENCODE_HANDSHAKE;
 
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
 import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.queen.event.operator.MODE;
+import com.tgx.chess.queen.event.operator.ZMode;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.async.AioPacket;
 import com.tgx.chess.queen.io.core.inf.IPacket;
@@ -49,12 +52,12 @@ public class WsHandShakeFilter
 {
     private final static String CRLF = "\r\n";
 
-    private final MODE          _Mode;
-    private final Logger        _Log = Logger.getLogger(getClass().getName());
+    private final ZMode  _Mode;
+    private final Logger _Log = Logger.getLogger(getClass().getName());
 
-    public WsHandShakeFilter(MODE mode)
+    public WsHandShakeFilter(ZMode mode)
     {
-        name  = "web-socket-header-zfilter-" + mode.name();
+        name = "web-socket-header-zfilter-" + mode.name();
         _Mode = mode;
     }
 
@@ -72,9 +75,9 @@ public class WsHandShakeFilter
         if (context == null || !(input instanceof IPacket)) return ResultType.ERROR;
         if (context.needHandshake() && context.inState() == DECODE_HANDSHAKE) {
             WsHandshake handshake = context.getHandshake();
-            ByteBuffer  recvBuf   = ((IPacket) input).getBuffer();
-            ByteBuffer  cRvBuf    = context.getRvBuffer();
-            byte        c;
+            ByteBuffer recvBuf = ((IPacket) input).getBuffer();
+            ByteBuffer cRvBuf = context.getRvBuffer();
+            byte c;
             while (recvBuf.hasRemaining()) {
                 c = recvBuf.get();
                 cRvBuf.put(c);

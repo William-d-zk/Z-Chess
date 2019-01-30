@@ -41,16 +41,16 @@ class PrivKeyFormatter_PrivateKeyListedFv1
         if ((h.p.length != keyParams.N) || (f.p.length != keyParams.N)) return null;
 
         // Convert f to a listed F.
-        FullPolynomial F      = KeyFormatterUtil.recoverF(f);
+        FullPolynomial F = KeyFormatterUtil.recoverF(f);
 
         // Allocate output buffer
-        int            len    = (KeyFormatterUtil.fillHeader(tag, keyParams.OIDBytes, null)
-                                 + BitPack.pack(keyParams.N, keyParams.q)
-                                 + BitPack.pack(2 * keyParams.df, keyParams.N));
-        byte           ret[]  = new byte[len];
+        int len = (KeyFormatterUtil.fillHeader(tag, keyParams.OIDBytes, null)
+                   + BitPack.pack(keyParams.N, keyParams.q)
+                   + BitPack.pack(2 * keyParams.df, keyParams.N));
+        byte ret[] = new byte[len];
 
         // Encode the output
-        int            offset = KeyFormatterUtil.fillHeader(tag, keyParams.OIDBytes, ret);
+        int offset = KeyFormatterUtil.fillHeader(tag, keyParams.OIDBytes, ret);
         offset += BitPack.pack(keyParams.N, keyParams.q, h.p, 0, ret, offset);
         offset += KeyFormatterUtil.packListedCoefficients(F, keyParams.df, keyParams.df, ret, offset);
         return ret;
@@ -60,17 +60,17 @@ class PrivKeyFormatter_PrivateKeyListedFv1
     {
         // Parse the header, recover the key parameters.
         if (keyBlob[0] != tag) throw new IllegalArgumentException("key blob tag not recognized");
-        KeyParams keyParams  = KeyFormatterUtil.parseOID(keyBlob, 1, 3);
+        KeyParams keyParams = KeyFormatterUtil.parseOID(keyBlob, 1, 3);
 
         // Make sure the input will be fully consumed
-        int       headerLen  = KeyFormatterUtil.getHeaderEndOffset(keyBlob);
-        int       packedHLen = BitPack.unpack(keyParams.N, keyParams.q);
-        int       listedFLen = BitPack.unpack(2 * keyParams.df, keyParams.N);
+        int headerLen = KeyFormatterUtil.getHeaderEndOffset(keyBlob);
+        int packedHLen = BitPack.unpack(keyParams.N, keyParams.q);
+        int listedFLen = BitPack.unpack(2 * keyParams.df, keyParams.N);
         if (headerLen + packedHLen + listedFLen != keyBlob.length) throw new IllegalArgumentException("blob length invalid");
 
         // Recover h
-        int            offset = headerLen;
-        FullPolynomial h      = new FullPolynomial(keyParams.N);
+        int offset = headerLen;
+        FullPolynomial h = new FullPolynomial(keyParams.N);
         offset += BitPack.unpack(keyParams.N, keyParams.q, keyBlob, offset, h.p, 0);
 
         // Recover F

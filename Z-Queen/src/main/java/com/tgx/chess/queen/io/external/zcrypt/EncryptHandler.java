@@ -61,20 +61,21 @@ public class EncryptHandler
         return _ReqPubKeyId >= 0;
     }
 
-    private Pair<Integer, byte[][]> createPair(Random random, int _PubKeyId)
+    private Pair<Integer,
+                 byte[][]> createPair(Random random, int _PubKeyId)
     {
-        int      saltWidth  = _TotalSizeWidth + _VersionWidth;
-        int      saltMask   = (0xFFFFFFFF << saltWidth) ^ 0x80000000;
-        int      keyIndex   = _PubKeyId & _PairSizeMask;
-        int      keyVersion = (_PubKeyId & _VersionMask) >>> _TotalSizeWidth;
-        int      sequence;
-        byte[][] keyPair    = null;
+        int saltWidth = _TotalSizeWidth + _VersionWidth;
+        int saltMask = (0xFFFFFFFF << saltWidth) ^ 0x80000000;
+        int keyIndex = _PubKeyId & _PairSizeMask;
+        int keyVersion = (_PubKeyId & _VersionMask) >>> _TotalSizeWidth;
+        int sequence;
+        byte[][] keyPair = null;
         if (isPubKeyAvailable(_PubKeyId)) keyPair = _PublicKeyPair[keyIndex];
-        boolean recreate   = false;
-        int     curVersion = -1;
-        int     pubKeyId;
+        boolean recreate = false;
+        int curVersion = -1;
+        int pubKeyId;
         if (keyPair != null) {
-            sequence   = IoUtil.readInt(keyPair[KEY_PAIR_INDEX_TIME], 0) + 1;
+            sequence = IoUtil.readInt(keyPair[KEY_PAIR_INDEX_TIME], 0) + 1;
             curVersion = IoUtil.readUnsignedShort(keyPair[KEY_PAIR_INDEX_VERSION], 0);
             if (sequence < PUBLIC_KEY_TIME_MAX && keyVersion == curVersion) {
                 IoUtil.writeInt(sequence, keyPair[KEY_PAIR_INDEX_TIME], 0);
@@ -88,17 +89,17 @@ public class EncryptHandler
         }
         else {
             keyIndex = mIndexAdd++ & _PairSizeMask;
-            keyPair  = _PublicKeyPair[keyIndex];
+            keyPair = _PublicKeyPair[keyIndex];
             pubKeyId = (random.nextInt() << saltWidth) & saltMask | keyIndex;
             recreate = true;
         }
         if (recreate) {
             byte[] password = new byte[32];
             random.nextBytes(password);
-            byte[] time    = new byte[] { 0,
-                                          0,
-                                          0,
-                                          0 };
+            byte[] time = new byte[] { 0,
+                                       0,
+                                       0,
+                                       0 };
             byte[] version = new byte[] { 0,
                                           0 };
 
@@ -120,9 +121,11 @@ public class EncryptHandler
     }
 
     @Override
-    public Pair<Integer, byte[]> getAsymmetricPubKey(final int _InPubKeyId)
+    public Pair<Integer,
+                byte[]> getAsymmetricPubKey(final int _InPubKeyId)
     {
-        Pair<Integer, byte[][]> keyPair = createPair(_Random, _InPubKeyId);
+        Pair<Integer,
+             byte[][]> keyPair = createPair(_Random, _InPubKeyId);
         if (keyPair == null) return null;
         return new Pair<>(keyPair.first(), keyPair.second()[KEY_PAIR_INDEX_PUBLIC_KEY]);
     }
@@ -131,9 +134,9 @@ public class EncryptHandler
     public byte[] getSymmetricKey(final int _InPubKeyId, byte[] cipher)
     {
         if (_InPubKeyId < 0) return null;
-        int      keyIndex   = _InPubKeyId & _PairSizeMask;
-        int      keyVersion = (_InPubKeyId & _VersionMask) >>> _TotalSizeWidth;
-        byte[][] keyPair    = null;
+        int keyIndex = _InPubKeyId & _PairSizeMask;
+        int keyVersion = (_InPubKeyId & _VersionMask) >>> _TotalSizeWidth;
+        byte[][] keyPair = null;
         if (isPubKeyAvailable(_InPubKeyId)) keyPair = _PublicKeyPair[keyIndex];
         if (keyPair != null && keyPair[KEY_PAIR_INDEX_VERSION] != null && IoUtil.readUnsignedShort(keyPair[KEY_PAIR_INDEX_VERSION], 0) == keyVersion) {
             if (keyPair[KEY_PAIR_INDEX_PASSWORD] == null) return null;
@@ -143,11 +146,13 @@ public class EncryptHandler
     }
 
     @Override
-    public Pair<Integer, byte[]> getCipher(byte[] pubKey, byte[] symmetricKey)
+    public Pair<Integer,
+                byte[]> getCipher(byte[] pubKey, byte[] symmetricKey)
     {
-        int    symmetricKeyId = _Random.nextInt() & 0xFFFF;
-        byte[] cipher         = _Ntru.encrypt(symmetricKey, pubKey);
-        return cipher != null ? new Pair<>(symmetricKeyId, cipher) : null;
+        int symmetricKeyId = _Random.nextInt() & 0xFFFF;
+        byte[] cipher = _Ntru.encrypt(symmetricKey, pubKey);
+        return cipher != null ? new Pair<>(symmetricKeyId, cipher)
+                              : null;
     }
 
     @Override

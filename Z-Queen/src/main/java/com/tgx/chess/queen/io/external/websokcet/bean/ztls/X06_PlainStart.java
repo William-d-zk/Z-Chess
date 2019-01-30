@@ -64,8 +64,8 @@ public class X06_PlainStart
     @Override
     public int decodec(byte[] data, int pos)
     {
-        code  = IoUtil.readUnsignedShort(data, pos);
-        pos  += 2;
+        code = IoUtil.readUnsignedShort(data, pos);
+        pos += 2;
         return pos;
     }
 

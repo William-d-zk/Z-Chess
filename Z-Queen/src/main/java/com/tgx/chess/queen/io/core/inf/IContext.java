@@ -94,32 +94,32 @@ public interface IContext
     long getNtpArrivedTime();
 
     /*最多支持8种状态 -3~4 */
-    int COUNT_BITS         = Integer.SIZE - 3;
-    int CAPACITY           = (1 << COUNT_BITS) - 1;
-    int DECODE_NULL        = -2 << COUNT_BITS;
-    int DECODE_HANDSHAKE   = -1 << COUNT_BITS;
-    int DECODE_FRAME       = 00 << COUNT_BITS;
-    int DECODE_TLS         = 01 << COUNT_BITS;
-    int DECODE_TLS_ERROR   = 02 << COUNT_BITS;
-    int DECODE_ERROR       = 03 << COUNT_BITS;
+    int COUNT_BITS       = Integer.SIZE - 3;
+    int CAPACITY         = (1 << COUNT_BITS) - 1;
+    int DECODE_NULL      = -2 << COUNT_BITS;
+    int DECODE_HANDSHAKE = -1 << COUNT_BITS;
+    int DECODE_FRAME     = 00 << COUNT_BITS;
+    int DECODE_TLS       = 01 << COUNT_BITS;
+    int DECODE_TLS_ERROR = 02 << COUNT_BITS;
+    int DECODE_ERROR     = 03 << COUNT_BITS;
 
-    int ENCODE_NULL        = -2 << COUNT_BITS;
-    int ENCODE_HANDSHAKE   = -1 << COUNT_BITS;
-    int ENCODE_FRAME       = 00 << COUNT_BITS;
-    int ENCODE_TLS         = 01 << COUNT_BITS;
-    int ENCODE_TLS_ERROR   = 02 << COUNT_BITS;
-    int ENCODE_ERROR       = 03 << COUNT_BITS;
+    int ENCODE_NULL      = -2 << COUNT_BITS;
+    int ENCODE_HANDSHAKE = -1 << COUNT_BITS;
+    int ENCODE_FRAME     = 00 << COUNT_BITS;
+    int ENCODE_TLS       = 01 << COUNT_BITS;
+    int ENCODE_TLS_ERROR = 02 << COUNT_BITS;
+    int ENCODE_ERROR     = 03 << COUNT_BITS;
 
     /* 只有链接成功时才会创建 ISession 和 IContext */
-    int SESSION_CONNECTED  = -3 << COUNT_BITS;
+    int SESSION_CONNECTED = -3 << COUNT_BITS;
     /* 处于空闲状态 */
-    int SESSION_IDLE       = -2 << COUNT_BITS;
+    int SESSION_IDLE = -2 << COUNT_BITS;
     /* 有待发数据，尚未完成编码 */
-    int SESSION_PENDING    = -1 << COUNT_BITS;
+    int SESSION_PENDING = -1 << COUNT_BITS;
     /* 有编码完成的数据在发送，write->wrote 事件等待 */
-    int SESSION_SENDING    = 00 << COUNT_BITS;
+    int SESSION_SENDING = 00 << COUNT_BITS;
     /* 链路关闭，尚未完成清理 [any]->[close]*/
-    int SESSION_CLOSE      = 01 << COUNT_BITS;
+    int SESSION_CLOSE = 01 << COUNT_BITS;
     /* 终态，清理结束*/
     int SESSION_TERMINATED = 02 << COUNT_BITS;
 

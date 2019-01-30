@@ -68,7 +68,9 @@ public interface IProtocol
         int len = dataLength();
         if (len < 0 || len == 0) throw new IllegalArgumentException("data length is negative or zero");
         if (buf == null) throw new NullPointerException();
-        else if (len > length || buf.length < len || pos + length > buf.length) throw new ArrayIndexOutOfBoundsException("data length is too long for input buf");
+        else if (len > length
+                 || buf.length < len
+                 || pos + length > buf.length) throw new ArrayIndexOutOfBoundsException("data length is too long for input buf");
         pos = encodec(buf, pos);
         return pos;
     }

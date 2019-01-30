@@ -59,7 +59,8 @@ public interface IoUtil
     {
         if (length < 0 || length > b.length || pos + length > b.length) throw new ArrayIndexOutOfBoundsException();
         StringBuilder sb = new StringBuilder(length * 2);
-        String        s  = Objects.nonNull(split) && split.length > 0 ? split[0] : "";
+        String s = Objects.nonNull(split) && split.length > 0 ? split[0]
+                                                              : "";
         for (int i = pos, size = pos + length; i < size; i++) {
             sb.append(HEX_DIGITS[(b[i] & 0xf0) >>> 4]);
             sb.append(HEX_DIGITS[b[i] & 0x0f]);
@@ -80,7 +81,7 @@ public interface IoUtil
         int len = hex.length() >> 1;
         if (len > 0) {
             if (b == null) {
-                b   = new byte[len];
+                b = new byte[len];
                 pos = 0;
             }
             else if (b.length - pos < len) return null;
@@ -109,10 +110,10 @@ public interface IoUtil
     {
         if (ipAddr == null) return 0;
         String[] ipx = ipAddr.split("\\p{Punct}");
-        int      a   = Integer.parseInt(ipx[0]);
-        int      b   = Integer.parseInt(ipx[1]);
-        int      c   = Integer.parseInt(ipx[2]);
-        int      d   = Integer.parseInt(ipx[3]);
+        int a = Integer.parseInt(ipx[0]);
+        int b = Integer.parseInt(ipx[1]);
+        int c = Integer.parseInt(ipx[2]);
+        int d = Integer.parseInt(ipx[3]);
         return a << 24 | b << 16 | c << 8 | d;
     }
 
@@ -120,11 +121,11 @@ public interface IoUtil
     {
         if (ipAddr == null) return 0;
         String[] ipx = ipAddr.split("\\p{Punct}");
-        int      a   = Integer.parseInt(ipx[0]);
-        int      b   = Integer.parseInt(ipx[1]);
-        int      c   = Integer.parseInt(ipx[2]);
-        int      d   = Integer.parseInt(ipx[3]);
-        long     ip  = a << 24 | b << 16 | c << 8 | d | 0xFFFFFFFFL;
+        int a = Integer.parseInt(ipx[0]);
+        int b = Integer.parseInt(ipx[1]);
+        int c = Integer.parseInt(ipx[2]);
+        int d = Integer.parseInt(ipx[3]);
+        long ip = a << 24 | b << 16 | c << 8 | d | 0xFFFFFFFFL;
         return ip << 16 | port;
     }
 
@@ -150,10 +151,10 @@ public interface IoUtil
     static String readInetAddr(long inetAddr)
     {
         int a, b, c, d, port;
-        a    = (int) (inetAddr >> 40) & 0xFF;
-        b    = (int) (inetAddr >> 32) & 0xFF;
-        c    = (int) (inetAddr >> 24) & 0xFF;
-        d    = (int) (inetAddr >> 16) & 0xFF;
+        a = (int) (inetAddr >> 40) & 0xFF;
+        b = (int) (inetAddr >> 32) & 0xFF;
+        c = (int) (inetAddr >> 24) & 0xFF;
+        d = (int) (inetAddr >> 16) & 0xFF;
         port = (int) (inetAddr & 0xFFFF);
         return String.format("%d.%d.%d.%d:%d", a, b, c, d, port);
     }
@@ -161,10 +162,10 @@ public interface IoUtil
     static String readInetAddr(byte[] inetAddr, int off)
     {
         int a, b, c, d, port;
-        a    = inetAddr[off] & 0xFF;
-        b    = inetAddr[off + 1] & 0xFF;
-        c    = inetAddr[off + 2] & 0xFF;
-        d    = inetAddr[off + 3] & 0xFF;
+        a = inetAddr[off] & 0xFF;
+        b = inetAddr[off + 1] & 0xFF;
+        c = inetAddr[off + 2] & 0xFF;
+        d = inetAddr[off + 3] & 0xFF;
         port = readUnsignedShort(inetAddr, off + 4);
         return String.format("%d.%d.%d.%d:%d", a, b, c, d, port);
     }
@@ -178,21 +179,21 @@ public interface IoUtil
     {
         if (length == 0) return new byte[] { 0 };
         int resLength = 0;
-        int result    = 0;
+        int result = 0;
         do {
-            result   |= (length & 0x7F) << 24;
+            result |= (length & 0x7F) << 24;
             length >>>= 7;
             resLength++;
             if (length > 0) {
                 result >>>= 8;
-                result   |= 0x80000000;
+                result |= 0x80000000;
             }
         }
         while (length > 0);
         byte[] res = new byte[resLength];
         for (int i = 0, move = 24; i < resLength; i++) {
-            res[i]  = (byte) (result >>> move);
-            move   -= 8;
+            res[i] = (byte) (result >>> move);
+            move -= 8;
         }
         return res;
     }
@@ -200,22 +201,22 @@ public interface IoUtil
     static byte[] variableLength(long length)
     {
         if (length == 0) return new byte[] { 0 };
-        int  resLength = 0;
-        long result    = 0;
+        int resLength = 0;
+        long result = 0;
         do {
-            result   |= (length & 0x7F) << 56;
+            result |= (length & 0x7F) << 56;
             length >>>= 7;
             resLength++;
             if (length > 0) {
                 result >>>= 8;
-                result   |= 0x80000000;
+                result |= 0x80000000;
             }
         }
         while (length > 0);
         byte[] res = new byte[resLength];
         for (int i = 0, move = 56; i < resLength; i++) {
-            res[i]  = (byte) (result >>> move);
-            move   -= 8;
+            res[i] = (byte) (result >>> move);
+            move -= 8;
         }
         return res;
     }
@@ -223,7 +224,7 @@ public interface IoUtil
     static long readVariableLongLength(InputStream is)
     {
         long length = 0;
-        int  cur;
+        int cur;
         try {
             do {
                 cur = is.read();
@@ -242,9 +243,9 @@ public interface IoUtil
     static long readVariableLongLength(ByteBuffer buf)
     {
         long length = 0;
-        int  cur;
+        int cur;
         if (buf.hasRemaining()) do {
-            cur     = buf.get();
+            cur = buf.get();
             length |= (cur & 0x7F);
             if ((cur & 0x80) != 0) length <<= 7;
         }
@@ -270,7 +271,7 @@ public interface IoUtil
 
     static int writeLong(long v, byte[] b, int off)
     {
-        b[off]     = (byte) (0xFF & (v >>> 56));
+        b[off] = (byte) (0xFF & (v >>> 56));
         b[off + 1] = (byte) (0xFF & (v >>> 48));
         b[off + 2] = (byte) (0xFF & (v >>> 40));
         b[off + 3] = (byte) (0xFF & (v >>> 32));
@@ -288,7 +289,7 @@ public interface IoUtil
 
     static int write6BLong(long v, byte[] b, int off)
     {
-        b[off]     = (byte) (0xFF & (v >> 40));
+        b[off] = (byte) (0xFF & (v >> 40));
         b[off + 1] = (byte) (0xFF & (v >> 32));
         b[off + 2] = (byte) (0xFF & (v >> 24));
         b[off + 3] = (byte) (0xFF & (v >> 16));
@@ -299,7 +300,7 @@ public interface IoUtil
 
     static int writeInt(int v, byte[] b, int off)
     {
-        b[off]     = (byte) (0xFF & (v >>> 24));
+        b[off] = (byte) (0xFF & (v >>> 24));
         b[off + 1] = (byte) (0xFF & (v >>> 16));
         b[off + 2] = (byte) (0xFF & (v >>> 8));
         b[off + 3] = (byte) (0xFF & v);
@@ -308,7 +309,7 @@ public interface IoUtil
 
     static int writeShort(int v, byte[] b, int off)
     {
-        b[off]     = (byte) (0xFF & (v >>> 8));
+        b[off] = (byte) (0xFF & (v >>> 8));
         b[off + 1] = (byte) (0xFF & v);
         return 2;
     }

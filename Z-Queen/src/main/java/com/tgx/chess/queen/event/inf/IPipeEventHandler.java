@@ -30,12 +30,19 @@ import com.lmax.disruptor.RingBuffer;
 /**
  * @author William.d.zk
  */
-public interface IPipeEventHandler<T extends IEvent, R extends IEvent>
+public interface IPipeEventHandler<T extends IEvent,
+                                   R extends IEvent>
         extends
         EventHandler<T>
 {
 
-    default <V, A> boolean tryPublish(RingBuffer<R> publisher, IOperator.Type t, V v, A a, IOperator<V, A> operator)
+    default <V,
+             A> boolean tryPublish(RingBuffer<R> publisher,
+                                   IOperator.Type t,
+                                   V v,
+                                   A a,
+                                   IOperator<V,
+                                             A> operator)
     {
         if (publisher == null) return true;
         try {
@@ -55,7 +62,13 @@ public interface IPipeEventHandler<T extends IEvent, R extends IEvent>
         return false;
     }
 
-    default <V, A> void publish(RingBuffer<R> publisher, IOperator.Type t, V v, A a, IOperator<V, A> operator)
+    default <V,
+             A> void publish(RingBuffer<R> publisher,
+                             IOperator.Type t,
+                             V v,
+                             A a,
+                             IOperator<V,
+                                       A> operator)
     {
         if (publisher == null) return;
         long sequence = publisher.next();
@@ -68,7 +81,13 @@ public interface IPipeEventHandler<T extends IEvent, R extends IEvent>
         }
     }
 
-    default <V, A> boolean tryError(RingBuffer<R> publisher, IError.Type t, V v, A a, IOperator<V, A> operator)
+    default <V,
+             A> boolean tryError(RingBuffer<R> publisher,
+                                 IError.Type t,
+                                 V v,
+                                 A a,
+                                 IOperator<V,
+                                           A> operator)
     {
         if (publisher == null) return true;
         try {
@@ -88,7 +107,13 @@ public interface IPipeEventHandler<T extends IEvent, R extends IEvent>
         return false;
     }
 
-    default <V, A> void error(RingBuffer<R> publisher, IError.Type t, V v, A a, IOperator<V, A> operator)
+    default <V,
+             A> void error(RingBuffer<R> publisher,
+                           IError.Type t,
+                           V v,
+                           A a,
+                           IOperator<V,
+                                     A> operator)
     {
         if (publisher == null) return;
         long sequence = publisher.next();

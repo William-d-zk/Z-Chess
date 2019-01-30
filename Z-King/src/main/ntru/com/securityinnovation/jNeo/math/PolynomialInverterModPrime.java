@@ -42,7 +42,7 @@ public class PolynomialInverterModPrime
     /**
      * The modulus.
      */
-    protected int   prime;
+    protected int prime;
 
     /**
      * A table of inverses mod <code>prime</code>. The table should be
@@ -66,9 +66,10 @@ public class PolynomialInverterModPrime
      *            table should not be modified after it has been passed to the
      *            constructor.
      */
-    public PolynomialInverterModPrime(int _prime, short _invModPrime[])
+    public PolynomialInverterModPrime(int _prime,
+                                      short _invModPrime[])
     {
-        prime       = _prime;
+        prime = _prime;
         invModPrime = _invModPrime;
     }
 
@@ -79,11 +80,11 @@ public class PolynomialInverterModPrime
      */
     public FullPolynomial invert(FullPolynomial a)
     {
-        int            N = a.p.length;
+        int N = a.p.length;
 
         // Initialization:
         // k=0, b(X) = 1, c(X) = 0, f(X)=a(X), g(X)=X^N-1
-        int            k = 0;
+        int k = 0;
         FullPolynomial b = new FullPolynomial(N + 1);
         FullPolynomial c = new FullPolynomial(N + 1);
         FullPolynomial f = new FullPolynomial(N + 1);
@@ -129,16 +130,16 @@ public class PolynomialInverterModPrime
             if (df < dg) {
                 // swap(f,g), swap(b,c);
                 FullPolynomial tmpP;
-                int            tmpD;
+                int tmpD;
                 tmpP = f;
-                f    = g;
-                g    = tmpP;
+                f = g;
+                g = tmpP;
                 tmpP = b;
-                b    = c;
-                c    = tmpP;
+                b = c;
+                c = tmpP;
                 tmpD = df;
-                df   = dg;
-                dg   = tmpD;
+                df = dg;
+                dg = tmpD;
             }
 
             // u = f[0] * g[0]inv mod p

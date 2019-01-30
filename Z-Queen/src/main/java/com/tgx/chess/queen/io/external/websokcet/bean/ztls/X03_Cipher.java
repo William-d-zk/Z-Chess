@@ -55,19 +55,22 @@ public class X03_Cipher
     @Override
     public int decodec(byte[] data, int pos)
     {
-        pubKeyId        = IoUtil.readInt(data, pos);
-        pos            += 4;
-        symmetricKeyId  = IoUtil.readUnsignedShort(data, pos);
-        pos            += 2;
-        cipher          = new byte[data.length - super.dataLength() - 6];
-        pos             = IoUtil.read(data, pos, cipher);
+        pubKeyId = IoUtil.readInt(data, pos);
+        pos += 4;
+        symmetricKeyId = IoUtil.readUnsignedShort(data, pos);
+        pos += 2;
+        cipher = new byte[data.length - super.dataLength() - 6];
+        pos = IoUtil.read(data, pos, cipher);
         return pos;
     }
 
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 6 + (Objects.isNull(cipher) ? 0 : cipher.length);
+        return super.dataLength()
+               + 6
+               + (Objects.isNull(cipher) ? 0
+                                         : cipher.length);
     }
 
     @Override

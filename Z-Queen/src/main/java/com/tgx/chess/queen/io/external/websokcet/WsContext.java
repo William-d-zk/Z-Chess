@@ -28,7 +28,7 @@ import java.util.Base64;
 import java.util.Random;
 
 import com.tgx.chess.king.base.util.CryptUtil;
-import com.tgx.chess.queen.event.operator.MODE;
+import com.tgx.chess.queen.event.operator.ZMode;
 import com.tgx.chess.queen.io.core.async.AioContext;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 
@@ -47,35 +47,36 @@ public class WsContext
     public final static int HS_State_ORIGIN       = 1 << 5;
     public final static int HS_State_SEC_PROTOCOL = 1 << 6;
     // public final String mSecProtocol, mSubProtocol; //not support right now
-    public final static int HS_State_SEC_VERSION  = 1 << 7;
-    public final static int HS_State_HTTP_101     = 1 << 8;
-    public final static int HS_State_SEC_ACCEPT   = 1 << 9;
-    public final static int HS_State_ACCEPT_OK    = HS_State_HTTP_101 | HS_State_SEC_ACCEPT | HS_State_UPGRADE | HS_State_CONNECTION;
-    public final static int HS_State_CLIENT_OK    = HS_State_GET
-                                                    | HS_State_HOST
-                                                    | HS_State_UPGRADE
-                                                    | HS_State_CONNECTION
-                                                    | HS_State_SEC_KEY
-                                                    | HS_State_SEC_VERSION
-                                                    | HS_State_ORIGIN;
+    public final static int HS_State_SEC_VERSION = 1 << 7;
+    public final static int HS_State_HTTP_101    = 1 << 8;
+    public final static int HS_State_SEC_ACCEPT  = 1 << 9;
+    public final static int HS_State_ACCEPT_OK   = HS_State_HTTP_101 | HS_State_SEC_ACCEPT | HS_State_UPGRADE | HS_State_CONNECTION;
+    public final static int HS_State_CLIENT_OK   = HS_State_GET
+                                                   | HS_State_HOST
+                                                   | HS_State_UPGRADE
+                                                   | HS_State_CONNECTION
+                                                   | HS_State_SEC_KEY
+                                                   | HS_State_SEC_VERSION
+                                                   | HS_State_ORIGIN;
     public final String     mSecKey, mSecAcceptExpect;
-    private final int       mVersion              = 13;
+    private final int       mVersion             = 13;
     private final int       mMaxPayloadSize;
     private int             mHandshakeState;
     private WsFrame         mCarrier;
     private WsHandshake     mHandshake;
-    private CryptUtil       mCryptUtil            = new CryptUtil();
+    private CryptUtil       mCryptUtil           = new CryptUtil();
 
-    public WsContext(ISessionOption option, MODE mode)
+    public WsContext(ISessionOption option,
+                     ZMode mode)
     {
         super(option);
         mMaxPayloadSize = option.setSNF() - 2;
-        if (mode.equals(MODE.CONSUMER) || mode.equals(MODE.CONSUMER_SSL)) {
-            Random r    = new Random(System.nanoTime());
+        if (mode.equals(ZMode.CONSUMER) || mode.equals(ZMode.CONSUMER_SSL)) {
+            Random r = new Random(System.nanoTime());
             byte[] seed = new byte[17];
             r.nextBytes(seed);
-            mSecKey          = Base64.getEncoder()
-                                     .encodeToString(mCryptUtil.sha1(seed));
+            mSecKey = Base64.getEncoder()
+                            .encodeToString(mCryptUtil.sha1(seed));
             mSecAcceptExpect = getSecAccept(mSecKey);
         }
         else mSecKey = mSecAcceptExpect = null;
@@ -145,7 +146,7 @@ public class WsContext
         if (mCarrier != null) mCarrier.reset();
         if (mHandshake != null) mHandshake.dispose();
         mHandshake = null;
-        mCarrier   = null;
+        mCarrier = null;
         super.reset();
     }
 
@@ -154,7 +155,7 @@ public class WsContext
     {
         mCryptUtil = null;
         mHandshake = null;
-        mCarrier   = null;
+        mCarrier = null;
         super.dispose();
     }
 

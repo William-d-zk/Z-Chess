@@ -29,7 +29,13 @@ import com.tgx.chess.queen.io.core.inf.IProtocol;
 import com.tgx.chess.queen.io.external.websokcet.WsContext;
 import com.tgx.chess.queen.io.external.websokcet.WsControl;
 import com.tgx.chess.queen.io.external.websokcet.WsFrame;
-import com.tgx.chess.queen.io.external.websokcet.bean.control.*;
+import com.tgx.chess.queen.io.external.websokcet.bean.control.X101_HandShake;
+import com.tgx.chess.queen.io.external.websokcet.bean.control.X102_SslHandShake;
+import com.tgx.chess.queen.io.external.websokcet.bean.control.X103_Close;
+import com.tgx.chess.queen.io.external.websokcet.bean.control.X104_Ping;
+import com.tgx.chess.queen.io.external.websokcet.bean.control.X105_Pong;
+import com.tgx.chess.queen.io.external.websokcet.bean.control.X106_Identity;
+import com.tgx.chess.queen.io.external.websokcet.bean.control.X107_Redirect;
 
 /**
  * @author William.d.zk
@@ -74,7 +80,7 @@ public class WsControlFilter
     @Override
     public WsFrame encode(WsContext context, IProtocol output)
     {
-        WsFrame   frame   = new WsFrame();
+        WsFrame frame = new WsFrame();
         WsControl control = (WsControl) output;
         _Log.info("control %s", control);
         frame.setPayload(control.getPayload());

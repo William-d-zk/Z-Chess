@@ -41,16 +41,18 @@ import com.tgx.chess.queen.io.core.inf.ISession;
 
 public class ClientWriteDispatcher
         implements
-        IPipeEventHandler<QEvent, QEvent>
+        IPipeEventHandler<QEvent,
+                          QEvent>
 {
-    private final Logger     _Log = Logger.getLogger(getClass().getName());
+    private final Logger _Log = Logger.getLogger(getClass().getName());
 
     final RingBuffer<QEvent> _Error;
     final RingBuffer<QEvent> _Encoder;
 
-    public ClientWriteDispatcher(RingBuffer<QEvent> error, RingBuffer<QEvent> encoder)
+    public ClientWriteDispatcher(RingBuffer<QEvent> error,
+                                 RingBuffer<QEvent> encoder)
     {
-        _Error   = error;
+        _Error = error;
         _Encoder = encoder;
     }
 
@@ -72,19 +74,29 @@ public class ClientWriteDispatcher
                 case LOCAL://from biz local
                 case WRITE://from LinkIo
                 case LOGIC://from read->logic
-                    Pair<ICommand[], ISession> writeContent = event.getContent();
+                    Pair<ICommand[],
+                         ISession> writeContent = event.getContent();
                     ICommand[] commands = writeContent.first();
                     ISession session = writeContent.second();
                     if (session.isValid() && Objects.nonNull(commands)) {
-                        IOperator<ICommand[], ISession>                             transferOperator = event.getEventOp();
-                        Triple<ICommand, ISession, IOperator<ICommand, ISession>>[] triples          = transferOperator.transfer(commands, session);
-                        for (Triple<ICommand, ISession, IOperator<ICommand, ISession>> triple : triples) {
+                        IOperator<ICommand[],
+                                  ISession> transferOperator = event.getEventOp();
+                        Triple<ICommand,
+                               ISession,
+                               IOperator<ICommand,
+                                         ISession>>[] triples = transferOperator.transfer(commands, session);
+                        for (Triple<ICommand,
+                                    ISession,
+                                    IOperator<ICommand,
+                                              ISession>> triple : triples)
+                        {
                             tryPublish(_Encoder, WRITE, triple.first(), session, triple.third());
                         }
                     }
                     break;
                 case WROTE://from io-wrote
-                    Pair<Integer, ISession> wroteContent = event.getContent();
+                    Pair<Integer,
+                         ISession> wroteContent = event.getContent();
                     session = wroteContent.second();
                     if (session.isValid()) {
                         tryPublish(_Encoder, WROTE, wroteContent.first(), session, event.getEventOp());

@@ -32,7 +32,8 @@ import com.tgx.chess.spring.device.model.ClientEntity;
 @Repository
 public interface ClientRepository
         extends
-        JpaRepository<ClientEntity, Long>
+        JpaRepository<ClientEntity,
+                      Long>
 {
     ClientEntity findByAuth(String auth);
 }

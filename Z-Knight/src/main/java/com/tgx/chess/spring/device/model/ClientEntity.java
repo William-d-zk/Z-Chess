@@ -24,7 +24,7 @@
 
 package com.tgx.chess.spring.device.model;
 
-import com.tgx.chess.spring.jpa.model.AuditModel;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -38,7 +38,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
-import java.util.Set;
+
+import com.tgx.chess.spring.jpa.model.AuditModel;
 
 @Entity(name = "Client")
 @Table(schema = "\"tgx-z-chess-device\"", indexes = { @Index(name = "client_auth", columnList = "auth") })
@@ -51,12 +52,12 @@ public class ClientEntity
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private int               id;
+    private int    id;
     @Column(length = 64)
-    private String            auth;
+    private String auth;
 
     @Column(length = 16)
-    private String            salt;
+    private String salt;
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(schema = "\"tgx-z-chess-device\"",

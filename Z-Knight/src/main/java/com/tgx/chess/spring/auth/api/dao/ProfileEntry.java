@@ -33,8 +33,8 @@ public class ProfileEntry
 
     private static final long serialVersionUID = 5409265243979234754L;
 
-    private String            name;
-    private String            avatar;
+    private String name;
+    private String avatar;
 
     public String getName()
     {

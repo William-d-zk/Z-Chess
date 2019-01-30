@@ -37,7 +37,7 @@ public class ItemEntity
 {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private long   id;
+    private long id;
 
     private double price;
     @Column(length = 3, nullable = false)

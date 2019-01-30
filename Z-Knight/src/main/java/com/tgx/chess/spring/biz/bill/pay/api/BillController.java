@@ -46,15 +46,16 @@ import com.tgx.chess.spring.biz.bill.pay.service.ItemsService;
 @RestController
 public class BillController
 {
-    private final Logger       _Log = Logger.getLogger(getClass().getName());
+    private final Logger _Log = Logger.getLogger(getClass().getName());
 
     private final BillService  _BillService;
     private final ItemsService _ItemsService;
 
     @Autowired
-    public BillController(BillService billService, ItemsService itemsService)
+    public BillController(BillService billService,
+                          ItemsService itemsService)
     {
-        _BillService  = billService;
+        _BillService = billService;
         _ItemsService = itemsService;
     }
 
@@ -100,7 +101,8 @@ public class BillController
     {
         BillEntity billEntity = _BillService.findByBill(bill)
                                             .orElseThrow(() -> new ZApiExecption(String.format("bill %s not exist!", bill)));
-        billEntity.setResult(result ? Result.SUCCESS.name() : Result.FAILED.name());
+        billEntity.setResult(result ? Result.SUCCESS.name()
+                                    : Result.FAILED.name());
         billEntity.setOpenId(openId);
         billEntity = _BillService.saveBill(billEntity);
         BillEntry billEntry = new BillEntry();

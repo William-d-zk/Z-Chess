@@ -46,20 +46,20 @@ public class AioContext
      * 用于写出的 ByteBuffer 属于4096及其倍数的对齐块，应与 SocketOption 中系统写出 Buffer 的大小进行调整，存在 一次性投递多个 ICommand 对象的可能性也是存在的 AioPacket 中的 ByteBuffer 仅用于串行化
      * ICommand 对象
      */
-    private ByteBuffer          mWrBuf;
+    private ByteBuffer mWrBuf;
 
     /*
      * 用于缓存 IPoS 分块带入的 RecvBuffer 内容 由于 AioWorker 中 channel 的 read_buffer - protocol_buffer - 都以 SocketOption 设定为准，所以不存在 IPoS 带入一个包含多个分页的协议
      * 内容的情况
      */
-    private ByteBuffer          mRvBuf;
+    private ByteBuffer mRvBuf;
 
-    private boolean             mInitFromHandshake;
+    private boolean mInitFromHandshake;
 
-    private long                mClientStartTime;
-    private long                mServerArrivedTime;
-    private long                mServerResponseTime;
-    private long                mClientArrivedTime;
+    private long mClientStartTime;
+    private long mServerArrivedTime;
+    private long mServerResponseTime;
+    private long mClientArrivedTime;
 
     public AioContext(ISessionOption option)
     {
@@ -77,7 +77,7 @@ public class AioContext
         }
         _ChannelState.set(ctlOf(SESSION_IDLE, 0));
         mDecodingPosition = -1;
-        mLackData         = 1;
+        mLackData = 1;
     }
 
     @Override
@@ -115,7 +115,7 @@ public class AioContext
     public int lackLength(int length, int target)
     {
         mDecodingPosition += length;
-        mLackData          = target - mDecodingPosition;
+        mLackData = target - mDecodingPosition;
         return mLackData;
     }
 
@@ -135,7 +135,7 @@ public class AioContext
     public void finish()
     {
         mDecodingPosition = -1;
-        mLackData         = 1;
+        mLackData = 1;
     }
 
     @Override

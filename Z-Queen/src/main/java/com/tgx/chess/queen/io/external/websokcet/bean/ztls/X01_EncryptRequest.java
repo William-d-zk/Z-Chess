@@ -52,8 +52,8 @@ public class X01_EncryptRequest
     public int decodec(byte[] data, int pos)
     {
         if (isEncrypt()) {
-            pubKeyId  = IoUtil.readInt(data, pos);
-            pos      += 4;
+            pubKeyId = IoUtil.readInt(data, pos);
+            pos += 4;
         }
         return pos;
     }
@@ -68,7 +68,9 @@ public class X01_EncryptRequest
     @Override
     public int dataLength()
     {
-        return super.dataLength() + (isEncrypt() ? 4 : 0);
+        return super.dataLength()
+               + (isEncrypt() ? 4
+                              : 0);
     }
 
     @Override
