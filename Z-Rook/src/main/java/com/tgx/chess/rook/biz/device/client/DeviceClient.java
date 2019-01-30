@@ -25,9 +25,9 @@
 package com.tgx.chess.rook.biz.device.client;
 
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
-import static com.tgx.chess.queen.event.operator.MODE.CONSUMER;
-import static com.tgx.chess.queen.event.operator.OperatorHolder.CONNECTED_OPERATOR;
-import static com.tgx.chess.queen.event.operator.OperatorHolder.CONSUMER_TRANSFER;
+import static com.tgx.chess.queen.event.operator.ZMode.CONSUMER;
+import static com.tgx.chess.queen.event.operator.ZOperatorHolder.CONNECTED_OPERATOR;
+import static com.tgx.chess.queen.event.operator.ZOperatorHolder.CONSUMER_TRANSFER;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -55,7 +55,7 @@ import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.king.config.Config;
 import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.event.operator.MODE;
+import com.tgx.chess.queen.event.operator.ZMode;
 import com.tgx.chess.queen.io.core.async.AioCreator;
 import com.tgx.chess.queen.io.core.async.AioSession;
 import com.tgx.chess.queen.io.core.executor.ClientCore;
@@ -139,7 +139,7 @@ public class DeviceClient
             }
 
             @Override
-            public IContext createContext(ISessionOption option, MODE mode)
+            public IContext createContext(ISessionOption option, ZMode mode)
             {
                 return new ZContext(option, mode);
             }
@@ -189,7 +189,7 @@ public class DeviceClient
             }
 
             @Override
-            public MODE getMode()
+            public ZMode getMode()
             {
                 return CONSUMER;
             }

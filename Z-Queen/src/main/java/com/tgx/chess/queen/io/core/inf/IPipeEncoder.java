@@ -32,7 +32,7 @@ public interface IPipeEncoder
     default <C extends IContext> IProtocol filterWrite(IProtocol output, IFilterChain<C> filterChain, C context)
     {
         IFilter.ResultType resultType;
-        IFilterChain<C>    previousFilter = filterChain.getChainTail();
+        IFilterChain<C> previousFilter = filterChain.getChainTail();
         while (previousFilter != null) {
             resultType = previousFilter.preEncode(context, output);
             switch (resultType)

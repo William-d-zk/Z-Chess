@@ -71,7 +71,7 @@ public interface ISessionManager
     //
     //    Iterator<ISession> iterator();
     //
-    //    boolean checkMode(IConnectMode.MODE... modes);
+    //    boolean checkMode(IConnectMode.ZMode... modes);
 
     //-2bit- 类型 10 server 11 cluster 01 internal 00 client
     int CLIENT_SLOT   = 0;

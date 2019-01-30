@@ -46,31 +46,31 @@ import com.securityinnovation.jNeo.math.PolynomialInverterModPowerOfPrime;
  */
 public class KeyParams
 {
-    public final OID                OIDEnum;
-    public final byte               OIDBytes[];
-    public final short              N;
-    public final short              p;
-    public final short              q;
-    public final short              df;
-    public final short              dg;
-    public final short              lLen;
-    public final short              db;
-    public final short              maxMsgLenBytes;
-    public final short              bufferLenBits;
-    public final short              bufferLenTrits;
-    public final short              dm0;
+    public final OID   OIDEnum;
+    public final byte  OIDBytes[];
+    public final short N;
+    public final short p;
+    public final short q;
+    public final short df;
+    public final short dg;
+    public final short lLen;
+    public final short db;
+    public final short maxMsgLenBytes;
+    public final short bufferLenBits;
+    public final short bufferLenTrits;
+    public final short dm0;
 
     // Mask generation params, used in the generation of mask from R mod 4.
-    public final DigestAlgorithm    mgfHash;
+    public final DigestAlgorithm mgfHash;
 
     // BPGM3 params
-    public final DigestAlgorithm    igfHash;
-    public final short              dr;
-    public final short              c;
-    public final short              minCallsR;
-    public final short              minCallsMask;
+    public final DigestAlgorithm igfHash;
+    public final short           dr;
+    public final short           c;
+    public final short           minCallsR;
+    public final short           minCallsMask;
 
-    public final int                pkLen;
+    public final int pkLen;
 
     // The code to use to find the inverse of a polynomial.
     public final PolynomialInverter polyInverter;
@@ -132,30 +132,30 @@ public class KeyParams
                       int _minCallsMask,
                       int _pkLen)
     {
-        OIDEnum        = _oidEnum;
-        OIDBytes       = OIDEnum.getOIDBytes();
-        N              = (short) _N;
-        p              = (short) _p;
-        q              = (short) _q;
-        df             = (short) _df;
-        dg             = (short) _dg;
-        lLen           = (short) _lLen;
-        db             = (short) _db;
+        OIDEnum = _oidEnum;
+        OIDBytes = OIDEnum.getOIDBytes();
+        N = (short) _N;
+        p = (short) _p;
+        q = (short) _q;
+        df = (short) _df;
+        dg = (short) _dg;
+        lLen = (short) _lLen;
+        db = (short) _db;
         maxMsgLenBytes = (short) _maxMsgLenBytes;
-        bufferLenBits  = (short) _bufferLenBits;
+        bufferLenBits = (short) _bufferLenBits;
         bufferLenTrits = (short) _bufferLenTrits;
-        dm0            = (short) _dm0;
-        mgfHash        = _mgfHash;
-        igfHash        = _igfHash;
-        dr             = (short) _dr;
-        c              = (short) _c;
-        minCallsR      = (short) _minCallsR;
-        minCallsMask   = (short) _minCallsMask;
-        pkLen          = _pkLen;
+        dm0 = (short) _dm0;
+        mgfHash = _mgfHash;
+        igfHash = _igfHash;
+        dr = (short) _dr;
+        c = (short) _c;
+        minCallsR = (short) _minCallsR;
+        minCallsMask = (short) _minCallsMask;
+        pkLen = _pkLen;
 
         // This should be derived from q. But for now all parameter sets use
         // q = 2048.
-        polyInverter   = inverterMod2048;
+        polyInverter = inverterMod2048;
     }
 
     // An object to find the inverse of a polynomial mod 2048
@@ -165,12 +165,12 @@ public class KeyParams
     private static PolynomialInverter inverterMod2048 = new PolynomialInverterModPowerOfPrime(2048, 2, invMod2);
 
     // The master list of parameter sets.
-    private static KeyParams          paramSets[];
-    private static byte               numParamSets    = 0;
+    private static KeyParams paramSets[];
+    private static byte      numParamSets = 0;
 
     private static void initParamSets()
     {
-        paramSets                 = new KeyParams[12];
+        paramSets = new KeyParams[12];
         paramSets[numParamSets++] = new KeyParams(OID.ees401ep1,
                                                   401,
                                                   3,

@@ -41,7 +41,8 @@ import com.tgx.chess.queen.io.core.inf.ISession;
 
 public class WriteDispatcher
         implements
-        IPipeEventHandler<QEvent, QEvent>
+        IPipeEventHandler<QEvent,
+                          QEvent>
 {
     private final RingBuffer<QEvent>[] _Encoders;
     private final int                  _Mask;
@@ -51,7 +52,7 @@ public class WriteDispatcher
     public WriteDispatcher(RingBuffer<QEvent>... workers)
     {
         _Encoders = workers;
-        _Mask     = _Encoders.length - 1;
+        _Mask = _Encoders.length - 1;
     }
 
     private RingBuffer<QEvent> dispatchEncoder(long seq)
@@ -73,19 +74,29 @@ public class WriteDispatcher
             case LOCAL://from biz local
             case WRITE://from LinkIo/Cluster
             case LOGIC://from read->logic
-                Pair<ICommand[], ISession> writeContent = event.getContent();
+                Pair<ICommand[],
+                     ISession> writeContent = event.getContent();
                 ISession session = writeContent.second();
                 ICommand[] commands = writeContent.first();
                 if (session.isValid() && Objects.nonNull(commands)) {
-                    IOperator<ICommand[], ISession>                             transferOperator = event.getEventOp();
-                    Triple<ICommand, ISession, IOperator<ICommand, ISession>>[] triples          = transferOperator.transfer(commands, session);
-                    for (Triple<ICommand, ISession, IOperator<ICommand, ISession>> triple : triples) {
+                    IOperator<ICommand[],
+                              ISession> transferOperator = event.getEventOp();
+                    Triple<ICommand,
+                           ISession,
+                           IOperator<ICommand,
+                                     ISession>>[] triples = transferOperator.transfer(commands, session);
+                    for (Triple<ICommand,
+                                ISession,
+                                IOperator<ICommand,
+                                          ISession>> triple : triples)
+                    {
                         tryPublish(dispatchEncoder(session.getHashKey()), WRITE, triple.first(), session, triple.third());
                     }
                 }
                 break;
             case WROTE://from io-wrote
-                Pair<Integer, ISession> wroteContent = event.getContent();
+                Pair<Integer,
+                     ISession> wroteContent = event.getContent();
                 session = wroteContent.second();
                 if (session.isValid()) {
                     tryPublish(dispatchEncoder(session.getHashKey()), WROTE, wroteContent.first(), session, event.getEventOp());

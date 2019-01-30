@@ -50,7 +50,8 @@ public class ZTlsFilter<C extends AioContext>
     public ResultType preEncode(C context, IProtocol output)
     {
         if (Objects.isNull(context) || Objects.isNull(output)) return ResultType.ERROR;
-        ResultType resultType = context.isOutCrypt() ? ResultType.NEXT_STEP : ResultType.IGNORE;
+        ResultType resultType = context.isOutCrypt() ? ResultType.NEXT_STEP
+                                                     : ResultType.IGNORE;
         /* plain -> cipher X04/X05 encoded in command-zfilter */
         if (!context.isOutCrypt() && context.needUpdateKeyOut()) {
             _Log.info("X04/X05 done,change state from plain to cipher in next encoding conversion");
@@ -87,7 +88,8 @@ public class ZTlsFilter<C extends AioContext>
                    .reset();
             context.cryptIn();
         }
-        return context.isInCrypt() && !input.idempotent(getIdempotentBit()) ? ResultType.NEXT_STEP : ResultType.IGNORE;
+        return context.isInCrypt() && !input.idempotent(getIdempotentBit()) ? ResultType.NEXT_STEP
+                                                                            : ResultType.IGNORE;
     }
 
     @Override

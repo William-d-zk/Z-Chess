@@ -23,14 +23,14 @@
  */
 package com.tgx.chess.queen.io.core.inf;
 
-import com.tgx.chess.queen.event.operator.MODE;
+import com.tgx.chess.queen.event.operator.ZMode;
 
 /**
  * @author William.d.zk
  */
 public interface IDestine
 {
-    default RESULT trial(ICommand cmd, MODE mode)
+    default RESULT trial(ICommand cmd, ZMode mode)
     {
         return RESULT.IGNORE;
     }

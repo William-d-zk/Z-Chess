@@ -67,7 +67,13 @@ public class IGF2
     /**
      * Create an IGF driven by an MGF1 InputStream.
      */
-    public IGF2(int _maxValue, int _bitsPerIndex, DigestAlgorithm hashAlg, int _minNumRuns, byte seed[], int seedoff, int seedLen)
+    public IGF2(int _maxValue,
+                int _bitsPerIndex,
+                DigestAlgorithm hashAlg,
+                int _minNumRuns,
+                byte seed[],
+                int seedoff,
+                int seedLen)
     {
         MGF1 mgf = new MGF1(hashAlg, _minNumRuns, true, seed, seedoff, seedLen);
         init(_maxValue, _bitsPerIndex, mgf);
@@ -76,7 +82,9 @@ public class IGF2
     /**
      * Create an IGF driven by an externally-supplied InputStream.
      */
-    public IGF2(int _maxValue, int _bitsPerIndex, InputStream _source)
+    public IGF2(int _maxValue,
+                int _bitsPerIndex,
+                InputStream _source)
     {
         init(_maxValue, _bitsPerIndex, _source);
     }
@@ -86,11 +94,11 @@ public class IGF2
      */
     private void init(int _maxValue, int _bitsPerIndex, InputStream _source)
     {
-        maxValue        = (short) _maxValue;
-        bitsPerIndex    = (short) _bitsPerIndex;
-        leftoverBits    = 0;
+        maxValue = (short) _maxValue;
+        bitsPerIndex = (short) _bitsPerIndex;
+        leftoverBits = 0;
         numLeftoverBits = 0;
-        source          = _source;
+        source = _source;
         int modulus = (1 << bitsPerIndex);
         cutoff = modulus - (modulus % maxValue);
     }
@@ -118,16 +126,16 @@ public class IGF2
             while (true) {
                 // Make sure leftoverBits has at least bitsPerIndex in it.
                 while (numLeftoverBits < bitsPerIndex) {
-                    leftoverBits    <<= 8;
-                    leftoverBits     |= (0xff & source.read());
-                    numLeftoverBits  += 8;
+                    leftoverBits <<= 8;
+                    leftoverBits |= (0xff & source.read());
+                    numLeftoverBits += 8;
                 }
 
                 // Pull off bitsPerIndex from leftoverBits. Store in ret.
                 int shift = numLeftoverBits - bitsPerIndex;
-                ret              = 0xffff & (leftoverBits >> shift);
-                numLeftoverBits  = shift;
-                leftoverBits    &= ((1 << numLeftoverBits) - 1);
+                ret = 0xffff & (leftoverBits >> shift);
+                numLeftoverBits = shift;
+                leftoverBits &= ((1 << numLeftoverBits) - 1);
 
                 // If the value is below the cutoff, use it
                 if (ret < cutoff) return ret % maxValue;

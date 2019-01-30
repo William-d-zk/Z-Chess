@@ -27,7 +27,16 @@ package com.tgx.chess.king.config;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringReader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.Objects;
+import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -59,11 +68,14 @@ public class Config
     private final static String                      ROOT_OWNER             = "Environment";
     private final static String                      PACKAGE_PREFIX_PATTERN = PACKAGE_PREFIX_NAME.replaceAll("\\.", "\\\\.");
     private final static Set<String>                 KEY_SET                = new ConcurrentSkipListSet<>();
-    private final static List<Pair<Pattern, String>> KEY_PATTERNS           = new ArrayList<>();
-    private final Map<String, ? super Object>        _ValueStoreMap         = new TreeMap<>();
+    private final static List<Pair<Pattern,
+                                   String>>          KEY_PATTERNS           = new ArrayList<>();
+    private final Map<String,
+                      ? super Object>                _ValueStoreMap         = new TreeMap<>();
     private final String                             _ConfigParent;
     private final String                             _ConfigOwner;
-    private final Map<String, String>                _ConfigExternal;
+    private final Map<String,
+                      String>                        _ConfigExternal;
 
     public static Pattern getKeyPatternExactly(String group, String parent, String owner, String key)
     {
@@ -92,31 +104,50 @@ public class Config
 
     private static Pattern getKeyPattern(String group, String parent, String owner, String extension, String key, int revision)
     {
-        group     = Objects.isNull(group) ? "((\\w+\\.)+)"
-                                          : "(" + (group.matches(".*\\.$") ? group.replaceAll("\\.", "\\\\.") : group.replaceAll("\\.", "\\\\.") + "\\.") + ")";
-        parent    = Objects.isNull(parent) ? "((\\w+\\.)*)"
-                                           : "(" + (parent.matches(".*\\.$") ? parent.replaceAll("\\.", "\\\\.") : parent.replaceAll("\\.", "\\\\.") + "\\.") + ")";
+        group = Objects.isNull(group) ? "((\\w+\\.)+)"
+                                      : "("
+                                        + (group.matches(".*\\.$") ? group.replaceAll("\\.", "\\\\.")
+                                                                   : group.replaceAll("\\.", "\\\\.") + "\\.")
+                                        + ")";
+        parent = Objects.isNull(parent) ? "((\\w+\\.)*)"
+                                        : "("
+                                          + (parent.matches(".*\\.$") ? parent.replaceAll("\\.", "\\\\.")
+                                                                      : parent.replaceAll("\\.", "\\\\.") + "\\.")
+                                          + ")";
 
-        owner     = Objects.isNull(owner) ? "((\\w+)\\.)" : "(" + (owner.matches("\\w+\\.$") ? owner.replace(".", "\\.") : owner + "\\.") + ")";
+        owner = Objects.isNull(owner) ? "((\\w+)\\.)"
+                                      : "("
+                                        + (owner.matches("\\w+\\.$") ? owner.replace(".", "\\.")
+                                                                     : owner + "\\.")
+                                        + ")";
         extension = Objects.isNull(extension) ? "((\\w+\\.)*)"
                                               : "("
-                                                + (extension.matches(".*\\.$") ? extension.replaceAll("\\.", "\\\\.") : extension.replaceAll("\\.", "\\\\.") + "\\.")
+                                                + (extension.matches(".*\\.$") ? extension.replaceAll("\\.", "\\\\.")
+                                                                               : extension.replaceAll("\\.", "\\\\.") + "\\.")
                                                 + ")";
-        key       = Objects.isNull(key) ? "(\\w+)" : "(" + key + ")";
-        String revisionStr = revision < 0 ? "(\\.\\d+)?" : "\\." + Integer.toString(revision);
-        String pattern     = "^(" + PACKAGE_PREFIX_PATTERN + "\\.)" + group + parent + owner + extension + key + revisionStr;
+        key = Objects.isNull(key) ? "(\\w+)"
+                                  : "(" + key + ")";
+        String revisionStr = revision < 0 ? "(\\.\\d+)?"
+                                          : "\\." + Integer.toString(revision);
+        String pattern = "^(" + PACKAGE_PREFIX_PATTERN + "\\.)" + group + parent + owner + extension + key + revisionStr;
         return Pattern.compile(pattern);
     }
 
-    private Config(String owner, String parent, Map<String, String> external)
+    private Config(String owner,
+                   String parent,
+                   Map<String,
+                       String> external)
     {
-        _ConfigOwner    = owner;
-        _ConfigParent   = Objects.isNull(parent) || "".equals(parent) ? null : parent;
+        _ConfigOwner = owner;
+        _ConfigParent = Objects.isNull(parent) || "".equals(parent) ? null
+                                                                    : parent;
         _ConfigExternal = external;
         load();
     }
 
-    public Config(String parent, Map<String, String> external)
+    public Config(String parent,
+                  Map<String,
+                      String> external)
     {
         this(ROOT_OWNER, parent, external);
     }
@@ -148,7 +179,7 @@ public class Config
         LOG.info("service: " + parent + " Config name " + resourceBundle.getBaseBundleName());
         for (Enumeration<String> e = resourceBundle.getKeys(); e.hasMoreElements();) {
             String element = e.nextElement();
-            Object value   = ConfigReader.readObject(resourceBundle, element);
+            Object value = ConfigReader.readObject(resourceBundle, element);
             KEY_PATTERNS.stream()
                         .filter(pair ->
                         {
@@ -171,7 +202,8 @@ public class Config
         Objects.requireNonNull(owner);
         ResourceBundle resourceBundle = null;
         try {
-            resourceBundle = ResourceBundle.getBundle(Objects.isNull(parent) ? owner : parent.replaceAll("\\.", "_") + "/" + owner);
+            resourceBundle = ResourceBundle.getBundle(Objects.isNull(parent) ? owner
+                                                                             : parent.replaceAll("\\.", "_") + "/" + owner);
             LOG.debug("load resource " + owner + " parent: " + parent);
         }
         catch (MissingResourceException e) {

@@ -75,9 +75,9 @@ import com.tgx.chess.queen.io.external.zfilter.ZCommandFilter.CommandFactory;
 import com.tgx.chess.queen.io.external.zfilter.ZTlsFilter;
 
 @SuppressWarnings("unchecked")
-public class OperatorHolder
+public class ZOperatorHolder
 {
-    private static Logger LOG = Logger.getLogger(OperatorHolder.class.getName());
+    private static Logger LOG = Logger.getLogger(ZOperatorHolder.class.getName());
 
     private static IOperator<Void,
                              ISession>                                      close_operator;
@@ -317,7 +317,7 @@ public class OperatorHolder
         };
         consumer_encoder = new IEncoder()
         {
-            final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(MODE.CONSUMER);
+            final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(ZMode.CONSUMER);
             {
                 IFilterChain<WsContext> header = new ZTlsFilter();
                 handshakeFilter.linkAfter(header);
@@ -356,7 +356,7 @@ public class OperatorHolder
 
         server_encoder = new IEncoder()
         {
-            final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(MODE.SERVER);
+            final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(ZMode.SERVER);
             {
                 IFilterChain<WsContext> header = new ZTlsFilter();
                 handshakeFilter.linkAfter(header);
@@ -459,7 +459,7 @@ public class OperatorHolder
         server_decoder = new IDecoder()
         {
 
-            final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(MODE.SERVER);
+            final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(ZMode.SERVER);
 
             {
                 IFilterChain<WsContext> header = new ZTlsFilter();
@@ -509,7 +509,7 @@ public class OperatorHolder
         };
         consumer_decoder = new IDecoder()
         {
-            final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(MODE.CONSUMER);
+            final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(ZMode.CONSUMER);
 
             {
                 IFilterChain<WsContext> header = new ZTlsFilter();

@@ -24,9 +24,9 @@
 
 package com.tgx.chess.queen.io.core.inf;
 
-import com.tgx.chess.queen.event.operator.MODE;
+import com.tgx.chess.queen.event.operator.ZMode;
 
 public interface IConnectMode
 {
-    MODE getMode();
+    ZMode getMode();
 }

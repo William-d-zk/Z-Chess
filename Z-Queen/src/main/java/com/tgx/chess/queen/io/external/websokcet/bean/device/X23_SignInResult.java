@@ -57,16 +57,19 @@ public class X23_SignInResult
     @Override
     public int decodec(byte[] data, int pos)
     {
-        success      = data[pos++] > 0;
-        invalidTime  = IoUtil.readLong(data, pos);
-        pos         += 8;
+        success = data[pos++] > 0;
+        invalidTime = IoUtil.readLong(data, pos);
+        pos += 8;
         return pos;
     }
 
     @Override
     public int encodec(byte[] data, int pos)
     {
-        pos += IoUtil.writeByte(isSuccess() ? 1 : 0, data, pos);
+        pos += IoUtil.writeByte(isSuccess() ? 1
+                                            : 0,
+                                data,
+                                pos);
         pos += IoUtil.writeLong(invalidTime, data, pos);
         return pos;
     }

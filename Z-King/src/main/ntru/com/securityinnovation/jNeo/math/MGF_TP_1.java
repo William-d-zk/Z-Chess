@@ -49,30 +49,30 @@ public class MGF_TP_1
     public static FullPolynomial genTrinomial(int N, InputStream gen)
     {
         try {
-            FullPolynomial p     = new FullPolynomial(N);
+            FullPolynomial p = new FullPolynomial(N);
 
-            int            limit = 5 * (N / 5);
-            int            i     = 0;
+            int limit = 5 * (N / 5);
+            int i = 0;
             while (i < limit) {
                 int o = gen.read();
                 if (o >= 243) continue;
 
                 int b;
-                b        = (o % 3);
+                b = (o % 3);
                 p.p[i++] = (byte) b;
-                o        = (o - b) / 3;
-                b        = (o % 3);
+                o = (o - b) / 3;
+                b = (o % 3);
                 p.p[i++] = (byte) b;
-                o        = (o - b) / 3;
-                b        = (o % 3);
+                o = (o - b) / 3;
+                b = (o % 3);
                 p.p[i++] = (byte) b;
-                o        = (o - b) / 3;
-                b        = (o % 3);
+                o = (o - b) / 3;
+                b = (o % 3);
                 p.p[i++] = (byte) b;
-                o        = (o - b) / 3;
-                b        = (o % 3);
+                o = (o - b) / 3;
+                b = (o % 3);
                 p.p[i++] = (byte) b;
-                o        = (o - b) / 3;
+                o = (o - b) / 3;
             }
 
             while (i < N) {
@@ -80,25 +80,25 @@ public class MGF_TP_1
                 if (o >= 243) continue;
 
                 int b;
-                b        = (o % 3);
+                b = (o % 3);
                 p.p[i++] = (byte) b;
-                o        = (o - b) / 3;
+                o = (o - b) / 3;
                 if (i == N) break;
-                b        = (o % 3);
+                b = (o % 3);
                 p.p[i++] = (byte) b;
-                o        = (o - b) / 3;
+                o = (o - b) / 3;
                 if (i == N) break;
-                b        = (o % 3);
+                b = (o % 3);
                 p.p[i++] = (byte) b;
-                o        = (o - b) / 3;
+                o = (o - b) / 3;
                 if (i == N) break;
-                b        = (o % 3);
+                b = (o % 3);
                 p.p[i++] = (byte) b;
-                o        = (o - b) / 3;
+                o = (o - b) / 3;
                 if (i == N) break;
-                b        = (o % 3);
+                b = (o % 3);
                 p.p[i++] = (byte) b;
-                o        = (o - b) / 3;
+                o = (o - b) / 3;
                 if (i == N) break;
             }
 

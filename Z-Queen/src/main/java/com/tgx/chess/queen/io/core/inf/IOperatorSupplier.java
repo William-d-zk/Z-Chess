@@ -26,10 +26,14 @@ package com.tgx.chess.queen.io.core.inf;
 
 import com.tgx.chess.queen.event.inf.IOperator;
 
-public interface IOperatorSupplier<V, T, A>
+public interface IOperatorSupplier<V,
+                                   T,
+                                   A>
 {
-    IOperator<V, A> getInOperator();
+    IOperator<V,
+              A> getInOperator();
 
-    IOperator<T, A> getOutOperator();
+    IOperator<T,
+              A> getOutOperator();
 
 }

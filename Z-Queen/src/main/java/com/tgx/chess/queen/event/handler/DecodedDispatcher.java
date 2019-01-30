@@ -30,7 +30,7 @@ import java.util.Objects;
 
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.king.base.util.Pair;
-import com.tgx.chess.queen.event.operator.MODE;
+import com.tgx.chess.queen.event.operator.ZMode;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.ISession;
@@ -40,7 +40,10 @@ public class DecodedDispatcher
         BaseDispatcher
 {
 
-    public DecodedDispatcher(RingBuffer<QEvent> link, RingBuffer<QEvent> cluster, RingBuffer<QEvent> error, RingBuffer<QEvent>[] logic)
+    public DecodedDispatcher(RingBuffer<QEvent> link,
+                             RingBuffer<QEvent> cluster,
+                             RingBuffer<QEvent> error,
+                             RingBuffer<QEvent>[] logic)
     {
         super(link, cluster, error, logic);
     }
@@ -56,7 +59,8 @@ public class DecodedDispatcher
                     case TRANSFER:
                     case LOGIC:
                     case DISPATCH:
-                        Pair<ICommand[], ISession> dispatchContent = event.getContent();
+                        Pair<ICommand[],
+                             ISession> dispatchContent = event.getContent();
                         ISession session = dispatchContent.second();
                         ICommand[] commands = dispatchContent.first();
                         if (Objects.nonNull(commands)) {
@@ -69,7 +73,8 @@ public class DecodedDispatcher
                 break;
             default:
                 //错误处理
-                Pair<Throwable, ISession> dispatchError = event.getContent();
+                Pair<Throwable,
+                     ISession> dispatchError = event.getContent();
                 ISession session = dispatchError.second();
                 error(_Error, event.getErrorType(), dispatchError.first(), session, event.getEventOp());
                 break;
@@ -78,7 +83,7 @@ public class DecodedDispatcher
         event.reset();
     }
 
-    private void dispatch(MODE mode, ICommand cmd, ISession session)
+    private void dispatch(ZMode mode, ICommand cmd, ISession session)
     {
         switch (mode)
         {

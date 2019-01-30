@@ -49,13 +49,14 @@ public class RegisterService
     }
 
     @PostMapping(value = "/api/register")
-    public @ResponseBody AuthEntry register(@RequestBody Map<String, String> param)
+    public @ResponseBody AuthEntry register(@RequestBody Map<String,
+                                                             String> param)
     {
         System.out.println(param);
-        String                  username = param.get("name");
-        String                  email    = param.get("email");
-        String                  password = param.get("passwd");
-        Optional<AccountEntity> test     = _AccountService.findByEmail(email);
+        String username = param.get("name");
+        String email = param.get("email");
+        String password = param.get("passwd");
+        Optional<AccountEntity> test = _AccountService.findByEmail(email);
         if (test.isPresent()) {
             throw new IllegalArgumentException("email exist");
         }

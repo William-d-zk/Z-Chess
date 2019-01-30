@@ -41,9 +41,12 @@ public class AioPacket
     private boolean          isNoAbandon;
     private int              mIdempotentBit;
 
-    public AioPacket(int size, boolean direct)
+    public AioPacket(int size,
+                     boolean direct)
     {
-        _Buf = size > 0 ? (direct ? ByteBuffer.allocateDirect(size) : ByteBuffer.allocate(size)) : null;
+        _Buf = size > 0 ? (direct ? ByteBuffer.allocateDirect(size)
+                                  : ByteBuffer.allocate(size))
+                        : null;
     }
 
     public AioPacket(ByteBuffer buf)

@@ -44,7 +44,8 @@ public class X982Drbg
     /**
      * Constructor that takes a seed to start the RNG
      */
-    public X982Drbg(DigestAlgorithm hashAlgorithm, byte[] _seed)
+    public X982Drbg(DigestAlgorithm hashAlgorithm,
+                    byte[] _seed)
     {
         mHash = hashAlgorithm.newInstance();
         seed(_seed);
@@ -135,7 +136,7 @@ public class X982Drbg
         ctr = 1;
 
         // Set V = _seed
-        V   = new byte[_seed.length];
+        V = new byte[_seed.length];
         System.arraycopy(_seed, 0, V, 0, _seed.length);
 
         // Preallocate a temp buffer large enough to hold V, and
@@ -179,9 +180,9 @@ public class X982Drbg
         // Allocate a buffer to hold the new V.
         // Do as many full blocks as we can directly into newV
         // then do a final update into tmp and extract a partial block.
-        int    hashLen    = mHash.getDigestLen();
-        byte[] newV       = new byte[_seed.length];
-        int    newVOffset = 0;
+        int hashLen = mHash.getDigestLen();
+        byte[] newV = new byte[_seed.length];
+        int newVOffset = 0;
         while (newVOffset + hashLen <= newV.length) {
             mHash.digest(tmp, 0, tmp.length, newV, newVOffset);
             plusEquals(tmp, 1);
@@ -272,7 +273,7 @@ public class X982Drbg
         while (len > hashLen) {
             mHash.digest(Vtmp, 0, V.length, out, offset);
             offset += hashLen;
-            len    -= hashLen;
+            len -= hashLen;
             plusEquals(Vtmp, 1);
         }
 
@@ -289,11 +290,11 @@ public class X982Drbg
     void plusEquals(byte accum[], byte in[], int offset, int len)
     {
         int carry = 0;
-        int i     = len - 1, j = accum.length - 1;
+        int i = len - 1, j = accum.length - 1;
         while ((i >= 0) && (j >= 0)) {
-            carry      = (0xff & accum[j]) + (0xff & in[i]) + carry;
-            accum[j]   = (byte) carry;
-            carry    >>= 8;
+            carry = (0xff & accum[j]) + (0xff & in[i]) + carry;
+            accum[j] = (byte) carry;
+            carry >>= 8;
             j--;
             i--;
         }
@@ -306,11 +307,11 @@ public class X982Drbg
     void plusEquals(byte accum[], int x)
     {
         int carry = 0;
-        int i     = 0, j = accum.length - 1;
+        int i = 0, j = accum.length - 1;
         while ((i < 4) && (j >= 0)) {
-            carry      = (0xff & accum[j]) + (0xff & x) + carry;
-            accum[j]   = (byte) carry;
-            carry    >>= 8;
+            carry = (0xff & accum[j]) + (0xff & x) + carry;
+            accum[j] = (byte) carry;
+            carry >>= 8;
             j--;
             i--;
             x >>= 8;
@@ -344,5 +345,5 @@ public class X982Drbg
     /**
      * A 4-byte counter that is updated with each call to the PRNG.
      */
-    private int    ctr;
+    private int ctr;
 }

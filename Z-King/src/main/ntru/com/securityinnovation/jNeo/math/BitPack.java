@@ -118,7 +118,7 @@ public class BitPack
         int bitsPerElement = countBits(maxEltValue - 1);
 
         // Get the max output size
-        int maxOutLen      = (numElts * bitsPerElement + 7) / 8;
+        int maxOutLen = (numElts * bitsPerElement + 7) / 8;
 
         return pack(numElts, maxEltValue, maxOutLen, src, srcOffset, tgt, tgtOffset);
     }
@@ -154,22 +154,22 @@ public class BitPack
         if (tgt == null) return maxOutLen;
 
         // Get the number of bits in each element
-        int  bitsPerElement = countBits(maxEltValue - 1);
+        int bitsPerElement = countBits(maxEltValue - 1);
 
-        int  i              = srcOffset, iMax = srcOffset + numElts;
-        int  j              = tgtOffset, jMax = tgtOffset + maxOutLen;
-        byte cur            = 0;
-        int  next           = src[i++];
-        int  cb             = 0, nb = bitsPerElement;
+        int i = srcOffset, iMax = srcOffset + numElts;
+        int j = tgtOffset, jMax = tgtOffset + maxOutLen;
+        byte cur = 0;
+        int next = src[i++];
+        int cb = 0, nb = bitsPerElement;
         while ((j < jMax) && ((i < iMax) || (cb + nb > 8))) {
             if (cb + nb < 8) {
                 // Accumulate next into cur. The result will still
                 // be less than 8 bits. Then update next will the next
                 // input value.
-                cur  |= (byte) (next << (8 - cb - nb));
-                cb   += nb;
-                next  = (0x0ffff & src[i++]); // avoid sign extension
-                nb    = bitsPerElement;
+                cur |= (byte) (next << (8 - cb - nb));
+                cb += nb;
+                next = (0x0ffff & src[i++]); // avoid sign extension
+                nb = bitsPerElement;
             }
             else {
                 // Pull the most significant bits off of next into
@@ -177,11 +177,11 @@ public class BitPack
                 // stream. Then clear cur, and mask the used bits out
                 // of next.
                 int shift = cb + nb - 8;
-                tgt[j++]  = (byte) (cur | (next >> shift));
-                cur       = 0;
-                cb        = 0;
-                next     &= lowBitMask(shift);
-                nb        = shift;
+                tgt[j++] = (byte) (cur | (next >> shift));
+                cur = 0;
+                cb = 0;
+                next &= lowBitMask(shift);
+                nb = shift;
             }
         }
 
@@ -237,12 +237,12 @@ public class BitPack
         int bitsPerElement = countBits(maxEltValue - 1);
 
         // Get the max output size
-        int maxUsed        = (numElts * bitsPerElement + 7) / 8;
+        int maxUsed = (numElts * bitsPerElement + 7) / 8;
         if (tgt == null) return maxUsed;
 
         // i and j are the indices into the source and destination.
-        int i   = srcOffset, iMax = srcOffset + maxUsed;
-        int j   = tgtOffset, jMax = tgtOffset + numElts;
+        int i = srcOffset, iMax = srcOffset + maxUsed;
+        int j = tgtOffset, jMax = tgtOffset + numElts;
 
         // tmp holds up to 16 bits from the source stream.
         // Stored as an int to make it easier to shift bits.
@@ -250,13 +250,13 @@ public class BitPack
         // tb holds the number of bits in tmp that are valid,
         // that is, that still need to be placed in the tgt array.
         // These will always be the least significant bits of tmp.
-        int tb  = 8;
+        int tb = 8;
         // ob holds the number of bits in the last output byte
         // (tgt[j]) that are valid. This counts from the most-
         // significant relevant bit in tgt. So if bitsPerElement
         // is 10, and ob is 7, then bits 9-3 are filled and bits
         // 0-2 remain to be filled.
-        int ob  = 0;
+        int ob = 0;
         tgt[j] = 0;
         while ((i < iMax) || (ob + tb >= bitsPerElement)) {
             if (ob + tb < bitsPerElement) {
@@ -265,9 +265,9 @@ public class BitPack
                 // Move all tb bits from tmp into tgt[j].
                 int shift = bitsPerElement - ob - tb;
                 tgt[j] |= (short) ((tmp << shift) & 0x00ffff);
-                ob     += tb;
-                tmp     = (0xff & src[i++]);
-                tb      = 8;
+                ob += tb;
+                tmp = (0xff & src[i++]);
+                tb = 8;
             }
             else {
                 // tmp has more bits than we need to finish output
@@ -278,9 +278,9 @@ public class BitPack
                 int shift = ob + tb - bitsPerElement;
                 tgt[j++] |= (short) (((tmp & 0xff) >> shift) & 0x00ff);
                 if (j < jMax) tgt[j] = 0;
-                ob   = 0;
+                ob = 0;
                 tmp &= lowBitMask(shift);
-                tb   = shift;
+                tb = shift;
             }
         }
 

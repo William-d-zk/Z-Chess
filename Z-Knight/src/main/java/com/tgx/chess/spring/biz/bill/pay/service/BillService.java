@@ -49,12 +49,15 @@ public class BillService
     private final DeviceRepository  _DeviceRepository;
 
     @Autowired
-    public BillService(BillRepository billRepository, ProfileRepository profileRepository, ClientRepository clientRepository, DeviceRepository deviceRepository)
+    public BillService(BillRepository billRepository,
+                       ProfileRepository profileRepository,
+                       ClientRepository clientRepository,
+                       DeviceRepository deviceRepository)
     {
-        _BillRepository    = billRepository;
+        _BillRepository = billRepository;
         _ProfileRepository = profileRepository;
-        _ClientRepository  = clientRepository;
-        _DeviceRepository  = deviceRepository;
+        _ClientRepository = clientRepository;
+        _DeviceRepository = deviceRepository;
     }
 
     public Optional<DeviceEntity> findDeviceByMac(String mac)
@@ -79,7 +82,10 @@ public class BillService
 
     public BillEntity findLastByMacAndItem(String mac, ItemEntity item)
     {
-        return _BillRepository.findFirstByMacAndItem(mac, item, Sort.by("updatedAt").descending());
+        return _BillRepository.findFirstByMacAndItem(mac,
+                                                     item,
+                                                     Sort.by("updatedAt")
+                                                         .descending());
     }
 
     public BillEntity saveBill(BillEntity bill)
