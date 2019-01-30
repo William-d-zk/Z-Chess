@@ -52,7 +52,7 @@ public interface IAioServer
     {
         AioWorker worker = (AioWorker) Thread.currentThread();
         worker.publishConnected(server.getConnectedOperator(),
-                                server.getMode(),
+                                server.getDispatcher(),
                                 server,
                                 server.getSessionCreator(),
                                 server.getCommandCreator(),

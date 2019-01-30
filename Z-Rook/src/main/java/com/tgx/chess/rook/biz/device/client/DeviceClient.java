@@ -25,9 +25,9 @@
 package com.tgx.chess.rook.biz.device.client;
 
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
-import static com.tgx.chess.queen.event.operator.ZMode.CONSUMER;
-import static com.tgx.chess.queen.event.operator.ZOperatorHolder.CONNECTED_OPERATOR;
-import static com.tgx.chess.queen.event.operator.ZOperatorHolder.CONSUMER_TRANSFER;
+import static com.tgx.chess.queen.event.operator.ZDispatcher.CONSUMER;
+import static com.tgx.chess.queen.event.operator.ZDispatcher.CONSUMER_TRANSFER;
+import static com.tgx.chess.queen.io.core.inf.IDispatcher.CONNECTED_OPERATOR;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -55,7 +55,7 @@ import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.king.config.Config;
 import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.event.operator.ZMode;
+import com.tgx.chess.queen.event.operator.ZDispatcher;
 import com.tgx.chess.queen.io.core.async.AioCreator;
 import com.tgx.chess.queen.io.core.async.AioSession;
 import com.tgx.chess.queen.io.core.executor.ClientCore;
@@ -66,6 +66,7 @@ import com.tgx.chess.queen.io.core.inf.ICommandCreator;
 import com.tgx.chess.queen.io.core.inf.IConnectActive;
 import com.tgx.chess.queen.io.core.inf.IConnectionContext;
 import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.io.core.inf.IDispatcher;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionCreated;
 import com.tgx.chess.queen.io.core.inf.ISessionCreator;
@@ -129,7 +130,7 @@ public class DeviceClient
                                           this,
                                           this,
                                           DeviceClient.this,
-                                          active.getMode()
+                                          active.getDispatcher()
                                                 .getInOperator());
                 }
                 catch (IOException e) {
@@ -139,9 +140,10 @@ public class DeviceClient
             }
 
             @Override
-            public IContext createContext(ISessionOption option, ZMode mode)
+            public IContext createContext(ISessionOption option, IDispatcher dispatcher)
             {
-                return new ZContext(option, mode);
+                return dispatcher instanceof ZDispatcher ? new ZContext(option, (ZDispatcher) dispatcher)
+                                                         : null;
             }
         };
         _CommandCreator = (session) -> new ICommand[] { new X101_HandShake(_TargetHost, ((ZContext) session.getContext()).getSeKey(), 13) };
@@ -189,7 +191,7 @@ public class DeviceClient
             }
 
             @Override
-            public ZMode getMode()
+            public ZDispatcher getDispatcher()
             {
                 return CONSUMER;
             }

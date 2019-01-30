@@ -24,7 +24,7 @@
 
 package com.tgx.chess.queen.io.core.executor;
 
-import static com.tgx.chess.queen.event.operator.ZOperatorHolder.CLOSE_OPERATOR;
+import static com.tgx.chess.queen.io.core.inf.IDispatcher.CLOSE_OPERATOR;
 
 import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
@@ -56,7 +56,7 @@ public interface ILocalPublisher
                 event.produce(IOperator.Type.LOCAL,
                               toSends,
                               session,
-                              session.getMode()
+                              session.getDispatcher()
                                      .getOutOperator());
                 return true;
             }
