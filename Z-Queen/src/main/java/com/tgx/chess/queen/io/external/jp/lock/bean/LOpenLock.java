@@ -24,6 +24,28 @@
 
 package com.tgx.chess.queen.io.external.jp.lock.bean;
 
-public class LOpenLock extends BaseLCommand
+import com.tgx.chess.king.base.util.IoUtil;
+
+public class LOpenLock
+        extends
+        BaseLCommand
 {
+    public final static int JP_LOCK_OPEN = IoUtil.readInt("TJPL".getBytes(), 0) + 2;
+
+    protected LOpenLock()
+    {
+        super(JP_LOCK_OPEN);
+    }
+
+    @Override
+    public int dataLength()
+    {
+        return 0;
+    }
+
+    @Override
+    public int getPriority()
+    {
+        return QOS_08_IMMEDIATE_MESSAGE;
+    }
 }
