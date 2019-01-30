@@ -111,7 +111,7 @@ public class DeviceController
                       @RequestParam(name = "token") String token,
                       @RequestParam(name = "ctrl", defaultValue = "0") int ctrl)
     {
-        DeviceEntity device = _DeviceService.findDeviceByToken(token);
+        DeviceEntity device = _DeviceService.findDeviceByToken(token.toUpperCase());
         if (Objects.nonNull(device)) {
             sendX30(device.getToken(), device.getId(), msg, ctrl);
             return String.format("push %s -> device %s", msg, token);
