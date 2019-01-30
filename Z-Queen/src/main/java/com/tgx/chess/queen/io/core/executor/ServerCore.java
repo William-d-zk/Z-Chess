@@ -24,7 +24,7 @@
 
 package com.tgx.chess.queen.io.core.executor;
 
-import static com.tgx.chess.queen.io.core.inf.IDispatcher.CLOSE_OPERATOR;
+import static com.tgx.chess.queen.io.core.inf.IoHandler.CLOSE_OPERATOR;
 
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentLinkedQueue;

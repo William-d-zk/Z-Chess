@@ -26,7 +26,7 @@ package com.tgx.chess.queen.event.handler;
 import static com.tgx.chess.queen.event.inf.IError.Type.FILTER_DECODE;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.DISPATCH;
 import static com.tgx.chess.queen.io.core.inf.IContext.DECODE_ERROR;
-import static com.tgx.chess.queen.io.core.inf.IDispatcher.ERROR_OPERATOR;
+import static com.tgx.chess.queen.io.core.inf.IoHandler.ERROR_OPERATOR;
 
 import java.util.Arrays;
 
@@ -83,6 +83,7 @@ public class DecodeHandler
             catch (Exception e) {
                 _Log.warning(String.format("read decode error\n %s", session.toString()), e);
                 context.setInState(DECODE_ERROR);
+                //此处为Pipeline中间环节，使用event进行事件传递，不使用dispatcher
                 event.error(FILTER_DECODE, e, session, ERROR_OPERATOR());
             }
         }

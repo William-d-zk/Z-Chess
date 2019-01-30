@@ -24,10 +24,12 @@
 
 package com.tgx.chess.queen.io.core.inf;
 
+import com.tgx.chess.queen.event.inf.ISort;
+
 /**
  * @author William.d.zk
  */
 public interface IContextCreator
 {
-    IContext createContext(ISessionOption option, IDispatcher dispatcher);
+    IContext createContext(ISessionOption option, ISort sorter);
 }

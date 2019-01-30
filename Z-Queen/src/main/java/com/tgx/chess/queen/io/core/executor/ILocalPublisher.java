@@ -24,7 +24,7 @@
 
 package com.tgx.chess.queen.io.core.executor;
 
-import static com.tgx.chess.queen.io.core.inf.IDispatcher.CLOSE_OPERATOR;
+import static com.tgx.chess.queen.io.core.inf.IoHandler.CLOSE_OPERATOR;
 
 import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
@@ -43,6 +43,7 @@ public interface ILocalPublisher
 
     ReentrantLock getLocalLock();
 
+    @SuppressWarnings("unchecked")
     default boolean localSend(ISession session, ICommand... toSends)
     {
         Objects.requireNonNull(toSends);
@@ -56,7 +57,7 @@ public interface ILocalPublisher
                 event.produce(IOperator.Type.LOCAL,
                               toSends,
                               session,
-                              session.getDispatcher()
+                              session.getHandler()
                                      .getOutOperator());
                 return true;
             }

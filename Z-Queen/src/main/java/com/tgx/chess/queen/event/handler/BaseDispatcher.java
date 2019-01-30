@@ -25,10 +25,10 @@
 package com.tgx.chess.queen.event.handler;
 
 import com.lmax.disruptor.RingBuffer;
-import com.tgx.chess.queen.event.inf.IDispatch;
 import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
+import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.processor.QEvent;
 
 abstract class BaseDispatcher
@@ -63,14 +63,14 @@ abstract class BaseDispatcher
     }
 
     <V,
-     A> void dispatch(IDispatch mode,
+     A> void dispatch(ISort sorter,
                       IOperator.Type type,
                       V v,
                       A a,
                       IOperator<V,
                                 A> op)
     {
-        switch (mode.getMode())
+        switch (sorter.getMode())
         {
             case CLUSTER:
                 publish(_Cluster, type, v, a, op);
@@ -82,14 +82,14 @@ abstract class BaseDispatcher
     }
 
     <V,
-     A> void dispatchError(IDispatch mode,
+     A> void dispatchError(ISort sorter,
                            IError.Type type,
                            V v,
                            A a,
                            IOperator<V,
                                      A> op)
     {
-        switch (mode.getMode())
+        switch (sorter.getMode())
         {
             case CLUSTER:
                 error(_Cluster, type, v, a, op);

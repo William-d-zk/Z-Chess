@@ -28,9 +28,8 @@ import java.util.Base64;
 import java.util.Random;
 
 import com.tgx.chess.king.base.util.CryptUtil;
-import com.tgx.chess.queen.event.inf.IDispatch;
+import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.io.core.async.AioContext;
-import com.tgx.chess.queen.io.core.inf.IDispatcher;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 
 /**
@@ -68,12 +67,12 @@ public class WsContext
     private CryptUtil       mCryptUtil           = new CryptUtil();
 
     public WsContext(ISessionOption option,
-                     IDispatcher dispatcher)
+                     ISort sorter)
     {
         super(option);
         mMaxPayloadSize = option.setSNF() - 2;
-        if (dispatcher.getType()
-                      .equals(IDispatch.Type.CONSUMER))
+        if (sorter.getType()
+                  .equals(ISort.Type.CONSUMER))
         {
             Random r = new Random(System.nanoTime());
             byte[] seed = new byte[17];
@@ -84,7 +83,7 @@ public class WsContext
         }
         else mSecKey = mSecAcceptExpect = null;
 
-        switch (dispatcher.getMode())
+        switch (sorter.getMode())
         {
             case CLUSTER:
                 transfer();

@@ -24,9 +24,7 @@
 
 package com.tgx.chess.queen.io.core.inf;
 
-import com.tgx.chess.queen.event.inf.IDispatch;
-
 public interface IConnectMode
 {
-    <T extends IDispatch & IOperatorSupplier> T getDispatcher();
+    IoHandler getHandler();
 }
