@@ -123,7 +123,7 @@ public class DeviceController
     {
         X30_EventMsg x30 = new X30_EventMsg(_ZGenerator.next());
         x30.setCtrl(X30_EventMsg.CTRL_TEXT);
-        x30.setToken(token);
+        x30.setToken(token.toUpperCase());
         x30.setPayload(msg.getBytes(StandardCharsets.UTF_8));
         _DeviceService.localBizSend(deviceId, x30);
     }
