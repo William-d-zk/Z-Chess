@@ -22,12 +22,20 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.queen.io.core.inf;
+package com.tgx.chess.queen.event.inf;
 
-/**
- * @author William.d.zk
- */
-public interface IContextCreator
+public interface IDispatch
 {
-    IContext createContext(ISessionOption option, IDispatcher dispatcher);
+    enum Mode
+    {
+        CLUSTER,
+        LINK
+    }
+
+    /**
+     *
+     * @return true : cluster
+     *         false : link
+     */
+    Mode getMode();
 }

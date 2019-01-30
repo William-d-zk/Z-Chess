@@ -33,7 +33,7 @@ import java.nio.ByteBuffer;
 import java.util.Objects;
 
 import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.queen.event.operator.ZMode;
+import com.tgx.chess.queen.event.operator.ZDispatcher;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.async.AioPacket;
 import com.tgx.chess.queen.io.core.inf.IPacket;
@@ -52,10 +52,10 @@ public class WsHandShakeFilter
 {
     private final static String CRLF = "\r\n";
 
-    private final ZMode  _Mode;
+    private final ZDispatcher _Mode;
     private final Logger _Log = Logger.getLogger(getClass().getName());
 
-    public WsHandShakeFilter(ZMode mode)
+    public WsHandShakeFilter(ZDispatcher mode)
     {
         name = "web-socket-header-zfilter-" + mode.name();
         _Mode = mode;

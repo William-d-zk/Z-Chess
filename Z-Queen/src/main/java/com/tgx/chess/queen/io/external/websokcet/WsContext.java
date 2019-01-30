@@ -28,7 +28,7 @@ import java.util.Base64;
 import java.util.Random;
 
 import com.tgx.chess.king.base.util.CryptUtil;
-import com.tgx.chess.queen.event.operator.ZMode;
+import com.tgx.chess.queen.event.operator.ZDispatcher;
 import com.tgx.chess.queen.io.core.async.AioContext;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 
@@ -67,11 +67,11 @@ public class WsContext
     private CryptUtil       mCryptUtil           = new CryptUtil();
 
     public WsContext(ISessionOption option,
-                     ZMode mode)
+                     ZDispatcher mode)
     {
         super(option);
         mMaxPayloadSize = option.setSNF() - 2;
-        if (mode.equals(ZMode.CONSUMER) || mode.equals(ZMode.CONSUMER_SSL)) {
+        if (mode.equals(ZDispatcher.CONSUMER) || mode.equals(ZDispatcher.CONSUMER_SSL)) {
             Random r = new Random(System.nanoTime());
             byte[] seed = new byte[17];
             r.nextBytes(seed);

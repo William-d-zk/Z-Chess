@@ -46,7 +46,7 @@ public interface IAioConnector
     default void completed(Void result, AsynchronousSocketChannel channel)
     {
         AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishConnected(getConnectedOperator(), getMode(), this, getSessionCreator(), getCommandCreator(), getSessionCreated(), channel);
+        worker.publishConnected(getConnectedOperator(), getDispatcher(), this, getSessionCreator(), getCommandCreator(), getSessionCreated(), channel);
     }
 
     @Override

@@ -134,10 +134,10 @@ public class ClusterHandler
         {
             switch (event.getEventType()) {
                 case CONNECTED:
-                    IEventOp<Pair<ClusterNode<E, D, N>, IConnectMode.ZMode>,
+                    IEventOp<Pair<ClusterNode<E, D, N>, IConnectMode.ZDispatcher>,
                              AsynchronousSocketChannel> cOperator = event.getEventOp();// NODE_CONNECTED
-                    Pair<Pair<ClusterNode<E, D, N>, IConnectMode.ZMode>, AsynchronousSocketChannel> cContent = event.getContent();
-                    Pair<ClusterNode<E, D, N>, IConnectMode.ZMode> nmPair = cContent.first();
+                    Pair<Pair<ClusterNode<E, D, N>, IConnectMode.ZDispatcher>, AsynchronousSocketChannel> cContent = event.getContent();
+                    Pair<ClusterNode<E, D, N>, IConnectMode.ZDispatcher> nmPair = cContent.first();
                     // 集群至少2台机器的时候才需要进行诸多网络操作。
                     AsynchronousSocketChannel channel = cContent.second();
                     Triple<ICommand, ISession, IEventOp<ICommand, ISession>> cResult = cOperator.handle(nmPair, channel);
@@ -323,8 +323,8 @@ public class ClusterHandler
     }
 
     @Override
-    public final RESULT trial(ICommand cmd, IConnectMode.ZMode mode) {
-        if (mode.equals(ZMode.CLUSTER_CONSUMER) || mode.equals(ZMode.CLUSTER_SERVER)) {
+    public final RESULT trial(ICommand cmd, IConnectMode.ZDispatcher mode) {
+        if (mode.equals(ZDispatcher.CLUSTER_CONSUMER) || mode.equals(ZDispatcher.CLUSTER_SERVER)) {
             switch (cmd.getSerialNum()) {
                 case X10_StartElection.COMMAND:
                 case X11_Ballot.COMMAND:
