@@ -111,9 +111,14 @@ public class DeviceController
                       @RequestParam(name = "token") String token,
                       @RequestParam(name = "ctrl", defaultValue = "0") int ctrl)
     {
-        DeviceEntity device = _DeviceService.findDeviceByToken(token);
+        DeviceEntity device = _DeviceService.findDeviceByToken(token.toUpperCase());
         if (Objects.nonNull(device)) {
-            sendX30(device.getToken(), device.getId(), msg, ctrl);
+            try {
+                sendX30(device.getToken(), device.getId(), msg, ctrl);
+            }
+            catch (NullPointerException e) {
+                return String.format("device %s not login", token);
+            }
             return String.format("push %s -> device %s", msg, token);
         }
         return String.format("not found device %s", token);
