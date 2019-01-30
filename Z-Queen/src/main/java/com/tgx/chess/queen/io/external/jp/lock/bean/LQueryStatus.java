@@ -24,9 +24,28 @@
 
 package com.tgx.chess.queen.io.external.jp.lock.bean;
 
+import com.tgx.chess.king.base.util.IoUtil;
+
 public class LQueryStatus
         extends
         BaseLCommand
 {
+    public final static int JP_LOCK_STATUS = IoUtil.readInt("TJPL".getBytes(), 0) + 3;
 
+    protected LQueryStatus()
+    {
+        super(JP_LOCK_STATUS);
+    }
+
+    @Override
+    public int dataLength()
+    {
+        return 0;
+    }
+
+    @Override
+    public int getPriority()
+    {
+        return QOS_10_QUERY_MESSAGE;
+    }
 }

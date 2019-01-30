@@ -44,12 +44,6 @@ public class LHeartBeat
     }
 
     @Override
-    public int getSerial()
-    {
-        return JP_LOCK_HEARTBEAT;
-    }
-
-    @Override
     public int getPriority()
     {
         return QOS_00_NETWORK_CONTROL;

@@ -36,4 +36,10 @@ public abstract class BaseLCommand
     {
         _Command = cmd;
     }
+
+    @Override
+    public int getSerial()
+    {
+        return _Command;
+    }
 }
