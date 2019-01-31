@@ -24,8 +24,9 @@
 
 package com.tgx.chess.queen.event.handler;
 
+import static com.tgx.chess.queen.event.inf.IError.Type.SAVE_DATA;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
-import static com.tgx.chess.queen.event.operator.ZOperatorHolder.SERVER_TRANSFER;
+import static com.tgx.chess.queen.io.core.inf.IoHandler.ERROR_OPERATOR;
 
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.Objects;
@@ -76,6 +77,7 @@ public class LinkHandler
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
     {
         if (event.hasError()) {
@@ -141,17 +143,33 @@ public class LinkHandler
                             waitToSends = new ICommand[] { cmd };
                             break;
                         case X20_SignUp.COMMAND:
-                            waitToSends = new ICommand[] { _QueenManager.save(cmd, session) };
+                            try {
+                                waitToSends = new ICommand[] { _QueenManager.save(cmd, session) };
+                            }
+                            catch (Exception e) {
+                                error(_Error, SAVE_DATA, e, session, ERROR_OPERATOR());
+                            }
                             break;
                         case X22_SignIn.COMMAND:
-                            waitToSends = new ICommand[] { _QueenManager.find(cmd, session) };
+                            try {
+                                waitToSends = new ICommand[] { _QueenManager.find(cmd, session) };
+                            }
+                            catch (Exception e) {
+                                error(_Error, SAVE_DATA, e, session, ERROR_OPERATOR());
+                            }
                             break;
                         case X24_UpdateToken.COMMAND:
-                            waitToSends = new ICommand[] { _QueenManager.save(cmd, session) };
+                            try {
+                                waitToSends = new ICommand[] { _QueenManager.save(cmd, session) };
+                            }
+                            catch (Exception e) {
+                                error(_Error, SAVE_DATA, e, session, ERROR_OPERATOR());
+                            }
                             break;
 
                     }
-                    sendOperator = SERVER_TRANSFER();
+                    sendOperator = session.getHandler()
+                                          .getOutOperator();
                     break;
             }
             if (Objects.nonNull(waitToSends) && Objects.nonNull(session) && Objects.nonNull(sendOperator)) {
@@ -176,9 +194,9 @@ public class LinkHandler
         if (event.noError()) {
             switch (event.getEventType()) {
                 case CONNECTED:
-                    IEventOp<Pair<N, ZMode>, AsynchronousSocketChannel> cOperator = event.getEventOp();
-                    Pair<Pair<N, IConnectMode.ZMode>, AsynchronousSocketChannel> cContent = event.getContent();
-                    Pair<N, IConnectMode.ZMode> nmPair = cContent.first();
+                    IEventOp<Pair<N, ZOperators>, AsynchronousSocketChannel> cOperator = event.getEventOp();
+                    Pair<Pair<N, IConnectMode.ZOperators>, AsynchronousSocketChannel> cContent = event.getContent();
+                    Pair<N, IConnectMode.ZOperators> nmPair = cContent.first();
                     AsynchronousSocketChannel channel = cContent.second();
                     Triple<ICommand, AioSession, IEventOp<ICommand, AioSession>> cResult = cOperator.handle(nmPair, channel);
                     ICommand cmd = cResult.first();
@@ -346,15 +364,15 @@ public class LinkHandler
     }
 
     @Override
-    public RESULT trial(ICommand cmd, IConnectMode.ZMode mode) {
-        if (mode.equals(IConnectMode.ZMode.SYMMETRY)) {
+    public RESULT trial(ICommand cmd, IConnectMode.ZOperators mode) {
+        if (mode.equals(IConnectMode.ZOperators.SYMMETRY)) {
             switch (cmd.getSerialNum()) {
                 case X103_Close.COMMAND:
                 case X104_ExchangeIdentity.COMMAND:
                     return RESULT.HANDLE;
             }
         }
-        else if (mode.equals(ZMode.ACCEPT_SERVER) || mode.equals(ZMode.ACCEPT_SERVER_SSL)) {
+        else if (mode.equals(ZOperators.ACCEPT_SERVER) || mode.equals(ZOperators.ACCEPT_SERVER_SSL)) {
             if (cmd.getSerialNum() == X103_Close.COMMAND) return RESULT.HANDLE;
         }
         else if (_BizNode.getMqServer()

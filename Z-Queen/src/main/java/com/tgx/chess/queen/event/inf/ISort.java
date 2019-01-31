@@ -21,25 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.tgx.chess.queen.io.core.inf;
 
-/**
- * @author William.d.zk
- */
-public interface IDestine
+package com.tgx.chess.queen.event.inf;
+
+public interface ISort
 {
-    default RESULT trial(ICommand cmd, IoHandler handler)
+    enum Mode
     {
-        return RESULT.IGNORE;
+        CLUSTER,
+        LINK
     }
 
-    enum RESULT
+    enum Type
     {
-        HANDLE,
-        SECTION,
-        PASS,
-        IGNORE,
-        ERROR
+        SERVER,
+        CONSUMER,
+        SYMMETRY
     }
 
+    /**
+     *
+     * 用于区分当前处理过程属于哪个Pipeline
+     */
+    Mode getMode();
+
+    /**
+     * 
+     * 用于区分 IO 的角色，是服务端还是客户端，或者是对称式
+     */
+    Type getType();
 }

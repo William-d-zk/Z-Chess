@@ -30,7 +30,7 @@ import java.util.Objects;
 
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.king.base.util.Pair;
-import com.tgx.chess.queen.event.operator.ZMode;
+import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.ISession;
@@ -66,7 +66,7 @@ public class DecodedDispatcher
                         if (Objects.nonNull(commands)) {
                             for (ICommand cmd : commands) {
                                 //dispatch 到对应的 处理器里
-                                dispatch(session.getMode(), cmd, session);
+                                dispatch(session.getHandler(), cmd, session);
                             }
                         }
                 }
@@ -83,17 +83,14 @@ public class DecodedDispatcher
         event.reset();
     }
 
-    private void dispatch(ZMode mode, ICommand cmd, ISession session)
+    private void dispatch(ISort sorter, ICommand cmd, ISession session)
     {
-        switch (mode)
+        switch (sorter.getMode())
         {
-            case CLUSTER_CONSUMER:
-            case CLUSTER_SERVER:
+            case CLUSTER:
                 publish(_Cluster, LOGIC, cmd, session, null);
                 break;
-            case SERVER:
-            case SERVER_SSL:
-            case SYMMETRY:
+            case LINK:
                 if (cmd.isMappingCommand()) {
                     publish(_Link, LOGIC, cmd, session, null);
                 }

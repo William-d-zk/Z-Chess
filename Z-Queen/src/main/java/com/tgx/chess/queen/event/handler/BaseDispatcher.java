@@ -28,7 +28,7 @@ import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
-import com.tgx.chess.queen.event.operator.ZMode;
+import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.processor.QEvent;
 
 abstract class BaseDispatcher
@@ -63,55 +63,39 @@ abstract class BaseDispatcher
     }
 
     <V,
-     A> void dispatch(ZMode mode,
+     A> void dispatch(ISort sorter,
                       IOperator.Type type,
                       V v,
                       A a,
                       IOperator<V,
                                 A> op)
     {
-        switch (mode)
+        switch (sorter.getMode())
         {
-            case CLUSTER_CONSUMER:
-            case CLUSTER_SERVER:
+            case CLUSTER:
                 publish(_Cluster, type, v, a, op);
                 break;
-            case SYMMETRY:
-            case CONSUMER:
-            case SERVER:
-            case SERVER_SSL:
-            case CONSUMER_SSL:
+            case LINK:
                 publish(_Link, type, v, a, op);
-                break;
-            default:
-                // ignore
                 break;
         }
     }
 
     <V,
-     A> void dispatchError(ZMode mode,
+     A> void dispatchError(ISort sorter,
                            IError.Type type,
                            V v,
                            A a,
                            IOperator<V,
                                      A> op)
     {
-        switch (mode)
+        switch (sorter.getMode())
         {
-            case CLUSTER_CONSUMER:
-            case CLUSTER_SERVER:
+            case CLUSTER:
                 error(_Cluster, type, v, a, op);
                 break;
-            case SYMMETRY:
-            case CONSUMER:
-            case SERVER:
-            case SERVER_SSL:
-            case CONSUMER_SSL:
+            case LINK:
                 error(_Link, type, v, a, op);
-                break;
-            default:
-                // ignore
                 break;
         }
     }

@@ -110,6 +110,9 @@ public class ClusterHandler
                                     .onCreate(session);
                     _Log.info(String.format("cluster link handle %s,connected", session));
                     break;
+                case LOGIC:
+                    //TODO  逻辑处理器需要在此处完成操作。
+                    break;
                 default:
                     _Log.warning(String.format("cluster link handle can't handle %s", event.getEventType()));
                     break;
@@ -134,10 +137,10 @@ public class ClusterHandler
         {
             switch (event.getEventType()) {
                 case CONNECTED:
-                    IEventOp<Pair<ClusterNode<E, D, N>, IConnectMode.ZMode>,
+                    IEventOp<Pair<ClusterNode<E, D, N>, IConnectMode.ZOperators>,
                              AsynchronousSocketChannel> cOperator = event.getEventOp();// NODE_CONNECTED
-                    Pair<Pair<ClusterNode<E, D, N>, IConnectMode.ZMode>, AsynchronousSocketChannel> cContent = event.getContent();
-                    Pair<ClusterNode<E, D, N>, IConnectMode.ZMode> nmPair = cContent.first();
+                    Pair<Pair<ClusterNode<E, D, N>, IConnectMode.ZOperators>, AsynchronousSocketChannel> cContent = event.getContent();
+                    Pair<ClusterNode<E, D, N>, IConnectMode.ZOperators> nmPair = cContent.first();
                     // 集群至少2台机器的时候才需要进行诸多网络操作。
                     AsynchronousSocketChannel channel = cContent.second();
                     Triple<ICommand, ISession, IEventOp<ICommand, ISession>> cResult = cOperator.handle(nmPair, channel);
@@ -323,8 +326,8 @@ public class ClusterHandler
     }
 
     @Override
-    public final RESULT trial(ICommand cmd, IConnectMode.ZMode mode) {
-        if (mode.equals(ZMode.CLUSTER_CONSUMER) || mode.equals(ZMode.CLUSTER_SERVER)) {
+    public final RESULT trial(ICommand cmd, IConnectMode.ZOperators mode) {
+        if (mode.equals(ZOperators.CLUSTER_CONSUMER) || mode.equals(ZOperators.CLUSTER_SERVER)) {
             switch (cmd.getSerialNum()) {
                 case X10_StartElection.COMMAND:
                 case X11_Ballot.COMMAND:

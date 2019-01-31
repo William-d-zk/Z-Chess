@@ -55,6 +55,7 @@ public interface IError
         OUT_OF_LENGTH(803, " 数据越界 "),
         ILLEGAL_STATE(901, " 逻辑状态错误 "),
         ILLEGAL_BIZ_STATE(902, " 业务状态错误 "),
+        SAVE_DATA(903, " 保存数据失败 %s "),
         TIME_OUT(101, " 超时 "),
         NO_ERROR(200, " 成功 "),;
 

@@ -24,12 +24,12 @@
 
 package com.tgx.chess.queen.io.core.inf;
 
-import com.tgx.chess.queen.event.operator.ZMode;
+import com.tgx.chess.queen.event.inf.ISort;
 
 /**
  * @author William.d.zk
  */
 public interface IContextCreator
 {
-    IContext createContext(ISessionOption option, ZMode mode);
+    IContext createContext(ISessionOption option, ISort sorter);
 }
