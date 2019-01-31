@@ -22,22 +22,8 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.queen.event.operator;
+package com.tgx.chess.queen.io.external.zoperator;
 
-import static com.tgx.chess.queen.event.inf.IError.Type.READ_EOF;
-import static com.tgx.chess.queen.event.inf.IError.Type.READ_FAILED;
-import static com.tgx.chess.queen.event.inf.IError.Type.READ_ZERO;
-import static com.tgx.chess.queen.event.inf.IError.Type.WRITE_EOF;
-import static com.tgx.chess.queen.event.inf.IError.Type.WRITE_FAILED;
-import static com.tgx.chess.queen.event.inf.IError.Type.WRITE_ZERO;
-
-import java.io.EOFException;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.AsynchronousSocketChannel;
-import java.nio.channels.CompletionHandler;
-import java.nio.channels.NotYetConnectedException;
-import java.nio.channels.ShutdownChannelGroupException;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -45,15 +31,12 @@ import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.io.core.async.AioPacket;
-import com.tgx.chess.queen.io.core.async.socket.AioWorker;
 import com.tgx.chess.queen.io.core.inf.ICommand;
-import com.tgx.chess.queen.io.core.inf.IConnectionContext;
 import com.tgx.chess.queen.io.core.inf.IFilterChain;
+import com.tgx.chess.queen.io.core.inf.IOperatorSupplier;
 import com.tgx.chess.queen.io.core.inf.IPacket;
-import com.tgx.chess.queen.io.core.inf.IPipeDecode;
-import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
 import com.tgx.chess.queen.io.core.inf.ISession;
+import com.tgx.chess.queen.io.core.inf.IoHandler;
 import com.tgx.chess.queen.io.external.websokcet.WsContext;
 import com.tgx.chess.queen.io.external.websokcet.ZContext;
 import com.tgx.chess.queen.io.external.websokcet.bean.device.X20_SignUp;
@@ -71,47 +54,194 @@ import com.tgx.chess.queen.io.external.websokcet.filter.WsControlFilter;
 import com.tgx.chess.queen.io.external.websokcet.filter.WsFrameFilter;
 import com.tgx.chess.queen.io.external.websokcet.filter.WsHandShakeFilter;
 import com.tgx.chess.queen.io.external.zfilter.ZCommandFilter;
-import com.tgx.chess.queen.io.external.zfilter.ZCommandFilter.CommandFactory;
 import com.tgx.chess.queen.io.external.zfilter.ZTlsFilter;
 
 @SuppressWarnings("unchecked")
-public class ZOperatorHolder
-{
-    private static Logger LOG = Logger.getLogger(ZOperatorHolder.class.getName());
+public enum ZOperators
+        implements
 
-    private static IOperator<Void,
-                             ISession>                                      close_operator;
-    private static IOperator<Throwable,
-                             ISession>                                      error_operator;
-    private static IOperator<Throwable,
-                             ISession>                                      ignore_operator;
-    private static IOperator<Integer,
-                             ISession>                                      wrote_operator;
+        IoHandler
+{
+    CLUSTER_CONSUMER
+    {
+        @Override
+        public Type getType()
+        {
+            return Type.CONSUMER;
+        }
+    },
+    CLUSTER_SERVER
+    {
+        @Override
+        public IOperator<IPacket,
+                         ISession> getInOperator()
+        {
+            return CLUSTER_DECODER();
+        }
+
+        @Override
+        public IOperator<ICommand[],
+                         ISession> getOutOperator()
+        {
+            return null;
+        }
+    },
+    MQ_CONSUMER
+    {
+        @Override
+        public Type getType()
+        {
+            return Type.CONSUMER;
+        }
+    },
+    MQ_SERVER,
+    CONSUMER
+    {
+        @Override
+        public IOperator<IPacket,
+                         ISession> getInOperator()
+        {
+            return CONSUMER_DECODER();
+        }
+
+        @Override
+        public IOperator<ICommand[],
+                         ISession> getOutOperator()
+        {
+            return CONSUMER_TRANSFER();
+        }
+
+        @Override
+        public Mode getMode()
+        {
+            return Mode.LINK;
+        }
+
+        @Override
+        public Type getType()
+        {
+            return Type.CONSUMER;
+        }
+    },
+    SERVER
+    {
+        @Override
+        public IOperator<IPacket,
+                         ISession> getInOperator()
+        {
+            return SERVER_DECODER();
+        }
+
+        @Override
+        public IOperator<ICommand[],
+                         ISession> getOutOperator()
+        {
+            return SERVER_TRANSFER();
+        }
+
+        @Override
+        public Mode getMode()
+        {
+            return Mode.LINK;
+        }
+
+        @Override
+        public Type getType()
+        {
+            return Type.SERVER;
+        }
+    },
+    CONSUMER_SSL
+    {
+        @Override
+        public Mode getMode()
+        {
+            return Mode.LINK;
+        }
+
+        @Override
+        public Type getType()
+        {
+            return Type.CONSUMER;
+        }
+    },
+    SERVER_SSL
+    {
+        @Override
+        public Mode getMode()
+        {
+            return Mode.LINK;
+        }
+
+        @Override
+        public Type getType()
+        {
+            return Type.SERVER;
+        }
+    },
+    SYMMETRY
+    {
+        @Override
+        public Mode getMode()
+        {
+            return Mode.LINK;
+        }
+
+        @Override
+        public Type getType()
+        {
+            return Type.SYMMETRY;
+        }
+
+    };
+
+    @Override
+    public IOperator<IPacket,
+                     ISession> getInOperator()
+    {
+        return null;
+    }
+
+    @Override
+    public IOperator<ICommand[],
+                     ISession> getOutOperator()
+    {
+        return null;
+    }
+
+    @Override
+    public Mode getMode()
+    {
+        return Mode.CLUSTER;
+    }
+
+    public Type getType()
+    {
+        return Type.SERVER;
+    }
+
+    private static Logger LOG = Logger.getLogger(ZOperators.class.getName());
+
     private static IOperator<IPacket,
-                             ISession>                                      server_decoder;
+                             ISession>             server_decoder;
     private static IOperator<IPacket,
-                             ISession>                                      cluster_decoder;
+                             ISession>             cluster_decoder;
     private static IOperator<ICommand,
-                             ISession>                                      cluster_encoder;
+                             ISession>             cluster_encoder;
     private static IOperator<IPacket,
-                             ISession>                                      consumer_decoder;
+                             ISession>             consumer_decoder;
     private static IOperator<ICommand,
-                             ISession>                                      consumer_encoder;
+                             ISession>             consumer_encoder;
     private static IOperator<ICommand,
-                             ISession>                                      server_encoder;
+                             ISession>             server_encoder;
     private static IOperator<ICommand[],
-                             ISession>                                      server_transfer;
+                             ISession>             server_transfer;
     private static IOperator<ICommand[],
-                             ISession>                                      consumer_transfer;
+                             ISession>             consumer_transfer;
     private static IOperator<ICommand[],
-                             ISession>                                      cluster_transfer;
-    private static IOperator<IConnectionContext,
-                             AsynchronousSocketChannel>                     connected_operator;
-    private static CompletionHandler<Integer,
-                                     ISession>                              aio_writer;
-    private static CompletionHandler<Integer,
-                                     ISession>                              aio_reader;
-    private static CommandFactory                                           command_factory;
+                             ISession>             cluster_transfer;
+
+    private static ZCommandFilter.CommandFactory command_factory;
 
     static {
         //TODO 这是一个很偷懒的做法，正常的抽象需要将指令注入过程划归不同的角色去执行
@@ -145,179 +275,10 @@ public class ZOperatorHolder
                     return null;
             }
         };
-        close_operator = new IOperator<Void,
-                                       ISession>()
-        {
 
-            @Override
-            public <T,
-                    E> Triple<T,
-                              E,
-                              IOperator<T,
-                                        E>> handle(Void v, ISession session)
-            {
-                try {
-                    session.close();
-                }
-                catch (IOException e) {
-                    LOG.warning("session close: %s", e, session.toString());
-                }
-                LOG.warning("closed operator %s", session.toString());
-                return null;
-            }
-
-            @Override
-            public String toString()
-            {
-                return "close_operator";
-            }
-        };
-        error_operator = new IOperator<Throwable,
-                                       ISession>()
-        {
-            @Override
-            public Triple<Void,
-                          ISession,
-                          IOperator<Void,
-                                    ISession>> handle(Throwable throwable, ISession session)
-            {
-                LOG.warning("error session:%s", throwable, session);
-                return new Triple<>(null, session, close_operator);
-            }
-
-            @Override
-            public String toString()
-            {
-                return "error_operator";
-            }
-        };
-        ignore_operator = new IOperator<Throwable,
-                                        ISession>()
-        {
-            @Override
-            public <T,
-                    E> Triple<T,
-                              E,
-                              IOperator<T,
-                                        E>> handle(Throwable throwable, ISession iSession)
-            {
-                LOG.warning("ignore error", throwable);
-                return null;
-            }
-
-            @Override
-            public String toString()
-            {
-                return "ignore_operator";
-            }
-        };
-        wrote_operator = new IOperator<Integer,
-                                       ISession>()
-        {
-            @Override
-            public Triple<Throwable,
-                          ISession,
-                          IOperator<Throwable,
-                                    ISession>> handle(Integer wroteCnt, ISession session)
-            {
-                try {
-                    session.writeNext(wroteCnt, aio_writer);
-                }
-                catch (Exception e) {
-                    return new Triple<>(e, session, ERROR_OPERATOR());
-                }
-                return null;
-            }
-
-            @Override
-            public String toString()
-            {
-                return "wrote_operator";
-            }
-        };
-        aio_writer = new CompletionHandler<Integer,
-                                           ISession>()
-        {
-            @Override
-            public void completed(Integer result, ISession session)
-            {
-                AioWorker worker = (AioWorker) Thread.currentThread();
-                switch (result)
-                {
-                    case -1:
-                        worker.publishWroteError(error_operator, WRITE_EOF, new EOFException("wrote -1!"), session);
-                        break;
-                    case 0:
-                        worker.publishWroteError(error_operator, WRITE_ZERO, new IllegalArgumentException("wrote zero!"), session);
-                        break;
-                    default:
-                        LOG.info("wrote %d", result);
-                        worker.publishWrote(wrote_operator, result, session);
-                        break;
-                }
-            }
-
-            @Override
-            public void failed(Throwable exc, ISession session)
-            {
-                AioWorker worker = (AioWorker) Thread.currentThread();
-                worker.publishWroteError(error_operator, WRITE_FAILED, exc, session);
-            }
-
-            @Override
-            public String toString()
-            {
-                return "aio_writer";
-            }
-        };
-        aio_reader = new CompletionHandler<Integer,
-                                           ISession>()
-        {
-            @Override
-            public void completed(Integer read, ISession session)
-            {
-                AioWorker worker = (AioWorker) Thread.currentThread();
-                switch (read)
-                {
-                    case -1:
-                        worker.publishReadError(error_operator, READ_EOF, new EOFException("Read Negative"), session);
-                        break;
-                    case 0:
-                        worker.publishReadError(error_operator, READ_ZERO, new IllegalStateException("Read Zero"), session);
-                        session.readNext(this);
-                        break;
-                    default:
-                        LOG.info("read count: %d", read);
-                        ByteBuffer recvBuf = session.read(read);
-                        worker.publishRead(session.getDecodeOperator(), new AioPacket(recvBuf), session);
-                        try {
-                            session.readNext(this);
-                        }
-                        catch (NotYetConnectedException |
-                               ShutdownChannelGroupException e)
-                        {
-                            worker.publishReadError(error_operator, READ_FAILED, e, session);
-                        }
-                        break;
-                }
-            }
-
-            @Override
-            public void failed(Throwable exc, ISession session)
-            {
-                AioWorker worker = (AioWorker) Thread.currentThread();
-                worker.publishReadError(error_operator, READ_FAILED, exc, session);
-            }
-
-            @Override
-            public String toString()
-            {
-                return "aio_reader";
-            }
-        };
         consumer_encoder = new IEncoder()
         {
-            final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(ZMode.CONSUMER);
+            final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(ZOperators.CONSUMER);
             {
                 IFilterChain<WsContext> header = new ZTlsFilter();
                 handshakeFilter.linkAfter(header);
@@ -356,7 +317,7 @@ public class ZOperatorHolder
 
         server_encoder = new IEncoder()
         {
-            final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(ZMode.SERVER);
+            final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(ZOperators.SERVER);
             {
                 IFilterChain<WsContext> header = new ZTlsFilter();
                 handshakeFilter.linkAfter(header);
@@ -429,37 +390,11 @@ public class ZOperatorHolder
             }
 
         };
-        connected_operator = new IOperator<IConnectionContext,
-                                           AsynchronousSocketChannel>()
-        {
-            //都在 LinkIo-Processor 中处理
-            @Override
-            public Triple<ICommand[],
-                          ISession,
-                          IOperator<ICommand[],
-                                    ISession>> handle(IConnectionContext ctx, AsynchronousSocketChannel channel)
-            {
-                ISession session = ctx.getSessionCreator()
-                                      .createSession(channel, ctx.getConnectActive());
-                ICommand[] commands = ctx.getCommandCreator()
-                                         .createCommands(session);
-                session.readNext(aio_reader);
-                return new Triple<>(commands,
-                                    session,
-                                    session.getMode()
-                                           .getOutOperator());
-            }
 
-            @Override
-            public String toString()
-            {
-                return "connected_operator";
-            }
-        };
         server_decoder = new IDecoder()
         {
 
-            final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(ZMode.SERVER);
+            final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(ZOperators.SERVER);
 
             {
                 IFilterChain<WsContext> header = new ZTlsFilter();
@@ -509,7 +444,7 @@ public class ZOperatorHolder
         };
         consumer_decoder = new IDecoder()
         {
-            final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(ZMode.CONSUMER);
+            final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(ZOperators.CONSUMER);
 
             {
                 IFilterChain<WsContext> header = new ZTlsFilter();
@@ -586,64 +521,6 @@ public class ZOperatorHolder
             Arrays.setAll(triples, slot -> new Triple<>(commands[slot], session, server_encoder));
             return triples;
         }
-    }
-
-    private interface IEncoder
-            extends
-            IOperator<ICommand,
-                      ISession>,
-            IPipeEncoder
-    {
-    }
-
-    private interface IDecoder
-            extends
-            IOperator<IPacket,
-                      ISession>,
-            IPipeDecode
-    {
-    }
-
-    public static IOperator<Void,
-                            ISession> CLOSE_OPERATOR()
-    {
-        return close_operator;
-    }
-
-    public static IOperator<Throwable,
-                            ISession> ERROR_OPERATOR()
-    {
-        return error_operator;
-    }
-
-    public static IOperator<Throwable,
-                            ISession> IGNORE_OPERATOR()
-    {
-        return ignore_operator;
-    }
-
-    public static IOperator<Integer,
-                            ISession> WROTE_OPERATOR()
-    {
-        return wrote_operator;
-    }
-
-    public static IOperator<IConnectionContext,
-                            AsynchronousSocketChannel> CONNECTED_OPERATOR()
-    {
-        return connected_operator;
-    }
-
-    public static CompletionHandler<Integer,
-                                    ISession> AIO_WRITER()
-    {
-        return aio_writer;
-    }
-
-    public static CompletionHandler<Integer,
-                                    ISession> AIO_READER()
-    {
-        return aio_reader;
     }
 
     static IOperator<IPacket,

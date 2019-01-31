@@ -28,7 +28,7 @@ import java.util.Base64;
 import java.util.Random;
 
 import com.tgx.chess.king.base.util.CryptUtil;
-import com.tgx.chess.queen.event.operator.ZMode;
+import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.io.core.async.AioContext;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 
@@ -67,11 +67,13 @@ public class WsContext
     private CryptUtil       mCryptUtil           = new CryptUtil();
 
     public WsContext(ISessionOption option,
-                     ZMode mode)
+                     ISort sorter)
     {
         super(option);
         mMaxPayloadSize = option.setSNF() - 2;
-        if (mode.equals(ZMode.CONSUMER) || mode.equals(ZMode.CONSUMER_SSL)) {
+        if (sorter.getType()
+                  .equals(ISort.Type.CONSUMER))
+        {
             Random r = new Random(System.nanoTime());
             byte[] seed = new byte[17];
             r.nextBytes(seed);
@@ -81,19 +83,12 @@ public class WsContext
         }
         else mSecKey = mSecAcceptExpect = null;
 
-        switch (mode)
+        switch (sorter.getMode())
         {
-            case CLUSTER_SERVER:
-            case CLUSTER_CONSUMER:
-            case SYMMETRY:
-            case MQ_SERVER:
-            case MQ_CONSUMER:
+            case CLUSTER:
                 transfer();
                 break;
-            case CONSUMER:
-            case SERVER:
-            case CONSUMER_SSL:
-            case SERVER_SSL:
+            case LINK:
                 handshake();
                 break;
         }

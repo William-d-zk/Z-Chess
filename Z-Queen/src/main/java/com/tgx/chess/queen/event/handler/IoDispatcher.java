@@ -74,7 +74,7 @@ public class IoDispatcher
                      IConnectActive> connectFailedContent = event.getContent();
                 Throwable throwable = connectFailedContent.first();
                 IConnectActive connectActive = connectFailedContent.second();
-                dispatchError(connectActive.getMode(), errorType, throwable, connectActive, connectFailedOperator);
+                dispatchError(connectActive.getHandler(), errorType, throwable, connectActive, connectFailedOperator);
                 break;
             case CLOSED:
                 /* 将其他 Event Error 转换为 closed 进行定向分发 */
@@ -83,7 +83,7 @@ public class IoDispatcher
                 Pair<Void,
                      ISession> closedContent = event.getContent();
                 ISession session = closedContent.second();
-                if (!session.isClosed()) dispatchError(session.getMode(), CLOSED, closedContent.first(), session, closedOperator);
+                if (!session.isClosed()) dispatchError(session.getHandler(), CLOSED, closedContent.first(), session, closedOperator);
                 break;
             case ACCEPT_FAILED:
             case READ_ZERO:
@@ -110,7 +110,7 @@ public class IoDispatcher
                            ISession,
                            IOperator<Void,
                                      ISession>> transferResult = errorOperator.handle(throwable, session);
-                    dispatchError(session.getMode(), CLOSED, transferResult.first(), session, transferResult.third());
+                    dispatchError(session.getHandler(), CLOSED, transferResult.first(), session, transferResult.third());
                 }
                 break;
             case NO_ERROR:
@@ -122,7 +122,7 @@ public class IoDispatcher
                         Pair<IConnectionContext,
                              AsynchronousSocketChannel> connectContent = event.getContent();
                         IConnectionContext connectionContext = connectContent.first();
-                        dispatch(connectionContext.getMode(), CONNECTED, connectionContext, connectContent.second(), connectOperator);
+                        dispatch(connectionContext.getHandler(), CONNECTED, connectionContext, connectContent.second(), connectOperator);
                         break;
                     case READ:
                         Pair<IPacket,

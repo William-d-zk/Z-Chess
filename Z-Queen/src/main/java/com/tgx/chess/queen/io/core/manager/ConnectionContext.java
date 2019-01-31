@@ -24,30 +24,30 @@
 
 package com.tgx.chess.queen.io.core.manager;
 
-import com.tgx.chess.queen.event.operator.ZMode;
 import com.tgx.chess.queen.io.core.inf.ICommandCreator;
 import com.tgx.chess.queen.io.core.inf.IConnectActive;
 import com.tgx.chess.queen.io.core.inf.IConnectionContext;
 import com.tgx.chess.queen.io.core.inf.ISessionCreated;
 import com.tgx.chess.queen.io.core.inf.ISessionCreator;
+import com.tgx.chess.queen.io.core.inf.IoHandler;
 
 public class ConnectionContext
         implements
         IConnectionContext
 {
-    private final ZMode           _Mode;
+    private final IoHandler       _Handler;
     private final ISessionCreator _SessionCreator;
     private final IConnectActive  _ConnectActive;
     private final ICommandCreator _CommandCreator;
     private final ISessionCreated _SessionCreated;
 
-    public ConnectionContext(ZMode mode,
+    public ConnectionContext(IoHandler handler,
                              IConnectActive connectActive,
                              ISessionCreator sessionCreator,
                              ICommandCreator commandCreator,
                              ISessionCreated sessionCreated)
     {
-        _Mode = mode;
+        _Handler = handler;
         _ConnectActive = connectActive;
         _SessionCreator = sessionCreator;
         _CommandCreator = commandCreator;
@@ -73,9 +73,9 @@ public class ConnectionContext
     }
 
     @Override
-    public ZMode getMode()
+    public IoHandler getHandler()
     {
-        return _Mode;
+        return _Handler;
     }
 
     @Override

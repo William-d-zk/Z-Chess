@@ -42,7 +42,6 @@ import java.util.concurrent.TimeUnit;
 
 import com.tgx.chess.king.base.util.ArrayUtil;
 import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.event.operator.ZMode;
 import com.tgx.chess.queen.io.core.inf.IConnectActive;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IContextCreator;
@@ -50,6 +49,7 @@ import com.tgx.chess.queen.io.core.inf.IPacket;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
+import com.tgx.chess.queen.io.core.inf.IoHandler;
 
 /**
  * @author William.d.zk
@@ -71,7 +71,7 @@ public class AioSession
     private final ByteBuffer                   _RecvBuf;
     private final IContext                     _Ctx;
     private final int                          _HashCode;
-    private final ZMode                        _Mode;
+    private final IoHandler                    _IoHandler;
     private final ISessionDismiss              _DismissCallback;
     private final IOperator<IPacket,
                             ISession>          _InOperator;
@@ -103,7 +103,7 @@ public class AioSession
                              _HashCode,
                              _LocalAddress,
                              _RemoteAddress,
-                             _Mode,
+                             _IoHandler,
                              _HaIndex,
                              _PortIndex,
                              mIndex,
@@ -123,7 +123,7 @@ public class AioSession
     {
         Objects.requireNonNull(sessionOption);
         _Channel = channel;
-        _Mode = active.getMode();
+        _IoHandler = active.getHandler();
         _RemoteAddress = (InetSocketAddress) channel.getRemoteAddress();
         _LocalAddress = (InetSocketAddress) channel.getLocalAddress();
         _DismissCallback = sessionDismiss;
@@ -131,7 +131,7 @@ public class AioSession
         _PortIndex = active.getPortIndex();
         _HaIndex = active.getHaIndex();
         sessionOption.setOptions(channel);
-        _Ctx = contextCreator.createContext(sessionOption, _Mode);
+        _Ctx = contextCreator.createContext(sessionOption, _IoHandler);
         _ReadTimeOut = sessionOption.setReadTimeOut();
         _WriteTimeOut = sessionOption.setWriteTimeOut();
         _RecvBuf = ByteBuffer.allocate(sessionOption.setRCV());
@@ -419,9 +419,9 @@ public class AioSession
     }
 
     @Override
-    public ZMode getMode()
+    public IoHandler getHandler()
     {
-        return _Mode;
+        return _IoHandler;
     }
 
     @Override
