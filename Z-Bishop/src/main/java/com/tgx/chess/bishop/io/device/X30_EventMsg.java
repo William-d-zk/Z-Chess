@@ -52,11 +52,13 @@ public class X30_EventMsg
     }
 
     private byte[] token = new byte[32];
-    /*
-    -128 ~127 ;
-    -127-> script
-    0-> text
-    */
+    /**
+     * 取值范围
+     * -128 ~ 127;
+     * 
+     * -127: script
+     * 0000: text
+     */
     private byte   ctrl;
     private int    payloadLength;
     private byte[] payload;
