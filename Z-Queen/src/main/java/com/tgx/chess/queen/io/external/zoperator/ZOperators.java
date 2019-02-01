@@ -33,7 +33,6 @@ import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.IFilterChain;
-import com.tgx.chess.queen.io.core.inf.IOperatorSupplier;
 import com.tgx.chess.queen.io.core.inf.IPacket;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.IoHandler;
@@ -541,32 +540,32 @@ public enum ZOperators
         return consumer_decoder;
     }
 
-    public static IOperator<ICommand,
-                            ISession> CONSUMER_ENCODER()
+    static IOperator<ICommand,
+                     ISession> CONSUMER_ENCODER()
     {
         return consumer_encoder;
     }
 
-    public static IOperator<ICommand[],
-                            ISession> CONSUMER_TRANSFER()
+    static IOperator<ICommand[],
+                     ISession> CONSUMER_TRANSFER()
     {
         return consumer_transfer;
     }
 
-    public static IOperator<ICommand,
-                            ISession> SERVER_ENCODER()
+    static IOperator<ICommand,
+                     ISession> SERVER_ENCODER()
     {
         return server_encoder;
     }
 
-    public static IOperator<ICommand[],
-                            ISession> SERVER_TRANSFER()
+    static IOperator<ICommand[],
+                     ISession> SERVER_TRANSFER()
     {
         return server_transfer;
     }
 
-    public static IOperator<ICommand,
-                            ISession> CLUSTER_ENCODER()
+    static IOperator<ICommand,
+                     ISession> CLUSTER_ENCODER()
     {
         return cluster_encoder;
     }

@@ -24,9 +24,6 @@
 
 package com.tgx.chess.queen.event.operator;
 
-import static com.tgx.chess.queen.event.operator.ZOperatorHolder.SERVER_DECODER;
-import static com.tgx.chess.queen.event.operator.ZOperatorHolder.SERVER_TRANSFER;
-
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.IOperatorSupplier;
@@ -45,14 +42,14 @@ public enum LMode
         public IOperator<IPacket,
                          ISession> getInOperator()
         {
-            return SERVER_DECODER();
+            return null;
         }
 
         @Override
         public IOperator<ICommand[],
                          ISession> getOutOperator()
         {
-            return SERVER_TRANSFER();
+            return null;
         }
     },;
     @Override

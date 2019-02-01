@@ -26,6 +26,7 @@ package com.tgx.chess.rook.biz.device.client;
 
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 import static com.tgx.chess.queen.io.core.inf.IoHandler.CONNECTED_OPERATOR;
+import static com.tgx.chess.queen.io.core.inf.IoHandler.LOG;
 import static com.tgx.chess.queen.io.external.zoperator.ZOperators.CONSUMER;
 import static com.tgx.chess.queen.io.external.zoperator.ZOperators.CONSUMER_TRANSFER;
 
@@ -38,6 +39,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
@@ -105,9 +107,26 @@ public class DeviceClient
     private final AsynchronousChannelGroup _ChannelGroup;
     private final ClientCore               _ClientCore = new ClientCore();
     private final TimeWheel                _TimeWheel  = _ClientCore.getTimeWheel();
+    private final AtomicInteger            _State      = new AtomicInteger();
 
     private ISession                      clientSession;
     private final AtomicReference<byte[]> currentTokenRef = new AtomicReference<>();
+
+    enum STATE
+    {
+        STOP,
+        CONNECTING,
+        OFFLINE,
+        ONLINE,
+        SHUTDOWN
+    }
+
+    private void updateState(STATE state)
+    {
+        for (int s = _State.get(), retry = 0; !_State.compareAndSet(s, state.ordinal()); s = _State.get(), retry++) {
+            LOG.warning("update state failed! retry: %d", retry);
+        }
+    }
 
     @SuppressWarnings("unchecked")
     public DeviceClient(@Value("${client.target.name}") String targetName,
@@ -115,6 +134,7 @@ public class DeviceClient
                         @Value("${client.target.port}") int targetPort)
             throws IOException
     {
+        _State.set(STATE.STOP.ordinal());
         _TargetName = targetName;
         _TargetHost = targetHost;
         _TargetPort = targetPort;
@@ -281,7 +301,8 @@ public class DeviceClient
                                                      _Log.info("heartbeat ok");
                                                      break;
                                                  case X103_Close.COMMAND:
-                                                     return new X103_Close("client response close".getBytes());
+                                                     close();
+                                                     break;
                                              }
                                              return null;
                                          })
@@ -331,6 +352,7 @@ public class DeviceClient
     {
         _Log.info("client connect:%s", session);
         clientSession = session;
+        updateState(STATE.OFFLINE);
     }
 
     @Override
@@ -340,18 +362,18 @@ public class DeviceClient
         if (clientSession == session) {
             _Log.info("drop client session %s", session);
             clientSession = null;
-            connect();
+            updateState(STATE.SHUTDOWN);
         }
     }
 
     public boolean isOnline()
     {
-        return Objects.nonNull(clientSession);
+        return Objects.nonNull(clientSession) && _State.get() >= STATE.ONLINE.ordinal();
     }
 
     public boolean isOffline()
     {
-        return Objects.isNull(clientSession);
+        return Objects.isNull(clientSession) && _State.get() <= STATE.OFFLINE.ordinal();
     }
 
     public boolean sendLocal(ICommand... toSends)
