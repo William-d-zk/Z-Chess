@@ -22,34 +22,32 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.queen.event.handler.client;
+package com.tgx.chess.bishop.io.device;
 
-import static com.tgx.chess.queen.event.inf.IOperator.Type.LOGIC;
+import com.tgx.chess.bishop.io.websokcet.WsContext;
+import com.tgx.chess.bishop.io.zprotocol.Command;
 
-import com.tgx.chess.queen.event.handler.DecodeHandler;
-import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.ICommand;
-import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
-import com.tgx.chess.queen.io.core.inf.ISession;
-
-public class ClientDecodeHandler
+/**
+ * @author William.d.zk
+ */
+public class X51_DeviceMsgAck
         extends
-        DecodeHandler
+        Command<WsContext>
 {
+    public final static int COMMAND = 0x51;
 
-    public ClientDecodeHandler(IEncryptHandler encryptHandler)
+    public X51_DeviceMsgAck()
     {
-        super(encryptHandler);
+        super(COMMAND, true);
     }
 
-    @Override
-    protected void transfer(QEvent event,
-                            ICommand[] commands,
-                            ISession session,
-                            IOperator<ICommand[],
-                                      ISession> operator)
+    public X51_DeviceMsgAck(long msgUID)
     {
-        event.produce(LOGIC, commands, session, operator);
+        super(COMMAND, msgUID);
+    }
+
+    public int getPriority()
+    {
+        return QOS_09_CONFIRM_MESSAGE;
     }
 }

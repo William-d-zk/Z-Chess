@@ -52,6 +52,7 @@ import com.tgx.chess.queen.event.handler.client.ClientLinkHandler;
 import com.tgx.chess.queen.event.handler.client.ClientWriteDispatcher;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.async.socket.AioWorker;
+import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
 public class ClientCore
@@ -101,7 +102,7 @@ public class ClientCore
     ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
     */
     @SuppressWarnings("unchecked")
-    public void build(final EventHandler<QEvent> _LogicHandler)
+    public void build(final EventHandler<QEvent> _LogicHandler, IEncryptHandler encryptHandler)
     {
         final RingBuffer<QEvent> _WroteEvent = createPipelineYield(7);
         final RingBuffer<QEvent> _LinkIoEvent = createPipelineLite(2);
@@ -126,7 +127,7 @@ public class ClientCore
             _DispatchIo[i].addGatingSequences(_IoDispatcher.getSequences()[i]);
         final BatchEventProcessor<QEvent> _DecodeProcessor = new BatchEventProcessor<>(_ReadAndLogicEvent,
                                                                                        _ReadAndLogicEvent.newBarrier(),
-                                                                                       new ClientDecodeHandler());
+                                                                                       new ClientDecodeHandler(encryptHandler));
         /* 相对 server core 做了精简，decode 错误将在 logic processor 中按照 Ignore 进行处理
            最终被
         */

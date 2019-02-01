@@ -22,34 +22,63 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.queen.event.handler.client;
+package com.tgx.chess.bishop.io.ztls;
 
-import static com.tgx.chess.queen.event.inf.IOperator.Type.LOGIC;
+import com.tgx.chess.king.base.util.IoUtil;
+import com.tgx.chess.bishop.io.websokcet.ZContext;
+import com.tgx.chess.bishop.io.zprotocol.Command;
 
-import com.tgx.chess.queen.event.handler.DecodeHandler;
-import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.ICommand;
-import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
-import com.tgx.chess.queen.io.core.inf.ISession;
-
-public class ClientDecodeHandler
+/**
+ * @author William.d.zk
+ */
+public class X06_PlainStart
         extends
-        DecodeHandler
+        Command<ZContext>
 {
+    public final static int COMMAND = 0x06;
+    public int              code;
 
-    public ClientDecodeHandler(IEncryptHandler encryptHandler)
+    public X06_PlainStart()
     {
-        super(encryptHandler);
+        super(COMMAND, false);
     }
 
     @Override
-    protected void transfer(QEvent event,
-                            ICommand[] commands,
-                            ISession session,
-                            IOperator<ICommand[],
-                                      ISession> operator)
+    public boolean isMappingCommand()
     {
-        event.produce(LOGIC, commands, session, operator);
+        return true;
+    }
+
+    public X06_PlainStart(int code)
+    {
+        super(COMMAND, false);
+        this.code = code;
+    }
+
+    @Override
+    public int getPriority()
+    {
+        return QOS_00_NETWORK_CONTROL;
+    }
+
+    @Override
+    public int decodec(byte[] data, int pos)
+    {
+        code = IoUtil.readUnsignedShort(data, pos);
+        pos += 2;
+        return pos;
+    }
+
+    @Override
+    public int encodec(byte[] data, int pos)
+    {
+        pos += IoUtil.writeShort(code, data, pos);
+        return pos;
+    }
+
+    @Override
+    public int dataLength()
+    {
+        return super.dataLength() + 2;
     }
 }

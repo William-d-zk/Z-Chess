@@ -36,13 +36,13 @@
     <name>Z-Rook</name>
     <dependencies>
         <dependency>
-            <groupId>com.tgx.service</groupId>
-            <artifactId>io.z-queen</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.tgx.service</groupId>
+            <artifactId>manange.z-bishop</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

@@ -24,9 +24,9 @@
 
 package com.tgx.chess.bishop.biz.device;
 
+import static com.tgx.chess.bishop.io.zoperator.ZOperators.SERVER_TRANSFER;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 import static com.tgx.chess.queen.io.core.inf.IoHandler.CONNECTED_OPERATOR;
-import static com.tgx.chess.queen.io.external.zoperator.ZOperators.SERVER_TRANSFER;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -38,6 +38,23 @@ import java.util.Objects;
 
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
+import com.tgx.chess.bishop.io.control.X101_HandShake;
+import com.tgx.chess.bishop.io.control.X103_Close;
+import com.tgx.chess.bishop.io.control.X104_Ping;
+import com.tgx.chess.bishop.io.control.X105_Pong;
+import com.tgx.chess.bishop.io.device.X20_SignUp;
+import com.tgx.chess.bishop.io.device.X21_SignUpResult;
+import com.tgx.chess.bishop.io.device.X22_SignIn;
+import com.tgx.chess.bishop.io.device.X23_SignInResult;
+import com.tgx.chess.bishop.io.device.X30_EventMsg;
+import com.tgx.chess.bishop.io.device.X31_ConfirmMsg;
+import com.tgx.chess.bishop.io.device.X32_MsgStatus;
+import com.tgx.chess.bishop.io.device.X50_DeviceMsg;
+import com.tgx.chess.bishop.io.device.X51_DeviceMsgAck;
+import com.tgx.chess.bishop.io.websokcet.ZContext;
+import com.tgx.chess.bishop.io.zcrypt.EncryptHandler;
+import com.tgx.chess.bishop.io.zhandler.ZLinkedHandler;
+import com.tgx.chess.bishop.io.zoperator.ZOperators;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.base.util.Pair;
@@ -63,21 +80,6 @@ import com.tgx.chess.queen.io.core.inf.ISessionCreator;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
-import com.tgx.chess.queen.io.external.websokcet.ZContext;
-import com.tgx.chess.queen.io.external.websokcet.bean.control.X101_HandShake;
-import com.tgx.chess.queen.io.external.websokcet.bean.control.X103_Close;
-import com.tgx.chess.queen.io.external.websokcet.bean.control.X104_Ping;
-import com.tgx.chess.queen.io.external.websokcet.bean.control.X105_Pong;
-import com.tgx.chess.queen.io.external.websokcet.bean.device.X20_SignUp;
-import com.tgx.chess.queen.io.external.websokcet.bean.device.X21_SignUpResult;
-import com.tgx.chess.queen.io.external.websokcet.bean.device.X22_SignIn;
-import com.tgx.chess.queen.io.external.websokcet.bean.device.X23_SignInResult;
-import com.tgx.chess.queen.io.external.websokcet.bean.device.X30_EventMsg;
-import com.tgx.chess.queen.io.external.websokcet.bean.device.X31_ConfirmMsg;
-import com.tgx.chess.queen.io.external.websokcet.bean.device.X32_MsgStatus;
-import com.tgx.chess.queen.io.external.websokcet.bean.device.X50_DeviceMsg;
-import com.tgx.chess.queen.io.external.websokcet.bean.device.X51_DeviceMsgAck;
-import com.tgx.chess.queen.io.external.zoperator.ZOperators;
 
 public class DeviceNode
         extends
@@ -308,7 +310,7 @@ public class DeviceNode
                 }
             }
             event.ignore();
-        }, this);
+        }, this, new ZLinkedHandler(), new EncryptHandler());
         _DeviceServer.bindAddress(new InetSocketAddress(_ServerHost, _ServerPort),
                                   AsynchronousChannelGroup.withFixedThreadPool(_ServerCore.getServerCount(), _ServerCore.getWorkerThreadFactory()));
         _DeviceServer.pendingAccept();

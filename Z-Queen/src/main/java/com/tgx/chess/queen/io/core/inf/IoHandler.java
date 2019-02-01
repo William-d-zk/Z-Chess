@@ -333,4 +333,9 @@ public interface IoHandler
             IPipeDecode
     {
     }
+
+    default boolean isSSL()
+    {
+        return false;
+    }
 }

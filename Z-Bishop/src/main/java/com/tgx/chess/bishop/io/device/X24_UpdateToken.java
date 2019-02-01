@@ -22,34 +22,25 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.queen.event.handler.client;
+package com.tgx.chess.bishop.io.device;
 
-import static com.tgx.chess.queen.event.inf.IOperator.Type.LOGIC;
+import com.tgx.chess.bishop.io.websokcet.WsContext;
+import com.tgx.chess.bishop.io.zprotocol.Command;
 
-import com.tgx.chess.queen.event.handler.DecodeHandler;
-import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.ICommand;
-import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
-import com.tgx.chess.queen.io.core.inf.ISession;
-
-public class ClientDecodeHandler
+public class X24_UpdateToken
         extends
-        DecodeHandler
+        Command<WsContext>
 {
+    public final static int COMMAND = 0x24;
 
-    public ClientDecodeHandler(IEncryptHandler encryptHandler)
+    public X24_UpdateToken()
     {
-        super(encryptHandler);
+        super(COMMAND, false);
     }
 
     @Override
-    protected void transfer(QEvent event,
-                            ICommand[] commands,
-                            ISession session,
-                            IOperator<ICommand[],
-                                      ISession> operator)
+    public int getPriority()
     {
-        event.produce(LOGIC, commands, session, operator);
+        return QOS_06_META_CREATE;
     }
 }
