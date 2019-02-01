@@ -38,9 +38,9 @@ import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
 import com.tgx.chess.queen.io.core.inf.IPacket;
 import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.external.zcrypt.EncryptHandler;
 
 /**
  * @author William.d.zk
@@ -49,8 +49,12 @@ public class DecodeHandler
         implements
         EventHandler<QEvent>
 {
-    protected final Logger         _Log            = Logger.getLogger(getClass().getName());
-    protected final EncryptHandler _EncryptHandler = new EncryptHandler();
+    protected final Logger          _Log = Logger.getLogger(getClass().getName());
+    protected final IEncryptHandler _EncryptHandler;
+
+    public DecodeHandler(IEncryptHandler encryptHandler) {
+        _EncryptHandler = encryptHandler;
+    }
 
     /**
      * 错误由接下去的 Handler 负责投递 Close 事件给 IoDispatcher

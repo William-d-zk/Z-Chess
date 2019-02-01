@@ -27,8 +27,8 @@ package com.tgx.chess.rook.biz.device.client;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 import static com.tgx.chess.queen.io.core.inf.IoHandler.CONNECTED_OPERATOR;
 import static com.tgx.chess.queen.io.core.inf.IoHandler.LOG;
-import static com.tgx.chess.queen.io.external.zoperator.ZOperators.CONSUMER;
-import static com.tgx.chess.queen.io.external.zoperator.ZOperators.CONSUMER_TRANSFER;
+import static com.tgx.chess.rook.io.zoperator.ZOperators.CONSUMER;
+import static com.tgx.chess.rook.io.zoperator.ZOperators.CONSUMER_TRANSFER;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -49,6 +49,19 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
+import com.tgx.chess.bishop.io.control.X101_HandShake;
+import com.tgx.chess.bishop.io.control.X103_Close;
+import com.tgx.chess.bishop.io.control.X104_Ping;
+import com.tgx.chess.bishop.io.control.X105_Pong;
+import com.tgx.chess.bishop.io.device.X21_SignUpResult;
+import com.tgx.chess.bishop.io.device.X22_SignIn;
+import com.tgx.chess.bishop.io.device.X23_SignInResult;
+import com.tgx.chess.bishop.io.device.X30_EventMsg;
+import com.tgx.chess.bishop.io.device.X31_ConfirmMsg;
+import com.tgx.chess.bishop.io.websokcet.ZContext;
+import com.tgx.chess.bishop.io.zcrypt.EncryptHandler;
+import com.tgx.chess.bishop.io.ztls.X03_Cipher;
+import com.tgx.chess.bishop.io.ztls.X05_EncryptStart;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.schedule.TimeWheel;
@@ -73,19 +86,7 @@ import com.tgx.chess.queen.io.core.inf.ISessionCreated;
 import com.tgx.chess.queen.io.core.inf.ISessionCreator;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
-import com.tgx.chess.queen.io.external.websokcet.ZContext;
-import com.tgx.chess.queen.io.external.websokcet.bean.control.X101_HandShake;
-import com.tgx.chess.queen.io.external.websokcet.bean.control.X103_Close;
-import com.tgx.chess.queen.io.external.websokcet.bean.control.X104_Ping;
-import com.tgx.chess.queen.io.external.websokcet.bean.control.X105_Pong;
-import com.tgx.chess.queen.io.external.websokcet.bean.device.X21_SignUpResult;
-import com.tgx.chess.queen.io.external.websokcet.bean.device.X22_SignIn;
-import com.tgx.chess.queen.io.external.websokcet.bean.device.X23_SignInResult;
-import com.tgx.chess.queen.io.external.websokcet.bean.device.X30_EventMsg;
-import com.tgx.chess.queen.io.external.websokcet.bean.device.X31_ConfirmMsg;
-import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X03_Cipher;
-import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X05_EncryptStart;
-import com.tgx.chess.queen.io.external.zoperator.ZOperators;
+import com.tgx.chess.rook.io.zoperator.ZOperators;
 
 @Component
 @PropertySource("classpath:client.properties")
@@ -318,7 +319,7 @@ public class DeviceClient
                 event.produce(WRITE, commands, session, CONSUMER_TRANSFER());
             }
             else event.ignore();
-        });
+        }, new EncryptHandler());
     }
 
     public void connect()

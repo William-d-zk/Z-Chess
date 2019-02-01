@@ -24,7 +24,6 @@
 
 package com.tgx.chess.queen.event.handler;
 
-import static com.tgx.chess.queen.event.inf.IError.Type.SAVE_DATA;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 import static com.tgx.chess.queen.io.core.inf.IoHandler.ERROR_OPERATOR;
 
@@ -35,6 +34,7 @@ import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.base.util.Triple;
+import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
@@ -44,15 +44,6 @@ import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionCreated;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
-import com.tgx.chess.queen.io.external.websokcet.bean.device.X20_SignUp;
-import com.tgx.chess.queen.io.external.websokcet.bean.device.X22_SignIn;
-import com.tgx.chess.queen.io.external.websokcet.bean.device.X24_UpdateToken;
-import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X01_EncryptRequest;
-import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X02_AsymmetricPub;
-import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X03_Cipher;
-import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X04_EncryptConfirm;
-import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X05_EncryptStart;
-import com.tgx.chess.queen.io.external.websokcet.bean.ztls.X06_PlainStart;
 
 /**
  * @author William.d.zk
@@ -66,19 +57,21 @@ public class LinkHandler
     private final RingBuffer<QEvent> _Error;
     private final RingBuffer<QEvent> _Writer;
     private final QueenManager       _QueenManager;
+    private final ILinkHandler       _LinkHandler;
 
     public LinkHandler(QueenManager manager,
                        RingBuffer<QEvent> error,
-                       RingBuffer<QEvent> writer)
+                       RingBuffer<QEvent> writer,
+                       ILinkHandler linkHandler)
     {
         _Error = error;
         _Writer = writer;
         _QueenManager = manager;
+        _LinkHandler = linkHandler;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
+    public void onEvent(QEvent event, long sequence, boolean endOfBatch)
     {
         if (event.hasError()) {
             switch (event.getErrorType())
@@ -102,10 +95,6 @@ public class LinkHandler
             }
         }
         else {
-            ICommand[] waitToSends = null;
-            ISession session = null;
-            IOperator<ICommand[],
-                      ISession> sendOperator = null;
             switch (event.getEventType())
             {
                 case CONNECTED:
@@ -119,66 +108,36 @@ public class LinkHandler
                            IOperator<ICommand[],
                                      ISession>> connectedHandled = connectedOperator.handle(connectedContent.first(), channel);
                     //connectedHandled 不可能为 null
-                    waitToSends = connectedHandled.first();
-                    session = connectedHandled.second();
+                    ISession session = connectedHandled.second();
                     ISessionCreated sessionCreated = connectedContent.first()
                                                                      .getSessionCreated();
                     sessionCreated.onCreate(session);
-                    sendOperator = connectedHandled.third();
+                    write(connectedHandled.first(), session, connectedHandled.third());
                     break;
                 case LOGIC:
-                    Pair<ICommand,
-                         ISession> logicContent = event.getContent();
-                    _Log.info("LinkHandler cmd: %s", logicContent.first());
-                    session = logicContent.second();
-                    ICommand cmd = logicContent.first();
-                    switch (cmd.getSerial())
-                    {
-                        case X01_EncryptRequest.COMMAND:
-                        case X02_AsymmetricPub.COMMAND:
-                        case X03_Cipher.COMMAND:
-                        case X04_EncryptConfirm.COMMAND:
-                        case X05_EncryptStart.COMMAND:
-                        case X06_PlainStart.COMMAND:
-                            waitToSends = new ICommand[] { cmd };
-                            break;
-                        case X20_SignUp.COMMAND:
-                            try {
-                                waitToSends = new ICommand[] { _QueenManager.save(cmd, session) };
-                            }
-                            catch (Exception e) {
-                                error(_Error, SAVE_DATA, e, session, ERROR_OPERATOR());
-                            }
-                            break;
-                        case X22_SignIn.COMMAND:
-                            try {
-                                waitToSends = new ICommand[] { _QueenManager.find(cmd, session) };
-                            }
-                            catch (Exception e) {
-                                error(_Error, SAVE_DATA, e, session, ERROR_OPERATOR());
-                            }
-                            break;
-                        case X24_UpdateToken.COMMAND:
-                            try {
-                                waitToSends = new ICommand[] { _QueenManager.save(cmd, session) };
-                            }
-                            catch (Exception e) {
-                                error(_Error, SAVE_DATA, e, session, ERROR_OPERATOR());
-                            }
-                            break;
-
-                    }
-                    sendOperator = session.getHandler()
-                                          .getOutOperator();
+                    _LinkHandler.handle(this, _QueenManager, event);
                     break;
-            }
-            if (Objects.nonNull(waitToSends) && Objects.nonNull(session) && Objects.nonNull(sendOperator)) {
-                publish(_Writer, WRITE, waitToSends, session, sendOperator);
             }
         }
         event.reset();
     }
+
+    public void error(IError.Type type, Throwable e, ISession session)
+    {
+        error(_Error, type, e, session, ERROR_OPERATOR());
+    }
+
+    public void write(ICommand[] waitToSends,
+                      ISession session,
+                      IOperator<ICommand[],
+                                ISession> sendOperator)
+    {
+        if (Objects.nonNull(waitToSends) && Objects.nonNull(session) && Objects.nonNull(sendOperator)) {
+            publish(_Writer, WRITE, waitToSends, session, sendOperator);
+        }
+    }
 }
+
 /*        ,IConsistentRead<E, D, N>
 {
 

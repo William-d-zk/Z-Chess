@@ -22,34 +22,37 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.queen.event.handler.client;
+package com.tgx.chess.bishop.io.control;
 
-import static com.tgx.chess.queen.event.inf.IOperator.Type.LOGIC;
+import com.tgx.chess.bishop.io.websokcet.WsControl;
+import com.tgx.chess.bishop.io.websokcet.WsFrame;
+import com.tgx.chess.king.base.util.IoUtil;
 
-import com.tgx.chess.queen.event.handler.DecodeHandler;
-import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.ICommand;
-import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
-import com.tgx.chess.queen.io.core.inf.ISession;
-
-public class ClientDecodeHandler
+public class X107_Redirect
         extends
-        DecodeHandler
+        WsControl
 {
+    public final static int COMMAND = 0x107;
 
-    public ClientDecodeHandler(IEncryptHandler encryptHandler)
+    public X107_Redirect(byte[] payload)
     {
-        super(encryptHandler);
+        super(COMMAND, payload);
+        mCtrlCode = WsFrame.frame_op_code_ctrl_redirect;
+    }
+
+    public String getHost()
+    {
+        return IoUtil.readIpAdr(getPayload());
+    }
+
+    public int getPort()
+    {
+        return IoUtil.readUnsignedShort(getPayload(), 4);
     }
 
     @Override
-    protected void transfer(QEvent event,
-                            ICommand[] commands,
-                            ISession session,
-                            IOperator<ICommand[],
-                                      ISession> operator)
+    public X107_Redirect duplicate()
     {
-        event.produce(LOGIC, commands, session, operator);
+        return new X107_Redirect(getPayload());
     }
 }

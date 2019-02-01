@@ -21,35 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.tgx.chess.bishop.io.control;
 
-package com.tgx.chess.queen.event.handler.client;
+import com.tgx.chess.bishop.io.websokcet.WsHandshake;
 
-import static com.tgx.chess.queen.event.inf.IOperator.Type.LOGIC;
-
-import com.tgx.chess.queen.event.handler.DecodeHandler;
-import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.ICommand;
-import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
-import com.tgx.chess.queen.io.core.inf.ISession;
-
-public class ClientDecodeHandler
+/**
+ * @author William.d.zk
+ */
+public class X101_HandShake
         extends
-        DecodeHandler
+        WsHandshake
 {
+    public final static int COMMAND = 0x101;
 
-    public ClientDecodeHandler(IEncryptHandler encryptHandler)
+    public X101_HandShake(String host,
+                          String secKey,
+                          int version)
     {
-        super(encryptHandler);
+        this(String.format("GET /ws_service HTTP/1.1\r\nHost: %s\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: %s\r\nOrigin: http://%s\r\nSec-WebSocket-Protocol: z-push, z-chat\r\nSec-WebSocket-Version: %s\r\n\r\n",
+                           host,
+                           secKey,
+                           host,
+                           version));
     }
 
-    @Override
-    protected void transfer(QEvent event,
-                            ICommand[] commands,
-                            ISession session,
-                            IOperator<ICommand[],
-                                      ISession> operator)
+    public X101_HandShake(String handshake)
     {
-        event.produce(LOGIC, commands, session, operator);
+        super(COMMAND, handshake);
     }
+
+    public X101_HandShake()
+    {
+        this(null);
+    }
+
 }

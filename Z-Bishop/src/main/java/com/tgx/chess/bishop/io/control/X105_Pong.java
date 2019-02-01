@@ -21,35 +21,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.tgx.chess.bishop.io.control;
 
-package com.tgx.chess.queen.event.handler.client;
+import com.tgx.chess.bishop.io.websokcet.WsControl;
+import com.tgx.chess.bishop.io.websokcet.WsFrame;
 
-import static com.tgx.chess.queen.event.inf.IOperator.Type.LOGIC;
-
-import com.tgx.chess.queen.event.handler.DecodeHandler;
-import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.ICommand;
-import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
-import com.tgx.chess.queen.io.core.inf.ISession;
-
-public class ClientDecodeHandler
+/**
+ * @author William.d.zk
+ */
+public class X105_Pong
         extends
-        DecodeHandler
+        WsControl
 {
+    public final static int COMMAND = 0x105;
 
-    public ClientDecodeHandler(IEncryptHandler encryptHandler)
+    public X105_Pong()
     {
-        super(encryptHandler);
+        super(COMMAND);
+        mCtrlCode = WsFrame.frame_op_code_ctrl_pong;
+    }
+
+    public X105_Pong(byte[] payload)
+    {
+        super(COMMAND, payload);
+        mCtrlCode = WsFrame.frame_op_code_ctrl_pong;
     }
 
     @Override
-    protected void transfer(QEvent event,
-                            ICommand[] commands,
-                            ISession session,
-                            IOperator<ICommand[],
-                                      ISession> operator)
+    public X105_Pong duplicate()
     {
-        event.produce(LOGIC, commands, session, operator);
+        return new X105_Pong(getPayload());
     }
 }

@@ -54,12 +54,14 @@ import com.tgx.chess.queen.event.handler.DecodedDispatcher;
 import com.tgx.chess.queen.event.handler.EncodeHandler;
 import com.tgx.chess.queen.event.handler.EncodedHandler;
 import com.tgx.chess.queen.event.handler.HandlerFactory;
+import com.tgx.chess.queen.event.handler.ILinkHandler;
 import com.tgx.chess.queen.event.handler.IoDispatcher;
 import com.tgx.chess.queen.event.handler.LinkHandler;
 import com.tgx.chess.queen.event.handler.WriteDispatcher;
 import com.tgx.chess.queen.event.inf.IOperator.Type;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.async.socket.AioWorker;
+import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
 
@@ -194,7 +196,7 @@ public abstract class ServerCore
      */
 
     @SuppressWarnings("unchecked")
-    public void build(HandlerFactory handlerFactory, QueenManager manager)
+    public void build(HandlerFactory handlerFactory, QueenManager manager, ILinkHandler linkHandler, IEncryptHandler encryptHandler)
     {
         final RingBuffer<QEvent> _WroteEvent = createPipelineYield(_AioQueuePower + 1);
         final RingBuffer<QEvent> _LinkIoEvent = createPipelineYield(_LinkPower);
@@ -221,7 +223,7 @@ public abstract class ServerCore
         final BatchEventProcessor<QEvent>[] _DecodeProcessors = new BatchEventProcessor[DECODER_COUNT];
         Arrays.setAll(_ReadEvents, slot -> createPipelineLite(_AioQueuePower));
         Arrays.setAll(_ReadBarriers, slot -> _ReadEvents[slot].newBarrier());
-        Arrays.setAll(_DecodeProcessors, slot -> new BatchEventProcessor<>(_ReadEvents[slot], _ReadBarriers[slot], new DecodeHandler()));
+        Arrays.setAll(_DecodeProcessors, slot -> new BatchEventProcessor<>(_ReadEvents[slot], _ReadBarriers[slot], new DecodeHandler(encryptHandler)));
 
         /* 链路处理 */
         /* 所有带有路由规则绑定的数据都需要投递到这个 Pipeline -> _LinkDecoded */
@@ -236,7 +238,8 @@ public abstract class ServerCore
                                                                                                            _LinkBarriers,
                                                                                                            new LinkHandler(manager,
                                                                                                                            _ErrorEvents[0],
-                                                                                                                           _LinkWriteEvent));
+                                                                                                                           _LinkWriteEvent,
+                                                                                                                           linkHandler));
         _LinkProcessor.setThreadName("LinkProcessor");
         for (int i = 0, size = _LinkEvents.length; i < size; i++)
             _LinkEvents[i].addGatingSequences(_LinkProcessor.getSequences()[i]);

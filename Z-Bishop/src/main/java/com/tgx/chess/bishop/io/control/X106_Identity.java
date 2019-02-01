@@ -21,35 +21,52 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.tgx.chess.bishop.io.control;
 
-package com.tgx.chess.queen.event.handler.client;
+import com.tgx.chess.bishop.io.websokcet.WsControl;
+import com.tgx.chess.bishop.io.websokcet.WsFrame;
+import com.tgx.chess.king.base.util.IoUtil;
 
-import static com.tgx.chess.queen.event.inf.IOperator.Type.LOGIC;
-
-import com.tgx.chess.queen.event.handler.DecodeHandler;
-import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.ICommand;
-import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
-import com.tgx.chess.queen.io.core.inf.ISession;
-
-public class ClientDecodeHandler
+/**
+ * @author William.d.zk
+ */
+public class X106_Identity
         extends
-        DecodeHandler
+        WsControl
 {
+    public final static int COMMAND = 0x106;
 
-    public ClientDecodeHandler(IEncryptHandler encryptHandler)
+    public X106_Identity(String nodeName)
     {
-        super(encryptHandler);
+        super(nodeName, COMMAND);
+        mCtrlCode = WsFrame.frame_op_code_ctrl_cluster;
+    }
+
+    public X106_Identity(byte[] payload)
+    {
+        super(COMMAND, payload);
+        mCtrlCode = WsFrame.frame_op_code_ctrl_cluster;
+    }
+
+    public long getIdentity()
+    {
+        return IoUtil.readLong(getPayload(), 0);
+    }
+
+    public long[] getIdentities()
+    {
+        int size = (getPayload().length - 8) >>> 3;
+        if (size > 0) {
+            long[] result = new long[size];
+            IoUtil.readLongArray(getPayload(), 8, result);
+            return result;
+        }
+        return null;
     }
 
     @Override
-    protected void transfer(QEvent event,
-                            ICommand[] commands,
-                            ISession session,
-                            IOperator<ICommand[],
-                                      ISession> operator)
+    public X106_Identity duplicate()
     {
-        event.produce(LOGIC, commands, session, operator);
+        return new X106_Identity(getPayload());
     }
 }
