@@ -27,11 +27,11 @@ package com.tgx.chess.bishop.io.zoperator;
 import java.util.Arrays;
 import java.util.Objects;
 
-import com.tgx.chess.bishop.io.filter.WsControlFilter;
-import com.tgx.chess.bishop.io.filter.WsFrameFilter;
-import com.tgx.chess.bishop.io.filter.WsHandShakeFilter;
-import com.tgx.chess.bishop.io.websokcet.WsContext;
-import com.tgx.chess.bishop.io.websokcet.ZContext;
+import com.tgx.chess.bishop.io.ws.filter.WsControlFilter;
+import com.tgx.chess.bishop.io.ws.filter.WsFrameFilter;
+import com.tgx.chess.bishop.io.ws.filter.WsHandShakeFilter;
+import com.tgx.chess.bishop.io.ws.bean.WsContext;
+import com.tgx.chess.bishop.io.zprotocol.ZContext;
 import com.tgx.chess.bishop.io.zfilter.ZCommandFilter;
 import com.tgx.chess.bishop.io.zfilter.ZTlsFilter;
 import com.tgx.chess.king.base.log.Logger;

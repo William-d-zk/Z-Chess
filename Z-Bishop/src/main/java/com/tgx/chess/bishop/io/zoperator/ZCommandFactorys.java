@@ -24,17 +24,17 @@
 
 package com.tgx.chess.bishop.io.zoperator;
 
-import com.tgx.chess.bishop.io.device.X20_SignUp;
-import com.tgx.chess.bishop.io.device.X21_SignUpResult;
-import com.tgx.chess.bishop.io.device.X22_SignIn;
-import com.tgx.chess.bishop.io.device.X23_SignInResult;
-import com.tgx.chess.bishop.io.device.X24_UpdateToken;
-import com.tgx.chess.bishop.io.device.X25_AuthorisedToken;
-import com.tgx.chess.bishop.io.device.X30_EventMsg;
-import com.tgx.chess.bishop.io.device.X31_ConfirmMsg;
-import com.tgx.chess.bishop.io.device.X32_MsgStatus;
-import com.tgx.chess.bishop.io.device.X50_DeviceMsg;
-import com.tgx.chess.bishop.io.device.X51_DeviceMsgAck;
+import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
+import com.tgx.chess.bishop.io.zprotocol.device.X21_SignUpResult;
+import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
+import com.tgx.chess.bishop.io.zprotocol.device.X23_SignInResult;
+import com.tgx.chess.bishop.io.zprotocol.device.X24_UpdateToken;
+import com.tgx.chess.bishop.io.zprotocol.device.X25_AuthorisedToken;
+import com.tgx.chess.bishop.io.zprotocol.device.X30_EventMsg;
+import com.tgx.chess.bishop.io.zprotocol.device.X31_ConfirmMsg;
+import com.tgx.chess.bishop.io.zprotocol.device.X32_MsgStatus;
+import com.tgx.chess.bishop.io.zprotocol.device.X50_DeviceMsg;
+import com.tgx.chess.bishop.io.zprotocol.device.X51_DeviceMsgAck;
 import com.tgx.chess.bishop.io.zfilter.ZCommandFilter;
 import com.tgx.chess.bishop.io.zprotocol.Command;
 import com.tgx.chess.king.base.log.Logger;
