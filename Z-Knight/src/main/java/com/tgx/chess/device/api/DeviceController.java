@@ -36,7 +36,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
-import com.tgx.chess.bishop.io.device.X30_EventMsg;
+import com.tgx.chess.bishop.io.zprotocol.device.X30_EventMsg;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.spring.device.model.DeviceEntity;
 import com.tgx.chess.spring.device.service.DeviceService;

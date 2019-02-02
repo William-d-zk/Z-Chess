@@ -26,11 +26,11 @@ package com.tgx.chess.rook.biz.device.controller;
 
 import java.util.Objects;
 
-import com.tgx.chess.bishop.io.control.X103_Close;
-import com.tgx.chess.bishop.io.device.X20_SignUp;
-import com.tgx.chess.bishop.io.device.X22_SignIn;
-import com.tgx.chess.bishop.io.device.X50_DeviceMsg;
-import com.tgx.chess.bishop.io.ztls.X01_EncryptRequest;
+import com.tgx.chess.bishop.io.zprotocol.control.X103_Close;
+import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
+import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
+import com.tgx.chess.bishop.io.zprotocol.device.X50_DeviceMsg;
+import com.tgx.chess.bishop.io.zprotocol.ztls.X01_EncryptRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;

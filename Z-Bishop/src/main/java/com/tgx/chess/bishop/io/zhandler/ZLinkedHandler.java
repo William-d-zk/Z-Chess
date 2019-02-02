@@ -26,15 +26,15 @@ package com.tgx.chess.bishop.io.zhandler;
 
 import static com.tgx.chess.queen.event.inf.IError.Type.SAVE_DATA;
 
-import com.tgx.chess.bishop.io.device.X20_SignUp;
-import com.tgx.chess.bishop.io.device.X22_SignIn;
-import com.tgx.chess.bishop.io.device.X24_UpdateToken;
-import com.tgx.chess.bishop.io.ztls.X01_EncryptRequest;
-import com.tgx.chess.bishop.io.ztls.X02_AsymmetricPub;
-import com.tgx.chess.bishop.io.ztls.X03_Cipher;
-import com.tgx.chess.bishop.io.ztls.X04_EncryptConfirm;
-import com.tgx.chess.bishop.io.ztls.X05_EncryptStart;
-import com.tgx.chess.bishop.io.ztls.X06_PlainStart;
+import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
+import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
+import com.tgx.chess.bishop.io.zprotocol.device.X24_UpdateToken;
+import com.tgx.chess.bishop.io.zprotocol.ztls.X01_EncryptRequest;
+import com.tgx.chess.bishop.io.zprotocol.ztls.X02_AsymmetricPub;
+import com.tgx.chess.bishop.io.zprotocol.ztls.X03_Cipher;
+import com.tgx.chess.bishop.io.zprotocol.ztls.X04_EncryptConfirm;
+import com.tgx.chess.bishop.io.zprotocol.ztls.X05_EncryptStart;
+import com.tgx.chess.bishop.io.zprotocol.ztls.X06_PlainStart;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.handler.ILinkHandler;
