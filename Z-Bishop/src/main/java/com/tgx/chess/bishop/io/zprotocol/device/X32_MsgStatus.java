@@ -29,13 +29,13 @@ import static com.tgx.chess.bishop.io.zprotocol.device.X31_ConfirmMsg.STATUS_CON
 import static com.tgx.chess.bishop.io.zprotocol.device.X31_ConfirmMsg.STATUS_PENDING;
 import static com.tgx.chess.bishop.io.zprotocol.device.X31_ConfirmMsg.STATUS_RECEIVED;
 
-import com.tgx.chess.bishop.io.ws.bean.WsContext;
-import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.bishop.io.zprotocol.Command;
+import com.tgx.chess.bishop.io.zprotocol.ZContext;
+import com.tgx.chess.king.base.util.IoUtil;
 
 public class X32_MsgStatus
         extends
-        Command<WsContext>
+        Command<ZContext>
 {
     public final static int COMMAND = 0x32;
 

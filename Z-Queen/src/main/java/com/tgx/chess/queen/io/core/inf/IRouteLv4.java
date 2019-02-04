@@ -29,7 +29,8 @@ package com.tgx.chess.queen.io.core.inf;
 public interface IRouteLv4
         extends
         IRouteLv4Cluster,
-        IRouteLv4PortChannel
+        IRouteLv4PortChannel,
+        IDuplicate
 {
 
     default long getPortIdx()
@@ -48,11 +49,6 @@ public interface IRouteLv4
     }
 
     default IRouteLv4 setCluster(boolean b)
-    {
-        return this;
-    }
-
-    default IRouteLv4 duplicate()
     {
         return this;
     }

@@ -24,12 +24,12 @@
 
 package com.tgx.chess.bishop.io.zprotocol.device;
 
-import com.tgx.chess.bishop.io.ws.bean.WsContext;
 import com.tgx.chess.bishop.io.zprotocol.Command;
+import com.tgx.chess.bishop.io.zprotocol.ZContext;
 
 public class X25_AuthorisedToken
         extends
-        Command<WsContext>
+        Command<ZContext>
 {
     public final static int COMMAND = 0x25;
 

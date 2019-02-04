@@ -32,10 +32,10 @@ import static com.tgx.chess.queen.io.core.inf.IContext.ENCODE_HANDSHAKE;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
-import com.tgx.chess.bishop.io.zprotocol.control.X101_HandShake;
-import com.tgx.chess.bishop.io.zprotocol.control.X102_SslHandShake;
 import com.tgx.chess.bishop.io.ws.bean.WsContext;
 import com.tgx.chess.bishop.io.ws.bean.WsHandshake;
+import com.tgx.chess.bishop.io.zprotocol.control.X101_HandShake;
+import com.tgx.chess.bishop.io.zprotocol.control.X102_SslHandShake;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.async.AioPacket;
@@ -55,12 +55,12 @@ public class WsHandShakeFilter
     private final IoHandler _IoHandler;
     private final Logger    _Log = Logger.getLogger(getClass().getName());
 
-    public WsHandShakeFilter(IoHandler mode)
+    public WsHandShakeFilter(IoHandler handler)
     {
         name = "web-socket-header-zfilter-"
-               + mode.getClass()
-                     .getName();
-        _IoHandler = mode;
+               + handler.getClass()
+                        .getName();
+        _IoHandler = handler;
     }
 
     @Override

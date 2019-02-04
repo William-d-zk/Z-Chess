@@ -24,6 +24,8 @@
 
 package com.tgx.chess.bishop.io.zoperator;
 
+import com.tgx.chess.bishop.io.zprotocol.Command;
+import com.tgx.chess.bishop.io.zprotocol.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
 import com.tgx.chess.bishop.io.zprotocol.device.X21_SignUpResult;
 import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
@@ -35,20 +37,20 @@ import com.tgx.chess.bishop.io.zprotocol.device.X31_ConfirmMsg;
 import com.tgx.chess.bishop.io.zprotocol.device.X32_MsgStatus;
 import com.tgx.chess.bishop.io.zprotocol.device.X50_DeviceMsg;
 import com.tgx.chess.bishop.io.zprotocol.device.X51_DeviceMsgAck;
-import com.tgx.chess.bishop.io.zfilter.ZCommandFilter;
-import com.tgx.chess.bishop.io.zprotocol.Command;
 import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.queen.io.core.inf.ICommandFactory;
 
-public enum ZCommandFactorys
+public enum ZCommandFactories
         implements
-        ZCommandFilter.CommandFactory
+        ICommandFactory<ZContext,
+                        Command<ZContext>>
 {
 
     SERVER
     {
 
         @Override
-        public Command createCommand(int command)
+        public Command<ZContext> create(int command)
         {
             switch (command)
             {
@@ -58,8 +60,6 @@ public enum ZCommandFactorys
                     return new X22_SignIn();
                 case X24_UpdateToken.COMMAND:
                     return new X24_UpdateToken();
-                case X25_AuthorisedToken.COMMAND:
-                    return new X25_AuthorisedToken();
                 case X31_ConfirmMsg.COMMAND:
                     return new X31_ConfirmMsg();
                 case X32_MsgStatus.COMMAND:
@@ -76,7 +76,7 @@ public enum ZCommandFactorys
     CLUSTER
     {
         @Override
-        public Command createCommand(int command)
+        public Command<ZContext> create(int command)
         {
             LOG.warning(String.format("cluster command is not Handled : %x", command));
             return null;
@@ -85,7 +85,7 @@ public enum ZCommandFactorys
     MQ
     {
         @Override
-        public Command createCommand(int command)
+        public Command<ZContext> create(int command)
         {
             LOG.warning(String.format("mq-service command is not Handled : %x", command));
             return null;
@@ -93,7 +93,7 @@ public enum ZCommandFactorys
     },
     CONSUMER
     {
-        public Command createCommand(int command)
+        public Command<ZContext> create(int command)
         {
             switch (command)
             {
@@ -117,5 +117,5 @@ public enum ZCommandFactorys
         }
 
     };
-    private static Logger LOG = Logger.getLogger(ZCommandFactorys.class.getName());
+    private static Logger LOG = Logger.getLogger(ZCommandFactories.class.getName());
 }

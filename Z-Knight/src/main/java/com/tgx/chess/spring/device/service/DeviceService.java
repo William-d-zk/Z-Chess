@@ -42,13 +42,13 @@ import org.springframework.stereotype.Service;
 
 import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
 import com.tgx.chess.bishop.biz.device.DeviceNode;
+import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
+import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
+import com.tgx.chess.bishop.io.zprotocol.device.X24_UpdateToken;
 import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.io.core.inf.ICommand;
-import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
-import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
-import com.tgx.chess.bishop.io.zprotocol.device.X24_UpdateToken;
 import com.tgx.chess.spring.device.model.DeviceEntity;
 import com.tgx.chess.spring.device.repository.ClientRepository;
 import com.tgx.chess.spring.device.repository.DeviceRepository;
