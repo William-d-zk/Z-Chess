@@ -39,6 +39,7 @@ import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.config.Code;
 import com.tgx.chess.queen.io.core.async.AioContext;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
+import com.tgx.chess.queen.io.core.inf.ICommandFactory;
 import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
 
@@ -50,15 +51,17 @@ public class ZCommandFilter<C extends AioContext>
         AioFilterChain<C>
 {
 
-    private final CommandFactory<C> factory;
-    private final Logger            _Log = Logger.getLogger(getClass().getName());
+    private final ICommandFactory<C,
+                                  Command<C>>    factory;
+    private final Logger                         _Log = Logger.getLogger(getClass().getName());
 
     public ZCommandFilter()
     {
         this(null);
     }
 
-    public ZCommandFilter(CommandFactory<C> factory)
+    public ZCommandFilter(ICommandFactory<C,
+                                          Command<C>> factory)
     {
         this.factory = factory;
         name = "queen-command-zfilter";
@@ -108,7 +111,7 @@ public class ZCommandFilter<C extends AioContext>
         WsFrame frame = (WsFrame) input;
         int command = frame.getPayload()[1] & 0xFF;
         @SuppressWarnings("unchecked")
-        Command<C> _command = (Command<C>) createCommand(command);
+        Command<C> _command = (Command<C>) create(command);
         if (Objects.isNull(_command)) return null;
         _command.decode(frame.getPayload(), context);
         switch (command)
@@ -195,7 +198,7 @@ public class ZCommandFilter<C extends AioContext>
         }
     }
 
-    private Command<? extends AioContext> createCommand(int command)
+    private Command<? extends AioContext> create(int command)
     {
         switch (command)
         {
@@ -214,14 +217,8 @@ public class ZCommandFilter<C extends AioContext>
             case 0xFF:
                 throw new UnsupportedOperationException();
             default:
-                return Objects.nonNull(factory) ? factory.createCommand(command)
+                return Objects.nonNull(factory) ? factory.create(command)
                                                 : null;
         }
     }
-
-    public interface CommandFactory<E extends AioContext>
-    {
-        Command<E> createCommand(int command);
-    }
-
 }

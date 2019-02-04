@@ -26,13 +26,14 @@ package com.tgx.chess.bishop.io.zprotocol.device;
 
 import java.util.Objects;
 
+import com.tgx.chess.bishop.io.zprotocol.ZContext;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.bishop.io.ws.bean.WsContext;
 import com.tgx.chess.bishop.io.zprotocol.Command;
 
 public class X20_SignUp
         extends
-        Command<WsContext>
+        Command<ZContext>
 {
     public final static int COMMAND = 0x20;
 

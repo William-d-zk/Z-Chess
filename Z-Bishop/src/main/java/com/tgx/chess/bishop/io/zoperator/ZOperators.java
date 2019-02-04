@@ -191,7 +191,7 @@ public enum ZOperators
                 IFilterChain<WsContext> header = new ZTlsFilter();
                 handshakeFilter.linkAfter(header);
                 handshakeFilter.linkFront(new WsFrameFilter())
-                               .linkFront(new ZCommandFilter(ZCommandFactorys.SERVER))
+                               .linkFront(new ZCommandFilter(ZCommandFactories.SERVER))
                                .linkFront(new WsControlFilter());
             }
 
@@ -227,7 +227,7 @@ public enum ZOperators
         {
             final WsFrameFilter header = new WsFrameFilter();
             {
-                header.linkFront(new ZCommandFilter(ZCommandFactorys.CLUSTER))
+                header.linkFront(new ZCommandFilter(ZCommandFactories.CLUSTER))
                       .linkFront(new WsControlFilter());
             }
 
@@ -269,7 +269,7 @@ public enum ZOperators
                 IFilterChain<WsContext> header = new ZTlsFilter();
                 handshakeFilter.linkAfter(header);
                 handshakeFilter.linkFront(new WsFrameFilter())
-                               .linkFront(new ZCommandFilter(ZCommandFactorys.SERVER))
+                               .linkFront(new ZCommandFilter(ZCommandFactories.SERVER))
                                .linkFront(new WsControlFilter());
             }
 
@@ -292,7 +292,7 @@ public enum ZOperators
         {
             final WsFrameFilter header = new WsFrameFilter();
             {
-                header.linkFront(new ZCommandFilter(ZCommandFactorys.CLUSTER))
+                header.linkFront(new ZCommandFilter(ZCommandFactories.CLUSTER))
                       .linkFront(new WsControlFilter());
             }
 

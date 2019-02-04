@@ -34,7 +34,7 @@ import com.tgx.chess.bishop.io.ws.bean.WsContext;
 import com.tgx.chess.bishop.io.zprotocol.ZContext;
 import com.tgx.chess.bishop.io.zfilter.ZCommandFilter;
 import com.tgx.chess.bishop.io.zfilter.ZTlsFilter;
-import com.tgx.chess.bishop.io.zoperator.ZCommandFactorys;
+import com.tgx.chess.bishop.io.zoperator.ZCommandFactories;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.event.inf.IOperator;
@@ -105,7 +105,7 @@ public enum ZOperators
                 IFilterChain<WsContext> header = new ZTlsFilter();
                 handshakeFilter.linkAfter(header);
                 handshakeFilter.linkFront(new WsFrameFilter())
-                               .linkFront(new ZCommandFilter(ZCommandFactorys.CONSUMER))
+                               .linkFront(new ZCommandFilter(ZCommandFactories.CONSUMER))
                                .linkFront(new WsControlFilter());
             }
 
@@ -144,7 +144,7 @@ public enum ZOperators
                 IFilterChain<WsContext> header = new ZTlsFilter();
                 handshakeFilter.linkAfter(header);
                 handshakeFilter.linkFront(new WsFrameFilter())
-                               .linkFront(new ZCommandFilter(ZCommandFactorys.CONSUMER))
+                               .linkFront(new ZCommandFilter(ZCommandFactories.CONSUMER))
                                .linkFront(new WsControlFilter());
             }
 
