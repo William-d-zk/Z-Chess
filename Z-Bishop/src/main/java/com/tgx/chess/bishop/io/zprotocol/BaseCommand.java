@@ -38,13 +38,13 @@ import com.tgx.chess.queen.io.core.inf.IStreamProtocol;
 /**
  * @author William.d.zk
  */
-public abstract class Command<C extends AioContext>
+public abstract class BaseCommand<C extends AioContext>
         implements
         ICommand,
         IRouteLv4,
         IStreamProtocol<C>
 {
-    private final static Logger _Log = Logger.getLogger(Command.class.getName());
+    private final static Logger _Log = Logger.getLogger(BaseCommand.class.getName());
 
     public final static int  version             = 0x3;
     private final static int g_msg_uid_size      = 8;
@@ -60,8 +60,8 @@ public abstract class Command<C extends AioContext>
     private long             mSequence           = -1;
     private transient long   tTransactionKey     = _DEFAULT_TRANSACTION_KEY;
 
-    protected Command(int command,
-                      boolean hasUID)
+    protected BaseCommand(int command,
+                          boolean hasUID)
     {
         _Command = command;
         initGUid(0, _HasUID = hasUID);
@@ -71,8 +71,8 @@ public abstract class Command<C extends AioContext>
         setCharsetSerial(I18nUtil.CHARSET_UTF_8, I18nUtil.SERIAL_BINARY);
     }
 
-    public Command(int command,
-                   long uidWithoutSequence)
+    public BaseCommand(int command,
+                       long uidWithoutSequence)
     {
         _Command = command;
         initGUid(uidWithoutSequence, _HasUID = true);
@@ -132,7 +132,7 @@ public abstract class Command<C extends AioContext>
     }
 
     @Override
-    public Command<C> setCluster(boolean b)
+    public BaseCommand<C> setCluster(boolean b)
     {
         mHAttr |= b ? 0x80
                     : 0;
@@ -349,13 +349,13 @@ public abstract class Command<C extends AioContext>
         return mTypeByte;
     }
 
-    public Command<C> setPType(byte type_b)
+    public BaseCommand<C> setPType(byte type_b)
     {
         this.mTypeByte = type_b;
         return this;
     }
 
-    public Command<C> setUID(String hexGUid, long longGUid)
+    public BaseCommand<C> setUID(String hexGUid, long longGUid)
     {
         if (longGUid != -1) setUID(longGUid);
         else if (Objects.nonNull(hexGUid)) setUID(Long.parseLong(hexGUid, 16));
@@ -382,14 +382,14 @@ public abstract class Command<C extends AioContext>
     }
 
     @Override
-    public Command<C> setSession(ISession session)
+    public BaseCommand<C> setSession(ISession session)
     {
         this.mSession = session;
         return this;
     }
 
     @Override
-    public Command<C> duplicate()
+    public BaseCommand<C> duplicate()
     {
         return null;
     }

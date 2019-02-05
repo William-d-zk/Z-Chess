@@ -24,12 +24,12 @@
 
 package com.tgx.chess.bishop.io.zprotocol.device;
 
-import com.tgx.chess.bishop.io.zprotocol.Command;
+import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
 import com.tgx.chess.bishop.io.zprotocol.ZContext;
 
 public class X24_UpdateToken
         extends
-        Command<ZContext>
+        BaseCommand<ZContext>
 {
     public final static int COMMAND = 0x24;
 

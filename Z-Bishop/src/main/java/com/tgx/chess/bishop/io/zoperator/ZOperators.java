@@ -27,13 +27,13 @@ package com.tgx.chess.bishop.io.zoperator;
 import java.util.Arrays;
 import java.util.Objects;
 
+import com.tgx.chess.bishop.io.ws.bean.WsContext;
 import com.tgx.chess.bishop.io.ws.filter.WsControlFilter;
 import com.tgx.chess.bishop.io.ws.filter.WsFrameFilter;
 import com.tgx.chess.bishop.io.ws.filter.WsHandShakeFilter;
-import com.tgx.chess.bishop.io.ws.bean.WsContext;
-import com.tgx.chess.bishop.io.zprotocol.ZContext;
 import com.tgx.chess.bishop.io.zfilter.ZCommandFilter;
 import com.tgx.chess.bishop.io.zfilter.ZTlsFilter;
+import com.tgx.chess.bishop.io.zprotocol.ZContext;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.base.util.Triple;
@@ -186,7 +186,7 @@ public enum ZOperators
     static {
         server_encoder = new IEncoder()
         {
-            final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(ZOperators.SERVER);
+            final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(SERVER);
             {
                 IFilterChain<WsContext> header = new ZTlsFilter();
                 handshakeFilter.linkAfter(header);
@@ -263,7 +263,7 @@ public enum ZOperators
         server_decoder = new IDecoder()
         {
 
-            final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(ZOperators.SERVER);
+            final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(SERVER);
 
             {
                 IFilterChain<WsContext> header = new ZTlsFilter();
@@ -311,7 +311,6 @@ public enum ZOperators
                 return new Triple<>(filterRead(inPackage, header, (ZContext) session.getContext()), session, cluster_transfer);
             }
         };
-
 
         server_transfer = new ITransfer()
         {
