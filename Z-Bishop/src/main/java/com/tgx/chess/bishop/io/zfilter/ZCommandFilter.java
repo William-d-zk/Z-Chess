@@ -27,7 +27,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import com.tgx.chess.bishop.io.ws.bean.WsFrame;
-import com.tgx.chess.bishop.io.zprotocol.Command;
+import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X01_EncryptRequest;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X02_AsymmetricPub;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X03_Cipher;
@@ -52,7 +52,7 @@ public class ZCommandFilter<C extends AioContext>
 {
 
     private final ICommandFactory<C,
-                                  Command<C>>    factory;
+            BaseCommand<C>>    factory;
     private final Logger                         _Log = Logger.getLogger(getClass().getName());
 
     public ZCommandFilter()
@@ -61,7 +61,7 @@ public class ZCommandFilter<C extends AioContext>
     }
 
     public ZCommandFilter(ICommandFactory<C,
-                                          Command<C>> factory)
+            BaseCommand<C>> factory)
     {
         this.factory = factory;
         name = "queen-command-zfilter";
@@ -99,7 +99,7 @@ public class ZCommandFilter<C extends AioContext>
     {
         WsFrame frame = new WsFrame();
         @SuppressWarnings("unchecked")
-        Command<C> command = (Command<C>) output;
+        BaseCommand<C> command = (BaseCommand<C>) output;
         frame.setPayload(command.encode(context));
         frame.setCtrl(WsFrame.frame_op_code_no_ctrl_bin);
         return frame;
@@ -111,7 +111,7 @@ public class ZCommandFilter<C extends AioContext>
         WsFrame frame = (WsFrame) input;
         int command = frame.getPayload()[1] & 0xFF;
         @SuppressWarnings("unchecked")
-        Command<C> _command = (Command<C>) create(command);
+        BaseCommand<C> _command = (BaseCommand<C>) create(command);
         if (Objects.isNull(_command)) return null;
         _command.decode(frame.getPayload(), context);
         switch (command)
@@ -198,7 +198,7 @@ public class ZCommandFilter<C extends AioContext>
         }
     }
 
-    private Command<? extends AioContext> create(int command)
+    private BaseCommand<? extends AioContext> create(int command)
     {
         switch (command)
         {

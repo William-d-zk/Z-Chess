@@ -24,7 +24,7 @@
 
 package com.tgx.chess.bishop.io.zoperator;
 
-import com.tgx.chess.bishop.io.zprotocol.Command;
+import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
 import com.tgx.chess.bishop.io.zprotocol.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
 import com.tgx.chess.bishop.io.zprotocol.device.X21_SignUpResult;
@@ -43,14 +43,14 @@ import com.tgx.chess.queen.io.core.inf.ICommandFactory;
 public enum ZCommandFactories
         implements
         ICommandFactory<ZContext,
-                        Command<ZContext>>
+                BaseCommand<ZContext>>
 {
 
     SERVER
     {
 
         @Override
-        public Command<ZContext> create(int command)
+        public BaseCommand<ZContext> create(int command)
         {
             switch (command)
             {
@@ -76,7 +76,7 @@ public enum ZCommandFactories
     CLUSTER
     {
         @Override
-        public Command<ZContext> create(int command)
+        public BaseCommand<ZContext> create(int command)
         {
             LOG.warning(String.format("cluster command is not Handled : %x", command));
             return null;
@@ -85,7 +85,7 @@ public enum ZCommandFactories
     MQ
     {
         @Override
-        public Command<ZContext> create(int command)
+        public BaseCommand<ZContext> create(int command)
         {
             LOG.warning(String.format("mq-service command is not Handled : %x", command));
             return null;
@@ -93,7 +93,7 @@ public enum ZCommandFactories
     },
     CONSUMER
     {
-        public Command<ZContext> create(int command)
+        public BaseCommand<ZContext> create(int command)
         {
             switch (command)
             {

@@ -49,6 +49,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
+import com.tgx.chess.bishop.io.zcrypt.EncryptHandler;
+import com.tgx.chess.bishop.io.zprotocol.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.control.X101_HandShake;
 import com.tgx.chess.bishop.io.zprotocol.control.X103_Close;
 import com.tgx.chess.bishop.io.zprotocol.control.X104_Ping;
@@ -58,8 +60,6 @@ import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
 import com.tgx.chess.bishop.io.zprotocol.device.X23_SignInResult;
 import com.tgx.chess.bishop.io.zprotocol.device.X30_EventMsg;
 import com.tgx.chess.bishop.io.zprotocol.device.X31_ConfirmMsg;
-import com.tgx.chess.bishop.io.zprotocol.ZContext;
-import com.tgx.chess.bishop.io.zcrypt.EncryptHandler;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X03_Cipher;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X05_EncryptStart;
 import com.tgx.chess.king.base.log.Logger;

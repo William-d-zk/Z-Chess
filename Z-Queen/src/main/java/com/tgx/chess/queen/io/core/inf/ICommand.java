@@ -26,7 +26,10 @@ package com.tgx.chess.queen.io.core.inf;
 import com.tgx.chess.king.base.inf.IDisposable;
 
 /**
+ * 用于ISession 发送的指令最小单元 需要满足如下的行为特征
+ * 
  * @author William.d.zk
+ * @see ISession
  */
 public interface ICommand
         extends
