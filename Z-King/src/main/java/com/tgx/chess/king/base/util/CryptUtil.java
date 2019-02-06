@@ -27,6 +27,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
 
 /**
  * @author William.d.zk
@@ -110,6 +111,17 @@ public class CryptUtil
             }
         }
         return crc ^ 0xFFFFFFFFFFFFFFFFL;
+    }
+
+    public boolean xorSign(byte[] src, byte sign)
+    {
+        Objects.requireNonNull(src);
+        if (src.length == 0) return true;
+        byte xor = src[0];
+        for (int i = 1; i < src.length; i++) {
+            xor ^= src[i];
+        }
+        return xor == sign;
     }
 
     public static byte[] base64Decoder(char[] src, int start) throws IOException
