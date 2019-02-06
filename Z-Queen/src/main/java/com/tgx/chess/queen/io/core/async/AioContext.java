@@ -78,6 +78,8 @@ public class AioContext
         _ChannelState.set(ctlOf(SESSION_IDLE, 0));
         mDecodingPosition = -1;
         mLackData = 1;
+        mRvBuf.clear();
+        mWrBuf.clear();
     }
 
     @Override
