@@ -206,18 +206,6 @@ public abstract class BaseCommand<C extends AioContext>
         return lastPos + 4;
     }
 
-    public void decode(byte[] data, C ctx)
-    {
-        decode(data);
-        afterDecode(ctx);
-    }
-
-    public byte[] encode(C ctx)
-    {
-        byte[] data = encode();
-        afterEncode(ctx);
-        return data;
-    }
 
     @Override
     public final byte[] encode()
