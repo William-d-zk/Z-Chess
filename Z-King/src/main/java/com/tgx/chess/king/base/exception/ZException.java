@@ -22,14 +22,15 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.queen.event.handler;
+package com.tgx.chess.king.base.exception;
 
-import com.tgx.chess.king.base.exception.ZException;
-import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.manager.QueenManager;
-
-public interface ILinkHandler
+public class ZException
+        extends
+        RuntimeException
 {
-
-    void handle(LinkHandler _LinkHandler, QueenManager manager, QEvent event) throws ZException;
+    public ZException(String formatter,
+                      String message)
+    {
+        super(String.format(formatter, message));
+    }
 }
