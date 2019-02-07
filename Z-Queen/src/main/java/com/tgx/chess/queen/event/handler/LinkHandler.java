@@ -24,6 +24,8 @@
 
 package com.tgx.chess.queen.event.handler;
 
+import static com.tgx.chess.queen.event.inf.IError.Type.LINK_ERROR;
+import static com.tgx.chess.queen.event.inf.IError.Type.LINK_LOGIN_ERROR;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 import static com.tgx.chess.queen.io.core.inf.IoHandler.ERROR_OPERATOR;
 
@@ -31,6 +33,8 @@ import java.nio.channels.AsynchronousSocketChannel;
 import java.util.Objects;
 
 import com.lmax.disruptor.RingBuffer;
+import com.tgx.chess.king.base.exception.LinkRejectException;
+import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.base.util.Triple;
@@ -115,7 +119,18 @@ public class LinkHandler
                     write(connectedHandled.first(), session, connectedHandled.third());
                     break;
                 case LOGIC:
-                    _LinkHandler.handle(this, _QueenManager, event);
+                    Pair<ICommand,
+                         ISession> pair = event.getContent();
+                    session = pair.second();
+                    try {
+                        _LinkHandler.handle(this, _QueenManager, event);
+                    }
+                    catch (LinkRejectException e) {
+                        error(LINK_LOGIN_ERROR, e, session);
+                    }
+                    catch (ZException e) {
+                        error(LINK_ERROR, e, session);
+                    }
                     break;
             }
         }

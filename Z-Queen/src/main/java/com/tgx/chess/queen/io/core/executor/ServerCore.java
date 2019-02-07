@@ -177,8 +177,8 @@ public abstract class ServerCore
     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
     ┃                                                                                                       ║                 ┏━>_ErrorEvent━┛
     ┃┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓                                             ┏━║_LinkProcessor━━━┻━>_LinkWriteEvent  ━━━━║
-    ┃┃                                                      ┃ ━>_ConsistentResultEvent ━━━━━━━━━━━━━━━━━━━┫ ║              ━━>_BizLocalSendEvent  ━━━━║                ┏>_EncodedEvents[0]|║
-    ┃┃ ━>_AioProducerEvents║                 ┏>_ErrorEvent ━┛ ━>_ConsistentSendEvent   ━━━━━━━━━━━━━━┓    ┃                                           ║                ┃ _EncodedEvents[1]|║
+    ┃┃                                                      ┃  ━>_ConsistentResultEvent ━━━━━━━━━━━━━━━━━━┫ ║              ━━>_BizLocalSendEvent  ━━━━║                ┏>_EncodedEvents[0]|║
+    ┃┃ ━>_AioProducerEvents║                 ┏>_ErrorEvent ━┛  ━>_ConsistentSendEvent   ━━━━━━━━━━━━━┓    ┃                                           ║                ┃ _EncodedEvents[1]|║
     ┃┃ ━>_ClusterLocalClose║                 ┃ _LinkIoEvent    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━┫                                           ║_WriteDispatcher┫ _EncodedEvents[2]|║_EncodedProcessor┳━║[Event Done]
     ┃┃ ━>_BizLocalClose    ║                 ┃ _ClusterIoEvent ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫    ┃ ║              ━>_ClusterLocalSendEvent ━━║                ┃ _EncodedEvents[3]|║                 ┗━>_ErrorEvent━┓
     ┃┗━> _ErrorEvent[3]    ║_IoDispatcher━━> ┫ _ReadEvents[0]|━║                  ┏>_ClusterDecoded ━┻━━━━╋━║_ClusterProcessor┳━>_ClusterWriteEvent ━━║                ┗>_EncodedEvents[M]|║                                ┃
