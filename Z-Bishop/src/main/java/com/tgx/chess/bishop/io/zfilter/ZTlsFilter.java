@@ -41,7 +41,7 @@ public class ZTlsFilter<C extends AioContext>
 
     public ZTlsFilter()
     {
-        name = "queen-tls-zfilter";
+        super("queen-tls-zfilter");
     }
 
     private final Logger _Log = Logger.getLogger(getClass().getName());

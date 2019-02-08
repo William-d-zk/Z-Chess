@@ -45,7 +45,7 @@ public class WsFrameFilter
 
     public WsFrameFilter()
     {
-        name = "web-socket-frame-zfilter-";
+        super("web-socket-frame-zfilter");
     }
 
     @Override
@@ -191,7 +191,7 @@ public class WsFrameFilter
     public IProtocol decode(WsContext context, IProtocol input)
     {
         WsFrame frame = context.getCarrier();
-        context.setCarrierNull();
+        context.finish();
         return frame;
     }
 

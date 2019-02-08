@@ -24,19 +24,19 @@
 
 package com.tgx.chess.rook.io.zoperator;
 
-import java.util.Arrays;
 import java.util.Objects;
 
+import com.tgx.chess.bishop.io.ws.bean.WsContext;
 import com.tgx.chess.bishop.io.ws.filter.WsControlFilter;
 import com.tgx.chess.bishop.io.ws.filter.WsFrameFilter;
 import com.tgx.chess.bishop.io.ws.filter.WsHandShakeFilter;
-import com.tgx.chess.bishop.io.ws.bean.WsContext;
-import com.tgx.chess.bishop.io.zprotocol.ZContext;
 import com.tgx.chess.bishop.io.zfilter.ZCommandFilter;
 import com.tgx.chess.bishop.io.zfilter.ZTlsFilter;
 import com.tgx.chess.bishop.io.zoperator.ZCommandFactories;
+import com.tgx.chess.bishop.io.zprotocol.ZContext;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.base.util.Triple;
+import com.tgx.chess.queen.event.inf.AbstractTransfer;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.IFilterChain;
@@ -85,7 +85,7 @@ public enum ZOperators
                              ISession>             consumer_decoder;
 
     public static IOperator<ICommand[],
-                     ISession> CONSUMER_TRANSFER()
+                            ISession> CONSUMER_TRANSFER()
     {
         return consumer_transfer;
     }
@@ -163,7 +163,7 @@ public enum ZOperators
                 return new Triple<>(filterRead(inPackage, handshakeFilter, (ZContext) session.getContext()), session, consumer_transfer);
             }
         };
-        consumer_transfer = new ITransfer()
+        consumer_transfer = new AbstractTransfer(consumer_encoder)
         {
 
             @Override
@@ -172,27 +172,6 @@ public enum ZOperators
                 return "consumer_transfer";
             }
         };
-    }
-
-    private interface ITransfer
-            extends
-            IOperator<ICommand[],
-                      ISession>
-    {
-        @Override
-        default Triple<ICommand,
-                       ISession,
-                       IOperator<ICommand,
-                                 ISession>>[] transfer(ICommand[] commands, ISession session)
-        {
-            Objects.requireNonNull(commands);
-            Triple<ICommand,
-                   ISession,
-                   IOperator<ICommand,
-                             ISession>>[] triples = new Triple[commands.length];
-            Arrays.setAll(triples, slot -> new Triple<>(commands[slot], session, consumer_encoder));
-            return triples;
-        }
     }
 
 }

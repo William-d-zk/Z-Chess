@@ -22,33 +22,42 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.queen.io.core.inf;
+package com.tgx.chess.queen.event.inf;
 
-import com.tgx.chess.king.base.inf.IDisposable;
+import java.util.Arrays;
+import java.util.Objects;
 
-/**
- * @author William.d.zk
- */
-public interface IFilterChain<C extends IContext>
-        extends
-        IFilter<C>,
-        IDisposable
+import com.tgx.chess.king.base.util.Triple;
+import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.ISession;
+
+public class AbstractTransfer
+        implements
+        IOperator<ICommand[],
+                  ISession>
 {
-    IFilterChain<C> getPrevious();
+    private final IOperator<ICommand,
+                            ISession> _Encoder;
 
-    void setPrevious(IFilterChain<C> filter);
+    public AbstractTransfer(IOperator<ICommand,
+                                      ISession> encoder)
+    {
+        _Encoder = encoder;
+    }
 
-    IFilterChain<C> getNext();
-
-    void setNext(IFilterChain<C> filter);
-
-    IFilterChain<C> getChainHead();
-
-    IFilterChain<C> getChainTail();
-
-    IFilterChain<C> linkAfter(IFilterChain<C> curFilter);
-
-    IFilterChain<C> linkFront(IFilterChain<C> curFilter);
-
-    String getName();
+    @Override
+    @SuppressWarnings("unchecked")
+    public Triple<ICommand,
+                  ISession,
+                  IOperator<ICommand,
+                            ISession>>[] transfer(ICommand[] commands, ISession session)
+    {
+        Objects.requireNonNull(commands);
+        Triple<ICommand,
+               ISession,
+               IOperator<ICommand,
+                         ISession>>[] triples = new Triple[commands.length];
+        Arrays.setAll(triples, slot -> new Triple<>(commands[slot], session, _Encoder));
+        return triples;
+    }
 }

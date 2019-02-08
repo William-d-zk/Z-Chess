@@ -52,8 +52,8 @@ public class ZCommandFilter<C extends AioContext>
 {
 
     private final ICommandFactory<C,
-            BaseCommand<C>>    factory;
-    private final Logger                         _Log = Logger.getLogger(getClass().getName());
+                                  BaseCommand<C>>    factory;
+    private final Logger                             _Log = Logger.getLogger(getClass().getName());
 
     public ZCommandFilter()
     {
@@ -61,10 +61,10 @@ public class ZCommandFilter<C extends AioContext>
     }
 
     public ZCommandFilter(ICommandFactory<C,
-            BaseCommand<C>> factory)
+                                          BaseCommand<C>> factory)
     {
+        super("queen-command-zfilter");
         this.factory = factory;
-        name = "queen-command-zfilter";
     }
 
     @Override

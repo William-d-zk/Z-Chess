@@ -24,6 +24,7 @@
 
 package com.tgx.chess.queen.io.core.inf;
 
+import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.IoUtil;
 
@@ -52,7 +53,7 @@ public interface IPipeDecode
                 switch (resultType)
                 {
                     case ERROR:
-                        return null;
+                        throw new ZException(String.format("filter:%s error", nextFilter.getName()));
                     case NEED_DATA:
                         return commands;
                     case NEXT_STEP:

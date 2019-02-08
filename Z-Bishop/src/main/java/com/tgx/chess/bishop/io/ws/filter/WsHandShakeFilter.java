@@ -57,9 +57,7 @@ public class WsHandShakeFilter
 
     public WsHandShakeFilter(IoHandler handler)
     {
-        name = "web-socket-header-zfilter-"
-               + handler.getClass()
-                        .getName();
+        super("web-socket-header-zfilter-");
         _IoHandler = handler;
     }
 
@@ -234,8 +232,8 @@ public class WsHandShakeFilter
     public IProtocol decode(WsContext context, IProtocol input)
     {
         WsHandshake handshake = context.getHandshake();
-        context.cleanHandshake();
         context.setInState(DECODE_FRAME);
+        context.finish();
         return handshake;
     }
 

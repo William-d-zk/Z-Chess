@@ -24,7 +24,6 @@
 
 package com.tgx.chess.bishop.io.zoperator;
 
-import java.util.Arrays;
 import java.util.Objects;
 
 import com.tgx.chess.bishop.io.ws.bean.WsContext;
@@ -37,6 +36,7 @@ import com.tgx.chess.bishop.io.zprotocol.ZContext;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.base.util.Triple;
+import com.tgx.chess.queen.event.inf.AbstractTransfer;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.IFilterChain;
@@ -312,7 +312,7 @@ public enum ZOperators
             }
         };
 
-        server_transfer = new ITransfer()
+        server_transfer = new AbstractTransfer(server_encoder)
         {
 
             @Override
@@ -322,7 +322,7 @@ public enum ZOperators
             }
         };
 
-        cluster_transfer = new ITransfer()
+        cluster_transfer = new AbstractTransfer(server_encoder)
         {
 
             @Override
@@ -332,27 +332,6 @@ public enum ZOperators
             }
         };
 
-    }
-
-    private interface ITransfer
-            extends
-            IOperator<ICommand[],
-                      ISession>
-    {
-        @Override
-        default Triple<ICommand,
-                       ISession,
-                       IOperator<ICommand,
-                                 ISession>>[] transfer(ICommand[] commands, ISession session)
-        {
-            Objects.requireNonNull(commands);
-            Triple<ICommand,
-                   ISession,
-                   IOperator<ICommand,
-                             ISession>>[] triples = new Triple[commands.length];
-            Arrays.setAll(triples, slot -> new Triple<>(commands[slot], session, server_encoder));
-            return triples;
-        }
     }
 
     static IOperator<IPacket,
