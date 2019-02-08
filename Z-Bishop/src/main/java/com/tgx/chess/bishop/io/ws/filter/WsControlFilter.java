@@ -23,19 +23,19 @@
  */
 package com.tgx.chess.bishop.io.ws.filter;
 
-import com.tgx.chess.bishop.io.zprotocol.control.X101_HandShake;
-import com.tgx.chess.bishop.io.zprotocol.control.X104_Ping;
-import com.tgx.chess.bishop.io.zprotocol.control.X105_Pong;
 import com.tgx.chess.bishop.io.ws.bean.WsContext;
 import com.tgx.chess.bishop.io.ws.bean.WsControl;
 import com.tgx.chess.bishop.io.ws.bean.WsFrame;
+import com.tgx.chess.bishop.io.zprotocol.control.X101_HandShake;
+import com.tgx.chess.bishop.io.zprotocol.control.X102_SslHandShake;
+import com.tgx.chess.bishop.io.zprotocol.control.X103_Close;
+import com.tgx.chess.bishop.io.zprotocol.control.X104_Ping;
+import com.tgx.chess.bishop.io.zprotocol.control.X105_Pong;
+import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
+import com.tgx.chess.bishop.io.zprotocol.control.X107_Redirect;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
-import com.tgx.chess.bishop.io.zprotocol.control.X102_SslHandShake;
-import com.tgx.chess.bishop.io.zprotocol.control.X103_Close;
-import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
-import com.tgx.chess.bishop.io.zprotocol.control.X107_Redirect;
 
 /**
  * @author William.d.zk
@@ -48,7 +48,7 @@ public class WsControlFilter
 
     public WsControlFilter()
     {
-        name = "network-control-zfilter";
+        super("network-control-zfilter");
     }
 
     @Override

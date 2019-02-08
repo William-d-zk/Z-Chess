@@ -138,6 +138,7 @@ public class AioContext
     {
         mDecodingPosition = -1;
         mLackData = 1;
+        mRvBuf.clear();
     }
 
     @Override

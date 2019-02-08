@@ -23,6 +23,8 @@
  */
 package com.tgx.chess.queen.io.core.inf;
 
+import java.util.Objects;
+
 /**
  * @author William.d.zk
  */
@@ -57,36 +59,38 @@ public interface IProtocol
     default byte[] encode()
     {
         int len = dataLength();
-        if (len < 0 || len == 0) throw new IllegalArgumentException("data length is negative or zero");
-        byte[] a = new byte[len];
-        encodec(a, 0);
-        return a;
+        if (len > 0) {
+            byte[] a = new byte[len];
+            encodec(a, 0);
+            return a;
+        }
+        return null;
     }
 
     default int encode(byte[] buf, int pos, int length)
     {
         int len = dataLength();
-        if (len < 0 || len == 0) throw new IllegalArgumentException("data length is negative or zero");
-        if (buf == null) throw new NullPointerException();
-        else if (len > length
-                 || buf.length < len
-                 || pos + length > buf.length) throw new ArrayIndexOutOfBoundsException("data length is too long for input buf");
+        if (len > 0 && Objects.isNull(buf)
+            || len > length
+            || (Objects.nonNull(buf) && buf.length < len)
+            || (Objects.nonNull(buf) && pos + length > buf.length)) throw new ArrayIndexOutOfBoundsException("data length is too long for input buf");
         pos = encodec(buf, pos);
         return pos;
     }
 
     default int decode(byte[] data, int pos, int length)
     {
-        if (data == null) throw new NullPointerException();
         int len = dataLength();
-        if (len > length || data.length < len || pos + length > data.length) throw new ArrayIndexOutOfBoundsException();
+        if (len > length
+            || (Objects.nonNull(data) && data.length < len)
+            || (Objects.nonNull(data) && pos + length > data.length)) throw new ArrayIndexOutOfBoundsException();
         return decodec(data, pos);
     }
 
     default int decode(byte[] data)
     {
-        if (data == null) throw new NullPointerException();
-        if (data.length < dataLength()) throw new ArrayIndexOutOfBoundsException();
+
+        if (Objects.nonNull(data) && data.length < dataLength()) throw new ArrayIndexOutOfBoundsException();
         return decodec(data, 0);
     }
 

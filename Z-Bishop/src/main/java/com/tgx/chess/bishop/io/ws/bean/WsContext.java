@@ -104,11 +104,6 @@ public class WsContext
         mCarrier = frame;
     }
 
-    public void setCarrierNull()
-    {
-        mCarrier = null;
-    }
-
     public WsHandshake getHandshake()
     {
         return mHandshake;
@@ -117,11 +112,6 @@ public class WsContext
     public void setHandshake(WsHandshake handshake)
     {
         mHandshake = handshake;
-    }
-
-    public void cleanHandshake()
-    {
-        mHandshake = null;
     }
 
     public final int getMaxPayloadSize()
@@ -152,6 +142,14 @@ public class WsContext
         mHandshake = null;
         mCarrier = null;
         super.dispose();
+    }
+
+    @Override
+    public void finish()
+    {
+        super.finish();
+        mCarrier = null;
+        mHandshake = null;
     }
 
     public String getSecAccept(String sec_key)

@@ -34,10 +34,16 @@ public abstract class AioFilterChain<C extends IContext>
         IFilterChain<C>
 {
 
-    protected String        name;
+    protected final String  _Name;
     private IFilterChain<C> nextFilter;
     private IFilterChain<C> preFilter;
-    private int             mIdempotent = 0x80000000;
+
+    private int mIdempotent = 0x80000000;
+
+    protected AioFilterChain(String name)
+    {
+        _Name = name;
+    }
 
     @Override
     public int getIdempotentBit()
@@ -128,5 +134,11 @@ public abstract class AioFilterChain<C extends IContext>
             nFilter.setNext(null);
             nFilter = nnFilter;
         }
+    }
+
+    @Override
+    public String getName()
+    {
+        return _Name;
     }
 }
