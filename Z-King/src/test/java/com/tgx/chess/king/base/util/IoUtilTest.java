@@ -22,15 +22,19 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.king.base.exception;
+package com.tgx.chess.king.base.util;
 
-public class ZException
-        extends
-        RuntimeException
+import org.junit.jupiter.api.Test;
+
+class IoUtilTest
 {
-    public ZException(String formatter,
-                      Object... messages)
+
+    @Test
+    void long2Hex()
     {
-        super(String.format(formatter, messages));
+        long l = 0x00FF00FF00FF00L;
+        String hex = "00:00:FF:00:FF:00:FF:00";
+        String result = IoUtil.long2Hex(l, ":");
+        assert hex.equals(result);
     }
 }

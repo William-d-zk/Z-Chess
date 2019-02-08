@@ -71,6 +71,22 @@ public interface IoUtil
         return sb.toString();
     }
 
+    static String long2Hex(long l, String... split)
+    {
+        StringBuilder sb = new StringBuilder(16);
+        String s = Objects.nonNull(split) && split.length > 0 ? split[0]
+                                                              : "";
+        for (int i = 7; i >= 0; i--) {
+            int x = (int) (l >> i * 8);
+            sb.append(HEX_DIGITS[(x & 0xF0) >>> 4]);
+            sb.append(HEX_DIGITS[(x & 0x0F)]);
+            if (i > 0) {
+                sb.append(s);
+            }
+        }
+        return sb.toString();
+    }
+
     static byte[] hex2bin(String hex)
     {
         return hex2bin(hex, null, 0);
@@ -96,13 +112,18 @@ public interface IoUtil
     static String longToMacStr(long mac)
     {
         StringBuilder sb = new StringBuilder();
-        sb.append(Long.toHexString((mac >> 40) & 0xFF));
-        sb.append(Long.toHexString((mac >> 32) & 0xFF));
-        sb.append(Long.toHexString((mac >> 24) & 0xFF));
-        sb.append(Long.toHexString((mac >> 16) & 0xFF));
-        sb.append(Long.toHexString((mac >> 8) & 0xFF));
-        sb.append(Long.toHexString(mac & 0xFF));
-
+        sb.append(Long.toHexString((mac >> 40) & 0xFF))
+          .append(":");
+        sb.append(Long.toHexString((mac >> 32) & 0xFF))
+          .append(":");
+        sb.append(Long.toHexString((mac >> 24) & 0xFF))
+          .append(":");
+        sb.append(Long.toHexString((mac >> 16) & 0xFF))
+          .append(":");
+        sb.append(Long.toHexString((mac >> 8) & 0xFF))
+          .append(":");
+        sb.append(Long.toHexString(mac & 0xFF))
+          .append(":");
         return sb.toString();
     }
 
