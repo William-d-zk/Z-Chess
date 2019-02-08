@@ -24,13 +24,13 @@
 
 package com.tgx.chess.king.base.exception;
 
-public class ZException
+public class MissingParameterException
         extends
-        RuntimeException
+        ZException
 {
-    public ZException(String formatter,
-                      Object... messages)
+    public MissingParameterException(String function,
+                                     String paramName)
     {
-        super(String.format(formatter, messages));
+        super("function %s missing param %s", function, paramName);
     }
 }

@@ -28,9 +28,8 @@ public class LinkRejectException
         extends
         ZException
 {
-    public LinkRejectException(String formatter,
-                               String message)
+    public LinkRejectException(String message)
     {
-        super(formatter, message);
+        super("connect reject %s", message);
     }
 }
