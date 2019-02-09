@@ -25,7 +25,7 @@
 package com.tgx.chess.king.base.disruptor;
 
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.LockSupport;
 
 import com.lmax.disruptor.AlertException;
@@ -43,7 +43,11 @@ public class MultiBufferBatchEventProcessor<T>
         implements
         EventProcessor
 {
-    private final AtomicBoolean     isRunning = new AtomicBoolean(false);
+    private static final int IDLE    = 0;
+    private static final int HALTED  = IDLE + 1;
+    private static final int RUNNING = HALTED + 1;
+
+    private final AtomicInteger     running = new AtomicInteger(IDLE);
     private final DataProvider<T>[] _Providers;
     private final SequenceBarrier[] _Barriers;
     private final EventHandler<T>   _Handler;
@@ -72,52 +76,57 @@ public class MultiBufferBatchEventProcessor<T>
     @Override
     public void run()
     {
-        if (!isRunning.compareAndSet(false, true)) { throw new RuntimeException("Already running"); }
-        if (threadName != null) Thread.currentThread()
-                                      .setName(threadName);
-        for (SequenceBarrier barrier : _Barriers) {
-            barrier.clearAlert();
-        }
-
-        final int barrierLength = _Barriers.length;
-        int barrier_total_count;
-        long delta;
-        while (true) {
-            barrier_total_count = 0;
-            try {
-                for (int i = 0; i < barrierLength; i++) {
-
-                    long available = _Barriers[i].waitFor(-1);
-                    Sequence sequence = _Sequences[i];
-
-                    long nextSequence = sequence.get() + 1;
-                    for (long l = nextSequence; l <= available; l++) {
-                        _Handler.onEvent(_Providers[i].get(l), l, nextSequence == available);
-                    }
-
-                    sequence.set(available);
-                    delta = available - nextSequence + 1;
-                    barrier_total_count += delta;
-                }
-                //没有任何 前置生产者的存在事件的时候暂停 5ms 释放 CPU，不超过100个事件，将释放 CPU  
-                if (barrier_total_count == 0) LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(5));
-                else if (barrier_total_count < 100) Thread.yield();
+        if (running.compareAndSet(IDLE, RUNNING)) {
+            if (threadName != null) Thread.currentThread()
+                                          .setName(threadName);
+            for (SequenceBarrier barrier : _Barriers) {
+                barrier.clearAlert();
             }
-            catch (AlertException e) {
-                if (!isRunning()) {
+
+            final int barrierLength = _Barriers.length;
+            int barrier_total_count;
+            long delta;
+            while (true) {
+                barrier_total_count = 0;
+                try {
+                    for (int i = 0; i < barrierLength; i++) {
+
+                        long available = _Barriers[i].waitFor(-1);
+                        Sequence sequence = _Sequences[i];
+
+                        long nextSequence = sequence.get() + 1;
+                        for (long l = nextSequence; l <= available; l++) {
+                            _Handler.onEvent(_Providers[i].get(l), l, nextSequence == available);
+                        }
+
+                        sequence.set(available);
+                        delta = available - nextSequence + 1;
+                        barrier_total_count += delta;
+                    }
+                    //没有任何 前置生产者的存在事件的时候暂停 5ms 释放 CPU，不超过100个事件，将释放 CPU
+                    if (barrier_total_count == 0) LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(5));
+                    else if (barrier_total_count < 100) Thread.yield();
+                }
+                catch (AlertException e) {
+                    if (!isRunning()) {
+                        break;
+                    }
+                }
+                catch (InterruptedException |
+                       TimeoutException e)
+                {
+                    e.printStackTrace();
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
                     break;
                 }
             }
-            catch (InterruptedException |
-                   TimeoutException e)
-            {
-                e.printStackTrace();
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-                break;
-            }
         }
+        else {
+            if (running.get() == RUNNING) { throw new IllegalStateException("Thread is already running"); }
+        }
+
     }
 
     @Override
@@ -134,13 +143,13 @@ public class MultiBufferBatchEventProcessor<T>
     @Override
     public void halt()
     {
-        isRunning.set(false);
+        running.set(HALTED);
         _Barriers[0].alert();
     }
 
     @Override
     public boolean isRunning()
     {
-        return isRunning.get();
+        return running.get() != IDLE;
     }
 }

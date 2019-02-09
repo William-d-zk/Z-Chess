@@ -90,7 +90,9 @@ public class ClientWriteDispatcher
                                     IOperator<ICommand,
                                               ISession>> triple : triples)
                         {
-                            tryPublish(_Encoder, WRITE, triple.first(), session, triple.third());
+                            if (!tryPublish(_Encoder, WRITE, triple.first(), session, triple.third())) {
+                                _Log.warning("publish write event to encoder failed");
+                            }
                         }
                     }
                     break;
@@ -99,7 +101,9 @@ public class ClientWriteDispatcher
                          ISession> wroteContent = event.getContent();
                     session = wroteContent.second();
                     if (session.isValid()) {
-                        tryPublish(_Encoder, WROTE, wroteContent.first(), session, event.getEventOp());
+                        if (!tryPublish(_Encoder, WROTE, wroteContent.first(), session, event.getEventOp())) {
+                            _Log.warning("publish wrote event to encoder failed");
+                        }
                     }
                     break;
                 default:

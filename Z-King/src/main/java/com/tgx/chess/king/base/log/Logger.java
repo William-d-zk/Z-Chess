@@ -95,6 +95,11 @@ public class Logger
         _Logger.debug(msg);
     }
 
+    public void debug(String formatter, Object... content)
+    {
+        _Logger.debug(String.format(formatter, content));
+    }
+
     public void debug(String msg, Throwable throwable)
     {
         _Logger.debug(msg, throwable);

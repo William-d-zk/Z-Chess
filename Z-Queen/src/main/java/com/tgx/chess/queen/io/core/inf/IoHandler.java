@@ -173,7 +173,7 @@ public interface IoHandler
                                                                                                                    session);
                                                                                           break;
                                                                                       default:
-                                                                                          LOG.info("wrote %d", result);
+                                                                                          LOG.info("aio wrote %d", result);
                                                                                           worker.publishWrote(wrote_operator, result, session);
                                                                                           break;
                                                                                   }

@@ -53,7 +53,7 @@ public interface ISessionHandler
                    IOperator<Throwable,
                              ISession>> result = operator.handle(a, session);
             if (Objects.nonNull(result)) {
-                event.error(Type.FILTER_DECODE, result.first(), result.second(), result.third());
+                event.error(Type.FILTER_ENCODE, result.first(), result.second(), result.third());
                 context.setOutState(ENCODE_ERROR);
             }
             else {
