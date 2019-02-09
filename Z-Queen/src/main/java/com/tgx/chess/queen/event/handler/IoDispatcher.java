@@ -85,34 +85,6 @@ public class IoDispatcher
                 ISession session = closedContent.second();
                 if (!session.isClosed()) dispatchError(session.getHandler(), CLOSED, closedContent.first(), session, closedOperator);
                 break;
-            case ACCEPT_FAILED:
-            case READ_ZERO:
-            case READ_EOF:
-            case READ_FAILED:
-            case WRITE_EOF:
-            case WRITE_FAILED:
-            case WRITE_ZERO:
-            case TIME_OUT:
-            case FILTER_DECODE:
-            case FILTER_ENCODE:
-            case ILLEGAL_STATE:
-            case ILLEGAL_BIZ_STATE:
-            case OUT_OF_LENGTH:
-            case SSL_HANDSHAKE:
-                IOperator<Throwable,
-                          ISession> errorOperator = event.getEventOp();
-                Pair<Throwable,
-                     ISession> errorContent = event.getContent();
-                session = errorContent.second();
-                if (!session.isClosed()) {
-                    throwable = errorContent.first();
-                    Triple<Void,
-                           ISession,
-                           IOperator<Void,
-                                     ISession>> transferResult = errorOperator.handle(throwable, session);
-                    dispatchError(session.getHandler(), CLOSED, transferResult.first(), session, transferResult.third());
-                }
-                break;
             case NO_ERROR:
                 switch (event.getEventType())
                 {
@@ -147,7 +119,21 @@ public class IoDispatcher
                         _Log.warning(String.format(" wrong type %s in IoDispatcher", event.getEventType()));
                         break;
                 }
+                break;
             default:
+                IOperator<Throwable,
+                          ISession> errorOperator = event.getEventOp();
+                Pair<Throwable,
+                     ISession> errorContent = event.getContent();
+                session = errorContent.second();
+                if (!session.isClosed()) {
+                    throwable = errorContent.first();
+                    Triple<Void,
+                           ISession,
+                           IOperator<Void,
+                                     ISession>> transferResult = errorOperator.handle(throwable, session);
+                    dispatchError(session.getHandler(), CLOSED, transferResult.first(), session, transferResult.third());
+                }
                 break;
         }
         event.reset();

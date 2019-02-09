@@ -38,7 +38,8 @@ public interface IPipeDecode
 
     default <C extends IContext> ICommand[] filterRead(IProtocol input, IFilterChain<C> filterChain, C context)
     {
-        _Logger.info("input %s ",
+        _Logger.info("%s input %s ",
+                     toString(),
                      IoUtil.bin2Hex(((IPacket) input).getBuffer()
                                                      .array(),
                                     "."));

@@ -40,6 +40,7 @@ import java.util.Objects;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.ArrayUtil;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.io.core.inf.IConnectActive;
@@ -60,6 +61,7 @@ public class AioSession
         implements
         ISession
 {
+    private static Logger _Log = Logger.getLogger(AioSession.class.getSimpleName());
     /*--------------------------------------------------------------------------------------------------------------*/
     private final int                       _ReadTimeOut;
     private final int                       _WriteTimeOut;
@@ -308,6 +310,10 @@ public class AioSession
                 case IN_SENDING:
                     ps.send();
                 default:
+                    _Log.info("wait to write %d ,channel state %d ,less than sending %s",
+                              mWaitWrite,
+                              _Ctx.getChannelState(),
+                              _Ctx.channelStateLessThan(SESSION_SENDING));
                     if (mWaitWrite > 0 && _Ctx.channelStateLessThan(SESSION_SENDING)) {
                         flush(handler);
                     }
@@ -325,7 +331,7 @@ public class AioSession
                 case IN_SENDING:
                     fps.send();
                 default:
-                    if (mWaitWrite > 0 && _Ctx.stateLessThan(_Ctx.getChannelState(), SESSION_SENDING)) {
+                    if (mWaitWrite > 0 && _Ctx.channelStateLessThan(SESSION_SENDING)) {
                         flush(handler);
                     }
                     break;
@@ -349,15 +355,13 @@ public class AioSession
         if (mWroteExpect == 0) {
             mSending.clear();
             mSending.flip();
-        }
-
-        if (isEmpty()) {
-            _Ctx.advanceChannelState(SESSION_IDLE);
-            return WRITE_STATUS.IGNORE;
-        }
-        else {
+            if (isEmpty()) {
+                _Ctx.advanceChannelState(SESSION_IDLE);
+                return WRITE_STATUS.IGNORE;
+            }
             _Ctx.advanceChannelState(SESSION_PENDING);
         }
+
         IPacket fps;
         /* 将待发的 packet 都写到 sending buffer 中，充满 sending buffer，
            不会出现无限循环，writeChannel 中执行 remove 操作，由于都是在相同的线程中
@@ -395,8 +399,8 @@ public class AioSession
         if (Objects.nonNull(buf) && buf.hasRemaining()) {
             mWroteExpect += buf.remaining();
             mWaitWrite = mSending.remaining();
-            mSendingBlank = mSending.capacity() - mSending.limit();
             int pos = mSending.limit();
+            mSendingBlank = mSending.capacity() - pos;
             int size = Math.min(mSendingBlank, buf.remaining());
             mSending.limit(pos + size);
             for (int i = 0; i < size; i++, mSendingBlank--, mWaitWrite++, pos++)
