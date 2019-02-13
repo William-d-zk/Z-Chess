@@ -265,7 +265,6 @@
         </dependencies>
     </dependencyManagement>
     <build>
-        <sourceDirectory>.</sourceDirectory>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -285,10 +284,6 @@
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                     <encoding>${java.encoding}</encoding>
-                    <includes>
-                        <include>src/main/ntru/**/*.java</include>
-                        <include>src/main/java/**/*.java</include>
-                    </includes>
                 </configuration>
             </plugin>
             <plugin>

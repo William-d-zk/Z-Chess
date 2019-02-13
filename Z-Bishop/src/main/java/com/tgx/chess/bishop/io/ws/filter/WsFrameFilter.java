@@ -166,10 +166,7 @@ public class WsFrameFilter
                             _Log.warning("payload is too large");
                             return ResultType.ERROR;
                         }
-                        else if (carrier.getPayloadLength() == 0) {
-                            context.finish();
-                            return ResultType.NEXT_STEP;
-                        }
+                        else if (carrier.getPayloadLength() == 0) { return ResultType.NEXT_STEP; }
                     }
                     else {
                         if (carrier.getPayloadLength() > 0) {
@@ -178,7 +175,6 @@ public class WsFrameFilter
                             carrier.setPayload(payload);
                         }
                         cRvBuf.clear();
-                        context.finish();
                         return ResultType.NEXT_STEP;
                     }
                 }
