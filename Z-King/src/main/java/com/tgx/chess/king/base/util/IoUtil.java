@@ -80,9 +80,7 @@ public interface IoUtil
             int x = (int) (l >> i * 8);
             sb.append(HEX_DIGITS[(x & 0xF0) >>> 4]);
             sb.append(HEX_DIGITS[(x & 0x0F)]);
-            if (i > 0) {
-                sb.append(s);
-            }
+            sb.append(s);
         }
         return sb.toString();
     }
