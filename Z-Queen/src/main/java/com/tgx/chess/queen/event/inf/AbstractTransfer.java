@@ -27,6 +27,7 @@ package com.tgx.chess.queen.event.inf;
 import java.util.Arrays;
 import java.util.Objects;
 
+import com.tgx.chess.king.base.exception.MissingParameterException;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.ISession;
@@ -58,7 +59,7 @@ public class AbstractTransfer
                   IOperator<ICommand,
                             ISession>>[] transfer(ICommand[] commands, ISession session)
     {
-        Objects.requireNonNull(commands);
+        if (Objects.isNull(commands) || commands.length == 0) throw new MissingParameterException(toString() + ".transfer", "commands");
         Triple<ICommand,
                ISession,
                IOperator<ICommand,
