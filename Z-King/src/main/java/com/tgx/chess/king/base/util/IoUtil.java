@@ -80,9 +80,16 @@ public interface IoUtil
             int x = (int) (l >> i * 8);
             sb.append(HEX_DIGITS[(x & 0xF0) >>> 4]);
             sb.append(HEX_DIGITS[(x & 0x0F)]);
-            sb.append(s);
+            if (i > 0) {
+                sb.append(s);
+            }
         }
         return sb.toString();
+    }
+
+    static long hex2long(String hex)
+    {
+        return IoUtil.readLong(hex2bin(hex), 0);
     }
 
     static byte[] hex2bin(String hex)

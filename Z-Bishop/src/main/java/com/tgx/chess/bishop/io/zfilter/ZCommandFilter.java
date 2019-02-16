@@ -72,7 +72,7 @@ public class ZCommandFilter<C extends AioContext>
     {
         if (output == null || context == null) return ResultType.ERROR;
         if (context.isOutConvert()) {
-            switch (output.getSuperSerial())
+            switch (output.superSerial())
             {
                 case IProtocol.COMMAND_SERIAL:
                     return ResultType.NEXT_STEP;

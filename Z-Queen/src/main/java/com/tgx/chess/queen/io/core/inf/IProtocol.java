@@ -44,7 +44,7 @@ public interface IProtocol
 
     int getSerial();
 
-    int getSuperSerial();
+    int superSerial();
 
     default int decodec(byte[] data, int pos)
     {

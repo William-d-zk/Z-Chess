@@ -36,7 +36,7 @@ public interface IStorage
         IProtocol
 {
     @Override
-    default int getSuperSerial()
+    default int superSerial()
     {
         return DB_SERIAL;
     }
@@ -45,22 +45,22 @@ public interface IStorage
     {
     }
 
-    default long getPrimaryKey()
+    default long primaryKey()
     {
         return -1;
     }
 
-    default byte[] getSecondaryByteArrayKey()
+    default byte[] secondaryByteArrayKey()
     {
         return null;
     }
 
-    default long getSecondaryLongKey()
+    default long secondaryLongKey()
     {
         return -1;
     }
 
-    default Operation getOperation()
+    default Operation operation()
     {
         return Operation.OP_NULL;
     }

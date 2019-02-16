@@ -56,7 +56,7 @@ public class WsControlFilter
     {
         if (context == null || output == null) return ResultType.ERROR;
         if (context.isOutConvert()) {
-            switch (output.getSuperSerial())
+            switch (output.superSerial())
             {
                 case IProtocol.CONTROL_SERIAL:
                     switch (output.getSerial())
