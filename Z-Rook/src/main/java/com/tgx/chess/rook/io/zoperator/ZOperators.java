@@ -116,7 +116,7 @@ public enum ZOperators
                                     ISession>> handle(ICommand command, ISession session)
             {
                 try {
-                    IPacket send = (IPacket) filterWrite(command, handshakeFilter, (ZContext) session.getContext());
+                    IPacket send = (IPacket) filterWrite(command, handshakeFilter, session.getContext());
                     Objects.requireNonNull(send);
                     LOG.info("consumer send:%s",
                              IoUtil.bin2Hex(send.getBuffer()
@@ -160,7 +160,7 @@ public enum ZOperators
                           IOperator<ICommand[],
                                     ISession>> handle(IPacket inPackage, ISession session)
             {
-                return new Triple<>(filterRead(inPackage, handshakeFilter, (ZContext) session.getContext()), session, consumer_transfer);
+                return new Triple<>(filterRead(inPackage, handshakeFilter, session), session, consumer_transfer);
             }
         };
         consumer_transfer = new AbstractTransfer(consumer_encoder)

@@ -82,7 +82,7 @@ public interface ICommand
     }
 
     @Override
-    default int getSuperSerial()
+    default int superSerial()
     {
         return COMMAND_SERIAL;
     }
