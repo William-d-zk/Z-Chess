@@ -94,7 +94,7 @@ public class CryptUtil
                 else crc >>>= 1;
             }
         }
-        return crc ^ 0xFFFFFFFF;
+        return ~crc;
     }
 
     public static long crc64(byte[] buf, int off, int len)
@@ -110,7 +110,7 @@ public class CryptUtil
                 else crc >>>= 1;
             }
         }
-        return crc ^ 0xFFFFFFFFFFFFFFFFL;
+        return ~crc;
     }
 
     public static boolean xorSign(byte[] src, byte sign)
