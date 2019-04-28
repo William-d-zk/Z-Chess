@@ -109,7 +109,7 @@ public abstract class BaseCommand<C extends AioContext>
     }
 
     @Override
-    public int getSuperSerial()
+    public int superSerial()
     {
         return COMMAND_SERIAL;
     }

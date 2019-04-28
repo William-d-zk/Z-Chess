@@ -75,7 +75,7 @@ public abstract class WsControl
     }
 
     @Override
-    public int getSuperSerial()
+    public int superSerial()
     {
         return CONTROL_SERIAL;
     }

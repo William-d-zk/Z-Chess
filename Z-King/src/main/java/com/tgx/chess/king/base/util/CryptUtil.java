@@ -94,7 +94,7 @@ public class CryptUtil
                 else crc >>>= 1;
             }
         }
-        return crc ^ 0xFFFFFFFF;
+        return ~crc;
     }
 
     public static long crc64(byte[] buf, int off, int len)
@@ -110,10 +110,10 @@ public class CryptUtil
                 else crc >>>= 1;
             }
         }
-        return crc ^ 0xFFFFFFFFFFFFFFFFL;
+        return ~crc;
     }
 
-    public boolean xorSign(byte[] src, byte sign)
+    public static boolean xorSign(byte[] src, byte sign)
     {
         Objects.requireNonNull(src);
         if (src.length == 0) return true;
@@ -122,6 +122,15 @@ public class CryptUtil
             xor ^= src[i];
         }
         return xor == sign;
+    }
+
+    public static byte xor(byte[] src)
+    {
+        byte xor = 0;
+        for (byte b : src) {
+            xor ^= b;
+        }
+        return xor;
     }
 
     public static byte[] base64Decoder(char[] src, int start) throws IOException

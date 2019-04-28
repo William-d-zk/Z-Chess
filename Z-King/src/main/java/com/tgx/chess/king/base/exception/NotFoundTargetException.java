@@ -21,69 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.tgx.chess.queen.io.core.inf;
 
-import com.tgx.chess.king.base.inf.IDisposable;
+package com.tgx.chess.king.base.exception;
 
-/**
- * 用于ISession 发送的指令最小单元 需要满足如下的行为特征
- * 
- * @author William.d.zk
- * @see ISession
- */
-public interface ICommand
+public class NotFoundTargetException
         extends
-        IQoS,
-        IDuplicate,
-        IMessage,
-        IProtocol,
-        IChannel,
-        IDisposable
+        ZException
 {
-    /**
-     * 当前 Command 是否对route-mapping 存在影响
-     * 
-     * @return
-     */
-    default boolean isMappingCommand()
+    public NotFoundTargetException(String target,
+                                   String paramName)
     {
-        return false;
-    }
-
-    long _DEFAULT_TRANSACTION_KEY = -1;
-
-    default IPacket translate()
-    {
-        return null;
-    }
-
-    default long getUID()
-    {
-        return -1;
-    }
-
-    default void setUID(long _uid)
-    {
-    }
-
-    default long getTransactionKey()
-    {
-        return -1;
-    }
-
-    default void setTransactionKey(long _key)
-    {
-    }
-
-    @Override
-    default ICommand setSession(ISession session)
-    {
-        return this;
-    }
-
-    @Override
-    default int superSerial()
-    {
-        return COMMAND_SERIAL;
+        super("target %s not found by %s", target, paramName);
     }
 }

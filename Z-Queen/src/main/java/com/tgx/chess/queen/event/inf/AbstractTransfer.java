@@ -27,10 +27,17 @@ package com.tgx.chess.queen.event.inf;
 import java.util.Arrays;
 import java.util.Objects;
 
+import com.tgx.chess.king.base.exception.MissingParameterException;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
+/**
+ * 应用于解码完成后进入logic 处理时，向write 操作注入 writer 的操作
+ *
+ * @author william.d.zk
+ *
+ */
 public class AbstractTransfer
         implements
         IOperator<ICommand[],
@@ -52,12 +59,15 @@ public class AbstractTransfer
                   IOperator<ICommand,
                             ISession>>[] transfer(ICommand[] commands, ISession session)
     {
-        Objects.requireNonNull(commands);
+        if (Objects.isNull(commands) || commands.length == 0) throw new MissingParameterException(toString() + ".transfer", "commands");
         Triple<ICommand,
                ISession,
                IOperator<ICommand,
                          ISession>>[] triples = new Triple[commands.length];
-        Arrays.setAll(triples, slot -> new Triple<>(commands[slot], session, _Encoder));
+        /*
+           此处进行ICommand.setSession 的操作用于绑定待发送command与session
+         */
+        Arrays.setAll(triples, slot -> new Triple<>(commands[slot].setSession(session), session, _Encoder));
         return triples;
     }
 }

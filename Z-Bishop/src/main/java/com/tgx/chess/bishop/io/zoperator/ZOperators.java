@@ -32,7 +32,6 @@ import com.tgx.chess.bishop.io.ws.filter.WsFrameFilter;
 import com.tgx.chess.bishop.io.ws.filter.WsHandShakeFilter;
 import com.tgx.chess.bishop.io.zfilter.ZCommandFilter;
 import com.tgx.chess.bishop.io.zfilter.ZTlsFilter;
-import com.tgx.chess.bishop.io.zprotocol.ZContext;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.base.util.Triple;
@@ -202,7 +201,7 @@ public enum ZOperators
                                     ISession>> handle(ICommand command, ISession session)
             {
                 try {
-                    IPacket send = (IPacket) filterWrite(command, handshakeFilter, (ZContext) session.getContext());
+                    IPacket send = (IPacket) filterWrite(command, handshakeFilter, session.getContext());
                     Objects.requireNonNull(send);
                     LOG.info("server send:%s",
                              IoUtil.bin2Hex(send.getBuffer()
@@ -238,7 +237,7 @@ public enum ZOperators
                                     ISession>> handle(ICommand command, ISession session)
             {
                 try {
-                    IPacket send = (IPacket) filterWrite(command, header, (ZContext) session.getContext());
+                    IPacket send = (IPacket) filterWrite(command, header, session.getContext());
                     Objects.requireNonNull(send);
                     LOG.info("cluster send:%s",
                              IoUtil.bin2Hex(send.getBuffer()
@@ -279,7 +278,7 @@ public enum ZOperators
                           IOperator<ICommand[],
                                     ISession>> handle(IPacket inPackage, ISession session)
             {
-                return new Triple<>(filterRead(inPackage, handshakeFilter, (ZContext) session.getContext()), session, server_transfer);
+                return new Triple<>(filterRead(inPackage, handshakeFilter, session), session, server_transfer);
             }
 
             @Override
@@ -308,7 +307,7 @@ public enum ZOperators
                           IOperator<ICommand[],
                                     ISession>> handle(IPacket inPackage, ISession session)
             {
-                return new Triple<>(filterRead(inPackage, header, (ZContext) session.getContext()), session, cluster_transfer);
+                return new Triple<>(filterRead(inPackage, header, session), session, cluster_transfer);
             }
         };
 
@@ -322,7 +321,7 @@ public enum ZOperators
             }
         };
 
-        cluster_transfer = new AbstractTransfer(server_encoder)
+        cluster_transfer = new AbstractTransfer(cluster_encoder)
         {
 
             @Override
