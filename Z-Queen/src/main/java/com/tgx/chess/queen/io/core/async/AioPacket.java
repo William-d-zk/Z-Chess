@@ -137,7 +137,7 @@ public class AioPacket
     }
 
     @Override
-    public int getSuperSerial()
+    public int superSerial()
     {
         return 0;
     }

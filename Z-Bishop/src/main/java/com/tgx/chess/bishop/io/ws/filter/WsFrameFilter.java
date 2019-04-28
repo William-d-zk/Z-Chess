@@ -53,7 +53,7 @@ public class WsFrameFilter
     {
         if (Objects.isNull(context) || Objects.isNull(output)) return ResultType.ERROR;
         if (context.isOutConvert()) {
-            switch (output.getSuperSerial())
+            switch (output.superSerial())
             {
                 case IProtocol.CONTROL_SERIAL:
                 case IProtocol.COMMAND_SERIAL:

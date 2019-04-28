@@ -58,7 +58,7 @@ public interface ISession
 
     IOperator<IPacket, ISession> getDecodeOperator();
 
-    IContext getContext();
+    <C extends IContext> C getContext();
 
     ISessionDismiss getDismissCallback();
 

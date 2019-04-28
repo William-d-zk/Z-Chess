@@ -52,13 +52,13 @@ public class DeviceEntry
     private boolean isOnline;
 
     @Override
-    public long getPrimaryKey()
+    public long primaryKey()
     {
         return deviceUID;
     }
 
     @Override
-    public long getSecondaryLongKey()
+    public long secondaryLongKey()
     {
         return passwordId;
     }

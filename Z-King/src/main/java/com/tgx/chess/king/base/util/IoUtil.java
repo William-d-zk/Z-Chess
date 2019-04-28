@@ -87,6 +87,11 @@ public interface IoUtil
         return sb.toString();
     }
 
+    static long hex2long(String hex)
+    {
+        return IoUtil.readLong(hex2bin(hex), 0);
+    }
+
     static byte[] hex2bin(String hex)
     {
         return hex2bin(hex, null, 0);

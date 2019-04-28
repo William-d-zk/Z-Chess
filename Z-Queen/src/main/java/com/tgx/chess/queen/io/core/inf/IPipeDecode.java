@@ -36,7 +36,7 @@ public interface IPipeDecode
 
     Logger _Logger = Logger.getLogger(IPipeDecode.class.getName());
 
-    default <C extends IContext> ICommand[] filterRead(IProtocol input, IFilterChain<C> filterChain, C context)
+    default <C extends IContext> ICommand[] filterRead(IProtocol input, IFilterChain<C> filterChain, ISession session)
     {
         _Logger.info("%s input %s ",
                      toString(),
@@ -44,6 +44,7 @@ public interface IPipeDecode
                                                      .array(),
                                     "."));
         final IFilterChain<C> _HeaderFilter = filterChain.getChainHead();
+        final C context = session.getContext();
         ICommand commands[] = null;
         IFilter.ResultType resultType;
         IProtocol protocol = input;
@@ -63,6 +64,7 @@ public interface IPipeDecode
                     case HANDLED:
                         ICommand cmd = (ICommand) nextFilter.decode(context, protocol);
                         if (cmd != null) {
+                            cmd.setSession(session);
                             if (commands == null) commands = new ICommand[] { cmd };
                             else {
                                 ICommand[] nCmd = new ICommand[commands.length + 1];
