@@ -26,7 +26,6 @@ package com.tgx.chess.queen.io.core.inf;
 
 import java.io.Closeable;
 import java.nio.channels.AsynchronousSocketChannel;
-import java.nio.channels.CompletionHandler;
 import java.util.Queue;
 
 import com.tgx.chess.king.base.inf.IDisposable;
@@ -44,10 +43,8 @@ public interface ISession
         IDisposable,
         IConnectActive,
         IValid,
-        IReadable<CompletionHandler<Integer,
-                                    ISession>>,
-        IWritable<CompletionHandler<Integer,
-                                    ISession>>
+        IReadable<ISession>,
+        IWritable<ISession>
 {
     long _DEFAULT_INDEX = -1;
 
@@ -59,8 +56,7 @@ public interface ISession
 
     AsynchronousSocketChannel getChannel();
 
-    IOperator<IPacket,
-              ISession> getDecodeOperator();
+    IOperator<IPacket, ISession> getDecodeOperator();
 
     IContext getContext();
 
