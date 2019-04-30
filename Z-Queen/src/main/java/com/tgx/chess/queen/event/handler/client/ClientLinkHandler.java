@@ -28,67 +28,64 @@ import static com.tgx.chess.queen.event.inf.IError.Type.CONNECT_FAILED;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 
 import java.nio.channels.AsynchronousSocketChannel;
+import java.util.List;
 
 import com.lmax.disruptor.EventHandler;
+import com.tgx.chess.king.base.inf.IPair;
+import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
-import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.IConnectionContext;
+import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
 
-public class ClientLinkHandler
+/**
+ * @author william.d.zk
+ */
+public class ClientLinkHandler<C extends IContext>
         implements
         EventHandler<QEvent>
 {
     private final Logger _Log = Logger.getLogger(getClass().getName());
 
     @Override
-    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
-    {
+    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception {
         if (event.hasError()) {
             if (event.getErrorType()
-                     .equals(CONNECT_FAILED))
-            {
+                     .equals(CONNECT_FAILED)) {
                 event.ignore();
             }
             else {
                 _Log.warning("client io error , do close session");
-                IOperator<Void,
-                          ISession> closeOperator = event.getEventOp();
-                Pair<Void,
-                     ISession> errorContent = event.getContent();
-                ISession session = errorContent.second();
-                ISessionDismiss dismiss = session.getDismissCallback();
-                boolean closed = session.isClosed();
-                closeOperator.handle(null, session);
-                if (!closed) dismiss.onDismiss(session);
+                IPair errorContent = event.getContent();
+                ISession<C> session = errorContent.second();
+                ISessionDismiss<C> dismiss = session.getDismissCallback();
+                IOperator<Void, ISession<C>, Void> closeOperator = event.getEventOp();
+                if (!session.isClosed()) {
+                    closeOperator.handle(null, session);
+                    dismiss.onDismiss(session);
+                }
             }
         }
         else {
-            switch (event.getEventType())
-            {
+            switch (event.getEventType()) {
                 case CONNECTED:
-                    IOperator<IConnectionContext,
-                              AsynchronousSocketChannel> connectedOperator = event.getEventOp();
-                    Pair<IConnectionContext,
-                         AsynchronousSocketChannel> connectedContent = event.getContent();
-                    Triple<ICommand[],
-                           ISession,
-                           IOperator<ICommand[],
-                                     ISession>> connectedHandled = connectedOperator.handle(connectedContent.first(), connectedContent.second());
+                    IPair connectedContent = event.getContent();
+                    IConnectionContext<C> context = connectedContent.first();
+                    AsynchronousSocketChannel channel = connectedContent.second();
+                    IOperator<IConnectionContext, AsynchronousSocketChannel, ITriple> connectedOperator = event.getEventOp();
+                    ITriple connectedHandled = connectedOperator.handle(context, channel);
                     //connectedHandled 不可能为 null
                     ICommand[] waitToSend = connectedHandled.first();
-                    ISession session = connectedHandled.second();
-                    IOperator<ICommand[],
-                              ISession> sendTransferOperator = connectedHandled.third();
-                    event.produce(WRITE, waitToSend, session, sendTransferOperator);
-                    connectedContent.first()
-                                    .getSessionCreated()
-                                    .onCreate(session);
+                    ISession<C> session = connectedHandled.second();
+                    IOperator<ICommand[], ISession, List<ITriple>> sendTransferOperator = connectedHandled.third();
+                    event.produce(WRITE, new Pair<>(waitToSend, session), sendTransferOperator);
+                    context.getSessionCreated()
+                           .onCreate(session);
                     _Log.info(String.format("link handle %s,connected", session));
                     break;
                 default:

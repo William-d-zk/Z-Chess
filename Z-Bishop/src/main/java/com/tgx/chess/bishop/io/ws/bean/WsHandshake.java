@@ -48,11 +48,13 @@ public abstract class WsHandshake
                                         : rMsg;
     }
 
+    @Override
     public byte getControl()
     {
         return WsFrame.frame_op_code_ctrl_handshake;
     }
 
+    @Override
     public byte[] getPayload()
     {
         byte[] payload = super.getPayload();

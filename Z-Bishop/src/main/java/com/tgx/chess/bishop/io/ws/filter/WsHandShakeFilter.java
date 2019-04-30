@@ -37,42 +37,41 @@ import com.tgx.chess.bishop.io.ws.bean.WsHandshake;
 import com.tgx.chess.bishop.io.zprotocol.control.X101_HandShake;
 import com.tgx.chess.bishop.io.zprotocol.control.X102_SslHandShake;
 import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.async.AioPacket;
 import com.tgx.chess.queen.io.core.inf.IPacket;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
-import com.tgx.chess.queen.io.core.inf.IoHandler;
 
 /**
  * @author William.d.zk
  */
-public class WsHandShakeFilter
+public class WsHandShakeFilter<C extends WsContext>
         extends
-        AioFilterChain<WsContext>
+        AioFilterChain<C>
 {
     private final static String CRLF = "\r\n";
 
-    private final IoHandler _IoHandler;
-    private final Logger    _Log = Logger.getLogger(getClass().getName());
+    private final ISort         _Sort;
+    private final Logger        _Log = Logger.getLogger(getClass().getName());
 
-    public WsHandShakeFilter(IoHandler handler)
-    {
+    public WsHandShakeFilter(ISort sort) {
         super("web-socket-header-zfilter-");
-        _IoHandler = handler;
+        _Sort = sort;
     }
 
     @Override
-    public ResultType preEncode(WsContext context, IProtocol output)
-    {
-        if (context == null || output == null) return ResultType.ERROR;
-        if (context.needHandshake() && context.outState() == ENCODE_HANDSHAKE && output instanceof WsHandshake) { return ResultType.NEXT_STEP; }
+    public ResultType preEncode(C context, IProtocol output) {
+        if (context == null || output == null) { return ResultType.ERROR; }
+        if (context.needHandshake() && context.outState() == ENCODE_HANDSHAKE && output instanceof WsHandshake) {
+            return ResultType.NEXT_STEP;
+        }
         return ResultType.IGNORE;
     }
 
     @Override
-    public ResultType preDecode(WsContext context, IProtocol input)
-    {
-        if (context == null || !(input instanceof IPacket)) return ResultType.ERROR;
+    public ResultType preDecode(C context, IProtocol input) {
+        if (context == null || !(input instanceof IPacket)) { return ResultType.ERROR; }
         if (context.needHandshake() && context.inState() == DECODE_HANDSHAKE) {
             WsHandshake handshake = context.getHandshake();
             ByteBuffer recvBuf = ((IPacket) input).getBuffer();
@@ -86,18 +85,15 @@ public class WsHandShakeFilter
                     String x = new String(cRvBuf.array(), cRvBuf.position(), cRvBuf.limit());
                     _Log.info(x);
                     cRvBuf.clear();
-                    switch (_IoHandler.getType())
-                    {
+                    switch (_Sort.getType()) {
                         case SERVER:
                             if (Objects.isNull(handshake)) {
-                                handshake = _IoHandler.isSSL() ? new X102_SslHandShake()
-                                                               : new X101_HandShake();
+                                handshake = _Sort.isSSL() ? new X102_SslHandShake() : new X101_HandShake();
                             }
                             context.setHandshake(handshake);
                             String[] split = x.split(" ", 2);
                             String httpKey = split[0].toUpperCase();
-                            switch (httpKey)
-                            {
+                            switch (httpKey) {
                                 case "GET":
                                     split = x.split(" ");
                                     if (!split[2].equalsIgnoreCase("HTTP/1.1\r\n")) {
@@ -135,7 +131,9 @@ public class WsHandShakeFilter
                                         _Log.warning("sec-websokcet-version to low");
                                         return ResultType.ERROR;
                                     }
-                                    else if (split[1].contains("7") || split[1].contains("8")) break;
+                                    else if (split[1].contains("7") || split[1].contains("8")) {
+                                        break;
+                                    }
                                     // TODO multi version code
                                     // Sec-WebSocket-Version: 13, 7, 8 ->
                                     // Sec-WebSocket-Version:13\r\nSec-WebSocket-Version: 7, 8\r\n
@@ -154,26 +152,22 @@ public class WsHandShakeFilter
                                     context.updateHandshakeState(WsContext.HS_State_SEC_KEY);
                                     break;
                                 case CRLF:
-                                    if (context.checkState(WsContext.HS_State_CLIENT_OK)) {
-                                        handshake.ahead("HTTP/1.1 101 Switching Protocols\r\n")
-                                                 .append(CRLF);
-                                    }
-                                    else handshake.ahead("HTTP/1.1 400 Bad Request\r\n")
-                                                  .append(CRLF);
+                                    handshake.ahead(context.checkState(WsContext.HS_State_CLIENT_OK) ? "HTTP/1.1 101 Switching Protocols\r\n"
+                                                                                                     : "HTTP/1.1 400 Bad Request\r\n")
+                                             .append(CRLF);
                                     return ResultType.HANDLED;
-
+                                default:
+                                    break;
                             }
                             break;
                         case CONSUMER:
                             if (handshake == null) {
-                                handshake = _IoHandler.isSSL() ? new X102_SslHandShake()
-                                                               : new X101_HandShake();
+                                handshake = _Sort.isSSL() ? new X102_SslHandShake() : new X101_HandShake();
                             }
                             context.setHandshake(handshake);
                             split = x.split(" ", 2);
                             httpKey = split[0].toUpperCase();
-                            switch (httpKey)
-                            {
+                            switch (httpKey) {
                                 case "HTTP/1.1":
                                     if (!split[1].contains("101 Switching Protocols\r\n")) {
                                         _Log.warning("handshake error !:");
@@ -182,14 +176,14 @@ public class WsHandShakeFilter
                                     context.updateHandshakeState(WsContext.HS_State_HTTP_101);
                                     break;
                                 case "UPGRADE:":
-                                    if (!split[1].equalsIgnoreCase("websocket\r\n")) {
+                                    if (!"websocket\r\n".equalsIgnoreCase(split[1])) {
                                         _Log.warning("upgrade no web-socket");
                                         return ResultType.ERROR;
                                     }
                                     context.updateHandshakeState(WsContext.HS_State_UPGRADE);
                                     break;
                                 case "CONNECTION:":
-                                    if (!split[1].equalsIgnoreCase("Upgrade\r\n")) {
+                                    if (!"Upgrade\r\n".equalsIgnoreCase(split[1])) {
                                         _Log.warning("connection no upgrade");
                                         return ResultType.ERROR;
                                     }
@@ -206,6 +200,8 @@ public class WsHandShakeFilter
                                     if (context.checkState(WsContext.HS_State_ACCEPT_OK)) { return ResultType.HANDLED; }
                                     _Log.warning("client handshake error!");
                                     return ResultType.ERROR;
+                                default:
+                                    break;
                             }
                         default:
                             break;
@@ -213,7 +209,7 @@ public class WsHandShakeFilter
                     }
 
                 }
-                if (!recvBuf.hasRemaining()) return ResultType.NEED_DATA;
+                if (!recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
             }
             return ResultType.NEED_DATA;
         }
@@ -221,16 +217,14 @@ public class WsHandShakeFilter
     }
 
     @Override
-    public IProtocol encode(WsContext context, IProtocol output)
-    {
+    public IProtocol encode(C context, IProtocol output) {
         AioPacket encoded = new AioPacket(ByteBuffer.wrap(output.encode()));
         context.setOutState(ENCODE_FRAME);
         return encoded;
     }
 
     @Override
-    public IProtocol decode(WsContext context, IProtocol input)
-    {
+    public IProtocol decode(C context, IProtocol input) {
         WsHandshake handshake = context.getHandshake();
         context.setInState(DECODE_FRAME);
         context.finish();

@@ -30,28 +30,33 @@ import java.nio.channels.CompletionHandler;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.io.core.async.socket.AioWorker;
 
-public interface IAioConnector
+/**
+ * @author william.d.zk
+ */
+public interface IAioConnector<C extends IContext>
         extends
-        CompletionHandler<Void,
-                          AsynchronousSocketChannel>,
+        CompletionHandler<Void, AsynchronousSocketChannel>,
         IConnectActive,
-        IConnected,
+        IConnected<C>,
         IConnectError
 {
     @Override
-    IOperator<Throwable,
-              IAioConnector> getErrorOperator();
+    IOperator<Throwable, IAioConnector<C>, IAioConnector<C>> getErrorOperator();
 
     @Override
-    default void completed(Void result, AsynchronousSocketChannel channel)
-    {
+    default void completed(Void result, AsynchronousSocketChannel channel) {
         AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishConnected(getConnectedOperator(), getHandler(), this, getSessionCreator(), getCommandCreator(), getSessionCreated(), channel);
+        worker.publishConnected(getConnectedOperator(),
+                                getSort(),
+                                this,
+                                getSessionCreator(),
+                                getCommandCreator(),
+                                getSessionCreated(),
+                                channel);
     }
 
     @Override
-    default void failed(Throwable exc, AsynchronousSocketChannel channel)
-    {
+    default void failed(Throwable exc, AsynchronousSocketChannel channel) {
         AioWorker worker = (AioWorker) Thread.currentThread();
         worker.publishConnectingError(getErrorOperator(), exc, this);
     }

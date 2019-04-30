@@ -24,15 +24,19 @@
 
 package com.tgx.chess.queen.io.core.inf;
 
-public interface IConnectionContext
+/**
+ * @author william.d.zk
+ */
+public interface IConnectionContext<C extends IContext>
         extends
         IConnectMode
 {
     IConnectActive getConnectActive();
 
-    ISessionCreator getSessionCreator();
+    ISessionCreator<C> getSessionCreator();
 
-    ICommandCreator getCommandCreator();
+    ICommandCreator<C> getCommandCreator();
 
-    ISessionCreated getSessionCreated();
+    ISessionCreated<C> getSessionCreated();
+
 }

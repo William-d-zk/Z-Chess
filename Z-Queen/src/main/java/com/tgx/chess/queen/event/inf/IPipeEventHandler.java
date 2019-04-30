@@ -26,30 +26,23 @@ package com.tgx.chess.queen.event.inf;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.InsufficientCapacityException;
 import com.lmax.disruptor.RingBuffer;
+import com.tgx.chess.king.base.inf.IPair;
 
 /**
  * @author William.d.zk
  */
-public interface IPipeEventHandler<T extends IEvent,
-                                   R extends IEvent>
+public interface IPipeEventHandler<E extends IEvent>
         extends
-        EventHandler<T>
+        EventHandler<E>
 {
 
-    default <V,
-             A> boolean tryPublish(RingBuffer<R> publisher,
-                                   IOperator.Type t,
-                                   V v,
-                                   A a,
-                                   IOperator<V,
-                                             A> operator)
-    {
-        if (publisher == null) return true;
+    default <V, A, R> boolean tryPublish(RingBuffer<E> publisher, IOperator.Type t, IPair content, IOperator<V, A, R> operator) {
+        if (publisher == null) { return true; }
         try {
             long sequence = publisher.tryNext();
             try {
-                R event = publisher.get(sequence);
-                event.produce(t, v, a, operator);
+                E event = publisher.get(sequence);
+                event.produce(t, content, operator);
                 return true;
             }
             finally {
@@ -62,39 +55,25 @@ public interface IPipeEventHandler<T extends IEvent,
         return false;
     }
 
-    default <V,
-             A> void publish(RingBuffer<R> publisher,
-                             IOperator.Type t,
-                             V v,
-                             A a,
-                             IOperator<V,
-                                       A> operator)
-    {
-        if (publisher == null) return;
+    default <V, A, R> void publish(RingBuffer<E> publisher, IOperator.Type t, IPair content, IOperator<V, A, R> operator) {
+        if (publisher == null) { return; }
         long sequence = publisher.next();
         try {
-            R event = publisher.get(sequence);
-            event.produce(t, v, a, operator);
+            E event = publisher.get(sequence);
+            event.produce(t, content, operator);
         }
         finally {
             publisher.publish(sequence);
         }
     }
 
-    default <V,
-             A> boolean tryError(RingBuffer<R> publisher,
-                                 IError.Type t,
-                                 V v,
-                                 A a,
-                                 IOperator<V,
-                                           A> operator)
-    {
-        if (publisher == null) return true;
+    default <V, A, R> boolean tryError(RingBuffer<E> publisher, IError.Type t, IPair content, IOperator<V, A, R> operator) {
+        if (publisher == null) { return true; }
         try {
             long sequence = publisher.tryNext();
             try {
-                R event = publisher.get(sequence);
-                event.error(t, v, a, operator);
+                E event = publisher.get(sequence);
+                event.error(t, content, operator);
                 return true;
             }
             finally {
@@ -107,23 +86,15 @@ public interface IPipeEventHandler<T extends IEvent,
         return false;
     }
 
-    default <V,
-             A> void error(RingBuffer<R> publisher,
-                           IError.Type t,
-                           V v,
-                           A a,
-                           IOperator<V,
-                                     A> operator)
-    {
-        if (publisher == null) return;
+    default <V, A, R> void error(RingBuffer<E> publisher, IError.Type t, IPair content, IOperator<V, A, R> operator) {
+        if (publisher == null) { return; }
         long sequence = publisher.next();
         try {
-            R event = publisher.get(sequence);
-            event.error(t, v, a, operator);
+            E event = publisher.get(sequence);
+            event.error(t, content, operator);
         }
         finally {
             publisher.publish(sequence);
         }
     }
-
 }

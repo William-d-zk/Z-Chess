@@ -21,25 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.tgx.chess.queen.io.core.inf;
+
+package com.tgx.chess.king.base.inf;
 
 /**
- * @author William.d.zk
+ * @author william.d.zk
  */
-public interface IDestine
+public interface ITriple
+        extends
+        IDisposable,
+        Cloneable
 {
-    default RESULT trial(ICommand cmd, IoHandler handler)
-    {
-        return RESULT.IGNORE;
-    }
 
-    enum RESULT
-    {
-        HANDLE,
-        SECTION,
-        PASS,
-        IGNORE,
-        ERROR
-    }
+    <A> A first();
+
+    <B> B second();
+
+    <C> C third();
+
+    ITriple clone();
 
 }

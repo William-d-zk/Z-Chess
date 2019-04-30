@@ -24,27 +24,29 @@
 
 package com.tgx.chess.queen.io.core.inf;
 
+import com.tgx.chess.king.base.inf.ITriple;
+import com.tgx.chess.queen.event.inf.IOperator;
+
 /**
  * @author William.d.zk
  */
-public interface IPipeEncoder
+public interface IPipeEncoder<C extends IContext>
+        extends
+        IOperator<ICommand, ISession<C>, ITriple>
 {
-    default <C extends IContext> IProtocol filterWrite(IProtocol output, IFilterChain<C> filterChain, C context)
-    {
+    default IProtocol filterWrite(IProtocol output, IFilterChain<C> filterChain, C context) {
         IFilter.ResultType resultType;
         IFilterChain<C> previousFilter = filterChain.getChainTail();
         while (previousFilter != null) {
             resultType = previousFilter.preEncode(context, output);
-            switch (resultType)
-            {
+            switch (resultType) {
                 case ERROR:
                 case NEED_DATA:
                     return null;
                 case NEXT_STEP:
                     output = previousFilter.encode(context, output);
                     break;
-                case HANDLED:
-                case IGNORE:
+                default:
                     break;
             }
             previousFilter = previousFilter.getPrevious();

@@ -44,15 +44,12 @@ public class ZContext
     private Rc4             mEncryptRc4, mDecryptRc4;
     private IEncryptHandler mEncryptHandler;
 
-    public ZContext(ISessionOption option,
-                    ISort sorter)
-    {
+    public ZContext(ISessionOption option, ISort sorter) {
         super(option, sorter);
     }
 
     @Override
-    public void reset()
-    {
+    public void reset() {
         super.reset();
         mUpdateKeyIn = false;
         mUpdateKeyOut = false;
@@ -61,63 +58,56 @@ public class ZContext
     }
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         super.dispose();
         mEncryptHandler = null;
         mSymmetricKeyIn = mSymmetricKeyOut = mSymmetricKeyReroll = null;
-        if (mEncryptRc4 != null) mEncryptRc4.reset();
-        if (mDecryptRc4 != null) mDecryptRc4.reset();
+        if (mEncryptRc4 != null) {
+            mEncryptRc4.reset();
+        }
+        if (mDecryptRc4 != null) {
+            mDecryptRc4.reset();
+        }
         mEncryptRc4 = mDecryptRc4 = null;
     }
 
     @Override
-    public Rc4 getSymmetricDecrypt()
-    {
-        return mDecryptRc4 == null ? mDecryptRc4 = new Rc4()
-                                   : mDecryptRc4;
+    public Rc4 getSymmetricDecrypt() {
+        return mDecryptRc4 == null ? mDecryptRc4 = new Rc4() : mDecryptRc4;
     }
 
     @Override
-    public Rc4 getSymmetricEncrypt()
-    {
-        return mEncryptRc4 == null ? mEncryptRc4 = new Rc4()
-                                   : mEncryptRc4;
+    public Rc4 getSymmetricEncrypt() {
+        return mEncryptRc4 == null ? mEncryptRc4 = new Rc4() : mEncryptRc4;
     }
 
     @Override
-    public int getSymmetricKeyId()
-    {
+    public int getSymmetricKeyId() {
         return mSymmetricKeyId;
     }
 
     @Override
-    public void setSymmetricKeyId(int symmetricKeyId)
-    {
+    public void setSymmetricKeyId(int symmetricKeyId) {
         mSymmetricKeyId = symmetricKeyId;
     }
 
     @Override
-    public byte[] getSymmetricKeyIn()
-    {
+    public byte[] getSymmetricKeyIn() {
         return mSymmetricKeyIn;
     }
 
     @Override
-    public byte[] getSymmetricKeyOut()
-    {
+    public byte[] getSymmetricKeyOut() {
         return mSymmetricKeyOut;
     }
 
     @Override
-    public byte[] getReRollKey()
-    {
+    public byte[] getReRollKey() {
         return mSymmetricKeyReroll;
     }
 
     @Override
-    public boolean needUpdateKeyIn()
-    {
+    public boolean needUpdateKeyIn() {
         if (mUpdateKeyIn) {
             mUpdateKeyIn = false;
             return true;
@@ -126,8 +116,7 @@ public class ZContext
     }
 
     @Override
-    public boolean needUpdateKeyOut()
-    {
+    public boolean needUpdateKeyOut() {
         if (mUpdateKeyOut) {
             mUpdateKeyOut = false;
             return true;
@@ -136,56 +125,47 @@ public class ZContext
     }
 
     @Override
-    public void updateKeyIn()
-    {
+    public void updateKeyIn() {
         mUpdateKeyIn = true;
     }
 
     @Override
-    public void updateKeyOut()
-    {
+    public void updateKeyOut() {
         mUpdateKeyOut = true;
     }
 
     @Override
-    public void reRollKey(byte[] key)
-    {
+    public void reRollKey(byte[] key) {
         mSymmetricKeyReroll = key;
     }
 
     @Override
-    public void swapKeyIn(byte[] key)
-    {
+    public void swapKeyIn(byte[] key) {
         mSymmetricKeyIn = key;
     }
 
     @Override
-    public void swapKeyOut(byte[] key)
-    {
+    public void swapKeyOut(byte[] key) {
         mSymmetricKeyOut = key;
     }
 
     @Override
-    public int getPubKeyId()
-    {
+    public int getPubKeyId() {
         return mPubKeyId;
     }
 
     @Override
-    public void setPubKeyId(int pubKeyId)
-    {
+    public void setPubKeyId(int pubKeyId) {
         mPubKeyId = pubKeyId;
     }
 
     @Override
-    public IEncryptHandler getEncryptHandler()
-    {
+    public IEncryptHandler getEncryptHandler() {
         return mEncryptHandler;
     }
 
     @Override
-    public void setEncryptHandler(IEncryptHandler handler)
-    {
+    public void setEncryptHandler(IEncryptHandler handler) {
         mEncryptHandler = handler;
     }
 }

@@ -30,12 +30,11 @@ import java.util.Queue;
 
 import com.tgx.chess.king.base.inf.IDisposable;
 import com.tgx.chess.king.base.inf.IReset;
-import com.tgx.chess.queen.event.inf.IOperator;
 
 /**
  * @author William.d.zk
  */
-public interface ISession
+public interface ISession<C extends IContext>
         extends
         Queue<IPacket>,
         IReset,
@@ -43,10 +42,10 @@ public interface ISession
         IDisposable,
         IConnectActive,
         IValid,
-        IReadable<ISession>,
-        IWritable<ISession>
+        IReadable<ISession<C>>,
+        IWritable<ISession<C>>
 {
-    long _DEFAULT_INDEX = -1;
+    long DEFAULT_INDEX = -1;
 
     long getIndex();
 
@@ -56,11 +55,9 @@ public interface ISession
 
     AsynchronousSocketChannel getChannel();
 
-    IOperator<IPacket, ISession> getDecodeOperator();
+    C getContext();
 
-    <C extends IContext> C getContext();
-
-    ISessionDismiss getDismissCallback();
+    ISessionDismiss<C> getDismissCallback();
 
     long[] getPortChannels();
 

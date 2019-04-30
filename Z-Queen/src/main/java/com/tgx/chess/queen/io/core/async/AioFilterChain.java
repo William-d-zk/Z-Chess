@@ -38,76 +38,64 @@ public abstract class AioFilterChain<C extends IContext>
     private IFilterChain<C> nextFilter;
     private IFilterChain<C> preFilter;
 
-    private int mIdempotent = 0x80000000;
+    private int             mIdempotent = 0x80000000;
 
-    protected AioFilterChain(String name)
-    {
+    protected AioFilterChain(String name) {
         _Name = name;
     }
 
     @Override
-    public int getIdempotentBit()
-    {
+    public int getIdempotentBit() {
         return mIdempotent;
     }
 
     @Override
-    public void idempotentRightShift(int previous)
-    {
-        if (previous == 1) throw new IllegalArgumentException();
-        mIdempotent = previous == 0 && mIdempotent == 0x80000000 ? 1
-                                                                 : previous != 0 ? previous >>> 1
-                                                                                 : mIdempotent;
+    public void idempotentRightShift(int previous) {
+        if (previous == 1) { throw new IllegalArgumentException(); }
+        mIdempotent = previous == 0 && mIdempotent == 0x80000000 ? 1 : previous != 0 ? previous >>> 1 : mIdempotent;
     }
 
     @Override
-    public IFilterChain<C> getPrevious()
-    {
+    public IFilterChain<C> getPrevious() {
         return preFilter;
     }
 
     @Override
-    public void setPrevious(IFilterChain<C> filter)
-    {
+    public void setPrevious(IFilterChain<C> filter) {
         preFilter = filter;
     }
 
     @Override
-    public IFilterChain<C> getNext()
-    {
+    public IFilterChain<C> getNext() {
         return nextFilter;
     }
 
     @Override
-    public void setNext(IFilterChain<C> filter)
-    {
+    public void setNext(IFilterChain<C> filter) {
         nextFilter = filter;
     }
 
     @Override
-    public IFilterChain<C> getChainHead()
-    {
+    public IFilterChain<C> getChainHead() {
         IFilterChain<C> filter = preFilter;
-        while (filter != null && filter.getPrevious() != null)
+        while (filter != null && filter.getPrevious() != null) {
             filter = filter.getPrevious();
-        return filter == null ? this
-                              : filter;
+        }
+        return filter == null ? this : filter;
     }
 
     @Override
-    public IFilterChain<C> getChainTail()
-    {
+    public IFilterChain<C> getChainTail() {
         IFilterChain<C> filter = nextFilter;
-        while (filter != null && filter.getNext() != null)
+        while (filter != null && filter.getNext() != null) {
             filter = filter.getNext();
-        return filter == null ? this
-                              : filter;
+        }
+        return filter == null ? this : filter;
     }
 
     @Override
-    public IFilterChain<C> linkAfter(IFilterChain<C> curFilter)
-    {
-        if (curFilter == null) return this;
+    public IFilterChain<C> linkAfter(IFilterChain<C> curFilter) {
+        if (curFilter == null) { return this; }
         curFilter.setNext(this);
         setPrevious(curFilter);
         idempotentRightShift(curFilter.getIdempotentBit());
@@ -115,9 +103,8 @@ public abstract class AioFilterChain<C extends IContext>
     }
 
     @Override
-    public IFilterChain<C> linkFront(IFilterChain<C> curFilter)
-    {
-        if (curFilter == null) return this;
+    public IFilterChain<C> linkFront(IFilterChain<C> curFilter) {
+        if (curFilter == null) { return this; }
         curFilter.setPrevious(this);
         setNext(curFilter);
         curFilter.idempotentRightShift(getIdempotentBit());
@@ -125,8 +112,7 @@ public abstract class AioFilterChain<C extends IContext>
     }
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         IFilterChain<C> nnFilter;
         IFilterChain<C> nFilter = nextFilter;
         while (nFilter != null) {
@@ -137,8 +123,7 @@ public abstract class AioFilterChain<C extends IContext>
     }
 
     @Override
-    public String getName()
-    {
+    public String getName() {
         return _Name;
     }
 }

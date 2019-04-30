@@ -28,14 +28,15 @@ import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 import java.nio.channels.AsynchronousSocketChannel;
 
 import com.lmax.disruptor.RingBuffer;
+import com.tgx.chess.king.base.inf.IPair;
+import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
-import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.IConnectionContext;
+import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
@@ -43,32 +44,26 @@ import com.tgx.chess.queen.io.core.manager.QueenManager;
 /**
  * @author William.d.zk
  */
-public class ClusterHandler
-        implements
-        IPipeEventHandler<QEvent,
-                          QEvent>
+public class ClusterHandler<C extends IContext>
+        extends
+        BasePipeEventHandler<C>
 {
 
-    private final QueenManager       _QueenManager;
+    private final QueenManager<C>    _QueenManager;
     private final RingBuffer<QEvent> _Error;
     private final RingBuffer<QEvent> _Writer;
     private final Logger             _Log = Logger.getLogger(getClass().getName());
 
-    public ClusterHandler(final QueenManager queenManager,
-                          RingBuffer<QEvent> error,
-                          RingBuffer<QEvent> writer)
-    {
+    public ClusterHandler(final QueenManager<C> queenManager, RingBuffer<QEvent> error, RingBuffer<QEvent> writer) {
         _QueenManager = queenManager;
         _Error = error;
         _Writer = writer;
     }
 
     @Override
-    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
-    {
+    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception {
         if (event.hasError()) {
-            switch (event.getErrorType())
-            {
+            switch (event.getErrorType()) {
                 case ACCEPT_FAILED:
                 case CONNECT_FAILED:
                     _Log.info(String.format("error type %s,ignore ", event.getErrorType()));
@@ -76,38 +71,32 @@ public class ClusterHandler
                     break;
                 default:
                     _Log.warning("cluster io error , do close session");
-                    IOperator<Void,
-                              ISession> closeOperator = event.getEventOp();
-                    Pair<Void,
-                         ISession> errorContent = event.getContent();
-                    ISession session = errorContent.second();
-                    ISessionDismiss dismiss = session.getDismissCallback();
+                    IPair errorContent = event.getContent();
+                    ISession<C> session = errorContent.second();
+                    IOperator<Void, ISession<C>, Void> closeOperator = event.getEventOp();
+                    ISessionDismiss<C> dismiss = session.getDismissCallback();
                     boolean closed = session.isClosed();
                     closeOperator.handle(null, session);
-                    if (!closed) dismiss.onDismiss(session);
+                    if (!closed) {
+                        dismiss.onDismiss(session);
+                    }
             }
         }
         else {
-            switch (event.getEventType())
-            {
+            switch (event.getEventType()) {
                 case CONNECTED:
-                    IOperator<IConnectionContext,
-                              AsynchronousSocketChannel> connectedOperator = event.getEventOp();
-                    Pair<IConnectionContext,
-                         AsynchronousSocketChannel> connectedContent = event.getContent();
-                    Triple<ICommand[],
-                           ISession,
-                           IOperator<ICommand[],
-                                     ISession>> connectedHandled = connectedOperator.handle(connectedContent.first(), connectedContent.second());
+                    IPair connectedContent = event.getContent();
+                    IConnectionContext<C> context = connectedContent.first();
+                    AsynchronousSocketChannel channel = connectedContent.second();
+                    IOperator<IConnectionContext<C>, AsynchronousSocketChannel, ITriple> connectedOperator = event.getEventOp();
+                    ITriple connectedHandled = connectedOperator.handle(context, channel);
                     //connectedHandled 不可能为 null
                     ICommand[] waitToSend = connectedHandled.first();
-                    ISession session = connectedHandled.second();
-                    IOperator<ICommand[],
-                              ISession> sendTransferOperator = connectedHandled.third();
-                    event.produce(WRITE, waitToSend, session, sendTransferOperator);
-                    connectedContent.first()
-                                    .getSessionCreated()
-                                    .onCreate(session);
+                    ISession<C> session = connectedHandled.second();
+                    IOperator<ICommand[], ISession, ITriple> sendTransferOperator = connectedHandled.third();
+                    event.produce(WRITE, new Pair<>(waitToSend, session), sendTransferOperator);
+                    context.getSessionCreated()
+                           .onCreate(session);
                     _Log.info(String.format("cluster link handle %s,connected", session));
                     break;
                 case LOGIC:
@@ -233,7 +222,7 @@ public class ClusterHandler
                         case X103_Close.COMMAND:
                             dismiss = session.getDismissCallback();
                             if (dismiss != null && !session.isClosed()) dismiss.onDismiss(session);
-                            CLOSE_OPERATOR.INSTANCE.handle(null, session);
+                            getCloseOperator.INSTANCE.handle(null, session);
                             _ClusterNode.clearSession(session);
                             _ClusterNode.rmSession(session);
                             break;

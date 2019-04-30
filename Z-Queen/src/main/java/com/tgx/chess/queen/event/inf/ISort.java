@@ -39,6 +39,10 @@ public interface ISort
         SYMMETRY
     }
 
+    default boolean isSSL() {
+        return false;
+    }
+
     /**
      *
      * 用于区分当前处理过程属于哪个Pipeline

@@ -26,10 +26,14 @@ package com.tgx.chess.queen.event.handler;
 
 import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.queen.event.processor.QEvent;
+import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
 
-public interface ILinkHandler
+/**
+ * @author william.d.zk
+ */
+public interface ILinkHandler<C extends IContext>
 {
 
-    void handle(LinkHandler _LinkHandler, QueenManager manager, QEvent event) throws ZException;
+    void handle(LinkHandler<C> _LinkHandler, QueenManager<C> manager, QEvent event) throws ZException;
 }
