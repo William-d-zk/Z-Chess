@@ -24,39 +24,41 @@
 
 package com.tgx.chess.queen.io.core.manager;
 
-import com.tgx.chess.king.base.log.Logger;
+import java.util.List;
+
+import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.config.Config;
+import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.io.core.async.AioSessionManager;
 import com.tgx.chess.queen.io.core.executor.ServerCore;
 import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
-public abstract class QueenManager
+/**
+ * @author william.d.zk
+ */
+public abstract class QueenManager<C extends IContext>
         extends
-        AioSessionManager
+        AioSessionManager<C>
 {
-    private final Logger       _Logger = Logger.getLogger(getClass().getName());
-    protected final ServerCore _ServerCore;
+    protected final ServerCore<C> _ServerCore;
 
-    public QueenManager(Config config,
-                        ServerCore serverCore)
-    {
+    public QueenManager(Config config, ServerCore<C> serverCore) {
         super(config);
         _ServerCore = serverCore;
     }
 
-    public void localClose(ISession session)
-    {
-        _ServerCore.localClose(session);
+    public void localClose(ISession<C> session, IOperator<Void, ISession<C>, Void> closeOperator) {
+        _ServerCore.localClose(session, closeOperator);
     }
 
-    public boolean localSend(ISession session, ICommand... commands)
-    {
-        return _ServerCore.localSend(session, commands);
+    public boolean localSend(ISession<C> session, IOperator<ICommand[], ISession<C>, List<ITriple>> writeOperator, ICommand... commands) {
+        return _ServerCore.localSend(session, writeOperator, commands);
     }
 
-    public abstract ICommand save(ICommand tar, ISession session);
+    public abstract ICommand save(ICommand tar, ISession<C> session);
 
-    public abstract ICommand find(ICommand key, ISession session);
+    public abstract ICommand find(ICommand key, ISession<C> session);
 
 }

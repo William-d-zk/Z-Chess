@@ -28,9 +28,10 @@ package com.tgx.chess.queen.io.core.inf;
  * 完成连接时 构建需要首次发送的数据包，仅使用ICommand 接口
  * 使用 ISession 的 最小发送单元ICommand 作为接口规范
  * 
+ * @author william.d.zk
  * @see ICommandFactory
  */
-public interface ICommandCreator
+public interface ICommandCreator<C extends IContext>
 {
-    ICommand[] createCommands(ISession session);
+    ICommand[] createCommands(ISession<C> session);
 }

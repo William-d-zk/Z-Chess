@@ -22,18 +22,22 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.queen.io.core.inf;
+package com.tgx.chess.queen.event.operator;
 
 import com.tgx.chess.queen.event.inf.IOperator;
+import com.tgx.chess.queen.io.core.inf.IAioServer;
+import com.tgx.chess.queen.io.core.inf.IContext;
 
-public interface IOperatorSupplier<V,
-                                   T,
-                                   A>
+/**
+ * @author william.d.zk
+ */
+public class AcceptFailedOperator<C extends IContext>
+        implements
+        IOperator<Throwable, IAioServer<C>, IAioServer<C>>
 {
-    IOperator<V,
-              A> getInOperator();
 
-    IOperator<T,
-              A> getOutOperator();
-
+    @Override
+    public IAioServer<C> handle(Throwable throwable, IAioServer<C> aioServer) {
+        return aioServer;
+    }
 }

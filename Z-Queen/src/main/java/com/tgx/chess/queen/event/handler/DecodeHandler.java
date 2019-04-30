@@ -26,14 +26,13 @@ package com.tgx.chess.queen.event.handler;
 import static com.tgx.chess.queen.event.inf.IError.Type.FILTER_DECODE;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.DISPATCH;
 import static com.tgx.chess.queen.io.core.inf.IContext.DECODE_ERROR;
-import static com.tgx.chess.queen.io.core.inf.IoHandler.ERROR_OPERATOR;
 
 import java.util.Arrays;
 
-import com.lmax.disruptor.EventHandler;
+import com.tgx.chess.king.base.inf.IPair;
+import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
-import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.ICommand;
@@ -45,9 +44,9 @@ import com.tgx.chess.queen.io.core.inf.ISession;
 /**
  * @author William.d.zk
  */
-public class DecodeHandler
-        implements
-        EventHandler<QEvent>
+public class DecodeHandler<C extends IContext>
+        extends
+        BasePipeEventHandler<C>
 {
     protected final Logger          _Log = Logger.getLogger(getClass().getName());
     protected final IEncryptHandler _EncryptHandler;
@@ -62,45 +61,36 @@ public class DecodeHandler
      * @see IoDispatcher
      */
     @Override
-    public void onEvent(QEvent event, long sequence, boolean batch) throws Exception
-    {
+    public void onEvent(QEvent event, long sequence, boolean batch) throws Exception {
         /*
         错误事件已在同级旁路中处理，此处不再关心错误处理
          */
-        IOperator<IPacket,
-                  ISession> packetOperator = event.getEventOp();
-        Pair<IPacket,
-             ISession> packetContent = event.getContent();
-        ISession session = packetContent.second();
-        IContext context = session.getContext();
+        IPair packetContent = event.getContent();
+        ISession<C> session = packetContent.second();
+        IOperator<IPacket, ISession<C>, ITriple> packetOperator = event.getEventOp();
+        C context = session.getContext();
         context.setEncryptHandler(_EncryptHandler);
         IPacket packet = packetContent.first();
         if (!context.isInErrorState()) {
             try {
-                Triple<ICommand[],
-                       ISession,
-                       IOperator<ICommand[],
-                                 ISession>> result = packetOperator.handle(packet, session);
-                _Log.info("decoded commands:%s", Arrays.toString(result.first()));
-                transfer(event, result.first(), session, result.third());
+                ITriple result = packetOperator.handle(packet, session);
+                ICommand[] commands = result.first();
+                _Log.info("decoded commands:%s", Arrays.toString(commands));
+                event.produce(DISPATCH, new Pair<>(commands, session), result.third());
             }
             catch (Exception e) {
                 _Log.warning(String.format("read decode error\n %s", session.toString()), e);
                 context.setInState(DECODE_ERROR);
                 //此处为Pipeline中间环节，使用event进行事件传递，不使用dispatcher
-                event.error(FILTER_DECODE, e, session, ERROR_OPERATOR());
+                event.error(FILTER_DECODE, new Pair<>(e, session), getErrorOperator());
             }
         }
-        else event.ignore();
+        else {
+            event.ignore();
+        }
     }
 
-    protected void transfer(QEvent event,
-                            ICommand[] commands,
-                            ISession session,
-                            IOperator<ICommand[],
-                                      ISession> operator)
-    {
-        event.produce(DISPATCH, commands, session, operator);
+    protected void transfer(QEvent event, ICommand[] commands, ISession<C> session, IOperator<ICommand[], ISession<C>, ITriple> operator) {
+        event.produce(DISPATCH, new Pair<>(commands, session), operator);
     }
-
 }

@@ -25,35 +25,29 @@
 package com.tgx.chess.queen.io.core.inf;
 
 import com.tgx.chess.king.base.exception.ZException;
-import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.util.IoUtil;
+import com.tgx.chess.queen.event.inf.IOperator;
 
 /**
  * @author William.d.zk
  */
-public interface IPipeDecode
+public interface IPipeDecoder<C extends IContext>
+        extends
+        IOperator<IPacket, ISession<C>, ITriple>
 {
 
-    Logger _Logger = Logger.getLogger(IPipeDecode.class.getName());
-
-    default <C extends IContext> ICommand[] filterRead(IProtocol input, IFilterChain<C> filterChain, ISession session)
-    {
-        _Logger.info("%s input %s ",
-                     toString(),
-                     IoUtil.bin2Hex(((IPacket) input).getBuffer()
-                                                     .array(),
-                                    "."));
+    default ICommand[] filterRead(IProtocol input, IFilterChain<C> filterChain, ISession<C> session) {
         final IFilterChain<C> _HeaderFilter = filterChain.getChainHead();
         final C context = session.getContext();
-        ICommand commands[] = null;
+        ICommand[] commands = null;
         IFilter.ResultType resultType;
         IProtocol protocol = input;
         for (IFilterChain<C> nextFilter = _HeaderFilter;; nextFilter = _HeaderFilter, protocol = input) {
             Chain:
             while (nextFilter != null) {
                 resultType = nextFilter.preDecode(context, protocol);
-                switch (resultType)
-                {
+                switch (resultType) {
                     case ERROR:
                         throw new ZException(String.format("filter:%s error", nextFilter.getName()));
                     case NEED_DATA:
@@ -65,7 +59,9 @@ public interface IPipeDecode
                         ICommand cmd = (ICommand) nextFilter.decode(context, protocol);
                         if (cmd != null) {
                             cmd.setSession(session);
-                            if (commands == null) commands = new ICommand[] { cmd };
+                            if (commands == null) {
+                                commands = new ICommand[] { cmd };
+                            }
                             else {
                                 ICommand[] nCmd = new ICommand[commands.length + 1];
                                 IoUtil.addArray(commands, nCmd, cmd);
@@ -73,7 +69,7 @@ public interface IPipeDecode
                             }
                         }
                         break Chain;
-                    case IGNORE:
+                    default:
                         break;
                 }
                 nextFilter = nextFilter.getNext();

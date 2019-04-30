@@ -23,30 +23,19 @@
  */
 package com.tgx.chess.queen.event.inf;
 
-import com.tgx.chess.king.base.util.Triple;
+import java.util.Objects;
 
 /**
  * @author William.d.zk
  */
-public interface IOperator<V,
-                           A>
+public interface IOperator<T, U, R>
 {
-    default <T,
-             E> Triple<T,
-                       E,
-                       IOperator<T,
-                                 E>> handle(V v, A a)
-    {
-        return null;
-    }
 
-    default <T,
-             E> Triple<T,
-                       E,
-                       IOperator<T,
-                                 E>>[] transfer(V v, A a)
-    {
-        return null;
+    R handle(T t, U u);
+
+    default <V> IOperator<T, U, V> andThen(IOperator<? super T, ? super R, ? extends V> after) {
+        Objects.requireNonNull(after);
+        return (t, u) -> after.handle(t, handle(t, u));
     }
 
     enum Type

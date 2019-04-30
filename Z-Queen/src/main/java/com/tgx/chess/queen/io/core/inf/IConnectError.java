@@ -31,6 +31,5 @@ import com.tgx.chess.queen.event.inf.IOperator;
 @FunctionalInterface
 public interface IConnectError
 {
-    IOperator<Throwable,
-              ? extends IConnectActive> getErrorOperator();
+    IOperator<Throwable, ? extends IConnectActive, ? extends IConnectActive> getErrorOperator();
 }

@@ -351,6 +351,7 @@ public abstract class BaseCommand<C extends AioContext>
         return this;
     }
 
+    @Override
     public long getUID()
     {
         return mMsgUID;

@@ -25,51 +25,47 @@
 package com.tgx.chess.queen.event.handler;
 
 import com.lmax.disruptor.RingBuffer;
+import com.tgx.chess.king.base.inf.IPair;
+import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
-import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
+import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
-public class EncodedHandler
+/**
+ * @author william.d.zk
+ */
+public class EncodedHandler<C extends IContext>
         implements
-        IPipeEventHandler<QEvent,
-                          QEvent>,
-        ISessionHandler
+        IPipeEventHandler<QEvent>,
+        ISessionHandler<C>
 {
-    private final Logger _Log = Logger.getLogger(getClass().getName());
+    private final Logger             _Log = Logger.getLogger(getClass().getName());
 
     private final RingBuffer<QEvent> _Error;
 
-    public EncodedHandler(RingBuffer<QEvent> error)
-    {
+    public EncodedHandler(RingBuffer<QEvent> error) {
         _Error = error;
     }
 
     @Override
-    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
-    {
+    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception {
         if (event.hasError()) {
-            switch (event.getErrorType())
-            {
+            switch (event.getErrorType()) {
                 case FILTER_ENCODE:
                 case ILLEGAL_STATE:
                 case ILLEGAL_BIZ_STATE:
                 default:
-                    IOperator<Throwable,
-                              ISession> errorOperator = event.getEventOp();
-                    Pair<Throwable,
-                         ISession> errorContent = event.getContent();
-                    ISession session = errorContent.second();
+                    IPair errorContent = event.getContent();
                     Throwable throwable = errorContent.first();
-                    Triple<Void,
-                           ISession,
-                           IOperator<Void,
-                                     ISession>> errorResult = errorOperator.handle(throwable, session);
-                    error(_Error, IError.Type.CLOSED, errorResult.first(), session, errorResult.third());
+                    ISession<C> session = errorContent.second();
+                    IOperator<Throwable, ISession<C>, ITriple> errorOperator = event.getEventOp();
+                    ITriple errorResult = errorOperator.handle(throwable, session);
+                    error(_Error, IError.Type.CLOSED, new Pair<>(null, session), errorResult.third());
                     break;
             }
         }

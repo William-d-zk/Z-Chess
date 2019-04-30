@@ -24,25 +24,28 @@
 
 package com.tgx.chess.queen.event.handler;
 
+import com.tgx.chess.king.base.inf.IPair;
+import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
-public class EncodeHandler
+/**
+ * @author william.d.zk
+ */
+public class EncodeHandler<C extends IContext>
         implements
-        ISessionHandler
+        ISessionHandler<C>
 {
     private final Logger _Log = Logger.getLogger(getClass().getName());
 
     @Override
-    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
-    {
+    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception {
         if (event.hasError()) {
-            switch (event.getErrorType())
-            {
+            switch (event.getErrorType()) {
                 case FILTER_ENCODE:
                 case ILLEGAL_STATE:
                 case ILLEGAL_BIZ_STATE:
@@ -54,26 +57,23 @@ public class EncodeHandler
             }
         }
         else {
-            switch (event.getEventType())
-            {
+            switch (event.getEventType()) {
                 case WRITE:
-                    IOperator<ICommand,
-                              ISession> writeOperator = event.getEventOp();
-                    Pair<ICommand,
-                         ISession> pairWriteContent = event.getContent();
+                    IPair pairWriteContent = event.getContent();
                     ICommand cmd = pairWriteContent.first();
-                    ISession session = pairWriteContent.second();
+                    ISession<C> session = pairWriteContent.second();
+                    IOperator<ICommand, ISession<C>, ITriple> writeOperator = event.getEventOp();
                     encodeHandler(event, cmd, session, writeOperator);
                     cmd.dispose();
                     break;
                 case WROTE:
-                    IOperator<Integer,
-                              ISession> wroteOperator = event.getEventOp();
-                    Pair<Integer,
-                         ISession> pairWroteContent = event.getContent();
+                    IPair pairWroteContent = event.getContent();
                     int wroteCnt = pairWroteContent.first();
                     session = pairWroteContent.second();
+                    IOperator<Integer, ISession<C>, ITriple> wroteOperator = event.getEventOp();
                     encodeHandler(event, wroteCnt, session, wroteOperator);
+                    break;
+                default:
                     break;
             }
         }

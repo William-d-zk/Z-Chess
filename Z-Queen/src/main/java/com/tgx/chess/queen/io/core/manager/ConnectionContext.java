@@ -24,30 +24,33 @@
 
 package com.tgx.chess.queen.io.core.manager;
 
+import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.io.core.inf.ICommandCreator;
 import com.tgx.chess.queen.io.core.inf.IConnectActive;
 import com.tgx.chess.queen.io.core.inf.IConnectionContext;
+import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.ISessionCreated;
 import com.tgx.chess.queen.io.core.inf.ISessionCreator;
-import com.tgx.chess.queen.io.core.inf.IoHandler;
 
-public class ConnectionContext
+/**
+ * @author william.d.zk
+ */
+public class ConnectionContext<C extends IContext>
         implements
-        IConnectionContext
+        IConnectionContext<C>
 {
-    private final IoHandler       _Handler;
-    private final ISessionCreator _SessionCreator;
-    private final IConnectActive  _ConnectActive;
-    private final ICommandCreator _CommandCreator;
-    private final ISessionCreated _SessionCreated;
+    private final ISessionCreator<C> _SessionCreator;
+    private final IConnectActive     _ConnectActive;
+    private final ICommandCreator<C> _CommandCreator;
+    private final ISessionCreated<C> _SessionCreated;
+    private final ISort              _Sort;
 
-    public ConnectionContext(IoHandler handler,
+    public ConnectionContext(ISort sort,
                              IConnectActive connectActive,
-                             ISessionCreator sessionCreator,
-                             ICommandCreator commandCreator,
-                             ISessionCreated sessionCreated)
-    {
-        _Handler = handler;
+                             ISessionCreator<C> sessionCreator,
+                             ICommandCreator<C> commandCreator,
+                             ISessionCreated<C> sessionCreated) {
+        _Sort = sort;
         _ConnectActive = connectActive;
         _SessionCreator = sessionCreator;
         _CommandCreator = commandCreator;
@@ -55,33 +58,27 @@ public class ConnectionContext
     }
 
     @Override
-    public ISessionCreator getSessionCreator()
-    {
+    public ISessionCreator<C> getSessionCreator() {
         return _SessionCreator;
     }
 
     @Override
-    public ICommandCreator getCommandCreator()
-    {
+    public ICommandCreator<C> getCommandCreator() {
         return _CommandCreator;
     }
 
     @Override
-    public ISessionCreated getSessionCreated()
-    {
+    public ISessionCreated<C> getSessionCreated() {
         return _SessionCreated;
     }
 
     @Override
-    public IoHandler getHandler()
-    {
-        return _Handler;
-    }
-
-    @Override
-    public IConnectActive getConnectActive()
-    {
+    public IConnectActive getConnectActive() {
         return _ConnectActive;
     }
 
+    @Override
+    public ISort getSort() {
+        return _Sort;
+    }
 }

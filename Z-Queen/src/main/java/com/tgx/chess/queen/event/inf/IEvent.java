@@ -25,8 +25,7 @@ package com.tgx.chess.queen.event.inf;
 
 import java.util.List;
 
-import com.tgx.chess.king.base.util.Pair;
-import com.tgx.chess.king.base.util.Triple;
+import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.queen.event.inf.IError.Type;
 
 /**
@@ -38,43 +37,19 @@ public interface IEvent
 
     IError.Type getErrorType();
 
-    <V,
-     A> IOperator<V,
-                  A> getEventOp();
+    <T, U, R> IOperator<T, U, R> getEventOp();
 
-    <V,
-     A> Pair<V,
-             A> getContent();
+    IPair getContent();
 
-    <V,
-     A> List<Triple<V,
-                    A,
-                    IOperator<V,
-                              A>>> getContentList();
+    List<IPair> getContentList();
 
-    <V,
-     A> void produce(IOperator.Type t,
-                     V v,
-                     A a,
-                     IOperator<V,
-                               A> operator);
+    <V, A, R> void produce(IOperator.Type t, IPair content, IOperator<V, A, R> operator);
 
-    <E,
-     H> void error(IError.Type t,
-                   E e,
-                   H h,
-                   IOperator<E,
-                             H> operator);
+    <E, H, R> void error(IError.Type t, IPair content, IOperator<E, H, R> operator);
 
-    <V,
-     A> void produce(IOperator.Type t,
-                     List<Triple<V,
-                                 A,
-                                 IOperator<V,
-                                           A>>> cp);
+    void produce(IOperator.Type t, List<IPair> cp);
 
-    default boolean hasError()
-    {
+    default boolean hasError() {
         return !getErrorType().equals(Type.NO_ERROR);
     }
 }

@@ -56,7 +56,8 @@ public interface IError
         ILLEGAL_STATE(901, " 逻辑状态错误 "),
         ILLEGAL_BIZ_STATE(902, " 业务状态错误 "),
         SAVE_DATA(903, " 保存数据失败 %s "),
-        LINK_LOGIN_ERROR(904, " LINK 准入失败 %s"),
+        FIND_DATA(904, " 查询数据失败 %s "),
+        LINK_LOGIN_ERROR(905, " LINK 准入失败 %s"),
         LINK_ERROR(910, " LINK %s"),
         TIME_OUT(101, " 超时 "),
         NO_ERROR(200, " 成功 "),;
@@ -64,24 +65,19 @@ public interface IError
         private final int    _Code;
         private final String _MsgFormatter;
 
-        Type(int code,
-             String formatter)
-        {
+        Type(int code, String formatter) {
             _Code = code;
             _MsgFormatter = formatter;
         }
 
         @Override
-        public int getCode()
-        {
+        public int getCode() {
             return _Code;
         }
 
         @Override
-        public String getMsg(Object... args)
-        {
-            return Objects.isNull(args) || args.length == 0 ? _MsgFormatter
-                                                            : String.format(_MsgFormatter, args);
+        public String getMsg(Object... args) {
+            return Objects.isNull(args) || args.length == 0 ? _MsgFormatter : String.format(_MsgFormatter, args);
         }
 
     }

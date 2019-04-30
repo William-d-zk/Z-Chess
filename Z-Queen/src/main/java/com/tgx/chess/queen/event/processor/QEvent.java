@@ -26,9 +26,8 @@ package com.tgx.chess.queen.event.processor;
 import java.util.List;
 
 import com.lmax.disruptor.EventFactory;
+import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.IReset;
-import com.tgx.chess.king.base.util.Pair;
-import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IEvent;
 import com.tgx.chess.queen.event.inf.IOperator;
@@ -45,21 +44,17 @@ public class QEvent
     public static final EventFactory<QEvent> EVENT_FACTORY = new QEventFactory();
     private IError.Type                      mErrType      = IError.Type.NO_ERROR;
     private IOperator.Type                   mType         = IOperator.Type.NULL;
-    private Pair<?,
-                 ?>                          mContent;
-    private IOperator<?,
-                      ?>                     mOperator;
-    private List<?>                          mContentList;
+    private IPair                            mContent;
+    private IOperator<?, ?, ?>               mOperator;
+    private List<IPair>                      mContentList;
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return String.format("\nERR: %s\nTP:%s\nOP:%s\nCTL:\n%s\nCT:\n%s", mErrType, mType, mOperator, mContentList, mContent);
     }
 
     @Override
-    public void reset()
-    {
+    public void reset() {
         mType = IOperator.Type.NULL;
         mErrType = IError.Type.NO_ERROR;
         mOperator = null;
@@ -73,8 +68,7 @@ public class QEvent
         }
     }
 
-    public void transfer(QEvent dest)
-    {
+    public void transfer(QEvent dest) {
         dest.mType = mType;
         dest.mErrType = mErrType;
         dest.mOperator = mOperator;
@@ -83,40 +77,26 @@ public class QEvent
     }
 
     @Override
-    public IOperator.Type getEventType()
-    {
+    public IOperator.Type getEventType() {
         return mType;
     }
 
     @Override
-    public IError.Type getErrorType()
-    {
+    public IError.Type getErrorType() {
         return mErrType;
     }
 
     @Override
-    public <V,
-            A> void produce(IOperator.Type t,
-                            V v,
-                            A a,
-                            IOperator<V,
-                                      A> operator)
-    {
+    public <V, A, R> void produce(IOperator.Type t, IPair content, IOperator<V, A, R> operator) {
         mErrType = IError.Type.NO_ERROR;
         mType = t;
-        mContent = new Pair<>(v, a);
+        mContent = content;
         mOperator = operator;
         mContentList = null;
     }
 
     @Override
-    public <V,
-            A> void produce(IOperator.Type t,
-                            List<Triple<V,
-                                        A,
-                                        IOperator<V,
-                                                  A>>> cp)
-    {
+    public void produce(IOperator.Type t, List<IPair> cp) {
         mErrType = IError.Type.NO_ERROR;
         mType = t;
         mContent = null;
@@ -125,22 +105,15 @@ public class QEvent
     }
 
     @Override
-    public <E,
-            H> void error(IError.Type t,
-                          E e,
-                          H h,
-                          IOperator<E,
-                                    H> operator)
-    {
+    public <E, H, R> void error(IError.Type t, IPair content, IOperator<E, H, R> operator) {
         mType = IOperator.Type.NULL;
         mErrType = t;
-        mContent = new Pair<>(e, h);
+        mContent = content;
         mOperator = operator;
         mContentList = null;
     }
 
-    public void ignore()
-    {
+    public void ignore() {
         mType = Type.IGNORE;
         mErrType = IError.Type.NO_ERROR;
         mContent = null;
@@ -150,36 +123,18 @@ public class QEvent
 
     @SuppressWarnings("unchecked")
     @Override
-    public <V,
-            A> IOperator<V,
-                         A> getEventOp()
-    {
-        return (IOperator<V,
-                          A>) mOperator;
+    public <V, A, R> IOperator<V, A, R> getEventOp() {
+        return (IOperator<V, A, R>) mOperator;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public <V,
-            A> Pair<V,
-                    A> getContent()
-    {
-        return (Pair<V,
-                     A>) mContent;
+    public IPair getContent() {
+        return mContent;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public <V,
-            A> List<Triple<V,
-                           A,
-                           IOperator<V,
-                                     A>>> getContentList()
-    {
-        return (List<Triple<V,
-                            A,
-                            IOperator<V,
-                                      A>>>) mContentList;
+    public List<IPair> getContentList() {
+        return mContentList;
     }
 
     private static class QEventFactory
@@ -187,8 +142,7 @@ public class QEvent
             EventFactory<QEvent>
     {
         @Override
-        public QEvent newInstance()
-        {
+        public QEvent newInstance() {
             return new QEvent();
         }
     }

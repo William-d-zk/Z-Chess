@@ -39,6 +39,7 @@ public interface IFrame
 
     void setPayload(byte[] payload);
 
+    @Override
     default int superSerial()
     {
         return FRAME_SERIAL;

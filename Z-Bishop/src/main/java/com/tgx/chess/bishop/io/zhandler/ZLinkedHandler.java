@@ -24,8 +24,10 @@
 
 package com.tgx.chess.bishop.io.zhandler;
 
+import static com.tgx.chess.queen.event.inf.IError.Type.FIND_DATA;
 import static com.tgx.chess.queen.event.inf.IError.Type.SAVE_DATA;
 
+import com.tgx.chess.bishop.io.zprotocol.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
 import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
 import com.tgx.chess.bishop.io.zprotocol.device.X24_UpdateToken;
@@ -35,38 +37,33 @@ import com.tgx.chess.bishop.io.zprotocol.ztls.X03_Cipher;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X04_EncryptConfirm;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X05_EncryptStart;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X06_PlainStart;
+import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.handler.ILinkHandler;
 import com.tgx.chess.queen.event.handler.LinkHandler;
-import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
 
+/**
+ * @author william.d.zk
+ */
 public class ZLinkedHandler
         implements
-        ILinkHandler
+        ILinkHandler<ZContext>
 {
 
-    private static Logger LOG = Logger.getLogger(ZLinkedHandler.class.getName());
+    private final Logger _Log = Logger.getLogger(getClass().getName());
 
     @Override
-    public void handle(LinkHandler _LinkHandler, QueenManager manager, QEvent event)
-    {
-
-        Pair<ICommand,
-             ISession> logicContent = event.getContent();
-        LOG.info("LinkHandler cmd: %s", logicContent.first());
-        ISession session = logicContent.second();
+    public void handle(LinkHandler<ZContext> _LinkHandler, QueenManager<ZContext> manager, QEvent event) {
+        IPair logicContent = event.getContent();
+        _Log.info("LinkHandler cmd: %s", logicContent.first());
+        ISession<ZContext> session = logicContent.second();
         ICommand cmd = logicContent.first();
         ICommand[] waitToSends = null;
-        IOperator<ICommand[],
-                  ISession> sendOperator = session.getHandler()
-                                                  .getOutOperator();
-        switch (cmd.getSerial())
-        {
+        switch (cmd.getSerial()) {
             case X01_EncryptRequest.COMMAND:
             case X02_AsymmetricPub.COMMAND:
             case X03_Cipher.COMMAND:
@@ -76,11 +73,13 @@ public class ZLinkedHandler
                 waitToSends = new ICommand[] { cmd };
                 break;
             case X20_SignUp.COMMAND:
+            case X24_UpdateToken.COMMAND:
                 try {
                     waitToSends = new ICommand[] { manager.save(cmd, session) };
                 }
                 catch (Exception e) {
-                    _LinkHandler.error(SAVE_DATA, e, session);
+                    _LinkHandler.error(SAVE_DATA, e, session, _LinkHandler.getErrorOperator());
+                    return;
                 }
                 break;
             case X22_SignIn.COMMAND:
@@ -88,18 +87,13 @@ public class ZLinkedHandler
                     waitToSends = new ICommand[] { manager.find(cmd, session) };
                 }
                 catch (Exception e) {
-                    _LinkHandler.error(SAVE_DATA, e, session);
+                    _LinkHandler.error(FIND_DATA, e, session, _LinkHandler.getErrorOperator());
+                    return;
                 }
                 break;
-            case X24_UpdateToken.COMMAND:
-                try {
-                    waitToSends = new ICommand[] { manager.save(cmd, session) };
-                }
-                catch (Exception e) {
-                    _LinkHandler.error(SAVE_DATA, e, session);
-                }
+            default:
                 break;
         }
-        _LinkHandler.write(waitToSends, session, sendOperator);
+        _LinkHandler.write(waitToSends, session);
     }
 }

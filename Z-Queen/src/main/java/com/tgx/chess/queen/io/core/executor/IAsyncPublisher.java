@@ -27,6 +27,9 @@ package com.tgx.chess.queen.io.core.executor;
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.queen.event.processor.QEvent;
 
+/**
+ * @author william.d.zk
+ */
 public interface IAsyncPublisher
 {
     RingBuffer<QEvent> getAsyncPublisher();

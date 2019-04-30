@@ -24,12 +24,28 @@
 
 package com.tgx.chess.queen.event.handler;
 
-import com.lmax.disruptor.EventHandler;
+import com.tgx.chess.queen.event.inf.IPipeEventHandler;
+import com.tgx.chess.queen.event.operator.CloseOperator;
+import com.tgx.chess.queen.event.operator.ErrorOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.manager.QueenManager;
+import com.tgx.chess.queen.io.core.inf.IContext;
 
-@FunctionalInterface
-public interface HandlerFactory
+/**
+ * @author william.d.zk
+ */
+public abstract class BasePipeEventHandler<C extends IContext>
+        implements
+        IPipeEventHandler<QEvent>
 {
-    EventHandler<QEvent> create(QueenManager queenManager);
+    private final CloseOperator<C> _CloseOperator = new CloseOperator<>();
+    private final ErrorOperator<C> _ErrorOperator = new ErrorOperator<>(_CloseOperator);
+
+    public CloseOperator<C> getCloseOperator() {
+        return _CloseOperator;
+    }
+
+    public ErrorOperator<C> getErrorOperator() {
+        return _ErrorOperator;
+    }
+
 }

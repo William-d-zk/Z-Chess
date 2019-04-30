@@ -27,23 +27,24 @@ package com.tgx.chess.queen.event.handler;
 import static com.tgx.chess.queen.event.inf.IError.Type.LINK_ERROR;
 import static com.tgx.chess.queen.event.inf.IError.Type.LINK_LOGIN_ERROR;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
-import static com.tgx.chess.queen.io.core.inf.IoHandler.ERROR_OPERATOR;
 
 import java.nio.channels.AsynchronousSocketChannel;
-import java.util.Objects;
 
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.king.base.exception.LinkRejectException;
 import com.tgx.chess.king.base.exception.ZException;
+import com.tgx.chess.king.base.inf.IPair;
+import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
-import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.event.inf.IPipeEventHandler;
+import com.tgx.chess.queen.event.operator.TransferOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.IConnectionContext;
+import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionCreated;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
@@ -52,34 +53,33 @@ import com.tgx.chess.queen.io.core.manager.QueenManager;
 /**
  * @author William.d.zk
  */
-public class LinkHandler
-        implements
-        IPipeEventHandler<QEvent,
-                          QEvent>
+public class LinkHandler<C extends IContext>
+        extends
+        BasePipeEventHandler<C>
 {
-    private final Logger             _Log = Logger.getLogger(getClass().getName());
-    private final RingBuffer<QEvent> _Error;
-    private final RingBuffer<QEvent> _Writer;
-    private final QueenManager       _QueenManager;
-    private final ILinkHandler       _LinkHandler;
+    private final Logger              _Log = Logger.getLogger(getClass().getName());
+    private final RingBuffer<QEvent>  _Error;
+    private final RingBuffer<QEvent>  _Writer;
+    private final QueenManager<C>     _QueenManager;
+    private final ILinkHandler<C>     _LinkHandler;
+    private final TransferOperator<C> _Transfer;
 
-    public LinkHandler(QueenManager manager,
+    public LinkHandler(IPipeEncoder<C> encoder,
+                       QueenManager<C> manager,
                        RingBuffer<QEvent> error,
                        RingBuffer<QEvent> writer,
-                       ILinkHandler linkHandler)
-    {
+                       ILinkHandler<C> linkHandler) {
         _Error = error;
         _Writer = writer;
         _QueenManager = manager;
         _LinkHandler = linkHandler;
+        _Transfer = new TransferOperator<>(encoder);
     }
 
     @Override
-    public void onEvent(QEvent event, long sequence, boolean endOfBatch)
-    {
+    public void onEvent(QEvent event, long sequence, boolean endOfBatch) {
         if (event.hasError()) {
-            switch (event.getErrorType())
-            {
+            switch (event.getErrorType()) {
                 case ACCEPT_FAILED:
                 case CONNECT_FAILED:
                     _Log.info(String.format("error type %s,ignore ", event.getErrorType()));
@@ -87,70 +87,60 @@ public class LinkHandler
                     break;
                 default:
                     _Log.warning("server io error , do close session");
-                    IOperator<Void,
-                              ISession> closeOperator = event.getEventOp();
-                    Pair<Void,
-                         ISession> errorContent = event.getContent();
-                    ISession session = errorContent.second();
-                    ISessionDismiss dismiss = session.getDismissCallback();
+                    IOperator<Void, ISession<C>, Void> closeOperator = event.getEventOp();
+                    IPair errorContent = event.getContent();
+                    ISession<C> session = errorContent.second();
+                    ISessionDismiss<C> dismiss = session.getDismissCallback();
                     boolean closed = session.isClosed();
                     closeOperator.handle(null, session);
-                    if (!closed) dismiss.onDismiss(session);
+                    if (!closed) {
+                        dismiss.onDismiss(session);
+                    }
             }
         }
         else {
-            switch (event.getEventType())
-            {
+            switch (event.getEventType()) {
                 case CONNECTED:
-                    IOperator<IConnectionContext,
-                              AsynchronousSocketChannel> connectedOperator = event.getEventOp();
-                    Pair<IConnectionContext,
-                         AsynchronousSocketChannel> connectedContent = event.getContent();
+                    IPair connectedContent = event.getContent();
                     AsynchronousSocketChannel channel = connectedContent.second();
-                    Triple<ICommand[],
-                           ISession,
-                           IOperator<ICommand[],
-                                     ISession>> connectedHandled = connectedOperator.handle(connectedContent.first(), channel);
-                    //connectedHandled 不可能为 null
-                    ISession session = connectedHandled.second();
-                    ISessionCreated sessionCreated = connectedContent.first()
-                                                                     .getSessionCreated();
+                    IConnectionContext<C> connectionContext = connectedContent.first();
+                    ISessionCreated<C> sessionCreated = connectionContext.getSessionCreated();
+                    IOperator<IConnectionContext<C>, AsynchronousSocketChannel, ITriple> connectedOperator = event.getEventOp();
+                    ITriple connectedHandled = connectedOperator.handle(connectionContext, channel);
+                    /*connectedHandled 不可能为 null*/
+                    ISession<C> session = connectedHandled.second();
                     sessionCreated.onCreate(session);
-                    write(connectedHandled.first(), session, connectedHandled.third());
+                    ICommand[] waitToSends = connectedContent.first();
+                    publish(_Writer, WRITE, new Pair<>(waitToSends, session), connectedHandled.third());
                     break;
                 case LOGIC:
-                    Pair<ICommand,
-                         ISession> pair = event.getContent();
-                    session = pair.second();
+                    IPair logicContent = event.getContent();
+                    session = logicContent.second();
                     try {
                         _LinkHandler.handle(this, _QueenManager, event);
                     }
                     catch (LinkRejectException e) {
-                        error(LINK_LOGIN_ERROR, e, session);
+                        error(LINK_LOGIN_ERROR, e, session, getErrorOperator());
                     }
                     catch (ZException e) {
-                        error(LINK_ERROR, e, session);
+                        error(LINK_ERROR, e, session, getErrorOperator());
                     }
+                    break;
+                default:
                     break;
             }
         }
         event.reset();
     }
 
-    public void error(IError.Type type, Throwable e, ISession session)
-    {
-        error(_Error, type, e, session, ERROR_OPERATOR());
+    public void error(IError.Type type, Throwable e, ISession<C> session, IOperator<Throwable, ISession<C>, ITriple> errorOperator) {
+        error(_Error, type, new Pair<>(e, session), errorOperator);
     }
 
-    public void write(ICommand[] waitToSends,
-                      ISession session,
-                      IOperator<ICommand[],
-                                ISession> sendOperator)
-    {
-        if (Objects.nonNull(waitToSends) && Objects.nonNull(session) && Objects.nonNull(sendOperator)) {
-            publish(_Writer, WRITE, waitToSends, session, sendOperator);
-        }
+    public void write(ICommand[] waitToSends, ISession<C> session) {
+        publish(_Writer, WRITE, new Pair<>(waitToSends, session), _Transfer);
     }
+
 }
 
 /*        ,IConsistentRead<E, D, N>
@@ -230,7 +220,7 @@ public class LinkHandler
                                 case X103_Close.COMMAND:
                                     dismiss = session.getDismissCallback();
                                     if (dismiss != null && !session.isClosed()) dismiss.onDismiss(session);
-                                    CLOSE_OPERATOR.INSTANCE.handle(null, session);
+                                    getCloseOperator.INSTANCE.handle(null, session);
                                     _BizNode.clearSession(session);
                                     _BizNode.rmSession(session);
                                     break;

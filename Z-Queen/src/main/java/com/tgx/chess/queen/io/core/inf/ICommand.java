@@ -34,7 +34,6 @@ import com.tgx.chess.king.base.inf.IDisposable;
 public interface ICommand
         extends
         IQoS,
-        IDuplicate,
         IMessage,
         IProtocol,
         IChannel,
@@ -45,45 +44,37 @@ public interface ICommand
      * 
      * @return
      */
-    default boolean isMappingCommand()
-    {
+    default boolean isMappingCommand() {
         return false;
     }
 
     long _DEFAULT_TRANSACTION_KEY = -1;
 
-    default IPacket translate()
-    {
+    default IPacket translate() {
         return null;
     }
 
-    default long getUID()
-    {
+    default long getUID() {
         return -1;
     }
 
-    default void setUID(long _uid)
-    {
+    default void setUID(long _uid) {
     }
 
-    default long getTransactionKey()
-    {
+    default long getTransactionKey() {
         return -1;
     }
 
-    default void setTransactionKey(long _key)
-    {
+    default void setTransactionKey(long _key) {
     }
 
     @Override
-    default ICommand setSession(ISession session)
-    {
+    default <C extends IContext> ICommand setSession(ISession<C> session) {
         return this;
     }
 
     @Override
-    default int superSerial()
-    {
+    default int superSerial() {
         return COMMAND_SERIAL;
     }
 }
