@@ -75,41 +75,41 @@ public abstract class ServerCore<C extends IContext>
         implements
         ILocalPublisher<C>
 {
-    private static Logger                                   _Log                  = Logger.getLogger(ServerCore.class.getName());
-    private static Config                                   _Config               = new Config().load(getConfigName());
-    private static int                                      DECODER_COUNT         = _Config.getConfigValue(getConfigGroup(),
-                                                                                                           QueenConfigKey.OWNER_PIPELINE_CORE,
-                                                                                                           QueenConfigKey.KEY_CORE_DECODER);
-    private static int                                      ENCODER_COUNT         = _Config.getConfigValue(getConfigGroup(),
-                                                                                                           QueenConfigKey.OWNER_PIPELINE_CORE,
-                                                                                                           QueenConfigKey.KEY_CORE_ENCODER);
-    private static int                                      LOGIC_COUNT           = _Config.getConfigValue(getConfigGroup(),
-                                                                                                           QueenConfigKey.OWNER_PIPELINE_CORE,
-                                                                                                           QueenConfigKey.KEY_CORE_LOGIC);
-    private final int                                       _ServerCount          = _Config.getConfigValue(getConfigGroup(),
-                                                                                                           QueenConfigKey.OWNER_PIPELINE_CORE,
-                                                                                                           QueenConfigKey.KEY_CORE_SERVER);
-    private final int                                       _ClusterCount         = _Config.getConfigValue(getConfigGroup(),
-                                                                                                           QueenConfigKey.OWNER_PIPELINE_CORE,
-                                                                                                           QueenConfigKey.KEY_CORE_CLUSTER);
-    private final int                                       _AioQueuePower        = _Config.getConfigValue(getConfigGroup(),
-                                                                                                           QueenConfigKey.OWNER_QUEEN_POWER,
-                                                                                                           QueenConfigKey.KEY_POWER_SERVER);
-    private final int                                       _ClusterPower         = _Config.getConfigValue(getConfigGroup(),
-                                                                                                           QueenConfigKey.OWNER_QUEEN_POWER,
-                                                                                                           QueenConfigKey.KEY_POWER_CLUSTER);
-    private final int                                       _InternalPower        = _Config.getConfigValue(getConfigGroup(),
-                                                                                                           QueenConfigKey.OWNER_QUEEN_POWER,
-                                                                                                           QueenConfigKey.KEY_POWER_INTERNAL);
-    private final int                                       _LinkPower            = _Config.getConfigValue(getConfigGroup(),
-                                                                                                           QueenConfigKey.OWNER_QUEEN_POWER,
-                                                                                                           QueenConfigKey.KEY_POWER_LINK);
-    private final int                                       _LogicPower           = _Config.getConfigValue(getConfigGroup(),
-                                                                                                           QueenConfigKey.OWNER_QUEEN_POWER,
-                                                                                                           QueenConfigKey.KEY_POWER_LOGIC);
-    private final int                                       _ErrorPower           = _Config.getConfigValue(getConfigGroup(),
-                                                                                                           QueenConfigKey.OWNER_QUEEN_POWER,
-                                                                                                           QueenConfigKey.KEY_POWER_ERROR);
+    private static Logger _Log           = Logger.getLogger(ServerCore.class.getName());
+    private static Config _Config        = new Config().load(getConfigName());
+    private static int    DECODER_COUNT  = _Config.getConfigValue(getConfigGroup(),
+                                                                  QueenConfigKey.OWNER_PIPELINE_CORE,
+                                                                  QueenConfigKey.KEY_CORE_DECODER);
+    private static int    ENCODER_COUNT  = _Config.getConfigValue(getConfigGroup(),
+                                                                  QueenConfigKey.OWNER_PIPELINE_CORE,
+                                                                  QueenConfigKey.KEY_CORE_ENCODER);
+    private static int    LOGIC_COUNT    = _Config.getConfigValue(getConfigGroup(),
+                                                                  QueenConfigKey.OWNER_PIPELINE_CORE,
+                                                                  QueenConfigKey.KEY_CORE_LOGIC);
+    private final int     _ServerCount   = _Config.getConfigValue(getConfigGroup(),
+                                                                  QueenConfigKey.OWNER_PIPELINE_CORE,
+                                                                  QueenConfigKey.KEY_CORE_SERVER);
+    private final int     _ClusterCount  = _Config.getConfigValue(getConfigGroup(),
+                                                                  QueenConfigKey.OWNER_PIPELINE_CORE,
+                                                                  QueenConfigKey.KEY_CORE_CLUSTER);
+    private final int     _AioQueuePower = _Config.getConfigValue(getConfigGroup(),
+                                                                  QueenConfigKey.OWNER_QUEEN_POWER,
+                                                                  QueenConfigKey.KEY_POWER_SERVER);
+    private final int     _ClusterPower  = _Config.getConfigValue(getConfigGroup(),
+                                                                  QueenConfigKey.OWNER_QUEEN_POWER,
+                                                                  QueenConfigKey.KEY_POWER_CLUSTER);
+    private final int     _InternalPower = _Config.getConfigValue(getConfigGroup(),
+                                                                  QueenConfigKey.OWNER_QUEEN_POWER,
+                                                                  QueenConfigKey.KEY_POWER_INTERNAL);
+    private final int     _LinkPower     = _Config.getConfigValue(getConfigGroup(),
+                                                                  QueenConfigKey.OWNER_QUEEN_POWER,
+                                                                  QueenConfigKey.KEY_POWER_LINK);
+    private final int     _LogicPower    = _Config.getConfigValue(getConfigGroup(),
+                                                                  QueenConfigKey.OWNER_QUEEN_POWER,
+                                                                  QueenConfigKey.KEY_POWER_LOGIC);
+    private final int     _ErrorPower    = _Config.getConfigValue(getConfigGroup(),
+                                                                  QueenConfigKey.OWNER_QUEEN_POWER,
+                                                                  QueenConfigKey.KEY_POWER_ERROR);
 
     private final RingBuffer<QEvent>[]                      _AioProducerEvents;
     private final SequenceBarrier[]                         _AioProducerBarriers;
@@ -130,39 +130,42 @@ public abstract class ServerCore<C extends IContext>
     private final ConcurrentLinkedQueue<RingBuffer<QEvent>> _AioCacheConcurrentQueue;
     private final ConcurrentLinkedQueue<RingBuffer<QEvent>> _ClusterCacheConcurrentQueue;
 
-    private final ThreadFactory                             _WorkerThreadFactory  = new ThreadFactory()
-                                                                                  {
-                                                                                      int count;
+    private final ThreadFactory _WorkerThreadFactory  = new ThreadFactory()
+                                                      {
+                                                          int count;
 
-                                                                                      @Override
-                                                                                      public Thread newThread(Runnable r) {
-                                                                                          return new AioWorker(r,
-                                                                                                               String.format("AioWorker.server.%d",
-                                                                                                                             count++),
-                                                                                                               _AioCacheConcurrentQueue::offer,
-                                                                                                               _AioCacheConcurrentQueue.poll());
-                                                                                      }
-                                                                                  };
-    private final ThreadFactory                             _ClusterThreadFactory = new ThreadFactory()
-                                                                                  {
-                                                                                      int count;
+                                                          @Override
+                                                          public Thread newThread(Runnable r)
+                                                          {
+                                                              return new AioWorker(r,
+                                                                                   String.format("AioWorker.server.%d",
+                                                                                                 count++),
+                                                                                   _AioCacheConcurrentQueue::offer,
+                                                                                   _AioCacheConcurrentQueue.poll());
+                                                          }
+                                                      };
+    private final ThreadFactory _ClusterThreadFactory = new ThreadFactory()
+                                                      {
+                                                          int count;
 
-                                                                                      @Override
-                                                                                      public Thread newThread(Runnable r) {
-                                                                                          return new AioWorker(r,
-                                                                                                               String.format("AioWorker.cluster.%d",
-                                                                                                                             count++),
-                                                                                                               _ClusterCacheConcurrentQueue::offer,
-                                                                                                               _ClusterCacheConcurrentQueue.poll());
-                                                                                      }
-                                                                                  };
-    private final TimeWheel                                 _TimeWheel            = new TimeWheel(1, TimeUnit.SECONDS);
-    private final ReentrantLock                             _LocalLock            = new ReentrantLock();
-    private final Future<Void>                              _EventTimer;
-    private LinkHandler<C>                                  mLinkHandler;
+                                                          @Override
+                                                          public Thread newThread(Runnable r)
+                                                          {
+                                                              return new AioWorker(r,
+                                                                                   String.format("AioWorker.cluster.%d",
+                                                                                                 count++),
+                                                                                   _ClusterCacheConcurrentQueue::offer,
+                                                                                   _ClusterCacheConcurrentQueue.poll());
+                                                          }
+                                                      };
+    private final TimeWheel     _TimeWheel            = new TimeWheel(1, TimeUnit.SECONDS);
+    private final ReentrantLock _LocalLock            = new ReentrantLock();
+    private final Future<Void>  _EventTimer;
+    private LinkHandler<C>      mLinkHandler;
 
     @SuppressWarnings("unchecked")
-    public ServerCore() {
+    public ServerCore()
+    {
         super(poolSize(), poolSize(), 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
         /* Aio event producer  */
         _AioProducerEvents = new RingBuffer[_ServerCount + _ClusterCount];
@@ -171,10 +174,16 @@ public abstract class ServerCore<C extends IContext>
         _AioCacheConcurrentQueue = new ConcurrentLinkedQueue<>();
         /* Cluster worker cache */
         _ClusterCacheConcurrentQueue = new ConcurrentLinkedQueue<>();
-        Arrays.setAll(_AioProducerEvents, slot -> {
+        Arrays.setAll(_AioProducerEvents, slot ->
+        {
             RingBuffer<QEvent> rb = createPipelineYield(_AioQueuePower);
-            if (!(slot < _ServerCount ? _AioCacheConcurrentQueue : _ClusterCacheConcurrentQueue).offer(rb)) {
-                _Log.warning(String.format("%s cache queue offer failed :%d", slot < _ServerCount ? "biz io" : "cluster io", slot));
+            if (!(slot < _ServerCount ? _AioCacheConcurrentQueue
+                                      : _ClusterCacheConcurrentQueue).offer(rb))
+            {
+                _Log.warning(String.format("%s cache queue offer failed :%d",
+                                           slot < _ServerCount ? "biz io"
+                                                               : "cluster io",
+                                           slot));
             }
             return rb;
         });
@@ -221,7 +230,8 @@ public abstract class ServerCore<C extends IContext>
                       QueenManager manager,
                       IPipeEncoder<C> encoder,
                       ILinkHandler<C> linkHandler,
-                      IEncryptHandler encryptHandler) {
+                      IEncryptHandler encryptHandler)
+    {
         final RingBuffer<QEvent> _WroteEvent = createPipelineYield(_AioQueuePower + 1);
         final RingBuffer<QEvent> _LinkIoEvent = createPipelineYield(_LinkPower);
         final RingBuffer<QEvent> _ClusterIoEvent = createPipelineYield(_ClusterPower);
@@ -238,7 +248,10 @@ public abstract class ServerCore<C extends IContext>
         Arrays.setAll(_ErrorBarriers, slot -> _ErrorEvents[slot].newBarrier());
         IoUtil.addArray(_AioProducerEvents, _DispatchIo, _ClusterLocalCloseEvent, _BizLocalCloseEvent);
         IoUtil.addArray(_ErrorEvents, _DispatchIo, _ServerCount + _ClusterCount + 2);
-        IoUtil.addArray(_AioProducerBarriers, _DispatchIoBarriers, _ClusterLocalCloseEvent.newBarrier(), _BizLocalCloseEvent.newBarrier());
+        IoUtil.addArray(_AioProducerBarriers,
+                        _DispatchIoBarriers,
+                        _ClusterLocalCloseEvent.newBarrier(),
+                        _BizLocalCloseEvent.newBarrier());
         IoUtil.addArray(_ErrorBarriers, _DispatchIoBarriers, _ServerCount + _ClusterCount + 2);
         /* 负责进行 session 上数据的解码，由于相同的 session 是在同一个read processor 上执行
           虽然解决了先后顺序和组包的问题，单 session 巨帧(frame > 64K) 将导致资源利用率不均匀
@@ -248,7 +261,9 @@ public abstract class ServerCore<C extends IContext>
         Arrays.setAll(_ReadEvents, slot -> createPipelineLite(_AioQueuePower));
         Arrays.setAll(_ReadBarriers, slot -> _ReadEvents[slot].newBarrier());
         Arrays.setAll(_DecodeProcessors,
-                      slot -> new BatchEventProcessor<>(_ReadEvents[slot], _ReadBarriers[slot], new DecodeHandler(encryptHandler)));
+                      slot -> new BatchEventProcessor<>(_ReadEvents[slot],
+                                                        _ReadBarriers[slot],
+                                                        new DecodeHandler(encryptHandler)));
 
         /* 链路处理 */
         /* 所有带有路由规则绑定的数据都需要投递到这个 Pipeline -> _LinkDecoded */
@@ -306,7 +321,8 @@ public abstract class ServerCore<C extends IContext>
         final BatchEventProcessor<QEvent>[] _LogicProcessors = new BatchEventProcessor[LOGIC_COUNT];
         Arrays.setAll(_LogicEvents, slot -> createPipelineLite(_LogicPower));
         Arrays.setAll(_LogicBarriers, slot -> _LogicEvents[slot].newBarrier());
-        Arrays.setAll(_LogicProcessors, slot -> new BatchEventProcessor<>(_LogicEvents[slot], _LogicBarriers[slot], logicHandler));
+        Arrays.setAll(_LogicProcessors,
+                      slot -> new BatchEventProcessor<>(_LogicEvents[slot], _LogicBarriers[slot], logicHandler));
         /* Decoded dispatcher 将所有解码完成的结果派发到 _LinkDecoded,_ClusterDecoded,以及_LogicEvents进行逻辑处理*/
         final MultiBufferBatchEventProcessor<QEvent> _DecodedDispatcher = new MultiBufferBatchEventProcessor<>(_ReadEvents,
                                                                                                                _DecodedBarriers,
@@ -351,7 +367,9 @@ public abstract class ServerCore<C extends IContext>
         /* encode processor*/
         final BatchEventProcessor<QEvent>[] _EncodeProcessors = new BatchEventProcessor[ENCODER_COUNT];
         Arrays.setAll(_EncodeProcessors,
-                      slot -> new BatchEventProcessor<>(_WriteEvents[slot], _WriteEvents[slot].newBarrier(), new EncodeHandler()));
+                      slot -> new BatchEventProcessor<>(_WriteEvents[slot],
+                                                        _WriteEvents[slot].newBarrier(),
+                                                        new EncodeHandler()));
         final RingBuffer<QEvent>[] _EncodedEvents = new RingBuffer[ENCODER_COUNT];
         IoUtil.addArray(_WriteEvents, _EncodedEvents);
         final SequenceBarrier[] _EncodedBarriers = new SequenceBarrier[_EncodedEvents.length];
@@ -379,19 +397,23 @@ public abstract class ServerCore<C extends IContext>
         submit(_EncodedProcessor);
     }
 
-    private RingBuffer<QEvent> createPipeline(int power, WaitStrategy waitStrategy) {
+    private RingBuffer<QEvent> createPipeline(int power, WaitStrategy waitStrategy)
+    {
         return RingBuffer.createSingleProducer(QEvent.EVENT_FACTORY, 1 << power, waitStrategy);
     }
 
-    private RingBuffer<QEvent> createPipelineYield(int power) {
+    private RingBuffer<QEvent> createPipelineYield(int power)
+    {
         return createPipeline(power, new YieldingWaitStrategy());
     }
 
-    private RingBuffer<QEvent> createPipelineLite(int power) {
+    private RingBuffer<QEvent> createPipelineLite(int power)
+    {
         return createPipeline(power, new LiteBlockingWaitStrategy());
     }
 
-    private static int poolSize() {
+    private static int poolSize()
+    {
         return 1 // aioDispatch
                + DECODER_COUNT // read-decode
                + 1 // cluster-single
@@ -404,36 +426,44 @@ public abstract class ServerCore<C extends IContext>
         ;
     }
 
-    private static String getConfigName() {
+    private static String getConfigName()
+    {
         return "Pipeline";
     }
 
-    private static String getConfigGroup() {
+    private static String getConfigGroup()
+    {
         return "pipeline";
     }
 
-    public int getServerCount() {
+    public int getServerCount()
+    {
         return _ServerCount;
     }
 
-    public int getClusterCount() {
+    public int getClusterCount()
+    {
         return _ClusterCount;
     }
 
-    public ThreadFactory getWorkerThreadFactory() {
+    public ThreadFactory getWorkerThreadFactory()
+    {
         return _WorkerThreadFactory;
     }
 
-    public ThreadFactory getClusterThreadFactory() {
+    public ThreadFactory getClusterThreadFactory()
+    {
         return _ClusterThreadFactory;
     }
 
-    public TimeWheel getTimeWheel() {
+    public TimeWheel getTimeWheel()
+    {
         return _TimeWheel;
     }
 
     /*close 一定发生在 linker 处理器中，单线程处理*/
-    public void localClose(ISession<C> session) {
+    public void localClose(ISession<C> session)
+    {
         long sequence = _BizLocalCloseEvent.next();
         QEvent event = _BizLocalCloseEvent.get(sequence);
         event.produce(Type.CLOSE, new Pair<>(null, session), mLinkHandler.getCloseOperator());
@@ -441,31 +471,38 @@ public abstract class ServerCore<C extends IContext>
     }
 
     @Override
-    public ReentrantLock getLocalLock() {
+    public ReentrantLock getLocalLock()
+    {
         return _LocalLock;
     }
 
-    public RingBuffer<QEvent> getBizLocalCloseEvent() {
+    public RingBuffer<QEvent> getBizLocalCloseEvent()
+    {
         return _BizLocalCloseEvent;
     }
 
-    public RingBuffer<QEvent> getClusterLocalCloseEvent() {
+    public RingBuffer<QEvent> getClusterLocalCloseEvent()
+    {
         return _ClusterLocalCloseEvent;
     }
 
-    public RingBuffer<QEvent> getConsistentResultEvent() {
+    public RingBuffer<QEvent> getConsistentResultEvent()
+    {
         return _ConsistentResultEvent;
     }
 
-    public RingBuffer<QEvent> getConsistentLocalSendEvent() {
+    public RingBuffer<QEvent> getConsistentLocalSendEvent()
+    {
         return _ConsistentSendEvent;
     }
 
-    public RingBuffer<QEvent> getBizLocalSendEvent() {
+    public RingBuffer<QEvent> getBizLocalSendEvent()
+    {
         return _BizLocalSendEvent;
     }
 
-    public RingBuffer<QEvent> getClusterLocalSendEvent() {
+    public RingBuffer<QEvent> getClusterLocalSendEvent()
+    {
         return _ClusterLocalSendEvent;
     }
 }

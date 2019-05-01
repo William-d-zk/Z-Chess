@@ -49,11 +49,13 @@ public class ConnectedOperator<C extends IContext>
     private final IPipeEncoder<C>     _Encoder;
     private final IPipeDecoder<C>     _Decoder;
     private final TransferOperator<C> _Transfer;
+    private final AioReader<C>        _AioReader;
 
     public ConnectedOperator(IPipeEncoder<C> encoder, IPipeDecoder<C> decoder) {
         _Encoder = encoder;
         _Decoder = decoder;
         _Transfer = new TransferOperator<>(_Encoder);
+        _AioReader = new AioReader<>(_Decoder);
     }
 
     @Override
@@ -63,6 +65,7 @@ public class ConnectedOperator<C extends IContext>
         ISession<C> session = sessionCreator.createSession(channel, context);
         ICommandCreator<C> commandCreator = context.getCommandCreator();
         sessionCreated.onCreate(session);
+        session.readNext(_AioReader);
         ICommand[] commands = commandCreator.createCommands(session);
         return new Triple<>(commands, session, _Transfer);
     }

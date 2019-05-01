@@ -45,30 +45,34 @@ public class QEvent
     private IError.Type                      mErrType      = IError.Type.NO_ERROR;
     private IOperator.Type                   mType         = IOperator.Type.NULL;
     private IPair                            mContent;
-    private IOperator<?, ?, ?>               mOperator;
+    private IOperator<?,
+                      ?,
+                      ?>                     mOperator;
     private List<IPair>                      mContentList;
 
     @Override
-    public String toString() {
-        return String.format("\nERR: %s\nTP:%s\nOP:%s\nCTL:\n%s\nCT:\n%s", mErrType, mType, mOperator, mContentList, mContent);
+    public String toString()
+    {
+        return String.format("\nERR: %s\nTP:%s\nOP:%s\nCTL:\n%s\nCT:\n%s",
+                             mErrType,
+                             mType,
+                             mOperator,
+                             mContentList,
+                             mContent);
     }
 
     @Override
-    public void reset() {
+    public void reset()
+    {
         mType = IOperator.Type.NULL;
         mErrType = IError.Type.NO_ERROR;
         mOperator = null;
-        if (mContent != null) {
-            mContent.dispose();
-        }
         mContent = null;
-        if (mContentList != null) {
-            mContentList.clear();
-            mContentList = null;
-        }
+        mContentList = null;
     }
 
-    public void transfer(QEvent dest) {
+    public void transfer(QEvent dest)
+    {
         dest.mType = mType;
         dest.mErrType = mErrType;
         dest.mOperator = mOperator;
@@ -77,17 +81,26 @@ public class QEvent
     }
 
     @Override
-    public IOperator.Type getEventType() {
+    public IOperator.Type getEventType()
+    {
         return mType;
     }
 
     @Override
-    public IError.Type getErrorType() {
+    public IError.Type getErrorType()
+    {
         return mErrType;
     }
 
     @Override
-    public <V, A, R> void produce(IOperator.Type t, IPair content, IOperator<V, A, R> operator) {
+    public <V,
+            A,
+            R> void produce(IOperator.Type t,
+                            IPair content,
+                            IOperator<V,
+                                      A,
+                                      R> operator)
+    {
         mErrType = IError.Type.NO_ERROR;
         mType = t;
         mContent = content;
@@ -96,7 +109,8 @@ public class QEvent
     }
 
     @Override
-    public void produce(IOperator.Type t, List<IPair> cp) {
+    public void produce(IOperator.Type t, List<IPair> cp)
+    {
         mErrType = IError.Type.NO_ERROR;
         mType = t;
         mContent = null;
@@ -105,7 +119,14 @@ public class QEvent
     }
 
     @Override
-    public <E, H, R> void error(IError.Type t, IPair content, IOperator<E, H, R> operator) {
+    public <E,
+            H,
+            R> void error(IError.Type t,
+                          IPair content,
+                          IOperator<E,
+                                    H,
+                                    R> operator)
+    {
         mType = IOperator.Type.NULL;
         mErrType = t;
         mContent = content;
@@ -113,7 +134,8 @@ public class QEvent
         mContentList = null;
     }
 
-    public void ignore() {
+    public void ignore()
+    {
         mType = Type.IGNORE;
         mErrType = IError.Type.NO_ERROR;
         mContent = null;
@@ -123,17 +145,26 @@ public class QEvent
 
     @SuppressWarnings("unchecked")
     @Override
-    public <V, A, R> IOperator<V, A, R> getEventOp() {
-        return (IOperator<V, A, R>) mOperator;
+    public <V,
+            A,
+            R> IOperator<V,
+                         A,
+                         R> getEventOp()
+    {
+        return (IOperator<V,
+                          A,
+                          R>) mOperator;
     }
 
     @Override
-    public IPair getContent() {
+    public IPair getContent()
+    {
         return mContent;
     }
 
     @Override
-    public List<IPair> getContentList() {
+    public List<IPair> getContentList()
+    {
         return mContentList;
     }
 
@@ -142,7 +173,8 @@ public class QEvent
             EventFactory<QEvent>
     {
         @Override
-        public QEvent newInstance() {
+        public QEvent newInstance()
+        {
             return new QEvent();
         }
     }

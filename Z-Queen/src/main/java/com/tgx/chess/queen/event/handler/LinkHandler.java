@@ -68,7 +68,8 @@ public class LinkHandler<C extends IContext>
                        QueenManager<C> manager,
                        RingBuffer<QEvent> error,
                        RingBuffer<QEvent> writer,
-                       ILinkHandler<C> linkHandler) {
+                       ILinkHandler<C> linkHandler)
+    {
         _Error = error;
         _Writer = writer;
         _QueenManager = manager;
@@ -77,9 +78,11 @@ public class LinkHandler<C extends IContext>
     }
 
     @Override
-    public void onEvent(QEvent event, long sequence, boolean endOfBatch) {
+    public void onEvent(QEvent event, long sequence, boolean endOfBatch)
+    {
         if (event.hasError()) {
-            switch (event.getErrorType()) {
+            switch (event.getErrorType())
+            {
                 case ACCEPT_FAILED:
                 case CONNECT_FAILED:
                     _Log.info(String.format("error type %s,ignore ", event.getErrorType()));
@@ -87,7 +90,9 @@ public class LinkHandler<C extends IContext>
                     break;
                 default:
                     _Log.warning("server io error , do close session");
-                    IOperator<Void, ISession<C>, Void> closeOperator = event.getEventOp();
+                    IOperator<Void,
+                              ISession<C>,
+                              Void> closeOperator = event.getEventOp();
                     IPair errorContent = event.getContent();
                     ISession<C> session = errorContent.second();
                     ISessionDismiss<C> dismiss = session.getDismissCallback();
@@ -99,19 +104,21 @@ public class LinkHandler<C extends IContext>
             }
         }
         else {
-            switch (event.getEventType()) {
+            switch (event.getEventType())
+            {
                 case CONNECTED:
                     IPair connectedContent = event.getContent();
                     AsynchronousSocketChannel channel = connectedContent.second();
                     IConnectionContext<C> connectionContext = connectedContent.first();
                     ISessionCreated<C> sessionCreated = connectionContext.getSessionCreated();
-                    IOperator<IConnectionContext<C>, AsynchronousSocketChannel, ITriple> connectedOperator = event.getEventOp();
+                    IOperator<IConnectionContext<C>,
+                              AsynchronousSocketChannel,
+                              ITriple> connectedOperator = event.getEventOp();
                     ITriple connectedHandled = connectedOperator.handle(connectionContext, channel);
                     /*connectedHandled 不可能为 null*/
                     ISession<C> session = connectedHandled.second();
                     sessionCreated.onCreate(session);
-                    ICommand[] waitToSends = connectedContent.first();
-                    publish(_Writer, WRITE, new Pair<>(waitToSends, session), connectedHandled.third());
+                    publish(_Writer, WRITE, new Pair<>(connectedHandled.first(), session), connectedHandled.third());
                     break;
                 case LOGIC:
                     IPair logicContent = event.getContent();
@@ -133,11 +140,18 @@ public class LinkHandler<C extends IContext>
         event.reset();
     }
 
-    public void error(IError.Type type, Throwable e, ISession<C> session, IOperator<Throwable, ISession<C>, ITriple> errorOperator) {
+    public void error(IError.Type type,
+                      Throwable e,
+                      ISession<C> session,
+                      IOperator<Throwable,
+                                ISession<C>,
+                                ITriple> errorOperator)
+    {
         error(_Error, type, new Pair<>(e, session), errorOperator);
     }
 
-    public void write(ICommand[] waitToSends, ISession<C> session) {
+    public void write(ICommand[] waitToSends, ISession<C> session)
+    {
         publish(_Writer, WRITE, new Pair<>(waitToSends, session), _Transfer);
     }
 

@@ -46,21 +46,25 @@ import com.tgx.chess.queen.io.core.inf.ISession;
  */
 public class AioReader<C extends IContext>
         implements
-        CompletionHandler<Integer, ISession<C>>
+        CompletionHandler<Integer,
+                          ISession<C>>
 {
     private final Logger           _Log           = Logger.getLogger(getClass().getSimpleName());
     private final CloseOperator<C> _CloseOperator = new CloseOperator<>();
     private final ErrorOperator<C> _ErrorOperator = new ErrorOperator<>(_CloseOperator);
     private final IPipeDecoder<C>  _Decoder;
 
-    public AioReader(IPipeDecoder<C> decoder) {
+    public AioReader(IPipeDecoder<C> decoder)
+    {
         _Decoder = decoder;
     }
 
     @Override
-    public void completed(Integer result, ISession<C> session) {
+    public void completed(Integer result, ISession<C> session)
+    {
         AioWorker worker = (AioWorker) Thread.currentThread();
-        switch (result) {
+        switch (result)
+        {
             case -1:
                 worker.publishReadError(_ErrorOperator, READ_EOF, new EOFException("Read Negative"), session);
                 break;
@@ -76,7 +80,8 @@ public class AioReader<C extends IContext>
                     session.readNext(this);
                 }
                 catch (NotYetConnectedException |
-                       ShutdownChannelGroupException e) {
+                       ShutdownChannelGroupException e)
+                {
                     worker.publishReadError(_ErrorOperator, READ_FAILED, e, session);
                 }
                 break;
@@ -84,7 +89,8 @@ public class AioReader<C extends IContext>
     }
 
     @Override
-    public void failed(Throwable exc, ISession<C> session) {
+    public void failed(Throwable exc, ISession<C> session)
+    {
         AioWorker worker = (AioWorker) Thread.currentThread();
         worker.publishReadError(_ErrorOperator, READ_FAILED, exc, session);
     }

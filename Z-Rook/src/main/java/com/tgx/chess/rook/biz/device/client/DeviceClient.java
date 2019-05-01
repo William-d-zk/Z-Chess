@@ -103,7 +103,7 @@ public class DeviceClient
     private final ICommandCreator<ZContext> _CommandCreator;
     private final IAioConnector<ZContext>   _DeviceConnector;
     private final AsynchronousChannelGroup  _ChannelGroup;
-    private final ClientCore<ZContext>      _ClientCore      = new ClientCore();
+    private final ClientCore<ZContext>      _ClientCore      = new ClientCore<>();
     private final TimeWheel                 _TimeWheel       = _ClientCore.getTimeWheel();
     private final AtomicInteger             _State           = new AtomicInteger();
     private final IPipeEncoder<ZContext>    _ConsumerEncoder = CONSUMER.getConsumerEncoder();
@@ -319,7 +319,7 @@ public class DeviceClient
     }
 
     public void handshake() {
-        sendLocal(new X101_HandShake(_TargetHost, ((ZContext) clientSession.getContext()).getSeKey(), 13));
+        sendLocal(new X101_HandShake(_TargetHost,  clientSession.getContext().getSeKey(), 13));
     }
 
     public void heartbeat(String msg) {

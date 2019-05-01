@@ -55,303 +55,234 @@ import com.tgx.chess.queen.io.core.inf.ISession;
 @SuppressWarnings("unchecked")
 public enum ZSort
         implements
-        ISort
-{
-    /**
-     * 
-     */
-    CLUSTER_CONSUMER {
-        @Override
-        public Type getType() {
-            return Type.CONSUMER;
-        }
-
-    },
-    /**
-    *
-    */
-    CLUSTER_SERVER {
-        @Override
-        public IPipeEncoder<ZContext> getEncoder() {
-            return super._ClusterEncoder;
-        }
-
-        @Override
-        public IPipeDecoder<ZContext> getDecoder() {
-            return super._ClusterDecoder;
-        }
-    },
-    /**
-    *
-    */
-    MQ_CONSUMER {
-        @Override
-        public Type getType() {
-            return Type.CONSUMER;
-        }
-    },
-    /**
-    *
-    */
-    MQ_SERVER,
-    /**
-     *
-     */
-    SERVER {
-
-        @Override
-        public Mode getMode() {
-            return Mode.LINK;
-        }
-
-        @Override
-        public Type getType() {
-            return Type.SERVER;
-        }
-    },
-    /**
-     *
-     */
-    SERVER_SSL {
-        @Override
-        public Mode getMode() {
-            return Mode.LINK;
-        }
-
-        @Override
-        public Type getType() {
-            return Type.SERVER;
-        }
-    },
-    /**
-    *
-    */
-    SYMMETRY {
-        @Override
-        public Mode getMode() {
-            return Mode.LINK;
-        }
-
-        @Override
-        public Type getType() {
-            return Type.SYMMETRY;
-        }
-
-    };
-
-    @Override
-    public Mode getMode() {
-        return Mode.CLUSTER;
-    }
-
-    @Override
-    public Type getType() {
-        return Type.SERVER;
-    }
-
-    private static final Logger              _Log             = Logger.getLogger(ZSort.class.getName());
-    private final CloseOperator<ZContext>    _CloseOperator   = new CloseOperator<>();
-    private final ErrorOperator<ZContext>    _ErrorOperator   = new ErrorOperator<>(_CloseOperator);
-    private final AioWriter<ZContext>        _AioWriter       = new AioWriter<>();
-    private final IPipeEncoder<ZContext>     _ServerEncoder   = new IPipeEncoder<ZContext>()
-                                                              {
-
-                                                                  final WsHandShakeFilter<ZContext> handshakeFilter = new WsHandShakeFilter(SERVER);
-                                                                  {
-                                                                      IFilterChain<ZContext> header = new ZTlsFilter<>();
-                                                                      handshakeFilter.linkAfter(header);
-                                                                      handshakeFilter.linkFront(new WsFrameFilter<>())
-                                                                                     .linkFront(new ZCommandFilter<>(ZCommandFactories.SERVER))
-                                                                                     .linkFront(new WsControlFilter<>());
-                                                                  }
-
-                                                                  @Override
-                                                                  public ITriple handle(ICommand command, ISession<ZContext> session) {
-                                                                      try {
-                                                                          IPacket send = (IPacket) filterWrite(command,
-                                                                                                               handshakeFilter,
-                                                                                                               session.getContext());
-                                                                          Objects.requireNonNull(send);
-                                                                          _Log.info("_ServerEncoder send:%s",
-                                                                                    IoUtil.bin2Hex(send.getBuffer()
-                                                                                                       .array(),
-                                                                                                   "."));
-                                                                          session.write(send, _AioWriter);
-                                                                      }
-                                                                      catch (Exception e) {
-                                                                          return new Triple<>(e, session, _ErrorOperator);
-                                                                      }
-                                                                      return null;
-                                                                  }
-
-                                                                  @Override
-                                                                  public String toString() {
-                                                                      return "_ServerEncoder";
-                                                                  }
-                                                              };
-    private TransferOperator<ZContext>       _ServerTransfer  = new TransferOperator<>(_ServerEncoder);
-    private IPipeDecoder<ZContext>           _ServerDecoder   = new IPipeDecoder<ZContext>()
-                                                              {
-
-                                                                  final WsHandShakeFilter<ZContext> handshakeFilter = new WsHandShakeFilter<>(SERVER);
-                                                                  {
-                                                                      IFilterChain<ZContext> header = new ZTlsFilter<>();
-                                                                      handshakeFilter.linkAfter(header);
-                                                                      handshakeFilter.linkFront(new WsFrameFilter<>())
-                                                                                     .linkFront(new ZCommandFilter<>(ZCommandFactories.SERVER))
-                                                                                     .linkFront(new WsControlFilter<>());
-                                                                  }
-
-                                                                  @Override
-                                                                  public ITriple handle(IPacket inPackage, ISession<ZContext> session) {
-                                                                      return new Triple<>(filterRead(inPackage, handshakeFilter, session),
-                                                                                          session,
-                                                                                          _ServerTransfer);
-                                                                  }
-
-                                                                  @Override
-                                                                  public String toString() {
-                                                                      return "_ServerDecoder";
-                                                                  }
-                                                              };
-
-    private final IPipeEncoder<ZContext>     _ClusterEncoder  = new IPipeEncoder<ZContext>()
-                                                              {
-
-                                                                  final WsFrameFilter<ZContext> header = new WsFrameFilter();
-                                                                  {
-                                                                      header.linkFront(new ZCommandFilter<>(ZCommandFactories.CLUSTER))
-                                                                            .linkFront(new WsControlFilter<>());
-                                                                  }
-
-                                                                  @Override
-                                                                  public ITriple handle(ICommand command, ISession<ZContext> session) {
-                                                                      try {
-                                                                          IPacket send = (IPacket) filterWrite(command,
-                                                                                                               header,
-                                                                                                               session.getContext());
-                                                                          Objects.requireNonNull(send);
-                                                                          _Log.info("cluster send:%s",
-                                                                                    IoUtil.bin2Hex(send.getBuffer()
-                                                                                                       .array(),
-                                                                                                   "."));
-                                                                          session.write(send, _AioWriter);
-                                                                      }
-                                                                      catch (Exception e) {
-                                                                          return new Triple<>(e, session, _ErrorOperator);
-                                                                      }
-                                                                      return null;
-                                                                  }
-
-                                                                  @Override
-                                                                  public String toString() {
-                                                                      return "_ClusterEncoder";
-                                                                  }
-                                                              };
-    private final TransferOperator<ZContext> _ClusterTransfer = new TransferOperator<>(_ClusterEncoder);
-    private final IPipeDecoder<ZContext>     _ClusterDecoder  = new IPipeDecoder<ZContext>()
-                                                              {
-                                                                  final WsFrameFilter header = new WsFrameFilter<>();
-                                                                  {
-                                                                      header.linkFront(new ZCommandFilter<>(ZCommandFactories.CLUSTER))
-                                                                            .linkFront(new WsControlFilter<>());
-                                                                  }
-
-                                                                  @Override
-                                                                  public String toString() {
-                                                                      return "_ClusterDecoder";
-                                                                  }
-
-                                                                  @Override
-                                                                  public ITriple handle(IPacket input, ISession<ZContext> session) {
-                                                                      return new Triple<>(filterRead(input, header, session),
-                                                                                          session,
-                                                                                          _ClusterTransfer);
-                                                                  }
-                                                              };
-
-    public IPipeEncoder<ZContext> getEncoder() {
-        return _ServerEncoder;
-    }
-
-    public IPipeDecoder<ZContext> getDecoder() {
-        return _ServerDecoder;
-    }
-
-    public CloseOperator<ZContext> getCloseOperator() {
-        return _CloseOperator;
-    }
-
-    public TransferOperator<ZContext> getTransfer() {
-        return _ServerTransfer;
-    }
-
-    /*
-    
-    static {
-    
-        cluster_encoder = new IEncoder()
-        {
-            final WsFrameFilter header = new WsFrameFilter();
-            {
-                header.linkFront(new ZCommandFilter(ZCommandFactories.CLUSTER))
-                      .linkFront(new WsControlFilter());
-            }
-    
-            @Override
-            public Triple<Throwable, ISession, IOperator<Throwable, ISession<ZContext>>> handle(ICommand command,
-                                                                                                ISession<ZContext> session) {
-                try {
-                    IPacket send = (IPacket) filterWrite(command, header, session.getContext());
-                    Objects.requireNonNull(send);
-                    _Log.info("cluster send:%s",
-                             IoUtil.bin2Hex(send.getBuffer()
-                                                .array(),
-                                            "."));
-                    session.write(send, aio_writer);
-                }
-                catch (Exception e) {
-                    return new Triple<>(e, session, error_operator);
-                }
-                return null;
-            }
-    
-            @Override
-            public String toString() {
-                return "cluster_encoder";
-            }
-    
-        };
-    
-        _ServerDecoder = cluster_decoder = new IDecoder()
-        {
-            final WsFrameFilter header = new WsFrameFilter();
-            {
-                header.linkFront(new ZCommandFilter(ZCommandFactories.CLUSTER))
-                      .linkFront(new WsControlFilter());
-            }
-    
-            @Override
-            public String toString() {
-                return "cluster_decoder";
-            }
-    
-            @Override
-            public Triple<ICommand[], ISession<ZContext>, IOperator<ICommand[], ISession<ZContext>>> handle(IPacket inPackage,
-                                                                                                            ISession<ZContext> session) {
-                return new Triple<>(filterRead(inPackage, header, session), session, cluster_transfer);
-            }
-        };
-    
-        cluster_transfer = new AbstractTransfer(cluster_encoder)
-        {
-    
-            @Override
-            public String toString() {
-                return "cluster_transfer";
-            }
-        };
-    
-    }
-    */
+        ISort {
+	/**
+	 *
+	 */
+	CLUSTER_CONSUMER {
+		@Override
+		public Type getType() {
+			return Type.CONSUMER;
+		}
+		
+		@Override
+		public Mode getMode() {
+			return Mode.CLUSTER;
+		}
+		
+		@Override
+		IFilterChain<ZContext> getFilterChain() {
+			return _FrameFilter;
+		}
+	},
+	/**
+	*
+	*/
+	CLUSTER_SERVER {
+		@Override
+		public Type getType() {
+			return Type.SERVER;
+		}
+		
+		@Override
+		public Mode getMode() {
+			return Mode.CLUSTER;
+		}
+		
+		@Override
+		IFilterChain<ZContext> getFilterChain() {
+			return _FrameFilter;
+		}
+	},
+	/**
+	*
+	*/
+	MQ_CONSUMER {
+		@Override
+		public Type getType() {
+			return Type.CONSUMER;
+		}
+		
+		@Override
+		public Mode getMode() {
+			return Mode.CLUSTER;
+		}
+		
+		@Override
+		IFilterChain<ZContext> getFilterChain() {
+			return _FrameFilter;
+		}
+	},
+	/**
+	*
+	*/
+	MQ_SERVER {
+		
+		@Override
+		public Mode getMode() {
+			return Mode.CLUSTER;
+		}
+		
+		@Override
+		public Type getType() {
+			return Type.SERVER;
+		}
+		
+		@Override
+		IFilterChain<ZContext> getFilterChain() {
+			return _FrameFilter;
+		}
+	},
+	/**
+	 *
+	 */
+	SERVER {
+		
+		@Override
+		public Mode getMode() {
+			return Mode.LINK;
+		}
+		
+		@Override
+		public Type getType() {
+			return Type.SERVER;
+		}
+		
+		@Override
+		IFilterChain<ZContext> getFilterChain() {
+			return _HandshakeFilter;
+		}
+		
+	},
+	/**
+	 *
+	 */
+	SERVER_SSL {
+		@Override
+		IFilterChain<ZContext> getFilterChain() {
+			return _HandshakeFilter;
+		}
+		
+		@Override
+		public Mode getMode() {
+			return Mode.LINK;
+		}
+		
+		@Override
+		public Type getType() {
+			return Type.SERVER;
+		}
+		
+		@Override
+		public boolean isSSL() {
+			return true;
+		}
+	},
+	/**
+	*
+	*/
+	SYMMETRY {
+		@Override
+		IFilterChain<ZContext> getFilterChain() {
+			return _FrameFilter;
+		}
+		
+		@Override
+		public Mode getMode() {
+			return Mode.LINK;
+		}
+		
+		@Override
+		public Type getType() {
+			return Type.SYMMETRY;
+		}
+		
+	};
+	
+	private static final Logger				_Log				= Logger.getLogger(ZSort.class.getName());
+	private final CloseOperator<ZContext>	_CloseOperator		= new CloseOperator<>();
+	private final ErrorOperator<ZContext>	_ErrorOperator		= new ErrorOperator<>(_CloseOperator);
+	private final AioWriter<ZContext>		_AioWriter			= new AioWriter<>();
+	private final IPipeEncoder<ZContext>	_Encoder			= new IPipeEncoder<ZContext>()
+																{
+																	
+																	@Override
+																	public ITriple handle(ICommand command,
+																	                      ISession<ZContext> session) {
+																		try {
+																			IPacket send = (IPacket) filterWrite(command,
+																			                                     getFilterChain(),
+																			                                     session.getContext());
+																			Objects.requireNonNull(send);
+																			_Log.info("_Encoder send:%s",
+																			          IoUtil.bin2Hex(send.getBuffer()
+																			                             .array(),
+																			                         "."));
+																			session.write(send,
+																			              _AioWriter);
+																		}
+																		catch (Exception e) {
+																			return new Triple<>(e,
+																			                    session,
+																			                    _ErrorOperator);
+																		}
+																		return null;
+																	}
+																	
+																	@Override
+																	public String toString() {
+																		return "_Encoder";
+																	}
+																};
+	private TransferOperator<ZContext>		_Transfer			= new TransferOperator<>(_Encoder);
+	private IPipeDecoder<ZContext>			_Decoder			= new IPipeDecoder<ZContext>()
+																{
+																	
+																	@Override
+																	public ITriple handle(IPacket input,
+																	                      ISession<ZContext> session) {
+																		return new Triple<>(filterRead(input,
+																		                               getFilterChain(),
+																		                               session),
+																		                    session,
+																		                    _Transfer);
+																	}
+																	
+																	@Override
+																	public String toString() {
+																		return "_Decoder";
+																	}
+																};
+	final WsHandShakeFilter<ZContext>		_HandshakeFilter	= new WsHandShakeFilter(this);
+	{
+		IFilterChain<ZContext> header = new ZTlsFilter<>();
+		_HandshakeFilter.linkAfter(header);
+		_HandshakeFilter.linkFront(new WsFrameFilter<>())
+		                .linkFront(new ZCommandFilter<>(ZCommandFactories.SERVER))
+		                .linkFront(new WsControlFilter<>());
+	}
+	final WsFrameFilter<ZContext> _FrameFilter = new WsFrameFilter();
+	{
+		_FrameFilter.linkFront(new ZCommandFilter<>(ZCommandFactories.CLUSTER))
+		            .linkFront(new WsControlFilter<>());
+	}
+	
+	public IPipeEncoder<ZContext> getEncoder() {
+		return _Encoder;
+	}
+	
+	public IPipeDecoder<ZContext> getDecoder() {
+		return _Decoder;
+	}
+	
+	public CloseOperator<ZContext> getCloseOperator() {
+		return _CloseOperator;
+	}
+	
+	public TransferOperator<ZContext> getTransfer() {
+		return _Transfer;
+	}
+	
+	abstract IFilterChain<ZContext> getFilterChain();
+	
 }

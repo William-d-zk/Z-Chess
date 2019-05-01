@@ -56,105 +56,116 @@ import com.tgx.chess.queen.io.core.inf.ISession;
 @SuppressWarnings("unchecked")
 public enum ZSort
         implements
-        ISort
-{
-    /**
-     * 
-     */
-
-    CONSUMER,
-    CONSUMER_SSL;
-
-    @Override
-    public Mode getMode() {
-        return Mode.LINK;
-    }
-
-    @Override
-    public Type getType() {
-        return Type.CONSUMER;
-    }
-
-    private static final Logger              _Log              = Logger.getLogger(ZSort.class.getName());
-    private final CloseOperator<ZContext>    _CloseOperator    = new CloseOperator<>();
-    private final ErrorOperator<ZContext>    _ErrorOperator    = new ErrorOperator<>(_CloseOperator);
-    private final AioWriter<ZContext>        _AioWriter        = new AioWriter<>();
-    private final IPipeEncoder<ZContext>     _ConsumerEncoder  = new IPipeEncoder<ZContext>()
-                                                               {
-                                                                   final WsHandShakeFilter<ZContext> handshakeFilter = new WsHandShakeFilter<>(CONSUMER);
-
-                                                                   {
-                                                                       IFilterChain<ZContext> header = new ZTlsFilter<>();
-                                                                       handshakeFilter.linkAfter(header);
-                                                                       handshakeFilter.linkFront(new WsFrameFilter<>())
-                                                                                      .linkFront(new ZCommandFilter<>(ZCommandFactories.CONSUMER))
-                                                                                      .linkFront(new WsControlFilter<>());
-                                                                   }
-
-                                                                   @Override
-                                                                   public ITriple handle(ICommand command, ISession<ZContext> session) {
-                                                                       try {
-                                                                           IPacket send = (IPacket) filterWrite(command,
-                                                                                                                handshakeFilter,
-                                                                                                                session.getContext());
-                                                                           Objects.requireNonNull(send);
-                                                                           _Log.info("ConsumerEncoder send:%s",
-                                                                                     IoUtil.bin2Hex(send.getBuffer()
-                                                                                                        .array(),
-                                                                                                    "."));
-                                                                           session.write(send, _AioWriter);
-                                                                       }
-                                                                       catch (Exception e) {
-                                                                           return new Triple<>(e, session, _ErrorOperator);
-                                                                       }
-                                                                       return null;
-                                                                   }
-
-                                                                   @Override
-                                                                   public String toString() {
-                                                                       return "_ConsumerEncoder";
-                                                                   }
-                                                               };
-    private final TransferOperator<ZContext> _ConsumerTransfer = new TransferOperator<>(_ConsumerEncoder);
-    private final IPipeDecoder<ZContext>     _ConsumerDecoder  = new IPipeDecoder<ZContext>()
-                                                               {
-                                                                   final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(ZSort.CONSUMER);
-
-                                                                   {
-                                                                       IFilterChain<ZContext> header = new ZTlsFilter<>();
-                                                                       handshakeFilter.linkAfter(header);
-                                                                       handshakeFilter.linkFront(new WsFrameFilter<>())
-                                                                                      .linkFront(new ZCommandFilter<>(ZCommandFactories.CONSUMER))
-                                                                                      .linkFront(new WsControlFilter<>());
-                                                                   }
-
-                                                                   @Override
-                                                                   public ITriple handle(IPacket input, ISession<ZContext> session) {
-                                                                       return new Triple<>(filterRead(input, handshakeFilter, session),
-                                                                                           session,
-                                                                                           _ConsumerTransfer);
-                                                                   }
-
-                                                                   @Override
-                                                                   public String toString() {
-                                                                       return "_ConsumerDecoder";
-                                                                   }
-                                                               };
-
-    public CloseOperator<ZContext> getCloseOperator() {
-        return _CloseOperator;
-    }
-
-    public IPipeDecoder<ZContext> getConsumerDecoder() {
-        return _ConsumerDecoder;
-    }
-
-    public IPipeEncoder<ZContext> getConsumerEncoder() {
-        return _ConsumerEncoder;
-    }
-
-    public TransferOperator<ZContext> getTransfer() {
-        return _ConsumerTransfer;
-    }
-
+        ISort {
+	/**
+	 * 
+	 */
+	
+	CONSUMER,
+	CONSUMER_SSL {
+		@Override
+		public boolean isSSL() {
+			return true;
+		}
+	};
+	
+	@Override
+	public Mode getMode() {
+		return Mode.LINK;
+	}
+	
+	@Override
+	public Type getType() {
+		return Type.CONSUMER;
+	}
+	
+	private static final Logger					_Log				= Logger.getLogger(ZSort.class.getName());
+	private final CloseOperator<ZContext>		_CloseOperator		= new CloseOperator<>();
+	private final ErrorOperator<ZContext>		_ErrorOperator		= new ErrorOperator<>(_CloseOperator);
+	private final AioWriter<ZContext>			_AioWriter			= new AioWriter<>();
+	private final IPipeEncoder<ZContext>		_ConsumerEncoder	= new IPipeEncoder<ZContext>()
+																	{
+																		final WsHandShakeFilter<ZContext> handshakeFilter = new WsHandShakeFilter<>(ZSort.this);
+																		
+																		{
+																			IFilterChain<ZContext> header = new ZTlsFilter<>();
+																			handshakeFilter.linkAfter(header);
+																			handshakeFilter.linkFront(new WsFrameFilter<>())
+																			               .linkFront(new ZCommandFilter<>(ZCommandFactories.CONSUMER))
+																			               .linkFront(new WsControlFilter<>());
+																		}
+																		
+																		@Override
+																		public ITriple handle(ICommand command,
+																		                      ISession<ZContext> session) {
+																			try {
+																				IPacket send = (IPacket) filterWrite(command,
+																				                                     handshakeFilter,
+																				                                     session.getContext());
+																				Objects.requireNonNull(send);
+																				_Log.info("ConsumerEncoder send:%s",
+																				          IoUtil.bin2Hex(send.getBuffer()
+																				                             .array(),
+																				                         "."));
+																				session.write(send,
+																				              _AioWriter);
+																			}
+																			catch (Exception e) {
+																				return new Triple<>(e,
+																				                    session,
+																				                    _ErrorOperator);
+																			}
+																			return null;
+																		}
+																		
+																		@Override
+																		public String toString() {
+																			return "_ConsumerEncoder";
+																		}
+																	};
+	private final TransferOperator<ZContext>	_ConsumerTransfer	= new TransferOperator<>(_ConsumerEncoder);
+	private final IPipeDecoder<ZContext>		_ConsumerDecoder	= new IPipeDecoder<ZContext>()
+																	{
+																		final WsHandShakeFilter handshakeFilter = new WsHandShakeFilter(ZSort.this);
+																		
+																		{
+																			IFilterChain<ZContext> header = new ZTlsFilter<>();
+																			handshakeFilter.linkAfter(header);
+																			handshakeFilter.linkFront(new WsFrameFilter<>())
+																			               .linkFront(new ZCommandFilter<>(ZCommandFactories.CONSUMER))
+																			               .linkFront(new WsControlFilter<>());
+																		}
+																		
+																		@Override
+																		public ITriple handle(IPacket input,
+																		                      ISession<ZContext> session) {
+																			return new Triple<>(filterRead(input,
+																			                               handshakeFilter,
+																			                               session),
+																			                    session,
+																			                    _ConsumerTransfer);
+																		}
+																		
+																		@Override
+																		public String toString() {
+																			return "_ConsumerDecoder";
+																		}
+																	};
+	
+	public CloseOperator<ZContext> getCloseOperator() {
+		return _CloseOperator;
+	}
+	
+	public IPipeDecoder<ZContext> getConsumerDecoder() {
+		return _ConsumerDecoder;
+	}
+	
+	public IPipeEncoder<ZContext> getConsumerEncoder() {
+		return _ConsumerEncoder;
+	}
+	
+	public TransferOperator<ZContext> getTransfer() {
+		return _ConsumerTransfer;
+	}
+	
 }

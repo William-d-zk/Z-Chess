@@ -51,7 +51,8 @@ public class DecodeHandler<C extends IContext>
     protected final Logger          _Log = Logger.getLogger(getClass().getName());
     protected final IEncryptHandler _EncryptHandler;
 
-    public DecodeHandler(IEncryptHandler encryptHandler) {
+    public DecodeHandler(IEncryptHandler encryptHandler)
+    {
         _EncryptHandler = encryptHandler;
     }
 
@@ -61,13 +62,16 @@ public class DecodeHandler<C extends IContext>
      * @see IoDispatcher
      */
     @Override
-    public void onEvent(QEvent event, long sequence, boolean batch) throws Exception {
+    public void onEvent(QEvent event, long sequence, boolean batch) throws Exception
+    {
         /*
         错误事件已在同级旁路中处理，此处不再关心错误处理
          */
         IPair packetContent = event.getContent();
         ISession<C> session = packetContent.second();
-        IOperator<IPacket, ISession<C>, ITriple> packetOperator = event.getEventOp();
+        IOperator<IPacket,
+                  ISession<C>,
+                  ITriple> packetOperator = event.getEventOp();
         C context = session.getContext();
         context.setEncryptHandler(_EncryptHandler);
         IPacket packet = packetContent.first();
@@ -76,7 +80,7 @@ public class DecodeHandler<C extends IContext>
                 ITriple result = packetOperator.handle(packet, session);
                 ICommand[] commands = result.first();
                 _Log.info("decoded commands:%s", Arrays.toString(commands));
-                event.produce(DISPATCH, new Pair<>(commands, session), result.third());
+                transfer(event, commands, session, result.third());
             }
             catch (Exception e) {
                 _Log.warning(String.format("read decode error\n %s", session.toString()), e);
@@ -90,7 +94,13 @@ public class DecodeHandler<C extends IContext>
         }
     }
 
-    protected void transfer(QEvent event, ICommand[] commands, ISession<C> session, IOperator<ICommand[], ISession<C>, ITriple> operator) {
+    protected void transfer(QEvent event,
+                            ICommand[] commands,
+                            ISession<C> session,
+                            IOperator<ICommand[],
+                                      ISession<C>,
+                                      ITriple> operator)
+    {
         event.produce(DISPATCH, new Pair<>(commands, session), operator);
     }
 }
