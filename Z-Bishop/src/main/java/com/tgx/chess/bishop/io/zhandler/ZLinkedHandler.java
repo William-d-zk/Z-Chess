@@ -53,47 +53,62 @@ public class ZLinkedHandler
         implements
         ILinkHandler<ZContext>
 {
-
-    private final Logger _Log = Logger.getLogger(getClass().getName());
-
-    @Override
-    public void handle(LinkHandler<ZContext> _LinkHandler, QueenManager<ZContext> manager, QEvent event) {
-        IPair logicContent = event.getContent();
-        _Log.info("LinkHandler cmd: %s", logicContent.first());
-        ISession<ZContext> session = logicContent.second();
-        ICommand cmd = logicContent.first();
-        ICommand[] waitToSends = null;
-        switch (cmd.getSerial()) {
-            case X01_EncryptRequest.COMMAND:
-            case X02_AsymmetricPub.COMMAND:
-            case X03_Cipher.COMMAND:
-            case X04_EncryptConfirm.COMMAND:
-            case X05_EncryptStart.COMMAND:
-            case X06_PlainStart.COMMAND:
-                waitToSends = new ICommand[] { cmd };
-                break;
-            case X20_SignUp.COMMAND:
-            case X24_UpdateToken.COMMAND:
-                try {
-                    waitToSends = new ICommand[] { manager.save(cmd, session) };
-                }
-                catch (Exception e) {
-                    _LinkHandler.error(SAVE_DATA, e, session, _LinkHandler.getErrorOperator());
-                    return;
-                }
-                break;
-            case X22_SignIn.COMMAND:
-                try {
-                    waitToSends = new ICommand[] { manager.find(cmd, session) };
-                }
-                catch (Exception e) {
-                    _LinkHandler.error(FIND_DATA, e, session, _LinkHandler.getErrorOperator());
-                    return;
-                }
-                break;
-            default:
-                break;
-        }
-        _LinkHandler.write(waitToSends, session);
-    }
+	
+	private final Logger _Log = Logger.getLogger(getClass().getName());
+	
+	@Override
+	public void handle(LinkHandler<ZContext> _LinkHandler,
+	                   QueenManager<ZContext> manager,
+	                   QEvent event) {
+		IPair logicContent = event.getContent();
+		ISession<ZContext> session = logicContent.second();
+		ICommand cmd = logicContent.first();
+		_Log.info("LinkHandler cmd: %s",
+		          cmd);
+		ICommand[] waitToSends = null;
+		switch (cmd.getSerial()) {
+			case X01_EncryptRequest.COMMAND:
+			case X02_AsymmetricPub.COMMAND:
+			case X03_Cipher.COMMAND:
+			case X04_EncryptConfirm.COMMAND:
+			case X05_EncryptStart.COMMAND:
+			case X06_PlainStart.COMMAND:
+				waitToSends = new ICommand[] {
+				                               cmd };
+				break;
+			case X20_SignUp.COMMAND:
+			case X24_UpdateToken.COMMAND:
+				try {
+					waitToSends = new ICommand[] {
+					                               manager.save(cmd,
+					                                            session) };
+				}
+				catch (Exception e) {
+					_LinkHandler.error(SAVE_DATA,
+					                   e,
+					                   session,
+					                   _LinkHandler.getErrorOperator());
+					return;
+				}
+				break;
+			case X22_SignIn.COMMAND:
+				try {
+					waitToSends = new ICommand[] {
+					                               manager.find(cmd,
+					                                            session) };
+				}
+				catch (Exception e) {
+					_LinkHandler.error(FIND_DATA,
+					                   e,
+					                   session,
+					                   _LinkHandler.getErrorOperator());
+					return;
+				}
+				break;
+			default:
+				break;
+		}
+		_LinkHandler.write(waitToSends,
+		                   session);
+	}
 }

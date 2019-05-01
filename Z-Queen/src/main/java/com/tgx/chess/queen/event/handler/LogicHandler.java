@@ -51,14 +51,17 @@ public class LogicHandler<C extends IContext>
     private final IPipeEncoder<C>     _Encoder;
     private final TransferOperator<C> _Transfer;
 
-    public LogicHandler(IPipeEncoder<C> encoder, ICommandHandler<C> commandHandler) {
+    public LogicHandler(IPipeEncoder<C> encoder,
+                        ICommandHandler<C> commandHandler)
+    {
         _CommandHandler = commandHandler;
         _Encoder = encoder;
         _Transfer = new TransferOperator<>(encoder);
     }
 
     @Override
-    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception {
+    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
+    {
         if (IOperator.Type.LOGIC.equals(event.getEventType())) {
             IPair logicContent = event.getContent();
             ICommand cmd = logicContent.first();
@@ -71,9 +74,12 @@ public class LogicHandler<C extends IContext>
                 if (Objects.nonNull(cmd)) {
                     event.produce(WRITE, new Pair<>(new ICommand[] { cmd }, session), _Transfer);
                 }
+                else {
+                    event.ignore();
+                }
             }
         }
-        event.ignore();
+
     }
 
     public interface ICommandHandler<C extends IContext>

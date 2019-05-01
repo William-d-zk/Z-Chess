@@ -201,8 +201,9 @@ public class DeviceNode
                     break;
                 case X104_Ping.COMMAND:
                     return new X105_Pong("Server pong".getBytes());
-                case X51_DeviceMsgAck.COMMAND:
                 case X101_HandShake.COMMAND:
+                    return command;
+                case X51_DeviceMsgAck.COMMAND:
                 case X105_Pong.COMMAND:
                 default:
                     break;
