@@ -26,19 +26,21 @@ package com.tgx.chess.rook.biz.device.controller;
 
 import java.util.Objects;
 
-import com.tgx.chess.bishop.io.zprotocol.control.X103_Close;
-import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
-import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
-import com.tgx.chess.bishop.io.zprotocol.device.X50_DeviceMsg;
-import com.tgx.chess.bishop.io.zprotocol.ztls.X01_EncryptRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tgx.chess.bishop.io.zprotocol.ZContext;
+import com.tgx.chess.bishop.io.zprotocol.control.X103_Close;
+import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
+import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
+import com.tgx.chess.bishop.io.zprotocol.device.X50_DeviceMsg;
+import com.tgx.chess.bishop.io.zprotocol.ztls.X01_EncryptRequest;
 import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.rook.biz.device.client.DeviceClient;
+
 /**
  * @author william.d.zk
  */
@@ -71,7 +73,7 @@ public class ClientController
     @GetMapping("/client/close")
     public String close()
     {
-        _Client.sendLocal(new X103_Close("client close".getBytes()));
+        _Client.sendLocal(new X103_Close<ZContext>("client close".getBytes()));
         return "client close";
     }
 
@@ -104,7 +106,8 @@ public class ClientController
     }
 
     @GetMapping("/client/sign-in")
-    public String x22(@RequestParam(name = "password", defaultValue = "password", required = false) String password, @RequestParam(name = "token") String token)
+    public String x22(@RequestParam(name = "password", defaultValue = "password", required = false) String password,
+                      @RequestParam(name = "token") String token)
     {
         X22_SignIn x22 = new X22_SignIn();
         if (Objects.nonNull(_Client.getToken())

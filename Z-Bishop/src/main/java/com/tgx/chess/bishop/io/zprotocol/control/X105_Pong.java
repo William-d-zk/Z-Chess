@@ -23,15 +23,16 @@
  */
 package com.tgx.chess.bishop.io.zprotocol.control;
 
+import com.tgx.chess.bishop.io.ws.bean.WsContext;
 import com.tgx.chess.bishop.io.ws.bean.WsControl;
 import com.tgx.chess.bishop.io.ws.bean.WsFrame;
 
 /**
  * @author William.d.zk
  */
-public class X105_Pong
+public class X105_Pong<C extends WsContext>
         extends
-        WsControl
+        WsControl<C>
 {
     public final static int COMMAND = 0x105;
 
@@ -50,6 +51,6 @@ public class X105_Pong
     @Override
     public X105_Pong duplicate()
     {
-        return new X105_Pong(getPayload());
+        return new X105_Pong<C>(getPayload());
     }
 }

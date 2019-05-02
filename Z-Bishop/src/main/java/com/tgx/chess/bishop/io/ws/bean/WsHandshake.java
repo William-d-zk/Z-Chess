@@ -28,9 +28,9 @@ import java.util.Objects;
 /**
  * @author William.d.zk
  */
-public abstract class WsHandshake
+public abstract class WsHandshake<C extends WsContext>
         extends
-        WsControl
+        WsControl<C>
 {
 
     private String rMsg;

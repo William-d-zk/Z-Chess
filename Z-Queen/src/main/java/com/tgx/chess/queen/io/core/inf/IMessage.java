@@ -26,15 +26,17 @@ package com.tgx.chess.queen.io.core.inf;
 /**
  * @author William.d.zk
  */
-public interface IMessage
+public interface IMessage<C extends IContext>
         extends
         IDuplicate
 {
-    default <C extends IContext> ISession<C> getSession() {
+    default ISession<C> getSession()
+    {
         return null;
     }
 
-    default <C extends IContext> IMessage setSession(ISession<C> session) {
+    default IMessage setSession(ISession<C> session)
+    {
         return this;
     }
 

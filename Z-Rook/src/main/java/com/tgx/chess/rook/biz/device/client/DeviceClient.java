@@ -96,7 +96,7 @@ public class DeviceClient
         ISessionDismiss<ZContext>,
         ISessionCreated<ZContext>
 {
-    private final Logger                    _Log             = Logger.getLogger(getClass().getName());
+    private final Logger _Log = Logger.getLogger(getClass().getName());
 
     private final String                    _TargetName;
     private final String                    _TargetHost;
@@ -123,7 +123,8 @@ public class DeviceClient
         SHUTDOWN
     }
 
-    private void updateState(STATE state) {
+    private void updateState(STATE state)
+    {
         for (int s = _State.get(), retry = 0; !_State.compareAndSet(s, state.ordinal()); s = _State.get(), retry++) {
             _Log.warning("update state failed! retry: %d", retry);
         }
@@ -132,8 +133,8 @@ public class DeviceClient
     @SuppressWarnings("unchecked")
     public DeviceClient(@Value("${client.target.name}") String targetName,
                         @Value("${client.target.host}") String targetHost,
-                        @Value("${client.target.port}") int targetPort)
-            throws IOException {
+                        @Value("${client.target.port}") int targetPort) throws IOException
+    {
         _State.set(STATE.STOP.ordinal());
         _TargetName = targetName;
         _TargetHost = targetHost;
@@ -143,7 +144,9 @@ public class DeviceClient
         _SessionCreator = new AioCreator<ZContext>(_Config)
         {
             @Override
-            public ISession<ZContext> createSession(AsynchronousSocketChannel socketChannel, IConnectionContext<ZContext> context) {
+            public ISession<ZContext> createSession(AsynchronousSocketChannel socketChannel,
+                                                    IConnectionContext<ZContext> context)
+            {
                 try {
                     return new AioSession<>(socketChannel, context.getConnectActive(), this, this, DeviceClient.this);
                 }
@@ -154,7 +157,8 @@ public class DeviceClient
             }
 
             @Override
-            public ZContext createContext(ISessionOption option, ISort sorter) {
+            public ZContext createContext(ISessionOption option, ISort sorter)
+            {
                 return new ZContext(option, sorter);
             }
         };
@@ -166,22 +170,26 @@ public class DeviceClient
         {
 
             @Override
-            public ISort getSort() {
+            public ISort getSort()
+            {
                 return CONSUMER;
             }
 
             @Override
-            public ISessionCreator getSessionCreator() {
+            public ISessionCreator getSessionCreator()
+            {
                 return _SessionCreator;
             }
 
             @Override
-            public ISessionCreated getSessionCreated() {
+            public ISessionCreated getSessionCreated()
+            {
                 return DeviceClient.this;
             }
 
             @Override
-            public ICommandCreator getCommandCreator() {
+            public ICommandCreator getCommandCreator()
+            {
                 return _CommandCreator;
             }
 
@@ -190,11 +198,14 @@ public class DeviceClient
     }
 
     @PostConstruct
-    private void init() {
-        _ClientCore.build((QEvent event, long sequence, boolean endOfBatch) -> {
+    private void init()
+    {
+        _ClientCore.build((QEvent event, long sequence, boolean endOfBatch) ->
+        {
             ICommand[] commands = null;
             ISession session = null;
-            switch (event.getEventType()) {
+            switch (event.getEventType())
+            {
                 case LOGIC:
                     //与 Server Node 处理过程存在较大的差异，中间去掉一个decoded dispatcher 所以此处入参为 ICommand[]
                     IPair logicContent = event.getContent();
@@ -202,9 +213,11 @@ public class DeviceClient
                     session = logicContent.second();
                     if (Objects.nonNull(commands)) {
                         commands = Stream.of(commands)
-                                         .map(cmd -> {
+                                         .map(cmd ->
+                                         {
                                              _Log.info("recv:%x ", cmd.getSerial());
-                                             switch (cmd.getSerial()) {
+                                             switch (cmd.getSerial())
+                                             {
                                                  case X03_Cipher.COMMAND:
                                                  case X05_EncryptStart.COMMAND:
                                                      return cmd;
@@ -223,12 +236,13 @@ public class DeviceClient
                                                                           .atZone(ZoneId.of("GMT+8")));
                                                      }
                                                      else {
-                                                         return new X103_Close("sign in failed! close".getBytes());
+                                                         return new X103_Close<ZContext>("sign in failed! close".getBytes());
                                                      }
                                                      break;
                                                  case X30_EventMsg.COMMAND:
                                                      X30_EventMsg x30 = (X30_EventMsg) cmd;
-                                                     _Log.info("x30 payload: %s", new String(x30.getPayload(), StandardCharsets.UTF_8));
+                                                     _Log.info("x30 payload: %s",
+                                                               new String(x30.getPayload(), StandardCharsets.UTF_8));
                                                      X31_ConfirmMsg x31 = new X31_ConfirmMsg(x30.getUID());
                                                      x31.setStatus(X31_ConfirmMsg.STATUS_RECEIVED);
                                                      x31.setToken(x30.getToken());
@@ -262,10 +276,12 @@ public class DeviceClient
         }, new EncryptHandler());
     }
 
-    public void connect() {
+    public void connect()
+    {
         try {
             connect(_DeviceConnector, _ChannelGroup);
-            _TimeWheel.acquire(3, TimeUnit.SECONDS, _DeviceConnector, new ScheduleHandler<>(false, connector -> {
+            _TimeWheel.acquire(3, TimeUnit.SECONDS, _DeviceConnector, new ScheduleHandler<>(false, connector ->
+            {
                 if (Objects.nonNull(clientSession)) {
                     _Log.info("connect status checked -> success");
                 }
@@ -288,14 +304,16 @@ public class DeviceClient
     }
 
     @Override
-    public void onCreate(ISession<ZContext> session) {
+    public void onCreate(ISession<ZContext> session)
+    {
         _Log.info("client connect:%s", session);
         clientSession = session;
         updateState(STATE.OFFLINE);
     }
 
     @Override
-    public void onDismiss(ISession<ZContext> session) {
+    public void onDismiss(ISession<ZContext> session)
+    {
         _Log.info("dismiss:%s", session);
         if (clientSession == session) {
             _Log.info("drop client session %s", session);
@@ -304,37 +322,48 @@ public class DeviceClient
         }
     }
 
-    public boolean isOnline() {
+    public boolean isOnline()
+    {
         return Objects.nonNull(clientSession) && _State.get() >= STATE.ONLINE.ordinal();
     }
 
-    public boolean isOffline() {
+    public boolean isOffline()
+    {
         return Objects.isNull(clientSession) && _State.get() <= STATE.OFFLINE.ordinal();
     }
 
-    public boolean sendLocal(ICommand... toSends) {
+    public boolean sendLocal(ICommand... toSends)
+    {
         if (isOffline()) { throw new IllegalStateException("client is offline"); }
         return _ClientCore.localSend(clientSession, CONSUMER.getTransfer(), toSends);
     }
 
-    public void close() {
+    public void close()
+    {
         _ClientCore.localClose(clientSession, CONSUMER.getCloseOperator());
     }
 
-    public void handshake() {
-        sendLocal(new X101_HandShake(_TargetHost,  clientSession.getContext().getSeKey(), 13));
+    public void handshake()
+    {
+        sendLocal(new X101_HandShake<ZContext>(_TargetHost,
+                                               clientSession.getContext()
+                                                            .getSeKey(),
+                                               13));
     }
 
-    public void heartbeat(String msg) {
+    public void heartbeat(String msg)
+    {
         Objects.requireNonNull(msg);
         sendLocal(new X104_Ping(msg.getBytes()));
     }
 
-    public byte[] getToken() {
+    public byte[] getToken()
+    {
         return currentTokenRef.get();
     }
 
-    public void setToken(String token) {
+    public void setToken(String token)
+    {
         currentTokenRef.set(IoUtil.hex2bin(token));
     }
 }

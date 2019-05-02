@@ -108,15 +108,15 @@ public class WsControlFilter<C extends WsContext>
         WsFrame wsFrame = (WsFrame) input;
         switch (wsFrame.frame_op_code & 0x0F) {
             case WsFrame.frame_op_code_ctrl_close:
-                return new X103_Close(wsFrame.getPayload());
+                return new X103_Close<C>(wsFrame.getPayload());
             case WsFrame.frame_op_code_ctrl_ping:
-                return new X104_Ping(wsFrame.getPayload());
+                return new X104_Ping<C>(wsFrame.getPayload());
             case WsFrame.frame_op_code_ctrl_pong:
-                return new X105_Pong(wsFrame.getPayload());
+                return new X105_Pong<C>(wsFrame.getPayload());
             case WsFrame.frame_op_code_ctrl_cluster:
-                return new X106_Identity(wsFrame.getPayload());
+                return new X106_Identity<C>(wsFrame.getPayload());
             case WsFrame.frame_op_code_ctrl_redirect:
-                return new X107_Redirect(wsFrame.getPayload());
+                return new X107_Redirect<C>(wsFrame.getPayload());
             default:
                 return null;
         }

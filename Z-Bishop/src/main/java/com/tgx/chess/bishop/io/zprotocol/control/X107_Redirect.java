@@ -24,13 +24,14 @@
 
 package com.tgx.chess.bishop.io.zprotocol.control;
 
+import com.tgx.chess.bishop.io.ws.bean.WsContext;
 import com.tgx.chess.bishop.io.ws.bean.WsControl;
 import com.tgx.chess.bishop.io.ws.bean.WsFrame;
 import com.tgx.chess.king.base.util.IoUtil;
 
-public class X107_Redirect
+public class X107_Redirect<C extends WsContext>
         extends
-        WsControl
+        WsControl<C>
 {
     public final static int COMMAND = 0x107;
 
@@ -53,6 +54,6 @@ public class X107_Redirect
     @Override
     public X107_Redirect duplicate()
     {
-        return new X107_Redirect(getPayload());
+        return new X107_Redirect<C>(getPayload());
     }
 }

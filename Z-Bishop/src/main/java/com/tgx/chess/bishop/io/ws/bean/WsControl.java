@@ -32,16 +32,16 @@ import com.tgx.chess.queen.io.core.inf.ISession;
 /**
  * @author William.d.zk
  */
-public abstract class WsControl
+public abstract class WsControl<C extends WsContext>
         implements
-        ICommand,
+        ICommand<C>,
         IRouteLv4
 {
 
     private final byte[] _Msg;
     private final int    _Command;
     protected byte       mCtrlCode;
-    private ISession     mSession;
+    private ISession<C>  mSession;
 
     public WsControl(int command,
                      byte[] msg)
@@ -92,13 +92,13 @@ public abstract class WsControl
     }
 
     @Override
-    public ISession getSession()
+    public ISession<C> getSession()
     {
         return mSession;
     }
 
     @Override
-    public WsControl setSession(ISession session)
+    public WsControl setSession(ISession<C> session)
     {
         mSession = session;
         return this;
