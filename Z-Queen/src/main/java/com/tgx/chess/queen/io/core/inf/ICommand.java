@@ -75,7 +75,7 @@ public interface ICommand<C extends IContext>
     }
 
     @Override
-    default ICommand setSession(ISession<C> session)
+    default ICommand<C> setSession(ISession<C> session)
     {
         return this;
     }
