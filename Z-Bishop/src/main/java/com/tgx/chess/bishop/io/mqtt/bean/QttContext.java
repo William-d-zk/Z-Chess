@@ -35,6 +35,49 @@ public class QttContext
     public enum HEAD
     {
 
+        CONNECT(1, "C->S", "Client request to connect to Server"),
+        CONNACK(2, "S->C", "Connect acknowledgment"),
+        PUBLISH(3, "C->S | S->C", "Publish message"),
+        PUBACK(4, "C->S | S->C", "Publish acknowledgment"),
+        PUBREC(5, "C->S | S->C", "Publish received (assured delivery part 1)"),
+        PUBREL(6, "C->S | S->C", "Publish release (assured delivery part 2)"),
+        PUBCOMP(7, "C->S | S->C", "Publish complete (assured delivery part 3)"),
+        SUBSCRIBE(8, "C->S", "Client subscribe request"),
+        SUBACK(9, "S->C", "Subscribe acknowledgment"),
+        UNSUBSCRIBE(10, "C->S", "Unsubscribe request"),
+        UNSUBACK(11, "S->C", "Unsubscribe acknowledgment"),
+        PINGREQ(12, "C->S", "PING request"),
+        PINGRESP(13, "S->C", "PING response"),
+        DISCONNECT(14, "C->S", "Client is disconnecting");
+
+        final int    _Value;
+        final String _Description;
+        final String _Flow;
+
+        HEAD(int code,
+             String flow,
+             String description)
+        {
+            _Value = code;
+            _Flow = flow;
+            _Description = description;
+        }
+
+        public int getValue()
+        {
+            return _Value;
+        }
+
+        public String getFlow()
+        {
+            return _Flow;
+        }
+
+        public String getDescription()
+        {
+            return _Description;
+        }
+
     }
 
     public QttContext(ISessionOption option,
