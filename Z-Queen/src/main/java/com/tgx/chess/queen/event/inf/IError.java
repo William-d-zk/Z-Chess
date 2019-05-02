@@ -26,7 +26,7 @@ package com.tgx.chess.queen.event.inf;
 import java.util.Objects;
 
 /**
- * @author William.d.zk
+ * @author william.d.zk
  */
 public interface IError
 {

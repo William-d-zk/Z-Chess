@@ -36,7 +36,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tgx.chess.spring.auth.api.dao.AuthEntry;
 import com.tgx.chess.spring.auth.model.AccountEntity;
 import com.tgx.chess.spring.auth.service.AccountService;
-
+/**
+ * @author william.d.zk
+ */
 @RestController
 @CrossOrigin(origins = "http://localhost:4444")
 public class RegisterService

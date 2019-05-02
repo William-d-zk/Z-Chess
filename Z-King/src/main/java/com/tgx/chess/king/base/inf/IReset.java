@@ -23,7 +23,9 @@
  */
 
 package com.tgx.chess.king.base.inf;
-
+/**
+ * @author William.d.zk
+ */
 public interface IReset
 {
     void reset();

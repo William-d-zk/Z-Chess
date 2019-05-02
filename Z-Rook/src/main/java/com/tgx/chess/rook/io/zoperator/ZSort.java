@@ -52,7 +52,6 @@ import com.tgx.chess.queen.io.core.inf.ISession;
 /**
  * @author william.d.zk
  */
-
 @SuppressWarnings("unchecked")
 public enum ZSort
         implements

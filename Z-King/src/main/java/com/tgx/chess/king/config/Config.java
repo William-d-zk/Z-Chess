@@ -213,7 +213,7 @@ public class Config
                 if (!_ConfigExternal.isEmpty() && Objects.nonNull(_ConfigExternal.get(dbKey))) {
                     try {
                         String resource = _ConfigExternal.get(dbKey);
-                        resourceBundle = new TgxResourceBundle(owner, new StringReader(resource));
+                        resourceBundle = new ZResourceBundle(owner, new StringReader(resource));
                     }
                     catch (IOException ie) {
                         e.printStackTrace();

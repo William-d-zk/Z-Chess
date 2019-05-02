@@ -42,7 +42,9 @@ import javax.persistence.Table;
 
 import com.tgx.chess.spring.device.model.ClientEntity;
 import com.tgx.chess.spring.jpa.model.AuditModel;
-
+/**
+ * @author william.d.zk
+ */
 @Entity(name = "Profile")
 @Table(indexes = { @Index(name = "profile_idx_account", columnList = "account_id") })
 public class ProfileEntity

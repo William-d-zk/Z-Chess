@@ -26,6 +26,9 @@ package com.tgx.chess.queen.config;
 
 import com.tgx.chess.king.config.KingCode;
 
+/**
+ * @author william.d.zk
+ */
 public interface QueenCode
         extends
         KingCode

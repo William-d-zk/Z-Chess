@@ -23,7 +23,9 @@
  */
 
 package com.tgx.chess.queen.db.inf;
-
+/**
+ * @author william.d.zk
+ */
 public interface IBizDao<E extends IStorage>
 {
     /**

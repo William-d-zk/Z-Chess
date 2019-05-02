@@ -36,7 +36,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import com.tgx.chess.spring.jpa.model.AuditModel;
-
+/**
+ * @author william.d.zk
+ */
 @Entity(name = "Bill")
 @Table(schema = "\"tgx-z-chess-bill-pay\"",
        indexes = { @Index(name = "bill_idx_bill", columnList = "bill"),

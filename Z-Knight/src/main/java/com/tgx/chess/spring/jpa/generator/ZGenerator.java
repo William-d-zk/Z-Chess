@@ -32,7 +32,9 @@ import org.hibernate.id.IdentifierGenerator;
 
 import com.tgx.chess.bishop.biz.db.dao.ZUID;
 import com.tgx.chess.king.base.log.Logger;
-
+/**
+ * @author william.d.zk
+ */
 public class ZGenerator
         implements
         IdentifierGenerator

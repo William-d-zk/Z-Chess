@@ -33,7 +33,9 @@ import javax.persistence.Index;
 import javax.persistence.Table;
 
 import com.tgx.chess.spring.jpa.model.AuditModel;
-
+/**
+ * @author william.d.zk
+ */
 @Entity(name = "Role")
 @Table(indexes = { @Index(name = "role_idx_role", columnList = "role") })
 public class RoleEntity

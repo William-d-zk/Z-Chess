@@ -28,7 +28,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.tgx.chess.spring.auth.model.ProfileEntity;
-
+/**
+ * @author william.d.zk
+ */
 @Repository
 public interface ProfileRepository
         extends

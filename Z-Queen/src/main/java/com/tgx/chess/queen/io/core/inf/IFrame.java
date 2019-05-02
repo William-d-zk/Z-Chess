@@ -25,7 +25,9 @@
 package com.tgx.chess.queen.io.core.inf;
 
 import com.tgx.chess.king.base.inf.IReset;
-
+/**
+ * @author william.d.zk
+ */
 public interface IFrame
         extends
         IReset,

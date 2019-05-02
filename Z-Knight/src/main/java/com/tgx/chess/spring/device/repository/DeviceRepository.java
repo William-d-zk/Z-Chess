@@ -28,7 +28,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.tgx.chess.spring.device.model.DeviceEntity;
-
+/**
+ * @author william.d.zk
+ */
 @Repository
 //@Transactional
 public interface DeviceRepository

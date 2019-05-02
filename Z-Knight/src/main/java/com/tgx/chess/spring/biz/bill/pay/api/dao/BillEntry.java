@@ -26,7 +26,9 @@ package com.tgx.chess.spring.biz.bill.pay.api.dao;
 
 import java.io.Serializable;
 import java.util.Date;
-
+/**
+ * @author william.d.zk
+ */
 public class BillEntry
         implements
         Serializable

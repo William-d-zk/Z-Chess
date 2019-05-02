@@ -23,7 +23,9 @@
  */
 
 package com.tgx.chess.queen.event.inf;
-
+/**
+ * @author william.d.zk
+ */
 public interface ISort
 {
     enum Mode
