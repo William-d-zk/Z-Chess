@@ -40,7 +40,7 @@ import com.tgx.chess.queen.io.core.inf.IStreamProtocol;
  */
 public abstract class BaseCommand<C extends AioContext>
         implements
-        ICommand,
+        ICommand<C>,
         IRouteLv4,
         IStreamProtocol<C>
 {
@@ -206,7 +206,6 @@ public abstract class BaseCommand<C extends AioContext>
         return lastPos + 4;
     }
 
-
     @Override
     public final byte[] encode()
     {
@@ -235,7 +234,8 @@ public abstract class BaseCommand<C extends AioContext>
         }
         else if (len > length
                  || buf.length < len
-                 || pos + length > buf.length) throw new ArrayIndexOutOfBoundsException("data length is too long for input buf");
+                 || pos + length > buf.length)
+                                               throw new ArrayIndexOutOfBoundsException("data length is too long for input buf");
         pos += IoUtil.writeByte(mHAttr, buf, pos);
         pos += IoUtil.writeByte(_Command, buf, pos);
         if (isGlobalMsg()) pos += IoUtil.writeLong(mMsgUID, buf, pos);

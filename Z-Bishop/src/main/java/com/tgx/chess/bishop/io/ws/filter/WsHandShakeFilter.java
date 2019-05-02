@@ -52,25 +52,28 @@ public class WsHandShakeFilter<C extends WsContext>
 {
     private final static String CRLF = "\r\n";
 
-    private final ISort         _Sort;
-    private final Logger        _Log = Logger.getLogger(getClass().getName());
+    private final ISort  _Sort;
+    private final Logger _Log = Logger.getLogger(getClass().getName());
 
-    public WsHandShakeFilter(ISort sort) {
+    public WsHandShakeFilter(ISort sort)
+    {
         super("web-socket-header-zfilter-");
         _Sort = sort;
     }
 
     @Override
-    public ResultType preEncode(C context, IProtocol output) {
+    public ResultType preEncode(C context, IProtocol output)
+    {
         if (context == null || output == null) { return ResultType.ERROR; }
-        if (context.needHandshake() && context.outState() == ENCODE_HANDSHAKE && output instanceof WsHandshake) {
-            return ResultType.NEXT_STEP;
-        }
+        if (context.needHandshake()
+            && context.outState() == ENCODE_HANDSHAKE
+            && output instanceof WsHandshake) { return ResultType.NEXT_STEP; }
         return ResultType.IGNORE;
     }
 
     @Override
-    public ResultType preDecode(C context, IProtocol input) {
+    public ResultType preDecode(C context, IProtocol input)
+    {
         if (context == null || !(input instanceof IPacket)) { return ResultType.ERROR; }
         if (context.needHandshake() && context.inState() == DECODE_HANDSHAKE) {
             WsHandshake handshake = context.getHandshake();
@@ -85,15 +88,18 @@ public class WsHandShakeFilter<C extends WsContext>
                     String x = new String(cRvBuf.array(), cRvBuf.position(), cRvBuf.limit());
                     _Log.info(x);
                     cRvBuf.clear();
-                    switch (_Sort.getType()) {
+                    switch (_Sort.getType())
+                    {
                         case SERVER:
                             if (Objects.isNull(handshake)) {
-                                handshake = _Sort.isSSL() ? new X102_SslHandShake() : new X101_HandShake();
+                                handshake = _Sort.isSSL() ? new X102_SslHandShake<C>()
+                                                          : new X101_HandShake<C>();
                             }
                             context.setHandshake(handshake);
                             String[] split = x.split(" ", 2);
                             String httpKey = split[0].toUpperCase();
-                            switch (httpKey) {
+                            switch (httpKey)
+                            {
                                 case "GET":
                                     split = x.split(" ");
                                     if (!split[2].equalsIgnoreCase("HTTP/1.1\r\n")) {
@@ -162,12 +168,14 @@ public class WsHandShakeFilter<C extends WsContext>
                             break;
                         case CONSUMER:
                             if (handshake == null) {
-                                handshake = _Sort.isSSL() ? new X102_SslHandShake() : new X101_HandShake();
+                                handshake = _Sort.isSSL() ? new X102_SslHandShake()
+                                                          : new X101_HandShake();
                             }
                             context.setHandshake(handshake);
                             split = x.split(" ", 2);
                             httpKey = split[0].toUpperCase();
-                            switch (httpKey) {
+                            switch (httpKey)
+                            {
                                 case "HTTP/1.1":
                                     if (!split[1].contains("101 Switching Protocols\r\n")) {
                                         _Log.warning("handshake error !:");
@@ -190,8 +198,11 @@ public class WsHandShakeFilter<C extends WsContext>
                                     context.updateHandshakeState(WsContext.HS_State_CONNECTION);
                                     break;
                                 case "SEC-WEBSOCKET-ACCEPT:":
-                                    if (!split[1].startsWith(context.mSecAcceptExpect)) {
-                                        _Log.warning("key error: expect-> " + context.mSecAcceptExpect + " | result-> " + split[1]);
+                                    if (!split[1].startsWith(context.getSecAcceptExpect())) {
+                                        _Log.warning("key error: expect-> "
+                                                     + context.getSecAcceptExpect()
+                                                     + " | result-> "
+                                                     + split[1]);
                                         return ResultType.ERROR;
                                     }
                                     context.updateHandshakeState(WsContext.HS_State_SEC_ACCEPT);
@@ -217,14 +228,16 @@ public class WsHandShakeFilter<C extends WsContext>
     }
 
     @Override
-    public IProtocol encode(C context, IProtocol output) {
+    public IProtocol encode(C context, IProtocol output)
+    {
         AioPacket encoded = new AioPacket(ByteBuffer.wrap(output.encode()));
         context.setOutState(ENCODE_FRAME);
         return encoded;
     }
 
     @Override
-    public IProtocol decode(C context, IProtocol input) {
+    public IProtocol decode(C context, IProtocol input)
+    {
         WsHandshake handshake = context.getHandshake();
         context.setInState(DECODE_FRAME);
         context.finish();

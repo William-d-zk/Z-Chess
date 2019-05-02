@@ -23,15 +23,16 @@
  */
 package com.tgx.chess.bishop.io.zprotocol.control;
 
+import com.tgx.chess.bishop.io.ws.bean.WsContext;
 import com.tgx.chess.bishop.io.ws.bean.WsControl;
 import com.tgx.chess.bishop.io.ws.bean.WsFrame;
 
 /**
  * @author William.d.zk
  */
-public class X104_Ping
+public class X104_Ping<C extends WsContext>
         extends
-        WsControl
+        WsControl<C>
 {
 
     public final static int COMMAND = 0x104;
@@ -51,6 +52,6 @@ public class X104_Ping
     @Override
     public X104_Ping duplicate()
     {
-        return new X104_Ping(getPayload());
+        return new X104_Ping<C>(getPayload());
     }
 }

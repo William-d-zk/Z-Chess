@@ -23,14 +23,15 @@
  */
 package com.tgx.chess.bishop.io.zprotocol.control;
 
+import com.tgx.chess.bishop.io.ws.bean.WsContext;
 import com.tgx.chess.bishop.io.ws.bean.WsHandshake;
 
 /**
  * @author William.d.zk
  */
-public class X101_HandShake
+public class X101_HandShake<C extends WsContext>
         extends
-        WsHandshake
+        WsHandshake<C>
 {
     public final static int COMMAND = 0x101;
 

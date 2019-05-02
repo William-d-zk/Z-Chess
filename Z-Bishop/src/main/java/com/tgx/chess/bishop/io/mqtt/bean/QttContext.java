@@ -21,40 +21,40 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.tgx.chess.bishop.io.zprotocol.control;
 
-import com.tgx.chess.bishop.io.ws.bean.WsContext;
-import com.tgx.chess.bishop.io.ws.bean.WsHandshake;
+package com.tgx.chess.bishop.io.mqtt.bean;
 
-/**
- * @author William.d.zk
- */
-public class X102_SslHandShake<C extends WsContext>
+import com.tgx.chess.queen.event.inf.ISort;
+import com.tgx.chess.queen.io.core.async.AioContext;
+import com.tgx.chess.queen.io.core.inf.ISessionOption;
+
+public class QttContext
         extends
-        WsHandshake<C>
+        AioContext
 {
-    public final static int COMMAND = 0x102;
-
-    public X102_SslHandShake(String host,
-                             String secKey,
-                             int version)
+    public enum HEAD
     {
-        this(String.format("GET /ws_service HTTP/1.1\r\nHost: %s\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: %s\r\nOrigin: http://%s\r\nSec-WebSocket-Protocol: z-push, z-chat\r\nSec-WebSocket-Version: %s\r\n\r\n",
-                           host,
-                           secKey,
-                           host,
-                           version));
 
     }
 
-    public X102_SslHandShake(String handshake)
+    public QttContext(ISessionOption option,
+                      ISort sorter)
     {
-        super(COMMAND, handshake);
+        super(option);
+
+        switch (sorter.getMode())
+        {
+            case CLUSTER:
+                transfer();
+                break;
+            case LINK:
+                handshake();
+                break;
+        }
     }
 
-    public X102_SslHandShake()
+    public String getVersion()
     {
-        this(null);
+        return "3.1.1";
     }
-
 }
