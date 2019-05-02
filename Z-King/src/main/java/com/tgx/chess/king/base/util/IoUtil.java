@@ -29,6 +29,7 @@ import static java.lang.System.arraycopy;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Objects;
+
 /**
  * @author William.d.zk
  */
@@ -405,7 +406,10 @@ public interface IoUtil
 
     static int readInt(byte[] src, int off)
     {
-        return (src[off] & 0xFF) << 24 | (src[off + 1] & 0xFF) << 16 | (src[off + 2] & 0xFF) << 8 | (src[off + 3] & 0xFF);
+        return (src[off] & 0xFF) << 24
+               | (src[off + 1] & 0xFF) << 16
+               | (src[off + 2] & 0xFF) << 8
+               | (src[off + 3] & 0xFF);
     }
 
     static long readLong(byte[] src, int off)

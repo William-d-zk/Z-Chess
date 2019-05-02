@@ -267,37 +267,6 @@ public class WsFrame
     }
 
     @Override
-    public boolean isCtrl()
-    {
-        return (frame_op_code & 0x08) != 0;
-    }
-
-    public boolean isCtrlClose()
-    {
-        return (frame_op_code & 0x0F) == frame_op_code_ctrl_close;
-    }
-
-    public boolean isCtrlPing()
-    {
-        return (frame_op_code & 0x0F) == frame_op_code_ctrl_ping;
-    }
-
-    public boolean isCtrlPong()
-    {
-        return (frame_op_code & 0x0F) == frame_op_code_ctrl_pong;
-    }
-
-    public boolean isCtrlHandShake()
-    {
-        return (frame_op_code & 0x0F) == frame_op_code_ctrl_handshake;
-    }
-
-    public boolean isCtrlCluster()
-    {
-        return (frame_op_code & 0x0F) == frame_op_code_ctrl_cluster;
-    }
-
-    @Override
     public void reset()
     {
         mMask = null;

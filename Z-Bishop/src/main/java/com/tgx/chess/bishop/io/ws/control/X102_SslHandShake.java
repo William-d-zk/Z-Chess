@@ -21,36 +21,40 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.tgx.chess.bishop.io.zprotocol.control;
+package com.tgx.chess.bishop.io.ws.control;
 
 import com.tgx.chess.bishop.io.ws.bean.WsContext;
-import com.tgx.chess.bishop.io.ws.bean.WsControl;
-import com.tgx.chess.bishop.io.ws.bean.WsFrame;
+import com.tgx.chess.bishop.io.ws.bean.WsHandshake;
 
 /**
  * @author William.d.zk
  */
-public class X105_Pong<C extends WsContext>
+public class X102_SslHandShake<C extends WsContext>
         extends
-        WsControl<C>
+        WsHandshake<C>
 {
-    public final static int COMMAND = 0x105;
+    public final static int COMMAND = 0x102;
 
-    public X105_Pong()
+    public X102_SslHandShake(String host,
+                             String secKey,
+                             int version)
     {
-        super(COMMAND);
-        mCtrlCode = WsFrame.frame_op_code_ctrl_pong;
+        this(String.format("GET /ws_service HTTP/1.1\r\nHost: %s\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: %s\r\nOrigin: http://%s\r\nSec-WebSocket-Protocol: z-push, z-chat\r\nSec-WebSocket-Version: %s\r\n\r\n",
+                           host,
+                           secKey,
+                           host,
+                           version));
+
     }
 
-    public X105_Pong(byte[] payload)
+    public X102_SslHandShake(String handshake)
     {
-        super(COMMAND, payload);
-        mCtrlCode = WsFrame.frame_op_code_ctrl_pong;
+        super(COMMAND, handshake);
     }
 
-    @Override
-    public X105_Pong duplicate()
+    public X102_SslHandShake()
     {
-        return new X105_Pong<C>(getPayload());
+        this(null);
     }
+
 }
