@@ -47,10 +47,10 @@ import org.springframework.stereotype.Component;
 
 import com.tgx.chess.bishop.io.zcrypt.EncryptHandler;
 import com.tgx.chess.bishop.io.zprotocol.ZContext;
-import com.tgx.chess.bishop.io.zprotocol.control.X101_HandShake;
-import com.tgx.chess.bishop.io.zprotocol.control.X103_Close;
-import com.tgx.chess.bishop.io.zprotocol.control.X104_Ping;
-import com.tgx.chess.bishop.io.zprotocol.control.X105_Pong;
+import com.tgx.chess.bishop.io.ws.control.X101_HandShake;
+import com.tgx.chess.bishop.io.ws.control.X103_Close;
+import com.tgx.chess.bishop.io.ws.control.X104_Ping;
+import com.tgx.chess.bishop.io.ws.control.X105_Pong;
 import com.tgx.chess.bishop.io.zprotocol.device.X21_SignUpResult;
 import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
 import com.tgx.chess.bishop.io.zprotocol.device.X23_SignInResult;

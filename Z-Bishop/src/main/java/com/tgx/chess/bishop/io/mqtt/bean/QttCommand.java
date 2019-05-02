@@ -21,37 +21,52 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.tgx.chess.bishop.io.zprotocol.control;
 
-import com.tgx.chess.bishop.io.ws.bean.WsContext;
-import com.tgx.chess.bishop.io.ws.bean.WsControl;
-import com.tgx.chess.bishop.io.ws.bean.WsFrame;
+package com.tgx.chess.bishop.io.mqtt.bean;
+
+import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IRouteLv4;
+import com.tgx.chess.queen.io.core.inf.ISession;
 
 /**
- * @author William.d.zk
+ * @author william.d.zk
+ * @date 2019-05-02
  */
-public class X104_Ping<C extends WsContext>
-        extends
-        WsControl<C>
+public abstract class QttCommand<C extends QttContext>
+        implements
+        ICommand<C>,
+        IRouteLv4
 {
+    private final int   _Command;
+    private ISession<C> mSession;
 
-    public final static int COMMAND = 0x104;
-
-    public X104_Ping()
+    public QttCommand(int command)
     {
-        super(COMMAND);
-        mCtrlCode = WsFrame.frame_op_code_ctrl_ping;
-    }
-
-    public X104_Ping(byte[] payload)
-    {
-        super(COMMAND, payload);
-        mCtrlCode = WsFrame.frame_op_code_ctrl_ping;
+        _Command = command;
     }
 
     @Override
-    public X104_Ping duplicate()
+    public int dataLength()
     {
-        return new X104_Ping<C>(getPayload());
+        return 0;
+    }
+
+    @Override
+    public int getSerial()
+    {
+        return _Command;
+    }
+
+    @Override
+    public ICommand<C> setSession(ISession<C> session)
+    {
+        mSession = session;
+        return this;
+    }
+
+    @Override
+    public ISession<C> getSession()
+    {
+        return mSession;
     }
 }

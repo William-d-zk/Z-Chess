@@ -66,7 +66,7 @@ public class X106_Identity<C extends WsContext>
     }
 
     @Override
-    public X106_Identity duplicate()
+    public X106_Identity<C> duplicate()
     {
         return new X106_Identity<C>(getPayload());
     }

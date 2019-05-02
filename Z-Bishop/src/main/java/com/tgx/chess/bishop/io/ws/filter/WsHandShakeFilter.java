@@ -34,8 +34,8 @@ import java.util.Objects;
 
 import com.tgx.chess.bishop.io.ws.bean.WsContext;
 import com.tgx.chess.bishop.io.ws.bean.WsHandshake;
-import com.tgx.chess.bishop.io.zprotocol.control.X101_HandShake;
-import com.tgx.chess.bishop.io.zprotocol.control.X102_SslHandShake;
+import com.tgx.chess.bishop.io.ws.control.X101_HandShake;
+import com.tgx.chess.bishop.io.ws.control.X102_SslHandShake;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;

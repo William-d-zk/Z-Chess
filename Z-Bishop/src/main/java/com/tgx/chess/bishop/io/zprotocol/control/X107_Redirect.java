@@ -52,7 +52,7 @@ public class X107_Redirect<C extends WsContext>
     }
 
     @Override
-    public X107_Redirect duplicate()
+    public X107_Redirect<C> duplicate()
     {
         return new X107_Redirect<C>(getPayload());
     }

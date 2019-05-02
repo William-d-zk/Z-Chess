@@ -21,32 +21,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.tgx.chess.bishop.io.ws.control;
 
-package com.tgx.chess.bishop.io.mqtt.bean;
+import com.tgx.chess.bishop.io.ws.bean.WsContext;
+import com.tgx.chess.bishop.io.ws.bean.WsControl;
+import com.tgx.chess.bishop.io.ws.bean.WsFrame;
 
-import com.tgx.chess.king.base.util.CryptUtil;
-import com.tgx.chess.queen.io.core.async.AioContext;
-import com.tgx.chess.queen.io.core.inf.ISessionOption;
-
-public class QttContext
+/**
+ * @author William.d.zk
+ */
+public class X105_Pong<C extends WsContext>
         extends
-        AioContext
+        WsControl<C>
 {
+    public final static int COMMAND = 0x105;
 
-
-    public QttContext(ISessionOption option)
+    public X105_Pong()
     {
-        super(option);
-        transfer();
+        super(COMMAND);
+        mCtrlCode = WsFrame.frame_op_code_ctrl_pong;
     }
 
-    private QttFrame  mCarrier;
-    private CryptUtil mCryptUtil = new CryptUtil();
-
-
-
-    public String getVersion()
+    public X105_Pong(byte[] payload)
     {
-        return "3.1.1";
+        super(COMMAND, payload);
+        mCtrlCode = WsFrame.frame_op_code_ctrl_pong;
+    }
+
+    @Override
+    public X105_Pong<C> duplicate()
+    {
+        return new X105_Pong<C>(getPayload());
     }
 }

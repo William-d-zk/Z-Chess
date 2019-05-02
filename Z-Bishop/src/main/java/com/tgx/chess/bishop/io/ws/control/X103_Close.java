@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.tgx.chess.bishop.io.zprotocol.control;
+package com.tgx.chess.bishop.io.ws.control;
 
 import com.tgx.chess.bishop.io.ws.bean.WsContext;
 import com.tgx.chess.bishop.io.ws.bean.WsControl;
@@ -49,7 +49,7 @@ public class X103_Close<C extends WsContext>
     }
 
     @Override
-    public X103_Close duplicate()
+    public X103_Close<C> duplicate()
     {
         return new X103_Close<C>(getPayload());
     }

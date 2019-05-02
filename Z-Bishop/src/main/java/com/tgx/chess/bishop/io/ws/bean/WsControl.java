@@ -98,14 +98,14 @@ public abstract class WsControl<C extends WsContext>
     }
 
     @Override
-    public WsControl setSession(ISession<C> session)
+    public WsControl<C> setSession(ISession<C> session)
     {
         mSession = session;
         return this;
     }
 
     @Override
-    public WsControl duplicate()
+    public WsControl<C> duplicate()
     {
         return null;
     }
