@@ -25,7 +25,9 @@
 package com.tgx.chess.rook.biz.device.dao;
 
 import com.tgx.chess.queen.db.inf.IStorage;
-
+/**
+ * @author william.d.zk
+ */
 public class DeviceEntry
         implements
         IStorage

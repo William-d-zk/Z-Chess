@@ -85,6 +85,9 @@ import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 import com.tgx.chess.rook.io.zoperator.ZSort;
 
+/**
+ * @author william.d.zk
+ */
 @Component
 @PropertySource("classpath:client.properties")
 public class DeviceClient

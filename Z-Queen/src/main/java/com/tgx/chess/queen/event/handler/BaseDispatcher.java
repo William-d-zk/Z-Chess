@@ -31,7 +31,9 @@ import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.IContext;
-
+/**
+ * @author william.d.zk
+ */
 abstract class BaseDispatcher<C extends IContext>
         extends
         BasePipeEventHandler<C>

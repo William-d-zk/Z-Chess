@@ -40,7 +40,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
 import com.tgx.chess.king.base.log.Logger;
-
+/**
+ * @author William.d.zk
+ */
 public class TimeWheel
 {
     private Logger                _Log            = Logger.getLogger(getClass().getName());

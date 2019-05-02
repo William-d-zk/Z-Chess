@@ -45,7 +45,9 @@ import javax.validation.constraints.NotEmpty;
 import org.hibernate.validator.constraints.Length;
 
 import com.tgx.chess.spring.jpa.model.AuditModel;
-
+/**
+ * @author william.d.zk
+ */
 @Entity(name = "Account")
 @Table(indexes = { @Index(name = "account_idx_email", columnList = "email"),
                    @Index(name = "account_idx_name", columnList = "name") })

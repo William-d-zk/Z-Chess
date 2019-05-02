@@ -29,7 +29,9 @@ import static java.lang.System.arraycopy;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Objects;
-
+/**
+ * @author William.d.zk
+ */
 public interface IoUtil
 {
 

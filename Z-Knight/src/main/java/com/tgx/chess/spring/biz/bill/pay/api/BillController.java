@@ -42,7 +42,9 @@ import com.tgx.chess.spring.biz.bill.pay.model.BillEntity;
 import com.tgx.chess.spring.biz.bill.pay.model.ItemEntity;
 import com.tgx.chess.spring.biz.bill.pay.service.BillService;
 import com.tgx.chess.spring.biz.bill.pay.service.ItemsService;
-
+/**
+ * @author william.d.zk
+ */
 @RestController
 public class BillController
 {

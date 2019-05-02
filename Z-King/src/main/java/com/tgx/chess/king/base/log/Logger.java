@@ -29,7 +29,9 @@ import java.util.Objects;
 
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
-
+/**
+ * @author William.d.zk
+ */
 public class Logger
         implements
         Serializable

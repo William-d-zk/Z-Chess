@@ -23,7 +23,9 @@
  */
 
 package com.tgx.chess.king.base.exception;
-
+/**
+ * @author William.d.zk
+ */
 public class MissingParameterException
         extends
         ZException

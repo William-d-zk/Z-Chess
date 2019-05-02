@@ -39,9 +39,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.rook.biz.device.client.DeviceClient;
-
+/**
+ * @author william.d.zk
+ */
 @RestController
-
 public class ClientController
 {
     private final DeviceClient _Client;

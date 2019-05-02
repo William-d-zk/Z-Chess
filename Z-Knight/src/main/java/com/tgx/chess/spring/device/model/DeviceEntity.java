@@ -41,7 +41,9 @@ import org.hibernate.validator.constraints.Length;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tgx.chess.spring.jpa.model.AuditModel;
-
+/**
+ * @author william.d.zk
+ */
 @Entity(name = "Device")
 @Table(schema = "\"tgx-z-chess-device\"",
        indexes = { @Index(name = "device_idx_token_pwd", columnList = "token,password"),

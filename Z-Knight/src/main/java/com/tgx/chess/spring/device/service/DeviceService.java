@@ -52,7 +52,9 @@ import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.spring.device.model.DeviceEntity;
 import com.tgx.chess.spring.device.repository.ClientRepository;
 import com.tgx.chess.spring.device.repository.DeviceRepository;
-
+/**
+ * @author william.d.zk
+ */
 @Service
 @PropertySource("classpath:device.properties")
 public class DeviceService

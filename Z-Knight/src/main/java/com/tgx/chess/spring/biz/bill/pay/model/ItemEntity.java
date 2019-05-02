@@ -30,7 +30,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-
+/**
+ * @author william.d.zk
+ */
 @Entity(name = "Items")
 @Table(schema = "\"tgx-z-chess-bill-pay\"")
 public class ItemEntity

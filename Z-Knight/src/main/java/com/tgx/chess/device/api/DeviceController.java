@@ -42,6 +42,9 @@ import com.tgx.chess.spring.device.model.DeviceEntity;
 import com.tgx.chess.spring.device.service.DeviceService;
 import com.tgx.chess.spring.jpa.generator.ZGenerator;
 
+/**
+ * @author william.d.zk
+ */
 @RestController
 public class DeviceController
 {

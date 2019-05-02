@@ -40,7 +40,9 @@ import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
 import com.tgx.chess.spring.jpa.model.AuditModel;
-
+/**
+ * @author william.d.zk
+ */
 @Entity(name = "Client")
 @Table(schema = "\"tgx-z-chess-device\"", indexes = { @Index(name = "client_auth", columnList = "auth") })
 public class ClientEntity

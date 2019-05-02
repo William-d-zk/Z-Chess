@@ -27,7 +27,9 @@ package com.tgx.chess.spring.auth.api.dao;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-
+/**
+ * @author william.d.zk
+ */
 public class AuthEntry
         implements
         Serializable

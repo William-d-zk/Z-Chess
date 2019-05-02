@@ -22,23 +22,32 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.queen.event.operator;
+package com.tgx.chess.king.config;
 
-import com.tgx.chess.king.base.inf.ITriple;
-import com.tgx.chess.queen.io.core.inf.ICommand;
-import com.tgx.chess.queen.io.core.inf.IContext;
-import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
-import com.tgx.chess.queen.io.core.inf.ISession;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.PropertyResourceBundle;
 
 /**
  * @author william.d.zk
  */
-public class PipeEncoder<C extends IContext>
-        implements
-        IPipeEncoder<C>
+public class ZResourceBundle
+        extends
+        PropertyResourceBundle
 {
+
+    private final String _Name;
+
+    ZResourceBundle(String name,
+                    Reader reader) throws IOException
+    {
+        super(reader);
+        _Name = name;
+    }
+
     @Override
-    public ITriple handle(ICommand command, ISession<C> session) {
-        return null;
+    public String getBaseBundleName()
+    {
+        return _Name;
     }
 }
