@@ -24,7 +24,6 @@
 
 package com.tgx.chess.bishop.io.mqtt.bean;
 
-import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.io.core.async.AioContext;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 
@@ -80,20 +79,10 @@ public class QttContext
 
     }
 
-    public QttContext(ISessionOption option,
-                      ISort sorter)
+    public QttContext(ISessionOption option)
     {
         super(option);
-
-        switch (sorter.getMode())
-        {
-            case CLUSTER:
-                transfer();
-                break;
-            case LINK:
-                handshake();
-                break;
-        }
+        transfer();
     }
 
     public String getVersion()
