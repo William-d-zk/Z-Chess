@@ -56,7 +56,7 @@ public abstract class BaseCommand<C extends AioContext>
     private byte             mTypeByte;
     private byte             mHAttr;
     private long             mMsgUID;
-    private ISession         mSession;
+    private ISession<C>      mSession;
     private long             mSequence           = -1;
     private transient long   tTransactionKey     = _DEFAULT_TRANSACTION_KEY;
 
@@ -365,13 +365,13 @@ public abstract class BaseCommand<C extends AioContext>
     }
 
     @Override
-    public ISession getSession()
+    public ISession<C> getSession()
     {
         return mSession;
     }
 
     @Override
-    public BaseCommand<C> setSession(ISession session)
+    public BaseCommand<C> setSession(ISession<C> session)
     {
         this.mSession = session;
         return this;
