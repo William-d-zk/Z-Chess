@@ -41,7 +41,8 @@ import com.tgx.chess.queen.io.core.inf.ISession;
  */
 public class AioWriter<C extends IContext>
         implements
-        CompletionHandler<Integer, ISession<C>>
+        CompletionHandler<Integer,
+                          ISession<C>>
 {
     private final Logger           _Log           = Logger.getLogger(getClass().getSimpleName());
     private final CloseOperator<C> _CloseOperator = new CloseOperator<>();
@@ -49,14 +50,19 @@ public class AioWriter<C extends IContext>
     private final WroteOperator<C> _WroteOperator = new WroteOperator<>(this);
 
     @Override
-    public void completed(Integer result, ISession<C> session) {
+    public void completed(Integer result, ISession<C> session)
+    {
         AioWorker worker = (AioWorker) Thread.currentThread();
-        switch (result) {
+        switch (result)
+        {
             case -1:
                 worker.publishWroteError(_ErrorOperator, WRITE_EOF, new EOFException("wrote -1!"), session);
                 break;
             case 0:
-                worker.publishWroteError(_ErrorOperator, WRITE_ZERO, new IllegalArgumentException("wrote zero!"), session);
+                worker.publishWroteError(_ErrorOperator,
+                                         WRITE_ZERO,
+                                         new IllegalArgumentException("wrote zero!"),
+                                         session);
                 break;
             default:
                 _Log.info("aio wrote %d", result);
@@ -66,7 +72,8 @@ public class AioWriter<C extends IContext>
     }
 
     @Override
-    public void failed(Throwable exc, ISession<C> session) {
+    public void failed(Throwable exc, ISession<C> session)
+    {
         AioWorker worker = (AioWorker) Thread.currentThread();
         worker.publishWroteError(_ErrorOperator, WRITE_FAILED, exc, session);
     }

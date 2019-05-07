@@ -71,6 +71,31 @@ public class QttFrame
         frame_op_code = 0;
     }
 
+    public void setLengthCode(byte lengthCode)
+    {
+        mLengthCode = lengthCode;
+    }
+
+    public boolean isLengthCodeLack()
+    {
+        return (mLengthCode & 0x80) != 0;
+    }
+
+    public int payloadLengthLack()
+    {
+        mPayloadLength |= mLengthCode & 0x7F;
+        if (isLengthCodeLack()) {
+            mPayloadLength <<= 7;
+            return 1;
+        }
+        return mPayloadLength;
+    }
+
+    public int getPayloadLength()
+    {
+        return mPayloadLength;
+    }
+
     public enum QTT_TYPE
     {
 
@@ -224,6 +249,7 @@ public class QttFrame
     private int      mPayloadLength;
     private QTT_TYPE type;
     private byte[]   mPayload;
+    private byte     mLengthCode;
 
     public void setDup(boolean dup)
     {
@@ -280,15 +306,20 @@ public class QttFrame
         frame_op_code |= type.getValue();
     }
 
-    @Override
-    public int decodec(byte[] data, int pos)
+    public void setOpCode(byte opCode)
     {
-        frame_op_code = data[pos++];
+        frame_op_code = opCode;
         type = QTT_TYPE.valueOf((byte) (frame_op_code & 240));
         if (Objects.isNull(type)) { throw new IllegalArgumentException(); }
         dup = (frame_op_code & duplicate_flag) == duplicate_flag;
         retain = (frame_op_code & retain_flag) == retain_flag;
         qos_level = (byte) (frame_op_code & qos_mask);
+    }
+
+    @Override
+    public int decodec(byte[] data, int pos)
+    {
+        setOpCode(data[pos++]);
         mPayloadLength = (int) IoUtil.readVariableLongLength(ByteBuffer.wrap(data, pos, data.length - pos));
         pos += mPayloadLength;
         mPayload = new byte[mPayloadLength];

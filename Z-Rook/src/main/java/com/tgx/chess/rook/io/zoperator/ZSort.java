@@ -31,7 +31,7 @@ import com.tgx.chess.bishop.io.ws.filter.WsFrameFilter;
 import com.tgx.chess.bishop.io.ws.filter.WsHandShakeFilter;
 import com.tgx.chess.bishop.io.zfilter.ZCommandFilter;
 import com.tgx.chess.bishop.io.zfilter.ZTlsFilter;
-import com.tgx.chess.bishop.io.zoperator.ZCommandFactories;
+import com.tgx.chess.bishop.io.zprotocol.ZCommandFactories;
 import com.tgx.chess.bishop.io.zprotocol.ZContext;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;

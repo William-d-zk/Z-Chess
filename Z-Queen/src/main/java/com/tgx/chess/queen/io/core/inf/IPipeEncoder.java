@@ -32,14 +32,18 @@ import com.tgx.chess.queen.event.inf.IOperator;
  */
 public interface IPipeEncoder<C extends IContext>
         extends
-        IOperator<ICommand, ISession<C>, ITriple>
+        IOperator<ICommand,
+                  ISession<C>,
+                  ITriple>
 {
-    default IProtocol filterWrite(IProtocol output, IFilterChain<C> filterChain, C context) {
+    default IProtocol filterWrite(IProtocol output, IFilterChain<C> filterChain, C context)
+    {
         IFilter.ResultType resultType;
         IFilterChain<C> previousFilter = filterChain.getChainTail();
         while (previousFilter != null) {
             resultType = previousFilter.preEncode(context, output);
-            switch (resultType) {
+            switch (resultType)
+            {
                 case ERROR:
                 case NEED_DATA:
                     return null;
