@@ -61,7 +61,7 @@ public class QttFrame
     @Override
     public void setPayload(byte[] payload)
     {
-
+        mPayload = payload;
     }
 
     @Override
@@ -149,10 +149,46 @@ public class QttFrame
                     return PINGRESP;
                 case (byte) (14 << 4):
                     return DISCONNECT;
+                default:
+                    throw new IllegalArgumentException();
             }
-            return null;
+
         }
 
+    }
+
+    public enum QOS_LEVEL
+    {
+        QOS_ONLY_ONCE(qos_only_once),
+        QOS_LESS_ONCE(qos_less_once),
+        QOS_AT_LEAST_ONCE(qos_at_least_once);
+
+        final byte _Value;
+
+        public byte getValue()
+        {
+            return _Value;
+        }
+
+        QOS_LEVEL(byte level)
+        {
+            _Value = level;
+        }
+
+        static QOS_LEVEL valueOf(byte level)
+        {
+            switch (level)
+            {
+                case qos_less_once:
+                    return QOS_LESS_ONCE;
+                case qos_at_least_once:
+                    return QOS_AT_LEAST_ONCE;
+                case qos_only_once:
+                    return QOS_ONLY_ONCE;
+                default:
+                    throw new IllegalArgumentException();
+            }
+        }
     }
 
     final static byte duplicate_flag    = 1 << 3;
@@ -164,15 +200,15 @@ public class QttFrame
 
     private final static int MQTT_FRAME = FRAME_SERIAL + 2;
 
-    private int mPayloadLength;
-
     @Override
     public int dataLength()
     {
-        return 1 + mPayloadLength + mPayloadLength < 128 ? 1
-                                                         : mPayloadLength < 16384 ? 2
-                                                                                  : mPayloadLength < 2097152 ? 3
-                                                                                                             : 4;
+        return 1
+               + mPayloadLength
+               + (mPayloadLength < 128 ? 1
+                                       : mPayloadLength < 16384 ? 2
+                                                                : mPayloadLength < 2097152 ? 3
+                                                                                           : 4);
     }
 
     @Override
@@ -185,24 +221,88 @@ public class QttFrame
     private boolean  dup;
     private boolean  retain;
     private byte     qos_level;
+    private int      mPayloadLength;
     private QTT_TYPE type;
+    private byte[]   mPayload;
+
+    public void setDup(boolean dup)
+    {
+        this.dup = dup;
+        if (dup) {
+            frame_op_code |= duplicate_flag;
+        }
+        else {
+            frame_op_code &= ~duplicate_flag;
+        }
+    }
+
+    public boolean isDup()
+    {
+        return dup;
+    }
+
+    public void setRetain(boolean retain)
+    {
+        this.retain = retain;
+        if (retain) {
+            frame_op_code |= retain_flag;
+        }
+        else {
+            frame_op_code &= ~retain_flag;
+        }
+    }
+
+    public boolean isRetain()
+    {
+        return retain;
+    }
+
+    public void setQosLevel(QOS_LEVEL level)
+    {
+        qos_level = level.getValue();
+        frame_op_code &= ~qos_mask;
+        frame_op_code |= qos_level;
+    }
+
+    public QOS_LEVEL getQosLevel()
+    {
+        return QOS_LEVEL.valueOf(qos_level);
+    }
+
+    public QTT_TYPE getType()
+    {
+        return type;
+    }
+
+    public void setType(QTT_TYPE type)
+    {
+        this.type = type;
+        frame_op_code |= type.getValue();
+    }
 
     @Override
     public int decodec(byte[] data, int pos)
     {
-        byte head = data[pos++];
-        type = QTT_TYPE.valueOf((byte) (head & 240));
+        frame_op_code = data[pos++];
+        type = QTT_TYPE.valueOf((byte) (frame_op_code & 240));
         if (Objects.isNull(type)) { throw new IllegalArgumentException(); }
-        dup = (head & duplicate_flag) == duplicate_flag;
-        retain = (head & retain_flag) == retain_flag;
-        qos_level = (byte) (head & qos_mask);
+        dup = (frame_op_code & duplicate_flag) == duplicate_flag;
+        retain = (frame_op_code & retain_flag) == retain_flag;
+        qos_level = (byte) (frame_op_code & qos_mask);
         mPayloadLength = (int) IoUtil.readVariableLongLength(ByteBuffer.wrap(data, pos, data.length - pos));
+        pos += mPayloadLength;
+        mPayload = new byte[mPayloadLength];
+        pos = IoUtil.read(data, pos, mPayload);
         return pos;
     }
 
     @Override
     public int encodec(byte[] data, int pos)
     {
-        return 0;
+        pos += IoUtil.writeByte(frame_op_code, data, pos);
+        byte[] lengthVar = IoUtil.variableLength(mPayloadLength);
+        pos += IoUtil.write(lengthVar, 0, data, pos, lengthVar.length);
+        pos += IoUtil.write(mPayload, data, pos);
+        return pos;
     }
 }
