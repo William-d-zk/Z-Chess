@@ -22,38 +22,44 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.bishop.io.mqtt.bean;
+package com.tgx.chess.queen.event.operator;
 
-import com.tgx.chess.king.base.util.CryptUtil;
-import com.tgx.chess.queen.io.core.async.AioContext;
-import com.tgx.chess.queen.io.core.inf.ISessionOption;
+import com.tgx.chess.king.base.inf.ITriple;
+import com.tgx.chess.king.base.util.Triple;
+import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.io.core.inf.IFilterChain;
+import com.tgx.chess.queen.io.core.inf.IPacket;
+import com.tgx.chess.queen.io.core.inf.IPipeDecoder;
+import com.tgx.chess.queen.io.core.inf.ISession;
 
-public class QttContext
-        extends
-        AioContext
+/**
+ * @author william.d.zk
+ * @date 2019-05-08
+ */
+public class PipeDecoder<C extends IContext>
+        implements
+        IPipeDecoder<C>
 {
 
-    public QttContext(ISessionOption option)
+    private final IFilterChain<C> _FilterChain;
+    private TransferOperator<C>   _Transfer;
+
+    public PipeDecoder(IFilterChain<C> filterChain,
+                       TransferOperator<C> transfer)
     {
-        super(option);
-        transfer();
+        _FilterChain = filterChain;
+        _Transfer = transfer;
     }
 
-    private QttFrame  mCarrier;
-    private CryptUtil mCryptUtil = new CryptUtil();
-
-    public String getVersion()
+    @Override
+    public ITriple handle(IPacket input, ISession<C> session)
     {
-        return "3.1.1";
+        return new Triple<>(filterRead(input, _FilterChain, session), session, _Transfer);
     }
 
-    public QttFrame getCarrier()
+    @Override
+    public String toString()
     {
-        return mCarrier;
-    }
-
-    public void setCarrier(QttFrame carrier)
-    {
-        mCarrier = carrier;
+        return "PipeDecoder";
     }
 }

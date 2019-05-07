@@ -43,15 +43,18 @@ public class WsFrameFilter<C extends WsContext>
 {
     private final Logger _Log = Logger.getLogger(getClass().getName());
 
-    public WsFrameFilter() {
+    public WsFrameFilter()
+    {
         super("web-socket-frame-zfilter");
     }
 
     @Override
-    public ResultType preEncode(C context, IProtocol output) {
+    public ResultType preEncode(C context, IProtocol output)
+    {
         if (Objects.isNull(context) || Objects.isNull(output)) { return ResultType.ERROR; }
         if (context.isOutConvert()) {
-            switch (output.superSerial()) {
+            switch (output.superSerial())
+            {
                 case IProtocol.CONTROL_SERIAL:
                 case IProtocol.COMMAND_SERIAL:
                 case IProtocol.FRAME_SERIAL:
@@ -64,26 +67,20 @@ public class WsFrameFilter<C extends WsContext>
     }
 
     @Override
-    public IProtocol encode(C context, IProtocol output) {
+    public IProtocol encode(C context, IProtocol output)
+    {
         WsFrame toEncode = (WsFrame) output;
         toEncode.setMask(null);
         ByteBuffer toWrite = ByteBuffer.allocate(toEncode.dataLength());
-        toWrite.put(toEncode.getFrameFin());
-        toWrite.put(toEncode.getPayloadLengthArray());
-        if (toEncode.getMaskLength() > 0) {
-            toWrite.put(toEncode.getMask());
-        }
-        if (toEncode.getPayloadLength() > 0) {
-            toEncode.doMask();
-            toWrite.put(toEncode.getPayload());
-        }
-        toWrite.flip();
+        toWrite.position(toEncode.encodec(toWrite.array(), toWrite.position()))
+               .flip();
         return new AioPacket(toWrite);
 
     }
 
     @Override
-    public ResultType preDecode(C context, IProtocol input) {
+    public ResultType preDecode(C context, IProtocol input)
+    {
         if (context == null || input == null) { return ResultType.ERROR; }
         if (!context.isInConvert()) { return ResultType.IGNORE; }
         IPacket _package = (IPacket) input;
@@ -91,7 +88,8 @@ public class WsFrameFilter<C extends WsContext>
         ByteBuffer cRvBuf = context.getRvBuffer();
         WsFrame carrier = context.getCarrier();
         int lack = context.lack();
-        switch (context.position()) {
+        switch (context.position())
+        {
             case -1:
                 if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
                 context.setCarrier(carrier = new WsFrame());
@@ -117,10 +115,10 @@ public class WsFrameFilter<C extends WsContext>
                     lack = context.lackLength(length, target);
                     if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
                     cRvBuf.flip();
-
                     // decoding
                     if (carrier.getPayloadLength() < 0) {
-                        switch (target) {
+                        switch (target)
+                        {
                             case WsFrame.frame_payload_length_7_no_mask_position:
                                 carrier.setPayloadLength(cRvBuf.get());
                                 carrier.setMask(null);
@@ -180,7 +178,8 @@ public class WsFrameFilter<C extends WsContext>
     }
 
     @Override
-    public IProtocol decode(C context, IProtocol input) {
+    public IProtocol decode(C context, IProtocol input)
+    {
         WsFrame frame = context.getCarrier();
         context.finish();
         return frame;

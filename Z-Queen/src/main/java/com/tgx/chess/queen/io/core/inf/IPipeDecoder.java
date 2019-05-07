@@ -34,20 +34,24 @@ import com.tgx.chess.queen.event.inf.IOperator;
  */
 public interface IPipeDecoder<C extends IContext>
         extends
-        IOperator<IPacket, ISession<C>, ITriple>
+        IOperator<IPacket,
+                  ISession<C>,
+                  ITriple>
 {
-
-    default ICommand[] filterRead(IProtocol input, IFilterChain<C> filterChain, ISession<C> session) {
+    @SuppressWarnings("unchecked")
+    default ICommand[] filterRead(IProtocol input, IFilterChain<C> filterChain, ISession<C> session)
+    {
         final IFilterChain<C> _HeaderFilter = filterChain.getChainHead();
         final C context = session.getContext();
-        ICommand[] commands = null;
+        ICommand<C>[] commands = null;
         IFilter.ResultType resultType;
         IProtocol protocol = input;
         for (IFilterChain<C> nextFilter = _HeaderFilter;; nextFilter = _HeaderFilter, protocol = input) {
             Chain:
             while (nextFilter != null) {
                 resultType = nextFilter.preDecode(context, protocol);
-                switch (resultType) {
+                switch (resultType)
+                {
                     case ERROR:
                         throw new ZException(String.format("filter:%s error", nextFilter.getName()));
                     case NEED_DATA:
@@ -56,14 +60,14 @@ public interface IPipeDecoder<C extends IContext>
                         protocol = nextFilter.decode(context, protocol);
                         break;
                     case HANDLED:
-                        ICommand cmd = (ICommand) nextFilter.decode(context, protocol);
+                        ICommand<C> cmd = (ICommand<C>) nextFilter.decode(context, protocol);
                         if (cmd != null) {
                             cmd.setSession(session);
                             if (commands == null) {
                                 commands = new ICommand[] { cmd };
                             }
                             else {
-                                ICommand[] nCmd = new ICommand[commands.length + 1];
+                                ICommand<C>[] nCmd = new ICommand[commands.length + 1];
                                 IoUtil.addArray(commands, nCmd, cmd);
                                 commands = nCmd;
                             }

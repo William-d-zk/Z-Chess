@@ -35,7 +35,7 @@ import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
 import com.tgx.chess.bishop.io.zcrypt.EncryptHandler;
 import com.tgx.chess.bishop.io.zhandler.ZLinkedHandler;
 import com.tgx.chess.bishop.io.zhandler.ZLogicHandler;
-import com.tgx.chess.bishop.io.zoperator.ZSort;
+import com.tgx.chess.bishop.io.WsZSort;
 import com.tgx.chess.bishop.io.zprotocol.ZContext;
 import com.tgx.chess.bishop.io.ws.control.X101_HandShake;
 import com.tgx.chess.bishop.io.ws.control.X103_Close;
@@ -91,8 +91,8 @@ public class DeviceNode
     private final ISessionCreator<ZContext> _SessionCreator;
     private final ICommandCreator<ZContext> _CommandCreator;
     private final IRepository<DeviceEntry>  _Repository;
-    private final IPipeEncoder<ZContext>    _Encoder = ZSort.SERVER.getEncoder();
-    private final IPipeDecoder<ZContext>    _Decoder = ZSort.SERVER.getDecoder();
+    private final IPipeEncoder<ZContext>    _Encoder = WsZSort.SERVER.getEncoder();
+    private final IPipeDecoder<ZContext>    _Decoder = WsZSort.SERVER.getDecoder();
 
     @Override
     public void onDismiss(ISession<ZContext> session) {
@@ -161,7 +161,7 @@ public class DeviceNode
 
             @Override
             public ISort getSort() {
-                return ZSort.SERVER;
+                return WsZSort.SERVER;
             }
 
             @Override
@@ -260,10 +260,10 @@ public class DeviceNode
     }
 
     public void localBizSend(long deviceId, ICommand... toSends) {
-        localSend(findSessionByIndex(deviceId), ZSort.SERVER.getTransfer(), toSends);
+        localSend(findSessionByIndex(deviceId), WsZSort.SERVER.getTransfer(), toSends);
     }
 
     public void localBizClose(long deviceId) {
-        localClose(findSessionByIndex(deviceId), ZSort.SERVER.getCloseOperator());
+        localClose(findSessionByIndex(deviceId), WsZSort.SERVER.getCloseOperator());
     }
 }

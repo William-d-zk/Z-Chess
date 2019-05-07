@@ -22,10 +22,8 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.bishop.io.zoperator;
+package com.tgx.chess.bishop.io.zprotocol;
 
-import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
-import com.tgx.chess.bishop.io.zprotocol.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
 import com.tgx.chess.bishop.io.zprotocol.device.X21_SignUpResult;
 import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
@@ -43,7 +41,7 @@ import com.tgx.chess.queen.io.core.inf.ICommandFactory;
 public enum ZCommandFactories
         implements
         ICommandFactory<ZContext,
-                BaseCommand<ZContext>>
+                        BaseCommand<ZContext>>
 {
 
     SERVER
