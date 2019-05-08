@@ -23,16 +23,17 @@
  */
 package com.tgx.chess.bishop.io.zprotocol.ztls;
 
+import com.tgx.chess.bishop.io.ws.bean.WsContext;
 import com.tgx.chess.king.base.util.IoUtil;
-import com.tgx.chess.bishop.io.zprotocol.ZContext;
+import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
 
 /**
  * @author William.d.zk
  */
-public class X04_EncryptConfirm
+public class X04_EncryptConfirm<C extends WsContext>
         extends
-        BaseCommand<ZContext>
+        BaseCommand<C>
 {
     public final static int COMMAND = 0x04;
     public int              code;
@@ -89,13 +90,13 @@ public class X04_EncryptConfirm
     }
 
     @Override
-    public void afterEncode(ZContext ctx)
+    public void afterEncode(C ctx)
     {
         ctx.updateKeyOut();
     }
 
     @Override
-    public void afterDecode(ZContext ctx)
+    public void afterDecode(C ctx)
     {
         ctx.updateKeyIn();
     }

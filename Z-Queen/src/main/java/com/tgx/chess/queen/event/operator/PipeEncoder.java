@@ -60,7 +60,7 @@ public class PipeEncoder<C extends IContext>
     }
 
     @Override
-    public ITriple handle(ICommand command, ISession<C> session)
+    public ITriple handle(ICommand<C> command, ISession<C> session)
     {
         try {
             IPacket send = (IPacket) filterWrite(command, _FilterChain, session.getContext());

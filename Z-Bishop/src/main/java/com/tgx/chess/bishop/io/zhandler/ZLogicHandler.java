@@ -24,18 +24,20 @@
 
 package com.tgx.chess.bishop.io.zhandler;
 
-import com.tgx.chess.bishop.io.zprotocol.ZContext;
+import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.queen.event.handler.LogicHandler;
 import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
 
 /**
  * @author william.d.zk
  */
-public class ZLogicHandler
+public class ZLogicHandler<C extends ZContext>
         extends
-        LogicHandler<ZContext>
+        LogicHandler<C>
 {
-    public ZLogicHandler(IPipeEncoder<ZContext> encoder, ICommandHandler<ZContext> commandHandler) {
+    public ZLogicHandler(IPipeEncoder<C> encoder,
+                         ICommandHandler<C> commandHandler)
+    {
         super(encoder, commandHandler);
     }
 

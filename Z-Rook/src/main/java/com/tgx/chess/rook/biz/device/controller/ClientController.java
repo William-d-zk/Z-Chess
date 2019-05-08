@@ -31,7 +31,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tgx.chess.bishop.io.zprotocol.ZContext;
 import com.tgx.chess.bishop.io.ws.control.X103_Close;
 import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
 import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
@@ -73,7 +72,7 @@ public class ClientController
     @GetMapping("/client/close")
     public String close()
     {
-        _Client.sendLocal(new X103_Close<ZContext>("client close".getBytes()));
+        _Client.sendLocal(new X103_Close<>("client close".getBytes()));
         return "client close";
     }
 

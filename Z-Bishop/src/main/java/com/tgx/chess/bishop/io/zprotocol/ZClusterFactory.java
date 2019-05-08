@@ -22,27 +22,28 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.bishop.io.zprotocol.device;
+package com.tgx.chess.bishop.io.zprotocol;
 
-import com.tgx.chess.bishop.io.ws.bean.WsContext;
-import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
-import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.queen.io.core.async.AioContext;
+import com.tgx.chess.queen.io.core.inf.ICommandFactory;
 
-public class X24_UpdateToken<C extends AioContext>
+/**
+ * @author william.d.zk
+ * @date 2019-05-08
+ */
+public interface ZClusterFactory<C extends AioContext>
         extends
-        BaseCommand<C>
+        ICommandFactory<C,
+                        BaseCommand<C>>
 {
-    public final static int COMMAND = 0x24;
-
-    public X24_UpdateToken()
+    @Override
+    default BaseCommand<C> create(int command)
     {
-        super(COMMAND, false);
+        return clusterCommand(command);
     }
 
-    @Override
-    public int getPriority()
+    default BaseCommand<C> clusterCommand(int command)
     {
-        return QOS_06_META_CREATE;
+        return null;
     }
 }

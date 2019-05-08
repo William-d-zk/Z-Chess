@@ -32,7 +32,7 @@ import com.tgx.chess.queen.event.inf.IOperator;
  */
 public interface IPipeEncoder<C extends IContext>
         extends
-        IOperator<ICommand,
+        IOperator<ICommand<C>,
                   ISession<C>,
                   ITriple>
 {

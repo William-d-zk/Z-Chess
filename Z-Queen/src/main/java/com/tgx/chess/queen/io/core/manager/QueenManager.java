@@ -44,21 +44,32 @@ public abstract class QueenManager<C extends IContext>
 {
     protected final ServerCore<C> _ServerCore;
 
-    public QueenManager(Config config, ServerCore<C> serverCore) {
+    public QueenManager(Config config,
+                        ServerCore<C> serverCore)
+    {
         super(config);
         _ServerCore = serverCore;
     }
 
-    public void localClose(ISession<C> session, IOperator<Void, ISession<C>, Void> closeOperator) {
+    public void localClose(ISession<C> session,
+                           IOperator<Void,
+                                     ISession<C>,
+                                     Void> closeOperator)
+    {
         _ServerCore.localClose(session, closeOperator);
     }
 
-    public boolean localSend(ISession<C> session, IOperator<ICommand[], ISession<C>, List<ITriple>> writeOperator, ICommand... commands) {
+    public boolean localSend(ISession<C> session,
+                             IOperator<ICommand<C>[],
+                                       ISession<C>,
+                                       List<ITriple>> writeOperator,
+                             ICommand<C>... commands)
+    {
         return _ServerCore.localSend(session, writeOperator, commands);
     }
 
-    public abstract ICommand save(ICommand tar, ISession<C> session);
+    public abstract ICommand<C> save(ICommand<C> tar, ISession<C> session);
 
-    public abstract ICommand find(ICommand key, ISession<C> session);
+    public abstract ICommand<C> find(ICommand<C> key, ISession<C> session);
 
 }

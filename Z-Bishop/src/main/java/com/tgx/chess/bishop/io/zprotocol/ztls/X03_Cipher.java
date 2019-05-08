@@ -25,16 +25,17 @@ package com.tgx.chess.bishop.io.zprotocol.ztls;
 
 import java.util.Objects;
 
+import com.tgx.chess.bishop.io.ws.bean.WsContext;
 import com.tgx.chess.king.base.util.IoUtil;
-import com.tgx.chess.bishop.io.zprotocol.ZContext;
+import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
 
 /**
  * @author William.d.zk
  */
-public class X03_Cipher
+public class X03_Cipher<C extends WsContext>
         extends
-        BaseCommand<ZContext>
+        BaseCommand<C>
 {
     public final static int COMMAND = 0x03;
     public int              pubKeyId;

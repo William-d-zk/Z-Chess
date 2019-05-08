@@ -24,12 +24,14 @@
 
 package com.tgx.chess.bishop.io.zprotocol.device;
 
+import com.tgx.chess.bishop.io.ws.bean.WsContext;
 import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
-import com.tgx.chess.bishop.io.zprotocol.ZContext;
+import com.tgx.chess.bishop.io.zfilter.ZContext;
+import com.tgx.chess.queen.io.core.async.AioContext;
 
-public class X25_AuthorisedToken
+public class X25_AuthorisedToken<C extends AioContext>
         extends
-        BaseCommand<ZContext>
+        BaseCommand<C>
 {
     public final static int COMMAND = 0x25;
 

@@ -39,7 +39,7 @@ public interface IPipeDecoder<C extends IContext>
                   ITriple>
 {
     @SuppressWarnings("unchecked")
-    default ICommand[] filterRead(IProtocol input, IFilterChain<C> filterChain, ISession<C> session)
+    default ICommand<C>[] filterRead(IProtocol input, IFilterChain<C> filterChain, ISession<C> session)
     {
         final IFilterChain<C> _HeaderFilter = filterChain.getChainHead();
         final C context = session.getContext();

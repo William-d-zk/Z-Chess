@@ -27,9 +27,9 @@ import java.io.IOException;
 import java.util.Base64;
 import java.util.Random;
 
+import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.queen.event.inf.ISort;
-import com.tgx.chess.queen.io.core.async.AioContext;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 
 /**
@@ -37,7 +37,7 @@ import com.tgx.chess.queen.io.core.inf.ISessionOption;
  */
 public class WsContext
         extends
-        AioContext
+        ZContext
 {
     public final static int HS_State_GET          = 1;
     public final static int HS_State_HOST         = 1 << 1;
