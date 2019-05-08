@@ -49,7 +49,12 @@ public interface ILocalPublisher<C extends IContext>
     ReentrantLock getLocalLock();
 
     @SuppressWarnings("unchecked")
-    default boolean localSend(ISession<C> session, IOperator<ICommand[], ISession<C>, List<ITriple>> operator, ICommand... toSends) {
+    default boolean localSend(ISession<C> session,
+                              IOperator<ICommand<C>[],
+                                        ISession<C>,
+                                        List<ITriple>> operator,
+                              ICommand<C>... toSends)
+    {
         Objects.requireNonNull(toSends);
         Objects.requireNonNull(session);
         final RingBuffer<QEvent> _BizLocalSendEvent = getLocalPublisher(session);
@@ -73,7 +78,11 @@ public interface ILocalPublisher<C extends IContext>
         return false;
     }
 
-    default void localClose(ISession<C> session, IOperator<Void, ISession<C>, Void> operator) {
+    default void localClose(ISession<C> session,
+                            IOperator<Void,
+                                      ISession<C>,
+                                      Void> operator)
+    {
         Objects.requireNonNull(session);
         final RingBuffer<QEvent> _BizLocalCloseEvent = getLocalCloser(session);
         final ReentrantLock _LocalLock = getLocalLock();

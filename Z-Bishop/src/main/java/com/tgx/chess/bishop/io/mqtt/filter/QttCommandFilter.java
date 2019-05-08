@@ -21,68 +21,55 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.tgx.chess.bishop.io.zprotocol.ztls;
 
-import com.tgx.chess.bishop.io.ws.bean.WsContext;
-import com.tgx.chess.king.base.util.IoUtil;
-import com.tgx.chess.bishop.io.zfilter.ZContext;
+package com.tgx.chess.bishop.io.mqtt.filter;
+
+import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
+import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
 import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
+import com.tgx.chess.queen.io.core.async.AioFilterChain;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
- * @author William.d.zk
+ * @author william.d.zk
+ * @date 2019-05-08
  */
-public class X01_EncryptRequest<C extends WsContext>
+public class QttCommandFilter<C extends QttContext>
         extends
-        BaseCommand<C>
+        AioFilterChain<C>
 {
-    public final static int COMMAND  = 0x01;
-    public int              pubKeyId = -1;
-
-    public X01_EncryptRequest()
+    public QttCommandFilter()
     {
-        super(COMMAND, false);
+        super("mqtt-command-filter");
     }
 
     @Override
-    public boolean isMappingCommand()
+    public ResultType preEncode(C context, IProtocol output)
     {
-        return true;
+        return null;
     }
 
     @Override
-    public int decodec(byte[] data, int pos)
+    public ResultType preDecode(C context, IProtocol input)
     {
-        if (isEncrypt()) {
-            pubKeyId = IoUtil.readInt(data, pos);
-            pos += 4;
-        }
-        return pos;
+        if (context == null || input == null) return ResultType.ERROR;
+        return input instanceof QttFrame && ((QttFrame) input).isNoCtrl() ? ResultType.HANDLED
+                                                                          : ResultType.IGNORE;
     }
 
     @Override
-    public int encodec(byte[] data, int pos)
+    public IProtocol encode(C context, IProtocol output)
     {
-        if (isEncrypt()) pos += IoUtil.writeInt(pubKeyId, data, pos);
-        return pos;
+        QttFrame frame = new QttFrame();
+        @SuppressWarnings("unchecked")
+        BaseCommand<C> command = (BaseCommand<C>) output;
+        frame.setPayload(command.encode(context));
+        return frame;
     }
 
     @Override
-    public int dataLength()
+    public IProtocol decode(C context, IProtocol input)
     {
-        return super.dataLength()
-               + (isEncrypt() ? 4
-                              : 0);
-    }
-
-    @Override
-    public int getPriority()
-    {
-        return QOS_00_NETWORK_CONTROL;
-    }
-
-    @Override
-    public String toString()
-    {
-        return String.format("%s,public-key-id:%d", super.toString(), pubKeyId);
+        return null;
     }
 }

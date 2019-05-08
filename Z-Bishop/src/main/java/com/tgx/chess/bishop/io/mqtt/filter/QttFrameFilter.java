@@ -45,7 +45,7 @@ public class QttFrameFilter<C extends QttContext>
 {
     private final Logger _Log = Logger.getLogger(getClass().getName());
 
-    protected QttFrameFilter()
+    public QttFrameFilter()
     {
         super("mqtt-frame-filter");
     }

@@ -25,7 +25,7 @@
 package com.tgx.chess.rook.biz.device.client;
 
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
-import static com.tgx.chess.rook.io.zoperator.ZSort.CONSUMER;
+import static com.tgx.chess.rook.io.WsZSort.CONSUMER;
 
 import java.io.IOException;
 import java.nio.channels.AsynchronousChannelGroup;
@@ -45,12 +45,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
-import com.tgx.chess.bishop.io.zcrypt.EncryptHandler;
-import com.tgx.chess.bishop.io.zprotocol.ZContext;
+import com.tgx.chess.bishop.io.ws.bean.WsContext;
 import com.tgx.chess.bishop.io.ws.control.X101_HandShake;
 import com.tgx.chess.bishop.io.ws.control.X103_Close;
 import com.tgx.chess.bishop.io.ws.control.X104_Ping;
 import com.tgx.chess.bishop.io.ws.control.X105_Pong;
+import com.tgx.chess.bishop.io.zcrypt.EncryptHandler;
 import com.tgx.chess.bishop.io.zprotocol.device.X21_SignUpResult;
 import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
 import com.tgx.chess.bishop.io.zprotocol.device.X23_SignInResult;
@@ -83,7 +83,7 @@ import com.tgx.chess.queen.io.core.inf.ISessionCreated;
 import com.tgx.chess.queen.io.core.inf.ISessionCreator;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
-import com.tgx.chess.rook.io.zoperator.ZSort;
+import com.tgx.chess.rook.io.WsZSort;
 
 /**
  * @author william.d.zk
@@ -93,26 +93,26 @@ import com.tgx.chess.rook.io.zoperator.ZSort;
 public class DeviceClient
         implements
         IAioClient,
-        ISessionDismiss<ZContext>,
-        ISessionCreated<ZContext>
+        ISessionDismiss<WsContext>,
+        ISessionCreated<WsContext>
 {
     private final Logger _Log = Logger.getLogger(getClass().getName());
 
-    private final String                    _TargetName;
-    private final String                    _TargetHost;
-    private final int                       _TargetPort;
-    private final Config                    _Config;
-    private final ISessionCreator<ZContext> _SessionCreator;
-    private final ICommandCreator<ZContext> _CommandCreator;
-    private final IAioConnector<ZContext>   _DeviceConnector;
-    private final AsynchronousChannelGroup  _ChannelGroup;
-    private final ClientCore<ZContext>      _ClientCore      = new ClientCore<>();
-    private final TimeWheel                 _TimeWheel       = _ClientCore.getTimeWheel();
-    private final AtomicInteger             _State           = new AtomicInteger();
-    private final IPipeEncoder<ZContext>    _ConsumerEncoder = CONSUMER.getConsumerEncoder();
-    private final IPipeDecoder<ZContext>    _ConsumerDecoder = CONSUMER.getConsumerDecoder();
-    private ISession<ZContext>              clientSession;
-    private final AtomicReference<byte[]>   currentTokenRef  = new AtomicReference<>();
+    private final String                     _TargetName;
+    private final String                     _TargetHost;
+    private final int                        _TargetPort;
+    private final Config                     _Config;
+    private final ISessionCreator<WsContext> _SessionCreator;
+    private final ICommandCreator<WsContext> _CommandCreator;
+    private final IAioConnector<WsContext>   _DeviceConnector;
+    private final AsynchronousChannelGroup   _ChannelGroup;
+    private final ClientCore<WsContext>      _ClientCore      = new ClientCore<>();
+    private final TimeWheel                  _TimeWheel       = _ClientCore.getTimeWheel();
+    private final AtomicInteger              _State           = new AtomicInteger();
+    private final IPipeEncoder<WsContext>    _ConsumerEncoder = CONSUMER.getConsumerEncoder();
+    private final IPipeDecoder<WsContext>    _ConsumerDecoder = CONSUMER.getConsumerDecoder();
+    private ISession<WsContext>              clientSession;
+    private final AtomicReference<byte[]>    currentTokenRef  = new AtomicReference<>();
 
     enum STATE
     {
@@ -130,7 +130,6 @@ public class DeviceClient
         }
     }
 
-    @SuppressWarnings("unchecked")
     public DeviceClient(@Value("${client.target.name}") String targetName,
                         @Value("${client.target.host}") String targetHost,
                         @Value("${client.target.port}") int targetPort) throws IOException
@@ -141,11 +140,11 @@ public class DeviceClient
         _TargetPort = targetPort;
         _Config = new Config();
         _ChannelGroup = AsynchronousChannelGroup.withFixedThreadPool(1, _ClientCore.getWorkerThreadFactory());
-        _SessionCreator = new AioCreator<ZContext>(_Config)
+        _SessionCreator = new AioCreator<WsContext>(_Config)
         {
             @Override
-            public ISession<ZContext> createSession(AsynchronousSocketChannel socketChannel,
-                                                    IConnectionContext<ZContext> context)
+            public ISession<WsContext> createSession(AsynchronousSocketChannel socketChannel,
+                                                     IConnectionContext<WsContext> context)
             {
                 try {
                     return new AioSession<>(socketChannel, context.getConnectActive(), this, this, DeviceClient.this);
@@ -157,16 +156,16 @@ public class DeviceClient
             }
 
             @Override
-            public ZContext createContext(ISessionOption option, ISort sorter)
+            public WsContext createContext(ISessionOption option, ISort sorter)
             {
-                return new ZContext(option, sorter);
+                return new WsContext(option, sorter);
             }
         };
-        _CommandCreator = (session) -> new ICommand[] { new X101_HandShake(_TargetHost,
-                                                                           session.getContext()
-                                                                                  .getSeKey(),
-                                                                           13) };
-        _DeviceConnector = new BaseAioConnector<ZContext>(_TargetHost, _TargetPort, _ConsumerEncoder, _ConsumerDecoder)
+        _CommandCreator = (session) -> new ICommand[] { new X101_HandShake<>(_TargetHost,
+                                                                             session.getContext()
+                                                                                    .getSeKey(),
+                                                                             13) };
+        _DeviceConnector = new BaseAioConnector<WsContext>(_TargetHost, _TargetPort, _ConsumerEncoder, _ConsumerDecoder)
         {
 
             @Override
@@ -176,19 +175,19 @@ public class DeviceClient
             }
 
             @Override
-            public ISessionCreator getSessionCreator()
+            public ISessionCreator<WsContext> getSessionCreator()
             {
                 return _SessionCreator;
             }
 
             @Override
-            public ISessionCreated getSessionCreated()
+            public ISessionCreated<WsContext> getSessionCreated()
             {
                 return DeviceClient.this;
             }
 
             @Override
-            public ICommandCreator getCommandCreator()
+            public ICommandCreator<WsContext> getCommandCreator()
             {
                 return _CommandCreator;
             }
@@ -198,12 +197,13 @@ public class DeviceClient
     }
 
     @PostConstruct
+    @SuppressWarnings("unchecked")
     private void init()
     {
         _ClientCore.build((QEvent event, long sequence, boolean endOfBatch) ->
         {
-            ICommand[] commands = null;
-            ISession session = null;
+            ICommand<WsContext>[] commands = null;
+            ISession<WsContext> session = null;
             switch (event.getEventType())
             {
                 case LOGIC:
@@ -236,14 +236,14 @@ public class DeviceClient
                                                                           .atZone(ZoneId.of("GMT+8")));
                                                      }
                                                      else {
-                                                         return new X103_Close<ZContext>("sign in failed! close".getBytes());
+                                                         return new X103_Close<WsContext>("sign in failed! close".getBytes());
                                                      }
                                                      break;
                                                  case X30_EventMsg.COMMAND:
                                                      X30_EventMsg x30 = (X30_EventMsg) cmd;
                                                      _Log.info("x30 payload: %s",
                                                                new String(x30.getPayload(), StandardCharsets.UTF_8));
-                                                     X31_ConfirmMsg x31 = new X31_ConfirmMsg(x30.getUID());
+                                                     X31_ConfirmMsg x31 = new X31_ConfirmMsg<>(x30.getUID());
                                                      x31.setStatus(X31_ConfirmMsg.STATUS_RECEIVED);
                                                      x31.setToken(x30.getToken());
                                                      return x31;
@@ -268,7 +268,7 @@ public class DeviceClient
                     break;
             }
             if (Objects.nonNull(commands) && commands.length > 0 && Objects.nonNull(session)) {
-                event.produce(WRITE, new Pair<>(commands, session), ZSort.CONSUMER.getTransfer());
+                event.produce(WRITE, new Pair<>(commands, session), WsZSort.CONSUMER.getTransfer());
             }
             else {
                 event.ignore();
@@ -304,7 +304,7 @@ public class DeviceClient
     }
 
     @Override
-    public void onCreate(ISession<ZContext> session)
+    public void onCreate(ISession<WsContext> session)
     {
         _Log.info("client connect:%s", session);
         clientSession = session;
@@ -312,7 +312,7 @@ public class DeviceClient
     }
 
     @Override
-    public void onDismiss(ISession<ZContext> session)
+    public void onDismiss(ISession<WsContext> session)
     {
         _Log.info("dismiss:%s", session);
         if (clientSession == session) {
@@ -332,7 +332,7 @@ public class DeviceClient
         return Objects.isNull(clientSession) && _State.get() <= STATE.OFFLINE.ordinal();
     }
 
-    public boolean sendLocal(ICommand... toSends)
+    public boolean sendLocal(ICommand<WsContext>... toSends)
     {
         if (isOffline()) { throw new IllegalStateException("client is offline"); }
         return _ClientCore.localSend(clientSession, CONSUMER.getTransfer(), toSends);
@@ -345,10 +345,10 @@ public class DeviceClient
 
     public void handshake()
     {
-        sendLocal(new X101_HandShake<ZContext>(_TargetHost,
-                                               clientSession.getContext()
-                                                            .getSeKey(),
-                                               13));
+        sendLocal(new X101_HandShake<>(_TargetHost,
+                                       clientSession.getContext()
+                                                    .getSeKey(),
+                                       13));
     }
 
     public void heartbeat(String msg)

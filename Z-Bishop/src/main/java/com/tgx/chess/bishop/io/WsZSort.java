@@ -24,13 +24,14 @@
 
 package com.tgx.chess.bishop.io;
 
+import com.tgx.chess.bishop.io.ws.bean.WsContext;
 import com.tgx.chess.bishop.io.ws.filter.WsControlFilter;
 import com.tgx.chess.bishop.io.ws.filter.WsFrameFilter;
 import com.tgx.chess.bishop.io.ws.filter.WsHandShakeFilter;
 import com.tgx.chess.bishop.io.zfilter.ZCommandFilter;
 import com.tgx.chess.bishop.io.zfilter.ZTlsFilter;
-import com.tgx.chess.bishop.io.zprotocol.ZCommandFactories;
-import com.tgx.chess.bishop.io.zprotocol.ZContext;
+import com.tgx.chess.bishop.io.zprotocol.ZClusterFactory;
+import com.tgx.chess.bishop.io.zprotocol.ZServerFactory;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.operator.AioWriter;
 import com.tgx.chess.queen.event.operator.CloseOperator;
@@ -70,7 +71,7 @@ public enum WsZSort
         }
 
         @Override
-        IFilterChain<ZContext> getFilterChain()
+        IFilterChain<WsContext> getFilterChain()
         {
             return _FrameFilter;
         }
@@ -93,7 +94,7 @@ public enum WsZSort
         }
 
         @Override
-        IFilterChain<ZContext> getFilterChain()
+        IFilterChain<WsContext> getFilterChain()
         {
             return _FrameFilter;
         }
@@ -116,7 +117,7 @@ public enum WsZSort
         }
 
         @Override
-        IFilterChain<ZContext> getFilterChain()
+        IFilterChain<WsContext> getFilterChain()
         {
             return _FrameFilter;
         }
@@ -140,7 +141,7 @@ public enum WsZSort
         }
 
         @Override
-        IFilterChain<ZContext> getFilterChain()
+        IFilterChain<WsContext> getFilterChain()
         {
             return _FrameFilter;
         }
@@ -164,7 +165,7 @@ public enum WsZSort
         }
 
         @Override
-        IFilterChain<ZContext> getFilterChain()
+        IFilterChain<WsContext> getFilterChain()
         {
             return _HandshakeFilter;
         }
@@ -176,7 +177,7 @@ public enum WsZSort
     SERVER_SSL
     {
         @Override
-        IFilterChain<ZContext> getFilterChain()
+        IFilterChain<WsContext> getFilterChain()
         {
             return _HandshakeFilter;
         }
@@ -205,7 +206,7 @@ public enum WsZSort
     SYMMETRY
     {
         @Override
-        IFilterChain<ZContext> getFilterChain()
+        IFilterChain<WsContext> getFilterChain()
         {
             return _FrameFilter;
         }
@@ -223,49 +224,52 @@ public enum WsZSort
         }
 
     };
-
-    private final CloseOperator<ZContext> _CloseOperator   = new CloseOperator<>();
-    private final ErrorOperator<ZContext> _ErrorOperator   = new ErrorOperator<>(_CloseOperator);
-    private final AioWriter<ZContext>     _AioWriter       = new AioWriter<>();
-    private final IPipeEncoder<ZContext>  _Encoder         = new PipeEncoder<>(getFilterChain(),
-                                                                               _ErrorOperator,
-                                                                               _AioWriter);
-    private TransferOperator<ZContext>    _Transfer        = new TransferOperator<>(_Encoder);
-    private IPipeDecoder<ZContext>        _Decoder         = new PipeDecoder<>(getFilterChain(), _Transfer);
-    final WsHandShakeFilter<ZContext>     _HandshakeFilter = new WsHandShakeFilter(this);
+    final WsHandShakeFilter<WsContext> _HandshakeFilter = new WsHandShakeFilter(this);
     {
-        IFilterChain<ZContext> header = new ZTlsFilter<>();
+        IFilterChain<WsContext> header = new ZTlsFilter<>();
         _HandshakeFilter.linkAfter(header);
         _HandshakeFilter.linkFront(new WsFrameFilter<>())
-                        .linkFront(new ZCommandFilter<>(ZCommandFactories.SERVER))
+                        .linkFront(new ZCommandFilter<>(new ZServerFactory<WsContext>()
+                        {
+                        }))
                         .linkFront(new WsControlFilter<>());
     }
-    final WsFrameFilter<ZContext> _FrameFilter = new WsFrameFilter();
+    final WsFrameFilter<WsContext> _FrameFilter = new WsFrameFilter();
     {
-        _FrameFilter.linkFront(new ZCommandFilter<>(ZCommandFactories.CLUSTER))
+        _FrameFilter.linkFront(new ZCommandFilter<>(new ZClusterFactory<WsContext>()
+        {
+        }))
                     .linkFront(new WsControlFilter<>());
     }
+    private final CloseOperator<WsContext> _CloseOperator = new CloseOperator<>();
+    private final ErrorOperator<WsContext> _ErrorOperator = new ErrorOperator<>(_CloseOperator);
+    private final AioWriter<WsContext>     _AioWriter     = new AioWriter<>();
+    private final IPipeEncoder<WsContext>  _Encoder       = new PipeEncoder<>(getFilterChain(),
+                                                                              _ErrorOperator,
+                                                                              _AioWriter);
+    private TransferOperator<WsContext>    _Transfer      = new TransferOperator<>(_Encoder);
+    private IPipeDecoder<WsContext>        _Decoder       = new PipeDecoder<>(getFilterChain(), _Transfer);
 
-    public IPipeEncoder<ZContext> getEncoder()
+    public IPipeEncoder<WsContext> getEncoder()
     {
         return _Encoder;
     }
 
-    public IPipeDecoder<ZContext> getDecoder()
+    public IPipeDecoder<WsContext> getDecoder()
     {
         return _Decoder;
     }
 
-    public CloseOperator<ZContext> getCloseOperator()
+    public CloseOperator<WsContext> getCloseOperator()
     {
         return _CloseOperator;
     }
 
-    public TransferOperator<ZContext> getTransfer()
+    public TransferOperator<WsContext> getTransfer()
     {
         return _Transfer;
     }
 
-    abstract IFilterChain<ZContext> getFilterChain();
+    abstract IFilterChain<WsContext> getFilterChain();
 
 }

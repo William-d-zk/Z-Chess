@@ -27,7 +27,7 @@ package com.tgx.chess.bishop.io.zhandler;
 import static com.tgx.chess.queen.event.inf.IError.Type.FIND_DATA;
 import static com.tgx.chess.queen.event.inf.IError.Type.SAVE_DATA;
 
-import com.tgx.chess.bishop.io.zprotocol.ZContext;
+import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
 import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
 import com.tgx.chess.bishop.io.zprotocol.device.X24_UpdateToken;
@@ -49,66 +49,54 @@ import com.tgx.chess.queen.io.core.manager.QueenManager;
 /**
  * @author william.d.zk
  */
-public class ZLinkedHandler
+public class ZLinkedHandler<C extends ZContext>
         implements
-        ILinkHandler<ZContext>
+        ILinkHandler<C>
 {
-	
-	private final Logger _Log = Logger.getLogger(getClass().getName());
-	
-	@Override
-	public void handle(LinkHandler<ZContext> _LinkHandler,
-	                   QueenManager<ZContext> manager,
-	                   QEvent event) {
-		IPair logicContent = event.getContent();
-		ISession<ZContext> session = logicContent.second();
-		ICommand cmd = logicContent.first();
-		_Log.info("LinkHandler cmd: %s",
-		          cmd);
-		ICommand[] waitToSends = null;
-		switch (cmd.getSerial()) {
-			case X01_EncryptRequest.COMMAND:
-			case X02_AsymmetricPub.COMMAND:
-			case X03_Cipher.COMMAND:
-			case X04_EncryptConfirm.COMMAND:
-			case X05_EncryptStart.COMMAND:
-			case X06_PlainStart.COMMAND:
-				waitToSends = new ICommand[] {
-				                               cmd };
-				break;
-			case X20_SignUp.COMMAND:
-			case X24_UpdateToken.COMMAND:
-				try {
-					waitToSends = new ICommand[] {
-					                               manager.save(cmd,
-					                                            session) };
-				}
-				catch (Exception e) {
-					_LinkHandler.error(SAVE_DATA,
-					                   e,
-					                   session,
-					                   _LinkHandler.getErrorOperator());
-					return;
-				}
-				break;
-			case X22_SignIn.COMMAND:
-				try {
-					waitToSends = new ICommand[] {
-					                               manager.find(cmd,
-					                                            session) };
-				}
-				catch (Exception e) {
-					_LinkHandler.error(FIND_DATA,
-					                   e,
-					                   session,
-					                   _LinkHandler.getErrorOperator());
-					return;
-				}
-				break;
-			default:
-				break;
-		}
-		_LinkHandler.write(waitToSends,
-		                   session);
-	}
+
+    private final Logger _Log = Logger.getLogger(getClass().getName());
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void handle(LinkHandler<C> _LinkHandler, QueenManager<C> manager, QEvent event)
+    {
+        IPair logicContent = event.getContent();
+        ISession<C> session = logicContent.second();
+        ICommand<C> cmd = logicContent.first();
+        _Log.info("LinkHandler cmd: %s", cmd);
+        ICommand<C>[] waitToSends = null;
+        switch (cmd.getSerial())
+        {
+            case X01_EncryptRequest.COMMAND:
+            case X02_AsymmetricPub.COMMAND:
+            case X03_Cipher.COMMAND:
+            case X04_EncryptConfirm.COMMAND:
+            case X05_EncryptStart.COMMAND:
+            case X06_PlainStart.COMMAND:
+                waitToSends = new ICommand[] { cmd };
+                break;
+            case X20_SignUp.COMMAND:
+            case X24_UpdateToken.COMMAND:
+                try {
+                    waitToSends = new ICommand[] { manager.save(cmd, session) };
+                }
+                catch (Exception e) {
+                    _LinkHandler.error(SAVE_DATA, e, session, _LinkHandler.getErrorOperator());
+                    return;
+                }
+                break;
+            case X22_SignIn.COMMAND:
+                try {
+                    waitToSends = new ICommand[] { manager.find(cmd, session) };
+                }
+                catch (Exception e) {
+                    _LinkHandler.error(FIND_DATA, e, session, _LinkHandler.getErrorOperator());
+                    return;
+                }
+                break;
+            default:
+                break;
+        }
+        _LinkHandler.write(waitToSends, session);
+    }
 }

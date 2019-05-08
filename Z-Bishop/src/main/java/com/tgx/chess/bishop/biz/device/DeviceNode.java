@@ -32,15 +32,15 @@ import java.util.Objects;
 
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
-import com.tgx.chess.bishop.io.zcrypt.EncryptHandler;
-import com.tgx.chess.bishop.io.zhandler.ZLinkedHandler;
-import com.tgx.chess.bishop.io.zhandler.ZLogicHandler;
 import com.tgx.chess.bishop.io.WsZSort;
-import com.tgx.chess.bishop.io.zprotocol.ZContext;
+import com.tgx.chess.bishop.io.ws.bean.WsContext;
 import com.tgx.chess.bishop.io.ws.control.X101_HandShake;
 import com.tgx.chess.bishop.io.ws.control.X103_Close;
 import com.tgx.chess.bishop.io.ws.control.X104_Ping;
 import com.tgx.chess.bishop.io.ws.control.X105_Pong;
+import com.tgx.chess.bishop.io.zcrypt.EncryptHandler;
+import com.tgx.chess.bishop.io.zhandler.ZLinkedHandler;
+import com.tgx.chess.bishop.io.zhandler.ZLogicHandler;
 import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
 import com.tgx.chess.bishop.io.zprotocol.device.X21_SignUpResult;
 import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
@@ -79,40 +79,47 @@ import com.tgx.chess.queen.io.core.manager.QueenManager;
  */
 public class DeviceNode
         extends
-        QueenManager<ZContext>
+        QueenManager<WsContext>
         implements
-        ISessionDismiss<ZContext>,
-        ISessionCreated<ZContext>
+        ISessionDismiss<WsContext>,
+        ISessionCreated<WsContext>
 {
-    private final Logger                    _Log     = Logger.getLogger(getClass().getName());
-    private final String                    _ServerHost;
-    private final int                       _ServerPort;
-    private final IAioServer<ZContext>      _DeviceServer;
-    private final ISessionCreator<ZContext> _SessionCreator;
-    private final ICommandCreator<ZContext> _CommandCreator;
-    private final IRepository<DeviceEntry>  _Repository;
-    private final IPipeEncoder<ZContext>    _Encoder = WsZSort.SERVER.getEncoder();
-    private final IPipeDecoder<ZContext>    _Decoder = WsZSort.SERVER.getDecoder();
+    private final Logger                     _Log     = Logger.getLogger(getClass().getName());
+    private final String                     _ServerHost;
+    private final int                        _ServerPort;
+    private final IAioServer<WsContext>      _DeviceServer;
+    private final ISessionCreator<WsContext> _SessionCreator;
+    private final ICommandCreator<WsContext> _CommandCreator;
+    private final IRepository<DeviceEntry>   _Repository;
+    private final IPipeEncoder<WsContext>    _Encoder = WsZSort.SERVER.getEncoder();
+    private final IPipeDecoder<WsContext>    _Decoder = WsZSort.SERVER.getDecoder();
 
     @Override
-    public void onDismiss(ISession<ZContext> session) {
+    public void onDismiss(ISession<WsContext> session)
+    {
         rmSession(session);
     }
 
     @Override
-    public void onCreate(ISession<ZContext> session) {
+    public void onCreate(ISession<WsContext> session)
+    {
         /* 进入这里的都是 _DeviceServer 建立的链接*/
         session.setIndex(QueenCode.CM_XID);
         addSession(session);
     }
 
-    public DeviceNode(String host, int port, IRepository<DeviceEntry> respository) {
-        super(new Config("device"), new ServerCore<ZContext>()
+    public DeviceNode(String host,
+                      int port,
+                      IRepository<DeviceEntry> respository)
+    {
+        super(new Config("device"), new ServerCore<WsContext>()
         {
 
             @Override
-            public RingBuffer<QEvent> getLocalPublisher(ISession<ZContext> session) {
-                switch (getSlot(session)) {
+            public RingBuffer<QEvent> getLocalPublisher(ISession<WsContext> session)
+            {
+                switch (getSlot(session))
+                {
                     case QueenCode.CM_XID_LOW:
                     case QueenCode.RM_XID_LOW:
                         return getClusterLocalSendEvent();
@@ -122,8 +129,10 @@ public class DeviceNode
             }
 
             @Override
-            public RingBuffer<QEvent> getLocalCloser(ISession<ZContext> session) {
-                switch (getSlot(session)) {
+            public RingBuffer<QEvent> getLocalCloser(ISession<WsContext> session)
+            {
+                switch (getSlot(session))
+                {
                     case QueenCode.CM_XID_LOW:
                     case QueenCode.RM_XID_LOW:
                         return getClusterLocalCloseEvent();
@@ -134,11 +143,13 @@ public class DeviceNode
         });
         _ServerHost = host;
         _ServerPort = port;
-        _SessionCreator = new AioCreator<ZContext>(getConfig())
+        _SessionCreator = new AioCreator<WsContext>(getConfig())
         {
 
             @Override
-            public ISession<ZContext> createSession(AsynchronousSocketChannel socketChannel, IConnectionContext<ZContext> context) {
+            public ISession<WsContext> createSession(AsynchronousSocketChannel socketChannel,
+                                                     IConnectionContext<WsContext> context)
+            {
                 try {
                     return new AioSession<>(socketChannel, context.getConnectActive(), this, this, DeviceNode.this);
                 }
@@ -149,33 +160,38 @@ public class DeviceNode
             }
 
             @Override
-            public ZContext createContext(ISessionOption option, ISort sort) {
-                return new ZContext(option, sort);
+            public WsContext createContext(ISessionOption option, ISort sort)
+            {
+                return new WsContext(option, sort);
 
             }
         };
         _CommandCreator = (session) -> null;
 
-        _DeviceServer = new BaseAioServer<ZContext>(_ServerHost, _ServerPort, _Encoder, _Decoder)
+        _DeviceServer = new BaseAioServer<WsContext>(_ServerHost, _ServerPort, _Encoder, _Decoder)
         {
 
             @Override
-            public ISort getSort() {
+            public ISort getSort()
+            {
                 return WsZSort.SERVER;
             }
 
             @Override
-            public ISessionCreator<ZContext> getSessionCreator() {
+            public ISessionCreator<WsContext> getSessionCreator()
+            {
                 return _SessionCreator;
             }
 
             @Override
-            public ISessionCreated<ZContext> getSessionCreated() {
+            public ISessionCreated<WsContext> getSessionCreated()
+            {
                 return DeviceNode.this;
             }
 
             @Override
-            public ICommandCreator<ZContext> getCommandCreator() {
+            public ICommandCreator<WsContext> getCommandCreator()
+            {
                 return _CommandCreator;
             }
 
@@ -184,23 +200,26 @@ public class DeviceNode
         _Log.info("Device Node Bean Load");
     }
 
-    public void start() throws IOException {
-        _ServerCore.build(new ZLogicHandler(_Encoder, (command, session, handler) -> {
+    public void start() throws IOException
+    {
+        _ServerCore.build(new ZLogicHandler<>(_Encoder, (command, session, handler) ->
+        {
             //前置的 dispatcher 将 ICommands 拆分了
 
             _Log.info("device node logic handle %s", command);
-            switch (command.getSerial()) {
+            switch (command.getSerial())
+            {
                 case X30_EventMsg.COMMAND:
-                    return new X31_ConfirmMsg(command.getUID());
+                    return new X31_ConfirmMsg<>(command.getUID());
                 case X31_ConfirmMsg.COMMAND:
-                    return new X32_MsgStatus(command.getUID());
+                    return new X32_MsgStatus<>(command.getUID());
                 case X50_DeviceMsg.COMMAND:
-                    return new X51_DeviceMsgAck(command.getUID());
+                    return new X51_DeviceMsgAck<>(command.getUID());
                 case X103_Close.COMMAND:
                     localClose(session, handler.getCloseOperator());
                     break;
                 case X104_Ping.COMMAND:
-                    return new X105_Pong("Server pong".getBytes());
+                    return new X105_Pong<>("Server pong".getBytes());
                 case X101_HandShake.COMMAND:
                     return command;
                 case X51_DeviceMsgAck.COMMAND:
@@ -209,7 +228,7 @@ public class DeviceNode
                     break;
             }
             return null;
-        }), this, _Encoder, new ZLinkedHandler(), new EncryptHandler());
+        }), this, _Encoder, new ZLinkedHandler<>(), new EncryptHandler());
         _DeviceServer.bindAddress(new InetSocketAddress(_ServerHost, _ServerPort),
                                   AsynchronousChannelGroup.withFixedThreadPool(_ServerCore.getServerCount(),
                                                                                _ServerCore.getWorkerThreadFactory()));
@@ -218,9 +237,11 @@ public class DeviceNode
     }
 
     @Override
-    public ICommand save(ICommand tar, ISession<ZContext> session) {
+    public ICommand<WsContext> save(ICommand<WsContext> tar, ISession<WsContext> session)
+    {
         DeviceEntry deviceEntry = _Repository.save(tar);
-        switch (tar.getSerial()) {
+        switch (tar.getSerial())
+        {
             case X20_SignUp.COMMAND:
                 X21_SignUpResult x21 = new X21_SignUpResult();
                 if (Objects.nonNull(deviceEntry)) {
@@ -240,11 +261,13 @@ public class DeviceNode
     }
 
     @Override
-    public ICommand find(ICommand key, ISession<ZContext> session) {
+    public ICommand<WsContext> find(ICommand<WsContext> key, ISession<WsContext> session)
+    {
         DeviceEntry deviceEntry = _Repository.find(key);
-        switch (key.getSerial()) {
+        switch (key.getSerial())
+        {
             case X22_SignIn.COMMAND:
-                X23_SignInResult x23 = new X23_SignInResult();
+                X23_SignInResult<WsContext> x23 = new X23_SignInResult<>();
                 if (Objects.nonNull(deviceEntry)) {
                     x23.setSuccess();
                     x23.setInvalidTime(deviceEntry.getInvalidTime());
@@ -259,11 +282,13 @@ public class DeviceNode
         }
     }
 
-    public void localBizSend(long deviceId, ICommand... toSends) {
+    public void localBizSend(long deviceId, ICommand<WsContext>... toSends)
+    {
         localSend(findSessionByIndex(deviceId), WsZSort.SERVER.getTransfer(), toSends);
     }
 
-    public void localBizClose(long deviceId) {
+    public void localBizClose(long deviceId)
+    {
         localClose(findSessionByIndex(deviceId), WsZSort.SERVER.getCloseOperator());
     }
 }

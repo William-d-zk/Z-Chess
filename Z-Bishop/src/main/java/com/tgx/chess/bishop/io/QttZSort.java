@@ -26,7 +26,6 @@ package com.tgx.chess.bishop.io;
 
 import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
 import com.tgx.chess.bishop.io.mqtt.filter.QttFrameFilter;
-import com.tgx.chess.bishop.io.zprotocol.ZContext;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.operator.AioWriter;
 import com.tgx.chess.queen.event.operator.CloseOperator;
@@ -67,16 +66,15 @@ public enum QttZSort
         }
 
     };
-    private final CloseOperator<QttContext> _CloseOperator = new CloseOperator<>();
-    private final ErrorOperator<QttContext> _ErrorOperator = new ErrorOperator<>(_CloseOperator);
-    private final AioWriter<QttContext>     _AioWriter     = new AioWriter<>();
-    private final IPipeEncoder<QttContext>  _Encoder       = new PipeEncoder<>(getFilterChain(),
-                                                                               _ErrorOperator,
-                                                                               _AioWriter);
-    private TransferOperator<QttContext>    _Transfer      = new TransferOperator<>(_Encoder);
-    private final IPipeDecoder<QttContext>  _Decoder       = new PipeDecoder<>(getFilterChain(), _Transfer);
-
-    final QttFrameFilter<QttContext> _QttFrameFilter = new QttFrameFilter<>();
+    final QttFrameFilter<QttContext>        _QttFrameFilter = new QttFrameFilter<>();
+    private final CloseOperator<QttContext> _CloseOperator  = new CloseOperator<>();
+    private final ErrorOperator<QttContext> _ErrorOperator  = new ErrorOperator<>(_CloseOperator);
+    private final AioWriter<QttContext>     _AioWriter      = new AioWriter<>();
+    private final IPipeEncoder<QttContext>  _Encoder        = new PipeEncoder<>(getFilterChain(),
+                                                                                _ErrorOperator,
+                                                                                _AioWriter);
+    private TransferOperator<QttContext>    _Transfer       = new TransferOperator<>(_Encoder);
+    private final IPipeDecoder<QttContext>  _Decoder        = new PipeDecoder<>(getFilterChain(), _Transfer);
 
     public IPipeEncoder<QttContext> getEncoder()
     {
