@@ -236,7 +236,7 @@ public class DeviceClient
                                                                           .atZone(ZoneId.of("GMT+8")));
                                                      }
                                                      else {
-                                                         return new X103_Close<WsContext>("sign in failed! close".getBytes());
+                                                         return new X103_Close<>("sign in failed! close".getBytes());
                                                      }
                                                      break;
                                                  case X30_EventMsg.COMMAND:

@@ -38,17 +38,12 @@ public abstract class QttCommand<C extends QttContext>
         IRouteLv4
 {
     private final int   _Command;
+    private byte[]      mPayload;
     private ISession<C> mSession;
 
     public QttCommand(int command)
     {
         _Command = command;
-    }
-
-    @Override
-    public int dataLength()
-    {
-        return 0;
     }
 
     @Override
@@ -68,5 +63,15 @@ public abstract class QttCommand<C extends QttContext>
     public ISession<C> getSession()
     {
         return mSession;
+    }
+
+    public byte[] getPayload()
+    {
+        return mPayload;
+    }
+
+    public void setPayload(byte[] payload)
+    {
+        mPayload = payload;
     }
 }
