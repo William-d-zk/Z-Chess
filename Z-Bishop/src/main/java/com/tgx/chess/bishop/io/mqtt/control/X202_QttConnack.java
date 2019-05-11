@@ -21,12 +21,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.tgx.chess.bishop.io.mqtt.control;
+
+import com.tgx.chess.bishop.io.mqtt.bean.QttCommand;
+import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
 
 /**
  * @author william.d.zk
- * @date 2019-05-02
+ * @date 2019-05-11
  */
-public class QttConnect<C extends QttContext> extends QttCommand<C> {
-    
+public class X202_QttConnack<C extends QttContext>
+        extends
+        QttCommand<C>
+{
+    public final static int COMMAND = 0x202;
+
+    public X202_QttConnack()
+    {
+        super(COMMAND);
+    }
+
+    @Override
+    public int dataLength()
+    {
+        return 0;
+    }
+
+    @Override
+    public int getPriority()
+    {
+        return QOS_00_NETWORK_CONTROL;
+    }
 }

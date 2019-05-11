@@ -61,7 +61,9 @@ public class QttFrame
     @Override
     public void setPayload(byte[] payload)
     {
+        if (payload.length > 268435455 || payload.length < 2) { throw new IndexOutOfBoundsException(); }
         mPayload = payload;
+        mPayloadLength = mPayload.length;
     }
 
     @Override
@@ -200,7 +202,7 @@ public class QttFrame
             _Value = level;
         }
 
-        static QOS_LEVEL valueOf(byte level)
+        public static QOS_LEVEL valueOf(byte level)
         {
             switch (level)
             {
@@ -211,14 +213,14 @@ public class QttFrame
                 case qos_only_once:
                     return QOS_ONLY_ONCE;
                 default:
-                    throw new IllegalArgumentException();
+                    throw new IllegalArgumentException("QoS reserved");
             }
         }
     }
 
     final static byte duplicate_flag    = 1 << 3;
-    final static byte qos_only_once     = 2 << 1;
-    final static byte qos_at_least_once = 1 << 1;
+    final static byte qos_only_once     = 2;
+    final static byte qos_at_least_once = 1;
     final static byte qos_less_once     = 0;
     final static byte retain_flag       = 1;
     final static byte qos_mask          = 0x06;
@@ -287,7 +289,7 @@ public class QttFrame
     {
         qos_level = level.getValue();
         frame_op_code &= ~qos_mask;
-        frame_op_code |= qos_level;
+        frame_op_code |= qos_level << 1;
     }
 
     public QOS_LEVEL getQosLevel()
@@ -313,7 +315,7 @@ public class QttFrame
         if (Objects.isNull(type)) { throw new IllegalArgumentException(); }
         dup = (frame_op_code & duplicate_flag) == duplicate_flag;
         retain = (frame_op_code & retain_flag) == retain_flag;
-        qos_level = (byte) (frame_op_code & qos_mask);
+        qos_level = (byte) ((frame_op_code & qos_mask) >> 1);
     }
 
     @Override
