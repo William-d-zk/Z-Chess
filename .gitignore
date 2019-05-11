@@ -6,3 +6,4 @@ gradle
 out
 *.iml
 mvn_deploy.sh
+.project

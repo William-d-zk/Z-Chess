@@ -38,7 +38,7 @@ import com.tgx.chess.bishop.io.zprotocol.device.X50_DeviceMsg;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X01_EncryptRequest;
 import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.king.base.util.IoUtil;
-import com.tgx.chess.rook.biz.device.client.DeviceClient;
+import com.tgx.chess.rook.biz.device.client.WsZClient;
 
 /**
  * @author william.d.zk
@@ -46,11 +46,11 @@ import com.tgx.chess.rook.biz.device.client.DeviceClient;
 @RestController
 public class ClientController
 {
-    private final DeviceClient _Client;
+    private final WsZClient _Client;
     private final CryptUtil    _CryptUtil = new CryptUtil();
 
     @Autowired
-    ClientController(DeviceClient client)
+    ClientController(WsZClient client)
     {
         _Client = client;
     }
