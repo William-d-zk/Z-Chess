@@ -24,7 +24,9 @@
 
 package com.tgx.chess.bishop.io.mqtt.bean;
 
+import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.util.CryptUtil;
+import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.io.core.async.AioContext;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 
@@ -32,6 +34,7 @@ public class QttContext
         extends
         AioContext
 {
+    private final static IPair VERSION = new Pair<>("3.1.1", 4);
 
     public QttContext(ISessionOption option)
     {
@@ -42,9 +45,9 @@ public class QttContext
     private QttFrame  mCarrier;
     private CryptUtil mCryptUtil = new CryptUtil();
 
-    public String getVersion()
+    public static IPair getVersion()
     {
-        return "3.1.1";
+        return VERSION;
     }
 
     public QttFrame getCarrier()
