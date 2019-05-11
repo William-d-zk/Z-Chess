@@ -90,7 +90,7 @@ import com.tgx.chess.rook.io.WsZSort;
  */
 @Component
 @PropertySource("classpath:client.properties")
-public class DeviceClient
+public class WsZClient
         implements
         IAioClient,
         ISessionDismiss<WsContext>,
@@ -130,9 +130,9 @@ public class DeviceClient
         }
     }
 
-    public DeviceClient(@Value("${client.target.name}") String targetName,
-                        @Value("${client.target.host}") String targetHost,
-                        @Value("${client.target.port}") int targetPort) throws IOException
+    public WsZClient(@Value("${client.target.name}") String targetName,
+                     @Value("${client.target.host}") String targetHost,
+                     @Value("${client.target.port}") int targetPort) throws IOException
     {
         _State.set(STATE.STOP.ordinal());
         _TargetName = targetName;
@@ -147,7 +147,7 @@ public class DeviceClient
                                                      IConnectionContext<WsContext> context)
             {
                 try {
-                    return new AioSession<>(socketChannel, context.getConnectActive(), this, this, DeviceClient.this);
+                    return new AioSession<>(socketChannel, context.getConnectActive(), this, this, WsZClient.this);
                 }
                 catch (IOException e) {
                     e.printStackTrace();
@@ -183,7 +183,7 @@ public class DeviceClient
             @Override
             public ISessionCreated<WsContext> getSessionCreated()
             {
-                return DeviceClient.this;
+                return WsZClient.this;
             }
 
             @Override
