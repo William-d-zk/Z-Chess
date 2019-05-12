@@ -179,9 +179,7 @@ public class QttFrame
                 default:
                     throw new IllegalArgumentException();
             }
-
         }
-
     }
 
     public enum QOS_LEVEL
