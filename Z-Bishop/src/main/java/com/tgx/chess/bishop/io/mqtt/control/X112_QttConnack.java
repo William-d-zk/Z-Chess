@@ -31,13 +31,13 @@ import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
  * @author william.d.zk
  * @date 2019-05-11
  */
-public class X202_QttConnack<C extends QttContext>
+public class X112_QttConnack<C extends QttContext>
         extends
         QttCommand<C>
 {
-    public final static int COMMAND = 0x202;
+    public final static int COMMAND = 0x112;
 
-    public X202_QttConnack()
+    public X112_QttConnack()
     {
         super(COMMAND);
     }
