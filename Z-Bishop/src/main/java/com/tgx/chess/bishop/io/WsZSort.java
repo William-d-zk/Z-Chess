@@ -42,6 +42,8 @@ import com.tgx.chess.queen.event.operator.TransferOperator;
 import com.tgx.chess.queen.io.core.inf.IFilterChain;
 import com.tgx.chess.queen.io.core.inf.IPipeDecoder;
 import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
+import com.tgx.chess.queen.io.core.inf.IPipeTransfer;
+import com.tgx.chess.queen.io.core.inf.ISessionCloser;
 
 /**
  * @author william.d.zk
@@ -51,7 +53,7 @@ import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
 @SuppressWarnings("unchecked")
 public enum WsZSort
         implements
-        ISort
+        ISort<WsContext>
 {
     /**
      *
@@ -71,7 +73,7 @@ public enum WsZSort
         }
 
         @Override
-        IFilterChain<WsContext> getFilterChain()
+        public IFilterChain<WsContext> getFilterChain()
         {
             return _FrameFilter;
         }
@@ -94,7 +96,7 @@ public enum WsZSort
         }
 
         @Override
-        IFilterChain<WsContext> getFilterChain()
+        public IFilterChain<WsContext> getFilterChain()
         {
             return _FrameFilter;
         }
@@ -117,7 +119,7 @@ public enum WsZSort
         }
 
         @Override
-        IFilterChain<WsContext> getFilterChain()
+        public IFilterChain<WsContext> getFilterChain()
         {
             return _FrameFilter;
         }
@@ -141,7 +143,7 @@ public enum WsZSort
         }
 
         @Override
-        IFilterChain<WsContext> getFilterChain()
+        public IFilterChain<WsContext> getFilterChain()
         {
             return _FrameFilter;
         }
@@ -165,7 +167,7 @@ public enum WsZSort
         }
 
         @Override
-        IFilterChain<WsContext> getFilterChain()
+        public IFilterChain<WsContext> getFilterChain()
         {
             return _HandshakeFilter;
         }
@@ -177,7 +179,7 @@ public enum WsZSort
     SERVER_SSL
     {
         @Override
-        IFilterChain<WsContext> getFilterChain()
+        public IFilterChain<WsContext> getFilterChain()
         {
             return _HandshakeFilter;
         }
@@ -206,7 +208,7 @@ public enum WsZSort
     SYMMETRY
     {
         @Override
-        IFilterChain<WsContext> getFilterChain()
+        public IFilterChain<WsContext> getFilterChain()
         {
             return _FrameFilter;
         }
@@ -260,16 +262,16 @@ public enum WsZSort
         return _Decoder;
     }
 
-    public CloseOperator<WsContext> getCloseOperator()
+    @Override
+    public ISessionCloser<WsContext> getCloser()
     {
         return _CloseOperator;
     }
 
-    public TransferOperator<WsContext> getTransfer()
+    @Override
+    public IPipeTransfer<WsContext> getTransfer()
     {
         return _Transfer;
     }
-
-    abstract IFilterChain<WsContext> getFilterChain();
 
 }

@@ -28,15 +28,10 @@ import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 import static com.tgx.chess.rook.io.WsZSort.CONSUMER;
 
 import java.io.IOException;
-import java.nio.channels.AsynchronousChannelGroup;
-import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
@@ -59,29 +54,11 @@ import com.tgx.chess.bishop.io.zprotocol.device.X31_ConfirmMsg;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X03_Cipher;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X05_EncryptStart;
 import com.tgx.chess.king.base.inf.IPair;
-import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.king.base.schedule.ScheduleHandler;
-import com.tgx.chess.king.base.schedule.TimeWheel;
-import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.base.util.Pair;
-import com.tgx.chess.king.config.Config;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.async.AioCreator;
-import com.tgx.chess.queen.io.core.async.AioSession;
-import com.tgx.chess.queen.io.core.async.BaseAioConnector;
-import com.tgx.chess.queen.io.core.executor.ClientCore;
-import com.tgx.chess.queen.io.core.inf.IAioClient;
-import com.tgx.chess.queen.io.core.inf.IAioConnector;
 import com.tgx.chess.queen.io.core.inf.ICommand;
-import com.tgx.chess.queen.io.core.inf.ICommandCreator;
-import com.tgx.chess.queen.io.core.inf.IConnectionContext;
-import com.tgx.chess.queen.io.core.inf.IPipeDecoder;
-import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
 import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.inf.ISessionCreated;
-import com.tgx.chess.queen.io.core.inf.ISessionCreator;
-import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 import com.tgx.chess.rook.io.WsZSort;
 
@@ -89,111 +66,27 @@ import com.tgx.chess.rook.io.WsZSort;
  * @author william.d.zk
  */
 @Component
-@PropertySource("classpath:client.properties")
+@PropertySource("classpath:ws.client.properties")
 public class WsZClient
-        implements
-        IAioClient,
-        ISessionDismiss<WsContext>,
-        ISessionCreated<WsContext>
+        extends
+        BaseDeviceClient<WsContext>
 {
-    private final Logger _Log = Logger.getLogger(getClass().getName());
-
-    private final String                     _TargetName;
-    private final String                     _TargetHost;
-    private final int                        _TargetPort;
-    private final Config                     _Config;
-    private final ISessionCreator<WsContext> _SessionCreator;
-    private final ICommandCreator<WsContext> _CommandCreator;
-    private final IAioConnector<WsContext>   _DeviceConnector;
-    private final AsynchronousChannelGroup   _ChannelGroup;
-    private final ClientCore<WsContext>      _ClientCore      = new ClientCore<>();
-    private final TimeWheel                  _TimeWheel       = _ClientCore.getTimeWheel();
-    private final AtomicInteger              _State           = new AtomicInteger();
-    private final IPipeEncoder<WsContext>    _ConsumerEncoder = CONSUMER.getConsumerEncoder();
-    private final IPipeDecoder<WsContext>    _ConsumerDecoder = CONSUMER.getConsumerDecoder();
-    private ISession<WsContext>              clientSession;
-    private final AtomicReference<byte[]>    currentTokenRef  = new AtomicReference<>();
-
-    enum STATE
-    {
-        STOP,
-        CONNECTING,
-        OFFLINE,
-        ONLINE,
-        SHUTDOWN
-    }
-
-    private void updateState(STATE state)
-    {
-        for (int s = _State.get(), retry = 0; !_State.compareAndSet(s, state.ordinal()); s = _State.get(), retry++) {
-            _Log.warning("update state failed! retry: %d", retry);
-        }
-    }
 
     public WsZClient(@Value("${client.target.name}") String targetName,
                      @Value("${client.target.host}") String targetHost,
                      @Value("${client.target.port}") int targetPort) throws IOException
     {
-        _State.set(STATE.STOP.ordinal());
-        _TargetName = targetName;
-        _TargetHost = targetHost;
-        _TargetPort = targetPort;
-        _Config = new Config();
-        _ChannelGroup = AsynchronousChannelGroup.withFixedThreadPool(1, _ClientCore.getWorkerThreadFactory());
-        _SessionCreator = new AioCreator<WsContext>(_Config)
-        {
-            @Override
-            public ISession<WsContext> createSession(AsynchronousSocketChannel socketChannel,
-                                                     IConnectionContext<WsContext> context)
-            {
-                try {
-                    return new AioSession<>(socketChannel, context.getConnectActive(), this, this, WsZClient.this);
-                }
-                catch (IOException e) {
-                    e.printStackTrace();
-                    return null;
-                }
-            }
 
-            @Override
-            public WsContext createContext(ISessionOption option, ISort sorter)
-            {
-                return new WsContext(option, sorter);
-            }
-        };
-        _CommandCreator = (session) -> new ICommand[] { new X101_HandShake<>(_TargetHost,
-                                                                             session.getContext()
-                                                                                    .getSeKey(),
-                                                                             13) };
-        _DeviceConnector = new BaseAioConnector<WsContext>(_TargetHost, _TargetPort, _ConsumerEncoder, _ConsumerDecoder)
-        {
+        super(targetName, targetHost, targetPort, CONSUMER);
+    }
 
-            @Override
-            public ISort getSort()
-            {
-                return CONSUMER;
-            }
-
-            @Override
-            public ISessionCreator<WsContext> getSessionCreator()
-            {
-                return _SessionCreator;
-            }
-
-            @Override
-            public ISessionCreated<WsContext> getSessionCreated()
-            {
-                return WsZClient.this;
-            }
-
-            @Override
-            public ICommandCreator<WsContext> getCommandCreator()
-            {
-                return _CommandCreator;
-            }
-
-        };
-
+    @Override
+    public ICommand[] createCommands(ISession<WsContext> session)
+    {
+        return new ICommand[] { new X101_HandShake<>(_TargetHost,
+                                                     session.getContext()
+                                                            .getSeKey(),
+                                                     13) };
     }
 
     @PostConstruct
@@ -215,7 +108,7 @@ public class WsZClient
                         commands = Stream.of(commands)
                                          .map(cmd ->
                                          {
-                                             _Log.info("recv:%x ", cmd.getSerial());
+                                             _Logger.info("recv:%x ", cmd.getSerial());
                                              switch (cmd.getSerial())
                                              {
                                                  case X03_Cipher.COMMAND:
@@ -231,27 +124,27 @@ public class WsZClient
                                                  case X23_SignInResult.COMMAND:
                                                      X23_SignInResult x23 = (X23_SignInResult) cmd;
                                                      if (x23.isSuccess()) {
-                                                         _Log.info("sign in success token invalid @ %s",
-                                                                   Instant.ofEpochMilli(x23.getInvalidTime())
-                                                                          .atZone(ZoneId.of("GMT+8")));
+                                                         _Logger.info("sign in success token invalid @ %s",
+                                                                      Instant.ofEpochMilli(x23.getInvalidTime())
+                                                                             .atZone(ZoneId.of("GMT+8")));
                                                      }
                                                      else {
-                                                         return new X103_Close<>("sign in failed! close".getBytes());
+                                                         return new X103_Close<>("sign in failed! ws_close".getBytes());
                                                      }
                                                      break;
                                                  case X30_EventMsg.COMMAND:
                                                      X30_EventMsg x30 = (X30_EventMsg) cmd;
-                                                     _Log.info("x30 payload: %s",
-                                                               new String(x30.getPayload(), StandardCharsets.UTF_8));
+                                                     _Logger.info("x30 payload: %s",
+                                                                  new String(x30.getPayload(), StandardCharsets.UTF_8));
                                                      X31_ConfirmMsg x31 = new X31_ConfirmMsg<>(x30.getUID());
                                                      x31.setStatus(X31_ConfirmMsg.STATUS_RECEIVED);
                                                      x31.setToken(x30.getToken());
                                                      return x31;
                                                  case X101_HandShake.COMMAND:
-                                                     _Log.info("handshake ok");
+                                                     _Logger.info("ws_handshake ok");
                                                      break;
                                                  case X105_Pong.COMMAND:
-                                                     _Log.info("heartbeat ok");
+                                                     _Logger.info("ws_heartbeat ok");
                                                      break;
                                                  case X103_Close.COMMAND:
                                                      close();
@@ -264,7 +157,7 @@ public class WsZClient
                     }
                     break;
                 default:
-                    _Log.warning("event type no handle %s", event.getEventType());
+                    _Logger.warning("event type no handle %s", event.getEventType());
                     break;
             }
             if (Objects.nonNull(commands) && commands.length > 0 && Objects.nonNull(session)) {
@@ -274,73 +167,6 @@ public class WsZClient
                 event.ignore();
             }
         }, new EncryptHandler());
-    }
-
-    public void connect()
-    {
-        try {
-            connect(_DeviceConnector, _ChannelGroup);
-            _TimeWheel.acquire(3, TimeUnit.SECONDS, _DeviceConnector, new ScheduleHandler<>(false, connector ->
-            {
-                if (Objects.nonNull(clientSession)) {
-                    _Log.info("connect status checked -> success");
-                }
-                else {
-                    _Log.warning("connect status checked -> failed -> retry once");
-                    try {
-                        connect(connector, _ChannelGroup);
-                    }
-                    catch (IOException e) {
-                        e.printStackTrace();
-                        //terminate connect
-                    }
-                }
-            }));
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-            //terminate connect
-        }
-    }
-
-    @Override
-    public void onCreate(ISession<WsContext> session)
-    {
-        _Log.info("client connect:%s", session);
-        clientSession = session;
-        updateState(STATE.OFFLINE);
-    }
-
-    @Override
-    public void onDismiss(ISession<WsContext> session)
-    {
-        _Log.info("dismiss:%s", session);
-        if (clientSession == session) {
-            _Log.info("drop client session %s", session);
-            clientSession = null;
-            updateState(STATE.SHUTDOWN);
-        }
-    }
-
-    public boolean isOnline()
-    {
-        return Objects.nonNull(clientSession) && _State.get() >= STATE.ONLINE.ordinal();
-    }
-
-    public boolean isOffline()
-    {
-        return Objects.isNull(clientSession) && _State.get() <= STATE.OFFLINE.ordinal();
-    }
-
-    public boolean sendLocal(ICommand<WsContext>... toSends)
-    {
-        if (isOffline()) { throw new IllegalStateException("client is offline"); }
-        return _ClientCore.localSend(clientSession, CONSUMER.getTransfer(), toSends);
-    }
-
-    public void close()
-    {
-        _ClientCore.localClose(clientSession, CONSUMER.getCloseOperator());
     }
 
     public void handshake()
@@ -357,13 +183,9 @@ public class WsZClient
         sendLocal(new X104_Ping(msg.getBytes()));
     }
 
-    public byte[] getToken()
+    @Override
+    public WsContext createContext(ISessionOption option, ISort sort)
     {
-        return currentTokenRef.get();
-    }
-
-    public void setToken(String token)
-    {
-        currentTokenRef.set(IoUtil.hex2bin(token));
+        return new WsContext(option, sort);
     }
 }

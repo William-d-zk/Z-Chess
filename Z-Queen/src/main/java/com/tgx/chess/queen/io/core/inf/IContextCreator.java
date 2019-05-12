@@ -31,5 +31,5 @@ import com.tgx.chess.queen.event.inf.ISort;
  */
 public interface IContextCreator<C extends IContext>
 {
-    C createContext(ISessionOption option, ISort sorter);
+    C createContext(ISessionOption option, ISort sort);
 }

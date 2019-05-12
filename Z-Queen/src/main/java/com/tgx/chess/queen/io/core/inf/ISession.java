@@ -40,7 +40,7 @@ public interface ISession<C extends IContext>
         IReset,
         Closeable,
         IDisposable,
-        IConnectActive,
+        IConnectActive<C>,
         IValid,
         IReadable<ISession<C>>,
         IWritable<ISession<C>>

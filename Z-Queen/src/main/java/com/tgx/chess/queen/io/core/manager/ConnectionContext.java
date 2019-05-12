@@ -40,16 +40,17 @@ public class ConnectionContext<C extends IContext>
         IConnectionContext<C>
 {
     private final ISessionCreator<C> _SessionCreator;
-    private final IConnectActive     _ConnectActive;
+    private final IConnectActive<C>  _ConnectActive;
     private final ICommandCreator<C> _CommandCreator;
     private final ISessionCreated<C> _SessionCreated;
-    private final ISort              _Sort;
+    private final ISort<C>           _Sort;
 
-    public ConnectionContext(ISort sort,
-                             IConnectActive connectActive,
+    public ConnectionContext(ISort<C> sort,
+                             IConnectActive<C> connectActive,
                              ISessionCreator<C> sessionCreator,
                              ICommandCreator<C> commandCreator,
-                             ISessionCreated<C> sessionCreated) {
+                             ISessionCreated<C> sessionCreated)
+    {
         _Sort = sort;
         _ConnectActive = connectActive;
         _SessionCreator = sessionCreator;
@@ -58,27 +59,32 @@ public class ConnectionContext<C extends IContext>
     }
 
     @Override
-    public ISessionCreator<C> getSessionCreator() {
+    public ISessionCreator<C> getSessionCreator()
+    {
         return _SessionCreator;
     }
 
     @Override
-    public ICommandCreator<C> getCommandCreator() {
+    public ICommandCreator<C> getCommandCreator()
+    {
         return _CommandCreator;
     }
 
     @Override
-    public ISessionCreated<C> getSessionCreated() {
+    public ISessionCreated<C> getSessionCreated()
+    {
         return _SessionCreated;
     }
 
     @Override
-    public IConnectActive getConnectActive() {
+    public IConnectActive<C> getConnectActive()
+    {
         return _ConnectActive;
     }
 
     @Override
-    public ISort getSort() {
+    public ISort<C> getSort()
+    {
         return _Sort;
     }
 }

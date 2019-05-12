@@ -47,15 +47,22 @@ public class DecodedDispatcher<C extends IContext>
         BaseDispatcher<C>
 {
 
-    public DecodedDispatcher(RingBuffer<QEvent> link, RingBuffer<QEvent> cluster, RingBuffer<QEvent> error, RingBuffer<QEvent>[] logic) {
+    public DecodedDispatcher(RingBuffer<QEvent> link,
+                             RingBuffer<QEvent> cluster,
+                             RingBuffer<QEvent> error,
+                             RingBuffer<QEvent>[] logic)
+    {
         super(link, cluster, error, logic);
     }
 
     @Override
-    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception {
-        switch (event.getErrorType()) {
+    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
+    {
+        switch (event.getErrorType())
+        {
             case NO_ERROR:
-                switch (event.getEventType()) {
+                switch (event.getEventType())
+                {
                     case TRANSFER:
                     case LOGIC:
                     case DISPATCH:
@@ -84,8 +91,15 @@ public class DecodedDispatcher<C extends IContext>
         event.reset();
     }
 
-    private void dispatch(ISort sorter, ICommand cmd, ISession<C> session, IOperator<ICommand, ISession<C>, ITriple> op) {
-        switch (sorter.getMode()) {
+    private void dispatch(ISort sorter,
+                          ICommand cmd,
+                          ISession<C> session,
+                          IOperator<ICommand,
+                                    ISession<C>,
+                                    ITriple> op)
+    {
+        switch (sorter.getMode())
+        {
             case CLUSTER:
                 publish(_Cluster, LOGIC, new Pair<>(cmd, session), op);
                 break;

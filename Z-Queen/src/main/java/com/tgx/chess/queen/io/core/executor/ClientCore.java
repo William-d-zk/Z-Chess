@@ -40,7 +40,6 @@ import com.lmax.disruptor.SequenceBarrier;
 import com.lmax.disruptor.WaitStrategy;
 import com.lmax.disruptor.YieldingWaitStrategy;
 import com.tgx.chess.king.base.disruptor.MultiBufferBatchEventProcessor;
-import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.base.util.IoUtil;
@@ -66,7 +65,6 @@ public class ClientCore<C extends IContext>
         ILocalPublisher<C>
 
 {
-    private static Logger            _Log                 = Logger.getLogger(ClientCore.class.getName());
     private final RingBuffer<QEvent> _AioProducerEvent;
     private final RingBuffer<QEvent> _BizLocalCloseEvent;
     private final RingBuffer<QEvent> _BizLocalSendEvent;
@@ -75,9 +73,11 @@ public class ClientCore<C extends IContext>
                                                               int count;
 
                                                               @Override
-                                                              public Thread newThread(Runnable r) {
+                                                              public Thread newThread(Runnable r)
+                                                              {
                                                                   return new AioWorker(r,
-                                                                                       String.format("AioWorker.client.%d", count++),
+                                                                                       String.format("AioWorker.client.%d",
+                                                                                                     count++),
                                                                                        _AioProducerEvent);
                                                               }
                                                           };
@@ -85,7 +85,8 @@ public class ClientCore<C extends IContext>
     private final TimeWheel          _TimeWheel           = new TimeWheel(1, TimeUnit.SECONDS);
     private final Future<Void>       _EventTimer;
 
-    public ClientCore() {
+    public ClientCore()
+    {
         super(poolSize(), poolSize(), 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
         _AioProducerEvent = createPipelineYield(6);
         _BizLocalCloseEvent = createPipelineLite(5);
@@ -106,7 +107,8 @@ public class ClientCore<C extends IContext>
     ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
     */
     @SuppressWarnings("unchecked")
-    public void build(final EventHandler<QEvent> _LogicHandler, IEncryptHandler encryptHandler) {
+    public void build(final EventHandler<QEvent> _LogicHandler, IEncryptHandler encryptHandler)
+    {
         final RingBuffer<QEvent> _WroteEvent = createPipelineYield(7);
         final RingBuffer<QEvent> _LinkIoEvent = createPipelineLite(2);
         final RingBuffer<QEvent>[] _ErrorEvents = new RingBuffer[3];
@@ -118,7 +120,10 @@ public class ClientCore<C extends IContext>
         Arrays.setAll(_ErrorEvents, slot -> createPipelineLite(5));
         Arrays.setAll(_ErrorBarriers, slot -> _ErrorEvents[slot].newBarrier());
         IoUtil.addArray(_ErrorEvents, _DispatchIo, _AioProducerEvent, _BizLocalCloseEvent);
-        IoUtil.addArray(_ErrorBarriers, _DispatchIoBarriers, _AioProducerEvent.newBarrier(), _BizLocalCloseEvent.newBarrier());
+        IoUtil.addArray(_ErrorBarriers,
+                        _DispatchIoBarriers,
+                        _AioProducerEvent.newBarrier(),
+                        _BizLocalCloseEvent.newBarrier());
         final MultiBufferBatchEventProcessor<QEvent> _IoDispatcher = new MultiBufferBatchEventProcessor<>(_DispatchIo,
                                                                                                           _DispatchIoBarriers,
                                                                                                           new ClientIoDispatcher(_LinkIoEvent,
@@ -175,19 +180,23 @@ public class ClientCore<C extends IContext>
         submit(_EncodedProcessor);
     }
 
-    private RingBuffer<QEvent> createPipeline(int power, WaitStrategy waitStrategy) {
+    private RingBuffer<QEvent> createPipeline(int power, WaitStrategy waitStrategy)
+    {
         return RingBuffer.createSingleProducer(QEvent.EVENT_FACTORY, 1 << power, waitStrategy);
     }
 
-    private RingBuffer<QEvent> createPipelineYield(int power) {
+    private RingBuffer<QEvent> createPipelineYield(int power)
+    {
         return createPipeline(power, new YieldingWaitStrategy());
     }
 
-    private RingBuffer<QEvent> createPipelineLite(int power) {
+    private RingBuffer<QEvent> createPipelineLite(int power)
+    {
         return createPipeline(power, new LiteBlockingWaitStrategy());
     }
 
-    private static int poolSize() {
+    private static int poolSize()
+    {
         return 1// aioDispatch
                + 1// link
                + 1// read-decode
@@ -198,34 +207,41 @@ public class ClientCore<C extends IContext>
         ;
     }
 
-    private static String getConfigName() {
+    private static String getConfigName()
+    {
         return "ClientPipeline";
     }
 
-    private static String getConfigGroup() {
+    private static String getConfigGroup()
+    {
         return "pipeline";
     }
 
-    public ThreadFactory getWorkerThreadFactory() {
+    public ThreadFactory getWorkerThreadFactory()
+    {
         return _WorkerThreadFactory;
     }
 
-    public TimeWheel getTimeWheel() {
+    public TimeWheel getTimeWheel()
+    {
         return _TimeWheel;
     }
 
     @Override
-    public RingBuffer<QEvent> getLocalPublisher(ISession session) {
+    public RingBuffer<QEvent> getLocalPublisher(ISession<C> session)
+    {
         return _BizLocalSendEvent;
     }
 
     @Override
-    public RingBuffer<QEvent> getLocalCloser(ISession session) {
+    public RingBuffer<QEvent> getLocalCloser(ISession<C> session)
+    {
         return _BizLocalCloseEvent;
     }
 
     @Override
-    public ReentrantLock getLocalLock() {
+    public ReentrantLock getLocalLock()
+    {
         return _LocalLock;
     }
 }

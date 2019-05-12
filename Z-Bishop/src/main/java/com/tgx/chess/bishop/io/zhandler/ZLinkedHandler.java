@@ -54,7 +54,7 @@ public class ZLinkedHandler<C extends ZContext>
         ILinkHandler<C>
 {
 
-    private final Logger _Log = Logger.getLogger(getClass().getName());
+    private final Logger _Logger = Logger.getLogger(getClass().getName());
 
     @Override
     @SuppressWarnings("unchecked")
@@ -63,7 +63,7 @@ public class ZLinkedHandler<C extends ZContext>
         IPair logicContent = event.getContent();
         ISession<C> session = logicContent.second();
         ICommand<C> cmd = logicContent.first();
-        _Log.info("LinkHandler cmd: %s", cmd);
+        _Logger.info("LinkHandler cmd: %s", cmd);
         ICommand<C>[] waitToSends = null;
         switch (cmd.getSerial())
         {

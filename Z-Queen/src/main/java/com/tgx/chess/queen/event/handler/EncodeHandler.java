@@ -40,12 +40,14 @@ public class EncodeHandler<C extends IContext>
         implements
         ISessionHandler<C>
 {
-    private final Logger _Log = Logger.getLogger(getClass().getName());
+    private final Logger _Logger = Logger.getLogger(getClass().getName());
 
     @Override
-    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception {
+    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
+    {
         if (event.hasError()) {
-            switch (event.getErrorType()) {
+            switch (event.getErrorType())
+            {
                 case FILTER_ENCODE:
                 case ILLEGAL_STATE:
                 case ILLEGAL_BIZ_STATE:
@@ -57,12 +59,15 @@ public class EncodeHandler<C extends IContext>
             }
         }
         else {
-            switch (event.getEventType()) {
+            switch (event.getEventType())
+            {
                 case WRITE:
                     IPair pairWriteContent = event.getContent();
-                    ICommand cmd = pairWriteContent.first();
+                    ICommand<C> cmd = pairWriteContent.first();
                     ISession<C> session = pairWriteContent.second();
-                    IOperator<ICommand, ISession<C>, ITriple> writeOperator = event.getEventOp();
+                    IOperator<ICommand<C>,
+                              ISession<C>,
+                              ITriple> writeOperator = event.getEventOp();
                     encodeHandler(event, cmd, session, writeOperator);
                     cmd.dispose();
                     break;
@@ -70,7 +75,9 @@ public class EncodeHandler<C extends IContext>
                     IPair pairWroteContent = event.getContent();
                     int wroteCnt = pairWroteContent.first();
                     session = pairWroteContent.second();
-                    IOperator<Integer, ISession<C>, ITriple> wroteOperator = event.getEventOp();
+                    IOperator<Integer,
+                              ISession<C>,
+                              ITriple> wroteOperator = event.getEventOp();
                     encodeHandler(event, wroteCnt, session, wroteOperator);
                     break;
                 default:

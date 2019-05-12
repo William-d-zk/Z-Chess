@@ -44,7 +44,11 @@ public abstract class BaseAioConnector<C extends IContext>
         implements
         IAioConnector<C>
 {
-    public BaseAioConnector(String host, int port, IPipeEncoder<C> encoder, IPipeDecoder<C> decoder) {
+    protected BaseAioConnector(String host,
+                               int port,
+                               IPipeEncoder<C> encoder,
+                               IPipeDecoder<C> decoder)
+    {
         _RemoteAddress = new InetSocketAddress(host, port);
         _ConnectedOperator = new ConnectedOperator<>(encoder, decoder);
     }
@@ -55,27 +59,36 @@ public abstract class BaseAioConnector<C extends IContext>
     private InetSocketAddress              mLocalBind;
 
     @Override
-    public InetSocketAddress getRemoteAddress() {
+    public InetSocketAddress getRemoteAddress()
+    {
         return _RemoteAddress;
     }
 
     @Override
-    public InetSocketAddress getLocalAddress() {
+    public InetSocketAddress getLocalAddress()
+    {
         return mLocalBind;
     }
 
     @Override
-    public void setLocalAddress(InetSocketAddress address) {
+    public void setLocalAddress(InetSocketAddress address)
+    {
         mLocalBind = address;
     }
 
     @Override
-    public IOperator<IConnectionContext<C>, AsynchronousSocketChannel, ITriple> getConnectedOperator() {
+    public IOperator<IConnectionContext<C>,
+                     AsynchronousSocketChannel,
+                     ITriple> getConnectedOperator()
+    {
         return _ConnectedOperator;
     }
 
     @Override
-    public IOperator<Throwable, IAioConnector<C>, IAioConnector<C>> getErrorOperator() {
+    public IOperator<Throwable,
+                     IAioConnector<C>,
+                     IAioConnector<C>> getErrorOperator()
+    {
         return _ConnectFailedOperator;
     }
 }

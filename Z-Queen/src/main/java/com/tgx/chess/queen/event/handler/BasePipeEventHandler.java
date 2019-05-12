@@ -40,11 +40,13 @@ public abstract class BasePipeEventHandler<C extends IContext>
     private final CloseOperator<C> _CloseOperator = new CloseOperator<>();
     private final ErrorOperator<C> _ErrorOperator = new ErrorOperator<>(_CloseOperator);
 
-    public CloseOperator<C> getCloseOperator() {
+    public CloseOperator<C> getCloseOperator()
+    {
         return _CloseOperator;
     }
 
-    public ErrorOperator<C> getErrorOperator() {
+    public ErrorOperator<C> getErrorOperator()
+    {
         return _ErrorOperator;
     }
 

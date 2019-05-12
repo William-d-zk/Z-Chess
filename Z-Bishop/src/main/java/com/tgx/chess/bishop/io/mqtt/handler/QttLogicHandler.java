@@ -22,29 +22,23 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.queen.event.operator;
+package com.tgx.chess.bishop.io.mqtt.handler;
 
-import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.io.core.inf.IAioConnector;
-import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
+import com.tgx.chess.queen.event.handler.LogicHandler;
+import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
 
 /**
  * @author william.d.zk
+ * @date 2019-05-12
  */
-public class ConnectFailedOperator<C extends IContext>
-        implements
-        IOperator<Throwable,
-                  IAioConnector<C>,
-                  IAioConnector<C>>
+public class QttLogicHandler
+        extends
+        LogicHandler<QttContext>
 {
-
-    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
-
-    @Override
-    public IAioConnector<C> handle(Throwable throwable, IAioConnector<C> aioConnector)
+    public QttLogicHandler(IPipeEncoder<QttContext> encoder,
+                           ICommandHandler<QttContext> commandHandler)
     {
-        _Logger.warning("handler connect failed!", throwable);
-        return aioConnector;
+        super(encoder, commandHandler);
     }
 }

@@ -50,7 +50,7 @@ public class IoDispatcher<C extends IContext>
         extends
         BaseDispatcher<C>
 {
-    private final Logger             _Log = Logger.getLogger(getClass().getName());
+    private final Logger             _Logger = Logger.getLogger(getClass().getName());
     private final RingBuffer<QEvent> _IoWrote;
 
     @SafeVarargs
@@ -58,15 +58,18 @@ public class IoDispatcher<C extends IContext>
                         RingBuffer<QEvent> cluster,
                         RingBuffer<QEvent> wrote,
                         RingBuffer<QEvent> error,
-                        RingBuffer<QEvent>... read) {
+                        RingBuffer<QEvent>... read)
+    {
         super(link, cluster, error, read);
         _IoWrote = wrote;
     }
 
     @Override
-    public void onEvent(QEvent event, long sequence, boolean batch) throws Exception {
+    public void onEvent(QEvent event, long sequence, boolean batch) throws Exception
+    {
         IError.Type errorType = event.getErrorType();
-        switch (errorType) {
+        switch (errorType)
+        {
             case CONNECT_FAILED:
                 IPair connectFailedContent = event.getContent();
                 Throwable throwable = connectFailedContent.first();
@@ -75,7 +78,9 @@ public class IoDispatcher<C extends IContext>
                 break;
             case CLOSED:
                 /* 将其他 Event Error 转换为 closed 进行定向分发 */
-                IOperator<Void, ISession<C>, Void> closedOperator = event.getEventOp();
+                IOperator<Void,
+                          ISession<C>,
+                          Void> closedOperator = event.getEventOp();
                 IPair closedContent = event.getContent();
                 ISession<C> session = closedContent.second();
                 if (!session.isClosed()) {
@@ -83,12 +88,15 @@ public class IoDispatcher<C extends IContext>
                 }
                 break;
             case NO_ERROR:
-                switch (event.getEventType()) {
+                switch (event.getEventType())
+                {
                     case CONNECTED:
                         IPair connectContent = event.getContent();
                         IConnectionContext<C> context = connectContent.first();
                         AsynchronousSocketChannel channel = connectContent.second();
-                        IOperator<IConnectionContext, AsynchronousSocketChannel, ITriple> connectOperator = event.getEventOp();
+                        IOperator<IConnectionContext,
+                                  AsynchronousSocketChannel,
+                                  ITriple> connectOperator = event.getEventOp();
                         dispatch(context.getSort(), CONNECTED, context, channel, connectOperator);
                         break;
                     case READ:
@@ -101,7 +109,9 @@ public class IoDispatcher<C extends IContext>
                         publish(_IoWrote, WROTE, wroteContent, event.getEventOp());
                         break;
                     case CLOSE:// local close
-                        IOperator<Void, ISession<C>, Void> closeOperator = event.getEventOp();
+                        IOperator<Void,
+                                  ISession<C>,
+                                  Void> closeOperator = event.getEventOp();
                         IPair closeContent = event.getContent();
                         session = closeContent.second();
                         if (!session.isClosed()) {
@@ -109,12 +119,14 @@ public class IoDispatcher<C extends IContext>
                         }
                         break;
                     default:
-                        _Log.warning(String.format(" wrong type %s in IoDispatcher", event.getEventType()));
+                        _Logger.warning(String.format(" wrong type %s in IoDispatcher", event.getEventType()));
                         break;
                 }
                 break;
             default:
-                IOperator<Throwable, ISession<C>, ITriple> errorOperator = event.getEventOp();
+                IOperator<Throwable,
+                          ISession<C>,
+                          ITriple> errorOperator = event.getEventOp();
                 IPair errorContent = event.getContent();
                 session = errorContent.second();
                 if (!session.isClosed()) {

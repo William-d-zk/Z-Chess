@@ -35,6 +35,7 @@ import com.tgx.chess.queen.io.core.inf.IConnectionContext;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IPipeDecoder;
 import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
+import com.tgx.chess.queen.io.core.inf.IPipeTransfer;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionCreated;
 import com.tgx.chess.queen.io.core.inf.ISessionCreator;
@@ -44,14 +45,18 @@ import com.tgx.chess.queen.io.core.inf.ISessionCreator;
  */
 public class ConnectedOperator<C extends IContext>
         implements
-        IOperator<IConnectionContext<C>, AsynchronousSocketChannel, ITriple>
+        IOperator<IConnectionContext<C>,
+                  AsynchronousSocketChannel,
+                  ITriple>
 {
-    private final IPipeEncoder<C>     _Encoder;
-    private final IPipeDecoder<C>     _Decoder;
-    private final TransferOperator<C> _Transfer;
-    private final AioReader<C>        _AioReader;
+    private final IPipeEncoder<C>  _Encoder;
+    private final IPipeDecoder<C>  _Decoder;
+    private final IPipeTransfer<C> _Transfer;
+    private final AioReader<C>     _AioReader;
 
-    public ConnectedOperator(IPipeEncoder<C> encoder, IPipeDecoder<C> decoder) {
+    public ConnectedOperator(IPipeEncoder<C> encoder,
+                             IPipeDecoder<C> decoder)
+    {
         _Encoder = encoder;
         _Decoder = decoder;
         _Transfer = new TransferOperator<>(_Encoder);
@@ -59,7 +64,8 @@ public class ConnectedOperator<C extends IContext>
     }
 
     @Override
-    public ITriple handle(IConnectionContext<C> context, AsynchronousSocketChannel channel) {
+    public ITriple handle(IConnectionContext<C> context, AsynchronousSocketChannel channel)
+    {
         ISessionCreated<C> sessionCreated = context.getSessionCreated();
         ISessionCreator<C> sessionCreator = context.getSessionCreator();
         ISession<C> session = sessionCreator.createSession(channel, context);

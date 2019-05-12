@@ -48,14 +48,12 @@ public class LogicHandler<C extends IContext>
 {
     private final Logger              _Log = Logger.getLogger(getClass().getName());
     private final ICommandHandler<C>  _CommandHandler;
-    private final IPipeEncoder<C>     _Encoder;
     private final TransferOperator<C> _Transfer;
 
     public LogicHandler(IPipeEncoder<C> encoder,
                         ICommandHandler<C> commandHandler)
     {
         _CommandHandler = commandHandler;
-        _Encoder = encoder;
         _Transfer = new TransferOperator<>(encoder);
     }
 
@@ -84,6 +82,6 @@ public class LogicHandler<C extends IContext>
 
     public interface ICommandHandler<C extends IContext>
     {
-        ICommand onCommand(ICommand input, ISession<C> session, LogicHandler<C> handler);
+        ICommand<C> onCommand(ICommand<C> input, ISession<C> session, LogicHandler<C> handler);
     }
 }

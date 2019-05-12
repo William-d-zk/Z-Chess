@@ -36,6 +36,8 @@ import com.tgx.chess.queen.event.operator.TransferOperator;
 import com.tgx.chess.queen.io.core.inf.IFilterChain;
 import com.tgx.chess.queen.io.core.inf.IPipeDecoder;
 import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
+import com.tgx.chess.queen.io.core.inf.IPipeTransfer;
+import com.tgx.chess.queen.io.core.inf.ISessionCloser;
 
 /**
  * @author william.d.zk
@@ -43,12 +45,12 @@ import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
  */
 public enum QttZSort
         implements
-        ISort
+        ISort<QttContext>
 {
     SYMMETRY
     {
         @Override
-        IFilterChain<QttContext> getFilterChain()
+        public IFilterChain<QttContext> getFilterChain()
         {
             return _QttFrameFilter;
         }
@@ -76,25 +78,28 @@ public enum QttZSort
     private TransferOperator<QttContext>    _Transfer       = new TransferOperator<>(_Encoder);
     private final IPipeDecoder<QttContext>  _Decoder        = new PipeDecoder<>(getFilterChain(), _Transfer);
 
+    @Override
     public IPipeEncoder<QttContext> getEncoder()
     {
         return _Encoder;
     }
 
+    @Override
     public IPipeDecoder<QttContext> getDecoder()
     {
         return _Decoder;
     }
 
-    public CloseOperator<QttContext> getCloseOperator()
+    @Override
+    public ISessionCloser<QttContext> getCloser()
     {
         return _CloseOperator;
     }
 
-    public TransferOperator<QttContext> getTransfer()
+    @Override
+    public IPipeTransfer<QttContext> getTransfer()
     {
         return _Transfer;
     }
 
-    abstract IFilterChain<QttContext> getFilterChain();
 }

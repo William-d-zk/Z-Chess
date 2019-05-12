@@ -24,16 +24,14 @@
 
 package com.tgx.chess.queen.io.core.manager;
 
-import java.util.List;
-
-import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.config.Config;
-import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.io.core.async.AioSessionManager;
 import com.tgx.chess.queen.io.core.executor.ServerCore;
 import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.io.core.inf.IPipeTransfer;
 import com.tgx.chess.queen.io.core.inf.ISession;
+import com.tgx.chess.queen.io.core.inf.ISessionCloser;
 
 /**
  * @author william.d.zk
@@ -51,21 +49,15 @@ public abstract class QueenManager<C extends IContext>
         _ServerCore = serverCore;
     }
 
-    public void localClose(ISession<C> session,
-                           IOperator<Void,
-                                     ISession<C>,
-                                     Void> closeOperator)
+    protected void localClose(ISession<C> session, ISessionCloser<C> closeOperator)
     {
         _ServerCore.localClose(session, closeOperator);
     }
 
-    public boolean localSend(ISession<C> session,
-                             IOperator<ICommand<C>[],
-                                       ISession<C>,
-                                       List<ITriple>> writeOperator,
-                             ICommand<C>... commands)
+    @SafeVarargs
+    protected final boolean localSend(ISession<C> session, IPipeTransfer<C> transfer, ICommand<C>... commands)
     {
-        return _ServerCore.localSend(session, writeOperator, commands);
+        return _ServerCore.localSend(session, transfer, commands);
     }
 
     public abstract ICommand<C> save(ICommand<C> tar, ISession<C> session);

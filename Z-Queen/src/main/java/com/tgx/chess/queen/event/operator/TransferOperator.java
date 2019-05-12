@@ -24,28 +24,16 @@
 
 package com.tgx.chess.queen.event.operator;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import com.tgx.chess.king.base.exception.MissingParameterException;
-import com.tgx.chess.king.base.inf.ITriple;
-import com.tgx.chess.king.base.util.Triple;
-import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
-import com.tgx.chess.queen.io.core.inf.ISession;
+import com.tgx.chess.queen.io.core.inf.IPipeTransfer;
 
 /**
  * @author william.d.zk
  */
 public class TransferOperator<C extends IContext>
         implements
-        IOperator<ICommand<C>[],
-                  ISession<C>,
-                  List<ITriple>>
+        IPipeTransfer<C>
 {
     private final IPipeEncoder<C> _Encoder;
 
@@ -55,18 +43,14 @@ public class TransferOperator<C extends IContext>
     }
 
     @Override
-    public List<ITriple> handle(ICommand<C>[] commands, ISession<C> session)
-    {
-        if (Objects.isNull(commands)
-            || commands.length == 0) { throw new MissingParameterException(toString() + ".transfer", "commands"); }
-        return Stream.of(commands)
-                     .map(command -> new Triple<>(command.setSession(session), session, _Encoder))
-                     .collect(Collectors.toList());
-    }
-
-    @Override
     public String toString()
     {
         return "transfer";
+    }
+
+    @Override
+    public IPipeEncoder<C> getEncoder()
+    {
+        return _Encoder;
     }
 }

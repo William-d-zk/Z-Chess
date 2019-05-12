@@ -24,36 +24,20 @@
 
 package com.tgx.chess.queen.event.operator;
 
-import java.io.IOException;
-
-import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.io.core.inf.IContext;
-import com.tgx.chess.queen.io.core.inf.ISession;
+import com.tgx.chess.queen.io.core.inf.ISessionCloser;
 
 /**
  * @author william.d.zk
+ * @date 2019-05-12
  */
 public class CloseOperator<C extends IContext>
         implements
-        IOperator<Void, ISession<C>, Void>
+        ISessionCloser<C>
 {
-    private final Logger _Log = Logger.getLogger(getClass().getSimpleName());
-
     @Override
-    public Void handle(Void v, ISession<C> session) {
-        try {
-            session.close();
-        }
-        catch (IOException e) {
-            _Log.warning("session close: %s", e, session.toString());
-        }
-        _Log.warning("closed operator %s", session.toString());
-        return null;
-    }
-
-    @Override
-    public String toString() {
+    public String toString()
+    {
         return "close_operator";
     }
 }

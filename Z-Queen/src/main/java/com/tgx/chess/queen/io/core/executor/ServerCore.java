@@ -227,7 +227,7 @@ public abstract class ServerCore<C extends IContext>
 
     @SuppressWarnings("unchecked")
     public void build(LogicHandler<C> logicHandler,
-                      QueenManager manager,
+                      QueenManager<C> manager,
                       IPipeEncoder<C> encoder,
                       ILinkHandler<C> linkHandler,
                       IEncryptHandler encryptHandler)
@@ -263,7 +263,7 @@ public abstract class ServerCore<C extends IContext>
         Arrays.setAll(_DecodeProcessors,
                       slot -> new BatchEventProcessor<>(_ReadEvents[slot],
                                                         _ReadBarriers[slot],
-                                                        new DecodeHandler(encryptHandler)));
+                                                        new DecodeHandler<>(encryptHandler)));
 
         /* 链路处理 */
         /* 所有带有路由规则绑定的数据都需要投递到这个 Pipeline -> _LinkDecoded */
@@ -276,11 +276,11 @@ public abstract class ServerCore<C extends IContext>
                                                                         _ConsistentResultEvent.newBarrier() };
         final MultiBufferBatchEventProcessor<QEvent> _LinkProcessor = new MultiBufferBatchEventProcessor<>(_LinkEvents,
                                                                                                            _LinkBarriers,
-                                                                                                           new LinkHandler(encoder,
-                                                                                                                           manager,
-                                                                                                                           _ErrorEvents[0],
-                                                                                                                           _LinkWriteEvent,
-                                                                                                                           linkHandler));
+                                                                                                           new LinkHandler<>(encoder,
+                                                                                                                             manager,
+                                                                                                                             _ErrorEvents[0],
+                                                                                                                             _LinkWriteEvent,
+                                                                                                                             linkHandler));
         _LinkProcessor.setThreadName("LinkProcessor");
         for (int i = 0, size = _LinkEvents.length; i < size; i++) {
             _LinkEvents[i].addGatingSequences(_LinkProcessor.getSequences()[i]);
@@ -296,20 +296,20 @@ public abstract class ServerCore<C extends IContext>
                                                                            _ConsistentSendEvent.newBarrier() };
         final MultiBufferBatchEventProcessor<QEvent> _ClusterProcessor = new MultiBufferBatchEventProcessor<>(_ClusterEvents,
                                                                                                               _ClusterBarriers,
-                                                                                                              new ClusterHandler(manager,
-                                                                                                                                 _ErrorEvents[1],
-                                                                                                                                 _ClusterWriteEvent));
+                                                                                                              new ClusterHandler<>(manager,
+                                                                                                                                   _ErrorEvents[1],
+                                                                                                                                   _ClusterWriteEvent));
         _ClusterProcessor.setThreadName("ClusterProcessor");
         for (int i = 0, size = _ClusterEvents.length; i < size; i++) {
             _ClusterEvents[i].addGatingSequences(_ClusterProcessor.getSequences()[i]);
         }
         final MultiBufferBatchEventProcessor<QEvent> _IoDispatcher = new MultiBufferBatchEventProcessor<>(_DispatchIo,
                                                                                                           _DispatchIoBarriers,
-                                                                                                          new IoDispatcher(_LinkIoEvent,
-                                                                                                                           _ClusterIoEvent,
-                                                                                                                           _WroteEvent,
-                                                                                                                           _ErrorEvents[2],
-                                                                                                                           _ReadEvents));
+                                                                                                          new IoDispatcher<>(_LinkIoEvent,
+                                                                                                                             _ClusterIoEvent,
+                                                                                                                             _WroteEvent,
+                                                                                                                             _ErrorEvents[2],
+                                                                                                                             _ReadEvents));
         _IoDispatcher.setThreadName("IoDispatcher");
         for (int i = 0, size = _DispatchIo.length; i < size; i++) {
             _DispatchIo[i].addGatingSequences(_IoDispatcher.getSequences()[i]);
@@ -326,10 +326,10 @@ public abstract class ServerCore<C extends IContext>
         /* Decoded dispatcher 将所有解码完成的结果派发到 _LinkDecoded,_ClusterDecoded,以及_LogicEvents进行逻辑处理*/
         final MultiBufferBatchEventProcessor<QEvent> _DecodedDispatcher = new MultiBufferBatchEventProcessor<>(_ReadEvents,
                                                                                                                _DecodedBarriers,
-                                                                                                               new DecodedDispatcher(_LinkDecoded,
-                                                                                                                                     _ClusterDecoded,
-                                                                                                                                     _ErrorEvents[3],
-                                                                                                                                     _LogicEvents));
+                                                                                                               new DecodedDispatcher<>(_LinkDecoded,
+                                                                                                                                       _ClusterDecoded,
+                                                                                                                                       _ErrorEvents[3],
+                                                                                                                                       _LogicEvents));
         _DecodedDispatcher.setThreadName("DecodedDispatcher");
         for (int i = 0; i < DECODER_COUNT; i++) {
             _ReadEvents[i].addGatingSequences(_DecodedDispatcher.getSequences()[i]);
@@ -359,7 +359,7 @@ public abstract class ServerCore<C extends IContext>
         */
         final MultiBufferBatchEventProcessor<QEvent> _WriteDispatcher = new MultiBufferBatchEventProcessor<>(_SendEvents,
                                                                                                              _SendBarriers,
-                                                                                                             new WriteDispatcher(_WriteEvents));
+                                                                                                             new WriteDispatcher<>(_WriteEvents));
         _WriteDispatcher.setThreadName("WriteDispatcher");
         for (int i = 0, size = _SendEvents.length; i < size; i++) {
             _SendEvents[i].addGatingSequences(_WriteDispatcher.getSequences()[i]);
@@ -376,7 +376,7 @@ public abstract class ServerCore<C extends IContext>
         Arrays.setAll(_EncodedBarriers, slot -> _EncodedEvents[slot].newBarrier(_EncodeProcessors[slot].getSequence()));
         final MultiBufferBatchEventProcessor<QEvent> _EncodedProcessor = new MultiBufferBatchEventProcessor<>(_EncodedEvents,
                                                                                                               _EncodedBarriers,
-                                                                                                              new EncodedHandler(_ErrorEvents[4]));
+                                                                                                              new EncodedHandler<>(_ErrorEvents[4]));
         _EncodedProcessor.setThreadName("EncodedProcessor");
         for (int i = 0; i < ENCODER_COUNT; i++) {
             _EncodedEvents[i].addGatingSequences(_EncodedProcessor.getSequences()[i]);
@@ -476,12 +476,12 @@ public abstract class ServerCore<C extends IContext>
         return _LocalLock;
     }
 
-    public RingBuffer<QEvent> getBizLocalCloseEvent()
+    protected RingBuffer<QEvent> getBizLocalCloseEvent()
     {
         return _BizLocalCloseEvent;
     }
 
-    public RingBuffer<QEvent> getClusterLocalCloseEvent()
+    protected RingBuffer<QEvent> getClusterLocalCloseEvent()
     {
         return _ClusterLocalCloseEvent;
     }
@@ -496,12 +496,12 @@ public abstract class ServerCore<C extends IContext>
         return _ConsistentSendEvent;
     }
 
-    public RingBuffer<QEvent> getBizLocalSendEvent()
+    protected RingBuffer<QEvent> getBizLocalSendEvent()
     {
         return _BizLocalSendEvent;
     }
 
-    public RingBuffer<QEvent> getClusterLocalSendEvent()
+    protected RingBuffer<QEvent> getClusterLocalSendEvent()
     {
         return _ClusterLocalSendEvent;
     }

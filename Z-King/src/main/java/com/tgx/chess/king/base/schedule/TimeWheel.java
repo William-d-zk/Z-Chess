@@ -40,12 +40,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
 import com.tgx.chess.king.base.log.Logger;
+
 /**
  * @author William.d.zk
  */
 public class TimeWheel
 {
-    private Logger                _Log            = Logger.getLogger(getClass().getName());
+    private Logger                _Logger         = Logger.getLogger(getClass().getName());
     private final int             _SlotBitLeft    = 3;
     private final TickSlot[]      _ModHashEntriesArray;
     private final int             _HashMod;
@@ -65,7 +66,8 @@ public class TimeWheel
         _ModHashEntriesArray = new TickSlot[1 << _SlotBitLeft];
         Arrays.setAll(_ModHashEntriesArray, TickSlot::new);
         _HashMod = _ModHashEntriesArray.length - 1;
-        _Timer = new Thread(() -> {
+        _Timer = new Thread(() ->
+        {
             _Running.set(true);
             long millisTick = timeUnit.toMillis(tick);
             for (long align = 0, t; _Running.get();) {
@@ -75,7 +77,9 @@ public class TimeWheel
                     try {
                         Thread.sleep(sleep);
                     }
-                    catch (InterruptedException e) {}
+                    catch (InterruptedException e) {
+                        _Logger.warning("interrupt sleep", e);
+                    }
                 }
                 else {
                     sleep = 0;
@@ -89,12 +93,15 @@ public class TimeWheel
                         if (handleTask.getHandler()
                                       .isCycle())
                         {
-                            if (!_RequestQueue.offer(new HandleTask(handleTask.getConstLoop(), handleTask.getConstTick(), handleTask.getHandler()))) {
-                                _Log.warning("%s,loop:%d slot%d",
-                                             Thread.currentThread()
-                                                   .getName(),
-                                             getCurrentLoop(),
-                                             getCurrentSlot());
+                            if (!_RequestQueue.offer(new HandleTask(handleTask.getConstLoop(),
+                                                                    handleTask.getConstTick(),
+                                                                    handleTask.getHandler())))
+                            {
+                                _Logger.warning("%s,loop:%d slot%d",
+                                                Thread.currentThread()
+                                                      .getName(),
+                                                getCurrentLoop(),
+                                                getCurrentSlot());
                             }
                         }
                         executorService.submit(handleTask);
@@ -147,7 +154,7 @@ public class TimeWheel
         int tick = slots & _HashMod;
         if (Objects.nonNull(handler)) handler.attach(attachment);
         HandleTask task = new HandleTask<>(loop, tick, handler);
-        _Log.info("time wheel offer %s,", task);
+        _Logger.info("time wheel offer %s,", task);
         return _RequestQueue.offer(task) ? task
                                          : null;
     }
@@ -163,7 +170,7 @@ public class TimeWheel
         TickSlot<A> timeSlot = _ModHashEntriesArray[slot];
         int index = Collections.binarySearch(timeSlot, handleTask);
         if (index >= 0) {
-            if (timeSlot.get(index) == handleTask) _Log.warning(" %s exist in slot,drop it ", handleTask);
+            if (timeSlot.get(index) == handleTask) _Logger.warning(" %s exist in slot,drop it ", handleTask);
             else timeSlot.add(index, handleTask);
         }
         else {

@@ -30,6 +30,7 @@ import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IFilterChain;
 import com.tgx.chess.queen.io.core.inf.IPacket;
 import com.tgx.chess.queen.io.core.inf.IPipeDecoder;
+import com.tgx.chess.queen.io.core.inf.IPipeTransfer;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
 /**
@@ -41,11 +42,11 @@ public class PipeDecoder<C extends IContext>
         IPipeDecoder<C>
 {
 
-    private final IFilterChain<C> _FilterChain;
-    private TransferOperator<C>   _Transfer;
+    private final IFilterChain<C>  _FilterChain;
+    private final IPipeTransfer<C> _Transfer;
 
     public PipeDecoder(IFilterChain<C> filterChain,
-                       TransferOperator<C> transfer)
+                       IPipeTransfer<C> transfer)
     {
         _FilterChain = filterChain;
         _Transfer = transfer;

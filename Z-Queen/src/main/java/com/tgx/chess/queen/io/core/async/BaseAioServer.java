@@ -51,7 +51,11 @@ public abstract class BaseAioServer<C extends IContext>
     private final AcceptFailedOperator<C> _AcceptFailedOperator = new AcceptFailedOperator<>();
     private final ConnectedOperator<C>    _ConnectedOperator;
 
-    public BaseAioServer(String serverHost, int serverPort, IPipeEncoder<C> encoder, IPipeDecoder<C> decoder) {
+    protected BaseAioServer(String serverHost,
+                            int serverPort,
+                            IPipeEncoder<C> encoder,
+                            IPipeDecoder<C> decoder)
+    {
         _LocalBind = new InetSocketAddress(serverHost, serverPort);
         _ConnectedOperator = new ConnectedOperator<>(encoder, decoder);
     }
@@ -59,14 +63,16 @@ public abstract class BaseAioServer<C extends IContext>
     private AsynchronousServerSocketChannel mServerChannel;
 
     @Override
-    public void bindAddress(InetSocketAddress address, AsynchronousChannelGroup channelGroup) throws IOException {
+    public void bindAddress(InetSocketAddress address, AsynchronousChannelGroup channelGroup) throws IOException
+    {
         mServerChannel = AsynchronousServerSocketChannel.open(channelGroup);
         mServerChannel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
         mServerChannel.bind(address, 1 << 6);
     }
 
     @Override
-    public void pendingAccept() {
+    public void pendingAccept()
+    {
         if (mServerChannel.isOpen()) {
             mServerChannel.accept(this, this);
         }
@@ -75,22 +81,30 @@ public abstract class BaseAioServer<C extends IContext>
     private final InetSocketAddress _LocalBind;
 
     @Override
-    public InetSocketAddress getRemoteAddress() {
+    public InetSocketAddress getRemoteAddress()
+    {
         throw new UnsupportedOperationException(" server hasn't remote address");
     }
 
     @Override
-    public InetSocketAddress getLocalAddress() {
+    public InetSocketAddress getLocalAddress()
+    {
         return _LocalBind;
     }
 
     @Override
-    public IOperator<Throwable, IAioServer<C>, IAioServer<C>> getErrorOperator() {
+    public IOperator<Throwable,
+                     IAioServer<C>,
+                     IAioServer<C>> getErrorOperator()
+    {
         return _AcceptFailedOperator;
     }
 
     @Override
-    public IOperator<IConnectionContext<C>, AsynchronousSocketChannel, ITriple> getConnectedOperator() {
+    public IOperator<IConnectionContext<C>,
+                     AsynchronousSocketChannel,
+                     ITriple> getConnectedOperator()
+    {
         return _ConnectedOperator;
     }
 }

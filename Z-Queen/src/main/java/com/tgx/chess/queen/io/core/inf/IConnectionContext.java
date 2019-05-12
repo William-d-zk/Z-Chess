@@ -29,9 +29,9 @@ package com.tgx.chess.queen.io.core.inf;
  */
 public interface IConnectionContext<C extends IContext>
         extends
-        IConnectMode
+        IConnectMode<C>
 {
-    IConnectActive getConnectActive();
+    IConnectActive<C> getConnectActive();
 
     ISessionCreator<C> getSessionCreator();
 

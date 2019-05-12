@@ -24,45 +24,37 @@
 
 package com.tgx.chess.queen.io.core.inf;
 
-import java.nio.channels.AsynchronousSocketChannel;
-import java.nio.channels.CompletionHandler;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import com.tgx.chess.king.base.exception.MissingParameterException;
+import com.tgx.chess.king.base.inf.ITriple;
+import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.io.core.async.socket.AioWorker;
 
 /**
  * @author william.d.zk
+ * @date 2019-05-12
  */
-public interface IAioConnector<C extends IContext>
+public interface IPipeTransfer<C extends IContext>
         extends
-        CompletionHandler<Void,
-                          AsynchronousSocketChannel>,
-        IConnectActive<C>,
-        IConnected<C>,
-        IConnectError
+        IOperator<ICommand<C>[],
+                  ISession<C>,
+                  List<ITriple>>
 {
-    @Override
-    IOperator<Throwable,
-              IAioConnector<C>,
-              IAioConnector<C>> getErrorOperator();
+    IPipeEncoder<C> getEncoder();
 
     @Override
-    default void completed(Void result, AsynchronousSocketChannel channel)
+    default List<ITriple> handle(ICommand<C>[] commands, ISession<C> session)
     {
-        AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishConnected(getConnectedOperator(),
-                                getSort(),
-                                this,
-                                getSessionCreator(),
-                                getCommandCreator(),
-                                getSessionCreated(),
-                                channel);
+        if (Objects.isNull(commands) || commands.length == 0) {
+            throw new MissingParameterException(toString() + ".transfer", "commands");
+        }
+        return Stream.of(commands)
+                     .map(command -> new Triple<>(command.setSession(session), session, getEncoder()))
+                     .collect(Collectors.toList());
     }
 
-    @Override
-    default void failed(Throwable exc, AsynchronousSocketChannel channel)
-    {
-        AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishConnectingError(getErrorOperator(), exc, this);
-    }
 }

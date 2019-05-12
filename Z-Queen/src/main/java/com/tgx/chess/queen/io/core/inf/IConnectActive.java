@@ -26,16 +26,18 @@ package com.tgx.chess.queen.io.core.inf;
 /**
  * @author William.d.zk
  */
-public interface IConnectActive
+public interface IConnectActive<C extends IContext>
         extends
         IAddress,
-        IConnectMode
+        IConnectMode<C>
 {
-    default int getHaIndex() {
+    default int getHaIndex()
+    {
         return 0;
     }
 
-    default int getPortIndex() {
+    default int getPortIndex()
+    {
         return 0;
     }
 

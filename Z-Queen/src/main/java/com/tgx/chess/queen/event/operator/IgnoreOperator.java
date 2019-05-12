@@ -34,19 +34,23 @@ import com.tgx.chess.queen.io.core.inf.ISession;
  */
 public class IgnoreOperator<C extends IContext>
         implements
-        IOperator<Throwable, ISession<C>, Void>
+        IOperator<Throwable,
+                  ISession<C>,
+                  Void>
 {
 
-    private final Logger _Log = Logger.getLogger(getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
 
     @Override
-    public Void handle(Throwable throwable, ISession<C> session) {
-        _Log.warning("error session:%s", throwable, session);
+    public Void handle(Throwable throwable, ISession<C> session)
+    {
+        _Logger.warning("error session:%s", throwable, session);
         return null;
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return "ignore_operator";
     }
 }
