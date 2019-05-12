@@ -31,7 +31,6 @@ import com.tgx.chess.bishop.io.ws.filter.WsHandShakeFilter;
 import com.tgx.chess.bishop.io.zfilter.ZCommandFilter;
 import com.tgx.chess.bishop.io.zfilter.ZTlsFilter;
 import com.tgx.chess.bishop.io.zprotocol.ZConsumerFactory;
-import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.operator.AioWriter;
 import com.tgx.chess.queen.event.operator.CloseOperator;
@@ -42,6 +41,8 @@ import com.tgx.chess.queen.event.operator.TransferOperator;
 import com.tgx.chess.queen.io.core.inf.IFilterChain;
 import com.tgx.chess.queen.io.core.inf.IPipeDecoder;
 import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
+import com.tgx.chess.queen.io.core.inf.IPipeTransfer;
+import com.tgx.chess.queen.io.core.inf.ISessionCloser;
 
 /**
  * @author william.d.zk
@@ -49,7 +50,7 @@ import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
 @SuppressWarnings("unchecked")
 public enum WsZSort
         implements
-        ISort
+        ISort<WsContext>
 {
     /**
      * 
@@ -77,7 +78,6 @@ public enum WsZSort
         return Type.CONSUMER;
     }
 
-    private static final Logger            _Log             = Logger.getLogger(WsZSort.class.getName());
     private final CloseOperator<WsContext> _CloseOperator   = new CloseOperator<>();
     private final ErrorOperator<WsContext> _ErrorOperator   = new ErrorOperator<>(_CloseOperator);
     private final AioWriter<WsContext>     _AioWriter       = new AioWriter<>();
@@ -100,27 +100,32 @@ public enum WsZSort
     private final IPipeDecoder<WsContext>     _ConsumerDecoder  = new PipeDecoder<>(getFilterChain(),
                                                                                     _ConsumerTransfer);
 
-    public CloseOperator<WsContext> getCloseOperator()
+    @Override
+    public ISessionCloser<WsContext> getCloser()
     {
         return _CloseOperator;
     }
 
-    public IPipeDecoder<WsContext> getConsumerDecoder()
+    @Override
+    public IPipeDecoder<WsContext> getDecoder()
     {
         return _ConsumerDecoder;
     }
 
-    public IPipeEncoder<WsContext> getConsumerEncoder()
+    @Override
+    public IPipeEncoder<WsContext> getEncoder()
     {
         return _ConsumerEncoder;
     }
 
-    public TransferOperator<WsContext> getTransfer()
+    @Override
+    public IPipeTransfer<WsContext> getTransfer()
     {
         return _ConsumerTransfer;
     }
 
-    IFilterChain<WsContext> getFilterChain()
+    @Override
+    public IFilterChain<WsContext> getFilterChain()
     {
         return _HandshakeFilter;
     }

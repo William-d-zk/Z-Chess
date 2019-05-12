@@ -44,18 +44,21 @@ public class EncodedHandler<C extends IContext>
         IPipeEventHandler<QEvent>,
         ISessionHandler<C>
 {
-    private final Logger             _Log = Logger.getLogger(getClass().getName());
+    private final Logger _Logger = Logger.getLogger(getClass().getName());
 
     private final RingBuffer<QEvent> _Error;
 
-    public EncodedHandler(RingBuffer<QEvent> error) {
+    public EncodedHandler(RingBuffer<QEvent> error)
+    {
         _Error = error;
     }
 
     @Override
-    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception {
+    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
+    {
         if (event.hasError()) {
-            switch (event.getErrorType()) {
+            switch (event.getErrorType())
+            {
                 case FILTER_ENCODE:
                 case ILLEGAL_STATE:
                 case ILLEGAL_BIZ_STATE:
@@ -63,7 +66,9 @@ public class EncodedHandler<C extends IContext>
                     IPair errorContent = event.getContent();
                     Throwable throwable = errorContent.first();
                     ISession<C> session = errorContent.second();
-                    IOperator<Throwable, ISession<C>, ITriple> errorOperator = event.getEventOp();
+                    IOperator<Throwable,
+                              ISession<C>,
+                              ITriple> errorOperator = event.getEventOp();
                     ITriple errorResult = errorOperator.handle(throwable, session);
                     error(_Error, IError.Type.CLOSED, new Pair<>(null, session), errorResult.third());
                     break;

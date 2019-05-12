@@ -54,16 +54,21 @@ public class ClusterHandler<C extends IContext>
     private final RingBuffer<QEvent> _Writer;
     private final Logger             _Log = Logger.getLogger(getClass().getName());
 
-    public ClusterHandler(final QueenManager<C> queenManager, RingBuffer<QEvent> error, RingBuffer<QEvent> writer) {
+    public ClusterHandler(QueenManager<C> queenManager,
+                          RingBuffer<QEvent> error,
+                          RingBuffer<QEvent> writer)
+    {
         _QueenManager = queenManager;
         _Error = error;
         _Writer = writer;
     }
 
     @Override
-    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception {
+    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
+    {
         if (event.hasError()) {
-            switch (event.getErrorType()) {
+            switch (event.getErrorType())
+            {
                 case ACCEPT_FAILED:
                 case CONNECT_FAILED:
                     _Log.info(String.format("error type %s,ignore ", event.getErrorType()));
@@ -73,7 +78,9 @@ public class ClusterHandler<C extends IContext>
                     _Log.warning("cluster io error , do close session");
                     IPair errorContent = event.getContent();
                     ISession<C> session = errorContent.second();
-                    IOperator<Void, ISession<C>, Void> closeOperator = event.getEventOp();
+                    IOperator<Void,
+                              ISession<C>,
+                              Void> closeOperator = event.getEventOp();
                     ISessionDismiss<C> dismiss = session.getDismissCallback();
                     boolean closed = session.isClosed();
                     closeOperator.handle(null, session);
@@ -83,17 +90,22 @@ public class ClusterHandler<C extends IContext>
             }
         }
         else {
-            switch (event.getEventType()) {
+            switch (event.getEventType())
+            {
                 case CONNECTED:
                     IPair connectedContent = event.getContent();
                     IConnectionContext<C> context = connectedContent.first();
                     AsynchronousSocketChannel channel = connectedContent.second();
-                    IOperator<IConnectionContext<C>, AsynchronousSocketChannel, ITriple> connectedOperator = event.getEventOp();
+                    IOperator<IConnectionContext<C>,
+                              AsynchronousSocketChannel,
+                              ITriple> connectedOperator = event.getEventOp();
                     ITriple connectedHandled = connectedOperator.handle(context, channel);
                     //connectedHandled 不可能为 null
                     ICommand[] waitToSend = connectedHandled.first();
                     ISession<C> session = connectedHandled.second();
-                    IOperator<ICommand[], ISession, ITriple> sendTransferOperator = connectedHandled.third();
+                    IOperator<ICommand[],
+                              ISession,
+                              ITriple> sendTransferOperator = connectedHandled.third();
                     event.produce(WRITE, new Pair<>(waitToSend, session), sendTransferOperator);
                     context.getSessionCreated()
                            .onCreate(session);

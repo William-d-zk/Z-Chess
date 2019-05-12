@@ -22,29 +22,45 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.queen.event.operator;
+package com.tgx.chess.bishop.io.mqtt.handler;
 
+import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
+import com.tgx.chess.bishop.io.zfilter.ZContext;
+import com.tgx.chess.king.base.exception.ZException;
+import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.io.core.inf.IAioConnector;
-import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.event.handler.ILinkHandler;
+import com.tgx.chess.queen.event.handler.LinkHandler;
+import com.tgx.chess.queen.event.processor.QEvent;
+import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.ISession;
+import com.tgx.chess.queen.io.core.manager.QueenManager;
 
 /**
  * @author william.d.zk
+ * @date 2019-05-12
  */
-public class ConnectFailedOperator<C extends IContext>
+public class QttLinkHandler<C extends ZContext>
         implements
-        IOperator<Throwable,
-                  IAioConnector<C>,
-                  IAioConnector<C>>
+        ILinkHandler<C>
 {
-
     private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
 
     @Override
-    public IAioConnector<C> handle(Throwable throwable, IAioConnector<C> aioConnector)
+    public void handle(LinkHandler<C> _LinkHandler, QueenManager<C> manager, QEvent event) throws ZException
     {
-        _Logger.warning("handler connect failed!", throwable);
-        return aioConnector;
+        IPair logicContent = event.getContent();
+        ISession<C> session = logicContent.second();
+        ICommand<C> cmd = logicContent.first();
+        _Logger.info("LinkHandler cmd: %s", cmd);
+        ICommand<C>[] waitToSends = null;
+        switch (cmd.getSerial())
+        {
+            case X111_QttConnect.COMMAND:
+
+            default:
+                break;
+        }
+        _LinkHandler.write(waitToSends, session);
     }
 }

@@ -60,7 +60,7 @@ public class AioSession<C extends IContext>
         implements
         ISession<C>
 {
-    private static Logger                   _Log   = Logger.getLogger(AioSession.class.getSimpleName());
+    private static Logger _Logger = Logger.getLogger(AioSession.class.getSimpleName());
     /*--------------------------------------------------------------------------------------------------------------*/
     private final int                       _ReadTimeOut;
     private final int                       _WriteTimeOut;
@@ -69,34 +69,35 @@ public class AioSession<C extends IContext>
     /*
      * 与系统的 SocketOption 的 RecvBuffer 相等大小， 至少可以一次性将系统 Buffer 中的数据全部转存
      */
-    private final ByteBuffer                _RecvBuf;
-    private final C                         _Ctx;
-    private final int                       _HashCode;
-    private final ISort                     _Sort;
-    private final ISessionDismiss<C>        _DismissCallback;
-    private final int                       _QueueSizeMax;
-    private final int                       _HaIndex, _PortIndex;
+    private final ByteBuffer         _RecvBuf;
+    private final C                  _Ctx;
+    private final int                _HashCode;
+    private final ISort<C>           _Sort;
+    private final ISessionDismiss<C> _DismissCallback;
+    private final int                _QueueSizeMax;
+    private final int                _HaIndex, _PortIndex;
     /*----------------------------------------------------------------------------------------------------------------*/
 
     /*----------------------------------------------------------------------------------------------------------------*/
-    private long                            mIndex = DEFAULT_INDEX;
+    private long mIndex = DEFAULT_INDEX;
     /*
      * 此处并不会进行空间初始化，完全依赖于 Context 的 WrBuf 初始化大小
      */
-    private ByteBuffer                      mSending;
+    private ByteBuffer mSending;
     /*
      * Session close 只能出现在 QueenManager 的工作线程中 所以关闭操作只需要做到全域线程可见即可，不需要处理写冲突
      */
-    private long[]                          mPortChannels;
+    private long[] mPortChannels;
 
-    private int                             mWroteExpect;
-    private int                             mSendingBlank;
-    private int                             mWaitWrite;
-    private long                            mReadTimeStamp;
-    private long                            hashKey;
+    private int  mWroteExpect;
+    private int  mSendingBlank;
+    private int  mWaitWrite;
+    private long mReadTimeStamp;
+    private long hashKey;
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return String.format("@%x %s->%s mode:%s HA:%x Port:%x Index:%x close:%s\nwait to write %d,queue size %d",
                              _HashCode,
                              _LocalAddress,
@@ -111,11 +112,11 @@ public class AioSession<C extends IContext>
     }
 
     public AioSession(final AsynchronousSocketChannel channel,
-                      final IConnectActive active,
+                      final IConnectActive<C> active,
                       final IContextCreator<C> contextCreator,
                       final ISessionOption sessionOption,
-                      final ISessionDismiss<C> sessionDismiss)
-            throws IOException {
+                      final ISessionDismiss<C> sessionDismiss) throws IOException
+    {
         Objects.requireNonNull(sessionOption);
         _Channel = channel;
         _Sort = active.getSort();
@@ -138,47 +139,56 @@ public class AioSession<C extends IContext>
     }
 
     @Override
-    public boolean isValid() {
+    public boolean isValid()
+    {
         return !isClosed();
     }
 
     @Override
-    public InetSocketAddress getLocalAddress() {
+    public InetSocketAddress getLocalAddress()
+    {
         return _LocalAddress;
     }
 
     @Override
-    public void setLocalAddress(InetSocketAddress address) {
+    public void setLocalAddress(InetSocketAddress address)
+    {
         throw new UnsupportedOperationException(" final member!");
     }
 
     @Override
-    public InetSocketAddress getRemoteAddress() {
+    public InetSocketAddress getRemoteAddress()
+    {
         return _RemoteAddress;
     }
 
     @Override
-    public void setRemoteAddress(InetSocketAddress address) {
+    public void setRemoteAddress(InetSocketAddress address)
+    {
         throw new UnsupportedOperationException(" final member!");
     }
 
     @Override
-    public int getHaIndex() {
+    public int getHaIndex()
+    {
         return _HaIndex;
     }
 
     @Override
-    public int getPortIndex() {
+    public int getPortIndex()
+    {
         return _PortIndex;
     }
 
     @Override
-    public void reset() {
+    public void reset()
+    {
         mIndex = -1;
     }
 
     @Override
-    public final void dispose() {
+    public final void dispose()
+    {
         _Ctx.dispose();
         mSending = null;
         clear();
@@ -187,24 +197,28 @@ public class AioSession<C extends IContext>
     }
 
     @Override
-    public final void close() throws IOException {
+    public final void close() throws IOException
+    {
         if (isClosed()) { return; }
         _Ctx.close();
         _Channel.close();
     }
 
     @Override
-    public final boolean isClosed() {
+    public final boolean isClosed()
+    {
         return _Ctx.isClosed();
     }
 
     @Override
-    public final long getIndex() {
+    public final long getIndex()
+    {
         return mIndex;
     }
 
     @Override
-    public final void setIndex(long index) {
+    public final void setIndex(long index)
+    {
         mIndex = index;
         if (mIndex != -1L) {
             hashKey = mIndex;
@@ -212,35 +226,43 @@ public class AioSession<C extends IContext>
     }
 
     @Override
-    public final void bindport2channel(long channelport) {
-        mPortChannels = mPortChannels == null ? new long[] { channelport } : ArrayUtil.setSortAdd(channelport, mPortChannels);
+    public final void bindport2channel(long channelport)
+    {
+        mPortChannels = mPortChannels == null ? new long[] { channelport }
+                                              : ArrayUtil.setSortAdd(channelport, mPortChannels);
     }
 
     @Override
-    public final long[] getPortChannels() {
+    public final long[] getPortChannels()
+    {
         return mPortChannels;
     }
 
     @Override
-    public final long getHashKey() {
+    public final long getHashKey()
+    {
         return hashKey;
     }
 
     @Override
-    public final AsynchronousSocketChannel getChannel() {
+    public final AsynchronousSocketChannel getChannel()
+    {
         return _Channel;
     }
 
     @Override
-    public final void readNext(CompletionHandler<Integer, ISession<C>> readHandler) throws NotYetConnectedException,
-                                                                                    ShutdownChannelGroupException {
+    public final void readNext(CompletionHandler<Integer,
+                                                 ISession<C>> readHandler) throws NotYetConnectedException,
+                                                                           ShutdownChannelGroupException
+    {
         if (isClosed()) { return; }
         _RecvBuf.clear();
         _Channel.read(_RecvBuf, _ReadTimeOut, TimeUnit.SECONDS, this, readHandler);
     }
 
     @Override
-    public final ByteBuffer read(int length) {
+    public final ByteBuffer read(int length)
+    {
         if (length < 0) { throw new IllegalArgumentException(); }
         if (length != _RecvBuf.position()) { throw new ArrayIndexOutOfBoundsException(); }
         ByteBuffer read = ByteBuffer.allocate(length);
@@ -251,20 +273,25 @@ public class AioSession<C extends IContext>
     }
 
     @Override
-    public C getContext() {
+    public C getContext()
+    {
         return _Ctx;
     }
 
     @Override
-    public WRITE_STATUS write(IPacket ps, CompletionHandler<Integer, ISession<C>> handler) throws WritePendingException,
-                                                                                           NotYetConnectedException,
-                                                                                           ShutdownChannelGroupException,
-                                                                                           RejectedExecutionException {
+    public WRITE_STATUS write(IPacket ps,
+                              CompletionHandler<Integer,
+                                                ISession<C>> handler) throws WritePendingException,
+                                                                      NotYetConnectedException,
+                                                                      ShutdownChannelGroupException,
+                                                                      RejectedExecutionException
+    {
         if (isClosed()) { return WRITE_STATUS.CLOSED; }
         ps.waitSend();
         if (isEmpty()) {
             WRITE_STATUS status = writeChannel(ps);
-            switch (status) {
+            switch (status)
+            {
                 case IGNORE:
                     return status;
                 case UNFINISHED:
@@ -272,10 +299,10 @@ public class AioSession<C extends IContext>
                 case IN_SENDING:
                     ps.send();
                 default:
-                    _Log.info("wait to write %d ,channel state %d ,less than sending %s",
-                              mWaitWrite,
-                              _Ctx.getChannelState(),
-                              _Ctx.channelStateLessThan(SESSION_SENDING));
+                    _Logger.info("wait to write %d ,channel state %d ,less than sending %s",
+                                 mWaitWrite,
+                                 _Ctx.getChannelState(),
+                                 _Ctx.channelStateLessThan(SESSION_SENDING));
                     if (mWaitWrite > 0 && _Ctx.channelStateLessThan(SESSION_SENDING)) {
                         flush(handler);
                     }
@@ -287,7 +314,8 @@ public class AioSession<C extends IContext>
         }
         else {
             IPacket fps = peek();
-            switch (writeChannel(fps)) {
+            switch (writeChannel(fps))
+            {
                 case IGNORE:
                     break;
                 case UNFINISHED:
@@ -305,10 +333,13 @@ public class AioSession<C extends IContext>
     }
 
     @Override
-    public WRITE_STATUS writeNext(int wroteCnt, CompletionHandler<Integer, ISession<C>> handler) throws WritePendingException,
-                                                                                                 NotYetConnectedException,
-                                                                                                 ShutdownChannelGroupException,
-                                                                                                 RejectedExecutionException {
+    public WRITE_STATUS writeNext(int wroteCnt,
+                                  CompletionHandler<Integer,
+                                                    ISession<C>> handler) throws WritePendingException,
+                                                                          NotYetConnectedException,
+                                                                          ShutdownChannelGroupException,
+                                                                          RejectedExecutionException
+    {
         if (isClosed()) { return WRITE_STATUS.CLOSED; }
         mWroteExpect -= wroteCnt;
         mWaitWrite -= wroteCnt;
@@ -331,7 +362,8 @@ public class AioSession<C extends IContext>
         do {
             fps = peek();
             if (Objects.nonNull(fps)) {
-                switch (writeChannel(fps)) {
+                switch (writeChannel(fps))
+                {
                     case IGNORE:
                         continue;
                     case UNFINISHED:
@@ -352,7 +384,8 @@ public class AioSession<C extends IContext>
         return WRITE_STATUS.IGNORE;
     }
 
-    private WRITE_STATUS writeChannel(IPacket ps) {
+    private WRITE_STATUS writeChannel(IPacket ps)
+    {
         ByteBuffer buf = ps.getBuffer();
         if (Objects.nonNull(buf) && buf.hasRemaining()) {
             mWroteExpect += buf.remaining();
@@ -378,20 +411,24 @@ public class AioSession<C extends IContext>
         return WRITE_STATUS.IGNORE;
     }
 
-    private void flush(CompletionHandler<Integer, ISession<C>> handler) throws WritePendingException,
-                                                                        NotYetConnectedException,
-                                                                        ShutdownChannelGroupException {
+    private void flush(CompletionHandler<Integer,
+                                         ISession<C>> handler) throws WritePendingException,
+                                                               NotYetConnectedException,
+                                                               ShutdownChannelGroupException
+    {
         _Ctx.advanceChannelState(SESSION_SENDING);
         _Channel.write(mSending, _WriteTimeOut, TimeUnit.SECONDS, this, handler);
     }
 
     @Override
-    public ISessionDismiss<C> getDismissCallback() {
+    public ISessionDismiss<C> getDismissCallback()
+    {
         return _DismissCallback;
     }
 
     @Override
-    public ISort getSort() {
+    public ISort<C> getSort()
+    {
         return _Sort;
     }
 }

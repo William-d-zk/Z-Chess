@@ -66,7 +66,8 @@ public class Config
     private final static Logger                      LOG                    = Logger.getLogger(Config.class.getName());
     private final static String                      PACKAGE_PREFIX_NAME    = "com.tgx.chess.config";
     private final static String                      ROOT_OWNER             = "Environment";
-    private final static String                      PACKAGE_PREFIX_PATTERN = PACKAGE_PREFIX_NAME.replaceAll("\\.", "\\\\.");
+    private final static String                      PACKAGE_PREFIX_PATTERN = PACKAGE_PREFIX_NAME.replaceAll("\\.",
+                                                                                                             "\\\\.");
     private final static Set<String>                 KEY_SET                = new ConcurrentSkipListSet<>();
     private final static List<Pair<Pattern,
                                    String>>          KEY_PATTERNS           = new ArrayList<>();
@@ -102,7 +103,12 @@ public class Config
         return getKeyPattern(group, null, null, null, null, -1);
     }
 
-    private static Pattern getKeyPattern(String group, String parent, String owner, String extension, String key, int revision)
+    private static Pattern getKeyPattern(String group,
+                                         String parent,
+                                         String owner,
+                                         String extension,
+                                         String key,
+                                         int revision)
     {
         group = Objects.isNull(group) ? "((\\w+\\.)+)"
                                       : "("
@@ -123,13 +129,22 @@ public class Config
         extension = Objects.isNull(extension) ? "((\\w+\\.)*)"
                                               : "("
                                                 + (extension.matches(".*\\.$") ? extension.replaceAll("\\.", "\\\\.")
-                                                                               : extension.replaceAll("\\.", "\\\\.") + "\\.")
+                                                                               : extension.replaceAll("\\.", "\\\\.")
+                                                                                 + "\\.")
                                                 + ")";
         key = Objects.isNull(key) ? "(\\w+)"
                                   : "(" + key + ")";
         String revisionStr = revision < 0 ? "(\\.\\d+)?"
                                           : "\\." + Integer.toString(revision);
-        String pattern = "^(" + PACKAGE_PREFIX_PATTERN + "\\.)" + group + parent + owner + extension + key + revisionStr;
+        String pattern = "^("
+                         + PACKAGE_PREFIX_PATTERN
+                         + "\\.)"
+                         + group
+                         + parent
+                         + owner
+                         + extension
+                         + key
+                         + revisionStr;
         return Pattern.compile(pattern);
     }
 
@@ -145,9 +160,9 @@ public class Config
         load();
     }
 
-    public Config(String parent,
-                  Map<String,
-                      String> external)
+    private Config(String parent,
+                   Map<String,
+                       String> external)
     {
         this(ROOT_OWNER, parent, external);
     }
@@ -162,7 +177,7 @@ public class Config
         this(null, null);
     }
 
-    public void load()
+    private void load()
     {
         load(_ConfigOwner, _ConfigParent);
     }
@@ -188,7 +203,9 @@ public class Config
                             return Objects.isNull(parent) ? matcher.matches()
                                                           : matcher.find()
                                                             && matcher.group(3)
-                                                                      .matches("(" + parent.replaceAll("\\.", "\\\\.") + "\\.)");
+                                                                      .matches("("
+                                                                               + parent.replaceAll("\\.", "\\\\.")
+                                                                               + "\\.)");
                         })
                         .map(Pair::second)
                         .forEach(str -> _ValueStoreMap.put(str, value));
@@ -203,7 +220,9 @@ public class Config
         ResourceBundle resourceBundle = null;
         try {
             resourceBundle = ResourceBundle.getBundle(Objects.isNull(parent) ? owner
-                                                                             : parent.replaceAll("\\.", "_") + "/" + owner);
+                                                                             : parent.replaceAll("\\.", "_")
+                                                                               + "/"
+                                                                               + owner);
             LOG.debug("load resource " + owner + " parent: " + parent);
         }
         catch (MissingResourceException e) {
@@ -255,7 +274,12 @@ public class Config
     public boolean contains(String group, String owner, String key)
     {
         String configKey = getKeySet().stream()
-                                      .filter(getKeyPattern(group, getConfigParent(), owner, null, key, -1).asPredicate())
+                                      .filter(getKeyPattern(group,
+                                                            getConfigParent(),
+                                                            owner,
+                                                            null,
+                                                            key,
+                                                            -1).asPredicate())
                                       .findFirst()
                                       .orElse(getPackagePrefix() + "." + group + "." + owner + "." + key);
         return contains(configKey);
@@ -282,7 +306,12 @@ public class Config
     <T> void setConfigValue(String group, String owner, String key, T value)
     {
         String configKey = getKeySet().stream()
-                                      .filter(getKeyPattern(group, getConfigParent(), owner, null, key, -1).asPredicate())
+                                      .filter(getKeyPattern(group,
+                                                            getConfigParent(),
+                                                            owner,
+                                                            null,
+                                                            key,
+                                                            -1).asPredicate())
                                       .findFirst()
                                       .orElse(getPackagePrefix() + "." + group + "." + owner + "." + key);
         LOG.debug("set config : " + configKey + " = " + value);
@@ -292,7 +321,12 @@ public class Config
     public <T> T getConfigValue(String group, String owner, String extension, String key)
     {
         return getConfigValue(getKeySet().stream()
-                                         .filter(getKeyPattern(group, getConfigParent(), owner, extension, key, -1).asPredicate())
+                                         .filter(getKeyPattern(group,
+                                                               getConfigParent(),
+                                                               owner,
+                                                               extension,
+                                                               key,
+                                                               -1).asPredicate())
                                          .findFirst()
                                          .orElse(getPackagePrefix() + "." + group + "." + owner + "." + key));
     }
@@ -300,7 +334,12 @@ public class Config
     public <T> T getConfigValue(String group, String owner, String extension, String key, int revision)
     {
         return getConfigValue(getKeySet().stream()
-                                         .filter(getKeyPattern(group, getConfigParent(), owner, extension, key, revision).asPredicate())
+                                         .filter(getKeyPattern(group,
+                                                               getConfigParent(),
+                                                               owner,
+                                                               extension,
+                                                               key,
+                                                               revision).asPredicate())
                                          .findFirst()
                                          .orElse(getPackagePrefix() + "." + group + "." + owner + "." + key));
     }
@@ -308,7 +347,12 @@ public class Config
     public <T> T getConfigValue(String group, String parent, String owner, String extension, String key, int revision)
     {
         return getConfigValue(getKeySet().stream()
-                                         .filter(getKeyPattern(group, parent, owner, extension, key, revision).asPredicate())
+                                         .filter(getKeyPattern(group,
+                                                               parent,
+                                                               owner,
+                                                               extension,
+                                                               key,
+                                                               revision).asPredicate())
                                          .findFirst()
                                          .orElse(getPackagePrefix() + "." + group + "." + owner + "." + key));
     }
@@ -316,12 +360,17 @@ public class Config
     public <T> T getConfigValue(String group, String owner, String key)
     {
         return getConfigValue(getKeySet().stream()
-                                         .filter(getKeyPattern(group, getConfigParent(), owner, null, key, -1).asPredicate())
+                                         .filter(getKeyPattern(group,
+                                                               getConfigParent(),
+                                                               owner,
+                                                               null,
+                                                               key,
+                                                               -1).asPredicate())
                                          .findFirst()
                                          .orElse(getPackagePrefix() + "." + group + "." + owner + "." + key));
     }
 
-    public Set<String> getKeySet()
+    private Set<String> getKeySet()
     {
         Set<String> keySet = new TreeSet<>();
         keySet.addAll(KEY_SET);
@@ -339,7 +388,7 @@ public class Config
                                                                 .toArray()));
     }
 
-    public static String getPackagePrefix()
+    private static String getPackagePrefix()
     {
         return PACKAGE_PREFIX_NAME;
     }

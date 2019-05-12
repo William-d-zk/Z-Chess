@@ -41,7 +41,8 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 
 import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
-import com.tgx.chess.bishop.biz.device.DeviceNode;
+import com.tgx.chess.bishop.biz.device.QttNode;
+import com.tgx.chess.bishop.biz.device.WsNode;
 import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
 import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
 import com.tgx.chess.bishop.io.zprotocol.device.X24_UpdateToken;
@@ -52,6 +53,7 @@ import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.spring.device.model.DeviceEntity;
 import com.tgx.chess.spring.device.repository.ClientRepository;
 import com.tgx.chess.spring.device.repository.DeviceRepository;
+
 /**
  * @author william.d.zk
  */
@@ -63,25 +65,30 @@ public class DeviceService
 {
     private final DeviceRepository _DeviceRepository;
     private final ClientRepository _ClientRepository;
-    private final DeviceNode       _DeviceNode;
+    private final WsNode           _DeviceNode;
+    private final QttNode          _QttNode;
     private final Random           _Random    = new Random();
     private final CryptUtil        _CryptUtil = new CryptUtil();
 
     @Autowired
     public DeviceService(DeviceRepository deviceRepository,
                          ClientRepository clientRepository,
-                         @Value("${device.server.host}") String host,
-                         @Value("${device.server.port}") int port)
+                         @Value("${ws.server.host}") String wsHost,
+                         @Value("${ws.server.port}") int wsPort,
+                         @Value("${qtt.server.host}") String qttHost,
+                         @Value("${qtt.server.port}") int qttPort)
     {
         _DeviceRepository = deviceRepository;
         _ClientRepository = clientRepository;
-        _DeviceNode = new DeviceNode(host, port, this);
+        _DeviceNode = new WsNode(wsHost, wsPort, this);
+        _QttNode = new QttNode(qttHost, qttPort, this);
     }
 
     @PostConstruct
     private void start() throws IOException
     {
         _DeviceNode.start();
+        _QttNode.start();
     }
 
     public List<DeviceEntry> findAll()

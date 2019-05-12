@@ -24,6 +24,7 @@
 
 package com.tgx.chess.queen.event.operator;
 
+import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.io.core.inf.IAioServer;
 import com.tgx.chess.queen.io.core.inf.IContext;
@@ -33,11 +34,17 @@ import com.tgx.chess.queen.io.core.inf.IContext;
  */
 public class AcceptFailedOperator<C extends IContext>
         implements
-        IOperator<Throwable, IAioServer<C>, IAioServer<C>>
+        IOperator<Throwable,
+                  IAioServer<C>,
+                  IAioServer<C>>
 {
 
+    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
+
     @Override
-    public IAioServer<C> handle(Throwable throwable, IAioServer<C> aioServer) {
+    public IAioServer<C> handle(Throwable throwable, IAioServer<C> aioServer)
+    {
+        _Logger.warning("accept failed!", throwable);
         return aioServer;
     }
 }

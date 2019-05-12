@@ -24,15 +24,15 @@
 
 package com.tgx.chess.bishop.io.mqtt.bean;
 
+import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.king.base.util.Pair;
-import com.tgx.chess.queen.io.core.async.AioContext;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 
 public class QttContext
         extends
-        AioContext
+        ZContext
 {
     private final static IPair VERSION = new Pair<>("3.1.1", 4);
 

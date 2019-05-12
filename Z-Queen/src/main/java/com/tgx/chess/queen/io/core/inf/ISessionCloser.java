@@ -24,45 +24,34 @@
 
 package com.tgx.chess.queen.io.core.inf;
 
-import java.nio.channels.AsynchronousSocketChannel;
-import java.nio.channels.CompletionHandler;
+import java.io.IOException;
 
+import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.io.core.async.socket.AioWorker;
 
 /**
  * @author william.d.zk
+ * @date 2019-05-12
  */
-public interface IAioConnector<C extends IContext>
+public interface ISessionCloser<C extends IContext>
         extends
-        CompletionHandler<Void,
-                          AsynchronousSocketChannel>,
-        IConnectActive<C>,
-        IConnected<C>,
-        IConnectError
+        IOperator<Void,
+                  ISession<C>,
+                  Void>
 {
-    @Override
-    IOperator<Throwable,
-              IAioConnector<C>,
-              IAioConnector<C>> getErrorOperator();
+
+    Logger _Logger = Logger.getLogger(ISessionCloser.class.getSimpleName());
 
     @Override
-    default void completed(Void result, AsynchronousSocketChannel channel)
+    default Void handle(Void v, ISession<C> session)
     {
-        AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishConnected(getConnectedOperator(),
-                                getSort(),
-                                this,
-                                getSessionCreator(),
-                                getCommandCreator(),
-                                getSessionCreated(),
-                                channel);
-    }
-
-    @Override
-    default void failed(Throwable exc, AsynchronousSocketChannel channel)
-    {
-        AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishConnectingError(getErrorOperator(), exc, this);
+        try {
+            session.close();
+        }
+        catch (IOException e) {
+            _Logger.warning("session close: %s", e, session.toString());
+        }
+        _Logger.warning("closed operator %s", session.toString());
+        return null;
     }
 }

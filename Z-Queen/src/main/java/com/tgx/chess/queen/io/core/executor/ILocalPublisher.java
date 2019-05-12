@@ -24,18 +24,18 @@
 
 package com.tgx.chess.queen.io.core.executor;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.lmax.disruptor.RingBuffer;
-import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.io.core.inf.IPipeTransfer;
 import com.tgx.chess.queen.io.core.inf.ISession;
+import com.tgx.chess.queen.io.core.inf.ISessionCloser;
 
 /**
  * @author william.d.zk
@@ -49,11 +49,7 @@ public interface ILocalPublisher<C extends IContext>
     ReentrantLock getLocalLock();
 
     @SuppressWarnings("unchecked")
-    default boolean localSend(ISession<C> session,
-                              IOperator<ICommand<C>[],
-                                        ISession<C>,
-                                        List<ITriple>> operator,
-                              ICommand<C>... toSends)
+    default boolean localSend(ISession<C> session, IPipeTransfer<C> operator, ICommand<C>... toSends)
     {
         Objects.requireNonNull(toSends);
         Objects.requireNonNull(session);
@@ -78,10 +74,7 @@ public interface ILocalPublisher<C extends IContext>
         return false;
     }
 
-    default void localClose(ISession<C> session,
-                            IOperator<Void,
-                                      ISession<C>,
-                                      Void> operator)
+    default void localClose(ISession<C> session, ISessionCloser<C> closer)
     {
         Objects.requireNonNull(session);
         final RingBuffer<QEvent> _BizLocalCloseEvent = getLocalCloser(session);
@@ -91,7 +84,7 @@ public interface ILocalPublisher<C extends IContext>
             long sequence = _BizLocalCloseEvent.next();
             try {
                 QEvent event = _BizLocalCloseEvent.get(sequence);
-                event.produce(IOperator.Type.CLOSE, new Pair<>(null, session), operator);
+                event.produce(IOperator.Type.CLOSE, new Pair<>(null, session), closer);
             }
             finally {
                 _BizLocalCloseEvent.publish(sequence);

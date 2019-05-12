@@ -48,8 +48,8 @@ public class DecodeHandler<C extends IContext>
         extends
         BasePipeEventHandler<C>
 {
-    protected final Logger          _Log = Logger.getLogger(getClass().getName());
-    protected final IEncryptHandler _EncryptHandler;
+    protected final Logger        _Logger = Logger.getLogger(getClass().getName());
+    private final IEncryptHandler _EncryptHandler;
 
     public DecodeHandler(IEncryptHandler encryptHandler)
     {
@@ -79,11 +79,11 @@ public class DecodeHandler<C extends IContext>
             try {
                 ITriple result = packetOperator.handle(packet, session);
                 ICommand[] commands = result.first();
-                _Log.info("decoded commands:%s", Arrays.toString(commands));
+                _Logger.info("decoded commands:%s", Arrays.toString(commands));
                 transfer(event, commands, session, result.third());
             }
             catch (Exception e) {
-                _Log.warning(String.format("read decode error\n %s", session.toString()), e);
+                _Logger.warning(String.format("read decode error\n %s", session.toString()), e);
                 context.setInState(DECODE_ERROR);
                 //此处为Pipeline中间环节，使用event进行事件传递，不使用dispatcher
                 event.error(FILTER_DECODE, new Pair<>(e, session), getErrorOperator());
