@@ -60,9 +60,9 @@ public class QttZClient
         BaseDeviceClient<QttContext>
 {
 
-    public QttZClient(@Value("${client.target.name}") String targetName,
-                      @Value("${client.target.host}") String targetHost,
-                      @Value("${client.target.port}") int targetPort) throws IOException
+    public QttZClient(@Value("${qtt.client.target.name}") String targetName,
+                      @Value("${qtt.client.target.host}") String targetHost,
+                      @Value("${qtt.client.target.port}") int targetPort) throws IOException
     {
         super(targetName, targetHost, targetPort, QttZSort.SYMMETRY);
     }
@@ -74,7 +74,8 @@ public class QttZClient
     }
 
     @Override
-    public ICommand[] createCommands(ISession<QttContext> session)
+    @SuppressWarnings("unchecked")
+    public ICommand<QttContext>[] createCommands(ISession<QttContext> session)
     {
         return new ICommand[] { new X111_QttConnect() };
     }

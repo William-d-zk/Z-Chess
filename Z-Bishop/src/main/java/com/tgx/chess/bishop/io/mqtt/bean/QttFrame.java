@@ -55,7 +55,7 @@ public class QttFrame
     @Override
     public void setCtrl(byte ctrl)
     {
-        frame_op_code = ctrl;
+        setOpCode(ctrl);
     }
 
     @Override
@@ -118,14 +118,14 @@ public class QttFrame
 
         final byte   _Value;
         final String _Description;
-        final String _Flow;
+        final String _Direction;
 
         QTT_TYPE(int code,
-                 String flow,
+                 String direction,
                  String description)
         {
             _Value = (byte) (code << 4);
-            _Flow = flow;
+            _Direction = direction;
             _Description = description;
         }
 
@@ -134,9 +134,9 @@ public class QttFrame
             return _Value;
         }
 
-        public String getFlow()
+        public String getDirection()
         {
-            return _Flow;
+            return _Direction;
         }
 
         public String getDescription()
@@ -250,6 +250,18 @@ public class QttFrame
     private QTT_TYPE type;
     private byte[]   mPayload;
     private byte     mLengthCode;
+
+    public static byte generateCtrl(boolean dup, boolean retain, QOS_LEVEL qosLevel, QTT_TYPE qttType)
+    {
+        byte ctrl = 0;
+        ctrl |= dup ? duplicate_flag
+                    : 0;
+        ctrl |= retain ? retain_flag
+                       : 0;
+        ctrl |= qosLevel.getValue() << 1;
+        ctrl |= qttType.getValue();
+        return ctrl;
+    }
 
     public void setDup(boolean dup)
     {

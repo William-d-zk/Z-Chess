@@ -43,7 +43,7 @@ public class QttFrameFilter<C extends QttContext>
         extends
         AioFilterChain<C>
 {
-    private final Logger _Log = Logger.getLogger(getClass().getName());
+    private final Logger _Logger = Logger.getLogger(getClass().getName());
 
     public QttFrameFilter()
     {

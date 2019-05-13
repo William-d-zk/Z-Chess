@@ -29,6 +29,7 @@ import java.util.Objects;
 
 import com.tgx.chess.bishop.io.mqtt.bean.QttCommand;
 import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
+import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
 import com.tgx.chess.bishop.io.mqtt.bean.QttFrame.QOS_LEVEL;
 import com.tgx.chess.king.base.util.IoUtil;
 
@@ -48,6 +49,17 @@ public class X111_QttConnect<C extends QttContext>
     public X111_QttConnect()
     {
         super(COMMAND);
+    }
+
+    private final static byte CTRL = QttFrame.generateCtrl(false,
+                                                           false,
+                                                           QOS_LEVEL.QOS_ONLY_ONCE,
+                                                           QttFrame.QTT_TYPE.CONNECT);
+
+    @Override
+    public byte getCtrl()
+    {
+        return CTRL;
     }
 
     @Override

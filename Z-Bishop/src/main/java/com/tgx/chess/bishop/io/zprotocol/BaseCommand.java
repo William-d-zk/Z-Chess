@@ -44,7 +44,7 @@ public abstract class BaseCommand<C extends AioContext>
         IRouteLv4,
         IStreamProtocol<C>
 {
-    private final static Logger _Log = Logger.getLogger(BaseCommand.class.getName());
+    private final static Logger _Logger = Logger.getLogger(BaseCommand.class.getName());
 
     public final static int  version             = 0x3;
     private final static int g_msg_uid_size      = 8;
@@ -218,7 +218,7 @@ public abstract class BaseCommand<C extends AioContext>
         pos += IoUtil.writeByte(mTypeByte, data, pos);
         int ppos = pos;
         int dpos = encodec(data, pos);
-        _Log.info("command:0x%03X,payload:%s", _Command, IoUtil.bin2Hex(data, ppos, dpos - ppos, "."));
+        _Logger.info("command:0x%03X,payload:%s", _Command, IoUtil.bin2Hex(data, ppos, dpos - ppos, "."));
         addCrc(data, dpos);
         return data;
     }
