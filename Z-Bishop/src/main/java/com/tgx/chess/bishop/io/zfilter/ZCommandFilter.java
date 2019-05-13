@@ -119,7 +119,8 @@ public class ZCommandFilter<C extends AioContext>
             case X01_EncryptRequest.COMMAND:
                 X01_EncryptRequest x01 = (X01_EncryptRequest) _command;
                 IEncryptHandler encryptHandler = context.getEncryptHandler();
-                if (encryptHandler == null || !x01.isEncrypt()) return new X06_PlainStart(Code.PLAIN_UNSUPPORTED.getCode());
+                if (encryptHandler == null
+                    || !x01.isEncrypt()) return new X06_PlainStart(Code.PLAIN_UNSUPPORTED.getCode());
                 Pair<Integer,
                      byte[]> keyPair = encryptHandler.getAsymmetricPubKey(x01.pubKeyId);
                 if (keyPair != null) {
@@ -203,17 +204,17 @@ public class ZCommandFilter<C extends AioContext>
         switch (command)
         {
             case X01_EncryptRequest.COMMAND:
-                return new X01_EncryptRequest();
+                return new X01_EncryptRequest<>();
             case X02_AsymmetricPub.COMMAND:
-                return new X02_AsymmetricPub();
+                return new X02_AsymmetricPub<>();
             case X03_Cipher.COMMAND:
-                return new X03_Cipher();
+                return new X03_Cipher<>();
             case X04_EncryptConfirm.COMMAND:
-                return new X04_EncryptConfirm();
+                return new X04_EncryptConfirm<>();
             case X05_EncryptStart.COMMAND:
-                return new X05_EncryptStart();
+                return new X05_EncryptStart<>();
             case X06_PlainStart.COMMAND:
-                return new X06_PlainStart();
+                return new X06_PlainStart<>();
             case 0xFF:
                 throw new UnsupportedOperationException();
             default:

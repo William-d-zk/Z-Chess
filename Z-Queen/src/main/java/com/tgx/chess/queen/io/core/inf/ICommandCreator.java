@@ -33,5 +33,5 @@ package com.tgx.chess.queen.io.core.inf;
  */
 public interface ICommandCreator<C extends IContext>
 {
-    ICommand[] createCommands(ISession<C> session);
+    ICommand<C>[] createCommands(ISession<C> session);
 }

@@ -24,9 +24,9 @@
 
 package com.tgx.chess.bishop.io.mqtt.filter;
 
+import com.tgx.chess.bishop.io.mqtt.bean.QttCommand;
 import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
 import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
-import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
 
@@ -46,7 +46,17 @@ public class QttCommandFilter<C extends QttContext>
     @Override
     public ResultType preEncode(C context, IProtocol output)
     {
-        return null;
+        if (output == null || context == null) return ResultType.ERROR;
+        switch (output.superSerial())
+        {
+            case IProtocol.COMMAND_SERIAL:
+            case IProtocol.CONTROL_SERIAL:
+                return ResultType.NEXT_STEP;
+            case IProtocol.FRAME_SERIAL:
+                return ResultType.IGNORE;
+            default:
+                return ResultType.ERROR;
+        }
     }
 
     @Override
@@ -62,14 +72,18 @@ public class QttCommandFilter<C extends QttContext>
     {
         QttFrame frame = new QttFrame();
         @SuppressWarnings("unchecked")
-        BaseCommand<C> command = (BaseCommand<C>) output;
+        QttCommand<C> command = (QttCommand<C>) output;
         frame.setPayload(command.encode(context));
+        frame.setCtrl(command.getCtrl());
         return frame;
     }
 
     @Override
     public IProtocol decode(C context, IProtocol input)
     {
+        QttFrame frame = (QttFrame) input;
+
+
         return null;
     }
 }

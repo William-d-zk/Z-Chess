@@ -72,7 +72,7 @@ public class ConnectedOperator<C extends IContext>
         ICommandCreator<C> commandCreator = context.getCommandCreator();
         sessionCreated.onCreate(session);
         session.readNext(_AioReader);
-        ICommand[] commands = commandCreator.createCommands(session);
+        ICommand<C>[] commands = commandCreator.createCommands(session);
         return new Triple<>(commands, session, _Transfer);
     }
 }

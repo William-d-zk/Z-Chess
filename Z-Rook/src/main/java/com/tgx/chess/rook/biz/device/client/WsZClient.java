@@ -72,16 +72,17 @@ public class WsZClient
         BaseDeviceClient<WsContext>
 {
 
-    public WsZClient(@Value("${client.target.name}") String targetName,
-                     @Value("${client.target.host}") String targetHost,
-                     @Value("${client.target.port}") int targetPort) throws IOException
+    public WsZClient(@Value("${ws.client.target.name}") String targetName,
+                     @Value("${ws.client.target.host}") String targetHost,
+                     @Value("${ws.client.target.port}") int targetPort) throws IOException
     {
 
         super(targetName, targetHost, targetPort, CONSUMER);
     }
 
     @Override
-    public ICommand[] createCommands(ISession<WsContext> session)
+    @SuppressWarnings("unchecked")
+    public ICommand<WsContext>[] createCommands(ISession<WsContext> session)
     {
         return new ICommand[] { new X101_HandShake<>(_TargetHost,
                                                      session.getContext()

@@ -26,6 +26,7 @@ package com.tgx.chess.bishop.io.mqtt.control;
 
 import com.tgx.chess.bishop.io.mqtt.bean.QttCommand;
 import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
+import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
 
 /**
  * @author william.d.zk
@@ -35,11 +36,21 @@ public class X112_QttConnack<C extends QttContext>
         extends
         QttCommand<C>
 {
-    public final static int COMMAND = 0x112;
+    public final static int   COMMAND = 0x112;
+    private final static byte CTRL    = QttFrame.generateCtrl(false,
+                                                              false,
+                                                              QttFrame.QOS_LEVEL.QOS_ONLY_ONCE,
+                                                              QttFrame.QTT_TYPE.CONNACK);
 
     public X112_QttConnack()
     {
         super(COMMAND);
+    }
+
+    @Override
+    public byte getCtrl()
+    {
+        return CTRL;
     }
 
     @Override

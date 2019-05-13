@@ -22,60 +22,12 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.bishop.io.mqtt.bean;
-
-import com.tgx.chess.queen.io.core.inf.ICommand;
-import com.tgx.chess.queen.io.core.inf.IRouteLv4;
-import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.inf.IStreamProtocol;
+package com.tgx.chess.bishop.io.mqtt.filter;
 
 /**
  * @author william.d.zk
- * @date 2019-05-02
+ * @date 2019-05-13
  */
-public abstract class QttCommand<C extends QttContext>
-        implements
-        ICommand<C>,
-        IRouteLv4,
-        IStreamProtocol<C>
+public class QttControlFilter
 {
-    private final int   _Command;
-    private byte[]      mPayload;
-    private ISession<C> mSession;
-
-    public abstract byte getCtrl();
-
-    public QttCommand(int command)
-    {
-        _Command = command;
-    }
-
-    @Override
-    public int getSerial()
-    {
-        return _Command;
-    }
-
-    @Override
-    public ICommand<C> setSession(ISession<C> session)
-    {
-        mSession = session;
-        return this;
-    }
-
-    @Override
-    public ISession<C> getSession()
-    {
-        return mSession;
-    }
-
-    public byte[] getPayload()
-    {
-        return mPayload;
-    }
-
-    public void setPayload(byte[] payload)
-    {
-        mPayload = payload;
-    }
 }
