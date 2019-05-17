@@ -35,6 +35,8 @@ import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
 import com.tgx.chess.bishop.io.zprotocol.control.X107_Redirect;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
+import com.tgx.chess.queen.io.core.inf.IFrame;
+import com.tgx.chess.queen.io.core.inf.IPacket;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
@@ -46,17 +48,21 @@ public class WsControlFilter<C extends WsContext>
 {
     private final Logger _Log = Logger.getLogger(getClass().getName());
 
-    public WsControlFilter() {
+    public WsControlFilter()
+    {
         super("network-control-zfilter");
     }
 
     @Override
-    public ResultType preEncode(C context, IProtocol output) {
+    public ResultType preEncode(C context, IFrame output)
+    {
         if (context == null || output == null) { return ResultType.ERROR; }
         if (context.isOutConvert()) {
-            switch (output.superSerial()) {
+            switch (output.superSerial())
+            {
                 case IProtocol.CONTROL_SERIAL:
-                    switch (output.getSerial()) {
+                    switch (output.getSerial())
+                    {
                         case X101_HandShake.COMMAND:
                         case X102_SslHandShake.COMMAND:
                             return ResultType.ERROR;
@@ -74,7 +80,8 @@ public class WsControlFilter<C extends WsContext>
     }
 
     @Override
-    public WsFrame encode(C context, IProtocol output) {
+    public WsFrame encode(C context, IProtocol output)
+    {
         WsFrame frame = new WsFrame();
         WsControl control = (WsControl) output;
         _Log.info("control %s", control);
@@ -84,14 +91,16 @@ public class WsControlFilter<C extends WsContext>
     }
 
     @Override
-    public ResultType preDecode(C context, IProtocol input) {
+    public ResultType preDecode(C context, IPacket input)
+    {
         if (context == null || input == null) { return ResultType.ERROR; }
         if (!context.isInConvert()) { return ResultType.IGNORE; }
         if (!(input instanceof WsFrame)) { return ResultType.ERROR; }
         WsFrame frame = (WsFrame) input;
         if (frame.isNoCtrl()) { return ResultType.IGNORE; }
         WsFrame wsFrame = (WsFrame) input;
-        switch (wsFrame.frame_op_code & 0x0F) {
+        switch (wsFrame.frame_op_code & 0x0F)
+        {
             case WsFrame.frame_op_code_ctrl_close:
             case WsFrame.frame_op_code_ctrl_ping:
             case WsFrame.frame_op_code_ctrl_pong:
@@ -104,9 +113,11 @@ public class WsControlFilter<C extends WsContext>
     }
 
     @Override
-    public WsControl decode(C context, IProtocol input) {
+    public WsControl decode(C context, IProtocol input)
+    {
         WsFrame wsFrame = (WsFrame) input;
-        switch (wsFrame.frame_op_code & 0x0F) {
+        switch (wsFrame.frame_op_code & 0x0F)
+        {
             case WsFrame.frame_op_code_ctrl_close:
                 return new X103_Close<C>(wsFrame.getPayload());
             case WsFrame.frame_op_code_ctrl_ping:

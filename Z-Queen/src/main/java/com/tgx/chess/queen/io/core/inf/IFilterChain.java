@@ -31,7 +31,6 @@ import com.tgx.chess.king.base.inf.IDisposable;
  */
 public interface IFilterChain<C extends IContext>
         extends
-        IFilter<C>,
         IDisposable
 {
     IFilterChain<C> getPrevious();
@@ -49,6 +48,15 @@ public interface IFilterChain<C extends IContext>
     IFilterChain<C> linkAfter(IFilterChain<C> curFilter);
 
     IFilterChain<C> linkFront(IFilterChain<C> curFilter);
+
+    default int getIdempotentBit() {
+        return -1;
+    }
+
+    default void idempotentRightShift(int previous) {
+    }
+
+    <P extends IProtocol, T extends IProtocol> IFilter<C, P, T> getFilter();
 
     String getName();
 }

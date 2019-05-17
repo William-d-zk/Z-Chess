@@ -54,14 +54,8 @@ public class QttFrameFilter<C extends QttContext>
     public ResultType preEncode(C context, IProtocol output)
     {
         if (Objects.isNull(context) || Objects.isNull(output)) { return ResultType.ERROR; }
-        switch (output.superSerial())
-        {
-            case IProtocol.COMMAND_SERIAL:
-            case IProtocol.FRAME_SERIAL:
-                return ResultType.NEXT_STEP;
-            default:
-                return ResultType.ERROR;
-        }
+        if (output.superSerial() == IProtocol.FRAME_SERIAL) { return ResultType.NEXT_STEP; }
+        return ResultType.ERROR;
     }
 
     @Override

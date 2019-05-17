@@ -23,18 +23,23 @@
  */
 package com.tgx.chess.queen.io.core.async;
 
+import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.io.core.inf.IFilter;
 import com.tgx.chess.queen.io.core.inf.IFilterChain;
+import com.tgx.chess.queen.io.core.inf.IFrame;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
  * @author William.d.zk
  */
-public abstract class AioFilterChain<C extends IContext>
+public abstract class AioFilterChain<C extends IContext, O extends IProtocol, I extends IProtocol>
         implements
-        IFilterChain<C>
+        IFilterChain<C>,
+        IFilter<C, O, I>
 {
 
-    protected final String  _Name;
+    private final String    _Name;
     private IFilterChain<C> nextFilter;
     private IFilterChain<C> preFilter;
 
@@ -120,6 +125,33 @@ public abstract class AioFilterChain<C extends IContext>
             nFilter.setNext(null);
             nFilter = nnFilter;
         }
+    }
+
+    protected ResultType preCommandEncode(C context, ICommand<C> output) {
+        if (output == null || context == null) { return ResultType.ERROR; }
+        if (context.isOutConvert()) {
+            switch (output.superSerial()) {
+                case IProtocol.COMMAND_SERIAL:
+                    return ResultType.NEXT_STEP;
+                case IProtocol.CONTROL_SERIAL:
+                case IProtocol.FRAME_SERIAL:
+                    return ResultType.IGNORE;
+                default:
+                    return ResultType.ERROR;
+            }
+        }
+        return ResultType.IGNORE;
+    }
+
+    protected ResultType preCommandDecode(C context, IFrame input) {
+        if (context == null || input == null) { return ResultType.ERROR; }
+        return context.isInConvert() && input.isNoCtrl() ? ResultType.HANDLED : ResultType.IGNORE;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public IFilter<C, O, I> getFilter() {
+        return this;
     }
 
     @Override
