@@ -251,13 +251,24 @@ public class WsFrame
 
     public boolean checkRSV(byte value)
     {
-        return (value & frame_rsv_1_mask) == 0 && (value & frame_rsv_2_mask) == 0 && (value & frame_rsv_2_mask) == 0;
+        return (value & frame_rsv_1_mask) == 0 && (value & frame_rsv_2_mask) == 0 && (value & frame_rsv_3_mask) == 0;
     }
 
     @Override
     public void setCtrl(byte frame_ctrl_code)
     {
         frame_op_code = frame_ctrl_code;
+        switch (frame_ctrl_code & 0x0F)
+        {
+            case WsFrame.frame_op_code_ctrl_close:
+            case WsFrame.frame_op_code_ctrl_ping:
+            case WsFrame.frame_op_code_ctrl_pong:
+            case WsFrame.frame_op_code_ctrl_cluster:
+            case WsFrame.frame_op_code_ctrl_redirect:
+                return;
+            default:
+                throw new IllegalArgumentException();
+        }
     }
 
     @Override

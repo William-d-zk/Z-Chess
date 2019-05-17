@@ -36,7 +36,6 @@ public interface IFrame
 {
     boolean isNoCtrl();
 
-
     void setCtrl(byte ctrl);
 
     void setPayload(byte[] payload);
