@@ -34,33 +34,32 @@ import com.tgx.chess.queen.event.inf.IOperator;
  */
 public interface IPipeDecoder<C extends IContext>
         extends
-        IOperator<IPacket,
-                  ISession<C>,
-                  ITriple>
+        IOperator<IPacket, ISession<C>, ITriple>
 {
     @SuppressWarnings("unchecked")
-    default ICommand<C>[] filterRead(IProtocol input, IFilterChain<C> filterChain, ISession<C> session)
-    {
-        final IFilterChain<C> _HeaderFilter = filterChain.getChainHead();
-        final C context = session.getContext();
+    default ICommand<C>[] filterRead(IPacket input, IFilterChain<C> filterChain, ISession<C> session) {
+        final IFilterChain<C> _Header = filterChain.getChainHead();
+        final C _Context = session.getContext();
         ICommand<C>[] commands = null;
         IFilter.ResultType resultType;
         IProtocol protocol = input;
-        for (IFilterChain<C> nextFilter = _HeaderFilter;; nextFilter = _HeaderFilter, protocol = input) {
+        for (IFilterChain<C> next = _Header;; next = _Header, protocol = input) {
             Chain:
-            while (nextFilter != null) {
-                resultType = nextFilter.preDecode(context, protocol);
-                switch (resultType)
-                {
+            while (next != null) {
+                resultType = next.getFilter()
+                                 .preDecode(_Context, protocol);
+                switch (resultType) {
                     case ERROR:
-                        throw new ZException(String.format("filter:%s error", nextFilter.getName()));
+                        throw new ZException(String.format("filter:%s error", next.getName()));
                     case NEED_DATA:
                         return commands;
                     case NEXT_STEP:
-                        protocol = nextFilter.decode(context, protocol);
+                        protocol = next.getFilter()
+                                       .decode(_Context, protocol);
                         break;
                     case HANDLED:
-                        ICommand<C> cmd = (ICommand<C>) nextFilter.decode(context, protocol);
+                        ICommand<C> cmd = (ICommand<C>) next.getFilter()
+                                                            .decode(_Context, protocol);
                         if (cmd != null) {
                             cmd.setSession(session);
                             if (commands == null) {
@@ -76,7 +75,7 @@ public interface IPipeDecoder<C extends IContext>
                     default:
                         break;
                 }
-                nextFilter = nextFilter.getNext();
+                next = next.getNext();
             }
         }
     }

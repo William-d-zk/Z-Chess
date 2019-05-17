@@ -68,34 +68,11 @@ public class ZCommandFilter<C extends AioContext>
     }
 
     @Override
-    public ResultType preEncode(C context, IProtocol output)
-    {
-        if (output == null || context == null) return ResultType.ERROR;
-        if (context.isOutConvert()) {
-            switch (output.superSerial())
-            {
-                case IProtocol.COMMAND_SERIAL:
-                    return ResultType.NEXT_STEP;
-                case IProtocol.CONTROL_SERIAL:
-                case IProtocol.FRAME_SERIAL:
-                    return ResultType.IGNORE;
-                default:
-                    return ResultType.ERROR;
-            }
-        }
-        return ResultType.IGNORE;
+    public <R extends IProtocol, O extends IProtocol> R encode(C context, O output) {
+        return null;
     }
 
-    @Override
-    public ResultType preDecode(C context, IProtocol input)
-    {
-        if (context == null || input == null) return ResultType.ERROR;
-        return context.isInConvert() && input instanceof WsFrame && ((WsFrame) input).isNoCtrl() ? ResultType.HANDLED
-                                                                                                 : ResultType.IGNORE;
-    }
-
-    @Override
-    public IProtocol encode(C context, IProtocol output)
+    public WsFrame encode(C context, BaseCommand<C> output)
     {
         WsFrame frame = new WsFrame();
         @SuppressWarnings("unchecked")

@@ -24,9 +24,64 @@
 
 package com.tgx.chess.bishop.io.mqtt.bean;
 
+import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IRouteLv4;
+import com.tgx.chess.queen.io.core.inf.ISession;
+
 /**
  * @author william.d.zk
  * @date 2019-05-13
  */
-public class QttControl {
+public abstract class QttControl<C extends QttContext>
+        implements
+        ICommand<C>,
+        IRouteLv4
+{
+    private final int   _Command;
+    private final byte  _CtrlCode;
+    private byte[]      mPayload;
+    private ISession<C> mSession;
+
+    public QttControl(byte ctrl,
+                      int command,
+                      byte[] msg)
+    {
+        _CtrlCode = ctrl;
+        _Command = command;
+        mPayload = msg;
+    }
+
+    public byte getCtrl()
+    {
+        return _CtrlCode;
+    }
+
+    @Override
+    public ICommand<C> setSession(ISession<C> session)
+    {
+        mSession = session;
+        return this;
+    }
+
+    @Override
+    public int getSerial()
+    {
+        return _Command;
+    }
+
+    @Override
+    public ISession<C> getSession()
+    {
+        return mSession;
+    }
+
+    public byte[] getPayload()
+    {
+        return mPayload;
+    }
+
+    public void setPayload(byte[] payload)
+    {
+        mPayload = payload;
+    }
 }

@@ -36,26 +36,29 @@ public interface IPipeEncoder<C extends IContext>
                   ISession<C>,
                   ITriple>
 {
-    default IProtocol filterWrite(IProtocol output, IFilterChain<C> filterChain, C context)
+    default <O extends IProtocol> O filterWrite(ICommand<C> output, IFilterChain<C> filterChain, C context)
     {
         IFilter.ResultType resultType;
-        IFilterChain<C> previousFilter = filterChain.getChainTail();
-        while (previousFilter != null) {
-            resultType = previousFilter.preEncode(context, output);
+        IFilterChain<C> previous = filterChain.getChainTail();
+        IProtocol toWrite = output;
+        while (previous != null) {
+            resultType = previous.getFilter()
+                                 .preEncode(context, toWrite);
             switch (resultType)
             {
                 case ERROR:
                 case NEED_DATA:
                     return null;
                 case NEXT_STEP:
-                    output = previousFilter.encode(context, output);
+                    toWrite = previous.getFilter()
+                                      .encode(context, output);
                     break;
                 default:
                     break;
             }
-            previousFilter = previousFilter.getPrevious();
+            previous = previous.getPrevious();
         }
-        return output;
+        return (O) toWrite;
     }
 
 }

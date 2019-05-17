@@ -50,20 +50,16 @@ public class PipeEncoder<C extends IContext>
     private final ErrorOperator<C> _ErrorOperator;
     private final AioWriter<C>     _AioWriter;
 
-    public PipeEncoder(IFilterChain<C> filterChain,
-                       ErrorOperator<C> errorOperator,
-                       AioWriter<C> aioWriter)
-    {
+    public PipeEncoder(IFilterChain<C> filterChain, ErrorOperator<C> errorOperator, AioWriter<C> aioWriter) {
         _FilterChain = filterChain;
         _ErrorOperator = errorOperator;
         _AioWriter = aioWriter;
     }
 
     @Override
-    public ITriple handle(ICommand<C> command, ISession<C> session)
-    {
+    public ITriple handle(ICommand<C> command, ISession<C> session) {
         try {
-            IPacket send = (IPacket) filterWrite(command, _FilterChain, session.getContext());
+            IPacket send = filterWrite(command, _FilterChain, session.getContext());
             Objects.requireNonNull(send);
             _Log.info("%s send:%s",
                       toString(),
@@ -79,8 +75,7 @@ public class PipeEncoder<C extends IContext>
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "PipeEncoder";
     }
 }

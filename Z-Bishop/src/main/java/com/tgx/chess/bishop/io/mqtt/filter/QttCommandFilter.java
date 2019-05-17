@@ -26,6 +26,7 @@ package com.tgx.chess.bishop.io.mqtt.filter;
 
 import com.tgx.chess.bishop.io.mqtt.bean.QttCommand;
 import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
+import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
 import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
@@ -44,31 +45,7 @@ public class QttCommandFilter<C extends QttContext>
     }
 
     @Override
-    public ResultType preEncode(C context, IProtocol output)
-    {
-        if (output == null || context == null) return ResultType.ERROR;
-        switch (output.superSerial())
-        {
-            case IProtocol.COMMAND_SERIAL:
-            case IProtocol.CONTROL_SERIAL:
-                return ResultType.NEXT_STEP;
-            case IProtocol.FRAME_SERIAL:
-                return ResultType.IGNORE;
-            default:
-                return ResultType.ERROR;
-        }
-    }
-
-    @Override
-    public ResultType preDecode(C context, IProtocol input)
-    {
-        if (context == null || input == null) return ResultType.ERROR;
-        return input instanceof QttFrame && ((QttFrame) input).isNoCtrl() ? ResultType.HANDLED
-                                                                          : ResultType.IGNORE;
-    }
-
-    @Override
-    public IProtocol encode(C context, IProtocol output)
+    public QttFrame encode(C context, QttControl output)
     {
         QttFrame frame = new QttFrame();
         @SuppressWarnings("unchecked")
@@ -83,7 +60,32 @@ public class QttCommandFilter<C extends QttContext>
     {
         QttFrame frame = (QttFrame) input;
 
+        return null;
+    }
 
+    @Override
+    public <O extends IProtocol> ResultType preEncode(C context, O output)
+    {
+        return null;
+    }
+
+    @Override
+    public <I extends IProtocol> ResultType preDecode(C context, I input)
+    {
+        return null;
+    }
+
+    @Override
+    public <R extends IProtocol,
+            O extends IProtocol> R encode(C context, O output)
+    {
+        return null;
+    }
+
+    @Override
+    public <R extends IProtocol,
+            I extends IProtocol> R decode(C context, I input)
+    {
         return null;
     }
 }
