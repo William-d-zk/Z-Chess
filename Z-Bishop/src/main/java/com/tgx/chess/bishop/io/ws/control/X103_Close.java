@@ -51,7 +51,7 @@ public class X103_Close<C extends WsContext>
     @Override
     public X103_Close<C> duplicate()
     {
-        return new X103_Close<C>(getPayload());
+        return new X103_Close<>(getPayload());
     }
 
 }

@@ -26,12 +26,13 @@ package com.tgx.chess.bishop.io.zprotocol.device;
 
 import java.util.Objects;
 
-import com.tgx.chess.bishop.io.ws.bean.WsContext;
-import com.tgx.chess.bishop.io.zfilter.ZContext;
-import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
+import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.io.core.async.AioContext;
 
+/**
+ * @author william.d.zk
+ */
 public class X22_SignIn<C extends AioContext>
         extends
         BaseCommand<C>

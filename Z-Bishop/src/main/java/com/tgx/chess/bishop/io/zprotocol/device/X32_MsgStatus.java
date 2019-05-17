@@ -35,6 +35,9 @@ import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.io.core.async.AioContext;
 
+/**
+ * @author william.d.zk
+ */
 public class X32_MsgStatus<C extends AioContext>
         extends
         BaseCommand<C>

@@ -36,18 +36,16 @@ public class X51_DeviceMsgAck<C extends AioContext>
 {
     public final static int COMMAND = 0x51;
 
-    public X51_DeviceMsgAck()
-    {
+    public X51_DeviceMsgAck() {
         super(COMMAND, true);
     }
 
-    public X51_DeviceMsgAck(long msgUID)
-    {
+    public X51_DeviceMsgAck(long msgUID) {
         super(COMMAND, msgUID);
     }
 
-    public int getPriority()
-    {
+    @Override
+    public int getPriority() {
         return QOS_09_CONFIRM_MESSAGE;
     }
 }

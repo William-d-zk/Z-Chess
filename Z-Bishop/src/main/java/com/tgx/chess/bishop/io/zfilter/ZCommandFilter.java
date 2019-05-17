@@ -51,29 +51,19 @@ public class ZCommandFilter<C extends AioContext>
         AioFilterChain<C>
 {
 
-    private final ICommandFactory<C,
-                                  BaseCommand<C>>    factory;
+    private final ICommandFactory<C, BaseCommand<C>> factory;
     private final Logger                             _Log = Logger.getLogger(getClass().getName());
 
-    public ZCommandFilter()
-    {
+    public ZCommandFilter() {
         this(null);
     }
 
-    public ZCommandFilter(ICommandFactory<C,
-                                          BaseCommand<C>> factory)
-    {
+    public ZCommandFilter(ICommandFactory<C, BaseCommand<C>> factory) {
         super("queen-command-zfilter");
         this.factory = factory;
     }
 
-    @Override
-    public <R extends IProtocol, O extends IProtocol> R encode(C context, O output) {
-        return null;
-    }
-
-    public WsFrame encode(C context, BaseCommand<C> output)
-    {
+    public WsFrame encode(C context, BaseCommand<C> output) {
         WsFrame frame = new WsFrame();
         @SuppressWarnings("unchecked")
         BaseCommand<C> command = (BaseCommand<C>) output;
@@ -83,23 +73,19 @@ public class ZCommandFilter<C extends AioContext>
     }
 
     @Override
-    public IProtocol decode(C context, IProtocol input)
-    {
+    public IProtocol decode(C context, IProtocol input) {
         WsFrame frame = (WsFrame) input;
         int command = frame.getPayload()[1] & 0xFF;
         @SuppressWarnings("unchecked")
         BaseCommand<C> _command = (BaseCommand<C>) create(command);
         if (Objects.isNull(_command)) return null;
         _command.decode(frame.getPayload(), context);
-        switch (command)
-        {
+        switch (command) {
             case X01_EncryptRequest.COMMAND:
                 X01_EncryptRequest x01 = (X01_EncryptRequest) _command;
                 IEncryptHandler encryptHandler = context.getEncryptHandler();
-                if (encryptHandler == null
-                    || !x01.isEncrypt()) return new X06_PlainStart(Code.PLAIN_UNSUPPORTED.getCode());
-                Pair<Integer,
-                     byte[]> keyPair = encryptHandler.getAsymmetricPubKey(x01.pubKeyId);
+                if (encryptHandler == null || !x01.isEncrypt()) return new X06_PlainStart(Code.PLAIN_UNSUPPORTED.getCode());
+                Pair<Integer, byte[]> keyPair = encryptHandler.getAsymmetricPubKey(x01.pubKeyId);
                 if (keyPair != null) {
                     X02_AsymmetricPub x02 = new X02_AsymmetricPub();
                     context.setPubKeyId(keyPair.first());
@@ -154,8 +140,7 @@ public class ZCommandFilter<C extends AioContext>
                 X04_EncryptConfirm x04 = (X04_EncryptConfirm) _command;
                 encryptHandler = context.getEncryptHandler();
                 if (x04.symmetricKeyId == context.getSymmetricKeyId()
-                    && Arrays.equals(encryptHandler.getSymmetricKeySign(context.getReRollKey()), x04.getSign()))
-                {
+                    && Arrays.equals(encryptHandler.getSymmetricKeySign(context.getReRollKey()), x04.getSign())) {
                     X05_EncryptStart x05 = new X05_EncryptStart();
                     x05.symmetricKeyId = x04.symmetricKeyId;
                     x05.salt = encryptHandler.nextRandomInt();
@@ -176,10 +161,8 @@ public class ZCommandFilter<C extends AioContext>
         }
     }
 
-    private BaseCommand<? extends AioContext> create(int command)
-    {
-        switch (command)
-        {
+    private BaseCommand<? extends AioContext> create(int command) {
+        switch (command) {
             case X01_EncryptRequest.COMMAND:
                 return new X01_EncryptRequest<>();
             case X02_AsymmetricPub.COMMAND:
@@ -195,8 +178,7 @@ public class ZCommandFilter<C extends AioContext>
             case 0xFF:
                 throw new UnsupportedOperationException();
             default:
-                return Objects.nonNull(factory) ? factory.create(command)
-                                                : null;
+                return Objects.nonNull(factory) ? factory.create(command) : null;
         }
     }
 }
