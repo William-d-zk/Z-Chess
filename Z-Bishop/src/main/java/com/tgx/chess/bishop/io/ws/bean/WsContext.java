@@ -47,35 +47,29 @@ public class WsContext
     public final static int HS_State_ORIGIN       = 1 << 5;
     public final static int HS_State_SEC_PROTOCOL = 1 << 6;
     // public final String mSecProtocol, mSubProtocol; //not support right now
-    public final static int HS_State_SEC_VERSION = 1 << 7;
-    public final static int HS_State_HTTP_101    = 1 << 8;
-    public final static int HS_State_SEC_ACCEPT  = 1 << 9;
-    public final static int HS_State_ACCEPT_OK   = HS_State_HTTP_101
-                                                   | HS_State_SEC_ACCEPT
-                                                   | HS_State_UPGRADE
-                                                   | HS_State_CONNECTION;
-    public final static int HS_State_CLIENT_OK   = HS_State_GET
-                                                   | HS_State_HOST
-                                                   | HS_State_UPGRADE
-                                                   | HS_State_CONNECTION
-                                                   | HS_State_SEC_KEY
-                                                   | HS_State_SEC_VERSION
-                                                   | HS_State_ORIGIN;
+    public final static int HS_State_SEC_VERSION  = 1 << 7;
+    public final static int HS_State_HTTP_101     = 1 << 8;
+    public final static int HS_State_SEC_ACCEPT   = 1 << 9;
+    public final static int HS_State_ACCEPT_OK    = HS_State_HTTP_101 | HS_State_SEC_ACCEPT | HS_State_UPGRADE | HS_State_CONNECTION;
+    public final static int HS_State_CLIENT_OK    = HS_State_GET
+                                                    | HS_State_HOST
+                                                    | HS_State_UPGRADE
+                                                    | HS_State_CONNECTION
+                                                    | HS_State_SEC_KEY
+                                                    | HS_State_SEC_VERSION
+                                                    | HS_State_ORIGIN;
     private final String    _SecKey, _SecAcceptExpect;
     private final int       _MaxPayloadSize;
     private int             mHandshakeState;
     private WsFrame         mCarrier;
     private WsHandshake     mHandshake;
-    private CryptUtil       mCryptUtil           = new CryptUtil();
+    private CryptUtil       mCryptUtil            = new CryptUtil();
 
-    public WsContext(ISessionOption option,
-                     ISort sorter)
-    {
+    public WsContext(ISessionOption option, ISort sorter) {
         super(option);
         _MaxPayloadSize = option.setSNF() - 2;
         if (sorter.getType()
-                  .equals(ISort.Type.CONSUMER))
-        {
+                  .equals(ISort.Type.CONSUMER)) {
             Random r = new Random(System.nanoTime());
             byte[] seed = new byte[17];
             r.nextBytes(seed);
@@ -83,63 +77,62 @@ public class WsContext
                             .encodeToString(mCryptUtil.sha1(seed));
             _SecAcceptExpect = getSecAccept(_SecKey);
         }
-        else _SecKey = _SecAcceptExpect = null;
+        else {
+            _SecKey = _SecAcceptExpect = null;
+        }
 
-        switch (sorter.getMode())
-        {
+        switch (sorter.getMode()) {
             case CLUSTER:
                 transfer();
                 break;
             case LINK:
                 handshake();
                 break;
+            default:
+                break;
         }
     }
 
-    public WsFrame getCarrier()
-    {
+    public WsFrame getCarrier() {
         return mCarrier;
     }
 
-    public void setCarrier(WsFrame frame)
-    {
+    public void setCarrier(WsFrame frame) {
         mCarrier = frame;
     }
 
-    public WsHandshake getHandshake()
-    {
+    public WsHandshake getHandshake() {
         return mHandshake;
     }
 
-    public void setHandshake(WsHandshake handshake)
-    {
+    public void setHandshake(WsHandshake handshake) {
         mHandshake = handshake;
     }
 
-    public final int getMaxPayloadSize()
-    {
+    public final int getMaxPayloadSize() {
         return _MaxPayloadSize;
     }
 
     @Override
-    public void close() throws IOException
-    {
+    public void close() throws IOException {
         super.close();
     }
 
     @Override
-    public void reset()
-    {
-        if (mCarrier != null) mCarrier.reset();
-        if (mHandshake != null) mHandshake.dispose();
+    public void reset() {
+        if (mCarrier != null) {
+            mCarrier.reset();
+        }
+        if (mHandshake != null) {
+            mHandshake.dispose();
+        }
         mHandshake = null;
         mCarrier = null;
         super.reset();
     }
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         mCryptUtil = null;
         mHandshake = null;
         mCarrier = null;
@@ -147,41 +140,34 @@ public class WsContext
     }
 
     @Override
-    public void finish()
-    {
+    public void finish() {
         super.finish();
         mCarrier = null;
         mHandshake = null;
     }
 
-    public String getSecAccept(String sec_key)
-    {
+    public String getSecAccept(String secKey) {
         return Base64.getEncoder()
-                     .encodeToString(mCryptUtil.sha1((sec_key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11").getBytes()));
+                     .encodeToString(mCryptUtil.sha1((secKey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11").getBytes()));
     }
 
-    public String getSeKey()
-    {
+    public String getSeKey() {
         return _SecKey;
     }
 
-    public final void updateHandshakeState(int state)
-    {
+    public final void updateHandshakeState(int state) {
         mHandshakeState |= state;
     }
 
-    public final boolean checkState(int state)
-    {
+    public final boolean checkState(int state) {
         return mHandshakeState == state || (mHandshakeState & state) == state;
     }
 
-    public final int getWsVersion()
-    {
+    public final int getWsVersion() {
         return 13;
     }
 
-    public String getSecAcceptExpect()
-    {
+    public String getSecAcceptExpect() {
         return _SecAcceptExpect;
     }
 }

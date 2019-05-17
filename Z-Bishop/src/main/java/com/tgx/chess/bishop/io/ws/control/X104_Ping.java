@@ -37,21 +37,18 @@ public class X104_Ping<C extends WsContext>
 
     public final static int COMMAND = 0x104;
 
-    public X104_Ping()
-    {
+    public X104_Ping() {
         super(COMMAND);
         mCtrlCode = WsFrame.frame_op_code_ctrl_ping;
     }
 
-    public X104_Ping(byte[] payload)
-    {
+    public X104_Ping(byte[] payload) {
         super(COMMAND, payload);
         mCtrlCode = WsFrame.frame_op_code_ctrl_ping;
     }
 
     @Override
-    public X104_Ping<C> duplicate()
-    {
-        return new X104_Ping<C>(getPayload());
+    public X104_Ping<C> duplicate() {
+        return new X104_Ping<>(getPayload());
     }
 }

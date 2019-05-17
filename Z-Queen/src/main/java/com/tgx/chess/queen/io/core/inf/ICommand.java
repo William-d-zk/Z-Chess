@@ -70,7 +70,7 @@ public interface ICommand<C extends IContext>
         return -1;
     }
 
-    default void setTransactionKey(long _key)
+    default void setTransactionKey(long key)
     {
     }
 

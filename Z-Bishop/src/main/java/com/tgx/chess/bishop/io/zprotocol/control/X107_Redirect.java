@@ -29,6 +29,9 @@ import com.tgx.chess.bishop.io.ws.bean.WsControl;
 import com.tgx.chess.bishop.io.ws.bean.WsFrame;
 import com.tgx.chess.king.base.util.IoUtil;
 
+/**
+ * @author william.d.zk
+ */
 public class X107_Redirect<C extends WsContext>
         extends
         WsControl<C>
