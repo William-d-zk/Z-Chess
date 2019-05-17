@@ -23,6 +23,8 @@
  */
 package com.tgx.chess.queen.io.core.async;
 
+import java.util.Objects;
+
 import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IFilter;
@@ -33,104 +35,126 @@ import com.tgx.chess.queen.io.core.inf.IProtocol;
 /**
  * @author William.d.zk
  */
-public abstract class AioFilterChain<C extends IContext, O extends IProtocol, I extends IProtocol>
+public abstract class AioFilterChain<C extends IContext,
+                                     O extends IProtocol,
+                                     I extends IProtocol>
         implements
         IFilterChain<C>,
-        IFilter<C, O, I>
+        IFilter<C,
+                O,
+                I>
 {
 
     private final String    _Name;
-    private IFilterChain<C> nextFilter;
-    private IFilterChain<C> preFilter;
+    private IFilterChain<C> next;
+    private IFilterChain<C> previous;
 
-    private int             mIdempotent = 0x80000000;
+    private int mIdempotent = 0x80000000;
 
-    protected AioFilterChain(String name) {
+    protected AioFilterChain(String name)
+    {
         _Name = name;
     }
 
     @Override
-    public int getIdempotentBit() {
+    public int getIdempotentBit()
+    {
         return mIdempotent;
     }
 
     @Override
-    public void idempotentRightShift(int previous) {
+    public void idempotentRightShift(int previous)
+    {
         if (previous == 1) { throw new IllegalArgumentException(); }
-        mIdempotent = previous == 0 && mIdempotent == 0x80000000 ? 1 : previous != 0 ? previous >>> 1 : mIdempotent;
+        mIdempotent = previous == 0 && mIdempotent == 0x80000000 ? 1
+                                                                 : previous != 0 ? previous >>> 1
+                                                                                 : mIdempotent;
     }
 
     @Override
-    public IFilterChain<C> getPrevious() {
-        return preFilter;
+    public IFilterChain<C> getPrevious()
+    {
+        return previous;
     }
 
     @Override
-    public void setPrevious(IFilterChain<C> filter) {
-        preFilter = filter;
+    public void setPrevious(IFilterChain<C> previous)
+    {
+        this.previous = previous;
     }
 
     @Override
-    public IFilterChain<C> getNext() {
-        return nextFilter;
+    public IFilterChain<C> getNext()
+    {
+        return next;
     }
 
     @Override
-    public void setNext(IFilterChain<C> filter) {
-        nextFilter = filter;
+    public void setNext(IFilterChain<C> next)
+    {
+        this.next = next;
     }
 
     @Override
-    public IFilterChain<C> getChainHead() {
-        IFilterChain<C> filter = preFilter;
-        while (filter != null && filter.getPrevious() != null) {
-            filter = filter.getPrevious();
+    public IFilterChain<C> getChainHead()
+    {
+        IFilterChain<C> node = previous;
+        while (node != null && node.getPrevious() != null) {
+            node = node.getPrevious();
         }
-        return filter == null ? this : filter;
+        return node == null ? this
+                            : node;
     }
 
     @Override
-    public IFilterChain<C> getChainTail() {
-        IFilterChain<C> filter = nextFilter;
-        while (filter != null && filter.getNext() != null) {
-            filter = filter.getNext();
+    public IFilterChain<C> getChainTail()
+    {
+        IFilterChain<C> node = next;
+        while (node != null && node.getNext() != null) {
+            node = node.getNext();
         }
-        return filter == null ? this : filter;
+        return node == null ? this
+                            : node;
     }
 
     @Override
-    public IFilterChain<C> linkAfter(IFilterChain<C> curFilter) {
-        if (curFilter == null) { return this; }
-        curFilter.setNext(this);
-        setPrevious(curFilter);
-        idempotentRightShift(curFilter.getIdempotentBit());
+    public IFilterChain<C> linkAfter(IFilterChain<C> current)
+    {
+        if (current == null) { return this; }
+        current.setNext(this);
+        setPrevious(current);
+        idempotentRightShift(current.getIdempotentBit());
         return this;
     }
 
     @Override
-    public IFilterChain<C> linkFront(IFilterChain<C> curFilter) {
-        if (curFilter == null) { return this; }
-        curFilter.setPrevious(this);
-        setNext(curFilter);
-        curFilter.idempotentRightShift(getIdempotentBit());
-        return curFilter;
+    public IFilterChain<C> linkFront(IFilterChain<C> current)
+    {
+        if (current == null) { return this; }
+        current.setPrevious(this);
+        setNext(current);
+        current.idempotentRightShift(getIdempotentBit());
+        return current;
     }
 
     @Override
-    public void dispose() {
-        IFilterChain<C> nnFilter;
-        IFilterChain<C> nFilter = nextFilter;
-        while (nFilter != null) {
-            nnFilter = nextFilter.getNext();
-            nFilter.setNext(null);
-            nFilter = nnFilter;
+    public void dispose()
+    {
+        IFilterChain<C> nextNext;
+        IFilterChain<C> next = this.next;
+        while (next != null) {
+            nextNext = next.getNext();
+            next.setNext(null);
+            next = nextNext;
         }
     }
 
-    protected ResultType preCommandEncode(C context, ICommand<C> output) {
+    protected ResultType preCommandEncode(C context, ICommand<C> output)
+    {
         if (output == null || context == null) { return ResultType.ERROR; }
         if (context.isOutConvert()) {
-            switch (output.superSerial()) {
+            switch (output.superSerial())
+            {
                 case IProtocol.COMMAND_SERIAL:
                     return ResultType.NEXT_STEP;
                 case IProtocol.CONTROL_SERIAL:
@@ -143,19 +167,34 @@ public abstract class AioFilterChain<C extends IContext, O extends IProtocol, I 
         return ResultType.IGNORE;
     }
 
-    protected ResultType preCommandDecode(C context, IFrame input) {
+    protected ResultType preCommandDecode(C context, IFrame input)
+    {
         if (context == null || input == null) { return ResultType.ERROR; }
-        return context.isInConvert() && input.isNoCtrl() ? ResultType.HANDLED : ResultType.IGNORE;
+        return context.isInConvert() && input.isNoCtrl() ? ResultType.HANDLED
+                                                         : ResultType.IGNORE;
+    }
+
+    protected ResultType preFrameDecode(C context, IFrame input)
+    {
+        if (Objects.isNull(context) || Objects.isNull(input)) { return ResultType.ERROR; }
+        return input.isNoCtrl() || !context.isInConvert() ? ResultType.IGNORE
+                                                          : ResultType.HANDLED;
+
+
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public IFilter<C, O, I> getFilter() {
+    public IFilter<C,
+                   O,
+                   I> getFilter()
+    {
         return this;
     }
 
     @Override
-    public String getName() {
+    public String getName()
+    {
         return _Name;
     }
 }

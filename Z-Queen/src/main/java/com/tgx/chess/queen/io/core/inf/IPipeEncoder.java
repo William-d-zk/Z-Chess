@@ -36,6 +36,7 @@ public interface IPipeEncoder<C extends IContext>
                   ISession<C>,
                   ITriple>
 {
+    @SuppressWarnings("unchecked")
     default <O extends IProtocol> O filterWrite(ICommand<C> output, IFilterChain<C> filterChain, C context)
     {
         IFilter.ResultType resultType;
