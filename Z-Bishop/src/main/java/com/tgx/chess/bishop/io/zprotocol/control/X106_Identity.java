@@ -23,7 +23,6 @@
  */
 package com.tgx.chess.bishop.io.zprotocol.control;
 
-import com.tgx.chess.bishop.io.ws.bean.WsContext;
 import com.tgx.chess.bishop.io.ws.bean.WsControl;
 import com.tgx.chess.bishop.io.ws.bean.WsFrame;
 import com.tgx.chess.king.base.util.IoUtil;
@@ -31,9 +30,9 @@ import com.tgx.chess.king.base.util.IoUtil;
 /**
  * @author William.d.zk
  */
-public class X106_Identity<C extends WsContext>
+public class X106_Identity
         extends
-        WsControl<C>
+        WsControl
 {
     public final static int COMMAND = 0x106;
 
@@ -66,8 +65,8 @@ public class X106_Identity<C extends WsContext>
     }
 
     @Override
-    public X106_Identity<C> duplicate()
+    public X106_Identity duplicate()
     {
-        return new X106_Identity<>(getPayload());
+        return new X106_Identity(getPayload());
     }
 }

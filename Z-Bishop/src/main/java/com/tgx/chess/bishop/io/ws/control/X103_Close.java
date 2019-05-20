@@ -23,16 +23,15 @@
  */
 package com.tgx.chess.bishop.io.ws.control;
 
-import com.tgx.chess.bishop.io.ws.bean.WsContext;
 import com.tgx.chess.bishop.io.ws.bean.WsControl;
 import com.tgx.chess.bishop.io.ws.bean.WsFrame;
 
 /**
  * @author William.d.zk
  */
-public class X103_Close<C extends WsContext>
+public class X103_Close
         extends
-        WsControl<C>
+        WsControl
 {
     public final static int COMMAND = 0x103;
 
@@ -49,9 +48,9 @@ public class X103_Close<C extends WsContext>
     }
 
     @Override
-    public X103_Close<C> duplicate()
+    public X103_Close duplicate()
     {
-        return new X103_Close<>(getPayload());
+        return new X103_Close(getPayload());
     }
 
 }

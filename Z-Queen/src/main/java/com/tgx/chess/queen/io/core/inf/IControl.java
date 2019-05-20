@@ -34,7 +34,10 @@ public interface IControl<C extends IContext>
         ICommand<C>
 {
     @Override
-    default int superSerial() {
+    default int superSerial()
+    {
         return CONTROL_SERIAL;
     }
+
+    byte getCtrl();
 }

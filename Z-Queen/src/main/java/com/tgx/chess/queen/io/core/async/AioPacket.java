@@ -37,9 +37,10 @@ public class AioPacket
 {
 
     private final ByteBuffer _Buf;
-    private Status           mStatus = Status.No_Send;
+    private Status           mStatus      = Status.No_Send;
     private boolean          isNoAbandon;
     private int              mIdempotentBit;
+    private int              mSuperSerial = PACKAT_SERIAL;
 
     public AioPacket(int size,
                      boolean direct)
@@ -139,7 +140,13 @@ public class AioPacket
     @Override
     public int superSerial()
     {
-        return 0;
+        return mSuperSerial;
+    }
+
+    @Override
+    public void frameReady()
+    {
+        mSuperSerial = FRAME_SERIAL;
     }
 
     @Override

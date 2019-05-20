@@ -23,31 +23,33 @@
  */
 package com.tgx.chess.bishop.io.ws.control;
 
-import com.tgx.chess.bishop.io.ws.bean.WsContext;
 import com.tgx.chess.bishop.io.ws.bean.WsControl;
 import com.tgx.chess.bishop.io.ws.bean.WsFrame;
 
 /**
  * @author William.d.zk
  */
-public class X105_Pong<C extends WsContext>
+public class X105_Pong
         extends
-        WsControl<C>
+        WsControl
 {
     public final static int COMMAND = 0x105;
 
-    public X105_Pong() {
+    public X105_Pong()
+    {
         super(COMMAND);
         mCtrlCode = WsFrame.frame_op_code_ctrl_pong;
     }
 
-    public X105_Pong(byte[] payload) {
+    public X105_Pong(byte[] payload)
+    {
         super(COMMAND, payload);
         mCtrlCode = WsFrame.frame_op_code_ctrl_pong;
     }
 
     @Override
-    public X105_Pong<C> duplicate() {
-        return new X105_Pong<>(getPayload());
+    public X105_Pong duplicate()
+    {
+        return new X105_Pong(getPayload());
     }
 }

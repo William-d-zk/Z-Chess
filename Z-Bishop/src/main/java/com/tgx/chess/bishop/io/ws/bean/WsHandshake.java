@@ -28,9 +28,9 @@ import java.util.Objects;
 /**
  * @author William.d.zk
  */
-public abstract class WsHandshake<C extends WsContext>
+public abstract class WsHandshake
         extends
-        WsControl<C>
+        WsControl
 {
 
     private String rMsg;
@@ -49,7 +49,7 @@ public abstract class WsHandshake<C extends WsContext>
     }
 
     @Override
-    public byte getControl()
+    public byte getCtrl()
     {
         return WsFrame.frame_op_code_ctrl_handshake;
     }
@@ -90,15 +90,4 @@ public abstract class WsHandshake<C extends WsContext>
         return this;
     }
 
-    @Override
-    public byte[] encode()
-    {
-        return getPayload();
-    }
-
-    @Override
-    public void dispose()
-    {
-        rMsg = null;
-    }
 }
