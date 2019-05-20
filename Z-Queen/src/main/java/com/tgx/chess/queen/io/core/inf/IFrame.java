@@ -34,7 +34,6 @@ public interface IFrame
         IReset,
         IProtocol
 {
-    boolean isNoCtrl();
 
     void setCtrl(byte ctrl);
 

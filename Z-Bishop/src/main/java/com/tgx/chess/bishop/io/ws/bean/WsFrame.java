@@ -271,7 +271,6 @@ public class WsFrame
         }
     }
 
-    @Override
     public boolean isNoCtrl()
     {
         return (frame_op_code & 0x08) == 0;

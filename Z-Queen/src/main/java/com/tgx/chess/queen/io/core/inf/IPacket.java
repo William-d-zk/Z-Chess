@@ -51,6 +51,8 @@ public interface IPacket
 
     void setNoAbandon();
 
+    void frameReady();
+
     ByteBuffer getBuffer();
 
     IPacket wrapper(ByteBuffer buffer);

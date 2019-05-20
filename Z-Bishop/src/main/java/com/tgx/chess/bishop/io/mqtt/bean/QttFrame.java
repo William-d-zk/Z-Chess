@@ -41,8 +41,7 @@ public class QttFrame
         IFrame
 {
 
-    @Override
-    public boolean isNoCtrl()
+    public boolean isCtrl()
     {
         int head = frame_op_code & 240;
         return head == QTT_TYPE.CONNECT._Value

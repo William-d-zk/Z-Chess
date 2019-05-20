@@ -33,86 +33,68 @@ import com.tgx.chess.bishop.io.ws.control.X104_Ping;
 import com.tgx.chess.bishop.io.ws.control.X105_Pong;
 import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
 import com.tgx.chess.bishop.io.zprotocol.control.X107_Redirect;
-import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
-import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
  * @author William.d.zk
  */
-public class WsControlFilter<C extends WsContext>
+public class WsControlFilter
         extends
-        AioFilterChain<C,
-                       WsControl<C>,
+        AioFilterChain<WsContext,
+                       WsControl,
                        WsFrame>
 {
-    private final Logger _Log = Logger.getLogger(getClass().getName());
-
     public WsControlFilter()
     {
         super("network-control-zfilter");
     }
 
     @Override
-    public ResultType preEncode(C context, WsControl<C> output)
+    public ResultType preEncode(WsContext context, WsControl output)
     {
-        if (context == null || output == null) { return ResultType.ERROR; }
-        if (context.isOutConvert()) {
-            switch (output.superSerial())
-            {
-                case IProtocol.CONTROL_SERIAL:
-                    switch (output.getSerial())
-                    {
-                        case X101_HandShake.COMMAND:
-                        case X102_SslHandShake.COMMAND:
-                            return ResultType.ERROR;
-                        default:
-                            return ResultType.NEXT_STEP;
-                    }
-                case IProtocol.COMMAND_SERIAL:
-                case IProtocol.FRAME_SERIAL:
-                    return ResultType.IGNORE;
-                default:
-                    return ResultType.ERROR;
-            }
+        ResultType result = preControlEncode(context, output);
+        if (result.equals(ResultType.NEXT_STEP)) {
+            return output.getSerial() == X101_HandShake.COMMAND
+                   || output.getSerial() == X102_SslHandShake.COMMAND ? ResultType.ERROR
+                                                                      : result;
         }
-        return ResultType.IGNORE;
+        return result;
     }
 
     @Override
-    public WsFrame encode(C context, WsControl<C> output)
+    public WsFrame encode(WsContext context, WsControl output)
     {
         WsFrame frame = new WsFrame();
-        WsControl control = (WsControl) output;
-        _Log.info("control %s", control);
-        frame.setPayload(control.getPayload());
-        frame.setCtrl(control.getControl());
+        _Logger.info("control %s", output);
+        frame.setPayload(output.getPayload());
+        frame.setCtrl(output.getCtrl());
         return frame;
     }
 
     @Override
-    public ResultType preDecode(C context, WsFrame input)
+    public ResultType preDecode(WsContext context, WsFrame input)
     {
-        return preFrameDecode(context, input);
+        return preControlDecode(context, input);
     }
 
     @Override
-    public WsControl<C> decode(C context, WsFrame input)
+    public WsControl decode(WsContext context, WsFrame input)
     {
         switch (input.frame_op_code & 0x0F)
         {
             case WsFrame.frame_op_code_ctrl_close:
-                return new X103_Close<C>(input.getPayload());
+                return new X103_Close<>(input.getPayload());
             case WsFrame.frame_op_code_ctrl_ping:
-                return new X104_Ping<C>(input.getPayload());
+                return new X104_Ping<>(input.getPayload());
             case WsFrame.frame_op_code_ctrl_pong:
-                return new X105_Pong<C>(input.getPayload());
+                return new X105_Pong<>(input.getPayload());
             case WsFrame.frame_op_code_ctrl_cluster:
-                return new X106_Identity<C>(input.getPayload());
+                return new X106_Identity<>(input.getPayload());
             case WsFrame.frame_op_code_ctrl_redirect:
-                return new X107_Redirect<C>(input.getPayload());
+                return new X107_Redirect<>(input.getPayload());
             default:
-                return null;
+                throw new UnsupportedOperationException(String.format("web socket frame with control code %d.",
+                                                                      input.frame_op_code & 0x0F));
         }
     }
 }

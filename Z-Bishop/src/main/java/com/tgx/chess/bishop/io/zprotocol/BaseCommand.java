@@ -44,7 +44,7 @@ public abstract class BaseCommand<C extends AioContext>
         IRouteLv4,
         IStreamProtocol<C>
 {
-    private final static Logger _Logger = Logger.getLogger(BaseCommand.class.getName());
+    private final Logger _Logger = Logger.getLogger(getClass().getName());
 
     public final static int  version             = 0x3;
     private final static int g_msg_uid_size      = 8;

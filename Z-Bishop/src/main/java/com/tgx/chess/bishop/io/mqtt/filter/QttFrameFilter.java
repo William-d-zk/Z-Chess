@@ -25,15 +25,12 @@
 package com.tgx.chess.bishop.io.mqtt.filter;
 
 import java.nio.ByteBuffer;
-import java.util.Objects;
 
 import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
 import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
-import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.async.AioPacket;
 import com.tgx.chess.queen.io.core.inf.IPacket;
-import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
  * @author william.d.zk
@@ -41,9 +38,10 @@ import com.tgx.chess.queen.io.core.inf.IProtocol;
  */
 public class QttFrameFilter<C extends QttContext>
         extends
-        AioFilterChain<C>
+        AioFilterChain<C,
+                       QttFrame,
+                       IPacket>
 {
-    private final Logger _Logger = Logger.getLogger(getClass().getName());
 
     public QttFrameFilter()
     {
@@ -51,77 +49,76 @@ public class QttFrameFilter<C extends QttContext>
     }
 
     @Override
-    public ResultType preEncode(C context, IProtocol output)
+    public ResultType preEncode(C context, QttFrame output)
     {
-        if (Objects.isNull(context) || Objects.isNull(output)) { return ResultType.ERROR; }
-        if (output.superSerial() == IProtocol.FRAME_SERIAL) { return ResultType.NEXT_STEP; }
-        return ResultType.ERROR;
+        return preFrameEncode(context, output);
     }
 
     @Override
-    public ResultType preDecode(C context, IProtocol input)
+    public IPacket encode(C context, QttFrame output)
     {
-        if (context == null || input == null) { return ResultType.ERROR; }
-        IPacket _package = (IPacket) input;
-        ByteBuffer recvBuf = _package.getBuffer();
-        ByteBuffer cRvBuf = context.getRvBuffer();
-        QttFrame carrier = context.getCarrier();
-        int lack = context.lack();
-        switch (context.position())
-        {
-            case -1:
-                if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
-                context.setCarrier(carrier = new QttFrame());
-                byte value = recvBuf.get();
-                carrier.setOpCode(value);
-                lack = context.lackLength(1, 1);
-            case 0:
-                if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
-                carrier.setLengthCode(recvBuf.get());
-                lack = context.lackLength(1, carrier.payloadLengthLack() + context.position());
-            case 1:
-            default:
-                if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
-                int target = context.position() + lack;
-                do {
-                    if (carrier.isLengthCodeLack()) {
-                        carrier.setLengthCode(recvBuf.get());
-                        lack = context.lackLength(1, target = carrier.payloadLengthLack() + context.position());
-                    }
-                    else {
-                        int length = Math.min(recvBuf.remaining(), lack);
-                        for (int i = 0; i < length; i++) {
-                            cRvBuf.put(recvBuf.get());
-                        }
-                        lack = context.lackLength(length, target);
-                        if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
-                        if (carrier.getPayloadLength() > 0) {
-                            byte[] payload = new byte[carrier.getPayloadLength()];
-                            cRvBuf.flip();
-                            cRvBuf.get(payload);
-                            carrier.setPayload(payload);
-                        }
-                        cRvBuf.clear();
-                        return ResultType.NEXT_STEP;
-                    }
-                }
-                while (recvBuf.hasRemaining());
-                return ResultType.NEED_DATA;
-        }
-    }
-
-    @Override
-    public IProtocol encode(C context, IProtocol output)
-    {
-        QttFrame toEncode = (QttFrame) output;
-        ByteBuffer toWrite = ByteBuffer.allocate(toEncode.dataLength());
-        toWrite.position(toEncode.encodec(toWrite.array(), toWrite.position()))
+        ByteBuffer toWrite = ByteBuffer.allocate(output.dataLength());
+        toWrite.position(output.encodec(toWrite.array(), toWrite.position()))
                .flip();
         return new AioPacket(toWrite);
     }
 
     @Override
-    public IProtocol decode(C context, IProtocol input)
+    public ResultType preDecode(C context, IPacket input)
+    {
+        ResultType result = preFrameDecode(context, input);
+        if (ResultType.NEXT_STEP.equals(result)) {
+            ByteBuffer recvBuf = input.getBuffer();
+            ByteBuffer cRvBuf = context.getRvBuffer();
+            QttFrame carrier = context.getCarrier();
+            int lack = context.lack();
+            switch (context.position())
+            {
+                case -1:
+                    if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
+                    context.setCarrier(carrier = new QttFrame());
+                    byte value = recvBuf.get();
+                    carrier.setOpCode(value);
+                    lack = context.lackLength(1, 1);
+                case 0:
+                    if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
+                    carrier.setLengthCode(recvBuf.get());
+                    lack = context.lackLength(1, carrier.payloadLengthLack() + context.position());
+                case 1:
+                default:
+                    if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
+                    int target = context.position() + lack;
+                    do {
+                        if (carrier.isLengthCodeLack()) {
+                            carrier.setLengthCode(recvBuf.get());
+                            lack = context.lackLength(1, target = carrier.payloadLengthLack() + context.position());
+                        }
+                        else {
+                            int length = Math.min(recvBuf.remaining(), lack);
+                            for (int i = 0; i < length; i++) {
+                                cRvBuf.put(recvBuf.get());
+                            }
+                            lack = context.lackLength(length, target);
+                            if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
+                            if (carrier.getPayloadLength() > 0) {
+                                byte[] payload = new byte[carrier.getPayloadLength()];
+                                cRvBuf.flip();
+                                cRvBuf.get(payload);
+                                carrier.setPayload(payload);
+                            }
+                            cRvBuf.clear();
+                            return ResultType.NEXT_STEP;
+                        }
+                    }
+                    while (recvBuf.hasRemaining());
+                    return ResultType.NEED_DATA;
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public QttFrame decode(C context, IPacket input)
     {
         QttFrame frame = context.getCarrier();
         context.finish();

@@ -25,23 +25,23 @@ package com.tgx.chess.bishop.io.ws.bean;
 
 import java.util.Objects;
 
-import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IRouteLv4;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
 /**
  * @author William.d.zk
  */
-public abstract class WsControl<C extends WsContext>
+public abstract class WsControl
         implements
-        ICommand<C>,
+        IControl<WsContext>,
         IRouteLv4
 {
 
-    private final byte[] _Msg;
-    private final int    _Command;
-    protected byte       mCtrlCode;
-    private ISession<C>  mSession;
+    private final byte[]        _Msg;
+    private final int           _Command;
+    protected byte              mCtrlCode;
+    private ISession<WsContext> mSession;
 
     public WsControl(int command,
                      byte[] msg)
@@ -63,9 +63,19 @@ public abstract class WsControl<C extends WsContext>
         this(command, null);
     }
 
+    @Override
+    public void reset() {
+        setSession(null);
+    }
+
     public byte[] getPayload()
     {
         return _Msg;
+    }
+
+    public void setPayload(byte[] payload)
+    {
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -86,28 +96,29 @@ public abstract class WsControl<C extends WsContext>
         return _Command;
     }
 
-    public byte getControl()
+    @Override
+    public void setCtrl(byte ctrl)
+    {
+        mCtrlCode = ctrl;
+    }
+
+    @Override
+    public byte getCtrl()
     {
         return mCtrlCode;
     }
 
     @Override
-    public ISession<C> getSession()
+    public ISession<WsContext> getSession()
     {
         return mSession;
     }
 
     @Override
-    public WsControl<C> setSession(ISession<C> session)
+    public WsControl setSession(ISession<WsContext> session)
     {
         mSession = session;
         return this;
-    }
-
-    @Override
-    public WsControl<C> duplicate()
-    {
-        return null;
     }
 
     @Override

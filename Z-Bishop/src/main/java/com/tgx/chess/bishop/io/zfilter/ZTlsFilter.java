@@ -23,74 +23,78 @@
  */
 package com.tgx.chess.bishop.io.zfilter;
 
-import java.util.Objects;
-
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.io.core.async.AioContext;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.inf.IPacket;
-import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
  * @author William.d.zk
  */
 public class ZTlsFilter<C extends AioContext>
         extends
-        AioFilterChain<C>
+        AioFilterChain<C,
+                       IPacket,
+                       IPacket>
 {
 
-    public ZTlsFilter() {
+    public ZTlsFilter()
+    {
         super("queen-tls-zfilter");
     }
 
     private final Logger _Logger = Logger.getLogger(getClass().getName());
 
     @Override
-    public ResultType preEncode(C context, IProtocol output) {
-        if (Objects.isNull(context) || Objects.isNull(output)) { return ResultType.ERROR; }
-        ResultType resultType = context.isOutCrypt() ? ResultType.NEXT_STEP : ResultType.IGNORE;
-        /* plain -> cipher X04/X05 encoded in command-zfilter */
+    public ResultType preEncode(C context, IPacket output)
+    {
+        return prePacketEncode(context, output);
+    }
+
+    @Override
+    public IPacket encode(C context, IPacket output)
+    {
         if (!context.isOutCrypt() && context.needUpdateKeyOut()) {
+            /* plain -> cipher X04/X05 encoded in command-zfilter */
             _Logger.info("X04/X05 done,change state from plain to cipher in next encoding conversion");
             context.swapKeyOut(context.getReRollKey());
             context.getSymmetricEncrypt()
                    .reset();
             context.cryptOut();
         }
-        return resultType;
-    }
-
-    @Override
-    public IProtocol encode(C context, IProtocol output) {
-        IPacket _package = (IPacket) output;
-        context.getSymmetricEncrypt()
-               .digest(_package.getBuffer(), context.getSymmetricKeyOut());
-        /* cipher with old symmetric key -> new symmetric key */
-        if (context.needUpdateKeyOut()) {
-            context.swapKeyOut(context.getReRollKey());
+        if (context.isOutCrypt()) {
             context.getSymmetricEncrypt()
-                   .reset();
+                   .digest(output.getBuffer(), context.getSymmetricKeyOut());
+            /* cipher with old symmetric key -> new symmetric key */
+            if (context.needUpdateKeyOut()) {
+                context.swapKeyOut(context.getReRollKey());
+                context.getSymmetricEncrypt()
+                       .reset();
+            }
         }
-        return _package;
+        return output;
     }
 
     @Override
-    public ResultType preDecode(C context, IProtocol input) {
-        if (Objects.isNull(context) || Objects.isNull(input)) return ResultType.ERROR;
+    public ResultType preDecode(C context, IPacket input)
+    {
+        return prePacketDecode(context, input);
+    }
+
+    @Override
+    public IPacket decode(C context, IPacket input)
+    {
         if (context.needUpdateKeyIn()) {
             context.swapKeyIn(context.getReRollKey());
             context.getSymmetricDecrypt()
                    .reset();
             context.cryptIn();
         }
-        return context.isInCrypt() && !input.idempotent(getIdempotentBit()) ? ResultType.NEXT_STEP : ResultType.IGNORE;
-    }
-
-    @Override
-    public IProtocol decode(C context, IProtocol input) {
-        IPacket _package = (IPacket) input;
-        context.getSymmetricDecrypt()
-               .digest(_package.getBuffer(), context.getSymmetricKeyIn());
+        if (context.isInCrypt() && !input.idempotent(getIdempotentBit())) {
+            context.getSymmetricDecrypt()
+                   .digest(input.getBuffer(), context.getSymmetricKeyIn());
+        }
+        input.frameReady();
         return input;
     }
 
