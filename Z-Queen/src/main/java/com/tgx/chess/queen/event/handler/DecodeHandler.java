@@ -35,7 +35,7 @@ import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
 import com.tgx.chess.queen.io.core.inf.IPacket;
@@ -78,7 +78,7 @@ public class DecodeHandler<C extends IContext>
         if (!context.isInErrorState()) {
             try {
                 ITriple result = packetOperator.handle(packet, session);
-                ICommand[] commands = result.first();
+                IControl[] commands = result.first();
                 _Logger.info("decoded commands:%s", Arrays.toString(commands));
                 transfer(event, commands, session, result.third());
             }
@@ -95,9 +95,9 @@ public class DecodeHandler<C extends IContext>
     }
 
     protected void transfer(QEvent event,
-                            ICommand[] commands,
+                            IControl[] commands,
                             ISession<C> session,
-                            IOperator<ICommand[],
+                            IOperator<IControl[],
                                       ISession<C>,
                                       ITriple> operator)
     {

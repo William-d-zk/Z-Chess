@@ -21,27 +21,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.tgx.chess.queen.io.core.inf;
 
-import com.tgx.chess.king.base.inf.IDisposable;
-
 /**
- * 用于ISession 发送的指令最小单元 需要满足如下的行为特征
- * 
- * @author William.d.zk
- * @see ISession
+ * @author william.d.zk
+ * @date 2019-05-17
  */
 public interface ICommand<C extends IContext>
         extends
-        IQoS,
-        IMessage<C>,
-        IProtocol,
+        IControl<C>,
         IChannel,
-        IDisposable
+        IStreamProtocol<C>,
+        IRouteLv4
 {
+    @Override
+    default int superSerial()
+    {
+        return COMMAND_SERIAL;
+    }
+
+    @Override
+    default ICommand<C> setSession(ISession<C> session)
+    {
+        return this;
+    }
+
     /**
      * 当前 Command 是否对route-mapping 存在影响
-     * 
+     *
      * @return
      */
     default boolean isMappingCommand()
@@ -51,38 +59,22 @@ public interface ICommand<C extends IContext>
 
     long _DEFAULT_TRANSACTION_KEY = -1;
 
-    default IPacket translate()
-    {
-        return null;
-    }
-
     default long getUID()
     {
         return -1;
     }
 
-    default void setUID(long _uid)
+    default void setUID(long uid)
     {
     }
 
     default long getTransactionKey()
     {
-        return -1;
+        return _DEFAULT_TRANSACTION_KEY;
     }
 
     default void setTransactionKey(long key)
     {
     }
 
-    @Override
-    default ICommand<C> setSession(ISession<C> session)
-    {
-        return this;
-    }
-
-    @Override
-    default int superSerial()
-    {
-        return COMMAND_SERIAL;
-    }
 }

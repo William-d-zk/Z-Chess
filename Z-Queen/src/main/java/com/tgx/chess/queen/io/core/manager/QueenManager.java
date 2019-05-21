@@ -27,7 +27,7 @@ package com.tgx.chess.queen.io.core.manager;
 import com.tgx.chess.king.config.Config;
 import com.tgx.chess.queen.io.core.async.AioSessionManager;
 import com.tgx.chess.queen.io.core.executor.ServerCore;
-import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IPipeTransfer;
 import com.tgx.chess.queen.io.core.inf.ISession;
@@ -55,13 +55,13 @@ public abstract class QueenManager<C extends IContext>
     }
 
     @SafeVarargs
-    protected final boolean localSend(ISession<C> session, IPipeTransfer<C> transfer, ICommand<C>... commands)
+    protected final boolean localSend(ISession<C> session, IPipeTransfer<C> transfer, IControl<C>... commands)
     {
         return _ServerCore.localSend(session, transfer, commands);
     }
 
-    public abstract ICommand<C> save(ICommand<C> tar, ISession<C> session);
+    public abstract IControl<C> save(IControl<C> tar, ISession<C> session);
 
-    public abstract ICommand<C> find(ICommand<C> key, ISession<C> session);
+    public abstract IControl<C> find(IControl<C> key, ISession<C> session);
 
 }

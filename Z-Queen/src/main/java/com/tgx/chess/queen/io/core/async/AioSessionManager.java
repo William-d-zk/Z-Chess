@@ -509,7 +509,7 @@ public abstract class AioSessionManager<C extends IContext>
     //        return _SessionsSets.size();
     //    }
     //
-    //    public List<ICommand> heartbeatAll(List<ICommand> wList, ICommand heartbeat) {
+    //    public List<IControl> heartbeatAll(List<IControl> wList, IControl heartbeat) {
     //        for (ISession session : _Index2SessionMaps.values())
     //            wList.add(heartbeat.duplicate()
     //                               .setSession(session));

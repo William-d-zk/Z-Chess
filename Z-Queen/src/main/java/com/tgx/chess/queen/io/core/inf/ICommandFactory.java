@@ -27,13 +27,14 @@ package com.tgx.chess.queen.io.core.inf;
 /**
  * 核心方法
  * 根据命令字 创建具体的通讯指令
- * 通讯指令 必须是 IRouteLv4 & IStreamProtocol & ICommand 的子集
- * ICommand 作为 ISession 的最基本的指令单元，严格化的支持 Route 和 Stream 处理
+ * 通讯指令 必须是 IRouteLv4 & IStreamProtocol & IControl 的子集
+ * IControl 作为 ISession 的最基本的指令单元，严格化的支持 Route 和 Stream 处理
+ * 
  * @author william.d.zk
  * @see ICommandCreator
  */
 public interface ICommandFactory<E extends IContext,
-                                 T extends IRouteLv4 & IStreamProtocol<E> & ICommand>
+                                 T extends IRouteLv4 & IControl<E>>
 {
     T create(int command);
 }

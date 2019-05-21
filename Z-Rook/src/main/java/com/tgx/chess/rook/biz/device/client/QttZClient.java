@@ -32,6 +32,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 
+import com.tgx.chess.queen.io.core.inf.IControl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
@@ -44,7 +45,6 @@ import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 import com.tgx.chess.rook.io.WsZSort;
@@ -75,9 +75,9 @@ public class QttZClient
 
     @Override
     @SuppressWarnings("unchecked")
-    public ICommand<QttContext>[] createCommands(ISession<QttContext> session)
+    public IControl<QttContext>[] createCommands(ISession<QttContext> session)
     {
-        return new ICommand[] { new X111_QttConnect() };
+        return new IControl[] { new X111_QttConnect() };
     }
 
     @PostConstruct
@@ -86,12 +86,12 @@ public class QttZClient
     {
         _ClientCore.build((QEvent event, long sequence, boolean endOfBatch) ->
         {
-            ICommand<QttContext>[] commands = null;
+            IControl<QttContext>[] commands = null;
             ISession<QttContext> session = null;
             switch (event.getEventType())
             {
                 case LOGIC:
-                    //与 Server Node 处理过程存在较大的差异，中间去掉一个decoded dispatcher 所以此处入参为 ICommand[]
+                    //与 Server Node 处理过程存在较大的差异，中间去掉一个decoded dispatcher 所以此处入参为 IControl[]
                     IPair logicContent = event.getContent();
                     commands = logicContent.first();
                     session = logicContent.second();
@@ -108,7 +108,7 @@ public class QttZClient
                                              return null;
                                          })
                                          .filter(Objects::nonNull)
-                                         .toArray(ICommand[]::new);
+                                         .toArray(IControl[]::new);
                     }
                     break;
                 default:

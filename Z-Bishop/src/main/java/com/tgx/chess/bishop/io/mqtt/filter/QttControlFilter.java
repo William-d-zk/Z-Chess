@@ -25,44 +25,40 @@
 package com.tgx.chess.bishop.io.mqtt.filter;
 
 import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
+import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
+import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
-import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
  * @author william.d.zk
  * @date 2019-05-13
  */
-public class QttControlFilter<C extends QttContext>
+public class QttControlFilter
         extends
-        AioFilterChain<C>
+        AioFilterChain<QttContext, QttControl, QttFrame>
 {
 
-    protected QttControlFilter()
-    {
+    protected QttControlFilter() {
         super("mqtt-control-filter");
     }
 
     @Override
-    public ResultType preEncode(C context, IProtocol output)
-    {
+    public ResultType preEncode(QttContext context, QttControl output) {
+        return preControlEncode(context, output);
+    }
+
+    @Override
+    public ResultType preDecode(QttContext context, QttFrame input) {
         return null;
     }
 
     @Override
-    public ResultType preDecode(C context, IProtocol input)
-    {
+    public QttFrame encode(QttContext context, QttControl output) {
         return null;
     }
 
     @Override
-    public IProtocol encode(C context, IProtocol output)
-    {
-        return null;
-    }
-
-    @Override
-    public IProtocol decode(C context, IProtocol input)
-    {
+    public QttControl decode(QttContext context, QttFrame input) {
         return null;
     }
 }

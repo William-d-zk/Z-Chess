@@ -36,7 +36,7 @@ import com.tgx.chess.bishop.io.mqtt.handler.QttLogicHandler;
 import com.tgx.chess.bishop.io.zcrypt.EncryptHandler;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.event.inf.ISort;
-import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 
@@ -85,13 +85,13 @@ public class QttNode
     }
 
     @Override
-    public ICommand<QttContext> save(ICommand<QttContext> tar, ISession<QttContext> session)
+    public IControl<QttContext> save(IControl<QttContext> tar, ISession<QttContext> session)
     {
         return null;
     }
 
     @Override
-    public ICommand<QttContext> find(ICommand<QttContext> key, ISession<QttContext> session)
+    public IControl<QttContext> find(IControl<QttContext> key, ISession<QttContext> session)
     {
         return null;
     }

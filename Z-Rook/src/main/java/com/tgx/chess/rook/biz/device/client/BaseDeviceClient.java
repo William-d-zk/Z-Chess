@@ -45,7 +45,7 @@ import com.tgx.chess.queen.io.core.async.BaseAioConnector;
 import com.tgx.chess.queen.io.core.executor.ClientCore;
 import com.tgx.chess.queen.io.core.inf.IAioClient;
 import com.tgx.chess.queen.io.core.inf.IAioConnector;
-import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ICommandCreator;
 import com.tgx.chess.queen.io.core.inf.IConnectionContext;
 import com.tgx.chess.queen.io.core.inf.IContextCreator;
@@ -222,7 +222,7 @@ public abstract class BaseDeviceClient<C extends ZContext>
     }
 
     @SafeVarargs
-    public final boolean sendLocal(ICommand<C>... toSends)
+    public final boolean sendLocal(IControl<C>... toSends)
     {
         if (isOffline()) { throw new IllegalStateException("client is offline"); }
         return _ClientCore.localSend(clientSession, _Sort.getTransfer(), toSends);

@@ -24,68 +24,47 @@
 
 package com.tgx.chess.bishop.io.mqtt.filter;
 
-import com.tgx.chess.bishop.io.mqtt.bean.QttCommand;
 import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
-import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
 import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
+import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
-import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
  * @author william.d.zk
  * @date 2019-05-08
  */
-public class QttCommandFilter<C extends QttContext>
+public class QttCommandFilter
         extends
-        AioFilterChain<C>
+        AioFilterChain<QttContext, BaseCommand<QttContext>, QttFrame>
 {
-    public QttCommandFilter()
-    {
+    public QttCommandFilter() {
         super("mqtt-command-filter");
     }
 
     @Override
-    public QttFrame encode(C context, QttControl output)
-    {
+    public QttFrame encode(QttContext context, BaseCommand<QttContext> output) {
         QttFrame frame = new QttFrame();
-        @SuppressWarnings("unchecked")
-        QttCommand<C> command = (QttCommand<C>) output;
-        frame.setPayload(command.encode(context));
-        frame.setCtrl(command.getCtrl());
+        frame.setPayload(output.encode(context));
+        //        frame.setCtrl(output.getCtrl());
         return frame;
     }
 
     @Override
-    public IProtocol decode(C context, IProtocol input)
-    {
-        QttFrame frame = (QttFrame) input;
+    public BaseCommand<QttContext> decode(QttContext context, QttFrame input) {
 
         return null;
     }
 
     @Override
-    public <O extends IProtocol> ResultType preEncode(C context, O output)
-    {
+    public ResultType preEncode(QttContext context, BaseCommand<QttContext> output) {
+
         return null;
     }
 
     @Override
-    public <I extends IProtocol> ResultType preDecode(C context, I input)
-    {
+    public ResultType preDecode(QttContext context, QttFrame input) {
+
         return null;
     }
 
-    @Override
-    public <R extends IProtocol,
-            O extends IProtocol> R encode(C context, O output)
-    {
-        return null;
-    }
-
-    @Override
-    public <R extends IProtocol,
-            I extends IProtocol> R decode(C context, I input)
-    {
-        return null;
-    }
 }

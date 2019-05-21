@@ -271,9 +271,16 @@ public class WsFrame
         }
     }
 
-    public boolean isNoCtrl()
+    @Override
+    public byte getCtrl()
     {
-        return (frame_op_code & 0x08) == 0;
+        return (byte) (frame_op_code & 0x0F);
+    }
+
+    @Override
+    public boolean isCtrl()
+    {
+        return (frame_op_code & 0x08) != 0;
     }
 
     @Override

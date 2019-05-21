@@ -27,8 +27,8 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
-import com.tgx.chess.bishop.io.mqtt.bean.QttCommand;
 import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
+import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
 import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
 import com.tgx.chess.bishop.io.mqtt.bean.QttFrame.QOS_LEVEL;
 import com.tgx.chess.king.base.util.IoUtil;
@@ -37,30 +37,25 @@ import com.tgx.chess.king.base.util.IoUtil;
  * @author william.d.zk
  * @date 2019-05-02
  */
-public class X111_QttConnect<C extends QttContext>
+public class X111_QttConnect
         extends
-        QttCommand<C>
+        QttControl
 {
-    final static int MAX_USER_NAME_LENGTH = 127;
-    final static int MAX_PASSWORD_LENGTH  = 127;
+    private final static int MAX_USER_NAME_LENGTH = 127;
+    private final static int MAX_PASSWORD_LENGTH  = 127;
 
     public final static int COMMAND = 0x111;
 
     public X111_QttConnect()
     {
         super(COMMAND);
+        setCtrl(CTRL);
     }
 
     private final static byte CTRL = QttFrame.generateCtrl(false,
                                                            false,
                                                            QOS_LEVEL.QOS_ONLY_ONCE,
                                                            QttFrame.QTT_TYPE.CONNECT);
-
-    @Override
-    public byte getCtrl()
-    {
-        return CTRL;
-    }
 
     @Override
     public int dataLength()

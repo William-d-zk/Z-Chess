@@ -40,12 +40,12 @@ import com.tgx.chess.queen.event.inf.IOperator;
  */
 public interface IPipeTransfer<C extends IContext>
         extends
-        IOperator<ICommand<C>[], ISession<C>, List<ITriple>>
+        IOperator<IControl<C>[], ISession<C>, List<ITriple>>
 {
     IPipeEncoder<C> getEncoder();
 
     @Override
-    default List<ITriple> handle(ICommand<C>[] commands, ISession<C> session) {
+    default List<ITriple> handle(IControl<C>[] commands, ISession<C> session) {
         if (Objects.isNull(commands) || commands.length == 0) { throw new MissingParameterException(toString() + ".transfer", "commands"); }
         return Stream.of(commands)
                      .map(command -> new Triple<>(command.setSession(session), session, getEncoder()))

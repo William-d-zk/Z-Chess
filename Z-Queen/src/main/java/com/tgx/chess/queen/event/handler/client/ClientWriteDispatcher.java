@@ -38,7 +38,7 @@ import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
@@ -75,10 +75,10 @@ public class ClientWriteDispatcher<C extends IContext>
                 case WRITE://from LinkIo
                 case LOGIC://from read->logic
                     IPair writeContent = event.getContent();
-                    ICommand[] commands = writeContent.first();
+                    IControl[] commands = writeContent.first();
                     ISession<C> session = writeContent.second();
                     if (session.isValid() && Objects.nonNull(commands)) {
-                        IOperator<ICommand[], ISession, List<ITriple>> transferOperator = event.getEventOp();
+                        IOperator<IControl[], ISession, List<ITriple>> transferOperator = event.getEventOp();
                         List<ITriple> triples = transferOperator.handle(commands, session);
                         for (ITriple triple : triples) {
                             if (!tryPublish(_EncoderPipe, WRITE, new Pair<>(triple.first(), session), triple.third())) {

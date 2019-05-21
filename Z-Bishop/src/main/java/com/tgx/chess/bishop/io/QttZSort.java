@@ -71,7 +71,7 @@ public enum QttZSort
     };
     final QttFrameFilter<QttContext> _QttFrameFilter = new QttFrameFilter<>();
     {
-        _QttFrameFilter.linkFront(new QttCommandFilter<>());
+        _QttFrameFilter.linkFront(new QttCommandFilter());
     }
     private final CloseOperator<QttContext> _CloseOperator = new CloseOperator<>();
     private final ErrorOperator<QttContext> _ErrorOperator = new ErrorOperator<>(_CloseOperator);

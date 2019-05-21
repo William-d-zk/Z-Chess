@@ -42,7 +42,7 @@ import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.event.handler.ILinkHandler;
 import com.tgx.chess.queen.event.handler.LinkHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
 
@@ -62,9 +62,9 @@ public class ZLinkedHandler<C extends ZContext>
     {
         IPair logicContent = event.getContent();
         ISession<C> session = logicContent.second();
-        ICommand<C> cmd = logicContent.first();
+        IControl<C> cmd = logicContent.first();
         _Logger.info("LinkHandler cmd: %s", cmd);
-        ICommand<C>[] waitToSends = null;
+        IControl<C>[] waitToSends = null;
         switch (cmd.getSerial())
         {
             case X01_EncryptRequest.COMMAND:
@@ -73,12 +73,12 @@ public class ZLinkedHandler<C extends ZContext>
             case X04_EncryptConfirm.COMMAND:
             case X05_EncryptStart.COMMAND:
             case X06_PlainStart.COMMAND:
-                waitToSends = new ICommand[] { cmd };
+                waitToSends = new IControl[] { cmd };
                 break;
             case X20_SignUp.COMMAND:
             case X24_UpdateToken.COMMAND:
                 try {
-                    waitToSends = new ICommand[] { manager.save(cmd, session) };
+                    waitToSends = new IControl[] { manager.save(cmd, session) };
                 }
                 catch (Exception e) {
                     _LinkHandler.error(SAVE_DATA, e, session, _LinkHandler.getErrorOperator());
@@ -87,7 +87,7 @@ public class ZLinkedHandler<C extends ZContext>
                 break;
             case X22_SignIn.COMMAND:
                 try {
-                    waitToSends = new ICommand[] { manager.find(cmd, session) };
+                    waitToSends = new IControl[] { manager.find(cmd, session) };
                 }
                 catch (Exception e) {
                     _LinkHandler.error(FIND_DATA, e, session, _LinkHandler.getErrorOperator());

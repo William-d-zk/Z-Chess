@@ -40,7 +40,7 @@ public class QttFrame
         IReset,
         IFrame
 {
-
+    @Override
     public boolean isCtrl()
     {
         int head = frame_op_code & 240;
@@ -63,6 +63,18 @@ public class QttFrame
         if (payload.length > 268435455 || payload.length < 2) { throw new IndexOutOfBoundsException(); }
         mPayload = payload;
         mPayloadLength = mPayload.length;
+    }
+
+    @Override
+    public byte[] getPayload()
+    {
+        return mPayload;
+    }
+
+    @Override
+    public byte getCtrl()
+    {
+        return (byte) (frame_op_code & 240);
     }
 
     @Override

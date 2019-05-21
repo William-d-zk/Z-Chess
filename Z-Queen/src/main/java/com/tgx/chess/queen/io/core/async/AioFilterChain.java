@@ -29,9 +29,9 @@ import static com.tgx.chess.queen.io.core.inf.IContext.ENCODE_HANDSHAKE;
 import java.util.Objects;
 
 import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.queen.io.core.inf.ICommand;
-import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
+import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.IFilter;
 import com.tgx.chess.queen.io.core.inf.IFilterChain;
 import com.tgx.chess.queen.io.core.inf.IFrame;
@@ -51,7 +51,7 @@ public abstract class AioFilterChain<C extends IContext,
                 I>
 {
 
-    protected final Logger _Logger = Logger.getLogger(getName());
+    protected final Logger _Logger;
 
     private final String    _Name;
     private IFilterChain<C> next;
@@ -62,6 +62,7 @@ public abstract class AioFilterChain<C extends IContext,
     protected AioFilterChain(String name)
     {
         _Name = name;
+        _Logger = Logger.getLogger(getName());
     }
 
     @Override
@@ -157,7 +158,7 @@ public abstract class AioFilterChain<C extends IContext,
         }
     }
 
-    protected ResultType preCommandEncode(C context, ICommand<C> output)
+    protected ResultType preCommandEncode(C context, IControl<C> output)
     {
         if (Objects.isNull(output) || Objects.isNull(context)) { return ResultType.ERROR; }
         return context.isOutConvert() && output.superSerial() == IProtocol.COMMAND_SERIAL ? ResultType.NEXT_STEP
@@ -200,7 +201,7 @@ public abstract class AioFilterChain<C extends IContext,
                                                                                        : ResultType.IGNORE;
     }
 
-    protected ResultType preControlEncode(C context, IControl<C> output)
+    protected ResultType preControlEncode(C context, ICommand<C> output)
     {
         if (Objects.isNull(context) || Objects.isNull(output)) { return ResultType.ERROR; }
         return context.isOutConvert() && output.superSerial() == IProtocol.CONTROL_SERIAL ? ResultType.NEXT_STEP
@@ -215,7 +216,7 @@ public abstract class AioFilterChain<C extends IContext,
 
     }
 
-    protected ResultType preHandShakeEncode(C context, IControl<C> output)
+    protected ResultType preHandShakeEncode(C context, ICommand<C> output)
     {
         if (Objects.isNull(context) || Objects.isNull(output)) { return ResultType.ERROR; }
         return context.isOutConvert() && output.superSerial() == IProtocol.CONTROL_SERIAL

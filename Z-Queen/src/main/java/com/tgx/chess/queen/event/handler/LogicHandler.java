@@ -34,8 +34,8 @@ import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.operator.TransferOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
@@ -62,7 +62,7 @@ public class LogicHandler<C extends IContext>
     {
         if (IOperator.Type.LOGIC.equals(event.getEventType())) {
             IPair logicContent = event.getContent();
-            ICommand cmd = logicContent.first();
+            IControl<C> cmd = logicContent.first();
             ISession<C> session = logicContent.second();
             if (Objects.isNull(cmd)) {
                 _Log.warning("cmd null");
@@ -70,7 +70,7 @@ public class LogicHandler<C extends IContext>
             else {
                 cmd = _CommandHandler.onCommand(cmd, session, this);
                 if (Objects.nonNull(cmd)) {
-                    event.produce(WRITE, new Pair<>(new ICommand[] { cmd }, session), _Transfer);
+                    event.produce(WRITE, new Pair<>(new IControl[] { cmd }, session), _Transfer);
                 }
                 else {
                     event.ignore();
@@ -82,6 +82,6 @@ public class LogicHandler<C extends IContext>
 
     public interface ICommandHandler<C extends IContext>
     {
-        ICommand<C> onCommand(ICommand<C> input, ISession<C> session, LogicHandler<C> handler);
+        IControl<C> onCommand(IControl<C> input, ISession<C> session, LogicHandler<C> handler);
     }
 }

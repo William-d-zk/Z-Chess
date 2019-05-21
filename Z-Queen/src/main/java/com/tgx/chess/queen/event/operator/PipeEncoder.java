@@ -30,7 +30,7 @@ import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.base.util.Triple;
-import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IFilterChain;
 import com.tgx.chess.queen.io.core.inf.IPacket;
@@ -57,7 +57,7 @@ public class PipeEncoder<C extends IContext>
     }
 
     @Override
-    public ITriple handle(ICommand<C> command, ISession<C> session) {
+    public ITriple handle(IControl<C> command, ISession<C> session) {
         try {
             IPacket send = filterWrite(command, _FilterChain, session.getContext());
             Objects.requireNonNull(send);

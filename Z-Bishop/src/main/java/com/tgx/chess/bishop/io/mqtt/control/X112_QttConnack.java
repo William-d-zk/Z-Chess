@@ -24,44 +24,32 @@
 
 package com.tgx.chess.bishop.io.mqtt.control;
 
-import com.tgx.chess.bishop.io.mqtt.bean.QttCommand;
-import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
+import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
 import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
 
 /**
  * @author william.d.zk
  * @date 2019-05-11
  */
-public class X112_QttConnack<C extends QttContext>
+public class X112_QttConnack
         extends
-        QttCommand<C>
+        QttControl
 {
     public final static int   COMMAND = 0x112;
-    private final static byte CTRL    = QttFrame.generateCtrl(false,
-                                                              false,
-                                                              QttFrame.QOS_LEVEL.QOS_ONLY_ONCE,
-                                                              QttFrame.QTT_TYPE.CONNACK);
+    private final static byte CTRL    = QttFrame.generateCtrl(false, false, QttFrame.QOS_LEVEL.QOS_ONLY_ONCE, QttFrame.QTT_TYPE.CONNACK);
 
-    public X112_QttConnack()
-    {
+    public X112_QttConnack() {
         super(COMMAND);
+        setCtrl(CTRL);
     }
 
     @Override
-    public byte getCtrl()
-    {
-        return CTRL;
-    }
-
-    @Override
-    public int dataLength()
-    {
+    public int dataLength() {
         return 0;
     }
 
     @Override
-    public int getPriority()
-    {
+    public int getPriority() {
         return QOS_00_NETWORK_CONTROL;
     }
 }

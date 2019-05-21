@@ -51,7 +51,7 @@ import com.tgx.chess.bishop.io.zprotocol.device.X51_DeviceMsgAck;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.event.inf.ISort;
-import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 
@@ -78,7 +78,7 @@ public class WsNode
 
     public void start() throws IOException
     {
-        _ServerCore.build(new ZLogicHandler<>(_Sort.getEncoder(), (command, session, handler) ->
+        _ServerCore.build(new ZLogicHandler<WsContext>(_Sort.getEncoder(), (command, session, handler) ->
         {
             //前置的 dispatcher 将 ICommands 拆分了
 
@@ -95,7 +95,7 @@ public class WsNode
                     localClose(session, handler.getCloseOperator());
                     break;
                 case X104_Ping.COMMAND:
-                    return new X105_Pong<>("Server pong".getBytes());
+                    return new X105_Pong("Server pong".getBytes());
                 case X101_HandShake.COMMAND:
                     return command;
                 case X51_DeviceMsgAck.COMMAND:
@@ -113,7 +113,7 @@ public class WsNode
     }
 
     @Override
-    public ICommand<WsContext> save(ICommand<WsContext> tar, ISession<WsContext> session)
+    public IControl<WsContext> save(IControl<WsContext> tar, ISession<WsContext> session)
     {
         DeviceEntry deviceEntry = _Repository.save(tar);
         switch (tar.getSerial())
@@ -137,7 +137,7 @@ public class WsNode
     }
 
     @Override
-    public ICommand<WsContext> find(ICommand<WsContext> key, ISession<WsContext> session)
+    public IControl<WsContext> find(IControl<WsContext> key, ISession<WsContext> session)
     {
         DeviceEntry deviceEntry = _Repository.find(key);
         switch (key.getSerial())

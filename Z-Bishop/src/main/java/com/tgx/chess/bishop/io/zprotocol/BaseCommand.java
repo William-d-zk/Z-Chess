@@ -30,19 +30,17 @@ import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.king.base.util.I18nUtil;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.io.core.async.AioContext;
-import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IRouteLv4;
 import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.inf.IStreamProtocol;
 
 /**
  * @author William.d.zk
  */
 public abstract class BaseCommand<C extends AioContext>
         implements
-        ICommand<C>,
-        IRouteLv4,
-        IStreamProtocol<C>
+        IControl<C>,
+        IRouteLv4
 {
     private final Logger _Logger = Logger.getLogger(getClass().getName());
 
@@ -59,6 +57,8 @@ public abstract class BaseCommand<C extends AioContext>
     private ISession<C>      mSession;
     private long             mSequence           = -1;
     private transient long   tTransactionKey     = _DEFAULT_TRANSACTION_KEY;
+    private byte[]           mPayload;
+    private byte             mCtrlCode;
 
     protected BaseCommand(int command,
                           boolean hasUID)
@@ -80,6 +80,43 @@ public abstract class BaseCommand<C extends AioContext>
         setCompress();
         setVersion(version);
         setCharsetSerial(I18nUtil.CHARSET_UTF_8, I18nUtil.SERIAL_BINARY);
+    }
+
+    @Override
+    public void setCtrl(byte ctrl)
+    {
+        mCtrlCode = ctrl;
+    }
+
+    @Override
+    public byte getCtrl()
+    {
+        return mCtrlCode;
+    }
+
+    @Override
+    public boolean isCtrl()
+    {
+        return false;
+    }
+
+    @Override
+    public void setPayload(byte[] payload)
+    {
+        mPayload = payload;
+    }
+
+    @Override
+    public byte[] getPayload()
+    {
+        return mPayload;
+    }
+
+    @Override
+    public void reset()
+    {
+        setPayload(null);
+        setSession(null);
     }
 
     public boolean isTypeBin()
@@ -156,8 +193,12 @@ public abstract class BaseCommand<C extends AioContext>
 
     private void initGUid(long _uid, boolean flag)
     {
-        if (flag) mHAttr &= ~0x40;
-        else mHAttr |= 0x40;
+        if (flag) {
+            mHAttr &= ~0x40;
+        }
+        else {
+            mHAttr |= 0x40;
+        }
         mMsgUID = flag ? _uid
                        : 0;
     }
@@ -202,7 +243,7 @@ public abstract class BaseCommand<C extends AioContext>
     {
         int l_crc = CryptUtil.crc32(data, 0, lastPos);
         int crc = IoUtil.readInt(data, lastPos);
-        if (l_crc != crc) throw new SecurityException("crc check failed!  =" + data[1]);
+        if (l_crc != crc) { throw new SecurityException("crc check failed!  =" + data[1]); }
         return lastPos + 4;
     }
 
@@ -214,7 +255,9 @@ public abstract class BaseCommand<C extends AioContext>
         int pos = 0;
         pos += IoUtil.writeByte(mHAttr, data, pos);
         pos += IoUtil.writeByte(_Command, data, pos);
-        if (isGlobalMsg()) pos += IoUtil.writeLong(mMsgUID, data, pos);
+        if (isGlobalMsg()) {
+            pos += IoUtil.writeLong(mMsgUID, data, pos);
+        }
         pos += IoUtil.writeByte(mTypeByte, data, pos);
         int ppos = pos;
         int dpos = encodec(data, pos);
@@ -227,18 +270,19 @@ public abstract class BaseCommand<C extends AioContext>
     public final int encode(byte[] buf, int pos, int length)
     {
         int len = dataLength();
-        if (len <= 0) throw new IllegalArgumentException("data length is negative or zero");
+        if (len <= 0) { throw new IllegalArgumentException("data length is negative or zero"); }
         if (buf == null) {
             buf = new byte[len];
             pos = 0;
         }
-        else if (len > length
-                 || buf.length < len
-                 || pos + length > buf.length)
-                                               throw new ArrayIndexOutOfBoundsException("data length is too long for input buf");
+        else if (len > length || buf.length < len || pos + length > buf.length) {
+            throw new ArrayIndexOutOfBoundsException("data length is too long for input buf");
+        }
         pos += IoUtil.writeByte(mHAttr, buf, pos);
         pos += IoUtil.writeByte(_Command, buf, pos);
-        if (isGlobalMsg()) pos += IoUtil.writeLong(mMsgUID, buf, pos);
+        if (isGlobalMsg()) {
+            pos += IoUtil.writeLong(mMsgUID, buf, pos);
+        }
         pos += IoUtil.writeByte(mTypeByte, buf, pos);
         pos = addCrc(buf, encodec(buf, pos));
         return pos;
@@ -247,8 +291,8 @@ public abstract class BaseCommand<C extends AioContext>
     @Override
     public final int decode(byte[] data)
     {
-        if (data == null) throw new NullPointerException();
-        if (data.length < dataLength()) throw new ArrayIndexOutOfBoundsException();
+        if (data == null) { throw new NullPointerException(); }
+        if (data.length < dataLength()) { throw new ArrayIndexOutOfBoundsException(); }
         mHAttr = data[0];
         int pos = 2;
         if (isGlobalMsg()) {
@@ -263,8 +307,8 @@ public abstract class BaseCommand<C extends AioContext>
     @Override
     public final int decode(byte[] data, int pos, int length)
     {
-        if (data == null) throw new NullPointerException();
-        if (data.length - length < dataLength()) throw new ArrayIndexOutOfBoundsException();
+        if (data == null) { throw new NullPointerException(); }
+        if (data.length - length < dataLength()) { throw new ArrayIndexOutOfBoundsException(); }
 
         mHAttr = data[pos];
         pos += 2;
@@ -277,9 +321,9 @@ public abstract class BaseCommand<C extends AioContext>
         return checkCrc(data, decodec(data, pos));
     }
 
-    private String getCharset(byte type_c)
+    private String getCharset(byte charsetCode)
     {
-        return I18nUtil.getCharset(type_c);
+        return I18nUtil.getCharset(charsetCode);
     }
 
     public String getCharset()
@@ -345,9 +389,15 @@ public abstract class BaseCommand<C extends AioContext>
 
     public BaseCommand<C> setUID(String hexGUid, long longGUid)
     {
-        if (longGUid != -1) setUID(longGUid);
-        else if (Objects.nonNull(hexGUid)) setUID(Long.parseLong(hexGUid, 16));
-        else throw new NullPointerException();
+        if (longGUid != -1) {
+            setUID(longGUid);
+        }
+        else if (Objects.nonNull(hexGUid)) {
+            setUID(Long.parseLong(hexGUid, 16));
+        }
+        else {
+            throw new NullPointerException();
+        }
         return this;
     }
 
@@ -360,7 +410,7 @@ public abstract class BaseCommand<C extends AioContext>
     @Override
     public void setUID(long uid)
     {
-        if (!_HasUID) throw new UnsupportedOperationException();
+        if (!_HasUID) { throw new UnsupportedOperationException(); }
         mMsgUID = uid;
     }
 

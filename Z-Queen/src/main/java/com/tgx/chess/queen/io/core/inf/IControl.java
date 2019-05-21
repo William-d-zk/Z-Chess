@@ -21,23 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.tgx.chess.queen.io.core.inf;
 
+import com.tgx.chess.king.base.inf.IDisposable;
+
 /**
- * @author william.d.zk
- * @date 2019-05-17
+ * 用于ISession 发送的指令最小单元 需要满足如下的行为特征
+ * 
+ * @author William.d.zk
+ * @see ISession
  */
 public interface IControl<C extends IContext>
         extends
         IFrame,
-        ICommand<C>
+        IQoS,
+        IMessage<C>,
+        IDisposable
 {
+    @Override
+    default IControl<C> setSession(ISession<C> session)
+    {
+        return this;
+    }
+
     @Override
     default int superSerial()
     {
         return CONTROL_SERIAL;
     }
 
-    byte getCtrl();
+    @Override
+    default int getPriority()
+    {
+        return QOS_00_NETWORK_CONTROL;
+    }
 }

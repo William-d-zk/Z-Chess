@@ -41,7 +41,7 @@ import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.operator.TransferOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IConnectionContext;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
@@ -147,7 +147,7 @@ public class LinkHandler<C extends IContext>
         error(_Error, type, new Pair<>(e, session), errorOperator);
     }
 
-    public void write(ICommand[] waitToSends, ISession<C> session)
+    public void write(IControl[] waitToSends, ISession<C> session)
     {
         publish(_Writer, WRITE, new Pair<>(waitToSends, session), _Transfer);
     }
@@ -173,8 +173,8 @@ public class LinkHandler<C extends IContext>
                     Pair<Pair<N, IConnectMode.ZOperators>, AsynchronousSocketChannel> cContent = event.getContent();
                     Pair<N, IConnectMode.ZOperators> nmPair = cContent.first();
                     AsynchronousSocketChannel channel = cContent.second();
-                    Triple<ICommand, AioSession, IEventOp<ICommand, AioSession>> cResult = cOperator.handle(nmPair, channel);
-                    ICommand cmd = cResult.first();
+                    Triple<IControl, AioSession, IEventOp<IControl, AioSession>> cResult = cOperator.handle(nmPair, channel);
+                    IControl cmd = cResult.first();
                     if (cmd != null && cmd.getSerialNum() != XF000_NULL.COMMAND) {
                         publish(_WriteRB, Type.DISPATCH, cmd, cResult.second(), cResult.third());
                     }
@@ -190,33 +190,33 @@ public class LinkHandler<C extends IContext>
                     _BizNode.rmSession(session);
                     break;
                 case LOCAL:
-                    Pair<ICommand, AioSessionManager> lcContent = event.getContent();
-                    IEventOp<ICommand, AioSessionManager> lcOperator = event.getEventOp();
-                    List<Triple<ICommand,
+                    Pair<IControl, AioSessionManager> lcContent = event.getContent();
+                    IEventOp<IControl, AioSessionManager> lcOperator = event.getEventOp();
+                    List<Triple<IControl,
                                 ISession,
-                                IEventOp<ICommand, ISession>>> lcResult = lcOperator.handleResultAsList(lcContent.first(),
+                                IEventOp<IControl, ISession>>> lcResult = lcOperator.handleResultAsList(lcContent.first(),
                                                                                                         lcContent.second());
-                    if (lcResult != null) for (Triple<ICommand, ISession, IEventOp<ICommand, ISession>> llt : lcResult) {
+                    if (lcResult != null) for (Triple<IControl, ISession, IEventOp<IControl, ISession>> llt : lcResult) {
                         publish(_WriteRB, Type.DISPATCH, llt.first(), llt.second(), llt.third());
                     }
                     break;
                 case LOGIC:
-                    Pair<ICommand, ISession> rContent = event.getContent();
+                    Pair<IControl, ISession> rContent = event.getContent();
                     cmd = rContent.first();
                     session = rContent.second();
-                    IEventOp<ICommand, ISession> rOperator = event.getEventOp();
-                    Triple<RESULT, ICommand, Throwable> lResult = localRead(cmd, _BizNode.getBizDao());
+                    IEventOp<IControl, ISession> rOperator = event.getEventOp();
+                    Triple<RESULT, IControl, Throwable> lResult = localRead(cmd, _BizNode.getBizDao());
                     convergentClearTransaction();
                     switch (lResult.first()) {
                         case HANDLE:
-                            Triple<ICommand, ISession, IEventOp<ICommand, ISession>> rResult = rOperator.handle(cmd, session);
+                            Triple<IControl, ISession, IEventOp<IControl, ISession>> rResult = rOperator.handle(cmd, session);
                             publish(_WriteRB, Type.DISPATCH, rResult.first(), rResult.second(), rResult.third());
                             break;
                         case SECTION:
                             rResult = rOperator.handle(cmd, session);
                             publish(_WriteRB, Type.DISPATCH, rResult.first(), rResult.second(), rResult.third());
                         case PASS:
-                            ICommand cCmd = lResult.second();
+                            IControl cCmd = lResult.second();
                             long transactionKey = ClusterNode.getUniqueIdentity();
                             cCmd.setTransactionKey(transactionKey);
                             _BizNode.mapSession(transactionKey, session);
@@ -245,7 +245,7 @@ public class LinkHandler<C extends IContext>
                                 case XF000_NULL.COMMAND:
                                     break;// drop
                                 default:
-                                    Triple<ICommand, ISession, IEventOp<ICommand, ISession>> mqResult = _BizNode.getMqServer()
+                                    Triple<IControl, ISession, IEventOp<IControl, ISession>> mqResult = _BizNode.getMqServer()
                                                                                                                 .consistentHandle(cmd,
                                                                                                                                   session);
                                     if (mqResult != null
@@ -264,11 +264,11 @@ public class LinkHandler<C extends IContext>
                     }
                     break;
                 case BRANCH:
-                    Pair<ICommand, ISession> bContent = event.getContent();
-                    IEventOp<ICommand, ISession> bOperator = event.getEventOp();
+                    Pair<IControl, ISession> bContent = event.getContent();
+                    IEventOp<IControl, ISession> bOperator = event.getEventOp();
                     cmd = bContent.first();
-                    Pair<ICommand, ISession> bResult = consistentRead(cmd.getTransactionKey(), _BizNode);
-                    Triple<ICommand, ISession, IEventOp<ICommand, ISession>> rResult = bOperator.handle(bResult.first(), bResult.second());
+                    Pair<IControl, ISession> bResult = consistentRead(cmd.getTransactionKey(), _BizNode);
+                    Triple<IControl, ISession, IEventOp<IControl, ISession>> rResult = bOperator.handle(bResult.first(), bResult.second());
                     publish(_WriteRB, Type.DISPATCH, rResult.first(), rResult.second(), rResult.third());
                     clearTransaction(cmd.getTransactionKey());
                     break;
@@ -339,7 +339,7 @@ public class LinkHandler<C extends IContext>
     }
 
     @Override
-    public RESULT trial(ICommand cmd, IConnectMode.ZOperators mode) {
+    public RESULT trial(IControl cmd, IConnectMode.ZOperators mode) {
         if (mode.equals(IConnectMode.ZOperators.SYMMETRY)) {
             switch (cmd.getSerialNum()) {
                 case X103_Close.COMMAND:

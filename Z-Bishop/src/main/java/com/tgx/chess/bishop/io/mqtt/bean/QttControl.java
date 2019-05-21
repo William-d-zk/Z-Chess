@@ -32,32 +32,41 @@ import com.tgx.chess.queen.io.core.inf.ISession;
  * @author william.d.zk
  * @date 2019-05-13
  */
-public abstract class QttControl<C extends QttContext>
+public abstract class QttControl
         implements
-        ICommand<C>,
+        ICommand<QttContext>,
         IRouteLv4
 {
-    private final int   _Command;
-    private final byte  _CtrlCode;
-    private byte[]      mPayload;
-    private ISession<C> mSession;
+    private final int            _Command;
+    private byte                 mCtrlCode;
+    private byte[]               mPayload;
+    private ISession<QttContext> mSession;
 
-    public QttControl(byte ctrl,
-                      int command,
-                      byte[] msg)
+    public QttControl(int command)
     {
-        _CtrlCode = ctrl;
         _Command = command;
-        mPayload = msg;
-    }
-
-    public byte getCtrl()
-    {
-        return _CtrlCode;
     }
 
     @Override
-    public ICommand<C> setSession(ISession<C> session)
+    public byte getCtrl()
+    {
+        return mCtrlCode;
+    }
+
+    @Override
+    public void setCtrl(byte ctrl)
+    {
+        mCtrlCode = ctrl;
+    }
+
+    @Override
+    public boolean isCtrl()
+    {
+        return true;
+    }
+
+    @Override
+    public ICommand<QttContext> setSession(ISession<QttContext> session)
     {
         mSession = session;
         return this;
@@ -70,7 +79,7 @@ public abstract class QttControl<C extends QttContext>
     }
 
     @Override
-    public ISession<C> getSession()
+    public ISession<QttContext> getSession()
     {
         return mSession;
     }
@@ -80,8 +89,17 @@ public abstract class QttControl<C extends QttContext>
         return mPayload;
     }
 
+    @Override
     public void setPayload(byte[] payload)
     {
         mPayload = payload;
+    }
+
+    @Override
+    public void reset()
+    {
+        mCtrlCode = 0;
+        mSession = null;
+        mPayload = null;
     }
 }

@@ -37,7 +37,7 @@ import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IConnectionContext;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.ISession;
@@ -87,9 +87,9 @@ public class ClientLinkHandler<C extends IContext>
                               ITriple> connectedOperator = event.getEventOp();
                     ITriple connectedHandled = connectedOperator.handle(context, channel);
                     //connectedHandled 不可能为 null
-                    ICommand[] waitToSend = connectedHandled.first();
+                    IControl[] waitToSend = connectedHandled.first();
                     ISession<C> session = connectedHandled.second();
-                    IOperator<ICommand[],
+                    IOperator<IControl[],
                               ISession,
                               List<ITriple>> sendTransferOperator = connectedHandled.third();
                     event.produce(WRITE, new Pair<>(waitToSend, session), sendTransferOperator);

@@ -34,7 +34,7 @@ import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IConnectionContext;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.ISession;
@@ -101,9 +101,9 @@ public class ClusterHandler<C extends IContext>
                               ITriple> connectedOperator = event.getEventOp();
                     ITriple connectedHandled = connectedOperator.handle(context, channel);
                     //connectedHandled 不可能为 null
-                    ICommand[] waitToSend = connectedHandled.first();
+                    IControl[] waitToSend = connectedHandled.first();
                     ISession<C> session = connectedHandled.second();
-                    IOperator<ICommand[],
+                    IOperator<IControl[],
                               ISession,
                               ITriple> sendTransferOperator = connectedHandled.third();
                     event.produce(WRITE, new Pair<>(waitToSend, session), sendTransferOperator);
@@ -144,8 +144,8 @@ public class ClusterHandler<C extends IContext>
                     Pair<ClusterNode<E, D, N>, IConnectMode.ZOperators> nmPair = cContent.first();
                     // 集群至少2台机器的时候才需要进行诸多网络操作。
                     AsynchronousSocketChannel channel = cContent.second();
-                    Triple<ICommand, ISession, IEventOp<ICommand, ISession>> cResult = cOperator.handle(nmPair, channel);
-                    ICommand inCmd = cResult.first();
+                    Triple<IControl, ISession, IEventOp<IControl, ISession>> cResult = cOperator.handle(nmPair, channel);
+                    IControl inCmd = cResult.first();
                     if (inCmd != null && inCmd.getSerialNum() != XF000_NULL.COMMAND) publish(_WriteRB,
                                                                                              Type.DISPATCH,
                                                                                              inCmd,
@@ -163,23 +163,23 @@ public class ClusterHandler<C extends IContext>
                     _ClusterNode.rmSession(session);
                     break;
                 case LOCAL:
-                    Pair<ICommand, AioSessionManager> lContent = event.getContent();
-                    IEventOp<ICommand, AioSessionManager> lcOperator = event.getEventOp();// NODE_LOCAL
-                    List<Triple<ICommand,
+                    Pair<IControl, AioSessionManager> lContent = event.getContent();
+                    IEventOp<IControl, AioSessionManager> lcOperator = event.getEventOp();// NODE_LOCAL
+                    List<Triple<IControl,
                                 ISession,
-                                IEventOp<ICommand, ISession>>> lcResult = lcOperator.handleResultAsList(lContent.first(),
+                                IEventOp<IControl, ISession>>> lcResult = lcOperator.handleResultAsList(lContent.first(),
                                                                                                         lContent.second());
-                    if (lcResult != null) for (Triple<ICommand, ISession, IEventOp<ICommand, ISession>> llt : lcResult) {
+                    if (lcResult != null) for (Triple<IControl, ISession, IEventOp<IControl, ISession>> llt : lcResult) {
                         publish(_WriteRB, Type.DISPATCH, llt.first(), llt.second(), llt.third());
                     }
                     break;
                 case LOGIC:
                     // Cluster bind Session
-                    IEventOp<ICommand, ISession> lOperator = event.getEventOp();// DEFAULT_TRANSFER_LOGIC
-                    Pair<ICommand, ISession> rContent = event.getContent();
+                    IEventOp<IControl, ISession> lOperator = event.getEventOp();// DEFAULT_TRANSFER_LOGIC
+                    Pair<IControl, ISession> rContent = event.getContent();
                     inCmd = rContent.first();
                     session = rContent.second();
-                    List<ICommand> wList = new LinkedList<>();
+                    List<IControl> wList = new LinkedList<>();
                     switch (inCmd.getSerialNum()) {
                         case X10_StartElection.COMMAND:
                             X10_StartElection x10 = (X10_StartElection) inCmd;
@@ -247,12 +247,12 @@ public class ClusterHandler<C extends IContext>
                             _ClusterNode.onClusterConnected(_clusterId);
                             break;
                         default:
-                            Triple<ICommand, ISession, IEventOp<ICommand, ISession>> rResult = lOperator.handle(inCmd, session);
+                            Triple<IControl, ISession, IEventOp<IControl, ISession>> rResult = lOperator.handle(inCmd, session);
                             if (rResult.first()
                                        .getSerialNum() != XF000_NULL.COMMAND) publish(_WriteRB, Type.DISPATCH, rResult.first(), rResult.second(), rResult.third());
                             break;
                     }
-                    for (ICommand outCommand : wList)
+                    for (IControl outCommand : wList)
                         switch (outCommand.getSerialNum()) {
                             case XF000_NULL.COMMAND:
                                 break;// drop
@@ -270,12 +270,12 @@ public class ClusterHandler<C extends IContext>
                         }
                     break;
                 case BRANCH:
-                    Pair<ICommand, ISession> bContent = event.getContent();
-                    IEventOp<ICommand, ISession> bOperator = event.getEventOp();
+                    Pair<IControl, ISession> bContent = event.getContent();
+                    IEventOp<IControl, ISession> bOperator = event.getEventOp();
                     inCmd = bContent.first();
                     session = bContent.second();
-                    Collection<ICommand> rCollection = consistentWrite(inCmd, _ClusterNode, session, inCmd.getTransactionKey());
-                    if (rCollection != null) for (ICommand out : rCollection)
+                    Collection<IControl> rCollection = consistentWrite(inCmd, _ClusterNode, session, inCmd.getTransactionKey());
+                    if (rCollection != null) for (IControl out : rCollection)
                         switch (out.getSerialNum()) {
                             case XF001_TransactionCompleted.COMMAND:
                                 tryPublish(_ConsistentResultRB, Type.BRANCH, out, null, bOperator);
@@ -327,7 +327,7 @@ public class ClusterHandler<C extends IContext>
     }
 
     @Override
-    public final RESULT trial(ICommand cmd, IConnectMode.ZOperators mode) {
+    public final RESULT trial(IControl cmd, IConnectMode.ZOperators mode) {
         if (mode.equals(ZOperators.CLUSTER_CONSUMER) || mode.equals(ZOperators.CLUSTER_SERVER)) {
             switch (cmd.getSerialNum()) {
                 case X10_StartElection.COMMAND:
