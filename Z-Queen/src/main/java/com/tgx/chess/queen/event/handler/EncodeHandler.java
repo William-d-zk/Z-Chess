@@ -29,7 +29,7 @@ import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
@@ -63,9 +63,9 @@ public class EncodeHandler<C extends IContext>
             {
                 case WRITE:
                     IPair pairWriteContent = event.getContent();
-                    ICommand<C> cmd = pairWriteContent.first();
+                    IControl<C> cmd = pairWriteContent.first();
                     ISession<C> session = pairWriteContent.second();
-                    IOperator<ICommand<C>,
+                    IOperator<IControl<C>,
                               ISession<C>,
                               ITriple> writeOperator = event.getEventOp();
                     encodeHandler(event, cmd, session, writeOperator);

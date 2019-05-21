@@ -24,13 +24,14 @@
 
 package com.tgx.chess.queen.db.inf;
 
-import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IControl;
+
 /**
  * @author william.d.zk
  */
 public interface IRepository<T>
 {
-    T save(ICommand target);
+    T save(IControl target);
 
-    T find(ICommand key);
+    T find(IControl key);
 }

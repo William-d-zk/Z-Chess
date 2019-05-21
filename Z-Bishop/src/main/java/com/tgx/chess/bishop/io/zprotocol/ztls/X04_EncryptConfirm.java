@@ -23,14 +23,14 @@
  */
 package com.tgx.chess.bishop.io.zprotocol.ztls;
 
-import com.tgx.chess.bishop.io.ws.bean.WsContext;
 import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
 import com.tgx.chess.king.base.util.IoUtil;
+import com.tgx.chess.queen.io.core.async.AioContext;
 
 /**
  * @author William.d.zk
  */
-public class X04_EncryptConfirm<C extends WsContext>
+public class X04_EncryptConfirm<C extends AioContext>
         extends
         BaseCommand<C>
 {
@@ -39,32 +39,38 @@ public class X04_EncryptConfirm<C extends WsContext>
     public int              symmetricKeyId;
 
     /* SHA256 */
-    private byte[]          mSign;
+    private byte[] mSign;
 
-    public X04_EncryptConfirm() {
+    public X04_EncryptConfirm()
+    {
         super(COMMAND, false);
     }
 
     @Override
-    public boolean isMappingCommand() {
+    public boolean isMappingCommand()
+    {
         return true;
     }
 
-    public byte[] getSign() {
+    public byte[] getSign()
+    {
         return mSign;
     }
 
-    public void setSign(byte[] sign) {
+    public void setSign(byte[] sign)
+    {
         mSign = sign;
     }
 
     @Override
-    public int dataLength() {
+    public int dataLength()
+    {
         return super.dataLength() + 36;
     }
 
     @Override
-    public int decodec(byte[] data, int pos) {
+    public int decodec(byte[] data, int pos)
+    {
         code = IoUtil.readShort(data, pos);
         pos += 2;
         symmetricKeyId = IoUtil.readUnsignedShort(data, pos);
@@ -75,7 +81,8 @@ public class X04_EncryptConfirm<C extends WsContext>
     }
 
     @Override
-    public int encodec(byte[] data, int pos) {
+    public int encodec(byte[] data, int pos)
+    {
         pos += IoUtil.writeShort(code, data, pos);
         pos += IoUtil.writeShort(symmetricKeyId, data, pos);
         pos += IoUtil.write(mSign, data, pos);
@@ -83,22 +90,30 @@ public class X04_EncryptConfirm<C extends WsContext>
     }
 
     @Override
-    public void afterEncode(C ctx) {
+    public void afterEncode(C ctx)
+    {
         ctx.updateKeyOut();
     }
 
     @Override
-    public void afterDecode(C ctx) {
+    public void afterDecode(C ctx)
+    {
         ctx.updateKeyIn();
     }
 
     @Override
-    public int getPriority() {
+    public int getPriority()
+    {
         return QOS_00_NETWORK_CONTROL;
     }
 
     @Override
-    public String toString() {
-        return String.format("%s,code:%s,rc4-key: %d ,sign: %s", super.toString(), code, symmetricKeyId, IoUtil.bin2Hex(mSign));
+    public String toString()
+    {
+        return String.format("%s,code:%s,rc4-key: %d ,sign: %s",
+                             super.toString(),
+                             code,
+                             symmetricKeyId,
+                             IoUtil.bin2Hex(mSign));
     }
 }

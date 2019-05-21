@@ -30,14 +30,16 @@ import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 
+/**
+ * @author william.d.zk
+ */
 public class QttContext
         extends
         ZContext
 {
     private final static IPair VERSION = new Pair<>("3.1.1", 4);
 
-    public QttContext(ISessionOption option)
-    {
+    public QttContext(ISessionOption option) {
         super(option);
         transfer();
     }
@@ -45,18 +47,15 @@ public class QttContext
     private QttFrame  mCarrier;
     private CryptUtil mCryptUtil = new CryptUtil();
 
-    public static IPair getVersion()
-    {
+    public static IPair getVersion() {
         return VERSION;
     }
 
-    public QttFrame getCarrier()
-    {
+    public QttFrame getCarrier() {
         return mCarrier;
     }
 
-    public void setCarrier(QttFrame carrier)
-    {
+    public void setCarrier(QttFrame carrier) {
         mCarrier = carrier;
     }
 }

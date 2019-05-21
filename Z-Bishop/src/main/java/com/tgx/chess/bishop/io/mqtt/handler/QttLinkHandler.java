@@ -32,7 +32,7 @@ import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.event.handler.ILinkHandler;
 import com.tgx.chess.queen.event.handler.LinkHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
 
@@ -51,9 +51,9 @@ public class QttLinkHandler<C extends ZContext>
     {
         IPair logicContent = event.getContent();
         ISession<C> session = logicContent.second();
-        ICommand<C> cmd = logicContent.first();
+        IControl<C> cmd = logicContent.first();
         _Logger.info("LinkHandler cmd: %s", cmd);
-        ICommand<C>[] waitToSends = null;
+        IControl<C>[] waitToSends = null;
         switch (cmd.getSerial())
         {
             case X111_QttConnect.COMMAND:

@@ -31,7 +31,7 @@ import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.handler.DecodeHandler;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
 import com.tgx.chess.queen.io.core.inf.ISession;
@@ -49,7 +49,7 @@ public class ClientDecodeHandler<C extends IContext>
     }
 
     @Override
-    protected void transfer(QEvent event, ICommand[] commands, ISession<C> session, IOperator<ICommand[], ISession<C>, ITriple> operator) {
+    protected void transfer(QEvent event, IControl[] commands, ISession<C> session, IOperator<IControl[], ISession<C>, ITriple> operator) {
         event.produce(LOGIC, new Pair<>(commands, session), operator);
     }
 }

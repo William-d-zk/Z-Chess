@@ -23,31 +23,34 @@
  */
 package com.tgx.chess.bishop.io.zprotocol.ztls;
 
-import com.tgx.chess.bishop.io.ws.bean.WsContext;
 import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
 import com.tgx.chess.king.base.util.IoUtil;
+import com.tgx.chess.queen.io.core.async.AioContext;
 
 /**
  * @author William.d.zk
  */
-public class X01_EncryptRequest<C extends WsContext>
+public class X01_EncryptRequest<C extends AioContext>
         extends
         BaseCommand<C>
 {
     public final static int COMMAND  = 0x01;
     public int              pubKeyId = -1;
 
-    public X01_EncryptRequest() {
+    public X01_EncryptRequest()
+    {
         super(COMMAND, false);
     }
 
     @Override
-    public boolean isMappingCommand() {
+    public boolean isMappingCommand()
+    {
         return true;
     }
 
     @Override
-    public int decodec(byte[] data, int pos) {
+    public int decodec(byte[] data, int pos)
+    {
         if (isEncrypt()) {
             pubKeyId = IoUtil.readInt(data, pos);
             pos += 4;
@@ -56,7 +59,8 @@ public class X01_EncryptRequest<C extends WsContext>
     }
 
     @Override
-    public int encodec(byte[] data, int pos) {
+    public int encodec(byte[] data, int pos)
+    {
         if (isEncrypt()) {
             pos += IoUtil.writeInt(pubKeyId, data, pos);
         }
@@ -64,17 +68,22 @@ public class X01_EncryptRequest<C extends WsContext>
     }
 
     @Override
-    public int dataLength() {
-        return super.dataLength() + (isEncrypt() ? 4 : 0);
+    public int dataLength()
+    {
+        return super.dataLength()
+               + (isEncrypt() ? 4
+                              : 0);
     }
 
     @Override
-    public int getPriority() {
+    public int getPriority()
+    {
         return QOS_00_NETWORK_CONTROL;
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return String.format("%s,public-key-id:%d", super.toString(), pubKeyId);
     }
 }

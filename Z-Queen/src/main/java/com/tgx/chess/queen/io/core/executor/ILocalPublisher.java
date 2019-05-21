@@ -31,7 +31,7 @@ import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IPipeTransfer;
 import com.tgx.chess.queen.io.core.inf.ISession;
@@ -49,7 +49,7 @@ public interface ILocalPublisher<C extends IContext>
     ReentrantLock getLocalLock();
 
     @SuppressWarnings("unchecked")
-    default boolean localSend(ISession<C> session, IPipeTransfer<C> operator, ICommand<C>... toSends)
+    default boolean localSend(ISession<C> session, IPipeTransfer<C> operator, IControl<C>... toSends)
     {
         Objects.requireNonNull(toSends);
         Objects.requireNonNull(session);

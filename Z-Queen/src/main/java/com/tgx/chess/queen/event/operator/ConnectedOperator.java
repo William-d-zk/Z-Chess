@@ -29,7 +29,7 @@ import java.nio.channels.AsynchronousSocketChannel;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ICommandCreator;
 import com.tgx.chess.queen.io.core.inf.IConnectionContext;
 import com.tgx.chess.queen.io.core.inf.IContext;
@@ -72,7 +72,7 @@ public class ConnectedOperator<C extends IContext>
         ICommandCreator<C> commandCreator = context.getCommandCreator();
         sessionCreated.onCreate(session);
         session.readNext(_AioReader);
-        ICommand<C>[] commands = commandCreator.createCommands(session);
+        IControl<C>[] commands = commandCreator.createCommands(session);
         return new Triple<>(commands, session, _Transfer);
     }
 }

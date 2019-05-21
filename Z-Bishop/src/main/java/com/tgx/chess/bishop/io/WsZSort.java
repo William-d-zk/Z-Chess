@@ -58,97 +58,117 @@ public enum WsZSort
     /**
      *
      */
-    CLUSTER_CONSUMER {
+    CLUSTER_CONSUMER
+    {
         @Override
-        public Type getType() {
+        public Type getType()
+        {
             return Type.CONSUMER;
         }
 
         @Override
-        public Mode getMode() {
+        public Mode getMode()
+        {
             return Mode.CLUSTER;
         }
 
         @Override
-        public IFilterChain<WsContext> getFilterChain() {
+        public IFilterChain<WsContext> getFilterChain()
+        {
             return _FrameFilter;
         }
     },
     /**
     *
     */
-    CLUSTER_SERVER {
+    CLUSTER_SERVER
+    {
         @Override
-        public Type getType() {
+        public Type getType()
+        {
             return Type.SERVER;
         }
 
         @Override
-        public Mode getMode() {
+        public Mode getMode()
+        {
             return Mode.CLUSTER;
         }
 
         @Override
-        public IFilterChain<WsContext> getFilterChain() {
+        public IFilterChain<WsContext> getFilterChain()
+        {
             return _FrameFilter;
         }
     },
     /**
     *
     */
-    MQ_CONSUMER {
+    MQ_CONSUMER
+    {
         @Override
-        public Type getType() {
+        public Type getType()
+        {
             return Type.CONSUMER;
         }
 
         @Override
-        public Mode getMode() {
+        public Mode getMode()
+        {
             return Mode.CLUSTER;
         }
 
         @Override
-        public IFilterChain<WsContext> getFilterChain() {
+        public IFilterChain<WsContext> getFilterChain()
+        {
             return _FrameFilter;
         }
     },
     /**
     *
     */
-    MQ_SERVER {
+    MQ_SERVER
+    {
 
         @Override
-        public Mode getMode() {
+        public Mode getMode()
+        {
             return Mode.CLUSTER;
         }
 
         @Override
-        public Type getType() {
+        public Type getType()
+        {
             return Type.SERVER;
         }
 
         @Override
-        public IFilterChain<WsContext> getFilterChain() {
+        public IFilterChain<WsContext> getFilterChain()
+        {
             return _FrameFilter;
         }
     },
     /**
      *
      */
-    SERVER {
+    SERVER
+    {
 
         @Override
-        public Mode getMode() {
+        public Mode getMode()
+        {
             return Mode.LINK;
         }
 
         @Override
-        public Type getType() {
+        public Type getType()
+        {
             return Type.SERVER;
         }
 
         @Override
-        public IFilterChain<WsContext> getFilterChain() {
+        public IFilterChain<WsContext> getFilterChain()
+        {
             return _HandshakeFilter;
         }
 
@@ -156,88 +176,103 @@ public enum WsZSort
     /**
      *
      */
-    SERVER_SSL {
+    SERVER_SSL
+    {
         @Override
-        public IFilterChain<WsContext> getFilterChain() {
+        public IFilterChain<WsContext> getFilterChain()
+        {
             return _HandshakeFilter;
         }
 
         @Override
-        public Mode getMode() {
+        public Mode getMode()
+        {
             return Mode.LINK;
         }
 
         @Override
-        public Type getType() {
+        public Type getType()
+        {
             return Type.SERVER;
         }
 
         @Override
-        public boolean isSSL() {
+        public boolean isSSL()
+        {
             return true;
         }
     },
     /**
     *
     */
-    SYMMETRY {
+    SYMMETRY
+    {
         @Override
-        public IFilterChain<WsContext> getFilterChain() {
+        public IFilterChain<WsContext> getFilterChain()
+        {
             return _FrameFilter;
         }
 
         @Override
-        public Mode getMode() {
+        public Mode getMode()
+        {
             return Mode.LINK;
         }
 
         @Override
-        public Type getType() {
+        public Type getType()
+        {
             return Type.SYMMETRY;
         }
 
     };
-    final WsHandShakeFilter<WsContext> _HandshakeFilter = new WsHandShakeFilter(this);
+    final WsHandShakeFilter _HandshakeFilter = new WsHandShakeFilter(this);
     {
         IFilterChain<WsContext> header = new ZTlsFilter<>();
         _HandshakeFilter.linkAfter(header);
-        _HandshakeFilter.linkFront(new WsFrameFilter<>())
-                        .linkFront(new ZCommandFilter<>(new ZServerFactory<WsContext>()
+        _HandshakeFilter.linkFront(new WsFrameFilter())
+                        .linkFront(new ZCommandFilter(new ZServerFactory<WsContext>()
                         {
                         }))
-                        .linkFront(new WsControlFilter<>());
+                        .linkFront(new WsControlFilter());
     }
-    final WsFrameFilter<WsContext> _FrameFilter = new WsFrameFilter();
+    final WsFrameFilter _FrameFilter = new WsFrameFilter();
     {
         _FrameFilter.linkFront(new ZCommandFilter<>(new ZClusterFactory<WsContext>()
         {
         }))
-                    .linkFront(new WsControlFilter<>());
+                    .linkFront(new WsControlFilter());
     }
     private final CloseOperator<WsContext> _CloseOperator = new CloseOperator<>();
     private final ErrorOperator<WsContext> _ErrorOperator = new ErrorOperator<>(_CloseOperator);
     private final AioWriter<WsContext>     _AioWriter     = new AioWriter<>();
-    private final IPipeEncoder<WsContext>  _Encoder       = new PipeEncoder<>(getFilterChain(), _ErrorOperator, _AioWriter);
+    private final IPipeEncoder<WsContext>  _Encoder       = new PipeEncoder<>(getFilterChain(),
+                                                                              _ErrorOperator,
+                                                                              _AioWriter);
     private TransferOperator<WsContext>    _Transfer      = new TransferOperator<>(_Encoder);
     private IPipeDecoder<WsContext>        _Decoder       = new PipeDecoder<>(getFilterChain(), _Transfer);
 
     @Override
-    public IPipeEncoder<WsContext> getEncoder() {
+    public IPipeEncoder<WsContext> getEncoder()
+    {
         return _Encoder;
     }
 
     @Override
-    public IPipeDecoder<WsContext> getDecoder() {
+    public IPipeDecoder<WsContext> getDecoder()
+    {
         return _Decoder;
     }
 
     @Override
-    public ISessionCloser<WsContext> getCloser() {
+    public ISessionCloser<WsContext> getCloser()
+    {
         return _CloseOperator;
     }
 
     @Override
-    public IPipeTransfer<WsContext> getTransfer() {
+    public IPipeTransfer<WsContext> getTransfer()
+    {
         return _Transfer;
     }
 

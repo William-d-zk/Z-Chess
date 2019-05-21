@@ -41,7 +41,7 @@ import com.tgx.chess.queen.io.core.async.AioSession;
 import com.tgx.chess.queen.io.core.async.BaseAioServer;
 import com.tgx.chess.queen.io.core.executor.ServerCore;
 import com.tgx.chess.queen.io.core.inf.IAioServer;
-import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ICommandCreator;
 import com.tgx.chess.queen.io.core.inf.IConnectionContext;
 import com.tgx.chess.queen.io.core.inf.IContextCreator;
@@ -180,7 +180,7 @@ public abstract class BaseDeviceNode<C extends ZContext>
     }
 
     @SafeVarargs
-    public final void localBizSend(long deviceId, ICommand<C>... toSends)
+    public final void localBizSend(long deviceId, IControl<C>... toSends)
     {
         localSend(findSessionByIndex(deviceId), _Sort.getTransfer(), toSends);
     }

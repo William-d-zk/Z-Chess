@@ -26,7 +26,6 @@ package com.tgx.chess.bishop.io.zfilter;
 import java.util.Arrays;
 import java.util.Objects;
 
-import com.tgx.chess.bishop.io.ws.bean.WsContext;
 import com.tgx.chess.bishop.io.ws.bean.WsFrame;
 import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X01_EncryptRequest;
@@ -38,18 +37,21 @@ import com.tgx.chess.bishop.io.zprotocol.ztls.X06_PlainStart;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.config.Code;
+import com.tgx.chess.queen.io.core.async.AioContext;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ICommandFactory;
 import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
+import com.tgx.chess.queen.io.core.inf.IFrame;
 
 /**
  * @author William.d.zk
  */
-public class ZCommandFilter<C extends WsContext>
+public class ZCommandFilter<C extends AioContext>
         extends
         AioFilterChain<C,
-                       BaseCommand<C>,
-                       WsFrame>
+                IControl<C>,
+                       IFrame>
 {
 
     private final ICommandFactory<C,
@@ -69,13 +71,13 @@ public class ZCommandFilter<C extends WsContext>
     }
 
     @Override
-    public ResultType preEncode(C context, BaseCommand<C> output)
+    public ResultType preEncode(C context, IControl<C> output)
     {
         return preCommandEncode(context, output);
     }
 
     @Override
-    public WsFrame encode(C context, BaseCommand<C> output)
+    public IFrame encode(C context, IControl<C> output)
     {
         WsFrame frame = new WsFrame();
         frame.setPayload(output.encode(context));
@@ -84,13 +86,13 @@ public class ZCommandFilter<C extends WsContext>
     }
 
     @Override
-    public ResultType preDecode(C context, WsFrame input)
+    public ResultType preDecode(C context, IFrame input)
     {
         return preCommandDecode(context, input);
     }
 
     @Override
-    public BaseCommand<C> decode(C context, WsFrame input)
+    public IControl<C> decode(C context, IFrame input)
     {
         int command = input.getPayload()[1] & 0xFF;
         BaseCommand<C> _command = create(command);
@@ -115,7 +117,7 @@ public class ZCommandFilter<C extends WsContext>
             case X02_AsymmetricPub.COMMAND:
                 X02_AsymmetricPub x02 = (X02_AsymmetricPub) _command;
                 encryptHandler = context.getEncryptHandler();
-                if (encryptHandler == null) return new X06_PlainStart<>(Code.PLAIN_UNSUPPORTED.getCode());
+                if (encryptHandler == null) return new X06_PlainStart(Code.PLAIN_UNSUPPORTED.getCode());
                 byte[] symmetricKey = context.getSymmetricEncrypt()
                                              .createKey("z-tls-rc4");
                 if (symmetricKey == null) throw new NullPointerException("create symmetric-key failed!");

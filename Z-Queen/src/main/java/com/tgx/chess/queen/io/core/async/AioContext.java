@@ -43,8 +43,8 @@ public class AioContext
     private final AtomicInteger _ChannelState     = new AtomicInteger(SESSION_CONNECTED);
 
     /*
-     * 用于写出的 ByteBuffer 属于4096及其倍数的对齐块，应与 SocketOption 中系统写出 Buffer 的大小进行调整，存在 一次性投递多个 ICommand 对象的可能性也是存在的 AioPacket 中的 ByteBuffer 仅用于串行化
-     * ICommand 对象
+     * 用于写出的 ByteBuffer 属于4096及其倍数的对齐块，应与 SocketOption 中系统写出 Buffer 的大小进行调整，存在 一次性投递多个 IControl 对象的可能性也是存在的 AioPacket 中的 ByteBuffer 仅用于串行化
+     * IControl 对象
      */
     private ByteBuffer mWrBuf;
 

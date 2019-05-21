@@ -49,7 +49,7 @@ import com.tgx.chess.bishop.io.zprotocol.device.X24_UpdateToken;
 import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.db.inf.IRepository;
-import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.spring.device.model.DeviceEntity;
 import com.tgx.chess.spring.device.repository.ClientRepository;
 import com.tgx.chess.spring.device.repository.DeviceRepository;
@@ -117,7 +117,7 @@ public class DeviceService
     }
 
     @Override
-    public DeviceEntry save(ICommand tar)
+    public DeviceEntry save(IControl tar)
     {
         switch (tar.getSerial())
         {
@@ -159,7 +159,7 @@ public class DeviceService
     }
 
     @Override
-    public DeviceEntry find(ICommand key)
+    public DeviceEntry find(IControl key)
     {
         switch (key.getSerial())
         {
@@ -188,7 +188,7 @@ public class DeviceService
         return deviceEntry;
     }
 
-    public void localBizSend(long deviceId, ICommand... toSends)
+    public void localBizSend(long deviceId, IControl... toSends)
     {
         _DeviceNode.localBizSend(deviceId, toSends);
     }

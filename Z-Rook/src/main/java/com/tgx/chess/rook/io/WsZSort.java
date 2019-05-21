@@ -81,15 +81,15 @@ public enum WsZSort
     private final CloseOperator<WsContext> _CloseOperator   = new CloseOperator<>();
     private final ErrorOperator<WsContext> _ErrorOperator   = new ErrorOperator<>(_CloseOperator);
     private final AioWriter<WsContext>     _AioWriter       = new AioWriter<>();
-    final WsHandShakeFilter<WsContext>     _HandshakeFilter = new WsHandShakeFilter(this);
+    final WsHandShakeFilter                _HandshakeFilter = new WsHandShakeFilter(this);
     {
         IFilterChain<WsContext> header = new ZTlsFilter<>();
         _HandshakeFilter.linkAfter(header)
-                        .linkFront(new WsFrameFilter<>())
+                        .linkFront(new WsFrameFilter())
                         .linkFront(new ZCommandFilter<>(new ZConsumerFactory<WsContext>()
                         {
                         }))
-                        .linkFront(new WsControlFilter<>());
+                        .linkFront(new WsControlFilter());
     }
 
     private final IPipeEncoder<WsContext> _ConsumerEncoder = new PipeEncoder<>(getFilterChain(),

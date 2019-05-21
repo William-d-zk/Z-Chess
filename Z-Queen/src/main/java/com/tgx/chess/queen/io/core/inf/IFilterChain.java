@@ -49,14 +49,19 @@ public interface IFilterChain<C extends IContext>
 
     IFilterChain<C> linkFront(IFilterChain<C> curFilter);
 
-    default int getIdempotentBit() {
+    default int getIdempotentBit()
+    {
         return -1;
     }
 
-    default void idempotentRightShift(int previous) {
+    default void idempotentRightShift(int previous)
+    {
     }
 
-    <P extends IProtocol, T extends IProtocol> IFilter<C, P, T> getFilter();
+    <P extends IProtocol,
+     T extends IProtocol> IFilter<C,
+                                  P,
+                                  T> getFilter();
 
     String getName();
 }

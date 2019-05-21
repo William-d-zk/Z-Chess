@@ -36,6 +36,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 
+import com.tgx.chess.queen.io.core.inf.IControl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
@@ -57,7 +58,6 @@ import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 import com.tgx.chess.rook.io.WsZSort;
@@ -82,12 +82,12 @@ public class WsZClient
 
     @Override
     @SuppressWarnings("unchecked")
-    public ICommand<WsContext>[] createCommands(ISession<WsContext> session)
+    public IControl<WsContext>[] createCommands(ISession<WsContext> session)
     {
-        return new ICommand[] { new X101_HandShake<>(_TargetHost,
-                                                     session.getContext()
-                                                            .getSeKey(),
-                                                     13) };
+        return new IControl[] { new X101_HandShake(_TargetHost,
+                                                   session.getContext()
+                                                          .getSeKey(),
+                                                   13) };
     }
 
     @PostConstruct
@@ -96,12 +96,12 @@ public class WsZClient
     {
         _ClientCore.build((QEvent event, long sequence, boolean endOfBatch) ->
         {
-            ICommand<WsContext>[] commands = null;
+            IControl<WsContext>[] commands = null;
             ISession<WsContext> session = null;
             switch (event.getEventType())
             {
                 case LOGIC:
-                    //与 Server Node 处理过程存在较大的差异，中间去掉一个decoded dispatcher 所以此处入参为 ICommand[]
+                    //与 Server Node 处理过程存在较大的差异，中间去掉一个decoded dispatcher 所以此处入参为 IControl[]
                     IPair logicContent = event.getContent();
                     commands = logicContent.first();
                     session = logicContent.second();
@@ -130,7 +130,7 @@ public class WsZClient
                                                                              .atZone(ZoneId.of("GMT+8")));
                                                      }
                                                      else {
-                                                         return new X103_Close<>("sign in failed! ws_close".getBytes());
+                                                         return new X103_Close("sign in failed! ws_close".getBytes());
                                                      }
                                                      break;
                                                  case X30_EventMsg.COMMAND:
@@ -154,7 +154,7 @@ public class WsZClient
                                              return null;
                                          })
                                          .filter(Objects::nonNull)
-                                         .toArray(ICommand[]::new);
+                                         .toArray(IControl[]::new);
                     }
                     break;
                 default:
@@ -172,10 +172,10 @@ public class WsZClient
 
     public void handshake()
     {
-        sendLocal(new X101_HandShake<>(_TargetHost,
-                                       clientSession.getContext()
-                                                    .getSeKey(),
-                                       13));
+        sendLocal(new X101_HandShake(_TargetHost,
+                                     clientSession.getContext()
+                                                  .getSeKey(),
+                                     13));
     }
 
     public void heartbeat(String msg)

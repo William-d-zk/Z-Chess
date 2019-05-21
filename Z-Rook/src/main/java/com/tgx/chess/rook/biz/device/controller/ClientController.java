@@ -83,7 +83,7 @@ public class ClientController
     @GetMapping("/client/ws/close")
     public String ws_close()
     {
-        _WsClient.sendLocal(new X103_Close<>("client ws_close".getBytes()));
+        _WsClient.sendLocal(new X103_Close("client ws_close".getBytes()));
         return "client ws_close";
     }
 

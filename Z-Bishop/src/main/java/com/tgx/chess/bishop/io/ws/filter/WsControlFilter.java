@@ -34,6 +34,7 @@ import com.tgx.chess.bishop.io.ws.control.X105_Pong;
 import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
 import com.tgx.chess.bishop.io.zprotocol.control.X107_Redirect;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
+import com.tgx.chess.queen.io.core.inf.ICommand;
 
 /**
  * @author William.d.zk
@@ -41,7 +42,7 @@ import com.tgx.chess.queen.io.core.async.AioFilterChain;
 public class WsControlFilter
         extends
         AioFilterChain<WsContext,
-                       WsControl,
+                ICommand<WsContext>,
                        WsFrame>
 {
     public WsControlFilter()
@@ -50,7 +51,7 @@ public class WsControlFilter
     }
 
     @Override
-    public ResultType preEncode(WsContext context, WsControl output)
+    public ResultType preEncode(WsContext context, ICommand<WsContext> output)
     {
         ResultType result = preControlEncode(context, output);
         if (result.equals(ResultType.NEXT_STEP)) {
@@ -62,7 +63,7 @@ public class WsControlFilter
     }
 
     @Override
-    public WsFrame encode(WsContext context, WsControl output)
+    public WsFrame encode(WsContext context, ICommand<WsContext> output)
     {
         WsFrame frame = new WsFrame();
         _Logger.info("control %s", output);
@@ -83,15 +84,15 @@ public class WsControlFilter
         switch (input.frame_op_code & 0x0F)
         {
             case WsFrame.frame_op_code_ctrl_close:
-                return new X103_Close<>(input.getPayload());
+                return new X103_Close(input.getPayload());
             case WsFrame.frame_op_code_ctrl_ping:
-                return new X104_Ping<>(input.getPayload());
+                return new X104_Ping(input.getPayload());
             case WsFrame.frame_op_code_ctrl_pong:
-                return new X105_Pong<>(input.getPayload());
+                return new X105_Pong(input.getPayload());
             case WsFrame.frame_op_code_ctrl_cluster:
-                return new X106_Identity<>(input.getPayload());
+                return new X106_Identity(input.getPayload());
             case WsFrame.frame_op_code_ctrl_redirect:
-                return new X107_Redirect<>(input.getPayload());
+                return new X107_Redirect(input.getPayload());
             default:
                 throw new UnsupportedOperationException(String.format("web socket frame with control code %d.",
                                                                       input.frame_op_code & 0x0F));

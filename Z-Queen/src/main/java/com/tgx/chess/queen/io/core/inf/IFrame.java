@@ -39,6 +39,17 @@ public interface IFrame
 
     void setPayload(byte[] payload);
 
+    byte[] getPayload();
+
+    byte getCtrl();
+
+    boolean isCtrl();
+
+    default IPacket translate()
+    {
+        return null;
+    }
+
     @Override
     default int superSerial()
     {

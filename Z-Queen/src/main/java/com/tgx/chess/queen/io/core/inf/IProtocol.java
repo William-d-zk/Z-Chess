@@ -30,7 +30,7 @@ import java.util.Objects;
  */
 public interface IProtocol
 {
-    int PACKAT_SERIAL = 0;
+    int PACKAT_SERIAL   = 0;
     int COMMAND_SERIAL  = 0x0FF;//1~0xFE(254)
     int CONTROL_SERIAL  = 0x100;//0x101~0x1FE(254)
     int FRAME_SERIAL    = 0x200;//0x201~0x2FE(254)
@@ -46,15 +46,18 @@ public interface IProtocol
 
     int superSerial();
 
-    default int decodec(byte[] data, int pos) {
+    default int decodec(byte[] data, int pos)
+    {
         return pos;
     }
 
-    default int encodec(byte[] data, int pos) {
+    default int encodec(byte[] data, int pos)
+    {
         return pos;
     }
 
-    default byte[] encode() {
+    default byte[] encode()
+    {
         int len = dataLength();
         if (len > 0) {
             byte[] a = new byte[len];
@@ -64,33 +67,37 @@ public interface IProtocol
         return null;
     }
 
-    default int encode(byte[] buf, int pos, int length) {
+    default int encode(byte[] buf, int pos, int length)
+    {
         int len = dataLength();
-        if (len > 0 && Objects.isNull(buf)
-            || len > length
-            || (Objects.nonNull(buf) && buf.length < len)
-            || (Objects.nonNull(buf) && pos + length > buf.length)) {
+        if (len > length
+            || len > 0 && Objects.isNull(buf)
+            || (Objects.nonNull(buf) && (buf.length < len || pos + length > buf.length)))
+        {
             throw new ArrayIndexOutOfBoundsException("data length is too long for input buf");
         }
         pos = encodec(buf, pos);
         return pos;
     }
 
-    default int decode(byte[] data, int pos, int length) {
+    default int decode(byte[] data, int pos, int length)
+    {
         int len = dataLength();
-        if (len > length || (Objects.nonNull(data) && data.length < len) || (Objects.nonNull(data) && pos + length > data.length)) {
+        if (len > length || (Objects.nonNull(data) && (data.length < len || pos + length > data.length))) {
             throw new ArrayIndexOutOfBoundsException();
         }
         return decodec(data, pos);
     }
 
-    default int decode(byte[] data) {
+    default int decode(byte[] data)
+    {
 
         if (Objects.nonNull(data) && data.length < dataLength()) { throw new ArrayIndexOutOfBoundsException(); }
         return decodec(data, 0);
     }
 
-    default boolean idempotent(int bitIdempotent) {
+    default boolean idempotent(int bitIdempotent)
+    {
         return false;
     }
 }

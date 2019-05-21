@@ -32,12 +32,12 @@ import com.tgx.chess.queen.event.inf.IOperator;
  */
 public interface IPipeEncoder<C extends IContext>
         extends
-        IOperator<ICommand<C>,
+        IOperator<IControl<C>,
                   ISession<C>,
                   ITriple>
 {
     @SuppressWarnings("unchecked")
-    default <O extends IProtocol> O filterWrite(ICommand<C> output, IFilterChain<C> filterChain, C context)
+    default <O extends IProtocol> O filterWrite(IControl<C> output, IFilterChain<C> filterChain, C context)
     {
         IFilter.ResultType resultType;
         IFilterChain<C> previous = filterChain.getChainTail();

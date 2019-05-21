@@ -26,7 +26,6 @@ package com.tgx.chess.bishop.io.ws.bean;
 import java.util.Objects;
 
 import com.tgx.chess.queen.io.core.inf.IControl;
-import com.tgx.chess.queen.io.core.inf.IRouteLv4;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
 /**
@@ -34,8 +33,7 @@ import com.tgx.chess.queen.io.core.inf.ISession;
  */
 public abstract class WsControl
         implements
-        IControl<WsContext>,
-        IRouteLv4
+        IControl<WsContext>
 {
 
     private final byte[]        _Msg;
@@ -64,7 +62,14 @@ public abstract class WsControl
     }
 
     @Override
-    public void reset() {
+    public void dispose()
+    {
+        reset();
+    }
+
+    @Override
+    public void reset()
+    {
         setSession(null);
     }
 
@@ -76,18 +81,6 @@ public abstract class WsControl
     public void setPayload(byte[] payload)
     {
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public int getPriority()
-    {
-        return QOS_00_NETWORK_CONTROL;
-    }
-
-    @Override
-    public int superSerial()
-    {
-        return CONTROL_SERIAL;
     }
 
     @Override
@@ -106,6 +99,12 @@ public abstract class WsControl
     public byte getCtrl()
     {
         return mCtrlCode;
+    }
+
+    @Override
+    public boolean isCtrl()
+    {
+        return true;
     }
 
     @Override

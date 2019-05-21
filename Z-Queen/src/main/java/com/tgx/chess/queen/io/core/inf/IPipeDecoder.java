@@ -37,10 +37,10 @@ public interface IPipeDecoder<C extends IContext>
         IOperator<IPacket, ISession<C>, ITriple>
 {
     @SuppressWarnings("unchecked")
-    default ICommand<C>[] filterRead(IPacket input, IFilterChain<C> filterChain, ISession<C> session) {
+    default IControl<C>[] filterRead(IPacket input, IFilterChain<C> filterChain, ISession<C> session) {
         final IFilterChain<C> _Header = filterChain.getChainHead();
         final C _Context = session.getContext();
-        ICommand<C>[] commands = null;
+        IControl<C>[] commands = null;
         IFilter.ResultType resultType;
         IProtocol protocol = input;
         for (IFilterChain<C> next = _Header;; next = _Header, protocol = input) {
@@ -58,15 +58,15 @@ public interface IPipeDecoder<C extends IContext>
                                        .decode(_Context, protocol);
                         break;
                     case HANDLED:
-                        ICommand<C> cmd = (ICommand<C>) next.getFilter()
+                        IControl<C> cmd = (IControl<C>) next.getFilter()
                                                             .decode(_Context, protocol);
                         if (cmd != null) {
                             cmd.setSession(session);
                             if (commands == null) {
-                                commands = new ICommand[] { cmd };
+                                commands = new IControl[] { cmd };
                             }
                             else {
-                                ICommand<C>[] nCmd = new ICommand[commands.length + 1];
+                                IControl<C>[] nCmd = new IControl[commands.length + 1];
                                 IoUtil.addArray(commands, nCmd, cmd);
                                 commands = nCmd;
                             }
