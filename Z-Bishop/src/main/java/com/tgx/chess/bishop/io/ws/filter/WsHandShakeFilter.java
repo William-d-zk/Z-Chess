@@ -227,10 +227,10 @@ public class WsHandShakeFilter
                                             break;
                                     }
                                 default:
-                                    break;
+                                    _Logger.warning("cluster handshake ? session initialize error!");
+                                    return ResultType.ERROR;
                             }
                         }
-
                     }
                     if (!recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
                 }
