@@ -83,16 +83,16 @@ public class WsHandShakeFilter
             while (recvBuf.hasRemaining()) {
                 byte c = recvBuf.get();
                 cRvBuf.put(c);
-                if (c == '\n') {
-                    String x = new String(cRvBuf.array(), cRvBuf.position() - 4, cRvBuf.position());
+                if (c == '\n' && cRvBuf.position() > 4) {
+                    String x = new String(cRvBuf.array(), cRvBuf.position() - 4, 4);
                     if (CRLFCRLF.equals(x)) {
                         cRvBuf.flip();
                         x = new String(cRvBuf.array(), cRvBuf.position(), cRvBuf.limit(), StandardCharsets.UTF_8);
-                        _Logger.info("receive handshake %s", x);
+                        _Logger.info("receive handshake\r\n%s", x);
                         String[] split = x.split(CRLF);
                         StringBuilder response = new StringBuilder();
                         for (String row : split) {
-                            String[] rowSplit = row.split("\\s*", 2);
+                            String[] rowSplit = row.split("\\s+", 2);
                             String httpKey = rowSplit[0].toUpperCase();
                             switch (_Sort.getType())
                             {
@@ -100,7 +100,7 @@ public class WsHandShakeFilter
                                     switch (httpKey)
                                     {
                                         case "GET":
-                                            rowSplit = row.split("\\s");
+                                            rowSplit = row.split("\\s+");
                                             if (!"HTTP/1.1".equalsIgnoreCase(rowSplit[2])) {
                                                 _Logger.warning("http protocol version is low than 1.1");
                                                 return ResultType.ERROR;
@@ -166,12 +166,6 @@ public class WsHandShakeFilter
                                             response.append(String.format("Sec-WebSocket-Accept: %s\r\n",
                                                                           sec_accept_expect));
                                             break;
-                                        case "":
-                                            context.setHandshake(new X101_HandShake((context.checkState(WsContext.HS_State_CLIENT_OK) ? "HTTP/1.1 101 Switching Protocols\r\n"
-                                                                                                                                      : "HTTP/1.1 400 Bad Request\r\n")
-                                                                                    + response.toString()
-                                                                                    + CRLF));
-                                            return ResultType.HANDLED;
                                         default:
                                             _Logger.info("unchecked httpKey and content: [%s %s]",
                                                          httpKey,
@@ -213,23 +207,36 @@ public class WsHandShakeFilter
                                             }
                                             context.updateHandshakeState(WsContext.HS_State_SEC_ACCEPT);
                                             break;
-                                        case "":
-                                            if (context.checkState(WsContext.HS_State_ACCEPT_OK)) {
-                                                context.setHandshake(new X101_HandShake(x));
-                                                return ResultType.HANDLED;
-                                            }
-                                            _Logger.warning("client handshake error!");
-                                            return ResultType.ERROR;
                                         default:
                                             _Logger.info("unchecked httpKey and content: [%s %s]",
                                                          httpKey,
                                                          rowSplit[1]);
                                             break;
                                     }
+                                    break;
                                 default:
                                     _Logger.warning("cluster handshake ? session initialize error!");
                                     return ResultType.ERROR;
                             }
+                        }
+                        if (_Sort.getType()
+                                 .equals(ISort.Type.SERVER))
+                        {
+                            context.setHandshake(new X101_HandShake((context.checkState(WsContext.HS_State_CLIENT_OK) ? "HTTP/1.1 101 Switching Protocols\r\n"
+                                                                                                                      : "HTTP/1.1 400 Bad Request\r\n")
+                                                                    + response.toString()
+                                                                    + CRLF));
+                            return ResultType.HANDLED;
+                        }
+                        else if (_Sort.getType()
+                                      .equals(ISort.Type.CONSUMER))
+                        {
+                            if (context.checkState(WsContext.HS_State_ACCEPT_OK)) {
+                                context.setHandshake(new X101_HandShake(x));
+                                return ResultType.HANDLED;
+                            }
+                            _Logger.warning("client handshake error!");
+                            return ResultType.ERROR;
                         }
                     }
                     if (!recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }

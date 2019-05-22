@@ -82,7 +82,7 @@ public class WsNode
         {
             //前置的 dispatcher 将 ICommands 拆分了
 
-            _Logger.info("device node logic handle %s", command);
+            _Logger.info("device node logic handle\n%s", command);
             switch (command.getSerial())
             {
                 case X30_EventMsg.COMMAND:
