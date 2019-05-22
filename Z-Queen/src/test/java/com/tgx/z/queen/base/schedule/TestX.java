@@ -21,29 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.tgx.chess.bishop.io.ws.control;
 
-import com.tgx.chess.bishop.io.ws.bean.WsHandshake;
+package com.tgx.z.queen.base.schedule;
+
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+
+import org.junit.jupiter.api.Test;
 
 /**
- * @author William.d.zk
- * @date 2017-01-12
+ * @author william.d.zk
+ * @date 2019-05-22
  */
-public class X101_HandShake
-        extends
-        WsHandshake
+public class TestX
 {
-    public final static int COMMAND = 0x101;
+    @Test
+    void x() {
+        ByteBuffer buffer = ByteBuffer.allocate(10);
+        buffer.put((byte) '\r');
+        buffer.put((byte) '\n');
+        buffer.put((byte) '\r');
+        buffer.put((byte) '\n');
+        System.out.println(buffer.position());
+        String x = new String(buffer.array(), buffer.position() - 4, buffer.position());
+        System.out.println(Arrays.toString(x.split("\\s")));
 
-    public X101_HandShake(String host, String secKey, int version) {
-        this(String.format("GET /ws_service HTTP/1.1\r\nHost: %s\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: %s\r\nOrigin: http://%s\r\nSec-WebSocket-Protocol: z-push, z-chat\r\nSec-WebSocket-Version: %s\r\n\r\n",
-                           host,
-                           secKey,
-                           host,
-                           version));
-    }
-
-    public X101_HandShake(String handshake) {
-        super(COMMAND, handshake);
     }
 }
