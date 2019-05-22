@@ -34,7 +34,7 @@ import com.tgx.chess.bishop.io.ws.control.X105_Pong;
 import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
 import com.tgx.chess.bishop.io.zprotocol.control.X107_Redirect;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
-import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
  * @author William.d.zk
@@ -42,7 +42,7 @@ import com.tgx.chess.queen.io.core.inf.ICommand;
 public class WsControlFilter
         extends
         AioFilterChain<WsContext,
-                ICommand<WsContext>,
+                       WsControl,
                        WsFrame>
 {
     public WsControlFilter()
@@ -51,7 +51,7 @@ public class WsControlFilter
     }
 
     @Override
-    public ResultType preEncode(WsContext context, ICommand<WsContext> output)
+    public ResultType preEncode(WsContext context, IProtocol output)
     {
         ResultType result = preControlEncode(context, output);
         if (result.equals(ResultType.NEXT_STEP)) {
@@ -63,7 +63,7 @@ public class WsControlFilter
     }
 
     @Override
-    public WsFrame encode(WsContext context, ICommand<WsContext> output)
+    public WsFrame encode(WsContext context, WsControl output)
     {
         WsFrame frame = new WsFrame();
         _Logger.info("control %s", output);

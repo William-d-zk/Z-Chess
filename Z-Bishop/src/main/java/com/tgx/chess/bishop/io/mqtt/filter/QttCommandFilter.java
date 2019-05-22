@@ -28,6 +28,7 @@ import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
 import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
 import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
  * @author william.d.zk
@@ -35,14 +36,18 @@ import com.tgx.chess.queen.io.core.async.AioFilterChain;
  */
 public class QttCommandFilter
         extends
-        AioFilterChain<QttContext, BaseCommand<QttContext>, QttFrame>
+        AioFilterChain<QttContext,
+                       BaseCommand<QttContext>,
+                       QttFrame>
 {
-    public QttCommandFilter() {
+    public QttCommandFilter()
+    {
         super("mqtt-command-filter");
     }
 
     @Override
-    public QttFrame encode(QttContext context, BaseCommand<QttContext> output) {
+    public QttFrame encode(QttContext context, BaseCommand<QttContext> output)
+    {
         QttFrame frame = new QttFrame();
         frame.setPayload(output.encode(context));
         //        frame.setCtrl(output.getCtrl());
@@ -50,19 +55,22 @@ public class QttCommandFilter
     }
 
     @Override
-    public BaseCommand<QttContext> decode(QttContext context, QttFrame input) {
+    public BaseCommand<QttContext> decode(QttContext context, QttFrame input)
+    {
 
         return null;
     }
 
     @Override
-    public ResultType preEncode(QttContext context, BaseCommand<QttContext> output) {
+    public ResultType preEncode(QttContext context, IProtocol output)
+    {
 
         return null;
     }
 
     @Override
-    public ResultType preDecode(QttContext context, QttFrame input) {
+    public ResultType preDecode(QttContext context, QttFrame input)
+    {
 
         return null;
     }

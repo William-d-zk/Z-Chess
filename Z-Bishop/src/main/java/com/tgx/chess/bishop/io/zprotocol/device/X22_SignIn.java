@@ -51,7 +51,7 @@ public class X22_SignIn<C extends AioContext>
     }
 
     @Override
-    public boolean isMappingCommand()
+    public boolean isMapping()
     {
         return true;
     }

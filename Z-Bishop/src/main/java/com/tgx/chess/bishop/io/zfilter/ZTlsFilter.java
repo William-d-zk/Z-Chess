@@ -27,6 +27,7 @@ import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.io.core.async.AioContext;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.inf.IPacket;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
  * @author William.d.zk
@@ -46,7 +47,7 @@ public class ZTlsFilter<C extends AioContext>
     private final Logger _Logger = Logger.getLogger(getClass().getName());
 
     @Override
-    public ResultType preEncode(C context, IPacket output)
+    public ResultType preEncode(C context, IProtocol output)
     {
         return prePacketEncode(context, output);
     }

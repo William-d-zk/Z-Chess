@@ -25,6 +25,7 @@ package com.tgx.chess.bishop.io.ws.bean;
 
 import java.util.Objects;
 
+import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
@@ -81,6 +82,13 @@ public abstract class WsControl
     public void setPayload(byte[] payload)
     {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int encodec(byte[] data, int pos)
+    {
+        pos += IoUtil.write(_Msg, data, pos);
+        return pos;
     }
 
     @Override

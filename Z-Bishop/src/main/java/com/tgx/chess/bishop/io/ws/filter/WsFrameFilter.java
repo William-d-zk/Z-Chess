@@ -30,6 +30,7 @@ import com.tgx.chess.bishop.io.ws.bean.WsFrame;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.async.AioPacket;
 import com.tgx.chess.queen.io.core.inf.IPacket;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
  * @author William.d.zk
@@ -47,7 +48,7 @@ public class WsFrameFilter
     }
 
     @Override
-    public ResultType preEncode(WsContext context, WsFrame output)
+    public ResultType preEncode(WsContext context, IProtocol output)
     {
         return preFrameEncode(context, output);
     }

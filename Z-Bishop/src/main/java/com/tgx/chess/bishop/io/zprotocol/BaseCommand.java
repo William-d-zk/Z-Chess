@@ -30,7 +30,7 @@ import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.king.base.util.I18nUtil;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.io.core.async.AioContext;
-import com.tgx.chess.queen.io.core.inf.IControl;
+import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.IRouteLv4;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
@@ -39,7 +39,7 @@ import com.tgx.chess.queen.io.core.inf.ISession;
  */
 public abstract class BaseCommand<C extends AioContext>
         implements
-        IControl<C>,
+        ICommand<C>,
         IRouteLv4
 {
     private final Logger _Logger = Logger.getLogger(getClass().getName());

@@ -100,7 +100,7 @@ public class DecodedDispatcher<C extends IContext>
                 publish(_Cluster, LOGIC, new Pair<>(cmd, session), op);
                 break;
             case LINK:
-                if (cmd.isMappingCommand()) {
+                if (cmd.isMapping()) {
                     publish(_Link, LOGIC, new Pair<>(cmd, session), op);
                 }
                 else {
