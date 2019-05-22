@@ -46,7 +46,7 @@ public class X02_AsymmetricPub<C extends AioContext>
     }
 
     @Override
-    public boolean isMappingCommand()
+    public boolean isMapping()
     {
         return true;
     }

@@ -78,7 +78,7 @@ public class WsNode
 
     public void start() throws IOException
     {
-        _ServerCore.build(new ZLogicHandler<WsContext>(_Sort.getEncoder(), (command, session, handler) ->
+        _ServerCore.build(new ZLogicHandler<>(_Sort.getEncoder(), (command, session, handler) ->
         {
             //前置的 dispatcher 将 ICommands 拆分了
 
@@ -86,11 +86,14 @@ public class WsNode
             switch (command.getSerial())
             {
                 case X30_EventMsg.COMMAND:
-                    return new X31_ConfirmMsg<>(command.getUID());
+                    X30_EventMsg x30 = (X30_EventMsg) command;
+                    return new X31_ConfirmMsg<>(x30.getUID());
                 case X31_ConfirmMsg.COMMAND:
-                    return new X32_MsgStatus<>(command.getUID());
+                    X31_ConfirmMsg x31 = (X31_ConfirmMsg) command;
+                    return new X32_MsgStatus<>(x31.getUID());
                 case X50_DeviceMsg.COMMAND:
-                    return new X51_DeviceMsgAck<>(command.getUID());
+                    X50_DeviceMsg x50 = (X50_DeviceMsg) command;
+                    return new X51_DeviceMsgAck<>(x50.getUID());
                 case X103_Close.COMMAND:
                     localClose(session, handler.getCloseOperator());
                     break;

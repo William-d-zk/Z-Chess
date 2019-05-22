@@ -28,6 +28,7 @@ import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
 import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
 import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
  * @author william.d.zk
@@ -35,30 +36,37 @@ import com.tgx.chess.queen.io.core.async.AioFilterChain;
  */
 public class QttControlFilter
         extends
-        AioFilterChain<QttContext, QttControl, QttFrame>
+        AioFilterChain<QttContext,
+                       QttControl,
+                       QttFrame>
 {
 
-    protected QttControlFilter() {
+    protected QttControlFilter()
+    {
         super("mqtt-control-filter");
     }
 
     @Override
-    public ResultType preEncode(QttContext context, QttControl output) {
+    public ResultType preEncode(QttContext context, IProtocol output)
+    {
         return preControlEncode(context, output);
     }
 
     @Override
-    public ResultType preDecode(QttContext context, QttFrame input) {
+    public ResultType preDecode(QttContext context, QttFrame input)
+    {
         return null;
     }
 
     @Override
-    public QttFrame encode(QttContext context, QttControl output) {
+    public QttFrame encode(QttContext context, QttControl output)
+    {
         return null;
     }
 
     @Override
-    public QttControl decode(QttContext context, QttFrame input) {
+    public QttControl decode(QttContext context, QttFrame input)
+    {
         return null;
     }
 }

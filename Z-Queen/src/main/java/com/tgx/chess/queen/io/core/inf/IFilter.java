@@ -30,7 +30,7 @@ public interface IFilter<C extends IContext,
                          O extends IProtocol,
                          I extends IProtocol>
 {
-    ResultType preEncode(C context, O output);
+    ResultType preEncode(C context, IProtocol output);
 
     ResultType preDecode(C context, I input);
 

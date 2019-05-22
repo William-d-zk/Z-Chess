@@ -29,9 +29,7 @@ import static com.tgx.chess.queen.io.core.inf.IContext.ENCODE_HANDSHAKE;
 import java.util.Objects;
 
 import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IContext;
-import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.IFilter;
 import com.tgx.chess.queen.io.core.inf.IFilterChain;
 import com.tgx.chess.queen.io.core.inf.IFrame;
@@ -158,7 +156,7 @@ public abstract class AioFilterChain<C extends IContext,
         }
     }
 
-    protected ResultType preCommandEncode(C context, IControl<C> output)
+    protected ResultType preCommandEncode(C context, IProtocol output)
     {
         if (Objects.isNull(output) || Objects.isNull(context)) { return ResultType.ERROR; }
         return context.isOutConvert() && output.superSerial() == IProtocol.COMMAND_SERIAL ? ResultType.NEXT_STEP
@@ -173,7 +171,7 @@ public abstract class AioFilterChain<C extends IContext,
                                                                                         : ResultType.IGNORE;
     }
 
-    protected ResultType preFrameEncode(C context, IFrame output)
+    protected ResultType preFrameEncode(C context, IProtocol output)
     {
         if (Objects.isNull(context) || Objects.isNull(output)) { return ResultType.ERROR; }
         return context.isOutConvert() && output.superSerial() == IProtocol.FRAME_SERIAL ? ResultType.NEXT_STEP
@@ -187,7 +185,7 @@ public abstract class AioFilterChain<C extends IContext,
                                                                                       : ResultType.IGNORE;
     }
 
-    protected ResultType prePacketEncode(C context, IPacket output)
+    protected ResultType prePacketEncode(C context, IProtocol output)
     {
         if (Objects.isNull(context) || Objects.isNull(output)) { return ResultType.ERROR; }
         return context.isOutConvert() && output.superSerial() == IProtocol.PACKAT_SERIAL ? ResultType.NEXT_STEP
@@ -201,7 +199,7 @@ public abstract class AioFilterChain<C extends IContext,
                                                                                        : ResultType.IGNORE;
     }
 
-    protected ResultType preControlEncode(C context, ICommand<C> output)
+    protected ResultType preControlEncode(C context, IProtocol output)
     {
         if (Objects.isNull(context) || Objects.isNull(output)) { return ResultType.ERROR; }
         return context.isOutConvert() && output.superSerial() == IProtocol.CONTROL_SERIAL ? ResultType.NEXT_STEP
@@ -216,24 +214,22 @@ public abstract class AioFilterChain<C extends IContext,
 
     }
 
-    protected ResultType preHandShakeEncode(C context, ICommand<C> output)
+    protected ResultType preHandShakeEncode(C context, IProtocol output)
     {
         if (Objects.isNull(context) || Objects.isNull(output)) { return ResultType.ERROR; }
-        return context.isOutConvert() && output.superSerial() == IProtocol.CONTROL_SERIAL
-               || context.needHandshake()
-                  && context.outState() == ENCODE_HANDSHAKE
-                  && output.superSerial() == IProtocol.PACKAT_SERIAL ? ResultType.NEXT_STEP
-                                                                     : ResultType.IGNORE;
+        return context.needHandshake()
+               && context.outState() == ENCODE_HANDSHAKE
+               && output.superSerial() == IProtocol.CONTROL_SERIAL ? ResultType.NEXT_STEP
+                                                                   : ResultType.IGNORE;
     }
 
     protected ResultType preHandShakeDecode(C context, IPacket input)
     {
         if (Objects.isNull(context) || Objects.isNull(input)) { return ResultType.ERROR; }
-        return context.isInConvert() && input.superSerial() == IProtocol.CONTROL_SERIAL
-               || context.needHandshake()
-                  && context.inState() == DECODE_HANDSHAKE
-                  && input.superSerial() == IProtocol.PACKAT_SERIAL ? ResultType.HANDLED
-                                                                    : ResultType.IGNORE;
+        return context.needHandshake()
+               && context.inState() == DECODE_HANDSHAKE
+               && input.superSerial() == IProtocol.PACKAT_SERIAL ? ResultType.HANDLED
+                                                                 : ResultType.IGNORE;
 
     }
 

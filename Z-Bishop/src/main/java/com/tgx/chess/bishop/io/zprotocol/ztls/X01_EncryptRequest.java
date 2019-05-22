@@ -43,7 +43,7 @@ public class X01_EncryptRequest<C extends AioContext>
     }
 
     @Override
-    public boolean isMappingCommand()
+    public boolean isMapping()
     {
         return true;
     }

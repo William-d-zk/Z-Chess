@@ -47,15 +47,7 @@ public interface ICommand<C extends IContext>
         return this;
     }
 
-    /**
-     * 当前 Command 是否对route-mapping 存在影响
-     *
-     * @return
-     */
-    default boolean isMappingCommand()
-    {
-        return false;
-    }
+
 
     long _DEFAULT_TRANSACTION_KEY = -1;
 

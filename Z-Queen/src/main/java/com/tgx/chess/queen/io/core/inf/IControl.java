@@ -35,7 +35,7 @@ public interface IControl<C extends IContext>
         extends
         IFrame,
         IQoS,
-        IMessage<C>,
+        ISessionMessage<C>,
         IDisposable
 {
     @Override
@@ -54,5 +54,15 @@ public interface IControl<C extends IContext>
     default int getPriority()
     {
         return QOS_00_NETWORK_CONTROL;
+    }
+
+    /**
+     * 当前 Command 是否对route-mapping 存在影响
+     *
+     * @return
+     */
+    default boolean isMapping()
+    {
+        return false;
     }
 }

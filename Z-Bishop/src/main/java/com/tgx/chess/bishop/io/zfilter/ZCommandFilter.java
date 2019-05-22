@@ -39,10 +39,11 @@ import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.config.Code;
 import com.tgx.chess.queen.io.core.async.AioContext;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
-import com.tgx.chess.queen.io.core.inf.IControl;
+import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.ICommandFactory;
 import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
 import com.tgx.chess.queen.io.core.inf.IFrame;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
  * @author William.d.zk
@@ -50,7 +51,7 @@ import com.tgx.chess.queen.io.core.inf.IFrame;
 public class ZCommandFilter<C extends AioContext>
         extends
         AioFilterChain<C,
-                IControl<C>,
+                       ICommand<C>,
                        IFrame>
 {
 
@@ -71,13 +72,13 @@ public class ZCommandFilter<C extends AioContext>
     }
 
     @Override
-    public ResultType preEncode(C context, IControl<C> output)
+    public ResultType preEncode(C context, IProtocol output)
     {
         return preCommandEncode(context, output);
     }
 
     @Override
-    public IFrame encode(C context, IControl<C> output)
+    public IFrame encode(C context, ICommand<C> output)
     {
         WsFrame frame = new WsFrame();
         frame.setPayload(output.encode(context));
@@ -92,7 +93,7 @@ public class ZCommandFilter<C extends AioContext>
     }
 
     @Override
-    public IControl<C> decode(C context, IFrame input)
+    public ICommand<C> decode(C context, IFrame input)
     {
         int command = input.getPayload()[1] & 0xFF;
         BaseCommand<C> _command = create(command);

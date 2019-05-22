@@ -47,7 +47,7 @@ public class X03_Cipher<C extends AioContext>
     }
 
     @Override
-    public boolean isMappingCommand()
+    public boolean isMapping()
     {
         return true;
     }

@@ -45,7 +45,7 @@ public class X101_HandShake
                            version));
     }
 
-    public X101_HandShake(String handshake)
+    private X101_HandShake(String handshake)
     {
         super(COMMAND, handshake);
     }

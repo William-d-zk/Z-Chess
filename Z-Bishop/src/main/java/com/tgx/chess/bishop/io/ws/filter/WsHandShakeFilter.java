@@ -25,20 +25,17 @@
 package com.tgx.chess.bishop.io.ws.filter;
 
 import static com.tgx.chess.queen.io.core.inf.IContext.DECODE_FRAME;
-import static com.tgx.chess.queen.io.core.inf.IContext.DECODE_HANDSHAKE;
 import static com.tgx.chess.queen.io.core.inf.IContext.ENCODE_FRAME;
 
 import java.nio.ByteBuffer;
-import java.util.Objects;
 
 import com.tgx.chess.bishop.io.ws.bean.WsContext;
 import com.tgx.chess.bishop.io.ws.bean.WsHandshake;
-import com.tgx.chess.bishop.io.ws.control.X101_HandShake;
-import com.tgx.chess.bishop.io.ws.control.X102_SslHandShake;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.async.AioPacket;
 import com.tgx.chess.queen.io.core.inf.IPacket;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
  * @author William.d.zk
@@ -60,7 +57,7 @@ public class WsHandShakeFilter
     }
 
     @Override
-    public ResultType preEncode(WsContext context, WsHandshake output)
+    public ResultType preEncode(WsContext context, IProtocol output)
     {
         return preHandShakeEncode(context, output);
     }
@@ -78,27 +75,30 @@ public class WsHandShakeFilter
     {
         ResultType result = preHandShakeDecode(context, input);
         if (ResultType.HANDLED.equals(result)) {
-            if (context.needHandshake() && context.inState() == DECODE_HANDSHAKE) {
-                WsHandshake handshake = context.getHandshake();
                 ByteBuffer recvBuf = input.getBuffer();
                 ByteBuffer cRvBuf = context.getRvBuffer();
+            int lack = context.lack();
+            switch (context.position()){
+                case -1:
+                case 0:
+                case 1:
+                    default:
+
+            }
+
+
+            int position = context.position();
                 byte c;
                 while (recvBuf.hasRemaining()) {
                     c = recvBuf.get();
                     cRvBuf.put(c);
+                    context.lackLength(1, context.position() + 1);
                     if (c == '\n') {
-                        cRvBuf.flip();
-                        String x = new String(cRvBuf.array(), cRvBuf.position(), cRvBuf.limit());
+                        String x = new String(cRvBuf.array(), , cRvBuf.position());
                         _Logger.info(x);
-                        cRvBuf.clear();
                         switch (_Sort.getType())
                         {
                             case SERVER:
-                                if (Objects.isNull(handshake)) {
-                                    handshake = _Sort.isSSL() ? new X102_SslHandShake()
-                                                              : new X101_HandShake();
-                                }
-                                context.setHandshake(handshake);
                                 String[] split = x.split(" ", 2);
                                 String httpKey = split[0].toUpperCase();
                                 switch (httpKey)
@@ -117,7 +117,6 @@ public class WsHandShakeFilter
                                             return ResultType.ERROR;
                                         }
                                         context.updateHandshakeState(WsContext.HS_State_UPGRADE);
-                                        handshake.append(x);
                                         break;
                                     case "CONNECTION:":
                                         if (!split[1].equalsIgnoreCase("Upgrade\r\n")) {
@@ -125,7 +124,6 @@ public class WsHandShakeFilter
                                             return ResultType.ERROR;
                                         }
                                         context.updateHandshakeState(WsContext.HS_State_CONNECTION);
-                                        handshake.append(x);
                                         break;
                                     case "SEC-WEBSOCKET-PROTOCOL:":
                                         if (!split[1].contains("z-push") && !split[1].contains("z-chat")) {
@@ -133,20 +131,19 @@ public class WsHandShakeFilter
                                             return ResultType.ERROR;
                                         }
                                         context.updateHandshakeState(WsContext.HS_State_SEC_PROTOCOL);
-                                        handshake.append(x);
                                         break;
                                     case "SEC-WEBSOCKET-VERSION:":
+                                        if (split[1].contains("7") || split[1].contains("8")) {
+                                            _Logger.info("sec-websokcet-version : %s, ignore", split[1]);
+                                        }
                                         if (!split[1].contains("13")) {
                                             _Logger.warning("sec-websokcet-version to low");
                                             return ResultType.ERROR;
                                         }
-                                        else if (split[1].contains("7") || split[1].contains("8")) {
-                                            break;
+                                        else {
+                                            // just support version 13
+                                            context.updateHandshakeState(WsContext.HS_State_SEC_VERSION);
                                         }
-                                        // TODO multi version code
-                                        // Sec-WebSocket-Version: 13, 7, 8 ->
-                                        // Sec-WebSocket-Version:13\r\nSec-WebSocket-Version: 7, 8\r\n
-                                        context.updateHandshakeState(WsContext.HS_State_SEC_VERSION);
                                         break;
                                     case "HOST:":
                                         context.updateHandshakeState(WsContext.HS_State_HOST);
@@ -171,11 +168,6 @@ public class WsHandShakeFilter
                                 }
                                 break;
                             case CONSUMER:
-                                if (handshake == null) {
-                                    handshake = _Sort.isSSL() ? new X102_SslHandShake()
-                                                              : new X101_HandShake();
-                                }
-                                context.setHandshake(handshake);
                                 split = x.split(" ", 2);
                                 httpKey = split[0].toUpperCase();
                                 switch (httpKey)
@@ -229,8 +221,7 @@ public class WsHandShakeFilter
                     if (!recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
                 }
                 return ResultType.NEED_DATA;
-            }
-            return ResultType.IGNORE;
+            
         }
         return result;
     }

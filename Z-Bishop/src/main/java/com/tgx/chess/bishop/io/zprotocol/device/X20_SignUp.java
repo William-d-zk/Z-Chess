@@ -44,7 +44,7 @@ public class X20_SignUp<C extends AioContext>
     }
 
     @Override
-    public boolean isMappingCommand() {
+    public boolean isMapping() {
         return true;
     }
 

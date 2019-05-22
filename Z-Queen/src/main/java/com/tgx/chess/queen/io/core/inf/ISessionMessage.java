@@ -24,42 +24,13 @@
 
 package com.tgx.chess.queen.io.core.inf;
 
-import com.tgx.chess.king.base.inf.ITriple;
-import com.tgx.chess.queen.event.inf.IOperator;
-
 /**
- * @author William.d.zk
+ * @author william.d.zk
+ * @date 2019-05-21
  */
-public interface IPipeEncoder<C extends IContext>
+public interface ISessionMessage<C extends IContext>
         extends
-        IOperator<IControl<C>,
-                  ISession<C>,
-                  ITriple>
+        IMessage<C>
 {
-    @SuppressWarnings("unchecked")
-    default <O extends IProtocol> O filterWrite(IControl<C> output, IFilterChain<C> filterChain, C context)
-    {
-        IFilter.ResultType resultType;
-        IFilterChain<C> previous = filterChain.getChainTail();
-        IProtocol toWrite = output;
-        while (previous != null) {
-            resultType = previous.getFilter()
-                                 .preEncode(context, toWrite);
-            switch (resultType)
-            {
-                case ERROR:
-                case NEED_DATA:
-                    return null;
-                case NEXT_STEP:
-                    toWrite = previous.getFilter()
-                                      .encode(context, toWrite);
-                    break;
-                default:
-                    break;
-            }
-            previous = previous.getPrevious();
-        }
-        return (O) toWrite;
-    }
-
+    boolean isMapping();
 }

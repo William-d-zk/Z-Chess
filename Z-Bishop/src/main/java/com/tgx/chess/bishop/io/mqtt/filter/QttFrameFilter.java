@@ -31,6 +31,7 @@ import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.async.AioPacket;
 import com.tgx.chess.queen.io.core.inf.IPacket;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
  * @author william.d.zk
@@ -49,7 +50,7 @@ public class QttFrameFilter<C extends QttContext>
     }
 
     @Override
-    public ResultType preEncode(C context, QttFrame output)
+    public ResultType preEncode(C context, IProtocol output)
     {
         return preFrameEncode(context, output);
     }
