@@ -39,7 +39,7 @@ public class X106_Identity
     public X106_Identity(String nodeName)
     {
         super(nodeName, COMMAND);
-        mCtrlCode = WsFrame.frame_op_code_ctrl_cluster;
+        setCtrl(WsFrame.frame_op_code_ctrl_cluster);
     }
 
     public X106_Identity(byte[] payload)

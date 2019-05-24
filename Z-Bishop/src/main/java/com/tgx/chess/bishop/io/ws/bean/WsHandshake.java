@@ -48,7 +48,7 @@ public abstract class WsHandshake
     @Override
     public String toString()
     {
-        return String.format("web socket handshake %s", new String(getPayload(), StandardCharsets.UTF_8));
+        return String.format("web socket handshake \n\n%s", new String(getPayload(), StandardCharsets.UTF_8));
     }
 
 }

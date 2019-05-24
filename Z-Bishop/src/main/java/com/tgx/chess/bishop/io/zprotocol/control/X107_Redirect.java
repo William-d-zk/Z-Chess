@@ -40,7 +40,7 @@ public class X107_Redirect
     public X107_Redirect(byte[] payload)
     {
         super(COMMAND, payload);
-        mCtrlCode = WsFrame.frame_op_code_ctrl_redirect;
+        setCtrl(WsFrame.frame_op_code_ctrl_redirect);
     }
 
     public String getHost()

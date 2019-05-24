@@ -78,7 +78,7 @@ public class WsFrameFilter
                     if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
                     context.setCarrier(carrier = new WsFrame());
                     byte value = recvBuf.get();
-                    carrier.frame_op_code = WsFrame.getOpCode(value);
+                    carrier.setCtrl(WsFrame.getOpCode(value));
                     carrier.frame_fin = WsFrame.isFrameFin(value);
                     lack = context.lackLength(1, 1);
                 case 0:

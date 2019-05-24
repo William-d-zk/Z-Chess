@@ -299,7 +299,7 @@ public class AioSession<C extends IContext>
                 case IN_SENDING:
                     ps.send();
                 default:
-                    _Logger.info("wait to write %d ,channel state %d ,less than sending %s",
+                    _Logger.info("wait to write %d ,channel state %x ,less than [SENDING] %s",
                                  mWaitWrite,
                                  _Ctx.getChannelState(),
                                  _Ctx.channelStateLessThan(SESSION_SENDING));
