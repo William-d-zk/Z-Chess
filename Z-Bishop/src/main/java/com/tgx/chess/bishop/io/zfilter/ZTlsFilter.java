@@ -63,7 +63,7 @@ public class ZTlsFilter<C extends AioContext>
                    .reset();
             context.cryptOut();
         }
-        if (context.isOutCrypt()) {
+        else if (context.isOutCrypt()) {
             context.getSymmetricEncrypt()
                    .digest(output.getBuffer(), context.getSymmetricKeyOut());
             /* cipher with old symmetric key -> new symmetric key */

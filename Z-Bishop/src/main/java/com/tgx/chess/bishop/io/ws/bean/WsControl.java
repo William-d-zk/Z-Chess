@@ -23,6 +23,7 @@
  */
 package com.tgx.chess.bishop.io.ws.bean;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import com.tgx.chess.king.base.util.IoUtil;
@@ -139,6 +140,6 @@ public abstract class WsControl
     public String toString()
     {
         int command = getSerial();
-        return String.format("cmd: 0X%X", command);
+        return String.format("cmd: 0X%X, %s", command, new String(_Msg, StandardCharsets.UTF_8));
     }
 }

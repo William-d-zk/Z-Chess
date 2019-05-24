@@ -118,7 +118,7 @@ public class ZCommandFilter<C extends AioContext>
             case X02_AsymmetricPub.COMMAND:
                 X02_AsymmetricPub x02 = (X02_AsymmetricPub) _command;
                 encryptHandler = context.getEncryptHandler();
-                if (encryptHandler == null) return new X06_PlainStart(Code.PLAIN_UNSUPPORTED.getCode());
+                if (encryptHandler == null) return new X06_PlainStart<>(Code.PLAIN_UNSUPPORTED.getCode());
                 byte[] symmetricKey = context.getSymmetricEncrypt()
                                              .createKey("z-tls-rc4");
                 if (symmetricKey == null) throw new NullPointerException("create symmetric-key failed!");
@@ -176,7 +176,7 @@ public class ZCommandFilter<C extends AioContext>
             case X05_EncryptStart.COMMAND:
                 X05_EncryptStart x05 = (X05_EncryptStart) _command;
                 if (context.getSymmetricKeyId() != x05.symmetricKeyId) throw new IllegalStateException("symmetric key id is not equals");
-                _Logger.info("encrypt start");
+                _Logger.info("encrypt start, no response");
             case X06_PlainStart.COMMAND:
                 return null;
             default:

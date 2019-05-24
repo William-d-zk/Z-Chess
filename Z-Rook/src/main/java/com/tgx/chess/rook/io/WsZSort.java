@@ -86,10 +86,10 @@ public enum WsZSort
         IFilterChain<WsContext> header = new ZTlsFilter<>();
         _HandshakeFilter.linkAfter(header)
                         .linkFront(new WsFrameFilter())
+                        .linkFront(new WsControlFilter())
                         .linkFront(new ZCommandFilter<>(new ZConsumerFactory<WsContext>()
                         {
-                        }))
-                        .linkFront(new WsControlFilter());
+                        }));
     }
 
     private final IPipeEncoder<WsContext> _ConsumerEncoder = new PipeEncoder<>(getFilterChain(),

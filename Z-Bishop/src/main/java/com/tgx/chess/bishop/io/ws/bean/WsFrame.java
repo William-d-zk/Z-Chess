@@ -258,17 +258,6 @@ public class WsFrame
     public void setCtrl(byte frame_ctrl_code)
     {
         frame_op_code = frame_ctrl_code;
-        switch (frame_ctrl_code & 0x0F)
-        {
-            case WsFrame.frame_op_code_ctrl_close:
-            case WsFrame.frame_op_code_ctrl_ping:
-            case WsFrame.frame_op_code_ctrl_pong:
-            case WsFrame.frame_op_code_ctrl_cluster:
-            case WsFrame.frame_op_code_ctrl_redirect:
-                return;
-            default:
-                throw new IllegalArgumentException();
-        }
     }
 
     @Override

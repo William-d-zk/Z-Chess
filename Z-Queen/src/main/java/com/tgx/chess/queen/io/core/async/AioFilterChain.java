@@ -167,8 +167,10 @@ public abstract class AioFilterChain<C extends IContext,
     protected ResultType preCommandDecode(C context, IFrame input)
     {
         if (Objects.isNull(context) || Objects.isNull(input)) { return ResultType.ERROR; }
-        return context.isInConvert() && input.superSerial() == IProtocol.COMMAND_SERIAL ? ResultType.HANDLED
-                                                                                        : ResultType.IGNORE;
+        return context.isInConvert()
+               && input.superSerial() == IProtocol.FRAME_SERIAL
+               && !input.isCtrl() ? ResultType.HANDLED
+                                  : ResultType.IGNORE;
     }
 
     protected ResultType preFrameEncode(C context, IProtocol output)
@@ -209,8 +211,10 @@ public abstract class AioFilterChain<C extends IContext,
     protected ResultType preControlDecode(C context, IFrame input)
     {
         if (Objects.isNull(context) || Objects.isNull(input)) { return ResultType.ERROR; }
-        return context.isInConvert() && input.superSerial() == IProtocol.CONTROL_SERIAL ? ResultType.HANDLED
-                                                                                        : ResultType.IGNORE;
+        return context.isInConvert()
+               && input.superSerial() == IProtocol.FRAME_SERIAL
+               && input.isCtrl() ? ResultType.HANDLED
+                                 : ResultType.IGNORE;
 
     }
 

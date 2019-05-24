@@ -39,13 +39,13 @@ public class X104_Ping
     public X104_Ping()
     {
         super(COMMAND);
-        mCtrlCode = WsFrame.frame_op_code_ctrl_ping;
+        setCtrl(WsFrame.frame_op_code_ctrl_ping);
     }
 
     public X104_Ping(byte[] payload)
     {
         super(COMMAND, payload);
-        mCtrlCode = WsFrame.frame_op_code_ctrl_ping;
+        setCtrl(WsFrame.frame_op_code_ctrl_ping);
     }
 
     @Override

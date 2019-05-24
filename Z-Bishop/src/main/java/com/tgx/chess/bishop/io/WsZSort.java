@@ -30,6 +30,7 @@ import com.tgx.chess.bishop.io.ws.filter.WsFrameFilter;
 import com.tgx.chess.bishop.io.ws.filter.WsHandShakeFilter;
 import com.tgx.chess.bishop.io.zfilter.ZCommandFilter;
 import com.tgx.chess.bishop.io.zfilter.ZTlsFilter;
+import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
 import com.tgx.chess.bishop.io.zprotocol.ZClusterFactory;
 import com.tgx.chess.bishop.io.zprotocol.ZServerFactory;
 import com.tgx.chess.queen.event.inf.ISort;
@@ -231,17 +232,25 @@ public enum WsZSort
         IFilterChain<WsContext> header = new ZTlsFilter<>();
         _HandshakeFilter.linkAfter(header);
         _HandshakeFilter.linkFront(new WsFrameFilter())
+                        .linkFront(new WsControlFilter())
                         .linkFront(new ZCommandFilter(new ZServerFactory<WsContext>()
                         {
-                        }))
-                        .linkFront(new WsControlFilter());
+                        }));
     }
     final WsFrameFilter _FrameFilter = new WsFrameFilter();
     {
         _FrameFilter.linkFront(new ZCommandFilter<>(new ZClusterFactory<WsContext>()
         {
         }))
-                    .linkFront(new WsControlFilter());
+                    .linkFront(new WsControlFilter())
+                    .linkFront(new ZCommandFilter(new ZServerFactory<WsContext>()
+                    {
+                        @Override
+                        public BaseCommand<WsContext> create(int command)
+                        {
+                            return null;
+                        }
+                    }));
     }
     private final CloseOperator<WsContext> _CloseOperator = new CloseOperator<>();
     private final ErrorOperator<WsContext> _ErrorOperator = new ErrorOperator<>(_CloseOperator);
