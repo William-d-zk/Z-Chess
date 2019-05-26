@@ -21,73 +21,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.tgx.chess.bishop.io.mqtt.bean;
 
-import com.tgx.chess.queen.io.core.inf.IControl;
-import com.tgx.chess.queen.io.core.inf.IRouteLv4;
+import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
 /**
  * @author william.d.zk
- * @date 2019-05-13
+ * @date 2019-05-25
  */
-public abstract class QttControl
+public abstract class QttCommand
         extends
         BaseQtt
         implements
-        IControl<QttContext>,
-        IRouteLv4
+        ICommand<QttContext>
 {
-    private final int            _Command;
-    private byte[]               mPayload;
-    private ISession<QttContext> mSession;
 
-    public QttControl(int command)
+    private final int _Command;
+
+    public QttCommand(int command)
     {
         _Command = command;
     }
 
-    @Override
-    public byte getCtrl()
-    {
-        return getOpCode();
-    }
+    private ISession<QttContext> mSession;
+    private byte[]               mPayload;
 
     @Override
     public void setCtrl(byte ctrl)
     {
         setOpCode(ctrl);
-    }
-
-    @Override
-    public boolean isCtrl()
-    {
-        return true;
-    }
-
-    @Override
-    public IControl<QttContext> setSession(ISession<QttContext> session)
-    {
-        mSession = session;
-        return this;
-    }
-
-    @Override
-    public int getSerial()
-    {
-        return _Command;
-    }
-
-    @Override
-    public ISession<QttContext> getSession()
-    {
-        return mSession;
-    }
-
-    public byte[] getPayload()
-    {
-        return mPayload;
     }
 
     @Override
@@ -97,9 +60,51 @@ public abstract class QttControl
     }
 
     @Override
+    public byte[] getPayload()
+    {
+        return mPayload;
+    }
+
+    @Override
+    public byte getCtrl()
+    {
+        return getOpCode();
+    }
+
+    @Override
+    public boolean isCtrl()
+    {
+        return false;
+    }
+
+    @Override
     public void reset()
     {
-        mSession = null;
         mPayload = null;
+    }
+
+    @Override
+    public int getSerial()
+    {
+        return _Command;
+    }
+
+    @Override
+    public ICommand<QttContext> setSession(ISession<QttContext> session)
+    {
+        mSession = session;
+        return this;
+    }
+
+    @Override
+    public ISession<QttContext> getSession()
+    {
+        return mSession;
+    }
+
+    @Override
+    public int getPriority()
+    {
+        return QOS_08_IMMEDIATE_MESSAGE;
     }
 }

@@ -26,6 +26,7 @@ package com.tgx.chess.bishop.io.ws.bean;
 import com.tgx.chess.king.base.inf.IReset;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.io.core.inf.IFrame;
+import com.tgx.chess.queen.io.core.inf.IVariableLength;
 
 /**
  * @author William.d.zk
@@ -33,7 +34,8 @@ import com.tgx.chess.queen.io.core.inf.IFrame;
 public class WsFrame
         implements
         IReset,
-        IFrame
+        IFrame,
+        IVariableLength
 {
     private final static int WEB_SOCKET_FRAME = FRAME_SERIAL + 1;
 
@@ -217,6 +219,7 @@ public class WsFrame
 
     }
 
+    @Override
     public int payloadLengthLack()
     {
         int result = (mPayload_Mask & 0x80) != 0 ? 4

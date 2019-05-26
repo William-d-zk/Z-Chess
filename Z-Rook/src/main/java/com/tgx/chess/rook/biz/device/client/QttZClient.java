@@ -32,7 +32,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 
-import com.tgx.chess.queen.io.core.inf.IControl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
@@ -45,6 +44,7 @@ import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.processor.QEvent;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 import com.tgx.chess.rook.io.WsZSort;
@@ -77,7 +77,9 @@ public class QttZClient
     @SuppressWarnings("unchecked")
     public IControl<QttContext>[] createCommands(ISession<QttContext> session)
     {
-        return new IControl[] { new X111_QttConnect() };
+        X111_QttConnect x111 = new X111_QttConnect();
+        x111.setClientId("test-connect");
+        return new IControl[] { x111.setSession(session) };
     }
 
     @PostConstruct

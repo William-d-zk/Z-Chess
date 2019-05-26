@@ -27,6 +27,8 @@ package com.tgx.chess.bishop.io.mqtt.filter;
 import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
 import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
 import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
+import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
+import com.tgx.chess.bishop.io.mqtt.control.X112_QttConnack;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
 
@@ -41,7 +43,7 @@ public class QttControlFilter
                        QttFrame>
 {
 
-    protected QttControlFilter()
+    public QttControlFilter()
     {
         super("mqtt-control-filter");
     }
@@ -55,18 +57,34 @@ public class QttControlFilter
     @Override
     public ResultType preDecode(QttContext context, QttFrame input)
     {
-        return null;
+        return preControlDecode(context, input);
     }
 
     @Override
     public QttFrame encode(QttContext context, QttControl output)
     {
-        return null;
+        QttFrame frame = new QttFrame();
+        frame.setCtrl(output.getCtrl());
+        frame.setPayload(output.encode());
+        return frame;
     }
 
     @Override
     public QttControl decode(QttContext context, QttFrame input)
     {
-        return null;
+        QttControl qttControl;
+        switch (input.getType())
+        {
+            case CONNECT:
+                qttControl = new X111_QttConnect();
+                break;
+            case CONNACK:
+                qttControl = new X112_QttConnack();
+                break;
+            default:
+                throw new IllegalArgumentException("MQTT type error");
+        }
+        qttControl.decode(input.getPayload());
+        return qttControl;
     }
 }

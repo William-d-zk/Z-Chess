@@ -27,10 +27,10 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
+import com.tgx.chess.bishop.io.mqtt.bean.BaseQtt;
 import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
 import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
 import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
-import com.tgx.chess.bishop.io.mqtt.bean.QttFrame.QOS_LEVEL;
 import com.tgx.chess.king.base.util.IoUtil;
 
 /**
@@ -49,13 +49,8 @@ public class X111_QttConnect
     public X111_QttConnect()
     {
         super(COMMAND);
-        setCtrl(CTRL);
+        setCtrl(QttFrame.generateCtrl(false, false, BaseQtt.QOS_LEVEL.QOS_ONLY_ONCE, QttFrame.QTT_TYPE.CONNECT));
     }
-
-    private final static byte CTRL = QttFrame.generateCtrl(false,
-                                                           false,
-                                                           QOS_LEVEL.QOS_ONLY_ONCE,
-                                                           QttFrame.QTT_TYPE.CONNECT);
 
     @Override
     public int dataLength()
@@ -69,26 +64,45 @@ public class X111_QttConnect
         return QOS_00_NETWORK_CONTROL;
     }
 
-    private boolean   mFlagUserName;
-    private boolean   mFlagPassword;
-    private boolean   mFlagWillRetain;
-    private QOS_LEVEL mFlagWillQoS;
-    private boolean   mFlagWill;
-    private boolean   mFlagCleanSession;
-    private int       mKeepAlive;
-    private String    mUserName;
-    private String    mPassword;
-    private String    mClientId;
-    private int       mClientIdLength;
-    private String    mWillTopic;
-    private String    mWillMessage;
+    private boolean           mFlagUserName;
+    private boolean           mFlagPassword;
+    private boolean           mFlagWillRetain;
+    private BaseQtt.QOS_LEVEL mFlagWillQoS;
+    private boolean           mFlagWill;
+    private boolean           mFlagCleanSession;
+    private int               mKeepAlive;
+    private String            mUserName;
+    private String            mPassword;
+    private String            mClientId;
+    private int               mClientIdLength;
+    private String            mWillTopic;
+    private String            mWillMessage;
 
     private final int _FixHeadLength = 10;
-    private final int _MQTT          = IoUtil.readInt(new byte[] { 'M',
-                                                                   'Q',
-                                                                   'T',
-                                                                   'T' },
-                                                      0);
+    private final int _MQTT           = IoUtil.readInt(new byte[] { 'M',
+                                                                    'Q',
+                                                                    'T',
+                                                                    'T' },
+                                                       0);
+
+    @Override
+    public void reset()
+    {
+        super.reset();
+        mFlagUserName = false;
+        mFlagPassword = false;
+        mFlagWill = false;
+        mFlagWillQoS = null;
+        mFlagWillRetain = false;
+        mFlagCleanSession = false;
+        mUserName = null;
+        mPassword = null;
+        mKeepAlive = 0;
+        mClientId = null;
+        mClientIdLength = 0;
+        mWillTopic = null;
+        mWillMessage = null;
+    }
 
     enum Flag
     {
@@ -132,9 +146,10 @@ public class X111_QttConnect
                                   : 0;
         code |= mFlagWill ? Flag.Will.getMask()
                           : 0;
-        code |= mFlagWillQoS.getValue() << 3;
-        code |= mFlagWillRetain ? Flag.WillRetain.getMask()
-                                : 0;
+        code |= mFlagWill ? mFlagWillQoS.getValue() << 3
+                          : 0;
+        code |= mFlagWill && mFlagWillRetain ? Flag.WillRetain.getMask()
+                                             : 0;
         code |= mFlagPassword ? Flag.Password.getMask()
                               : 0;
         code |= mFlagUserName ? Flag.UserName.getMask()
@@ -162,8 +177,10 @@ public class X111_QttConnect
         return mKeepAlive;
     }
 
-    public void setWillFlag()
+    public void setWill(QOS_LEVEL level, boolean retain)
     {
+        mFlagWillQoS = level;
+        mFlagWillRetain = retain;
         mFlagWill = true;
     }
 
@@ -304,7 +321,7 @@ public class X111_QttConnect
         pos += 4;
         if (mqtt != _MQTT) { throw new IllegalArgumentException("FixHead Protocol name wrong"); }
         int level = data[pos++];
-        Integer globalVersion = QttContext.getVersion()
+        int globalVersion = QttContext.getVersion()
                                           .second();
         if (level != globalVersion) { throw new IllegalArgumentException("Protocol version unsupported"); }
         setControlCode(data[pos++]);
@@ -359,10 +376,10 @@ public class X111_QttConnect
     {
         pos += IoUtil.writeShort(_FixHeadLength, data, pos);
         pos += IoUtil.writeInt(_MQTT, data, pos);
-        pos += IoUtil.writeByte(QttContext.getVersion()
-                                          .second(),
-                                data,
-                                pos);
+        //此处必须分开写，否则直接写到writeByte方法中会出现类型推定错误
+        int version = QttContext.getVersion()
+                                .second();
+        pos += IoUtil.writeByte(version, data, pos);
         pos += IoUtil.writeByte(getControlCode(), data, pos);
         pos += IoUtil.writeShort(getKeepAlive(), data, pos);
         byte[] varClientIdLength = IoUtil.variableLength(mClientIdLength);

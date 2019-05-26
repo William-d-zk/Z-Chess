@@ -82,6 +82,7 @@ public interface IProtocol
 
     default int decode(byte[] data, int pos, int length)
     {
+        //dataLength 此处表达了最短长度值
         int len = dataLength();
         if (len > length || (Objects.nonNull(data) && (data.length < len || pos + length > data.length))) {
             throw new ArrayIndexOutOfBoundsException();
@@ -91,7 +92,7 @@ public interface IProtocol
 
     default int decode(byte[] data)
     {
-
+        //dataLength 此处表达了最短长度值
         if (Objects.nonNull(data) && data.length < dataLength()) { throw new ArrayIndexOutOfBoundsException(); }
         return decodec(data, 0);
     }
