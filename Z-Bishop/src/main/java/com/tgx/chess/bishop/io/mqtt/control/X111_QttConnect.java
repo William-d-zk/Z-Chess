@@ -79,11 +79,11 @@ public class X111_QttConnect
     private String            mWillMessage;
 
     private final int _FixHeadLength = 10;
-    private final int _MQTT           = IoUtil.readInt(new byte[] { 'M',
-                                                                    'Q',
-                                                                    'T',
-                                                                    'T' },
-                                                       0);
+    private final int _MQTT          = IoUtil.readInt(new byte[] { 'M',
+                                                                   'Q',
+                                                                   'T',
+                                                                   'T' },
+                                                      0);
 
     @Override
     public void reset()
@@ -245,6 +245,11 @@ public class X111_QttConnect
         mClientId = id;
     }
 
+    public String getClientId()
+    {
+        return mClientId;
+    }
+
     public void setWillTopic(String topic)
     {
         if (Objects.isNull(topic) || "".equals(topic)) { throw new NullPointerException("will topic within [null]"); }
@@ -322,7 +327,7 @@ public class X111_QttConnect
         if (mqtt != _MQTT) { throw new IllegalArgumentException("FixHead Protocol name wrong"); }
         int level = data[pos++];
         int globalVersion = QttContext.getVersion()
-                                          .second();
+                                      .second();
         if (level != globalVersion) { throw new IllegalArgumentException("Protocol version unsupported"); }
         setControlCode(data[pos++]);
         mKeepAlive = IoUtil.readUnsignedShort(data, pos);

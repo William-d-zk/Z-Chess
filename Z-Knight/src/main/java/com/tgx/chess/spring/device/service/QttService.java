@@ -25,12 +25,9 @@
 package com.tgx.chess.spring.device.service;
 
 import java.io.IOException;
-import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -42,12 +39,8 @@ import org.springframework.stereotype.Service;
 
 import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
 import com.tgx.chess.bishop.biz.device.QttNode;
-import com.tgx.chess.bishop.biz.device.WsNode;
-import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
-import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
-import com.tgx.chess.bishop.io.zprotocol.device.X24_UpdateToken;
+import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
 import com.tgx.chess.king.base.util.CryptUtil;
-import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.spring.device.model.DeviceEntity;
@@ -56,38 +49,36 @@ import com.tgx.chess.spring.device.repository.DeviceRepository;
 
 /**
  * @author william.d.zk
+ * @date 2019-05-26
  */
 @Service
-@PropertySource("classpath:device.properties")
-public class DeviceService
+@PropertySource("classpath:device.qtt.properties")
+public class QttService
         implements
-        IRepository<DeviceEntry>
+        IRepository<DeviceEntry,
+                    QttContext>
 {
     private final DeviceRepository _DeviceRepository;
     private final ClientRepository _ClientRepository;
-    private final WsNode           _DeviceNode;
     private final QttNode          _QttNode;
-    private final Random           _Random    = new Random();
-    private final CryptUtil        _CryptUtil = new CryptUtil();
+
+    private final Random    _Random    = new Random();
+    private final CryptUtil _CryptUtil = new CryptUtil();
 
     @Autowired
-    public DeviceService(DeviceRepository deviceRepository,
-                         ClientRepository clientRepository,
-                         @Value("${ws.server.host}") String wsHost,
-                         @Value("${ws.server.port}") int wsPort,
-                         @Value("${qtt.server.host}") String qttHost,
-                         @Value("${qtt.server.port}") int qttPort)
+    public QttService(DeviceRepository deviceRepository,
+                      ClientRepository clientRepository,
+                      @Value("${qtt.server.host}") String qttHost,
+                      @Value("${qtt.server.port}") int qttPort)
     {
         _DeviceRepository = deviceRepository;
         _ClientRepository = clientRepository;
-        _DeviceNode = new WsNode(wsHost, wsPort, this);
         _QttNode = new QttNode(qttHost, qttPort, this);
     }
 
     @PostConstruct
     private void start() throws IOException
     {
-        _DeviceNode.start();
         _QttNode.start();
     }
 
@@ -96,7 +87,7 @@ public class DeviceService
         List<DeviceEntity> entities = _DeviceRepository.findAll();
         return Objects.nonNull(entities) ? entities.stream()
                                                    .map(this::convertDevice)
-                                                   .peek(entry -> entry.setOnline(Objects.nonNull(_DeviceNode.findSessionByIndex(entry.getDeviceUID()))))
+                                                   .peek(entry -> entry.setOnline(Objects.nonNull(_QttNode.findSessionByIndex(entry.getDeviceUID()))))
                                                    .collect(Collectors.toList())
                                          : null;
     }
@@ -121,38 +112,6 @@ public class DeviceService
     {
         switch (tar.getSerial())
         {
-            case X20_SignUp.COMMAND:
-                X20_SignUp x20 = (X20_SignUp) tar;
-                byte[] deviceMac = x20.getMac();
-                String devicePwd = x20.getPassword();
-                long pwdId = x20.getPasswordId();
-                DeviceEntity deviceEntity = _DeviceRepository.findByMac(IoUtil.readMac(deviceMac));
-                if (Objects.isNull(deviceEntity) || deviceEntity.getPasswordId() == pwdId) {
-                    if (Objects.isNull(deviceEntity)) {
-                        deviceEntity = new DeviceEntity();
-                        deviceEntity.setMac(IoUtil.readMac(deviceMac));
-                        deviceEntity.setPasswordId(pwdId);
-
-                    }
-                    deviceEntity.setPassword(devicePwd);
-                    deviceEntity.setInvalidAt(Date.from(Instant.now()
-                                                               .plusSeconds(TimeUnit.DAYS.toSeconds(41))));
-                    byte[] src = new byte[6 + devicePwd.getBytes().length];
-                    IoUtil.write(deviceMac, src, 0);
-                    IoUtil.write(devicePwd.getBytes(), src, 6);
-                    deviceEntity.setToken(IoUtil.bin2Hex(_CryptUtil.sha256(src)));
-                    try {
-                        _DeviceRepository.save(deviceEntity);
-                        return convertDevice(deviceEntity);
-                    }
-                    catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-                break;
-            case X24_UpdateToken.COMMAND:
-                X24_UpdateToken x24 = (X24_UpdateToken) tar;
-                break;
 
         }
         return null;
@@ -163,16 +122,7 @@ public class DeviceService
     {
         switch (key.getSerial())
         {
-            case X22_SignIn.COMMAND:
-                X22_SignIn x22 = (X22_SignIn) key;
-                String deviceToken = IoUtil.bin2Hex(x22.getToken());
-                String devicePwd = x22.getPassword();
-                byte[] password = devicePwd.getBytes();
-                byte[] toSign = new byte[password.length + 6];
-                IoUtil.write(password, toSign, 6);
-                DeviceEntity deviceEntity = _DeviceRepository.findByTokenAndPassword(deviceToken, devicePwd);
-                if (Objects.nonNull(deviceEntity)) { return convertDevice(deviceEntity); }
-                break;
+
         }
         return null;
     }
@@ -188,14 +138,15 @@ public class DeviceService
         return deviceEntry;
     }
 
-    public void localBizSend(long deviceId, IControl... toSends)
+    @SafeVarargs
+    public final void localBizSend(long deviceId, IControl<QttContext>... toSends)
     {
-        _DeviceNode.localBizSend(deviceId, toSends);
+        _QttNode.localBizSend(deviceId, toSends);
     }
 
     public void localBizClose(long deviceId)
     {
-        _DeviceNode.localBizClose(deviceId);
+        _QttNode.localBizClose(deviceId);
     }
 
 }

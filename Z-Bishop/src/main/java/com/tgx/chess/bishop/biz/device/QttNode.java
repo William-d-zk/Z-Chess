@@ -51,7 +51,8 @@ public class QttNode
 
     public QttNode(String host,
                    int port,
-                   IRepository<DeviceEntry> respository)
+                   IRepository<DeviceEntry,
+                               QttContext> respository)
     {
         super(host, port, QttZSort.SYMMETRY, respository);
     }
@@ -87,6 +88,11 @@ public class QttNode
     @Override
     public IControl<QttContext> save(IControl<QttContext> tar, ISession<QttContext> session)
     {
+        //TODO 存储会话
+        switch (tar.getSerial())
+        {
+
+        }
         return null;
     }
 

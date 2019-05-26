@@ -24,14 +24,16 @@
 
 package com.tgx.chess.queen.db.inf;
 
+import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
 
 /**
  * @author william.d.zk
  */
-public interface IRepository<T>
+public interface IRepository<T,
+                             C extends IContext>
 {
-    T save(IControl target);
+    T save(IControl<C> target);
 
-    T find(IControl key);
+    T find(IControl<C> key);
 }

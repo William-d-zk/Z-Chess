@@ -39,7 +39,7 @@ import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
 import com.tgx.chess.bishop.io.zprotocol.device.X30_EventMsg;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.spring.device.model.DeviceEntity;
-import com.tgx.chess.spring.device.service.DeviceService;
+import com.tgx.chess.spring.device.service.WsService;
 import com.tgx.chess.spring.jpa.generator.ZGenerator;
 
 /**
@@ -49,12 +49,12 @@ import com.tgx.chess.spring.jpa.generator.ZGenerator;
 public class DeviceController
 {
     private final Logger        _Log        = Logger.getLogger(getClass().getName());
-    private final DeviceService _DeviceService;
+    private final WsService _DeviceService;
     private final Random        _Random     = new Random();
     private final ZGenerator    _ZGenerator = new ZGenerator();
 
     @Autowired
-    public DeviceController(DeviceService deviceService)
+    public DeviceController(WsService deviceService)
     {
         _DeviceService = deviceService;
     }
