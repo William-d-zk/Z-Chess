@@ -27,10 +27,13 @@ package com.tgx.chess.bishop.biz.device;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousChannelGroup;
+import java.util.Objects;
 
 import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
 import com.tgx.chess.bishop.io.QttZSort;
 import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
+import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
+import com.tgx.chess.bishop.io.mqtt.control.X112_QttConnack;
 import com.tgx.chess.bishop.io.mqtt.handler.QttLinkHandler;
 import com.tgx.chess.bishop.io.mqtt.handler.QttLogicHandler;
 import com.tgx.chess.bishop.io.zcrypt.EncryptHandler;
@@ -88,10 +91,16 @@ public class QttNode
     @Override
     public IControl<QttContext> save(IControl<QttContext> tar, ISession<QttContext> session)
     {
-        //TODO 存储会话
+        DeviceEntry deviceEntry = _Repository.save(tar);
         switch (tar.getSerial())
         {
+            case X111_QttConnect.COMMAND:
+                X112_QttConnack x112 = new X112_QttConnack();
+                x112.responseOk();
+                if (Objects.nonNull(deviceEntry)) {
 
+                }
+                return x112;
         }
         return null;
     }

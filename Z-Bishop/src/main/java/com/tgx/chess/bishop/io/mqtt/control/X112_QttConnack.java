@@ -79,6 +79,12 @@ public class X112_QttConnack
         mResponseCode = code.getValue();
     }
 
+    public void responseOk()
+    {
+        mPresent = true;
+        setCode(Code.ACCEPT);
+    }
+
     public void responseClean()
     {
         mPresent = false;
