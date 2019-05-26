@@ -24,6 +24,8 @@
 
 package com.tgx.chess.bishop.io.mqtt.handler;
 
+import static com.tgx.chess.queen.event.inf.IError.Type.SAVE_DATA;
+
 import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.king.base.exception.ZException;
@@ -47,6 +49,7 @@ public class QttLinkHandler<C extends ZContext>
     private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
 
     @Override
+    @SuppressWarnings("unchecked")
     public void handle(LinkHandler<C> _LinkHandler, QueenManager<C> manager, QEvent event) throws ZException
     {
         IPair logicContent = event.getContent();
@@ -57,7 +60,14 @@ public class QttLinkHandler<C extends ZContext>
         switch (cmd.getSerial())
         {
             case X111_QttConnect.COMMAND:
-
+                try {
+                    waitToSends = new IControl[] { manager.save(cmd, session) };
+                }
+                catch (Exception e) {
+                    _LinkHandler.error(SAVE_DATA, e, session, _LinkHandler.getErrorOperator());
+                    return;
+                }
+                break;
             default:
                 break;
         }

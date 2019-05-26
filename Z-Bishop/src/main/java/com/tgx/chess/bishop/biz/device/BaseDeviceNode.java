@@ -41,10 +41,10 @@ import com.tgx.chess.queen.io.core.async.AioSession;
 import com.tgx.chess.queen.io.core.async.BaseAioServer;
 import com.tgx.chess.queen.io.core.executor.ServerCore;
 import com.tgx.chess.queen.io.core.inf.IAioServer;
-import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ICommandCreator;
 import com.tgx.chess.queen.io.core.inf.IConnectionContext;
 import com.tgx.chess.queen.io.core.inf.IContextCreator;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionCreated;
 import com.tgx.chess.queen.io.core.inf.ISessionCreator;
@@ -65,14 +65,15 @@ public abstract class BaseDeviceNode<C extends ZContext>
         IContextCreator<C>
 {
 
-    final Logger                     _Logger = Logger.getLogger(getClass().getName());
-    final String                     _ServerHost;
-    final int                        _ServerPort;
-    final IAioServer<C>              _AioServer;
-    final ISort<C>                   _Sort;
-    final IRepository<DeviceEntry>   _Repository;
-    private final ISessionCreator<C> _SessionCreator;
-    private final ICommandCreator<C> _CommandCreator;
+    final Logger                      _Logger = Logger.getLogger(getClass().getName());
+    final String                      _ServerHost;
+    final int                         _ServerPort;
+    final IAioServer<C>               _AioServer;
+    final ISort<C>                    _Sort;
+    final IRepository<DeviceEntry,
+                      C>              _Repository;
+    private final ISessionCreator<C>  _SessionCreator;
+    private final ICommandCreator<C>  _CommandCreator;
 
     @Override
     public void onDismiss(ISession<C> session)
@@ -91,7 +92,8 @@ public abstract class BaseDeviceNode<C extends ZContext>
     BaseDeviceNode(String host,
                    int port,
                    ISort<C> sort,
-                   IRepository<DeviceEntry> repository)
+                   IRepository<DeviceEntry,
+                               C> repository)
     {
         super(new Config("device"), new ServerCore<C>()
         {

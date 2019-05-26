@@ -65,7 +65,8 @@ public class WsNode
 
     public WsNode(String host,
                   int port,
-                  IRepository<DeviceEntry> repository)
+                  IRepository<DeviceEntry,
+                              WsContext> repository)
     {
         super(host, port, WsZSort.SERVER, repository);
     }
