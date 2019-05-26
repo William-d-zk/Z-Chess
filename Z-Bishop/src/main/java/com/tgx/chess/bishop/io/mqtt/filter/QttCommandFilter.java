@@ -24,10 +24,12 @@
 
 package com.tgx.chess.bishop.io.mqtt.filter;
 
+import com.tgx.chess.bishop.io.mqtt.bean.BaseQtt;
 import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
 import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
 import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
+import com.tgx.chess.queen.io.core.inf.ICommandFactory;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
@@ -40,39 +42,49 @@ public class QttCommandFilter
                        BaseCommand<QttContext>,
                        QttFrame>
 {
-    public QttCommandFilter()
+    public QttCommandFilter(ICommandFactory<QttContext,
+                                            BaseCommand<QttContext>> factory)
     {
         super("mqtt-command-filter");
+        _CommandFactory = factory;
     }
+
+    private final ICommandFactory<QttContext,
+                                  BaseCommand<QttContext>> _CommandFactory;
 
     @Override
     public QttFrame encode(QttContext context, BaseCommand<QttContext> output)
     {
         QttFrame frame = new QttFrame();
+        frame.setCtrl(output.getCtrl());
         frame.setPayload(output.encode(context));
-        //        frame.setCtrl(output.getCtrl());
         return frame;
     }
 
     @Override
     public BaseCommand<QttContext> decode(QttContext context, QttFrame input)
     {
+        switch (BaseQtt.QTT_TYPE.valueOf(input.getCtrl()))
+        {
+            case PUBLISH:
+            case SUBSCRIBE:
 
-        return null;
+        }
+        BaseCommand<QttContext> cmd = _CommandFactory.create(0);
+
+        return cmd;
     }
 
     @Override
     public ResultType preEncode(QttContext context, IProtocol output)
     {
-
-        return null;
+        return preCommandEncode(context, output);
     }
 
     @Override
     public ResultType preDecode(QttContext context, QttFrame input)
     {
-
-        return null;
+        return preCommandDecode(context, input);
     }
 
 }

@@ -26,6 +26,7 @@ package com.tgx.chess.bishop.io.mqtt.control;
 
 import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
 import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
+import com.tgx.chess.king.base.util.IoUtil;
 
 /**
  * @author william.d.zk
@@ -35,21 +36,150 @@ public class X112_QttConnack
         extends
         QttControl
 {
-    public final static int   COMMAND = 0x112;
-    private final static byte CTRL    = QttFrame.generateCtrl(false, false, QttFrame.QOS_LEVEL.QOS_ONLY_ONCE, QttFrame.QTT_TYPE.CONNACK);
+    public final static int COMMAND = 0x112;
 
-    public X112_QttConnack() {
+    private boolean mPresent;
+    private byte    mResponseCode;
+
+    public X112_QttConnack()
+    {
         super(COMMAND);
-        setCtrl(CTRL);
+        setCtrl(QttFrame.generateCtrl(false, false, QttFrame.QOS_LEVEL.QOS_ONLY_ONCE, QttFrame.QTT_TYPE.CONNACK));
     }
 
     @Override
-    public int dataLength() {
-        return 0;
+    public int dataLength()
+    {
+        return 2;
     }
 
     @Override
-    public int getPriority() {
+    public int getPriority()
+    {
         return QOS_00_NETWORK_CONTROL;
     }
+
+    public boolean isPresent()
+    {
+        return mPresent;
+    }
+
+    public void setPresent()
+    {
+        mPresent = true;
+    }
+
+    public Code getCode()
+    {
+        return Code.valueOf(mResponseCode);
+    }
+
+    private void setCode(Code code)
+    {
+        mResponseCode = code.getValue();
+    }
+
+    public void responseClean()
+    {
+        mPresent = false;
+        setCode(Code.ACCEPT);
+    }
+
+    public void rejectUnacceptableProtocol()
+    {
+        mPresent = false;
+        setCode(Code.REJECT_UNACCEPTABLE_PROTOCOL);
+    }
+
+    public void rejectIdentifier()
+    {
+        mPresent = false;
+        setCode(Code.REJECT_IDENTIFIER);
+    }
+
+    public void rejectServerUnavailable()
+    {
+        mPresent = false;
+        setCode(Code.REJECT_SERVER_UNAVAILABLE);
+    }
+
+    public void rejectBadUserOrPassword()
+    {
+        mPresent = false;
+        setCode(Code.REJECT_BAD_USER_OR_PASSWORD);
+    }
+
+    public void rejectNotAuthorized()
+    {
+        mPresent = false;
+        setCode(Code.REJECT_NOT_AUTHORIZED);
+    }
+
+    @Override
+    public int encodec(byte[] data, int pos)
+    {
+        pos += IoUtil.writeByte(mPresent ? 1
+                                         : 0,
+                                data,
+                                pos);
+        pos += IoUtil.writeByte(mResponseCode, data, pos);
+        return pos;
+    }
+
+    @Override
+    public int decodec(byte[] data, int pos)
+    {
+        mPresent = data[pos++] > 0;
+        mResponseCode = data[pos++];
+        return pos;
+    }
+
+    public boolean isIllegalState()
+    {
+        return mPresent && mResponseCode > 0;
+    }
+
+    public enum Code
+    {
+
+        ACCEPT(0),
+        REJECT_UNACCEPTABLE_PROTOCOL(1),
+        REJECT_IDENTIFIER(2),
+        REJECT_SERVER_UNAVAILABLE(3),
+        REJECT_BAD_USER_OR_PASSWORD(4),
+        REJECT_NOT_AUTHORIZED(5);
+        private final byte _Code;
+
+        Code(int code)
+        {
+            _Code = (byte) code;
+        }
+
+        public byte getValue()
+        {
+            return _Code;
+        }
+
+        static Code valueOf(byte code)
+        {
+            switch (code)
+            {
+                case 0:
+                    return ACCEPT;
+                case 1:
+                    return REJECT_UNACCEPTABLE_PROTOCOL;
+                case 2:
+                    return REJECT_IDENTIFIER;
+                case 3:
+                    return REJECT_SERVER_UNAVAILABLE;
+                case 4:
+                    return REJECT_BAD_USER_OR_PASSWORD;
+                case 5:
+                    return REJECT_NOT_AUTHORIZED;
+                default:
+                    throw new IllegalArgumentException("6-255 Reserved");
+            }
+        }
+    }
+
 }

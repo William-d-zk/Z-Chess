@@ -26,7 +26,10 @@ package com.tgx.chess.bishop.io;
 
 import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
 import com.tgx.chess.bishop.io.mqtt.filter.QttCommandFilter;
+import com.tgx.chess.bishop.io.mqtt.filter.QttControlFilter;
 import com.tgx.chess.bishop.io.mqtt.filter.QttFrameFilter;
+import com.tgx.chess.bishop.io.zfilter.ZTlsFilter;
+import com.tgx.chess.bishop.io.zprotocol.ZServerFactory;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.operator.AioWriter;
 import com.tgx.chess.queen.event.operator.CloseOperator;
@@ -71,7 +74,11 @@ public enum QttZSort
     };
     final QttFrameFilter<QttContext> _QttFrameFilter = new QttFrameFilter<>();
     {
-        _QttFrameFilter.linkFront(new QttCommandFilter());
+        _QttFrameFilter.linkAfter(new ZTlsFilter<>());
+        _QttFrameFilter.linkFront(new QttControlFilter())
+                       .linkFront(new QttCommandFilter(new ZServerFactory<QttContext>()
+                       {
+                       }));
     }
     private final CloseOperator<QttContext> _CloseOperator = new CloseOperator<>();
     private final ErrorOperator<QttContext> _ErrorOperator = new ErrorOperator<>(_CloseOperator);
