@@ -75,7 +75,6 @@ public class QttNode
             _Logger.info("qtt node logic handle %s", command);
             switch (command.getSerial())
             {
-
                 default:
                     break;
             }

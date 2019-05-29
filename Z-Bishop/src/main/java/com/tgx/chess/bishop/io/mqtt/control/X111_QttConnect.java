@@ -53,6 +53,12 @@ public class X111_QttConnect
     }
 
     @Override
+    public boolean isMapping()
+    {
+        return true;
+    }
+
+    @Override
     public int dataLength()
     {
         return 11 + getClientIdLength() + getWillLength() + getUserNameLength() + getPasswordLength();
