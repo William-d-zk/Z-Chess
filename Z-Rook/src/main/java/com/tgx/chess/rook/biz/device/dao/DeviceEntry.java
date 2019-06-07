@@ -46,4 +46,13 @@ public class DeviceEntry
         return DEVICE_ENTRY_SERIAL;
     }
 
+    @Override
+    public Status getStatus() {
+        return null;
+    }
+
+    @Override
+    public void setStatus(Status status) {
+
+    }
 }

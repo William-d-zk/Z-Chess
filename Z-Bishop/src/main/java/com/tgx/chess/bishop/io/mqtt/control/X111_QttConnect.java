@@ -23,6 +23,8 @@
  */
 package com.tgx.chess.bishop.io.mqtt.control;
 
+import static com.tgx.chess.king.base.util.IoUtil.isBlank;
+
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
@@ -92,6 +94,24 @@ public class X111_QttConnect
                                                       0);
 
     @Override
+    public String toString()
+    {
+        return String.format("connect:[ctrl-code %x clientId:%s clean:%s willQoS:%s willRetain:%s willTopic:%s willMessage:%s user:%s password:%s keepalive:%d ]",
+                             getControlCode(),
+                             getClientId(),
+                             isCleanSession(),
+                             getWillQoS(),
+                             isWillRetain(),
+                             getWillTopic(),
+                             getWillMessage(),
+                             getUserName(),
+                             getPassword(),
+                             getKeepAlive()
+
+        );
+    }
+
+    @Override
     public void reset()
     {
         super.reset();
@@ -141,6 +161,9 @@ public class X111_QttConnect
         if (!mFlagWill && (mFlagWillRetain || mFlagWillQoS.getValue() > QOS_LEVEL.QOS_LESS_ONCE.getValue())) {
             throw new IllegalArgumentException("no will flag, will retain or will qos not 0");
         }
+        if (!mFlagWill) {
+            mFlagWillQoS = null;
+        }
         mFlagPassword = (code & Flag.Password.getMask()) != 0;
         mFlagUserName = (code & Flag.UserName.getMask()) != 0;
     }
@@ -188,6 +211,11 @@ public class X111_QttConnect
         mFlagWillQoS = level;
         mFlagWillRetain = retain;
         mFlagWill = true;
+    }
+
+    public boolean hasWill()
+    {
+        return mFlagWill;
     }
 
     public void setWillQoS(QOS_LEVEL level)
@@ -245,8 +273,8 @@ public class X111_QttConnect
     {
         mClientIdLength = Objects.isNull(id) || "".equals(id) ? 0
                                                               : id.getBytes().length;
-        if (mClientIdLength < 1 || mClientIdLength > 23) {
-            throw new IndexOutOfBoundsException("client identity length within [0 < length < 24]");
+        if (mClientIdLength < 1) {
+            setCleanSession();
         }
         mClientId = id;
     }
@@ -341,12 +369,10 @@ public class X111_QttConnect
         ByteBuffer payload = ByteBuffer.wrap(data, pos, data.length - pos);
         mClientIdLength = (int) IoUtil.readVariableLongLength(payload);
         pos = payload.position();
-        if (mClientIdLength < 1 || mClientIdLength > 23) {
-            //follow protocol 3.1, client identity can't empty
-            throw new IllegalArgumentException("client identity length within [0 < length < 24]");
+        if (mClientIdLength > 0) {
+            mClientId = new String(data, pos, mClientIdLength, StandardCharsets.UTF_8);
+            payload.position(pos += mClientIdLength);
         }
-        mClientId = new String(data, pos, mClientIdLength, StandardCharsets.UTF_8);
-        payload.position(pos += mClientIdLength);
         if (mFlagWill) {
             int willTopicLength = (int) IoUtil.readVariableLongLength(payload);
             pos = payload.position();
@@ -395,12 +421,16 @@ public class X111_QttConnect
         pos += IoUtil.writeShort(getKeepAlive(), data, pos);
         byte[] varClientIdLength = IoUtil.variableLength(mClientIdLength);
         pos += IoUtil.write(varClientIdLength, data, pos);
-        pos += IoUtil.write(mClientId.getBytes(), data, pos);
+        if (mClientIdLength > 0) {
+            pos += IoUtil.write(mClientId.getBytes(), data, pos);
+        }
         if (mFlagWill) {
+            if (isBlank(mWillTopic)) { throw new NullPointerException("will topic within [null]"); }
             byte[] varWillTopic = mWillTopic.getBytes(StandardCharsets.UTF_8);
             byte[] varWillTopicLength = IoUtil.variableLength(varWillTopic.length);
             pos += IoUtil.write(varWillTopicLength, data, pos);
             pos += IoUtil.write(varWillTopic, data, pos);
+            if (isBlank(mWillMessage)) { throw new NullPointerException("will message within [null]"); }
             byte[] varWillMessage = mWillMessage.getBytes(StandardCharsets.UTF_8);
             pos += IoUtil.writeShort(varWillMessage.length, data, pos);
             pos += IoUtil.write(varWillMessage, data, pos);

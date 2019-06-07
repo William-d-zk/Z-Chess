@@ -41,6 +41,7 @@ import org.hibernate.validator.constraints.Length;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tgx.chess.spring.jpa.model.AuditModel;
+
 /**
  * @author william.d.zk
  */
@@ -48,7 +49,10 @@ import com.tgx.chess.spring.jpa.model.AuditModel;
 @Table(schema = "\"tgx-z-chess-device\"",
        indexes = { @Index(name = "device_idx_token_pwd", columnList = "token,password"),
                    @Index(name = "device_idx_token", columnList = "token"),
-                   @Index(name = "device_idx_mac", columnList = "mac") })
+                   @Index(name = "device_idx_mac", columnList = "mac"),
+                   @Index(name = "device_idx_imei", columnList = "imei"),
+                   @Index(name = "device_idx_imsi", columnList = "imsi"),
+                   @Index(name = "device_idx_sn", columnList = "sn") })
 public class DeviceEntity
         extends
         AuditModel
@@ -60,15 +64,24 @@ public class DeviceEntity
     @GenericGenerator(name = "ZGenerator", strategy = "com.tgx.chess.spring.jpa.generator.ZGenerator")
     private Long id;
 
-    @NotEmpty(message = "provide create device lv2 mac")
     @Column(length = 17)
     private String mac;
+
+    @Column(length = 17)
+    private String imei;
+
+    @Column(length = 15)
+    private String imsi;
+
+    @Column(length = 64)
+    private String sn;
 
     @Column(length = 32)
     @Length(min = 5, max = 32, message = "*Your password must have at least 5 characters less than 32 characters")
     @NotEmpty(message = "*Please provide your password")
     private String password;
     private long   passwordId;
+
     @Column(length = 64)
     private String token;
 
@@ -110,10 +123,13 @@ public class DeviceEntity
     @Override
     public String toString()
     {
-        return String.format("device{id:%s,pass:%s,mac:%s,create:%s,update:%s,token:%s,invalid:%s}",
+        return String.format("device{id:%s,pass:%s,mac:%s,imei:%s,imsi:%s,sn:%s,create:%s,update:%s,token:%s,invalid:%s}",
                              getId(),
                              getPassword(),
                              getMac(),
+                             getImei(),
+                             getImsi(),
+                             getSn(),
                              getCreatedAt(),
                              getUpdatedAt(),
                              getToken(),
@@ -148,5 +164,35 @@ public class DeviceEntity
     public void setMac(String mac)
     {
         this.mac = mac;
+    }
+
+    public String getImei()
+    {
+        return imei;
+    }
+
+    public void setImei(String imei)
+    {
+        this.imei = imei;
+    }
+
+    public String getImsi()
+    {
+        return imsi;
+    }
+
+    public void setImsi(String imsi)
+    {
+        this.imsi = imsi;
+    }
+
+    public String getSn()
+    {
+        return sn;
+    }
+
+    public void setSn(String sn)
+    {
+        this.sn = sn;
     }
 }

@@ -145,6 +145,12 @@ public class X112_QttConnack
         return mPresent && mResponseCode > 0;
     }
 
+    @Override
+    public String toString()
+    {
+        return String.format("connack:[present:%s,result:%s]", mPresent, getCode());
+    }
+
     public enum Code
     {
 

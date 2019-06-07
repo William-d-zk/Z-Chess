@@ -39,8 +39,10 @@ import org.springframework.stereotype.Component;
 import com.tgx.chess.bishop.io.QttZSort;
 import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
 import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
+import com.tgx.chess.bishop.io.mqtt.control.X112_QttConnack;
 import com.tgx.chess.bishop.io.zcrypt.EncryptHandler;
 import com.tgx.chess.king.base.inf.IPair;
+import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.processor.QEvent;
@@ -78,7 +80,9 @@ public class QttZClient
     public IControl<QttContext>[] createCommands(ISession<QttContext> session)
     {
         X111_QttConnect x111 = new X111_QttConnect();
-        x111.setClientId("test-connect");
+        x111.setClientId(IoUtil.bin2Hex(_CryptUtil.sha256("test-mqtt-smallbeex".getBytes())));
+        x111.setUserName("smallbeex.mqtt.lbs.tracker");
+        x111.setPassword("iot.2019_mqtt|smallbeex");
         return new IControl[] { x111.setSession(session) };
     }
 
@@ -101,9 +105,10 @@ public class QttZClient
                         commands = Stream.of(commands)
                                          .map(cmd ->
                                          {
-                                             _Logger.info("recv:%x ", cmd.getSerial());
+                                             _Logger.info("recv:{ %s }", cmd);
                                              switch (cmd.getSerial())
                                              {
+                                                 case X112_QttConnack.COMMAND:
                                                  default:
                                                      break;
                                              }

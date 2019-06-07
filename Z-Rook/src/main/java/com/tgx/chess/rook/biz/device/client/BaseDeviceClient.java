@@ -36,6 +36,7 @@ import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.schedule.TimeWheel;
+import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.config.Config;
 import com.tgx.chess.queen.event.inf.ISort;
@@ -45,10 +46,10 @@ import com.tgx.chess.queen.io.core.async.BaseAioConnector;
 import com.tgx.chess.queen.io.core.executor.ClientCore;
 import com.tgx.chess.queen.io.core.inf.IAioClient;
 import com.tgx.chess.queen.io.core.inf.IAioConnector;
-import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ICommandCreator;
 import com.tgx.chess.queen.io.core.inf.IConnectionContext;
 import com.tgx.chess.queen.io.core.inf.IContextCreator;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionCreated;
 import com.tgx.chess.queen.io.core.inf.ISessionCreator;
@@ -82,6 +83,7 @@ public abstract class BaseDeviceClient<C extends ZContext>
     final AtomicReference<byte[]>          currentTokenRef = new AtomicReference<>();
     private final ISort<C>                 _Sort;
     ISession<C>                            clientSession;
+    final CryptUtil                        _CryptUtil      = new CryptUtil();
 
     enum STATE
     {
