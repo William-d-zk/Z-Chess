@@ -69,6 +69,19 @@ public interface IStorage
     {
     }
 
+    Status getStatus();
+
+    void setStatus(Status status);
+
+    enum Status
+    {
+        MISS,
+        CREATE,
+        UPDATE,
+        DELETE,
+        INVALID
+    }
+
     enum Operation
     {
         OP_NULL(Byte.parseByte("00000000", 2)),

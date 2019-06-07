@@ -90,14 +90,36 @@ public class QttNode
     @Override
     public IControl<QttContext> save(IControl<QttContext> tar, ISession<QttContext> session)
     {
-        DeviceEntry deviceEntry = _Repository.save(tar);
+        DeviceEntry deviceEntry;
         switch (tar.getSerial())
         {
             case X111_QttConnect.COMMAND:
+                X111_QttConnect x111 = (X111_QttConnect) tar;
                 X112_QttConnack x112 = new X112_QttConnack();
                 x112.responseOk();
-                if (Objects.nonNull(deviceEntry)) {
-
+                if (!x111.isCleanSession()) {
+                    if (x111.getClientIdLength() == 0) {
+                        x112.rejectIdentifier();
+                    }
+                    else {
+                        deviceEntry = _Repository.save(tar);
+                        if (Objects.isNull(deviceEntry)) {
+                            x112.rejectIdentifier();
+                        }
+                        else {
+                            switch (deviceEntry.getStatus())
+                            {
+                                case MISS:
+                                    x112.rejectIdentifier();
+                                    break;
+                                case INVALID:
+                                    x112.rejectBadUserOrPassword();
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    }
                 }
                 return x112;
         }

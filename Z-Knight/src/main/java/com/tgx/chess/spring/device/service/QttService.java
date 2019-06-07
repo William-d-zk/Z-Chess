@@ -24,10 +24,15 @@
 
 package com.tgx.chess.spring.device.service;
 
+import static com.tgx.chess.king.base.util.IoUtil.isBlank;
+
 import java.io.IOException;
+import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -40,8 +45,11 @@ import org.springframework.stereotype.Service;
 import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
 import com.tgx.chess.bishop.biz.device.QttNode;
 import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
+import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
+import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.queen.db.inf.IRepository;
+import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.spring.device.model.DeviceEntity;
 import com.tgx.chess.spring.device.repository.ClientRepository;
@@ -64,6 +72,8 @@ public class QttService
 
     private final Random    _Random    = new Random();
     private final CryptUtil _CryptUtil = new CryptUtil();
+
+    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
 
     @Autowired
     public QttService(DeviceRepository deviceRepository,
@@ -102,9 +112,24 @@ public class QttService
         return _DeviceRepository.findByMac(mac);
     }
 
+    public DeviceEntity findDeviceByImei(String imei)
+    {
+        return _DeviceRepository.findByImei(imei);
+    }
+
+    public DeviceEntity findDeviceByImsi(String imsi)
+    {
+        return _DeviceRepository.findByImsi(imsi);
+    }
+
     public DeviceEntity findDeviceByToken(String token)
     {
         return _DeviceRepository.findByToken(token);
+    }
+
+    public DeviceEntity findDeviceBySn(String sn)
+    {
+        return _DeviceRepository.findBySn(sn);
     }
 
     @Override
@@ -112,7 +137,38 @@ public class QttService
     {
         switch (tar.getSerial())
         {
-
+            case X111_QttConnect.COMMAND:
+                X111_QttConnect x111 = (X111_QttConnect) tar;
+                String deviceSn = x111.getClientId();
+                DeviceEntity deviceEntity = findDeviceBySn(deviceSn);
+                DeviceEntry deviceEntry = new DeviceEntry();
+                if (Objects.nonNull(deviceEntity)) {
+                    String password = deviceEntity.getPassword();
+                    deviceEntry.setDeviceUID(deviceEntity.getId());
+                    if (isBlank(password)
+                        || "*".equals(password)
+                        || ".".equals(password)
+                        || password.equals(x111.getPassword()))
+                    {
+                        _Logger.info("auth ok");
+                        deviceEntry.setStatus(IStorage.Status.UPDATE);
+                        deviceEntry.setOnline(true);
+                    }
+                    else {
+                        deviceEntry.setStatus(IStorage.Status.INVALID);
+                    }
+                    deviceEntry.setInvalidTime(deviceEntity.getInvalidAt()
+                                                           .getTime());
+                }
+                else {
+                    deviceEntity = new DeviceEntity();
+                    deviceEntity.setSn(deviceSn);
+                    deviceEntity.setPassword(x111.getPassword());
+                    deviceEntity.setInvalidAt(Date.from(Instant.now()
+                                                               .plusSeconds(TimeUnit.DAYS.toSeconds(41))));
+                    saveDevice(deviceEntity);
+                }
+                return deviceEntry;
         }
         return null;
     }

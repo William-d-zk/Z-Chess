@@ -44,12 +44,14 @@ public class DeviceEntry
         return DEVICE_ENTRY_SERIAL;
     }
 
-    private long    deviceUID;
-    private long    passwordId;
-    private String  token;
-    private String  mac;
-    private long    invalidTime;
-    private boolean isOnline;
+    private long      deviceUID;
+    private long      passwordId;
+    private String    token;
+    private String    mac;
+    private long      invalidTime;
+    private boolean   isOnline;
+    private Operation operation;
+    private Status    status = Status.MISS;
 
     @Override
     public long primaryKey()
@@ -121,5 +123,28 @@ public class DeviceEntry
     public void setOnline(boolean online)
     {
         isOnline = online;
+    }
+
+    @Override
+    public void setOperation(Operation op)
+    {
+        operation = op;
+    }
+
+    public Operation getOperation()
+    {
+        return operation;
+    }
+
+    @Override
+    public Status getStatus()
+    {
+        return status;
+    }
+
+    @Override
+    public void setStatus(Status status)
+    {
+        this.status = status;
     }
 }
