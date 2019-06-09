@@ -27,6 +27,7 @@ package com.tgx.chess.rook.biz.device.client;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -82,7 +83,7 @@ public class QttZClient
         X111_QttConnect x111 = new X111_QttConnect();
         x111.setClientId(IoUtil.bin2Hex(_CryptUtil.sha256("test-mqtt-smallbeex".getBytes())));
         x111.setUserName("smallbeex.mqtt.lbs.tracker");
-        x111.setPassword("iot.2019_mqtt|smallbeex");
+        x111.setPassword("iot.2019_mqtt|smallbeex".getBytes(StandardCharsets.UTF_8));
         return new IControl[] { x111.setSession(session) };
     }
 

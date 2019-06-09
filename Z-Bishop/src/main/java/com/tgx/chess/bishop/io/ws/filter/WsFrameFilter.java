@@ -85,7 +85,7 @@ public class WsFrameFilter
                     if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
                     carrier.setMaskCode(recvBuf.get());
                     cRvBuf.put(carrier.getLengthCode());
-                    lack = context.lackLength(1, carrier.payloadLengthLack() + context.position());
+                    lack = context.lackLength(1, carrier.payloadLengthLack(context.position()) + context.position());
                 case 1:
                 default:
                     if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }

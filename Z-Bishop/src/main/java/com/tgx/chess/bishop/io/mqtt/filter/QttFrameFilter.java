@@ -84,7 +84,8 @@ public class QttFrameFilter<C extends QttContext>
                 case 0:
                     if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
                     carrier.setLengthCode(recvBuf.get());
-                    lack = context.lackLength(1, carrier.payloadLengthLack() + context.position() + 1);
+                    lack = context.lackLength(1,
+                                              carrier.payloadLengthLack(context.position()) + context.position() + 1);
                 case 1:
                 default:
                     if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
@@ -92,7 +93,10 @@ public class QttFrameFilter<C extends QttContext>
                     do {
                         if (carrier.isLengthCodeLack()) {
                             carrier.setLengthCode(recvBuf.get());
-                            lack = context.lackLength(1, target = carrier.payloadLengthLack() + context.position() + 1);
+                            lack = context.lackLength(1,
+                                                      target = carrier.payloadLengthLack(context.position())
+                                                               + context.position()
+                                                               + 1);
                         }
                         else {
                             int length = Math.min(recvBuf.remaining(), lack);

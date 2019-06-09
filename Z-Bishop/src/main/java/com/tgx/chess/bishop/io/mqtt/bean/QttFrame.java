@@ -89,13 +89,10 @@ public class QttFrame
     }
 
     @Override
-    public int payloadLengthLack()
+    public int payloadLengthLack(int position)
     {
-        mPayloadLength |= mLengthCode & 0x7F;
-        if (isLengthCodeLack()) {
-            mPayloadLength <<= 7;
-            return 1;
-        }
+        mPayloadLength += (mLengthCode & 0x7F) << (position * 7);
+        if (isLengthCodeLack()) { return 1; }
         return mPayloadLength;
     }
 
@@ -141,7 +138,7 @@ public class QttFrame
     public int decodec(byte[] data, int pos)
     {
         setOpCode(data[pos++]);
-        mPayloadLength = (int) IoUtil.readVariableLongLength(ByteBuffer.wrap(data, pos, data.length - pos));
+        mPayloadLength = IoUtil.readVariableIntLength(ByteBuffer.wrap(data, pos, data.length - pos));
         pos += mPayloadLength;
         mPayload = new byte[mPayloadLength];
         pos = IoUtil.read(data, pos, mPayload);
