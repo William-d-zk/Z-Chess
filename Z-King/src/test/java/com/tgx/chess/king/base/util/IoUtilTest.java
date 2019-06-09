@@ -24,6 +24,8 @@
 
 package com.tgx.chess.king.base.util;
 
+import java.nio.ByteBuffer;
+
 import org.junit.jupiter.api.Test;
 
 class IoUtilTest
@@ -36,5 +38,13 @@ class IoUtilTest
         String hex = "00:00:FF:00:FF:00:FF:00";
         String result = IoUtil.long2Hex(l, ":");
         assert hex.equals(result);
+    }
+
+    @Test
+    void variableIntLength()
+    {
+        byte[] varLength = IoUtil.variableLength(16384);
+        ByteBuffer buf = ByteBuffer.wrap(varLength);
+        assert IoUtil.readVariableIntLength(buf) == 16384;
     }
 }

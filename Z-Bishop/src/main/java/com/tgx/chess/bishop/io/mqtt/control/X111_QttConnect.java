@@ -25,7 +25,6 @@ package com.tgx.chess.bishop.io.mqtt.control;
 
 import static com.tgx.chess.king.base.util.IoUtil.isBlank;
 
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
@@ -80,18 +79,17 @@ public class X111_QttConnect
     private boolean           mFlagCleanSession;
     private int               mKeepAlive;
     private String            mUserName;
-    private String            mPassword;
+    private byte[]            mPassword;
     private String            mClientId;
     private int               mClientIdLength;
     private String            mWillTopic;
-    private String            mWillMessage;
+    private byte[]            mWillMessage;
 
-    private final int _FixHeadLength = 10;
-    private final int _MQTT          = IoUtil.readInt(new byte[] { 'M',
-                                                                   'Q',
-                                                                   'T',
-                                                                   'T' },
-                                                      0);
+    private final int _MQTT = IoUtil.readInt(new byte[] { 'M',
+                                                          'Q',
+                                                          'T',
+                                                          'T' },
+                                             0);
 
     @Override
     public String toString()
@@ -103,9 +101,11 @@ public class X111_QttConnect
                              getWillQoS(),
                              isWillRetain(),
                              getWillTopic(),
-                             getWillMessage(),
+                             Objects.nonNull(getWillMessage()) ? new String(getWillMessage(), StandardCharsets.UTF_8)
+                                                               : null,
                              getUserName(),
-                             getPassword(),
+                             Objects.nonNull(getPassword()) ? new String(getPassword(), StandardCharsets.UTF_8)
+                                                            : null,
                              getKeepAlive()
 
         );
@@ -245,11 +245,9 @@ public class X111_QttConnect
         mFlagUserName = true;
     }
 
-    public void setPassword(String password)
+    public void setPassword(byte[] password)
     {
-        if (Objects.isNull(password) || "".equals(password)) {
-            throw new NullPointerException("password within [null]");
-        }
+        if (Objects.isNull(password)) { throw new NullPointerException("password within [null]"); }
         mPassword = password;
         mFlagPassword = true;
     }
@@ -259,20 +257,20 @@ public class X111_QttConnect
         return mUserName;
     }
 
-    public String getPassword()
+    public byte[] getPassword()
     {
         return mPassword;
     }
 
     public int getClientIdLength()
     {
-        return mClientIdLength;
+        return mClientIdLength + 2;
     }
 
     public void setClientId(String id)
     {
-        mClientIdLength = Objects.isNull(id) || "".equals(id) ? 0
-                                                              : id.getBytes().length;
+        mClientIdLength = isBlank(id) ? 0
+                                      : id.getBytes().length;
         if (mClientIdLength < 1) {
             setCleanSession();
         }
@@ -296,12 +294,10 @@ public class X111_QttConnect
         return mWillTopic;
     }
 
-    public void setWillMessage(String message)
+    public void setWillMessage(byte[] message)
     {
-        if (Objects.isNull(message) || "".equals(message)) {
-            throw new NullPointerException("will message with null ");
-        }
-        int messageLength = message.getBytes(StandardCharsets.UTF_8).length;
+        if (Objects.isNull(message)) { throw new NullPointerException("will message with null "); }
+        int messageLength = message.length;
         if (messageLength > 65535) {
             throw new IndexOutOfBoundsException(String.format("will message length [%d] out of bounds", messageLength));
         }
@@ -309,7 +305,7 @@ public class X111_QttConnect
         mFlagWill = true;
     }
 
-    public String getWillMessage()
+    public byte[] getWillMessage()
     {
         return mWillMessage;
     }
@@ -317,13 +313,8 @@ public class X111_QttConnect
     private int getWillLength()
     {
         if (mFlagWill) {
-            int length = 0;
             byte[] varWillTopic = mWillTopic.getBytes(StandardCharsets.UTF_8);
-            byte[] varWillTopicLength = IoUtil.variableLength(varWillTopic.length);
-            length += varWillTopicLength.length + varWillTopic.length;
-            byte[] varWillMessage = mWillMessage.getBytes(StandardCharsets.UTF_8);
-            length += varWillMessage.length + 2;
-            return length;
+            return 4 + varWillTopic.length + mWillMessage.length;
         }
         return 0;
     }
@@ -332,29 +323,24 @@ public class X111_QttConnect
     {
         if (mFlagUserName) {
             byte[] varUserName = mUserName.getBytes(StandardCharsets.UTF_8);
-            byte[] varUserNameLength = IoUtil.variableLength(varUserName.length);
-            return varUserNameLength.length + varUserName.length;
+            return 2 + varUserName.length;
         }
         return 0;
     }
 
     private int getPasswordLength()
     {
-        if (mFlagPassword) {
-            byte[] varPassword = mPassword.getBytes(StandardCharsets.UTF_8);
-            byte[] varPasswordLength = IoUtil.variableLength(varPassword.length);
-            return varPasswordLength.length + varPassword.length;
-        }
-        return 0;
+        return mFlagPassword ? 2 + mPassword.length
+                             : 0;
     }
 
     @Override
     public int decodec(byte[] data, int pos)
     {
-        short fixLength = IoUtil.readShort(data, pos);
+        int protocolNameLength = IoUtil.readUnsignedShort(data, pos);
         pos += 2;
-        if (fixLength != _FixHeadLength) {
-            throw new IndexOutOfBoundsException(String.format("fix head length error ![%d]", fixLength));
+        if (protocolNameLength != 4) {
+            throw new IndexOutOfBoundsException(String.format("fix head length error ![%d]", protocolNameLength));
         }
         int mqtt = IoUtil.readInt(data, pos);
         pos += 4;
@@ -366,44 +352,43 @@ public class X111_QttConnect
         setControlCode(data[pos++]);
         mKeepAlive = IoUtil.readUnsignedShort(data, pos);
         pos += 2;
-        ByteBuffer payload = ByteBuffer.wrap(data, pos, data.length - pos);
-        mClientIdLength = (int) IoUtil.readVariableLongLength(payload);
-        pos = payload.position();
+        mClientIdLength = IoUtil.readUnsignedShort(data, pos);
+        pos += 2;
         if (mClientIdLength > 0) {
             mClientId = new String(data, pos, mClientIdLength, StandardCharsets.UTF_8);
-            payload.position(pos += mClientIdLength);
+            pos += mClientIdLength;
         }
         if (mFlagWill) {
-            int willTopicLength = (int) IoUtil.readVariableLongLength(payload);
-            pos = payload.position();
+            int willTopicLength = IoUtil.readUnsignedShort(data, pos);
+            pos += 2;
             mWillTopic = new String(data, pos, willTopicLength, StandardCharsets.UTF_8);
-            payload.position(pos += willTopicLength);
+            pos += willTopicLength;
             int willMessageLength = IoUtil.readUnsignedShort(data, pos);
             pos += 2;
-            mWillMessage = new String(data, pos, willMessageLength, StandardCharsets.UTF_8);
-            payload.position(pos += willMessageLength);
+            mWillMessage = new byte[willMessageLength];
+            pos = IoUtil.read(data, pos, mWillMessage, 0, willMessageLength);
         }
         if (mFlagUserName) {
-            int userNameLength = (int) IoUtil.readVariableLongLength(payload);
+            int userNameLength = IoUtil.readUnsignedShort(data, pos);
+            pos += 2;
             if (userNameLength < 1 || userNameLength > MAX_USER_NAME_LENGTH) {
                 throw new IndexOutOfBoundsException(String.format(" user name length within [0 < length < %d], error:[%d]",
                                                                   MAX_USER_NAME_LENGTH + 1,
                                                                   userNameLength));
             }
-            pos = payload.position();
             mUserName = new String(data, pos, userNameLength, StandardCharsets.UTF_8);
-            payload.position(pos += userNameLength);
+            pos += userNameLength;
         }
         if (mFlagPassword) {
-            int passwordLength = (int) IoUtil.readVariableLongLength(payload);
+            int passwordLength = IoUtil.readUnsignedShort(data, pos);
+            pos += 2;
             if (passwordLength < 1 || passwordLength > MAX_PASSWORD_LENGTH) {
                 throw new IndexOutOfBoundsException(String.format(" password length within [0 < length < %d], error:[%d]",
                                                                   MAX_PASSWORD_LENGTH + 1,
                                                                   passwordLength));
             }
-            pos = payload.position();
-            mPassword = new String(data, pos, passwordLength, StandardCharsets.UTF_8);
-            payload.position(pos += passwordLength);
+            mPassword = new byte[passwordLength];
+            pos = IoUtil.read(data, pos, mPassword, 0, passwordLength);
         }
         return pos;
     }
@@ -411,7 +396,7 @@ public class X111_QttConnect
     @Override
     public int encodec(byte[] data, int pos)
     {
-        pos += IoUtil.writeShort(_FixHeadLength, data, pos);
+        pos += IoUtil.writeShort(4, data, pos);
         pos += IoUtil.writeInt(_MQTT, data, pos);
         //此处必须分开写，否则直接写到writeByte方法中会出现类型推定错误
         int version = QttContext.getVersion()
@@ -419,21 +404,18 @@ public class X111_QttConnect
         pos += IoUtil.writeByte(version, data, pos);
         pos += IoUtil.writeByte(getControlCode(), data, pos);
         pos += IoUtil.writeShort(getKeepAlive(), data, pos);
-        byte[] varClientIdLength = IoUtil.variableLength(mClientIdLength);
-        pos += IoUtil.write(varClientIdLength, data, pos);
+        pos += IoUtil.writeShort(mClientIdLength, data, pos);
         if (mClientIdLength > 0) {
             pos += IoUtil.write(mClientId.getBytes(), data, pos);
         }
         if (mFlagWill) {
             if (isBlank(mWillTopic)) { throw new NullPointerException("will topic within [null]"); }
             byte[] varWillTopic = mWillTopic.getBytes(StandardCharsets.UTF_8);
-            byte[] varWillTopicLength = IoUtil.variableLength(varWillTopic.length);
-            pos += IoUtil.write(varWillTopicLength, data, pos);
+            pos += IoUtil.writeShort(varWillTopic.length, data, pos);
             pos += IoUtil.write(varWillTopic, data, pos);
-            if (isBlank(mWillMessage)) { throw new NullPointerException("will message within [null]"); }
-            byte[] varWillMessage = mWillMessage.getBytes(StandardCharsets.UTF_8);
-            pos += IoUtil.writeShort(varWillMessage.length, data, pos);
-            pos += IoUtil.write(varWillMessage, data, pos);
+            if (Objects.isNull(mWillMessage)) { throw new NullPointerException("will message within [null]"); }
+            pos += IoUtil.writeShort(mWillMessage.length, data, pos);
+            pos += IoUtil.write(mWillMessage, data, pos);
         }
         if (mFlagUserName) {
             byte[] varUserName = mUserName.getBytes(StandardCharsets.UTF_8);
@@ -442,21 +424,18 @@ public class X111_QttConnect
                                                                   MAX_USER_NAME_LENGTH + 1,
                                                                   varUserName.length));
             }
-            byte[] varUserNameLength = IoUtil.variableLength(varUserName.length);
-            pos += IoUtil.write(varUserNameLength, data, pos);
+            pos += IoUtil.writeShort(varUserName.length, data, pos);
             pos += IoUtil.write(varUserName, data, pos);
 
         }
         if (mFlagPassword) {
-            byte[] varPassword = mPassword.getBytes(StandardCharsets.UTF_8);
-            if (varPassword.length > MAX_PASSWORD_LENGTH) {
+            if (mPassword.length > MAX_PASSWORD_LENGTH) {
                 throw new IndexOutOfBoundsException(String.format(" password length within [0 < length < %d], error:[%d]",
                                                                   MAX_PASSWORD_LENGTH + 1,
-                                                                  varPassword.length));
+                                                                  mPassword.length));
             }
-            byte[] varPasswordLength = IoUtil.variableLength(varPassword.length);
-            pos += IoUtil.write(varPasswordLength, data, pos);
-            pos += IoUtil.write(varPassword, data, pos);
+            pos += IoUtil.writeShort(mPassword.length, data, pos);
+            pos += IoUtil.write(mPassword, data, pos);
         }
         return pos;
     }

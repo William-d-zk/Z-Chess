@@ -79,7 +79,8 @@ public interface IStorage
         CREATE,
         UPDATE,
         DELETE,
-        INVALID
+        INVALID,
+        RESET
     }
 
     enum Operation

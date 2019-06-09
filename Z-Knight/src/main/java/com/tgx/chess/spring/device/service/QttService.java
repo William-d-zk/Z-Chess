@@ -27,6 +27,7 @@ package com.tgx.chess.spring.device.service;
 import static com.tgx.chess.king.base.util.IoUtil.isBlank;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
@@ -148,11 +149,18 @@ public class QttService
                     if (isBlank(password)
                         || "*".equals(password)
                         || ".".equals(password)
-                        || password.equals(x111.getPassword()))
+                        || (Objects.nonNull(x111.getPassword())
+                            && password.equals(new String(x111.getPassword(), StandardCharsets.UTF_8))))
                     {
                         _Logger.info("auth ok");
-                        deviceEntry.setStatus(IStorage.Status.UPDATE);
-                        deviceEntry.setOnline(true);
+                        if (x111.isCleanSession()) {
+                            deviceEntry.setOnline(false);
+                            deviceEntry.setStatus(IStorage.Status.RESET);
+                        }
+                        else {
+                            deviceEntry.setStatus(IStorage.Status.UPDATE);
+                            deviceEntry.setOnline(true);
+                        }
                     }
                     else {
                         deviceEntry.setStatus(IStorage.Status.INVALID);
@@ -163,10 +171,15 @@ public class QttService
                 else {
                     deviceEntity = new DeviceEntity();
                     deviceEntity.setSn(deviceSn);
-                    deviceEntity.setPassword(x111.getPassword());
+                    deviceEntity.setPassword(new String(x111.getPassword(), StandardCharsets.UTF_8));
                     deviceEntity.setInvalidAt(Date.from(Instant.now()
                                                                .plusSeconds(TimeUnit.DAYS.toSeconds(41))));
                     saveDevice(deviceEntity);
+                    deviceEntry.setStatus(IStorage.Status.CREATE);
+                    deviceEntry.setOnline(true);
+                    deviceEntry.setToken(deviceSn);
+                    deviceEntry.setInvalidTime(deviceEntity.getInvalidAt()
+                                                           .getTime());
                 }
                 return deviceEntry;
         }
