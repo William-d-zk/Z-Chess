@@ -47,12 +47,12 @@ public abstract class AioSessionManager<C extends IContext>
         implements
         ISessionManager<C>
 {
-    protected final Logger                   _Log                   = Logger.getLogger(getClass().getName());
-    protected final Map<Long,
-                        ISession<C>>[]       _Index2SessionMaps     = new Map[4];
-    protected final Map<Long,
-                        long[][]>[]          _PortChannel2IndexMaps = new Map[4];
-    protected final Set<ISession<C>>[]       _SessionsSets          = new Set[4];
+    protected final Logger                 _Log                   = Logger.getLogger(getClass().getName());
+    private final Map<Long,
+                      ISession<C>>[]       _Index2SessionMaps     = new Map[4];
+    private final Map<Long,
+                      long[][]>[]          _PortChannel2IndexMaps = new Map[4];
+    private final Set<ISession<C>>[]       _SessionsSets          = new Set[4];
     // 每个mask都有单独对应的loadFair
     private final Map<Long,
                       Integer>[]       _LoadFairMaps = new Map[4];

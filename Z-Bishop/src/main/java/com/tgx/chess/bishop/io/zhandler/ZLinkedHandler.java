@@ -24,13 +24,7 @@
 
 package com.tgx.chess.bishop.io.zhandler;
 
-import static com.tgx.chess.queen.event.inf.IError.Type.FIND_DATA;
-import static com.tgx.chess.queen.event.inf.IError.Type.SAVE_DATA;
-
 import com.tgx.chess.bishop.io.zfilter.ZContext;
-import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
-import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
-import com.tgx.chess.bishop.io.zprotocol.device.X24_UpdateToken;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X01_EncryptRequest;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X02_AsymmetricPub;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X03_Cipher;
@@ -73,26 +67,11 @@ public class ZLinkedHandler<C extends ZContext>
             case X04_EncryptConfirm.COMMAND:
             case X05_EncryptStart.COMMAND:
             case X06_PlainStart.COMMAND:
+                /*
+                 *  内嵌逻辑，在ZCommandFilter中已经处理结束
+                 *  此处仅执行转发逻辑
+                 */
                 waitToSends = new IControl[] { cmd };
-                break;
-            case X20_SignUp.COMMAND:
-            case X24_UpdateToken.COMMAND:
-                try {
-                    waitToSends = new IControl[] { manager.save(cmd, session) };
-                }
-                catch (Exception e) {
-                    _LinkHandler.error(SAVE_DATA, e, session, _LinkHandler.getErrorOperator());
-                    return;
-                }
-                break;
-            case X22_SignIn.COMMAND:
-                try {
-                    waitToSends = new IControl[] { manager.find(cmd, session) };
-                }
-                catch (Exception e) {
-                    _LinkHandler.error(FIND_DATA, e, session, _LinkHandler.getErrorOperator());
-                    return;
-                }
                 break;
             default:
                 break;

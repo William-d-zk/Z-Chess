@@ -65,15 +65,14 @@ public abstract class BaseDeviceNode<C extends ZContext>
         IContextCreator<C>
 {
 
-    final Logger                      _Logger = Logger.getLogger(getClass().getName());
-    final String                      _ServerHost;
-    final int                         _ServerPort;
-    final IAioServer<C>               _AioServer;
-    final ISort<C>                    _Sort;
-    final IRepository<DeviceEntry,
-                      C>              _Repository;
-    private final ISessionCreator<C>  _SessionCreator;
-    private final ICommandCreator<C>  _CommandCreator;
+    final Logger                     _Logger = Logger.getLogger(getClass().getName());
+    final String                     _ServerHost;
+    final int                        _ServerPort;
+    final IAioServer<C>              _AioServer;
+    final ISort<C>                   _Sort;
+    final IRepository<DeviceEntry>   _DeviceRepository;
+    private final ISessionCreator<C> _SessionCreator;
+    private final ICommandCreator<C> _CommandCreator;
 
     @Override
     public void onDismiss(ISession<C> session)
@@ -92,8 +91,7 @@ public abstract class BaseDeviceNode<C extends ZContext>
     BaseDeviceNode(String host,
                    int port,
                    ISort<C> sort,
-                   IRepository<DeviceEntry,
-                               C> repository)
+                   IRepository<DeviceEntry> repository)
     {
         super(new Config("device"), new ServerCore<C>()
         {
@@ -177,7 +175,7 @@ public abstract class BaseDeviceNode<C extends ZContext>
             }
 
         };
-        _Repository = repository;
+        _DeviceRepository = repository;
         _Logger.info("Device Node Bean Load");
     }
 

@@ -48,10 +48,10 @@ import com.tgx.chess.spring.jpa.generator.ZGenerator;
 @RestController
 public class DeviceController
 {
-    private final Logger        _Log        = Logger.getLogger(getClass().getName());
-    private final WsService _DeviceService;
-    private final Random        _Random     = new Random();
-    private final ZGenerator    _ZGenerator = new ZGenerator();
+    private final Logger     _Log        = Logger.getLogger(getClass().getName());
+    private final WsService  _DeviceService;
+    private final Random     _Random     = new Random();
+    private final ZGenerator _ZGenerator = new ZGenerator();
 
     @Autowired
     public DeviceController(WsService deviceService)
@@ -81,7 +81,7 @@ public class DeviceController
         for (DeviceEntry device : list) {
             _Log.info("device mac %s", device.getToken());
             sb.append(String.format("token:%s\n", device.getToken()));
-            _DeviceService.localBizClose(device.getDeviceUID());
+            _DeviceService.localBizClose(device.getPrimaryKey());
         }
         return sb.toString();
     }
@@ -97,14 +97,15 @@ public class DeviceController
     }
 
     @GetMapping("/event/x30/broadcast")
-    public String x30Broadcast(@RequestParam(name = "msg") String msg, @RequestParam(name = "ctrl", defaultValue = "0") int ctrl)
+    public String x30Broadcast(@RequestParam(name = "msg") String msg,
+                               @RequestParam(name = "ctrl", defaultValue = "0") int ctrl)
     {
         List<DeviceEntry> list = _DeviceService.findAll();
         StringBuffer sb = new StringBuffer();
         for (DeviceEntry device : list) {
             _Log.info("device mac %s", device.getToken());
             sb.append(String.format("token:%s\n", device.getToken()));
-            sendX30(device.getToken(), device.getDeviceUID(), msg, ctrl);
+            sendX30(device.getToken(), device.getPrimaryKey(), msg, ctrl);
         }
         return sb.toString();
     }

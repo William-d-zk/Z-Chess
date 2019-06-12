@@ -23,6 +23,8 @@
  */
 package com.tgx.chess.bishop.io.zprotocol;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import com.tgx.chess.king.base.log.Logger;
@@ -50,7 +52,7 @@ public abstract class BaseCommand<C extends AioContext>
     private final static int min_msg_uid_size    = min_no_msg_uid_size + g_msg_uid_size;
     private final int        _Command;
     private final boolean    _HasUID;
-    private String           charset             = "UTF-8";
+    private Charset          mCharset            = StandardCharsets.UTF_8;
     private byte             mTypeByte;
     private byte             mHAttr;
     private long             mMsgUID;
@@ -300,7 +302,7 @@ public abstract class BaseCommand<C extends AioContext>
             pos += 8;
         }
         mTypeByte = data[pos++];
-        charset = getCharset(mTypeByte);
+        mCharset = getCharset(mTypeByte);
         return checkCrc(data, decodec(data, pos));
     }
 
@@ -317,18 +319,18 @@ public abstract class BaseCommand<C extends AioContext>
             pos += 8;
         }
         mTypeByte = data[pos++];
-        charset = getCharset(mTypeByte);
+        mCharset = getCharset(mTypeByte);
         return checkCrc(data, decodec(data, pos));
     }
 
-    private String getCharset(byte charsetCode)
+    private Charset getCharset(byte charsetCode)
     {
         return I18nUtil.getCharset(charsetCode);
     }
 
-    public String getCharset()
+    public Charset getCharset()
     {
-        return charset;
+        return mCharset;
     }
 
     protected int getCharsetCode(String charset)
@@ -346,7 +348,7 @@ public abstract class BaseCommand<C extends AioContext>
     @Override
     public void dispose()
     {
-        charset = null;
+        mCharset = null;
         mSession = null;
     }
 

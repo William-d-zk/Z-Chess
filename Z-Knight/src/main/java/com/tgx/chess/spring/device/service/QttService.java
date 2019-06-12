@@ -30,11 +30,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
-import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -49,9 +47,9 @@ import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
 import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.CryptUtil;
-import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.io.core.inf.IControl;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 import com.tgx.chess.spring.device.model.DeviceEntity;
 import com.tgx.chess.spring.device.repository.ClientRepository;
 import com.tgx.chess.spring.device.repository.DeviceRepository;
@@ -63,13 +61,10 @@ import com.tgx.chess.spring.device.repository.DeviceRepository;
 @Service
 @PropertySource("classpath:device.qtt.properties")
 public class QttService
-        implements
-        IRepository<DeviceEntry,
-                    QttContext>
+        extends
+        DeviceService
 {
-    private final DeviceRepository _DeviceRepository;
-    private final ClientRepository _ClientRepository;
-    private final QttNode          _QttNode;
+    private final QttNode _QttNode;
 
     private final Random    _Random    = new Random();
     private final CryptUtil _CryptUtil = new CryptUtil();
@@ -82,8 +77,7 @@ public class QttService
                       @Value("${qtt.server.host}") String qttHost,
                       @Value("${qtt.server.port}") int qttPort)
     {
-        _DeviceRepository = deviceRepository;
-        _ClientRepository = clientRepository;
+        super(deviceRepository, clientRepository);
         _QttNode = new QttNode(qttHost, qttPort, this);
     }
 
@@ -93,48 +87,8 @@ public class QttService
         _QttNode.start();
     }
 
-    public List<DeviceEntry> findAll()
-    {
-        List<DeviceEntity> entities = _DeviceRepository.findAll();
-        return Objects.nonNull(entities) ? entities.stream()
-                                                   .map(this::convertDevice)
-                                                   .peek(entry -> entry.setOnline(Objects.nonNull(_QttNode.findSessionByIndex(entry.getDeviceUID()))))
-                                                   .collect(Collectors.toList())
-                                         : null;
-    }
-
-    public DeviceEntity saveDevice(DeviceEntity device)
-    {
-        return _DeviceRepository.save(device);
-    }
-
-    public DeviceEntity findDeviceByMac(String mac)
-    {
-        return _DeviceRepository.findByMac(mac);
-    }
-
-    public DeviceEntity findDeviceByImei(String imei)
-    {
-        return _DeviceRepository.findByImei(imei);
-    }
-
-    public DeviceEntity findDeviceByImsi(String imsi)
-    {
-        return _DeviceRepository.findByImsi(imsi);
-    }
-
-    public DeviceEntity findDeviceByToken(String token)
-    {
-        return _DeviceRepository.findByToken(token);
-    }
-
-    public DeviceEntity findDeviceBySn(String sn)
-    {
-        return _DeviceRepository.findBySn(sn);
-    }
-
     @Override
-    public DeviceEntry save(IControl tar)
+    public DeviceEntry save(IProtocol tar)
     {
         switch (tar.getSerial())
         {
@@ -145,7 +99,7 @@ public class QttService
                 DeviceEntry deviceEntry = new DeviceEntry();
                 if (Objects.nonNull(deviceEntity)) {
                     String password = deviceEntity.getPassword();
-                    deviceEntry.setDeviceUID(deviceEntity.getId());
+                    deviceEntry.setPrimaryKey(deviceEntity.getId());
                     if (isBlank(password)
                         || "*".equals(password)
                         || ".".equals(password)
@@ -154,16 +108,23 @@ public class QttService
                     {
                         _Logger.info("auth ok");
                         if (x111.isCleanSession()) {
-                            deviceEntry.setOnline(false);
-                            deviceEntry.setStatus(IStorage.Status.RESET);
+                            deviceEntry.setOperation(IStorage.Operation.OP_RESET);
                         }
                         else {
-                            deviceEntry.setStatus(IStorage.Status.UPDATE);
-                            deviceEntry.setOnline(true);
+                            switch (x111.getQosLevel())
+                            {
+                                case QOS_ONLY_ONCE:
+                                    deviceEntry.setOperation(IStorage.Operation.OP_MODIFY);
+                                    break;
+                                case QOS_AT_LEAST_ONCE:
+                                    deviceEntry.setOperation(IStorage.Operation.OP_RETRY);
+                                case QOS_LESS_ONCE:
+                            }
+
                         }
                     }
                     else {
-                        deviceEntry.setStatus(IStorage.Status.INVALID);
+                        deviceEntry.setOperation(IStorage.Operation.OP_INVALID);
                     }
                     deviceEntry.setInvalidTime(deviceEntity.getInvalidAt()
                                                            .getTime());
@@ -175,8 +136,7 @@ public class QttService
                     deviceEntity.setInvalidAt(Date.from(Instant.now()
                                                                .plusSeconds(TimeUnit.DAYS.toSeconds(41))));
                     saveDevice(deviceEntity);
-                    deviceEntry.setStatus(IStorage.Status.CREATE);
-                    deviceEntry.setOnline(true);
+                    deviceEntry.setOperation(IStorage.Operation.OP_INSERT);
                     deviceEntry.setToken(deviceSn);
                     deviceEntry.setInvalidTime(deviceEntity.getInvalidAt()
                                                            .getTime());
@@ -187,24 +147,13 @@ public class QttService
     }
 
     @Override
-    public DeviceEntry find(IControl key)
+    public DeviceEntry find(IProtocol key)
     {
         switch (key.getSerial())
         {
 
         }
         return null;
-    }
-
-    private DeviceEntry convertDevice(DeviceEntity entity)
-    {
-        DeviceEntry deviceEntry = new DeviceEntry();
-        deviceEntry.setDeviceUID(entity.getId());
-        deviceEntry.setMac(entity.getMac());
-        deviceEntry.setToken(entity.getToken());
-        deviceEntry.setInvalidTime(entity.getInvalidAt()
-                                         .getTime());
-        return deviceEntry;
     }
 
     @SafeVarargs

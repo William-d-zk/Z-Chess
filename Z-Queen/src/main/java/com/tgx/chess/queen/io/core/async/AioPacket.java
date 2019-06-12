@@ -40,7 +40,7 @@ public class AioPacket
     private Status           mStatus      = Status.No_Send;
     private boolean          isNoAbandon;
     private int              mIdempotentBit;
-    private int              mSuperSerial = PACKAT_SERIAL;
+    private int              mSuperSerial = PACKET_SERIAL;
 
     public AioPacket(int size,
                      boolean direct)
