@@ -50,6 +50,7 @@ import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.io.core.inf.IControl;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 import com.tgx.chess.spring.device.model.DeviceEntity;
 import com.tgx.chess.spring.device.repository.ClientRepository;
 import com.tgx.chess.spring.device.repository.DeviceRepository;
@@ -61,8 +62,7 @@ import com.tgx.chess.spring.device.repository.DeviceRepository;
 @PropertySource("classpath:device.ws.properties")
 public class WsService
         implements
-        IRepository<DeviceEntry,
-                    WsContext>
+        IRepository<DeviceEntry>
 {
     private final DeviceRepository _DeviceRepository;
     private final ClientRepository _ClientRepository;
@@ -93,7 +93,6 @@ public class WsService
         List<DeviceEntity> entities = _DeviceRepository.findAll();
         return Objects.nonNull(entities) ? entities.stream()
                                                    .map(this::convertDevice)
-                                                   .peek(entry -> entry.setOnline(Objects.nonNull(_DeviceNode.findSessionByIndex(entry.getDeviceUID()))))
                                                    .collect(Collectors.toList())
                                          : null;
     }
@@ -114,7 +113,7 @@ public class WsService
     }
 
     @Override
-    public DeviceEntry save(IControl tar)
+    public DeviceEntry save(IProtocol tar)
     {
         switch (tar.getSerial())
         {
@@ -156,7 +155,7 @@ public class WsService
     }
 
     @Override
-    public DeviceEntry find(IControl key)
+    public DeviceEntry find(IProtocol key)
     {
         switch (key.getSerial())
         {
@@ -177,8 +176,7 @@ public class WsService
     private DeviceEntry convertDevice(DeviceEntity entity)
     {
         DeviceEntry deviceEntry = new DeviceEntry();
-        deviceEntry.setDeviceUID(entity.getId());
-        deviceEntry.setMac(entity.getMac());
+        deviceEntry.setPrimaryKey(entity.getId());
         deviceEntry.setToken(entity.getToken());
         deviceEntry.setInvalidTime(entity.getInvalidAt()
                                          .getTime());

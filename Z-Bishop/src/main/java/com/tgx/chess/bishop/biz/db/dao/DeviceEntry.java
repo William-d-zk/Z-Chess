@@ -35,7 +35,22 @@ public class DeviceEntry
     @Override
     public int dataLength()
     {
-        return 0;
+        return getDeviceUidLength() + getTokenLength() + getInvalidTimeLength() + getOperationLength();
+    }
+
+    private int getDeviceUidLength()
+    {
+        return 8;
+    }
+
+    private int getTokenLength()
+    {
+        return 64;
+    }
+
+    private int getInvalidTimeLength()
+    {
+        return 8;
     }
 
     @Override
@@ -44,35 +59,26 @@ public class DeviceEntry
         return DEVICE_ENTRY_SERIAL;
     }
 
+    private int getOperationLength()
+    {
+        return 1;
+    }
+
     private long      deviceUID;
-    private long      passwordId;
     private String    token;
-    private String    mac;
     private long      invalidTime;
-    private boolean   isOnline;
     private Operation operation;
-    private Status    status = Status.MISS;
 
     @Override
-    public long primaryKey()
+    public long getPrimaryKey()
     {
         return deviceUID;
     }
 
     @Override
-    public long secondaryLongKey()
+    public void setPrimaryKey(long key)
     {
-        return passwordId;
-    }
-
-    public void setDeviceUID(long deviceUID)
-    {
-        this.deviceUID = deviceUID;
-    }
-
-    public long getDeviceUID()
-    {
-        return deviceUID;
+        deviceUID = key;
     }
 
     public String getToken()
@@ -85,26 +91,6 @@ public class DeviceEntry
         this.token = token;
     }
 
-    public String getMac()
-    {
-        return mac;
-    }
-
-    public void setMac(String mac)
-    {
-        this.mac = mac;
-    }
-
-    public long getPasswordId()
-    {
-        return passwordId;
-    }
-
-    public void setPasswordId(long passwordId)
-    {
-        this.passwordId = passwordId;
-    }
-
     public long getInvalidTime()
     {
         return invalidTime;
@@ -113,16 +99,6 @@ public class DeviceEntry
     public void setInvalidTime(long invalidTime)
     {
         this.invalidTime = invalidTime;
-    }
-
-    public boolean isOnline()
-    {
-        return isOnline;
-    }
-
-    public void setOnline(boolean online)
-    {
-        isOnline = online;
     }
 
     @Override
@@ -136,15 +112,4 @@ public class DeviceEntry
         return operation;
     }
 
-    @Override
-    public Status getStatus()
-    {
-        return status;
-    }
-
-    @Override
-    public void setStatus(Status status)
-    {
-        this.status = status;
-    }
 }

@@ -54,10 +54,9 @@ public class QttNode
 
     public QttNode(String host,
                    int port,
-                   IRepository<DeviceEntry,
-                               QttContext> respository)
+                   IRepository<DeviceEntry> repository)
     {
-        super(host, port, QttZSort.SYMMETRY, respository);
+        super(host, port, QttZSort.SYMMETRY, repository);
     }
 
     @Override
@@ -88,7 +87,8 @@ public class QttNode
     }
 
     @Override
-    public IControl<QttContext> save(IControl<QttContext> tar, ISession<QttContext> session)
+    @SuppressWarnings("unchecked")
+    public IControl<QttContext>[] handle(IControl<QttContext> tar, ISession<QttContext> session)
     {
         DeviceEntry deviceEntry;
         switch (tar.getSerial())
@@ -102,17 +102,17 @@ public class QttNode
                         x112.rejectIdentifier();
                     }
                     else {
-                        deviceEntry = _Repository.save(tar);
+                        deviceEntry = _DeviceRepository.save(tar);
                         if (Objects.isNull(deviceEntry)) {
                             x112.rejectIdentifier();
                         }
                         else {
-                            switch (deviceEntry.getStatus())
+                            switch (deviceEntry.getOperation())
                             {
-                                case MISS:
+                                case OP_NULL:
                                     x112.rejectIdentifier();
                                     break;
-                                case INVALID:
+                                case OP_INVALID:
                                     x112.rejectBadUserOrPassword();
                                     break;
                                 default:
@@ -121,14 +121,9 @@ public class QttNode
                         }
                     }
                 }
-                return x112;
+                return new IControl[] { x112 };
         }
         return null;
     }
 
-    @Override
-    public IControl<QttContext> find(IControl<QttContext> key, ISession<QttContext> session)
-    {
-        return null;
-    }
 }

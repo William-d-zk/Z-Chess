@@ -65,8 +65,7 @@ public class WsNode
 
     public WsNode(String host,
                   int port,
-                  IRepository<DeviceEntry,
-                              WsContext> repository)
+                  IRepository<DeviceEntry> repository)
     {
         super(host, port, WsZSort.SERVER, repository);
     }
@@ -117,49 +116,39 @@ public class WsNode
     }
 
     @Override
-    public IControl<WsContext> save(IControl<WsContext> tar, ISession<WsContext> session)
+    @SuppressWarnings("unchecked")
+    public IControl<WsContext>[] handle(IControl<WsContext> tar, ISession<WsContext> session)
     {
-        DeviceEntry deviceEntry = _Repository.save(tar);
         switch (tar.getSerial())
         {
             case X20_SignUp.COMMAND:
                 X21_SignUpResult x21 = new X21_SignUpResult();
+                DeviceEntry deviceEntry = _DeviceRepository.save(tar);
+
                 if (Objects.nonNull(deviceEntry)) {
                     x21.setSuccess();
                     x21.setToken(IoUtil.hex2bin(deviceEntry.getToken()));
-                    x21.setPasswordId(deviceEntry.getPasswordId());
-                    mapSession(deviceEntry.getDeviceUID(), session);
+                    x21.setPasswordId(deviceEntry.getSecondaryLongKey());
+                    mapSession(deviceEntry.getPrimaryKey(), session);
                 }
                 else {
                     x21.setFailed();
                 }
-                return x21;
-            default:
-                return null;
-        }
-
-    }
-
-    @Override
-    public IControl<WsContext> find(IControl<WsContext> key, ISession<WsContext> session)
-    {
-        DeviceEntry deviceEntry = _Repository.find(key);
-        switch (key.getSerial())
-        {
+                return new IControl[] { x21 };
             case X22_SignIn.COMMAND:
+                deviceEntry = _DeviceRepository.find(tar);
                 X23_SignInResult<WsContext> x23 = new X23_SignInResult<>();
                 if (Objects.nonNull(deviceEntry)) {
                     x23.setSuccess();
                     x23.setInvalidTime(deviceEntry.getInvalidTime());
-                    mapSession(deviceEntry.getDeviceUID(), session);
+                    mapSession(deviceEntry.getPrimaryKey(), session);
                 }
                 else {
                     x23.setFailed();
                 }
-                return x23;
-            default:
-                return null;
+                return new IControl[] { x23 };
         }
-    }
 
+        return new IControl[0];
+    }
 }

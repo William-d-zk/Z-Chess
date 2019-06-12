@@ -30,7 +30,7 @@ import java.util.Objects;
  */
 public interface IProtocol
 {
-    int PACKAT_SERIAL   = 0;
+    int PACKET_SERIAL   = 0;
     int COMMAND_SERIAL  = 0x0FF;//1~0xFE(254)
     int CONTROL_SERIAL  = 0x100;//0x101~0x1FE(254)
     int FRAME_SERIAL    = 0x200;//0x201~0x2FE(254)

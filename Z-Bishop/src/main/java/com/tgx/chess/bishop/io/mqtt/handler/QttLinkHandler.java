@@ -61,7 +61,7 @@ public class QttLinkHandler<C extends ZContext>
         {
             case X111_QttConnect.COMMAND:
                 try {
-                    waitToSends = new IControl[] { manager.save(cmd, session) };
+                    waitToSends = manager.handle(cmd, session);
                 }
                 catch (Exception e) {
                     _LinkHandler.error(SAVE_DATA, e, session, _LinkHandler.getErrorOperator());

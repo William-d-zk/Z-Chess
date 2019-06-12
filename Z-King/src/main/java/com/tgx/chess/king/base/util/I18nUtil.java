@@ -23,6 +23,9 @@
  */
 package com.tgx.chess.king.base.util;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
 /**
  * @author William.d.zk
  */
@@ -44,43 +47,29 @@ public interface I18nUtil
     int SERIAL_XML          = 0x04;
     int SERIAL_PROXY        = 0x05;
 
-    static String getCharset(byte data)
+    static Charset getCharset(byte data)
     {
-        String charset;
         switch (data & 0xF0)
         {
             case CHARSET_ASCII:
-                charset = "ASCII";
-                break;
-            case CHARSET_UTF_8:
-                charset = "UTF-8";
-                break;
+                return StandardCharsets.US_ASCII;
             case CHARSET_UTF_8_NB:
-                charset = "UTF-16";
-                break;
+                return StandardCharsets.UTF_16;
             case CHARSET_UTC_BE:
-                charset = "UTF-16BE";
-                break;
+                return StandardCharsets.UTF_16BE;
             case CHARSET_UTC_LE:
-                charset = "UTF-16LE";
-                break;
+                return StandardCharsets.UTF_16LE;
             case CHARSET_GBK:
-                charset = "GBK";
-                break;
+                return Charset.forName("GBK");
             case CHARSET_GB2312:
-                charset = "GB2312";
-                break;
+                return Charset.forName("GB2312");
             case CHARSET_GB18030:
-                charset = "GB18030";
-                break;
+                return Charset.forName("GB18030");
             case CHARSET_ISO_8859_1:
-                charset = "ISO-8859-1";
-                break;
+                return StandardCharsets.ISO_8859_1;
             default:
-                charset = "UTF-8";
-                break;
+                return StandardCharsets.UTF_8;
         }
-        return charset;
     }
 
     static int getCharsetCode(String charset)

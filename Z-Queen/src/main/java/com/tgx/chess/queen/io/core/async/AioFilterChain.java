@@ -190,14 +190,14 @@ public abstract class AioFilterChain<C extends IContext,
     protected ResultType prePacketEncode(C context, IProtocol output)
     {
         if (Objects.isNull(context) || Objects.isNull(output)) { return ResultType.ERROR; }
-        return context.isOutConvert() && output.superSerial() == IProtocol.PACKAT_SERIAL ? ResultType.NEXT_STEP
+        return context.isOutConvert() && output.superSerial() == IProtocol.PACKET_SERIAL ? ResultType.NEXT_STEP
                                                                                          : ResultType.IGNORE;
     }
 
     protected ResultType prePacketDecode(C context, IPacket input)
     {
         if (Objects.isNull(context) || Objects.isNull(input)) { return ResultType.ERROR; }
-        return context.isInConvert() && input.superSerial() == IProtocol.PACKAT_SERIAL ? ResultType.NEXT_STEP
+        return context.isInConvert() && input.superSerial() == IProtocol.PACKET_SERIAL ? ResultType.NEXT_STEP
                                                                                        : ResultType.IGNORE;
     }
 
@@ -232,7 +232,7 @@ public abstract class AioFilterChain<C extends IContext,
         if (Objects.isNull(context) || Objects.isNull(input)) { return ResultType.ERROR; }
         return context.needHandshake()
                && context.inState() == DECODE_HANDSHAKE
-               && input.superSerial() == IProtocol.PACKAT_SERIAL ? ResultType.HANDLED
+               && input.superSerial() == IProtocol.PACKET_SERIAL ? ResultType.HANDLED
                                                                  : ResultType.IGNORE;
 
     }

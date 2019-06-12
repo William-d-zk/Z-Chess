@@ -47,8 +47,6 @@ public interface ICommand<C extends IContext>
         return this;
     }
 
-
-
     long _DEFAULT_TRANSACTION_KEY = -1;
 
     default long getUID()

@@ -45,43 +45,26 @@ public interface IStorage
     {
     }
 
-    default long primaryKey()
-    {
-        return -1;
-    }
+    long getPrimaryKey();
 
-    default byte[] secondaryByteArrayKey()
+    void setPrimaryKey(long key);
+
+    default byte[] getSecondaryByteArrayKey()
     {
         return null;
     }
 
-    default long secondaryLongKey()
+    default long getSecondaryLongKey()
     {
         return -1;
     }
 
-    default Operation operation()
+    default Operation getOperation()
     {
         return Operation.OP_NULL;
     }
 
-    default void setOperation(Operation op)
-    {
-    }
-
-    Status getStatus();
-
-    void setStatus(Status status);
-
-    enum Status
-    {
-        MISS,
-        CREATE,
-        UPDATE,
-        DELETE,
-        INVALID,
-        RESET
-    }
+    void setOperation(Operation op);
 
     enum Operation
     {
@@ -91,9 +74,11 @@ public interface IStorage
         OP_APPEND(Byte.parseByte("00000111", 2)),
         OP_REMOVE(Byte.parseByte("00010001", 2)),
         OP_DELETE(Byte.parseByte("00011001", 2)),
+        OP_RESET(Byte.parseByte("00100000", 2)),
+        OP_RETRY(Byte.parseByte("01000000", 2)),
         OP_INVALID((byte) Integer.parseInt("10000000", 2));
 
-        byte _Value;
+        private final byte _Value;
 
         Operation(byte value)
         {

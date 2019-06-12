@@ -158,10 +158,10 @@ public class BaseQtt
     }
 
     byte     frame_op_code;
-    boolean  dup;
-    boolean  retain;
-    byte     qos_level;
-    QTT_TYPE type;
+    private boolean  dup;
+    private boolean  retain;
+    private byte     qos_level;
+    private QTT_TYPE type;
     
    
     
@@ -233,7 +233,7 @@ public class BaseQtt
         frame_op_code |= type.getValue();
     }
 
-    public void setOpCode(byte opCode)
+    void setOpCode(byte opCode)
     {
         frame_op_code = opCode;
         type = QTT_TYPE.valueOf(getOpCode());

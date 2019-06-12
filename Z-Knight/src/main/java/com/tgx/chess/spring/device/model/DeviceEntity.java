@@ -52,7 +52,8 @@ import com.tgx.chess.spring.jpa.model.AuditModel;
                    @Index(name = "device_idx_mac", columnList = "mac"),
                    @Index(name = "device_idx_imei", columnList = "imei"),
                    @Index(name = "device_idx_imsi", columnList = "imsi"),
-                   @Index(name = "device_idx_sn", columnList = "sn") })
+                   @Index(name = "device_idx_sn", columnList = "sn"),
+                   @Index(name = "device_idx_password_id", columnList = "password_id") })
 public class DeviceEntity
         extends
         AuditModel
@@ -80,7 +81,8 @@ public class DeviceEntity
     @Length(min = 5, max = 32, message = "*Your password must have at least 5 characters less than 32 characters")
     @NotEmpty(message = "*Please provide your password")
     private String password;
-    private long   passwordId;
+
+    private long passwordId;
 
     @Column(length = 64)
     private String token;
