@@ -48,7 +48,6 @@ import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
 import com.tgx.chess.bishop.io.zprotocol.device.X24_UpdateToken;
 import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.king.base.util.IoUtil;
-import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
 import com.tgx.chess.spring.device.model.DeviceEntity;
@@ -61,8 +60,9 @@ import com.tgx.chess.spring.device.repository.DeviceRepository;
 @Service
 @PropertySource("classpath:device.ws.properties")
 public class WsService
-        implements
-        IRepository<DeviceEntry>
+        extends
+        DeviceService
+
 {
     private final DeviceRepository _DeviceRepository;
     private final ClientRepository _ClientRepository;
@@ -77,6 +77,7 @@ public class WsService
                      @Value("${ws.server.host}") String wsHost,
                      @Value("${ws.server.port}") int wsPort)
     {
+        super(deviceRepository, clientRepository);
         _DeviceRepository = deviceRepository;
         _ClientRepository = clientRepository;
         _DeviceNode = new WsNode(wsHost, wsPort, this);
@@ -95,21 +96,6 @@ public class WsService
                                                    .map(this::convertDevice)
                                                    .collect(Collectors.toList())
                                          : null;
-    }
-
-    public DeviceEntity saveDevice(DeviceEntity device)
-    {
-        return _DeviceRepository.save(device);
-    }
-
-    public DeviceEntity findDeviceByMac(String mac)
-    {
-        return _DeviceRepository.findByMac(mac);
-    }
-
-    public DeviceEntity findDeviceByToken(String token)
-    {
-        return _DeviceRepository.findByToken(token);
     }
 
     @Override

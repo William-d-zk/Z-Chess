@@ -22,41 +22,68 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.jpa.generator;
-
-import java.io.Serializable;
-
-import org.hibernate.HibernateException;
-import org.hibernate.engine.spi.SharedSessionContractImplementor;
-import org.hibernate.id.IdentifierGenerator;
-
-import com.tgx.chess.bishop.biz.db.dao.ZUID;
-import com.tgx.chess.king.base.log.Logger;
+package com.tgx.chess.spring.device.service;
 
 /**
  * @author william.d.zk
+ * @date 2019-06-15
  */
-public class ZGenerator
-        implements
-        IdentifierGenerator
+public class DeviceDo
 {
-    private final Logger      _Logger = Logger.getLogger(getClass().getName());
-    private final static ZUID _ZUID   = new ZUID();
 
-    public ZGenerator()
+    private String imei;
+    private String mac;
+    private String sn;
+    private String password;
+    private String token;
+
+    public String getImei()
     {
+        return imei;
     }
 
-    @Override
-    public Serializable generate(SharedSessionContractImplementor session, Object object) throws HibernateException
+    public void setImei(String imei)
     {
-        long id = next();
-        _Logger.info("generate id %x, %s", id, object);
-        return id;
+        this.imei = imei;
     }
 
-    public long next()
+    public String getMac()
     {
-        return _ZUID.getId();
+        return mac;
+    }
+
+    public void setMac(String mac)
+    {
+        this.mac = mac;
+    }
+
+    public String getSn()
+    {
+        return sn;
+    }
+
+    public void setSn(String sn)
+    {
+        this.sn = sn;
+    }
+
+    public void setPassword(String password)
+    {
+        this.password = password;
+    }
+
+    public String getPassword()
+    {
+        return password;
+    }
+
+    public void setToken(String token)
+    {
+        this.token = token;
+    }
+
+    public String getToken()
+    {
+        return token;
     }
 }

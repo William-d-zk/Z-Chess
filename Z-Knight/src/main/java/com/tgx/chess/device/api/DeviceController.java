@@ -31,6 +31,8 @@ import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,6 +41,7 @@ import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
 import com.tgx.chess.bishop.io.zprotocol.device.X30_EventMsg;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.spring.device.model.DeviceEntity;
+import com.tgx.chess.spring.device.service.DeviceDo;
 import com.tgx.chess.spring.device.service.WsService;
 import com.tgx.chess.spring.jpa.generator.ZGenerator;
 
@@ -48,15 +51,27 @@ import com.tgx.chess.spring.jpa.generator.ZGenerator;
 @RestController
 public class DeviceController
 {
-    private final Logger     _Log        = Logger.getLogger(getClass().getName());
+    private final Logger     _Logger     = Logger.getLogger(getClass().getName());
     private final WsService  _DeviceService;
-    private final Random     _Random     = new Random();
     private final ZGenerator _ZGenerator = new ZGenerator();
 
     @Autowired
     public DeviceController(WsService deviceService)
     {
         _DeviceService = deviceService;
+    }
+
+    @PostMapping("/device/register")
+    public @ResponseBody DeviceDo registerDevice(@RequestBody DeviceDo deviceDo)
+    {
+        DeviceEntity deviceEntity = new DeviceEntity();
+        deviceEntity.setImei(deviceDo.getImei());
+        deviceEntity.setMac(deviceDo.getMac());
+        deviceEntity.setSn(deviceDo.getSn());
+        deviceEntity = _DeviceService.saveDevice(deviceEntity);
+        deviceDo.setPassword(deviceEntity.getPassword());
+        deviceDo.setToken(deviceEntity.getToken());
+        return deviceDo;
     }
 
     @GetMapping("/client/devices")
@@ -79,7 +94,7 @@ public class DeviceController
         List<DeviceEntry> list = _DeviceService.findAll();
         StringBuffer sb = new StringBuffer();
         for (DeviceEntry device : list) {
-            _Log.info("device mac %s", device.getToken());
+            _Logger.info("device mac %s", device.getToken());
             sb.append(String.format("token:%s\n", device.getToken()));
             _DeviceService.localBizClose(device.getPrimaryKey());
         }
@@ -103,7 +118,7 @@ public class DeviceController
         List<DeviceEntry> list = _DeviceService.findAll();
         StringBuffer sb = new StringBuffer();
         for (DeviceEntry device : list) {
-            _Log.info("device mac %s", device.getToken());
+            _Logger.info("device mac %s", device.getToken());
             sb.append(String.format("token:%s\n", device.getToken()));
             sendX30(device.getToken(), device.getPrimaryKey(), msg, ctrl);
         }
