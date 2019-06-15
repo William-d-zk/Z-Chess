@@ -95,6 +95,8 @@ public abstract class DeviceService
         return deviceEntry;
     }
 
+    private final byte[] _PasswordChars = "qwertyuiopasdfghjklzxcvbnmQAZWSXEDCRFVTGBYHNUJMIKOLP1234567890,-=+_!~`%&*#@;|/".getBytes(StandardCharsets.US_ASCII);
+
     public DeviceEntity saveDevice(@NonNull DeviceEntity device)
     {
         if (isBlank(device.getSn()) && isBlank(device.getImei()) && isBlank(device.getMac())) {
@@ -136,7 +138,7 @@ public abstract class DeviceService
             int passwordLength = _Random.nextInt(27) + 5;
             byte[] pwdBytes = new byte[passwordLength];
             for (int i = 0; i < passwordLength; i++) {
-                pwdBytes[i] = (byte) (_Random.nextInt(94) + 33);
+                pwdBytes[i] = _PasswordChars[_Random.nextInt(_PasswordChars.length)];
             }
             device.setPassword(new String(pwdBytes, StandardCharsets.US_ASCII));
             device.setPasswordId(passwordId);
