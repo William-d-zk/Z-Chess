@@ -24,70 +24,30 @@
 
 package com.tgx.chess.device.api;
 
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Objects;
-import java.util.Random;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
-import com.tgx.chess.bishop.io.zprotocol.device.X30_EventMsg;
 import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.spring.device.model.DeviceEntity;
-import com.tgx.chess.spring.device.service.DeviceDo;
-import com.tgx.chess.spring.device.service.WsService;
+import com.tgx.chess.spring.device.service.QttService;
 import com.tgx.chess.spring.jpa.generator.ZGenerator;
 
 /**
  * @author william.d.zk
  */
 @RestController
-public class DeviceController
+public class DeviceQttController
 {
     private final Logger     _Logger     = Logger.getLogger(getClass().getName());
-    private final WsService  _DeviceService;
+    private final QttService _DeviceService;
     private final ZGenerator _ZGenerator = new ZGenerator();
 
     @Autowired
-    public DeviceController(WsService deviceService)
+    public DeviceQttController(QttService deviceService)
     {
         _DeviceService = deviceService;
     }
 
-    @PostMapping("/device/register")
-    public @ResponseBody DeviceDo registerDevice(@RequestBody DeviceDo deviceDo)
-    {
-        DeviceEntity deviceEntity = new DeviceEntity();
-        deviceEntity.setImei(deviceDo.getImei());
-        deviceEntity.setMac(deviceDo.getMac());
-        deviceEntity.setSn(deviceDo.getSn());
-        deviceEntity = _DeviceService.saveDevice(deviceEntity);
-        deviceDo.setPassword(deviceEntity.getPassword());
-        deviceDo.setToken(deviceEntity.getToken());
-        return deviceDo;
-    }
-
-    @GetMapping("/client/devices")
-    public @ResponseBody Object getDevices()
-    {
-        List<DeviceEntry> list = _DeviceService.findAll();
-        return Objects.nonNull(list) && !list.isEmpty() ? list
-                                                        : "no devices";
-    }
-
-    @GetMapping("/client/device")
-    public @ResponseBody DeviceEntity getDevice(@RequestParam(name = "mac") String deviceMac)
-    {
-        return _DeviceService.findDeviceByMac(deviceMac);
-    }
-
+    /*
     @GetMapping("/client/close/all")
     public String closeAll()
     {
@@ -100,7 +60,7 @@ public class DeviceController
         }
         return sb.toString();
     }
-
+    
     @GetMapping("/client/close/device")
     public String close(@RequestParam(name = "token") String token)
     {
@@ -110,7 +70,7 @@ public class DeviceController
         }
         return token;
     }
-
+    
     @GetMapping("/event/x30/broadcast")
     public String x30Broadcast(@RequestParam(name = "msg") String msg,
                                @RequestParam(name = "ctrl", defaultValue = "0") int ctrl)
@@ -124,7 +84,7 @@ public class DeviceController
         }
         return sb.toString();
     }
-
+    
     @GetMapping("/event/x30/push")
     public String x30(@RequestParam(name = "msg") String msg,
                       @RequestParam(name = "token") String token,
@@ -142,7 +102,7 @@ public class DeviceController
         }
         return String.format("not found device %s", token);
     }
-
+    
     private void sendX30(String token, long deviceId, String msg, int ctrl)
     {
         X30_EventMsg x30 = new X30_EventMsg(_ZGenerator.next());
@@ -151,4 +111,5 @@ public class DeviceController
         x30.setPayload(msg.getBytes(StandardCharsets.UTF_8));
         _DeviceService.localBizSend(deviceId, x30);
     }
+     */
 }

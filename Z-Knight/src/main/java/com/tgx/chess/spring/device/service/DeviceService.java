@@ -97,11 +97,8 @@ public abstract class DeviceService
 
     private final byte[] _PasswordChars = "qwertyuiopasdfghjklzxcvbnmQAZWSXEDCRFVTGBYHNUJMIKOLP1234567890,-=+_!~`%&*#@;|/".getBytes(StandardCharsets.US_ASCII);
 
-    public DeviceEntity saveDevice(@NonNull DeviceEntity device)
+    public DeviceEntity findDevice(@NonNull DeviceEntity device)
     {
-        if (isBlank(device.getSn()) && isBlank(device.getImei()) && isBlank(device.getMac())) {
-            throw new ZApiExecption("unique device info null");
-        }
         DeviceEntity exist = _DeviceRepository.findBySn(device.getSn());
         if (Objects.isNull(exist)) {
             exist = _DeviceRepository.findByImei(device.getImei());
@@ -109,31 +106,31 @@ public abstract class DeviceService
         if (Objects.isNull(exist)) {
             exist = _DeviceRepository.findByMac(device.getMac());
         }
-        long passwordId = 0;
         if (Objects.nonNull(exist)) {
             device.setId(exist.getId());
-            passwordId = exist.getPasswordId();
-            if (!isBlank(device.getPassword())
-                && !device.getPassword()
-                          .equals(exist.getPassword()))
-            {
-                passwordId++;
-                device.setInvalidAt(Date.from(Instant.now()
-                                                     .plus(invalidDurationOfDays, ChronoUnit.DAYS)));
-            }
-            if (Objects.nonNull(exist.getMac()) && Objects.isNull(device.getMac())) {
+            if (!isBlank(exist.getMac())) {
                 device.setMac(exist.getMac());
             }
-            if (Objects.nonNull(exist.getImei()) && Objects.isNull(device.getImei())) {
+            if (!isBlank(exist.getImei())) {
                 device.setImei(exist.getImei());
             }
-            if (Objects.nonNull(exist.getImsi()) && Objects.isNull(device.getImsi())) {
+            if (!isBlank(exist.getImsi()) && isBlank(device.getImsi())) {
                 device.setImsi(exist.getImsi());
             }
-            if (Objects.nonNull(exist.getSn()) && Objects.isNull(device.getSn())) {
-                device.setSn(exist.getSn());
+            if (!isBlank(exist.getPhone()) && isBlank(device.getPhone())) {
+                device.setPhone(exist.getPhone());
             }
+            device.setPasswordId(exist.getPasswordId());
         }
+        return device;
+    }
+
+    public DeviceEntity saveDevice(@NonNull DeviceEntity device)
+    {
+        if (isBlank(device.getSn()) && isBlank(device.getImei()) && isBlank(device.getMac())) {
+            throw new ZApiExecption("unique device info null");
+        }
+        device = findDevice(device);
         if (isBlank(device.getPassword())) {
             int passwordLength = _Random.nextInt(27) + 5;
             byte[] pwdBytes = new byte[passwordLength];
@@ -141,7 +138,7 @@ public abstract class DeviceService
                 pwdBytes[i] = _PasswordChars[_Random.nextInt(_PasswordChars.length)];
             }
             device.setPassword(new String(pwdBytes, StandardCharsets.US_ASCII));
-            device.setPasswordId(passwordId);
+            device.increasePasswordId();
             device.setInvalidAt(Date.from(Instant.now()
                                                  .plus(invalidDurationOfDays, ChronoUnit.DAYS)));
         }

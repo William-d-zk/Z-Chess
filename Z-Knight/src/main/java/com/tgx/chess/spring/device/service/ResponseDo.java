@@ -22,22 +22,36 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.king.base.inf;
+package com.tgx.chess.spring.device.service;
+
+import com.tgx.chess.bishop.biz.db.dao.DeviceStatus;
 
 /**
  * @author william.d.zk
- * @date 2019-06-15
+ * @date 2019-06-16
  */
-public interface IStatus
+public class ResponseDo
 {
-    String getStatus();
+    private DeviceStatus status;
+    private DeviceDo     device;
 
-    int getCode();
+    public DeviceStatus getStatus()
+    {
+        return status;
+    }
 
-    int CODE_MISS       = Integer.parseInt("00000001", 2);
-    int CODE_CREATED    = Integer.parseInt("00010010", 2);
-    int CODE_INVALID    = Integer.parseInt("00010110", 2);
-    int CODE_INCOMPLETE = Integer.parseInt("00011110", 2);
-    int CODE_AVAILABLE  = Integer.parseInt("10000010", 2);
-    int CODE_DISABLE    = Integer.parseInt("10010010", 2);
+    public void setStatus(DeviceStatus status)
+    {
+        this.status = status;
+    }
+
+    public DeviceDo getDevice()
+    {
+        return device;
+    }
+
+    public void setDevice(DeviceDo device)
+    {
+        this.device = device;
+    }
 }
