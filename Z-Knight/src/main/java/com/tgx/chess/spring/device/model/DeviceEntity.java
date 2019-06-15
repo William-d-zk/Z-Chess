@@ -115,6 +115,11 @@ public class DeviceEntity
         this.password = password;
     }
 
+    public void increasePasswordId()
+    {
+        passwordId++;
+    }
+
     public String getToken()
     {
         return token;
@@ -211,4 +216,5 @@ public class DeviceEntity
     {
         this.phone = phone;
     }
+
 }

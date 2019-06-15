@@ -36,6 +36,8 @@ public class DeviceDo
     private String sn;
     private String password;
     private String token;
+    private String phone;
+    private String imsi;
 
     public String getImei()
     {
@@ -85,5 +87,25 @@ public class DeviceDo
     public String getToken()
     {
         return token;
+    }
+
+    public String getPhone()
+    {
+        return phone;
+    }
+
+    public void setPhone(String phone)
+    {
+        this.phone = phone;
+    }
+
+    public String getImsi()
+    {
+        return imsi;
+    }
+
+    public void setImsi(String imsi)
+    {
+        this.imsi = imsi;
     }
 }
