@@ -53,7 +53,7 @@ import com.tgx.chess.spring.jpa.model.AuditModel;
                    @Index(name = "device_idx_imei", columnList = "imei"),
                    @Index(name = "device_idx_imsi", columnList = "imsi"),
                    @Index(name = "device_idx_sn", columnList = "sn"),
-                   @Index(name = "device_idx_password_id", columnList = "password_id") })
+                   @Index(name = "device_idx_password_id", columnList = "passwordId") })
 public class DeviceEntity
         extends
         AuditModel
@@ -73,6 +73,9 @@ public class DeviceEntity
 
     @Column(length = 15)
     private String imsi;
+
+    @Column(length = 25)
+    private String phone;
 
     @Column(length = 64)
     private String sn;
@@ -125,8 +128,10 @@ public class DeviceEntity
     @Override
     public String toString()
     {
-        return String.format("device{id:%s,pass:%s,mac:%s,imei:%s,imsi:%s,sn:%s,create:%s,update:%s,token:%s,invalid:%s}",
+        return String.format("device{id:%s,token:%s,pass_id:%d,pass: %s ,mac:%s,imei:%s,imsi:%s,sn:%s,create:%s,update:%s,invalid:%s}",
                              getId(),
+                             getToken(),
+                             getPasswordId(),
                              getPassword(),
                              getMac(),
                              getImei(),
@@ -134,7 +139,6 @@ public class DeviceEntity
                              getSn(),
                              getCreatedAt(),
                              getUpdatedAt(),
-                             getToken(),
                              getInvalidAt());
     }
 
@@ -196,5 +200,15 @@ public class DeviceEntity
     public void setSn(String sn)
     {
         this.sn = sn;
+    }
+
+    public String getPhone()
+    {
+        return phone;
+    }
+
+    public void setPhone(String phone)
+    {
+        this.phone = phone;
     }
 }

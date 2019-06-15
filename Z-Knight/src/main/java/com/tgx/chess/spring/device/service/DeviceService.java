@@ -24,12 +24,26 @@
 
 package com.tgx.chess.spring.device.service;
 
+import static com.tgx.chess.king.base.util.IoUtil.isBlank;
+
+import java.nio.charset.StandardCharsets;
+import java.sql.Date;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.lang.NonNull;
+
+import com.tgx.chess.ZApiExecption;
 import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
+import com.tgx.chess.king.base.util.CryptUtil;
+import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.spring.device.model.ClientEntity;
 import com.tgx.chess.spring.device.model.DeviceEntity;
@@ -40,12 +54,18 @@ import com.tgx.chess.spring.device.repository.DeviceRepository;
  * @author william.d.zk
  * @date 2019-06-10
  */
+@PropertySource("classpath:device.config.properties")
 public abstract class DeviceService
         implements
         IRepository<DeviceEntry>
 {
+    private final Random           _Random    = new Random();
+    private final CryptUtil        _CryptUtil = new CryptUtil();
     private final DeviceRepository _DeviceRepository;
     private final ClientRepository _ClientRepository;
+
+    @Value("${invalid.days}")
+    private int invalidDurationOfDays;
 
     DeviceService(DeviceRepository deviceRepository,
                   ClientRepository clientRepository)
@@ -75,8 +95,60 @@ public abstract class DeviceService
         return deviceEntry;
     }
 
-    public DeviceEntity saveDevice(DeviceEntity device)
+    public DeviceEntity saveDevice(@NonNull DeviceEntity device)
     {
+        if (isBlank(device.getSn()) && isBlank(device.getImei()) && isBlank(device.getMac())) {
+            throw new ZApiExecption("unique device info null");
+        }
+        DeviceEntity exist = _DeviceRepository.findBySn(device.getSn());
+        if (Objects.isNull(exist)) {
+            exist = _DeviceRepository.findByImei(device.getImei());
+        }
+        if (Objects.isNull(exist)) {
+            exist = _DeviceRepository.findByMac(device.getMac());
+        }
+        long passwordId = 0;
+        if (Objects.nonNull(exist)) {
+            device.setId(exist.getId());
+            passwordId = exist.getPasswordId();
+            if (!isBlank(device.getPassword())
+                && !device.getPassword()
+                          .equals(exist.getPassword()))
+            {
+                passwordId++;
+                device.setInvalidAt(Date.from(Instant.now()
+                                                     .plus(invalidDurationOfDays, ChronoUnit.DAYS)));
+            }
+            if (Objects.nonNull(exist.getMac()) && Objects.isNull(device.getMac())) {
+                device.setMac(exist.getMac());
+            }
+            if (Objects.nonNull(exist.getImei()) && Objects.isNull(device.getImei())) {
+                device.setImei(exist.getImei());
+            }
+            if (Objects.nonNull(exist.getImsi()) && Objects.isNull(device.getImsi())) {
+                device.setImsi(exist.getImsi());
+            }
+            if (Objects.nonNull(exist.getSn()) && Objects.isNull(device.getSn())) {
+                device.setSn(exist.getSn());
+            }
+        }
+        if (isBlank(device.getPassword())) {
+            int passwordLength = _Random.nextInt(27) + 5;
+            byte[] pwdBytes = new byte[passwordLength];
+            for (int i = 0; i < passwordLength; i++) {
+                pwdBytes[i] = (byte) (_Random.nextInt(94) + 33);
+            }
+            device.setPassword(new String(pwdBytes, StandardCharsets.US_ASCII));
+            device.setPasswordId(passwordId);
+            device.setInvalidAt(Date.from(Instant.now()
+                                                 .plus(invalidDurationOfDays, ChronoUnit.DAYS)));
+        }
+        device.setToken(IoUtil.bin2Hex(_CryptUtil.sha256(String.format("sn:%s,mac:%s,imei:%s",
+                                                                       device.getSn(),
+                                                                       device.getMac(),
+                                                                       device.getImei())
+                                                               .getBytes(StandardCharsets.US_ASCII))));
+
         return _DeviceRepository.save(device);
     }
 
@@ -110,4 +182,5 @@ public abstract class DeviceService
         return _ClientRepository.findByAuth(client.getAuth())
                                 .getDevices();
     }
+
 }

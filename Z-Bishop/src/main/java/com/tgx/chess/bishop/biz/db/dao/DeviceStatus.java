@@ -22,41 +22,41 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.jpa.generator;
+package com.tgx.chess.bishop.biz.db.dao;
 
-import java.io.Serializable;
-
-import org.hibernate.HibernateException;
-import org.hibernate.engine.spi.SharedSessionContractImplementor;
-import org.hibernate.id.IdentifierGenerator;
-
-import com.tgx.chess.bishop.biz.db.dao.ZUID;
-import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.king.base.inf.IStatus;
 
 /**
  * @author william.d.zk
+ * @date 2019-06-16
  */
-public class ZGenerator
+public enum DeviceStatus
         implements
-        IdentifierGenerator
+        IStatus
 {
-    private final Logger      _Logger = Logger.getLogger(getClass().getName());
-    private final static ZUID _ZUID   = new ZUID();
 
-    public ZGenerator()
+    MISS(CODE_MISS),
+    CREATED(CODE_CREATED),
+    INVALID(CODE_INVALID),
+    INCOMPLETE(CODE_INCOMPLETE);
+
+    private final int _Code;
+
+    DeviceStatus(int code)
     {
+        _Code = code;
     }
 
     @Override
-    public Serializable generate(SharedSessionContractImplementor session, Object object) throws HibernateException
+    public String getStatus()
     {
-        long id = next();
-        _Logger.info("generate id %x, %s", id, object);
-        return id;
+        return name();
     }
 
-    public long next()
+    @Override
+    public int getCode()
     {
-        return _ZUID.getId();
+        return _Code;
     }
+
 }

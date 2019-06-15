@@ -38,6 +38,12 @@ public class DeviceEntry
         return getDeviceUidLength() + getTokenLength() + getInvalidTimeLength() + getOperationLength();
     }
 
+    @Override
+    public int getSerial()
+    {
+        return DEVICE_ENTRY_SERIAL;
+    }
+
     private int getDeviceUidLength()
     {
         return 8;
@@ -53,18 +59,12 @@ public class DeviceEntry
         return 8;
     }
 
-    @Override
-    public int getSerial()
-    {
-        return DEVICE_ENTRY_SERIAL;
-    }
-
     private int getOperationLength()
     {
         return 1;
     }
 
-    private long      deviceUID;
+    private long      deviceId;
     private String    token;
     private long      invalidTime;
     private Operation operation;
@@ -72,13 +72,13 @@ public class DeviceEntry
     @Override
     public long getPrimaryKey()
     {
-        return deviceUID;
+        return deviceId;
     }
 
     @Override
     public void setPrimaryKey(long key)
     {
-        deviceUID = key;
+        deviceId = key;
     }
 
     public String getToken()
