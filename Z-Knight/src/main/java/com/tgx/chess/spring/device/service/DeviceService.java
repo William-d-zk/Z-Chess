@@ -97,7 +97,7 @@ public abstract class DeviceService
 
     private final byte[] _PasswordChars = "qwertyuiopasdfghjklzxcvbnmQAZWSXEDCRFVTGBYHNUJMIKOLP1234567890,-=+_!~`%&*#@;|/".getBytes(StandardCharsets.US_ASCII);
 
-    public DeviceEntity findDevice(@NonNull DeviceEntity device)
+    private DeviceEntity findDevice(@NonNull DeviceEntity device)
     {
         DeviceEntity exist = _DeviceRepository.findBySn(device.getSn());
         if (Objects.isNull(exist)) {
@@ -182,4 +182,12 @@ public abstract class DeviceService
                                 .getDevices();
     }
 
+    boolean auth(DeviceEntity deviceEntity, String password)
+    {
+        String origin = deviceEntity.getPassword();
+        return isBlank(origin)
+               || "*".equals(origin)
+               || ".".equals(origin)
+               || (Objects.nonNull(password) && origin.equals(password));
+    }
 }

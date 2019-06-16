@@ -24,8 +24,6 @@
 
 package com.tgx.chess.spring.device.service;
 
-import static com.tgx.chess.king.base.util.IoUtil.isBlank;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
@@ -109,13 +107,11 @@ public class QttService
                 DeviceEntity deviceEntity = findDeviceBySn(deviceSn);
                 DeviceEntry deviceEntry = new DeviceEntry();
                 if (Objects.nonNull(deviceEntity)) {
-                    String password = deviceEntity.getPassword();
                     deviceEntry.setPrimaryKey(deviceEntity.getId());
-                    if (isBlank(password)
-                        || "*".equals(password)
-                        || ".".equals(password)
-                        || (Objects.nonNull(x111.getPassword())
-                            && password.equals(new String(x111.getPassword(), StandardCharsets.UTF_8))))
+                    if (auth(deviceEntity,
+                             Objects.nonNull(x111.getPassword()) ? new String(x111.getPassword(),
+                                                                              StandardCharsets.UTF_8)
+                                                                 : null))
                     {
                         _Logger.info("auth ok");
                         deviceEntry.setOperation(IStorage.Operation.OP_APPEND);
