@@ -81,9 +81,9 @@ public class QttZClient
     public IControl<QttContext>[] createCommands(ISession<QttContext> session)
     {
         X111_QttConnect x111 = new X111_QttConnect();
-        x111.setClientId(IoUtil.bin2Hex(_CryptUtil.sha256("test-mqtt-smallbeex".getBytes())));
-        x111.setUserName("smallbeex.mqtt.lbs.tracker");
-        x111.setPassword("iot.2019_mqtt|smallbeex".getBytes(StandardCharsets.UTF_8));
+        x111.setClientId(IoUtil.bin2Hex(_CryptUtil.sha256("test-mqtt-smallbeex-0001".getBytes())));
+        x111.setUserName("A06FF74D68D32FD5FE9DEB00F636BEC9C24FC400F23E6B91F2CA3AA9A3E52B7F");
+        x111.setPassword("=~+X~Az#T0&HexTONx@-Y_/!PH`m;R".getBytes(StandardCharsets.UTF_8));
         return new IControl[] { x111.setSession(session) };
     }
 

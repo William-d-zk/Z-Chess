@@ -24,9 +24,26 @@
 
 package com.tgx.chess.bishop.io.mqtt.control;
 
+import com.tgx.chess.bishop.io.mqtt.bean.QttCommand;
+
 /**
  * @author william.d.zk
  * @date 2019-05-30
  */
-public class X116_QttPubrel {
+public class X116_QttPubrel
+        extends
+        QttCommand
+{
+    public final static int COMMAND = 0x116;
+
+    public X116_QttPubrel()
+    {
+        super(COMMAND);
+    }
+
+    @Override
+    public int dataLength()
+    {
+        return 0;
+    }
 }

@@ -134,6 +134,9 @@ public class WsService
                 break;
             case X24_UpdateToken.COMMAND:
                 X24_UpdateToken x24 = (X24_UpdateToken) tar;
+
+
+
                 break;
 
         }

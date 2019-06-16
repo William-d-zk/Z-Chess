@@ -45,11 +45,13 @@ import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
 import com.tgx.chess.bishop.biz.device.QttNode;
 import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
 import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
+import com.tgx.chess.bishop.io.mqtt.control.X118_QttSubscribe;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
+import com.tgx.chess.queen.io.core.inf.IQoS;
 import com.tgx.chess.spring.device.model.DeviceEntity;
 import com.tgx.chess.spring.device.repository.ClientRepository;
 import com.tgx.chess.spring.device.repository.DeviceRepository;
@@ -107,20 +109,23 @@ public class QttService
                             && password.equals(new String(x111.getPassword(), StandardCharsets.UTF_8))))
                     {
                         _Logger.info("auth ok");
+                        deviceEntry.setOperation(IStorage.Operation.OP_APPEND);
                         if (x111.isCleanSession()) {
-                            deviceEntry.setOperation(IStorage.Operation.OP_RESET);
+                            deviceEntry.setStrategy(IStorage.Strategy.CLEAN);
                         }
                         else {
                             switch (x111.getQosLevel())
                             {
                                 case QOS_ONLY_ONCE:
-                                    deviceEntry.setOperation(IStorage.Operation.OP_MODIFY);
+                                    deviceEntry.setQosLevel(IQoS.Level.ONLY_ONCE);
                                     break;
                                 case QOS_AT_LEAST_ONCE:
-                                    deviceEntry.setOperation(IStorage.Operation.OP_RETRY);
+                                    deviceEntry.setQosLevel(IQoS.Level.AT_LEAST_ONCE);
+                                    break;
                                 case QOS_LESS_ONCE:
+                                    deviceEntry.setQosLevel(IQoS.Level.LESS_ONCE);
+                                    break;
                             }
-
                         }
                     }
                     else {
@@ -142,6 +147,8 @@ public class QttService
                                                            .getTime());
                 }
                 return deviceEntry;
+            case X118_QttSubscribe.COMMAND:
+
         }
         return null;
     }

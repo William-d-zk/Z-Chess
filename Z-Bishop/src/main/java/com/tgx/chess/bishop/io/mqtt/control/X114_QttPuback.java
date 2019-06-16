@@ -24,9 +24,23 @@
 
 package com.tgx.chess.bishop.io.mqtt.control;
 
+import com.tgx.chess.bishop.io.mqtt.bean.QttCommand;
+
 /**
  * @author william.d.zk
  * @date 2019-05-30
  */
-public class X114_QttPuback {
+public class X114_QttPuback extends QttCommand {
+    public final static int COMMAND = 0x114;
+
+    public X114_QttPuback()
+    {
+        super(COMMAND);
+    }
+
+    @Override
+    public int dataLength()
+    {
+        return 0;
+    }
 }

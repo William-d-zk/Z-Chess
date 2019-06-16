@@ -101,12 +101,15 @@ public class DeviceWsController
         responseDo.setStatus(DeviceStatus.MISS);
         DeviceEntity entity = null;
         if (!isBlank(token)) {
+            token = token.toUpperCase();
             entity = _DeviceService.findDeviceByToken(token);
         }
         else if (!isBlank(sn)) {
+            sn = sn.toUpperCase();
             entity = _DeviceService.findDeviceBySn(sn);
         }
         else if (!isBlank(mac)) {
+            mac = mac.toUpperCase();
             entity = _DeviceService.findDeviceBySn(mac);
         }
         if (Objects.nonNull(entity)) {
