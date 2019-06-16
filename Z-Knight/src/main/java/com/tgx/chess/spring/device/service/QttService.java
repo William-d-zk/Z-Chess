@@ -91,8 +91,20 @@ public class QttService
     {
         switch (tar.getSerial())
         {
+
+            case X118_QttSubscribe.COMMAND:
+
+        }
+        return null;
+    }
+
+    @Override
+    public DeviceEntry find(IProtocol key)
+    {
+        switch (key.getSerial())
+        {
             case X111_QttConnect.COMMAND:
-                X111_QttConnect x111 = (X111_QttConnect) tar;
+                X111_QttConnect x111 = (X111_QttConnect) key;
                 String deviceSn = x111.getClientId();
                 DeviceEntity deviceEntity = findDeviceBySn(deviceSn);
                 DeviceEntry deviceEntry = new DeviceEntry();
@@ -132,18 +144,6 @@ public class QttService
                     deviceEntry.setOperation(IStorage.Operation.OP_NULL);
                 }
                 return deviceEntry;
-            case X118_QttSubscribe.COMMAND:
-
-        }
-        return null;
-    }
-
-    @Override
-    public DeviceEntry find(IProtocol key)
-    {
-        switch (key.getSerial())
-        {
-
         }
         return null;
     }
