@@ -97,27 +97,25 @@ public class QttNode
                 X111_QttConnect x111 = (X111_QttConnect) tar;
                 X112_QttConnack x112 = new X112_QttConnack();
                 x112.responseOk();
-                if (!x111.isCleanSession()) {
-                    if (x111.getClientIdLength() == 0) {
+                if (!x111.isCleanSession() && x111.getClientIdLength() == 0) {
+                    x112.rejectIdentifier();
+                }
+                else {
+                    deviceEntry = _DeviceRepository.find(x111);
+                    if (Objects.isNull(deviceEntry)) {
                         x112.rejectIdentifier();
                     }
                     else {
-                        deviceEntry = _DeviceRepository.save(x111);
-                        if (Objects.isNull(deviceEntry)) {
-                            x112.rejectIdentifier();
-                        }
-                        else {
-                            switch (deviceEntry.getOperation())
-                            {
-                                case OP_NULL:
-                                    x112.rejectIdentifier();
-                                    break;
-                                case OP_INVALID:
-                                    x112.rejectBadUserOrPassword();
-                                    break;
-                                default:
-                                    break;
-                            }
+                        switch (deviceEntry.getOperation())
+                        {
+                            case OP_NULL:
+                                x112.rejectIdentifier();
+                                break;
+                            case OP_INVALID:
+                                x112.rejectBadUserOrPassword();
+                                break;
+                            default:
+                                break;
                         }
                     }
                 }
