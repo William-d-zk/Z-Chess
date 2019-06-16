@@ -66,6 +66,26 @@ public interface IStorage
 
     void setOperation(Operation op);
 
+    default Strategy getStrategy()
+    {
+        return Strategy.CLEAN;
+    }
+
+    void setStrategy(Strategy strategy);
+
+    enum Strategy
+    {
+        /**
+         * 状态值需要进行持久化
+         */
+        RETAIN,
+        /**
+         * 会话状态不保持
+         * 每次声明会话都清除之前的状态。
+         */
+        CLEAN;
+    }
+
     enum Operation
     {
         OP_NULL(Byte.parseByte("00000000", 2)),

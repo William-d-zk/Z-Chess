@@ -24,9 +24,27 @@
 
 package com.tgx.chess.bishop.io.mqtt.control;
 
+import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
+
 /**
  * @author william.d.zk
  * @date 2019-05-30
  */
-public class X119_QttSuback {
+public class X119_QttSuback
+        extends
+        QttControl
+{
+
+    public final static int COMMAND = 0x119;
+
+    public X119_QttSuback()
+    {
+        super(COMMAND);
+    }
+
+    @Override
+    public int dataLength()
+    {
+        return 0;
+    }
 }

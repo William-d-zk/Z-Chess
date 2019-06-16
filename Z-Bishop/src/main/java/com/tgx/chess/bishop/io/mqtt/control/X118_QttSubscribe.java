@@ -24,9 +24,27 @@
 
 package com.tgx.chess.bishop.io.mqtt.control;
 
+import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
+
 /**
  * @author william.d.zk
  * @date 2019-05-30
  */
-public class X118_QttSubscribe {
+public class X118_QttSubscribe
+        extends
+        QttControl
+{
+
+    public final static int COMMAND = 0x118;
+
+    public X118_QttSubscribe()
+    {
+        super(COMMAND);
+    }
+
+    @Override
+    public int dataLength()
+    {
+        return 0;
+    }
 }

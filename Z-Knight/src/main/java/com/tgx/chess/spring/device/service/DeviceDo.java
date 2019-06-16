@@ -24,6 +24,8 @@
 
 package com.tgx.chess.spring.device.service;
 
+import org.springframework.lang.NonNull;
+
 /**
  * @author william.d.zk
  * @date 2019-06-15
@@ -44,9 +46,9 @@ public class DeviceDo
         return imei;
     }
 
-    public void setImei(String imei)
+    public void setImei(@NonNull String imei)
     {
-        this.imei = imei;
+        this.imei = imei.toUpperCase();
     }
 
     public String getMac()
@@ -54,9 +56,9 @@ public class DeviceDo
         return mac;
     }
 
-    public void setMac(String mac)
+    public void setMac(@NonNull String mac)
     {
-        this.mac = mac;
+        this.mac = mac.toUpperCase();
     }
 
     public String getSn()
@@ -64,12 +66,12 @@ public class DeviceDo
         return sn;
     }
 
-    public void setSn(String sn)
+    public void setSn(@NonNull String sn)
     {
-        this.sn = sn;
+        this.sn = sn.toUpperCase();
     }
 
-    public void setPassword(String password)
+    public void setPassword(@NonNull String password)
     {
         this.password = password;
     }
@@ -79,9 +81,9 @@ public class DeviceDo
         return password;
     }
 
-    public void setToken(String token)
+    public void setToken(@NonNull String token)
     {
-        this.token = token;
+        this.token = token.toUpperCase();
     }
 
     public String getToken()
@@ -94,7 +96,7 @@ public class DeviceDo
         return phone;
     }
 
-    public void setPhone(String phone)
+    public void setPhone(@NonNull String phone)
     {
         this.phone = phone;
     }
@@ -104,8 +106,8 @@ public class DeviceDo
         return imsi;
     }
 
-    public void setImsi(String imsi)
+    public void setImsi(@NonNull String imsi)
     {
-        this.imsi = imsi;
+        this.imsi = imsi.toUpperCase();
     }
 }
