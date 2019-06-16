@@ -28,11 +28,8 @@ import static com.tgx.chess.king.base.util.IoUtil.isBlank;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-import java.util.Date;
 import java.util.Objects;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
@@ -110,22 +107,19 @@ public class QttService
                     {
                         _Logger.info("auth ok");
                         deviceEntry.setOperation(IStorage.Operation.OP_APPEND);
-                        if (x111.isCleanSession()) {
-                            deviceEntry.setStrategy(IStorage.Strategy.CLEAN);
-                        }
-                        else {
-                            switch (x111.getQosLevel())
-                            {
-                                case QOS_ONLY_ONCE:
-                                    deviceEntry.setQosLevel(IQoS.Level.ONLY_ONCE);
-                                    break;
-                                case QOS_AT_LEAST_ONCE:
-                                    deviceEntry.setQosLevel(IQoS.Level.AT_LEAST_ONCE);
-                                    break;
-                                case QOS_LESS_ONCE:
-                                    deviceEntry.setQosLevel(IQoS.Level.LESS_ONCE);
-                                    break;
-                            }
+                        deviceEntry.setStrategy(x111.isCleanSession() ? IStorage.Strategy.CLEAN
+                                                                      : IStorage.Strategy.RETAIN);
+                        switch (x111.getQosLevel())
+                        {
+                            case QOS_ONLY_ONCE:
+                                deviceEntry.setQosLevel(IQoS.Level.ONLY_ONCE);
+                                break;
+                            case QOS_AT_LEAST_ONCE:
+                                deviceEntry.setQosLevel(IQoS.Level.AT_LEAST_ONCE);
+                                break;
+                            case QOS_LESS_ONCE:
+                                deviceEntry.setQosLevel(IQoS.Level.LESS_ONCE);
+                                break;
                         }
                     }
                     else {
@@ -135,16 +129,7 @@ public class QttService
                                                            .getTime());
                 }
                 else {
-                    deviceEntity = new DeviceEntity();
-                    deviceEntity.setSn(deviceSn);
-                    deviceEntity.setPassword(new String(x111.getPassword(), StandardCharsets.UTF_8));
-                    deviceEntity.setInvalidAt(Date.from(Instant.now()
-                                                               .plusSeconds(TimeUnit.DAYS.toSeconds(41))));
-                    saveDevice(deviceEntity);
-                    deviceEntry.setOperation(IStorage.Operation.OP_INSERT);
-                    deviceEntry.setToken(deviceSn);
-                    deviceEntry.setInvalidTime(deviceEntity.getInvalidAt()
-                                                           .getTime());
+                    deviceEntry.setOperation(IStorage.Operation.OP_NULL);
                 }
                 return deviceEntry;
             case X118_QttSubscribe.COMMAND:
