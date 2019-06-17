@@ -26,6 +26,8 @@ package com.tgx.chess.bishop.io.mqtt.bean;
 
 import java.util.Objects;
 
+import com.tgx.chess.queen.io.core.inf.IQoS;
+
 /**
  * @author william.d.zk
  * @date 2019-05-25
@@ -157,14 +159,11 @@ public class BaseQtt
         }
     }
 
-    byte     frame_op_code;
+    byte             frame_op_code;
     private boolean  dup;
     private boolean  retain;
     private byte     qos_level;
     private QTT_TYPE type;
-    
-   
-    
 
     public static byte generateCtrl(boolean dup, boolean retain, QOS_LEVEL qosLevel, QTT_TYPE qttType)
     {
@@ -248,5 +247,17 @@ public class BaseQtt
         return frame_op_code;
     }
 
-    
+    public IQoS.Level convertQosLevel()
+    {
+        switch (getQosLevel())
+        {
+            case QOS_LESS_ONCE:
+                return IQoS.Level.LESS_ONCE;
+            case QOS_AT_LEAST_ONCE:
+                return IQoS.Level.AT_LEAST_ONCE;
+            default:
+                return IQoS.Level.ONLY_ONCE;
+        }
+    }
+
 }
