@@ -45,6 +45,8 @@ import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
 import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.db.inf.IRepository;
+import com.tgx.chess.queen.db.inf.IStorage;
+import com.tgx.chess.queen.io.core.inf.IQoS;
 import com.tgx.chess.spring.device.model.ClientEntity;
 import com.tgx.chess.spring.device.model.DeviceEntity;
 import com.tgx.chess.spring.device.repository.ClientRepository;
@@ -182,12 +184,32 @@ public abstract class DeviceService
                                 .getDevices();
     }
 
-    boolean auth(DeviceEntity deviceEntity, String password)
+    DeviceEntry auth(DeviceEntity deviceEntity, boolean clean, String password, IQoS.Level level)
     {
-        String origin = deviceEntity.getPassword();
-        return isBlank(origin)
-               || "*".equals(origin)
-               || ".".equals(origin)
-               || (Objects.nonNull(password) && origin.equals(password));
+        Objects.requireNonNull(level);
+        DeviceEntry deviceEntry = new DeviceEntry();
+        if (Objects.nonNull(deviceEntity)) {
+            deviceEntry.setPrimaryKey(deviceEntity.getId());
+            String origin = deviceEntity.getPassword();
+            if (isBlank(origin)
+                || "*".equals(origin)
+                || ".".equals(origin)
+                || (Objects.nonNull(password) && origin.equals(password)))
+            {
+                deviceEntry.setOperation(IStorage.Operation.OP_APPEND);
+                deviceEntry.setStrategy(clean ? IStorage.Strategy.CLEAN
+                                              : IStorage.Strategy.RETAIN);
+                deviceEntry.setQosLevel(level);
+            }
+            else {
+                deviceEntry.setOperation(IStorage.Operation.OP_INVALID);
+            }
+            deviceEntry.setInvalidTime(deviceEntity.getInvalidAt()
+                                                   .getTime());
+        }
+        else {
+            deviceEntry.setOperation(IStorage.Operation.OP_NULL);
+        }
+        return deviceEntry;
     }
 }

@@ -43,10 +43,8 @@ import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
 import com.tgx.chess.bishop.io.mqtt.control.X118_QttSubscribe;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.CryptUtil;
-import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
-import com.tgx.chess.queen.io.core.inf.IQoS;
 import com.tgx.chess.spring.device.model.DeviceEntity;
 import com.tgx.chess.spring.device.repository.ClientRepository;
 import com.tgx.chess.spring.device.repository.DeviceRepository;
@@ -105,41 +103,11 @@ public class QttService
                 X111_QttConnect x111 = (X111_QttConnect) key;
                 String deviceSn = x111.getClientId();
                 DeviceEntity deviceEntity = findDeviceBySn(deviceSn);
-                DeviceEntry deviceEntry = new DeviceEntry();
-                if (Objects.nonNull(deviceEntity)) {
-                    deviceEntry.setPrimaryKey(deviceEntity.getId());
-                    if (auth(deviceEntity,
-                             Objects.nonNull(x111.getPassword()) ? new String(x111.getPassword(),
-                                                                              StandardCharsets.UTF_8)
-                                                                 : null))
-                    {
-                        _Logger.info("auth ok");
-                        deviceEntry.setOperation(IStorage.Operation.OP_APPEND);
-                        deviceEntry.setStrategy(x111.isCleanSession() ? IStorage.Strategy.CLEAN
-                                                                      : IStorage.Strategy.RETAIN);
-                        switch (x111.getQosLevel())
-                        {
-                            case QOS_ONLY_ONCE:
-                                deviceEntry.setQosLevel(IQoS.Level.ONLY_ONCE);
-                                break;
-                            case QOS_AT_LEAST_ONCE:
-                                deviceEntry.setQosLevel(IQoS.Level.AT_LEAST_ONCE);
-                                break;
-                            case QOS_LESS_ONCE:
-                                deviceEntry.setQosLevel(IQoS.Level.LESS_ONCE);
-                                break;
-                        }
-                    }
-                    else {
-                        deviceEntry.setOperation(IStorage.Operation.OP_INVALID);
-                    }
-                    deviceEntry.setInvalidTime(deviceEntity.getInvalidAt()
-                                                           .getTime());
-                }
-                else {
-                    deviceEntry.setOperation(IStorage.Operation.OP_NULL);
-                }
-                return deviceEntry;
+                return auth(deviceEntity,
+                            x111.isCleanSession(),
+                            Objects.nonNull(x111.getPassword()) ? new String(x111.getPassword(), StandardCharsets.UTF_8)
+                                                                : null,
+                            x111.convertQosLevel());
         }
         return null;
     }
