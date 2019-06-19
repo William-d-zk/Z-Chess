@@ -44,7 +44,7 @@ public class X112_QttConnack
     public X112_QttConnack()
     {
         super(COMMAND);
-        setCtrl(QttFrame.generateCtrl(false, false, QttFrame.QOS_LEVEL.QOS_ONLY_ONCE, QttFrame.QTT_TYPE.CONNACK));
+        setCtrl(QttFrame.generateCtrl(false, false, QttFrame.QOS_LEVEL.QOS_ALMOST_ONCE, QttFrame.QTT_TYPE.CONNACK));
     }
 
     @Override

@@ -72,7 +72,7 @@ public interface IQoS
          * 不确保送达
          * 类似UDP
          */
-        ONLY_ONCE,
+        ALMOST_ONCE,
         /**
          * 最多传输成功1次
          * 确保送达
@@ -86,7 +86,7 @@ public interface IQoS
          * 确认接收方完成接收处理
          * 至少成功传输一次
          */
-        LESS_ONCE;
+        EXACTLY_ONCE;
     }
 
 }
