@@ -35,9 +35,9 @@ import com.tgx.chess.queen.io.core.inf.IQoS;
 public class BaseQtt
 {
     private final static byte DUPLICATE_FLAG    = 1 << 3;
-    private final static byte QOS_ONLY_ONCE     = 2;
+    private final static byte QOS_ALMOST_ONCE   = 2;
     private final static byte QOS_AT_LEAST_ONCE = 1;
-    private final static byte QOS_LESS_ONCE     = 0;
+    private final static byte QOS_EXACTLY_ONCE  = 0;
     private final static byte RETAIN_FLAG       = 1;
     private final static byte QOS_MASK          = 0x06;
 
@@ -127,8 +127,8 @@ public class BaseQtt
 
     public enum QOS_LEVEL
     {
-        QOS_ONLY_ONCE(BaseQtt.QOS_ONLY_ONCE),
-        QOS_LESS_ONCE(BaseQtt.QOS_LESS_ONCE),
+        QOS_ALMOST_ONCE(BaseQtt.QOS_ALMOST_ONCE),
+        QOS_EXACTLY_ONCE(BaseQtt.QOS_EXACTLY_ONCE),
         QOS_AT_LEAST_ONCE(BaseQtt.QOS_AT_LEAST_ONCE);
 
         final byte _Value;
@@ -147,12 +147,12 @@ public class BaseQtt
         {
             switch (level)
             {
-                case BaseQtt.QOS_LESS_ONCE:
-                    return QOS_LESS_ONCE;
+                case BaseQtt.QOS_EXACTLY_ONCE:
+                    return QOS_EXACTLY_ONCE;
                 case BaseQtt.QOS_AT_LEAST_ONCE:
                     return QOS_AT_LEAST_ONCE;
-                case BaseQtt.QOS_ONLY_ONCE:
-                    return QOS_ONLY_ONCE;
+                case BaseQtt.QOS_ALMOST_ONCE:
+                    return QOS_ALMOST_ONCE;
                 default:
                     throw new IllegalArgumentException("QoS reserved");
             }
@@ -251,12 +251,12 @@ public class BaseQtt
     {
         switch (getQosLevel())
         {
-            case QOS_LESS_ONCE:
-                return IQoS.Level.LESS_ONCE;
+            case QOS_EXACTLY_ONCE:
+                return IQoS.Level.EXACTLY_ONCE;
             case QOS_AT_LEAST_ONCE:
                 return IQoS.Level.AT_LEAST_ONCE;
             default:
-                return IQoS.Level.ONLY_ONCE;
+                return IQoS.Level.ALMOST_ONCE;
         }
     }
 

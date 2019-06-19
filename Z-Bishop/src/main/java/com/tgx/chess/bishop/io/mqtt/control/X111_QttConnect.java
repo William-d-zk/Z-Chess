@@ -50,7 +50,7 @@ public class X111_QttConnect
     public X111_QttConnect()
     {
         super(COMMAND);
-        setCtrl(QttFrame.generateCtrl(false, false, BaseQtt.QOS_LEVEL.QOS_ONLY_ONCE, QttFrame.QTT_TYPE.CONNECT));
+        setCtrl(QttFrame.generateCtrl(false, false, BaseQtt.QOS_LEVEL.QOS_ALMOST_ONCE, QttFrame.QTT_TYPE.CONNECT));
     }
 
     @Override
@@ -158,7 +158,7 @@ public class X111_QttConnect
         mFlagWill = (code & Flag.Will.getMask()) != 0;
         mFlagWillQoS = QOS_LEVEL.valueOf((byte) ((code & Flag.WillQoS.getMask()) >> 3));
         mFlagWillRetain = (code & Flag.WillRetain.getMask()) != 0;
-        if (!mFlagWill && (mFlagWillRetain || mFlagWillQoS.getValue() > QOS_LEVEL.QOS_LESS_ONCE.getValue())) {
+        if (!mFlagWill && (mFlagWillRetain || mFlagWillQoS.getValue() > QOS_LEVEL.QOS_EXACTLY_ONCE.getValue())) {
             throw new IllegalArgumentException("no will flag, will retain or will qos not 0");
         }
         if (!mFlagWill) {
