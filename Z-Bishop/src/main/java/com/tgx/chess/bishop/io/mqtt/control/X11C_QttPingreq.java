@@ -24,9 +24,26 @@
 
 package com.tgx.chess.bishop.io.mqtt.control;
 
+import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
+
 /**
  * @author william.d.zk
  * @date 2019-05-30
  */
-public class X11C_QttPingreq {
+public class X11C_QttPingreq
+        extends
+        QttControl
+{
+    public final static int COMMAND = 0x11C;
+
+    public X11C_QttPingreq()
+    {
+        super(COMMAND);
+    }
+
+    @Override
+    public int dataLength()
+    {
+        return 0;
+    }
 }
