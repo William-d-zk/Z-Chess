@@ -24,10 +24,26 @@
 
 package com.tgx.chess.bishop.io.mqtt.control;
 
+import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
+
 /**
  * @author william.d.zk
  * @date 2019-05-30
  */
 public class X11E_QttDisconnect
+        extends
+        QttControl
 {
+    public final static int COMMAND = 0x11E;
+
+    public X11E_QttDisconnect()
+    {
+        super(COMMAND);
+    }
+
+    @Override
+    public int dataLength()
+    {
+        return 0;
+    }
 }
