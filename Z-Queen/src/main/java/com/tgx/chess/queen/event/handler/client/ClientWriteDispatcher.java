@@ -38,31 +38,35 @@ import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
 /**
  * @author william.d.zk
  */
-public class ClientWriteDispatcher<C extends IContext>
+public class ClientWriteDispatcher<C extends IContext<C>>
         implements
         IPipeEventHandler<QEvent>
 {
-    private final Logger     _Log = Logger.getLogger(getClass().getName());
+    private final Logger _Logger = Logger.getLogger(getClass().getName());
 
     final RingBuffer<QEvent> _ErrorPipe;
     final RingBuffer<QEvent> _EncoderPipe;
 
-    public ClientWriteDispatcher(RingBuffer<QEvent> error, RingBuffer<QEvent> encoder) {
+    public ClientWriteDispatcher(RingBuffer<QEvent> error,
+                                 RingBuffer<QEvent> encoder)
+    {
         _ErrorPipe = error;
         _EncoderPipe = encoder;
     }
 
     @Override
-    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception {
+    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
+    {
         if (event.hasError()) {
-            switch (event.getErrorType()) {
+            switch (event.getErrorType())
+            {
                 case FILTER_DECODE:
                 case ILLEGAL_STATE:
                 case ILLEGAL_BIZ_STATE:
@@ -70,19 +74,22 @@ public class ClientWriteDispatcher<C extends IContext>
             }
         }
         else {
-            switch (event.getEventType()) {
+            switch (event.getEventType())
+            {
                 case LOCAL://from biz local
                 case WRITE://from LinkIo
                 case LOGIC://from read->logic
                     IPair writeContent = event.getContent();
-                    IControl[] commands = writeContent.first();
+                    IControl<C>[] commands = writeContent.first();
                     ISession<C> session = writeContent.second();
                     if (session.isValid() && Objects.nonNull(commands)) {
-                        IOperator<IControl[], ISession, List<ITriple>> transferOperator = event.getEventOp();
+                        IOperator<IControl<C>[],
+                                  ISession<C>,
+                                  List<ITriple>> transferOperator = event.getEventOp();
                         List<ITriple> triples = transferOperator.handle(commands, session);
                         for (ITriple triple : triples) {
                             if (!tryPublish(_EncoderPipe, WRITE, new Pair<>(triple.first(), session), triple.third())) {
-                                _Log.warning("publish write event to encoder failed");
+                                _Logger.warning("publish write event to encoder failed");
                             }
                         }
                     }
@@ -92,7 +99,7 @@ public class ClientWriteDispatcher<C extends IContext>
                     session = wroteContent.second();
                     if (session.isValid()) {
                         if (!tryPublish(_EncoderPipe, WROTE, wroteContent, event.getEventOp())) {
-                            _Log.warning("publish wrote event to encoder failed");
+                            _Logger.warning("publish wrote event to encoder failed");
                         }
                     }
                     break;

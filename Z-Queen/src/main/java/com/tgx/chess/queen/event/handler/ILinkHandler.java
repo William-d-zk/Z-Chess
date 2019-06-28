@@ -32,7 +32,7 @@ import com.tgx.chess.queen.io.core.manager.QueenManager;
 /**
  * @author william.d.zk
  */
-public interface ILinkHandler<C extends IContext>
+public interface ILinkHandler<C extends IContext<C>>
 {
 
     void handle(LinkHandler<C> _LinkHandler, QueenManager<C> manager, QEvent event) throws ZException;

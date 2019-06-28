@@ -36,38 +36,43 @@ import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.IOperator;
+import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
 /**
  * @author william.d.zk
  */
-public class WriteDispatcher<C extends IContext>
-        extends
-        BasePipeEventHandler<C>
+public class WriteDispatcher<C extends IContext<C>>
+        implements
+        IPipeEventHandler<QEvent>
 {
     private final RingBuffer<QEvent>[] _Encoders;
     private final int                  _Mask;
-    private final Logger               _Log = Logger.getLogger(getClass().getName());
+    private final Logger               _Logger = Logger.getLogger(getClass().getName());
 
     @SafeVarargs
-    public WriteDispatcher(RingBuffer<QEvent>... workers) {
+    public WriteDispatcher(RingBuffer<QEvent>... workers)
+    {
         _Encoders = workers;
         _Mask = _Encoders.length - 1;
     }
 
-    private RingBuffer<QEvent> dispatchEncoder(long seq) {
+    private RingBuffer<QEvent> dispatchEncoder(long seq)
+    {
         return _Encoders[(int) (seq & _Mask)];
     }
 
     @Override
-    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception {
+    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
+    {
         /*
          Write Dispatcher  不存在错误状态的输入,都已经处理完了
          */
-        switch (event.getEventType()) {
+        switch (event.getEventType())
+        {
             case NULL://在前一个处理器event.reset().
             case IGNORE://没有任何时间需要跨 Barrier 投递向下一层 Pipeline
                 break;
@@ -78,11 +83,17 @@ public class WriteDispatcher<C extends IContext>
                 IControl[] commands = writeContent.first();
                 ISession<C> session = writeContent.second();
                 if (session.isValid() && Objects.nonNull(commands)) {
-                    IOperator<IControl[], ISession, List<ITriple>> transferOperator = event.getEventOp();
+                    IOperator<IControl[],
+                              ISession,
+                              List<ITriple>> transferOperator = event.getEventOp();
                     List<ITriple> triples = transferOperator.handle(commands, session);
                     for (ITriple triple : triples) {
-                        tryPublish(dispatchEncoder(session.getHashKey()), WRITE, new Pair<>(triple.first(), session), triple.third());
+                        tryPublish(dispatchEncoder(session.getHashKey()),
+                                   WRITE,
+                                   new Pair<>(triple.first(), session),
+                                   triple.third());
                     }
+                    _Logger.info("write_dispatcher, source %s,transfer:%d", event.getEventType(), commands.length);
                 }
                 break;
             case WROTE://from io-wrote
@@ -90,7 +101,10 @@ public class WriteDispatcher<C extends IContext>
                 int wroteCount = wroteContent.first();
                 session = wroteContent.second();
                 if (session.isValid()) {
-                    tryPublish(dispatchEncoder(session.getHashKey()), WROTE, new Pair<>(wroteCount, session), event.getEventOp());
+                    tryPublish(dispatchEncoder(session.getHashKey()),
+                               WROTE,
+                               new Pair<>(wroteCount, session),
+                               event.getEventOp());
                 }
                 break;
             default:

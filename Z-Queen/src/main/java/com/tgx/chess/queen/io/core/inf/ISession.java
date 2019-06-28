@@ -34,13 +34,14 @@ import com.tgx.chess.king.base.inf.IReset;
 /**
  * @author William.d.zk
  */
-public interface ISession<C extends IContext>
+public interface ISession<C extends IContext<C>>
         extends
         Queue<IPacket>,
         IReset,
         Closeable,
         IDisposable,
-        IConnectActive<C>,
+        IAddress,
+        IConnectMode,
         IValid,
         IReadable<ISession<C>>,
         IWritable<ISession<C>>
@@ -65,4 +66,13 @@ public interface ISession<C extends IContext>
 
     boolean isClosed();
 
+    default int getHaIndex()
+    {
+        return 0;
+    }
+
+    default int getPortIndex()
+    {
+        return 0;
+    }
 }

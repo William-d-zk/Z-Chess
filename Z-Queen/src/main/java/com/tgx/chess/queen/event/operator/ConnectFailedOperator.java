@@ -32,7 +32,7 @@ import com.tgx.chess.queen.io.core.inf.IContext;
 /**
  * @author william.d.zk
  */
-public class ConnectFailedOperator<C extends IContext>
+public class ConnectFailedOperator<C extends IContext<C>>
         implements
         IOperator<Throwable,
                   IAioConnector<C>,

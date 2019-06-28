@@ -30,17 +30,18 @@ import com.tgx.chess.queen.event.inf.IOperator;
 /**
  * @author William.d.zk
  */
-public interface IPipeEncoder<C extends IContext>
+public interface IPipeEncoder<C extends IContext<C>>
         extends
         IOperator<IControl<C>,
                   ISession<C>,
                   ITriple>
 {
     @SuppressWarnings("unchecked")
-    default <O extends IProtocol> O filterWrite(IControl<C> output, IFilterChain<C> filterChain, C context)
+    default <O extends IProtocol> O filterWrite(IControl<C> output, C context)
     {
         IFilter.ResultType resultType;
-        IFilterChain<C> previous = filterChain.getChainTail();
+        IFilterChain<C> previous = context.getFilterChain()
+                                          .getChainTail();
         IProtocol toWrite = output;
         while (previous != null) {
             resultType = previous.getFilter()

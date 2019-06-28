@@ -58,7 +58,7 @@ import com.tgx.chess.queen.io.core.inf.ISession;
 /**
  * @author william.d.zk
  */
-public class ClientCore<C extends IContext>
+public class ClientCore<C extends IContext<C>>
         extends
         ThreadPoolExecutor
         implements

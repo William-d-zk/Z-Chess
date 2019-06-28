@@ -32,13 +32,18 @@ import com.tgx.chess.queen.event.inf.IOperator;
 /**
  * @author William.d.zk
  */
-public interface IPipeDecoder<C extends IContext>
+public interface IPipeDecoder<C extends IContext<C>>
         extends
-        IOperator<IPacket, ISession<C>, ITriple>
+        IOperator<IPacket,
+                  ISession<C>,
+                  ITriple>
 {
     @SuppressWarnings("unchecked")
-    default IControl<C>[] filterRead(IPacket input, IFilterChain<C> filterChain, ISession<C> session) {
-        final IFilterChain<C> _Header = filterChain.getChainHead();
+    default IControl<C>[] filterRead(IPacket input, ISession<C> session)
+    {
+        final IFilterChain<C> _Header = session.getContext()
+                                               .getFilterChain()
+                                               .getChainHead();
         final C _Context = session.getContext();
         IControl<C>[] commands = null;
         IFilter.ResultType resultType;
@@ -48,7 +53,8 @@ public interface IPipeDecoder<C extends IContext>
             while (next != null) {
                 resultType = next.getFilter()
                                  .preDecode(_Context, protocol);
-                switch (resultType) {
+                switch (resultType)
+                {
                     case ERROR:
                         throw new ZException(String.format("filter:%s error", next.getName()));
                     case NEED_DATA:

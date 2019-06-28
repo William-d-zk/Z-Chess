@@ -31,7 +31,7 @@ import com.tgx.chess.queen.io.core.inf.ISessionCloser;
  * @author william.d.zk
  * @date 2019-05-12
  */
-public class CloseOperator<C extends IContext>
+public class CloseOperator<C extends IContext<C>>
         implements
         ISessionCloser<C>
 {

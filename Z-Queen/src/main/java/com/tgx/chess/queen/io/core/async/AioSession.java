@@ -43,7 +43,7 @@ import java.util.concurrent.TimeUnit;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.ArrayUtil;
 import com.tgx.chess.queen.event.inf.ISort;
-import com.tgx.chess.queen.io.core.inf.IConnectActive;
+import com.tgx.chess.queen.io.core.inf.IConnectActivity;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IContextCreator;
 import com.tgx.chess.queen.io.core.inf.IPacket;
@@ -54,7 +54,7 @@ import com.tgx.chess.queen.io.core.inf.ISessionOption;
 /**
  * @author William.d.zk
  */
-public class AioSession<C extends IContext>
+public class AioSession<C extends IContext<C>>
         extends
         LinkedList<IPacket>
         implements
@@ -72,7 +72,7 @@ public class AioSession<C extends IContext>
     private final ByteBuffer         _RecvBuf;
     private final C                  _Ctx;
     private final int                _HashCode;
-    private final ISort<C>           _Sort;
+    private final ISort              _Sort;
     private final ISessionDismiss<C> _DismissCallback;
     private final int                _QueueSizeMax;
     private final int                _HaIndex, _PortIndex;
@@ -89,11 +89,11 @@ public class AioSession<C extends IContext>
      */
     private long[] mPortChannels;
 
+    private long mHashKey;
     private int  mWroteExpect;
     private int  mSendingBlank;
     private int  mWaitWrite;
     private long mReadTimeStamp;
-    private long hashKey;
 
     @Override
     public String toString()
@@ -112,30 +112,34 @@ public class AioSession<C extends IContext>
     }
 
     public AioSession(final AsynchronousSocketChannel channel,
-                      final IConnectActive<C> active,
-                      final IContextCreator<C> contextCreator,
                       final ISessionOption sessionOption,
+                      final IContextCreator<C> contextCreator,
+                      final IConnectActivity<C> activity,
                       final ISessionDismiss<C> sessionDismiss) throws IOException
     {
         Objects.requireNonNull(sessionOption);
+        Objects.requireNonNull(channel);
+        Objects.requireNonNull(contextCreator);
+        Objects.requireNonNull(activity);
+
         _Channel = channel;
-        _Sort = active.getSort();
+        _HashCode = channel.hashCode();
+        mHashKey = _HashCode;
         _RemoteAddress = (InetSocketAddress) channel.getRemoteAddress();
         _LocalAddress = (InetSocketAddress) channel.getLocalAddress();
-        _DismissCallback = sessionDismiss;
-        _HashCode = channel.hashCode();
-        _PortIndex = active.getPortIndex();
-        _HaIndex = active.getHaIndex();
+        _Sort = activity.getSort();
+        _PortIndex = activity.getPortIndex();
+        _HaIndex = activity.getHaIndex();
         sessionOption.setOptions(channel);
-        _Ctx = contextCreator.createContext(sessionOption, _Sort);
         _ReadTimeOut = sessionOption.setReadTimeOut();
         _WriteTimeOut = sessionOption.setWriteTimeOut();
         _RecvBuf = ByteBuffer.allocate(sessionOption.setRCV());
         _QueueSizeMax = sessionOption.setQueueMax();
+        _Ctx = contextCreator.createContext(sessionOption, _Sort);
         mSending = _Ctx.getWrBuffer();
         mSending.flip();
         mSendingBlank = mSending.capacity() - mSending.limit();
-        hashKey = _HashCode;
+        _DismissCallback = sessionDismiss;
     }
 
     @Override
@@ -221,7 +225,7 @@ public class AioSession<C extends IContext>
     {
         mIndex = index;
         if (mIndex != -1L) {
-            hashKey = mIndex;
+            mHashKey = mIndex;
         }
     }
 
@@ -241,7 +245,7 @@ public class AioSession<C extends IContext>
     @Override
     public final long getHashKey()
     {
-        return hashKey;
+        return mHashKey;
     }
 
     @Override
@@ -427,7 +431,7 @@ public class AioSession<C extends IContext>
     }
 
     @Override
-    public ISort<C> getSort()
+    public ISort getSort()
     {
         return _Sort;
     }

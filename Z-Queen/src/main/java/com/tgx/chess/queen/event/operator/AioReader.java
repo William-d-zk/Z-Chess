@@ -38,26 +38,17 @@ import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.io.core.async.AioPacket;
 import com.tgx.chess.queen.io.core.async.socket.AioWorker;
 import com.tgx.chess.queen.io.core.inf.IContext;
-import com.tgx.chess.queen.io.core.inf.IPipeDecoder;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
 /**
  * @author william.d.zk
  */
-public class AioReader<C extends IContext>
+public class AioReader<C extends IContext<C>>
         implements
         CompletionHandler<Integer,
                           ISession<C>>
 {
-    private final Logger           _Log           = Logger.getLogger(getClass().getSimpleName());
-    private final CloseOperator<C> _CloseOperator = new CloseOperator<>();
-    private final ErrorOperator<C> _ErrorOperator = new ErrorOperator<>(_CloseOperator);
-    private final IPipeDecoder<C>  _Decoder;
-
-    public AioReader(IPipeDecoder<C> decoder)
-    {
-        _Decoder = decoder;
-    }
+    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
 
     @Override
     public void completed(Integer result, ISession<C> session)
@@ -66,23 +57,38 @@ public class AioReader<C extends IContext>
         switch (result)
         {
             case -1:
-                worker.publishReadError(_ErrorOperator, READ_EOF, new EOFException("Read Negative"), session);
+                worker.publishReadError(session.getContext()
+                                               .getError(),
+                                        READ_EOF,
+                                        new EOFException("Read Negative"),
+                                        session);
                 break;
             case 0:
-                worker.publishReadError(_ErrorOperator, READ_ZERO, new IllegalStateException("Read Zero"), session);
+                worker.publishReadError(session.getContext()
+                                               .getError(),
+                                        READ_ZERO,
+                                        new IllegalStateException("Read Zero"),
+                                        session);
                 session.readNext(this);
                 break;
             default:
-                _Log.info("read count: %d", result);
+                _Logger.info("read count: %d", result);
                 ByteBuffer recvBuf = session.read(result);
-                worker.publishRead(_Decoder, new AioPacket(recvBuf), session);
+                worker.publishRead(session.getContext()
+                                          .getDecoder(),
+                                   new AioPacket(recvBuf),
+                                   session);
                 try {
                     session.readNext(this);
                 }
                 catch (NotYetConnectedException |
                        ShutdownChannelGroupException e)
                 {
-                    worker.publishReadError(_ErrorOperator, READ_FAILED, e, session);
+                    worker.publishReadError(session.getContext()
+                                                   .getError(),
+                                            READ_FAILED,
+                                            e,
+                                            session);
                 }
                 break;
         }
@@ -92,6 +98,10 @@ public class AioReader<C extends IContext>
     public void failed(Throwable exc, ISession<C> session)
     {
         AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishReadError(_ErrorOperator, READ_FAILED, exc, session);
+        worker.publishReadError(session.getContext()
+                                       .getError(),
+                                READ_FAILED,
+                                exc,
+                                session);
     }
 }

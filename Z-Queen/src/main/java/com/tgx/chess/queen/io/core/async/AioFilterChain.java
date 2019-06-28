@@ -39,7 +39,7 @@ import com.tgx.chess.queen.io.core.inf.IProtocol;
 /**
  * @author William.d.zk
  */
-public abstract class AioFilterChain<C extends IContext,
+public abstract class AioFilterChain<C extends IContext<C>,
                                      O extends IProtocol,
                                      I extends IProtocol>
         implements

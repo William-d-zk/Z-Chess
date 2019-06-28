@@ -32,7 +32,7 @@ import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.event.operator.TransferOperator;
+import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
@@ -42,19 +42,17 @@ import com.tgx.chess.queen.io.core.inf.ISession;
 /**
  * @author william.d.zk
  */
-public class LogicHandler<C extends IContext>
-        extends
-        BasePipeEventHandler<C>
+public class LogicHandler<C extends IContext<C>>
+        implements
+        IPipeEventHandler<QEvent>
 {
-    private final Logger              _Log = Logger.getLogger(getClass().getName());
-    private final ICommandHandler<C>  _CommandHandler;
-    private final TransferOperator<C> _Transfer;
+    private final Logger             _Log = Logger.getLogger(getClass().getName());
+    private final ICommandHandler<C> _CommandHandler;
 
     public LogicHandler(IPipeEncoder<C> encoder,
                         ICommandHandler<C> commandHandler)
     {
         _CommandHandler = commandHandler;
-        _Transfer = new TransferOperator<>(encoder);
     }
 
     @Override
@@ -70,7 +68,10 @@ public class LogicHandler<C extends IContext>
             else {
                 cmd = _CommandHandler.onCommand(cmd, session, this);
                 if (Objects.nonNull(cmd)) {
-                    event.produce(WRITE, new Pair<>(new IControl[] { cmd }, session), _Transfer);
+                    event.produce(WRITE,
+                                  new Pair<>(new IControl[] { cmd }, session),
+                                  session.getContext()
+                                         .getTransfer());
                 }
                 else {
                     event.ignore();
@@ -80,7 +81,7 @@ public class LogicHandler<C extends IContext>
 
     }
 
-    public interface ICommandHandler<C extends IContext>
+    public interface ICommandHandler<C extends IContext<C>>
     {
         IControl<C> onCommand(IControl<C> input, ISession<C> session, LogicHandler<C> handler);
     }

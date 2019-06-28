@@ -44,33 +44,37 @@ import com.tgx.chess.queen.io.core.inf.IProtocol;
  */
 public class WsHandShakeFilter
         extends
-        AioFilterChain<WsContext, WsHandshake, IPacket>
+        AioFilterChain<WsContext,
+                       WsHandshake,
+                       IPacket>
 {
     private final static String CRLF     = "\r\n";
     private final static String CRLFCRLF = CRLF + CRLF;
 
-    private final ISort         _Sort;
-
-    public WsHandShakeFilter(ISort sort) {
+    public WsHandShakeFilter()
+    {
         super("web-socket-header-zfilter-");
-        _Sort = sort;
     }
 
     @Override
-    public ResultType preEncode(WsContext context, IProtocol output) {
+    public ResultType preEncode(WsContext context, IProtocol output)
+    {
         return preHandShakeEncode(context, output);
     }
 
     @Override
-    public IPacket encode(WsContext context, WsHandshake output) {
+    public IPacket encode(WsContext context, WsHandshake output)
+    {
         AioPacket encoded = new AioPacket(ByteBuffer.wrap(output.encode()));
         context.setOutState(ENCODE_FRAME);
         return encoded;
     }
 
     @Override
-    public ResultType preDecode(WsContext context, IPacket input) {
+    public ResultType preDecode(WsContext context, IPacket input)
+    {
         ResultType result = preHandShakeDecode(context, input);
+        ISort<WsContext> sort = context.getSort();
         if (ResultType.HANDLED.equals(result)) {
             ByteBuffer recvBuf = input.getBuffer();
             ByteBuffer cRvBuf = context.getRvBuffer();
@@ -88,9 +92,11 @@ public class WsHandShakeFilter
                         for (String row : split) {
                             String[] rowSplit = row.split("\\s+", 2);
                             String httpKey = rowSplit[0].toUpperCase();
-                            switch (_Sort.getType()) {
+                            switch (sort.getType())
+                            {
                                 case SERVER:
-                                    switch (httpKey) {
+                                    switch (httpKey)
+                                    {
                                         case "GET":
                                             rowSplit = row.split("\\s+");
                                             if (!"HTTP/1.1".equalsIgnoreCase(rowSplit[2])) {
@@ -157,12 +163,15 @@ public class WsHandShakeFilter
                                                                           context.getSecAccept(rowSplit[1])));
                                             break;
                                         default:
-                                            _Logger.info("unchecked httpKey and content: [%s %s]", httpKey, rowSplit[1]);
+                                            _Logger.info("unchecked httpKey and content: [%s %s]",
+                                                         httpKey,
+                                                         rowSplit[1]);
                                             break;
                                     }
                                     break;
                                 case CONSUMER:
-                                    switch (httpKey) {
+                                    switch (httpKey)
+                                    {
                                         case "HTTP/1.1":
                                             if (!rowSplit[1].contains("101 Switching Protocols")) {
                                                 _Logger.warning("handshake error !:");
@@ -195,7 +204,9 @@ public class WsHandShakeFilter
                                             context.updateHandshakeState(WsContext.HS_State_SEC_ACCEPT);
                                             break;
                                         default:
-                                            _Logger.info("unchecked httpKey and content: [%s %s]", httpKey, rowSplit[1]);
+                                            _Logger.info("unchecked httpKey and content: [%s %s]",
+                                                         httpKey,
+                                                         rowSplit[1]);
                                             break;
                                     }
                                     break;
@@ -204,23 +215,21 @@ public class WsHandShakeFilter
                                     return ResultType.ERROR;
                             }
                         }
-                        if (_Sort.getType()
-                                 .equals(ISort.Type.SERVER)) {
+                        if (ISort.Type.SERVER.equals(sort.getType())) {
                             context.setHandshake(new X101_HandShake((context.checkState(WsContext.HS_State_CLIENT_OK) ? "HTTP/1.1 101 Switching Protocols\r\n"
                                                                                                                       : "HTTP/1.1 400 Bad Request\r\n")
                                                                     + response.toString()
                                                                     + CRLF));
                             return ResultType.HANDLED;
                         }
-                        else if (_Sort.getType()
-                                      .equals(ISort.Type.CONSUMER)) {
-                                          if (context.checkState(WsContext.HS_State_ACCEPT_OK)) {
-                                              context.setHandshake(new X101_HandShake(x));
-                                              return ResultType.HANDLED;
-                                          }
-                                          _Logger.warning("client handshake error!");
-                                          return ResultType.ERROR;
-                                      }
+                        else if (ISort.Type.CONSUMER.equals(sort.getType())) {
+                            if (context.checkState(WsContext.HS_State_ACCEPT_OK)) {
+                                context.setHandshake(new X101_HandShake(x));
+                                return ResultType.HANDLED;
+                            }
+                            _Logger.warning("client handshake error!");
+                            return ResultType.ERROR;
+                        }
                     }
                     if (!recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
                 }
@@ -231,7 +240,8 @@ public class WsHandShakeFilter
     }
 
     @Override
-    public WsHandshake decode(WsContext context, IPacket input) {
+    public WsHandshake decode(WsContext context, IPacket input)
+    {
         WsHandshake handshake = context.getHandshake();
         context.setInState(DECODE_FRAME);
         context.finish();

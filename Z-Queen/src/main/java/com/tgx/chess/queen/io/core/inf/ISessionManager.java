@@ -26,14 +26,15 @@ package com.tgx.chess.queen.io.core.inf;
 /**
  * @author William.d.zk
  */
-public interface ISessionManager<C extends IContext>
+public interface ISessionManager<C extends IContext<C>>
 {
     long INVALID_INDEX = -1;
     long NULL_INDEX    = 0;
 
     boolean mapSession(long index, ISession<C> session);
 
-    default boolean mapSession(ISession<C> session) {
+    default boolean mapSession(ISession<C> session)
+    {
         return mapSession(session.getIndex(), session);
     }
 
@@ -45,7 +46,8 @@ public interface ISessionManager<C extends IContext>
 
     void clearSessionWithPort(long index, ISession<C> session);
 
-    default void clearSession(ISession<C> session) {
+    default void clearSession(ISession<C> session)
+    {
         clearSessionWithPort(session.getIndex(), session);
     }
 

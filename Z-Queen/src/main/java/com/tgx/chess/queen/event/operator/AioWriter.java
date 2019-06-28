@@ -39,14 +39,12 @@ import com.tgx.chess.queen.io.core.inf.ISession;
 /**
  * @author william.d.zk
  */
-public class AioWriter<C extends IContext>
+public class AioWriter<C extends IContext<C>>
         implements
         CompletionHandler<Integer,
                           ISession<C>>
 {
-    private final Logger           _Log           = Logger.getLogger(getClass().getSimpleName());
-    private final CloseOperator<C> _CloseOperator = new CloseOperator<>();
-    private final ErrorOperator<C> _ErrorOperator = new ErrorOperator<>(_CloseOperator);
+    private final Logger           _Logger        = Logger.getLogger(getClass().getSimpleName());
     private final WroteOperator<C> _WroteOperator = new WroteOperator<>(this);
 
     @Override
@@ -56,16 +54,21 @@ public class AioWriter<C extends IContext>
         switch (result)
         {
             case -1:
-                worker.publishWroteError(_ErrorOperator, WRITE_EOF, new EOFException("wrote -1!"), session);
+                worker.publishWroteError(session.getContext()
+                                                .getError(),
+                                         WRITE_EOF,
+                                         new EOFException("wrote -1!"),
+                                         session);
                 break;
             case 0:
-                worker.publishWroteError(_ErrorOperator,
+                worker.publishWroteError(session.getContext()
+                                                .getError(),
                                          WRITE_ZERO,
                                          new IllegalArgumentException("wrote zero!"),
                                          session);
                 break;
             default:
-                _Log.info("aio wrote %d", result);
+                _Logger.info("aio wrote %d", result);
                 worker.publishWrote(_WroteOperator, result, session);
                 break;
         }
@@ -75,6 +78,10 @@ public class AioWriter<C extends IContext>
     public void failed(Throwable exc, ISession<C> session)
     {
         AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishWroteError(_ErrorOperator, WRITE_FAILED, exc, session);
+        worker.publishWroteError(session.getContext()
+                                        .getError(),
+                                 WRITE_FAILED,
+                                 exc,
+                                 session);
     }
 }

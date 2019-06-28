@@ -32,7 +32,7 @@ import com.tgx.chess.queen.io.core.inf.ISession;
 /**
  * @author william.d.zk
  */
-public class IgnoreOperator<C extends IContext>
+public class IgnoreOperator<C extends IContext<C>>
         implements
         IOperator<Throwable,
                   ISession<C>,

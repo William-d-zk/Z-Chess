@@ -30,9 +30,8 @@ import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.base.util.Triple;
-import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IContext;
-import com.tgx.chess.queen.io.core.inf.IFilterChain;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IPacket;
 import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
 import com.tgx.chess.queen.io.core.inf.ISession;
@@ -41,31 +40,32 @@ import com.tgx.chess.queen.io.core.inf.ISession;
  * @author william.d.zk
  * @date 2019-05-08
  */
-public class PipeEncoder<C extends IContext>
+public class PipeEncoder<C extends IContext<C>>
         implements
         IPipeEncoder<C>
 {
-    private final Logger           _Log = Logger.getLogger(getClass().getSimpleName());
-    private final IFilterChain<C>  _FilterChain;
+    private final Logger           _Logger = Logger.getLogger(getClass().getSimpleName());
     private final ErrorOperator<C> _ErrorOperator;
     private final AioWriter<C>     _AioWriter;
 
-    public PipeEncoder(IFilterChain<C> filterChain, ErrorOperator<C> errorOperator, AioWriter<C> aioWriter) {
-        _FilterChain = filterChain;
+    public PipeEncoder(ErrorOperator<C> errorOperator,
+                       AioWriter<C> aioWriter)
+    {
         _ErrorOperator = errorOperator;
         _AioWriter = aioWriter;
     }
 
     @Override
-    public ITriple handle(IControl<C> command, ISession<C> session) {
+    public ITriple handle(IControl<C> command, ISession<C> session)
+    {
         try {
-            IPacket send = filterWrite(command, _FilterChain, session.getContext());
+            IPacket send = filterWrite(command, session.getContext());
             Objects.requireNonNull(send);
-            _Log.info("%s send:%s",
-                      toString(),
-                      IoUtil.bin2Hex(send.getBuffer()
-                                         .array(),
-                                     "."));
+            _Logger.info("%s send:%s",
+                         toString(),
+                         IoUtil.bin2Hex(send.getBuffer()
+                                            .array(),
+                                        "."));
             session.write(send, _AioWriter);
         }
         catch (Exception e) {
@@ -75,7 +75,8 @@ public class PipeEncoder<C extends IContext>
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return "PipeEncoder";
     }
 }

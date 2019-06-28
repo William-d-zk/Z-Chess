@@ -39,7 +39,7 @@ import com.tgx.chess.queen.io.core.inf.ISession;
 /**
  * @author william.d.zk
  */
-public class EncodedHandler<C extends IContext>
+public class EncodedHandler<C extends IContext<C>>
         implements
         IPipeEventHandler<QEvent>,
         ISessionHandler<C>

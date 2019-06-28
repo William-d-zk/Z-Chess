@@ -47,7 +47,6 @@ import com.tgx.chess.queen.io.core.executor.ClientCore;
 import com.tgx.chess.queen.io.core.inf.IAioClient;
 import com.tgx.chess.queen.io.core.inf.IAioConnector;
 import com.tgx.chess.queen.io.core.inf.ICommandCreator;
-import com.tgx.chess.queen.io.core.inf.IConnectionContext;
 import com.tgx.chess.queen.io.core.inf.IContextCreator;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
@@ -60,13 +59,13 @@ import com.tgx.chess.queen.io.core.inf.ISessionOption;
  * @author william.d.zk
  * @date 2019-05-12
  */
-public abstract class BaseDeviceClient<C extends ZContext>
+public abstract class BaseDeviceClient
         implements
-        IAioClient,
-        ISessionDismiss<C>,
-        ISessionCreated<C>,
-        ICommandCreator<C>,
-        IContextCreator<C>
+        IAioClient<ZContext>,
+        ISessionDismiss<ZContext>,
+        ISessionCreated<ZContext>,
+        ICommandCreator<ZContext>,
+        IContextCreator<ZContext>
 {
     final Logger _Logger = Logger.getLogger(getClass().getName());
 
@@ -120,7 +119,7 @@ public abstract class BaseDeviceClient<C extends ZContext>
             {
                 try {
                     return new AioSession<>(socketChannel,
-                                            context.getConnectActive(),
+                                            context.getConnectActivity(),
                                             this,
                                             this,
                                             BaseDeviceClient.this);
@@ -132,7 +131,7 @@ public abstract class BaseDeviceClient<C extends ZContext>
             }
 
             @Override
-            public C createContext(ISessionOption option, ISort sort)
+            public C createContext(ISessionOption option, ISort<C> sort)
             {
                 return BaseDeviceClient.this.createContext(option, sort);
             }

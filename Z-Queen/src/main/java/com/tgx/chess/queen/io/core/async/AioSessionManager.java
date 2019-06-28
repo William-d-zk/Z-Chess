@@ -43,7 +43,7 @@ import com.tgx.chess.queen.io.core.inf.ISessionManager;
 /**
  * @author William.d.zk
  */
-public abstract class AioSessionManager<C extends IContext>
+public abstract class AioSessionManager<C extends IContext<C>>
         implements
         ISessionManager<C>
 {
@@ -112,7 +112,7 @@ public abstract class AioSessionManager<C extends IContext>
         return power;
     }
 
-    protected static <C extends IContext> int getSlot(ISession<C> session)
+    protected static <C extends IContext<C>> int getSlot(ISession<C> session)
     {
         return getSlot(session.getIndex());
     }

@@ -27,15 +27,22 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.io.core.inf.IFilterChain;
+import com.tgx.chess.queen.io.core.inf.IPipeDecoder;
+import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
+import com.tgx.chess.queen.io.core.inf.IPipeTransfer;
+import com.tgx.chess.queen.io.core.inf.ISessionCloser;
+import com.tgx.chess.queen.io.core.inf.ISessionError;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 
 /**
  * @author William.d.zk
  */
-public class AioContext
+public abstract class AioContext<C extends IContext<C>>
         implements
-        IContext
+        IContext<C>
 {
     private int                 mDecodingPosition = -1, mLackData = 1;
     private final AtomicInteger _EncodeState      = new AtomicInteger(ENCODE_NULL);
@@ -46,25 +53,45 @@ public class AioContext
      * 用于写出的 ByteBuffer 属于4096及其倍数的对齐块，应与 SocketOption 中系统写出 Buffer 的大小进行调整，存在 一次性投递多个 IControl 对象的可能性也是存在的 AioPacket 中的 ByteBuffer 仅用于串行化
      * IControl 对象
      */
-    private ByteBuffer mWrBuf;
+    private final ByteBuffer _WrBuf;
 
     /*
      * 用于缓存 IPoS 分块带入的 RecvBuffer 内容 由于 AioWorker 中 channel 的 read_buffer - protocol_buffer - 都以 SocketOption 设定为准，所以不存在 IPoS 带入一个包含多个分页的协议
      * 内容的情况
      */
-    private ByteBuffer mRvBuf;
-
-    private boolean mInitFromHandshake;
+    private final ByteBuffer        _RvBuf;
+    private final ISort             _Sort;
+    private final IPipeEncoder<C>   _PipeEncoder;
+    private final IPipeDecoder<C>   _PipeDecoder;
+    private final IPipeTransfer<C>  _PipeTransfer;
+    private final IFilterChain<C>   _FilterChain;
+    private final ISessionCloser<C> _SessionCloser;
+    private final ISessionError<C>  _SessionError;
+    private boolean                 mInitFromHandshake;
 
     private long mClientStartTime;
     private long mServerArrivedTime;
     private long mServerResponseTime;
     private long mClientArrivedTime;
 
-    public AioContext(ISessionOption option)
+    protected AioContext(ISessionOption option,
+                         ISort sort,
+                         IPipeEncoder<C> pipeEncoder,
+                         IPipeDecoder<C> pipeDecoder,
+                         IPipeTransfer<C> pipeTransfer,
+                         IFilterChain<C> filterChain,
+                         ISessionCloser<C> closer,
+                         ISessionError<C> error)
     {
-        mRvBuf = ByteBuffer.allocate(option.setRCV());
-        mWrBuf = ByteBuffer.allocate(option.setSNF());
+        _RvBuf = ByteBuffer.allocate(option.setRCV());
+        _WrBuf = ByteBuffer.allocate(option.setSNF());
+        _PipeEncoder = pipeEncoder;
+        _PipeDecoder = pipeDecoder;
+        _PipeTransfer = pipeTransfer;
+        _Sort = sort;
+        _FilterChain = filterChain;
+        _SessionCloser = closer;
+        _SessionError = error;
     }
 
     @Override
@@ -78,8 +105,8 @@ public class AioContext
         _ChannelState.set(ctlOf(SESSION_IDLE, 0));
         mDecodingPosition = -1;
         mLackData = 1;
-        mRvBuf.clear();
-        mWrBuf.clear();
+        _RvBuf.clear();
+        _WrBuf.clear();
     }
 
     @Override
@@ -138,7 +165,7 @@ public class AioContext
     {
         mDecodingPosition = -1;
         mLackData = 1;
-        mRvBuf.clear();
+        _RvBuf.clear();
     }
 
     @Override
@@ -154,7 +181,7 @@ public class AioContext
     }
 
     @Override
-    public IContext setOutState(int state)
+    public IContext<C> setOutState(int state)
     {
         advanceState(_EncodeState, state);
         return this;
@@ -173,14 +200,14 @@ public class AioContext
     }
 
     @Override
-    public IContext setInState(int state)
+    public IContext<C> setInState(int state)
     {
         advanceState(_DecodeState, state);
         return this;
     }
 
     @Override
-    public IContext setChannelState(int state)
+    public IContext<C> setChannelState(int state)
     {
         advanceState(_ChannelState, state);
         return this;
@@ -231,19 +258,19 @@ public class AioContext
     @Override
     public ByteBuffer getWrBuffer()
     {
-        return mWrBuf;
+        return _WrBuf;
     }
 
     @Override
     public ByteBuffer getRvBuffer()
     {
-        return mRvBuf;
+        return _RvBuf;
     }
 
     @Override
     public int getSendMaxSize()
     {
-        return mWrBuf.capacity();
+        return _WrBuf.capacity();
     }
 
     @Override
@@ -289,5 +316,47 @@ public class AioContext
     public boolean isClosed()
     {
         return isClosed(_ChannelState.get());
+    }
+
+    @Override
+    public IPipeEncoder<C> getEncoder()
+    {
+        return _PipeEncoder;
+    }
+
+    @Override
+    public IPipeDecoder<C> getDecoder()
+    {
+        return _PipeDecoder;
+    }
+
+    @Override
+    public IPipeTransfer<C> getTransfer()
+    {
+        return _PipeTransfer;
+    }
+
+    @Override
+    public ISort getSort()
+    {
+        return _Sort;
+    }
+
+    @Override
+    public IFilterChain<C> getFilterChain()
+    {
+        return _FilterChain;
+    }
+
+    @Override
+    public ISessionCloser<C> getCloser()
+    {
+        return _SessionCloser;
+    }
+
+    @Override
+    public ISessionError<C> getError()
+    {
+        return _SessionError;
     }
 }

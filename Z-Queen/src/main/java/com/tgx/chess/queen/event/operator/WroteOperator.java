@@ -30,16 +30,13 @@ import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
-public class WroteOperator<C extends IContext>
+public class WroteOperator<C extends IContext<C>>
         implements
         IOperator<Integer,
                   ISession<C>,
                   ITriple>
 {
-    private final AioWriter<C>     _AioWrite;
-    private final CloseOperator<C> _CloseOperator = new CloseOperator<>();
-
-    private final ErrorOperator<C> _ErrorOperator = new ErrorOperator<>(_CloseOperator);
+    private final AioWriter<C> _AioWrite;
 
     public WroteOperator(AioWriter<C> aioWriter)
     {
@@ -53,7 +50,10 @@ public class WroteOperator<C extends IContext>
             session.writeNext(wroteCnt, _AioWrite);
         }
         catch (Exception e) {
-            return new Triple<>(e, session, _ErrorOperator);
+            return new Triple<>(e,
+                                session,
+                                session.getContext()
+                                       .getError());
         }
         return null;
     }

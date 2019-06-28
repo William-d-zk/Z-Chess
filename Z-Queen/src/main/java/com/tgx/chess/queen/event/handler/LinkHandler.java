@@ -39,12 +39,11 @@ import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.event.operator.TransferOperator;
+import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.IConnectionContext;
+import com.tgx.chess.queen.io.core.inf.IConnectActivity;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
-import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
@@ -52,19 +51,17 @@ import com.tgx.chess.queen.io.core.manager.QueenManager;
 /**
  * @author William.d.zk
  */
-public class LinkHandler<C extends IContext>
-        extends
-        BasePipeEventHandler<C>
+public class LinkHandler<C extends IContext<C>>
+        implements
+        IPipeEventHandler<QEvent>
 {
-    private final Logger              _Log = Logger.getLogger(getClass().getName());
-    private final RingBuffer<QEvent>  _Error;
-    private final RingBuffer<QEvent>  _Writer;
-    private final QueenManager<C>     _QueenManager;
-    private final ILinkHandler<C>     _LinkHandler;
-    private final TransferOperator<C> _Transfer;
+    private final Logger             _Log = Logger.getLogger(getClass().getName());
+    private final RingBuffer<QEvent> _Error;
+    private final RingBuffer<QEvent> _Writer;
+    private final QueenManager<C>    _QueenManager;
+    private final ILinkHandler<C>    _LinkHandler;
 
-    public LinkHandler(IPipeEncoder<C> encoder,
-                       QueenManager<C> manager,
+    public LinkHandler(QueenManager<C> manager,
                        RingBuffer<QEvent> error,
                        RingBuffer<QEvent> writer,
                        ILinkHandler<C> linkHandler)
@@ -73,7 +70,6 @@ public class LinkHandler<C extends IContext>
         _Writer = writer;
         _QueenManager = manager;
         _LinkHandler = linkHandler;
-        _Transfer = new TransferOperator<>(encoder);
     }
 
     @Override
@@ -108,11 +104,11 @@ public class LinkHandler<C extends IContext>
                 case CONNECTED:
                     IPair connectedContent = event.getContent();
                     AsynchronousSocketChannel channel = connectedContent.second();
-                    IConnectionContext<C> connectionContext = connectedContent.first();
-                    IOperator<IConnectionContext<C>,
+                    IConnectActivity<C> connectActivity = connectedContent.first();
+                    IOperator<IConnectActivity<C>,
                               AsynchronousSocketChannel,
                               ITriple> connectedOperator = event.getEventOp();
-                    ITriple connectedHandled = connectedOperator.handle(connectionContext, channel);
+                    ITriple connectedHandled = connectedOperator.handle(connectActivity, channel);
                     /*connectedHandled 不可能为 null*/
                     ISession<C> session = connectedHandled.second();
                     publish(_Writer, WRITE, new Pair<>(connectedHandled.first(), session), connectedHandled.third());
@@ -124,10 +120,18 @@ public class LinkHandler<C extends IContext>
                         _LinkHandler.handle(this, _QueenManager, event);
                     }
                     catch (LinkRejectException e) {
-                        error(LINK_LOGIN_ERROR, e, session, getErrorOperator());
+                        error(LINK_LOGIN_ERROR,
+                              e,
+                              session,
+                              session.getContext()
+                                     .getError());
                     }
                     catch (ZException e) {
-                        error(LINK_ERROR, e, session, getErrorOperator());
+                        error(LINK_ERROR,
+                              e,
+                              session,
+                              session.getContext()
+                                     .getError());
                     }
                     break;
                 default:
@@ -149,7 +153,11 @@ public class LinkHandler<C extends IContext>
 
     public void write(IControl[] waitToSends, ISession<C> session)
     {
-        publish(_Writer, WRITE, new Pair<>(waitToSends, session), _Transfer);
+        publish(_Writer,
+                WRITE,
+                new Pair<>(waitToSends, session),
+                session.getContext()
+                       .getTransfer());
     }
 
 }

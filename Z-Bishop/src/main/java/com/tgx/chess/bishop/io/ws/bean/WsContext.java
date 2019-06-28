@@ -30,6 +30,12 @@ import java.util.Random;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.queen.event.inf.ISort;
+import com.tgx.chess.queen.io.core.inf.IFilterChain;
+import com.tgx.chess.queen.io.core.inf.IPipeDecoder;
+import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
+import com.tgx.chess.queen.io.core.inf.IPipeTransfer;
+import com.tgx.chess.queen.io.core.inf.ISessionCloser;
+import com.tgx.chess.queen.io.core.inf.ISessionError;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 
 /**
@@ -69,12 +75,18 @@ public class WsContext
     private CryptUtil       mCryptUtil           = new CryptUtil();
 
     public WsContext(ISessionOption option,
-                     ISort sorter)
+                     ISort sort,
+                     IPipeEncoder<ZContext> pipeEncoder,
+                     IPipeDecoder<ZContext> pipeDecoder,
+                     IPipeTransfer<ZContext> pipeTransfer,
+                     IFilterChain<ZContext> filterChain,
+                     ISessionCloser<ZContext> closer,
+                     ISessionError<ZContext> error)
     {
-        super(option);
+        super(option, sort, pipeEncoder, pipeDecoder, pipeTransfer, filterChain, closer, error);
         _MaxPayloadSize = option.setSNF() - 2;
-        if (sorter.getType()
-                  .equals(ISort.Type.CONSUMER))
+        if (sort.getType()
+                .equals(ISort.Type.CONSUMER))
         {
             Random r = new Random(System.nanoTime());
             byte[] seed = new byte[17];
@@ -87,7 +99,7 @@ public class WsContext
             _SecKey = _SecAcceptExpect = null;
         }
 
-        switch (sorter.getMode())
+        switch (sort.getMode())
         {
             case CLUSTER:
                 transfer();

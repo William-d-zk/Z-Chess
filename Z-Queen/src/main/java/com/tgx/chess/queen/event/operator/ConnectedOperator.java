@@ -29,13 +29,10 @@ import java.nio.channels.AsynchronousSocketChannel;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ICommandCreator;
-import com.tgx.chess.queen.io.core.inf.IConnectionContext;
+import com.tgx.chess.queen.io.core.inf.IConnectActivity;
 import com.tgx.chess.queen.io.core.inf.IContext;
-import com.tgx.chess.queen.io.core.inf.IPipeDecoder;
-import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
-import com.tgx.chess.queen.io.core.inf.IPipeTransfer;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionCreated;
 import com.tgx.chess.queen.io.core.inf.ISessionCreator;
@@ -43,36 +40,27 @@ import com.tgx.chess.queen.io.core.inf.ISessionCreator;
 /**
  * @author william.d.zk
  */
-public class ConnectedOperator<C extends IContext>
+public class ConnectedOperator<C extends IContext<C>>
         implements
-        IOperator<IConnectionContext<C>,
+        IOperator<IConnectActivity<C>,
                   AsynchronousSocketChannel,
                   ITriple>
 {
-    private final IPipeEncoder<C>  _Encoder;
-    private final IPipeDecoder<C>  _Decoder;
-    private final IPipeTransfer<C> _Transfer;
-    private final AioReader<C>     _AioReader;
-
-    public ConnectedOperator(IPipeEncoder<C> encoder,
-                             IPipeDecoder<C> decoder)
-    {
-        _Encoder = encoder;
-        _Decoder = decoder;
-        _Transfer = new TransferOperator<>(_Encoder);
-        _AioReader = new AioReader<>(_Decoder);
-    }
+    private final AioReader<C> _AioReader = new AioReader<>();
 
     @Override
-    public ITriple handle(IConnectionContext<C> context, AsynchronousSocketChannel channel)
+    public ITriple handle(IConnectActivity<C> activity, AsynchronousSocketChannel channel)
     {
-        ISessionCreated<C> sessionCreated = context.getSessionCreated();
-        ISessionCreator<C> sessionCreator = context.getSessionCreator();
-        ISession<C> session = sessionCreator.createSession(channel, context);
-        ICommandCreator<C> commandCreator = context.getCommandCreator();
+        ISessionCreated<C> sessionCreated = activity.getSessionCreated();
+        ISessionCreator<C> sessionCreator = activity.getSessionCreator();
+        ICommandCreator<C> commandCreator = activity.getCommandCreator();
+        ISession<C> session = sessionCreator.createSession(channel, activity);
         sessionCreated.onCreate(session);
         session.readNext(_AioReader);
         IControl<C>[] commands = commandCreator.createCommands(session);
-        return new Triple<>(commands, session, _Transfer);
+        return new Triple<>(commands,
+                            session,
+                            session.getContext()
+                                   .getTransfer());
     }
 }

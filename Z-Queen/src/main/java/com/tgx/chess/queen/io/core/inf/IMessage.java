@@ -26,7 +26,7 @@ package com.tgx.chess.queen.io.core.inf;
 /**
  * @author William.d.zk
  */
-public interface IMessage<C extends IContext>
+public interface IMessage<C extends IContext<C>>
         extends
         IDuplicate
 {

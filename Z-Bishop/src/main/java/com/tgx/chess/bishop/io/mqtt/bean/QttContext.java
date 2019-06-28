@@ -28,6 +28,13 @@ import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.king.base.util.Pair;
+import com.tgx.chess.queen.event.inf.ISort;
+import com.tgx.chess.queen.io.core.inf.IFilterChain;
+import com.tgx.chess.queen.io.core.inf.IPipeDecoder;
+import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
+import com.tgx.chess.queen.io.core.inf.IPipeTransfer;
+import com.tgx.chess.queen.io.core.inf.ISessionCloser;
+import com.tgx.chess.queen.io.core.inf.ISessionError;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 
 /**
@@ -39,23 +46,34 @@ public class QttContext
 {
     private final static IPair VERSION = new Pair<>("3.1.1", 4);
 
-    public QttContext(ISessionOption option) {
-        super(option);
+    public QttContext(ISessionOption option,
+                      ISort sort,
+                      IPipeEncoder<ZContext> pipeEncoder,
+                      IPipeDecoder<ZContext> pipeDecoder,
+                      IPipeTransfer<ZContext> pipeTransfer,
+                      IFilterChain<ZContext> filterChain,
+                      ISessionCloser<ZContext> closer,
+                      ISessionError<ZContext> error)
+    {
+        super(option, sort, pipeEncoder, pipeDecoder, pipeTransfer, filterChain, closer, error);
         transfer();
     }
 
     private QttFrame  mCarrier;
     private CryptUtil mCryptUtil = new CryptUtil();
 
-    public static IPair getVersion() {
+    public static IPair getVersion()
+    {
         return VERSION;
     }
 
-    public QttFrame getCarrier() {
+    public QttFrame getCarrier()
+    {
         return mCarrier;
     }
 
-    public void setCarrier(QttFrame carrier) {
+    public void setCarrier(QttFrame carrier)
+    {
         mCarrier = carrier;
     }
 }

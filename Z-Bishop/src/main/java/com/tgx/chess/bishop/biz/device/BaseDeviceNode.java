@@ -26,10 +26,14 @@ package com.tgx.chess.bishop.biz.device;
 
 import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
+import com.tgx.chess.bishop.io.ws.bean.WsContext;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
+import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.config.Config;
 import com.tgx.chess.queen.config.QueenCode;
@@ -42,8 +46,7 @@ import com.tgx.chess.queen.io.core.async.BaseAioServer;
 import com.tgx.chess.queen.io.core.executor.ServerCore;
 import com.tgx.chess.queen.io.core.inf.IAioServer;
 import com.tgx.chess.queen.io.core.inf.ICommandCreator;
-import com.tgx.chess.queen.io.core.inf.IConnectionContext;
-import com.tgx.chess.queen.io.core.inf.IContextCreator;
+import com.tgx.chess.queen.io.core.inf.IConnectActivity;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionCreated;
@@ -56,48 +59,40 @@ import com.tgx.chess.queen.io.core.manager.QueenManager;
  * @author william.d.zk
  * @date 2019-05-12
  */
-public abstract class BaseDeviceNode<C extends ZContext>
+public abstract class BaseDeviceNode
         extends
-        QueenManager<C>
+        QueenManager<ZContext>
         implements
-        ISessionDismiss<C>,
-        ISessionCreated<C>,
-        IContextCreator<C>
+        ISessionDismiss<ZContext>,
+        ISessionCreated<ZContext>
 {
 
     final Logger                     _Logger = Logger.getLogger(getClass().getName());
-    final String                     _ServerHost;
-    final int                        _ServerPort;
-    final IAioServer<C>              _AioServer;
-    final ISort<C>                   _Sort;
+    final List<IAioServer<ZContext>> _AioServers;
     final IRepository<DeviceEntry>   _DeviceRepository;
-    private final ISessionCreator<C> _SessionCreator;
-    private final ICommandCreator<C> _CommandCreator;
 
     @Override
-    public void onDismiss(ISession<C> session)
+    public void onDismiss(ISession<ZContext> session)
     {
         rmSession(session);
     }
 
     @Override
-    public void onCreate(ISession<C> session)
+    public void onCreate(ISession<ZContext> session)
     {
         /* 进入这里的都是 _AioServer 建立的链接*/
         session.setIndex(QueenCode.CM_XID);
         addSession(session);
     }
 
-    BaseDeviceNode(String host,
-                   int port,
-                   ISort<C> sort,
+    BaseDeviceNode(List<ITriple> hosts,
                    IRepository<DeviceEntry> repository)
     {
-        super(new Config("device"), new ServerCore<C>()
+        super(new Config("device"), new ServerCore<ZContext>()
         {
 
             @Override
-            public RingBuffer<QEvent> getLocalPublisher(ISession<C> session)
+            public RingBuffer<QEvent> getLocalPublisher(ISession<ZContext> session)
             {
                 switch (getSlot(session))
                 {
@@ -110,7 +105,7 @@ public abstract class BaseDeviceNode<C extends ZContext>
             }
 
             @Override
-            public RingBuffer<QEvent> getLocalCloser(ISession<C> session)
+            public RingBuffer<QEvent> getLocalCloser(ISession<ZContext> session)
             {
                 switch (getSlot(session))
                 {
@@ -122,9 +117,33 @@ public abstract class BaseDeviceNode<C extends ZContext>
                 }
             }
         });
-        _ServerHost = host;
-        _ServerPort = port;
-        _Sort = sort;
+
+        _AioServers = hosts.stream()
+                           .map(triple ->
+                           {
+                               String host = triple.first();
+                               int port = triple.second();
+                               ISort sort = triple.third();
+                               ISessionCreator<ZContext> sessionCreator = new AioCreator<ZContext>(getConfig())
+                               {
+                                   @Override
+                                   public ISession<ZContext> createSession(AsynchronousSocketChannel socketChannel,
+                                                                           IConnectActivity<ZContext> activity)
+                                   {
+                                       return null;
+                                   }
+
+                                   @Override
+                                   public ZContext createContext(ISessionOption option, ISort sort)
+                                   {
+
+                                       return new WsContext(option, sort);
+                                   }
+                               };
+
+                           })
+                           .collect(Collectors.toList());
+
         _SessionCreator = new AioCreator<C>(getConfig())
         {
 
@@ -132,7 +151,11 @@ public abstract class BaseDeviceNode<C extends ZContext>
             public ISession<C> createSession(AsynchronousSocketChannel socketChannel, IConnectionContext<C> context)
             {
                 try {
-                    return new AioSession<>(socketChannel, context.getConnectActive(), this, this, BaseDeviceNode.this);
+                    return new AioSession<>(socketChannel,
+                                            context.getConnectActivity(),
+                                            this,
+                                            this,
+                                            BaseDeviceNode.this);
                 }
                 catch (IOException e) {
                     e.printStackTrace();
