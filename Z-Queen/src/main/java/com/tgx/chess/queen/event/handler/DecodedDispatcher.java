@@ -43,7 +43,7 @@ import com.tgx.chess.queen.io.core.inf.ISession;
 /**
  * @author william.d.zk
  */
-public class DecodedDispatcher<C extends IContext>
+public class DecodedDispatcher<C extends IContext<C>>
         extends
         BaseDispatcher<C>
 {

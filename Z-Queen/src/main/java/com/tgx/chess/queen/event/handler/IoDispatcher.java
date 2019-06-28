@@ -38,15 +38,14 @@ import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.IConnectActive;
-import com.tgx.chess.queen.io.core.inf.IConnectionContext;
+import com.tgx.chess.queen.io.core.inf.IConnectActivity;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
 /**
  * @author william.d.zk
  */
-public class IoDispatcher<C extends IContext>
+public class IoDispatcher<C extends IContext<C>>
         extends
         BaseDispatcher<C>
 {
@@ -73,7 +72,7 @@ public class IoDispatcher<C extends IContext>
             case CONNECT_FAILED:
                 IPair connectFailedContent = event.getContent();
                 Throwable throwable = connectFailedContent.first();
-                IConnectActive connectActive = connectFailedContent.second();
+                IConnectActivity<C> connectActive = connectFailedContent.second();
                 dispatchError(connectActive.getSort(), errorType, throwable, connectActive, event.getEventOp());
                 break;
             case CLOSED:
@@ -92,9 +91,9 @@ public class IoDispatcher<C extends IContext>
                 {
                     case CONNECTED:
                         IPair connectContent = event.getContent();
-                        IConnectionContext<C> context = connectContent.first();
+                        IConnectActivity<C> context = connectContent.first();
                         AsynchronousSocketChannel channel = connectContent.second();
-                        IOperator<IConnectionContext,
+                        IOperator<IConnectActivity<C>,
                                   AsynchronousSocketChannel,
                                   ITriple> connectOperator = event.getEventOp();
                         dispatch(context.getSort(), CONNECTED, context, channel, connectOperator);

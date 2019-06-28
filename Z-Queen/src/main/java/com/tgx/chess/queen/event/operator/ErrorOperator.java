@@ -24,40 +24,18 @@
 
 package com.tgx.chess.queen.event.operator;
 
-import com.tgx.chess.king.base.inf.ITriple;
-import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.king.base.util.Triple;
-import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.io.core.inf.IContext;
-import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.inf.ISessionCloser;
+import com.tgx.chess.queen.io.core.inf.ISessionError;
 
 /**
  * @author william.d.zk
  * @date 2019-04-25
  */
-public class ErrorOperator<C extends IContext>
+public class ErrorOperator<C extends IContext<C>>
         implements
-        IOperator<Throwable,
-                  ISession<C>,
-                  ITriple>
+        ISessionError<C>
+
 {
-
-    private final Logger            _Logger = Logger.getLogger(getClass().getSimpleName());
-    private final ISessionCloser<C> _Closer;
-
-    public ErrorOperator(ISessionCloser<C> closer)
-    {
-        _Closer = closer;
-    }
-
-    @Override
-    public ITriple handle(Throwable throwable, ISession<C> session)
-    {
-        _Logger.warning("error session:%s", throwable, session);
-        return new Triple<>(null, session, _Closer);
-    }
-
     @Override
     public String toString()
     {

@@ -33,7 +33,7 @@ import com.tgx.chess.queen.event.inf.IOperator;
  * @author william.d.zk
  * @date 2019-05-12
  */
-public interface ISessionCloser<C extends IContext>
+public interface ISessionCloser<C extends IContext<C>>
         extends
         IOperator<Void,
                   ISession<C>,

@@ -62,14 +62,13 @@ import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.async.socket.AioWorker;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
-import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
 
 /**
  * @author william.d.zk
  */
-public abstract class ServerCore<C extends IContext>
+public abstract class ServerCore<C extends IContext<C>>
         extends
         ThreadPoolExecutor
         implements
@@ -228,7 +227,6 @@ public abstract class ServerCore<C extends IContext>
     @SuppressWarnings("unchecked")
     public void build(LogicHandler<C> logicHandler,
                       QueenManager<C> manager,
-                      IPipeEncoder<C> encoder,
                       ILinkHandler<C> linkHandler,
                       IEncryptHandler encryptHandler)
     {
@@ -276,8 +274,7 @@ public abstract class ServerCore<C extends IContext>
                                                                         _ConsistentResultEvent.newBarrier() };
         final MultiBufferBatchEventProcessor<QEvent> _LinkProcessor = new MultiBufferBatchEventProcessor<>(_LinkEvents,
                                                                                                            _LinkBarriers,
-                                                                                                           new LinkHandler<>(encoder,
-                                                                                                                             manager,
+                                                                                                           new LinkHandler<>(manager,
                                                                                                                              _ErrorEvents[0],
                                                                                                                              _LinkWriteEvent,
                                                                                                                              linkHandler));
@@ -466,7 +463,10 @@ public abstract class ServerCore<C extends IContext>
     {
         long sequence = _BizLocalCloseEvent.next();
         QEvent event = _BizLocalCloseEvent.get(sequence);
-        event.produce(Type.CLOSE, new Pair<>(null, session), mLinkHandler.getCloseOperator());
+        event.produce(Type.CLOSE,
+                      new Pair<>(null, session),
+                      session.getContext()
+                             .getCloser());
         _BizLocalCloseEvent.publish(sequence);
     }
 

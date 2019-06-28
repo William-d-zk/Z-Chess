@@ -32,13 +32,9 @@ import com.tgx.chess.queen.event.inf.IOperator;
 /**
  * @author William.d.zk
  */
-public interface IConnected<C extends IContext>
+public interface IConnected<C extends IContext<C>>
 {
-    IOperator<IConnectionContext<C>, AsynchronousSocketChannel, ITriple> getConnectedOperator();
-
-    ISessionCreator<C> getSessionCreator();
-
-    ISessionCreated<C> getSessionCreated();
-
-    ICommandCreator<C> getCommandCreator();
+    IOperator<IConnectActivity<C>,
+              AsynchronousSocketChannel,
+              ITriple> getConnectedOperator();
 }

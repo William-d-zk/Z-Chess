@@ -34,6 +34,7 @@ import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.IOperator;
+import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
@@ -44,9 +45,9 @@ import com.tgx.chess.queen.io.core.inf.ISession;
 /**
  * @author William.d.zk
  */
-public class DecodeHandler<C extends IContext>
-        extends
-        BasePipeEventHandler<C>
+public class DecodeHandler<C extends IContext<C>>
+        implements
+        IPipeEventHandler<QEvent>
 {
     protected final Logger        _Logger = Logger.getLogger(getClass().getName());
     private final IEncryptHandler _EncryptHandler;
@@ -86,7 +87,10 @@ public class DecodeHandler<C extends IContext>
                 _Logger.warning(String.format("read decode error\n%s", session.toString()), e);
                 context.setInState(DECODE_ERROR);
                 //此处为Pipeline中间环节，使用event进行事件传递，不使用dispatcher
-                event.error(FILTER_DECODE, new Pair<>(e, session), getErrorOperator());
+                event.error(FILTER_DECODE,
+                            new Pair<>(e, session),
+                            session.getContext()
+                                   .getError());
             }
         }
         else {

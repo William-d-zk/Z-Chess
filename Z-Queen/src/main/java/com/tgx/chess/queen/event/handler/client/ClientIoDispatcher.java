@@ -36,20 +36,19 @@ import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
-import com.tgx.chess.queen.event.handler.BasePipeEventHandler;
 import com.tgx.chess.queen.event.inf.IOperator;
+import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.IConnectActive;
-import com.tgx.chess.queen.io.core.inf.IConnectionContext;
+import com.tgx.chess.queen.io.core.inf.IConnectActivity;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
 /**
  * @author william.d.zk
  */
-public class ClientIoDispatcher<C extends IContext>
-        extends
-        BasePipeEventHandler<C>
+public class ClientIoDispatcher<C extends IContext<C>>
+        implements
+        IPipeEventHandler<QEvent>
 {
     private final RingBuffer<QEvent> _LinkIoPipe;
     private final RingBuffer<QEvent> _DecoderPipe;
@@ -60,7 +59,8 @@ public class ClientIoDispatcher<C extends IContext>
     public ClientIoDispatcher(RingBuffer<QEvent> linkIoPipe,
                               RingBuffer<QEvent> decoderPipe,
                               RingBuffer<QEvent> wrotePipe,
-                              RingBuffer<QEvent> errorPipe) {
+                              RingBuffer<QEvent> errorPipe)
+    {
 
         _LinkIoPipe = linkIoPipe;
         _DecoderPipe = decoderPipe;
@@ -69,32 +69,42 @@ public class ClientIoDispatcher<C extends IContext>
     }
 
     @Override
-    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception {
-        switch (event.getErrorType()) {
+    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
+    {
+        switch (event.getErrorType())
+        {
             case CONNECT_FAILED:
                 IPair connectFailedContent = event.getContent();
                 Throwable throwable = connectFailedContent.first();
-                IConnectActive connectActive = connectFailedContent.second();
-                IOperator<Throwable, IConnectActive, ITriple> connectFailedOperator = event.getEventOp();
+                IConnectActivity<C> connectActive = connectFailedContent.second();
+                IOperator<Throwable,
+                          IConnectActivity<C>,
+                          ITriple> connectFailedOperator = event.getEventOp();
                 error(_LinkIoPipe, event.getErrorType(), new Pair<>(throwable, connectActive), connectFailedOperator);
                 break;
             case CLOSED:
                 //transfer
                 IPair closedContent = event.getContent();
                 ISession<C> session = closedContent.second();
-                IOperator<Void, ISession<C>, Void> closedOperator = event.getEventOp();
+                IOperator<Void,
+                          ISession<C>,
+                          Void> closedOperator = event.getEventOp();
                 if (!session.isClosed()) {
                     error(_LinkIoPipe, event.getErrorType(), new Pair<>(null, session), closedOperator);
                 }
                 break;
-            case NO_ERROR: {
-                switch (event.getEventType()) {
+            case NO_ERROR:
+            {
+                switch (event.getEventType())
+                {
                     case CONNECTED:
                         IPair connectContent = event.getContent();
-                        IConnectionContext<C> context = connectContent.first();
+                        IConnectActivity<C> connectActivity = connectContent.first();
                         AsynchronousSocketChannel channel = connectContent.second();
-                        IOperator<IConnectionContext, AsynchronousSocketChannel, ITriple> connectOperator = event.getEventOp();
-                        publish(_LinkIoPipe, CONNECTED, new Pair<>(context, channel), connectOperator);
+                        IOperator<IConnectActivity<C>,
+                                  AsynchronousSocketChannel,
+                                  ITriple> connectOperator = event.getEventOp();
+                        publish(_LinkIoPipe, CONNECTED, new Pair<>(connectActivity, channel), connectOperator);
                         break;
                     case READ:
                         IPair readContent = event.getContent();
@@ -105,7 +115,9 @@ public class ClientIoDispatcher<C extends IContext>
                         publish(_WrotePipe, WROTE, wroteContent, event.getEventOp());
                         break;
                     case CLOSE:
-                        IOperator<Void, ISession<C>, Void> closeOperator = event.getEventOp();
+                        IOperator<Void,
+                                  ISession<C>,
+                                  Void> closeOperator = event.getEventOp();
                         IPair closeContent = event.getContent();
                         session = closeContent.second();
                         if (!session.isClosed()) {
@@ -121,12 +133,17 @@ public class ClientIoDispatcher<C extends IContext>
             default:
                 //convert & transfer
                 IPair errorContent = event.getContent();
-                IOperator<Throwable, ISession<C>, ITriple> errorOperator = event.getEventOp();
+                IOperator<Throwable,
+                          ISession<C>,
+                          ITriple> errorOperator = event.getEventOp();
                 session = errorContent.second();
                 if (!session.isClosed()) {
                     throwable = errorContent.first();
                     ITriple transferResult = errorOperator.handle(throwable, session);
-                    error(_LinkIoPipe, event.getErrorType(), new Pair<>(transferResult.first(), session), transferResult.third());
+                    error(_LinkIoPipe,
+                          event.getErrorType(),
+                          new Pair<>(transferResult.first(), session),
+                          transferResult.third());
                 }
                 break;
         }

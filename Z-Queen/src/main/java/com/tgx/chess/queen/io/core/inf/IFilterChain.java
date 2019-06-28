@@ -29,7 +29,7 @@ import com.tgx.chess.king.base.inf.IDisposable;
 /**
  * @author William.d.zk
  */
-public interface IFilterChain<C extends IContext>
+public interface IFilterChain<C extends IContext<C>>
         extends
         IDisposable
 {

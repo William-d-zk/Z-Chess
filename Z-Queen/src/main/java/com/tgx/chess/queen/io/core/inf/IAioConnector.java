@@ -33,13 +33,13 @@ import com.tgx.chess.queen.io.core.async.socket.AioWorker;
 /**
  * @author william.d.zk
  */
-public interface IAioConnector<C extends IContext>
+public interface IAioConnector<C extends IContext<C>>
         extends
         CompletionHandler<Void,
                           AsynchronousSocketChannel>,
-        IConnectActive<C>,
+        IConnectActivity<C>,
         IConnected<C>,
-        IConnectError
+        IConnectError<C>
 {
     @Override
     IOperator<Throwable,
@@ -50,13 +50,7 @@ public interface IAioConnector<C extends IContext>
     default void completed(Void result, AsynchronousSocketChannel channel)
     {
         AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishConnected(getConnectedOperator(),
-                                getSort(),
-                                this,
-                                getSessionCreator(),
-                                getCommandCreator(),
-                                getSessionCreated(),
-                                channel);
+        worker.publishConnected(getConnectedOperator(), this, channel);
     }
 
     @Override

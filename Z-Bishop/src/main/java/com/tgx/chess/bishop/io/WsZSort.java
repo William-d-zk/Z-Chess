@@ -35,7 +35,6 @@ import com.tgx.chess.bishop.io.zprotocol.ZClusterFactory;
 import com.tgx.chess.bishop.io.zprotocol.ZServerFactory;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.operator.AioWriter;
-import com.tgx.chess.queen.event.operator.CloseOperator;
 import com.tgx.chess.queen.event.operator.ErrorOperator;
 import com.tgx.chess.queen.event.operator.PipeDecoder;
 import com.tgx.chess.queen.event.operator.PipeEncoder;
@@ -43,8 +42,6 @@ import com.tgx.chess.queen.event.operator.TransferOperator;
 import com.tgx.chess.queen.io.core.inf.IFilterChain;
 import com.tgx.chess.queen.io.core.inf.IPipeDecoder;
 import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
-import com.tgx.chess.queen.io.core.inf.IPipeTransfer;
-import com.tgx.chess.queen.io.core.inf.ISessionCloser;
 
 /**
  * @author william.d.zk
@@ -54,7 +51,7 @@ import com.tgx.chess.queen.io.core.inf.ISessionCloser;
 @SuppressWarnings("unchecked")
 public enum WsZSort
         implements
-        ISort<WsContext>
+        ISort
 {
     /**
      *
@@ -252,37 +249,12 @@ public enum WsZSort
                         }
                     }));
     }
-    private final CloseOperator<WsContext> _CloseOperator = new CloseOperator<>();
-    private final ErrorOperator<WsContext> _ErrorOperator = new ErrorOperator<>(_CloseOperator);
+    private final ErrorOperator<WsContext> _ErrorOperator = new ErrorOperator<>();
     private final AioWriter<WsContext>     _AioWriter     = new AioWriter<>();
     private final IPipeEncoder<WsContext>  _Encoder       = new PipeEncoder<>(getFilterChain(),
                                                                               _ErrorOperator,
                                                                               _AioWriter);
     private TransferOperator<WsContext>    _Transfer      = new TransferOperator<>(_Encoder);
     private IPipeDecoder<WsContext>        _Decoder       = new PipeDecoder<>(getFilterChain(), _Transfer);
-
-    @Override
-    public IPipeEncoder<WsContext> getEncoder()
-    {
-        return _Encoder;
-    }
-
-    @Override
-    public IPipeDecoder<WsContext> getDecoder()
-    {
-        return _Decoder;
-    }
-
-    @Override
-    public ISessionCloser<WsContext> getCloser()
-    {
-        return _CloseOperator;
-    }
-
-    @Override
-    public IPipeTransfer<WsContext> getTransfer()
-    {
-        return _Transfer;
-    }
 
 }

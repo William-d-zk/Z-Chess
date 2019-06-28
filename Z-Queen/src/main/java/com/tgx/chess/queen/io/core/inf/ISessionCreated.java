@@ -26,7 +26,7 @@ package com.tgx.chess.queen.io.core.inf;
 /**
  * @author William.d.zk
  */
-public interface ISessionCreated<C extends IContext>
+public interface ISessionCreated<C extends IContext<C>>
 {
     void onCreate(ISession<C> session);
 }

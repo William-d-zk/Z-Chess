@@ -27,35 +27,26 @@ package com.tgx.chess.queen.event.operator;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.io.core.inf.IContext;
-import com.tgx.chess.queen.io.core.inf.IFilterChain;
 import com.tgx.chess.queen.io.core.inf.IPacket;
 import com.tgx.chess.queen.io.core.inf.IPipeDecoder;
-import com.tgx.chess.queen.io.core.inf.IPipeTransfer;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
 /**
  * @author william.d.zk
  * @date 2019-05-08
  */
-public class PipeDecoder<C extends IContext>
+public class PipeDecoder<C extends IContext<C>>
         implements
         IPipeDecoder<C>
 {
 
-    private final IFilterChain<C>  _FilterChain;
-    private final IPipeTransfer<C> _Transfer;
-
-    public PipeDecoder(IFilterChain<C> filterChain,
-                       IPipeTransfer<C> transfer)
-    {
-        _FilterChain = filterChain;
-        _Transfer = transfer;
-    }
-
     @Override
     public ITriple handle(IPacket input, ISession<C> session)
     {
-        return new Triple<>(filterRead(input, _FilterChain, session), session, _Transfer);
+        return new Triple<>(filterRead(input, session),
+                            session,
+                            session.getContext()
+                                   .getTransfer());
     }
 
     @Override

@@ -28,7 +28,7 @@ package com.tgx.chess.queen.io.core.inf;
  * @author william.d.zk
  * @date 2019-05-21
  */
-public interface ISessionMessage<C extends IContext>
+public interface ISessionMessage<C extends IContext<C>>
         extends
         IMessage<C>
 {

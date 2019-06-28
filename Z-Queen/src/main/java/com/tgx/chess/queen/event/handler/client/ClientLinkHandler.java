@@ -37,20 +37,20 @@ import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.IControl;
-import com.tgx.chess.queen.io.core.inf.IConnectionContext;
+import com.tgx.chess.queen.io.core.inf.IConnectActivity;
 import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
 
 /**
  * @author william.d.zk
  */
-public class ClientLinkHandler<C extends IContext>
+public class ClientLinkHandler<C extends IContext<C>>
         implements
         EventHandler<QEvent>
 {
-    private final Logger _Log = Logger.getLogger(getClass().getName());
+    private final Logger _Logger = Logger.getLogger(getClass().getName());
 
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
@@ -62,7 +62,7 @@ public class ClientLinkHandler<C extends IContext>
                 event.ignore();
             }
             else {
-                _Log.warning("client io error , do close session");
+                _Logger.warning("client io error , do close session");
                 IPair errorContent = event.getContent();
                 ISession<C> session = errorContent.second();
                 ISessionDismiss<C> dismiss = session.getDismissCallback();
@@ -80,12 +80,12 @@ public class ClientLinkHandler<C extends IContext>
             {
                 case CONNECTED:
                     IPair connectedContent = event.getContent();
-                    IConnectionContext<C> context = connectedContent.first();
+                    IConnectActivity<C> connectActivity = connectedContent.first();
                     AsynchronousSocketChannel channel = connectedContent.second();
-                    IOperator<IConnectionContext,
+                    IOperator<IConnectActivity<C>,
                               AsynchronousSocketChannel,
                               ITriple> connectedOperator = event.getEventOp();
-                    ITriple connectedHandled = connectedOperator.handle(context, channel);
+                    ITriple connectedHandled = connectedOperator.handle(connectActivity, channel);
                     //connectedHandled 不可能为 null
                     IControl[] waitToSend = connectedHandled.first();
                     ISession<C> session = connectedHandled.second();
@@ -93,10 +93,10 @@ public class ClientLinkHandler<C extends IContext>
                               ISession,
                               List<ITriple>> sendTransferOperator = connectedHandled.third();
                     event.produce(WRITE, new Pair<>(waitToSend, session), sendTransferOperator);
-                    _Log.info(String.format("link handle %s,connected", session));
+                    _Logger.info(String.format("link handle %s,connected", session));
                     break;
                 default:
-                    _Log.warning(String.format("client link handle can't handle %s", event.getEventType()));
+                    _Logger.warning(String.format("client link handle can't handle %s", event.getEventType()));
                     break;
             }
         }

@@ -31,25 +31,37 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author William.d.zk
  */
-public interface ISessionCreator<C extends IContext>
+public interface ISessionCreator<C extends IContext<C>>
         extends
         ISessionOption,
         IContextCreator<C>
 {
-    ISession<C> createSession(AsynchronousSocketChannel socketChannel, IConnectionContext<C> context);
+    /**
+     * 由于继承了 ISessionOption 和 IContextCreator 所以在 create_session 入参中不再显示声明这两个参数
+     * 
+     * @param socketChannel
+     *            已完成连接的 socket
+     * @param activity
+     *            连接执行器实际执行单元
+     * @return session
+     */
+    ISession<C> createSession(AsynchronousSocketChannel socketChannel, IConnectActivity<C> activity);
 
     @Override
-    default int setSNF() {
+    default int setSNF()
+    {
         return INC_SEND_SIZE;
     }
 
     @Override
-    default int setRCV() {
+    default int setRCV()
+    {
         return INC_RECV_SIZE;
     }
 
     @Override
-    default void setOptions(AsynchronousSocketChannel channel) {
+    default void setOptions(AsynchronousSocketChannel channel)
+    {
         if (channel != null) {
             try {
                 channel.setOption(StandardSocketOptions.TCP_NODELAY, true);
@@ -64,23 +76,27 @@ public interface ISessionCreator<C extends IContext>
     }
 
     @Override
-    default int setQueueMax() {
+    default int setQueueMax()
+    {
         return INC_QUEUE_SIZE;
     }
 
     @Override
-    default int setReadTimeOut() {
+    default int setReadTimeOut()
+    {
         return (int) TimeUnit.MINUTES.toSeconds(15);
 
     }
 
     @Override
-    default int setWriteTimeOut() {
+    default int setWriteTimeOut()
+    {
         return 30;
     }
 
     @Override
-    default boolean setKeepAlive() {
+    default boolean setKeepAlive()
+    {
         return false;
     }
 }

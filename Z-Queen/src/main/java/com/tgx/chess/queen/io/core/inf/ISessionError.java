@@ -22,22 +22,32 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.queen.event.operator;
+package com.tgx.chess.queen.io.core.inf;
 
-import com.tgx.chess.queen.io.core.inf.IContext;
-import com.tgx.chess.queen.io.core.inf.IPipeTransfer;
+import com.tgx.chess.king.base.inf.ITriple;
+import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.king.base.util.Triple;
+import com.tgx.chess.queen.event.inf.IOperator;
 
 /**
  * @author william.d.zk
+ * @date 2019-06-28
  */
-public class TransferOperator<C extends IContext<C>>
-        implements
-        IPipeTransfer<C>
+public interface ISessionError<C extends IContext<C>>
+        extends
+        IOperator<Throwable,
+                  ISession<C>,
+                  ITriple>
 {
-    @Override
-    public String toString()
-    {
-        return "transfer";
-    }
+    Logger _Logger = Logger.getLogger(ISessionError.class.getSimpleName());
 
+    @Override
+    default ITriple handle(Throwable throwable, ISession<C> session)
+    {
+        _Logger.warning("error session:%s", throwable, session);
+        return new Triple<>(null,
+                            session,
+                            session.getContext()
+                                   .getCloser());
+    }
 }

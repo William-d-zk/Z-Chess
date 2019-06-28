@@ -36,7 +36,7 @@ import com.tgx.chess.queen.io.core.inf.ISessionCloser;
 /**
  * @author william.d.zk
  */
-public abstract class QueenManager<C extends IContext>
+public abstract class QueenManager<C extends IContext<C>>
         extends
         AioSessionManager<C>
 {

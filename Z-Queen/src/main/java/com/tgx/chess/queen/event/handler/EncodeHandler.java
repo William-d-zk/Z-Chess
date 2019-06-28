@@ -29,14 +29,14 @@ import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
 /**
  * @author william.d.zk
  */
-public class EncodeHandler<C extends IContext>
+public class EncodeHandler<C extends IContext<C>>
         implements
         ISessionHandler<C>
 {

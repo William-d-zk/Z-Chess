@@ -29,11 +29,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.tgx.chess.king.base.inf.IDisposable;
 import com.tgx.chess.king.base.inf.IReset;
+import com.tgx.chess.queen.event.inf.ISort;
 
 /**
  * @author William.d.zk
  */
-public interface IContext
+public interface IContext<C extends IContext<C>>
         extends
         ITlsContext,
         IReset,
@@ -60,7 +61,7 @@ public interface IContext
         return ENCODE_FRAME;
     }
 
-    IContext setOutState(int state);
+    IContext<C> setOutState(int state);
 
     @Override
     default int inState()
@@ -68,11 +69,11 @@ public interface IContext
         return DECODE_FRAME;
     }
 
-    IContext setInState(int state);
+    IContext<C> setInState(int state);
 
     int getChannelState();
 
-    IContext setChannelState(int state);
+    IContext<C> setChannelState(int state);
 
     boolean channelStateLessThan(int state);
 
@@ -191,4 +192,18 @@ public interface IContext
     }
 
     void advanceChannelState(int targetState);
+
+    IPipeEncoder<C> getEncoder();
+
+    IPipeDecoder<C> getDecoder();
+
+    IPipeTransfer<C> getTransfer();
+
+    ISort getSort();
+
+    IFilterChain<C> getFilterChain();
+
+    ISessionCloser<C> getCloser();
+
+    ISessionError<C> getError();
 }

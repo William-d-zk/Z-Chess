@@ -50,83 +50,49 @@ import com.tgx.chess.queen.io.core.inf.ISessionCloser;
 @SuppressWarnings("unchecked")
 public enum WsZSort
         implements
-        ISort<WsContext>
-{
+        ISort<WsContext> {
     /**
-     * 
+     *
      */
 
     CONSUMER,
-    CONSUMER_SSL
-    {
+    CONSUMER_SSL {
         @Override
-        public boolean isSSL()
-        {
+        public boolean isSSL() {
             return true;
         }
     };
 
     @Override
-    public Mode getMode()
-    {
+    public Mode getMode() {
         return Mode.LINK;
     }
 
     @Override
-    public Type getType()
-    {
+    public Type getType() {
         return Type.CONSUMER;
     }
 
-    private final CloseOperator<WsContext> _CloseOperator   = new CloseOperator<>();
-    private final ErrorOperator<WsContext> _ErrorOperator   = new ErrorOperator<>(_CloseOperator);
-    private final AioWriter<WsContext>     _AioWriter       = new AioWriter<>();
-    final WsHandShakeFilter                _HandshakeFilter = new WsHandShakeFilter(this);
+    private final CloseOperator<WsContext> _CloseOperator = new CloseOperator<>();
+    private final ErrorOperator<WsContext> _ErrorOperator = new ErrorOperator<>(_CloseOperator);
+    private final AioWriter<WsContext> _AioWriter = new AioWriter<>();
+    final WsHandShakeFilter _HandshakeFilter = new WsHandShakeFilter(this);
+
     {
         IFilterChain<WsContext> header = new ZTlsFilter<>();
         _HandshakeFilter.linkAfter(header)
-                        .linkFront(new WsFrameFilter())
-                        .linkFront(new WsControlFilter())
-                        .linkFront(new ZCommandFilter<>(new ZConsumerFactory<WsContext>()
-                        {
-                        }));
+                .linkFront(new WsFrameFilter())
+                .linkFront(new WsControlFilter())
+                .linkFront(new ZCommandFilter<>(new ZConsumerFactory<WsContext>() {
+                }));
     }
 
     private final IPipeEncoder<WsContext> _ConsumerEncoder = new PipeEncoder<>(getFilterChain(),
-                                                                               _ErrorOperator,
-                                                                               _AioWriter);
+            _ErrorOperator,
+            _AioWriter);
 
-    private final TransferOperator<WsContext> _ConsumerTransfer = new TransferOperator<>(_ConsumerEncoder);
-    private final IPipeDecoder<WsContext>     _ConsumerDecoder  = new PipeDecoder<>(getFilterChain(),
-                                                                                    _ConsumerTransfer);
+    private final TransferOperator<WsContext> _ConsumerTransfer = new TransferOperator<>();
+    private final IPipeDecoder<WsContext> _ConsumerDecoder = new PipeDecoder<>(getFilterChain(),
+            _ConsumerTransfer);
 
-    @Override
-    public ISessionCloser<WsContext> getCloser()
-    {
-        return _CloseOperator;
-    }
-
-    @Override
-    public IPipeDecoder<WsContext> getDecoder()
-    {
-        return _ConsumerDecoder;
-    }
-
-    @Override
-    public IPipeEncoder<WsContext> getEncoder()
-    {
-        return _ConsumerEncoder;
-    }
-
-    @Override
-    public IPipeTransfer<WsContext> getTransfer()
-    {
-        return _ConsumerTransfer;
-    }
-
-    @Override
-    public IFilterChain<WsContext> getFilterChain()
-    {
-        return _HandshakeFilter;
-    }
 }

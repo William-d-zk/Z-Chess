@@ -32,25 +32,21 @@ import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.operator.ConnectFailedOperator;
 import com.tgx.chess.queen.event.operator.ConnectedOperator;
 import com.tgx.chess.queen.io.core.inf.IAioConnector;
-import com.tgx.chess.queen.io.core.inf.IConnectionContext;
+import com.tgx.chess.queen.io.core.inf.IConnectActivity;
 import com.tgx.chess.queen.io.core.inf.IContext;
-import com.tgx.chess.queen.io.core.inf.IPipeDecoder;
-import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
 
 /**
  * @author william.d.zk
  */
-public abstract class BaseAioConnector<C extends IContext>
+public abstract class BaseAioConnector<C extends IContext<C>>
         implements
         IAioConnector<C>
 {
     protected BaseAioConnector(String host,
-                               int port,
-                               IPipeEncoder<C> encoder,
-                               IPipeDecoder<C> decoder)
+                               int port)
     {
         _RemoteAddress = new InetSocketAddress(host, port);
-        _ConnectedOperator = new ConnectedOperator<>(encoder, decoder);
+        _ConnectedOperator = new ConnectedOperator<>();
     }
 
     private final ConnectFailedOperator<C> _ConnectFailedOperator = new ConnectFailedOperator<>();
@@ -77,7 +73,7 @@ public abstract class BaseAioConnector<C extends IContext>
     }
 
     @Override
-    public IOperator<IConnectionContext<C>,
+    public IOperator<IConnectActivity<C>,
                      AsynchronousSocketChannel,
                      ITriple> getConnectedOperator()
     {

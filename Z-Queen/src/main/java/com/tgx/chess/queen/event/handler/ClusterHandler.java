@@ -33,10 +33,11 @@ import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.IOperator;
+import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.IControl;
-import com.tgx.chess.queen.io.core.inf.IConnectionContext;
+import com.tgx.chess.queen.io.core.inf.IConnectActivity;
 import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
@@ -44,9 +45,9 @@ import com.tgx.chess.queen.io.core.manager.QueenManager;
 /**
  * @author William.d.zk
  */
-public class ClusterHandler<C extends IContext>
-        extends
-        BasePipeEventHandler<C>
+public class ClusterHandler<C extends IContext<C>>
+        implements
+        IPipeEventHandler<QEvent>
 {
 
     private final QueenManager<C>    _QueenManager;
@@ -94,12 +95,12 @@ public class ClusterHandler<C extends IContext>
             {
                 case CONNECTED:
                     IPair connectedContent = event.getContent();
-                    IConnectionContext<C> context = connectedContent.first();
+                    IConnectActivity<C> connectActivity = connectedContent.first();
                     AsynchronousSocketChannel channel = connectedContent.second();
-                    IOperator<IConnectionContext<C>,
+                    IOperator<IConnectActivity<C>,
                               AsynchronousSocketChannel,
                               ITriple> connectedOperator = event.getEventOp();
-                    ITriple connectedHandled = connectedOperator.handle(context, channel);
+                    ITriple connectedHandled = connectedOperator.handle(connectActivity, channel);
                     //connectedHandled 不可能为 null
                     IControl[] waitToSend = connectedHandled.first();
                     ISession<C> session = connectedHandled.second();
@@ -107,8 +108,8 @@ public class ClusterHandler<C extends IContext>
                               ISession,
                               ITriple> sendTransferOperator = connectedHandled.third();
                     event.produce(WRITE, new Pair<>(waitToSend, session), sendTransferOperator);
-                    context.getSessionCreated()
-                           .onCreate(session);
+                    connectActivity.getSessionCreated()
+                                   .onCreate(session);
                     _Log.info(String.format("cluster link handle %s,connected", session));
                     break;
                 case LOGIC:
@@ -294,8 +295,8 @@ public class ClusterHandler<C extends IContext>
             IError.Type errorType = event.getErrorType();
             switch (errorType) {
                 case CONNECT_FAILED:
-                    IEventOp<Pair<ClusterNode<E, D, N>, Throwable>, IConnectActive> cOperator = event.getEventOp();
-                    Pair<Pair<ClusterNode<E, D, N>, Throwable>, IConnectActive> cContent = event.getContent();
+                    IEventOp<Pair<ClusterNode<E, D, N>, Throwable>, IConnectActivity> cOperator = event.getEventOp();
+                    Pair<Pair<ClusterNode<E, D, N>, Throwable>, IConnectActivity> cContent = event.getContent();
                     cOperator.handle(cContent.first(), cContent.second());
                     ClusterNode<E, D, N> clusterNode = cContent.first()
                                                                .first();

@@ -24,17 +24,10 @@
 
 package com.tgx.chess.queen.event.inf;
 
-import com.tgx.chess.queen.io.core.inf.IContext;
-import com.tgx.chess.queen.io.core.inf.IFilterChain;
-import com.tgx.chess.queen.io.core.inf.IPipeDecoder;
-import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
-import com.tgx.chess.queen.io.core.inf.IPipeTransfer;
-import com.tgx.chess.queen.io.core.inf.ISessionCloser;
-
 /**
  * @author william.d.zk
  */
-public interface ISort<C extends IContext>
+public interface ISort
 {
     enum Mode
     {
@@ -65,15 +58,5 @@ public interface ISort<C extends IContext>
      * 用于区分 IO 的角色，是服务端还是客户端，或者是对称式
      */
     Type getType();
-
-    IPipeTransfer<C> getTransfer();
-
-    IPipeEncoder<C> getEncoder();
-
-    IPipeDecoder<C> getDecoder();
-
-    ISessionCloser<C> getCloser();
-
-    IFilterChain<C> getFilterChain();
 
 }

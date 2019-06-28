@@ -30,7 +30,7 @@ package com.tgx.chess.queen.io.core.inf;
  * @see IContext
  * @author William.d.zk
  */
-public interface IStreamProtocol<C extends IContext>
+public interface IStreamProtocol<C extends IContext<C>>
         extends
         IProtocol
 {

@@ -40,11 +40,17 @@ import com.tgx.chess.queen.io.core.inf.ISession;
 /**
  * @author william.d.zk
  */
-public interface ISessionHandler<C extends IContext>
+public interface ISessionHandler<C extends IContext<C>>
         extends
         EventHandler<QEvent>
 {
-    default <A> void encodeHandler(QEvent event, A a, ISession<C> session, IOperator<A, ISession<C>, ITriple> operator) {
+    default <A> void encodeHandler(QEvent event,
+                                   A a,
+                                   ISession<C> session,
+                                   IOperator<A,
+                                             ISession<C>,
+                                             ITriple> operator)
+    {
         C context = session.getContext();
         if (!context.isOutErrorState()) {
             ITriple result = operator.handle(a, session);

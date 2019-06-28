@@ -31,7 +31,7 @@ import com.tgx.chess.king.base.inf.IDisposable;
  * @author William.d.zk
  * @see ISession
  */
-public interface IControl<C extends IContext>
+public interface IControl<C extends IContext<C>>
         extends
         IFrame,
         IQoS,

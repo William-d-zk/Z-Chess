@@ -21,22 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.tgx.chess.queen.io.core.inf;
 
 /**
- * @author william.d.zk
+ * @author William.d.zk
  */
-public interface IConnectionContext<C extends IContext>
+public interface IConnectActivity<C extends IContext<C>>
         extends
-        IConnectMode<C>
+        IAddress,
+        IConnectMode
 {
-    IConnectActive<C> getConnectActive();
+    default int getHaIndex()
+    {
+        return 0;
+    }
+
+    default int getPortIndex()
+    {
+        return 0;
+    }
 
     ISessionCreator<C> getSessionCreator();
 
-    ICommandCreator<C> getCommandCreator();
-
     ISessionCreated<C> getSessionCreated();
+
+    ICommandCreator<C> getCommandCreator();
 
 }

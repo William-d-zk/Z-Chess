@@ -28,7 +28,7 @@ package com.tgx.chess.queen.io.core.inf;
  * @author william.d.zk
  * @date 2019-05-17
  */
-public interface ICommand<C extends IContext>
+public interface ICommand<C extends IContext<C>>
         extends
         IControl<C>,
         IChannel,
