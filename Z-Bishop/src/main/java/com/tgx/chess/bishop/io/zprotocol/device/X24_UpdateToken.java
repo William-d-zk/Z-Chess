@@ -30,9 +30,9 @@ import com.tgx.chess.queen.io.core.async.AioContext;
 /**
  * @author william.d.zk
  */
-public class X24_UpdateToken<C extends AioContext>
+public class X24_UpdateToken
         extends
-        BaseCommand<C>
+        BaseCommand
 {
     public final static int COMMAND = 0x24;
 

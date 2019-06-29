@@ -31,9 +31,9 @@ import com.tgx.chess.queen.io.core.async.AioContext;
 /**
  * @author William.d.zk
  */
-public class X06_PlainStart<C extends AioContext>
+public class X06_PlainStart
         extends
-        BaseCommand<C>
+        BaseCommand
 {
     public final static int COMMAND = 0x06;
     private int             code;

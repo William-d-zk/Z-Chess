@@ -24,6 +24,7 @@
 
 package com.tgx.chess.bishop.io.mqtt.bean;
 
+import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IRouteLv4;
 import com.tgx.chess.queen.io.core.inf.ISession;
@@ -36,12 +37,12 @@ public abstract class QttControl
         extends
         BaseQtt
         implements
-        IControl<QttContext>,
+        IControl<ZContext>,
         IRouteLv4
 {
-    private final int            _Command;
-    private byte[]               mPayload;
-    private ISession<QttContext> mSession;
+    private final int          _Command;
+    private byte[]             mPayload;
+    private ISession<ZContext> mSession;
 
     public QttControl(int command)
     {
@@ -67,7 +68,7 @@ public abstract class QttControl
     }
 
     @Override
-    public IControl<QttContext> setSession(ISession<QttContext> session)
+    public IControl<ZContext> setSession(ISession<ZContext> session)
     {
         mSession = session;
         return this;
@@ -80,7 +81,7 @@ public abstract class QttControl
     }
 
     @Override
-    public ISession<QttContext> getSession()
+    public ISession<ZContext> getSession()
     {
         return mSession;
     }

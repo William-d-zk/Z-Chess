@@ -37,7 +37,6 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 
 import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
-import com.tgx.chess.bishop.biz.device.QttNode;
 import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
 import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
 import com.tgx.chess.bishop.io.mqtt.control.X118_QttSubscribe;
@@ -59,7 +58,6 @@ public class QttService
         extends
         DeviceService
 {
-    private final QttNode _QttNode;
 
     private final Random    _Random    = new Random();
     private final CryptUtil _CryptUtil = new CryptUtil();

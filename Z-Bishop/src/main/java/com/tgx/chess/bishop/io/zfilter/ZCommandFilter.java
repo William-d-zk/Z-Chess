@@ -37,7 +37,6 @@ import com.tgx.chess.bishop.io.zprotocol.ztls.X06_PlainStart;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.config.Code;
-import com.tgx.chess.queen.io.core.async.AioContext;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.ICommandFactory;
@@ -48,37 +47,37 @@ import com.tgx.chess.queen.io.core.inf.IProtocol;
 /**
  * @author William.d.zk
  */
-public class ZCommandFilter<C extends AioContext>
+public class ZCommandFilter
         extends
-        AioFilterChain<C,
-                       ICommand<C>,
+        AioFilterChain<ZContext,
+                       ICommand<ZContext>,
                        IFrame>
 {
 
-    private final ICommandFactory<C,
-                                  BaseCommand<C>>    factory;
-    private final Logger                             _Logger = Logger.getLogger(getClass().getName());
+    private final ICommandFactory<ZContext,
+                                  BaseCommand>           factory;
+    private final Logger                                 _Logger = Logger.getLogger(getClass().getName());
 
     public ZCommandFilter()
     {
         this(null);
     }
 
-    public ZCommandFilter(ICommandFactory<C,
-                                          BaseCommand<C>> factory)
+    public ZCommandFilter(ICommandFactory<ZContext,
+                                          BaseCommand> factory)
     {
         super("queen-command-zfilter");
         this.factory = factory;
     }
 
     @Override
-    public ResultType preEncode(C context, IProtocol output)
+    public ResultType preEncode(ZContext context, IProtocol output)
     {
         return preCommandEncode(context, output);
     }
 
     @Override
-    public IFrame encode(C context, ICommand<C> output)
+    public IFrame encode(ZContext context, ICommand<ZContext> output)
     {
         WsFrame frame = new WsFrame();
         frame.setPayload(output.encode(context));
@@ -87,16 +86,16 @@ public class ZCommandFilter<C extends AioContext>
     }
 
     @Override
-    public ResultType preDecode(C context, IFrame input)
+    public ResultType preDecode(ZContext context, IFrame input)
     {
         return preCommandDecode(context, input);
     }
 
     @Override
-    public ICommand<C> decode(C context, IFrame input)
+    public ICommand<ZContext> decode(ZContext context, IFrame input)
     {
         int command = input.getPayload()[1] & 0xFF;
-        BaseCommand<C> _command = create(command);
+        BaseCommand _command = create(command);
         if (Objects.isNull(_command)) return null;
         _command.decode(input.getPayload(), context);
         switch (command)
@@ -105,7 +104,7 @@ public class ZCommandFilter<C extends AioContext>
                 X01_EncryptRequest x01 = (X01_EncryptRequest) _command;
                 IEncryptHandler encryptHandler = context.getEncryptHandler();
                 if (encryptHandler == null
-                    || !x01.isEncrypt()) return new X06_PlainStart<>(Code.PLAIN_UNSUPPORTED.getCode());
+                    || !x01.isEncrypt()) return new X06_PlainStart(Code.PLAIN_UNSUPPORTED.getCode());
                 Pair<Integer,
                      byte[]> keyPair = encryptHandler.getAsymmetricPubKey(x01.pubKeyId);
                 if (keyPair != null) {
@@ -118,7 +117,7 @@ public class ZCommandFilter<C extends AioContext>
             case X02_AsymmetricPub.COMMAND:
                 X02_AsymmetricPub x02 = (X02_AsymmetricPub) _command;
                 encryptHandler = context.getEncryptHandler();
-                if (encryptHandler == null) return new X06_PlainStart<>(Code.PLAIN_UNSUPPORTED.getCode());
+                if (encryptHandler == null) return new X06_PlainStart(Code.PLAIN_UNSUPPORTED.getCode());
                 byte[] symmetricKey = context.getSymmetricEncrypt()
                                              .createKey("z-tls-rc4");
                 if (symmetricKey == null) throw new NullPointerException("create symmetric-key failed!");
@@ -171,7 +170,7 @@ public class ZCommandFilter<C extends AioContext>
                 }
                 else {
                     context.reset();
-                    return new X01_EncryptRequest<>();
+                    return new X01_EncryptRequest();
                 }
             case X05_EncryptStart.COMMAND:
                 X05_EncryptStart x05 = (X05_EncryptStart) _command;
@@ -184,22 +183,22 @@ public class ZCommandFilter<C extends AioContext>
         }
     }
 
-    private BaseCommand<C> create(int command)
+    private BaseCommand create(int command)
     {
         switch (command)
         {
             case X01_EncryptRequest.COMMAND:
-                return new X01_EncryptRequest<>();
+                return new X01_EncryptRequest();
             case X02_AsymmetricPub.COMMAND:
-                return new X02_AsymmetricPub<>();
+                return new X02_AsymmetricPub();
             case X03_Cipher.COMMAND:
-                return new X03_Cipher<>();
+                return new X03_Cipher();
             case X04_EncryptConfirm.COMMAND:
-                return new X04_EncryptConfirm<>();
+                return new X04_EncryptConfirm();
             case X05_EncryptStart.COMMAND:
-                return new X05_EncryptStart<>();
+                return new X05_EncryptStart();
             case X06_PlainStart.COMMAND:
-                return new X06_PlainStart<>();
+                return new X06_PlainStart();
             case 0xFF:
                 throw new UnsupportedOperationException();
             default:

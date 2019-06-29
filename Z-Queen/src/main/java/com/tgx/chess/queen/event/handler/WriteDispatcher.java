@@ -80,11 +80,11 @@ public class WriteDispatcher<C extends IContext<C>>
             case WRITE://from LinkIo/Cluster
             case LOGIC://from read->logic
                 IPair writeContent = event.getContent();
-                IControl[] commands = writeContent.first();
+                IControl<C>[] commands = writeContent.first();
                 ISession<C> session = writeContent.second();
                 if (session.isValid() && Objects.nonNull(commands)) {
                     IOperator<IControl[],
-                              ISession,
+                              ISession<C>,
                               List<ITriple>> transferOperator = event.getEventOp();
                     List<ITriple> triples = transferOperator.handle(commands, session);
                     for (ITriple triple : triples) {

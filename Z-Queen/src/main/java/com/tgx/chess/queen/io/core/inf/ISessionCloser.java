@@ -47,11 +47,11 @@ public interface ISessionCloser<C extends IContext<C>>
     {
         try {
             session.close();
+            _Logger.info("closed %s", session.toString());
         }
         catch (IOException e) {
-            _Logger.warning("session close: %s", e, session.toString());
+            _Logger.warning("close exception: %s", e, session.toString());
         }
-        _Logger.warning("closed operator %s", session.toString());
         return null;
     }
 }

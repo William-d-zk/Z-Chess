@@ -37,7 +37,8 @@ public interface IReadable<A>
      *
      * @param completionHandler
      */
-    void readNext(CompletionHandler<Integer, A> completionHandler);
+    void readNext(CompletionHandler<Integer,
+                                    A> completionHandler) throws IllegalStateException;
 
     /**
      * read bytes from received buffer

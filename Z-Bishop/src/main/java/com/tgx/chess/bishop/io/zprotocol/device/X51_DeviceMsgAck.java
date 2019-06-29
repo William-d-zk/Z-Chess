@@ -25,27 +25,29 @@
 package com.tgx.chess.bishop.io.zprotocol.device;
 
 import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
-import com.tgx.chess.queen.io.core.async.AioContext;
 
 /**
  * @author William.d.zk
  */
-public class X51_DeviceMsgAck<C extends AioContext>
+public class X51_DeviceMsgAck
         extends
-        BaseCommand<C>
+        BaseCommand
 {
     public final static int COMMAND = 0x51;
 
-    public X51_DeviceMsgAck() {
+    public X51_DeviceMsgAck()
+    {
         super(COMMAND, true);
     }
 
-    public X51_DeviceMsgAck(long msgUID) {
+    public X51_DeviceMsgAck(long msgUID)
+    {
         super(COMMAND, msgUID);
     }
 
     @Override
-    public int getPriority() {
+    public int getPriority()
+    {
         return QOS_09_CONFIRM_MESSAGE;
     }
 }

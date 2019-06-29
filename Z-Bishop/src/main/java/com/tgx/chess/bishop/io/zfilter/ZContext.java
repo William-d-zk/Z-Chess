@@ -24,15 +24,11 @@
 package com.tgx.chess.bishop.io.zfilter;
 
 import com.tgx.chess.king.base.crypt.util.Rc4;
+import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.io.core.async.AioContext;
 import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
-import com.tgx.chess.queen.io.core.inf.IFilterChain;
-import com.tgx.chess.queen.io.core.inf.IPipeDecoder;
-import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
-import com.tgx.chess.queen.io.core.inf.IPipeTransfer;
-import com.tgx.chess.queen.io.core.inf.ISessionCloser;
-import com.tgx.chess.queen.io.core.inf.ISessionError;
+import com.tgx.chess.queen.io.core.inf.IFrame;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 
 /**
@@ -44,23 +40,20 @@ public class ZContext
         AioContext<ZContext>
 {
 
+    private final CryptUtil _CryptUtil = new CryptUtil();
+
     private int             mPubKeyId = -2;
     private boolean         mUpdateKeyIn, mUpdateKeyOut;
     private int             mSymmetricKeyId;
     private byte[]          mSymmetricKeyIn, mSymmetricKeyOut, mSymmetricKeyReroll;
     private Rc4             mEncryptRc4, mDecryptRc4;
     private IEncryptHandler mEncryptHandler;
+    private IFrame          mCarrier;
 
     public ZContext(ISessionOption option,
-                    ISort sort,
-                    IPipeEncoder<ZContext> pipeEncoder,
-                    IPipeDecoder<ZContext> pipeDecoder,
-                    IPipeTransfer<ZContext> pipeTransfer,
-                    IFilterChain<ZContext> filterChain,
-                    ISessionCloser<ZContext> closer,
-                    ISessionError<ZContext> error)
+                    ISort<ZContext> sort)
     {
-        super(option, sort, pipeEncoder, pipeDecoder, pipeTransfer, filterChain, closer, error);
+        super(option, sort);
     }
 
     @Override
@@ -71,6 +64,10 @@ public class ZContext
         mUpdateKeyOut = false;
         mPubKeyId = -2;
         mSymmetricKeyId = 0;
+        if (mCarrier != null) {
+            mCarrier.reset();
+        }
+        mCarrier = null;
     }
 
     @Override
@@ -86,6 +83,14 @@ public class ZContext
             mDecryptRc4.reset();
         }
         mEncryptRc4 = mDecryptRc4 = null;
+        mCarrier = null;
+    }
+
+    @Override
+    public void finish()
+    {
+        super.finish();
+        mCarrier = null;
     }
 
     @Override
@@ -206,4 +211,19 @@ public class ZContext
         mEncryptHandler = handler;
     }
 
+    public CryptUtil getCryptUtil()
+    {
+        return _CryptUtil;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <F extends IFrame> F getCarrier()
+    {
+        return (F) mCarrier;
+    }
+
+    public void setCarrier(IFrame frame)
+    {
+        mCarrier = frame;
+    }
 }

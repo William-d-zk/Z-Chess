@@ -33,6 +33,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
 import java.nio.channels.NotYetConnectedException;
+import java.nio.channels.ReadPendingException;
 import java.nio.channels.ShutdownChannelGroupException;
 import java.nio.channels.WritePendingException;
 import java.util.LinkedList;
@@ -42,7 +43,6 @@ import java.util.concurrent.TimeUnit;
 
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.ArrayUtil;
-import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.io.core.inf.IConnectActivity;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IContextCreator;
@@ -72,7 +72,6 @@ public class AioSession<C extends IContext<C>>
     private final ByteBuffer         _RecvBuf;
     private final C                  _Ctx;
     private final int                _HashCode;
-    private final ISort              _Sort;
     private final ISessionDismiss<C> _DismissCallback;
     private final int                _QueueSizeMax;
     private final int                _HaIndex, _PortIndex;
@@ -102,7 +101,7 @@ public class AioSession<C extends IContext<C>>
                              _HashCode,
                              _LocalAddress,
                              _RemoteAddress,
-                             _Sort,
+                             _Ctx.getSort(),
                              _HaIndex,
                              _PortIndex,
                              mIndex,
@@ -127,7 +126,6 @@ public class AioSession<C extends IContext<C>>
         mHashKey = _HashCode;
         _RemoteAddress = (InetSocketAddress) channel.getRemoteAddress();
         _LocalAddress = (InetSocketAddress) channel.getLocalAddress();
-        _Sort = activity.getSort();
         _PortIndex = activity.getPortIndex();
         _HaIndex = activity.getHaIndex();
         sessionOption.setOptions(channel);
@@ -135,7 +133,7 @@ public class AioSession<C extends IContext<C>>
         _WriteTimeOut = sessionOption.setWriteTimeOut();
         _RecvBuf = ByteBuffer.allocate(sessionOption.setRCV());
         _QueueSizeMax = sessionOption.setQueueMax();
-        _Ctx = contextCreator.createContext(sessionOption, _Sort);
+        _Ctx = contextCreator.createContext(sessionOption, activity.getSort());
         mSending = _Ctx.getWrBuffer();
         mSending.flip();
         mSendingBlank = mSending.capacity() - mSending.limit();
@@ -257,6 +255,7 @@ public class AioSession<C extends IContext<C>>
     @Override
     public final void readNext(CompletionHandler<Integer,
                                                  ISession<C>> readHandler) throws NotYetConnectedException,
+                                                                           ReadPendingException,
                                                                            ShutdownChannelGroupException
     {
         if (isClosed()) { return; }
@@ -430,9 +429,4 @@ public class AioSession<C extends IContext<C>>
         return _DismissCallback;
     }
 
-    @Override
-    public ISort getSort()
-    {
-        return _Sort;
-    }
 }

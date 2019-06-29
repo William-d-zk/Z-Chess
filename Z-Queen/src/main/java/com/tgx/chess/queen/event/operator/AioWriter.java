@@ -54,14 +54,14 @@ public class AioWriter<C extends IContext<C>>
         switch (result)
         {
             case -1:
-                worker.publishWroteError(session.getContext()
+                worker.publishWroteError(session.getContext().getSort()
                                                 .getError(),
                                          WRITE_EOF,
                                          new EOFException("wrote -1!"),
                                          session);
                 break;
             case 0:
-                worker.publishWroteError(session.getContext()
+                worker.publishWroteError(session.getContext().getSort()
                                                 .getError(),
                                          WRITE_ZERO,
                                          new IllegalArgumentException("wrote zero!"),
@@ -78,7 +78,7 @@ public class AioWriter<C extends IContext<C>>
     public void failed(Throwable exc, ISession<C> session)
     {
         AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishWroteError(session.getContext()
+        worker.publishWroteError(session.getContext().getSort()
                                         .getError(),
                                  WRITE_FAILED,
                                  exc,

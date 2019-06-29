@@ -24,47 +24,47 @@
 
 package com.tgx.chess.bishop.io.zprotocol;
 
+import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
 import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
 import com.tgx.chess.bishop.io.zprotocol.device.X24_UpdateToken;
 import com.tgx.chess.bishop.io.zprotocol.device.X31_ConfirmMsg;
 import com.tgx.chess.bishop.io.zprotocol.device.X32_MsgStatus;
 import com.tgx.chess.bishop.io.zprotocol.device.X50_DeviceMsg;
-import com.tgx.chess.queen.io.core.async.AioContext;
 import com.tgx.chess.queen.io.core.inf.ICommandFactory;
 
 /**
  * @author william.d.zk
  * @date 2019-05-08
  */
-public interface ZServerFactory<C extends AioContext>
+public interface ZServerFactory
         extends
-        ICommandFactory<C,
-                        BaseCommand<C>>
+        ICommandFactory<ZContext,
+                        BaseCommand>
 {
 
     @Override
-    default BaseCommand<C> create(int command)
+    default BaseCommand create(int command)
     {
         return serverCommand(command);
     }
 
-    default BaseCommand<C> serverCommand(int command)
+    default BaseCommand serverCommand(int command)
     {
         switch (command)
         {
             case X20_SignUp.COMMAND:
-                return new X20_SignUp<>();
+                return new X20_SignUp();
             case X22_SignIn.COMMAND:
-                return new X22_SignIn<>();
+                return new X22_SignIn();
             case X24_UpdateToken.COMMAND:
-                return new X24_UpdateToken<>();
+                return new X24_UpdateToken();
             case X31_ConfirmMsg.COMMAND:
-                return new X31_ConfirmMsg<>();
+                return new X31_ConfirmMsg();
             case X32_MsgStatus.COMMAND:
-                return new X32_MsgStatus<>();
+                return new X32_MsgStatus();
             case X50_DeviceMsg.COMMAND:
-                return new X50_DeviceMsg<>();
+                return new X50_DeviceMsg();
             default:
                 return null;
         }

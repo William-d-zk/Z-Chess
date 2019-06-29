@@ -87,9 +87,9 @@ public class ClientLinkHandler<C extends IContext<C>>
                               ITriple> connectedOperator = event.getEventOp();
                     ITriple connectedHandled = connectedOperator.handle(connectActivity, channel);
                     //connectedHandled 不可能为 null
-                    IControl[] waitToSend = connectedHandled.first();
+                    IControl<C>[] waitToSend = connectedHandled.first();
                     ISession<C> session = connectedHandled.second();
-                    IOperator<IControl[],
+                    IOperator<IControl<C>[],
                               ISession,
                               List<ITriple>> sendTransferOperator = connectedHandled.third();
                     event.produce(WRITE, new Pair<>(waitToSend, session), sendTransferOperator);

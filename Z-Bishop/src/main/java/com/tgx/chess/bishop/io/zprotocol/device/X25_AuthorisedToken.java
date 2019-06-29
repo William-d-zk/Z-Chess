@@ -25,14 +25,13 @@
 package com.tgx.chess.bishop.io.zprotocol.device;
 
 import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
-import com.tgx.chess.queen.io.core.async.AioContext;
 
 /**
  * @author william.d.zk
  */
-public class X25_AuthorisedToken<C extends AioContext>
+public class X25_AuthorisedToken
         extends
-        BaseCommand<C>
+        BaseCommand
 {
     public final static int COMMAND = 0x25;
 

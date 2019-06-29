@@ -24,6 +24,9 @@
 
 package com.tgx.chess.bishop.io.zhandler;
 
+import static com.tgx.chess.queen.event.inf.IError.Type.SAVE_DATA;
+
+import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X01_EncryptRequest;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X02_AsymmetricPub;
@@ -43,22 +46,22 @@ import com.tgx.chess.queen.io.core.manager.QueenManager;
 /**
  * @author william.d.zk
  */
-public class ZLinkedHandler<C extends ZContext>
+public class ZLinkedHandler
         implements
-        ILinkHandler<C>
+        ILinkHandler<ZContext>
 {
 
     private final Logger _Logger = Logger.getLogger(getClass().getName());
 
     @Override
     @SuppressWarnings("unchecked")
-    public void handle(LinkHandler<C> _LinkHandler, QueenManager<C> manager, QEvent event)
+    public void handle(LinkHandler<ZContext> _LinkHandler, QueenManager<ZContext> manager, QEvent event)
     {
         IPair logicContent = event.getContent();
-        ISession<C> session = logicContent.second();
-        IControl<C> cmd = logicContent.first();
+        ISession<ZContext> session = logicContent.second();
+        IControl<ZContext> cmd = logicContent.first();
         _Logger.info("LinkHandler cmd: %s", cmd);
-        IControl<C>[] waitToSends = null;
+        IControl<ZContext>[] waitToSends = null;
         switch (cmd.getSerial())
         {
             case X01_EncryptRequest.COMMAND:
@@ -72,6 +75,20 @@ public class ZLinkedHandler<C extends ZContext>
                  *  此处仅执行转发逻辑
                  */
                 waitToSends = new IControl[] { cmd };
+                break;
+            case X111_QttConnect.COMMAND:
+                try {
+                    waitToSends = manager.handle(cmd, session);
+                }
+                catch (Exception e) {
+                    _LinkHandler.error(SAVE_DATA,
+                                       e,
+                                       session,
+                                       session.getContext()
+                                              .getSort()
+                                              .getError());
+                    return;
+                }
                 break;
             default:
                 break;

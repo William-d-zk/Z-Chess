@@ -40,7 +40,8 @@ public interface IPipeEncoder<C extends IContext<C>>
     default <O extends IProtocol> O filterWrite(IControl<C> output, C context)
     {
         IFilter.ResultType resultType;
-        IFilterChain<C> previous = context.getFilterChain()
+        IFilterChain<C> previous = context.getSort()
+                                          .getFilterChain()
                                           .getChainTail();
         IProtocol toWrite = output;
         while (previous != null) {

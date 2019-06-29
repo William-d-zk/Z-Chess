@@ -90,6 +90,7 @@ public class DecodeHandler<C extends IContext<C>>
                 event.error(FILTER_DECODE,
                             new Pair<>(e, session),
                             session.getContext()
+                                   .getSort()
                                    .getError());
             }
         }
@@ -99,9 +100,9 @@ public class DecodeHandler<C extends IContext<C>>
     }
 
     protected void transfer(QEvent event,
-                            IControl[] commands,
+                            IControl<C>[] commands,
                             ISession<C> session,
-                            IOperator<IControl[],
+                            IOperator<IControl<C>[],
                                       ISession<C>,
                                       ITriple> operator)
     {

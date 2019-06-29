@@ -38,8 +38,6 @@ import com.tgx.chess.queen.event.operator.ConnectedOperator;
 import com.tgx.chess.queen.io.core.inf.IAioServer;
 import com.tgx.chess.queen.io.core.inf.IConnectActivity;
 import com.tgx.chess.queen.io.core.inf.IContext;
-import com.tgx.chess.queen.io.core.inf.IPipeDecoder;
-import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
 
 /**
  * @author william.d.zk
@@ -49,15 +47,12 @@ public abstract class BaseAioServer<C extends IContext<C>>
         IAioServer<C>
 {
     private final AcceptFailedOperator<C> _AcceptFailedOperator = new AcceptFailedOperator<>();
-    private final ConnectedOperator<C>    _ConnectedOperator;
+    private final ConnectedOperator<C>    _ConnectedOperator    = new ConnectedOperator<>();
 
     protected BaseAioServer(String serverHost,
-                            int serverPort,
-                            IPipeEncoder<C> encoder,
-                            IPipeDecoder<C> decoder)
+                            int serverPort)
     {
         _LocalBind = new InetSocketAddress(serverHost, serverPort);
-        _ConnectedOperator = new ConnectedOperator<>();
     }
 
     private AsynchronousServerSocketChannel mServerChannel;

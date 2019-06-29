@@ -54,7 +54,7 @@ public class ClientIoDispatcher<C extends IContext<C>>
     private final RingBuffer<QEvent> _DecoderPipe;
     private final RingBuffer<QEvent> _WrotePipe;
     private final RingBuffer<QEvent> _ErrorPipe;
-    private final Logger             _Log = Logger.getLogger(getClass().getName());
+    private final Logger             _Logger = Logger.getLogger(getClass().getName());
 
     public ClientIoDispatcher(RingBuffer<QEvent> linkIoPipe,
                               RingBuffer<QEvent> decoderPipe,
@@ -125,7 +125,7 @@ public class ClientIoDispatcher<C extends IContext<C>>
                         }
                         break;
                     default:
-                        _Log.warning(String.format(" wrong type %s in ClientIoDispatcher", event.getEventType()));
+                        _Logger.warning(String.format(" wrong type %s in ClientIoDispatcher", event.getEventType()));
                         break;
                 }
             }
