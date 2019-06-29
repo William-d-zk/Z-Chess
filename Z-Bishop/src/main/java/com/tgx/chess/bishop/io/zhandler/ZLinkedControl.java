@@ -36,7 +36,6 @@ import com.tgx.chess.bishop.io.zprotocol.ztls.X05_EncryptStart;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X06_PlainStart;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.queen.event.handler.ILinkHandler;
 import com.tgx.chess.queen.event.handler.LinkHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.IControl;
@@ -46,9 +45,9 @@ import com.tgx.chess.queen.io.core.manager.QueenManager;
 /**
  * @author william.d.zk
  */
-public class ZLinkedHandler
+public class ZLinkedControl
         implements
-        ILinkHandler<ZContext>
+        LinkHandler.IControlHandler<ZContext>
 {
 
     private final Logger _Logger = Logger.getLogger(getClass().getName());

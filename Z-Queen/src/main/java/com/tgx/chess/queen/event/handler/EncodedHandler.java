@@ -41,8 +41,7 @@ import com.tgx.chess.queen.io.core.inf.ISession;
  */
 public class EncodedHandler<C extends IContext<C>>
         implements
-        IPipeEventHandler<QEvent>,
-        ISessionHandler<C>
+        IPipeEventHandler<QEvent>
 {
     private final Logger _Logger = Logger.getLogger(getClass().getName());
 

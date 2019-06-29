@@ -59,17 +59,17 @@ public class LinkHandler<C extends IContext<C>>
     private final RingBuffer<QEvent> _Error;
     private final RingBuffer<QEvent> _Writer;
     private final QueenManager<C>    _QueenManager;
-    private final ILinkHandler<C>    _LinkHandler;
+    private final IControlHandler<C> _ControlHandler;
 
     public LinkHandler(QueenManager<C> manager,
                        RingBuffer<QEvent> error,
                        RingBuffer<QEvent> writer,
-                       ILinkHandler<C> linkHandler)
+                       IControlHandler<C> controlHandler)
     {
         _Error = error;
         _Writer = writer;
         _QueenManager = manager;
-        _LinkHandler = linkHandler;
+        _ControlHandler = controlHandler;
     }
 
     @Override
@@ -126,7 +126,7 @@ public class LinkHandler<C extends IContext<C>>
                     IPair logicContent = event.getContent();
                     ISession<C> session = logicContent.second();
                     try {
-                        _LinkHandler.handle(this, _QueenManager, event);
+                        _ControlHandler.handle(this, _QueenManager, event);
                     }
                     catch (LinkRejectException e) {
                         error(LINK_LOGIN_ERROR,
@@ -170,6 +170,11 @@ public class LinkHandler<C extends IContext<C>>
                 session.getContext()
                        .getSort()
                        .getTransfer());
+    }
+
+    public interface IControlHandler<C extends IContext<C>>
+    {
+        void handle(LinkHandler<C> _LinkHandler, QueenManager<C> manager, QEvent event) throws ZException;
     }
 
 }

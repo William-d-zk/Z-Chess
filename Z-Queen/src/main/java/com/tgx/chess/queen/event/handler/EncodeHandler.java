@@ -24,9 +24,16 @@
 
 package com.tgx.chess.queen.event.handler;
 
+import static com.tgx.chess.queen.io.core.inf.IContext.ENCODE_ERROR;
+
+import java.util.Objects;
+
+import com.lmax.disruptor.EventHandler;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.king.base.util.Pair;
+import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.IContext;
@@ -38,7 +45,7 @@ import com.tgx.chess.queen.io.core.inf.ISession;
  */
 public class EncodeHandler<C extends IContext<C>>
         implements
-        ISessionHandler<C>
+        EventHandler<QEvent>
 {
     private final Logger _Logger = Logger.getLogger(getClass().getName());
 
@@ -82,6 +89,27 @@ public class EncodeHandler<C extends IContext<C>>
                     break;
                 default:
                     break;
+            }
+        }
+    }
+
+    private <A> void encodeHandler(QEvent event,
+                                   A a,
+                                   ISession<C> session,
+                                   IOperator<A,
+                                             ISession<C>,
+                                             ITriple> operator)
+    {
+        C context = session.getContext();
+        if (!context.isOutErrorState()) {
+            ITriple result = operator.handle(a, session);
+            if (Objects.nonNull(result)) {
+                Throwable throwable = result.first();
+                event.error(IError.Type.FILTER_ENCODE, new Pair<>(throwable, session), result.third());
+                context.setOutState(ENCODE_ERROR);
+            }
+            else {
+                event.ignore();
             }
         }
     }

@@ -41,7 +41,7 @@ import com.tgx.chess.bishop.io.ws.control.X104_Ping;
 import com.tgx.chess.bishop.io.ws.control.X105_Pong;
 import com.tgx.chess.bishop.io.zcrypt.EncryptHandler;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
-import com.tgx.chess.bishop.io.zhandler.ZLinkedHandler;
+import com.tgx.chess.bishop.io.zhandler.ZLinkedControl;
 import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
 import com.tgx.chess.bishop.io.zprotocol.device.X21_SignUpResult;
 import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
@@ -240,7 +240,7 @@ public class DeviceNode
                     break;
             }
             return null;
-        }), this, new ZLinkedHandler(), new EncryptHandler());
+        }), this, new ZLinkedControl(), new EncryptHandler());
         for (IAioServer<ZContext> server : _AioServers) {
             server.bindAddress(server.getLocalAddress(),
                                AsynchronousChannelGroup.withFixedThreadPool(_ServerCore.getServerCount(),
