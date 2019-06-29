@@ -23,6 +23,7 @@
  */
 package com.tgx.chess.bishop.io.mqtt.bean;
 
+import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
@@ -34,7 +35,7 @@ public abstract class QttCommand
         extends
         BaseQtt
         implements
-        ICommand<QttContext>
+        ICommand<ZContext>
 {
 
     private final int _Command;
@@ -44,8 +45,8 @@ public abstract class QttCommand
         _Command = command;
     }
 
-    private ISession<QttContext> mSession;
-    private byte[]               mPayload;
+    private ISession<ZContext> mSession;
+    private byte[]             mPayload;
 
     @Override
     public void setCtrl(byte ctrl)
@@ -90,14 +91,14 @@ public abstract class QttCommand
     }
 
     @Override
-    public ICommand<QttContext> setSession(ISession<QttContext> session)
+    public ICommand<ZContext> setSession(ISession<ZContext> session)
     {
         mSession = session;
         return this;
     }
 
     @Override
-    public ISession<QttContext> getSession()
+    public ISession<ZContext> getSession()
     {
         return mSession;
     }

@@ -26,8 +26,8 @@ package com.tgx.chess.bishop.io.mqtt.filter;
 
 import java.nio.ByteBuffer;
 
-import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
 import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
+import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.async.AioPacket;
 import com.tgx.chess.queen.io.core.inf.IPacket;
@@ -37,9 +37,9 @@ import com.tgx.chess.queen.io.core.inf.IProtocol;
  * @author william.d.zk
  * @date 2019-05-07
  */
-public class QttFrameFilter<C extends QttContext>
+public class QttFrameFilter
         extends
-        AioFilterChain<C,
+        AioFilterChain<ZContext,
                        QttFrame,
                        IPacket>
 {
@@ -50,13 +50,13 @@ public class QttFrameFilter<C extends QttContext>
     }
 
     @Override
-    public ResultType preEncode(C context, IProtocol output)
+    public ResultType preEncode(ZContext context, IProtocol output)
     {
         return preFrameEncode(context, output);
     }
 
     @Override
-    public IPacket encode(C context, QttFrame output)
+    public IPacket encode(ZContext context, QttFrame output)
     {
         ByteBuffer toWrite = ByteBuffer.allocate(output.dataLength());
         toWrite.position(output.encodec(toWrite.array(), toWrite.position()))
@@ -65,7 +65,7 @@ public class QttFrameFilter<C extends QttContext>
     }
 
     @Override
-    public ResultType preDecode(C context, IPacket input)
+    public ResultType preDecode(ZContext context, IPacket input)
     {
         ResultType result = preFrameDecode(context, input);
         if (ResultType.NEXT_STEP.equals(result)) {
@@ -123,7 +123,7 @@ public class QttFrameFilter<C extends QttContext>
     }
 
     @Override
-    public QttFrame decode(C context, IPacket input)
+    public QttFrame decode(ZContext context, IPacket input)
     {
         QttFrame frame = context.getCarrier();
         context.finish();

@@ -31,8 +31,6 @@ import static com.tgx.chess.queen.event.inf.IError.Type.READ_ZERO;
 import java.io.EOFException;
 import java.nio.ByteBuffer;
 import java.nio.channels.CompletionHandler;
-import java.nio.channels.NotYetConnectedException;
-import java.nio.channels.ShutdownChannelGroupException;
 
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.io.core.async.AioPacket;
@@ -58,6 +56,7 @@ public class AioReader<C extends IContext<C>>
         {
             case -1:
                 worker.publishReadError(session.getContext()
+                                               .getSort()
                                                .getError(),
                                         READ_EOF,
                                         new EOFException("Read Negative"),
@@ -65,26 +64,32 @@ public class AioReader<C extends IContext<C>>
                 break;
             case 0:
                 worker.publishReadError(session.getContext()
+                                               .getSort()
                                                .getError(),
                                         READ_ZERO,
                                         new IllegalStateException("Read Zero"),
                                         session);
-                session.readNext(this);
-                break;
-            default:
-                _Logger.info("read count: %d", result);
-                ByteBuffer recvBuf = session.read(result);
-                worker.publishRead(session.getContext()
-                                          .getDecoder(),
-                                   new AioPacket(recvBuf),
-                                   session);
                 try {
                     session.readNext(this);
                 }
-                catch (NotYetConnectedException |
-                       ShutdownChannelGroupException e)
-                {
+                catch (Exception e) {
+                    //ignore
+                }
+                break;
+            default:
+                _Logger.info("read count: %d", result);
+                try {
+                    ByteBuffer recvBuf = session.read(result);
+                    worker.publishRead(session.getContext()
+                                              .getSort()
+                                              .getDecoder(),
+                                       new AioPacket(recvBuf),
+                                       session);
+                    session.readNext(this);
+                }
+                catch (Exception e) {
                     worker.publishReadError(session.getContext()
+                                                   .getSort()
                                                    .getError(),
                                             READ_FAILED,
                                             e,
@@ -99,6 +104,7 @@ public class AioReader<C extends IContext<C>>
     {
         AioWorker worker = (AioWorker) Thread.currentThread();
         worker.publishReadError(session.getContext()
+                                       .getSort()
                                        .getError(),
                                 READ_FAILED,
                                 exc,

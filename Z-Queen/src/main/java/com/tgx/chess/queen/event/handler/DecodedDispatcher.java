@@ -71,7 +71,11 @@ public class DecodedDispatcher<C extends IContext<C>>
                     if (Objects.nonNull(commands)) {
                         for (IControl cmd : commands) {
                             //dispatch 到对应的 处理器里
-                            dispatch(session.getSort(), cmd, session, event.getEventOp());
+                            dispatch(session.getContext()
+                                            .getSort(),
+                                     cmd,
+                                     session,
+                                     event.getEventOp());
                         }
                     }
                 default:

@@ -23,7 +23,6 @@
  */
 package com.tgx.chess.bishop.io.ws.filter;
 
-import com.tgx.chess.bishop.io.ws.bean.WsContext;
 import com.tgx.chess.bishop.io.ws.bean.WsControl;
 import com.tgx.chess.bishop.io.ws.bean.WsFrame;
 import com.tgx.chess.bishop.io.ws.control.X101_HandShake;
@@ -31,6 +30,7 @@ import com.tgx.chess.bishop.io.ws.control.X102_SslHandShake;
 import com.tgx.chess.bishop.io.ws.control.X103_Close;
 import com.tgx.chess.bishop.io.ws.control.X104_Ping;
 import com.tgx.chess.bishop.io.ws.control.X105_Pong;
+import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
 import com.tgx.chess.bishop.io.zprotocol.control.X107_Redirect;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
@@ -41,7 +41,7 @@ import com.tgx.chess.queen.io.core.inf.IProtocol;
  */
 public class WsControlFilter
         extends
-        AioFilterChain<WsContext,
+        AioFilterChain<ZContext,
                        WsControl,
                        WsFrame>
 {
@@ -51,7 +51,7 @@ public class WsControlFilter
     }
 
     @Override
-    public ResultType preEncode(WsContext context, IProtocol output)
+    public ResultType preEncode(ZContext context, IProtocol output)
     {
         ResultType result = preControlEncode(context, output);
         if (result.equals(ResultType.NEXT_STEP)) {
@@ -63,7 +63,7 @@ public class WsControlFilter
     }
 
     @Override
-    public WsFrame encode(WsContext context, WsControl output)
+    public WsFrame encode(ZContext context, WsControl output)
     {
         WsFrame frame = new WsFrame();
         _Logger.info("control %s", output);
@@ -73,13 +73,13 @@ public class WsControlFilter
     }
 
     @Override
-    public ResultType preDecode(WsContext context, WsFrame input)
+    public ResultType preDecode(ZContext context, WsFrame input)
     {
         return preControlDecode(context, input);
     }
 
     @Override
-    public WsControl decode(WsContext context, WsFrame input)
+    public WsControl decode(ZContext context, WsFrame input)
     {
         switch (input.frame_op_code & 0x0F)
         {

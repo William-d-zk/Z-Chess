@@ -29,7 +29,7 @@ package com.tgx.chess.queen.io.core.inf;
 public interface IConnectActivity<C extends IContext<C>>
         extends
         IAddress,
-        IConnectMode
+        IConnectMode<C>
 {
     default int getHaIndex()
     {

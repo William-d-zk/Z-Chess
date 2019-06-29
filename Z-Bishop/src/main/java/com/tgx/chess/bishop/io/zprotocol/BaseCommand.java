@@ -27,11 +27,11 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
+import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.king.base.util.I18nUtil;
 import com.tgx.chess.king.base.util.IoUtil;
-import com.tgx.chess.queen.io.core.async.AioContext;
 import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.IRouteLv4;
 import com.tgx.chess.queen.io.core.inf.ISession;
@@ -39,28 +39,28 @@ import com.tgx.chess.queen.io.core.inf.ISession;
 /**
  * @author William.d.zk
  */
-public abstract class BaseCommand<C extends AioContext>
+public abstract class BaseCommand
         implements
-        ICommand<C>,
+        ICommand<ZContext>,
         IRouteLv4
 {
     private final Logger _Logger = Logger.getLogger(getClass().getName());
 
-    public final static int  version             = 0x3;
-    private final static int g_msg_uid_size      = 8;
-    private final static int min_no_msg_uid_size = 1 + 1 + 1 + 4;
-    private final static int min_msg_uid_size    = min_no_msg_uid_size + g_msg_uid_size;
-    private final int        _Command;
-    private final boolean    _HasUID;
-    private Charset          mCharset            = StandardCharsets.UTF_8;
-    private byte             mTypeByte;
-    private byte             mHAttr;
-    private long             mMsgUID;
-    private ISession<C>      mSession;
-    private long             mSequence           = -1;
-    private transient long   tTransactionKey     = _DEFAULT_TRANSACTION_KEY;
-    private byte[]           mPayload;
-    private byte             mCtrlCode;
+    public final static int    version             = 0x3;
+    private final static int   g_msg_uid_size      = 8;
+    private final static int   min_no_msg_uid_size = 1 + 1 + 1 + 4;
+    private final static int   min_msg_uid_size    = min_no_msg_uid_size + g_msg_uid_size;
+    private final int          _Command;
+    private final boolean      _HasUID;
+    private Charset            mCharset            = StandardCharsets.UTF_8;
+    private byte               mTypeByte;
+    private byte               mHAttr;
+    private long               mMsgUID;
+    private ISession<ZContext> mSession;
+    private long               mSequence           = -1;
+    private transient long     tTransactionKey     = _DEFAULT_TRANSACTION_KEY;
+    private byte[]             mPayload;
+    private byte               mCtrlCode;
 
     protected BaseCommand(int command,
                           boolean hasUID)
@@ -171,7 +171,7 @@ public abstract class BaseCommand<C extends AioContext>
     }
 
     @Override
-    public BaseCommand<C> setCluster(boolean b)
+    public BaseCommand setCluster(boolean b)
     {
         mHAttr |= b ? 0x80
                     : 0;
@@ -383,13 +383,13 @@ public abstract class BaseCommand<C extends AioContext>
         return mTypeByte;
     }
 
-    public BaseCommand<C> setPType(byte type_b)
+    public BaseCommand setPType(byte type_b)
     {
         this.mTypeByte = type_b;
         return this;
     }
 
-    public BaseCommand<C> setUID(String hexGUid, long longGUid)
+    public BaseCommand setUID(String hexGUid, long longGUid)
     {
         if (longGUid != -1) {
             setUID(longGUid);
@@ -417,20 +417,20 @@ public abstract class BaseCommand<C extends AioContext>
     }
 
     @Override
-    public ISession<C> getSession()
+    public ISession<ZContext> getSession()
     {
         return mSession;
     }
 
     @Override
-    public BaseCommand<C> setSession(ISession<C> session)
+    public BaseCommand setSession(ISession<ZContext> session)
     {
         this.mSession = session;
         return this;
     }
 
     @Override
-    public BaseCommand<C> duplicate()
+    public BaseCommand duplicate()
     {
         return null;
     }

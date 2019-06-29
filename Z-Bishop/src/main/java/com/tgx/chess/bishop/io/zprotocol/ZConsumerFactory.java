@@ -24,46 +24,46 @@
 
 package com.tgx.chess.bishop.io.zprotocol;
 
+import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.device.X21_SignUpResult;
 import com.tgx.chess.bishop.io.zprotocol.device.X23_SignInResult;
 import com.tgx.chess.bishop.io.zprotocol.device.X25_AuthorisedToken;
 import com.tgx.chess.bishop.io.zprotocol.device.X30_EventMsg;
 import com.tgx.chess.bishop.io.zprotocol.device.X32_MsgStatus;
 import com.tgx.chess.bishop.io.zprotocol.device.X51_DeviceMsgAck;
-import com.tgx.chess.queen.io.core.async.AioContext;
 import com.tgx.chess.queen.io.core.inf.ICommandFactory;
 
 /**
  * @author william.d.zk
  * @date 2019-05-08
  */
-public interface ZConsumerFactory<C extends AioContext>
+public interface ZConsumerFactory
         extends
-        ICommandFactory<C,
-                        BaseCommand<C>>
+        ICommandFactory<ZContext,
+                        BaseCommand>
 {
     @Override
-    default BaseCommand<C> create(int command)
+    default BaseCommand create(int command)
     {
         return consumerCommand(command);
     }
 
-    default BaseCommand<C> consumerCommand(int command)
+    default BaseCommand consumerCommand(int command)
     {
         switch (command)
         {
             case X21_SignUpResult.COMMAND:
-                return new X21_SignUpResult<>();
+                return new X21_SignUpResult();
             case X23_SignInResult.COMMAND:
-                return new X23_SignInResult<>();
+                return new X23_SignInResult();
             case X25_AuthorisedToken.COMMAND:
-                return new X25_AuthorisedToken<>();
+                return new X25_AuthorisedToken();
             case X30_EventMsg.COMMAND:
-                return new X30_EventMsg<>();
+                return new X30_EventMsg();
             case X32_MsgStatus.COMMAND:
-                return new X32_MsgStatus<>();
+                return new X32_MsgStatus();
             case X51_DeviceMsgAck.COMMAND:
-                return new X51_DeviceMsgAck<>();
+                return new X51_DeviceMsgAck();
             default:
                 return null;
         }

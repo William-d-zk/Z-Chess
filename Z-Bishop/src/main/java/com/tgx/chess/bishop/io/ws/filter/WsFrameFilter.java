@@ -27,6 +27,7 @@ import java.nio.ByteBuffer;
 
 import com.tgx.chess.bishop.io.ws.bean.WsContext;
 import com.tgx.chess.bishop.io.ws.bean.WsFrame;
+import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.async.AioPacket;
 import com.tgx.chess.queen.io.core.inf.IPacket;
@@ -37,7 +38,7 @@ import com.tgx.chess.queen.io.core.inf.IProtocol;
  */
 public class WsFrameFilter
         extends
-        AioFilterChain<WsContext,
+        AioFilterChain<ZContext,
                        WsFrame,
                        IPacket>
 {
@@ -48,13 +49,13 @@ public class WsFrameFilter
     }
 
     @Override
-    public ResultType preEncode(WsContext context, IProtocol output)
+    public ResultType preEncode(ZContext context, IProtocol output)
     {
         return preFrameEncode(context, output);
     }
 
     @Override
-    public IPacket encode(WsContext context, WsFrame output)
+    public IPacket encode(ZContext context, WsFrame output)
     {
         output.setMask(null);
         ByteBuffer toWrite = ByteBuffer.allocate(output.dataLength());
@@ -64,7 +65,7 @@ public class WsFrameFilter
     }
 
     @Override
-    public ResultType preDecode(WsContext context, IPacket input)
+    public ResultType preDecode(ZContext context, IPacket input)
     {
         ResultType result = preFrameDecode(context, input);
         if (ResultType.NEXT_STEP.equals(result)) {
@@ -139,7 +140,7 @@ public class WsFrameFilter
                             target = context.position() + (int) carrier.getPayloadLength();
                             lack = context.lackLength(0, target);
                             cRvBuf.clear();
-                            if (carrier.getPayloadLength() > context.getMaxPayloadSize() - target) {
+                            if (carrier.getPayloadLength() > ((WsContext) context).getMaxPayloadSize() - target) {
                                 _Logger.warning("payload is too large");
                                 return ResultType.ERROR;
                             }
@@ -163,7 +164,7 @@ public class WsFrameFilter
     }
 
     @Override
-    public WsFrame decode(WsContext context, IPacket input)
+    public WsFrame decode(ZContext context, IPacket input)
     {
         WsFrame frame = context.getCarrier();
         context.finish();

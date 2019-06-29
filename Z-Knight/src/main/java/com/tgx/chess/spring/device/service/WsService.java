@@ -41,7 +41,6 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 
 import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
-import com.tgx.chess.bishop.biz.device.WsNode;
 import com.tgx.chess.bishop.io.ws.bean.WsContext;
 import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
 import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
@@ -66,7 +65,6 @@ public class WsService
 {
     private final DeviceRepository _DeviceRepository;
     private final ClientRepository _ClientRepository;
-    private final WsNode           _DeviceNode;
 
     private final Random    _Random    = new Random();
     private final CryptUtil _CryptUtil = new CryptUtil();
@@ -80,7 +78,6 @@ public class WsService
         super(deviceRepository, clientRepository);
         _DeviceRepository = deviceRepository;
         _ClientRepository = clientRepository;
-        _DeviceNode = new WsNode(wsHost, wsPort, this);
     }
 
     @PostConstruct
@@ -134,8 +131,6 @@ public class WsService
                 break;
             case X24_UpdateToken.COMMAND:
                 X24_UpdateToken x24 = (X24_UpdateToken) tar;
-
-
 
                 break;
 

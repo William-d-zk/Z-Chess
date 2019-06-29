@@ -24,11 +24,11 @@
 
 package com.tgx.chess.bishop.io.mqtt.filter;
 
-import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
 import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
 import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
 import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
 import com.tgx.chess.bishop.io.mqtt.control.X112_QttConnack;
+import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
 
@@ -38,7 +38,7 @@ import com.tgx.chess.queen.io.core.inf.IProtocol;
  */
 public class QttControlFilter
         extends
-        AioFilterChain<QttContext,
+        AioFilterChain<ZContext,
                        QttControl,
                        QttFrame>
 {
@@ -49,19 +49,19 @@ public class QttControlFilter
     }
 
     @Override
-    public ResultType preEncode(QttContext context, IProtocol output)
+    public ResultType preEncode(ZContext context, IProtocol output)
     {
         return preControlEncode(context, output);
     }
 
     @Override
-    public ResultType preDecode(QttContext context, QttFrame input)
+    public ResultType preDecode(ZContext context, QttFrame input)
     {
         return preControlDecode(context, input);
     }
 
     @Override
-    public QttFrame encode(QttContext context, QttControl output)
+    public QttFrame encode(ZContext context, QttControl output)
     {
         QttFrame frame = new QttFrame();
         frame.setCtrl(output.getCtrl());
@@ -70,7 +70,7 @@ public class QttControlFilter
     }
 
     @Override
-    public QttControl decode(QttContext context, QttFrame input)
+    public QttControl decode(ZContext context, QttFrame input)
     {
         QttControl qttControl;
         switch (input.getType())

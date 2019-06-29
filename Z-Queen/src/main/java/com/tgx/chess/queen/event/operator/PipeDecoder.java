@@ -46,6 +46,7 @@ public class PipeDecoder<C extends IContext<C>>
         return new Triple<>(filterRead(input, session),
                             session,
                             session.getContext()
+                                   .getSort()
                                    .getTransfer());
     }
 

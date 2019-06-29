@@ -42,6 +42,7 @@ public interface IPipeDecoder<C extends IContext<C>>
     default IControl<C>[] filterRead(IPacket input, ISession<C> session)
     {
         final IFilterChain<C> _Header = session.getContext()
+                                               .getSort()
                                                .getFilterChain()
                                                .getChainHead();
         final C _Context = session.getContext();

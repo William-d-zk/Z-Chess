@@ -38,7 +38,7 @@ public class WroteOperator<C extends IContext<C>>
 {
     private final AioWriter<C> _AioWrite;
 
-    public WroteOperator(AioWriter<C> aioWriter)
+    WroteOperator(AioWriter<C> aioWriter)
     {
         _AioWrite = aioWriter;
     }
@@ -53,6 +53,7 @@ public class WroteOperator<C extends IContext<C>>
             return new Triple<>(e,
                                 session,
                                 session.getContext()
+                                       .getSort()
                                        .getError());
         }
         return null;

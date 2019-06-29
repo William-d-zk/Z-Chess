@@ -51,9 +51,9 @@ public class ClientDecodeHandler<C extends IContext<C>>
 
     @Override
     protected void transfer(QEvent event,
-                            IControl[] commands,
+                            IControl<C>[] commands,
                             ISession<C> session,
-                            IOperator<IControl[],
+                            IOperator<IControl<C>[],
                                       ISession<C>,
                                       ITriple> operator)
     {

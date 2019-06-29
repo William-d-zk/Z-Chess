@@ -29,7 +29,7 @@ import com.tgx.chess.queen.event.inf.ISort;
 /**
  * @author william.d.zk
  */
-public interface IConnectMode
+public interface IConnectMode<C extends IContext<C>>
 {
-    ISort getSort();
+    ISort<C> getSort();
 }

@@ -38,9 +38,9 @@ import com.tgx.chess.queen.io.core.async.AioContext;
 /**
  * @author william.d.zk
  */
-public class X32_MsgStatus<C extends AioContext>
+public class X32_MsgStatus
         extends
-        BaseCommand<C>
+        BaseCommand
 {
     public final static int COMMAND = 0x32;
 

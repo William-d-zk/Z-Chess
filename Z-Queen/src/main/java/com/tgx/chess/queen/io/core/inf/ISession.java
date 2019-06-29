@@ -41,7 +41,6 @@ public interface ISession<C extends IContext<C>>
         Closeable,
         IDisposable,
         IAddress,
-        IConnectMode,
         IValid,
         IReadable<ISession<C>>,
         IWritable<ISession<C>>

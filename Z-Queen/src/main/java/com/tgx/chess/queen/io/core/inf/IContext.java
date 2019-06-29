@@ -61,7 +61,7 @@ public interface IContext<C extends IContext<C>>
         return ENCODE_FRAME;
     }
 
-    IContext<C> setOutState(int state);
+    void setOutState(int state);
 
     @Override
     default int inState()
@@ -69,11 +69,11 @@ public interface IContext<C extends IContext<C>>
         return DECODE_FRAME;
     }
 
-    IContext<C> setInState(int state);
+    void setInState(int state);
 
     int getChannelState();
 
-    IContext<C> setChannelState(int state);
+    void setChannelState(int state);
 
     boolean channelStateLessThan(int state);
 
@@ -193,17 +193,6 @@ public interface IContext<C extends IContext<C>>
 
     void advanceChannelState(int targetState);
 
-    IPipeEncoder<C> getEncoder();
+    ISort<C> getSort();
 
-    IPipeDecoder<C> getDecoder();
-
-    IPipeTransfer<C> getTransfer();
-
-    ISort getSort();
-
-    IFilterChain<C> getFilterChain();
-
-    ISessionCloser<C> getCloser();
-
-    ISessionError<C> getError();
 }

@@ -26,6 +26,7 @@ package com.tgx.chess.bishop.io.ws.bean;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
+import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
@@ -35,13 +36,13 @@ import com.tgx.chess.queen.io.core.inf.ISession;
  */
 public abstract class WsControl
         implements
-        IControl<WsContext>
+        IControl<ZContext>
 {
 
-    private final byte[]        _Msg;
-    private final int           _Command;
-    protected byte              mCtrlCode;
-    private ISession<WsContext> mSession;
+    private final byte[]       _Msg;
+    private final int          _Command;
+    protected byte             mCtrlCode;
+    private ISession<ZContext> mSession;
 
     public WsControl(int command,
                      byte[] msg)
@@ -117,13 +118,13 @@ public abstract class WsControl
     }
 
     @Override
-    public ISession<WsContext> getSession()
+    public ISession<ZContext> getSession()
     {
         return mSession;
     }
 
     @Override
-    public WsControl setSession(ISession<WsContext> session)
+    public WsControl setSession(ISession<ZContext> session)
     {
         mSession = session;
         return this;

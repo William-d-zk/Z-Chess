@@ -24,7 +24,6 @@
 package com.tgx.chess.bishop.io.zfilter;
 
 import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.queen.io.core.async.AioContext;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.inf.IPacket;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
@@ -32,9 +31,9 @@ import com.tgx.chess.queen.io.core.inf.IProtocol;
 /**
  * @author William.d.zk
  */
-public class ZTlsFilter<C extends AioContext>
+public class ZTlsFilter
         extends
-        AioFilterChain<C,
+        AioFilterChain<ZContext,
                        IPacket,
                        IPacket>
 {
@@ -47,13 +46,13 @@ public class ZTlsFilter<C extends AioContext>
     private final Logger _Logger = Logger.getLogger(getClass().getName());
 
     @Override
-    public ResultType preEncode(C context, IProtocol output)
+    public ResultType preEncode(ZContext context, IProtocol output)
     {
         return prePacketEncode(context, output);
     }
 
     @Override
-    public IPacket encode(C context, IPacket output)
+    public IPacket encode(ZContext context, IPacket output)
     {
         if (!context.isOutCrypt() && context.needUpdateKeyOut()) {
             /* plain -> cipher X04/X05 encoded in command-zfilter */
@@ -77,13 +76,13 @@ public class ZTlsFilter<C extends AioContext>
     }
 
     @Override
-    public ResultType preDecode(C context, IPacket input)
+    public ResultType preDecode(ZContext context, IPacket input)
     {
         return prePacketDecode(context, input);
     }
 
     @Override
-    public IPacket decode(C context, IPacket input)
+    public IPacket decode(ZContext context, IPacket input)
     {
         if (context.needUpdateKeyIn()) {
             context.swapKeyIn(context.getReRollKey());

@@ -54,6 +54,7 @@ public interface IPipeTransfer<C extends IContext<C>>
                      .map(command -> new Triple<>(command.setSession(session),
                                                   session,
                                                   session.getContext()
+                                                         .getSort()
                                                          .getEncoder()))
                      .collect(Collectors.toList());
     }

@@ -47,7 +47,9 @@ public interface ISessionError<C extends IContext<C>>
         _Logger.warning("error session:%s", throwable, session);
         return new Triple<>(null,
                             session,
-                            session.getContext()
-                                   .getCloser());
+                            session == null ? null
+                                            : session.getContext()
+                                                     .getSort()
+                                                     .getCloser());
     }
 }

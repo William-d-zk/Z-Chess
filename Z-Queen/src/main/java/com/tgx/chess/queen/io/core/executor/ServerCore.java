@@ -163,7 +163,7 @@ public abstract class ServerCore<C extends IContext<C>>
     private LinkHandler<C>      mLinkHandler;
 
     @SuppressWarnings("unchecked")
-    public ServerCore()
+    protected ServerCore()
     {
         super(poolSize(), poolSize(), 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
         /* Aio event producer  */
@@ -466,6 +466,7 @@ public abstract class ServerCore<C extends IContext<C>>
         event.produce(Type.CLOSE,
                       new Pair<>(null, session),
                       session.getContext()
+                             .getSort()
                              .getCloser());
         _BizLocalCloseEvent.publish(sequence);
     }

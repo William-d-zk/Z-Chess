@@ -26,14 +26,13 @@ package com.tgx.chess.bishop.io.zprotocol.device;
 
 import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
 import com.tgx.chess.king.base.util.IoUtil;
-import com.tgx.chess.queen.io.core.async.AioContext;
 
 /**
  * @author william.d.zk
  */
-public class X23_SignInResult<C extends AioContext>
+public class X23_SignInResult
         extends
-        BaseCommand<C>
+        BaseCommand
 {
     public final static int COMMAND = 0x23;
 

@@ -32,9 +32,9 @@ import com.tgx.chess.queen.io.core.async.AioContext;
 /**
  * @author William.d.zk
  */
-public class X03_Cipher<C extends AioContext>
+public class X03_Cipher
         extends
-        BaseCommand<C>
+        BaseCommand
 {
     public final static int COMMAND = 0x03;
     public int              pubKeyId;

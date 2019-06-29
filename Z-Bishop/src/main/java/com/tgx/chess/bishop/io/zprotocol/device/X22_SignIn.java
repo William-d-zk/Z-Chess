@@ -28,14 +28,13 @@ import java.util.Objects;
 
 import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
 import com.tgx.chess.king.base.util.IoUtil;
-import com.tgx.chess.queen.io.core.async.AioContext;
 
 /**
  * @author william.d.zk
  */
-public class X22_SignIn<C extends AioContext>
+public class X22_SignIn
         extends
-        BaseCommand<C>
+        BaseCommand
 {
     public final static int COMMAND = 0x22;
 

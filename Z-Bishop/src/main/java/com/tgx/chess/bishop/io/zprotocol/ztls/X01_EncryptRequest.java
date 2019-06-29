@@ -25,14 +25,13 @@ package com.tgx.chess.bishop.io.zprotocol.ztls;
 
 import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
 import com.tgx.chess.king.base.util.IoUtil;
-import com.tgx.chess.queen.io.core.async.AioContext;
 
 /**
  * @author William.d.zk
  */
-public class X01_EncryptRequest<C extends AioContext>
+public class X01_EncryptRequest
         extends
-        BaseCommand<C>
+        BaseCommand
 {
     public final static int COMMAND  = 0x01;
     public int              pubKeyId = -1;

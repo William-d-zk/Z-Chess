@@ -83,7 +83,12 @@ public class IoDispatcher<C extends IContext<C>>
                 IPair closedContent = event.getContent();
                 ISession<C> session = closedContent.second();
                 if (!session.isClosed()) {
-                    dispatchError(session.getSort(), CLOSED, closedContent.first(), session, closedOperator);
+                    dispatchError(session.getContext()
+                                         .getSort(),
+                                  CLOSED,
+                                  closedContent.first(),
+                                  session,
+                                  closedOperator);
                 }
                 break;
             case NO_ERROR:
@@ -131,7 +136,12 @@ public class IoDispatcher<C extends IContext<C>>
                 if (!session.isClosed()) {
                     throwable = errorContent.first();
                     ITriple result = errorOperator.handle(throwable, session);
-                    dispatchError(session.getSort(), CLOSED, result.first(), session, result.third());
+                    dispatchError(session.getContext()
+                                         .getSort(),
+                                  CLOSED,
+                                  result.first(),
+                                  session,
+                                  result.third());
                 }
                 break;
         }

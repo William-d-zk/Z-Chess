@@ -45,7 +45,7 @@ public interface ISessionCreator<C extends IContext<C>>
      *            连接执行器实际执行单元
      * @return session
      */
-    ISession<C> createSession(AsynchronousSocketChannel socketChannel, IConnectActivity<C> activity);
+    ISession<C> createSession(AsynchronousSocketChannel socketChannel, IConnectActivity<C> activity) throws IOException;
 
     @Override
     default int setSNF()

@@ -44,14 +44,11 @@ public class PipeEncoder<C extends IContext<C>>
         implements
         IPipeEncoder<C>
 {
-    private final Logger           _Logger = Logger.getLogger(getClass().getSimpleName());
-    private final ErrorOperator<C> _ErrorOperator;
-    private final AioWriter<C>     _AioWriter;
+    private final Logger       _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final AioWriter<C> _AioWriter;
 
-    public PipeEncoder(ErrorOperator<C> errorOperator,
-                       AioWriter<C> aioWriter)
+    public PipeEncoder(AioWriter<C> aioWriter)
     {
-        _ErrorOperator = errorOperator;
         _AioWriter = aioWriter;
     }
 
@@ -69,7 +66,11 @@ public class PipeEncoder<C extends IContext<C>>
             session.write(send, _AioWriter);
         }
         catch (Exception e) {
-            return new Triple<>(e, session, _ErrorOperator);
+            return new Triple<>(e,
+                                session,
+                                session.getContext()
+                                       .getSort()
+                                       .getError());
         }
         return null;
     }

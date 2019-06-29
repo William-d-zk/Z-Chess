@@ -24,8 +24,10 @@
 
 package com.tgx.chess.queen.event.operator;
 
+import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
 
+import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.event.inf.IOperator;
@@ -49,18 +51,24 @@ public class ConnectedOperator<C extends IContext<C>>
     private final AioReader<C> _AioReader = new AioReader<>();
 
     @Override
-    public ITriple handle(IConnectActivity<C> activity, AsynchronousSocketChannel channel)
+    public ITriple handle(IConnectActivity<C> activity, AsynchronousSocketChannel channel) throws ZException
     {
         ISessionCreated<C> sessionCreated = activity.getSessionCreated();
         ISessionCreator<C> sessionCreator = activity.getSessionCreator();
         ICommandCreator<C> commandCreator = activity.getCommandCreator();
-        ISession<C> session = sessionCreator.createSession(channel, activity);
-        sessionCreated.onCreate(session);
-        session.readNext(_AioReader);
-        IControl<C>[] commands = commandCreator.createCommands(session);
-        return new Triple<>(commands,
-                            session,
-                            session.getContext()
-                                   .getTransfer());
+        try {
+            ISession<C> session = sessionCreator.createSession(channel, activity);
+            sessionCreated.onCreate(session);
+            session.readNext(_AioReader);
+            IControl<C>[] commands = commandCreator.createCommands(session);
+            return new Triple<>(commands,
+                                session,
+                                session.getContext()
+                                       .getSort()
+                                       .getTransfer());
+        }
+        catch (IOException e) {
+            throw new ZException("session create failed:%s", channel);
+        }
     }
 }

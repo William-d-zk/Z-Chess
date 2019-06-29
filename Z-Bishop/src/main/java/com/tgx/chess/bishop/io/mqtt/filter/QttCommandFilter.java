@@ -25,8 +25,8 @@
 package com.tgx.chess.bishop.io.mqtt.filter;
 
 import com.tgx.chess.bishop.io.mqtt.bean.BaseQtt;
-import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
 import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
+import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.inf.ICommandFactory;
@@ -38,22 +38,22 @@ import com.tgx.chess.queen.io.core.inf.IProtocol;
  */
 public class QttCommandFilter
         extends
-        AioFilterChain<QttContext,
-                       BaseCommand<QttContext>,
+        AioFilterChain<ZContext,
+                       BaseCommand,
                        QttFrame>
 {
-    public QttCommandFilter(ICommandFactory<QttContext,
-                                            BaseCommand<QttContext>> factory)
+    public QttCommandFilter(ICommandFactory<ZContext,
+                                            BaseCommand> factory)
     {
         super("mqtt-command-filter");
         _CommandFactory = factory;
     }
 
-    private final ICommandFactory<QttContext,
-                                  BaseCommand<QttContext>> _CommandFactory;
+    private final ICommandFactory<ZContext,
+                                  BaseCommand> _CommandFactory;
 
     @Override
-    public QttFrame encode(QttContext context, BaseCommand<QttContext> output)
+    public QttFrame encode(ZContext context, BaseCommand output)
     {
         QttFrame frame = new QttFrame();
         frame.setCtrl(output.getCtrl());
@@ -62,7 +62,7 @@ public class QttCommandFilter
     }
 
     @Override
-    public BaseCommand<QttContext> decode(QttContext context, QttFrame input)
+    public BaseCommand decode(ZContext context, QttFrame input)
     {
         switch (BaseQtt.QTT_TYPE.valueOf(input.getCtrl()))
         {
@@ -70,19 +70,19 @@ public class QttCommandFilter
             case SUBSCRIBE:
 
         }
-        BaseCommand<QttContext> cmd = _CommandFactory.create(0);
+        BaseCommand cmd = _CommandFactory.create(0);
 
         return cmd;
     }
 
     @Override
-    public ResultType preEncode(QttContext context, IProtocol output)
+    public ResultType preEncode(ZContext context, IProtocol output)
     {
         return preCommandEncode(context, output);
     }
 
     @Override
-    public ResultType preDecode(QttContext context, QttFrame input)
+    public ResultType preDecode(ZContext context, QttFrame input)
     {
         return preCommandDecode(context, input);
     }

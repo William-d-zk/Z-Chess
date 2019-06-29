@@ -24,25 +24,25 @@
 
 package com.tgx.chess.bishop.io.zprotocol;
 
-import com.tgx.chess.queen.io.core.async.AioContext;
+import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.queen.io.core.inf.ICommandFactory;
 
 /**
  * @author william.d.zk
  * @date 2019-05-08
  */
-public interface ZClusterFactory<C extends AioContext>
+public interface ZClusterFactory
         extends
-        ICommandFactory<C,
-                        BaseCommand<C>>
+        ICommandFactory<ZContext,
+                        BaseCommand>
 {
     @Override
-    default BaseCommand<C> create(int command)
+    default BaseCommand create(int command)
     {
         return clusterCommand(command);
     }
 
-    default BaseCommand<C> clusterCommand(int command)
+    default BaseCommand clusterCommand(int command)
     {
         return null;
     }
