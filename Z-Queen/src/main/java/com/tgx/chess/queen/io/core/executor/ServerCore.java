@@ -52,7 +52,6 @@ import com.tgx.chess.queen.event.handler.DecodeHandler;
 import com.tgx.chess.queen.event.handler.DecodedDispatcher;
 import com.tgx.chess.queen.event.handler.EncodeHandler;
 import com.tgx.chess.queen.event.handler.EncodedHandler;
-import com.tgx.chess.queen.event.handler.ILinkHandler;
 import com.tgx.chess.queen.event.handler.IoDispatcher;
 import com.tgx.chess.queen.event.handler.LinkHandler;
 import com.tgx.chess.queen.event.handler.LogicHandler;
@@ -227,7 +226,7 @@ public abstract class ServerCore<C extends IContext<C>>
     @SuppressWarnings("unchecked")
     public void build(LogicHandler<C> logicHandler,
                       QueenManager<C> manager,
-                      ILinkHandler<C> linkHandler,
+                      LinkHandler.IControlHandler<C> linkHandler,
                       IEncryptHandler encryptHandler)
     {
         final RingBuffer<QEvent> _WroteEvent = createPipelineYield(_AioQueuePower + 1);
