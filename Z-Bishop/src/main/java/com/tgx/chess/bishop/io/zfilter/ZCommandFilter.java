@@ -54,9 +54,9 @@ public class ZCommandFilter
                        IFrame>
 {
 
-    private final ICommandFactory<ZContext,
-                                  BaseCommand>           factory;
-    private final Logger                                 _Logger = Logger.getLogger(getClass().getName());
+    private ICommandFactory<ZContext,
+                            BaseCommand>           commandFactory;
+    private final Logger                           _Logger = Logger.getLogger(getClass().getName());
 
     public ZCommandFilter()
     {
@@ -67,7 +67,7 @@ public class ZCommandFilter
                                           BaseCommand> factory)
     {
         super("queen-command-zfilter");
-        this.factory = factory;
+        this.commandFactory = factory;
     }
 
     @Override
@@ -202,8 +202,14 @@ public class ZCommandFilter
             case 0xFF:
                 throw new UnsupportedOperationException();
             default:
-                return Objects.nonNull(factory) ? factory.create(command)
-                                                : null;
+                return Objects.nonNull(commandFactory) ? commandFactory.create(command)
+                                                       : null;
         }
+    }
+
+    public void setCommandFactory(ICommandFactory<ZContext,
+                                                  BaseCommand> factory)
+    {
+        commandFactory = factory;
     }
 }

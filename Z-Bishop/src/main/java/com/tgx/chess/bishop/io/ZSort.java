@@ -43,6 +43,7 @@ import com.tgx.chess.queen.event.operator.ErrorOperator;
 import com.tgx.chess.queen.event.operator.PipeDecoder;
 import com.tgx.chess.queen.event.operator.PipeEncoder;
 import com.tgx.chess.queen.event.operator.TransferOperator;
+import com.tgx.chess.queen.io.core.inf.ICommandCreator;
 import com.tgx.chess.queen.io.core.inf.IFilterChain;
 import com.tgx.chess.queen.io.core.inf.IPipeDecoder;
 import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
@@ -84,9 +85,9 @@ public enum ZSort
         }
 
         @Override
-        public ZContext newContext(ISessionOption option)
+        public ZContext newContext(ISessionOption option, ICommandCreator<ZContext> commandCreator)
         {
-            return new WsContext(option, this);
+            return new WsContext(option, this, commandCreator);
         }
     },
     /**
@@ -113,9 +114,9 @@ public enum ZSort
         }
 
         @Override
-        public ZContext newContext(ISessionOption option)
+        public ZContext newContext(ISessionOption option, ICommandCreator<ZContext> commandCreator)
         {
-            return new WsContext(option, this);
+            return new WsContext(option, this, commandCreator);
         }
     },
     /**
@@ -142,9 +143,9 @@ public enum ZSort
         }
 
         @Override
-        public ZContext newContext(ISessionOption option)
+        public ZContext newContext(ISessionOption option, ICommandCreator<ZContext> commandCreator)
         {
-            return new WsContext(option, this);
+            return new WsContext(option, this, commandCreator);
         }
     },
     /**
@@ -172,9 +173,9 @@ public enum ZSort
         }
 
         @Override
-        public ZContext newContext(ISessionOption option)
+        public ZContext newContext(ISessionOption option, ICommandCreator<ZContext> commandCreator)
         {
-            return new WsContext(option, this);
+            return new WsContext(option, this, commandCreator);
         }
     },
     /**
@@ -202,9 +203,9 @@ public enum ZSort
         }
 
         @Override
-        public ZContext newContext(ISessionOption option)
+        public ZContext newContext(ISessionOption option, ICommandCreator<ZContext> commandCreator)
         {
-            return new WsContext(option, this);
+            return new WsContext(option, this, commandCreator);
         }
     },
     /**
@@ -237,9 +238,9 @@ public enum ZSort
         }
 
         @Override
-        public ZContext newContext(ISessionOption option)
+        public ZContext newContext(ISessionOption option, ICommandCreator<ZContext> commandCreator)
         {
-            return new WsContext(option, this);
+            return new WsContext(option, this, commandCreator);
         }
     },
     /**
@@ -266,9 +267,9 @@ public enum ZSort
         }
 
         @Override
-        public ZContext newContext(ISessionOption option)
+        public ZContext newContext(ISessionOption option, ICommandCreator<ZContext> commandCreator)
         {
-            return new WsContext(option, this);
+            return new WsContext(option, this, commandCreator);
         }
     },
     QTT_SYMMETRY
@@ -292,9 +293,9 @@ public enum ZSort
         }
 
         @Override
-        public ZContext newContext(ISessionOption option)
+        public ZContext newContext(ISessionOption option, ICommandCreator<ZContext> commandCreator)
         {
-            return new QttContext(option, this);
+            return new QttContext(option, this, commandCreator);
         }
     };
 
@@ -361,4 +362,5 @@ public enum ZSort
     {
         return _ErrorOperator;
     }
+
 }

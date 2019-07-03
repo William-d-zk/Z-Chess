@@ -24,7 +24,10 @@
 
 package com.tgx.chess.queen.io.core.executor;
 
+import java.io.IOException;
+import java.nio.channels.AsynchronousChannelGroup;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -128,38 +131,39 @@ public abstract class ServerCore<C extends IContext<C>>
     private final ConcurrentLinkedQueue<RingBuffer<QEvent>> _AioCacheConcurrentQueue;
     private final ConcurrentLinkedQueue<RingBuffer<QEvent>> _ClusterCacheConcurrentQueue;
 
-    private final ThreadFactory _WorkerThreadFactory  = new ThreadFactory()
-                                                      {
-                                                          int count;
+    private final ThreadFactory      _WorkerThreadFactory  = new ThreadFactory()
+                                                           {
+                                                               int count;
 
-                                                          @Override
-                                                          public Thread newThread(Runnable r)
-                                                          {
-                                                              return new AioWorker(r,
-                                                                                   String.format("AioWorker.server.%d",
-                                                                                                 count++),
-                                                                                   _AioCacheConcurrentQueue::offer,
-                                                                                   _AioCacheConcurrentQueue.poll());
-                                                          }
-                                                      };
-    private final ThreadFactory _ClusterThreadFactory = new ThreadFactory()
-                                                      {
-                                                          int count;
+                                                               @Override
+                                                               public Thread newThread(Runnable r)
+                                                               {
+                                                                   return new AioWorker(r,
+                                                                                        String.format("AioWorker.server.%d",
+                                                                                                      count++),
+                                                                                        _AioCacheConcurrentQueue::offer,
+                                                                                        _AioCacheConcurrentQueue.poll());
+                                                               }
+                                                           };
+    private final ThreadFactory      _ClusterThreadFactory = new ThreadFactory()
+                                                           {
+                                                               int count;
 
-                                                          @Override
-                                                          public Thread newThread(Runnable r)
-                                                          {
-                                                              return new AioWorker(r,
-                                                                                   String.format("AioWorker.cluster.%d",
-                                                                                                 count++),
-                                                                                   _ClusterCacheConcurrentQueue::offer,
-                                                                                   _ClusterCacheConcurrentQueue.poll());
-                                                          }
-                                                      };
-    private final TimeWheel     _TimeWheel            = new TimeWheel(1, TimeUnit.SECONDS);
-    private final ReentrantLock _LocalLock            = new ReentrantLock();
-    private final Future<Void>  _EventTimer;
-    private LinkHandler<C>      mLinkHandler;
+                                                               @Override
+                                                               public Thread newThread(Runnable r)
+                                                               {
+                                                                   return new AioWorker(r,
+                                                                                        String.format("AioWorker.cluster.%d",
+                                                                                                      count++),
+                                                                                        _ClusterCacheConcurrentQueue::offer,
+                                                                                        _ClusterCacheConcurrentQueue.poll());
+                                                               }
+                                                           };
+    private final TimeWheel          _TimeWheel            = new TimeWheel(1, TimeUnit.SECONDS);
+    private final ReentrantLock      _LocalLock            = new ReentrantLock();
+    private final Future<Void>       _EventTimer;
+    private AsynchronousChannelGroup mServiceChannelGroup;
+    private LinkHandler<C>           mLinkHandler;
 
     @SuppressWarnings("unchecked")
     protected ServerCore()
@@ -504,5 +508,13 @@ public abstract class ServerCore<C extends IContext<C>>
     protected RingBuffer<QEvent> getClusterLocalSendEvent()
     {
         return _ClusterLocalSendEvent;
+    }
+
+    public AsynchronousChannelGroup getServiceChannelGroup() throws IOException
+    {
+        return Objects.nonNull(mServiceChannelGroup) ? mServiceChannelGroup
+                                                     : (mServiceChannelGroup = AsynchronousChannelGroup.withFixedThreadPool(getServerCount(),
+                                                                                                                            getWorkerThreadFactory()));
+
     }
 }
