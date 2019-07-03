@@ -302,9 +302,9 @@ public class AioSession<C extends IContext<C>>
                 case IN_SENDING:
                     ps.send();
                 default:
-                    _Logger.info("wait to write %d ,channel state %x ,less than [SENDING] %s",
+                    _Logger.info("wait to write %d ,channel state %s ,less than [SENDING] %s",
                                  mWaitWrite,
-                                 _Ctx.getChannelState(),
+                                 _Ctx.getSessionState(_Ctx.getChannelState()),
                                  _Ctx.channelStateLessThan(SESSION_SENDING));
                     if (mWaitWrite > 0 && _Ctx.channelStateLessThan(SESSION_SENDING)) {
                         flush(handler);

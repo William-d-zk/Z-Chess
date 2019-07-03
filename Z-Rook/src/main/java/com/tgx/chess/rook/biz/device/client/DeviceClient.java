@@ -259,7 +259,7 @@ public class DeviceClient
                     X111_QttConnect x111 = new X111_QttConnect();
                     x111.setClientId(IoUtil.bin2Hex(_CryptUtil.sha256("test-mqtt-smallbeex-0001".getBytes())));
                     x111.setUserName("A06FF74D68D32FD5FE9DEB00F636BEC9C24FC400F23E6B91F2CA3AA9A3E52B7F");
-                    x111.setPassword("=~+X~Az#T0&HexTONx@-Y_/!PH`m;R".getBytes(StandardCharsets.UTF_8));
+                    x111.setPassword("SNju/kfjXtgAAe-`cN".getBytes(StandardCharsets.UTF_8));
                     x111.setCleanSession();
                     return new IControl[] { x111 };
                 };
@@ -317,7 +317,7 @@ public class DeviceClient
             _TimeWheel.acquire(3, TimeUnit.SECONDS, _Connector, new ScheduleHandler<>(false, connector ->
             {
                 if (Objects.nonNull(_ClientSessions.get(_ClientId))) {
-                    _Logger.info("connect status checked -> success");
+                    _Logger.info("connect -> success; %s", _ClientSessions.get(_ClientId));
                 }
                 else {
                     _Logger.warning("connect status checked -> failed -> retry once");
@@ -342,8 +342,14 @@ public class DeviceClient
     public void onCreate(ISession<ZContext> session)
     {
         _Logger.info("client connect:%s", session);
-        _ClientSessions.put(session.getIndex(), session);
-        updateState(STATE.OFFLINE);
+        long sessionIndex = session.getIndex();
+        if (_ClientSessions.containsKey(sessionIndex)) {
+            _Logger.warning("clientId %d already connected", sessionIndex);
+        }
+        else {
+            _ClientSessions.put(session.getIndex(), session);
+            updateState(STATE.OFFLINE);
+        }
     }
 
     @Override

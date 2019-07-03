@@ -118,6 +118,27 @@ public interface IContext<C extends IContext<C>>
     int SESSION_CLOSE      = 01 << COUNT_BITS; /* 链路关闭，尚未完成清理 [any]->[close]*/
     int SESSION_TERMINATED = 02 << COUNT_BITS; /* 终态，清理结束*/
 
+    default String getSessionState(int c)
+    {
+        switch (c)
+        {
+            case SESSION_CONNECTED:
+                return "SESSION_CONNECTED";
+            case SESSION_IDLE:
+                return "SESSION_IDLE";
+            case SESSION_PENDING:
+                return "SESSION_PENDING";
+            case SESSION_SENDING:
+                return "SESSION_SENDING";
+            case SESSION_CLOSE:
+                return "SESSION_CLOSE";
+            case SESSION_TERMINATED:
+                return "SESSION_TERMINATED";
+            default:
+                return "UNKNOWN";
+        }
+    }
+
     default int stateOf(int c)
     {
         return c & ~CAPACITY;
