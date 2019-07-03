@@ -25,7 +25,6 @@
 package com.tgx.chess.bishop.biz.device;
 
 import java.io.IOException;
-import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.List;
 import java.util.Objects;
@@ -105,8 +104,8 @@ public class DeviceNode
         addSession(session);
     }
 
-    DeviceNode(List<ITriple> hosts,
-               IRepository<DeviceEntry> repository)
+    public DeviceNode(List<ITriple> hosts,
+                      IRepository<DeviceEntry> repository)
     {
         super(new Config("device"), new ServerCore<ZContext>()
         {
@@ -144,6 +143,7 @@ public class DeviceNode
                                final String _Host = triple.first();
                                final int _Port = triple.second();
                                final ISort<ZContext> _Sort = triple.third();
+                               final ICommandCreator<ZContext> _CommandCreator = session -> null;
                                final ISessionCreator<ZContext> _SessionCreator = new AioCreator<ZContext>(getConfig())
                                {
                                    @Override
@@ -157,13 +157,12 @@ public class DeviceNode
                                    @Override
                                    public ZContext createContext(ISessionOption option, ISort<ZContext> sort)
                                    {
-                                       return sort.newContext(option);
+                                       return sort.newContext(option, _CommandCreator);
                                    }
                                };
-                               final ICommandCreator<ZContext> _CommandCreator = session -> null;
+
                                return new BaseAioServer<ZContext>(_Host, _Port)
                                {
-
                                    @Override
                                    public ISort<ZContext> getSort()
                                    {
@@ -195,16 +194,30 @@ public class DeviceNode
     }
 
     @SafeVarargs
-    public final void localBizSend(long deviceId, ISort<ZContext> sort, IControl<ZContext>... toSends)
+    public final void localBizSend(long deviceId, IControl<ZContext>... toSends)
     {
-        localSend(findSessionByIndex(deviceId), sort.getTransfer(), toSends);
+        ISession<ZContext> session = findSessionByIndex(deviceId);
+        if (session != null) {
+            localSend(session,
+                      session.getContext()
+                             .getSort()
+                             .getTransfer(),
+                      toSends);
+        }
     }
 
-    public void localBizClose(long deviceId, ISort<ZContext> sort)
+    public void localBizClose(long deviceId)
     {
-        localClose(findSessionByIndex(deviceId), sort.getCloser());
+        ISession<ZContext> session = findSessionByIndex(deviceId);
+        if (session != null) {
+            localClose(session,
+                       session.getContext()
+                              .getSort()
+                              .getCloser());
+        }
     }
 
+    @SuppressWarnings("unchecked")
     public void start() throws IOException
     {
         _ServerCore.build(new LogicHandler((command, session) ->
@@ -242,9 +255,7 @@ public class DeviceNode
             return null;
         }), this, new ZLinkedControl(), new EncryptHandler());
         for (IAioServer<ZContext> server : _AioServers) {
-            server.bindAddress(server.getLocalAddress(),
-                               AsynchronousChannelGroup.withFixedThreadPool(_ServerCore.getServerCount(),
-                                                                            _ServerCore.getWorkerThreadFactory()));
+            server.bindAddress(server.getLocalAddress(), _ServerCore.getServiceChannelGroup());
             server.pendingAccept();
             _Logger.info(String.format("device node start %s", server.getLocalAddress()));
         }

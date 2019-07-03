@@ -193,6 +193,12 @@ public interface IContext<C extends IContext<C>>
 
     void advanceChannelState(int targetState);
 
+    /**
+     * 基于通讯协议的分类器。
+     * 
+     * @return
+     */
     ISort<C> getSort();
 
+    ICommandCreator<C> getCommandCreator();
 }

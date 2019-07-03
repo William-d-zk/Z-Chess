@@ -55,7 +55,7 @@ public class ZGenerator
         return id;
     }
 
-    public long next()
+    private long next()
     {
         return _ZUID.getId();
     }

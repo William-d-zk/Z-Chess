@@ -28,6 +28,7 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.tgx.chess.queen.event.inf.ISort;
+import com.tgx.chess.queen.io.core.inf.ICommandCreator;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 
@@ -53,9 +54,10 @@ public abstract class AioContext<C extends IContext<C>>
      * 用于缓存 IPoS 分块带入的 RecvBuffer 内容 由于 AioWorker 中 channel 的 read_buffer - protocol_buffer - 都以 SocketOption 设定为准，所以不存在 IPoS 带入一个包含多个分页的协议
      * 内容的情况
      */
-    private final ByteBuffer _RvBuf;
-    private final ISort<C>   _Sort;
-    private boolean          mInitFromHandshake;
+    private final ByteBuffer         _RvBuf;
+    private final ISort<C>           _Sort;
+    private final ICommandCreator<C> _CommandCreator;
+    private boolean                  mInitFromHandshake;
 
     private long mClientStartTime;
     private long mServerArrivedTime;
@@ -63,11 +65,13 @@ public abstract class AioContext<C extends IContext<C>>
     private long mClientArrivedTime;
 
     protected AioContext(ISessionOption option,
-                         ISort<C> sort)
+                         ISort<C> sort,
+                         ICommandCreator<C> commandCreator)
     {
         _RvBuf = ByteBuffer.allocate(option.setRCV());
         _WrBuf = ByteBuffer.allocate(option.setSNF());
         _Sort = sort;
+        _CommandCreator = commandCreator;
     }
 
     @Override
@@ -297,4 +301,9 @@ public abstract class AioContext<C extends IContext<C>>
         return _Sort;
     }
 
+    @Override
+    public ICommandCreator<C> getCommandCreator()
+    {
+        return _CommandCreator;
+    }
 }

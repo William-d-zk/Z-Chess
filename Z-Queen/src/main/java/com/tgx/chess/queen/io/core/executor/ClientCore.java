@@ -87,7 +87,7 @@ public class ClientCore<C extends IContext<C>>
 
     public ClientCore()
     {
-        super(poolSize(), poolSize(), 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
+        super(poolSize(), poolSize(), 15, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
         _AioProducerEvent = createPipelineYield(6);
         _BizLocalCloseEvent = createPipelineLite(5);
         _BizLocalSendEvent = createPipelineLite(5);

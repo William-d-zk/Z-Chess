@@ -24,6 +24,7 @@
 
 package com.tgx.chess.queen.event.inf;
 
+import com.tgx.chess.queen.io.core.inf.ICommandCreator;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IFilterChain;
 import com.tgx.chess.queen.io.core.inf.IPipeDecoder;
@@ -35,6 +36,7 @@ import com.tgx.chess.queen.io.core.inf.ISessionOption;
 
 /**
  * @author william.d.zk
+ *         基于通讯协议的Pipeline 固有模式分类
  */
 public interface ISort<C extends IContext<C>>
 {
@@ -80,5 +82,5 @@ public interface ISort<C extends IContext<C>>
 
     ISessionError<C> getError();
 
-    C newContext(ISessionOption option);
+    C newContext(ISessionOption option, ICommandCreator<C> commandCreator);
 }

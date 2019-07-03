@@ -43,22 +43,22 @@ import com.tgx.chess.bishop.biz.db.dao.DeviceStatus;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.spring.device.model.DeviceEntity;
 import com.tgx.chess.spring.device.service.DeviceDo;
+import com.tgx.chess.spring.device.service.DeviceService;
 import com.tgx.chess.spring.device.service.ResponseDo;
-import com.tgx.chess.spring.device.service.WsService;
 import com.tgx.chess.spring.jpa.generator.ZGenerator;
 
 /**
  * @author william.d.zk
  */
 @RestController
-public class DeviceWsController
+public class DeviceController
 {
-    private final Logger     _Logger     = Logger.getLogger(getClass().getName());
-    private final WsService  _DeviceService;
-    private final ZGenerator _ZGenerator = new ZGenerator();
+    private final Logger        _Logger     = Logger.getLogger(getClass().getName());
+    private final DeviceService _DeviceService;
+    private final ZGenerator    _ZGenerator = new ZGenerator();
 
     @Autowired
-    public DeviceWsController(WsService deviceService)
+    public DeviceController(DeviceService deviceService)
     {
         _DeviceService = deviceService;
     }
