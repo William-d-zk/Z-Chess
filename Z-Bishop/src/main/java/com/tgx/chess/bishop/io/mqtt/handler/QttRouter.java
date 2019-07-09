@@ -22,7 +22,7 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.spring.device.service;
+package com.tgx.chess.bishop.io.mqtt.handler;
 
 import java.util.Comparator;
 import java.util.Map;
@@ -35,7 +35,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
-import com.tgx.chess.bishop.io.mqtt.handler.IQttRouter;
+import com.tgx.chess.bishop.io.mqtt.bean.BaseQtt;
+import com.tgx.chess.king.base.util.Pair;
 
 /**
  * @author william.d.zk
@@ -47,7 +48,8 @@ public class QttRouter
 {
 
     private final Map<Pattern,
-                      Set<Long>> _Topic2SessionsMap = new TreeMap<>(Comparator.comparing(Pattern::pattern));
+                      Pair<BaseQtt.QOS_LEVEL,
+                           Set<Long>>> _Topic2SessionsMap = new TreeMap<>(Comparator.comparing(Pattern::pattern));
 
     @PostConstruct
     private void addDefault()
@@ -55,32 +57,45 @@ public class QttRouter
 
     }
 
-    public Set<Long> broker(final String topic)
+    public Set<Pair<BaseQtt.QOS_LEVEL,
+                    Long>> broker(final String topic)
     {
         return _Topic2SessionsMap.entrySet()
                                  .parallelStream()
                                  .map(entry ->
                                  {
                                      Pattern pattern = entry.getKey();
-                                     return pattern.asPredicate()
-                                                   .test(topic) ? entry.getValue()
-                                                                : null;
+                                     return pattern.matcher(topic)
+                                                   .matches() ? entry.getValue()
+                                                              : null;
                                  })
                                  .filter(Objects::nonNull)
-                                 .flatMap(Set::stream)
+                                 .flatMap(pair ->
+                                 {
+                                     Set<Long> indexSet = pair.second();
+                                     BaseQtt.QOS_LEVEL qosLevel = pair.first();
+                                     return indexSet.stream()
+                                                    .map(l -> new Pair<>(qosLevel, l));
+                                 })
                                  .collect(Collectors.toCollection(ConcurrentSkipListSet::new));
     }
 
-    public void addTopic(String topic, long index)
+    public void addTopic(Pair<String,
+                              BaseQtt.QOS_LEVEL> pair,
+                         long index)
     {
+        String topic = pair.first();
+        BaseQtt.QOS_LEVEL qosLevel = pair.second();
         Pattern pattern = topic.endsWith("/+") ? Pattern.compile(topic.replace("+", "[^/]+"))
                                                : topic.endsWith("/#") ? Pattern.compile(topic.replace("#", ".+"))
                                                                       : Pattern.compile(topic);
-        Set<Long> indexSet = _Topic2SessionsMap.get(pattern);
-        if (Objects.isNull(indexSet)) {
-            indexSet = new ConcurrentSkipListSet<>();
+        Pair<BaseQtt.QOS_LEVEL,
+             Set<Long>> value = _Topic2SessionsMap.get(pattern);
+        if (Objects.isNull(value)) {
+            value = new Pair<>(qosLevel, new ConcurrentSkipListSet<>());
         }
-        indexSet.add(index);
+        value.second()
+             .add(index);
     }
 
 }
