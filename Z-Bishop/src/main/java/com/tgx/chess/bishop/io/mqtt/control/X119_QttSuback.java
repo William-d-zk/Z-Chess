@@ -24,7 +24,14 @@
 
 package com.tgx.chess.bishop.io.mqtt.control;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
+
 import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
+import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
+import com.tgx.chess.king.base.util.IoUtil;
 
 /**
  * @author william.d.zk
@@ -40,11 +47,53 @@ public class X119_QttSuback
     public X119_QttSuback()
     {
         super(COMMAND);
+        setCtrl(QttFrame.generateCtrl(false, false, QOS_LEVEL.QOS_ALMOST_ONCE, QTT_TYPE.SUBACK));
+    }
+
+    private List<QOS_LEVEL> resultList;
+
+    public void addResult(QOS_LEVEL qosLevel)
+    {
+        if (resultList == null) {
+            resultList = new LinkedList<>();
+        }
+        resultList.add(qosLevel);
+    }
+
+    public List<QOS_LEVEL> getQosLevels()
+    {
+        return resultList;
     }
 
     @Override
     public int dataLength()
     {
-        return 0;
+        return 3 + resultList.size();
     }
+
+    @Override
+    public int decodec(byte[] data, int pos)
+    {
+        int size = IoUtil.readUnsignedShort(data, pos);
+        pos += 2;
+        resultList = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            resultList.add(QOS_LEVEL.valueOf(data[pos++]));
+        }
+        return pos;
+    }
+
+    @Override
+    public int encodec(byte[] data, int pos)
+    {
+        pos += IoUtil.writeShort(Objects.isNull(resultList) || resultList.isEmpty() ? 0
+                                                                                    : resultList.size(),
+                                 data,
+                                 pos);
+        for (QOS_LEVEL qosLevel : resultList) {
+            pos += IoUtil.writeByte(qosLevel.getValue(), data, pos);
+        }
+        return pos;
+    }
+
 }

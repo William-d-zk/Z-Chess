@@ -28,7 +28,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
 import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
@@ -77,16 +76,17 @@ public class X118_QttSubscribe
         return length;
     }
 
-    private final List<IPair> _Topics = new ArrayList<>(3);
+    private final List<Pair<String,
+                            QOS_LEVEL>> _Topics = new ArrayList<>(3);
 
-    public List<String> getTopics()
+    public List<Pair<String,
+                     QOS_LEVEL>> getTopics()
     {
-        return _Topics.stream()
-                      .map(pair -> (String) pair.first())
-                      .collect(Collectors.toList());
+        return _Topics;
     }
 
-    public void setTopics(IPair... topics)
+    public void setTopics(Pair<String,
+                               QOS_LEVEL>... topics)
     {
         Collections.addAll(_Topics, topics);
     }

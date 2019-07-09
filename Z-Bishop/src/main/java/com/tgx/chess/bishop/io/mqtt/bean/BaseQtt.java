@@ -38,6 +38,7 @@ public class BaseQtt
     private final static byte QOS_ALMOST_ONCE   = 0;
     private final static byte QOS_AT_LEAST_ONCE = 1;
     private final static byte QOS_EXACTLY_ONCE  = 2;
+    private final static byte QOS_FAILURE       = (byte) 0x80;
     private final static byte RETAIN_FLAG       = 1;
     private final static byte QOS_MASK          = 0x06;
 
@@ -127,6 +128,7 @@ public class BaseQtt
 
     public enum QOS_LEVEL
     {
+        QOS_FAILURE(BaseQtt.QOS_FAILURE),
         QOS_ALMOST_ONCE(BaseQtt.QOS_ALMOST_ONCE),
         QOS_EXACTLY_ONCE(BaseQtt.QOS_EXACTLY_ONCE),
         QOS_AT_LEAST_ONCE(BaseQtt.QOS_AT_LEAST_ONCE);
@@ -153,6 +155,8 @@ public class BaseQtt
                     return QOS_AT_LEAST_ONCE;
                 case BaseQtt.QOS_ALMOST_ONCE:
                     return QOS_ALMOST_ONCE;
+                case BaseQtt.QOS_FAILURE:
+                    return QOS_FAILURE;
                 default:
                     throw new IllegalArgumentException("QoS reserved");
             }

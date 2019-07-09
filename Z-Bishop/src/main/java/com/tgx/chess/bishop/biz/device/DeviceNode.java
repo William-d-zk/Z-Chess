@@ -329,10 +329,16 @@ public class DeviceNode
                 return new IControl[] { x112 };
             case X118_QttSubscribe.COMMAND:
                 X118_QttSubscribe x118 = (X118_QttSubscribe) input;
-                List<String> topics = x118.getTopics();
-                topics.forEach(topic -> _QttRouter.addTopic(topic, session.getIndex()));
                 X119_QttSuback x119 = new X119_QttSuback();
+                x118.getTopics()
+                    .forEach(topic ->
+                    {
+                        _QttRouter.addTopic(topic, session.getIndex());
+                        x119.addResult(topic.second());
+                    });
+
                 return new IControl[] { x119 };
+
         }
         return new IControl[0];
     }
