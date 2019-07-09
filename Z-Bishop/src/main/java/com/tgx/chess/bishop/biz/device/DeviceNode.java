@@ -34,6 +34,9 @@ import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
 import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
 import com.tgx.chess.bishop.io.mqtt.control.X112_QttConnack;
+import com.tgx.chess.bishop.io.mqtt.control.X118_QttSubscribe;
+import com.tgx.chess.bishop.io.mqtt.control.X119_QttSuback;
+import com.tgx.chess.bishop.io.mqtt.handler.IQttRouter;
 import com.tgx.chess.bishop.io.ws.control.X101_HandShake;
 import com.tgx.chess.bishop.io.ws.control.X103_Close;
 import com.tgx.chess.bishop.io.ws.control.X104_Ping;
@@ -89,6 +92,7 @@ public class DeviceNode
     final Logger                     _Logger = Logger.getLogger(getClass().getName());
     final List<IAioServer<ZContext>> _AioServers;
     final IRepository<DeviceEntry>   _DeviceRepository;
+    final IQttRouter                 _QttRouter;
 
     @Override
     public void onDismiss(ISession<ZContext> session)
@@ -105,7 +109,8 @@ public class DeviceNode
     }
 
     public DeviceNode(List<ITriple> hosts,
-                      IRepository<DeviceEntry> repository)
+                      IRepository<DeviceEntry> repository,
+                      IQttRouter qttRouter)
     {
         super(new Config("device"), new ServerCore<ZContext>()
         {
@@ -190,6 +195,7 @@ public class DeviceNode
                            })
                            .collect(Collectors.toList());
         _DeviceRepository = repository;
+        _QttRouter = qttRouter;
         _Logger.info("Device Node Bean Load");
     }
 
@@ -224,7 +230,7 @@ public class DeviceNode
         {
             //前置的 dispatcher 将 ICommands 拆分了
 
-            _Logger.info("qtt node logic handle %s", command);
+            _Logger.info(" node logic mappingHandle %s", command);
             switch (command.getSerial())
             {
                 case X30_EventMsg.COMMAND:
@@ -249,6 +255,7 @@ public class DeviceNode
                     return command;
                 case X51_DeviceMsgAck.COMMAND:
                 case X105_Pong.COMMAND:
+
                 default:
                     break;
             }
@@ -263,13 +270,13 @@ public class DeviceNode
 
     @Override
     @SuppressWarnings("unchecked")
-    public IControl<ZContext>[] handle(IControl<ZContext> tar, ISession<ZContext> session)
+    public IControl<ZContext>[] mappingHandle(IControl<ZContext> input, ISession<ZContext> session)
     {
-        switch (tar.getSerial())
+        switch (input.getSerial())
         {
             case X20_SignUp.COMMAND:
                 X21_SignUpResult x21 = new X21_SignUpResult();
-                DeviceEntry deviceEntry = _DeviceRepository.save(tar);
+                DeviceEntry deviceEntry = _DeviceRepository.save(input);
 
                 if (Objects.nonNull(deviceEntry)) {
                     x21.setSuccess();
@@ -282,7 +289,7 @@ public class DeviceNode
                 }
                 return new IControl[] { x21 };
             case X22_SignIn.COMMAND:
-                deviceEntry = _DeviceRepository.find(tar);
+                deviceEntry = _DeviceRepository.find(input);
                 X23_SignInResult x23 = new X23_SignInResult();
                 if (Objects.nonNull(deviceEntry)) {
                     x23.setSuccess();
@@ -294,7 +301,7 @@ public class DeviceNode
                 }
                 return new IControl[] { x23 };
             case X111_QttConnect.COMMAND:
-                X111_QttConnect x111 = (X111_QttConnect) tar;
+                X111_QttConnect x111 = (X111_QttConnect) input;
                 X112_QttConnack x112 = new X112_QttConnack();
                 x112.responseOk();
                 if (!x111.isCleanSession() && x111.getClientIdLength() == 0) {
@@ -320,6 +327,12 @@ public class DeviceNode
                     }
                 }
                 return new IControl[] { x112 };
+            case X118_QttSubscribe.COMMAND:
+                X118_QttSubscribe x118 = (X118_QttSubscribe) input;
+                List<String> topics = x118.getTopics();
+                topics.forEach(topic -> _QttRouter.addTopic(topic, session.getIndex()));
+                X119_QttSuback x119 = new X119_QttSuback();
+                return new IControl[] { x119 };
         }
         return new IControl[0];
     }

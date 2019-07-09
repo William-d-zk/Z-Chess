@@ -205,7 +205,7 @@ public abstract class ServerCore<C extends IContext<C>>
         _EventTimer = _TimeWheel.acquire(1, TimeUnit.SECONDS, new ScheduleHandler<>(true));
     }
 
-    /*  ║ barrier, ━> publish event, ━━ pipeline,| handle event
+    /*  ║ barrier, ━> publish event, ━━ pipeline,| mappingHandle event
     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
     ┃                                                                                                       ║                 ┏━>_ErrorEvent━┛
     ┃┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓                                             ┏━║_LinkProcessor━━━┻━>_LinkWriteEvent  ━━━━║

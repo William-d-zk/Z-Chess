@@ -67,9 +67,9 @@ public class DecodedDispatcher<C extends IContext<C>>
                 case DISPATCH:
                     IPair dispatchContent = event.getContent();
                     ISession<C> session = dispatchContent.second();
-                    IControl[] commands = dispatchContent.first();
+                    IControl<C>[] commands = dispatchContent.first();
                     if (Objects.nonNull(commands)) {
-                        for (IControl cmd : commands) {
+                        for (IControl<C> cmd : commands) {
                             //dispatch 到对应的 处理器里
                             dispatch(session.getContext()
                                             .getSort(),
@@ -92,12 +92,13 @@ public class DecodedDispatcher<C extends IContext<C>>
     }
 
     private void dispatch(ISort sorter,
-                          IControl cmd,
+                          IControl<C> cmd,
                           ISession<C> session,
                           IOperator<IControl,
                                     ISession<C>,
                                     ITriple> op)
     {
+        cmd.setSession(session);
         switch (sorter.getMode())
         {
             case CLUSTER:

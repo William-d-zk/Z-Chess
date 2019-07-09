@@ -24,9 +24,11 @@
 
 package com.tgx.chess.bishop.io.zhandler;
 
+import static com.tgx.chess.queen.event.inf.IError.Type.FIND_DATA;
 import static com.tgx.chess.queen.event.inf.IError.Type.SAVE_DATA;
 
 import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
+import com.tgx.chess.bishop.io.mqtt.control.X118_QttSubscribe;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X01_EncryptRequest;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X02_AsymmetricPub;
@@ -37,6 +39,7 @@ import com.tgx.chess.bishop.io.zprotocol.ztls.X06_PlainStart;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.event.handler.LinkHandler;
+import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
@@ -76,22 +79,35 @@ public class ZLinkedControl
                 waitToSends = new IControl[] { cmd };
                 break;
             case X111_QttConnect.COMMAND:
-                try {
-                    waitToSends = manager.handle(cmd, session);
-                }
-                catch (Exception e) {
-                    _LinkHandler.error(SAVE_DATA,
-                                       e,
-                                       session,
-                                       session.getContext()
-                                              .getSort()
-                                              .getError());
-                    return;
-                }
+                waitToSends = mappingHandle(manager, _LinkHandler, cmd, session, FIND_DATA);
+                break;
+            case X118_QttSubscribe.COMMAND:
+                waitToSends = mappingHandle(manager, _LinkHandler, cmd, session, SAVE_DATA);
                 break;
             default:
                 break;
         }
         _LinkHandler.write(waitToSends, session);
+    }
+
+    private IControl<ZContext>[] mappingHandle(QueenManager<ZContext> manager,
+                                               LinkHandler<ZContext> _LinkHandler,
+                                               IControl<ZContext> cmd,
+                                               ISession<ZContext> session,
+                                               IError.Type errorType)
+    {
+        try {
+            return manager.mappingHandle(cmd, session);
+        }
+        catch (Exception e) {
+            _LinkHandler.error(errorType,
+                               e,
+                               session,
+                               session.getContext()
+                                      .getSort()
+                                      .getError());
+
+        }
+        return null;
     }
 }

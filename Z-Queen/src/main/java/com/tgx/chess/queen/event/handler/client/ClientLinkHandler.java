@@ -93,10 +93,10 @@ public class ClientLinkHandler<C extends IContext<C>>
                               ISession,
                               List<ITriple>> sendTransferOperator = connectedHandled.third();
                     event.produce(WRITE, new Pair<>(waitToSend, session), sendTransferOperator);
-                    _Logger.info(String.format("link handle %s,connected", session));
+                    _Logger.info(String.format("link mappingHandle %s,connected", session));
                     break;
                 default:
-                    _Logger.warning(String.format("client link handle can't handle %s", event.getEventType()));
+                    _Logger.warning(String.format("client link mappingHandle can't mappingHandle %s", event.getEventType()));
                     break;
             }
         }

@@ -110,13 +110,13 @@ public class ClusterHandler<C extends IContext<C>>
                     event.produce(WRITE, new Pair<>(waitToSend, session), sendTransferOperator);
                     connectActivity.getSessionCreated()
                                    .onCreate(session);
-                    _Log.info(String.format("cluster link handle %s,connected", session));
+                    _Log.info(String.format("cluster link mappingHandle %s,connected", session));
                     break;
                 case LOGIC:
                     //TODO  逻辑处理器需要在此处完成操作。
                     break;
                 default:
-                    _Log.warning(String.format("cluster link handle can't handle %s", event.getEventType()));
+                    _Log.warning(String.format("cluster link mappingHandle can't mappingHandle %s", event.getEventType()));
                     break;
             }
         }
@@ -145,7 +145,7 @@ public class ClusterHandler<C extends IContext<C>>
                     Pair<ClusterNode<E, D, N>, IConnectMode.ZOperators> nmPair = cContent.first();
                     // 集群至少2台机器的时候才需要进行诸多网络操作。
                     AsynchronousSocketChannel channel = cContent.second();
-                    Triple<IControl, ISession, IEventOp<IControl, ISession>> cResult = cOperator.handle(nmPair, channel);
+                    Triple<IControl, ISession, IEventOp<IControl, ISession>> cResult = cOperator.mappingHandle(nmPair, channel);
                     IControl inCmd = cResult.first();
                     if (inCmd != null && inCmd.getSerialNum() != XF000_NULL.COMMAND) publish(_WriteRB,
                                                                                              Type.DISPATCH,
@@ -159,7 +159,7 @@ public class ClusterHandler<C extends IContext<C>>
                     ISession session = ccContent.second();
                     ISessionDismiss dismiss = session.getDismissCallback();
                     if (dismiss != null && !session.isClosed()) dismiss.onDismiss(session);
-                    ccOperator.handle(null, session);
+                    ccOperator.mappingHandle(null, session);
                     _ClusterNode.clearSession(session);
                     _ClusterNode.rmSession(session);
                     break;
@@ -235,7 +235,7 @@ public class ClusterHandler<C extends IContext<C>>
                         case X103_Close.COMMAND:
                             dismiss = session.getDismissCallback();
                             if (dismiss != null && !session.isClosed()) dismiss.onDismiss(session);
-                            getCloseOperator.INSTANCE.handle(null, session);
+                            getCloseOperator.INSTANCE.mappingHandle(null, session);
                             _ClusterNode.clearSession(session);
                             _ClusterNode.rmSession(session);
                             break;
@@ -248,7 +248,7 @@ public class ClusterHandler<C extends IContext<C>>
                             _ClusterNode.onClusterConnected(_clusterId);
                             break;
                         default:
-                            Triple<IControl, ISession, IEventOp<IControl, ISession>> rResult = lOperator.handle(inCmd, session);
+                            Triple<IControl, ISession, IEventOp<IControl, ISession>> rResult = lOperator.mappingHandle(inCmd, session);
                             if (rResult.first()
                                        .getSerialNum() != XF000_NULL.COMMAND) publish(_WriteRB, Type.DISPATCH, rResult.first(), rResult.second(), rResult.third());
                             break;
@@ -297,7 +297,7 @@ public class ClusterHandler<C extends IContext<C>>
                 case CONNECT_FAILED:
                     IEventOp<Pair<ClusterNode<E, D, N>, Throwable>, IConnectActivity> cOperator = event.getEventOp();
                     Pair<Pair<ClusterNode<E, D, N>, Throwable>, IConnectActivity> cContent = event.getContent();
-                    cOperator.handle(cContent.first(), cContent.second());
+                    cOperator.mappingHandle(cContent.first(), cContent.second());
                     ClusterNode<E, D, N> clusterNode = cContent.first()
                                                                .first();
                     clusterNode.getErrorOperator(cContent.second());
@@ -309,14 +309,14 @@ public class ClusterHandler<C extends IContext<C>>
                     ISession session = ccContent.second();
                     ISessionDismiss dismiss = session.getDismissCallback();
                     if (dismiss != null && !session.isClosed()) dismiss.onDismiss(session);
-                    ccOperator.handle(throwable, session);
+                    ccOperator.mappingHandle(throwable, session);
                     _ClusterNode.clearSession(session);
                     _ClusterNode.rmSession(session);
                     break;
                 default:
                     IEventOp<Throwable, ISession> eOperator = event.getEventOp();
                     Pair<Throwable, ISession> eContent = event.getContent();
-                    eOperator.handle(eContent.first(), eContent.second());// LOG_OPERATOR
+                    eOperator.mappingHandle(eContent.first(), eContent.second());// LOG_OPERATOR
                     break;
             }
         }

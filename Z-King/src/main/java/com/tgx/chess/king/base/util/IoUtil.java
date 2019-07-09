@@ -28,6 +28,7 @@ import static java.lang.System.arraycopy;
 
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.Objects;
 
 /**
@@ -526,6 +527,11 @@ public interface IoUtil
     static String readString(byte[] data, int pos, int length)
     {
         return new String(data, pos, length);
+    }
+
+    static String readString(byte[] data, int pos, int length, Charset charset)
+    {
+        return new String(data, pos, length, charset);
     }
 
     static boolean isBlank(final CharSequence cs)
