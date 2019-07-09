@@ -41,6 +41,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.lang.NonNull;
@@ -90,6 +91,7 @@ public class DeviceService
     @Value("${invalid.days}")
     private int invalidDurationOfDays;
 
+    @Autowired
     DeviceService(DeviceRepository deviceRepository,
                   ClientRepository clientRepository,
                   @Value("${qtt.server.host}") String qttServiceHost,
@@ -102,7 +104,7 @@ public class DeviceService
         List<ITriple> hosts = new ArrayList<>(2);
         hosts.add(new Triple<>(wsServiceHost, wsServicePort, ZSort.WS_SERVER));
         hosts.add(new Triple<>(qttServiceHost, qttServicePort, ZSort.QTT_SYMMETRY));
-        _DeviceNode = new DeviceNode(hosts, this);
+        _DeviceNode = new DeviceNode(hosts, this, new QttRouter());
     }
 
     @PostConstruct

@@ -60,5 +60,5 @@ public abstract class QueenManager<C extends IContext<C>>
         return _ServerCore.localSend(session, transfer, commands);
     }
 
-    public abstract IControl<C>[] handle(IControl<C> tar, ISession<C> session);
+    public abstract IControl<C>[] mappingHandle(IControl<C> input, ISession<C> session);
 }

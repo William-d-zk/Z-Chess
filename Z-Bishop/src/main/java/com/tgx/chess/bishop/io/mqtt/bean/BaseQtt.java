@@ -35,9 +35,9 @@ import com.tgx.chess.queen.io.core.inf.IQoS;
 public class BaseQtt
 {
     private final static byte DUPLICATE_FLAG    = 1 << 3;
-    private final static byte QOS_ALMOST_ONCE   = 2;
+    private final static byte QOS_ALMOST_ONCE   = 0;
     private final static byte QOS_AT_LEAST_ONCE = 1;
-    private final static byte QOS_EXACTLY_ONCE  = 0;
+    private final static byte QOS_EXACTLY_ONCE  = 2;
     private final static byte RETAIN_FLAG       = 1;
     private final static byte QOS_MASK          = 0x06;
 

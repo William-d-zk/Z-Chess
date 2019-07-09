@@ -50,7 +50,7 @@ public class X111_QttConnect
     public X111_QttConnect()
     {
         super(COMMAND);
-        setCtrl(QttFrame.generateCtrl(false, false, BaseQtt.QOS_LEVEL.QOS_ALMOST_ONCE, QttFrame.QTT_TYPE.CONNECT));
+        setCtrl(QttFrame.generateCtrl(false, false, QOS_LEVEL.QOS_ALMOST_ONCE, QTT_TYPE.CONNECT));
     }
 
     @Override

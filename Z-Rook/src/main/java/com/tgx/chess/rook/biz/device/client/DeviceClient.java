@@ -200,7 +200,7 @@ public class DeviceClient
                     }
                     break;
                 default:
-                    _Logger.warning("event type no handle %s", event.getEventType());
+                    _Logger.warning("event type no mappingHandle %s", event.getEventType());
                     commands = null;
                     session = null;
                     break;
