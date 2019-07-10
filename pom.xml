@@ -22,25 +22,21 @@
         <java.encoding>UTF-8</java.encoding>
         <project.build.sourceEncoding>${java.encoding}</project.build.sourceEncoding>
         <!--LOG-->
-        <slf4j.version>1.7.25</slf4j.version>
+        <slf4j.version>1.7.26</slf4j.version>
         <logback.version>1.2.3</logback.version>
         <!--SPRING-BOOT-->
-        <spring.version>5.0.8.RELEASE</spring.version>
-        <spring-security.version>5.0.8.RELEASE</spring-security.version>
-        <spring-boot.version>2.1.4.RELEASE</spring-boot.version>
-        <thymeleaf.extras.security4.version>3.0.2.RELEASE</thymeleaf.extras.security4.version>
-        <thymeleaf.extras.java8.version>3.0.1.RELEASE</thymeleaf.extras.java8.version>
+        <spring-boot.version>2.1.6.RELEASE</spring-boot.version>
         <!--DB-->
-        <postgresql.driver.version>42.2.5</postgresql.driver.version>
+        <postgresql.driver.version>42.2.6</postgresql.driver.version>
         <bdb.je.version>7.5.11</bdb.je.version>
         <!--PIPELINE-->
         <disruptor.version>3.4.2</disruptor.version>
         <!--TOOLS-->
-        <httpcore.version>4.4.9</httpcore.version>
+        <httpcore.version>4.4.11</httpcore.version>
         <!--TEST TOOLS VERSION-->
-        <junit.platform.version>1.2.0</junit.platform.version>
-        <junit.vintage.version>5.2.0</junit.vintage.version>
-        <junit.jupiter.version>5.2.0</junit.jupiter.version>
+        <junit.platform.version>1.5.0</junit.platform.version>
+        <junit.vintage.version>5.5.0</junit.vintage.version>
+        <junit.jupiter.version>5.5.0</junit.jupiter.version>
         <mockito.version>2.18.3</mockito.version>
     </properties>
     <dependencies>
