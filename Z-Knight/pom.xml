@@ -37,7 +37,7 @@
     <dependencies>
         <dependency>
             <groupId>com.tgx.service</groupId>
-            <artifactId>manange.z-bishop</artifactId>
+            <artifactId>manage.z-bishop</artifactId>
             <version>${project.version}</version>
         </dependency>
         <!--spring boot-->

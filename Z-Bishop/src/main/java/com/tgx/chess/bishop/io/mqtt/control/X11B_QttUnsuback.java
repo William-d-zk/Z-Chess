@@ -24,7 +24,8 @@
 
 package com.tgx.chess.bishop.io.mqtt.control;
 
-import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
+import com.tgx.chess.bishop.io.mqtt.bean.QttCommand;
+import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
 
 /**
  * @author william.d.zk
@@ -32,18 +33,21 @@ import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
  */
 public class X11B_QttUnsuback
         extends
-        QttControl
+        QttCommand
 {
     public final static int COMMAND = 0x11B;
 
     public X11B_QttUnsuback()
     {
         super(COMMAND);
+        setCtrl(QttFrame.generateCtrl(false, false, QOS_LEVEL.QOS_AT_LEAST_ONCE, QTT_TYPE.UNSUBACK));
     }
 
     @Override
     public int dataLength()
     {
-        return 0;
+        return super.dataLength();
     }
+
+
 }

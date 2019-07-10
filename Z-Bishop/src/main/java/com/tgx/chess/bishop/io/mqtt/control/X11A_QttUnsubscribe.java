@@ -24,7 +24,14 @@
 
 package com.tgx.chess.bishop.io.mqtt.control;
 
-import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import com.tgx.chess.bishop.io.mqtt.bean.QttCommand;
+import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
+import com.tgx.chess.king.base.util.IoUtil;
 
 /**
  * @author william.d.zk
@@ -32,18 +39,80 @@ import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
  */
 public class X11A_QttUnsubscribe
         extends
-        QttControl
+        QttCommand
 {
     public final static int COMMAND = 0x11A;
 
     public X11A_QttUnsubscribe()
     {
         super(COMMAND);
+        setCtrl(QttFrame.generateCtrl(false, false, QOS_LEVEL.QOS_AT_LEAST_ONCE, QTT_TYPE.UNSUBSCRIBE));
+    }
+
+    @Override
+    public boolean isMapping()
+    {
+        return true;
+    }
+
+    @Override
+    public int getPriority()
+    {
+        return QOS_06_META_CREATE;
     }
 
     @Override
     public int dataLength()
     {
-        return 0;
+        int length = super.dataLength();
+        for (String topic : _Topics) {
+            //2byte UTF-8 length 1byte Qos-lv
+            length += 2 + topic.getBytes(StandardCharsets.UTF_8).length;
+        }
+        return length;
+    }
+
+    private final List<String> _Topics = new ArrayList<>(3);
+
+    public List<String> getTopics()
+    {
+        return _Topics;
+    }
+
+    public void setTopics(String... topics)
+    {
+        Collections.addAll(_Topics, topics);
+    }
+
+    @Override
+    public int decodec(byte[] data, int pos)
+    {
+        pos = super.decodec(data, pos);
+        for (int size = data.length; pos < size;) {
+            int utfSize = IoUtil.readUnsignedShort(data, pos);
+            pos += 2;
+            String topic = IoUtil.readString(data, pos, utfSize, StandardCharsets.UTF_8);
+            pos += utfSize;
+            _Topics.add(topic);
+        }
+        return pos;
+    }
+
+    @Override
+    public int encodec(byte[] data, int pos)
+    {
+        pos = super.encodec(data, pos);
+        for (String topic : _Topics) {
+            byte[] topicData = topic.getBytes(StandardCharsets.UTF_8);
+            pos += IoUtil.writeShort(topicData.length, data, pos);
+            pos += IoUtil.write(topicData, data, pos);
+        }
+        return pos;
+    }
+
+    @Override
+    public String toString()
+    {
+        return String.format("unsubscribe:local-id:%d topics:%s", getLocalId(), _Topics);
     }
 }
