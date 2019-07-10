@@ -30,6 +30,8 @@ import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
 import com.tgx.chess.bishop.io.mqtt.control.X113_QttPublish;
 import com.tgx.chess.bishop.io.mqtt.control.X118_QttSubscribe;
 import com.tgx.chess.bishop.io.mqtt.control.X119_QttSuback;
+import com.tgx.chess.bishop.io.mqtt.control.X11A_QttUnsubscribe;
+import com.tgx.chess.bishop.io.mqtt.control.X11B_QttUnsuback;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
@@ -72,6 +74,12 @@ public class QttCommandFilter
                 break;
             case SUBACK:
                 cmd = new X119_QttSuback();
+                break;
+            case UNSUBSCRIBE:
+                cmd = new X11A_QttUnsubscribe();
+                break;
+            case UNSUBACK:
+                cmd = new X11B_QttUnsuback();
                 break;
             default:
                 throw new IllegalArgumentException("MQTT type error");
