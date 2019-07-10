@@ -303,9 +303,7 @@ public enum ZSort
     {
         _QttFrameFilter.linkAfter(new ZTlsFilter());
         _QttFrameFilter.linkFront(new QttControlFilter())
-                       .linkFront(new QttCommandFilter(new ZServerFactory()
-                       {
-                       }));
+                       .linkFront(new QttCommandFilter());
     }
     final WsHandShakeFilter _WsHandshakeFilter = new WsHandShakeFilter();
     {

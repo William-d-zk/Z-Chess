@@ -336,7 +336,6 @@ public class DeviceNode
                         _QttRouter.addTopic(topic, session.getIndex());
                         x119.addResult(topic.second());
                     });
-
                 return new IControl[] { x119 };
 
         }

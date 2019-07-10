@@ -29,7 +29,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
-import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
+import com.tgx.chess.bishop.io.mqtt.bean.QttCommand;
 import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
 import com.tgx.chess.king.base.util.IoUtil;
 
@@ -39,7 +39,7 @@ import com.tgx.chess.king.base.util.IoUtil;
  */
 public class X119_QttSuback
         extends
-        QttControl
+        QttCommand
 {
 
     public final static int COMMAND = 0x119;
@@ -68,12 +68,13 @@ public class X119_QttSuback
     @Override
     public int dataLength()
     {
-        return 3 + resultList.size();
+        return super.dataLength() + resultList.size() + 2;
     }
 
     @Override
     public int decodec(byte[] data, int pos)
     {
+        pos = super.decodec(data, pos);
         int size = IoUtil.readUnsignedShort(data, pos);
         pos += 2;
         resultList = new ArrayList<>(size);
@@ -86,6 +87,7 @@ public class X119_QttSuback
     @Override
     public int encodec(byte[] data, int pos)
     {
+        pos = super.encodec(data, pos);
         pos += IoUtil.writeShort(Objects.isNull(resultList) || resultList.isEmpty() ? 0
                                                                                     : resultList.size(),
                                  data,

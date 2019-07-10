@@ -220,6 +220,7 @@ public class BaseQtt
         frame_op_code |= qos_level << 1;
     }
 
+
     public QOS_LEVEL getQosLevel()
     {
         return QOS_LEVEL.valueOf(qos_level);

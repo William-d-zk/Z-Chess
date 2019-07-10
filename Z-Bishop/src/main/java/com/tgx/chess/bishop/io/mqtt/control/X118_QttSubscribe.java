@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
+import com.tgx.chess.bishop.io.mqtt.bean.QttCommand;
 import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.util.IoUtil;
@@ -41,7 +41,7 @@ import com.tgx.chess.king.base.util.Pair;
  */
 public class X118_QttSubscribe
         extends
-        QttControl
+        QttCommand
 {
 
     public final static int COMMAND = 0x118;
@@ -67,7 +67,7 @@ public class X118_QttSubscribe
     @Override
     public int dataLength()
     {
-        int length = 1;
+        int length = super.dataLength();
         for (IPair pair : _Topics) {
             String topic = pair.first();
             //2byte UTF-8 length 1byte Qos-lv
@@ -94,6 +94,7 @@ public class X118_QttSubscribe
     @Override
     public int decodec(byte[] data, int pos)
     {
+        pos = super.decodec(data, pos);
         for (int size = data.length; pos < size;) {
             int utfSize = IoUtil.readUnsignedShort(data, pos);
             pos += 2;
@@ -108,6 +109,7 @@ public class X118_QttSubscribe
     @Override
     public int encodec(byte[] data, int pos)
     {
+        pos = super.encodec(data, pos);
         for (IPair pair : _Topics) {
             String topic = pair.first();
             byte[] topicData = topic.getBytes(StandardCharsets.UTF_8);
@@ -119,4 +121,9 @@ public class X118_QttSubscribe
         return pos;
     }
 
+    @Override
+    public String toString()
+    {
+        return String.format("subscribe:local-id:%d topics:%s", getLocalId(), _Topics);
+    }
 }

@@ -169,7 +169,7 @@ public abstract class AioFilterChain<C extends IContext<C>,
         if (Objects.isNull(context) || Objects.isNull(input)) { return ResultType.ERROR; }
         return context.isInConvert()
                && input.superSerial() == IProtocol.FRAME_SERIAL
-               && !input.isCtrl() ? ResultType.HANDLED
+                && !input.isCtrl() ? ResultType.HANDLED
                                   : ResultType.IGNORE;
     }
 

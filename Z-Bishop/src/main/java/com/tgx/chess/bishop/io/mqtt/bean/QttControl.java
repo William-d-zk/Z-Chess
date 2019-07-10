@@ -24,6 +24,8 @@
 
 package com.tgx.chess.bishop.io.mqtt.bean;
 
+import java.util.Objects;
+
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IRouteLv4;
@@ -47,6 +49,13 @@ public abstract class QttControl
     public QttControl(int command)
     {
         _Command = command;
+    }
+
+    @Override
+    public int dataLength()
+    {
+        return Objects.nonNull(mPayload) ? mPayload.length
+                                         : 0;
     }
 
     @Override

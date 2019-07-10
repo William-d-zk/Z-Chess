@@ -170,7 +170,7 @@ public class DeviceService
         if (isBlank(device.getSn()) && isBlank(device.getImei()) && isBlank(device.getMac())) {
             throw new ZApiExecption("unique device info null");
         }
-        device = findDevice(device);
+        findDevice(device);
         if (isBlank(device.getPassword())) {
             int passwordLength = _Random.nextInt(27) + 5;
             byte[] pwdBytes = new byte[passwordLength];
