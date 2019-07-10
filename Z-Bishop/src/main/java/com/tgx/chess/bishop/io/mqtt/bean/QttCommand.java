@@ -23,7 +23,10 @@
  */
 package com.tgx.chess.bishop.io.mqtt.bean;
 
+import java.util.Objects;
+
 import com.tgx.chess.bishop.io.zfilter.ZContext;
+import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
@@ -45,6 +48,7 @@ public abstract class QttCommand
         _Command = command;
     }
 
+    private int                mLocalId;
     private ISession<ZContext> mSession;
     private byte[]             mPayload;
 
@@ -52,6 +56,16 @@ public abstract class QttCommand
     public void setCtrl(byte ctrl)
     {
         setOpCode(ctrl);
+    }
+
+    public void setLocalId(int id)
+    {
+        mLocalId = id;
+    }
+
+    public int getLocalId()
+    {
+        return mLocalId;
     }
 
     @Override
@@ -107,5 +121,28 @@ public abstract class QttCommand
     public int getPriority()
     {
         return QOS_08_IMMEDIATE_MESSAGE;
+    }
+
+    @Override
+    public int decodec(byte[] data, int pos)
+    {
+        mLocalId = IoUtil.readUnsignedShort(data, pos);
+        pos += 2;
+        return pos;
+    }
+
+    @Override
+    public int encodec(byte[] data, int pos)
+    {
+        pos += IoUtil.writeShort(mLocalId, data, pos);
+        return pos;
+    }
+
+    @Override
+    public int dataLength()
+    {
+        return 2
+               + (Objects.nonNull(mPayload) ? mPayload.length
+                                            : 0);
     }
 }

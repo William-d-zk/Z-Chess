@@ -25,6 +25,7 @@
 package com.tgx.chess.bishop.io.mqtt.control;
 
 import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
+import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
 
 /**
  * @author william.d.zk
@@ -39,6 +40,7 @@ public class X11E_QttDisconnect
     public X11E_QttDisconnect()
     {
         super(COMMAND);
+        setCtrl(QttFrame.generateCtrl(false, false, QOS_LEVEL.QOS_ALMOST_ONCE, QTT_TYPE.DISCONNECT));
     }
 
     @Override

@@ -153,9 +153,7 @@ public enum ClientZSort
     {
         _QttFrameFilter.linkAfter(new ZTlsFilter());
         _QttFrameFilter.linkFront(new QttControlFilter())
-                       .linkFront(new QttCommandFilter(new ZConsumerFactory()
-                       {
-                       }));
+                       .linkFront(new QttCommandFilter());
     }
 
     @Override

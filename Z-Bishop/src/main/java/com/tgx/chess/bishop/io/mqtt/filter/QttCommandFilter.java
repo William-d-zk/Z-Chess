@@ -25,11 +25,13 @@
 package com.tgx.chess.bishop.io.mqtt.filter;
 
 import com.tgx.chess.bishop.io.mqtt.bean.BaseQtt;
+import com.tgx.chess.bishop.io.mqtt.bean.QttCommand;
 import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
+import com.tgx.chess.bishop.io.mqtt.control.X113_QttPublish;
+import com.tgx.chess.bishop.io.mqtt.control.X118_QttSubscribe;
+import com.tgx.chess.bishop.io.mqtt.control.X119_QttSuback;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
-import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
-import com.tgx.chess.queen.io.core.inf.ICommandFactory;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
@@ -39,21 +41,16 @@ import com.tgx.chess.queen.io.core.inf.IProtocol;
 public class QttCommandFilter
         extends
         AioFilterChain<ZContext,
-                       BaseCommand,
+                       QttCommand,
                        QttFrame>
 {
-    public QttCommandFilter(ICommandFactory<ZContext,
-                                            BaseCommand> factory)
+    public QttCommandFilter()
     {
         super("mqtt-command-filter");
-        _CommandFactory = factory;
     }
 
-    private final ICommandFactory<ZContext,
-                                  BaseCommand> _CommandFactory;
-
     @Override
-    public QttFrame encode(ZContext context, BaseCommand output)
+    public QttFrame encode(ZContext context, QttCommand output)
     {
         QttFrame frame = new QttFrame();
         frame.setCtrl(output.getCtrl());
@@ -62,16 +59,24 @@ public class QttCommandFilter
     }
 
     @Override
-    public BaseCommand decode(ZContext context, QttFrame input)
+    public QttCommand decode(ZContext context, QttFrame input)
     {
+        QttCommand cmd;
         switch (BaseQtt.QTT_TYPE.valueOf(input.getCtrl()))
         {
             case PUBLISH:
+                cmd = new X113_QttPublish();
+                break;
             case SUBSCRIBE:
-
+                cmd = new X118_QttSubscribe();
+                break;
+            case SUBACK:
+                cmd = new X119_QttSuback();
+                break;
+            default:
+                throw new IllegalArgumentException("MQTT type error");
         }
-        BaseCommand cmd = _CommandFactory.create(0);
-
+        cmd.decode(input.getPayload());
         return cmd;
     }
 

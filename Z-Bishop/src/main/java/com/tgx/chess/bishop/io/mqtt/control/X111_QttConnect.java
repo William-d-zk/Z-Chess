@@ -50,7 +50,7 @@ public class X111_QttConnect
     public X111_QttConnect()
     {
         super(COMMAND);
-        setCtrl(QttFrame.generateCtrl(false, false, QOS_LEVEL.QOS_AT_LEAST_ONCE, QTT_TYPE.CONNECT));
+        setCtrl(QttFrame.generateCtrl(false, false, QOS_LEVEL.QOS_ALMOST_ONCE, QTT_TYPE.CONNECT));
     }
 
     @Override
@@ -62,7 +62,7 @@ public class X111_QttConnect
     @Override
     public int dataLength()
     {
-        return 11 + getClientIdLength() + getWillLength() + getUserNameLength() + getPasswordLength();
+        return 10 + getClientIdLength() + getWillLength() + getUserNameLength() + getPasswordLength();
     }
 
     @Override
