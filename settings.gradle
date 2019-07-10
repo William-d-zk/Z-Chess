@@ -25,14 +25,14 @@
 rootProject.name = 'framework.z-chess'
 include ':core.z-king'
 include ':io.z-queen'
-include ':manange.z-bishop'
+include ':manage.z-bishop'
 include ':spring.z-knight'
 include ':endpoint.z-rook'
 include ':start.z-pawn'
 
 project(':io.z-queen').projectDir = "$rootDir/Z-Queen" as File
 project(':core.z-king').projectDir = "$rootDir/Z-King" as File
-project(':manange.z-bishop').projectDir = "$rootDir/Z-Bishop" as File
+project(':manage.z-bishop').projectDir = "$rootDir/Z-Bishop" as File
 project(':spring.z-knight').projectDir = "$rootDir/Z-Knight" as File
 project(':endpoint.z-rook').projectDir = "$rootDir/Z-Rook" as File
 project(':start.z-pawn').projectDir = "$rootDir/Z-Pawn" as File
