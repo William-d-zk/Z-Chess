@@ -36,6 +36,10 @@ import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
 import com.tgx.chess.bishop.io.mqtt.control.X112_QttConnack;
 import com.tgx.chess.bishop.io.mqtt.control.X118_QttSubscribe;
 import com.tgx.chess.bishop.io.mqtt.control.X119_QttSuback;
+import com.tgx.chess.bishop.io.mqtt.control.X11A_QttUnsubscribe;
+import com.tgx.chess.bishop.io.mqtt.control.X11B_QttUnsuback;
+import com.tgx.chess.bishop.io.mqtt.control.X11C_QttPingreq;
+import com.tgx.chess.bishop.io.mqtt.control.X11D_QttPingresp;
 import com.tgx.chess.bishop.io.mqtt.handler.IQttRouter;
 import com.tgx.chess.bishop.io.ws.control.X101_HandShake;
 import com.tgx.chess.bishop.io.ws.control.X103_Close;
@@ -230,7 +234,7 @@ public class DeviceNode
         {
             //前置的 dispatcher 将 ICommands 拆分了
 
-            _Logger.info(" node logic mappingHandle %s", command);
+            _Logger.info(" node logic %s", command);
             switch (command.getSerial())
             {
                 case X30_EventMsg.COMMAND:
@@ -255,7 +259,9 @@ public class DeviceNode
                     return command;
                 case X51_DeviceMsgAck.COMMAND:
                 case X105_Pong.COMMAND:
-
+                    break;
+                case X11C_QttPingreq.COMMAND:
+                    return new X11D_QttPingresp();
                 default:
                     break;
             }
@@ -272,6 +278,8 @@ public class DeviceNode
     @SuppressWarnings("unchecked")
     public IControl<ZContext>[] mappingHandle(IControl<ZContext> input, ISession<ZContext> session)
     {
+
+        _Logger.info("Manage LinkHandle mappingHandle input %s", input);
         switch (input.getSerial())
         {
             case X20_SignUp.COMMAND:
@@ -330,6 +338,7 @@ public class DeviceNode
             case X118_QttSubscribe.COMMAND:
                 X118_QttSubscribe x118 = (X118_QttSubscribe) input;
                 X119_QttSuback x119 = new X119_QttSuback();
+                x119.setLocalId(x118.getLocalId());
                 x118.getTopics()
                     .forEach(topic ->
                     {
@@ -337,7 +346,11 @@ public class DeviceNode
                         x119.addResult(topic.second());
                     });
                 return new IControl[] { x119 };
-
+            case X11A_QttUnsubscribe.COMMAND:
+                X11A_QttUnsubscribe x11A = (X11A_QttUnsubscribe) input;
+                X11B_QttUnsuback x11B = new X11B_QttUnsuback();
+                x11B.setLocalId(x11A.getLocalId());
+                return new IControl[] { x11B };
         }
         return new IControl[0];
     }

@@ -25,6 +25,7 @@
 package com.tgx.chess.bishop.io.mqtt.control;
 
 import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
+import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
 
 /**
  * @author william.d.zk
@@ -39,11 +40,6 @@ public class X11D_QttPingresp
     public X11D_QttPingresp()
     {
         super(COMMAND);
-    }
-
-    @Override
-    public int dataLength()
-    {
-        return 0;
+        setCtrl(QttFrame.generateCtrl(false, false, QOS_LEVEL.QOS_AT_LEAST_ONCE, QTT_TYPE.PINGRESP));
     }
 }

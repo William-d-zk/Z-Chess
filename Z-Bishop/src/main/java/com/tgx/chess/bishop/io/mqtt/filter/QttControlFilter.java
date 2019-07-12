@@ -28,8 +28,9 @@ import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
 import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
 import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
 import com.tgx.chess.bishop.io.mqtt.control.X112_QttConnack;
-import com.tgx.chess.bishop.io.mqtt.control.X118_QttSubscribe;
-import com.tgx.chess.bishop.io.mqtt.control.X119_QttSuback;
+import com.tgx.chess.bishop.io.mqtt.control.X11C_QttPingreq;
+import com.tgx.chess.bishop.io.mqtt.control.X11D_QttPingresp;
+import com.tgx.chess.bishop.io.mqtt.control.X11E_QttDisconnect;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
@@ -82,6 +83,15 @@ public class QttControlFilter
                 break;
             case CONNACK:
                 qttControl = new X112_QttConnack();
+                break;
+            case PINGREQ:
+                qttControl = new X11C_QttPingreq();
+                break;
+            case PINGRESP:
+                qttControl = new X11D_QttPingresp();
+                break;
+            case DISCONNECT:
+                qttControl = new X11E_QttDisconnect();
                 break;
             default:
                 throw new IllegalArgumentException("MQTT type error");
