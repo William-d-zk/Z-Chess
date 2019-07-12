@@ -66,7 +66,6 @@ public class X11A_QttUnsubscribe
     {
         int length = super.dataLength();
         for (String topic : _Topics) {
-            //2byte UTF-8 length 1byte Qos-lv
             length += 2 + topic.getBytes(StandardCharsets.UTF_8).length;
         }
         return length;

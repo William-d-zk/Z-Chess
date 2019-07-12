@@ -29,6 +29,7 @@ import static com.tgx.chess.queen.event.inf.IError.Type.SAVE_DATA;
 
 import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
 import com.tgx.chess.bishop.io.mqtt.control.X118_QttSubscribe;
+import com.tgx.chess.bishop.io.mqtt.control.X11A_QttUnsubscribe;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X01_EncryptRequest;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X02_AsymmetricPub;
@@ -82,6 +83,7 @@ public class ZLinkedControl
                 waitToSends = mappingHandle(manager, _LinkHandler, cmd, session, FIND_DATA);
                 break;
             case X118_QttSubscribe.COMMAND:
+            case X11A_QttUnsubscribe.COMMAND:
                 waitToSends = mappingHandle(manager, _LinkHandler, cmd, session, SAVE_DATA);
                 break;
             default:

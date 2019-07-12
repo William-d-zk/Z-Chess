@@ -43,9 +43,4 @@ public class X11E_QttDisconnect
         setCtrl(QttFrame.generateCtrl(false, false, QOS_LEVEL.QOS_ALMOST_ONCE, QTT_TYPE.DISCONNECT));
     }
 
-    @Override
-    public int dataLength()
-    {
-        return 0;
-    }
 }

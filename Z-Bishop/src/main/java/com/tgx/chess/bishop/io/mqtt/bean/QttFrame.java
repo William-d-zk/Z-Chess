@@ -104,9 +104,12 @@ public class QttFrame
     @Override
     public void setPayload(byte[] payload)
     {
-        if (payload.length > 268435455 || payload.length < 2) { throw new IndexOutOfBoundsException(); }
+        if (payload != null && (payload.length > 268435455 || payload.length < 2)) {
+            throw new IndexOutOfBoundsException();
+        }
         mPayload = payload;
-        mPayloadLength = mPayload.length;
+        mPayloadLength = mPayload == null ? 0
+                                          : mPayload.length;
     }
 
     @Override
@@ -138,10 +141,12 @@ public class QttFrame
     public int decodec(byte[] data, int pos)
     {
         setOpCode(data[pos++]);
-        mPayloadLength = IoUtil.readVariableIntLength(ByteBuffer.wrap(data, pos, data.length - pos));
-        pos += mPayloadLength;
-        mPayload = new byte[mPayloadLength];
-        pos = IoUtil.read(data, pos, mPayload);
+        if (pos < data.length) {
+            mPayloadLength = IoUtil.readVariableIntLength(ByteBuffer.wrap(data, pos, data.length - pos));
+            pos += mPayloadLength;
+            mPayload = new byte[mPayloadLength];
+            pos = IoUtil.read(data, pos, mPayload);
+        }
         return pos;
     }
 
@@ -149,9 +154,11 @@ public class QttFrame
     public int encodec(byte[] data, int pos)
     {
         pos += IoUtil.writeByte(frame_op_code, data, pos);
-        byte[] lengthVar = IoUtil.variableLength(mPayloadLength);
-        pos += IoUtil.write(lengthVar, 0, data, pos, lengthVar.length);
-        pos += IoUtil.write(mPayload, data, pos);
+        if (mPayloadLength > 0) {
+            byte[] lengthVar = IoUtil.variableLength(mPayloadLength);
+            pos += IoUtil.write(lengthVar, 0, data, pos, lengthVar.length);
+            pos += IoUtil.write(mPayload, data, pos);
+        }
         return pos;
     }
 }
