@@ -63,7 +63,7 @@ public class QttFrame
     @Override
     public byte getCtrl()
     {
-        return (byte) (getOpCode() & 240);
+        return getOpCode();
     }
 
     @Override

@@ -24,10 +24,13 @@
 
 package com.tgx.chess.bishop.io.mqtt.filter;
 
-import com.tgx.chess.bishop.io.mqtt.bean.BaseQtt;
 import com.tgx.chess.bishop.io.mqtt.bean.QttCommand;
 import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
 import com.tgx.chess.bishop.io.mqtt.control.X113_QttPublish;
+import com.tgx.chess.bishop.io.mqtt.control.X114_QttPuback;
+import com.tgx.chess.bishop.io.mqtt.control.X115_QttPubrec;
+import com.tgx.chess.bishop.io.mqtt.control.X116_QttPubrel;
+import com.tgx.chess.bishop.io.mqtt.control.X117_QttPubcomp;
 import com.tgx.chess.bishop.io.mqtt.control.X118_QttSubscribe;
 import com.tgx.chess.bishop.io.mqtt.control.X119_QttSuback;
 import com.tgx.chess.bishop.io.mqtt.control.X11A_QttUnsubscribe;
@@ -64,10 +67,22 @@ public class QttCommandFilter
     public QttCommand decode(ZContext context, QttFrame input)
     {
         QttCommand cmd;
-        switch (BaseQtt.QTT_TYPE.valueOf(input.getCtrl()))
+        switch (input.getType())
         {
             case PUBLISH:
                 cmd = new X113_QttPublish();
+                break;
+            case PUBACK:
+                cmd = new X114_QttPuback();
+                break;
+            case PUBREC:
+                cmd = new X115_QttPubrec();
+                break;
+            case PUBREL:
+                cmd = new X116_QttPubrel();
+                break;
+            case PUBCOMP:
+                cmd = new X117_QttPubcomp();
                 break;
             case SUBSCRIBE:
                 cmd = new X118_QttSubscribe();
@@ -84,6 +99,7 @@ public class QttCommandFilter
             default:
                 throw new IllegalArgumentException("MQTT type error");
         }
+        cmd.setCtrl(input.getCtrl());
         cmd.decode(input.getPayload());
         return cmd;
     }

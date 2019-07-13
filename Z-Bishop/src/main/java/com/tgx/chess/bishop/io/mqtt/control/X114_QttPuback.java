@@ -25,6 +25,7 @@
 package com.tgx.chess.bishop.io.mqtt.control;
 
 import com.tgx.chess.bishop.io.mqtt.bean.QttCommand;
+import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
 
 /**
  * @author william.d.zk
@@ -39,11 +40,12 @@ public class X114_QttPuback
     public X114_QttPuback()
     {
         super(COMMAND);
+        setCtrl(QttFrame.generateCtrl(false, false, QOS_LEVEL.QOS_ALMOST_ONCE, QTT_TYPE.PUBACK));
     }
 
     @Override
-    public int dataLength()
+    public String toString()
     {
-        return 0;
+        return String.format("puback local-id:%d ", getLocalId());
     }
 }

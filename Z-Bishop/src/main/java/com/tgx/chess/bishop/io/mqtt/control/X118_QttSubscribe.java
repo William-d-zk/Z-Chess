@@ -124,6 +124,6 @@ public class X118_QttSubscribe
     @Override
     public String toString()
     {
-        return String.format("subscribe:local-id:%d topics:%s", getLocalId(), _Topics);
+        return String.format("subscribe local-id:%d topics:%s", getLocalId(), _Topics);
     }
 }

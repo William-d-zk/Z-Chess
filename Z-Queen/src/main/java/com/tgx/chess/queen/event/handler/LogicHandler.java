@@ -64,10 +64,10 @@ public class LogicHandler<C extends IContext<C>>
                 _Logger.warning("cmd null");
             }
             else {
-                cmd = _CommandHandler.onCommand(cmd, session);
-                if (Objects.nonNull(cmd)) {
+                IControl<C>[] response = _CommandHandler.onCommand(cmd, session);
+                if (Objects.nonNull(response) && response.length > 0) {
                     event.produce(WRITE,
-                                  new Pair<>(new IControl[] { cmd }, session),
+                                  new Pair<>(response, session),
                                   session.getContext()
                                          .getSort()
                                          .getTransfer());
@@ -82,6 +82,6 @@ public class LogicHandler<C extends IContext<C>>
 
     public interface ICommandHandler<C extends IContext<C>>
     {
-        IControl<C> onCommand(IControl<C> input, ISession<C> session);
+        IControl<C>[] onCommand(IControl<C> input, ISession<C> session);
     }
 }

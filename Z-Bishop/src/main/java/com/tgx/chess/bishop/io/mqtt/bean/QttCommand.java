@@ -48,7 +48,7 @@ public abstract class QttCommand
         _Command = command;
     }
 
-    private int                mLocalId;
+    private int                mLocalId = -1;
     private ISession<ZContext> mSession;
     private byte[]             mPayload;
 

@@ -114,9 +114,10 @@ public interface IContext<C extends IContext<C>>
     int SESSION_CONNECTED  = -3 << COUNT_BITS; /* 只有链接成功时才会创建 ISession 和 IContext */
     int SESSION_IDLE       = -2 << COUNT_BITS; /* 处于空闲状态 */
     int SESSION_PENDING    = -1 << COUNT_BITS; /* 有待发数据，尚未完成编码 */
-    int SESSION_SENDING    = 00 << COUNT_BITS; /* 有编码完成的数据在发送，write->wrote 事件等待 */
-    int SESSION_CLOSE      = 01 << COUNT_BITS; /* 链路关闭，尚未完成清理 [any]->[close]*/
-    int SESSION_TERMINATED = 02 << COUNT_BITS; /* 终态，清理结束*/
+    int SESSION_SENDING    = 00 << COUNT_BITS; /* 有编码完成的数据在发送，已装入待发sending-buffer */
+    int SESSION_FLUSHED    = 01 << COUNT_BITS; /* 有编码完成的数据在发送，write->wrote 事件等待 */
+    int SESSION_CLOSE      = 02 << COUNT_BITS; /* 链路关闭，尚未完成清理 [any]->[close]*/
+    int SESSION_TERMINATED = 03 << COUNT_BITS; /* 终态，清理结束*/
 
     default String getSessionState(int c)
     {
@@ -130,6 +131,8 @@ public interface IContext<C extends IContext<C>>
                 return "SESSION_PENDING";
             case SESSION_SENDING:
                 return "SESSION_SENDING";
+            case SESSION_FLUSHED:
+                return "SESSION_FLUSHED";
             case SESSION_CLOSE:
                 return "SESSION_CLOSE";
             case SESSION_TERMINATED:

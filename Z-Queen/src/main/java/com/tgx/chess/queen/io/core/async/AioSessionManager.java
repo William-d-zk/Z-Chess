@@ -47,7 +47,7 @@ public abstract class AioSessionManager<C extends IContext<C>>
         implements
         ISessionManager<C>
 {
-    protected final Logger                 _Log                   = Logger.getLogger(getClass().getName());
+    protected final Logger                 _Logger                = Logger.getLogger(getClass().getName());
     private final Map<Long,
                       ISession<C>>[]       _Index2SessionMaps     = new Map[4];
     private final Map<Long,
@@ -126,12 +126,12 @@ public abstract class AioSessionManager<C extends IContext<C>>
     public void addSession(ISession<C> session)
     {
         int slot = getSlot(session);
-        _Log.info(String.format("%s add session -> set slot:%s",
-                                getClass().getSimpleName(),
-                                slot == CLIENT_SLOT ? "CLIENT"
-                                                    : slot == INTERNAL_SLOT ? "INTERNAL"
-                                                                            : slot == SERVER_SLOT ? "SERVER"
-                                                                                                  : "CLUSTER"));
+        _Logger.info(String.format("%s add session -> set slot:%s",
+                                   getClass().getSimpleName(),
+                                   slot == CLIENT_SLOT ? "CLIENT"
+                                                       : slot == INTERNAL_SLOT ? "INTERNAL"
+                                                                               : slot == SERVER_SLOT ? "SERVER"
+                                                                                                     : "CLUSTER"));
         _SessionsSets[slot].add(session);
     }
 
@@ -148,6 +148,7 @@ public abstract class AioSessionManager<C extends IContext<C>>
     @Override
     public boolean mapSession(long _Index, ISession<C> session)
     {
+        _Logger.info("session manager map->(%d,%s)", _Index, session);
         if (_Index == INVALID_INDEX || _Index == NULL_INDEX) { return false; }
         /*
          * 1:相同 Session 不同 _Index 进行登录，产生多个 _Index 对应 相同 Session 的情况 2:相同 _Index 在不同的 Session 上登录，产生覆盖 Session 的情况。
@@ -179,10 +180,10 @@ public abstract class AioSessionManager<C extends IContext<C>>
                  * oldIndex bind oldSession 已在 Map 完成其他的新的绑定关系。
                  */
                 if (oldMappedSession == oldSession) {
-                    _Log.debug("oldMappedSession == oldSession -> Ignore");// Ignore
+                    _Logger.debug("oldMappedSession == oldSession -> Ignore");// Ignore
                 }
                 else if (oldMappedSession == null) {
-                    _Log.debug("oldMappedSession == null -> oldIndex invalid");// oldIndex 已失效
+                    _Logger.debug("oldMappedSession == null -> oldIndex invalid");// oldIndex 已失效
                 }
                 // else oldIndex 已完成其他的绑定过程无需做任何处理。
             }
@@ -259,7 +260,7 @@ public abstract class AioSessionManager<C extends IContext<C>>
                             }
                         }
                     }
-                    session.bindport2channel(portId);
+                    session.bindPort2Channel(portId);
                     if (put) {
                         _PortChannel2IndexMaps[getSlot(session)].put(portId, c);
                     }
@@ -396,7 +397,7 @@ public abstract class AioSessionManager<C extends IContext<C>>
         if (c != null && c.length > 0 && c[0] != null && c[0].length > 1) {
             ISession session = null;
             int size = (int) c[0][c[0].length - 1];
-            _Log.info("port-size: " + size);
+            _Logger.info("port-size: " + size);
             if (size == 0) {
                 return 0;
             }
@@ -447,7 +448,7 @@ public abstract class AioSessionManager<C extends IContext<C>>
         if (c != null && c.length > 0 && c[0] != null && c[0].length > 1) {
             ISession<C> session;
             int size = (int) c[0][c[0].length - 1];
-            _Log.info("port-size: " + size);
+            _Logger.info("port-size: " + size);
             if (size == 0) {
                 return null;
             }
@@ -463,11 +464,11 @@ public abstract class AioSessionManager<C extends IContext<C>>
                                                                                       : _LoadFairMaps[getSlot(portMask)].get(portMask);
                 long idx = c[0][(loadFair++ & Integer.MAX_VALUE) % size];
                 _LoadFairMaps[getSlot(portMask)].put(portMask, loadFair);
-                _Log.info("session index: "
-                          + Long.toHexString(idx)
-                                .toUpperCase()
-                          + "load fair: "
-                          + loadFair);
+                _Logger.info("session index: "
+                             + Long.toHexString(idx)
+                                   .toUpperCase()
+                             + "load fair: "
+                             + loadFair);
 
                 session = _Index2SessionMaps[getSlot(idx)].get(idx);
                 if (session == null || session.isClosed()) {

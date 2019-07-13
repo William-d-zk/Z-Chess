@@ -61,7 +61,7 @@ public interface ISession<C extends IContext<C>>
 
     long[] getPortChannels();
 
-    void bindport2channel(long portId);
+    void bindPort2Channel(long portId);
 
     boolean isClosed();
 

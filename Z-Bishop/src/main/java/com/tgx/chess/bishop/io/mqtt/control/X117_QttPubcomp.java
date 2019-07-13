@@ -25,6 +25,7 @@
 package com.tgx.chess.bishop.io.mqtt.control;
 
 import com.tgx.chess.bishop.io.mqtt.bean.QttCommand;
+import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
 
 /**
  * @author william.d.zk
@@ -39,11 +40,6 @@ public class X117_QttPubcomp
     public X117_QttPubcomp()
     {
         super(COMMAND);
-    }
-
-    @Override
-    public int dataLength()
-    {
-        return 0;
+        setCtrl(QttFrame.generateCtrl(false, false, QOS_LEVEL.QOS_ALMOST_ONCE, QTT_TYPE.PUBCOMP));
     }
 }
