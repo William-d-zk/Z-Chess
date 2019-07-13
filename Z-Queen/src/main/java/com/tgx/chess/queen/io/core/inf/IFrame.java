@@ -45,7 +45,6 @@ public interface IFrame
 
     boolean isCtrl();
 
-
     default IPacket translate()
     {
         return null;

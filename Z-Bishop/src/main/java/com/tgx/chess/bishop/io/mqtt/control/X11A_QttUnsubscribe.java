@@ -24,16 +24,15 @@
 
 package com.tgx.chess.bishop.io.mqtt.control;
 
+import static com.tgx.chess.queen.io.core.inf.IQoS.Level.AT_LEAST_ONCE;
+
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import com.tgx.chess.bishop.io.mqtt.bean.QttCommand;
-import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
 import com.tgx.chess.king.base.util.IoUtil;
-
-import static com.tgx.chess.queen.io.core.inf.IQoS.Level.AT_LEAST_ONCE;
 
 /**
  * @author william.d.zk

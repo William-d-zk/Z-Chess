@@ -116,7 +116,8 @@ public class ClusterHandler<C extends IContext<C>>
                     //TODO  逻辑处理器需要在此处完成操作。
                     break;
                 default:
-                    _Log.warning(String.format("cluster link mappingHandle can't mappingHandle %s", event.getEventType()));
+                    _Log.warning(String.format("cluster link mappingHandle can't mappingHandle %s",
+                                               event.getEventType()));
                     break;
             }
         }

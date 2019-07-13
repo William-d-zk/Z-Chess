@@ -49,60 +49,76 @@ public class ConfigReader
      *            文件名
      * @return 读取的节点值
      */
-    public static String readConfigString(String name, String fileName) throws MissingResourceException, ClassCastException
+    public static String readConfigString(String name, String fileName) throws MissingResourceException,
+                                                                        ClassCastException
     {
         ResourceBundle rb = ResourceBundle.getBundle(fileName);
         return rb.getString(name);
     }
 
-    public static boolean readConfigBoolean(String name, String fileName) throws MissingResourceException, ClassCastException
+    public static boolean readConfigBoolean(String name, String fileName) throws MissingResourceException,
+                                                                          ClassCastException
     {
         ResourceBundle rb = ResourceBundle.getBundle(fileName);
         return Boolean.parseBoolean(rb.getString(name));
     }
 
-    public static int readConfigInteger(String name, String fileName) throws MissingResourceException, ClassCastException, NumberFormatException
+    public static int readConfigInteger(String name, String fileName) throws MissingResourceException,
+                                                                      ClassCastException,
+                                                                      NumberFormatException
     {
         ResourceBundle rb = ResourceBundle.getBundle(fileName);
         return Integer.parseInt(rb.getString(name));
     }
 
-    public static int readConfigHexInteger(String name, String fileName) throws MissingResourceException, ClassCastException, NumberFormatException
+    public static int readConfigHexInteger(String name, String fileName) throws MissingResourceException,
+                                                                         ClassCastException,
+                                                                         NumberFormatException
     {
         ResourceBundle rb = ResourceBundle.getBundle(fileName);
         return Integer.parseInt(rb.getString(name), 16);
     }
 
-    public static long readConfigHexLong(String name, String fileName) throws MissingResourceException, ClassCastException, NumberFormatException
+    public static long readConfigHexLong(String name, String fileName) throws MissingResourceException,
+                                                                       ClassCastException,
+                                                                       NumberFormatException
     {
         ResourceBundle rb = ResourceBundle.getBundle(fileName);
         return Long.parseLong(rb.getString(name), 16);
     }
 
-    public static long readConfigLong(String name, String fileName) throws MissingResourceException, ClassCastException, NumberFormatException
+    public static long readConfigLong(String name, String fileName) throws MissingResourceException,
+                                                                    ClassCastException,
+                                                                    NumberFormatException
     {
         ResourceBundle rb = ResourceBundle.getBundle(fileName);
         return Long.parseLong(rb.getString(name));
     }
 
-    public static double readConfigDouble(String name, String fileName) throws MissingResourceException, ClassCastException, NumberFormatException
+    public static double readConfigDouble(String name, String fileName) throws MissingResourceException,
+                                                                        ClassCastException,
+                                                                        NumberFormatException
     {
         ResourceBundle rb = ResourceBundle.getBundle(fileName);
         return Double.parseDouble(rb.getString(name));
     }
 
-    public static float readConfigFloat(String name, String fileName) throws MissingResourceException, ClassCastException, NumberFormatException
+    public static float readConfigFloat(String name, String fileName) throws MissingResourceException,
+                                                                      ClassCastException,
+                                                                      NumberFormatException
     {
         ResourceBundle rb = ResourceBundle.getBundle(fileName);
         return Float.parseFloat(rb.getString(name));
     }
 
-    public static String[] readConfigStringArray(String name, String fileName) throws MissingResourceException, ClassCastException
+    public static String[] readConfigStringArray(String name, String fileName) throws MissingResourceException,
+                                                                               ClassCastException
     {
         return readConfigArray(name, fileName, RegExUtil.STRING_ARRAY_PATTERN, RegExUtil.STRING_PATTERN);
     }
 
-    public static int[] readConfigIntegerArray(String name, String fileName) throws MissingResourceException, ClassCastException
+    public static int[] readConfigIntegerArray(String name, String fileName) throws MissingResourceException,
+                                                                             ClassCastException
     {
         String[] result = readConfigArray(name, fileName, RegExUtil.INTEGER_ARRAY_PATTERN, RegExUtil.INTEGER_PATTERN);
         int[] intArray = new int[result.length];
@@ -114,7 +130,8 @@ public class ConfigReader
         return intArray;
     }
 
-    public static long[] readConfigLongArray(String name, String fileName) throws MissingResourceException, ClassCastException
+    public static long[] readConfigLongArray(String name, String fileName) throws MissingResourceException,
+                                                                           ClassCastException
     {
         String[] result = readConfigArray(name, fileName, RegExUtil.INTEGER_ARRAY_PATTERN, RegExUtil.INTEGER_PATTERN);
         long[] longArray = new long[result.length];
@@ -126,7 +143,8 @@ public class ConfigReader
         return longArray;
     }
 
-    public static double[] readConfigDoubleArray(String name, String fileName) throws MissingResourceException, ClassCastException
+    public static double[] readConfigDoubleArray(String name, String fileName) throws MissingResourceException,
+                                                                               ClassCastException
     {
         String[] result = readConfigArray(name, fileName, RegExUtil.DOUBLE_ARRAY_PATTERN, RegExUtil.DOUBLE_PATTERN);
         double[] doubleArray = new double[result.length];
@@ -138,7 +156,8 @@ public class ConfigReader
         return doubleArray;
     }
 
-    public static float[] readConfigFloatArray(String name, String fileName) throws MissingResourceException, ClassCastException
+    public static float[] readConfigFloatArray(String name, String fileName) throws MissingResourceException,
+                                                                             ClassCastException
     {
         String[] result = readConfigArray(name, fileName, RegExUtil.DOUBLE_ARRAY_PATTERN, RegExUtil.DOUBLE_PATTERN);
         float[] floatArray = new float[result.length];
@@ -150,8 +169,10 @@ public class ConfigReader
         return floatArray;
     }
 
-    private static String[] readConfigArray(String name, String fileName, Pattern pattern, Pattern innerPattern) throws MissingResourceException,
-                                                                                                                 ClassCastException
+    private static String[] readConfigArray(String name,
+                                            String fileName,
+                                            Pattern pattern,
+                                            Pattern innerPattern) throws MissingResourceException, ClassCastException
     {
         ResourceBundle rb = ResourceBundle.getBundle(fileName);
         String line = rb.getString(name);
@@ -163,7 +184,10 @@ public class ConfigReader
             String[] splits = matched.split(",");
             for (String x : splits) {
                 if (!innerPattern.matcher(x)
-                                 .matches()) { throw new IllegalArgumentException("Check " + name + " @ " + x); }
+                                 .matches())
+                {
+                    throw new IllegalArgumentException("Check " + name + " @ " + x);
+                }
             }
             return splits;
         }

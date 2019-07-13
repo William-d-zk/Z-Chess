@@ -28,7 +28,9 @@ import com.tgx.chess.king.base.inf.ITriple;
 /**
  * @author William.d.zk
  */
-public class Triple<FIRST, SECOND, THIRD>
+public class Triple<FIRST,
+                    SECOND,
+                    THIRD>
         implements
         ITriple
 {
@@ -36,64 +38,83 @@ public class Triple<FIRST, SECOND, THIRD>
     private SECOND second;
     private THIRD  third;
 
-    public Triple(FIRST first, SECOND second, THIRD third) {
+    public Triple(FIRST first,
+                  SECOND second,
+                  THIRD third)
+    {
         this.first = first;
         this.second = second;
         this.third = third;
     }
 
     @Override
-    public FIRST first() {
+    public FIRST first()
+    {
         return first;
     }
 
     @Override
-    public SECOND second() {
+    public SECOND second()
+    {
         return second;
     }
 
     @Override
-    public THIRD third() {
+    public THIRD third()
+    {
         return third;
     }
 
-    public void setFirst(FIRST f) {
+    public void setFirst(FIRST f)
+    {
         first = f;
     }
 
-    public void setSecond(SECOND s) {
+    public void setSecond(SECOND s)
+    {
         second = s;
     }
 
-    public void setThird(THIRD t) {
+    public void setThird(THIRD t)
+    {
         third = t;
     }
 
     @Override
-    public void dispose() {
+    public void dispose()
+    {
         first = null;
         second = null;
         third = null;
     }
 
     @Override
-    public Triple<FIRST, SECOND, THIRD> clone() {
+    public Triple<FIRST,
+                  SECOND,
+                  THIRD> clone()
+    {
         return new Triple<>(first, second, third);
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(Object obj)
+    {
         if (!(obj instanceof Triple)) { return false; }
         if (this != obj) {
             @SuppressWarnings("unchecked")
-            Triple<FIRST, SECOND, THIRD> other = (Triple<FIRST, SECOND, THIRD>) obj;
+            Triple<FIRST,
+                   SECOND,
+                   THIRD> other = (Triple<FIRST,
+                                          SECOND,
+                                          THIRD>) obj;
             return first.equals(other.first) && second.equals(other.second) && third.equals(other.third);
         }
         return true;
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return String.format("<%s,%s,%s>", first, second, third);
     }
 }

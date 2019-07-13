@@ -145,7 +145,8 @@ public class NtruEncryptKey
      * can be either a public or private key blob generated with
      * <code>getPubKey()</code> or <code>getPrivKey()</code>.
      */
-    public NtruEncryptKey(byte keyBlob[]) throws FormatNotSupportedException, ParamSetNotSupportedException
+    public NtruEncryptKey(byte keyBlob[]) throws FormatNotSupportedException,
+                                          ParamSetNotSupportedException
     {
         NtruEncryptKeyNativeEncoder encoder = new NtruEncryptKeyNativeEncoder();
         RawKeyData rawKey = encoder.decodeKeyBlob(keyBlob);
@@ -225,7 +226,8 @@ public class NtruEncryptKey
         if (message == null) throw new NullPointerException("NtruEncrypt input plaintext is NULL");
 
         // Check input length
-        if (keyParams.maxMsgLenBytes < message.length) throw new PlaintextBadLengthException(message.length, keyParams.maxMsgLenBytes);
+        if (keyParams.maxMsgLenBytes < message.length) throw new PlaintextBadLengthException(message.length,
+                                                                                             keyParams.maxMsgLenBytes);
 
         FullPolynomial mPrime, R;
         do {
@@ -239,7 +241,13 @@ public class NtruEncryptKey
             byte sData[] = form_sData(message, 0, message.length, M, 0);
 
             // Form r from sData.
-            IGF2 igf = new IGF2(keyParams.N, keyParams.c, keyParams.igfHash, keyParams.minCallsR, sData, 0, sData.length);
+            IGF2 igf = new IGF2(keyParams.N,
+                                keyParams.c,
+                                keyParams.igfHash,
+                                keyParams.minCallsR,
+                                sData,
+                                0,
+                                sData.length);
             FullPolynomial r = BPGM3.genTrinomial(keyParams.N, keyParams.dr, keyParams.dr, igf);
             igf.close();
 
@@ -275,20 +283,26 @@ public class NtruEncryptKey
      *            the input ciphertext.
      * @return the decrypted plaintext.
      */
-    public byte[] decrypt(byte ciphertext[]) throws NoPrivateKeyException, CiphertextBadLengthException, ObjectClosedException, DecryptionFailureException
+    public byte[] decrypt(byte ciphertext[]) throws NoPrivateKeyException,
+                                             CiphertextBadLengthException,
+                                             ObjectClosedException,
+                                             DecryptionFailureException
     {
         if (ciphertext == null) throw new NullPointerException("NtruDecrypt input ciphertext is NULL");
         if (h == null) throw new ObjectClosedException();
         if (f == null) throw new NoPrivateKeyException();
         int expectedCTLength = BitPack.pack(keyParams.N, keyParams.q);
-        if (ciphertext.length != expectedCTLength) throw new CiphertextBadLengthException(ciphertext.length, expectedCTLength);
+        if (ciphertext.length != expectedCTLength) throw new CiphertextBadLengthException(ciphertext.length,
+                                                                                          expectedCTLength);
 
         boolean fail = false;
 
         // Unpack ciphertext into the polynomial e.
         FullPolynomial e = new FullPolynomial(keyParams.N);
         int numUnpacked = BitPack.unpack(keyParams.N, keyParams.q, ciphertext, 0, e.p, 0);
-        if (numUnpacked != ciphertext.length) throw new CiphertextBadLengthException(ciphertext.length, BitPack.pack(keyParams.N, keyParams.q));
+        if (numUnpacked != ciphertext.length) throw new CiphertextBadLengthException(ciphertext.length,
+                                                                                     BitPack.pack(keyParams.N,
+                                                                                                  keyParams.q));
 
         // a = f*e with coefficients reduced to range [A..A+q-1], where
         // A = lower bound decryption coefficient (-q/2 in all param sets)
@@ -613,7 +627,10 @@ public class NtruEncryptKey
 
         int i, j;
         for (i = 0, j = 0; i < R4.length - 1; i++, j += 4)
-            R4[i] = (byte) (((R.p[j] & 0x03) << 6) | ((R.p[j + 1] & 0x03) << 4) | ((R.p[j + 2] & 0x03) << 2) | ((R.p[j + 3] & 0x03)));
+            R4[i] = (byte) (((R.p[j] & 0x03) << 6)
+                            | ((R.p[j + 1] & 0x03) << 4)
+                            | ((R.p[j + 2] & 0x03) << 2)
+                            | ((R.p[j + 3] & 0x03)));
 
         int remElements = R.p.length % 4;
         R4[i] = 0;

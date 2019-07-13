@@ -30,7 +30,6 @@ import static com.tgx.chess.bishop.io.zprotocol.device.X31_ConfirmMsg.STATUS_PEN
 import static com.tgx.chess.bishop.io.zprotocol.device.X31_ConfirmMsg.STATUS_RECEIVED;
 
 import com.tgx.chess.bishop.io.zprotocol.ZCommand;
-import com.tgx.chess.bishop.io.zprotocol.ZProtocol;
 import com.tgx.chess.king.base.util.IoUtil;
 
 /**

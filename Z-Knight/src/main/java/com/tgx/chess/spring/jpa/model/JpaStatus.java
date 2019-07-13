@@ -28,5 +28,6 @@ package com.tgx.chess.spring.jpa.model;
  * @author william.d.zk
  * @date 2019-06-15
  */
-public class JpaStatus {
+public class JpaStatus
+{
 }

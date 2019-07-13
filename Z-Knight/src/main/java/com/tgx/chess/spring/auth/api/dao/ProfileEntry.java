@@ -25,6 +25,7 @@
 package com.tgx.chess.spring.auth.api.dao;
 
 import java.io.Serializable;
+
 /**
  * @author william.d.zk
  */

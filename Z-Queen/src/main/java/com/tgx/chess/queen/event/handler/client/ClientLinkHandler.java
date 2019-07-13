@@ -96,7 +96,8 @@ public class ClientLinkHandler<C extends IContext<C>>
                     _Logger.info(String.format("link mappingHandle %s,connected", session));
                     break;
                 default:
-                    _Logger.warning(String.format("client link mappingHandle can't mappingHandle %s", event.getEventType()));
+                    _Logger.warning(String.format("client link mappingHandle can't mappingHandle %s",
+                                                  event.getEventType()));
                     break;
             }
         }

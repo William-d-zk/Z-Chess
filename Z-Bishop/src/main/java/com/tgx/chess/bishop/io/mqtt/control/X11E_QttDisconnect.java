@@ -24,9 +24,9 @@
 
 package com.tgx.chess.bishop.io.mqtt.control;
 
-import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
-
 import static com.tgx.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
+
+import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
 
 /**
  * @author william.d.zk
@@ -41,7 +41,7 @@ public class X11E_QttDisconnect
     public X11E_QttDisconnect()
     {
         super(COMMAND);
-        setCtrl(generateCtrl(false, false,  ALMOST_ONCE, QTT_TYPE.DISCONNECT));
+        setCtrl(generateCtrl(false, false, ALMOST_ONCE, QTT_TYPE.DISCONNECT));
     }
 
 }

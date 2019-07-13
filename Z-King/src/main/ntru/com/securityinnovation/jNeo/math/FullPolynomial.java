@@ -162,7 +162,10 @@ public class FullPolynomial
      *            the smallest coefficient value of the result.
      * @return the resulting polynomial.
      */
-    public static final FullPolynomial addAndRecenter(FullPolynomial a, FullPolynomial b, int coefficientModulus, int newLowerLimit)
+    public static final FullPolynomial addAndRecenter(FullPolynomial a,
+                                                      FullPolynomial b,
+                                                      int coefficientModulus,
+                                                      int newLowerLimit)
     {
         FullPolynomial c = new FullPolynomial(a.p.length);
         for (int i = 0; i < c.p.length; i++)
@@ -208,7 +211,10 @@ public class FullPolynomial
      *            the smallest coefficient value of the result.
      * @return the difference.
      */
-    public static final FullPolynomial subtractAndRecenter(FullPolynomial a, FullPolynomial b, int coefficientModulus, int newLowerLimit)
+    public static final FullPolynomial subtractAndRecenter(FullPolynomial a,
+                                                           FullPolynomial b,
+                                                           int coefficientModulus,
+                                                           int newLowerLimit)
     {
         FullPolynomial c = new FullPolynomial(a.p.length);
         for (int i = 0; i < c.p.length; i++)

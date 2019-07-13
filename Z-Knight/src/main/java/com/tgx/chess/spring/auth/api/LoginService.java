@@ -43,6 +43,7 @@ import com.tgx.chess.spring.auth.api.dao.ProfileEntry;
 import com.tgx.chess.spring.auth.model.AccountEntity;
 import com.tgx.chess.spring.auth.model.RoleEntity;
 import com.tgx.chess.spring.auth.service.AccountService;
+
 /**
  * @author william.d.zk
  */

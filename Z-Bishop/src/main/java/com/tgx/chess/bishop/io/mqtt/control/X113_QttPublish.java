@@ -24,13 +24,13 @@
 
 package com.tgx.chess.bishop.io.mqtt.control;
 
+import static com.tgx.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import com.tgx.chess.bishop.io.mqtt.bean.QttCommand;
 import com.tgx.chess.king.base.util.IoUtil;
-
-import static com.tgx.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
 
 /**
  * @author william.d.zk
@@ -54,8 +54,8 @@ public class X113_QttPublish
     public int dataLength()
     {
         return (getLevel().ordinal() > ALMOST_ONCE.ordinal() ? super.dataLength()
-                                                                   : Objects.nonNull(getPayload()) ? getPayload().length
-                                                                                                   : 0)
+                                                             : Objects.nonNull(getPayload()) ? getPayload().length
+                                                                                             : 0)
                + 2
                + (Objects.nonNull(mTopic) ? mTopic.getBytes(StandardCharsets.UTF_8).length
                                           : 0);
