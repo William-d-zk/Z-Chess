@@ -24,14 +24,13 @@
 package com.tgx.chess.bishop.io.mqtt.control;
 
 import static com.tgx.chess.king.base.util.IoUtil.isBlank;
+import static com.tgx.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
-import com.tgx.chess.bishop.io.mqtt.bean.BaseQtt;
 import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
 import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
-import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
 import com.tgx.chess.king.base.util.IoUtil;
 
 /**
@@ -50,7 +49,7 @@ public class X111_QttConnect
     public X111_QttConnect()
     {
         super(COMMAND);
-        setCtrl(QttFrame.generateCtrl(false, false, QOS_LEVEL.QOS_ALMOST_ONCE, QTT_TYPE.CONNECT));
+        setCtrl(generateCtrl(false, false, ALMOST_ONCE, QTT_TYPE.CONNECT));
     }
 
     @Override
@@ -68,22 +67,22 @@ public class X111_QttConnect
     @Override
     public int getPriority()
     {
-        return QOS_00_NETWORK_CONTROL;
+        return QOS_PRIORITY_00_NETWORK_CONTROL;
     }
 
-    private boolean           mFlagUserName;
-    private boolean           mFlagPassword;
-    private boolean           mFlagWillRetain;
-    private BaseQtt.QOS_LEVEL mFlagWillQoS;
-    private boolean           mFlagWill;
-    private boolean           mFlagCleanSession;
-    private int               mKeepAlive;
-    private String            mUserName;
-    private byte[]            mPassword;
-    private String            mClientId;
-    private int               mClientIdLength;
-    private String            mWillTopic;
-    private byte[]            mWillMessage;
+    private boolean mFlagUserName;
+    private boolean mFlagPassword;
+    private boolean mFlagWillRetain;
+    private Level   mFlagWillQoS;
+    private boolean mFlagWill;
+    private boolean mFlagCleanSession;
+    private int     mKeepAlive;
+    private String  mUserName;
+    private byte[]  mPassword;
+    private String  mClientId;
+    private int     mClientIdLength;
+    private String  mWillTopic;
+    private byte[]  mWillMessage;
 
     private final int _MQTT = IoUtil.readInt(new byte[] { 'M',
                                                           'Q',
@@ -156,9 +155,9 @@ public class X111_QttConnect
         if ((0x01 & code) != 0) { throw new IllegalArgumentException("Flag error 0 bit->reserved 1"); }
         mFlagCleanSession = (code & Flag.CleanSession.getMask()) != 0;
         mFlagWill = (code & Flag.Will.getMask()) != 0;
-        mFlagWillQoS = QOS_LEVEL.valueOf((byte) ((code & Flag.WillQoS.getMask()) >> 3));
+        mFlagWillQoS = Level.valueOf((byte) ((code & Flag.WillQoS.getMask()) >> 3));
         mFlagWillRetain = (code & Flag.WillRetain.getMask()) != 0;
-        if (!mFlagWill && (mFlagWillRetain || mFlagWillQoS.getValue() > QOS_LEVEL.QOS_EXACTLY_ONCE.getValue())) {
+        if (!mFlagWill && (mFlagWillRetain || mFlagWillQoS.ordinal() > Level.EXACTLY_ONCE.ordinal())) {
             throw new IllegalArgumentException("no will flag, will retain or will qos not 0");
         }
         if (!mFlagWill) {
@@ -175,7 +174,7 @@ public class X111_QttConnect
                                   : 0;
         code |= mFlagWill ? Flag.Will.getMask()
                           : 0;
-        code |= mFlagWill ? mFlagWillQoS.getValue() << 3
+        code |= mFlagWill ? mFlagWillQoS.ordinal() << 3
                           : 0;
         code |= mFlagWill && mFlagWillRetain ? Flag.WillRetain.getMask()
                                              : 0;
@@ -206,7 +205,7 @@ public class X111_QttConnect
         return mKeepAlive;
     }
 
-    public void setWill(QOS_LEVEL level, boolean retain)
+    public void setWill(Level level, boolean retain)
     {
         mFlagWillQoS = level;
         mFlagWillRetain = retain;
@@ -218,12 +217,12 @@ public class X111_QttConnect
         return mFlagWill;
     }
 
-    public void setWillQoS(QOS_LEVEL level)
+    public void setWillQoS(Level level)
     {
         mFlagWillQoS = level;
     }
 
-    public QOS_LEVEL getWillQoS()
+    public Level getWillQoS()
     {
         return mFlagWillQoS;
     }

@@ -24,10 +24,12 @@
 
 package com.tgx.chess.bishop.biz.db.dao;
 
+import java.util.NavigableMap;
 import java.util.Objects;
 
+import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.queen.db.inf.IStorage;
-import com.tgx.chess.queen.io.core.inf.IQoS;
+import com.tgx.chess.queen.io.core.inf.ICommand;
 
 public class DeviceEntry
         implements
@@ -67,12 +69,14 @@ public class DeviceEntry
         return 1;
     }
 
-    private long       deviceId;
-    private String     token;
-    private long       invalidTime;
-    private Operation  operation;
-    private Strategy   strategy;
-    private IQoS.Level qosLevel;
+    private long      deviceId;
+    private String    token;
+    private long      invalidTime;
+    private Operation operation;
+    private Strategy  strategy;
+
+    private NavigableMap<Long,
+                         ICommand<ZContext>> messageQueue;
 
     @Override
     public long getPrimaryKey()
@@ -115,16 +119,6 @@ public class DeviceEntry
     public Operation getOperation()
     {
         return operation;
-    }
-
-    public IQoS.Level getQosLevel()
-    {
-        return qosLevel;
-    }
-
-    public void setQosLevel(IQoS.Level qosLevel)
-    {
-        this.qosLevel = qosLevel;
     }
 
     @Override

@@ -23,6 +23,8 @@
  */
 package com.tgx.chess.bishop.io.ws.control;
 
+import static com.tgx.chess.queen.io.core.inf.IQoS.Level.AT_LEAST_ONCE;
+
 import com.tgx.chess.bishop.io.ws.bean.WsControl;
 import com.tgx.chess.bishop.io.ws.bean.WsFrame;
 
@@ -38,19 +40,23 @@ public class X104_Ping
 
     public X104_Ping()
     {
-        super(COMMAND);
-        setCtrl(WsFrame.frame_op_code_ctrl_ping);
+        this(null);
     }
 
     public X104_Ping(byte[] payload)
     {
-        super(COMMAND, payload);
-        setCtrl(WsFrame.frame_op_code_ctrl_ping);
+        super(WsFrame.frame_op_code_ctrl_ping, COMMAND, payload);
     }
 
     @Override
     public X104_Ping duplicate()
     {
         return new X104_Ping(getPayload());
+    }
+
+    @Override
+    public Level getLevel()
+    {
+        return AT_LEAST_ONCE;
     }
 }

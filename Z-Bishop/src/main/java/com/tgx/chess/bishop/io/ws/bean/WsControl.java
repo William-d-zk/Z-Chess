@@ -23,6 +23,8 @@
  */
 package com.tgx.chess.bishop.io.ws.bean;
 
+import static com.tgx.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
@@ -41,27 +43,22 @@ public abstract class WsControl
 
     private final byte[]       _Msg;
     private final int          _Command;
-    protected byte             mCtrlCode;
+    private final byte         _CtrlCode;
     private ISession<ZContext> mSession;
 
-    public WsControl(int command,
+    public WsControl(byte code,
+                     int command,
                      byte[] msg)
     {
+        _CtrlCode = code;
         _Command = command;
         _Msg = msg;
     }
 
-    public WsControl(String msg,
+    public WsControl(byte code,
                      int command)
     {
-        this(command,
-             Objects.nonNull(msg) ? msg.getBytes()
-                                  : null);
-    }
-
-    public WsControl(int command)
-    {
-        this(command, null);
+        this(code, command, null);
     }
 
     @Override
@@ -102,13 +99,13 @@ public abstract class WsControl
     @Override
     public void setCtrl(byte ctrl)
     {
-        mCtrlCode = ctrl;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public byte getCtrl()
     {
-        return mCtrlCode;
+        return _CtrlCode;
     }
 
     @Override
@@ -142,5 +139,11 @@ public abstract class WsControl
     {
         int command = getSerial();
         return String.format("cmd: 0X%X, %s", command, new String(_Msg, StandardCharsets.UTF_8));
+    }
+
+    @Override
+    public Level getLevel()
+    {
+        return ALMOST_ONCE;
     }
 }

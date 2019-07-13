@@ -41,30 +41,4 @@ public interface ICommand<C extends IContext<C>>
         return COMMAND_SERIAL;
     }
 
-    @Override
-    default ICommand<C> setSession(ISession<C> session)
-    {
-        return this;
-    }
-
-    long _DEFAULT_TRANSACTION_KEY = -1;
-
-    default long getUID()
-    {
-        return -1;
-    }
-
-    default void setUID(long uid)
-    {
-    }
-
-    default long getTransactionKey()
-    {
-        return _DEFAULT_TRANSACTION_KEY;
-    }
-
-    default void setTransactionKey(long key)
-    {
-    }
-
 }

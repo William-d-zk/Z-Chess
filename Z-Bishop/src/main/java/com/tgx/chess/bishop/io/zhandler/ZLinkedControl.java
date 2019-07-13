@@ -36,7 +36,7 @@ import com.tgx.chess.bishop.io.zprotocol.ztls.X02_AsymmetricPub;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X03_Cipher;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X04_EncryptConfirm;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X05_EncryptStart;
-import com.tgx.chess.bishop.io.zprotocol.ztls.X06_PlainStart;
+import com.tgx.chess.bishop.io.zprotocol.ztls.X06_EncryptComp;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.event.handler.LinkHandler;
@@ -72,7 +72,7 @@ public class ZLinkedControl
             case X03_Cipher.COMMAND:
             case X04_EncryptConfirm.COMMAND:
             case X05_EncryptStart.COMMAND:
-            case X06_PlainStart.COMMAND:
+            case X06_EncryptComp.COMMAND:
                 /*
                  *  内嵌逻辑，在ZCommandFilter中已经处理结束
                  *  此处仅执行转发逻辑

@@ -37,14 +37,12 @@ public class X103_Close
 
     public X103_Close()
     {
-        super(COMMAND);
-        mCtrlCode = WsFrame.frame_op_code_ctrl_close;
+        this(null);
     }
 
     public X103_Close(byte[] payload)
     {
-        super(COMMAND, payload);
-        mCtrlCode = WsFrame.frame_op_code_ctrl_close;
+        super(WsFrame.frame_op_code_ctrl_close, COMMAND, payload);
     }
 
     @Override

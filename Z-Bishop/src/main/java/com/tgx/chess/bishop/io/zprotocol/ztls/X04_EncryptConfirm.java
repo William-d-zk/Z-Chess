@@ -24,7 +24,7 @@
 package com.tgx.chess.bishop.io.zprotocol.ztls;
 
 import com.tgx.chess.bishop.io.zfilter.ZContext;
-import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
+import com.tgx.chess.bishop.io.zprotocol.ZCommand;
 import com.tgx.chess.king.base.util.IoUtil;
 
 /**
@@ -32,7 +32,7 @@ import com.tgx.chess.king.base.util.IoUtil;
  */
 public class X04_EncryptConfirm
         extends
-        BaseCommand
+        ZCommand
 {
     public final static int COMMAND = 0x04;
     public int              code;
@@ -102,12 +102,6 @@ public class X04_EncryptConfirm
     }
 
     @Override
-    public int getPriority()
-    {
-        return QOS_00_NETWORK_CONTROL;
-    }
-
-    @Override
     public String toString()
     {
         return String.format("%s,code:%s,rc4-key: %d ,sign: %s",
@@ -115,5 +109,18 @@ public class X04_EncryptConfirm
                              code,
                              symmetricKeyId,
                              IoUtil.bin2Hex(mSign));
+    }
+
+    @Override
+    public void dispose()
+    {
+        mSign = null;
+        super.dispose();
+    }
+
+    @Override
+    public Level getLevel()
+    {
+        return Level.EXACTLY_ONCE;
     }
 }

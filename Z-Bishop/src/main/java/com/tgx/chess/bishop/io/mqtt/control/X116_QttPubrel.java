@@ -24,8 +24,9 @@
 
 package com.tgx.chess.bishop.io.mqtt.control;
 
+import static com.tgx.chess.queen.io.core.inf.IQoS.Level.AT_LEAST_ONCE;
+
 import com.tgx.chess.bishop.io.mqtt.bean.QttCommand;
-import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
 
 /**
  * @author william.d.zk
@@ -40,7 +41,7 @@ public class X116_QttPubrel
     public X116_QttPubrel()
     {
         super(COMMAND);
-        setCtrl(QttFrame.generateCtrl(false, false, QOS_LEVEL.QOS_AT_LEAST_ONCE, QTT_TYPE.PUBREL));
+        setCtrl(generateCtrl(false, false, AT_LEAST_ONCE, QTT_TYPE.PUBREL));
     }
 
 }

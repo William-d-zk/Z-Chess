@@ -24,14 +24,14 @@
 
 package com.tgx.chess.bishop.io.zprotocol.device;
 
-import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
+import com.tgx.chess.bishop.io.zprotocol.ZCommand;
 
 /**
  * @author william.d.zk
  */
 public class X25_AuthorisedToken
         extends
-        BaseCommand
+        ZCommand
 {
     public final static int COMMAND = 0x25;
 
@@ -43,6 +43,6 @@ public class X25_AuthorisedToken
     @Override
     public int getPriority()
     {
-        return QOS_09_CONFIRM_MESSAGE;
+        return QOS_PRIORITY_09_CONFIRM_MESSAGE;
     }
 }

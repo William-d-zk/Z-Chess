@@ -37,7 +37,7 @@ import com.tgx.chess.queen.io.core.inf.ISession;
  */
 public abstract class QttControl
         extends
-        BaseQtt
+        MqttProtocol
         implements
         IControl<ZContext>,
         IRouteLv4
@@ -112,4 +112,5 @@ public abstract class QttControl
         mSession = null;
         mPayload = null;
     }
+
 }

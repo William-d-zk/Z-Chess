@@ -27,13 +27,13 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import com.tgx.chess.bishop.io.ws.bean.WsFrame;
-import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
+import com.tgx.chess.bishop.io.zprotocol.ZCommand;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X01_EncryptRequest;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X02_AsymmetricPub;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X03_Cipher;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X04_EncryptConfirm;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X05_EncryptStart;
-import com.tgx.chess.bishop.io.zprotocol.ztls.X06_PlainStart;
+import com.tgx.chess.bishop.io.zprotocol.ztls.X06_EncryptComp;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.config.Code;
@@ -55,8 +55,8 @@ public class ZCommandFilter
 {
 
     private ICommandFactory<ZContext,
-                            BaseCommand>           commandFactory;
-    private final Logger                           _Logger = Logger.getLogger(getClass().getName());
+                            ZCommand>           commandFactory;
+    private final Logger                        _Logger = Logger.getLogger(getClass().getName());
 
     public ZCommandFilter()
     {
@@ -64,7 +64,7 @@ public class ZCommandFilter
     }
 
     public ZCommandFilter(ICommandFactory<ZContext,
-                                          BaseCommand> factory)
+                                          ZCommand> factory)
     {
         super("queen-command-zfilter");
         this.commandFactory = factory;
@@ -95,7 +95,7 @@ public class ZCommandFilter
     public ICommand<ZContext> decode(ZContext context, IFrame input)
     {
         int command = input.getPayload()[1] & 0xFF;
-        BaseCommand _command = create(command);
+        ZCommand _command = create(command);
         if (Objects.isNull(_command)) return null;
         _command.decode(input.getPayload(), context);
         switch (command)
@@ -103,8 +103,7 @@ public class ZCommandFilter
             case X01_EncryptRequest.COMMAND:
                 X01_EncryptRequest x01 = (X01_EncryptRequest) _command;
                 IEncryptHandler encryptHandler = context.getEncryptHandler();
-                if (encryptHandler == null
-                    || !x01.isEncrypt()) return new X06_PlainStart(Code.PLAIN_UNSUPPORTED.getCode());
+                if (encryptHandler == null) return new X06_EncryptComp(Code.PLAIN_UNSUPPORTED.getCode());
                 Pair<Integer,
                      byte[]> keyPair = encryptHandler.getAsymmetricPubKey(x01.pubKeyId);
                 if (keyPair != null) {
@@ -117,7 +116,7 @@ public class ZCommandFilter
             case X02_AsymmetricPub.COMMAND:
                 X02_AsymmetricPub x02 = (X02_AsymmetricPub) _command;
                 encryptHandler = context.getEncryptHandler();
-                if (encryptHandler == null) return new X06_PlainStart(Code.PLAIN_UNSUPPORTED.getCode());
+                if (encryptHandler == null) return new X06_EncryptComp(Code.PLAIN_UNSUPPORTED.getCode());
                 byte[] symmetricKey = context.getSymmetricEncrypt()
                                              .createKey("z-tls-rc4");
                 if (symmetricKey == null) throw new NullPointerException("create symmetric-key failed!");
@@ -176,14 +175,14 @@ public class ZCommandFilter
                 X05_EncryptStart x05 = (X05_EncryptStart) _command;
                 if (context.getSymmetricKeyId() != x05.symmetricKeyId) throw new IllegalStateException("symmetric key id is not equals");
                 _Logger.info("encrypt start, no response");
-            case X06_PlainStart.COMMAND:
+            case X06_EncryptComp.COMMAND:
                 return null;
             default:
                 return _command;
         }
     }
 
-    private BaseCommand create(int command)
+    private ZCommand create(int command)
     {
         switch (command)
         {
@@ -197,8 +196,8 @@ public class ZCommandFilter
                 return new X04_EncryptConfirm();
             case X05_EncryptStart.COMMAND:
                 return new X05_EncryptStart();
-            case X06_PlainStart.COMMAND:
-                return new X06_PlainStart();
+            case X06_EncryptComp.COMMAND:
+                return new X06_EncryptComp();
             case 0xFF:
                 throw new UnsupportedOperationException();
             default:
@@ -208,7 +207,7 @@ public class ZCommandFilter
     }
 
     public void setCommandFactory(ICommandFactory<ZContext,
-                                                  BaseCommand> factory)
+                                                  ZCommand> factory)
     {
         commandFactory = factory;
     }

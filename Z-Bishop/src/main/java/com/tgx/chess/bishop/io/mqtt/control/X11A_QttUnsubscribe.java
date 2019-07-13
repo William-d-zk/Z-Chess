@@ -33,6 +33,8 @@ import com.tgx.chess.bishop.io.mqtt.bean.QttCommand;
 import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
 import com.tgx.chess.king.base.util.IoUtil;
 
+import static com.tgx.chess.queen.io.core.inf.IQoS.Level.AT_LEAST_ONCE;
+
 /**
  * @author william.d.zk
  * @date 2019-05-30
@@ -46,7 +48,7 @@ public class X11A_QttUnsubscribe
     public X11A_QttUnsubscribe()
     {
         super(COMMAND);
-        setCtrl(QttFrame.generateCtrl(false, false, QOS_LEVEL.QOS_AT_LEAST_ONCE, QTT_TYPE.UNSUBSCRIBE));
+        setCtrl(generateCtrl(false, false, AT_LEAST_ONCE, QTT_TYPE.UNSUBSCRIBE));
     }
 
     @Override
@@ -58,7 +60,7 @@ public class X11A_QttUnsubscribe
     @Override
     public int getPriority()
     {
-        return QOS_06_META_CREATE;
+        return QOS_PRIORITY_06_META_CREATE;
     }
 
     @Override

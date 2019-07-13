@@ -29,6 +29,9 @@ import java.util.Objects;
  * @author William.d.zk
  */
 public interface IProtocol
+        extends
+        IEncode,
+        IDecode
 {
     int PACKET_SERIAL   = 0;
     int COMMAND_SERIAL  = 0x0FF;//1~0xFE(254)
@@ -45,16 +48,6 @@ public interface IProtocol
     int getSerial();
 
     int superSerial();
-
-    default int decodec(byte[] data, int pos)
-    {
-        return pos;
-    }
-
-    default int encodec(byte[] data, int pos)
-    {
-        return pos;
-    }
 
     default byte[] encode()
     {

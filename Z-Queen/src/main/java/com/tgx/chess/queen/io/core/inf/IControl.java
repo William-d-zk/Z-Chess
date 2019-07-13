@@ -53,7 +53,7 @@ public interface IControl<C extends IContext<C>>
     @Override
     default int getPriority()
     {
-        return QOS_00_NETWORK_CONTROL;
+        return QOS_PRIORITY_00_NETWORK_CONTROL;
     }
 
     /**
@@ -65,4 +65,5 @@ public interface IControl<C extends IContext<C>>
     {
         return false;
     }
+
 }

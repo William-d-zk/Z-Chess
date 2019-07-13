@@ -24,7 +24,7 @@
 
 package com.tgx.chess.bishop.io.zprotocol.device;
 
-import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
+import com.tgx.chess.bishop.io.zprotocol.ZCommand;
 import com.tgx.chess.king.base.util.IoUtil;
 
 /**
@@ -32,7 +32,7 @@ import com.tgx.chess.king.base.util.IoUtil;
  */
 public class X21_SignUpResult
         extends
-        BaseCommand
+        ZCommand
 {
     public final static int COMMAND = 0x21;
 
@@ -44,7 +44,7 @@ public class X21_SignUpResult
     @Override
     public int getPriority()
     {
-        return QOS_09_CONFIRM_MESSAGE;
+        return QOS_PRIORITY_09_CONFIRM_MESSAGE;
     }
 
     private boolean success;

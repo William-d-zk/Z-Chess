@@ -24,7 +24,7 @@
 package com.tgx.chess.bishop.io.zprotocol.ztls;
 
 import com.tgx.chess.bishop.io.zfilter.ZContext;
-import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
+import com.tgx.chess.bishop.io.zprotocol.ZCommand;
 import com.tgx.chess.king.base.util.IoUtil;
 
 /**
@@ -32,7 +32,7 @@ import com.tgx.chess.king.base.util.IoUtil;
  */
 public class X05_EncryptStart
         extends
-        BaseCommand
+        ZCommand
 {
     public final static int COMMAND = 0x05;
     public int              symmetricKeyId;
@@ -86,14 +86,14 @@ public class X05_EncryptStart
     }
 
     @Override
-    public int getPriority()
-    {
-        return QOS_00_NETWORK_CONTROL;
-    }
-
-    @Override
     public String toString()
     {
         return String.format("%s,rc4-key:%d", super.toString(), symmetricKeyId);
+    }
+
+    @Override
+    public Level getLevel()
+    {
+        return Level.AT_LEAST_ONCE;
     }
 }

@@ -24,21 +24,20 @@
 
 package com.tgx.chess.bishop.io.zprotocol.ztls;
 
-import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
+import com.tgx.chess.bishop.io.zprotocol.ZCommand;
 import com.tgx.chess.king.base.util.IoUtil;
-import com.tgx.chess.queen.io.core.async.AioContext;
 
 /**
  * @author William.d.zk
  */
-public class X06_PlainStart
+public class X06_EncryptComp
         extends
-        BaseCommand
+        ZCommand
 {
     public final static int COMMAND = 0x06;
     private int             code;
 
-    public X06_PlainStart()
+    public X06_EncryptComp()
     {
         super(COMMAND, false);
     }
@@ -49,16 +48,10 @@ public class X06_PlainStart
         return true;
     }
 
-    public X06_PlainStart(int code)
+    public X06_EncryptComp(int code)
     {
         super(COMMAND, false);
         this.code = code;
-    }
-
-    @Override
-    public int getPriority()
-    {
-        return QOS_00_NETWORK_CONTROL;
     }
 
     @Override

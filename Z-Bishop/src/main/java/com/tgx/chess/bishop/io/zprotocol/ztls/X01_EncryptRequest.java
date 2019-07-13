@@ -23,7 +23,7 @@
  */
 package com.tgx.chess.bishop.io.zprotocol.ztls;
 
-import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
+import com.tgx.chess.bishop.io.zprotocol.ZCommand;
 import com.tgx.chess.king.base.util.IoUtil;
 
 /**
@@ -31,7 +31,7 @@ import com.tgx.chess.king.base.util.IoUtil;
  */
 public class X01_EncryptRequest
         extends
-        BaseCommand
+        ZCommand
 {
     public final static int COMMAND  = 0x01;
     public int              pubKeyId = -1;
@@ -50,39 +50,33 @@ public class X01_EncryptRequest
     @Override
     public int decodec(byte[] data, int pos)
     {
-        if (isEncrypt()) {
-            pubKeyId = IoUtil.readInt(data, pos);
-            pos += 4;
-        }
+        pubKeyId = IoUtil.readInt(data, pos);
+        pos += 4;
         return pos;
     }
 
     @Override
     public int encodec(byte[] data, int pos)
     {
-        if (isEncrypt()) {
-            pos += IoUtil.writeInt(pubKeyId, data, pos);
-        }
+        pos += IoUtil.writeInt(pubKeyId, data, pos);
         return pos;
     }
 
     @Override
     public int dataLength()
     {
-        return super.dataLength()
-               + (isEncrypt() ? 4
-                              : 0);
-    }
-
-    @Override
-    public int getPriority()
-    {
-        return QOS_00_NETWORK_CONTROL;
+        return super.dataLength() + 4;
     }
 
     @Override
     public String toString()
     {
         return String.format("%s,public-key-id:%d", super.toString(), pubKeyId);
+    }
+
+    @Override
+    public Level getLevel()
+    {
+        return Level.AT_LEAST_ONCE;
     }
 }

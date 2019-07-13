@@ -31,6 +31,11 @@ public interface IDuplicate
 {
     default IDuplicate duplicate()
     {
-        return this;
+        throw new UnsupportedOperationException();
+    }
+
+    default boolean isDuplicate()
+    {
+        return false;
     }
 }

@@ -38,8 +38,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import com.tgx.chess.bishop.io.mqtt.bean.BaseQtt;
 import com.tgx.chess.king.base.util.Pair;
+import com.tgx.chess.queen.io.core.inf.IQoS;
 
 /**
  * @author william.d.zk
@@ -52,13 +52,13 @@ public class QttRouter
 
     private final Map<Pattern,
                       Map<Long,
-                          BaseQtt.QOS_LEVEL>>                _Topic2SessionsMap = new TreeMap<>(Comparator.comparing(Pattern::pattern));
-    private final AtomicLong                                 _AtomicIdentity    = new AtomicLong(Long.MIN_VALUE);
+                          IQoS.Level>>                _Topic2SessionsMap = new TreeMap<>(Comparator.comparing(Pattern::pattern));
+    private final AtomicLong                          _AtomicIdentity    = new AtomicLong(Long.MIN_VALUE);
     private final Map<Long,
-                      Set<Integer>>                          _QttStatusMap      = new ConcurrentHashMap<>(47);
+                      Set<Integer>>                   _QttStatusMap      = new ConcurrentHashMap<>(47);
 
     public Map<Long,
-               BaseQtt.QOS_LEVEL>
+               IQoS.Level>
 
             broker(final String topic)
     {
@@ -82,16 +82,16 @@ public class QttRouter
     }
 
     public void addTopic(Pair<String,
-                              BaseQtt.QOS_LEVEL> pair,
+                              IQoS.Level> pair,
                          long index)
     {
         String topic = pair.first();
-        BaseQtt.QOS_LEVEL qosLevel = pair.second();
+        IQoS.Level qosLevel = pair.second();
         Pattern pattern = topic.endsWith("/+") ? Pattern.compile(topic.replace("+", "[^/]+"))
                                                : topic.endsWith("/#") ? Pattern.compile(topic.replace("#", ".+"))
                                                                       : Pattern.compile(topic);
         Map<Long,
-            BaseQtt.QOS_LEVEL> value = _Topic2SessionsMap.get(pattern);
+            IQoS.Level> value = _Topic2SessionsMap.get(pattern);
         if (Objects.isNull(value)) {
             value = new ConcurrentSkipListMap<>();
             _Topic2SessionsMap.put(pattern, value);
@@ -109,17 +109,17 @@ public class QttRouter
     {
         for (Iterator<Map.Entry<Pattern,
                                 Map<Long,
-                                    BaseQtt.QOS_LEVEL>>> iterator = _Topic2SessionsMap.entrySet()
-                                                                                      .iterator(); iterator.hasNext();)
+                                    IQoS.Level>>> iterator = _Topic2SessionsMap.entrySet()
+                                                                               .iterator(); iterator.hasNext();)
         {
             Map.Entry<Pattern,
                       Map<Long,
-                          BaseQtt.QOS_LEVEL>> entry = iterator.next();
+                          IQoS.Level>> entry = iterator.next();
             Pattern pattern = entry.getKey();
             Matcher matcher = pattern.matcher(topic);
             if (matcher.matches()) {
                 Map<Long,
-                    BaseQtt.QOS_LEVEL> value = entry.getValue();
+                    IQoS.Level> value = entry.getValue();
                 value.remove(index);
                 if (value.isEmpty()) {
                     iterator.remove();

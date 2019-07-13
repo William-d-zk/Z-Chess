@@ -25,8 +25,9 @@
 package com.tgx.chess.bishop.io.mqtt.control;
 
 import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
-import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
 import com.tgx.chess.king.base.util.IoUtil;
+
+import static com.tgx.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
 
 /**
  * @author william.d.zk
@@ -44,7 +45,7 @@ public class X112_QttConnack
     public X112_QttConnack()
     {
         super(COMMAND);
-        setCtrl(QttFrame.generateCtrl(false, false, QttFrame.QOS_LEVEL.QOS_ALMOST_ONCE, QttFrame.QTT_TYPE.CONNACK));
+        setCtrl(generateCtrl(false, false, ALMOST_ONCE, QTT_TYPE.CONNACK));
     }
 
     @Override
@@ -56,7 +57,7 @@ public class X112_QttConnack
     @Override
     public int getPriority()
     {
-        return QOS_00_NETWORK_CONTROL;
+        return QOS_PRIORITY_00_NETWORK_CONTROL;
     }
 
     public boolean isPresent()
