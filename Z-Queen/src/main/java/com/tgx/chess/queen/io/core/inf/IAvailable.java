@@ -23,6 +23,7 @@
  */
 
 package com.tgx.chess.queen.io.core.inf;
+
 /**
  * @author william.d.zk
  */

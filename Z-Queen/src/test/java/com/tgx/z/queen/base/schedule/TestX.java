@@ -36,7 +36,8 @@ import org.junit.jupiter.api.Test;
 public class TestX
 {
     @Test
-    void x() {
+    void x()
+    {
         ByteBuffer buffer = ByteBuffer.allocate(10);
         buffer.put((byte) '\r');
         buffer.put((byte) '\n');

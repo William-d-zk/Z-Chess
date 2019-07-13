@@ -29,7 +29,8 @@ import com.tgx.chess.king.base.inf.IPair;
 /**
  * @author William.d.zk
  */
-public class Pair<FIRST, SECOND>
+public class Pair<FIRST,
+                  SECOND>
         implements
         IDisposable,
         IPair
@@ -37,53 +38,66 @@ public class Pair<FIRST, SECOND>
     private FIRST  first;
     private SECOND second;
 
-    public Pair(FIRST first, SECOND second) {
+    public Pair(FIRST first,
+                SECOND second)
+    {
         this.first = first;
         this.second = second;
     }
 
-    public void setFirst(FIRST f) {
+    public void setFirst(FIRST f)
+    {
         first = f;
     }
 
-    public void setSecond(SECOND s) {
+    public void setSecond(SECOND s)
+    {
         second = s;
     }
 
     @Override
-    public void dispose() {
+    public void dispose()
+    {
         first = null;
         second = null;
     }
 
     @Override
-    public FIRST first() {
+    public FIRST first()
+    {
         return first;
     }
 
     @Override
-    public SECOND second() {
+    public SECOND second()
+    {
         return second;
     }
 
     @Override
-    public Pair<FIRST, SECOND> clone() {
+    public Pair<FIRST,
+                SECOND> clone()
+    {
         return new Pair<>(first, second);
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(Object obj)
+    {
         if (!(obj instanceof Pair)) { return false; }
         if (this != obj) {
             @SuppressWarnings("unchecked")
-            Pair<FIRST, SECOND> other = (Pair<FIRST, SECOND>) obj;
+            Pair<FIRST,
+                 SECOND> other = (Pair<FIRST,
+                                       SECOND>) obj;
             return first.equals(other.first) && second.equals(other.second);
         }
         return true;
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return String.format("< %s, %s >", first, second);
     }
 }

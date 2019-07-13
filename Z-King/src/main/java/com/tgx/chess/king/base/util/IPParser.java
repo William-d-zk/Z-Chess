@@ -42,7 +42,8 @@ public class IPParser
     private final static String ipv4segment = "(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])";
 
     // 0-65535
-    private final static String portsegment         = ":(?:6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|" + "6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{1,3}|[0-9])";
+    private final static String portsegment         = ":(?:6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|"
+                                                      + "6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{1,3}|[0-9])";
     private final static String ipv4address         = "(" + ipv4segment + "\\.){3,3}" + ipv4segment;
     private final static String ipv4addressWithPort = ipv4address + portsegment + "?";
     private final static String ipv6segment         = "[a-fA-F0-9]{1,4}";

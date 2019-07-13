@@ -42,6 +42,7 @@ import com.tgx.chess.spring.biz.bill.pay.model.BillEntity;
 import com.tgx.chess.spring.biz.bill.pay.model.ItemEntity;
 import com.tgx.chess.spring.biz.bill.pay.service.BillService;
 import com.tgx.chess.spring.biz.bill.pay.service.ItemsService;
+
 /**
  * @author william.d.zk
  */
@@ -102,7 +103,8 @@ public class BillController
                                            @RequestParam("result") boolean result) throws ZApiExecption
     {
         BillEntity billEntity = _BillService.findByBill(bill)
-                                            .orElseThrow(() -> new ZApiExecption(String.format("bill %s not exist!", bill)));
+                                            .orElseThrow(() -> new ZApiExecption(String.format("bill %s not exist!",
+                                                                                               bill)));
         billEntity.setResult(result ? Result.SUCCESS.name()
                                     : Result.FAILED.name());
         billEntity.setOpenId(openId);
@@ -141,9 +143,12 @@ public class BillController
     public @ResponseBody BillEntry queryLastBillByItem(@RequestParam("mac") String mac, @RequestParam("item") long item)
     {
         ItemEntity itemEntity = _ItemsService.findById(item)
-                                             .orElseThrow(() -> new ZApiExecption(String.format("item not define %d", item)));
+                                             .orElseThrow(() -> new ZApiExecption(String.format("item not define %d",
+                                                                                                item)));
         BillEntity billEntity = _BillService.findLastByMacAndItem(mac, itemEntity);
-        if (Objects.isNull(billEntity)) { throw new ZApiExecption(String.format("not found bill entity by mac:%s ", mac)); }
+        if (Objects.isNull(billEntity)) {
+            throw new ZApiExecption(String.format("not found bill entity by mac:%s ", mac));
+        }
         BillEntry billEntry = new BillEntry();
         billEntry.setMac(billEntity.getMac());
         billEntry.setBill(billEntity.getBill());

@@ -36,6 +36,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import com.tgx.chess.spring.jpa.model.AuditModel;
+
 /**
  * @author william.d.zk
  */
@@ -149,7 +150,14 @@ public class BillEntity
     @Override
     public String toString()
     {
-        return String.format("bill:%s mac:%s openId:%s amount:%s %s type:%s result:%s", bill, mac, openId, amount, super.toString(), type, result);
+        return String.format("bill:%s mac:%s openId:%s amount:%s %s type:%s result:%s",
+                             bill,
+                             mac,
+                             openId,
+                             amount,
+                             super.toString(),
+                             type,
+                             result);
     }
 
     public String getCurrency()

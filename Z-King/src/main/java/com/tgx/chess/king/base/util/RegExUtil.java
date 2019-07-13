@@ -38,7 +38,9 @@ public class RegExUtil
                                                         + "([nN][oO])|"
                                                         + "([eE][nN][aA][bB][lL][eE])|"
                                                         + "([dD][iI][sS][aA][bB][lL][eE])";
-    public static String  BOOLEAN_TRUE_PATTERN_STRING = "([tT][rR][uU][eE])|" + "([yY][eE][sS])|" + "([eE][nN][aA][bB][lL][eE])";
+    public static String  BOOLEAN_TRUE_PATTERN_STRING = "([tT][rR][uU][eE])|"
+                                                        + "([yY][eE][sS])|"
+                                                        + "([eE][nN][aA][bB][lL][eE])";
     public static String  INTEGER_PATTERN_STRING      = "([-+]?\\d+\\s*,?)";
     public static String  DOUBLE_PATTERN_STRING       = "(([-+]?((\\d+(\\.\\d*)?)|(\\.\\d+)))([eE](([-+]?([012]?\\d{1,2}|30[0-7]))|-3([01]?[4-9]|[012]?[0-3])))?[dD]?\\s*,?)";
     public static String  STRING_PATTERN_STRING       = "(\\w+\\s*,?)";

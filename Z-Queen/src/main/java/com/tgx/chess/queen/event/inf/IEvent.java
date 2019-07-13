@@ -37,19 +37,36 @@ public interface IEvent
 
     IError.Type getErrorType();
 
-    <T, U, R> IOperator<T, U, R> getEventOp();
+    <T,
+     U,
+     R> IOperator<T,
+                  U,
+                  R> getEventOp();
 
     IPair getContent();
 
     List<IPair> getContentList();
 
-    <V, A, R> void produce(IOperator.Type t, IPair content, IOperator<V, A, R> operator);
+    <V,
+     A,
+     R> void produce(IOperator.Type t,
+                     IPair content,
+                     IOperator<V,
+                               A,
+                               R> operator);
 
-    <E, H, R> void error(IError.Type t, IPair content, IOperator<E, H, R> operator);
+    <E,
+     H,
+     R> void error(IError.Type t,
+                   IPair content,
+                   IOperator<E,
+                             H,
+                             R> operator);
 
     void produce(IOperator.Type t, List<IPair> cp);
 
-    default boolean hasError() {
+    default boolean hasError()
+    {
         return !getErrorType().equals(Type.NO_ERROR);
     }
 }

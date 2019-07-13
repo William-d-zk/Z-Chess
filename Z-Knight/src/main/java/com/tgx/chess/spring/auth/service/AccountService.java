@@ -38,6 +38,7 @@ import com.tgx.chess.spring.auth.model.RoleEntity;
 import com.tgx.chess.spring.auth.repository.AccountRepository;
 import com.tgx.chess.spring.auth.repository.ProfileRepository;
 import com.tgx.chess.spring.auth.repository.RoleRepository;
+
 /**
  * @author william.d.zk
  */

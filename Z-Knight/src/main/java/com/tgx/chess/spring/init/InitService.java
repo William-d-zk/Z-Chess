@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tgx.chess.spring.auth.service.AccountService;
+
 /**
  * @author william.d.zk
  */

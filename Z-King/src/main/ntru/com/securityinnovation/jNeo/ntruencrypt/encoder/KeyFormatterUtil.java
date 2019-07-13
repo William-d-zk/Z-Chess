@@ -42,7 +42,8 @@ public class KeyFormatterUtil
 
     static KeyParams parseOID(byte keyBlob[], int oidStartIndex, int oidLen) throws ParamSetNotSupportedException
     {
-        if (oidStartIndex + oidLen > keyBlob.length) throw new IllegalArgumentException("keyblob not large enough to hold OID");
+        if (oidStartIndex
+            + oidLen > keyBlob.length) throw new IllegalArgumentException("keyblob not large enough to hold OID");
         byte oid[] = new byte[oidLen];
         System.arraycopy(keyBlob, oidStartIndex, oid, 0, oidLen);
         return KeyParams.getKeyParams(oid);
@@ -87,7 +88,12 @@ public class KeyFormatterUtil
         return len;
     }
 
-    static public int unpackListedCoefficients(FullPolynomial F, int N, int numOnes, int numNegOnes, byte in[], int offset)
+    static public int unpackListedCoefficients(FullPolynomial F,
+                                               int N,
+                                               int numOnes,
+                                               int numNegOnes,
+                                               byte in[],
+                                               int offset)
     {
         short coefficients[] = new short[numOnes + numNegOnes];
         int len = BitPack.unpack(coefficients.length, N, in, offset, coefficients, 0);

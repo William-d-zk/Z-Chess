@@ -23,6 +23,7 @@
  */
 
 package com.tgx.chess.king.base.inf;
+
 /**
  * @author William.d.zk
  */

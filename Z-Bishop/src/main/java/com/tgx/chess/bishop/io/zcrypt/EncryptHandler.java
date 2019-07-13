@@ -56,11 +56,14 @@ public class EncryptHandler
     private final CryptUtil  cryptUtil                 = new CryptUtil();
     private int              mIndexAdd;
 
-    private boolean isPubKeyAvailable(int _ReqPubKeyId) {
+    private boolean isPubKeyAvailable(int _ReqPubKeyId)
+    {
         return _ReqPubKeyId >= 0;
     }
 
-    private Pair<Integer, byte[][]> createPair(Random random, int _PubKeyId) {
+    private Pair<Integer,
+                 byte[][]> createPair(Random random, int _PubKeyId)
+    {
         int saltWidth = _TotalSizeWidth + _VersionWidth;
         int saltMask = (0xFFFFFFFF << saltWidth) ^ 0x80000000;
         int keyIndex = _PubKeyId & _PairSizeMask;
@@ -120,14 +123,18 @@ public class EncryptHandler
     }
 
     @Override
-    public Pair<Integer, byte[]> getAsymmetricPubKey(final int _InPubKeyId) {
-        Pair<Integer, byte[][]> keyPair = createPair(_Random, _InPubKeyId);
+    public Pair<Integer,
+                byte[]> getAsymmetricPubKey(final int _InPubKeyId)
+    {
+        Pair<Integer,
+             byte[][]> keyPair = createPair(_Random, _InPubKeyId);
         if (keyPair == null) { return null; }
         return new Pair<>(keyPair.first(), keyPair.second()[KEY_PAIR_INDEX_PUBLIC_KEY]);
     }
 
     @Override
-    public byte[] getSymmetricKey(final int _InPubKeyId, byte[] cipher) {
+    public byte[] getSymmetricKey(final int _InPubKeyId, byte[] cipher)
+    {
         if (_InPubKeyId < 0) { return null; }
         int keyIndex = _InPubKeyId & _PairSizeMask;
         int keyVersion = (_InPubKeyId & _VersionMask) >>> _TotalSizeWidth;
@@ -137,7 +144,8 @@ public class EncryptHandler
         }
         if (keyPair != null
             && keyPair[KEY_PAIR_INDEX_VERSION] != null
-            && IoUtil.readUnsignedShort(keyPair[KEY_PAIR_INDEX_VERSION], 0) == keyVersion) {
+            && IoUtil.readUnsignedShort(keyPair[KEY_PAIR_INDEX_VERSION], 0) == keyVersion)
+        {
             if (keyPair[KEY_PAIR_INDEX_PASSWORD] == null) { return null; }
             return _Ntru.decrypt(cipher, keyPair[KEY_PAIR_INDEX_PASSWORD]);
         }
@@ -145,19 +153,24 @@ public class EncryptHandler
     }
 
     @Override
-    public Pair<Integer, byte[]> getCipher(byte[] pubKey, byte[] symmetricKey) {
+    public Pair<Integer,
+                byte[]> getCipher(byte[] pubKey, byte[] symmetricKey)
+    {
         int symmetricKeyId = _Random.nextInt() & 0xFFFF;
         byte[] cipher = _Ntru.encrypt(symmetricKey, pubKey);
-        return cipher != null ? new Pair<>(symmetricKeyId, cipher) : null;
+        return cipher != null ? new Pair<>(symmetricKeyId, cipher)
+                              : null;
     }
 
     @Override
-    public byte[] getSymmetricKeySign(byte[] symmetricKey) {
+    public byte[] getSymmetricKeySign(byte[] symmetricKey)
+    {
         return cryptUtil.sha256(symmetricKey);
     }
 
     @Override
-    public int nextRandomInt() {
+    public int nextRandomInt()
+    {
         return _Random.nextInt();
     }
 }

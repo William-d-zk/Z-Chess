@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 
 import com.tgx.chess.spring.auth.model.RoleEntity;
 import com.tgx.chess.spring.auth.repository.RoleRepository;
+
 /**
  * @author william.d.zk
  */

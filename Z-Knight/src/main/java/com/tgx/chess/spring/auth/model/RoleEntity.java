@@ -33,6 +33,7 @@ import javax.persistence.Index;
 import javax.persistence.Table;
 
 import com.tgx.chess.spring.jpa.model.AuditModel;
+
 /**
  * @author william.d.zk
  */

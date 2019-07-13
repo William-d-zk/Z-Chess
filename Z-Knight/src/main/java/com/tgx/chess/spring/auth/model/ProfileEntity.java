@@ -42,6 +42,7 @@ import javax.persistence.Table;
 
 import com.tgx.chess.spring.device.model.ClientEntity;
 import com.tgx.chess.spring.jpa.model.AuditModel;
+
 /**
  * @author william.d.zk
  */
@@ -63,7 +64,9 @@ public class ProfileEntity
     private String openId;
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinTable(name = "profile_client", joinColumns = @JoinColumn(name = "profile_id"), inverseJoinColumns = @JoinColumn(name = "client_id"))
+    @JoinTable(name = "profile_client",
+               joinColumns = @JoinColumn(name = "profile_id"),
+               inverseJoinColumns = @JoinColumn(name = "client_id"))
     private Set<ClientEntity> clients;
 
     public int getId()

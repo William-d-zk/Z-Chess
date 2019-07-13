@@ -25,7 +25,6 @@
 package com.tgx.chess.bishop.io.zprotocol.device;
 
 import com.tgx.chess.bishop.io.zprotocol.ZCommand;
-import com.tgx.chess.bishop.io.zprotocol.ZProtocol;
 import com.tgx.chess.king.base.util.IoUtil;
 
 /**

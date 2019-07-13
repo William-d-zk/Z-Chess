@@ -45,6 +45,7 @@ import javax.validation.constraints.NotEmpty;
 import org.hibernate.validator.constraints.Length;
 
 import com.tgx.chess.spring.jpa.model.AuditModel;
+
 /**
  * @author william.d.zk
  */
@@ -80,7 +81,9 @@ public class AccountEntity
     private int active;
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinTable(name = "account_role", joinColumns = @JoinColumn(name = "account_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+    @JoinTable(name = "account_role",
+               joinColumns = @JoinColumn(name = "account_id"),
+               inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<RoleEntity> roles;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "account")
