@@ -32,10 +32,13 @@ import java.sql.Date;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -52,6 +55,7 @@ import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
 import com.tgx.chess.bishop.biz.device.DeviceNode;
 import com.tgx.chess.bishop.io.ZSort;
 import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
+import com.tgx.chess.bishop.io.mqtt.control.X113_QttPublish;
 import com.tgx.chess.bishop.io.mqtt.handler.QttRouter;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
@@ -65,7 +69,6 @@ import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
-import com.tgx.chess.queen.io.core.inf.IQoS;
 import com.tgx.chess.spring.device.model.ClientEntity;
 import com.tgx.chess.spring.device.model.DeviceEntity;
 import com.tgx.chess.spring.device.repository.ClientRepository;
@@ -83,11 +86,14 @@ public class DeviceService
         implements
         IRepository<DeviceEntry>
 {
-    private final Random           _Random    = new Random();
-    private final CryptUtil        _CryptUtil = new CryptUtil();
-    private final DeviceRepository _DeviceRepository;
-    private final ClientRepository _ClientRepository;
-    private final DeviceNode       _DeviceNode;
+    private final Random                                   _Random                = new Random();
+    private final CryptUtil                                _CryptUtil             = new CryptUtil();
+    private final DeviceRepository                         _DeviceRepository;
+    private final ClientRepository                         _ClientRepository;
+    private final DeviceNode                               _DeviceNode;
+    private final Map<Long,
+                      Map<Long,
+                          IControl<ZContext>>>             _DeviceMessageStateMap = new ConcurrentSkipListMap<>();
 
     @Value("${invalid.days}")
     private int invalidDurationOfDays;
@@ -222,9 +228,8 @@ public class DeviceService
                                 .getDevices();
     }
 
-    DeviceEntry auth(DeviceEntity deviceEntity, boolean clean, String password, IQoS.Level level)
+    private DeviceEntry auth(DeviceEntity deviceEntity, String password)
     {
-        Objects.requireNonNull(level);
         DeviceEntry deviceEntry = new DeviceEntry();
         if (Objects.nonNull(deviceEntity)) {
             deviceEntry.setPrimaryKey(deviceEntity.getId());
@@ -235,9 +240,6 @@ public class DeviceService
                 || (Objects.nonNull(password) && origin.equals(password)))
             {
                 deviceEntry.setOperation(IStorage.Operation.OP_APPEND);
-                deviceEntry.setStrategy(clean ? IStorage.Strategy.CLEAN
-                                              : IStorage.Strategy.RETAIN);
-                deviceEntry.setQosLevel(level);
             }
             else {
                 deviceEntry.setOperation(IStorage.Operation.OP_INVALID);
@@ -288,6 +290,25 @@ public class DeviceService
             case X24_UpdateToken.COMMAND:
                 X24_UpdateToken x24 = (X24_UpdateToken) target;
                 break;
+            case X113_QttPublish.COMMAND:
+                /*
+                QOS 1/2 时需要存储Publish的状态
+                 */
+                X113_QttPublish x113 = (X113_QttPublish) target;
+                long index = x113.getSession()
+                                 .getIndex();
+                long identity = x113.getLocalId();
+                if (_DeviceMessageStateMap.computeIfPresent(index, (key, old) ->
+                {
+                    old.put(identity, x113);
+                    return old;
+                }) == null) {
+                    final Map<Long,
+                              IControl<ZContext>> _IdentityMessageMap = new HashMap<>(7);
+                    _IdentityMessageMap.put(identity, x113);
+                    _DeviceMessageStateMap.put(index, _IdentityMessageMap);
+                }
+                break;
 
         }
         return null;
@@ -313,10 +334,8 @@ public class DeviceService
                 String deviceSn = x111.getClientId();
                 deviceEntity = findDeviceBySn(deviceSn);
                 return auth(deviceEntity,
-                            x111.isCleanSession(),
                             Objects.nonNull(x111.getPassword()) ? new String(x111.getPassword(), StandardCharsets.UTF_8)
-                                                                : null,
-                            x111.convertQosLevel());
+                                                                : null);
         }
         return null;
     }

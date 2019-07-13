@@ -26,8 +26,8 @@ package com.tgx.chess.bishop.io.mqtt.handler;
 
 import java.util.Map;
 
-import com.tgx.chess.bishop.io.mqtt.bean.BaseQtt;
 import com.tgx.chess.king.base.util.Pair;
+import com.tgx.chess.queen.io.core.inf.IQoS;
 
 /**
  * @author william.d.zk
@@ -37,10 +37,10 @@ public interface IQttRouter
 {
 
     Map<Long,
-        BaseQtt.QOS_LEVEL> broker(final String topic);
+        IQoS.Level> broker(final String topic);
 
     void addTopic(Pair<String,
-                       BaseQtt.QOS_LEVEL> topic,
+                       IQoS.Level> topic,
                   long index);
 
     void removeTopic(String topic, long index);

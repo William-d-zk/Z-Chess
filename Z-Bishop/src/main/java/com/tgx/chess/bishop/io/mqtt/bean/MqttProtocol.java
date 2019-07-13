@@ -26,21 +26,21 @@ package com.tgx.chess.bishop.io.mqtt.bean;
 
 import java.util.Objects;
 
+import com.tgx.chess.queen.io.core.inf.IDuplicate;
 import com.tgx.chess.queen.io.core.inf.IQoS;
 
 /**
  * @author william.d.zk
  * @date 2019-05-25
  */
-public class BaseQtt
+public class MqttProtocol
+        implements
+        IQoS,
+        IDuplicate
 {
-    private final static byte DUPLICATE_FLAG    = 1 << 3;
-    private final static byte QOS_ALMOST_ONCE   = 0;
-    private final static byte QOS_AT_LEAST_ONCE = 1;
-    private final static byte QOS_EXACTLY_ONCE  = 2;
-    private final static byte QOS_FAILURE       = (byte) 0x80;
-    private final static byte RETAIN_FLAG       = 1;
-    private final static byte QOS_MASK          = 0x06;
+    private final static byte DUPLICATE_FLAG = 1 << 3;
+    private final static byte RETAIN_FLAG    = 1;
+    private final static byte QOS_MASK       = 3 << 1;
 
     public enum QTT_TYPE
     {
@@ -126,65 +126,28 @@ public class BaseQtt
         }
     }
 
-    public enum QOS_LEVEL
-    {
-        QOS_FAILURE(BaseQtt.QOS_FAILURE),
-        QOS_ALMOST_ONCE(BaseQtt.QOS_ALMOST_ONCE),
-        QOS_EXACTLY_ONCE(BaseQtt.QOS_EXACTLY_ONCE),
-        QOS_AT_LEAST_ONCE(BaseQtt.QOS_AT_LEAST_ONCE);
-
-        final byte _Value;
-
-        public byte getValue()
-        {
-            return _Value;
-        }
-
-        QOS_LEVEL(byte level)
-        {
-            _Value = level;
-        }
-
-        public static QOS_LEVEL valueOf(byte level)
-        {
-            switch (level)
-            {
-                case BaseQtt.QOS_EXACTLY_ONCE:
-                    return QOS_EXACTLY_ONCE;
-                case BaseQtt.QOS_AT_LEAST_ONCE:
-                    return QOS_AT_LEAST_ONCE;
-                case BaseQtt.QOS_ALMOST_ONCE:
-                    return QOS_ALMOST_ONCE;
-                case BaseQtt.QOS_FAILURE:
-                    return QOS_FAILURE;
-                default:
-                    throw new IllegalArgumentException("QoS reserved");
-            }
-        }
-    }
-
     byte             frame_op_code;
-    private boolean  dup;
+    private boolean  duplicate;
     private boolean  retain;
     private byte     qos_level;
     private QTT_TYPE type;
 
-    public static byte generateCtrl(boolean dup, boolean retain, QOS_LEVEL qosLevel, QTT_TYPE qttType)
+    public static byte generateCtrl(boolean dup, boolean retain, Level qosLevel, QTT_TYPE qttType)
     {
         byte ctrl = 0;
         ctrl |= dup ? DUPLICATE_FLAG
                     : 0;
         ctrl |= retain ? RETAIN_FLAG
                        : 0;
-        ctrl |= qosLevel.getValue() << 1;
+        ctrl |= qosLevel.ordinal() << 1;
         ctrl |= qttType.getValue();
         return ctrl;
     }
 
-    public void setDup(boolean dup)
+    public void setDuplicate(boolean duplicate)
     {
-        this.dup = dup;
-        if (dup) {
+        this.duplicate = duplicate;
+        if (duplicate) {
             frame_op_code |= DUPLICATE_FLAG;
         }
         else {
@@ -192,9 +155,10 @@ public class BaseQtt
         }
     }
 
-    public boolean isDup()
+    @Override
+    public boolean isDuplicate()
     {
-        return dup;
+        return duplicate;
     }
 
     public void setRetain(boolean retain)
@@ -213,16 +177,11 @@ public class BaseQtt
         return retain;
     }
 
-    public void setQosLevel(QOS_LEVEL level)
+    public void setLevel(Level level)
     {
-        qos_level = level.getValue();
+        qos_level = (byte) level.ordinal();
         frame_op_code &= ~QOS_MASK;
         frame_op_code |= qos_level << 1;
-    }
-
-    public QOS_LEVEL getQosLevel()
-    {
-        return QOS_LEVEL.valueOf(qos_level);
     }
 
     public QTT_TYPE getType()
@@ -241,7 +200,7 @@ public class BaseQtt
         frame_op_code = opCode;
         type = QTT_TYPE.valueOf(getOpCode());
         if (Objects.isNull(type)) { throw new IllegalArgumentException(); }
-        dup = (frame_op_code & DUPLICATE_FLAG) == DUPLICATE_FLAG;
+        duplicate = (frame_op_code & DUPLICATE_FLAG) == DUPLICATE_FLAG;
         retain = (frame_op_code & RETAIN_FLAG) == RETAIN_FLAG;
         qos_level = (byte) ((frame_op_code & QOS_MASK) >> 1);
     }
@@ -251,17 +210,15 @@ public class BaseQtt
         return frame_op_code;
     }
 
-    public IQoS.Level convertQosLevel()
+    @Override
+    public int getPriority()
     {
-        switch (getQosLevel())
-        {
-            case QOS_EXACTLY_ONCE:
-                return IQoS.Level.EXACTLY_ONCE;
-            case QOS_AT_LEAST_ONCE:
-                return IQoS.Level.AT_LEAST_ONCE;
-            default:
-                return IQoS.Level.ALMOST_ONCE;
-        }
+        return QOS_PRIORITY_00_NETWORK_CONTROL;
+    }
+
+    public IQoS.Level getLevel()
+    {
+        return IQoS.Level.valueOf(qos_level);
     }
 
 }

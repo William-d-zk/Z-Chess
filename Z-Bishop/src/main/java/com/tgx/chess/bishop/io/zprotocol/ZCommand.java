@@ -22,26 +22,99 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.bishop.io.mqtt.control;
+package com.tgx.chess.bishop.io.zprotocol;
 
-import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
-
-import static com.tgx.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
+import com.tgx.chess.bishop.io.zfilter.ZContext;
+import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.ISession;
 
 /**
  * @author william.d.zk
- * @date 2019-05-30
+ * @date 2019-07-14
  */
-public class X11E_QttDisconnect
+public class ZCommand
         extends
-        QttControl
+        ZProtocol
+        implements
+        ICommand<ZContext>
 {
-    public final static int COMMAND = 0x11E;
 
-    public X11E_QttDisconnect()
+    protected ZCommand(int command,
+                       boolean hasMsgId)
     {
-        super(COMMAND);
-        setCtrl(generateCtrl(false, false,  ALMOST_ONCE, QTT_TYPE.DISCONNECT));
+        super(command,
+              hasMsgId,
+              hasMsgId ? 0
+                       : -1);
     }
 
+    public ZCommand(int command,
+                    long msgId)
+    {
+        super(command, msgId);
+    }
+
+    private ISession<ZContext> mSession;
+    private byte[]             mPayload;
+
+    @Override
+    public ICommand<ZContext> setSession(ISession<ZContext> session)
+    {
+        mSession = session;
+        return this;
+    }
+
+    @Override
+    public ISession<ZContext> getSession()
+    {
+        return mSession;
+    }
+
+    @Override
+    public void reset()
+    {
+        mSession = null;
+    }
+
+    @Override
+    public void setCtrl(byte ctrl)
+    {
+        setCtrlCode(ctrl);
+    }
+
+    @Override
+    public void setPayload(byte[] payload)
+    {
+        mPayload = payload;
+    }
+
+    @Override
+    public byte[] getPayload()
+    {
+        return mPayload;
+    }
+
+    @Override
+    public byte getCtrl()
+    {
+        return getCtrlCode();
+    }
+
+    @Override
+    public boolean isCtrl()
+    {
+        return false;
+    }
+
+    @Override
+    public int dataLength()
+    {
+        return minLength();
+    }
+
+    @Override
+    public int getSerial()
+    {
+        return getCommand();
+    }
 }

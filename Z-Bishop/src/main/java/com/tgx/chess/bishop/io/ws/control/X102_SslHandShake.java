@@ -51,9 +51,4 @@ public class X102_SslHandShake
         super(COMMAND, handshake);
     }
 
-    public X102_SslHandShake()
-    {
-        this(null);
-    }
-
 }

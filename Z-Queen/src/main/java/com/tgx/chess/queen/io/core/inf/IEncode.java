@@ -22,26 +22,16 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.bishop.io.mqtt.control;
-
-import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
-
-import static com.tgx.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
+package com.tgx.chess.queen.io.core.inf;
 
 /**
  * @author william.d.zk
- * @date 2019-05-30
+ * @date 2019-07-14
  */
-public class X11E_QttDisconnect
-        extends
-        QttControl
+public interface IEncode
 {
-    public final static int COMMAND = 0x11E;
-
-    public X11E_QttDisconnect()
+    default int encodec(byte[] data, int pos)
     {
-        super(COMMAND);
-        setCtrl(generateCtrl(false, false,  ALMOST_ONCE, QTT_TYPE.DISCONNECT));
+        return pos;
     }
-
 }

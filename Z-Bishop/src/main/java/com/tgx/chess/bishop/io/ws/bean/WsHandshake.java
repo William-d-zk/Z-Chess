@@ -36,13 +36,7 @@ public abstract class WsHandshake
     public WsHandshake(int command,
                        String msg)
     {
-        super(msg, command);
-    }
-
-    @Override
-    public byte getCtrl()
-    {
-        return WsFrame.frame_op_code_ctrl_handshake;
+        super(WsFrame.frame_op_code_ctrl_handshake, command, msg.getBytes(StandardCharsets.UTF_8));
     }
 
     @Override

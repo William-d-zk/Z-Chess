@@ -23,6 +23,8 @@
  */
 package com.tgx.chess.bishop.io.zprotocol.control;
 
+import java.nio.charset.StandardCharsets;
+
 import com.tgx.chess.bishop.io.ws.bean.WsControl;
 import com.tgx.chess.bishop.io.ws.bean.WsFrame;
 import com.tgx.chess.king.base.util.IoUtil;
@@ -38,14 +40,12 @@ public class X106_Identity
 
     public X106_Identity(String nodeName)
     {
-        super(nodeName, COMMAND);
-        setCtrl(WsFrame.frame_op_code_ctrl_cluster);
+        this(nodeName.getBytes(StandardCharsets.UTF_8));
     }
 
     public X106_Identity(byte[] payload)
     {
-        super(COMMAND, payload);
-        mCtrlCode = WsFrame.frame_op_code_ctrl_cluster;
+        super(WsFrame.frame_op_code_ctrl_cluster, COMMAND, payload);
     }
 
     public long getIdentity()
@@ -55,7 +55,7 @@ public class X106_Identity
 
     public long[] getIdentities()
     {
-        int size = (getPayload().length - 8) >>> 3;
+        int size = (getPayload().length >>> 3) - 1;
         if (size > 0) {
             long[] result = new long[size];
             IoUtil.readLongArray(getPayload(), 8, result);
@@ -69,4 +69,5 @@ public class X106_Identity
     {
         return new X106_Identity(getPayload());
     }
+
 }

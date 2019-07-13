@@ -37,14 +37,12 @@ public class X105_Pong
 
     public X105_Pong()
     {
-        super(COMMAND);
-        mCtrlCode = WsFrame.frame_op_code_ctrl_pong;
+        this(null);
     }
 
     public X105_Pong(byte[] payload)
     {
-        super(COMMAND, payload);
-        mCtrlCode = WsFrame.frame_op_code_ctrl_pong;
+        super(WsFrame.frame_op_code_ctrl_pong, COMMAND, payload);
     }
 
     @Override

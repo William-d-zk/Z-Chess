@@ -27,6 +27,8 @@ package com.tgx.chess.bishop.io.mqtt.control;
 import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
 import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
 
+import static com.tgx.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
+
 /**
  * @author william.d.zk
  * @date 2019-05-30
@@ -40,6 +42,6 @@ public class X11D_QttPingresp
     public X11D_QttPingresp()
     {
         super(COMMAND);
-        setCtrl(QttFrame.generateCtrl(false, false, QOS_LEVEL.QOS_AT_LEAST_ONCE, QTT_TYPE.PINGRESP));
+        setCtrl(generateCtrl(false, false,  ALMOST_ONCE, QTT_TYPE.PINGRESP));
     }
 }

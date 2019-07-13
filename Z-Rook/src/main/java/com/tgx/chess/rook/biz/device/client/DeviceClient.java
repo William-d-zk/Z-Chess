@@ -176,7 +176,7 @@ public class DeviceClient
                                                      X30_EventMsg x30 = (X30_EventMsg) cmd;
                                                      _Logger.info("x30 payload: %s",
                                                                   new String(x30.getPayload(), StandardCharsets.UTF_8));
-                                                     X31_ConfirmMsg x31 = new X31_ConfirmMsg(x30.getUID());
+                                                     X31_ConfirmMsg x31 = new X31_ConfirmMsg(x30.getMsgId());
                                                      x31.setStatus(X31_ConfirmMsg.STATUS_RECEIVED);
                                                      x31.setToken(x30.getToken());
                                                      return x31;

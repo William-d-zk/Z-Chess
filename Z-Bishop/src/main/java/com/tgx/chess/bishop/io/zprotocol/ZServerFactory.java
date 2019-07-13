@@ -40,16 +40,16 @@ import com.tgx.chess.queen.io.core.inf.ICommandFactory;
 public interface ZServerFactory
         extends
         ICommandFactory<ZContext,
-                        BaseCommand>
+                        ZCommand>
 {
 
     @Override
-    default BaseCommand create(int command)
+    default ZCommand create(int command)
     {
         return serverCommand(command);
     }
 
-    default BaseCommand serverCommand(int command)
+    default ZCommand serverCommand(int command)
     {
         switch (command)
         {

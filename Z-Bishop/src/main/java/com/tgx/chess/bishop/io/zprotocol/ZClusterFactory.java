@@ -34,15 +34,15 @@ import com.tgx.chess.queen.io.core.inf.ICommandFactory;
 public interface ZClusterFactory
         extends
         ICommandFactory<ZContext,
-                        BaseCommand>
+                        ZCommand>
 {
     @Override
-    default BaseCommand create(int command)
+    default ZCommand create(int command)
     {
         return clusterCommand(command);
     }
 
-    default BaseCommand clusterCommand(int command)
+    default ZCommand clusterCommand(int command)
     {
         return null;
     }

@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
-import com.tgx.chess.bishop.io.mqtt.bean.BaseQtt;
 import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
 import com.tgx.chess.bishop.io.mqtt.control.X112_QttConnack;
 import com.tgx.chess.bishop.io.mqtt.control.X113_QttPublish;
@@ -80,6 +79,7 @@ import com.tgx.chess.queen.io.core.inf.IAioServer;
 import com.tgx.chess.queen.io.core.inf.ICommandCreator;
 import com.tgx.chess.queen.io.core.inf.IConnectActivity;
 import com.tgx.chess.queen.io.core.inf.IControl;
+import com.tgx.chess.queen.io.core.inf.IQoS;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionCreated;
 import com.tgx.chess.queen.io.core.inf.ISessionCreator;
@@ -243,13 +243,13 @@ public class DeviceNode
             {
                 case X30_EventMsg.COMMAND:
                     X30_EventMsg x30 = (X30_EventMsg) command;
-                    return new IControl[] { new X31_ConfirmMsg(x30.getUID()) };
+                    return new IControl[] { new X31_ConfirmMsg(x30.getMsgId()) };
                 case X31_ConfirmMsg.COMMAND:
                     X31_ConfirmMsg x31 = (X31_ConfirmMsg) command;
-                    return new IControl[] { new X32_MsgStatus(x31.getUID()) };
+                    return new IControl[] { new X32_MsgStatus(x31.getMsgId()) };
                 case X50_DeviceMsg.COMMAND:
                     X50_DeviceMsg x50 = (X50_DeviceMsg) command;
-                    return new IControl[] { new X51_DeviceMsgAck(x50.getUID()) };
+                    return new IControl[] { new X51_DeviceMsgAck(x50.getMsgId()) };
                 case X103_Close.COMMAND:
                     //session is not null
                     localClose(session,
@@ -267,7 +267,7 @@ public class DeviceNode
                 case X113_QttPublish.COMMAND:
                     X113_QttPublish x113 = (X113_QttPublish) command;
                     Map<Long,
-                        BaseQtt.QOS_LEVEL> route = _QttRouter.broker(x113.getTopic());
+                        IQoS.Level> route = _QttRouter.broker(x113.getTopic());
                     List<IControl<ZContext>> pushList;
                     pushList = route.entrySet()
                                     .stream()
@@ -275,49 +275,56 @@ public class DeviceNode
                                     {
                                         ISession<ZContext> targetSession = findSessionByIndex(entry.getKey());
                                         if (targetSession != null && x113.getPayload() != null) {
-                                            BaseQtt.QOS_LEVEL subscribeLevel = entry.getValue();
+                                            IQoS.Level subscribeLevel = entry.getValue();
                                             X113_QttPublish push = new X113_QttPublish();
-                                            push.setQosLevel(x113.getQosLevel()
-                                                                 .getValue() > subscribeLevel.getValue() ? subscribeLevel
-                                                                                                         : x113.getQosLevel());
+                                            push.setLevel(x113.getLevel()
+                                                              .getValue() > subscribeLevel.getValue() ? subscribeLevel
+                                                                                                      : x113.getLevel());
                                             push.setTopic(x113.getTopic());
                                             push.setPayload(x113.getPayload());
-                                            if (push.getQosLevel() == BaseQtt.QOS_LEVEL.QOS_AT_LEAST_ONCE
-                                                || push.getQosLevel() == BaseQtt.QOS_LEVEL.QOS_EXACTLY_ONCE)
+                                            push.setSession(targetSession);
+                                            if (push.getLevel() == IQoS.Level.AT_LEAST_ONCE
+                                                || push.getLevel() == IQoS.Level.EXACTLY_ONCE)
                                     {
                                                 int packIdentity = _QttRouter.nextPackIdentity();
                                                 push.setLocalId(packIdentity);
                                                 _QttRouter.register(packIdentity, entry.getKey());
+                                                _DeviceRepository.save(push);
                                             }
-                                            push.setSession(targetSession);
                                             return push;
                                         }
                                         return null;
                                     })
                                     .filter(Objects::nonNull)
                                     .collect(Collectors.toList());
-                    switch (x113.getQosLevel())
+                    switch (x113.getLevel())
                     {
-                        case QOS_AT_LEAST_ONCE:
+                        case AT_LEAST_ONCE:
                             X114_QttPuback x114 = new X114_QttPuback();
                             x114.setLocalId(x113.getLocalId());
                             pushList.add(x114);
                             break;
-                        case QOS_EXACTLY_ONCE:
+                        case EXACTLY_ONCE:
                             X115_QttPubrec x115 = new X115_QttPubrec();
                             x115.setLocalId(x113.getLocalId());
                             pushList.add(x115);
-                            break;
-                        default:
                             break;
                     }
                     return pushList.isEmpty() ? null
                                               : pushList.toArray(new IControl[0]);
                 case X114_QttPuback.COMMAND:
-
+                    X114_QttPuback x114 = (X114_QttPuback) command;
+                    _QttRouter.ack(x114.getLocalId(), session.getIndex());
                     break;
                 case X115_QttPubrec.COMMAND:
+                    X115_QttPubrec x115 = (X115_QttPubrec) command;
+                    X116_QttPubrel x116 = new X116_QttPubrel();
+                    x116.setLocalId(x115.getLocalId());
+                    return new IControl[] { x116 };
                 case X116_QttPubrel.COMMAND:
+                    x116 = (X116_QttPubrel) command;
+                    X117_QttPubcomp x117 = new X117_QttPubcomp();
+
                 case X117_QttPubcomp.COMMAND:
                 case X11C_QttPingreq.COMMAND:
                     return new IControl[] { new X11D_QttPingresp() };

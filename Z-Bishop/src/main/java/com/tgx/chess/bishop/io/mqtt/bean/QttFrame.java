@@ -37,7 +37,7 @@ import com.tgx.chess.queen.io.core.inf.IVariableLength;
  */
 public class QttFrame
         extends
-        BaseQtt
+        MqttProtocol
         implements
         IReset,
         IFrame,

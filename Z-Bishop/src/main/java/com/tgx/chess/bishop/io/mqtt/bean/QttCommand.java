@@ -36,7 +36,7 @@ import com.tgx.chess.queen.io.core.inf.ISession;
  */
 public abstract class QttCommand
         extends
-        BaseQtt
+        MqttProtocol
         implements
         ICommand<ZContext>
 {
@@ -120,7 +120,7 @@ public abstract class QttCommand
     @Override
     public int getPriority()
     {
-        return QOS_08_IMMEDIATE_MESSAGE;
+        return QOS_PRIORITY_08_IMMEDIATE_MESSAGE;
     }
 
     @Override
