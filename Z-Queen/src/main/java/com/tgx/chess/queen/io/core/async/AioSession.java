@@ -23,6 +23,7 @@
  */
 package com.tgx.chess.queen.io.core.async;
 
+import static com.tgx.chess.queen.io.core.inf.IContext.SESSION_FLUSHED;
 import static com.tgx.chess.queen.io.core.inf.IContext.SESSION_IDLE;
 import static com.tgx.chess.queen.io.core.inf.IContext.SESSION_PENDING;
 import static com.tgx.chess.queen.io.core.inf.IContext.SESSION_SENDING;
@@ -91,7 +92,6 @@ public class AioSession<C extends IContext<C>>
     private long mHashKey;
     private int  mWroteExpect;
     private int  mSendingBlank;
-    private int  mWaitWrite;
     private long mReadTimeStamp;
 
     @Override
@@ -106,7 +106,7 @@ public class AioSession<C extends IContext<C>>
                              _PortIndex,
                              mIndex,
                              isClosed(),
-                             mWaitWrite,
+                             mSending.remaining(),
                              size());
     }
 
@@ -228,7 +228,7 @@ public class AioSession<C extends IContext<C>>
     }
 
     @Override
-    public final void bindport2channel(long channelport)
+    public final void bindPort2Channel(long channelport)
     {
         mPortChannels = mPortChannels == null ? new long[] { channelport }
                                               : ArrayUtil.setSortAdd(channelport, mPortChannels);
@@ -291,48 +291,33 @@ public class AioSession<C extends IContext<C>>
     {
         if (isClosed()) { return WRITE_STATUS.CLOSED; }
         ps.waitSend();
-        if (isEmpty()) {
-            WRITE_STATUS status = writeChannel(ps);
-            switch (status)
-            {
-                case IGNORE:
-                    return status;
-                case UNFINISHED:
-                    offer(ps);
-                case IN_SENDING:
-                    ps.send();
-                default:
-                    _Logger.info("wait to write %d ,channel state %s ,less than [SENDING] %s",
-                                 mWaitWrite,
-                                 _Ctx.getSessionState(_Ctx.getChannelState()),
-                                 _Ctx.channelStateLessThan(SESSION_SENDING));
-                    if (mWaitWrite > 0 && _Ctx.channelStateLessThan(SESSION_SENDING)) {
-                        flush(handler);
-                    }
-                    return status;
+        if (size() > _QueueSizeMax) { throw new RejectedExecutionException(); }
+        if (_Ctx.channelStateLessThan(SESSION_FLUSHED)) {
+            // mSending 未托管给系统
+            if (isEmpty()) {
+                switch (writePacket(ps))
+                {
+                    case IGNORE:
+                        return WRITE_STATUS.IGNORE;
+                    case UNFINISHED:
+                        //mSending 空间不足
+                        offer(ps);
+                    case IN_SENDING:
+                        ps.send();
+                        _Ctx.advanceChannelState(SESSION_SENDING);
+                }
             }
-        }
-        else if (size() > _QueueSizeMax) {
-            throw new RejectedExecutionException();
+            else {
+                offer(ps);
+                write2Sending();
+            }
+            flush(handler);
         }
         else {
-            IPacket fps = peek();
-            switch (writeChannel(fps))
-            {
-                case IGNORE:
-                    break;
-                case UNFINISHED:
-                case IN_SENDING:
-                    fps.send();
-                default:
-                    if (mWaitWrite > 0 && _Ctx.channelStateLessThan(SESSION_SENDING)) {
-                        flush(handler);
-                    }
-                    break;
-            }
             offer(ps);
-            return WRITE_STATUS.UNFINISHED;
         }
+        return isEmpty() ? WRITE_STATUS.UNFINISHED
+                         : WRITE_STATUS.IN_SENDING;
     }
 
     @Override
@@ -345,27 +330,34 @@ public class AioSession<C extends IContext<C>>
     {
         if (isClosed()) { return WRITE_STATUS.CLOSED; }
         mWroteExpect -= wroteCnt;
-        mWaitWrite -= wroteCnt;
         if (mWroteExpect == 0) {
             mSending.clear();
             mSending.flip();
             if (isEmpty()) {
                 _Ctx.advanceChannelState(SESSION_IDLE);
+                _Logger.info("write all completed");
                 return WRITE_STATUS.IGNORE;
             }
             _Ctx.advanceChannelState(SESSION_PENDING);
+            _Logger.info("session buffed %d packets", size());
         }
+        write2Sending();
+        flush(handler);
+        return WRITE_STATUS.FLUSHED;
+    }
 
-        IPacket fps;
+    private void write2Sending()
+    {
         /* 将待发的 packet 都写到 sending buffer 中，充满 sending buffer，
-           不会出现无限循环，writeChannel 中执行 remove 操作，由于都是在相同的线程中
+           不会出现无限循环，writePacket 中执行 remove 操作，由于都是在相同的线程中
            不存在线程安全问题
-         */
+        */
+        IPacket fps;
         Loop:
         do {
             fps = peek();
             if (Objects.nonNull(fps)) {
-                switch (writeChannel(fps))
+                switch (writePacket(fps))
                 {
                     case IGNORE:
                         continue;
@@ -380,26 +372,22 @@ public class AioSession<C extends IContext<C>>
             }
         }
         while (Objects.nonNull(fps));
-        if (mWaitWrite > 0) {
-            flush(handler);
-            return WRITE_STATUS.FLUSHED;
-        }
-        return WRITE_STATUS.IGNORE;
+        _Ctx.advanceChannelState(SESSION_SENDING);
     }
 
-    private WRITE_STATUS writeChannel(IPacket ps)
+    private WRITE_STATUS writePacket(IPacket ps)
     {
         ByteBuffer buf = ps.getBuffer();
         if (Objects.nonNull(buf) && buf.hasRemaining()) {
             mWroteExpect += buf.remaining();
-            mWaitWrite = mSending.remaining();
             int pos = mSending.limit();
             mSendingBlank = mSending.capacity() - pos;
             int size = Math.min(mSendingBlank, buf.remaining());
             mSending.limit(pos + size);
-            for (int i = 0; i < size; i++, mSendingBlank--, mWaitWrite++, pos++) {
+            for (int i = 0; i < size; i++, mSendingBlank--, pos++) {
                 mSending.put(pos, buf.get());
             }
+            _Logger.info("write packet [wait write %d |wrote expect %d]", mSending.remaining(), mWroteExpect);
             if (buf.hasRemaining()) {
                 return WRITE_STATUS.UNFINISHED;
             }
@@ -410,8 +398,8 @@ public class AioSession<C extends IContext<C>>
         }
         else {
             remove(ps);
+            return WRITE_STATUS.IGNORE;
         }
-        return WRITE_STATUS.IGNORE;
     }
 
     private void flush(CompletionHandler<Integer,
@@ -419,8 +407,14 @@ public class AioSession<C extends IContext<C>>
                                                                NotYetConnectedException,
                                                                ShutdownChannelGroupException
     {
-        _Ctx.advanceChannelState(SESSION_SENDING);
-        _Channel.write(mSending, _WriteTimeOut, TimeUnit.SECONDS, this, handler);
+        _Logger.info("flush[ wait write %d, channel state %s ,less than [FLUSHED] %s]",
+                     mSending.remaining(),
+                     _Ctx.getSessionState(_Ctx.getChannelState()),
+                     _Ctx.channelStateLessThan(SESSION_FLUSHED));
+        if (_Ctx.channelStateLessThan(SESSION_FLUSHED) && mSending.hasRemaining()) {
+            _Ctx.advanceChannelState(SESSION_FLUSHED);
+            _Channel.write(mSending, _WriteTimeOut, TimeUnit.SECONDS, this, handler);
+        }
     }
 
     @Override

@@ -25,15 +25,18 @@
 package com.tgx.chess.bishop.io.mqtt.handler;
 
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import javax.annotation.PostConstruct;
 
 import com.tgx.chess.bishop.io.mqtt.bean.BaseQtt;
 import com.tgx.chess.king.base.util.Pair;
@@ -48,17 +51,16 @@ public class QttRouter
 {
 
     private final Map<Pattern,
-                      Pair<BaseQtt.QOS_LEVEL,
-                           Set<Long>>> _Topic2SessionsMap = new TreeMap<>(Comparator.comparing(Pattern::pattern));
+                      Map<Long,
+                          BaseQtt.QOS_LEVEL>>                _Topic2SessionsMap = new TreeMap<>(Comparator.comparing(Pattern::pattern));
+    private final AtomicLong                                 _AtomicIdentity    = new AtomicLong(Long.MIN_VALUE);
+    private final Map<Long,
+                      Set<Integer>>                          _QttStatusMap      = new ConcurrentHashMap<>(47);
 
-    @PostConstruct
-    private void addDefault()
-    {
+    public Map<Long,
+               BaseQtt.QOS_LEVEL>
 
-    }
-
-    public Set<Pair<BaseQtt.QOS_LEVEL,
-                    Long>> broker(final String topic)
+            broker(final String topic)
     {
         return _Topic2SessionsMap.entrySet()
                                  .parallelStream()
@@ -70,14 +72,13 @@ public class QttRouter
                                                               : null;
                                  })
                                  .filter(Objects::nonNull)
-                                 .flatMap(pair ->
-                                 {
-                                     Set<Long> indexSet = pair.second();
-                                     BaseQtt.QOS_LEVEL qosLevel = pair.first();
-                                     return indexSet.stream()
-                                                    .map(l -> new Pair<>(qosLevel, l));
-                                 })
-                                 .collect(Collectors.toCollection(ConcurrentSkipListSet::new));
+                                 .map(Map::entrySet)
+                                 .flatMap(Set::stream)
+                                 .collect(Collectors.toMap(Map.Entry::getKey,
+                                                           Map.Entry::getValue,
+                                                           (l, r) -> l.getValue() > r.getValue() ? l
+                                                                                                 : r,
+                                                           ConcurrentSkipListMap::new));
     }
 
     public void addTopic(Pair<String,
@@ -89,13 +90,72 @@ public class QttRouter
         Pattern pattern = topic.endsWith("/+") ? Pattern.compile(topic.replace("+", "[^/]+"))
                                                : topic.endsWith("/#") ? Pattern.compile(topic.replace("#", ".+"))
                                                                       : Pattern.compile(topic);
-        Pair<BaseQtt.QOS_LEVEL,
-             Set<Long>> value = _Topic2SessionsMap.get(pattern);
+        Map<Long,
+            BaseQtt.QOS_LEVEL> value = _Topic2SessionsMap.get(pattern);
         if (Objects.isNull(value)) {
-            value = new Pair<>(qosLevel, new ConcurrentSkipListSet<>());
+            value = new ConcurrentSkipListMap<>();
+            _Topic2SessionsMap.put(pattern, value);
         }
-        value.second()
-             .add(index);
+        if (value.computeIfPresent(index,
+                                   (key, old) -> old.getValue() > qosLevel.getValue() ? old
+                                                                                      : qosLevel) == null)
+        {
+            value.put(index, qosLevel);
+        }
+    }
+
+    @Override
+    public void removeTopic(String topic, long index)
+    {
+        for (Iterator<Map.Entry<Pattern,
+                                Map<Long,
+                                    BaseQtt.QOS_LEVEL>>> iterator = _Topic2SessionsMap.entrySet()
+                                                                                      .iterator(); iterator.hasNext();)
+        {
+            Map.Entry<Pattern,
+                      Map<Long,
+                          BaseQtt.QOS_LEVEL>> entry = iterator.next();
+            Pattern pattern = entry.getKey();
+            Matcher matcher = pattern.matcher(topic);
+            if (matcher.matches()) {
+                Map<Long,
+                    BaseQtt.QOS_LEVEL> value = entry.getValue();
+                value.remove(index);
+                if (value.isEmpty()) {
+                    iterator.remove();
+                }
+            }
+        }
+    }
+
+    @Override
+    public int nextPackIdentity()
+    {
+        return (int) (0xFFFF & _AtomicIdentity.getAndIncrement());
+    }
+
+    @Override
+    public void register(int identity, long index)
+    {
+        if (_QttStatusMap.computeIfPresent(index, (key, old) ->
+        {
+            old.add(identity);
+            return old;
+        }) == null) {
+            Set<Integer> identitySet = new ConcurrentSkipListSet<>();
+            _QttStatusMap.put(index, identitySet);
+        }
+    }
+
+    @Override
+    public void ack(int identity, long index)
+    {
+        _QttStatusMap.computeIfPresent(index, (key, old) ->
+        {
+            old.remove(identity);
+            return old.isEmpty() ? null
+                                 : old;
+        });
     }
 
 }

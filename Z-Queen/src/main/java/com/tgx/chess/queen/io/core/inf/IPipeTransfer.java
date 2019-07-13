@@ -51,11 +51,19 @@ public interface IPipeTransfer<C extends IContext<C>>
             throw new MissingParameterException(toString() + ".transfer", "commands");
         }
         return Stream.of(commands)
-                     .map(command -> new Triple<>(command.setSession(session),
-                                                  session,
-                                                  session.getContext()
-                                                         .getSort()
-                                                         .getEncoder()))
+                     .map(command ->
+                     {
+                         ISession<C> targetSession = command.getSession();
+                         if (targetSession == null) {
+                             command.setSession(session);
+                             targetSession = session;
+                         }
+                         return new Triple<>(command,
+                                             targetSession,
+                                             session.getContext()
+                                                    .getSort()
+                                                    .getEncoder());
+                     })
                      .collect(Collectors.toList());
     }
 

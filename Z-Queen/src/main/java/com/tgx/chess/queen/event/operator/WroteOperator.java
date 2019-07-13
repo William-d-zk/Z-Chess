@@ -50,6 +50,7 @@ public class WroteOperator<C extends IContext<C>>
             session.writeNext(wroteCnt, _AioWrite);
         }
         catch (Exception e) {
+            e.printStackTrace();
             return new Triple<>(e,
                                 session,
                                 session.getContext()
