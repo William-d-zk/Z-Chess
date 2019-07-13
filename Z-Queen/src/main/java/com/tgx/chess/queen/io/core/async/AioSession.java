@@ -304,17 +304,18 @@ public class AioSession<C extends IContext<C>>
                         offer(ps);
                     case IN_SENDING:
                         ps.send();
-                        _Ctx.advanceChannelState(SESSION_SENDING);
                 }
             }
             else {
                 offer(ps);
-                write2Sending();
+                writeBuffed2Sending();
             }
+            _Ctx.advanceChannelState(SESSION_SENDING);
             flush(handler);
         }
         else {
             offer(ps);
+            _Logger.info("aio event delay, session buffed packets %d", size());
         }
         return isEmpty() ? WRITE_STATUS.UNFINISHED
                          : WRITE_STATUS.IN_SENDING;
@@ -335,23 +336,23 @@ public class AioSession<C extends IContext<C>>
             mSending.flip();
             if (isEmpty()) {
                 _Ctx.advanceChannelState(SESSION_IDLE);
-                _Logger.info("write all completed");
                 return WRITE_STATUS.IGNORE;
             }
             _Ctx.advanceChannelState(SESSION_PENDING);
-            _Logger.info("session buffed %d packets", size());
         }
-        write2Sending();
+        writeBuffed2Sending();
+        _Ctx.advanceChannelState(SESSION_SENDING);
         flush(handler);
         return WRITE_STATUS.FLUSHED;
     }
 
-    private void write2Sending()
+    private void writeBuffed2Sending()
     {
         /* 将待发的 packet 都写到 sending buffer 中，充满 sending buffer，
            不会出现无限循环，writePacket 中执行 remove 操作，由于都是在相同的线程中
            不存在线程安全问题
         */
+        _Logger.info("session buffed packets %d", size());
         IPacket fps;
         Loop:
         do {
@@ -372,7 +373,7 @@ public class AioSession<C extends IContext<C>>
             }
         }
         while (Objects.nonNull(fps));
-        _Ctx.advanceChannelState(SESSION_SENDING);
+        _Logger.info("session remain buffed %d", size());
     }
 
     private WRITE_STATUS writePacket(IPacket ps)
@@ -387,7 +388,6 @@ public class AioSession<C extends IContext<C>>
             for (int i = 0; i < size; i++, mSendingBlank--, pos++) {
                 mSending.put(pos, buf.get());
             }
-            _Logger.info("write packet [wait write %d |wrote expect %d]", mSending.remaining(), mWroteExpect);
             if (buf.hasRemaining()) {
                 return WRITE_STATUS.UNFINISHED;
             }
@@ -407,10 +407,6 @@ public class AioSession<C extends IContext<C>>
                                                                NotYetConnectedException,
                                                                ShutdownChannelGroupException
     {
-        _Logger.info("flush[ wait write %d, channel state %s ,less than [FLUSHED] %s]",
-                     mSending.remaining(),
-                     _Ctx.getSessionState(_Ctx.getChannelState()),
-                     _Ctx.channelStateLessThan(SESSION_FLUSHED));
         if (_Ctx.channelStateLessThan(SESSION_FLUSHED) && mSending.hasRemaining()) {
             _Ctx.advanceChannelState(SESSION_FLUSHED);
             _Channel.write(mSending, _WriteTimeOut, TimeUnit.SECONDS, this, handler);
