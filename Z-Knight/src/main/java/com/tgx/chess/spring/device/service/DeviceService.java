@@ -35,9 +35,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -56,6 +58,7 @@ import com.tgx.chess.bishop.biz.device.DeviceNode;
 import com.tgx.chess.bishop.io.ZSort;
 import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
 import com.tgx.chess.bishop.io.mqtt.control.X113_QttPublish;
+import com.tgx.chess.bishop.io.mqtt.control.X116_QttPubrel;
 import com.tgx.chess.bishop.io.mqtt.handler.QttRouter;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
@@ -292,7 +295,7 @@ public class DeviceService
                 break;
             case X113_QttPublish.COMMAND:
                 /*
-                QOS 1/2 时需要存储Publish的状态
+                QOS 1/2 时需要存储 Publish 的状态
                  */
                 X113_QttPublish x113 = (X113_QttPublish) target;
                 long index = x113.getSession()
@@ -308,6 +311,21 @@ public class DeviceService
                     _IdentityMessageMap.put(identity, x113);
                     _DeviceMessageStateMap.put(index, _IdentityMessageMap);
                 }
+                break;
+            case X116_QttPubrel.COMMAND:
+                /*
+                QOS 2时 需要存储 Pubrel 的状态,此时将 Publish 状态清除，
+                消息所有权转移到 Publish 接收方
+                 */
+                X116_QttPubrel x116 = (X116_QttPubrel) target;
+                index = x116.getSession()
+                            .getIndex();
+                identity = x116.getLocalId();
+                _DeviceMessageStateMap.computeIfPresent(index, (key, old) ->
+                {
+                    old.put(identity, x116);
+                    return old;
+                });
                 break;
 
         }
@@ -336,6 +354,23 @@ public class DeviceService
                 return auth(deviceEntity,
                             Objects.nonNull(x111.getPassword()) ? new String(x111.getPassword(), StandardCharsets.UTF_8)
                                                                 : null);
+            case X116_QttPubrel.COMMAND:
+                /*
+                   此时才能将QoS 2的 Publish 消息进行分发。
+                 */
+                X116_QttPubrel x116 = (X116_QttPubrel) key;
+                long sessionIdx = x116.getSession()
+                                      .getIndex();
+                Map<Long,
+                    IControl<ZContext>> storage = _DeviceMessageStateMap.get(sessionIdx);
+                long msgId = x116.getLocalId();
+                IControl<ZContext> push = storage.remove(msgId);
+                DeviceEntry deviceEntry = new DeviceEntry();
+                deviceEntry.setPrimaryKey(sessionIdx);
+                NavigableMap<Long,
+                             IControl<ZContext>> msgQueue = new TreeMap<>();
+                deviceEntry.setMessageQueue(msgQueue);
+                return deviceEntry;
         }
         return null;
     }
