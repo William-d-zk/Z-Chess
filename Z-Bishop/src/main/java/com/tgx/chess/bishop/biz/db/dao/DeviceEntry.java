@@ -29,7 +29,7 @@ import java.util.Objects;
 
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.queen.db.inf.IStorage;
-import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IControl;
 
 public class DeviceEntry
         implements
@@ -76,7 +76,7 @@ public class DeviceEntry
     private Strategy  strategy;
 
     private NavigableMap<Long,
-                         ICommand<ZContext>> messageQueue;
+                         IControl<ZContext>> messageQueue;
 
     @Override
     public long getPrimaryKey()
@@ -132,5 +132,17 @@ public class DeviceEntry
     {
         Objects.requireNonNull(strategy);
         this.strategy = strategy;
+    }
+
+    public NavigableMap<Long,
+                        IControl<ZContext>> getMessageQueue()
+    {
+        return messageQueue;
+    }
+
+    public void setMessageQueue(NavigableMap<Long,
+                                             IControl<ZContext>> messageQueue)
+    {
+        this.messageQueue = messageQueue;
     }
 }

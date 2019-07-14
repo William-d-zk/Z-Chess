@@ -285,11 +285,11 @@ public class DeviceNode
                                             push.setSession(targetSession);
                                             if (push.getLevel() == IQoS.Level.AT_LEAST_ONCE
                                                 || push.getLevel() == IQoS.Level.EXACTLY_ONCE)
-                                            {
+                                    {
                                                 int packIdentity = _QttRouter.nextPackIdentity();
                                                 push.setLocalId(packIdentity);
-                                                _QttRouter.register(packIdentity, entry.getKey());
                                                 _DeviceRepository.save(push);
+                                                _QttRouter.register(packIdentity, entry.getKey());
                                             }
                                             return push;
                                         }
@@ -314,18 +314,26 @@ public class DeviceNode
                                               : pushList.toArray(new IControl[0]);
                 case X114_QttPuback.COMMAND:
                     X114_QttPuback x114 = (X114_QttPuback) command;
+                    _DeviceRepository.find(x114);
                     _QttRouter.ack(x114.getLocalId(), session.getIndex());
                     break;
                 case X115_QttPubrec.COMMAND:
                     X115_QttPubrec x115 = (X115_QttPubrec) command;
                     X116_QttPubrel x116 = new X116_QttPubrel();
                     x116.setLocalId(x115.getLocalId());
+                    _DeviceRepository.save(x116);
                     return new IControl[] { x116 };
                 case X116_QttPubrel.COMMAND:
                     x116 = (X116_QttPubrel) command;
                     X117_QttPubcomp x117 = new X117_QttPubcomp();
-
+                    x117.setLocalId(x116.getLocalId());
+                    _QttRouter.ack(x116.getLocalId(), session.getIndex());
+                    _DeviceRepository.find(x116);
+                    return new IControl[] { x117 };
                 case X117_QttPubcomp.COMMAND:
+                    x117 = (X117_QttPubcomp) command;
+                    _QttRouter.ack(x117.getLocalId(), session.getIndex());
+                    break;
                 case X11C_QttPingreq.COMMAND:
                     return new IControl[] { new X11D_QttPingresp() };
                 default:
