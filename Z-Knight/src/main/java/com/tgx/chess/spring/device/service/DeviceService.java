@@ -65,6 +65,7 @@ import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
 import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
 import com.tgx.chess.bishop.io.zprotocol.device.X24_UpdateToken;
 import com.tgx.chess.king.base.inf.ITriple;
+import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.base.util.Triple;
@@ -89,6 +90,7 @@ public class DeviceService
         implements
         IRepository<DeviceEntry>
 {
+    private final Logger                                   _Logger                = Logger.getLogger(getClass().getSimpleName());
     private final Random                                   _Random                = new Random();
     private final CryptUtil                                _CryptUtil             = new CryptUtil();
     private final DeviceRepository                         _DeviceRepository;
@@ -231,16 +233,17 @@ public class DeviceService
                                 .getDevices();
     }
 
-    private DeviceEntry auth(DeviceEntity deviceEntity, String password)
+    private DeviceEntry auth(DeviceEntity deviceEntity, String username, String password)
     {
         DeviceEntry deviceEntry = new DeviceEntry();
         if (Objects.nonNull(deviceEntity)) {
+            _Logger.info("device [%s] | connect %s", deviceEntity.getSn(), username);
             deviceEntry.setPrimaryKey(deviceEntity.getId());
             String origin = deviceEntity.getPassword();
-            if (isBlank(origin)
-                || "*".equals(origin)
-                || ".".equals(origin)
-                || (Objects.nonNull(password) && origin.equals(password)))
+            if ((isBlank(origin)
+                 || "*".equals(origin)
+                 || ".".equals(origin)
+                 || (Objects.nonNull(password) && origin.equals(password))))
             {
                 deviceEntry.setOperation(IStorage.Operation.OP_APPEND);
             }
@@ -349,9 +352,10 @@ public class DeviceService
                 break;
             case X111_QttConnect.COMMAND:
                 X111_QttConnect x111 = (X111_QttConnect) key;
-                String deviceSn = x111.getClientId();
-                deviceEntity = findDeviceBySn(deviceSn);
+                deviceToken = x111.getClientId();
+                deviceEntity = findDeviceByToken(deviceToken);
                 return auth(deviceEntity,
+                            x111.getUserName(),
                             Objects.nonNull(x111.getPassword()) ? new String(x111.getPassword(), StandardCharsets.UTF_8)
                                                                 : null);
             case X116_QttPubrel.COMMAND:
@@ -370,6 +374,7 @@ public class DeviceService
                 NavigableMap<Long,
                              IControl<ZContext>> msgQueue = new TreeMap<>();
                 deviceEntry.setMessageQueue(msgQueue);
+                msgQueue.put(msgId, push);
                 return deviceEntry;
         }
         return null;
