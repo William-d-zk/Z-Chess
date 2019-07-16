@@ -266,37 +266,7 @@ public class DeviceNode
                     break;
                 case X113_QttPublish.COMMAND:
                     X113_QttPublish x113 = (X113_QttPublish) command;
-                    Map<Long,
-                        IQoS.Level> route = _QttRouter.broker(x113.getTopic());
-                    List<IControl<ZContext>> pushList;
-                    pushList = route.entrySet()
-                                    .stream()
-                                    .map(entry ->
-                                    {
-                                        ISession<ZContext> targetSession = findSessionByIndex(entry.getKey());
-                                        if (targetSession != null && x113.getPayload() != null) {
-                                            IQoS.Level subscribeLevel = entry.getValue();
-                                            X113_QttPublish push = new X113_QttPublish();
-                                            push.setLevel(x113.getLevel()
-                                                              .getValue() > subscribeLevel.getValue() ? subscribeLevel
-                                                                                                      : x113.getLevel());
-                                            push.setTopic(x113.getTopic());
-                                            push.setPayload(x113.getPayload());
-                                            push.setSession(targetSession);
-                                            if (push.getLevel() == IQoS.Level.AT_LEAST_ONCE
-                                                || push.getLevel() == IQoS.Level.EXACTLY_ONCE)
-                                    {
-                                                int packIdentity = _QttRouter.nextPackIdentity();
-                                                push.setLocalId(packIdentity);
-                                                _DeviceRepository.save(push);
-                                                _QttRouter.register(packIdentity, entry.getKey());
-                                            }
-                                            return push;
-                                        }
-                                        return null;
-                                    })
-                                    .filter(Objects::nonNull)
-                                    .collect(Collectors.toList());
+                    List<IControl<ZContext>> pushList = brokerTopic(x113);
                     switch (x113.getLevel())
                     {
                         case AT_LEAST_ONCE:
@@ -328,8 +298,12 @@ public class DeviceNode
                     X117_QttPubcomp x117 = new X117_QttPubcomp();
                     x117.setLocalId(x116.getLocalId());
                     _QttRouter.ack(x116.getLocalId(), session.getIndex());
-                    _DeviceRepository.find(x116);
-                    return new IControl[] { x117 };
+                    DeviceEntry deviceEntry = _DeviceRepository.find(x116);
+                    x113 = (X113_QttPublish) deviceEntry.getMessageQueue()
+                                                        .firstEntry();
+                    pushList = brokerTopic(x113);
+                    pushList.add(x117);
+                    return pushList.toArray(new IControl[0]);
                 case X117_QttPubcomp.COMMAND:
                     x117 = (X117_QttPubcomp) command;
                     _QttRouter.ack(x117.getLocalId(), session.getIndex());
@@ -429,5 +403,42 @@ public class DeviceNode
                 return new IControl[] { x11B };
         }
         return new IControl[0];
+    }
+
+    private List<IControl<ZContext>> brokerTopic(X113_QttPublish x113)
+    {
+        Map<Long,
+            IQoS.Level> route = _QttRouter.broker(x113.getTopic());
+        List<IControl<ZContext>> pushList;
+        pushList = route.entrySet()
+                        .stream()
+                        .map(entry ->
+                        {
+                            ISession<ZContext> targetSession = findSessionByIndex(entry.getKey());
+                            if (targetSession != null && x113.getPayload() != null) {
+                                IQoS.Level subscribeLevel = entry.getValue();
+                                X113_QttPublish push = new X113_QttPublish();
+                                push.setLevel(x113.getLevel()
+                                                  .getValue() > subscribeLevel.getValue() ? subscribeLevel
+                                                                                          : x113.getLevel());
+                                push.setTopic(x113.getTopic());
+                                push.setPayload(x113.getPayload());
+                                push.setSession(targetSession);
+                                if (push.getLevel() == IQoS.Level.AT_LEAST_ONCE
+                                    || push.getLevel() == IQoS.Level.EXACTLY_ONCE)
+                        {
+                                    int packIdentity = _QttRouter.nextPackIdentity();
+                                    push.setLocalId(packIdentity);
+                                    _DeviceRepository.save(push);
+                                    _QttRouter.register(packIdentity, entry.getKey());
+                                }
+                                return push;
+                            }
+                            return null;
+                        })
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList());
+
+        return pushList;
     }
 }
