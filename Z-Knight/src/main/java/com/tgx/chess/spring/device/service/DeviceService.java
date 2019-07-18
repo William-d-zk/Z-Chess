@@ -90,15 +90,15 @@ public class DeviceService
         implements
         IRepository<DeviceEntry>
 {
-    private final Logger                                   _Logger                = Logger.getLogger(getClass().getSimpleName());
+    private final Logger _Logger                = Logger.getLogger(getClass().getSimpleName());
     private final Random                                   _Random                = new Random();
-    private final CryptUtil                                _CryptUtil             = new CryptUtil();
-    private final DeviceRepository                         _DeviceRepository;
-    private final ClientRepository                         _ClientRepository;
-    private final DeviceNode                               _DeviceNode;
+    private final CryptUtil _CryptUtil             = new CryptUtil();
+    private final DeviceRepository _DeviceRepository;
+    private final ClientRepository _ClientRepository;
+    private final DeviceNode _DeviceNode;
     private final Map<Long,
                       Map<Long,
-                          IControl<ZContext>>>             _DeviceMessageStateMap = new ConcurrentSkipListMap<>();
+                              IControl<ZContext>>>             _DeviceMessageStateMap = new ConcurrentSkipListMap<>();
 
     @Value("${invalid.days}")
     private int invalidDurationOfDays;
@@ -157,6 +157,15 @@ public class DeviceService
         if (Objects.isNull(exist)) {
             exist = _DeviceRepository.findByMac(device.getMac());
         }
+        return exist;
+    }
+
+    public DeviceEntity saveDevice(@NonNull DeviceEntity device)
+    {
+        if (isBlank(device.getSn()) && isBlank(device.getImei()) && isBlank(device.getMac())) {
+            throw new ZApiExecption("unique device info null");
+        }
+        DeviceEntity exist = findDevice(device);
         if (Objects.nonNull(exist)) {
             device.setId(exist.getId());
             if (!isBlank(exist.getMac())) {
@@ -171,18 +180,8 @@ public class DeviceService
             if (!isBlank(exist.getPhone()) && isBlank(device.getPhone())) {
                 device.setPhone(exist.getPhone());
             }
-            device.setPasswordId(exist.getPasswordId());
         }
-        return device;
-    }
-
-    public DeviceEntity saveDevice(@NonNull DeviceEntity device)
-    {
-        if (isBlank(device.getSn()) && isBlank(device.getImei()) && isBlank(device.getMac())) {
-            throw new ZApiExecption("unique device info null");
-        }
-        findDevice(device);
-        if (isBlank(device.getPassword())) {
+        if (isBlank(exist.getPassword())) {
             int passwordLength = _Random.nextInt(27) + 5;
             byte[] pwdBytes = new byte[passwordLength];
             for (int i = 0; i < passwordLength; i++) {
@@ -233,17 +232,17 @@ public class DeviceService
                                 .getDevices();
     }
 
-    private DeviceEntry auth(DeviceEntity deviceEntity, String username, String password)
+    private DeviceEntry auth(DeviceEntity deviceEntity, String password)
     {
         DeviceEntry deviceEntry = new DeviceEntry();
         if (Objects.nonNull(deviceEntity)) {
-            _Logger.info("device [%s] | connect %s", deviceEntity.getSn(), username);
+            _Logger.info("device [%s] | connect ", deviceEntity.getSn());
             deviceEntry.setPrimaryKey(deviceEntity.getId());
             String origin = deviceEntity.getPassword();
-            if ((isBlank(origin)
-                 || "*".equals(origin)
-                 || ".".equals(origin)
-                 || (Objects.nonNull(password) && origin.equals(password))))
+            if (isBlank(origin)
+                || "*".equals(origin)
+                || ".".equals(origin)
+                || (Objects.nonNull(password) && origin.equals(password)))
             {
                 deviceEntry.setOperation(IStorage.Operation.OP_APPEND);
             }
@@ -310,7 +309,7 @@ public class DeviceService
                     return old;
                 }) == null) {
                     final Map<Long,
-                              IControl<ZContext>> _IdentityMessageMap = new HashMap<>(7);
+                            IControl<ZContext>> _IdentityMessageMap = new HashMap<>(7);
                     _IdentityMessageMap.put(identity, x113);
                     _DeviceMessageStateMap.put(index, _IdentityMessageMap);
                 }
@@ -355,7 +354,6 @@ public class DeviceService
                 deviceToken = x111.getClientId();
                 deviceEntity = findDeviceByToken(deviceToken);
                 return auth(deviceEntity,
-                            x111.getUserName(),
                             Objects.nonNull(x111.getPassword()) ? new String(x111.getPassword(), StandardCharsets.UTF_8)
                                                                 : null);
             case X116_QttPubrel.COMMAND:
@@ -366,15 +364,15 @@ public class DeviceService
                 long sessionIdx = x116.getSession()
                                       .getIndex();
                 Map<Long,
-                    IControl<ZContext>> storage = _DeviceMessageStateMap.get(sessionIdx);
+                        IControl<ZContext>> storage = _DeviceMessageStateMap.get(sessionIdx);
                 long msgId = x116.getLocalId();
                 IControl<ZContext> push = storage.remove(msgId);
                 DeviceEntry deviceEntry = new DeviceEntry();
                 deviceEntry.setPrimaryKey(sessionIdx);
                 NavigableMap<Long,
-                             IControl<ZContext>> msgQueue = new TreeMap<>();
-                deviceEntry.setMessageQueue(msgQueue);
+                        IControl<ZContext>> msgQueue = new TreeMap<>();
                 msgQueue.put(msgId, push);
+                deviceEntry.setMessageQueue(msgQueue);
                 return deviceEntry;
         }
         return null;
