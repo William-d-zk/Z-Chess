@@ -90,15 +90,15 @@ public class DeviceService
         implements
         IRepository<DeviceEntry>
 {
-    private final Logger _Logger                = Logger.getLogger(getClass().getSimpleName());
+    private final Logger                                   _Logger                = Logger.getLogger(getClass().getSimpleName());
     private final Random                                   _Random                = new Random();
-    private final CryptUtil _CryptUtil             = new CryptUtil();
-    private final DeviceRepository _DeviceRepository;
-    private final ClientRepository _ClientRepository;
-    private final DeviceNode _DeviceNode;
+    private final CryptUtil                                _CryptUtil             = new CryptUtil();
+    private final DeviceRepository                         _DeviceRepository;
+    private final ClientRepository                         _ClientRepository;
+    private final DeviceNode                               _DeviceNode;
     private final Map<Long,
                       Map<Long,
-                              IControl<ZContext>>>             _DeviceMessageStateMap = new ConcurrentSkipListMap<>();
+                          IControl<ZContext>>>             _DeviceMessageStateMap = new ConcurrentSkipListMap<>();
 
     @Value("${invalid.days}")
     private int invalidDurationOfDays;
@@ -309,7 +309,7 @@ public class DeviceService
                     return old;
                 }) == null) {
                     final Map<Long,
-                            IControl<ZContext>> _IdentityMessageMap = new HashMap<>(7);
+                              IControl<ZContext>> _IdentityMessageMap = new HashMap<>(7);
                     _IdentityMessageMap.put(identity, x113);
                     _DeviceMessageStateMap.put(index, _IdentityMessageMap);
                 }
@@ -364,13 +364,13 @@ public class DeviceService
                 long sessionIdx = x116.getSession()
                                       .getIndex();
                 Map<Long,
-                        IControl<ZContext>> storage = _DeviceMessageStateMap.get(sessionIdx);
+                    IControl<ZContext>> storage = _DeviceMessageStateMap.get(sessionIdx);
                 long msgId = x116.getLocalId();
                 IControl<ZContext> push = storage.remove(msgId);
                 DeviceEntry deviceEntry = new DeviceEntry();
                 deviceEntry.setPrimaryKey(sessionIdx);
                 NavigableMap<Long,
-                        IControl<ZContext>> msgQueue = new TreeMap<>();
+                             IControl<ZContext>> msgQueue = new TreeMap<>();
                 msgQueue.put(msgId, push);
                 deviceEntry.setMessageQueue(msgQueue);
                 return deviceEntry;
