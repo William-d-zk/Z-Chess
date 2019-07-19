@@ -86,14 +86,14 @@ import com.tgx.chess.queen.io.core.inf.ISessionCreated;
 import com.tgx.chess.queen.io.core.inf.ISessionCreator;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
-import com.tgx.chess.rook.io.ClientZSort;
+import com.tgx.chess.rook.io.ConsumerZSort;
 
 /**
  * @author william.d.zk
  * @date 2019-05-12
  */
 @Component
-public class DeviceClient
+public class DeviceConsumer
         implements
         IAioClient<ZContext>,
         ISessionDismiss<ZContext>,
@@ -128,7 +128,7 @@ public class DeviceClient
     }
 
     @SuppressWarnings("unchecked")
-    public DeviceClient() throws IOException
+    public DeviceConsumer() throws IOException
     {
         _State.set(STATE.STOP.ordinal());
         _Config = new Config();
@@ -231,7 +231,7 @@ public class DeviceClient
                         final long _ClientId)
     {
         final ICommandCreator<ZContext> _CommandCreator;
-        switch ((ClientZSort) _Sort)
+        switch ((ConsumerZSort) _Sort)
         {
             case WS_CONSUMER:
                 _CommandCreator = session ->
@@ -280,7 +280,7 @@ public class DeviceClient
             public ISession<ZContext> createSession(AsynchronousSocketChannel socketChannel,
                                                     IConnectActivity<ZContext> activity) throws IOException
             {
-                ISession<ZContext> session = new AioSession<>(socketChannel, this, this, activity, DeviceClient.this);
+                ISession<ZContext> session = new AioSession<>(socketChannel, this, this, activity, DeviceConsumer.this);
                 session.setIndex(_ClientId);
                 return session;
             }
@@ -303,7 +303,7 @@ public class DeviceClient
             @Override
             public ISessionCreated<ZContext> getSessionCreated()
             {
-                return DeviceClient.this;
+                return DeviceConsumer.this;
             }
 
             @Override

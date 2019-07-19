@@ -39,29 +39,29 @@ import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
 import com.tgx.chess.bishop.io.zprotocol.device.X50_DeviceMsg;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X01_EncryptRequest;
 import com.tgx.chess.king.base.util.IoUtil;
-import com.tgx.chess.rook.biz.device.client.DeviceClient;
-import com.tgx.chess.rook.io.ClientZSort;
+import com.tgx.chess.rook.biz.device.client.DeviceConsumer;
+import com.tgx.chess.rook.io.ConsumerZSort;
 
 /**
  * @author william.d.zk
  */
 @RestController
-@PropertySource({ "classpath:ws.client.properties",
-                  "classpath:qtt.client.properties" })
-public class ClientController
+@PropertySource({"classpath:ws.consumer.properties",
+        "classpath:qtt.consumer.properties"})
+public class ConsumerController
 {
-    private final DeviceClient _DeviceClient;
+    private final DeviceConsumer _DeviceClient;
     private final String       _WsHost;
     private final int          _WsPort;
     private final String       _QttHost;
     private final int          _QttPort;
 
     @Autowired
-    ClientController(DeviceClient client,
-                     @Value("${ws.client.target.host}") String wsHost,
-                     @Value("${ws.client.target.port}") int wsPort,
-                     @Value("${qtt.client.target.host}") String qttHost,
-                     @Value("${qtt.client.target.port}") int qttPort)
+    ConsumerController(DeviceConsumer client,
+                       @Value("${ws.consumer.target.host}") String wsHost,
+                       @Value("${ws.consumer.target.port}") int wsPort,
+                       @Value("${qtt.consumer.target.host}") String qttHost,
+                       @Value("${qtt.consumer.target.port}") int qttPort)
     {
         _DeviceClient = client;
         _WsHost = wsHost;
@@ -70,35 +70,35 @@ public class ClientController
         _QttPort = qttPort;
     }
 
-    @GetMapping("/client/ws/start")
+    @GetMapping("/consumer/ws/start")
     public String wsStart(@RequestParam(name = "client_id") long clientId)
     {
-        _DeviceClient.connect(_WsHost, _WsPort, ClientZSort.WS_CONSUMER, clientId);
-        return "async commit ws_start client request";
+        _DeviceClient.connect(_WsHost, _WsPort, ConsumerZSort.WS_CONSUMER, clientId);
+        return "async commit ws_start consumer request";
     }
 
-    @GetMapping("/client/qtt/start")
+    @GetMapping("/consumer/qtt/start")
     public String qttStart(@RequestParam(name = "client_id") long clientId)
     {
-        _DeviceClient.connect(_QttHost, _QttPort, ClientZSort.QTT_SYMMETRY, clientId);
-        return "async commit qtt_start client request";
+        _DeviceClient.connect(_QttHost, _QttPort, ConsumerZSort.QTT_SYMMETRY, clientId);
+        return "async commit qtt_start consumer request";
     }
 
-    @GetMapping("/client/ws/end")
+    @GetMapping("/consumer/ws/end")
     public String wsEnd(@RequestParam(name = "client_id") long clientId)
     {
         _DeviceClient.close(clientId);
-        return "client wsEnd";
+        return "consumer wsEnd";
     }
 
-    @GetMapping("/client/ws/close")
+    @GetMapping("/consumer/ws/close")
     public String wsClose(@RequestParam(name = "client_id") long clientId)
     {
         _DeviceClient.sendLocal(clientId, new X103_Close("client ws_close".getBytes()));
-        return "client ws_close";
+        return "consumer ws_close";
     }
 
-    @GetMapping("/client/ws/heartbeat")
+    @GetMapping("/consumer/ws/heartbeat")
     public String wsHeartbeat(@RequestParam(name = "msg",
                                             defaultValue = "client ws_heartbeat",
                                             required = false) String msg,
@@ -108,7 +108,7 @@ public class ClientController
         return "ws_heartbeat";
     }
 
-    @GetMapping("/client/ws/x50")
+    @GetMapping("/consumer/ws/x50")
     public String wsX50(@RequestParam(name = "msg", defaultValue = "test", required = false) String msg,
                         @RequestParam(name = "client_id") long clientId)
     {
@@ -118,7 +118,7 @@ public class ClientController
         return "ws_x50";
     }
 
-    @GetMapping("/client/ws/sign-up")
+    @GetMapping("/consumer/ws/sign-up")
     public String wsX20(@RequestParam(name = "password", defaultValue = "password", required = false) String password,
                         @RequestParam(name = "mac", defaultValue = "AE:C3:33:44:56:09") String mac,
                         @RequestParam(name = "client_id") long clientId)
@@ -131,7 +131,7 @@ public class ClientController
         return String.format("send ws_x20 to sign up, mac{ %s }password{ %s }", mac, password);
     }
 
-    @GetMapping("/client/ws/sign-in")
+    @GetMapping("/consumer/ws/sign-in")
     public String wsX22(@RequestParam(name = "password", defaultValue = "password", required = false) String password,
                         @RequestParam(name = "token") String token,
                         @RequestParam(name = "client_id") long clientId)
@@ -147,7 +147,7 @@ public class ClientController
         return String.format("login %s : %s", IoUtil.bin2Hex(_DeviceClient.getToken()), password);
     }
 
-    @GetMapping("/client/ws/ztls")
+    @GetMapping("/consumer/ws/ztls")
     public String wsZtls(@RequestParam(name = "client_id") long clientId)
     {
         X01_EncryptRequest x01 = new X01_EncryptRequest();

@@ -71,6 +71,7 @@ public class DeviceController
         deviceEntity.setMac(deviceDo.getMac());
         deviceEntity.setSn(deviceDo.getSn());
         deviceEntity = _DeviceService.saveDevice(deviceEntity);
+        deviceDo.setUser(deviceEntity.getClient());
         deviceDo.setPassword(deviceEntity.getPassword());
         deviceDo.setToken(deviceEntity.getToken());
         return deviceDo;
@@ -143,70 +144,5 @@ public class DeviceController
     {
         return _DeviceService.findDeviceByMac(deviceMac);
     }
-    /*
-    
-    @GetMapping("/client/close/all")
-    public String closeAll()
-    {
-        List<DeviceEntry> list = _DeviceService.findAll();
-        StringBuffer sb = new StringBuffer();
-        for (DeviceEntry device : list) {
-            _Logger.info("device mac %s", device.getToken());
-            sb.append(String.format("token:%s\n", device.getToken()));
-            _DeviceService.localBizClose(device.getPrimaryKey());
-        }
-        return sb.toString();
-    }
-    
-    @GetMapping("/client/close/device")
-    public String close(@RequestParam(name = "token") String token)
-    {
-        DeviceEntity device = _DeviceService.findDeviceByToken(token);
-        if (Objects.nonNull(device)) {
-            _DeviceService.localBizClose(device.getId());
-        }
-        return token;
-    }
-    
-    @GetMapping("/event/x30/broadcast")
-    public String x30Broadcast(@RequestParam(name = "msg") String msg,
-                               @RequestParam(name = "ctrl", defaultValue = "0") int ctrl)
-    {
-        List<DeviceEntry> list = _DeviceService.findAll();
-        StringBuffer sb = new StringBuffer();
-        for (DeviceEntry device : list) {
-            _Logger.info("device mac %s", device.getToken());
-            sb.append(String.format("token:%s\n", device.getToken()));
-            sendX30(device.getToken(), device.getPrimaryKey(), msg, ctrl);
-        }
-        return sb.toString();
-    }
-    
-    @GetMapping("/event/x30/push")
-    public String x30(@RequestParam(name = "msg") String msg,
-                      @RequestParam(name = "token") String token,
-                      @RequestParam(name = "ctrl", defaultValue = "0") int ctrl)
-    {
-        DeviceEntity device = _DeviceService.findDeviceByToken(token.toUpperCase());
-        if (Objects.nonNull(device)) {
-            try {
-                sendX30(device.getToken(), device.getId(), msg, ctrl);
-            }
-            catch (NullPointerException e) {
-                return String.format("device %s not login", token);
-            }
-            return String.format("push %s -> device %s", msg, token);
-        }
-        return String.format("not found device %s", token);
-    }
-    
-    private void sendX30(String token, long deviceId, String msg, int ctrl)
-    {
-        X30_EventMsg x30 = new X30_EventMsg(_ZGenerator.next());
-        x30.setCtrl(X30_EventMsg.CTRL_TEXT);
-        x30.setToken(token.toUpperCase());
-        x30.setPayload(msg.getBytes(StandardCharsets.UTF_8));
-        _DeviceService.localBizSend(deviceId, x30);
-    }
-     */
+
 }

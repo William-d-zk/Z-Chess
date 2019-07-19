@@ -95,6 +95,8 @@ public class DeviceEntity
     @JsonIgnore
     private Date invalidAt;
 
+    private String client;
+
     public Long getId()
     {
         return id;
@@ -217,4 +219,13 @@ public class DeviceEntity
         this.phone = phone;
     }
 
+    public String getClient()
+    {
+        return client;
+    }
+
+    public void setClient(String client)
+    {
+        this.client = client;
+    }
 }
