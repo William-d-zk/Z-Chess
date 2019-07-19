@@ -154,9 +154,9 @@ public class QttFrame
     public int encodec(byte[] data, int pos)
     {
         pos += IoUtil.writeByte(frame_op_code, data, pos);
+        byte[] lengthVar = IoUtil.variableLength(mPayloadLength);
+        pos += IoUtil.write(lengthVar, 0, data, pos, lengthVar.length);
         if (mPayloadLength > 0) {
-            byte[] lengthVar = IoUtil.variableLength(mPayloadLength);
-            pos += IoUtil.write(lengthVar, 0, data, pos, lengthVar.length);
             pos += IoUtil.write(mPayload, data, pos);
         }
         return pos;
