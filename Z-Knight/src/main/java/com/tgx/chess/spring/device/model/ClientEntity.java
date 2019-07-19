@@ -61,7 +61,7 @@ public class ClientEntity
     @Column(length = 16)
     private String salt;
     @Column(length = 32)
-    private String usr;
+    private String userName;
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(schema = "\"tgx-z-chess-device\"",
@@ -110,11 +110,13 @@ public class ClientEntity
         this.salt = salt;
     }
 
-    public String getUsr() {
-        return usr;
+    public String getUserName()
+    {
+        return userName;
     }
 
-    public void setUsr(String usr) {
-        this.usr = usr;
+    public void setUserName(String userName)
+    {
+        this.userName = userName;
     }
 }

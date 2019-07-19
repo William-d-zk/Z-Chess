@@ -151,10 +151,10 @@ public class DeviceService
     private DeviceEntity findDevice(@NonNull DeviceEntity device)
     {
         DeviceEntity exist = _DeviceRepository.findBySn(device.getSn());
-        if (Objects.isNull(exist)) {
+        if (Objects.isNull(exist) && !isBlank(device.getImei())) {
             exist = _DeviceRepository.findByImei(device.getImei());
         }
-        if (Objects.isNull(exist)) {
+        if (Objects.isNull(exist) && !isBlank(device.getMac())) {
             exist = _DeviceRepository.findByMac(device.getMac());
         }
         return exist;
