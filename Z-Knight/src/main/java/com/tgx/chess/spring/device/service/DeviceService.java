@@ -181,7 +181,7 @@ public class DeviceService
                 device.setPhone(exist.getPhone());
             }
         }
-        if (isBlank(exist.getPassword())) {
+        if (exist == null || isBlank(exist.getPassword())) {
             int passwordLength = _Random.nextInt(27) + 5;
             byte[] pwdBytes = new byte[passwordLength];
             for (int i = 0; i < passwordLength; i++) {
@@ -191,13 +191,13 @@ public class DeviceService
             device.increasePasswordId();
             device.setInvalidAt(Date.from(Instant.now()
                                                  .plus(invalidDurationOfDays, ChronoUnit.DAYS)));
+
         }
         device.setToken(IoUtil.bin2Hex(_CryptUtil.sha256(String.format("sn:%s,mac:%s,imei:%s",
                                                                        device.getSn(),
                                                                        device.getMac(),
                                                                        device.getImei())
                                                                .getBytes(StandardCharsets.US_ASCII))));
-
         return _DeviceRepository.save(device);
     }
 
