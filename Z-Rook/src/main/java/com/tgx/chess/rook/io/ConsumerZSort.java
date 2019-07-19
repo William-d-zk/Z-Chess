@@ -56,7 +56,7 @@ import com.tgx.chess.queen.io.core.inf.ISessionOption;
  * @author william.d.zk
  */
 @SuppressWarnings("unchecked")
-public enum ClientZSort
+public enum ConsumerZSort
         implements
         ISort<ZContext>
 {

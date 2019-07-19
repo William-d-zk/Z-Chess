@@ -193,6 +193,10 @@ public class DeviceService
                                                  .plus(invalidDurationOfDays, ChronoUnit.DAYS)));
 
         }
+        else {
+            device.setPassword(exist.getPassword());
+            device.setInvalidAt(exist.getInvalidAt());
+        }
         device.setToken(IoUtil.bin2Hex(_CryptUtil.sha256(String.format("sn:%s,mac:%s,imei:%s",
                                                                        device.getSn(),
                                                                        device.getMac(),

@@ -26,16 +26,21 @@ package com.tgx.chess.spring.device.service;
 
 import org.springframework.lang.NonNull;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 /**
  * @author william.d.zk
  * @date 2019-06-15
  */
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class DeviceDo
 {
 
     private String imei;
     private String mac;
     private String sn;
+    private String user;
     private String password;
     private String token;
     private String phone;
@@ -86,6 +91,7 @@ public class DeviceDo
         this.token = token.toUpperCase();
     }
 
+    @JsonIgnore
     public String getToken()
     {
         return token;
@@ -94,6 +100,11 @@ public class DeviceDo
     public String getPhone()
     {
         return phone;
+    }
+
+    public String getClientId()
+    {
+        return getToken();
     }
 
     public void setPhone(@NonNull String phone)
@@ -109,5 +120,15 @@ public class DeviceDo
     public void setImsi(@NonNull String imsi)
     {
         this.imsi = imsi.toUpperCase();
+    }
+
+    public String getUser()
+    {
+        return user;
+    }
+
+    public void setUser(String user)
+    {
+        this.user = user;
     }
 }
