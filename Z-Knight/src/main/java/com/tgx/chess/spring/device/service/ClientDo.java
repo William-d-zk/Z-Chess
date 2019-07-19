@@ -26,24 +26,28 @@ package com.tgx.chess.spring.device.service;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 /**
  * @author william.d.zk
  * @date 2019-07-19
  */
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ClientDo
 {
     private String       auth;
-    private String       client;
+    private String       userName;
     private List<String> devices;
+    private List<String> successDevices;
 
-    public String getClient()
+    public String getUserName()
     {
-        return client;
+        return userName;
     }
 
-    public void setClient(String client)
+    public void setUserName(String userName)
     {
-        this.client = client;
+        this.userName = userName;
     }
 
     public List<String> getDevices()
@@ -64,5 +68,15 @@ public class ClientDo
     public void setAuth(String auth)
     {
         this.auth = auth;
+    }
+
+    public List<String> getSuccessDevices()
+    {
+        return successDevices;
+    }
+
+    public void setSuccessDevices(List<String> successDevices)
+    {
+        this.successDevices = successDevices;
     }
 }

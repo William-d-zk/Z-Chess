@@ -24,15 +24,19 @@
 
 package com.tgx.chess.device.api;
 
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.spring.device.model.ClientEntity;
+import com.tgx.chess.spring.device.model.DeviceEntity;
 import com.tgx.chess.spring.device.repository.ClientRepository;
 import com.tgx.chess.spring.device.repository.DeviceRepository;
 import com.tgx.chess.spring.device.service.ClientDo;
@@ -60,15 +64,26 @@ public class ClientController
     }
 
     @PostMapping("/client/register")
-    public @ResponseBody ClientDo register(ClientDo client)
+    public @ResponseBody ClientDo register(@RequestBody ClientDo client)
     {
         ClientEntity entity = new ClientEntity();
-        entity.setUsr(client.getClient());
+        entity.setUserName(client.getUserName());
         entity.setDevices(client.getDevices()
                                 .stream()
                                 .map(_DeviceRepository::findBySn)
+                                .filter(Objects::nonNull)
                                 .collect(Collectors.toSet()));
-        _ClientRepository.save(entity);
+        entity = _ClientRepository.save(entity);
+        Set<String> snSet = entity.getDevices()
+                                  .stream()
+                                  .map(DeviceEntity::getSn)
+                                  .collect(Collectors.toSet());
+        client.setSuccessDevices(client.getDevices()
+                                       .stream()
+                                       .filter(snSet::contains)
+                                       .collect(Collectors.toList()));
+        client.getDevices()
+              .removeAll(snSet);
         return client;
     }
 }
