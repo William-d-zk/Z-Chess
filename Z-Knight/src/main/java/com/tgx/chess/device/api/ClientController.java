@@ -47,7 +47,6 @@ import com.tgx.chess.spring.device.model.ClientEntity;
 import com.tgx.chess.spring.device.model.DeviceEntity;
 import com.tgx.chess.spring.device.service.ClientDo;
 import com.tgx.chess.spring.device.service.DeviceService;
-import com.tgx.chess.spring.jpa.generator.ZGenerator;
 
 /**
  * @author william.d.zk
@@ -58,7 +57,6 @@ public class ClientController
 {
 
     private final Logger         _Logger     = Logger.getLogger(getClass().getName());
-    private final ZGenerator     _ZGenerator = new ZGenerator();
     private final ClientService  _ClientService;
     private final AccountService _AccountService;
     private final DeviceService  _DeviceService;
@@ -129,6 +127,8 @@ public class ClientController
                                            .collect(Collectors.toList()));
             client.getDevices()
                   .removeAll(snSet);
+            client.setAuth(null);
+            client.setCipher(null);
             return client;
         }
         return "authority failed";
@@ -137,14 +137,15 @@ public class ClientController
     @GetMapping("/client/devices")
     public @ResponseBody Object getDevices(@RequestParam String auth,
                                            @RequestParam String cipher,
-                                           @RequestParam String plain,
                                            @RequestParam String userName)
     {
-        AccountEntity accountEntity = _AccountService.authAccount(auth, cipher, plain);
+        AccountEntity accountEntity = _AccountService.authAccount(auth, cipher, userName);
         if (accountEntity != null) {
             Set<ClientEntity> clients = accountEntity.getClients();
             if (clients != null && !clients.isEmpty()) {
                 return clients.stream()
+                              .filter(clientEntity -> clientEntity.getUserName()
+                                                                  .equals(userName))
                               .flatMap(clientEntity -> clientEntity.getDevices()
                                                                    .stream())
                               .map(_DeviceService::convertDevice)

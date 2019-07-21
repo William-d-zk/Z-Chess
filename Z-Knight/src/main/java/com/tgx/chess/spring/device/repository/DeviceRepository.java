@@ -51,4 +51,5 @@ public interface DeviceRepository
 
     DeviceEntity findBySn(String sn);
 
+    DeviceEntity findByPhone(String phone);
 }
