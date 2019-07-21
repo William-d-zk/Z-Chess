@@ -40,6 +40,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tgx.chess.spring.auth.api.dao.AuthEntry;
 import com.tgx.chess.spring.auth.api.dao.ProfileEntry;
 import com.tgx.chess.spring.auth.model.AccountEntity;
+import com.tgx.chess.spring.auth.model.AccountStatus;
 import com.tgx.chess.spring.auth.model.RoleEntity;
 import com.tgx.chess.spring.auth.model.RoleEnum;
 import com.tgx.chess.spring.auth.service.AccountService;
@@ -70,7 +71,7 @@ public class AccountController
             if (test.isPresent()) { throw new IllegalArgumentException("user_name exist"); }
         }
         AuthEntry auth = new AuthEntry();
-        auth.setStatus(true);
+        auth.setStatus(AccountStatus.CREATED);
         auth.setRole(RoleEnum.USER);
         AccountEntity account = new AccountEntity();
         account.setActive(1);
@@ -78,6 +79,8 @@ public class AccountController
         account.setEmail(accountDo.getEmail());
         account.setPassword(accountDo.getPassword());
         _AccountService.newAccount(account);
+        auth.setAuth(account.getAuth());
+        auth.setSecret(account.getSecret());
         return auth;
     }
 
@@ -93,14 +96,14 @@ public class AccountController
             && account.getPassword()
                       .equals(accountDo.getPassword()))
         {
-            authEntry.setStatus(true);
+            authEntry.setStatus(AccountStatus.ONLINE);
             authEntry.setRoles(account.getRoles()
                                       .stream()
                                       .map(RoleEntity::getRole)
                                       .collect(Collectors.toList()));
         }
         else {
-            authEntry.setStatus(false);
+            authEntry.setStatus(AccountStatus.INVALID);
         }
 
         return authEntry;
@@ -110,7 +113,7 @@ public class AccountController
     public @ResponseBody AuthEntry logout()
     {
         AuthEntry auth = new AuthEntry();
-        auth.setStatus(true);
+        auth.setStatus(AccountStatus.OFFLINE);
         return auth;
     }
 
