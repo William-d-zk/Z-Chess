@@ -24,22 +24,29 @@
 
 package com.tgx.chess.device.api;
 
+import static com.tgx.chess.king.base.util.IoUtil.isBlank;
+
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.spring.auth.model.AccountEntity;
+import com.tgx.chess.spring.auth.service.AccountService;
+import com.tgx.chess.spring.auth.service.ClientService;
 import com.tgx.chess.spring.device.model.ClientEntity;
 import com.tgx.chess.spring.device.model.DeviceEntity;
-import com.tgx.chess.spring.device.repository.ClientRepository;
-import com.tgx.chess.spring.device.repository.DeviceRepository;
 import com.tgx.chess.spring.device.service.ClientDo;
+import com.tgx.chess.spring.device.service.DeviceService;
 import com.tgx.chess.spring.jpa.generator.ZGenerator;
 
 /**
@@ -50,40 +57,100 @@ import com.tgx.chess.spring.jpa.generator.ZGenerator;
 public class ClientController
 {
 
-    private final Logger           _Logger     = Logger.getLogger(getClass().getName());
-    private final ZGenerator       _ZGenerator = new ZGenerator();
-    private final ClientRepository _ClientRepository;
-    private final DeviceRepository _DeviceRepository;
+    private final Logger         _Logger     = Logger.getLogger(getClass().getName());
+    private final ZGenerator     _ZGenerator = new ZGenerator();
+    private final ClientService  _ClientService;
+    private final AccountService _AccountService;
+    private final DeviceService  _DeviceService;
 
     @Autowired
-    public ClientController(ClientRepository clientRepository,
-                            DeviceRepository deviceRepository)
+    public ClientController(ClientService clientService,
+                            AccountService accountService,
+                            DeviceService deviceService)
     {
-        _ClientRepository = clientRepository;
-        _DeviceRepository = deviceRepository;
+        _ClientService = clientService;
+        _AccountService = accountService;
+        _DeviceService = deviceService;
     }
 
     @PostMapping("/client/register")
-    public @ResponseBody ClientDo register(@RequestBody ClientDo client)
+    public @ResponseBody Object register(@RequestBody ClientDo client)
     {
-        ClientEntity entity = new ClientEntity();
-        entity.setUserName(client.getUserName());
-        entity.setDevices(client.getDevices()
-                                .stream()
-                                .map(_DeviceRepository::findBySn)
-                                .filter(Objects::nonNull)
-                                .collect(Collectors.toSet()));
-        entity = _ClientRepository.save(entity);
-        Set<String> snSet = entity.getDevices()
-                                  .stream()
-                                  .map(DeviceEntity::getSn)
-                                  .collect(Collectors.toSet());
-        client.setSuccessDevices(client.getDevices()
-                                       .stream()
-                                       .filter(snSet::contains)
-                                       .collect(Collectors.toList()));
-        client.getDevices()
-              .removeAll(snSet);
-        return client;
+        AccountEntity accountEntity = _AccountService.authAccount(client.getAuth(),
+                                                                  client.getCipher(),
+                                                                  client.getUserName());
+        if (accountEntity != null) {
+            Set<ClientEntity> clients = accountEntity.getClients();
+            ClientEntity clientEntity = null;
+            if (clients != null) {
+                for (ClientEntity entity : clients) {
+                    if (!client.getUserName()
+                               .equals(entity.getUserName())
+                        && !isBlank(entity.getUserName()))
+                    {
+                        continue;
+                    }
+                    clientEntity = entity;
+                    _Logger.info("client exist %s", clientEntity.getId());
+                    client.setExist(true);
+                    break;
+                }
+            }
+            else {
+                clients = new HashSet<>();
+            }
+            if (clientEntity == null) {
+                clientEntity = new ClientEntity();
+            }
+            clients.add(clientEntity);
+            accountEntity.setClients(clients);
+            clientEntity.setUserName(client.getUserName());
+            clientEntity.setAccount(accountEntity);
+            Set<DeviceEntity> deviceSet = client.getDevices()
+                                                .stream()
+                                                .map(_DeviceService::findDeviceBySn)
+                                                .filter(Objects::nonNull)
+                                                .peek(device -> device.setUserName(client.getUserName()))
+                                                .collect(Collectors.toSet());
+            _DeviceService.updateDevices(deviceSet);
+            Set<String> snSet = deviceSet.stream()
+                                         .map(DeviceEntity::getSn)
+                                         .collect(Collectors.toSet());
+            Set<DeviceEntity> existDeviceSet = clientEntity.getDevices();
+            if (existDeviceSet != null) {
+                deviceSet.addAll(existDeviceSet);
+            }
+            clientEntity.setDevices(deviceSet);
+            _ClientService.updateClient(clientEntity);
+            _AccountService.updateAccount(accountEntity);
+            client.setSuccessDevices(client.getDevices()
+                                           .stream()
+                                           .filter(snSet::contains)
+                                           .collect(Collectors.toList()));
+            client.getDevices()
+                  .removeAll(snSet);
+            return client;
+        }
+        return "authority failed";
+    }
+
+    @GetMapping("/client/devices")
+    public @ResponseBody Object getDevices(@RequestParam String auth,
+                                           @RequestParam String cipher,
+                                           @RequestParam String plain,
+                                           @RequestParam String userName)
+    {
+        AccountEntity accountEntity = _AccountService.authAccount(auth, cipher, plain);
+        if (accountEntity != null) {
+            Set<ClientEntity> clients = accountEntity.getClients();
+            if (clients != null && !clients.isEmpty()) {
+                return clients.stream()
+                              .flatMap(clientEntity -> clientEntity.getDevices()
+                                                                   .stream())
+                              .map(_DeviceService::convertDevice)
+                              .collect(Collectors.toList());
+            }
+        }
+        return "no devices";
     }
 }

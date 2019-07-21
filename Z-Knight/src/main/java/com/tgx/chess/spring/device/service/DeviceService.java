@@ -32,17 +32,16 @@ import java.sql.Date;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Objects;
-import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -91,7 +90,6 @@ public class DeviceService
         IRepository<DeviceEntry>
 {
     private final Logger                                   _Logger                = Logger.getLogger(getClass().getSimpleName());
-    private final Random                                   _Random                = new Random();
     private final CryptUtil                                _CryptUtil             = new CryptUtil();
     private final DeviceRepository                         _DeviceRepository;
     private final ClientRepository                         _ClientRepository;
@@ -104,12 +102,12 @@ public class DeviceService
     private int invalidDurationOfDays;
 
     @Autowired
-    DeviceService(DeviceRepository deviceRepository,
-                  ClientRepository clientRepository,
-                  @Value("${qtt.server.host}") String qttServiceHost,
+    DeviceService(@Value("${qtt.server.host}") String qttServiceHost,
                   @Value("${qtt.server.port}") int qttServicePort,
                   @Value("${ws.server.host}") String wsServiceHost,
-                  @Value("${ws.server.port}") int wsServicePort)
+                  @Value("${ws.server.port}") int wsServicePort,
+                  DeviceRepository deviceRepository,
+                  ClientRepository clientRepository)
     {
         _DeviceRepository = deviceRepository;
         _ClientRepository = clientRepository;
@@ -125,17 +123,7 @@ public class DeviceService
         _DeviceNode.start();
     }
 
-    public List<DeviceEntry> findAll()
-    {
-        List<DeviceEntity> entities = _DeviceRepository.findAll();
-        return Objects.nonNull(entities) && !entities.isEmpty() ? entities.stream()
-                                                                          .filter(Objects::nonNull)
-                                                                          .map(this::convertDevice)
-                                                                          .collect(Collectors.toList())
-                                                                : null;
-    }
-
-    private DeviceEntry convertDevice(DeviceEntity entity)
+    public DeviceEntry convertDevice(DeviceEntity entity)
     {
         Objects.requireNonNull(entity);
         DeviceEntry deviceEntry = new DeviceEntry();
@@ -145,8 +133,6 @@ public class DeviceService
                                          .getTime());
         return deviceEntry;
     }
-
-    private final byte[] _PasswordChars = "qwertyuiopasdfghjklzxcvbnmQAZWSXEDCRFVTGBYHNUJMIKOLP1234567890,-=+_!~`%&*#@;|/".getBytes(StandardCharsets.US_ASCII);
 
     private DeviceEntity findDevice(@NonNull DeviceEntity device)
     {
@@ -182,12 +168,7 @@ public class DeviceService
             }
         }
         if (exist == null || isBlank(exist.getPassword())) {
-            int passwordLength = _Random.nextInt(27) + 5;
-            byte[] pwdBytes = new byte[passwordLength];
-            for (int i = 0; i < passwordLength; i++) {
-                pwdBytes[i] = _PasswordChars[_Random.nextInt(_PasswordChars.length)];
-            }
-            device.setPassword(new String(pwdBytes, StandardCharsets.US_ASCII));
+            device.setPassword(_CryptUtil.randomPassword(5, 32));
             device.increasePasswordId();
             device.setInvalidAt(Date.from(Instant.now()
                                                  .plus(invalidDurationOfDays, ChronoUnit.DAYS)));
@@ -197,12 +178,16 @@ public class DeviceService
             device.setPassword(exist.getPassword());
             device.setInvalidAt(exist.getInvalidAt());
         }
-        device.setToken(IoUtil.bin2Hex(_CryptUtil.sha256(String.format("sn:%s,mac:%s,imei:%s",
-                                                                       device.getSn(),
-                                                                       device.getMac(),
-                                                                       device.getImei())
-                                                               .getBytes(StandardCharsets.US_ASCII))));
+        device.setToken(_CryptUtil.sha256(String.format("sn:%s,mac:%s,imei:%s",
+                                                        device.getSn(),
+                                                        device.getMac(),
+                                                        device.getImei())));
         return _DeviceRepository.save(device);
+    }
+
+    public void updateDevices(Collection<DeviceEntity> devices)
+    {
+        _DeviceRepository.saveAll(devices);
     }
 
     public DeviceEntity findDeviceByMac(String mac)
@@ -232,8 +217,10 @@ public class DeviceService
 
     public Set<DeviceEntity> findDevicesByClient(ClientEntity client)
     {
-        return _ClientRepository.findByAuth(client.getAuth())
-                                .getDevices();
+        ClientEntity clientEntity = _ClientRepository.findById(client.getId())
+                                                     .orElse(null);
+        return clientEntity == null ? null
+                                    : clientEntity.getDevices();
     }
 
     private DeviceEntry auth(DeviceEntity deviceEntity, String password)

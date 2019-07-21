@@ -28,6 +28,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import com.tgx.chess.spring.auth.model.RoleEnum;
+
 /**
  * @author william.d.zk
  */
@@ -35,9 +37,9 @@ public class AuthEntry
         implements
         Serializable
 {
-    private static final long  serialVersionUID = -9052656763177899443L;
-    private boolean            status;
-    private Collection<String> roles;
+    private static final long    serialVersionUID = -9052656763177899443L;
+    private boolean              status;
+    private Collection<RoleEnum> roles;
 
     public boolean isStatus()
     {
@@ -49,19 +51,19 @@ public class AuthEntry
         this.status = status;
     }
 
-    public Collection<String> getRoles()
+    public Collection<RoleEnum> getRoles()
     {
         return roles;
     }
 
-    public void setRoles(Collection<String> roles)
+    public void setRoles(Collection<RoleEnum> roles)
     {
         this.roles = roles;
     }
 
-    public void setRole(String role)
+    public void setRole(RoleEnum role)
     {
-        ArrayList<String> list = new ArrayList<>(1);
+        ArrayList<RoleEnum> list = new ArrayList<>(1);
         list.add(role);
         setRoles(list);
     }

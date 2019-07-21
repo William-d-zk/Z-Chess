@@ -41,4 +41,6 @@ public interface AccountRepository
     AccountEntity findByEmail(String email);
 
     AccountEntity findByName(String name);
+
+    AccountEntity findByAuth(String auth);
 }

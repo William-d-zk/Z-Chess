@@ -27,7 +27,6 @@ package com.tgx.chess.device.api;
 import static com.tgx.chess.king.base.util.IoUtil.isBlank;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +37,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
 import com.tgx.chess.bishop.biz.db.dao.DeviceStatus;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.spring.device.model.DeviceEntity;
@@ -54,8 +52,8 @@ import com.tgx.chess.spring.jpa.generator.ZGenerator;
 public class DeviceController
 {
     private final Logger        _Logger     = Logger.getLogger(getClass().getName());
-    private final DeviceService _DeviceService;
     private final ZGenerator    _ZGenerator = new ZGenerator();
+    private final DeviceService _DeviceService;
 
     @Autowired
     public DeviceController(DeviceService deviceService)
@@ -71,7 +69,7 @@ public class DeviceController
         deviceEntity.setMac(deviceDo.getMac());
         deviceEntity.setSn(deviceDo.getSn());
         deviceEntity = _DeviceService.saveDevice(deviceEntity);
-        deviceDo.setUser(deviceEntity.getClient());
+        deviceDo.setUserName(deviceEntity.getUserName());
         deviceDo.setPassword(deviceEntity.getPassword());
         deviceDo.setToken(deviceEntity.getToken());
         return deviceDo;
@@ -129,14 +127,6 @@ public class DeviceController
             }
         }
         return responseDo;
-    }
-
-    @GetMapping("/client/devices")
-    public @ResponseBody Object getDevices()
-    {
-        List<DeviceEntry> list = _DeviceService.findAll();
-        return Objects.nonNull(list) && !list.isEmpty() ? list
-                                                        : "no devices";
     }
 
     @GetMapping("/client/device")

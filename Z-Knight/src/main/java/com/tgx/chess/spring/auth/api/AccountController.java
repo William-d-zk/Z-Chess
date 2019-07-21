@@ -24,13 +24,12 @@
 
 package com.tgx.chess.spring.auth.api;
 
-import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpSession;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -42,6 +41,7 @@ import com.tgx.chess.spring.auth.api.dao.AuthEntry;
 import com.tgx.chess.spring.auth.api.dao.ProfileEntry;
 import com.tgx.chess.spring.auth.model.AccountEntity;
 import com.tgx.chess.spring.auth.model.RoleEntity;
+import com.tgx.chess.spring.auth.model.RoleEnum;
 import com.tgx.chess.spring.auth.service.AccountService;
 
 /**
@@ -49,42 +49,64 @@ import com.tgx.chess.spring.auth.service.AccountService;
  */
 @RestController
 @CrossOrigin(origins = "http://localhost:4444")
-public class LoginService
+public class AccountController
 {
     private final AccountService _AccountService;
 
-    @Autowired
-    public LoginService(AccountService accountService)
+    public AccountController(AccountService accountService)
     {
         _AccountService = accountService;
     }
 
-    @PostMapping(value = "/api/login")
-    public @ResponseBody AuthEntry validate(@RequestBody Map<String,
-                                                             String> param)
+    @PostMapping("/account/register")
+    public @ResponseBody Object register(@RequestBody AccountDo accountDo)
     {
-        System.out.println(param);
-        AuthEntry auth = new AuthEntry();
-        String username = param.get("username");
-        String password = param.get("password");
-        AccountEntity account = _AccountService.findByName(username)
-                                               .orElse(_AccountService.findByEmail(username)
-                                                                      .orElse(null));
-        if (Objects.nonNull(password) && Objects.nonNull(account) && password.equals(account.getPassword())) {
-            auth.setStatus(true);
-            auth.setRoles(account.getRoles()
-                                 .stream()
-                                 .map(RoleEntity::getRole)
-                                 .collect(Collectors.toList()));
+        Optional<AccountEntity> test = _AccountService.findByEmail(accountDo.getEmail());
+        if (test.isPresent()) {
+            throw new IllegalArgumentException("email exist");
         }
         else {
-            auth.setStatus(false);
+            test = _AccountService.findByName(accountDo.getUserName());
+            if (test.isPresent()) { throw new IllegalArgumentException("user_name exist"); }
         }
-
+        AuthEntry auth = new AuthEntry();
+        auth.setStatus(true);
+        auth.setRole(RoleEnum.USER);
+        AccountEntity account = new AccountEntity();
+        account.setActive(1);
+        account.setName(accountDo.getUserName());
+        account.setEmail(accountDo.getEmail());
+        account.setPassword(accountDo.getPassword());
+        _AccountService.newAccount(account);
         return auth;
     }
 
-    @PostMapping(value = "/api/logout")
+    @PostMapping("/account/login")
+    public @ResponseBody AuthEntry validate(@RequestBody AccountDo accountDo)
+    {
+        AuthEntry authEntry = new AuthEntry();
+        AccountEntity account = _AccountService.findByName(accountDo.getUserName())
+                                               .orElse(_AccountService.findByEmail(accountDo.getEmail())
+                                                                      .orElse(_AccountService.findByAuth(accountDo.getAuth())
+                                                                                             .orElse(null)));
+        if (Objects.nonNull(account)
+            && account.getPassword()
+                      .equals(accountDo.getPassword()))
+        {
+            authEntry.setStatus(true);
+            authEntry.setRoles(account.getRoles()
+                                      .stream()
+                                      .map(RoleEntity::getRole)
+                                      .collect(Collectors.toList()));
+        }
+        else {
+            authEntry.setStatus(false);
+        }
+
+        return authEntry;
+    }
+
+    @PostMapping(value = "/account/logout")
     public @ResponseBody AuthEntry logout()
     {
         AuthEntry auth = new AuthEntry();
@@ -92,12 +114,18 @@ public class LoginService
         return auth;
     }
 
-    @GetMapping(value = "/api/profile")
+    @GetMapping(value = "/account/profile")
     public @ResponseBody ProfileEntry profile(HttpSession session)
     {
         System.out.println(session.getAttributeNames());
         ProfileEntry profile = new ProfileEntry();
         profile.setName("幂等");
         return profile;
+    }
+
+    @GetMapping("/account/init")
+    public void init()
+    {
+        _AccountService.initializeCheck();
     }
 }

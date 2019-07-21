@@ -22,83 +22,31 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.spring.device.service;
+package com.tgx.chess.spring.auth.service;
 
-import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.tgx.chess.spring.device.model.ClientEntity;
+import com.tgx.chess.spring.device.repository.ClientRepository;
 
 /**
  * @author william.d.zk
- * @date 2019-07-19
+ * @date 2019-07-20
  */
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class ClientDo
+@Service
+public class ClientService
 {
-    private String       auth;
-    private String       cipher;
-    private String       userName;
-    private Boolean      exist;
-    private List<String> devices;
-    private List<String> successDevices;
+    private final ClientRepository _ClientRepository;
 
-    public String getUserName()
+    @Autowired
+    public ClientService(ClientRepository clientRepository)
     {
-        return userName;
+        _ClientRepository = clientRepository;
     }
 
-    public void setUserName(String userName)
+    public void updateClient(ClientEntity entity)
     {
-        this.userName = userName;
-    }
-
-    public List<String> getDevices()
-    {
-        return devices;
-    }
-
-    public void setDevices(List<String> devices)
-    {
-        this.devices = devices;
-    }
-
-    public String getAuth()
-    {
-        return auth;
-    }
-
-    public void setAuth(String auth)
-    {
-        this.auth = auth;
-    }
-
-    public List<String> getSuccessDevices()
-    {
-        return successDevices;
-    }
-
-    public void setSuccessDevices(List<String> successDevices)
-    {
-        this.successDevices = successDevices;
-    }
-
-    public String getCipher()
-    {
-        return cipher;
-    }
-
-    public void setCipher(String cipher)
-    {
-        this.cipher = cipher;
-    }
-
-    public void setExist(boolean exist)
-    {
-        this.exist = exist;
-    }
-
-    public Boolean getExist()
-    {
-        return exist;
+        _ClientRepository.save(entity);
     }
 }
