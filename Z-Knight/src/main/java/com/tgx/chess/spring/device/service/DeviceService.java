@@ -215,6 +215,11 @@ public class DeviceService
         return _DeviceRepository.findBySn(sn);
     }
 
+    public DeviceEntity findDeviceByPhone(String phone)
+    {
+        return _DeviceRepository.findByPhone(phone);
+    }
+
     public Set<DeviceEntity> findDevicesByClient(ClientEntity client)
     {
         ClientEntity clientEntity = _ClientRepository.findById(client.getId())

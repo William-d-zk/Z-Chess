@@ -43,7 +43,6 @@ import com.tgx.chess.spring.device.model.DeviceEntity;
 import com.tgx.chess.spring.device.service.DeviceDo;
 import com.tgx.chess.spring.device.service.DeviceService;
 import com.tgx.chess.spring.device.service.ResponseDo;
-import com.tgx.chess.spring.jpa.generator.ZGenerator;
 
 /**
  * @author william.d.zk
@@ -52,7 +51,6 @@ import com.tgx.chess.spring.jpa.generator.ZGenerator;
 public class DeviceController
 {
     private final Logger        _Logger     = Logger.getLogger(getClass().getName());
-    private final ZGenerator    _ZGenerator = new ZGenerator();
     private final DeviceService _DeviceService;
 
     @Autowired
@@ -109,8 +107,21 @@ public class DeviceController
         }
         else if (!isBlank(mac)) {
             mac = mac.toUpperCase();
-            entity = _DeviceService.findDeviceBySn(mac);
+            entity = _DeviceService.findDeviceByMac(mac);
         }
+        else if (!isBlank(imei)) {
+            imei = imei.toUpperCase();
+            entity = _DeviceService.findDeviceByImei(imei);
+        }
+        else if (!isBlank(imsi)) {
+            imsi = imsi.toUpperCase();
+            entity = _DeviceService.findDeviceByImsi(imsi);
+        }
+        else if (!isBlank(phone)) {
+            phone = phone.toUpperCase();
+            entity = _DeviceService.findDeviceByPhone(phone);
+        }
+
         if (Objects.nonNull(entity)) {
             responseDo.setDevice(convertEntity2Do(entity));
             if (entity.getInvalidAt()
