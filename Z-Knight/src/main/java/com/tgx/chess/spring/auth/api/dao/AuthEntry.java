@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import com.tgx.chess.spring.auth.model.AccountStatus;
 import com.tgx.chess.spring.auth.model.RoleEnum;
 
 /**
@@ -38,18 +39,10 @@ public class AuthEntry
         Serializable
 {
     private static final long    serialVersionUID = -9052656763177899443L;
-    private boolean              status;
+    private AccountStatus        status;
+    private String               auth;
+    private String               secret;
     private Collection<RoleEnum> roles;
-
-    public boolean isStatus()
-    {
-        return status;
-    }
-
-    public void setStatus(boolean status)
-    {
-        this.status = status;
-    }
 
     public Collection<RoleEnum> getRoles()
     {
@@ -66,5 +59,35 @@ public class AuthEntry
         ArrayList<RoleEnum> list = new ArrayList<>(1);
         list.add(role);
         setRoles(list);
+    }
+
+    public String getAuth()
+    {
+        return auth;
+    }
+
+    public void setAuth(String auth)
+    {
+        this.auth = auth;
+    }
+
+    public String getSecret()
+    {
+        return secret;
+    }
+
+    public void setSecret(String secret)
+    {
+        this.secret = secret;
+    }
+
+    public AccountStatus getStatus()
+    {
+        return status;
+    }
+
+    public void setStatus(AccountStatus status)
+    {
+        this.status = status;
     }
 }
