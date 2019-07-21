@@ -63,19 +63,16 @@ public class AccountEntity
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private int id;
-
+    private int    id;
     @Email(message = "{valid.email}")
     @NotEmpty(message = "{field.not.empty}")
     @Length(max = 64, message = "{size.email.over_length}")
     @Column(length = 64, unique = true)
     private String email;
-
     @Length(min = 8, max = 32, message = "{size.account.form.password}")
     @NotEmpty(message = "{field.not.empty}")
     @Column(length = 32)
     private String password;
-
     @NotEmpty(message = "{field.not.empty}")
     @Length(min = 3, max = 32, message = "{size.account.form.name}")
     @Column(length = 32, unique = true)
@@ -86,9 +83,8 @@ public class AccountEntity
     private String secret;
     @Column(length = 16)
     private String salt;
-
     @Column
-    private int active;
+    private int    active;
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(name = "account_role",

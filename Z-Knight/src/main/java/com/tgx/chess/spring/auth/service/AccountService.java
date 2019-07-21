@@ -133,10 +133,8 @@ public class AccountService
         AccountEntity accountEntity = _AccountRepository.findByAuth(auth);
         if (accountEntity != null) {
             String secret = accountEntity.getSecret();
-            String salt = accountEntity.getSalt();
-            String result = _CryptUtil.sha256(secret + plain + salt);
-            return result.equalsIgnoreCase(cipher) ? accountEntity
-                                                   : null;
+            String result = _CryptUtil.sha256(secret + plain);
+            if (result.equalsIgnoreCase(cipher)) { return accountEntity; }
         }
         return null;
     }
