@@ -50,7 +50,7 @@ import com.tgx.chess.spring.device.service.ResponseDo;
 @RestController
 public class DeviceController
 {
-    private final Logger        _Logger     = Logger.getLogger(getClass().getName());
+    private final Logger        _Logger = Logger.getLogger(getClass().getName());
     private final DeviceService _DeviceService;
 
     @Autowired

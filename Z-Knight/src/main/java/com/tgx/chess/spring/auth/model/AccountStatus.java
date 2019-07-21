@@ -32,6 +32,7 @@ public enum AccountStatus
 {
     CREATED,
     INVALID,
+    VALID,
     ACTIVE,
     BANNED,
     ONLINE,

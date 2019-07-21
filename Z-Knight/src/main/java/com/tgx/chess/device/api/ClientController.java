@@ -56,7 +56,7 @@ import com.tgx.chess.spring.device.service.DeviceService;
 public class ClientController
 {
 
-    private final Logger         _Logger     = Logger.getLogger(getClass().getName());
+    private final Logger         _Logger = Logger.getLogger(getClass().getName());
     private final ClientService  _ClientService;
     private final AccountService _AccountService;
     private final DeviceService  _DeviceService;

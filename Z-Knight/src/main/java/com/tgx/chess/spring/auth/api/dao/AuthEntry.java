@@ -90,4 +90,5 @@ public class AuthEntry
     {
         this.status = status;
     }
+
 }
