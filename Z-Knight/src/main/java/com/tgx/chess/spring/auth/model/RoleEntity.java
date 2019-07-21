@@ -46,7 +46,7 @@ public class RoleEntity
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private int    id;
-    @Column(length = 16)
+    @Column(length = 16, unique = true)
     private String role;
 
     public int getId()
@@ -59,9 +59,14 @@ public class RoleEntity
         this.id = id;
     }
 
-    public String getRole()
+    public RoleEnum getRole()
     {
-        return role;
+        return RoleEnum.valueOf(role);
+    }
+
+    public void setRole(RoleEnum role)
+    {
+        this.role = role.name();
     }
 
     public void setRole(String role)

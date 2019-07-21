@@ -257,7 +257,7 @@ public class DeviceConsumer
                 _CommandCreator = session ->
                 {
                     X111_QttConnect x111 = new X111_QttConnect();
-                    x111.setClientId(IoUtil.bin2Hex(_CryptUtil.sha256("test-mqtt-smallbeex-0001".getBytes())));
+                    x111.setClientId(_CryptUtil.sha256("test-mqtt-smallbeex-0001"));
                     x111.setUserName("A06FF74D68D32FD5FE9DEB00F636BEC9C24FC400F23E6B91F2CA3AA9A3E52B7F");
                     x111.setPassword("SNju/kfjXtgAAe-`cN".getBytes(StandardCharsets.UTF_8));
                     x111.setCleanSession();

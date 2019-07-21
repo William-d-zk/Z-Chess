@@ -40,7 +40,7 @@ public class DeviceDo
     private String imei;
     private String mac;
     private String sn;
-    private String user;
+    private String userName;
     private String password;
     private String token;
     private String phone;
@@ -122,13 +122,13 @@ public class DeviceDo
         this.imsi = imsi.toUpperCase();
     }
 
-    public String getUser()
+    public String getUserName()
     {
-        return user;
+        return userName;
     }
 
-    public void setUser(String user)
+    public void setUserName(String user)
     {
-        this.user = user;
+        this.userName = user;
     }
 }

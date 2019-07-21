@@ -63,39 +63,30 @@ public class DeviceEntity
     @Id
     @GeneratedValue(generator = "ZGenerator")
     @GenericGenerator(name = "ZGenerator", strategy = "com.tgx.chess.spring.jpa.generator.ZGenerator")
-    private Long id;
-
+    private Long   id;
     @Column(length = 17)
     private String mac;
-
     @Column(length = 17)
     private String imei;
-
     @Column(length = 15)
     private String imsi;
-
     @Column(length = 25)
     private String phone;
-
     @Column(length = 64)
     private String sn;
-
     @Column(length = 32)
     @Length(min = 5, max = 32, message = "*Your password must have at least 5 characters less than 32 characters")
     @NotEmpty(message = "*Please provide your password")
     private String password;
-
-    private long passwordId;
-
+    private long   passwordId;
     @Column(length = 64)
     private String token;
-
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "invalid_at", nullable = false)
     @JsonIgnore
-    private Date invalidAt;
-
-    private String client;
+    private Date   invalidAt;
+    @Column(length = 32)
+    private String userName;
 
     public Long getId()
     {
@@ -135,10 +126,11 @@ public class DeviceEntity
     @Override
     public String toString()
     {
-        return String.format("device{id:%s,token:%s,pass_id:%d,pass: %s ,mac:%s,imei:%s,imsi:%s,sn:%s,create:%s,update:%s,invalid:%s}",
+        return String.format("device{id:%s,token:%s,pass_id:%d,user_name:%s,pass: %s ,mac:%s,imei:%s,imsi:%s,sn:%s,create:%s,update:%s,invalid:%s}",
                              getId(),
                              getToken(),
                              getPasswordId(),
+                             getUserName(),
                              getPassword(),
                              getMac(),
                              getImei(),
@@ -219,13 +211,13 @@ public class DeviceEntity
         this.phone = phone;
     }
 
-    public String getClient()
+    public String getUserName()
     {
-        return client;
+        return userName;
     }
 
-    public void setClient(String client)
+    public void setUserName(String userName)
     {
-        this.client = client;
+        this.userName = userName;
     }
 }

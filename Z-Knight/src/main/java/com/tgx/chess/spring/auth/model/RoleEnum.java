@@ -22,83 +22,14 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.spring.device.service;
-
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
+package com.tgx.chess.spring.auth.model;
 
 /**
  * @author william.d.zk
- * @date 2019-07-19
+ * @date 2019-07-20
  */
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class ClientDo
+public enum RoleEnum
 {
-    private String       auth;
-    private String       cipher;
-    private String       userName;
-    private Boolean      exist;
-    private List<String> devices;
-    private List<String> successDevices;
-
-    public String getUserName()
-    {
-        return userName;
-    }
-
-    public void setUserName(String userName)
-    {
-        this.userName = userName;
-    }
-
-    public List<String> getDevices()
-    {
-        return devices;
-    }
-
-    public void setDevices(List<String> devices)
-    {
-        this.devices = devices;
-    }
-
-    public String getAuth()
-    {
-        return auth;
-    }
-
-    public void setAuth(String auth)
-    {
-        this.auth = auth;
-    }
-
-    public List<String> getSuccessDevices()
-    {
-        return successDevices;
-    }
-
-    public void setSuccessDevices(List<String> successDevices)
-    {
-        this.successDevices = successDevices;
-    }
-
-    public String getCipher()
-    {
-        return cipher;
-    }
-
-    public void setCipher(String cipher)
-    {
-        this.cipher = cipher;
-    }
-
-    public void setExist(boolean exist)
-    {
-        this.exist = exist;
-    }
-
-    public Boolean getExist()
-    {
-        return exist;
-    }
+    USER,
+    ADMIN
 }

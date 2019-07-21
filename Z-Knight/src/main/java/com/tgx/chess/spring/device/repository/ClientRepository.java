@@ -38,5 +38,4 @@ public interface ClientRepository
         JpaRepository<ClientEntity,
                       Long>
 {
-    ClientEntity findByAuth(String auth);
 }

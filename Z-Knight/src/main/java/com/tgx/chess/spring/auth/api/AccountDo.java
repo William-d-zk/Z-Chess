@@ -22,25 +22,27 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.spring.device.service;
+package com.tgx.chess.spring.auth.api;
 
-import java.util.List;
+import javax.validation.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
  * @author william.d.zk
- * @date 2019-07-19
+ * @date 2019-07-20
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class ClientDo
+public class AccountDo
 {
-    private String       auth;
-    private String       cipher;
-    private String       userName;
-    private Boolean      exist;
-    private List<String> devices;
-    private List<String> successDevices;
+    @NotEmpty
+    private String userName;
+    @NotEmpty
+    private String password;
+    @NotEmpty
+    private String email;
+    private String auth;
+    private String secret;
 
     public String getUserName()
     {
@@ -52,14 +54,34 @@ public class ClientDo
         this.userName = userName;
     }
 
-    public List<String> getDevices()
+    public String getPassword()
     {
-        return devices;
+        return password;
     }
 
-    public void setDevices(List<String> devices)
+    public void setPassword(String password)
     {
-        this.devices = devices;
+        this.password = password;
+    }
+
+    public String getEmail()
+    {
+        return email;
+    }
+
+    public void setEmail(String email)
+    {
+        this.email = email;
+    }
+
+    public String getSecret()
+    {
+        return secret;
+    }
+
+    public void setSecret(String secret)
+    {
+        this.secret = secret;
     }
 
     public String getAuth()
@@ -70,35 +92,5 @@ public class ClientDo
     public void setAuth(String auth)
     {
         this.auth = auth;
-    }
-
-    public List<String> getSuccessDevices()
-    {
-        return successDevices;
-    }
-
-    public void setSuccessDevices(List<String> successDevices)
-    {
-        this.successDevices = successDevices;
-    }
-
-    public String getCipher()
-    {
-        return cipher;
-    }
-
-    public void setCipher(String cipher)
-    {
-        this.cipher = cipher;
-    }
-
-    public void setExist(boolean exist)
-    {
-        this.exist = exist;
-    }
-
-    public Boolean getExist()
-    {
-        return exist;
     }
 }
