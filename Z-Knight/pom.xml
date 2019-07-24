@@ -63,6 +63,10 @@
             <artifactId>postgresql</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.vladmihalcea</groupId>
+            <artifactId>hibernate-types-52</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.sleepycat</groupId>
             <artifactId>je</artifactId>
         </dependency>
