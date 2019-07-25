@@ -30,23 +30,21 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.Index;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+import com.vladmihalcea.hibernate.type.json.JsonStringType;
 
 /**
  * @author william.d.zk
  * @date 2019-07-22
  */
 @Entity(name = "Message")
-@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
-@Table(schema = "\"tgx-z-chess-device\"", indexes = { @Index(name = "device_idx_message", columnList = "payload") })
+@TypeDef(name = "json", typeClass = JsonStringType.class)
+@Table(schema = "\"tgx-z-chess-device\"")
 public class MessageEntity
         implements
         Serializable
@@ -57,12 +55,29 @@ public class MessageEntity
     @Id
     @GeneratedValue(generator = "ZGenerator")
     @GenericGenerator(name = "ZGenerator", strategy = "com.tgx.chess.spring.jpa.generator.ZGenerator")
-    private Long   id;
-    @NaturalId
-    private String isbn;
+    private Long id;
 
-    @Type(type = "jsonb")
-    @Column(columnDefinition = "jsonb")
+    @Type(type = "json")
+    @Column(columnDefinition = "json")
     private String payload;
 
+    public Long getId()
+    {
+        return id;
+    }
+
+    public void setId(Long id)
+    {
+        this.id = id;
+    }
+
+    public String getPayload()
+    {
+        return payload;
+    }
+
+    public void setPayload(String payload)
+    {
+        this.payload = payload;
+    }
 }

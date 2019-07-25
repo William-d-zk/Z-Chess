@@ -39,7 +39,7 @@ public interface IQttRouter
     Map<Long,
         IQoS.Level> broker(final String topic);
 
-    void addTopic(Pair<String,
+    boolean addTopic(Pair<String,
                        IQoS.Level> topic,
                   long index);
 

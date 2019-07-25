@@ -390,8 +390,8 @@ public class DeviceNode
                 x118.getTopics()
                     .forEach(topic ->
                     {
-                        _QttRouter.addTopic(topic, session.getIndex());
-                        x119.addResult(topic.second());
+                        x119.addResult(_QttRouter.addTopic(topic, session.getIndex()) ? topic.second()
+                                                                                      : IQoS.Level.FAILURE);
                     });
                 return new IControl[] { x119 };
             case X11A_QttUnsubscribe.COMMAND:

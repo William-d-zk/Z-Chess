@@ -23,6 +23,9 @@
  * SOFTWARE.                                                                      
  */
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import com.tgx.chess.king.base.util.CryptUtil;
 
 /**
@@ -34,8 +37,37 @@ public class TestAccountAuth
     public static void main(String[] args)
     {
         CryptUtil _CryptUtil = new CryptUtil();
-        System.out.println(_CryptUtil.sha256("AA83B8E5C286510F17C56FF7C588015B"
-                                             + "smallbeex.mqtt.lbs.tracker"
-                                             + "=SD=zm_!"));
+        System.out.println(_CryptUtil.sha256("AA83B8E5C286510F17C56FF7C588015B" + "smallbeex.mqtt.lbs.tracker"));
+        String src = "+/#/#/+";
+        src = src.replaceAll("\\++", "+");
+        src = src.replaceAll("#+", "#");
+        src = src.replaceAll("(/#)+", "/#");
+
+        if (Pattern.compile("#\\+|\\+#")
+                   .asPredicate()
+                   .test(src))
+        { throw new IllegalArgumentException(src); }
+        if (!Pattern.compile("(/\\+)$")
+                    .asPredicate()
+                    .test(src)
+            && !Pattern.compile("^\\+")
+                       .asPredicate()
+                       .test(src))
+        {
+            src = src.replaceAll("(\\+)$", "");
+        }
+        src = src.replaceAll("^\\+", "([^\\$/]+)");
+        src = src.replaceAll("(/\\+)$", "(/?[^/]*)");
+        src = src.replaceAll("/\\+", "/([^/]+)");
+        src = src.replaceAll("^#", "([^\\$]*)");
+        src = src.replaceAll("^/#", "(/.*)");
+        src = src.replaceAll("/#", "(/?.*)");
+        System.out.println(src);
+        Pattern pattern = Pattern.compile(src);
+        System.out.println(String.format("pattern:%s", pattern));
+        Matcher matcher = pattern.matcher("a/b/c");
+        System.out.println(String.format("match:%s",
+                                         matcher.matches() ? matcher.group()
+                                                           : "no matcher"));
     }
 }
