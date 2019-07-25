@@ -81,27 +81,60 @@ public class QttRouter
                                                            ConcurrentSkipListMap::new));
     }
 
-    public void addTopic(Pair<String,
-                              IQoS.Level> pair,
-                         long index)
+    public boolean addTopic(Pair<String,
+                                 IQoS.Level> pair,
+                            long index)
     {
         String topic = pair.first();
         IQoS.Level qosLevel = pair.second();
-        Pattern pattern = topic.endsWith("/+") ? Pattern.compile(topic.replace("+", "[^/]+"))
-                                               : topic.endsWith("/#") ? Pattern.compile(topic.replace("#", ".+"))
-                                                                      : Pattern.compile(topic);
-        Map<Long,
-            IQoS.Level> value = _Topic2SessionsMap.get(pattern);
-        if (Objects.isNull(value)) {
-            value = new ConcurrentSkipListMap<>();
-            _Topic2SessionsMap.put(pattern, value);
+        try {
+            Pattern pattern = topicToRegex(topic);
+            Map<Long,
+                IQoS.Level> value = _Topic2SessionsMap.get(pattern);
+            if (Objects.isNull(value)) {
+                value = new ConcurrentSkipListMap<>();
+                _Topic2SessionsMap.put(pattern, value);
+            }
+            if (value.computeIfPresent(index,
+                                       (key, old) -> old.getValue() > qosLevel.getValue() ? old
+                                                                                          : qosLevel) == null)
+            {
+                value.put(index, qosLevel);
+            }
+            return true;
         }
-        if (value.computeIfPresent(index,
-                                   (key, old) -> old.getValue() > qosLevel.getValue() ? old
-                                                                                      : qosLevel) == null)
+        catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private Pattern topicToRegex(String topic)
+    {
+
+        topic = topic.replaceAll("\\++", "+");
+        topic = topic.replaceAll("#+", "#");
+        topic = topic.replaceAll("(/#)+", "/#");
+
+        if (Pattern.compile("#\\+|\\+#")
+                   .asPredicate()
+                   .test(topic))
         {
-            value.put(index, qosLevel);
+            throw new IllegalArgumentException("topic error " + topic);
         }
+        if (!Pattern.compile("(/\\+)$")
+                    .asPredicate()
+                    .test(topic))
+        {
+            topic = topic.replaceAll("(\\+)$", "");
+        }
+        topic = topic.replaceAll("^\\+", "([^\\$/]+)");
+        topic = topic.replaceAll("(/\\+)$", "(/?[^/]*)");
+        topic = topic.replaceAll("/\\+", "/([^/]+)");
+        topic = topic.replaceAll("^#", "([^\\$]*)");
+        topic = topic.replaceAll("^/#", "(/.*)");
+        topic = topic.replaceAll("/#", "(/?.*)");
+        return Pattern.compile(topic);
     }
 
     @Override
