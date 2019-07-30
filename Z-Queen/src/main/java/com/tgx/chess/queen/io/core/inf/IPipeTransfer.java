@@ -60,9 +60,9 @@ public interface IPipeTransfer<C extends IContext<C>>
                          }
                          return new Triple<>(command,
                                              targetSession,
-                                             session.getContext()
-                                                    .getSort()
-                                                    .getEncoder());
+                                             targetSession.getContext()
+                                                          .getSort()
+                                                          .getEncoder());
                      })
                      .collect(Collectors.toList());
     }

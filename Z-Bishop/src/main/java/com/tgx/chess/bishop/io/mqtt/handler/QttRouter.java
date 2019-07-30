@@ -38,6 +38,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.io.core.inf.IQoS;
 
@@ -49,7 +50,7 @@ public class QttRouter
         implements
         IQttRouter
 {
-
+    private final Logger                              _Logger            = Logger.getLogger(getClass().getSimpleName());
     private final Map<Pattern,
                       Map<Long,
                           IQoS.Level>>                _Topic2SessionsMap = new TreeMap<>(Comparator.comparing(Pattern::pattern));
@@ -62,6 +63,7 @@ public class QttRouter
 
             broker(final String topic)
     {
+        _Logger.info("broker topic: %s", topic);
         return _Topic2SessionsMap.entrySet()
                                  .parallelStream()
                                  .map(entry ->
@@ -89,6 +91,7 @@ public class QttRouter
         IQoS.Level qosLevel = pair.second();
         try {
             Pattern pattern = topicToRegex(topic);
+            _Logger.info("topic %s,pattern %s", topic, pattern);
             Map<Long,
                 IQoS.Level> value = _Topic2SessionsMap.get(pattern);
             if (Objects.isNull(value)) {

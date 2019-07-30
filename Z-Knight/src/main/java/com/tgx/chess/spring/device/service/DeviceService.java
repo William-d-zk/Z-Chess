@@ -57,6 +57,7 @@ import com.tgx.chess.bishop.biz.device.DeviceNode;
 import com.tgx.chess.bishop.io.ZSort;
 import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
 import com.tgx.chess.bishop.io.mqtt.control.X113_QttPublish;
+import com.tgx.chess.bishop.io.mqtt.control.X114_QttPuback;
 import com.tgx.chess.bishop.io.mqtt.control.X116_QttPubrel;
 import com.tgx.chess.bishop.io.mqtt.handler.QttRouter;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
@@ -333,6 +334,7 @@ public class DeviceService
     @Override
     public DeviceEntry find(IProtocol key)
     {
+        _Logger.debug("find %d", key.getSerial());
         switch (key.getSerial())
         {
             case X22_SignIn.COMMAND:
@@ -352,6 +354,8 @@ public class DeviceService
                 return auth(deviceEntity,
                             Objects.nonNull(x111.getPassword()) ? new String(x111.getPassword(), StandardCharsets.UTF_8)
                                                                 : null);
+            case X114_QttPuback.COMMAND:
+                break;
             case X116_QttPubrel.COMMAND:
                 /*
                    此时才能将QoS 2的 Publish 消息进行分发。

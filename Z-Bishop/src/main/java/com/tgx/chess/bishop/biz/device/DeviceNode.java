@@ -388,11 +388,8 @@ public class DeviceNode
                 X119_QttSuback x119 = new X119_QttSuback();
                 x119.setLocalId(x118.getLocalId());
                 x118.getTopics()
-                    .forEach(topic ->
-                    {
-                        x119.addResult(_QttRouter.addTopic(topic, session.getIndex()) ? topic.second()
-                                                                                      : IQoS.Level.FAILURE);
-                    });
+                    .forEach(topic -> x119.addResult(_QttRouter.addTopic(topic, session.getIndex()) ? topic.second()
+                                                                                                    : IQoS.Level.FAILURE));
                 return new IControl[] { x119 };
             case X11A_QttUnsubscribe.COMMAND:
                 X11A_QttUnsubscribe x11A = (X11A_QttUnsubscribe) input;
@@ -409,12 +406,14 @@ public class DeviceNode
     {
         Map<Long,
             IQoS.Level> route = _QttRouter.broker(x113.getTopic());
+        _Logger.debug("route %s", route);
         List<IControl<ZContext>> pushList;
         pushList = route.entrySet()
                         .stream()
                         .map(entry ->
                         {
                             ISession<ZContext> targetSession = findSessionByIndex(entry.getKey());
+
                             if (targetSession != null && x113.getPayload() != null) {
                                 IQoS.Level subscribeLevel = entry.getValue();
                                 X113_QttPublish push = new X113_QttPublish();
@@ -438,7 +437,7 @@ public class DeviceNode
                         })
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList());
-
+        _Logger.info("push %s", pushList);
         return pushList;
     }
 }
