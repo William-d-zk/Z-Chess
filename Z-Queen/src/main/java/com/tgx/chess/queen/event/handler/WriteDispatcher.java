@@ -88,12 +88,13 @@ public class WriteDispatcher<C extends IContext<C>>
                               List<ITriple>> transferOperator = event.getEventOp();
                     List<ITriple> triples = transferOperator.handle(commands, session);
                     for (ITriple triple : triples) {
-                        tryPublish(dispatchEncoder(session.getHashKey()),
+                        ISession<C> targetSession = triple.second();
+                        tryPublish(dispatchEncoder(targetSession.getHashKey()),
                                    WRITE,
-                                   new Pair<>(triple.first(), session),
+                                   new Pair<>(triple.first(), targetSession),
                                    triple.third());
                     }
-                    _Logger.info("write_dispatcher, source %s,transfer:%d", event.getEventType(), commands.length);
+                    _Logger.info("write_dispatcher, source %s, transfer:%d", event.getEventType(), commands.length);
                 }
                 break;
             case WROTE://from io-wrote
