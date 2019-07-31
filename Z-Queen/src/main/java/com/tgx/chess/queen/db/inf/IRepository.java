@@ -31,7 +31,23 @@ import com.tgx.chess.queen.io.core.inf.IProtocol;
  */
 public interface IRepository<T>
 {
+    /**
+     * 处理无任何状态依赖的数据内容
+     * 
+     * @param target
+     * @return
+     */
     T save(IProtocol target);
+
+    /**
+     * 基于接收的处理
+     * 
+     * @param input
+     * @return
+     */
+    T receive(IProtocol input);
+
+    T send(IProtocol output);
 
     T find(IProtocol key);
 }

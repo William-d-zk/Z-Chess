@@ -25,6 +25,8 @@
 package com.tgx.chess.spring.device.service;
 
 import static com.tgx.chess.king.base.util.IoUtil.isBlank;
+import static com.tgx.chess.spring.device.model.DirectionEnum.OWNER_CLIENT;
+import static com.tgx.chess.spring.device.model.DirectionEnum.OWNER_SERVER;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -73,10 +75,15 @@ import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
+import com.tgx.chess.queen.io.core.inf.IQoS;
 import com.tgx.chess.spring.device.model.ClientEntity;
 import com.tgx.chess.spring.device.model.DeviceEntity;
+import com.tgx.chess.spring.device.model.DirectionEnum;
+import com.tgx.chess.spring.device.model.JsonMsg;
+import com.tgx.chess.spring.device.model.MessageEntity;
 import com.tgx.chess.spring.device.repository.ClientRepository;
 import com.tgx.chess.spring.device.repository.DeviceRepository;
+import com.tgx.chess.spring.device.repository.MessageRepository;
 
 /**
  * @author william.d.zk
@@ -94,6 +101,7 @@ public class DeviceService
     private final CryptUtil                                _CryptUtil             = new CryptUtil();
     private final DeviceRepository                         _DeviceRepository;
     private final ClientRepository                         _ClientRepository;
+    private final MessageRepository                        _MessageRepository;
     private final DeviceNode                               _DeviceNode;
     private final Map<Long,
                       Map<Long,
@@ -108,10 +116,12 @@ public class DeviceService
                   @Value("${ws.server.host}") String wsServiceHost,
                   @Value("${ws.server.port}") int wsServicePort,
                   DeviceRepository deviceRepository,
-                  ClientRepository clientRepository)
+                  ClientRepository clientRepository,
+                  MessageRepository messageRepository)
     {
         _DeviceRepository = deviceRepository;
         _ClientRepository = clientRepository;
+        _MessageRepository = messageRepository;
         List<ITriple> hosts = new ArrayList<>(2);
         hosts.add(new Triple<>(wsServiceHost, wsServicePort, ZSort.WS_SERVER));
         hosts.add(new Triple<>(qttServiceHost, qttServicePort, ZSort.QTT_SYMMETRY));
@@ -292,34 +302,16 @@ public class DeviceService
             case X24_UpdateToken.COMMAND:
                 X24_UpdateToken x24 = (X24_UpdateToken) target;
                 break;
-            case X113_QttPublish.COMMAND:
-                /*
-                QOS 1/2 时需要存储 Publish 的状态
-                 */
-                X113_QttPublish x113 = (X113_QttPublish) target;
-                long index = x113.getSession()
-                                 .getIndex();
-                long identity = x113.getLocalId();
-                if (_DeviceMessageStateMap.computeIfPresent(index, (key, old) ->
-                {
-                    old.put(identity, x113);
-                    return old;
-                }) == null) {
-                    final Map<Long,
-                              IControl<ZContext>> _IdentityMessageMap = new HashMap<>(7);
-                    _IdentityMessageMap.put(identity, x113);
-                    _DeviceMessageStateMap.put(index, _IdentityMessageMap);
-                }
-                break;
+
             case X116_QttPubrel.COMMAND:
                 /*
                 QOS 2时 需要存储 Pubrel 的状态,此时将 Publish 状态清除，
                 消息所有权转移到 Publish 接收方
                  */
                 X116_QttPubrel x116 = (X116_QttPubrel) target;
-                index = x116.getSession()
-                            .getIndex();
-                identity = x116.getLocalId();
+                long index = x116.getSession()
+                                 .getIndex();
+                long identity = x116.getLocalId();
                 _DeviceMessageStateMap.computeIfPresent(index, (key, old) ->
                 {
                     old.put(identity, x116);
@@ -375,6 +367,53 @@ public class DeviceService
                 deviceEntry.setMessageQueue(msgQueue);
                 return deviceEntry;
         }
+        return null;
+    }
+
+    @Override
+    public DeviceEntry receive(IProtocol input)
+    {
+        switch (input.getSerial())
+        {
+            case X113_QttPublish.COMMAND:
+                /*
+                QOS 1/2 时需要存储 Publish 的状态
+                 */
+                X113_QttPublish x113 = (X113_QttPublish) input;
+                long index = x113.getSession()
+                                 .getIndex();
+                long identity = x113.getLocalId();
+                if (_DeviceMessageStateMap.computeIfPresent(index, (key, old) ->
+                {
+                    old.put(identity, x113);
+                    return old;
+                }) == null) {
+                    final Map<Long,
+                              IControl<ZContext>> _IdentityMessageMap = new HashMap<>(7);
+                    _IdentityMessageMap.put(identity, x113);
+                    _DeviceMessageStateMap.put(index, _IdentityMessageMap);
+                }
+                MessageEntity msg = new MessageEntity();
+                msg.setCmd(X113_QttPublish.COMMAND);
+                msg.setDirection(DirectionEnum.CLIENT_TO_SERVER.getShort());
+                msg.setLocalId(x113.getLocalId());
+                msg.setOrigin(index);
+                msg.setOwner(x113.getLevel()
+                                 .getValue() < IQoS.Level.EXACTLY_ONCE.getValue() ? OWNER_CLIENT
+                                                                                  : OWNER_SERVER);
+                JsonMsg jsonMsg = new JsonMsg();
+                jsonMsg.setTopic(x113.getTopic());
+                jsonMsg.setContent(new String(x113.getPayload(), StandardCharsets.UTF_8));
+                msg.setPayload(jsonMsg);
+                msg = _MessageRepository.save(msg);
+                _Logger.info("save x113:%s", msg);
+                break;
+        }
+        return null;
+    }
+
+    public DeviceEntry send(IProtocol output)
+    {
         return null;
     }
 

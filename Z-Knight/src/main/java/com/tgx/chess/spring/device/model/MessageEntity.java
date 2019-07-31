@@ -36,16 +36,19 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
-import com.vladmihalcea.hibernate.type.json.JsonStringType;
+import com.tgx.chess.spring.jpa.model.AuditModel;
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 
 /**
  * @author william.d.zk
  * @date 2019-07-22
  */
 @Entity(name = "Message")
-@TypeDef(name = "json", typeClass = JsonStringType.class)
+@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 @Table(schema = "\"tgx-z-chess-device\"")
 public class MessageEntity
+        extends
+        AuditModel
         implements
         Serializable
 {
@@ -55,11 +58,20 @@ public class MessageEntity
     @Id
     @GeneratedValue(generator = "ZGenerator")
     @GenericGenerator(name = "ZGenerator", strategy = "com.tgx.chess.spring.jpa.generator.ZGenerator")
-    private Long id;
-
-    @Type(type = "json")
-    @Column(columnDefinition = "json")
-    private String payload;
+    private Long    id;
+    @Column(updatable = false)
+    private long    origin;
+    @Column(updatable = false)
+    private int     cmd;
+    @Column(length = 4, nullable = false, updatable = false)
+    private String  direction;
+    @Column(length = 10, nullable = false)
+    private String  owner = "SERVER";
+    @Column(updatable = false)
+    private int     localId;
+    @Type(type = "jsonb")
+    @Column(columnDefinition = "jsonb")
+    private JsonMsg payload;
 
     public Long getId()
     {
@@ -71,13 +83,63 @@ public class MessageEntity
         this.id = id;
     }
 
-    public String getPayload()
+    public JsonMsg getPayload()
     {
         return payload;
     }
 
-    public void setPayload(String payload)
+    public void setPayload(JsonMsg payload)
     {
         this.payload = payload;
+    }
+
+    public String getDirection()
+    {
+        return direction;
+    }
+
+    public void setDirection(String direction)
+    {
+        this.direction = direction;
+    }
+
+    public String getOwner()
+    {
+        return owner;
+    }
+
+    public void setOwner(String owner)
+    {
+        this.owner = owner;
+    }
+
+    public int getLocalId()
+    {
+        return localId;
+    }
+
+    public void setLocalId(int localId)
+    {
+        this.localId = localId;
+    }
+
+    public int getCmd()
+    {
+        return cmd;
+    }
+
+    public void setCmd(int cmd)
+    {
+        this.cmd = cmd;
+    }
+
+    public long getOrigin()
+    {
+        return origin;
+    }
+
+    public void setOrigin(long origin)
+    {
+        this.origin = origin;
     }
 }

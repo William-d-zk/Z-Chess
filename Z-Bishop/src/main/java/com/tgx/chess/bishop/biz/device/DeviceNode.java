@@ -266,6 +266,7 @@ public class DeviceNode
                     break;
                 case X113_QttPublish.COMMAND:
                     X113_QttPublish x113 = (X113_QttPublish) command;
+                    _DeviceRepository.receive(command);
                     List<IControl<ZContext>> pushList = brokerTopic(x113);
                     switch (x113.getLevel())
                     {
