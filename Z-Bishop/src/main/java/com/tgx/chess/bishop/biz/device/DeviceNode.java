@@ -414,7 +414,6 @@ public class DeviceNode
                         .map(entry ->
                         {
                             ISession<ZContext> targetSession = findSessionByIndex(entry.getKey());
-
                             if (targetSession != null && x113.getPayload() != null) {
                                 IQoS.Level subscribeLevel = entry.getValue();
                                 X113_QttPublish push = new X113_QttPublish();

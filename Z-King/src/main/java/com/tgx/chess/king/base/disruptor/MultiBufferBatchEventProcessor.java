@@ -43,9 +43,9 @@ public class MultiBufferBatchEventProcessor<T>
         implements
         EventProcessor
 {
-    private static final int        IDLE    = 0;
-    private static final int        HALTED  = IDLE + 1;
-    private static final int        RUNNING = HALTED + 1;
+    private static final int IDLE    = 0;
+    private static final int HALTED  = IDLE + 1;
+    private static final int RUNNING = HALTED + 1;
 
     private final AtomicInteger     running = new AtomicInteger(IDLE);
     private final DataProvider<T>[] _Providers;
@@ -54,7 +54,10 @@ public class MultiBufferBatchEventProcessor<T>
     private final Sequence[]        _Sequences;
     private String                  threadName;
 
-    public MultiBufferBatchEventProcessor(DataProvider<T>[] providers, SequenceBarrier[] barriers, EventHandler<T> handler) {
+    public MultiBufferBatchEventProcessor(DataProvider<T>[] providers,
+                                          SequenceBarrier[] barriers,
+                                          EventHandler<T> handler)
+    {
         if (providers.length != barriers.length) { throw new IllegalArgumentException(); }
         _Providers = providers;
         _Barriers = barriers;
@@ -65,12 +68,14 @@ public class MultiBufferBatchEventProcessor<T>
         }
     }
 
-    public void setThreadName(String name) {
+    public void setThreadName(String name)
+    {
         threadName = name;
     }
 
     @Override
-    public void run() {
+    public void run()
+    {
         if (running.compareAndSet(IDLE, RUNNING)) {
             if (threadName != null) Thread.currentThread()
                                           .setName(threadName);
@@ -112,7 +117,8 @@ public class MultiBufferBatchEventProcessor<T>
                     }
                 }
                 catch (InterruptedException |
-                       TimeoutException e) {
+                       TimeoutException e)
+                {
                     e.printStackTrace();
                 }
                 catch (Exception e) {
@@ -128,22 +134,26 @@ public class MultiBufferBatchEventProcessor<T>
     }
 
     @Override
-    public Sequence getSequence() {
+    public Sequence getSequence()
+    {
         throw new UnsupportedOperationException();
     }
 
-    public Sequence[] getSequences() {
+    public Sequence[] getSequences()
+    {
         return _Sequences;
     }
 
     @Override
-    public void halt() {
+    public void halt()
+    {
         running.set(HALTED);
         _Barriers[0].alert();
     }
 
     @Override
-    public boolean isRunning() {
+    public boolean isRunning()
+    {
         return running.get() != IDLE;
     }
 }
