@@ -46,15 +46,15 @@ import com.tgx.chess.rook.io.ConsumerZSort;
  * @author william.d.zk
  */
 @RestController
-@PropertySource({"classpath:ws.consumer.properties",
-        "classpath:qtt.consumer.properties"})
+@PropertySource({ "classpath:ws.consumer.properties",
+                  "classpath:qtt.consumer.properties" })
 public class ConsumerController
 {
     private final DeviceConsumer _DeviceClient;
-    private final String       _WsHost;
-    private final int          _WsPort;
-    private final String       _QttHost;
-    private final int          _QttPort;
+    private final String         _WsHost;
+    private final int            _WsPort;
+    private final String         _QttHost;
+    private final int            _QttPort;
 
     @Autowired
     ConsumerController(DeviceConsumer client,

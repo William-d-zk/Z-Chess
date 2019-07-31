@@ -40,8 +40,8 @@ public interface IQttRouter
         IQoS.Level> broker(final String topic);
 
     boolean addTopic(Pair<String,
-                       IQoS.Level> topic,
-                  long index);
+                          IQoS.Level> topic,
+                     long index);
 
     void removeTopic(String topic, long index);
 
