@@ -26,6 +26,8 @@ package com.tgx.chess.bishop.io.mqtt.handler;
 
 import java.util.Map;
 
+import com.tgx.chess.bishop.io.IRouter;
+import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.io.core.inf.IQoS;
 
@@ -34,6 +36,8 @@ import com.tgx.chess.queen.io.core.inf.IQoS;
  * @date 2019-07-09
  */
 public interface IQttRouter
+        extends
+        IRouter<ZContext>
 {
 
     Map<Long,
@@ -41,14 +45,8 @@ public interface IQttRouter
 
     boolean addTopic(Pair<String,
                           IQoS.Level> topic,
-                     long index);
+                     long sessionIndex);
 
-    void removeTopic(String topic, long index);
-
-    int nextPackIdentity();
-
-    void register(int identity, long index);
-
-    void ack(int identity, long index);
+    void removeTopic(String topic, long sessionIndex);
 
 }

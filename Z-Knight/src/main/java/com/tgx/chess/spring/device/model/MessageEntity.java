@@ -62,16 +62,19 @@ public class MessageEntity
     @Column(updatable = false)
     private long    origin;
     @Column(updatable = false)
+    private long    target;
+    @Column(updatable = false)
     private int     cmd;
     @Column(length = 4, nullable = false, updatable = false)
     private String  direction;
     @Column(length = 10, nullable = false)
-    private String  owner = "SERVER";
+    private String  owner  = "SERVER";
     @Column(updatable = false)
-    private int     localId;
+    private long    msgId;
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb")
     private JsonMsg payload;
+    private boolean retain = false;
 
     public Long getId()
     {
@@ -113,16 +116,6 @@ public class MessageEntity
         this.owner = owner;
     }
 
-    public int getLocalId()
-    {
-        return localId;
-    }
-
-    public void setLocalId(int localId)
-    {
-        this.localId = localId;
-    }
-
     public int getCmd()
     {
         return cmd;
@@ -141,5 +134,35 @@ public class MessageEntity
     public void setOrigin(long origin)
     {
         this.origin = origin;
+    }
+
+    public boolean isRetain()
+    {
+        return retain;
+    }
+
+    public void setRetain(boolean retain)
+    {
+        this.retain = retain;
+    }
+
+    public long getMsgId()
+    {
+        return msgId;
+    }
+
+    public void setMsgId(long msgId)
+    {
+        this.msgId = msgId;
+    }
+
+    public long getTarget()
+    {
+        return target;
+    }
+
+    public void setTarget(long target)
+    {
+        this.target = target;
     }
 }

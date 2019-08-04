@@ -24,8 +24,13 @@
 
 package com.tgx.chess.bishop.biz.device;
 
+import static com.tgx.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
+import static com.tgx.chess.queen.io.core.inf.IQoS.Level.EXACTLY_ONCE;
+import static java.lang.Integer.min;
+
 import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -33,6 +38,7 @@ import java.util.stream.Collectors;
 
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
+import com.tgx.chess.bishop.biz.db.dao.MessageEntry;
 import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
 import com.tgx.chess.bishop.io.mqtt.control.X112_QttConnack;
 import com.tgx.chess.bishop.io.mqtt.control.X113_QttPublish;
@@ -63,8 +69,8 @@ import com.tgx.chess.bishop.io.zprotocol.device.X31_ConfirmMsg;
 import com.tgx.chess.bishop.io.zprotocol.device.X32_MsgStatus;
 import com.tgx.chess.bishop.io.zprotocol.device.X50_DeviceMsg;
 import com.tgx.chess.bishop.io.zprotocol.device.X51_DeviceMsgAck;
+import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
-import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.config.Config;
 import com.tgx.chess.queen.config.QueenCode;
 import com.tgx.chess.queen.db.inf.IRepository;
@@ -100,7 +106,7 @@ public class DeviceNode
 {
 
     final List<IAioServer<ZContext>> _AioServers;
-    final IRepository<DeviceEntry>   _DeviceRepository;
+    final IRepository<IPair>         _DeviceRepository;
     final IQttRouter                 _QttRouter;
 
     @Override
@@ -118,7 +124,7 @@ public class DeviceNode
     }
 
     public DeviceNode(List<ITriple> hosts,
-                      IRepository<DeviceEntry> repository,
+                      IRepository<IPair> deviceRepository,
                       IQttRouter qttRouter)
     {
         super(new Config("device"), new ServerCore<ZContext>()
@@ -203,7 +209,7 @@ public class DeviceNode
                                };
                            })
                            .collect(Collectors.toList());
-        _DeviceRepository = repository;
+        _DeviceRepository = deviceRepository;
         _QttRouter = qttRouter;
         _Logger.info("Device Node Bean Load");
     }
@@ -267,47 +273,53 @@ public class DeviceNode
                 case X113_QttPublish.COMMAND:
                     X113_QttPublish x113 = (X113_QttPublish) command;
                     _DeviceRepository.receive(command);
-                    List<IControl<ZContext>> pushList = brokerTopic(x113);
+                    List<IControl<ZContext>> pushList = new LinkedList<>();
                     switch (x113.getLevel())
                     {
-                        case AT_LEAST_ONCE:
-                            X114_QttPuback x114 = new X114_QttPuback();
-                            x114.setLocalId(x113.getLocalId());
-                            pushList.add(x114);
-                            break;
                         case EXACTLY_ONCE:
                             X115_QttPubrec x115 = new X115_QttPubrec();
-                            x115.setLocalId(x113.getLocalId());
-                            pushList.add(x115);
-                            break;
+                            x115.setMsgId(x113.getMsgId());
+                            _QttRouter.register(x115, session.getIndex());
+                            return new IControl[] { x115 };
+                        case AT_LEAST_ONCE:
+                            X114_QttPuback x114 = new X114_QttPuback();
+                            x114.setMsgId(x113.getMsgId());
+                            pushList.add(x114);
+                        default:
+                            brokerTopic(x113.getTopic(), x113.getPayload(), x113.getLevel(), pushList);
+                            return pushList.toArray(new IControl[0]);
                     }
-                    return pushList.isEmpty() ? null
-                                              : pushList.toArray(new IControl[0]);
                 case X114_QttPuback.COMMAND:
                     X114_QttPuback x114 = (X114_QttPuback) command;
-                    _DeviceRepository.find(x114);
-                    _QttRouter.ack(x114.getLocalId(), session.getIndex());
+                    _DeviceRepository.receive(x114);
+                    _QttRouter.ack(x114, session.getIndex());
                     break;
                 case X115_QttPubrec.COMMAND:
                     X115_QttPubrec x115 = (X115_QttPubrec) command;
+                    _DeviceRepository.receive(x115);
+                    _QttRouter.ack(x115, session.getIndex());
                     X116_QttPubrel x116 = new X116_QttPubrel();
-                    x116.setLocalId(x115.getLocalId());
-                    _DeviceRepository.save(x116);
+                    x116.setMsgId(x115.getMsgId());
+                    _DeviceRepository.send(x116);
+                    _QttRouter.register(x116, session.getIndex());
                     return new IControl[] { x116 };
                 case X116_QttPubrel.COMMAND:
                     x116 = (X116_QttPubrel) command;
                     X117_QttPubcomp x117 = new X117_QttPubcomp();
-                    x117.setLocalId(x116.getLocalId());
-                    _QttRouter.ack(x116.getLocalId(), session.getIndex());
-                    DeviceEntry deviceEntry = _DeviceRepository.find(x116);
-                    x113 = (X113_QttPublish) deviceEntry.getMessageQueue()
-                                                        .firstEntry();
-                    pushList = brokerTopic(x113);
+                    x117.setMsgId(x116.getMsgId());
+                    _QttRouter.ack(x116, session.getIndex());
+                    pushList = new LinkedList<>();
+                    IPair result = _DeviceRepository.receive(x116);
+                    List<MessageEntry> msgList = result.first();
+                    msgList.forEach(messageEntry -> brokerTopic(messageEntry.getTopic(),
+                                                                messageEntry.getPayload(),
+                                                                EXACTLY_ONCE,
+                                                                pushList));
                     pushList.add(x117);
                     return pushList.toArray(new IControl[0]);
                 case X117_QttPubcomp.COMMAND:
                     x117 = (X117_QttPubcomp) command;
-                    _QttRouter.ack(x117.getLocalId(), session.getIndex());
+                    _QttRouter.ack(x117, session.getIndex());
                     break;
                 case X11C_QttPingreq.COMMAND:
                     return new IControl[] { new X11D_QttPingresp() };
@@ -331,25 +343,18 @@ public class DeviceNode
         switch (input.getSerial())
         {
             case X20_SignUp.COMMAND:
-                X21_SignUpResult x21 = new X21_SignUpResult();
-                DeviceEntry deviceEntry = _DeviceRepository.save(input);
-
-                if (Objects.nonNull(deviceEntry)) {
-                    x21.setSuccess();
-                    x21.setToken(IoUtil.hex2bin(deviceEntry.getToken()));
-                    x21.setPasswordId(deviceEntry.getSecondaryLongKey());
+                IPair result = _DeviceRepository.save(input);
+                X21_SignUpResult x21 = result.second();
+                DeviceEntry deviceEntry = result.first();
+                if (x21.isSuccess()) {
                     mapSession(deviceEntry.getPrimaryKey(), session);
-                }
-                else {
-                    x21.setFailed();
                 }
                 return new IControl[] { x21 };
             case X22_SignIn.COMMAND:
-                deviceEntry = _DeviceRepository.find(input);
-                X23_SignInResult x23 = new X23_SignInResult();
-                if (Objects.nonNull(deviceEntry)) {
-                    x23.setSuccess();
-                    x23.setInvalidTime(deviceEntry.getInvalidTime());
+                result = _DeviceRepository.find(input);
+                X23_SignInResult x23 = result.second();
+                if (x23.isSuccess()) {
+                    deviceEntry = result.first();
                     mapSession(deviceEntry.getPrimaryKey(), session);
                 }
                 else {
@@ -358,36 +363,20 @@ public class DeviceNode
                 return new IControl[] { x23 };
             case X111_QttConnect.COMMAND:
                 X111_QttConnect x111 = (X111_QttConnect) input;
-                X112_QttConnack x112 = new X112_QttConnack();
-                x112.responseOk();
+                result = _DeviceRepository.find(x111);
+                X112_QttConnack x112 = result.second();
                 if (!x111.isCleanSession() && x111.getClientIdLength() == 0) {
                     x112.rejectIdentifier();
                 }
-                else {
-                    deviceEntry = _DeviceRepository.find(x111);
-                    if (Objects.isNull(deviceEntry)) {
-                        x112.rejectIdentifier();
-                    }
-                    else {
-                        switch (deviceEntry.getOperation())
-                        {
-                            case OP_NULL:
-                                x112.rejectIdentifier();
-                                break;
-                            case OP_INVALID:
-                                x112.rejectBadUserOrPassword();
-                                break;
-                            default:
-                                mapSession(deviceEntry.getPrimaryKey(), session);
-                                break;
-                        }
-                    }
+                else if (!x112.isIllegalState()) {
+                    deviceEntry = result.first();
+                    mapSession(deviceEntry.getPrimaryKey(), session);
                 }
                 return new IControl[] { x112 };
             case X118_QttSubscribe.COMMAND:
                 X118_QttSubscribe x118 = (X118_QttSubscribe) input;
                 X119_QttSuback x119 = new X119_QttSuback();
-                x119.setLocalId(x118.getLocalId());
+                x119.setMsgId(x118.getMsgId());
                 x118.getTopics()
                     .forEach(topic -> x119.addResult(_QttRouter.addTopic(topic, session.getIndex()) ? topic.second()
                                                                                                     : IQoS.Level.FAILURE));
@@ -397,47 +386,48 @@ public class DeviceNode
                 x11A.getTopics()
                     .forEach(topic -> _QttRouter.removeTopic(topic, session.getIndex()));
                 X11B_QttUnsuback x11B = new X11B_QttUnsuback();
-                x11B.setLocalId(x11A.getLocalId());
+                x11B.setMsgId(x11A.getMsgId());
                 return new IControl[] { x11B };
         }
         return new IControl[0];
     }
 
-    private List<IControl<ZContext>> brokerTopic(X113_QttPublish x113)
+    private void brokerTopic(String topic, byte[] payload, IQoS.Level level, List<IControl<ZContext>> pushList)
     {
+        Objects.requireNonNull(pushList);
+        Objects.requireNonNull(topic);
+        Objects.requireNonNull(payload);
+        Objects.requireNonNull(level);
         Map<Long,
-            IQoS.Level> route = _QttRouter.broker(x113.getTopic());
+            IQoS.Level> route = _QttRouter.broker(topic);
         _Logger.debug("route %s", route);
-        List<IControl<ZContext>> pushList;
-        pushList = route.entrySet()
-                        .stream()
-                        .map(entry ->
-                        {
-                            ISession<ZContext> targetSession = findSessionByIndex(entry.getKey());
-                            if (targetSession != null && x113.getPayload() != null) {
-                                IQoS.Level subscribeLevel = entry.getValue();
-                                X113_QttPublish push = new X113_QttPublish();
-                                push.setLevel(x113.getLevel()
-                                                  .getValue() > subscribeLevel.getValue() ? subscribeLevel
-                                                                                          : x113.getLevel());
-                                push.setTopic(x113.getTopic());
-                                push.setPayload(x113.getPayload());
-                                push.setSession(targetSession);
-                                if (push.getLevel() == IQoS.Level.AT_LEAST_ONCE
-                                    || push.getLevel() == IQoS.Level.EXACTLY_ONCE)
-                        {
-                                    int packIdentity = _QttRouter.nextPackIdentity();
-                                    push.setLocalId(packIdentity);
-                                    _DeviceRepository.save(push);
-                                    _QttRouter.register(packIdentity, entry.getKey());
-                                }
-                                return push;
-                            }
-                            return null;
-                        })
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toList());
+        route.entrySet()
+             .stream()
+             .map(entry ->
+             {
+                 ISession<ZContext> targetSession = findSessionByIndex(entry.getKey());
+                 if (targetSession != null) {
+                     IQoS.Level subscribeLevel = entry.getValue();
+                     X113_QttPublish push = new X113_QttPublish();
+                     push.setLevel(IQoS.Level.valueOf(min(subscribeLevel.getValue(), level.getValue())));
+                     push.setTopic(topic);
+                     push.setPayload(payload);
+                     push.setSession(targetSession);
+                     if (push.getLevel() == ALMOST_ONCE) { return push; }
+                     long packIdentity = _QttRouter.nextPackIdentity();
+                     push.setMsgId(packIdentity);
+                     _DeviceRepository.send(push);
+                     _QttRouter.register(push, entry.getKey());
+                     return push;
+                 }
+                 return null;
+             })
+             .filter(Objects::nonNull)
+             .forEach(push ->
+             {
+                 _DeviceRepository.find(push);
+                 pushList.add(push);
+             });
         _Logger.info("push %s", pushList);
-        return pushList;
     }
 }

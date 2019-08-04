@@ -74,4 +74,6 @@ public interface ISession<C extends IContext<C>>
     {
         return 0;
     }
+
+    int getReadTimeOutSeconds();
 }

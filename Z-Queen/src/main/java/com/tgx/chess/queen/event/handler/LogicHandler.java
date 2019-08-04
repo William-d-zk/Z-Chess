@@ -76,7 +76,6 @@ public class LogicHandler<C extends IContext<C>>
                     else {
                         event.ignore();
                     }
-
                 }
                 catch (Exception e) {
                     e.printStackTrace();

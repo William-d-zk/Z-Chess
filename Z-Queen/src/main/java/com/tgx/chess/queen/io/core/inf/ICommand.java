@@ -41,4 +41,7 @@ public interface ICommand<C extends IContext<C>>
         return COMMAND_SERIAL;
     }
 
+    long getMsgId();
+
+    void setMsgId(long msgId);
 }

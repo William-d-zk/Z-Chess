@@ -21,23 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.tgx.chess.queen.io.core.inf;
 
 /**
- * @author William.d.zk
+ * @author william.d.zk
+ * @date 2019-05-21
  */
-public interface IMessage<C extends IContext<C>>
+public interface IMappingMessage<C extends IContext<C>>
         extends
-        IDuplicate
+        ISessionMessage<C>
 {
-    default ISession<C> getSession()
-    {
-        return null;
-    }
-
-    default IMessage setSession(ISession<C> session)
-    {
-        return this;
-    }
-
+    boolean isMapping();
 }

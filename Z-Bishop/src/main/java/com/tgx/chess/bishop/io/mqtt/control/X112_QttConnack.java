@@ -143,7 +143,7 @@ public class X112_QttConnack
 
     public boolean isIllegalState()
     {
-        return mPresent && mResponseCode > 0;
+        return !mPresent && mResponseCode > 0;
     }
 
     @Override

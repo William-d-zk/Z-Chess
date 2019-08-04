@@ -107,7 +107,7 @@ public class X113_QttPublish
                              isDuplicate(),
                              isRetain(),
                              getLevel(),
-                             getLocalId(),
+                             getMsgId(),
                              getTopic(),
                              new String(getPayload(), StandardCharsets.UTF_8));
     }
