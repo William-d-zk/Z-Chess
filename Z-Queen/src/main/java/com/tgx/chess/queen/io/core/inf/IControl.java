@@ -35,7 +35,7 @@ public interface IControl<C extends IContext<C>>
         extends
         IFrame,
         IQoS,
-        ISessionMessage<C>,
+        IMappingMessage<C>,
         IDisposable
 {
     @Override

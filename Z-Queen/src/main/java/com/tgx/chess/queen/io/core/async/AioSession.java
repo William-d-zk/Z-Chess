@@ -420,4 +420,9 @@ public class AioSession<C extends IContext<C>>
         return _DismissCallback;
     }
 
+    @Override
+    public int getReadTimeOutSeconds()
+    {
+        return _ReadTimeOut;
+    }
 }

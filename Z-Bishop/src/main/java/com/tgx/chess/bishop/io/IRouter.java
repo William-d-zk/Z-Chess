@@ -22,24 +22,20 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.spring.device.repository;
+package com.tgx.chess.bishop.io;
 
-import java.util.List;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-
-import com.tgx.chess.spring.device.model.MessageEntity;
+import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IContext;
 
 /**
  * @author william.d.zk
- * @date 2019-07-31
+ * @date 2019-08-04
  */
-public interface MessageRepository
-        extends
-        JpaRepository<MessageEntity,
-                      Long>
+public interface IRouter<C extends IContext<C>>
 {
-    List<MessageEntity> findAllByOriginAndMsgId(long origin, long localId);
+    long nextPackIdentity();
 
-    List<MessageEntity> findAllByTargetAndMsgId(long target, long localId);
+    void register(ICommand<C> stateMessage, long sessionIndex);
+
+    void ack(ICommand<C> stateMessage, long sessionIndex);
 }

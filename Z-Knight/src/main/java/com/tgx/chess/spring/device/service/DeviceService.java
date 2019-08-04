@@ -35,15 +35,13 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -55,21 +53,27 @@ import org.springframework.stereotype.Service;
 
 import com.tgx.chess.ZApiExecption;
 import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
+import com.tgx.chess.bishop.biz.db.dao.MessageEntry;
 import com.tgx.chess.bishop.biz.device.DeviceNode;
 import com.tgx.chess.bishop.io.ZSort;
 import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
+import com.tgx.chess.bishop.io.mqtt.control.X112_QttConnack;
 import com.tgx.chess.bishop.io.mqtt.control.X113_QttPublish;
 import com.tgx.chess.bishop.io.mqtt.control.X114_QttPuback;
 import com.tgx.chess.bishop.io.mqtt.control.X116_QttPubrel;
 import com.tgx.chess.bishop.io.mqtt.handler.QttRouter;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
+import com.tgx.chess.bishop.io.zprotocol.device.X21_SignUpResult;
 import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
+import com.tgx.chess.bishop.io.zprotocol.device.X23_SignInResult;
 import com.tgx.chess.bishop.io.zprotocol.device.X24_UpdateToken;
+import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.king.base.util.IoUtil;
+import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.db.inf.IStorage;
@@ -95,13 +99,14 @@ import com.tgx.chess.spring.device.repository.MessageRepository;
 @Service
 public class DeviceService
         implements
-        IRepository<DeviceEntry>
+        IRepository<IPair>
 {
-    private final Logger                                   _Logger                = Logger.getLogger(getClass().getSimpleName());
-    private final CryptUtil                                _CryptUtil             = new CryptUtil();
-    private final DeviceRepository                         _DeviceRepository;
-    private final ClientRepository                         _ClientRepository;
-    private final MessageRepository                        _MessageRepository;
+    private final Logger            _Logger    = Logger.getLogger(getClass().getSimpleName());
+    private final CryptUtil         _CryptUtil = new CryptUtil();
+    private final DeviceRepository  _DeviceRepository;
+    private final MessageRepository _MessageRepository;
+    private final ClientRepository  _ClientRepository;
+
     private final DeviceNode                               _DeviceNode;
     private final Map<Long,
                       Map<Long,
@@ -266,12 +271,14 @@ public class DeviceService
     }
 
     @Override
-    public DeviceEntry save(IProtocol target)
+    public IPair save(IProtocol target)
     {
         switch (target.getSerial())
         {
             case X20_SignUp.COMMAND:
                 X20_SignUp x20 = (X20_SignUp) target;
+                X21_SignUpResult x21 = new X21_SignUpResult();
+                x21.setFailed();
                 byte[] deviceMac = x20.getMac();
                 String devicePwd = x20.getPassword();
                 long pwdId = x20.getPasswordId();
@@ -292,129 +299,169 @@ public class DeviceService
                     deviceEntity.setToken(IoUtil.bin2Hex(_CryptUtil.sha256(src)));
                     try {
                         _DeviceRepository.save(deviceEntity);
-                        return convertDevice(deviceEntity);
+                        x21.setSuccess();
+                        x21.setToken(IoUtil.hex2bin(deviceEntity.getToken()));
+                        x21.setPasswordId(deviceEntity.getPasswordId());
+                        return new Pair<>(convertDevice(deviceEntity), x21);
                     }
                     catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
-                break;
+                return new Pair<>(null, x21);
             case X24_UpdateToken.COMMAND:
                 X24_UpdateToken x24 = (X24_UpdateToken) target;
                 break;
-
-            case X116_QttPubrel.COMMAND:
-                /*
-                QOS 2时 需要存储 Pubrel 的状态,此时将 Publish 状态清除，
-                消息所有权转移到 Publish 接收方
-                 */
-                X116_QttPubrel x116 = (X116_QttPubrel) target;
-                long index = x116.getSession()
-                                 .getIndex();
-                long identity = x116.getLocalId();
-                _DeviceMessageStateMap.computeIfPresent(index, (key, old) ->
-                {
-                    old.put(identity, x116);
-                    return old;
-                });
-                break;
-
         }
         return null;
     }
 
     @Override
-    public DeviceEntry find(IProtocol key)
+    public IPair find(IProtocol key)
     {
         _Logger.debug("find %d", key.getSerial());
+        String deviceToken = null, password = null;
         switch (key.getSerial())
         {
             case X22_SignIn.COMMAND:
                 X22_SignIn x22 = (X22_SignIn) key;
-                String deviceToken = IoUtil.bin2Hex(x22.getToken());
-                String devicePwd = x22.getPassword();
-                byte[] password = devicePwd.getBytes();
-                byte[] toSign = new byte[password.length + 6];
-                IoUtil.write(password, toSign, 6);
-                DeviceEntity deviceEntity = _DeviceRepository.findByTokenAndPassword(deviceToken, devicePwd);
-                if (Objects.nonNull(deviceEntity)) { return convertDevice(deviceEntity); }
-                break;
+                deviceToken = IoUtil.bin2Hex(x22.getToken());
+                password = x22.getPassword();
+                X23_SignInResult x23 = new X23_SignInResult();
+                DeviceEntity deviceEntity = findDeviceByToken(Objects.requireNonNull(deviceToken));
+                DeviceEntry deviceEntry = auth(deviceEntity, password);
+                switch (deviceEntry.getOperation())
+                {
+                    case OP_NULL:
+                    case OP_INVALID:
+                        x23.setFailed();
+                        break;
+                    case OP_APPEND:
+                        x23.setSuccess();
+                        x23.setInvalidTime(deviceEntry.getInvalidTime());
+                        break;
+                }
+                return new Pair<>(deviceEntry, x23);
             case X111_QttConnect.COMMAND:
                 X111_QttConnect x111 = (X111_QttConnect) key;
                 deviceToken = x111.getClientId();
-                deviceEntity = findDeviceByToken(deviceToken);
-                return auth(deviceEntity,
-                            Objects.nonNull(x111.getPassword()) ? new String(x111.getPassword(), StandardCharsets.UTF_8)
-                                                                : null);
-            case X114_QttPuback.COMMAND:
-                break;
-            case X116_QttPubrel.COMMAND:
-                /*
-                   此时才能将QoS 2的 Publish 消息进行分发。
-                 */
-                X116_QttPubrel x116 = (X116_QttPubrel) key;
-                long sessionIdx = x116.getSession()
-                                      .getIndex();
-                Map<Long,
-                    IControl<ZContext>> storage = _DeviceMessageStateMap.get(sessionIdx);
-                long msgId = x116.getLocalId();
-                IControl<ZContext> push = storage.remove(msgId);
-                DeviceEntry deviceEntry = new DeviceEntry();
-                deviceEntry.setPrimaryKey(sessionIdx);
-                NavigableMap<Long,
-                             IControl<ZContext>> msgQueue = new TreeMap<>();
-                msgQueue.put(msgId, push);
-                deviceEntry.setMessageQueue(msgQueue);
-                return deviceEntry;
+                password = Objects.nonNull(x111.getPassword()) ? new String(x111.getPassword(), StandardCharsets.UTF_8)
+                                                               : null;
+                deviceEntity = findDeviceByToken(Objects.requireNonNull(deviceToken));
+                deviceEntry = auth(deviceEntity, password);
+                X112_QttConnack x112 = new X112_QttConnack();
+                switch (deviceEntry.getOperation())
+                {
+                    case OP_NULL:
+                        x112.rejectIdentifier();
+                        break;
+                    case OP_INVALID:
+                        x112.rejectBadUserOrPassword();
+                        break;
+                    case OP_APPEND:
+                        x112.responseOk();
+                        break;
+                }
+                return new Pair<>(deviceEntry, x112);
         }
         return null;
     }
 
     @Override
-    public DeviceEntry receive(IProtocol input)
+    public IPair receive(IProtocol input)
     {
         switch (input.getSerial())
         {
             case X113_QttPublish.COMMAND:
-                /*
-                QOS 1/2 时需要存储 Publish 的状态
-                 */
                 X113_QttPublish x113 = (X113_QttPublish) input;
-                long index = x113.getSession()
-                                 .getIndex();
-                long identity = x113.getLocalId();
-                if (_DeviceMessageStateMap.computeIfPresent(index, (key, old) ->
-                {
-                    old.put(identity, x113);
-                    return old;
-                }) == null) {
-                    final Map<Long,
-                              IControl<ZContext>> _IdentityMessageMap = new HashMap<>(7);
-                    _IdentityMessageMap.put(identity, x113);
-                    _DeviceMessageStateMap.put(index, _IdentityMessageMap);
-                }
+                long origin = x113.getSession()
+                                  .getIndex();
                 MessageEntity msg = new MessageEntity();
+                msg.setRetain(x113.isRetain());
                 msg.setCmd(X113_QttPublish.COMMAND);
                 msg.setDirection(DirectionEnum.CLIENT_TO_SERVER.getShort());
-                msg.setLocalId(x113.getLocalId());
-                msg.setOrigin(index);
+                msg.setMsgId(x113.getMsgId());
+                msg.setOrigin(origin);
                 msg.setOwner(x113.getLevel()
-                                 .getValue() < IQoS.Level.EXACTLY_ONCE.getValue() ? OWNER_CLIENT
-                                                                                  : OWNER_SERVER);
+                                 .getValue() < IQoS.Level.EXACTLY_ONCE.getValue() ? OWNER_SERVER
+                                                                                  : OWNER_CLIENT);
                 JsonMsg jsonMsg = new JsonMsg();
                 jsonMsg.setTopic(x113.getTopic());
                 jsonMsg.setContent(new String(x113.getPayload(), StandardCharsets.UTF_8));
                 msg.setPayload(jsonMsg);
                 msg = _MessageRepository.save(msg);
-                _Logger.info("save x113:%s", msg);
+                _Logger.info("receive save: %s", msg);
                 break;
+            case X114_QttPuback.COMMAND:
+                break;
+            case X116_QttPubrel.COMMAND:
+                X116_QttPubrel x116 = (X116_QttPubrel) input;
+                origin = x116.getSession()
+                             .getIndex();
+                List<MessageEntity> msgList = _MessageRepository.findAllByOriginAndMsgId(origin, x116.getMsgId());
+                if (msgList != null) {
+                    msgList.forEach(messageEntity -> messageEntity.setOwner(OWNER_SERVER));
+                    if (!msgList.isEmpty()) {
+                        return new Pair<>(_MessageRepository.saveAll(msgList)
+                                                            .stream()
+                                                            .map(entity ->
+                                                            {
+                                                                JsonMsg jmsg = entity.getPayload();
+                                                                if (jmsg == null) { return null; }
+                                                                MessageEntry messageEntry = new MessageEntry();
+                                                                messageEntry.setPrimaryKey(entity.getId());
+                                                                messageEntry.setDirection(entity.getDirection());
+                                                                messageEntry.setTopic(jmsg.getTopic());
+                                                                messageEntry.setPayload(jmsg.getContent()
+                                                                                            .getBytes(StandardCharsets.UTF_8));
+                                                                messageEntry.setOrigin(entity.getOrigin());
+                                                                messageEntry.setTarget(entity.getTarget());
+                                                                return messageEntry;
+                                                            })
+                                                            .filter(Objects::nonNull)
+                                                            .collect(Collectors.toList()),
+                                          MessageEntry.class);
+                    }
+                }
+                _Logger.info("receive X116_QttPubrel: %s", x116);
+                return new Pair<>(msgList, null);
         }
         return null;
     }
 
-    public DeviceEntry send(IProtocol output)
+    public void send(IProtocol output)
     {
-        return null;
+        switch (output.getSerial())
+        {
+            case X113_QttPublish.COMMAND:
+                X113_QttPublish x113 = (X113_QttPublish) output;
+                long target = x113.getSession()
+                                  .getIndex();
+                MessageEntity msg = new MessageEntity();
+                msg.setRetain(x113.isRetain());
+                msg.setCmd(X113_QttPublish.COMMAND);
+                msg.setDirection(DirectionEnum.SERVER_TO_CLIENT.getShort());
+                msg.setMsgId(x113.getMsgId());
+                msg.setTarget(target);
+                msg.setOwner(x113.getLevel()
+                                 .getValue() > IQoS.Level.ALMOST_ONCE.getValue() ? OWNER_SERVER
+                                                                                 : OWNER_CLIENT);
+                JsonMsg jsonMsg = new JsonMsg();
+                jsonMsg.setTopic(x113.getTopic());
+                jsonMsg.setContent(new String(x113.getPayload(), StandardCharsets.UTF_8));
+                msg.setPayload(jsonMsg);
+                msg = _MessageRepository.save(msg);
+                _Logger.info("send save: %s", msg);
+                break;
+            case X116_QttPubrel.COMMAND:
+                X116_QttPubrel x116 = (X116_QttPubrel) output;
+                target = x116.getSession()
+                             .getIndex();
+                List<MessageEntity> msgList = _MessageRepository.findAllByTargetAndMsgId(target, x116.getMsgId());
+                msgList.forEach(messageEntity -> messageEntity.setOwner(OWNER_CLIENT));
+                _MessageRepository.saveAll(msgList);
+                break;
+        }
     }
 
     @SafeVarargs

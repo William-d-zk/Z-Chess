@@ -71,19 +71,6 @@ public enum DirectionEnum
         }
     }
 
-    public static String switchOwner(String previous)
-    {
-        switch (previous.toUpperCase())
-        {
-            case OWNER_CLIENT:
-                return OWNER_SERVER;
-            case OWNER_SERVER:
-                return OWNER_CLIENT;
-            default:
-                throw new IllegalArgumentException();
-        }
-    }
-
     public final static String OWNER_CLIENT = "CLIENT";
     public final static String OWNER_SERVER = "SERVER";
 }

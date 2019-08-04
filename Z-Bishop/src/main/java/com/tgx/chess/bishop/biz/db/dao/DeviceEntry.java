@@ -24,12 +24,9 @@
 
 package com.tgx.chess.bishop.biz.db.dao;
 
-import java.util.NavigableMap;
 import java.util.Objects;
 
-import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.queen.db.inf.IStorage;
-import com.tgx.chess.queen.io.core.inf.IControl;
 
 public class DeviceEntry
         implements
@@ -40,7 +37,11 @@ public class DeviceEntry
     @Override
     public int dataLength()
     {
-        return getDeviceUidLength() + getTokenLength() + getInvalidTimeLength() + getOperationLength();
+        return getDeviceUidLength()
+               + getTokenLength()
+               + getInvalidTimeLength()
+               + getOperationLength()
+               + getStrategyLength();
     }
 
     @Override
@@ -69,14 +70,16 @@ public class DeviceEntry
         return 1;
     }
 
+    private int getStrategyLength()
+    {
+        return 1;
+    }
+
     private long      deviceId;
     private String    token;
     private long      invalidTime;
-    private Operation operation;
-    private Strategy  strategy;
-
-    private NavigableMap<Long,
-                         IControl<ZContext>> messageQueue;
+    private Operation operation = Operation.OP_NULL;
+    private Strategy  strategy  = Strategy.RETAIN;
 
     @Override
     public long getPrimaryKey()
@@ -134,15 +137,4 @@ public class DeviceEntry
         this.strategy = strategy;
     }
 
-    public NavigableMap<Long,
-                        IControl<ZContext>> getMessageQueue()
-    {
-        return messageQueue;
-    }
-
-    public void setMessageQueue(NavigableMap<Long,
-                                             IControl<ZContext>> messageQueue)
-    {
-        this.messageQueue = messageQueue;
-    }
 }

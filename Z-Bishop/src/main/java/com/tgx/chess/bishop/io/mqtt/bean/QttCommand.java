@@ -48,7 +48,7 @@ public abstract class QttCommand
         _Command = command;
     }
 
-    private int                mLocalId = -1;
+    private long               mMsgId = -1;
     private ISession<ZContext> mSession;
     private byte[]             mPayload;
 
@@ -58,14 +58,16 @@ public abstract class QttCommand
         setOpCode(ctrl);
     }
 
-    public void setLocalId(int id)
+    @Override
+    public void setMsgId(long id)
     {
-        mLocalId = id;
+        mMsgId = id;
     }
 
-    public int getLocalId()
+    @Override
+    public long getMsgId()
     {
-        return mLocalId;
+        return mMsgId;
     }
 
     @Override
@@ -126,7 +128,7 @@ public abstract class QttCommand
     @Override
     public int decodec(byte[] data, int pos)
     {
-        mLocalId = IoUtil.readUnsignedShort(data, pos);
+        mMsgId = IoUtil.readUnsignedShort(data, pos);
         pos += 2;
         return pos;
     }
@@ -134,7 +136,7 @@ public abstract class QttCommand
     @Override
     public int encodec(byte[] data, int pos)
     {
-        pos += IoUtil.writeShort(mLocalId, data, pos);
+        pos += IoUtil.writeShort((int) mMsgId, data, pos);
         return pos;
     }
 

@@ -97,6 +97,6 @@ public class X119_QttSuback
     @Override
     public String toString()
     {
-        return String.format("suback local-id %d, %s", getLocalId(), getQosLevels());
+        return String.format("suback local-id %d, %s", getMsgId(), getQosLevels());
     }
 }

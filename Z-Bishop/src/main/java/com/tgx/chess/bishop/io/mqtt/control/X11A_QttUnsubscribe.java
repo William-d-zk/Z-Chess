@@ -113,6 +113,6 @@ public class X11A_QttUnsubscribe
     @Override
     public String toString()
     {
-        return String.format("unsubscribe local-id:%d topics:%s", getLocalId(), _Topics);
+        return String.format("unsubscribe local-id:%d topics:%s", getMsgId(), _Topics);
     }
 }
