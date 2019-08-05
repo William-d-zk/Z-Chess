@@ -39,7 +39,7 @@ public interface MessageRepository
         JpaRepository<MessageEntity,
                       Long>
 {
-    List<MessageEntity> findAllByOriginAndMsgId(long origin, long localId);
+    List<MessageEntity> findAllByOriginAndMsgId(long origin, long msgId);
 
-    List<MessageEntity> findAllByTargetAndMsgId(long target, long localId);
+    List<MessageEntity> findAllByTargetAndMsgId(long target, long msgId);
 }
