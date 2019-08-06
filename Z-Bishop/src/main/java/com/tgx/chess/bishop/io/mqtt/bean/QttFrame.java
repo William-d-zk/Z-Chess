@@ -132,7 +132,7 @@ public class QttFrame
     }
 
     @Override
-    public int getSerial()
+    public int serial()
     {
         return MQTT_FRAME;
     }

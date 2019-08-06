@@ -83,7 +83,7 @@ import com.tgx.chess.queen.io.core.inf.IQoS;
 import com.tgx.chess.spring.device.model.ClientEntity;
 import com.tgx.chess.spring.device.model.DeviceEntity;
 import com.tgx.chess.spring.device.model.DirectionEnum;
-import com.tgx.chess.spring.device.model.JsonMsg;
+import com.tgx.chess.spring.device.model.MessageBody;
 import com.tgx.chess.spring.device.model.MessageEntity;
 import com.tgx.chess.spring.device.repository.ClientRepository;
 import com.tgx.chess.spring.device.repository.DeviceRepository;
@@ -273,7 +273,7 @@ public class DeviceService
     @Override
     public IPair save(IProtocol target)
     {
-        switch (target.getSerial())
+        switch (target.serial())
         {
             case X20_SignUp.COMMAND:
                 X20_SignUp x20 = (X20_SignUp) target;
@@ -319,9 +319,9 @@ public class DeviceService
     @Override
     public IPair find(IProtocol key)
     {
-        _Logger.debug("find %d", key.getSerial());
+        _Logger.debug("find %d", key.serial());
         String deviceToken = null, password = null;
-        switch (key.getSerial())
+        switch (key.serial())
         {
             case X22_SignIn.COMMAND:
                 X22_SignIn x22 = (X22_SignIn) key;
@@ -370,7 +370,7 @@ public class DeviceService
     @Override
     public IPair receive(IProtocol input)
     {
-        switch (input.getSerial())
+        switch (input.serial())
         {
             case X113_QttPublish.COMMAND:
                 X113_QttPublish x113 = (X113_QttPublish) input;
@@ -385,10 +385,10 @@ public class DeviceService
                 msg.setOwner(x113.getLevel()
                                  .getValue() < IQoS.Level.EXACTLY_ONCE.getValue() ? OWNER_SERVER
                                                                                   : OWNER_CLIENT);
-                JsonMsg jsonMsg = new JsonMsg();
-                jsonMsg.setTopic(x113.getTopic());
-                jsonMsg.setContent(new String(x113.getPayload(), StandardCharsets.UTF_8));
-                msg.setPayload(jsonMsg);
+                MessageBody messageBody = new MessageBody();
+                messageBody.setTopic(x113.getTopic());
+                messageBody.setContent(x113.getPayload());
+                msg.setPayload(messageBody);
                 msg = _MessageRepository.save(msg);
                 _Logger.info("receive save: %s", msg);
                 break;
@@ -398,7 +398,10 @@ public class DeviceService
                 X116_QttPubrel x116 = (X116_QttPubrel) input;
                 origin = x116.getSession()
                              .getIndex();
-                List<MessageEntity> msgList = _MessageRepository.findAllByOriginAndMsgId(origin, x116.getMsgId());
+                List<MessageEntity> msgList = _MessageRepository.findAllByOriginAndMsgIdAndDirectionAndOwner(origin,
+                                                                                                             x116.getMsgId(),
+                                                                                                             DirectionEnum.CLIENT_TO_SERVER.getShort(),
+                                                                                                             OWNER_CLIENT);
                 if (msgList != null) {
                     msgList.forEach(messageEntity -> messageEntity.setOwner(OWNER_SERVER));
                     if (!msgList.isEmpty()) {
@@ -406,14 +409,13 @@ public class DeviceService
                                                             .stream()
                                                             .map(entity ->
                                                             {
-                                                                JsonMsg jmsg = entity.getPayload();
-                                                                if (jmsg == null) { return null; }
+                                                                MessageBody entityPayload = entity.getPayload();
+                                                                if (entityPayload == null) { return null; }
                                                                 MessageEntry messageEntry = new MessageEntry();
                                                                 messageEntry.setPrimaryKey(entity.getId());
                                                                 messageEntry.setDirection(entity.getDirection());
-                                                                messageEntry.setTopic(jmsg.getTopic());
-                                                                messageEntry.setPayload(jmsg.getContent()
-                                                                                            .getBytes(StandardCharsets.UTF_8));
+                                                                messageEntry.setTopic(entityPayload.getTopic());
+                                                                messageEntry.setPayload(entityPayload.getContent());
                                                                 messageEntry.setOrigin(entity.getOrigin());
                                                                 messageEntry.setTarget(entity.getTarget());
                                                                 return messageEntry;
@@ -431,7 +433,7 @@ public class DeviceService
 
     public void send(IProtocol output)
     {
-        switch (output.getSerial())
+        switch (output.serial())
         {
             case X113_QttPublish.COMMAND:
                 X113_QttPublish x113 = (X113_QttPublish) output;
@@ -446,10 +448,10 @@ public class DeviceService
                 msg.setOwner(x113.getLevel()
                                  .getValue() > IQoS.Level.ALMOST_ONCE.getValue() ? OWNER_SERVER
                                                                                  : OWNER_CLIENT);
-                JsonMsg jsonMsg = new JsonMsg();
-                jsonMsg.setTopic(x113.getTopic());
-                jsonMsg.setContent(new String(x113.getPayload(), StandardCharsets.UTF_8));
-                msg.setPayload(jsonMsg);
+                MessageBody messageBody = new MessageBody();
+                messageBody.setTopic(x113.getTopic());
+                messageBody.setContent(x113.getPayload());
+                msg.setPayload(messageBody);
                 msg = _MessageRepository.save(msg);
                 _Logger.info("send save: %s", msg);
                 break;
@@ -457,7 +459,10 @@ public class DeviceService
                 X116_QttPubrel x116 = (X116_QttPubrel) output;
                 target = x116.getSession()
                              .getIndex();
-                List<MessageEntity> msgList = _MessageRepository.findAllByTargetAndMsgId(target, x116.getMsgId());
+                List<MessageEntity> msgList = _MessageRepository.findAllByTargetAndMsgIdAndDirectionAndOwner(target,
+                                                                                                             x116.getMsgId(),
+                                                                                                             DirectionEnum.SERVER_TO_CLIENT.getShort(),
+                                                                                                             OWNER_SERVER);
                 msgList.forEach(messageEntity -> messageEntity.setOwner(OWNER_CLIENT));
                 _MessageRepository.saveAll(msgList);
                 break;

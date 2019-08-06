@@ -91,7 +91,7 @@ public abstract class WsControl
     }
 
     @Override
-    public int getSerial()
+    public int serial()
     {
         return _Command;
     }
@@ -137,7 +137,7 @@ public abstract class WsControl
     @Override
     public String toString()
     {
-        int command = getSerial();
+        int command = serial();
         return String.format("cmd: 0X%X, %s", command, new String(_Msg, StandardCharsets.UTF_8));
     }
 

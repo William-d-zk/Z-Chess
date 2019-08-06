@@ -30,14 +30,14 @@ import java.io.Serializable;
  * @author william.d.zk
  * @date 2019-07-31
  */
-public class JsonMsg
+public class MessageBody
         implements
         Serializable
 {
     private static final long serialVersionUID = -8904730289818144372L;
 
     private String topic;
-    private String content;
+    private byte[] content;
 
     public String getTopic()
     {
@@ -49,13 +49,14 @@ public class JsonMsg
         this.topic = topic;
     }
 
-    public String getContent()
+    public byte[] getContent()
     {
         return content;
     }
 
-    public void setContent(String content)
+    public void setContent(byte[] content)
     {
         this.content = content;
     }
+
 }

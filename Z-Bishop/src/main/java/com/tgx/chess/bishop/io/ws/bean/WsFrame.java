@@ -40,7 +40,7 @@ public class WsFrame
     private final static int WEB_SOCKET_FRAME = FRAME_SERIAL + 1;
 
     @Override
-    public int getSerial()
+    public int serial()
     {
         return WEB_SOCKET_FRAME;
     }

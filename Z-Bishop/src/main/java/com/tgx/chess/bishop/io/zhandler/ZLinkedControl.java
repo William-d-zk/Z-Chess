@@ -65,7 +65,7 @@ public class ZLinkedControl
         IControl<ZContext> cmd = logicContent.first();
         _Logger.info("LinkHandler cmd: %s", cmd);
         IControl<ZContext>[] waitToSends = null;
-        switch (cmd.getSerial())
+        switch (cmd.serial())
         {
             case X01_EncryptRequest.COMMAND:
             case X02_AsymmetricPub.COMMAND:

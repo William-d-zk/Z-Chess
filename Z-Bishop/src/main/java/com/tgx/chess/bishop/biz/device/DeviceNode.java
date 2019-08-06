@@ -245,7 +245,7 @@ public class DeviceNode
         {
             //前置的 dispatcher 将 ICommands 拆分了
             _Logger.info(" node logic %s", command);
-            switch (command.getSerial())
+            switch (command.serial())
             {
                 case X30_EventMsg.COMMAND:
                     X30_EventMsg x30 = (X30_EventMsg) command;
@@ -340,7 +340,7 @@ public class DeviceNode
     public IControl<ZContext>[] mappingHandle(IControl<ZContext> input, ISession<ZContext> session)
     {
         _Logger.info("Manage LinkHandle mappingHandle input %s", input);
-        switch (input.getSerial())
+        switch (input.serial())
         {
             case X20_SignUp.COMMAND:
                 IPair result = _DeviceRepository.save(input);

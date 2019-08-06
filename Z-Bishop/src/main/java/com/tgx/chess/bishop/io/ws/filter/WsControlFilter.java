@@ -55,8 +55,8 @@ public class WsControlFilter
     {
         ResultType result = preControlEncode(context, output);
         if (result.equals(ResultType.NEXT_STEP)) {
-            return output.getSerial() == X101_HandShake.COMMAND
-                   || output.getSerial() == X102_SslHandShake.COMMAND ? ResultType.ERROR
+            return output.serial() == X101_HandShake.COMMAND
+                   || output.serial() == X102_SslHandShake.COMMAND ? ResultType.ERROR
                                                                       : result;
         }
         return result;
