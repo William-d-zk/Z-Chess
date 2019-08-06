@@ -50,7 +50,7 @@ public class MessageEntry
                + getOperationLength()
                + getStrategyLength()
                + getTopicLength()
-               + getPayloadLenth();
+               + getPayloadLength();
     }
 
     @Override
@@ -85,7 +85,7 @@ public class MessageEntry
                               : topic.getBytes(StandardCharsets.UTF_8).length;
     }
 
-    private int getPayloadLenth()
+    private int getPayloadLength()
     {
         return payload == null ? 0
                                : payload.length;
