@@ -44,4 +44,9 @@ public class X115_QttPubrec
         setCtrl(generateCtrl(false, false, ALMOST_ONCE, QTT_TYPE.PUBREC));
     }
 
+    @Override
+    public String toString()
+    {
+        return String.format("x115 pubrec:{local-id:%d}", getMsgId());
+    }
 }
