@@ -35,17 +35,17 @@ public interface IProtocol
 {
     int PACKET_SERIAL   = 0;
     int COMMAND_SERIAL  = 0x0FF;//1~0xFE(254)
-    int CONTROL_SERIAL  = 0x100;//0x101~0x1FE(254)
-    int FRAME_SERIAL    = 0x200;//0x201~0x2FE(254)
-    int INTERNAL_SERIAL = 0x400;//0x401~0x4FE(254)
-    int DB_SERIAL       = 0x800;//0x801~0x8FE(254)
+    int CONTROL_SERIAL  = 0x100;//0x101~0x1FE(257~510)
+    int FRAME_SERIAL    = 0x200;//0x201~0x2FE(513~766)
+    int INTERNAL_SERIAL = 0x400;//0x401~0x4FE(1025~1278)
+    int DB_SERIAL       = 0x800;//0x801~0x8FE(2049~2302)
 
     /**
      * @return max in encoding min in decoding
      */
     int dataLength();
 
-    int getSerial();
+    int serial();
 
     int superSerial();
 

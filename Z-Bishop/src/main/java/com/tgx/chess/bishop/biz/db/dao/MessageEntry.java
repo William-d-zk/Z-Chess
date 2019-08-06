@@ -54,7 +54,7 @@ public class MessageEntry
     }
 
     @Override
-    public int getSerial()
+    public int serial()
     {
         return MESSAGE_ENTRY_SERIAL;
     }

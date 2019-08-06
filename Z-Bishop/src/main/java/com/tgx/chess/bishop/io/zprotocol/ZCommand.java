@@ -113,7 +113,7 @@ public class ZCommand
     }
 
     @Override
-    public int getSerial()
+    public int serial()
     {
         return getCommand();
     }

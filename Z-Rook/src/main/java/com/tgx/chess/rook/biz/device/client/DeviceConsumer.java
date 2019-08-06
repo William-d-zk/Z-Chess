@@ -149,7 +149,7 @@ public class DeviceConsumer
                                          .map(cmd ->
                                          {
                                              _Logger.info("recv:{ %s }", cmd);
-                                             switch (cmd.getSerial())
+                                             switch (cmd.serial())
                                              {
                                                  case X03_Cipher.COMMAND:
                                                  case X05_EncryptStart.COMMAND:

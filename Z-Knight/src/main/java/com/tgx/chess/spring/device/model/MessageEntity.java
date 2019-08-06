@@ -73,7 +73,7 @@ public class MessageEntity
     private long    msgId;
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb")
-    private JsonMsg payload;
+    private MessageBody payload;
     private boolean retain = false;
 
     public Long getId()
@@ -86,12 +86,12 @@ public class MessageEntity
         this.id = id;
     }
 
-    public JsonMsg getPayload()
+    public MessageBody getPayload()
     {
         return payload;
     }
 
-    public void setPayload(JsonMsg payload)
+    public void setPayload(MessageBody payload)
     {
         this.payload = payload;
     }

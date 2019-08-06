@@ -45,7 +45,7 @@ public class DeviceEntry
     }
 
     @Override
-    public int getSerial()
+    public int serial()
     {
         return DEVICE_ENTRY_SERIAL;
     }
