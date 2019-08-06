@@ -57,7 +57,7 @@ public class WsControlFilter
         if (result.equals(ResultType.NEXT_STEP)) {
             return output.serial() == X101_HandShake.COMMAND
                    || output.serial() == X102_SslHandShake.COMMAND ? ResultType.ERROR
-                                                                      : result;
+                                                                   : result;
         }
         return result;
     }
