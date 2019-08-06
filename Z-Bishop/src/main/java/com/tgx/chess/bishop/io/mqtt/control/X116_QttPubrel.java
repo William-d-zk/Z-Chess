@@ -44,4 +44,9 @@ public class X116_QttPubrel
         setCtrl(generateCtrl(false, false, AT_LEAST_ONCE, QTT_TYPE.PUBREL));
     }
 
+    @Override
+    public String toString()
+    {
+        return String.format("x116 pubrel:{local-id:%d}", getMsgId());
+    }
 }

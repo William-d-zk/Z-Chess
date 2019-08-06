@@ -43,4 +43,10 @@ public class X117_QttPubcomp
         super(COMMAND);
         setCtrl(generateCtrl(false, false, ALMOST_ONCE, QTT_TYPE.PUBCOMP));
     }
+
+    @Override
+    public String toString()
+    {
+        return String.format("x117 pubcomp:{local-id:%d}", getMsgId());
+    }
 }
