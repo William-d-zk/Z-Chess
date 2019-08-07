@@ -37,9 +37,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tgx.chess.bishop.biz.db.dao.DeviceStatus;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.spring.device.model.DeviceEntity;
+import com.tgx.chess.spring.device.model.MessageBody;
 import com.tgx.chess.spring.device.service.DeviceDo;
 import com.tgx.chess.spring.device.service.DeviceService;
 import com.tgx.chess.spring.device.service.ResponseDo;
@@ -146,4 +149,11 @@ public class DeviceController
         return _DeviceService.findDeviceByMac(deviceMac);
     }
 
+    @GetMapping("/message")
+    public @ResponseBody Object getMessage(@RequestParam(name = "id") long id) throws JsonProcessingException
+    {
+        MessageBody result = _DeviceService.getMessageById(id);
+        return new ObjectMapper().writer()
+                                 .writeValueAsString(result);
+    }
 }

@@ -24,12 +24,20 @@
 
 package com.tgx.chess.spring.device.model;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @author william.d.zk
  * @date 2019-07-31
  */
+
 public class MessageBody
         implements
         Serializable
@@ -49,12 +57,38 @@ public class MessageBody
         this.topic = topic;
     }
 
-    public byte[] getContent()
+    @JsonIgnore
+    public byte[] getPayload()
     {
         return content;
     }
 
-    public void setContent(byte[] content)
+    @JsonInclude
+    public JsonNode getContent()
+    {
+        try {
+            return new ObjectMapper().readTree(content);
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                return mapper.readTree(mapper.writeValueAsString(e.getMessage()));
+            }
+            catch (IOException ep) {
+                ep.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    public void setContent(JsonNode content)
+    {
+        setPayload(content.toString()
+                          .getBytes(StandardCharsets.UTF_8));
+    }
+
+    public void setPayload(byte[] content)
     {
         this.content = content;
     }

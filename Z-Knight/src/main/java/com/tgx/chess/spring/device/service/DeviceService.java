@@ -387,7 +387,7 @@ public class DeviceService
                                                                                   : OWNER_CLIENT);
                 MessageBody messageBody = new MessageBody();
                 messageBody.setTopic(x113.getTopic());
-                messageBody.setContent(x113.getPayload());
+                messageBody.setPayload(x113.getPayload());
                 msg.setPayload(messageBody);
                 msg = _MessageRepository.save(msg);
                 _Logger.info("receive save: %s", msg);
@@ -415,7 +415,7 @@ public class DeviceService
                                                                 messageEntry.setPrimaryKey(entity.getId());
                                                                 messageEntry.setDirection(entity.getDirection());
                                                                 messageEntry.setTopic(entityPayload.getTopic());
-                                                                messageEntry.setPayload(entityPayload.getContent());
+                                                                messageEntry.setPayload(entityPayload.getPayload());
                                                                 messageEntry.setOrigin(entity.getOrigin());
                                                                 messageEntry.setTarget(entity.getTarget());
                                                                 return messageEntry;
@@ -450,7 +450,7 @@ public class DeviceService
                                                                                  : OWNER_CLIENT);
                 MessageBody messageBody = new MessageBody();
                 messageBody.setTopic(x113.getTopic());
-                messageBody.setContent(x113.getPayload());
+                messageBody.setPayload(x113.getPayload());
                 msg.setPayload(messageBody);
                 msg = _MessageRepository.save(msg);
                 _Logger.info("send save: %s", msg);
@@ -479,4 +479,13 @@ public class DeviceService
     {
         _DeviceNode.localBizClose(deviceId);
     }
+
+    public MessageBody getMessageById(long unique)
+    {
+        return _MessageRepository.findById(unique)
+                                 .map(MessageEntity::getPayload)
+                                 .orElse(null);
+
+    }
+
 }
