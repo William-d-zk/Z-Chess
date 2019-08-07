@@ -24,6 +24,9 @@
 
 package com.tgx.chess.spring.biz.bill.pay;
 
+/**
+ * @author william.d.zk
+ */
 public enum Result
 {
     SUCCESS,

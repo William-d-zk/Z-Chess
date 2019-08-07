@@ -31,22 +31,22 @@ public interface IQoS
         ISequence,
         Comparable<IQoS>
 {
-    int QOS_00_NETWORK_CONTROL    = 1 << 0;
-    int QOS_01_CLUSTER_CONTROL    = 1 << 1;
-    int QOS_02_MQ_CONTROL         = 1 << 2;
-    int QOS_03_CLUSTER_EXCHANGE   = 1 << 3;
-    int QOS_04_MQ_EXCHANGE        = 1 << 4;
-    int QOS_05_SYNC_MODIFY        = 1 << 5;
-    int QOS_06_META_CREATE        = 1 << 6;
-    int QOS_07_ROUTE_MESSAGE      = 1 << 7;
-    int QOS_08_IMMEDIATE_MESSAGE  = 1 << 8;
-    int QOS_09_CONFIRM_MESSAGE    = 1 << 9;
-    int QOS_10_QUERY_MESSAGE      = 1 << 10;
-    int QOS_11_MQ_MODIFY          = 1 << 11;
-    int QOS_12_PUSH_MESSAGE       = 1 << 12;
-    int QOS_13_POSTPONE_MESSAGE   = 1 << 13;
-    int QOS_14_NO_CONFIRM_MESSAGE = 1 << 14;
-    int QOS_15_INNER_CMD          = 1 << 15;
+    int QOS_PRIORITY_00_NETWORK_CONTROL    = 4 << 0;
+    int QOS_PRIORITY_01_CLUSTER_CONTROL    = 4 << 1;
+    int QOS_PRIORITY_02_MQ_CONTROL         = 4 << 2;
+    int QOS_PRIORITY_03_CLUSTER_EXCHANGE   = 4 << 3;
+    int QOS_PRIORITY_04_MQ_EXCHANGE        = 4 << 4;
+    int QOS_PRIORITY_05_SYNC_MODIFY        = 4 << 5;
+    int QOS_PRIORITY_06_META_CREATE        = 4 << 6;
+    int QOS_PRIORITY_07_ROUTE_MESSAGE      = 4 << 7;
+    int QOS_PRIORITY_08_IMMEDIATE_MESSAGE  = 4 << 8;
+    int QOS_PRIORITY_09_CONFIRM_MESSAGE    = 4 << 9;
+    int QOS_PRIORITY_10_QUERY_MESSAGE      = 4 << 10;
+    int QOS_PRIORITY_11_MQ_MODIFY          = 4 << 11;
+    int QOS_PRIORITY_12_PUSH_MESSAGE       = 4 << 12;
+    int QOS_PRIORITY_13_POSTPONE_MESSAGE   = 4 << 13;
+    int QOS_PRIORITY_14_NO_CONFIRM_MESSAGE = 4 << 14;
+    int QOS_PRIORITY_15_INNER_CMD          = 4 << 15;
 
     int getPriority();
 
@@ -60,4 +60,68 @@ public interface IQoS
                                                                 : -1))
                                  : priorityDiff;
     }
+
+    Level getLevel();
+
+    /**
+     * 数据传输质量等级
+     */
+    enum Level
+    {
+
+        /**
+         * 只传输1次
+         * 不确保送达
+         * 类似UDP
+         */
+        ALMOST_ONCE(0),
+        /**
+         * 最多传输成功1次
+         * 确保送达
+         * 但不确认接收方是否完成处理
+         * 近似TCP
+         */
+        AT_LEAST_ONCE(1),
+        /**
+         * 至少成功传输1次
+         * 确保送达
+         * 确认接收方完成接收处理
+         * 至少成功传输一次
+         */
+        EXACTLY_ONCE(2),
+        /**
+         * 故障
+         */
+        FAILURE(0x80);
+        final int _Value;
+
+        Level(int value)
+        {
+            _Value = value;
+        }
+
+        public int getValue()
+        {
+            return _Value;
+        }
+
+        public static Level valueOf(int level)
+        {
+            switch (level)
+            {
+                case 0:
+                    return ALMOST_ONCE;
+                case 1:
+                    return AT_LEAST_ONCE;
+                case 2:
+                    return EXACTLY_ONCE;
+                case 0x80:
+                    return FAILURE;
+                default:
+                    throw new UnsupportedOperationException();
+            }
+        }
+
+    }
+
 }

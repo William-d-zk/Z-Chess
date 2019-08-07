@@ -29,7 +29,7 @@ import com.tgx.chess.queen.event.inf.ISort;
 /**
  * @author William.d.zk
  */
-public interface IContextCreator
+public interface IContextCreator<C extends IContext<C>>
 {
-    IContext createContext(ISessionOption option, ISort sorter);
+    C createContext(ISessionOption option, ISort<C> sort);
 }

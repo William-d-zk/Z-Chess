@@ -33,16 +33,20 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.tgx.chess.spring.auth.model.AccountEntity;
 import com.tgx.chess.spring.jpa.model.AuditModel;
 
+/**
+ * @author william.d.zk
+ */
 @Entity(name = "Client")
-@Table(schema = "\"tgx-z-chess-device\"", indexes = { @Index(name = "client_auth", columnList = "auth") })
+@Table(schema = "\"tgx-z-chess-device\"")
 public class ClientEntity
         extends
         AuditModel
@@ -52,12 +56,9 @@ public class ClientEntity
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private int    id;
-    @Column(length = 64)
-    private String auth;
-
-    @Column(length = 16)
-    private String salt;
+    private long   id;
+    @Column(length = 32)
+    private String userName;
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(schema = "\"tgx-z-chess-device\"",
@@ -66,24 +67,18 @@ public class ClientEntity
                inverseJoinColumns = @JoinColumn(name = "device_id"))
     private Set<DeviceEntity> devices;
 
-    public int getId()
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "account_id")
+    private AccountEntity account;
+
+    public long getId()
     {
         return id;
     }
 
-    public void setId(int id)
+    public void setId(long id)
     {
         this.id = id;
-    }
-
-    public String getAuth()
-    {
-        return auth;
-    }
-
-    public void setAuth(String auth)
-    {
-        this.auth = auth;
     }
 
     public Set<DeviceEntity> getDevices()
@@ -96,13 +91,23 @@ public class ClientEntity
         this.devices = devices;
     }
 
-    public String getSalt()
+    public String getUserName()
     {
-        return salt;
+        return userName;
     }
 
-    public void setSalt(String salt)
+    public void setUserName(String userName)
     {
-        this.salt = salt;
+        this.userName = userName;
+    }
+
+    public AccountEntity getAccount()
+    {
+        return account;
+    }
+
+    public void setAccount(AccountEntity account)
+    {
+        this.account = account;
     }
 }

@@ -26,30 +26,31 @@ package com.tgx.chess.queen.event.inf;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.InsufficientCapacityException;
 import com.lmax.disruptor.RingBuffer;
+import com.tgx.chess.king.base.inf.IPair;
 
 /**
  * @author William.d.zk
  */
-public interface IPipeEventHandler<T extends IEvent,
-                                   R extends IEvent>
+public interface IPipeEventHandler<E extends IEvent>
         extends
-        EventHandler<T>
+        EventHandler<E>
 {
 
     default <V,
-             A> boolean tryPublish(RingBuffer<R> publisher,
-                                   IOperator.Type t,
-                                   V v,
-                                   A a,
+             A,
+             R> boolean tryPublish(RingBuffer<E> publisher,
+                                   IOperator.Type type,
+                                   IPair content,
                                    IOperator<V,
-                                             A> operator)
+                                             A,
+                                             R> operator)
     {
-        if (publisher == null) return true;
+        if (publisher == null) { return true; }
         try {
             long sequence = publisher.tryNext();
             try {
-                R event = publisher.get(sequence);
-                event.produce(t, v, a, operator);
+                E event = publisher.get(sequence);
+                event.produce(type, content, operator);
                 return true;
             }
             finally {
@@ -63,18 +64,19 @@ public interface IPipeEventHandler<T extends IEvent,
     }
 
     default <V,
-             A> void publish(RingBuffer<R> publisher,
-                             IOperator.Type t,
-                             V v,
-                             A a,
+             A,
+             R> void publish(RingBuffer<E> publisher,
+                             IOperator.Type type,
+                             IPair content,
                              IOperator<V,
-                                       A> operator)
+                                       A,
+                                       R> operator)
     {
-        if (publisher == null) return;
+        if (publisher == null) { return; }
         long sequence = publisher.next();
         try {
-            R event = publisher.get(sequence);
-            event.produce(t, v, a, operator);
+            E event = publisher.get(sequence);
+            event.produce(type, content, operator);
         }
         finally {
             publisher.publish(sequence);
@@ -82,19 +84,20 @@ public interface IPipeEventHandler<T extends IEvent,
     }
 
     default <V,
-             A> boolean tryError(RingBuffer<R> publisher,
-                                 IError.Type t,
-                                 V v,
-                                 A a,
+             A,
+             R> boolean tryError(RingBuffer<E> publisher,
+                                 IError.Type type,
+                                 IPair content,
                                  IOperator<V,
-                                           A> operator)
+                                           A,
+                                           R> operator)
     {
-        if (publisher == null) return true;
+        if (publisher == null) { return true; }
         try {
             long sequence = publisher.tryNext();
             try {
-                R event = publisher.get(sequence);
-                event.error(t, v, a, operator);
+                E event = publisher.get(sequence);
+                event.error(type, content, operator);
                 return true;
             }
             finally {
@@ -108,22 +111,22 @@ public interface IPipeEventHandler<T extends IEvent,
     }
 
     default <V,
-             A> void error(RingBuffer<R> publisher,
-                           IError.Type t,
-                           V v,
-                           A a,
+             A,
+             R> void error(RingBuffer<E> publisher,
+                           IError.Type type,
+                           IPair content,
                            IOperator<V,
-                                     A> operator)
+                                     A,
+                                     R> operator)
     {
-        if (publisher == null) return;
+        if (publisher == null) { return; }
         long sequence = publisher.next();
         try {
-            R event = publisher.get(sequence);
-            event.error(t, v, a, operator);
+            E event = publisher.get(sequence);
+            event.error(type, content, operator);
         }
         finally {
             publisher.publish(sequence);
         }
     }
-
 }

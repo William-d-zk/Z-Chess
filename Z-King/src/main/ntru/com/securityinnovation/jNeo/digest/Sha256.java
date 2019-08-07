@@ -206,7 +206,10 @@ class Sha256
     {
         while (numInts-- > 0) {
             // Big endian
-            dst[dstOffset++] = (src[srcOffset++] << 24) | ((src[srcOffset++] & 0xFF) << 16) | ((src[srcOffset++] & 0xFF) << 8) | (src[srcOffset++] & 0xFF);
+            dst[dstOffset++] = (src[srcOffset++] << 24)
+                               | ((src[srcOffset++] & 0xFF) << 16)
+                               | ((src[srcOffset++] & 0xFF) << 8)
+                               | (src[srcOffset++] & 0xFF);
         }
     }
 

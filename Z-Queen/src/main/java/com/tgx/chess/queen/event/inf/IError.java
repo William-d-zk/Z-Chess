@@ -26,7 +26,7 @@ package com.tgx.chess.queen.event.inf;
 import java.util.Objects;
 
 /**
- * @author William.d.zk
+ * @author william.d.zk
  */
 public interface IError
 {
@@ -56,7 +56,9 @@ public interface IError
         ILLEGAL_STATE(901, " 逻辑状态错误 "),
         ILLEGAL_BIZ_STATE(902, " 业务状态错误 "),
         SAVE_DATA(903, " 保存数据失败 %s "),
-        LINK_LOGIN_ERROR(904, " LINK 准入失败 %s"),
+        FIND_DATA(904, " 查询数据失败 %s "),
+        LINK_LOGIN_ERROR(905, " LINK 准入失败 %s"),
+        HANDLE_DATA(906, " 数据处理失败 %s "),
         LINK_ERROR(910, " LINK %s"),
         TIME_OUT(101, " 超时 "),
         NO_ERROR(200, " 成功 "),;

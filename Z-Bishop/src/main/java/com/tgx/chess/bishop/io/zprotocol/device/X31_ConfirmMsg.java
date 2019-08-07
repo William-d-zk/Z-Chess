@@ -24,13 +24,15 @@
 
 package com.tgx.chess.bishop.io.zprotocol.device;
 
-import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
-import com.tgx.chess.bishop.io.zprotocol.ZContext;
+import com.tgx.chess.bishop.io.zprotocol.ZCommand;
 import com.tgx.chess.king.base.util.IoUtil;
 
+/**
+ * @author william.d.zk
+ */
 public class X31_ConfirmMsg
         extends
-        BaseCommand<ZContext>
+        ZCommand
 {
     public final static int COMMAND = 0x31;
 
@@ -47,7 +49,7 @@ public class X31_ConfirmMsg
     @Override
     public int getPriority()
     {
-        return QOS_09_CONFIRM_MESSAGE;
+        return QOS_PRIORITY_09_CONFIRM_MESSAGE;
     }
 
     private byte   status;

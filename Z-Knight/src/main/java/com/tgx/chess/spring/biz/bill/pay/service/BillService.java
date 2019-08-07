@@ -40,6 +40,9 @@ import com.tgx.chess.spring.device.model.DeviceEntity;
 import com.tgx.chess.spring.device.repository.ClientRepository;
 import com.tgx.chess.spring.device.repository.DeviceRepository;
 
+/**
+ * @author william.d.zk
+ */
 @Service
 public class BillService
 {
@@ -65,9 +68,9 @@ public class BillService
         return Optional.ofNullable(_DeviceRepository.findByMac(mac));
     }
 
-    public Optional<ClientEntity> findClientByName(String name)
+    public Optional<ClientEntity> findClientById(long id)
     {
-        return Optional.ofNullable(_ClientRepository.findByAuth(name));
+        return _ClientRepository.findById(id);
     }
 
     public Optional<BillEntity> findByBill(String bill)

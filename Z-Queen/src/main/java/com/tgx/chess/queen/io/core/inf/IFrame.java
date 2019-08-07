@@ -26,20 +26,32 @@ package com.tgx.chess.queen.io.core.inf;
 
 import com.tgx.chess.king.base.inf.IReset;
 
+/**
+ * @author william.d.zk
+ */
 public interface IFrame
         extends
         IReset,
         IProtocol
 {
-    boolean isNoCtrl();
-
-    boolean isCtrl();
 
     void setCtrl(byte ctrl);
 
     void setPayload(byte[] payload);
 
-    default int getSuperSerial()
+    byte[] getPayload();
+
+    byte getCtrl();
+
+    boolean isCtrl();
+
+    default IPacket translate()
+    {
+        return null;
+    }
+
+    @Override
+    default int superSerial()
     {
         return FRAME_SERIAL;
     }

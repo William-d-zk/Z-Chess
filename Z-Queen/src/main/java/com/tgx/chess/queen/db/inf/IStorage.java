@@ -36,7 +36,7 @@ public interface IStorage
         IProtocol
 {
     @Override
-    default int getSuperSerial()
+    default int superSerial()
     {
         return DB_SERIAL;
     }
@@ -45,10 +45,9 @@ public interface IStorage
     {
     }
 
-    default long getPrimaryKey()
-    {
-        return -1;
-    }
+    long getPrimaryKey();
+
+    void setPrimaryKey(long key);
 
     default byte[] getSecondaryByteArrayKey()
     {
@@ -65,8 +64,26 @@ public interface IStorage
         return Operation.OP_NULL;
     }
 
-    default void setOperation(Operation op)
+    void setOperation(Operation op);
+
+    default Strategy getStrategy()
     {
+        return Strategy.CLEAN;
+    }
+
+    void setStrategy(Strategy strategy);
+
+    enum Strategy
+    {
+        /**
+         * 状态值需要进行持久化
+         */
+        RETAIN,
+        /**
+         * 会话状态不保持
+         * 每次声明会话都清除之前的状态。
+         */
+        CLEAN;
     }
 
     enum Operation
@@ -77,9 +94,11 @@ public interface IStorage
         OP_APPEND(Byte.parseByte("00000111", 2)),
         OP_REMOVE(Byte.parseByte("00010001", 2)),
         OP_DELETE(Byte.parseByte("00011001", 2)),
+        OP_RESET(Byte.parseByte("00100000", 2)),
+        OP_RETRY(Byte.parseByte("01000000", 2)),
         OP_INVALID((byte) Integer.parseInt("10000000", 2));
 
-        byte _Value;
+        private final byte _Value;
 
         Operation(byte value)
         {

@@ -39,16 +39,17 @@ public class IPParser
      * format will be valid.
      */
     // 0.0.0.0-255.255.255.255
-    private final static String ipv4segment = "(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])";
+    private final static String ipv4segment = "(25[0-5]|(2[0-4]|1?[0-9])?[0-9])";
 
     // 0-65535
-    private final static String portsegment         = ":(?:6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|" + "6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{1,3}|[0-9])";
-    private final static String ipv4address         = "(" + ipv4segment + "\\.){3,3}" + ipv4segment;
+    private final static String portsegment         = ":(?:6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|"
+                                                      + "6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{1,3}|[0-9])";
+    private final static String ipv4address         = "(" + ipv4segment + "\\.){3}" + ipv4segment;
     private final static String ipv4addressWithPort = ipv4address + portsegment + "?";
     private final static String ipv6segment         = "[a-fA-F0-9]{1,4}";
     private final static String ipv6address         = "(" +
     // 1:2:3:4:5:6:7:8
-                                                      "(" + ipv6segment + ":){7,7}" + ipv6segment + "|" +
+                                                      "(" + ipv6segment + ":){7}" + ipv6segment + "|" +
                                                       // 1::, 1:2:3:4:5:6:7::
                                                       "(" + ipv6segment + ":){1,7}:|" +
                                                       // 1::8, 1:2:3:4:5:6::8,
@@ -79,7 +80,7 @@ public class IPParser
                                                       // fe80::7:8%1 (link-local
                                                       // IPv6 addresses with
                                                       // zone index)
-                                                      "fe80:(:" + ipv6segment + "){0,4}%[0-9a-zA-Z]{1,}|" +
+                                                      "fe80:(:" + ipv6segment + "){0,4}%[0-9a-zA-Z]+|" +
                                                       // ::255.255.255.255,
                                                       // ::ffff:255.255.255.255,
                                                       // ::ffff:0:255.255.255.255
@@ -87,14 +88,14 @@ public class IPParser
                                                       // addresses and
                                                       // IPv4-translated
                                                       // addresses)
-                                                      "::(ffff(:0{1,4}){0,1}:){0,1}" + ipv4address + "|" +
+                                                      "::(ffff(:0{1,4})?:)?" + ipv4address + "|" +
                                                       // 2001:db8:3:4::192.0.2.33,
                                                       // 64:ff9b::192.0.2.33
                                                       // (IPv4-Embedded
                                                       // IPv6 Address)
                                                       "(" + ipv6segment + ":){1,4}:" + ipv4address + ")";
 
-    private final static String ipv6addressWithPort = "\\[" + ipv6address + "\\]" + portsegment + "?";
+    private final static String ipv6addressWithPort = "\\[" + ipv6address + "]" + portsegment + "?";
 
     /**
      * Parses ipv4 and ipv6 addresses. Emits each described IP address as a
@@ -165,17 +166,16 @@ public class IPParser
         return null;
     }
 
-    public final static String ipv4Join(String ip, int port)
+    public static String ipv4Join(String ip, int port)
     {
-        return new StringBuilder(ip).append(':')
-                                    .append(port)
-                                    .toString();
+        return ip + ':' + port;
     }
 
     public static void main(String[] args)
     {
         Pair<InetAddress,
              Integer> result = parse("localhost:5226");
+        assert result != null;
         System.out.println(result.first()
                                  .getHostAddress());
     }

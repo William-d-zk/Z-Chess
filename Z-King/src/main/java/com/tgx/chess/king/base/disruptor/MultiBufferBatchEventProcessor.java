@@ -104,8 +104,12 @@ public class MultiBufferBatchEventProcessor<T>
                         barrier_total_count += delta;
                     }
                     //没有任何 前置生产者的存在事件的时候暂停 5ms 释放 CPU，不超过100个事件，将释放 CPU
-                    if (barrier_total_count == 0) LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(5));
-                    else if (barrier_total_count < 100) Thread.yield();
+                    if (barrier_total_count == 0) {
+                        LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(5));
+                    }
+                    else if (barrier_total_count < 100) {
+                        Thread.yield();
+                    }
                 }
                 catch (AlertException e) {
                     if (!isRunning()) {

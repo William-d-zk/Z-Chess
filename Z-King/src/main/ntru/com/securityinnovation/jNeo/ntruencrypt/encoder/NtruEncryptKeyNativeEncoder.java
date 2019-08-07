@@ -80,7 +80,10 @@ public class NtruEncryptKeyNativeEncoder
     PrivKeyFormatter pickDefaultPrivKeyFormatter(KeyParams keyParams)
     {
         int packedFLength = (keyParams.N + 4) / 5;
-        int packedListedFLength = (keyParams.df * 2 * com.securityinnovation.jNeo.math.BitPack.countBits(keyParams.q + 7) / 8);
+        int packedListedFLength = (keyParams.df
+                                   * 2
+                                   * com.securityinnovation.jNeo.math.BitPack.countBits(keyParams.q + 7)
+                                   / 8);
         if (packedFLength < packedListedFLength) return new PrivKeyFormatter_PrivateKeyPackedFv1();
         else return new PrivKeyFormatter_PrivateKeyListedFv1();
     }

@@ -27,18 +27,19 @@ import java.util.concurrent.TimeUnit;
 
 import com.tgx.chess.king.config.Config;
 import com.tgx.chess.queen.config.QueenConfigKey;
+import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.ISessionCreator;
 
 /**
  * @author William.d.zk
  */
-public abstract class AioCreator
+public abstract class AioCreator<C extends IContext<C>>
         implements
-        ISessionCreator
+        ISessionCreator<C>
 {
     private final Config _Config;
 
-    public AioCreator(Config config)
+    protected AioCreator(Config config)
     {
         _Config = config.load(getConfigName());
     }
@@ -46,25 +47,33 @@ public abstract class AioCreator
     @Override
     public int setSNF()
     {
-        return _Config.getConfigValue(getConfigGroup(), QueenConfigKey.OWNER_SOCKET_OPTION, QueenConfigKey.KEY_OPTION_SNF);
+        return _Config.getConfigValue(getConfigGroup(),
+                                      QueenConfigKey.OWNER_SOCKET_OPTION,
+                                      QueenConfigKey.KEY_OPTION_SNF);
     }
 
     @Override
     public int setRCV()
     {
-        return _Config.getConfigValue(getConfigGroup(), QueenConfigKey.OWNER_SOCKET_OPTION, QueenConfigKey.KEY_OPTION_RCV);
+        return _Config.getConfigValue(getConfigGroup(),
+                                      QueenConfigKey.OWNER_SOCKET_OPTION,
+                                      QueenConfigKey.KEY_OPTION_RCV);
     }
 
     @Override
     public int setQueueMax()
     {
-        return _Config.getConfigValue(getConfigGroup(), QueenConfigKey.OWNER_SOCKET_SEND, QueenConfigKey.KEY_SEND_QUEUE_SIZE);
+        return _Config.getConfigValue(getConfigGroup(),
+                                      QueenConfigKey.OWNER_SOCKET_SEND,
+                                      QueenConfigKey.KEY_SEND_QUEUE_SIZE);
     }
 
     @Override
     public int setReadTimeOut()
     {
-        int duration = _Config.getConfigValue(getConfigGroup(), QueenConfigKey.OWNER_SOCKET_IN, QueenConfigKey.KEY_IN_MINUTE);
+        int duration = _Config.getConfigValue(getConfigGroup(),
+                                              QueenConfigKey.OWNER_SOCKET_IN,
+                                              QueenConfigKey.KEY_IN_MINUTE);
         return (int) TimeUnit.MINUTES.toSeconds(duration);
     }
 
@@ -77,6 +86,8 @@ public abstract class AioCreator
     @Override
     public boolean setKeepAlive()
     {
-        return _Config.getConfigValue(getConfigGroup(), QueenConfigKey.OWNER_SOCKET_OPTION, QueenConfigKey.KEY_OPTION_KEEP_ALIVE);
+        return _Config.getConfigValue(getConfigGroup(),
+                                      QueenConfigKey.OWNER_SOCKET_OPTION,
+                                      QueenConfigKey.KEY_OPTION_KEEP_ALIVE);
     }
 }

@@ -25,16 +25,15 @@ package com.tgx.chess.bishop.io.zprotocol.ztls;
 
 import java.util.Objects;
 
+import com.tgx.chess.bishop.io.zprotocol.ZCommand;
 import com.tgx.chess.king.base.util.IoUtil;
-import com.tgx.chess.bishop.io.zprotocol.ZContext;
-import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
 
 /**
  * @author William.d.zk
  */
 public class X03_Cipher
         extends
-        BaseCommand<ZContext>
+        ZCommand
 {
     public final static int COMMAND = 0x03;
     public int              pubKeyId;
@@ -47,7 +46,7 @@ public class X03_Cipher
     }
 
     @Override
-    public boolean isMappingCommand()
+    public boolean isMapping()
     {
         return true;
     }
@@ -90,14 +89,14 @@ public class X03_Cipher
     }
 
     @Override
-    public int getPriority()
-    {
-        return QOS_00_NETWORK_CONTROL;
-    }
-
-    @Override
     public String toString()
     {
         return String.format("%s,public-key: %d | rc4-key: %d", super.toString(), pubKeyId, symmetricKeyId);
+    }
+
+    @Override
+    public Level getLevel()
+    {
+        return Level.AT_LEAST_ONCE;
     }
 }

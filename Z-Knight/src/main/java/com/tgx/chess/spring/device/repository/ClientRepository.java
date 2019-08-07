@@ -29,11 +29,13 @@ import org.springframework.stereotype.Repository;
 
 import com.tgx.chess.spring.device.model.ClientEntity;
 
+/**
+ * @author william.d.zk
+ */
 @Repository
 public interface ClientRepository
         extends
         JpaRepository<ClientEntity,
                       Long>
 {
-    ClientEntity findByAuth(String auth);
 }

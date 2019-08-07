@@ -33,12 +33,15 @@ import org.hibernate.id.IdentifierGenerator;
 import com.tgx.chess.bishop.biz.db.dao.ZUID;
 import com.tgx.chess.king.base.log.Logger;
 
+/**
+ * @author william.d.zk
+ */
 public class ZGenerator
         implements
         IdentifierGenerator
 {
-    private final Logger      _Log  = Logger.getLogger(getClass().getName());
-    private final static ZUID _ZUID = new ZUID();
+    private final Logger      _Logger = Logger.getLogger(getClass().getName());
+    private final static ZUID _ZUID   = new ZUID();
 
     public ZGenerator()
     {
@@ -47,11 +50,12 @@ public class ZGenerator
     @Override
     public Serializable generate(SharedSessionContractImplementor session, Object object) throws HibernateException
     {
-        _Log.info("generate id %s", object);
-        return next();
+        long id = next();
+        _Logger.info("generate id %x, %s", id, object);
+        return id;
     }
 
-    public long next()
+    private long next()
     {
         return _ZUID.getId();
     }

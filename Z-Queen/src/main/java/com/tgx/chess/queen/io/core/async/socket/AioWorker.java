@@ -29,6 +29,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.lmax.disruptor.RingBuffer;
+import com.tgx.chess.king.base.inf.IPair;
+import com.tgx.chess.king.base.inf.ITriple;
+import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IError.Type;
 import com.tgx.chess.queen.event.inf.IOperator;
@@ -36,15 +39,10 @@ import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.IAioConnector;
 import com.tgx.chess.queen.io.core.inf.IAioServer;
 import com.tgx.chess.queen.io.core.inf.IAvailable;
-import com.tgx.chess.queen.io.core.inf.ICommandCreator;
-import com.tgx.chess.queen.io.core.inf.IConnectActive;
-import com.tgx.chess.queen.io.core.inf.IConnectionContext;
+import com.tgx.chess.queen.io.core.inf.IConnectActivity;
+import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IPacket;
 import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.inf.ISessionCreated;
-import com.tgx.chess.queen.io.core.inf.ISessionCreator;
-import com.tgx.chess.queen.io.core.inf.IoHandler;
-import com.tgx.chess.queen.io.core.manager.ConnectionContext;
 
 /**
  * @author William.d.zk
@@ -91,21 +89,22 @@ public class AioWorker
     }
 
     public <T,
-            A> void publish(final IOperator<T,
-                                            A> op,
+            A,
+            R> void publish(final IOperator<T,
+                                            A,
+                                            R> op,
                             final IError.Type eType,
                             final IOperator.Type type,
-                            final T t,
-                            final A a)
+                            IPair content)
     {
         long sequence = _Producer.next();
         try {
             QEvent event = _Producer.get(sequence);
             if (eType.equals(IError.Type.NO_ERROR)) {
-                event.produce(type, t, a, op);
+                event.produce(type, content, op);
             }
             else {
-                event.error(eType, t, a, op);
+                event.error(eType, content, op);
             }
 
         }
@@ -114,70 +113,71 @@ public class AioWorker
         }
     }
 
-    public void publishRead(final IOperator<IPacket,
-                                            ISession> op,
-                            IPacket pack,
-                            final ISession session)
+    public <C extends IContext<C>> void publishRead(final IOperator<IPacket,
+                                                                    ISession<C>,
+                                                                    ITriple> op,
+                                                    IPacket pack,
+                                                    final ISession<C> session)
     {
-        publish(op, IError.Type.NO_ERROR, IOperator.Type.READ, pack, session);
+        publish(op, IError.Type.NO_ERROR, IOperator.Type.READ, new Pair<>(pack, session));
     }
 
-    public void publishWrote(final IOperator<Integer,
-                                             ISession> op,
-                             final int wroteCnt,
-                             final ISession session)
+    public <C extends IContext<C>> void publishWrote(final IOperator<Integer,
+                                                                     ISession<C>,
+                                                                     ITriple> op,
+                                                     final int wroteCnt,
+                                                     final ISession<C> session)
     {
-        publish(op, IError.Type.NO_ERROR, IOperator.Type.WROTE, wroteCnt, session);
+        publish(op, IError.Type.NO_ERROR, IOperator.Type.WROTE, new Pair<>(wroteCnt, session));
     }
 
-    public <T> void publishWroteError(final IOperator<T,
-                                                      ISession> op,
-                                      final IError.Type eType,
-                                      final T t,
-                                      final ISession session)
+    public <T,
+            C extends IContext<C>> void publishWroteError(final IOperator<T,
+                                                                          ISession<C>,
+                                                                          ITriple> op,
+                                                          final IError.Type eType,
+                                                          final T t,
+                                                          final ISession<C> session)
     {
-        publish(op, eType, IOperator.Type.NULL, t, session);
+        publish(op, eType, IOperator.Type.NULL, new Pair<>(t, session));
     }
 
-    public void publishConnected(final IOperator<IConnectionContext,
-                                                 AsynchronousSocketChannel> op,
-                                 final IoHandler handler,
-                                 final IConnectActive active,
-                                 final ISessionCreator sessionCreator,
-                                 final ICommandCreator commandCreator,
-                                 final ISessionCreated sessionCreated,
-                                 final AsynchronousSocketChannel channel)
+    public <C extends IContext<C>> void publishConnected(final IOperator<IConnectActivity<C>,
+                                                                         AsynchronousSocketChannel,
+                                                                         ITriple> op,
+                                                         final IConnectActivity<C> activity,
+                                                         final AsynchronousSocketChannel channel)
     {
-        publish(op,
-                IError.Type.NO_ERROR,
-                IOperator.Type.CONNECTED,
-                new ConnectionContext(handler, active, sessionCreator, commandCreator, sessionCreated),
-                channel);
+        publish(op, IError.Type.NO_ERROR, IOperator.Type.CONNECTED, new Pair<>(activity, channel));
     }
 
-    public void publishConnectingError(final IOperator<Throwable,
-                                                       IAioConnector> op,
-                                       final Throwable e,
-                                       final IAioConnector cActive)
+    public <C extends IContext<C>> void publishConnectingError(final IOperator<Throwable,
+                                                                               IAioConnector<C>,
+                                                                               IAioConnector<C>> op,
+                                                               final Throwable e,
+                                                               final IAioConnector<C> cActive)
     {
-        publish(op, IError.Type.CONNECT_FAILED, IOperator.Type.NULL, e, cActive);
+        publish(op, IError.Type.CONNECT_FAILED, IOperator.Type.NULL, new Pair<>(e, cActive));
     }
 
-    public void publishAcceptError(final IOperator<Throwable,
-                                                   IAioServer> op,
-                                   final Throwable e,
-                                   final IAioServer cActive)
+    public <C extends IContext<C>> void publishAcceptError(final IOperator<Throwable,
+                                                                           IAioServer<C>,
+                                                                           IAioServer<C>> op,
+                                                           final Throwable e,
+                                                           final IAioServer<C> cActive)
     {
-        publish(op, Type.ACCEPT_FAILED, IOperator.Type.NULL, e, cActive);
+        publish(op, Type.ACCEPT_FAILED, IOperator.Type.NULL, new Pair<>(e, cActive));
     }
 
-    public <T> void publishReadError(final IOperator<T,
-                                                     ISession> op,
-                                     final IError.Type eType,
-                                     final T t,
-                                     final ISession session)
+    public <T,
+            C extends IContext<C>> void publishReadError(final IOperator<T,
+                                                                         ISession<C>,
+                                                                         ?> op,
+                                                         final IError.Type eType,
+                                                         final T t,
+                                                         final ISession<C> session)
     {
-        publish(op, eType, IOperator.Type.NULL, t, session);
+        publish(op, eType, IOperator.Type.NULL, new Pair<>(t, session));
     }
 
 }

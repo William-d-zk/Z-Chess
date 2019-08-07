@@ -32,37 +32,40 @@ import static com.tgx.chess.queen.event.inf.IOperator.Type.WROTE;
 import java.nio.channels.AsynchronousSocketChannel;
 
 import com.lmax.disruptor.RingBuffer;
+import com.tgx.chess.king.base.inf.IPair;
+import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
-import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.IConnectActive;
-import com.tgx.chess.queen.io.core.inf.IConnectionContext;
-import com.tgx.chess.queen.io.core.inf.IPacket;
+import com.tgx.chess.queen.io.core.inf.IConnectActivity;
+import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
-public class ClientIoDispatcher
+/**
+ * @author william.d.zk
+ */
+public class ClientIoDispatcher<C extends IContext<C>>
         implements
-        IPipeEventHandler<QEvent,
-                          QEvent>
+        IPipeEventHandler<QEvent>
 {
-    private final RingBuffer<QEvent> _LinkIo;
-    private final RingBuffer<QEvent> _Decoder;
-    private final RingBuffer<QEvent> _Wrote;
-    private final RingBuffer<QEvent> _Error;
-    private final Logger             _Log = Logger.getLogger(getClass().getName());
+    private final RingBuffer<QEvent> _LinkIoPipe;
+    private final RingBuffer<QEvent> _DecoderPipe;
+    private final RingBuffer<QEvent> _WrotePipe;
+    private final RingBuffer<QEvent> _ErrorPipe;
+    private final Logger             _Logger = Logger.getLogger(getClass().getName());
 
-    public ClientIoDispatcher(RingBuffer<QEvent> linkIo,
-                              RingBuffer<QEvent> decoder,
-                              RingBuffer<QEvent> wrote,
-                              RingBuffer<QEvent> error)
+    public ClientIoDispatcher(RingBuffer<QEvent> linkIoPipe,
+                              RingBuffer<QEvent> decoderPipe,
+                              RingBuffer<QEvent> wrotePipe,
+                              RingBuffer<QEvent> errorPipe)
     {
-        _LinkIo = linkIo;
-        _Decoder = decoder;
-        _Wrote = wrote;
-        _Error = error;
+
+        _LinkIoPipe = linkIoPipe;
+        _DecoderPipe = decoderPipe;
+        _WrotePipe = wrotePipe;
+        _ErrorPipe = errorPipe;
     }
 
     @Override
@@ -71,74 +74,76 @@ public class ClientIoDispatcher
         switch (event.getErrorType())
         {
             case CONNECT_FAILED:
-                IOperator<Throwable,
-                          IConnectActive> connectFailedOperator = event.getEventOp();
-                Pair<Throwable,
-                     IConnectActive> connectFailedContent = event.getContent();
+                IPair connectFailedContent = event.getContent();
                 Throwable throwable = connectFailedContent.first();
-                IConnectActive connectActive = connectFailedContent.second();
-                error(_LinkIo, event.getErrorType(), throwable, connectActive, connectFailedOperator);
+                IConnectActivity<C> connectActive = connectFailedContent.second();
+                IOperator<Throwable,
+                          IConnectActivity<C>,
+                          ITriple> connectFailedOperator = event.getEventOp();
+                error(_LinkIoPipe, event.getErrorType(), new Pair<>(throwable, connectActive), connectFailedOperator);
                 break;
             case CLOSED:
                 //transfer
+                IPair closedContent = event.getContent();
+                ISession<C> session = closedContent.second();
                 IOperator<Void,
-                          ISession> closedOperator = event.getEventOp();
-                Pair<Void,
-                     ISession> closedContent = event.getContent();
-                ISession session = closedContent.second();
-                if (!session.isClosed()) error(_LinkIo, event.getErrorType(), closedContent.first(), closedContent.second(), closedOperator);
+                          ISession<C>,
+                          Void> closedOperator = event.getEventOp();
+                if (!session.isClosed()) {
+                    error(_LinkIoPipe, event.getErrorType(), new Pair<>(null, session), closedOperator);
+                }
                 break;
             case NO_ERROR:
             {
                 switch (event.getEventType())
                 {
                     case CONNECTED:
-                        IOperator<IConnectionContext,
-                                  AsynchronousSocketChannel> connectOperator = event.getEventOp();
-                        Pair<IConnectionContext,
-                             AsynchronousSocketChannel> connectContent = event.getContent();
-                        IConnectionContext connectionContext = connectContent.first();
+                        IPair connectContent = event.getContent();
+                        IConnectActivity<C> connectActivity = connectContent.first();
                         AsynchronousSocketChannel channel = connectContent.second();
-                        publish(_LinkIo, CONNECTED, connectionContext, channel, connectOperator);
+                        IOperator<IConnectActivity<C>,
+                                  AsynchronousSocketChannel,
+                                  ITriple> connectOperator = event.getEventOp();
+                        publish(_LinkIoPipe, CONNECTED, new Pair<>(connectActivity, channel), connectOperator);
                         break;
                     case READ:
-                        Pair<IPacket,
-                             ISession> readContent = event.getContent();
-                        publish(_Decoder, TRANSFER, readContent.first(), readContent.second(), event.getEventOp());
+                        IPair readContent = event.getContent();
+                        publish(_DecoderPipe, TRANSFER, readContent, event.getEventOp());
                         break;
                     case WROTE:
-                        Pair<Integer,
-                             ISession> wroteContent = event.getContent();
-                        publish(_Wrote, WROTE, wroteContent.first(), wroteContent.second(), event.getEventOp());
+                        IPair wroteContent = event.getContent();
+                        publish(_WrotePipe, WROTE, wroteContent, event.getEventOp());
                         break;
                     case CLOSE:
                         IOperator<Void,
-                                  ISession> closeOperator = event.getEventOp();
-                        Pair<Void,
-                             ISession> closeContent = event.getContent();
+                                  ISession<C>,
+                                  Void> closeOperator = event.getEventOp();
+                        IPair closeContent = event.getContent();
                         session = closeContent.second();
-                        if (!session.isClosed()) error(_Error, CLOSED, closeContent.first(), closeContent.second(), closeOperator);
+                        if (!session.isClosed()) {
+                            error(_ErrorPipe, CLOSED, closeContent, closeOperator);
+                        }
                         break;
                     default:
-                        _Log.warning(String.format(" wrong type %s in ClientIoDispatcher", event.getEventType()));
+                        _Logger.warning(String.format(" wrong type %s in ClientIoDispatcher", event.getEventType()));
                         break;
                 }
             }
                 break;
             default:
                 //convert & transfer
+                IPair errorContent = event.getContent();
                 IOperator<Throwable,
-                          ISession> errorOperator = event.getEventOp();
-                Pair<Throwable,
-                     ISession> errorContent = event.getContent();
+                          ISession<C>,
+                          ITriple> errorOperator = event.getEventOp();
                 session = errorContent.second();
                 if (!session.isClosed()) {
                     throwable = errorContent.first();
-                    Triple<Void,
-                           ISession,
-                           IOperator<Void,
-                                     ISession>> transferResult = errorOperator.handle(throwable, session);
-                    error(_LinkIo, event.getErrorType(), transferResult.first(), session, transferResult.third());
+                    ITriple transferResult = errorOperator.handle(throwable, session);
+                    error(_LinkIoPipe,
+                          event.getErrorType(),
+                          new Pair<>(transferResult.first(), session),
+                          transferResult.third());
                 }
                 break;
         }

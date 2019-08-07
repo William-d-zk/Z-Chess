@@ -29,8 +29,9 @@ import com.tgx.chess.queen.event.inf.IOperator;
  * @author William.d.zk
  */
 @FunctionalInterface
-public interface IConnectError
+public interface IConnectError<C extends IContext<C>>
 {
     IOperator<Throwable,
-              ? extends IConnectActive> getErrorOperator();
+              ? extends IConnectActivity<C>,
+              ? extends IConnectActivity<C>> getErrorOperator();
 }

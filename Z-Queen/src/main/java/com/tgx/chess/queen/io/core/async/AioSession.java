@@ -23,6 +23,7 @@
  */
 package com.tgx.chess.queen.io.core.async;
 
+import static com.tgx.chess.queen.io.core.inf.IContext.SESSION_FLUSHED;
 import static com.tgx.chess.queen.io.core.inf.IContext.SESSION_IDLE;
 import static com.tgx.chess.queen.io.core.inf.IContext.SESSION_PENDING;
 import static com.tgx.chess.queen.io.core.inf.IContext.SESSION_SENDING;
@@ -33,6 +34,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
 import java.nio.channels.NotYetConnectedException;
+import java.nio.channels.ReadPendingException;
 import java.nio.channels.ShutdownChannelGroupException;
 import java.nio.channels.WritePendingException;
 import java.util.LinkedList;
@@ -42,26 +44,24 @@ import java.util.concurrent.TimeUnit;
 
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.ArrayUtil;
-import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.io.core.inf.IConnectActive;
+import com.tgx.chess.queen.io.core.inf.IConnectActivity;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IContextCreator;
 import com.tgx.chess.queen.io.core.inf.IPacket;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
-import com.tgx.chess.queen.io.core.inf.IoHandler;
 
 /**
  * @author William.d.zk
  */
-public class AioSession
+public class AioSession<C extends IContext<C>>
         extends
         LinkedList<IPacket>
         implements
-        ISession
+        ISession<C>
 {
-    private static Logger _Log = Logger.getLogger(AioSession.class.getSimpleName());
+    private static Logger _Logger = Logger.getLogger(AioSession.class.getSimpleName());
     /*--------------------------------------------------------------------------------------------------------------*/
     private final int                       _ReadTimeOut;
     private final int                       _WriteTimeOut;
@@ -70,19 +70,16 @@ public class AioSession
     /*
      * 与系统的 SocketOption 的 RecvBuffer 相等大小， 至少可以一次性将系统 Buffer 中的数据全部转存
      */
-    private final ByteBuffer                   _RecvBuf;
-    private final IContext                     _Ctx;
-    private final int                          _HashCode;
-    private final IoHandler                    _IoHandler;
-    private final ISessionDismiss              _DismissCallback;
-    private final IOperator<IPacket,
-                            ISession>          _InOperator;
-    private final int                          _QueueSizeMax;
-    private final int                          _HaIndex, _PortIndex;
+    private final ByteBuffer         _RecvBuf;
+    private final C                  _Ctx;
+    private final int                _HashCode;
+    private final ISessionDismiss<C> _DismissCallback;
+    private final int                _QueueSizeMax;
+    private final int                _HaIndex, _PortIndex;
     /*----------------------------------------------------------------------------------------------------------------*/
 
     /*----------------------------------------------------------------------------------------------------------------*/
-    private long mIndex = _DEFAULT_INDEX;
+    private long mIndex = DEFAULT_INDEX;
     /*
      * 此处并不会进行空间初始化，完全依赖于 Context 的 WrBuf 初始化大小
      */
@@ -92,11 +89,10 @@ public class AioSession
      */
     private long[] mPortChannels;
 
+    private long mHashKey;
     private int  mWroteExpect;
     private int  mSendingBlank;
-    private int  mWaitWrite;
     private long mReadTimeStamp;
-    private long hashKey;
 
     @Override
     public String toString()
@@ -105,44 +101,43 @@ public class AioSession
                              _HashCode,
                              _LocalAddress,
                              _RemoteAddress,
-                             _IoHandler,
+                             _Ctx.getSort(),
                              _HaIndex,
                              _PortIndex,
                              mIndex,
                              isClosed(),
-                             mWaitWrite,
+                             mSending.remaining(),
                              size());
     }
 
     public AioSession(final AsynchronousSocketChannel channel,
-                      final IConnectActive active,
-                      final IContextCreator contextCreator,
                       final ISessionOption sessionOption,
-                      final ISessionDismiss sessionDismiss,
-                      final IOperator<IPacket,
-                                      ISession> operator)
-            throws IOException
+                      final IContextCreator<C> contextCreator,
+                      final IConnectActivity<C> activity,
+                      final ISessionDismiss<C> sessionDismiss) throws IOException
     {
         Objects.requireNonNull(sessionOption);
+        Objects.requireNonNull(channel);
+        Objects.requireNonNull(contextCreator);
+        Objects.requireNonNull(activity);
+
         _Channel = channel;
-        _IoHandler = active.getHandler();
+        _HashCode = channel.hashCode();
+        mHashKey = _HashCode;
         _RemoteAddress = (InetSocketAddress) channel.getRemoteAddress();
         _LocalAddress = (InetSocketAddress) channel.getLocalAddress();
-        _DismissCallback = sessionDismiss;
-        _HashCode = channel.hashCode();
-        _PortIndex = active.getPortIndex();
-        _HaIndex = active.getHaIndex();
+        _PortIndex = activity.getPortIndex();
+        _HaIndex = activity.getHaIndex();
         sessionOption.setOptions(channel);
-        _Ctx = contextCreator.createContext(sessionOption, _IoHandler);
         _ReadTimeOut = sessionOption.setReadTimeOut();
         _WriteTimeOut = sessionOption.setWriteTimeOut();
         _RecvBuf = ByteBuffer.allocate(sessionOption.setRCV());
         _QueueSizeMax = sessionOption.setQueueMax();
-        _InOperator = operator;
+        _Ctx = contextCreator.createContext(sessionOption, activity.getSort());
         mSending = _Ctx.getWrBuffer();
         mSending.flip();
         mSendingBlank = mSending.capacity() - mSending.limit();
-        hashKey = _HashCode;
+        _DismissCallback = sessionDismiss;
     }
 
     @Override
@@ -206,7 +201,7 @@ public class AioSession
     @Override
     public final void close() throws IOException
     {
-        if (isClosed()) return;
+        if (isClosed()) { return; }
         _Ctx.close();
         _Channel.close();
     }
@@ -228,12 +223,12 @@ public class AioSession
     {
         mIndex = index;
         if (mIndex != -1L) {
-            hashKey = mIndex;
+            mHashKey = mIndex;
         }
     }
 
     @Override
-    public final void bindport2channel(long channelport)
+    public final void bindPort2Channel(long channelport)
     {
         mPortChannels = mPortChannels == null ? new long[] { channelport }
                                               : ArrayUtil.setSortAdd(channelport, mPortChannels);
@@ -248,7 +243,7 @@ public class AioSession
     @Override
     public final long getHashKey()
     {
-        return hashKey;
+        return mHashKey;
     }
 
     @Override
@@ -259,17 +254,20 @@ public class AioSession
 
     @Override
     public final void readNext(CompletionHandler<Integer,
-                                                 ISession> readHandler) throws NotYetConnectedException, ShutdownChannelGroupException
+                                                 ISession<C>> readHandler) throws NotYetConnectedException,
+                                                                           ReadPendingException,
+                                                                           ShutdownChannelGroupException
     {
-        if (isClosed()) return;
+        if (isClosed()) { return; }
         _RecvBuf.clear();
         _Channel.read(_RecvBuf, _ReadTimeOut, TimeUnit.SECONDS, this, readHandler);
     }
 
+    @Override
     public final ByteBuffer read(int length)
     {
-        if (length < 0) throw new IllegalArgumentException();
-        if (length != _RecvBuf.position()) throw new ArrayIndexOutOfBoundsException();
+        if (length < 0) { throw new IllegalArgumentException(); }
+        if (length != _RecvBuf.position()) { throw new ArrayIndexOutOfBoundsException(); }
         ByteBuffer read = ByteBuffer.allocate(length);
         _RecvBuf.flip();
         read.put(_RecvBuf);
@@ -278,13 +276,7 @@ public class AioSession
     }
 
     @Override
-    public IOperator<IPacket,
-                     ISession> getDecodeOperator()
-    {
-        return _InOperator;
-    }
-
-    public IContext getContext()
+    public C getContext()
     {
         return _Ctx;
     }
@@ -292,66 +284,53 @@ public class AioSession
     @Override
     public WRITE_STATUS write(IPacket ps,
                               CompletionHandler<Integer,
-                                                ISession> handler) throws WritePendingException,
-                                                                   NotYetConnectedException,
-                                                                   ShutdownChannelGroupException,
-                                                                   RejectedExecutionException
+                                                ISession<C>> handler) throws WritePendingException,
+                                                                      NotYetConnectedException,
+                                                                      ShutdownChannelGroupException,
+                                                                      RejectedExecutionException
     {
-        if (isClosed()) return WRITE_STATUS.CLOSED;
+        if (isClosed()) { return WRITE_STATUS.CLOSED; }
         ps.waitSend();
-        if (isEmpty()) {
-            WRITE_STATUS status = writeChannel(ps);
-            switch (status)
-            {
-                case IGNORE:
-                    return status;
-                case UNFINISHED:
-                    offer(ps);
-                case IN_SENDING:
-                    ps.send();
-                default:
-                    _Log.info("wait to write %d ,channel state %d ,less than sending %s",
-                              mWaitWrite,
-                              _Ctx.getChannelState(),
-                              _Ctx.channelStateLessThan(SESSION_SENDING));
-                    if (mWaitWrite > 0 && _Ctx.channelStateLessThan(SESSION_SENDING)) {
-                        flush(handler);
-                    }
-                    return status;
+        if (size() > _QueueSizeMax) { throw new RejectedExecutionException(); }
+        if (_Ctx.channelStateLessThan(SESSION_FLUSHED)) {
+            // mSending 未托管给系统
+            if (isEmpty()) {
+                switch (writePacket(ps))
+                {
+                    case IGNORE:
+                        return WRITE_STATUS.IGNORE;
+                    case UNFINISHED:
+                        //mSending 空间不足
+                        offer(ps);
+                    case IN_SENDING:
+                        ps.send();
+                }
             }
+            else {
+                offer(ps);
+                writeBuffed2Sending();
+            }
+            _Ctx.advanceChannelState(SESSION_SENDING);
+            flush(handler);
         }
-        else if (size() > _QueueSizeMax) throw new RejectedExecutionException();
         else {
-            IPacket fps = peek();
-            switch (writeChannel(fps))
-            {
-                case IGNORE:
-                    break;
-                case UNFINISHED:
-                case IN_SENDING:
-                    fps.send();
-                default:
-                    if (mWaitWrite > 0 && _Ctx.channelStateLessThan(SESSION_SENDING)) {
-                        flush(handler);
-                    }
-                    break;
-            }
             offer(ps);
-            return WRITE_STATUS.UNFINISHED;
+            _Logger.info("aio event delay, session buffed packets %d", size());
         }
+        return isEmpty() ? WRITE_STATUS.UNFINISHED
+                         : WRITE_STATUS.IN_SENDING;
     }
 
     @Override
     public WRITE_STATUS writeNext(int wroteCnt,
                                   CompletionHandler<Integer,
-                                                    ISession> handler) throws WritePendingException,
-                                                                       NotYetConnectedException,
-                                                                       ShutdownChannelGroupException,
-                                                                       RejectedExecutionException
+                                                    ISession<C>> handler) throws WritePendingException,
+                                                                          NotYetConnectedException,
+                                                                          ShutdownChannelGroupException,
+                                                                          RejectedExecutionException
     {
         if (isClosed()) { return WRITE_STATUS.CLOSED; }
         mWroteExpect -= wroteCnt;
-        mWaitWrite -= wroteCnt;
         if (mWroteExpect == 0) {
             mSending.clear();
             mSending.flip();
@@ -361,17 +340,25 @@ public class AioSession
             }
             _Ctx.advanceChannelState(SESSION_PENDING);
         }
+        writeBuffed2Sending();
+        _Ctx.advanceChannelState(SESSION_SENDING);
+        flush(handler);
+        return WRITE_STATUS.FLUSHED;
+    }
 
-        IPacket fps;
+    private void writeBuffed2Sending()
+    {
         /* 将待发的 packet 都写到 sending buffer 中，充满 sending buffer，
-           不会出现无限循环，writeChannel 中执行 remove 操作，由于都是在相同的线程中
+           不会出现无限循环，writePacket 中执行 remove 操作，由于都是在相同的线程中
            不存在线程安全问题
-         */
+        */
+        _Logger.info("session buffed packets %d", size());
+        IPacket fps;
         Loop:
         do {
             fps = peek();
             if (Objects.nonNull(fps)) {
-                switch (writeChannel(fps))
+                switch (writePacket(fps))
                 {
                     case IGNORE:
                         continue;
@@ -386,52 +373,56 @@ public class AioSession
             }
         }
         while (Objects.nonNull(fps));
-        if (mWaitWrite > 0) {
-            flush(handler);
-            return WRITE_STATUS.FLUSHED;
-        }
-        return WRITE_STATUS.IGNORE;
+        _Logger.info("session remain buffed %d", size());
     }
 
-    private WRITE_STATUS writeChannel(IPacket ps)
+    private WRITE_STATUS writePacket(IPacket ps)
     {
         ByteBuffer buf = ps.getBuffer();
         if (Objects.nonNull(buf) && buf.hasRemaining()) {
             mWroteExpect += buf.remaining();
-            mWaitWrite = mSending.remaining();
             int pos = mSending.limit();
             mSendingBlank = mSending.capacity() - pos;
             int size = Math.min(mSendingBlank, buf.remaining());
             mSending.limit(pos + size);
-            for (int i = 0; i < size; i++, mSendingBlank--, mWaitWrite++, pos++)
+            for (int i = 0; i < size; i++, mSendingBlank--, pos++) {
                 mSending.put(pos, buf.get());
-            if (buf.hasRemaining()) return WRITE_STATUS.UNFINISHED;
+            }
+            if (buf.hasRemaining()) {
+                return WRITE_STATUS.UNFINISHED;
+            }
             else {
                 remove(ps);
                 return WRITE_STATUS.IN_SENDING;
             }
         }
-        else remove(ps);
-        return WRITE_STATUS.IGNORE;
+        else {
+            remove(ps);
+            return WRITE_STATUS.IGNORE;
+        }
     }
 
     private void flush(CompletionHandler<Integer,
-                                         ISession> handler) throws WritePendingException, NotYetConnectedException, ShutdownChannelGroupException
+                                         ISession<C>> handler) throws WritePendingException,
+                                                               NotYetConnectedException,
+                                                               ShutdownChannelGroupException
     {
-        _Ctx.advanceChannelState(SESSION_SENDING);
-        _Channel.write(mSending, _WriteTimeOut, TimeUnit.SECONDS, this, handler);
+        if (_Ctx.channelStateLessThan(SESSION_FLUSHED) && mSending.hasRemaining()) {
+            _Ctx.advanceChannelState(SESSION_FLUSHED);
+            _Logger.info("session 0x%x %d,flush %d", getIndex(), getIndex(), mSending.remaining());
+            _Channel.write(mSending, _WriteTimeOut, TimeUnit.SECONDS, this, handler);
+        }
     }
 
     @Override
-    public IoHandler getHandler()
-    {
-        return _IoHandler;
-    }
-
-    @Override
-    public ISessionDismiss getDismissCallback()
+    public ISessionDismiss<C> getDismissCallback()
     {
         return _DismissCallback;
     }
 
+    @Override
+    public int getReadTimeOutSeconds()
+    {
+        return _ReadTimeOut;
+    }
 }

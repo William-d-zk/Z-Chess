@@ -28,6 +28,9 @@ import java.util.Objects;
 
 import com.tgx.chess.king.base.inf.ICode;
 
+/**
+ * @author William.d.zk
+ */
 public enum Code
         implements
         ICode

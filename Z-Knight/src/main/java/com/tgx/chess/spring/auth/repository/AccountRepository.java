@@ -29,6 +29,9 @@ import org.springframework.stereotype.Repository;
 
 import com.tgx.chess.spring.auth.model.AccountEntity;
 
+/**
+ * @author william.d.zk
+ */
 @Repository
 public interface AccountRepository
         extends
@@ -38,4 +41,6 @@ public interface AccountRepository
     AccountEntity findByEmail(String email);
 
     AccountEntity findByName(String name);
+
+    AccountEntity findByAuth(String auth);
 }

@@ -23,20 +23,21 @@
  */
 package com.tgx.chess.bishop.io.zprotocol.ztls;
 
+import com.tgx.chess.bishop.io.zfilter.ZContext;
+import com.tgx.chess.bishop.io.zprotocol.ZCommand;
 import com.tgx.chess.king.base.util.IoUtil;
-import com.tgx.chess.bishop.io.zprotocol.ZContext;
-import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
 
 /**
  * @author William.d.zk
  */
 public class X04_EncryptConfirm
         extends
-        BaseCommand<ZContext>
+        ZCommand
 {
     public final static int COMMAND = 0x04;
     public int              code;
     public int              symmetricKeyId;
+
     /* SHA256 */
     private byte[] mSign;
 
@@ -46,7 +47,7 @@ public class X04_EncryptConfirm
     }
 
     @Override
-    public boolean isMappingCommand()
+    public boolean isMapping()
     {
         return true;
     }
@@ -101,14 +102,25 @@ public class X04_EncryptConfirm
     }
 
     @Override
-    public int getPriority()
+    public String toString()
     {
-        return QOS_00_NETWORK_CONTROL;
+        return String.format("%s,code:%s,rc4-key: %d ,sign: %s",
+                             super.toString(),
+                             code,
+                             symmetricKeyId,
+                             IoUtil.bin2Hex(mSign));
     }
 
     @Override
-    public String toString()
+    public void dispose()
     {
-        return String.format("%s,code:%s,rc4-key: %d ,sign: %s", super.toString(), code, symmetricKeyId, IoUtil.bin2Hex(mSign));
+        mSign = null;
+        super.dispose();
+    }
+
+    @Override
+    public Level getLevel()
+    {
+        return Level.EXACTLY_ONCE;
     }
 }

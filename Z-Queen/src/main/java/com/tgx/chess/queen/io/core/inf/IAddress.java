@@ -26,7 +26,7 @@ package com.tgx.chess.queen.io.core.inf;
 import java.net.InetSocketAddress;
 
 /**
- * @author William.d.zk
+ * @author william.d.zk
  */
 public interface IAddress
 {

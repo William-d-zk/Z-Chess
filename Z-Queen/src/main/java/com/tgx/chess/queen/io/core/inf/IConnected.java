@@ -26,19 +26,15 @@ package com.tgx.chess.queen.io.core.inf;
 
 import java.nio.channels.AsynchronousSocketChannel;
 
+import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.queen.event.inf.IOperator;
 
 /**
  * @author William.d.zk
  */
-public interface IConnected
+public interface IConnected<C extends IContext<C>>
 {
-    IOperator<IConnectionContext,
-              AsynchronousSocketChannel> getConnectedOperator();
-
-    ISessionCreator getSessionCreator();
-
-    ISessionCreated getSessionCreated();
-
-    ICommandCreator getCommandCreator();
+    IOperator<IConnectActivity<C>,
+              AsynchronousSocketChannel,
+              ITriple> getConnectedOperator();
 }

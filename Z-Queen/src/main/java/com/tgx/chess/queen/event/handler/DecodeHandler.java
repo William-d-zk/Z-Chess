@@ -26,18 +26,18 @@ package com.tgx.chess.queen.event.handler;
 import static com.tgx.chess.queen.event.inf.IError.Type.FILTER_DECODE;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.DISPATCH;
 import static com.tgx.chess.queen.io.core.inf.IContext.DECODE_ERROR;
-import static com.tgx.chess.queen.io.core.inf.IoHandler.ERROR_OPERATOR;
 
 import java.util.Arrays;
 
-import com.lmax.disruptor.EventHandler;
+import com.tgx.chess.king.base.inf.IPair;
+import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
-import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.event.inf.IOperator;
+import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
 import com.tgx.chess.queen.io.core.inf.IPacket;
 import com.tgx.chess.queen.io.core.inf.ISession;
@@ -45,14 +45,15 @@ import com.tgx.chess.queen.io.core.inf.ISession;
 /**
  * @author William.d.zk
  */
-public class DecodeHandler
+public class DecodeHandler<C extends IContext<C>>
         implements
-        EventHandler<QEvent>
+        IPipeEventHandler<QEvent>
 {
-    protected final Logger          _Log = Logger.getLogger(getClass().getName());
-    protected final IEncryptHandler _EncryptHandler;
+    protected final Logger        _Logger = Logger.getLogger(getClass().getName());
+    private final IEncryptHandler _EncryptHandler;
 
-    public DecodeHandler(IEncryptHandler encryptHandler) {
+    public DecodeHandler(IEncryptHandler encryptHandler)
+    {
         _EncryptHandler = encryptHandler;
     }
 
@@ -67,40 +68,44 @@ public class DecodeHandler
         /*
         错误事件已在同级旁路中处理，此处不再关心错误处理
          */
+        IPair packetContent = event.getContent();
+        ISession<C> session = packetContent.second();
         IOperator<IPacket,
-                  ISession> packetOperator = event.getEventOp();
-        Pair<IPacket,
-             ISession> packetContent = event.getContent();
-        ISession session = packetContent.second();
-        IContext context = session.getContext();
+                  ISession<C>,
+                  ITriple> packetOperator = event.getEventOp();
+        C context = session.getContext();
         context.setEncryptHandler(_EncryptHandler);
         IPacket packet = packetContent.first();
         if (!context.isInErrorState()) {
             try {
-                Triple<ICommand[],
-                       ISession,
-                       IOperator<ICommand[],
-                                 ISession>> result = packetOperator.handle(packet, session);
-                _Log.info("decoded commands:%s", Arrays.toString(result.first()));
-                transfer(event, result.first(), session, result.third());
+                ITriple result = packetOperator.handle(packet, session);
+                IControl<C>[] commands = result.first();
+                _Logger.info("decoded commands:\n%s", Arrays.toString(commands));
+                transfer(event, commands, session, result.third());
             }
             catch (Exception e) {
-                _Log.warning(String.format("read decode error\n %s", session.toString()), e);
+                _Logger.warning(String.format("read decode error\n%s", session.toString()), e);
                 context.setInState(DECODE_ERROR);
                 //此处为Pipeline中间环节，使用event进行事件传递，不使用dispatcher
-                event.error(FILTER_DECODE, e, session, ERROR_OPERATOR());
+                event.error(FILTER_DECODE,
+                            new Pair<>(e, session),
+                            session.getContext()
+                                   .getSort()
+                                   .getError());
             }
         }
-        else event.ignore();
+        else {
+            event.ignore();
+        }
     }
 
     protected void transfer(QEvent event,
-                            ICommand[] commands,
-                            ISession session,
-                            IOperator<ICommand[],
-                                      ISession> operator)
+                            IControl<C>[] commands,
+                            ISession<C> session,
+                            IOperator<IControl<C>[],
+                                      ISession<C>,
+                                      ITriple> operator)
     {
-        event.produce(DISPATCH, commands, session, operator);
+        event.produce(DISPATCH, new Pair<>(commands, session), operator);
     }
-
 }

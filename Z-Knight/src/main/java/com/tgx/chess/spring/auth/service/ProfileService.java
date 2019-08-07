@@ -30,6 +30,9 @@ import org.springframework.stereotype.Service;
 import com.tgx.chess.spring.auth.model.ProfileEntity;
 import com.tgx.chess.spring.auth.repository.ProfileRepository;
 
+/**
+ * @author william.d.zk
+ */
 @Service
 public class ProfileService
 {

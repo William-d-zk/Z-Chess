@@ -33,6 +33,9 @@ import org.springframework.stereotype.Repository;
 import com.tgx.chess.spring.biz.bill.pay.model.BillEntity;
 import com.tgx.chess.spring.biz.bill.pay.model.ItemEntity;
 
+/**
+ * @author william.d.zk
+ */
 @Repository
 public interface BillRepository
         extends

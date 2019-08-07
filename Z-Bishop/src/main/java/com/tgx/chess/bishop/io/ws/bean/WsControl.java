@@ -23,10 +23,14 @@
  */
 package com.tgx.chess.bishop.io.ws.bean;
 
+import static com.tgx.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
+
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
-import com.tgx.chess.queen.io.core.inf.ICommand;
-import com.tgx.chess.queen.io.core.inf.IRouteLv4;
+import com.tgx.chess.bishop.io.zfilter.ZContext;
+import com.tgx.chess.king.base.util.IoUtil;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
 /**
@@ -34,33 +38,39 @@ import com.tgx.chess.queen.io.core.inf.ISession;
  */
 public abstract class WsControl
         implements
-        ICommand,
-        IRouteLv4
+        IControl<ZContext>
 {
 
-    private final byte[] _Msg;
-    private final int    _Command;
-    protected byte       mCtrlCode;
-    private ISession     mSession;
+    private final byte[]       _Msg;
+    private final int          _Command;
+    private final byte         _CtrlCode;
+    private ISession<ZContext> mSession;
 
-    public WsControl(int command,
+    public WsControl(byte code,
+                     int command,
                      byte[] msg)
     {
+        _CtrlCode = code;
         _Command = command;
         _Msg = msg;
     }
 
-    public WsControl(String msg,
+    public WsControl(byte code,
                      int command)
     {
-        this(command,
-             Objects.nonNull(msg) ? msg.getBytes()
-                                  : null);
+        this(code, command, null);
     }
 
-    public WsControl(int command)
+    @Override
+    public void dispose()
     {
-        this(command, null);
+        reset();
+    }
+
+    @Override
+    public void reset()
+    {
+        setSession(null);
     }
 
     public byte[] getPayload()
@@ -68,46 +78,53 @@ public abstract class WsControl
         return _Msg;
     }
 
-    @Override
-    public int getPriority()
+    public void setPayload(byte[] payload)
     {
-        return QOS_00_NETWORK_CONTROL;
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public int getSuperSerial()
+    public int encodec(byte[] data, int pos)
     {
-        return CONTROL_SERIAL;
+        pos += IoUtil.write(_Msg, data, pos);
+        return pos;
     }
 
     @Override
-    public int getSerial()
+    public int serial()
     {
         return _Command;
     }
 
-    public byte getControl()
+    @Override
+    public void setCtrl(byte ctrl)
     {
-        return mCtrlCode;
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public ISession getSession()
+    public byte getCtrl()
+    {
+        return _CtrlCode;
+    }
+
+    @Override
+    public boolean isCtrl()
+    {
+        return true;
+    }
+
+    @Override
+    public ISession<ZContext> getSession()
     {
         return mSession;
     }
 
     @Override
-    public WsControl setSession(ISession session)
+    public WsControl setSession(ISession<ZContext> session)
     {
         mSession = session;
         return this;
-    }
-
-    @Override
-    public WsControl duplicate()
-    {
-        return null;
     }
 
     @Override
@@ -120,7 +137,13 @@ public abstract class WsControl
     @Override
     public String toString()
     {
-        int command = getSerial();
-        return String.format("cmd: 0X%X", command);
+        int command = serial();
+        return String.format("cmd: 0X%X, %s", command, new String(_Msg, StandardCharsets.UTF_8));
+    }
+
+    @Override
+    public Level getLevel()
+    {
+        return ALMOST_ONCE;
     }
 }

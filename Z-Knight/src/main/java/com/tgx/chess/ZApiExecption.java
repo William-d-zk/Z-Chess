@@ -24,6 +24,9 @@
 
 package com.tgx.chess;
 
+/**
+ * @author william.d.zk
+ */
 public class ZApiExecption
         extends
         RuntimeException
