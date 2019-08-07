@@ -28,8 +28,12 @@ import static java.lang.System.arraycopy;
 
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.Objects;
 
+/**
+ * @author William.d.zk
+ */
 public interface IoUtil
 {
 
@@ -85,6 +89,11 @@ public interface IoUtil
             }
         }
         return sb.toString();
+    }
+
+    static long hex2long(String hex)
+    {
+        return IoUtil.readLong(hex2bin(hex), 0);
     }
 
     static byte[] hex2bin(String hex)
@@ -199,24 +208,25 @@ public interface IoUtil
     static byte[] variableLength(int length)
     {
         if (length == 0) return new byte[] { 0 };
-        int resLength = 0;
-        int result = 0;
-        do {
-            result |= (length & 0x7F) << 24;
-            length >>>= 7;
-            resLength++;
-            if (length > 0) {
-                result >>>= 8;
-                result |= 0x80000000;
-            }
+        if (length < 128) {
+            return new byte[] { (byte) length };
         }
-        while (length > 0);
-        byte[] res = new byte[resLength];
-        for (int i = 0, move = 24; i < resLength; i++) {
-            res[i] = (byte) (result >>> move);
-            move -= 8;
+        else if (length < 16384) {
+            return new byte[] { (byte) (0x80 | (length & 0x7F)),
+                                (byte) (length >>> 7) };
         }
-        return res;
+        else if (length < 2097152) {
+            return new byte[] { (byte) (0x80 | (length & 0x7F)),
+                                (byte) (0x80 | (length & 0x7F80) >>> 7),
+                                (byte) (length >>> 14) };
+        }
+        else if (length < 268435456) {
+            return new byte[] { (byte) (0x80 | (length & 0x7F)),
+                                (byte) (0x80 | (length & 0x7F80) >>> 7),
+                                (byte) (0x80 | (length & 0x3FC000) >>> 14),
+                                (byte) (length >>> 21) };
+        }
+        throw new ArrayIndexOutOfBoundsException("malformed length");
     }
 
     static byte[] variableLength(long length)
@@ -271,6 +281,20 @@ public interface IoUtil
             if ((cur & 0x80) != 0) length <<= 7;
         }
         while ((cur & 0x80) != 0 && buf.hasRemaining());
+        return length;
+    }
+
+    static int readVariableIntLength(ByteBuffer buf)
+    {
+        int length = 0;
+        int cur, pos = 0;
+        if (buf.hasRemaining()) do {
+            cur = buf.get();
+            length += (cur & 0x7F) << (pos * 7);
+            pos++;
+        }
+        while ((cur & 0x80) != 0 && buf.hasRemaining());
+
         return length;
     }
 
@@ -398,7 +422,10 @@ public interface IoUtil
 
     static int readInt(byte[] src, int off)
     {
-        return (src[off] & 0xFF) << 24 | (src[off + 1] & 0xFF) << 16 | (src[off + 2] & 0xFF) << 8 | (src[off + 3] & 0xFF);
+        return (src[off] & 0xFF) << 24
+               | (src[off + 1] & 0xFF) << 16
+               | (src[off + 2] & 0xFF) << 8
+               | (src[off + 3] & 0xFF);
     }
 
     static long readLong(byte[] src, int off)
@@ -500,6 +527,11 @@ public interface IoUtil
     static String readString(byte[] data, int pos, int length)
     {
         return new String(data, pos, length);
+    }
+
+    static String readString(byte[] data, int pos, int length, Charset charset)
+    {
+        return new String(data, pos, length, charset);
     }
 
     static boolean isBlank(final CharSequence cs)

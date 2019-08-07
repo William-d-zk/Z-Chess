@@ -66,7 +66,9 @@ class PrivKeyFormatter_PrivateKeyListedFv1
         int headerLen = KeyFormatterUtil.getHeaderEndOffset(keyBlob);
         int packedHLen = BitPack.unpack(keyParams.N, keyParams.q);
         int listedFLen = BitPack.unpack(2 * keyParams.df, keyParams.N);
-        if (headerLen + packedHLen + listedFLen != keyBlob.length) throw new IllegalArgumentException("blob length invalid");
+        if (headerLen
+            + packedHLen
+            + listedFLen != keyBlob.length) throw new IllegalArgumentException("blob length invalid");
 
         // Recover h
         int offset = headerLen;
@@ -75,7 +77,12 @@ class PrivKeyFormatter_PrivateKeyListedFv1
 
         // Recover F
         FullPolynomial f = new FullPolynomial(keyParams.N);
-        offset += KeyFormatterUtil.unpackListedCoefficients(f, keyParams.N, keyParams.df, keyParams.df, keyBlob, offset);
+        offset += KeyFormatterUtil.unpackListedCoefficients(f,
+                                                            keyParams.N,
+                                                            keyParams.df,
+                                                            keyParams.df,
+                                                            keyBlob,
+                                                            offset);
         // Compute f = 1+p*F
         for (int i = 0; i < f.p.length; i++)
             f.p[i] *= keyParams.p;

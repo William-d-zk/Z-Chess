@@ -24,8 +24,7 @@
 
 package com.tgx.chess.bishop.io.zprotocol.device;
 
-import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
-import com.tgx.chess.bishop.io.zprotocol.ZContext;
+import com.tgx.chess.bishop.io.zprotocol.ZCommand;
 import com.tgx.chess.king.base.util.IoUtil;
 
 /**
@@ -33,7 +32,7 @@ import com.tgx.chess.king.base.util.IoUtil;
  */
 public class X50_DeviceMsg
         extends
-        BaseCommand<ZContext>
+        ZCommand
 {
     public final static int COMMAND = 0x50;
     private byte[]          payload;
@@ -52,7 +51,7 @@ public class X50_DeviceMsg
     @Override
     public int getPriority()
     {
-        return QOS_08_IMMEDIATE_MESSAGE;
+        return QOS_PRIORITY_08_IMMEDIATE_MESSAGE;
     }
 
     @Override

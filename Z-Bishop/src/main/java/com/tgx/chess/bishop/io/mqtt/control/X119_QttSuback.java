@@ -1,0 +1,102 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2016~2019 Z-Chess
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+package com.tgx.chess.bishop.io.mqtt.control;
+
+import static com.tgx.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
+import com.tgx.chess.bishop.io.mqtt.bean.QttCommand;
+import com.tgx.chess.king.base.util.IoUtil;
+
+/**
+ * @author william.d.zk
+ * @date 2019-05-30
+ */
+public class X119_QttSuback
+        extends
+        QttCommand
+{
+
+    public final static int COMMAND = 0x119;
+
+    public X119_QttSuback()
+    {
+        super(COMMAND);
+        setCtrl(generateCtrl(false, false, ALMOST_ONCE, QTT_TYPE.SUBACK));
+    }
+
+    private List<Level> resultList;
+
+    public void addResult(Level qosLevel)
+    {
+        if (resultList == null) {
+            resultList = new LinkedList<>();
+        }
+        resultList.add(qosLevel);
+    }
+
+    public List<Level> getQosLevels()
+    {
+        return resultList;
+    }
+
+    @Override
+    public int dataLength()
+    {
+        return super.dataLength() + resultList.size();
+    }
+
+    @Override
+    public int decodec(byte[] data, int pos)
+    {
+        pos = super.decodec(data, pos);
+        resultList = new ArrayList<>(data.length - pos);
+        for (int i = 0, size = data.length - pos; i < size; i++) {
+            resultList.add(Level.valueOf(data[pos++]));
+        }
+        return pos;
+    }
+
+    @Override
+    public int encodec(byte[] data, int pos)
+    {
+        pos = super.encodec(data, pos);
+        if (!resultList.isEmpty()) {
+            for (Level qosLevel : resultList) {
+                pos += IoUtil.writeByte(qosLevel.getValue(), data, pos);
+            }
+        }
+        return pos;
+    }
+
+    @Override
+    public String toString()
+    {
+        return String.format("suback local-id %d, %s", getMsgId(), getQosLevels());
+    }
+}

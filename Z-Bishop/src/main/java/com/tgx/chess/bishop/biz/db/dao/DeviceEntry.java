@@ -24,6 +24,8 @@
 
 package com.tgx.chess.bishop.biz.db.dao;
 
+import java.util.Objects;
+
 import com.tgx.chess.queen.db.inf.IStorage;
 
 public class DeviceEntry
@@ -35,42 +37,60 @@ public class DeviceEntry
     @Override
     public int dataLength()
     {
-        return 0;
+        return getDeviceUidLength()
+               + getTokenLength()
+               + getInvalidTimeLength()
+               + getOperationLength()
+               + getStrategyLength();
     }
 
     @Override
-    public int getSerial()
+    public int serial()
     {
         return DEVICE_ENTRY_SERIAL;
     }
 
-    private long    deviceUID;
-    private long    passwordId;
-    private String  token;
-    private String  mac;
-    private long    invalidTime;
-    private boolean isOnline;
+    private int getDeviceUidLength()
+    {
+        return 8;
+    }
+
+    private int getTokenLength()
+    {
+        return 64;
+    }
+
+    private int getInvalidTimeLength()
+    {
+        return 8;
+    }
+
+    private int getOperationLength()
+    {
+        return 1;
+    }
+
+    private int getStrategyLength()
+    {
+        return 1;
+    }
+
+    private long      deviceId;
+    private String    token;
+    private long      invalidTime;
+    private Operation operation = Operation.OP_NULL;
+    private Strategy  strategy  = Strategy.RETAIN;
 
     @Override
     public long getPrimaryKey()
     {
-        return deviceUID;
+        return deviceId;
     }
 
     @Override
-    public long getSecondaryLongKey()
+    public void setPrimaryKey(long key)
     {
-        return passwordId;
-    }
-
-    public void setDeviceUID(long deviceUID)
-    {
-        this.deviceUID = deviceUID;
-    }
-
-    public long getDeviceUID()
-    {
-        return deviceUID;
+        deviceId = key;
     }
 
     public String getToken()
@@ -83,26 +103,6 @@ public class DeviceEntry
         this.token = token;
     }
 
-    public String getMac()
-    {
-        return mac;
-    }
-
-    public void setMac(String mac)
-    {
-        this.mac = mac;
-    }
-
-    public long getPasswordId()
-    {
-        return passwordId;
-    }
-
-    public void setPasswordId(long passwordId)
-    {
-        this.passwordId = passwordId;
-    }
-
     public long getInvalidTime()
     {
         return invalidTime;
@@ -113,13 +113,28 @@ public class DeviceEntry
         this.invalidTime = invalidTime;
     }
 
-    public boolean isOnline()
+    @Override
+    public void setOperation(Operation op)
     {
-        return isOnline;
+        operation = op;
     }
 
-    public void setOnline(boolean online)
+    public Operation getOperation()
     {
-        isOnline = online;
+        return operation;
     }
+
+    @Override
+    public Strategy getStrategy()
+    {
+        return strategy;
+    }
+
+    @Override
+    public void setStrategy(Strategy strategy)
+    {
+        Objects.requireNonNull(strategy);
+        this.strategy = strategy;
+    }
+
 }

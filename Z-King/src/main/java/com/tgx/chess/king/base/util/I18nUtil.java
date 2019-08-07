@@ -23,6 +23,9 @@
  */
 package com.tgx.chess.king.base.util;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
 /**
  * @author William.d.zk
  */
@@ -44,43 +47,29 @@ public interface I18nUtil
     int SERIAL_XML          = 0x04;
     int SERIAL_PROXY        = 0x05;
 
-    static String getCharset(byte data)
+    static Charset getCharset(byte data)
     {
-        String charset;
         switch (data & 0xF0)
         {
             case CHARSET_ASCII:
-                charset = "ASCII";
-                break;
-            case CHARSET_UTF_8:
-                charset = "UTF-8";
-                break;
+                return StandardCharsets.US_ASCII;
             case CHARSET_UTF_8_NB:
-                charset = "UTF-16";
-                break;
+                return StandardCharsets.UTF_16;
             case CHARSET_UTC_BE:
-                charset = "UTF-16BE";
-                break;
+                return StandardCharsets.UTF_16BE;
             case CHARSET_UTC_LE:
-                charset = "UTF-16LE";
-                break;
+                return StandardCharsets.UTF_16LE;
             case CHARSET_GBK:
-                charset = "GBK";
-                break;
+                return Charset.forName("GBK");
             case CHARSET_GB2312:
-                charset = "GB2312";
-                break;
+                return Charset.forName("GB2312");
             case CHARSET_GB18030:
-                charset = "GB18030";
-                break;
+                return Charset.forName("GB18030");
             case CHARSET_ISO_8859_1:
-                charset = "ISO-8859-1";
-                break;
+                return StandardCharsets.ISO_8859_1;
             default:
-                charset = "UTF-8";
-                break;
+                return StandardCharsets.UTF_8;
         }
-        return charset;
     }
 
     static int getCharsetCode(String charset)
@@ -98,9 +87,33 @@ public interface I18nUtil
         return CHARSET_UTF_8;
     }
 
+    static int getCharsetCode(Charset charset)
+    {
+        if (StandardCharsets.US_ASCII.equals(charset)) return CHARSET_ASCII;
+        if (StandardCharsets.UTF_8.equals(charset)) return CHARSET_UTF_8;
+        if (StandardCharsets.UTF_16.equals(charset)) return CHARSET_UTF_8_NB;
+        if (StandardCharsets.UTF_16BE.equals(charset)) return CHARSET_UTC_BE;
+        if (StandardCharsets.UTF_16LE.equals(charset)) return CHARSET_UTC_LE;
+        if (StandardCharsets.ISO_8859_1.equals(charset)) return CHARSET_ISO_8859_1;
+        switch (charset.name()
+                       .toUpperCase())
+        {
+            case "GBK":
+                return CHARSET_GBK;
+            case "GB2312":
+                return CHARSET_GB2312;
+            case "GB18030":
+                return CHARSET_GB18030;
+            case "ISO-8859-15":
+                return CHARSET_ISO_8859_15;
+            default:
+                return CHARSET_UTF_8;
+        }
+    }
+
     static String getSerialType(int type)
     {
-        switch (type)
+        switch (type & 0xF)
         {
             case SERIAL_TEXT:
                 return "text";
@@ -113,7 +126,7 @@ public interface I18nUtil
             case SERIAL_PROXY:
                 return "proxy";
             default:
-                return "unknow";
+                return "unknown";
         }
     }
 

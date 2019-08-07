@@ -24,6 +24,9 @@
 
 package com.tgx.chess.king.config;
 
+/**
+ * @author William.d.zk
+ */
 public interface KingCode
 {
 }

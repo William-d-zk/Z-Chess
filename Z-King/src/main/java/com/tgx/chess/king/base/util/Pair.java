@@ -24,6 +24,7 @@
 package com.tgx.chess.king.base.util;
 
 import com.tgx.chess.king.base.inf.IDisposable;
+import com.tgx.chess.king.base.inf.IPair;
 
 /**
  * @author William.d.zk
@@ -32,7 +33,7 @@ public class Pair<FIRST,
                   SECOND>
         implements
         IDisposable,
-        Cloneable
+        IPair
 {
     private FIRST  first;
     private SECOND second;
@@ -42,16 +43,6 @@ public class Pair<FIRST,
     {
         this.first = first;
         this.second = second;
-    }
-
-    public FIRST first()
-    {
-        return first;
-    }
-
-    public SECOND second()
-    {
-        return second;
     }
 
     public void setFirst(FIRST f)
@@ -71,6 +62,19 @@ public class Pair<FIRST,
         second = null;
     }
 
+    @Override
+    public FIRST first()
+    {
+        return first;
+    }
+
+    @Override
+    public SECOND second()
+    {
+        return second;
+    }
+
+    @Override
     public Pair<FIRST,
                 SECOND> clone()
     {

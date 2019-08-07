@@ -31,9 +31,9 @@ import java.util.Objects;
 /**
  * @author William.d.zk
  */
-public interface IAioClient
+public interface IAioClient<C extends IContext<C>>
 {
-    default void connect(IAioConnector connector, AsynchronousChannelGroup channelGroup) throws IOException
+    default void connect(IAioConnector<C> connector, AsynchronousChannelGroup channelGroup) throws IOException
     {
         Objects.requireNonNull(channelGroup);
         AsynchronousSocketChannel socketChannel = AsynchronousSocketChannel.open(channelGroup);

@@ -44,11 +44,18 @@ import javax.validation.constraints.NotEmpty;
 
 import org.hibernate.validator.constraints.Length;
 
+import com.tgx.chess.spring.device.model.ClientEntity;
 import com.tgx.chess.spring.jpa.model.AuditModel;
 
+/**
+ * @author william.d.zk
+ */
 @Entity(name = "Account")
 @Table(indexes = { @Index(name = "account_idx_email", columnList = "email"),
-                   @Index(name = "account_idx_name", columnList = "name") })
+                   @Index(name = "account_idx_name", columnList = "name"),
+                   @Index(name = "account_idx_auth", columnList = "auth")
+
+})
 public class AccountEntity
         extends
         AuditModel
@@ -56,33 +63,42 @@ public class AccountEntity
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private int id;
-
+    private int    id;
     @Email(message = "{valid.email}")
     @NotEmpty(message = "{field.not.empty}")
     @Length(max = 64, message = "{size.email.over_length}")
-    @Column(length = 64)
+    @Column(length = 64, unique = true)
     private String email;
-
     @Length(min = 8, max = 32, message = "{size.account.form.password}")
     @NotEmpty(message = "{field.not.empty}")
     @Column(length = 32)
     private String password;
-
     @NotEmpty(message = "{field.not.empty}")
     @Length(min = 3, max = 32, message = "{size.account.form.name}")
-    @Column(length = 32)
+    @Column(length = 32, unique = true)
     private String name;
-
+    @Column(length = 64, unique = true)
+    private String auth;
+    @Column(length = 32)
+    private String secret;
+    @Column(length = 16)
+    private String salt;
     @Column
-    private int active;
+    private int    active;
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinTable(name = "account_role", joinColumns = @JoinColumn(name = "account_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+    @JoinTable(name = "account_role",
+               joinColumns = @JoinColumn(name = "account_id"),
+               inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<RoleEntity> roles;
-
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "account")
-    private ProfileEntity profile;
+    private ProfileEntity   profile;
+
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinTable(name = "account_client",
+               joinColumns = @JoinColumn(name = "account_id"),
+               inverseJoinColumns = @JoinColumn(name = "client_id"))
+    private Set<ClientEntity> clients;
 
     public int getId()
     {
@@ -154,4 +170,43 @@ public class AccountEntity
         this.profile = profile;
     }
 
+    public String getAuth()
+    {
+        return auth;
+    }
+
+    public void setAuth(String auth)
+    {
+        this.auth = auth;
+    }
+
+    public String getSalt()
+    {
+        return salt;
+    }
+
+    public void setSalt(String salt)
+    {
+        this.salt = salt;
+    }
+
+    public String getSecret()
+    {
+        return secret;
+    }
+
+    public void setSecret(String secret)
+    {
+        this.secret = secret;
+    }
+
+    public Set<ClientEntity> getClients()
+    {
+        return clients;
+    }
+
+    public void setClients(Set<ClientEntity> clients)
+    {
+        this.clients = clients;
+    }
 }

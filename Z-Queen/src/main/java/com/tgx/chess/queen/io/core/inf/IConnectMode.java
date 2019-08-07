@@ -24,7 +24,12 @@
 
 package com.tgx.chess.queen.io.core.inf;
 
-public interface IConnectMode
+import com.tgx.chess.queen.event.inf.ISort;
+
+/**
+ * @author william.d.zk
+ */
+public interface IConnectMode<C extends IContext<C>>
 {
-    IoHandler getHandler();
+    ISort<C> getSort();
 }

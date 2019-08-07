@@ -24,7 +24,21 @@
 
 package com.tgx.chess.queen.event.inf;
 
-public interface ISort
+import com.tgx.chess.queen.io.core.inf.ICommandCreator;
+import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.io.core.inf.IFilterChain;
+import com.tgx.chess.queen.io.core.inf.IPipeDecoder;
+import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
+import com.tgx.chess.queen.io.core.inf.IPipeTransfer;
+import com.tgx.chess.queen.io.core.inf.ISessionCloser;
+import com.tgx.chess.queen.io.core.inf.ISessionError;
+import com.tgx.chess.queen.io.core.inf.ISessionOption;
+
+/**
+ * @author william.d.zk
+ *         基于通讯协议的Pipeline 固有模式分类
+ */
+public interface ISort<C extends IContext<C>>
 {
     enum Mode
     {
@@ -39,6 +53,11 @@ public interface ISort
         SYMMETRY
     }
 
+    default boolean isSSL()
+    {
+        return false;
+    }
+
     /**
      *
      * 用于区分当前处理过程属于哪个Pipeline
@@ -50,4 +69,18 @@ public interface ISort
      * 用于区分 IO 的角色，是服务端还是客户端，或者是对称式
      */
     Type getType();
+
+    IPipeEncoder<C> getEncoder();
+
+    IPipeDecoder<C> getDecoder();
+
+    IPipeTransfer<C> getTransfer();
+
+    IFilterChain<C> getFilterChain();
+
+    ISessionCloser<C> getCloser();
+
+    ISessionError<C> getError();
+
+    C newContext(ISessionOption option, ICommandCreator<C> commandCreator);
 }

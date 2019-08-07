@@ -26,6 +26,9 @@ package com.tgx.chess.queen.config;
 
 import com.tgx.chess.king.config.ConfigKey;
 
+/**
+ * @author william.d.zk
+ */
 public interface QueenConfigKey
         extends
         ConfigKey

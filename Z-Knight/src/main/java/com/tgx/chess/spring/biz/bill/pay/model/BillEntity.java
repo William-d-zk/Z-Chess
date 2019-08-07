@@ -37,6 +37,9 @@ import javax.persistence.Table;
 
 import com.tgx.chess.spring.jpa.model.AuditModel;
 
+/**
+ * @author william.d.zk
+ */
 @Entity(name = "Bill")
 @Table(schema = "\"tgx-z-chess-bill-pay\"",
        indexes = { @Index(name = "bill_idx_bill", columnList = "bill"),
@@ -147,7 +150,14 @@ public class BillEntity
     @Override
     public String toString()
     {
-        return String.format("bill:%s mac:%s openId:%s amount:%s %s type:%s result:%s", bill, mac, openId, amount, super.toString(), type, result);
+        return String.format("bill:%s mac:%s openId:%s amount:%s %s type:%s result:%s",
+                             bill,
+                             mac,
+                             openId,
+                             amount,
+                             super.toString(),
+                             type,
+                             result);
     }
 
     public String getCurrency()

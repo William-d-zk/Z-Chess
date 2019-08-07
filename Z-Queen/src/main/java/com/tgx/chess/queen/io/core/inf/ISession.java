@@ -26,30 +26,26 @@ package com.tgx.chess.queen.io.core.inf;
 
 import java.io.Closeable;
 import java.nio.channels.AsynchronousSocketChannel;
-import java.nio.channels.CompletionHandler;
 import java.util.Queue;
 
 import com.tgx.chess.king.base.inf.IDisposable;
 import com.tgx.chess.king.base.inf.IReset;
-import com.tgx.chess.queen.event.inf.IOperator;
 
 /**
  * @author William.d.zk
  */
-public interface ISession
+public interface ISession<C extends IContext<C>>
         extends
         Queue<IPacket>,
         IReset,
         Closeable,
         IDisposable,
-        IConnectActive,
+        IAddress,
         IValid,
-        IReadable<CompletionHandler<Integer,
-                                    ISession>>,
-        IWritable<CompletionHandler<Integer,
-                                    ISession>>
+        IReadable<ISession<C>>,
+        IWritable<ISession<C>>
 {
-    long _DEFAULT_INDEX = -1;
+    long DEFAULT_INDEX = -1;
 
     long getIndex();
 
@@ -59,17 +55,25 @@ public interface ISession
 
     AsynchronousSocketChannel getChannel();
 
-    IOperator<IPacket,
-              ISession> getDecodeOperator();
+    C getContext();
 
-    IContext getContext();
-
-    ISessionDismiss getDismissCallback();
+    ISessionDismiss<C> getDismissCallback();
 
     long[] getPortChannels();
 
-    void bindport2channel(long portId);
+    void bindPort2Channel(long portId);
 
     boolean isClosed();
 
+    default int getHaIndex()
+    {
+        return 0;
+    }
+
+    default int getPortIndex()
+    {
+        return 0;
+    }
+
+    int getReadTimeOutSeconds();
 }

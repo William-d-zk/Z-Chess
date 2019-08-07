@@ -25,14 +25,26 @@
 package com.tgx.chess.queen.io.core.inf;
 
 import java.nio.ByteBuffer;
+import java.nio.channels.CompletionHandler;
 
 /**
  * @author William.d.zk
  */
 public interface IReadable<A>
 {
+    /**
+     * register new read completion event handler
+     *
+     * @param completionHandler
+     */
+    void readNext(CompletionHandler<Integer,
+                                    A> completionHandler) throws IllegalStateException;
 
-    void readNext(A attach);
-
+    /**
+     * read bytes from received buffer
+     * 
+     * @param length
+     * @return receiver
+     */
     ByteBuffer read(int length);
 }

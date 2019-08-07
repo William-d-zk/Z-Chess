@@ -29,6 +29,9 @@ import java.util.function.Consumer;
 
 import com.tgx.chess.king.base.schedule.TimeWheel.ITimeoutHandler;
 
+/**
+ * @author William.d.zk
+ */
 public class ScheduleHandler<A>
         implements
         ITimeoutHandler<A>

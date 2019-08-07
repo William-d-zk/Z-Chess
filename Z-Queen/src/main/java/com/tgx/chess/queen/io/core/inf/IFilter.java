@@ -26,24 +26,17 @@ package com.tgx.chess.queen.io.core.inf;
 /**
  * @author William.d.zk
  */
-public interface IFilter<C extends IContext>
+public interface IFilter<C extends IContext,
+                         O extends IProtocol,
+                         I extends IProtocol>
 {
     ResultType preEncode(C context, IProtocol output);
 
-    ResultType preDecode(C context, IProtocol input);
+    ResultType preDecode(C context, I input);
 
-    IProtocol encode(C context, IProtocol output);
+    I encode(C context, O output);
 
-    IProtocol decode(C context, IProtocol input);
-
-    default int getIdempotentBit()
-    {
-        return -1;
-    }
-
-    default void idempotentRightShift(int previous)
-    {
-    }
+    O decode(C context, I input);
 
     enum ResultType
     {

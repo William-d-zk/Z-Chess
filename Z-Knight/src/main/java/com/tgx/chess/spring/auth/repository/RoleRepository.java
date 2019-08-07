@@ -28,7 +28,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.tgx.chess.spring.auth.model.RoleEntity;
+import com.tgx.chess.spring.auth.model.RoleEnum;
 
+/**
+ * @author william.d.zk
+ */
 @Repository
 public interface RoleRepository
         extends
@@ -36,4 +40,9 @@ public interface RoleRepository
                       Integer>
 {
     RoleEntity findByRole(String role);
+
+    default RoleEntity findByRole(RoleEnum role)
+    {
+        return findByRole(role.name());
+    }
 }

@@ -24,39 +24,41 @@
 
 package com.tgx.chess.queen.io.core.manager;
 
-import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.config.Config;
 import com.tgx.chess.queen.io.core.async.AioSessionManager;
 import com.tgx.chess.queen.io.core.executor.ServerCore;
-import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.io.core.inf.IControl;
+import com.tgx.chess.queen.io.core.inf.IPipeTransfer;
 import com.tgx.chess.queen.io.core.inf.ISession;
+import com.tgx.chess.queen.io.core.inf.ISessionCloser;
 
-public abstract class QueenManager
+/**
+ * @author william.d.zk
+ */
+public abstract class QueenManager<C extends IContext<C>>
         extends
-        AioSessionManager
+        AioSessionManager<C>
 {
-    private final Logger       _Logger = Logger.getLogger(getClass().getName());
-    protected final ServerCore _ServerCore;
+    protected final ServerCore<C> _ServerCore;
 
     public QueenManager(Config config,
-                        ServerCore serverCore)
+                        ServerCore<C> serverCore)
     {
         super(config);
         _ServerCore = serverCore;
     }
 
-    public void localClose(ISession session)
+    protected void localClose(ISession<C> session, ISessionCloser<C> closeOperator)
     {
-        _ServerCore.localClose(session);
+        _ServerCore.localClose(session, closeOperator);
     }
 
-    public boolean localSend(ISession session, ICommand... commands)
+    @SafeVarargs
+    protected final boolean localSend(ISession<C> session, IPipeTransfer<C> transfer, IControl<C>... commands)
     {
-        return _ServerCore.localSend(session, commands);
+        return _ServerCore.localSend(session, transfer, commands);
     }
 
-    public abstract ICommand save(ICommand tar, ISession session);
-
-    public abstract ICommand find(ICommand key, ISession session);
-
+    public abstract IControl<C>[] mappingHandle(IControl<C> input, ISession<C> session);
 }

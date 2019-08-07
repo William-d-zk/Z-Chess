@@ -26,38 +26,38 @@ package com.tgx.chess.queen.io.core.inf;
 /**
  * @author William.d.zk
  */
-public interface ISessionManager
+public interface ISessionManager<C extends IContext<C>>
 {
     long INVALID_INDEX = -1;
     long NULL_INDEX    = 0;
 
-    boolean mapSession(long index, ISession session);
+    boolean mapSession(long index, ISession<C> session);
 
-    default boolean mapSession(ISession session)
+    default boolean mapSession(ISession<C> session)
     {
         return mapSession(session.getIndex(), session);
     }
 
-    boolean mapSession(long index, ISession session, long... filter);
+    boolean mapSession(long index, ISession<C> session, long... filter);
 
     boolean findPort(long portIdx);
 
     void clearSession(long index);
 
-    void clearSessionWithPort(long index, ISession session);
+    void clearSessionWithPort(long index, ISession<C> session);
 
-    default void clearSession(ISession session)
+    default void clearSession(ISession<C> session)
     {
         clearSessionWithPort(session.getIndex(), session);
     }
 
-    void addSession(ISession session);
+    void addSession(ISession<C> session);
 
-    void rmSession(ISession session);
+    void rmSession(ISession<C> session);
 
-    ISession findSessionByIndex(long index);
+    ISession<C> findSessionByIndex(long index);
 
-    ISession findSessionByPort(long portIdx);
+    ISession<C> findSessionByPort(long portIdx);
 
     int getSubPortCount(long portMask);
 

@@ -24,11 +24,18 @@
 
 package com.tgx.chess.queen.db.inf;
 
-import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 
+/**
+ * @author william.d.zk
+ */
 public interface IRepository<T>
 {
-    T save(ICommand target);
+    T save(IProtocol target);
 
-    T find(ICommand key);
+    T find(IProtocol key);
+
+    T receive(IProtocol input);
+
+    void send(IProtocol ouput);
 }

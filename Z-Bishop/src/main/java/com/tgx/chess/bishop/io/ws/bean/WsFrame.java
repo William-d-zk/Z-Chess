@@ -26,6 +26,7 @@ package com.tgx.chess.bishop.io.ws.bean;
 import com.tgx.chess.king.base.inf.IReset;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.io.core.inf.IFrame;
+import com.tgx.chess.queen.io.core.inf.IVariableLength;
 
 /**
  * @author William.d.zk
@@ -33,12 +34,13 @@ import com.tgx.chess.queen.io.core.inf.IFrame;
 public class WsFrame
         implements
         IReset,
-        IFrame
+        IFrame,
+        IVariableLength
 {
     private final static int WEB_SOCKET_FRAME = FRAME_SERIAL + 1;
 
     @Override
-    public int getSerial()
+    public int serial()
     {
         return WEB_SOCKET_FRAME;
     }
@@ -217,7 +219,8 @@ public class WsFrame
 
     }
 
-    public int payloadLengthLack()
+    @Override
+    public int payloadLengthLack(int position)
     {
         int result = (mPayload_Mask & 0x80) != 0 ? 4
                                                  : 0;
@@ -251,7 +254,7 @@ public class WsFrame
 
     public boolean checkRSV(byte value)
     {
-        return (value & frame_rsv_1_mask) == 0 && (value & frame_rsv_2_mask) == 0 && (value & frame_rsv_2_mask) == 0;
+        return (value & frame_rsv_1_mask) == 0 && (value & frame_rsv_2_mask) == 0 && (value & frame_rsv_3_mask) == 0;
     }
 
     @Override
@@ -261,40 +264,15 @@ public class WsFrame
     }
 
     @Override
-    public boolean isNoCtrl()
+    public byte getCtrl()
     {
-        return (frame_op_code & 0x08) == 0;
+        return (byte) (frame_op_code & 0x0F);
     }
 
     @Override
     public boolean isCtrl()
     {
         return (frame_op_code & 0x08) != 0;
-    }
-
-    public boolean isCtrlClose()
-    {
-        return (frame_op_code & 0x0F) == frame_op_code_ctrl_close;
-    }
-
-    public boolean isCtrlPing()
-    {
-        return (frame_op_code & 0x0F) == frame_op_code_ctrl_ping;
-    }
-
-    public boolean isCtrlPong()
-    {
-        return (frame_op_code & 0x0F) == frame_op_code_ctrl_pong;
-    }
-
-    public boolean isCtrlHandShake()
-    {
-        return (frame_op_code & 0x0F) == frame_op_code_ctrl_handshake;
-    }
-
-    public boolean isCtrlCluster()
-    {
-        return (frame_op_code & 0x0F) == frame_op_code_ctrl_cluster;
     }
 
     @Override
@@ -317,7 +295,7 @@ public class WsFrame
         frame_op_code = getOpCode(attr);
         frame_fin = isFrameFin(attr);
         mPayload_Mask = data[pos++];
-        int p = payloadLengthLack();
+        int p = payloadLengthLack(pos);
         switch (p)
         {
             case WsFrame.frame_payload_length_7_no_mask_position:

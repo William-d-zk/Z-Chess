@@ -31,12 +31,21 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author William.d.zk
  */
-public interface ISessionCreator
+public interface ISessionCreator<C extends IContext<C>>
         extends
         ISessionOption,
-        IContextCreator
+        IContextCreator<C>
 {
-    ISession createSession(AsynchronousSocketChannel socketChannel, IConnectActive active);
+    /**
+     * 由于继承了 ISessionOption 和 IContextCreator 所以在 create_session 入参中不再显示声明这两个参数
+     * 
+     * @param socketChannel
+     *            已完成连接的 socket
+     * @param activity
+     *            连接执行器实际执行单元
+     * @return session
+     */
+    ISession<C> createSession(AsynchronousSocketChannel socketChannel, IConnectActivity<C> activity) throws IOException;
 
     @Override
     default int setSNF()
@@ -53,14 +62,16 @@ public interface ISessionCreator
     @Override
     default void setOptions(AsynchronousSocketChannel channel)
     {
-        if (channel != null) try {
-            channel.setOption(StandardSocketOptions.TCP_NODELAY, true);
-            channel.setOption(StandardSocketOptions.SO_RCVBUF, setRCV());
-            channel.setOption(StandardSocketOptions.SO_SNDBUF, setSNF());
-            channel.setOption(StandardSocketOptions.SO_KEEPALIVE, setKeepAlive());
-        }
-        catch (IOException e) {
-            e.printStackTrace();
+        if (channel != null) {
+            try {
+                channel.setOption(StandardSocketOptions.TCP_NODELAY, true);
+                channel.setOption(StandardSocketOptions.SO_RCVBUF, setRCV());
+                channel.setOption(StandardSocketOptions.SO_SNDBUF, setSNF());
+                channel.setOption(StandardSocketOptions.SO_KEEPALIVE, setKeepAlive());
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 

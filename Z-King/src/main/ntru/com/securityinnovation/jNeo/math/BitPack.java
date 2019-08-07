@@ -149,7 +149,13 @@ public class BitPack
      * @return the number of elements used in the output array,
      *         or 0 on error.
      */
-    public final static int pack(int numElts, int maxEltValue, int maxOutLen, short src[], int srcOffset, byte tgt[], int tgtOffset)
+    public final static int pack(int numElts,
+                                 int maxEltValue,
+                                 int maxOutLen,
+                                 short src[],
+                                 int srcOffset,
+                                 byte tgt[],
+                                 int tgtOffset)
     {
         if (tgt == null) return maxOutLen;
 

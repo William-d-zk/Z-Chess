@@ -23,7 +23,7 @@
  */
 package com.tgx.chess.bishop.io.ws.bean;
 
-import java.util.Objects;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author William.d.zk
@@ -33,70 +33,16 @@ public abstract class WsHandshake
         WsControl
 {
 
-    private String rMsg;
-
     public WsHandshake(int command,
                        String msg)
     {
-        super(msg, command);
-    }
-
-    public String getMessage()
-    {
-        byte[] payload = getPayload();
-        return Objects.nonNull(payload) ? new String(payload)
-                                        : rMsg;
-    }
-
-    public byte getControl()
-    {
-        return WsFrame.frame_op_code_ctrl_handshake;
-    }
-
-    public byte[] getPayload()
-    {
-        byte[] payload = super.getPayload();
-        return Objects.isNull(payload) ? rMsg == null ? null
-                                                      : rMsg.getBytes()
-                                       : payload;
+        super(WsFrame.frame_op_code_ctrl_handshake, command, msg.getBytes(StandardCharsets.UTF_8));
     }
 
     @Override
     public String toString()
     {
-        return String.format("web socket handshake %s", getMessage());
+        return String.format("web socket handshake \n\n%s", new String(getPayload(), StandardCharsets.UTF_8));
     }
 
-    @Override
-    public int dataLength()
-    {
-        return Objects.nonNull(getPayload()) ? super.dataLength()
-                                             : Objects.nonNull(rMsg) ? rMsg.getBytes().length
-                                                                     : 0;
-    }
-
-    public void append(String x)
-    {
-        rMsg = Objects.isNull(rMsg) ? x
-                                    : rMsg + x;
-    }
-
-    public WsHandshake ahead(String x)
-    {
-        rMsg = rMsg == null ? x
-                            : x + rMsg;
-        return this;
-    }
-
-    @Override
-    public byte[] encode()
-    {
-        return getPayload();
-    }
-
-    @Override
-    public void dispose()
-    {
-        rMsg = null;
-    }
 }

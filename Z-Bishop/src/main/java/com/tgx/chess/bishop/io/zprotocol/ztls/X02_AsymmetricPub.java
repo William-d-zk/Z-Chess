@@ -23,16 +23,15 @@
  */
 package com.tgx.chess.bishop.io.zprotocol.ztls;
 
+import com.tgx.chess.bishop.io.zprotocol.ZCommand;
 import com.tgx.chess.king.base.util.IoUtil;
-import com.tgx.chess.bishop.io.zprotocol.ZContext;
-import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
 
 /**
  * @author William.d.zk
  */
 public class X02_AsymmetricPub
         extends
-        BaseCommand<ZContext>
+        ZCommand
 {
 
     public final static int COMMAND = 0x02;
@@ -46,7 +45,7 @@ public class X02_AsymmetricPub
     }
 
     @Override
-    public boolean isMappingCommand()
+    public boolean isMapping()
     {
         return true;
     }
@@ -87,12 +86,6 @@ public class X02_AsymmetricPub
         return super.dataLength() + mKeyLength + 6;
     }
 
-    @Override
-    public int getPriority()
-    {
-        return QOS_00_NETWORK_CONTROL;
-    }
-
     public X02_AsymmetricPub setPubKey(int _id, byte[] key)
     {
         pubKey = key;
@@ -107,4 +100,5 @@ public class X02_AsymmetricPub
     {
         return String.format("%s,public-key: %d | %s", super.toString(), pubKeyId, IoUtil.bin2Hex(pubKey));
     }
+
 }

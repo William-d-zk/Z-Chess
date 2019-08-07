@@ -32,20 +32,29 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.spring.auth.model.AccountEntity;
 import com.tgx.chess.spring.auth.model.ProfileEntity;
 import com.tgx.chess.spring.auth.model.RoleEntity;
+import com.tgx.chess.spring.auth.model.RoleEnum;
 import com.tgx.chess.spring.auth.repository.AccountRepository;
 import com.tgx.chess.spring.auth.repository.ProfileRepository;
 import com.tgx.chess.spring.auth.repository.RoleRepository;
 
+/**
+ * @author william.d.zk
+ */
 @Service
 public class AccountService
 {
 
+    private final Logger            _Logger    = Logger.getLogger(this.getClass()
+                                                                      .getSimpleName());
     private final AccountRepository _AccountRepository;
     private final RoleRepository    _RoleRepository;
     private final ProfileRepository _ProfileRepository;
+    private final CryptUtil         _CryptUtil = new CryptUtil();
 
     @Autowired
     public AccountService(AccountRepository accountRepository,
@@ -59,16 +68,16 @@ public class AccountService
 
     public void initializeCheck()
     {
-        RoleEntity admin = _RoleRepository.findByRole("ADMIN");
-        RoleEntity user = _RoleRepository.findByRole("USER");
+        RoleEntity admin = _RoleRepository.findByRole(RoleEnum.ADMIN);
+        RoleEntity user = _RoleRepository.findByRole(RoleEnum.USER);
         if (Objects.isNull(admin)) {
             admin = new RoleEntity();
-            admin.setRole("ADMIN");
+            admin.setRole(RoleEnum.ADMIN);
             _RoleRepository.save(admin);
         }
         if (Objects.isNull(user)) {
             user = new RoleEntity();
-            user.setRole("USER");
+            user.setRole(RoleEnum.USER);
             _RoleRepository.save(user);
         }
         AccountEntity test = _AccountRepository.findByName("root");
@@ -82,7 +91,7 @@ public class AccountService
             root.setEmail("z-chess@tgxstudio.com");
             root.setProfile(profile);
             profile.setAccount(root);
-            _AccountRepository.save(root);
+            newAccount(root);
         }
     }
 
@@ -96,13 +105,38 @@ public class AccountService
         return Optional.ofNullable(_AccountRepository.findByName(name));
     }
 
-    public void saveAccount(AccountEntity account)
+    public Optional<AccountEntity> findByAuth(String auth)
     {
-        account.setPassword(account.getPassword());
-        account.setActive(1);
-        RoleEntity role = _RoleRepository.findByRole("USER");
-        account.setRoles(new HashSet<>(Collections.singletonList(role)));
+        return Optional.ofNullable(_AccountRepository.findByAuth(auth));
+    }
+
+    public void newAccount(AccountEntity account)
+    {
+        account.setRoles(new HashSet<>(Collections.singletonList(_RoleRepository.findByRole(RoleEnum.USER))));
+        String source = String.format("email:%s|user_name:%s", account.getEmail(), account.getName());
+        _Logger.info("save account %s", source);
+        String auth = _CryptUtil.sha256(source);
+        account.setAuth(auth);
+        String salt = _CryptUtil.randomPassword(8, 16);
+        account.setSalt(salt);
+        account.setSecret(_CryptUtil.md5((account.getPassword() + salt)));
         _AccountRepository.save(account);
+    }
+
+    public void updateAccount(AccountEntity account)
+    {
+        _AccountRepository.save(account);
+    }
+
+    public AccountEntity authAccount(String auth, String cipher, String plain)
+    {
+        AccountEntity accountEntity = _AccountRepository.findByAuth(auth);
+        if (accountEntity != null) {
+            String secret = accountEntity.getSecret();
+            String result = _CryptUtil.sha256(secret + plain);
+            if (result.equalsIgnoreCase(cipher)) { return accountEntity; }
+        }
+        return null;
     }
 
 }

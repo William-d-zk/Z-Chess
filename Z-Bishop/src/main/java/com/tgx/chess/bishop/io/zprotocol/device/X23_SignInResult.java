@@ -24,13 +24,15 @@
 
 package com.tgx.chess.bishop.io.zprotocol.device;
 
-import com.tgx.chess.bishop.io.zprotocol.ZContext;
+import com.tgx.chess.bishop.io.zprotocol.ZCommand;
 import com.tgx.chess.king.base.util.IoUtil;
-import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
 
+/**
+ * @author william.d.zk
+ */
 public class X23_SignInResult
         extends
-        BaseCommand<ZContext>
+        ZCommand
 {
     public final static int COMMAND = 0x23;
 
@@ -42,7 +44,7 @@ public class X23_SignInResult
     @Override
     public int getPriority()
     {
-        return QOS_09_CONFIRM_MESSAGE;
+        return QOS_PRIORITY_09_CONFIRM_MESSAGE;
     }
 
     private boolean success;

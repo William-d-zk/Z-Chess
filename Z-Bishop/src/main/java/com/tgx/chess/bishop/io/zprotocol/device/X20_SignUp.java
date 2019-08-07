@@ -26,13 +26,15 @@ package com.tgx.chess.bishop.io.zprotocol.device;
 
 import java.util.Objects;
 
-import com.tgx.chess.bishop.io.zprotocol.ZContext;
+import com.tgx.chess.bishop.io.zprotocol.ZCommand;
 import com.tgx.chess.king.base.util.IoUtil;
-import com.tgx.chess.bishop.io.zprotocol.BaseCommand;
 
+/**
+ * @author william.d.zk
+ */
 public class X20_SignUp
         extends
-        BaseCommand<ZContext>
+        ZCommand
 {
     public final static int COMMAND = 0x20;
 
@@ -42,7 +44,7 @@ public class X20_SignUp
     }
 
     @Override
-    public boolean isMappingCommand()
+    public boolean isMapping()
     {
         return true;
     }
@@ -50,7 +52,7 @@ public class X20_SignUp
     @Override
     public int getPriority()
     {
-        return QOS_06_META_CREATE;
+        return QOS_PRIORITY_06_META_CREATE;
     }
 
     private byte[] mac = new byte[6];

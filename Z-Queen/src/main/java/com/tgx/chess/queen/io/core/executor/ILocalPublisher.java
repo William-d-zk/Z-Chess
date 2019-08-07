@@ -24,54 +24,57 @@
 
 package com.tgx.chess.queen.io.core.executor;
 
-import static com.tgx.chess.queen.io.core.inf.IoHandler.CLOSE_OPERATOR;
-
 import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.lmax.disruptor.RingBuffer;
+import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.io.core.inf.IControl;
+import com.tgx.chess.queen.io.core.inf.IPipeTransfer;
 import com.tgx.chess.queen.io.core.inf.ISession;
+import com.tgx.chess.queen.io.core.inf.ISessionCloser;
 
-public interface ILocalPublisher
+/**
+ * @author william.d.zk
+ */
+public interface ILocalPublisher<C extends IContext<C>>
 {
-    RingBuffer<QEvent> getLocalPublisher(ISession session);
+    RingBuffer<QEvent> getLocalPublisher(ISession<C> session);
 
-    RingBuffer<QEvent> getLocalCloser(ISession session);
+    RingBuffer<QEvent> getLocalCloser(ISession<C> session);
 
     ReentrantLock getLocalLock();
 
     @SuppressWarnings("unchecked")
-    default boolean localSend(ISession session, ICommand... toSends)
+    default boolean localSend(ISession<C> session, IPipeTransfer<C> operator, IControl<C>... toSends)
     {
         Objects.requireNonNull(toSends);
         Objects.requireNonNull(session);
         final RingBuffer<QEvent> _BizLocalSendEvent = getLocalPublisher(session);
         final ReentrantLock _LocalLock = getLocalLock();
-        if (_LocalLock.tryLock()) try {
-            long sequence = _BizLocalSendEvent.next();
+        if (_LocalLock.tryLock()) {
             try {
-                QEvent event = _BizLocalSendEvent.get(sequence);
-                event.produce(IOperator.Type.LOCAL,
-                              toSends,
-                              session,
-                              session.getHandler()
-                                     .getOutOperator());
-                return true;
+                long sequence = _BizLocalSendEvent.next();
+                try {
+                    QEvent event = _BizLocalSendEvent.get(sequence);
+                    event.produce(IOperator.Type.LOCAL, new Pair<>(toSends, session), operator);
+                    return true;
+                }
+                finally {
+                    _BizLocalSendEvent.publish(sequence);
+                }
             }
             finally {
-                _BizLocalSendEvent.publish(sequence);
+                _LocalLock.unlock();
             }
-        }
-        finally {
-            _LocalLock.unlock();
         }
         return false;
     }
 
-    default void localClose(ISession session)
+    default void localClose(ISession<C> session, ISessionCloser<C> closer)
     {
         Objects.requireNonNull(session);
         final RingBuffer<QEvent> _BizLocalCloseEvent = getLocalCloser(session);
@@ -81,7 +84,7 @@ public interface ILocalPublisher
             long sequence = _BizLocalCloseEvent.next();
             try {
                 QEvent event = _BizLocalCloseEvent.get(sequence);
-                event.produce(IOperator.Type.CLOSE, null, session, CLOSE_OPERATOR());
+                event.produce(IOperator.Type.CLOSE, new Pair<>(null, session), closer);
             }
             finally {
                 _BizLocalCloseEvent.publish(sequence);

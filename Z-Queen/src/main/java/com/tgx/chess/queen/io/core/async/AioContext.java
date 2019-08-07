@@ -27,15 +27,17 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.tgx.chess.queen.event.inf.ISort;
+import com.tgx.chess.queen.io.core.inf.ICommandCreator;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 
 /**
  * @author William.d.zk
  */
-public class AioContext
+public abstract class AioContext<C extends IContext<C>>
         implements
-        IContext
+        IContext<C>
 {
     private int                 mDecodingPosition = -1, mLackData = 1;
     private final AtomicInteger _EncodeState      = new AtomicInteger(ENCODE_NULL);
@@ -43,28 +45,33 @@ public class AioContext
     private final AtomicInteger _ChannelState     = new AtomicInteger(SESSION_CONNECTED);
 
     /*
-     * 用于写出的 ByteBuffer 属于4096及其倍数的对齐块，应与 SocketOption 中系统写出 Buffer 的大小进行调整，存在 一次性投递多个 ICommand 对象的可能性也是存在的 AioPacket 中的 ByteBuffer 仅用于串行化
-     * ICommand 对象
+     * 用于写出的 ByteBuffer 属于4096及其倍数的对齐块，应与 SocketOption 中系统写出 Buffer 的大小进行调整，存在 一次性投递多个 IControl 对象的可能性也是存在的 AioPacket 中的 ByteBuffer 仅用于串行化
+     * IControl 对象
      */
-    private ByteBuffer mWrBuf;
+    private final ByteBuffer _WrBuf;
 
     /*
      * 用于缓存 IPoS 分块带入的 RecvBuffer 内容 由于 AioWorker 中 channel 的 read_buffer - protocol_buffer - 都以 SocketOption 设定为准，所以不存在 IPoS 带入一个包含多个分页的协议
      * 内容的情况
      */
-    private ByteBuffer mRvBuf;
-
-    private boolean mInitFromHandshake;
+    private final ByteBuffer         _RvBuf;
+    private final ISort<C>           _Sort;
+    private final ICommandCreator<C> _CommandCreator;
+    private boolean                  mInitFromHandshake;
 
     private long mClientStartTime;
     private long mServerArrivedTime;
     private long mServerResponseTime;
     private long mClientArrivedTime;
 
-    public AioContext(ISessionOption option)
+    protected AioContext(ISessionOption option,
+                         ISort<C> sort,
+                         ICommandCreator<C> commandCreator)
     {
-        mRvBuf = ByteBuffer.allocate(option.setRCV());
-        mWrBuf = ByteBuffer.allocate(option.setSNF());
+        _RvBuf = ByteBuffer.allocate(option.setRCV());
+        _WrBuf = ByteBuffer.allocate(option.setSNF());
+        _Sort = sort;
+        _CommandCreator = commandCreator;
     }
 
     @Override
@@ -78,8 +85,8 @@ public class AioContext
         _ChannelState.set(ctlOf(SESSION_IDLE, 0));
         mDecodingPosition = -1;
         mLackData = 1;
-        mRvBuf.clear();
-        mWrBuf.clear();
+        _RvBuf.clear();
+        _WrBuf.clear();
     }
 
     @Override
@@ -138,7 +145,7 @@ public class AioContext
     {
         mDecodingPosition = -1;
         mLackData = 1;
-        mRvBuf.clear();
+        _RvBuf.clear();
     }
 
     @Override
@@ -154,10 +161,9 @@ public class AioContext
     }
 
     @Override
-    public IContext setOutState(int state)
+    public void setOutState(int state)
     {
         advanceState(_EncodeState, state);
-        return this;
     }
 
     @Override
@@ -173,17 +179,15 @@ public class AioContext
     }
 
     @Override
-    public IContext setInState(int state)
+    public void setInState(int state)
     {
         advanceState(_DecodeState, state);
-        return this;
     }
 
     @Override
-    public IContext setChannelState(int state)
+    public void setChannelState(int state)
     {
         advanceState(_ChannelState, state);
-        return this;
     }
 
     @Override
@@ -231,19 +235,19 @@ public class AioContext
     @Override
     public ByteBuffer getWrBuffer()
     {
-        return mWrBuf;
+        return _WrBuf;
     }
 
     @Override
     public ByteBuffer getRvBuffer()
     {
-        return mRvBuf;
+        return _RvBuf;
     }
 
     @Override
     public int getSendMaxSize()
     {
-        return mWrBuf.capacity();
+        return _WrBuf.capacity();
     }
 
     @Override
@@ -289,5 +293,17 @@ public class AioContext
     public boolean isClosed()
     {
         return isClosed(_ChannelState.get());
+    }
+
+    @Override
+    public ISort<C> getSort()
+    {
+        return _Sort;
+    }
+
+    @Override
+    public ICommandCreator<C> getCommandCreator()
+    {
+        return _CommandCreator;
     }
 }

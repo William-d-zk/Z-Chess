@@ -35,34 +35,28 @@ import com.tgx.chess.queen.io.core.async.socket.AioWorker;
 /**
  * @author William.d.zk
  */
-public interface IAioServer
+public interface IAioServer<C extends IContext<C>>
         extends
-        IConnected,
-        IConnectActive,
-        IConnectError,
+        IConnected<C>,
+        IConnectActivity<C>,
+        IConnectError<C>,
         CompletionHandler<AsynchronousSocketChannel,
-                          IAioServer>
+                          IAioServer<C>>
 {
     void bindAddress(InetSocketAddress address, AsynchronousChannelGroup channelGroup) throws IOException;
 
     void pendingAccept();
 
     @Override
-    default void completed(AsynchronousSocketChannel channel, IAioServer server)
+    default void completed(AsynchronousSocketChannel channel, IAioServer<C> server)
     {
         AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishConnected(server.getConnectedOperator(),
-                                server.getHandler(),
-                                server,
-                                server.getSessionCreator(),
-                                server.getCommandCreator(),
-                                server.getSessionCreated(),
-                                channel);
+        worker.publishConnected(server.getConnectedOperator(), server, channel);
         server.pendingAccept();
     }
 
     @Override
-    default void failed(Throwable exc, IAioServer server)
+    default void failed(Throwable exc, IAioServer<C> server)
     {
         AioWorker worker = (AioWorker) Thread.currentThread();
         worker.publishAcceptError(server.getErrorOperator(), exc, server);
@@ -71,5 +65,6 @@ public interface IAioServer
 
     @Override
     IOperator<Throwable,
-              IAioServer> getErrorOperator();
+              IAioServer<C>,
+              IAioServer<C>> getErrorOperator();
 }

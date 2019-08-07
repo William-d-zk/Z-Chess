@@ -25,16 +25,20 @@
 package com.tgx.chess.queen.event.handler;
 
 import com.lmax.disruptor.RingBuffer;
+import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.processor.QEvent;
+import com.tgx.chess.queen.io.core.inf.IContext;
 
-abstract class BaseDispatcher
+/**
+ * @author william.d.zk
+ */
+abstract class BaseDispatcher<C extends IContext<C>>
         implements
-        IPipeEventHandler<QEvent,
-                          QEvent>
+        IPipeEventHandler<QEvent>
 {
     final RingBuffer<QEvent> _Link;
     final RingBuffer<QEvent> _Cluster;
@@ -54,7 +58,9 @@ abstract class BaseDispatcher
         _Error = error;
         _Workers = workers;
         _WorkerMask = _Workers.length - 1;
-        if (Integer.bitCount(_Workers.length) != 1) { throw new IllegalArgumentException("workers' length must be a power of 2"); }
+        if (Integer.bitCount(_Workers.length) != 1) {
+            throw new IllegalArgumentException("workers' length must be a power of 2");
+        }
     }
 
     RingBuffer<QEvent> dispatchWorker(long seq)
@@ -63,39 +69,47 @@ abstract class BaseDispatcher
     }
 
     <V,
-     A> void dispatch(ISort sorter,
+     A,
+     R> void dispatch(ISort sorter,
                       IOperator.Type type,
                       V v,
                       A a,
                       IOperator<V,
-                                A> op)
+                                A,
+                                R> op)
     {
         switch (sorter.getMode())
         {
             case CLUSTER:
-                publish(_Cluster, type, v, a, op);
+                publish(_Cluster, type, new Pair<>(v, a), op);
                 break;
             case LINK:
-                publish(_Link, type, v, a, op);
+                publish(_Link, type, new Pair<>(v, a), op);
+                break;
+            default:
                 break;
         }
     }
 
     <V,
-     A> void dispatchError(ISort sorter,
+     A,
+     R> void dispatchError(ISort sorter,
                            IError.Type type,
                            V v,
                            A a,
                            IOperator<V,
-                                     A> op)
+                                     A,
+                                     R> op)
     {
         switch (sorter.getMode())
         {
             case CLUSTER:
-                error(_Cluster, type, v, a, op);
+                error(_Cluster, type, new Pair<>(v, a), op);
                 break;
             case LINK:
-                error(_Link, type, v, a, op);
+                error(_Link, type, new Pair<>(v, a), op);
+                break;
+            default:
                 break;
         }
     }

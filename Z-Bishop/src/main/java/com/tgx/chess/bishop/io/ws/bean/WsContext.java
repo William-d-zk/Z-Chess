@@ -27,9 +27,9 @@ import java.io.IOException;
 import java.util.Base64;
 import java.util.Random;
 
-import com.tgx.chess.king.base.util.CryptUtil;
+import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.queen.event.inf.ISort;
-import com.tgx.chess.queen.io.core.async.AioContext;
+import com.tgx.chess.queen.io.core.inf.ICommandCreator;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 
 /**
@@ -37,7 +37,7 @@ import com.tgx.chess.queen.io.core.inf.ISessionOption;
  */
 public class WsContext
         extends
-        AioContext
+        ZContext
 {
     public final static int HS_State_GET          = 1;
     public final static int HS_State_HOST         = 1 << 1;
@@ -50,7 +50,10 @@ public class WsContext
     public final static int HS_State_SEC_VERSION = 1 << 7;
     public final static int HS_State_HTTP_101    = 1 << 8;
     public final static int HS_State_SEC_ACCEPT  = 1 << 9;
-    public final static int HS_State_ACCEPT_OK   = HS_State_HTTP_101 | HS_State_SEC_ACCEPT | HS_State_UPGRADE | HS_State_CONNECTION;
+    public final static int HS_State_ACCEPT_OK   = HS_State_HTTP_101
+                                                   | HS_State_SEC_ACCEPT
+                                                   | HS_State_UPGRADE
+                                                   | HS_State_CONNECTION;
     public final static int HS_State_CLIENT_OK   = HS_State_GET
                                                    | HS_State_HOST
                                                    | HS_State_UPGRADE
@@ -58,32 +61,32 @@ public class WsContext
                                                    | HS_State_SEC_KEY
                                                    | HS_State_SEC_VERSION
                                                    | HS_State_ORIGIN;
-    public final String     mSecKey, mSecAcceptExpect;
-    private final int       mVersion             = 13;
-    private final int       mMaxPayloadSize;
+    private final String    _SecKey, _SecAcceptExpect;
+    private final int       _MaxPayloadSize;
     private int             mHandshakeState;
-    private WsFrame         mCarrier;
     private WsHandshake     mHandshake;
-    private CryptUtil       mCryptUtil           = new CryptUtil();
 
     public WsContext(ISessionOption option,
-                     ISort sorter)
+                     ISort<ZContext> sort,
+                     ICommandCreator<ZContext> commandCreator)
     {
-        super(option);
-        mMaxPayloadSize = option.setSNF() - 2;
-        if (sorter.getType()
-                  .equals(ISort.Type.CONSUMER))
+        super(option, sort, commandCreator);
+        _MaxPayloadSize = option.setSNF() - 2;
+        if (sort.getType()
+                .equals(ISort.Type.CONSUMER))
         {
             Random r = new Random(System.nanoTime());
             byte[] seed = new byte[17];
             r.nextBytes(seed);
-            mSecKey = Base64.getEncoder()
-                            .encodeToString(mCryptUtil.sha1(seed));
-            mSecAcceptExpect = getSecAccept(mSecKey);
+            _SecKey = Base64.getEncoder()
+                            .encodeToString(getCryptUtil().sha1(seed));
+            _SecAcceptExpect = getSecAccept(_SecKey);
         }
-        else mSecKey = mSecAcceptExpect = null;
+        else {
+            _SecKey = _SecAcceptExpect = null;
+        }
 
-        switch (sorter.getMode())
+        switch (sort.getMode())
         {
             case CLUSTER:
                 transfer();
@@ -91,17 +94,9 @@ public class WsContext
             case LINK:
                 handshake();
                 break;
+            default:
+                break;
         }
-    }
-
-    public WsFrame getCarrier()
-    {
-        return mCarrier;
-    }
-
-    public void setCarrier(WsFrame frame)
-    {
-        mCarrier = frame;
     }
 
     public WsHandshake getHandshake()
@@ -116,7 +111,7 @@ public class WsContext
 
     public final int getMaxPayloadSize()
     {
-        return mMaxPayloadSize;
+        return _MaxPayloadSize;
     }
 
     @Override
@@ -128,19 +123,17 @@ public class WsContext
     @Override
     public void reset()
     {
-        if (mCarrier != null) mCarrier.reset();
-        if (mHandshake != null) mHandshake.dispose();
+        if (mHandshake != null) {
+            mHandshake.dispose();
+        }
         mHandshake = null;
-        mCarrier = null;
         super.reset();
     }
 
     @Override
     public void dispose()
     {
-        mCryptUtil = null;
         mHandshake = null;
-        mCarrier = null;
         super.dispose();
     }
 
@@ -148,19 +141,18 @@ public class WsContext
     public void finish()
     {
         super.finish();
-        mCarrier = null;
         mHandshake = null;
     }
 
-    public String getSecAccept(String sec_key)
+    public String getSecAccept(String secKey)
     {
         return Base64.getEncoder()
-                     .encodeToString(mCryptUtil.sha1((sec_key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11").getBytes()));
+                     .encodeToString(getCryptUtil().sha1((secKey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11").getBytes()));
     }
 
     public String getSeKey()
     {
-        return mSecKey;
+        return _SecKey;
     }
 
     public final void updateHandshakeState(int state)
@@ -175,7 +167,11 @@ public class WsContext
 
     public final int getWsVersion()
     {
-        return mVersion;
+        return 13;
     }
 
+    public String getSecAcceptExpect()
+    {
+        return _SecAcceptExpect;
+    }
 }

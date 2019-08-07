@@ -23,7 +23,7 @@
  */
 package com.tgx.chess.king.base.util;
 
-import com.tgx.chess.king.base.inf.IDisposable;
+import com.tgx.chess.king.base.inf.ITriple;
 
 /**
  * @author William.d.zk
@@ -32,7 +32,7 @@ public class Triple<FIRST,
                     SECOND,
                     THIRD>
         implements
-        IDisposable
+        ITriple
 {
     private FIRST  first;
     private SECOND second;
@@ -47,16 +47,19 @@ public class Triple<FIRST,
         this.third = third;
     }
 
+    @Override
     public FIRST first()
     {
         return first;
     }
 
+    @Override
     public SECOND second()
     {
         return second;
     }
 
+    @Override
     public THIRD third()
     {
         return third;
@@ -85,6 +88,7 @@ public class Triple<FIRST,
         third = null;
     }
 
+    @Override
     public Triple<FIRST,
                   SECOND,
                   THIRD> clone()

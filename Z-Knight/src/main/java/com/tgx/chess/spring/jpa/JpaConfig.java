@@ -31,6 +31,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+/**
+ * @author william.d.zk
+ */
 @EnableJpaAuditing
 @EnableJpaRepositories({ "com.tgx.chess.spring.auth.repository",
                          "com.tgx.chess.spring.device.repository",

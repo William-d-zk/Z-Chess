@@ -27,33 +27,38 @@ package com.tgx.chess.queen.event.handler.client;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WROTE;
 
+import java.util.List;
 import java.util.Objects;
 
 import com.lmax.disruptor.RingBuffer;
+import com.tgx.chess.king.base.inf.IPair;
+import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
-import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
-public class ClientWriteDispatcher
+/**
+ * @author william.d.zk
+ */
+public class ClientWriteDispatcher<C extends IContext<C>>
         implements
-        IPipeEventHandler<QEvent,
-                          QEvent>
+        IPipeEventHandler<QEvent>
 {
-    private final Logger _Log = Logger.getLogger(getClass().getName());
+    private final Logger _Logger = Logger.getLogger(getClass().getName());
 
-    final RingBuffer<QEvent> _Error;
-    final RingBuffer<QEvent> _Encoder;
+    final RingBuffer<QEvent> _ErrorPipe;
+    final RingBuffer<QEvent> _EncoderPipe;
 
     public ClientWriteDispatcher(RingBuffer<QEvent> error,
                                  RingBuffer<QEvent> encoder)
     {
-        _Error = error;
-        _Encoder = encoder;
+        _ErrorPipe = error;
+        _EncoderPipe = encoder;
     }
 
     @Override
@@ -74,35 +79,27 @@ public class ClientWriteDispatcher
                 case LOCAL://from biz local
                 case WRITE://from LinkIo
                 case LOGIC://from read->logic
-                    Pair<ICommand[],
-                         ISession> writeContent = event.getContent();
-                    ICommand[] commands = writeContent.first();
-                    ISession session = writeContent.second();
+                    IPair writeContent = event.getContent();
+                    IControl<C>[] commands = writeContent.first();
+                    ISession<C> session = writeContent.second();
                     if (session.isValid() && Objects.nonNull(commands)) {
-                        IOperator<ICommand[],
-                                  ISession> transferOperator = event.getEventOp();
-                        Triple<ICommand,
-                               ISession,
-                               IOperator<ICommand,
-                                         ISession>>[] triples = transferOperator.transfer(commands, session);
-                        for (Triple<ICommand,
-                                    ISession,
-                                    IOperator<ICommand,
-                                              ISession>> triple : triples)
-                        {
-                            if (!tryPublish(_Encoder, WRITE, triple.first(), session, triple.third())) {
-                                _Log.warning("publish write event to encoder failed");
+                        IOperator<IControl<C>[],
+                                  ISession<C>,
+                                  List<ITriple>> transferOperator = event.getEventOp();
+                        List<ITriple> triples = transferOperator.handle(commands, session);
+                        for (ITriple triple : triples) {
+                            if (!tryPublish(_EncoderPipe, WRITE, new Pair<>(triple.first(), session), triple.third())) {
+                                _Logger.warning("publish write event to encoder failed");
                             }
                         }
                     }
                     break;
                 case WROTE://from io-wrote
-                    Pair<Integer,
-                         ISession> wroteContent = event.getContent();
+                    IPair wroteContent = event.getContent();
                     session = wroteContent.second();
                     if (session.isValid()) {
-                        if (!tryPublish(_Encoder, WROTE, wroteContent.first(), session, event.getEventOp())) {
-                            _Log.warning("publish wrote event to encoder failed");
+                        if (!tryPublish(_EncoderPipe, WROTE, wroteContent, event.getEventOp())) {
+                            _Logger.warning("publish wrote event to encoder failed");
                         }
                     }
                     break;

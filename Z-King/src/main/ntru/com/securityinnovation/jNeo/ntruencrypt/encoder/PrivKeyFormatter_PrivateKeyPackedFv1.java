@@ -42,7 +42,8 @@ class PrivKeyFormatter_PrivateKeyPackedFv1
     public byte[] encode(KeyParams keyParams, FullPolynomial h, FullPolynomial f)
     {
         // Sanity-check inputs
-        if ((h.p.length != keyParams.N) || (f.p.length != keyParams.N)) throw new IllegalArgumentException("exported key invalid");
+        if ((h.p.length != keyParams.N)
+            || (f.p.length != keyParams.N)) throw new IllegalArgumentException("exported key invalid");
 
         // Convert f to a packed F.
         FullPolynomial F = KeyFormatterUtil.recoverF(f);
@@ -51,7 +52,9 @@ class PrivKeyFormatter_PrivateKeyPackedFv1
         byte encodedF[] = os.toByteArray();
 
         // Allocate output buffer
-        int len = (KeyFormatterUtil.fillHeader(tag, keyParams.OIDBytes, null) + BitPack.pack(keyParams.N, keyParams.q) + encodedF.length);
+        int len = (KeyFormatterUtil.fillHeader(tag, keyParams.OIDBytes, null)
+                   + BitPack.pack(keyParams.N, keyParams.q)
+                   + encodedF.length);
         byte ret[] = new byte[len];
 
         // Encode the output
@@ -71,7 +74,9 @@ class PrivKeyFormatter_PrivateKeyPackedFv1
         int headerLen = KeyFormatterUtil.getHeaderEndOffset(keyBlob);
         int packedHLen = BitPack.unpack(keyParams.N, keyParams.q);
         int packedFLen = (keyParams.N + 4) / 5;
-        if (headerLen + packedHLen + packedFLen != keyBlob.length) throw new IllegalArgumentException("key blob length invalid");
+        if (headerLen
+            + packedHLen
+            + packedFLen != keyBlob.length) throw new IllegalArgumentException("key blob length invalid");
 
         // Recover h
         int offset = headerLen;

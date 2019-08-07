@@ -37,7 +37,7 @@
     <dependencies>
         <dependency>
             <groupId>com.tgx.service</groupId>
-            <artifactId>manange.z-bishop</artifactId>
+            <artifactId>manage.z-bishop</artifactId>
             <version>${project.version}</version>
         </dependency>
         <!--spring boot-->
@@ -51,11 +51,16 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <!--JPA-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
+            <groupId>com.vladmihalcea</groupId>
+            <artifactId>hibernate-types-52</artifactId>
         </dependency>
         <!--DB-->
         <dependency>

@@ -28,6 +28,9 @@ import com.tgx.chess.bishop.io.ws.bean.WsControl;
 import com.tgx.chess.bishop.io.ws.bean.WsFrame;
 import com.tgx.chess.king.base.util.IoUtil;
 
+/**
+ * @author william.d.zk
+ */
 public class X107_Redirect
         extends
         WsControl
@@ -36,8 +39,7 @@ public class X107_Redirect
 
     public X107_Redirect(byte[] payload)
     {
-        super(COMMAND, payload);
-        mCtrlCode = WsFrame.frame_op_code_ctrl_redirect;
+        super(WsFrame.frame_op_code_ctrl_redirect, COMMAND, payload);
     }
 
     public String getHost()

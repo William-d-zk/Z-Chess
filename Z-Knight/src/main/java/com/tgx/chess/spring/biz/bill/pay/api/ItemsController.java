@@ -40,6 +40,9 @@ import com.tgx.chess.spring.biz.bill.pay.api.dao.ItemEntry;
 import com.tgx.chess.spring.biz.bill.pay.model.ItemEntity;
 import com.tgx.chess.spring.biz.bill.pay.service.ItemsService;
 
+/**
+ * @author william.d.zk
+ */
 @RestController
 public class ItemsController
 {
@@ -56,7 +59,8 @@ public class ItemsController
     @GetMapping("/items/add")
     public @ResponseBody ItemEntry addSku(@RequestParam(name = "sku") String sku,
                                           @RequestParam(name = "price") double price,
-                                          @RequestParam(name = "currency", defaultValue = "CNY") String currency) throws ZApiExecption
+                                          @RequestParam(name = "currency",
+                                                        defaultValue = "CNY") String currency) throws ZApiExecption
     {
         ItemEntity itemEntity = new ItemEntity();
         itemEntity.setPrice(price);

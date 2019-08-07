@@ -124,13 +124,8 @@ class Sha1
     {
         // Sanity check inputs
         if (out == null) throw new NullPointerException("output array is null");
-        if (outOffset + getDigestLen() > out.length) throw new IllegalArgumentException("output array is too short: start at offset "
-                                                                                        + outOffset
-                                                                                        + " and writing "
-                                                                                        + getDigestLen()
-                                                                                        + " bytes will overrun "
-                                                                                        + " buffer length "
-                                                                                        + out.length);
+        if (outOffset
+            + getDigestLen() > out.length) throw new IllegalArgumentException("output array is too short: start at offset " + outOffset + " and writing " + getDigestLen() + " bytes will overrun " + " buffer length " + out.length);
         if (outOffset < 0) throw new IllegalArgumentException("output offset is negative (" + outOffset + ")");
 
         // Add the "end of input" marker
@@ -200,7 +195,10 @@ class Sha1
     {
         while (numInts-- > 0) {
             // Big endian
-            dst[dstOffset++] = ((src[srcOffset++] << 24) | ((src[srcOffset++] & 0xFF) << 16) | ((src[srcOffset++] & 0xFF) << 8) | (src[srcOffset++] & 0xFF));
+            dst[dstOffset++] = ((src[srcOffset++] << 24)
+                                | ((src[srcOffset++] & 0xFF) << 16)
+                                | ((src[srcOffset++] & 0xFF) << 8)
+                                | (src[srcOffset++] & 0xFF));
         }
     }
 

@@ -42,11 +42,18 @@ import org.hibernate.validator.constraints.Length;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tgx.chess.spring.jpa.model.AuditModel;
 
+/**
+ * @author william.d.zk
+ */
 @Entity(name = "Device")
 @Table(schema = "\"tgx-z-chess-device\"",
        indexes = { @Index(name = "device_idx_token_pwd", columnList = "token,password"),
                    @Index(name = "device_idx_token", columnList = "token"),
-                   @Index(name = "device_idx_mac", columnList = "mac") })
+                   @Index(name = "device_idx_mac", columnList = "mac"),
+                   @Index(name = "device_idx_imei", columnList = "imei"),
+                   @Index(name = "device_idx_imsi", columnList = "imsi"),
+                   @Index(name = "device_idx_sn", columnList = "sn"),
+                   @Index(name = "device_idx_password_id", columnList = "passwordId") })
 public class DeviceEntity
         extends
         AuditModel
@@ -56,12 +63,17 @@ public class DeviceEntity
     @Id
     @GeneratedValue(generator = "ZGenerator")
     @GenericGenerator(name = "ZGenerator", strategy = "com.tgx.chess.spring.jpa.generator.ZGenerator")
-    private Long id;
-
-    @NotEmpty(message = "provide create device lv2 mac")
+    private Long   id;
     @Column(length = 17)
     private String mac;
-
+    @Column(length = 17)
+    private String imei;
+    @Column(length = 15)
+    private String imsi;
+    @Column(length = 25)
+    private String phone;
+    @Column(length = 64)
+    private String sn;
     @Column(length = 32)
     @Length(min = 5, max = 32, message = "*Your password must have at least 5 characters less than 32 characters")
     @NotEmpty(message = "*Please provide your password")
@@ -69,11 +81,12 @@ public class DeviceEntity
     private long   passwordId;
     @Column(length = 64)
     private String token;
-
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "invalid_at", nullable = false)
     @JsonIgnore
-    private Date invalidAt;
+    private Date   invalidAt;
+    @Column(length = 32)
+    private String userName;
 
     public Long getId()
     {
@@ -95,6 +108,11 @@ public class DeviceEntity
         this.password = password;
     }
 
+    public void increasePasswordId()
+    {
+        passwordId++;
+    }
+
     public String getToken()
     {
         return token;
@@ -108,13 +126,18 @@ public class DeviceEntity
     @Override
     public String toString()
     {
-        return String.format("device{id:%s,pass:%s,mac:%s,create:%s,update:%s,token:%s,invalid:%s}",
+        return String.format("device{id:%s,token:%s,pass_id:%d,user_name:%s,pass: %s ,mac:%s,imei:%s,imsi:%s,sn:%s,create:%s,update:%s,invalid:%s}",
                              getId(),
+                             getToken(),
+                             getPasswordId(),
+                             getUserName(),
                              getPassword(),
                              getMac(),
+                             getImei(),
+                             getImsi(),
+                             getSn(),
                              getCreatedAt(),
                              getUpdatedAt(),
-                             getToken(),
                              getInvalidAt());
     }
 
@@ -146,5 +169,55 @@ public class DeviceEntity
     public void setMac(String mac)
     {
         this.mac = mac;
+    }
+
+    public String getImei()
+    {
+        return imei;
+    }
+
+    public void setImei(String imei)
+    {
+        this.imei = imei;
+    }
+
+    public String getImsi()
+    {
+        return imsi;
+    }
+
+    public void setImsi(String imsi)
+    {
+        this.imsi = imsi;
+    }
+
+    public String getSn()
+    {
+        return sn;
+    }
+
+    public void setSn(String sn)
+    {
+        this.sn = sn;
+    }
+
+    public String getPhone()
+    {
+        return phone;
+    }
+
+    public void setPhone(String phone)
+    {
+        this.phone = phone;
+    }
+
+    public String getUserName()
+    {
+        return userName;
+    }
+
+    public void setUserName(String userName)
+    {
+        this.userName = userName;
     }
 }

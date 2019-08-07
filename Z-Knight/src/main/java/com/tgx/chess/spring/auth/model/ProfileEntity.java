@@ -24,25 +24,22 @@
 
 package com.tgx.chess.spring.auth.model;
 
-import java.util.Set;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
-import com.tgx.chess.spring.device.model.ClientEntity;
 import com.tgx.chess.spring.jpa.model.AuditModel;
 
+/**
+ * @author william.d.zk
+ */
 @Entity(name = "Profile")
 @Table(indexes = { @Index(name = "profile_idx_account", columnList = "account_id") })
 public class ProfileEntity
@@ -59,10 +56,6 @@ public class ProfileEntity
 
     @Column(length = 64)
     private String openId;
-
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinTable(name = "profile_client", joinColumns = @JoinColumn(name = "profile_id"), inverseJoinColumns = @JoinColumn(name = "client_id"))
-    private Set<ClientEntity> clients;
 
     public int getId()
     {
@@ -94,13 +87,4 @@ public class ProfileEntity
         this.openId = openId;
     }
 
-    public Set<ClientEntity> getClients()
-    {
-        return clients;
-    }
-
-    public void setClients(Set<ClientEntity> clients)
-    {
-        this.clients = clients;
-    }
 }

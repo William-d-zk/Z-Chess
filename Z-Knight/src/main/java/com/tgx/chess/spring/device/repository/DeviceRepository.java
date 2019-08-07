@@ -29,6 +29,9 @@ import org.springframework.stereotype.Repository;
 
 import com.tgx.chess.spring.device.model.DeviceEntity;
 
+/**
+ * @author william.d.zk
+ */
 @Repository
 //@Transactional
 public interface DeviceRepository
@@ -41,4 +44,12 @@ public interface DeviceRepository
     DeviceEntity findByMac(String mac);
 
     DeviceEntity findByToken(String token);
+
+    DeviceEntity findByImei(String imei);
+
+    DeviceEntity findByImsi(String imei);
+
+    DeviceEntity findBySn(String sn);
+
+    DeviceEntity findByPhone(String phone);
 }
