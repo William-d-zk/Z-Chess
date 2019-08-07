@@ -1,8 +1,14 @@
+.classpath
 .gradle
 .idea
 build
 target
 gradle
 out
+bin
+.settings
 *.iml
 mvn_deploy.sh
+.project
+gradlew
+gradlew.bat
