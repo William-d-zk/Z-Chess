@@ -63,7 +63,7 @@ public class MessageBody
         return content;
     }
 
-    @JsonInclude
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public JsonNode getContent()
     {
         try {

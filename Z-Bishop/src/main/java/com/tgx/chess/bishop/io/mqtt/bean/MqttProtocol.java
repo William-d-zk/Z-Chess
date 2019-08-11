@@ -132,6 +132,13 @@ public class MqttProtocol
     private byte     qos_level;
     private QTT_TYPE type;
 
+    private void checkOpCode()
+    {
+        if (getLevel() == Level.ALMOST_ONCE && duplicate) {
+            throw new IllegalStateException("level == 0 && duplicate");
+        }
+    }
+
     public static byte generateCtrl(boolean dup, boolean retain, Level qosLevel, QTT_TYPE qttType)
     {
         byte ctrl = 0;
@@ -203,6 +210,7 @@ public class MqttProtocol
         duplicate = (frame_op_code & DUPLICATE_FLAG) == DUPLICATE_FLAG;
         retain = (frame_op_code & RETAIN_FLAG) == RETAIN_FLAG;
         qos_level = (byte) ((frame_op_code & QOS_MASK) >> 1);
+        checkOpCode();
     }
 
     byte getOpCode()

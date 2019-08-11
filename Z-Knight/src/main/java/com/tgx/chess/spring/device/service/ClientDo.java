@@ -40,7 +40,7 @@ public class ClientDo
     private String       userName;
     private Boolean      exist;
     private List<String> devices;
-    private List<String> successDevices;
+    private List<String> bindDevices;
 
     public String getUserName()
     {
@@ -72,16 +72,6 @@ public class ClientDo
         this.auth = auth;
     }
 
-    public List<String> getSuccessDevices()
-    {
-        return successDevices;
-    }
-
-    public void setSuccessDevices(List<String> successDevices)
-    {
-        this.successDevices = successDevices;
-    }
-
     public String getCipher()
     {
         return cipher;
@@ -100,5 +90,15 @@ public class ClientDo
     public Boolean getExist()
     {
         return exist;
+    }
+
+    public List<String> getBindDevices()
+    {
+        return bindDevices;
+    }
+
+    public void setBindDevices(List<String> bindDevices)
+    {
+        this.bindDevices = bindDevices;
     }
 }

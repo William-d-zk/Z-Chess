@@ -27,6 +27,7 @@ package com.tgx.chess.device.api;
 import static com.tgx.chess.king.base.util.IoUtil.isBlank;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -104,6 +105,10 @@ public class ClientController
             accountEntity.setClients(clients);
             clientEntity.setUserName(client.getUserName());
             clientEntity.setAccount(accountEntity);
+            List<String> devices = client.getDevices();
+            if (devices == null || devices.isEmpty()) {
+                throw new IllegalArgumentException("register empty client with none devices!");
+            }
             Set<DeviceEntity> deviceSet = client.getDevices()
                                                 .stream()
                                                 .map(_DeviceService::findDeviceBySn)
@@ -121,10 +126,10 @@ public class ClientController
             clientEntity.setDevices(deviceSet);
             _ClientService.updateClient(clientEntity);
             _AccountService.updateAccount(accountEntity);
-            client.setSuccessDevices(client.getDevices()
-                                           .stream()
-                                           .filter(snSet::contains)
-                                           .collect(Collectors.toList()));
+            client.setBindDevices(client.getDevices()
+                                        .stream()
+                                        .filter(snSet::contains)
+                                        .collect(Collectors.toList()));
             client.getDevices()
                   .removeAll(snSet);
             client.setAuth(null);
