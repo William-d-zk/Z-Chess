@@ -485,7 +485,6 @@ public class DeviceService
         return _MessageRepository.findById(unique)
                                  .map(MessageEntity::getPayload)
                                  .orElse(null);
-
     }
 
 }

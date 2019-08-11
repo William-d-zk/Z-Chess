@@ -206,7 +206,6 @@ public class QttRouter
         long msgId = stateMessage.getMsgId();
         if (_QttStatusMap.computeIfPresent(sessionIndex, (key, old) ->
         {
-
             old.remove(msgId);
             return old.isEmpty() ? old
                                  : null;
