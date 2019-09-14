@@ -27,6 +27,7 @@ package com.tgx.chess.spring.device.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import com.tgx.chess.spring.device.model.MessageEntity;
 
@@ -34,6 +35,7 @@ import com.tgx.chess.spring.device.model.MessageEntity;
  * @author william.d.zk
  * @date 2019-07-31
  */
+@Repository
 public interface MessageRepository
         extends
         JpaRepository<MessageEntity,
