@@ -1,7 +1,7 @@
 description = 'Z-Rook'
 dependencies {
     compile project(':io.z-queen')
-    compile(group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.6.RELEASE') {
+    compile(group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.8.RELEASE') {
         exclude(module: 'spring-boot-starter-tomcat')
     }
 }

@@ -43,7 +43,7 @@ subprojects {
     }
 
     dependencies {
-        compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26'
+        compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.28'
         compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
         compile group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
         testCompile group: 'org.junit.platform', name: 'junit-platform-launcher', version: '1.5.0'
