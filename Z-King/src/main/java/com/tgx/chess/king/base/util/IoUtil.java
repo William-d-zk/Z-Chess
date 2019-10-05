@@ -37,7 +37,7 @@ import java.util.Objects;
 public interface IoUtil
 {
 
-    char HEX_DIGITS[] = { '0',
+    char[] HEX_DIGITS = { '0',
                           '1',
                           '2',
                           '3',

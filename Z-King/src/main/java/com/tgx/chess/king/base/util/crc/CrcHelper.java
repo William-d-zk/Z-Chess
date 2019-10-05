@@ -22,25 +22,23 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.auth.repository;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
-import com.tgx.chess.spring.auth.model.AccountEntity;
+package com.tgx.chess.king.base.util.crc;
 
 /**
- * @author william.d.zk
+ * Created by anthony on 13.05.2017.
  */
-@Repository
-public interface AccountRepository
-        extends
-        JpaRepository<AccountEntity,
-                      Integer>
-{
-    AccountEntity findByEmail(String email);
+public class CrcHelper {
 
-    AccountEntity findByName(String name);
+    static long ReverseBits(long ul, int valueLength)
+    {
+        long newValue = 0;
 
-    AccountEntity findByAuth(String auth);
+        for (int i = valueLength - 1; i >= 0; i--)
+        {
+            newValue |= (ul & 1) << i;
+            ul >>= 1;
+        }
+
+        return newValue;
+    }
 }
