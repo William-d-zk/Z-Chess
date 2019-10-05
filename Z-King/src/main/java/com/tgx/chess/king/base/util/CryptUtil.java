@@ -37,13 +37,13 @@ import java.util.Random;
 public class CryptUtil
 {
 
-    final static String   chars          = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    final static char     pad            = '=';
-    private MessageDigest MD5            = create("MD5");
-    private MessageDigest SHA_1          = create("SHA-1");
-    private MessageDigest SHA_256        = create("SHA-256");
-    private final Random  _Random        = new Random((long) Math.PI);
-    private final byte[]  _PasswordChars = "qwertyuiopasdfghjklzxcvbnmQAZWSXEDCRFVTGBYHNUJMIKOLP1234567890,-=+_!~`%&*#@;|/".getBytes(StandardCharsets.US_ASCII);
+    private final static String chars          = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    private final static char   pad            = '=';
+    private MessageDigest       MD5            = create("MD5");
+    private MessageDigest       SHA_1          = create("SHA-1");
+    private MessageDigest       SHA_256        = create("SHA-256");
+    private final Random        _Random        = new Random((long) Math.E);
+    private final byte[]        _PasswordChars = "qwertyuiopasdfghjklzxcvbnmQAZWSXEDCRFVTGBYHNUJMIKOLP1234567890,-=+_!~`%&*#@;|/".getBytes(StandardCharsets.US_ASCII);
 
     /**
      * xor ^ <0-127>
