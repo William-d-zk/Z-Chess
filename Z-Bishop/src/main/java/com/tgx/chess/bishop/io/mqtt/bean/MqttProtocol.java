@@ -26,8 +26,12 @@ package com.tgx.chess.bishop.io.mqtt.bean;
 
 import java.util.Objects;
 
+import com.tgx.chess.bishop.io.Direction;
 import com.tgx.chess.queen.io.core.inf.IDuplicate;
 import com.tgx.chess.queen.io.core.inf.IQoS;
+
+import static com.tgx.chess.bishop.io.Direction.CLIENT_TO_SERVER;
+import static com.tgx.chess.bishop.io.Direction.SERVER_TO_CLIENT;
 
 /**
  * @author william.d.zk
@@ -45,31 +49,31 @@ public class MqttProtocol
     public enum QTT_TYPE
     {
 
-        CONNECT(1, "C->S", "Client request to connect to Server"),
-        CONNACK(2, "S->C", "Connect acknowledgment"),
-        PUBLISH(3, "C->S | S->C", "Publish message"),
-        PUBACK(4, "C->S | S->C", "Publish acknowledgment"),
-        PUBREC(5, "C->S | S->C", "Publish received (assured delivery part 1)"),
-        PUBREL(6, "C->S | S->C", "Publish release (assured delivery part 2)"),
-        PUBCOMP(7, "C->S | S->C", "Publish complete (assured delivery part 3)"),
-        SUBSCRIBE(8, "C->S", "Client subscribe request"),
-        SUBACK(9, "S->C", "Subscribe acknowledgment"),
-        UNSUBSCRIBE(10, "C->S", "Unsubscribe request"),
-        UNSUBACK(11, "S->C", "Unsubscribe acknowledgment"),
-        PINGREQ(12, "C->S", "PING request"),
-        PINGRESP(13, "S->C", "PING response"),
-        DISCONNECT(14, "C->S", "Client is disconnecting");
+        CONNECT(1, "Client request to connect to Server", CLIENT_TO_SERVER),
+        CONNACK(2, "Connect acknowledgment", SERVER_TO_CLIENT),
+        PUBLISH(3, "Publish message", CLIENT_TO_SERVER, SERVER_TO_CLIENT),
+        PUBACK(4, "Publish acknowledgment", CLIENT_TO_SERVER, SERVER_TO_CLIENT),
+        PUBREC(5, "Publish received (assured delivery part 1)", CLIENT_TO_SERVER, SERVER_TO_CLIENT),
+        PUBREL(6, "Publish release (assured delivery part 2)", CLIENT_TO_SERVER, SERVER_TO_CLIENT),
+        PUBCOMP(7, "Publish complete (assured delivery part 3)", CLIENT_TO_SERVER, SERVER_TO_CLIENT),
+        SUBSCRIBE(8, "Client subscribe request", CLIENT_TO_SERVER),
+        SUBACK(9, "Subscribe acknowledgment", SERVER_TO_CLIENT),
+        UNSUBSCRIBE(10, "Unsubscribe request", CLIENT_TO_SERVER),
+        UNSUBACK(11, "Unsubscribe acknowledgment", SERVER_TO_CLIENT),
+        PINGREQ(12, "PING request", CLIENT_TO_SERVER),
+        PINGRESP(13, "PING response", SERVER_TO_CLIENT),
+        DISCONNECT(14, "Client is disconnecting", CLIENT_TO_SERVER);
 
-        final int    _Value;
-        final String _Description;
-        final String _Direction;
+        final int         _Value;
+        final String      _Description;
+        final Direction[] _Directions;
 
         QTT_TYPE(int code,
-                 String direction,
-                 String description)
+                 String description,
+                 Direction... directions)
         {
             _Value = code << 4;
-            _Direction = direction;
+            _Directions = directions;
             _Description = description;
         }
 
@@ -78,9 +82,9 @@ public class MqttProtocol
             return _Value;
         }
 
-        public String getDirection()
+        public Direction[] getDirections()
         {
-            return _Direction;
+            return _Directions;
         }
 
         public String getDescription()

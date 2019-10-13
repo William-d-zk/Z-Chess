@@ -53,7 +53,7 @@ public interface ISessionOption
 
     default String getConfigName()
     {
-        return "SocketOption";
+        return "Socket";
     }
 
     default String getConfigGroup()

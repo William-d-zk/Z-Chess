@@ -22,36 +22,36 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.spring.device.service;
+package com.tgx.chess.spring.jpa.device.repository;
 
-import com.tgx.chess.bishop.biz.db.dao.DeviceStatus;
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.tgx.chess.spring.jpa.device.dao.MessageEntity;
 
 /**
  * @author william.d.zk
- * @date 2019-06-16
+ * @date 2019-07-31
  */
-public class ResponseDo
+@Repository
+public interface MessageRepository
+        extends
+        JpaRepository<MessageEntity,
+                      Long>
 {
-    private DeviceStatus status;
-    private DeviceDo     device;
+    List<MessageEntity> findAllByOriginAndMsgIdAndDirectionAndOwner(long origin,
+                                                                    long msgId,
+                                                                    String direction,
+                                                                    String owner);
 
-    public DeviceStatus getStatus()
-    {
-        return status;
-    }
+    List<MessageEntity> findAllByTargetAndMsgIdAndDirectionAndOwner(long target,
+                                                                    long msgId,
+                                                                    String direction,
+                                                                    String owner);
 
-    public void setStatus(DeviceStatus status)
-    {
-        this.status = status;
-    }
+    List<MessageEntity> findAllByTargetAndMsgIdBefore(long target, long msgId);
 
-    public DeviceDo getDevice()
-    {
-        return device;
-    }
-
-    public void setDevice(DeviceDo device)
-    {
-        this.device = device;
-    }
+    List<MessageEntity> findAllByOriginAndMsgIdBefore(long origin, long msgId);
 }

@@ -211,7 +211,6 @@ public class DeviceNode
                            .collect(Collectors.toList());
         _DeviceRepository = deviceRepository;
         _QttRouter = qttRouter;
-        _Logger.info("Device Node Bean Load");
     }
 
     @SafeVarargs

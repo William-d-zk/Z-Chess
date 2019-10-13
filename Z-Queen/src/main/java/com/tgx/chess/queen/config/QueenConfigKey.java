@@ -34,7 +34,7 @@ public interface QueenConfigKey
         ConfigKey
 {
 
-    String OWNER_QUEEN_POWER  = "power";
+    String OWNER_IO_POWER = "power";
     String KEY_POWER_SERVER   = "server";
     String KEY_POWER_CLUSTER  = "cluster";
     String KEY_POWER_INTERNAL = "internal";

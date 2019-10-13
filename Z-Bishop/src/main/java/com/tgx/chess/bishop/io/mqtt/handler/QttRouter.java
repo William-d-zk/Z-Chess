@@ -56,7 +56,7 @@ public class QttRouter
         implements
         IQttRouter
 {
-    private final Logger                                   _Logger            = Logger.getLogger(getClass().getSimpleName());
+    private final Logger                                   _Logger            = Logger.getLogger(getClass().getName());
     private final Map<Pattern,
                       Map<Long,
                           IQoS.Level>>                     _Topic2SessionsMap = new TreeMap<>(Comparator.comparing(Pattern::pattern));

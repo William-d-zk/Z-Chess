@@ -39,7 +39,7 @@ public class AcceptFailedOperator<C extends IContext<C>>
                   IAioServer<C>>
 {
 
-    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger(getClass().getName());
 
     @Override
     public IAioServer<C> handle(Throwable throwable, IAioServer<C> aioServer)

@@ -24,6 +24,7 @@
 
 package com.tgx.chess.bishop.io.zprotocol.device;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import com.tgx.chess.bishop.io.zprotocol.ZCommand;
@@ -55,7 +56,7 @@ public class X20_SignUp
         return QOS_PRIORITY_06_META_CREATE;
     }
 
-    private byte[] mac = new byte[6];
+    private String sn;
     private String password;
     private long   passwordId;
 
@@ -63,42 +64,37 @@ public class X20_SignUp
     public int dataLength()
     {
         return super.dataLength()
-               + 15
-               + (Objects.nonNull(password) ? password.getBytes().length
+               + 8
+               + sn.getBytes(StandardCharsets.UTF_8).length
+               + (Objects.nonNull(password) ? password.getBytes(StandardCharsets.UTF_8).length
                                             : 0);
     }
 
     @Override
     public int decodec(byte[] data, int pos)
     {
-        pos = IoUtil.read(data, pos, mac);
-        passwordId = IoUtil.readLong(data, pos);
-        pos += 8;
+        int snBytesLength = data[pos++] & 0xFF;
+        sn = IoUtil.readString(data, pos, snBytesLength, StandardCharsets.UTF_8);
+        pos += snBytesLength;
         int passwordBytesLength = data[pos++] & 0xFF;
         password = IoUtil.readString(data, pos, passwordBytesLength);
         pos += passwordBytesLength;
+        passwordId = IoUtil.readLong(data, pos);
+        pos += 8;
         return pos;
     }
 
     @Override
     public int encodec(byte[] data, int pos)
     {
-        pos += IoUtil.write(mac, data, pos);
-        pos += IoUtil.writeLong(passwordId, data, pos);
-        byte[] passwordBytes = password.getBytes();
+        byte[] snBytes = sn.getBytes(StandardCharsets.UTF_8);
+        pos += IoUtil.writeByte(snBytes.length, data, pos);
+        pos += IoUtil.write(snBytes, data, pos);
+        byte[] passwordBytes = password.getBytes(StandardCharsets.UTF_8);
         pos += IoUtil.writeByte(passwordBytes.length, data, pos);
         pos += IoUtil.write(passwordBytes, data, pos);
+        pos += IoUtil.writeLong(passwordId, data, pos);
         return pos;
-    }
-
-    public byte[] getMac()
-    {
-        return mac;
-    }
-
-    public void setMac(byte[] mac)
-    {
-        System.arraycopy(mac, 0, this.mac, 0, 6);
     }
 
     public String getPassword()
@@ -119,5 +115,15 @@ public class X20_SignUp
     public void setPasswordId(long passwordId)
     {
         this.passwordId = passwordId;
+    }
+
+    public String getSn()
+    {
+        return sn;
+    }
+
+    public void setSn(String sn)
+    {
+        this.sn = sn;
     }
 }

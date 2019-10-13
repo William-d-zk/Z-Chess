@@ -56,7 +56,7 @@ public class ZTlsFilter
     {
         if (!context.isOutCrypt() && context.needUpdateKeyOut()) {
             /* plain -> cipher X04/X05 encoded in command-zfilter */
-            _Logger.info("X04/X05 done,change state from plain to cipher in next encoding conversion");
+            _Logger.debug("X04/X05 done,change state from plain to cipher in next encoding conversion");
             context.swapKeyOut(context.getReRollKey());
             context.getSymmetricEncrypt()
                    .reset();

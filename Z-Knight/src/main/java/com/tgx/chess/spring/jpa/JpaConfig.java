@@ -35,12 +35,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  * @author william.d.zk
  */
 @EnableJpaAuditing
-@EnableJpaRepositories({ "com.tgx.chess.spring.auth.repository",
-                         "com.tgx.chess.spring.device.repository",
-                         "com.tgx.chess.spring.biz.bill.pay.repository" })
-@EntityScan({ "com.tgx.chess.spring.device.model",
-              "com.tgx.chess.spring.auth.model",
-              "com.tgx.chess.spring.biz.bill.pay.model" })
+@EnableJpaRepositories({ "com.tgx.chess.spring.jpa.device.repository" })
+@EntityScan({ "com.tgx.chess.spring.jpa.device.dao" })
 @EnableTransactionManagement
 @Configuration
 @PropertySource({ "classpath:db.properties" })

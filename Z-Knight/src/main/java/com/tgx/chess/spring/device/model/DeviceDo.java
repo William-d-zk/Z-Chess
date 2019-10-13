@@ -22,8 +22,59 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.bishop.biz.user;
+package com.tgx.chess.spring.device.model;
 
-public class UserNode
+import org.springframework.lang.NonNull;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+/**
+ * @author william.d.zk
+ * @date 2019-06-15
+ */
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+public class DeviceDo
 {
+
+    private String sn;
+    private String password;
+    private String token;
+
+    public String getSn()
+    {
+        return sn;
+    }
+
+    public void setSn(@NonNull String sn)
+    {
+        this.sn = sn.toUpperCase();
+    }
+
+    public void setPassword(@NonNull String password)
+    {
+        this.password = password;
+    }
+
+    public String getPassword()
+    {
+        return password;
+    }
+
+    public void setToken(@NonNull String token)
+    {
+        this.token = token.toUpperCase();
+    }
+
+    @JsonIgnore
+    public String getToken()
+    {
+        return token;
+    }
+
+    public String getClientId()
+    {
+        return getToken();
+    }
+
 }

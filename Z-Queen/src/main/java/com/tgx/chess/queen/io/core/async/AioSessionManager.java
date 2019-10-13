@@ -53,10 +53,9 @@ public abstract class AioSessionManager<C extends IContext<C>>
     private final Map<Long,
                       long[][]>[]          _PortChannel2IndexMaps = new Map[4];
     private final Set<ISession<C>>[]       _SessionsSets          = new Set[4];
-    // 每个mask都有单独对应的loadFair
     private final Map<Long,
-                      Integer>[]       _LoadFairMaps = new Map[4];
-    private final Config               _Config;
+                      Integer>[]           _LoadFairMaps          = new Map[4];
+    private final Config                   _Config;
 
     public Config getConfig()
     {
@@ -88,22 +87,22 @@ public abstract class AioSessionManager<C extends IContext<C>>
         {
             case CLIENT_SLOT:
                 power = config.getConfigValue(getConfigGroup(),
-                                              QueenConfigKey.OWNER_QUEEN_POWER,
+                                              QueenConfigKey.OWNER_IO_POWER,
                                               QueenConfigKey.KEY_POWER_CLIENT);
                 break;
             case INTERNAL_SLOT:
                 power = config.getConfigValue(getConfigGroup(),
-                                              QueenConfigKey.OWNER_QUEEN_POWER,
+                                              QueenConfigKey.OWNER_IO_POWER,
                                               QueenConfigKey.KEY_POWER_INTERNAL);
                 break;
             case SERVER_SLOT:
                 power = config.getConfigValue(getConfigGroup(),
-                                              QueenConfigKey.OWNER_QUEEN_POWER,
+                                              QueenConfigKey.OWNER_IO_POWER,
                                               QueenConfigKey.KEY_POWER_SERVER);
                 break;
             case CLUSTER_SLOT:
                 power = config.getConfigValue(getConfigGroup(),
-                                              QueenConfigKey.OWNER_QUEEN_POWER,
+                                              QueenConfigKey.OWNER_IO_POWER,
                                               QueenConfigKey.KEY_POWER_CLUSTER);
                 break;
             default:
@@ -397,7 +396,7 @@ public abstract class AioSessionManager<C extends IContext<C>>
         if (c != null && c.length > 0 && c[0] != null && c[0].length > 1) {
             ISession session = null;
             int size = (int) c[0][c[0].length - 1];
-            _Logger.info("port-size: " + size);
+            _Logger.debug("port-size: " + size);
             if (size == 0) {
                 return 0;
             }
@@ -448,7 +447,7 @@ public abstract class AioSessionManager<C extends IContext<C>>
         if (c != null && c.length > 0 && c[0] != null && c[0].length > 1) {
             ISession<C> session;
             int size = (int) c[0][c[0].length - 1];
-            _Logger.info("port-size: " + size);
+            _Logger.debug("findSessionByPort %d ,port-size: %d", portMask, size);
             if (size == 0) {
                 return null;
             }
@@ -464,11 +463,11 @@ public abstract class AioSessionManager<C extends IContext<C>>
                                                                                       : _LoadFairMaps[getSlot(portMask)].get(portMask);
                 long idx = c[0][(loadFair++ & Integer.MAX_VALUE) % size];
                 _LoadFairMaps[getSlot(portMask)].put(portMask, loadFair);
-                _Logger.info("session index: "
-                             + Long.toHexString(idx)
-                                   .toUpperCase()
-                             + "load fair: "
-                             + loadFair);
+                _Logger.debug("session index: "
+                              + Long.toHexString(idx)
+                                    .toUpperCase()
+                              + "load fair: "
+                              + loadFair);
 
                 session = _Index2SessionMaps[getSlot(idx)].get(idx);
                 if (session == null || session.isClosed()) {
@@ -488,33 +487,4 @@ public abstract class AioSessionManager<C extends IContext<C>>
         }
         return null;
     }
-
-    //    @Override
-    //    public Collection<Long> getIndexSet() {
-    //        return _Index2SessionMaps.keySet();
-    //    }
-    //
-    //    public ISession[] getSessions() {
-    //        ISession[] x = new ISession[_SessionsSets.size()];
-    //        _SessionsSets.toArray(x);
-    //        return x;
-    //    }
-    //
-    //    @Override
-    //    public Iterator<ISession> iterator() {
-    //        return _SessionsSets.iterator();
-    //    }
-    //
-    //    @Override
-    //    public final int sessionCount() {
-    //        return _SessionsSets.size();
-    //    }
-    //
-    //    public List<IControl> heartbeatAll(List<IControl> wList, IControl heartbeat) {
-    //        for (ISession session : _Index2SessionMaps.values())
-    //            wList.add(heartbeat.duplicate()
-    //                               .setSession(session));
-    //        return wList;
-    //    }
-
 }

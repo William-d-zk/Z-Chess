@@ -29,6 +29,8 @@ import static com.tgx.chess.king.base.util.IoUtil.isBlank;
 import java.time.Instant;
 import java.util.Objects;
 
+import com.tgx.chess.king.base.inf.IPair;
+import com.tgx.chess.king.base.util.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,11 +43,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tgx.chess.bishop.biz.db.dao.DeviceStatus;
 import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.spring.device.model.DeviceEntity;
+import com.tgx.chess.spring.jpa.device.dao.DeviceEntity;
 import com.tgx.chess.spring.device.model.MessageBody;
-import com.tgx.chess.spring.device.service.DeviceDo;
+import com.tgx.chess.spring.device.model.DeviceDo;
 import com.tgx.chess.spring.device.service.DeviceService;
-import com.tgx.chess.spring.device.service.ResponseDo;
 
 /**
  * @author william.d.zk
@@ -66,11 +67,8 @@ public class DeviceController
     public @ResponseBody DeviceDo registerDevice(@RequestBody DeviceDo deviceDo)
     {
         DeviceEntity deviceEntity = new DeviceEntity();
-        deviceEntity.setImei(deviceDo.getImei());
-        deviceEntity.setMac(deviceDo.getMac());
         deviceEntity.setSn(deviceDo.getSn());
         deviceEntity = _DeviceService.saveDevice(deviceEntity);
-        deviceDo.setUserName(deviceEntity.getUserName());
         deviceDo.setPassword(deviceEntity.getPassword());
         deviceDo.setToken(deviceEntity.getToken());
         return deviceDo;
@@ -79,26 +77,16 @@ public class DeviceController
     private DeviceDo convertEntity2Do(DeviceEntity entity)
     {
         DeviceDo deviceDo = new DeviceDo();
-        deviceDo.setImei(entity.getImei());
-        deviceDo.setMac(entity.getMac());
         deviceDo.setToken(entity.getToken());
         deviceDo.setSn(entity.getSn());
         deviceDo.setPassword(entity.getPassword());
-        deviceDo.setPhone(entity.getPhone());
-        deviceDo.setImsi(entity.getImsi());
         return deviceDo;
     }
 
     @GetMapping("/device/query")
-    public @ResponseBody ResponseDo queryDevice(@RequestParam(required = false) String token,
-                                                @RequestParam(required = false) String sn,
-                                                @RequestParam(required = false) String mac,
-                                                @RequestParam(required = false) String imei,
-                                                @RequestParam(required = false) String imsi,
-                                                @RequestParam(required = false) String phone)
+    public @ResponseBody IPair queryDevice(@RequestParam(required = false) String token,
+                                           @RequestParam(required = false) String sn)
     {
-        ResponseDo responseDo = new ResponseDo();
-        responseDo.setStatus(DeviceStatus.MISS);
         DeviceEntity entity = null;
         if (!isBlank(token)) {
             token = token.toUpperCase();
@@ -108,45 +96,19 @@ public class DeviceController
             sn = sn.toUpperCase();
             entity = _DeviceService.findDeviceBySn(sn);
         }
-        else if (!isBlank(mac)) {
-            mac = mac.toUpperCase();
-            entity = _DeviceService.findDeviceByMac(mac);
-        }
-        else if (!isBlank(imei)) {
-            imei = imei.toUpperCase();
-            entity = _DeviceService.findDeviceByImei(imei);
-        }
-        else if (!isBlank(imsi)) {
-            imsi = imsi.toUpperCase();
-            entity = _DeviceService.findDeviceByImsi(imsi);
-        }
-        else if (!isBlank(phone)) {
-            phone = phone.toUpperCase();
-            entity = _DeviceService.findDeviceByPhone(phone);
-        }
-
         if (Objects.nonNull(entity)) {
-            responseDo.setDevice(convertEntity2Do(entity));
+            DeviceDo deviceDo = convertEntity2Do(entity);
             if (entity.getInvalidAt()
                       .toInstant()
                       .isBefore(Instant.now()))
             {
-                responseDo.setStatus(DeviceStatus.INVALID);
-            }
-            else if (isBlank(entity.getMac()) && isBlank(entity.getImei())) {
-                responseDo.setStatus(DeviceStatus.INCOMPLETE);
+                return new Pair<>(DeviceStatus.INVALID, deviceDo);
             }
             else {
-                responseDo.setStatus(DeviceStatus.AVAILABLE);
+                return new Pair<>(DeviceStatus.AVAILABLE, deviceDo);
             }
         }
-        return responseDo;
-    }
-
-    @GetMapping("/client/device")
-    public @ResponseBody DeviceEntity getDevice(@RequestParam(name = "mac") String deviceMac)
-    {
-        return _DeviceService.findDeviceByMac(deviceMac);
+        return new Pair<>(DeviceStatus.MISS, null);
     }
 
     @GetMapping("/message")

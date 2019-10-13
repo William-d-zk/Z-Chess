@@ -44,7 +44,7 @@ public class PipeEncoder<C extends IContext<C>>
         implements
         IPipeEncoder<C>
 {
-    private final Logger       _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final Logger       _Logger = Logger.getLogger(getClass().getName());
     private final AioWriter<C> _AioWriter;
 
     public PipeEncoder(AioWriter<C> aioWriter)
