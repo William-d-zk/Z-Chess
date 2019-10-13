@@ -39,7 +39,7 @@ public interface ISessionError<C extends IContext<C>>
                   ISession<C>,
                   ITriple>
 {
-    Logger _Logger = Logger.getLogger(ISessionError.class.getSimpleName());
+    Logger _Logger = Logger.getLogger(ISessionError.class.getName());
 
     @Override
     default ITriple handle(Throwable throwable, ISession<C> session)

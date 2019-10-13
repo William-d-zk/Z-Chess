@@ -22,13 +22,13 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.device.model;
+package com.tgx.chess.bishop.io;
 
 /**
  * @author william.d.zk
  * @date 2019-07-31
  */
-public enum DirectionEnum
+public enum Direction
 {
 
     SERVER_TO_CLIENT("S->C"),
@@ -40,7 +40,7 @@ public enum DirectionEnum
 
     private final String _Abbreviation;
 
-    DirectionEnum(String abbreviation)
+    Direction(String abbreviation)
     {
         _Abbreviation = abbreviation;
     }
@@ -50,7 +50,7 @@ public enum DirectionEnum
         return _Abbreviation;
     }
 
-    public static DirectionEnum parseShort(String value)
+    public static Direction parseShort(String value)
     {
         switch (value)
         {

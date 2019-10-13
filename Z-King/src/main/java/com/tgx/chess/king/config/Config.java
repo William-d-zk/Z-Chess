@@ -214,7 +214,7 @@ public class Config
         }
     }
 
-    public void load(String owner, String parent)
+    private void load(String owner, String parent)
     {
         Objects.requireNonNull(owner);
         ResourceBundle resourceBundle = null;
@@ -254,7 +254,7 @@ public class Config
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T getConfigValue(String key)
+    private <T> T getConfigValue(String key)
     {
         Objects.requireNonNull(key);
         Object result = _ValueStoreMap.get(key);
@@ -265,7 +265,7 @@ public class Config
         return (T) result;
     }
 
-    public boolean contains(String key)
+    private boolean contains(String key)
     {
         Objects.requireNonNull(key);
         return _ValueStoreMap.containsKey(key) && Objects.nonNull(_ValueStoreMap.get(key));

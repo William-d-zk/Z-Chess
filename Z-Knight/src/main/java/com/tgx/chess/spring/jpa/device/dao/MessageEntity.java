@@ -22,16 +22,13 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.spring.device.model;
+package com.tgx.chess.spring.jpa.device.dao;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
+import com.tgx.chess.spring.device.model.MessageBody;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
@@ -45,7 +42,7 @@ import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
  */
 @Entity(name = "Message")
 @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
-@Table(schema = "\"tgx-z-chess-device\"")
+@Table(schema = "\"tgx-z-chess-device\"", indexes = { @Index(name = "message_idx_msg_id", columnList = "msgId") })
 public class MessageEntity
         extends
         AuditModel
@@ -58,30 +55,30 @@ public class MessageEntity
     @Id
     @GeneratedValue(generator = "ZGenerator")
     @GenericGenerator(name = "ZGenerator", strategy = "com.tgx.chess.spring.jpa.generator.ZGenerator")
-    private Long    id;
-    @Column(updatable = false)
-    private long    origin;
-    @Column(updatable = false)
-    private long    target;
-    @Column(updatable = false)
-    private int     cmd;
+    private long        id;
+    @Column(updatable = false, nullable = false)
+    private long        origin;
+    @Column(updatable = false, nullable = false)
+    private long        target;
+    @Column(updatable = false, nullable = false)
+    private int         cmd;
     @Column(length = 4, nullable = false, updatable = false)
-    private String  direction;
+    private String      direction;
     @Column(length = 10, nullable = false)
-    private String  owner  = "SERVER";
-    @Column(updatable = false)
-    private long    msgId;
+    private String      owner  = "SERVER";
+    @Column(updatable = false, nullable = false)
+    private long        msgId;
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb")
     private MessageBody payload;
-    private boolean retain = false;
+    private boolean     retain = false;
 
-    public Long getId()
+    public long getId()
     {
         return id;
     }
 
-    public void setId(Long id)
+    public void setId(long id)
     {
         this.id = id;
     }

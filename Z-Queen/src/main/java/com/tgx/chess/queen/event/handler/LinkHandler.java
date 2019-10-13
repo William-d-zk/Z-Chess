@@ -80,7 +80,7 @@ public class LinkHandler<C extends IContext<C>>
             {
                 case ACCEPT_FAILED:
                 case CONNECT_FAILED:
-                    _Logger.info(String.format("error type %s,ignore ", event.getErrorType()));
+                    _Logger.debug(String.format("error type %s,ignore ", event.getErrorType()));
                     event.ignore();
                     break;
                 default:

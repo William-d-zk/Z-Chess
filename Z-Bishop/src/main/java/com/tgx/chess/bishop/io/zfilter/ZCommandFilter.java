@@ -174,7 +174,7 @@ public class ZCommandFilter
             case X05_EncryptStart.COMMAND:
                 X05_EncryptStart x05 = (X05_EncryptStart) _command;
                 if (context.getSymmetricKeyId() != x05.symmetricKeyId) throw new IllegalStateException("symmetric key id is not equals");
-                _Logger.info("encrypt start, no response");
+                _Logger.debug("encrypt start, no response");
             case X06_EncryptComp.COMMAND:
                 return null;
             default:

@@ -99,8 +99,7 @@ public class DeviceConsumer
         ISessionDismiss<ZContext>,
         ISessionCreated<ZContext>
 {
-    final Logger _Logger = Logger.getLogger(getClass().getName());
-
+    private final Logger                        _Logger         = Logger.getLogger(getClass().getName());
     private final Config                        _Config;
     private final AsynchronousChannelGroup      _ChannelGroup;
     private final ClientCore<ZContext>          _ClientCore     = new ClientCore<>();
@@ -365,9 +364,9 @@ public class DeviceConsumer
     }
 
     @SafeVarargs
-    public final void sendLocal(long clientId, IControl<ZContext>... toSends)
+    public final void sendLocal(long sessionId, IControl<ZContext>... toSends)
     {
-        ISession<ZContext> session = _ClientSessions.get(clientId);
+        ISession<ZContext> session = _ClientSessions.get(sessionId);
         if (Objects.nonNull(session)) {
             _ClientCore.localSend(session,
                                   session.getContext()
@@ -376,7 +375,7 @@ public class DeviceConsumer
                                   toSends);
         }
         else {
-            throw new ZException("client-id:%d,is offline;send % failed", clientId, Arrays.toString(toSends));
+            throw new ZException("client-id:%d,is offline;send % failed", sessionId, Arrays.toString(toSends));
         }
     }
 

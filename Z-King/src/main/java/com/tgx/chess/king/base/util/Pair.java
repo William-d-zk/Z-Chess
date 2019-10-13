@@ -100,4 +100,14 @@ public class Pair<FIRST,
     {
         return String.format("< %s, %s >", first, second);
     }
+
+    public FIRST getFirst()
+    {
+        return first;
+    }
+
+    public SECOND getSecond()
+    {
+        return second;
+    }
 }

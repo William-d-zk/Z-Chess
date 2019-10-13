@@ -76,7 +76,7 @@ public abstract class ServerCore<C extends IContext<C>>
         implements
         ILocalPublisher<C>
 {
-    private static Logger _Log           = Logger.getLogger(ServerCore.class.getName());
+    private Logger        _Logger        = Logger.getLogger(getClass().getName());
     private static Config _Config        = new Config().load(getConfigName());
     private static int    DECODER_COUNT  = _Config.getConfigValue(getConfigGroup(),
                                                                   QueenConfigKey.OWNER_PIPELINE_CORE,
@@ -94,22 +94,22 @@ public abstract class ServerCore<C extends IContext<C>>
                                                                   QueenConfigKey.OWNER_PIPELINE_CORE,
                                                                   QueenConfigKey.KEY_CORE_CLUSTER);
     private final int     _AioQueuePower = _Config.getConfigValue(getConfigGroup(),
-                                                                  QueenConfigKey.OWNER_QUEEN_POWER,
+                                                                  QueenConfigKey.OWNER_IO_POWER,
                                                                   QueenConfigKey.KEY_POWER_SERVER);
     private final int     _ClusterPower  = _Config.getConfigValue(getConfigGroup(),
-                                                                  QueenConfigKey.OWNER_QUEEN_POWER,
+                                                                  QueenConfigKey.OWNER_IO_POWER,
                                                                   QueenConfigKey.KEY_POWER_CLUSTER);
     private final int     _InternalPower = _Config.getConfigValue(getConfigGroup(),
-                                                                  QueenConfigKey.OWNER_QUEEN_POWER,
+                                                                  QueenConfigKey.OWNER_IO_POWER,
                                                                   QueenConfigKey.KEY_POWER_INTERNAL);
     private final int     _LinkPower     = _Config.getConfigValue(getConfigGroup(),
-                                                                  QueenConfigKey.OWNER_QUEEN_POWER,
+                                                                  QueenConfigKey.OWNER_IO_POWER,
                                                                   QueenConfigKey.KEY_POWER_LINK);
     private final int     _LogicPower    = _Config.getConfigValue(getConfigGroup(),
-                                                                  QueenConfigKey.OWNER_QUEEN_POWER,
+                                                                  QueenConfigKey.OWNER_IO_POWER,
                                                                   QueenConfigKey.KEY_POWER_LOGIC);
     private final int     _ErrorPower    = _Config.getConfigValue(getConfigGroup(),
-                                                                  QueenConfigKey.OWNER_QUEEN_POWER,
+                                                                  QueenConfigKey.OWNER_IO_POWER,
                                                                   QueenConfigKey.KEY_POWER_ERROR);
 
     private final RingBuffer<QEvent>[]                      _AioProducerEvents;
@@ -182,10 +182,10 @@ public abstract class ServerCore<C extends IContext<C>>
             if (!(slot < _ServerCount ? _AioCacheConcurrentQueue
                                       : _ClusterCacheConcurrentQueue).offer(rb))
             {
-                _Log.warning(String.format("%s cache queue offer failed :%d",
-                                           slot < _ServerCount ? "biz io"
-                                                               : "cluster io",
-                                           slot));
+                _Logger.warning(String.format("%s cache queue offer failed :%d",
+                                              slot < _ServerCount ? "biz io"
+                                                                  : "cluster io",
+                                              slot));
             }
             return rb;
         });

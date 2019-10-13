@@ -72,7 +72,7 @@ public class ClusterHandler<C extends IContext<C>>
             {
                 case ACCEPT_FAILED:
                 case CONNECT_FAILED:
-                    _Log.info(String.format("error type %s,ignore ", event.getErrorType()));
+                    _Log.debug(String.format("error type %s,ignore ", event.getErrorType()));
                     event.ignore();
                     break;
                 default:

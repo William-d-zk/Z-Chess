@@ -44,7 +44,7 @@ public class AioWriter<C extends IContext<C>>
         CompletionHandler<Integer,
                           ISession<C>>
 {
-    private final Logger           _Logger        = Logger.getLogger(getClass().getSimpleName());
+    private final Logger           _Logger        = Logger.getLogger(getClass().getName());
     private final WroteOperator<C> _WroteOperator = new WroteOperator<>(this);
 
     @Override

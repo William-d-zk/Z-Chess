@@ -120,21 +120,21 @@ public class ConsumerController
 
     @GetMapping("/consumer/ws/sign-up")
     public String wsX20(@RequestParam(name = "password", defaultValue = "password", required = false) String password,
-                        @RequestParam(name = "mac", defaultValue = "AE:C3:33:44:56:09") String mac,
-                        @RequestParam(name = "client_id") long clientId)
+                        @RequestParam(name = "sn") String sn,
+                        @RequestParam(name = "session_id") long sessionId)
     {
 
         X20_SignUp x20 = new X20_SignUp();
-        x20.setMac(IoUtil.writeMacRaw(mac));
+        x20.setSn(sn);
         x20.setPassword(password);
-        _DeviceClient.sendLocal(clientId, x20);
-        return String.format("send ws_x20 to sign up, mac{ %s }password{ %s }", mac, password);
+        _DeviceClient.sendLocal(sessionId, x20);
+        return String.format("send ws_x20 to sign up, sn{ %s }password{ %s }", sn, password);
     }
 
     @GetMapping("/consumer/ws/sign-in")
     public String wsX22(@RequestParam(name = "password", defaultValue = "password", required = false) String password,
                         @RequestParam(name = "token") String token,
-                        @RequestParam(name = "client_id") long clientId)
+                        @RequestParam(name = "session_id") long sessionId)
     {
         X22_SignIn x22 = new X22_SignIn();
         if (Objects.nonNull(_DeviceClient.getToken())
@@ -143,7 +143,7 @@ public class ConsumerController
         _DeviceClient.setToken(token);
         x22.setToken(_DeviceClient.getToken());
         x22.setPassword(password);
-        _DeviceClient.sendLocal(clientId, x22);
+        _DeviceClient.sendLocal(sessionId, x22);
         return String.format("login %s : %s", IoUtil.bin2Hex(_DeviceClient.getToken()), password);
     }
 

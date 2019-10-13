@@ -39,7 +39,7 @@ public class IgnoreOperator<C extends IContext<C>>
                   Void>
 {
 
-    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger(getClass().getName());
 
     @Override
     public Void handle(Throwable throwable, ISession<C> session)
