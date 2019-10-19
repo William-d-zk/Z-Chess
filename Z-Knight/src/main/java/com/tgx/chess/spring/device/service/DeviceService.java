@@ -358,7 +358,7 @@ public class DeviceService
                                                                 messageEntry.setTopic(entityPayload.getTopic());
                                                                 messageEntry.setPayload(entityPayload.getPayload());
                                                                 messageEntry.setOrigin(entity.getOrigin());
-                                                                messageEntry.setTarget(entity.getTarget());
+                                                                messageEntry.setDestination(entity.getTarget());
                                                                 return messageEntry;
                                                             })
                                                             .filter(Objects::nonNull)

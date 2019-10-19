@@ -22,74 +22,31 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.spring.device.model;
+package service;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tgx.chess.spring.device.model.ClientEntity;
+import com.tgx.chess.spring.device.repository.ClientRepository;
 
 /**
  * @author william.d.zk
- * @date 2019-07-31
+ * @date 2019-07-20
  */
-
-public class MessageBody
-        implements
-        Serializable
+@Service
+public class ClientService
 {
-    private static final long   serialVersionUID = -8904730289818144372L;
-    private static ObjectMapper jsonMapper       = new ObjectMapper();
-    private String              topic;
-    private byte[]              content;
+    private final ClientRepository _ClientRepository;
 
-    public String getTopic()
+    @Autowired
+    public ClientService(ClientRepository clientRepository)
     {
-        return topic;
+        _ClientRepository = clientRepository;
     }
 
-    public void setTopic(String topic)
+    public void updateClient(ClientEntity entity)
     {
-        this.topic = topic;
+        _ClientRepository.save(entity);
     }
-
-    @JsonIgnore
-    public byte[] getPayload()
-    {
-        return content;
-    }
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public JsonNode getContent()
-    {
-        try {
-            return jsonMapper.readTree(content);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-            try {
-                return jsonMapper.readTree(jsonMapper.writeValueAsString(e.getMessage()));
-            }
-            catch (IOException ep) {
-                ep.printStackTrace();
-            }
-        }
-        return null;
-    }
-
-    public void setContent(JsonNode content)
-    {
-        setPayload(content.toString()
-                          .getBytes(StandardCharsets.UTF_8));
-    }
-
-    public void setPayload(byte[] content)
-    {
-        this.content = content;
-    }
-
 }
