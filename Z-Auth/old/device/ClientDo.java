@@ -22,74 +22,83 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.spring.device.model;
+package device;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
+import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @author william.d.zk
- * @date 2019-07-31
+ * @date 2019-07-19
  */
-
-public class MessageBody
-        implements
-        Serializable
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+public class ClientDo
 {
-    private static final long   serialVersionUID = -8904730289818144372L;
-    private static ObjectMapper jsonMapper       = new ObjectMapper();
-    private String              topic;
-    private byte[]              content;
+    private String       auth;
+    private String       cipher;
+    private String       userName;
+    private Boolean      exist;
+    private List<String> devices;
+    private List<String> bindDevices;
 
-    public String getTopic()
+    public String getUserName()
     {
-        return topic;
+        return userName;
     }
 
-    public void setTopic(String topic)
+    public void setUserName(String userName)
     {
-        this.topic = topic;
+        this.userName = userName;
     }
 
-    @JsonIgnore
-    public byte[] getPayload()
+    public List<String> getDevices()
     {
-        return content;
+        return devices;
     }
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public JsonNode getContent()
+    public void setDevices(List<String> devices)
     {
-        try {
-            return jsonMapper.readTree(content);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-            try {
-                return jsonMapper.readTree(jsonMapper.writeValueAsString(e.getMessage()));
-            }
-            catch (IOException ep) {
-                ep.printStackTrace();
-            }
-        }
-        return null;
+        this.devices = devices;
     }
 
-    public void setContent(JsonNode content)
+    public String getAuth()
     {
-        setPayload(content.toString()
-                          .getBytes(StandardCharsets.UTF_8));
+        return auth;
     }
 
-    public void setPayload(byte[] content)
+    public void setAuth(String auth)
     {
-        this.content = content;
+        this.auth = auth;
     }
 
+    public String getCipher()
+    {
+        return cipher;
+    }
+
+    public void setCipher(String cipher)
+    {
+        this.cipher = cipher;
+    }
+
+    public void setExist(boolean exist)
+    {
+        this.exist = exist;
+    }
+
+    public Boolean getExist()
+    {
+        return exist;
+    }
+
+    public List<String> getBindDevices()
+    {
+        return bindDevices;
+    }
+
+    public void setBindDevices(List<String> bindDevices)
+    {
+        this.bindDevices = bindDevices;
+    }
 }

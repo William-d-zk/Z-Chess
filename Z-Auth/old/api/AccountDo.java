@@ -22,74 +22,75 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.spring.device.model;
+package api;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
+import javax.validation.constraints.NotEmpty;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @author william.d.zk
- * @date 2019-07-31
+ * @date 2019-07-20
  */
-
-public class MessageBody
-        implements
-        Serializable
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+public class AccountDo
 {
-    private static final long   serialVersionUID = -8904730289818144372L;
-    private static ObjectMapper jsonMapper       = new ObjectMapper();
-    private String              topic;
-    private byte[]              content;
+    @NotEmpty
+    private String userName;
+    @NotEmpty
+    private String password;
+    @NotEmpty
+    private String email;
+    private String auth;
+    private String secret;
 
-    public String getTopic()
+    public String getUserName()
     {
-        return topic;
+        return userName;
     }
 
-    public void setTopic(String topic)
+    public void setUserName(String userName)
     {
-        this.topic = topic;
+        this.userName = userName;
     }
 
-    @JsonIgnore
-    public byte[] getPayload()
+    public String getPassword()
     {
-        return content;
+        return password;
     }
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public JsonNode getContent()
+    public void setPassword(String password)
     {
-        try {
-            return jsonMapper.readTree(content);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-            try {
-                return jsonMapper.readTree(jsonMapper.writeValueAsString(e.getMessage()));
-            }
-            catch (IOException ep) {
-                ep.printStackTrace();
-            }
-        }
-        return null;
+        this.password = password;
     }
 
-    public void setContent(JsonNode content)
+    public String getEmail()
     {
-        setPayload(content.toString()
-                          .getBytes(StandardCharsets.UTF_8));
+        return email;
     }
 
-    public void setPayload(byte[] content)
+    public void setEmail(String email)
     {
-        this.content = content;
+        this.email = email;
     }
 
+    public String getSecret()
+    {
+        return secret;
+    }
+
+    public void setSecret(String secret)
+    {
+        this.secret = secret;
+    }
+
+    public String getAuth()
+    {
+        return auth;
+    }
+
+    public void setAuth(String auth)
+    {
+        this.auth = auth;
+    }
 }

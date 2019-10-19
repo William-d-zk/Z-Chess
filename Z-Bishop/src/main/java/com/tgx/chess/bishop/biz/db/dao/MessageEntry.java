@@ -96,7 +96,7 @@ public class MessageEntry
         return 1;
     }
 
-    private long      origin, target;
+    private long      origin, destination;
     private long      msgId;
     private String    direction;
     private Operation operation = Operation.OP_NULL;
@@ -150,14 +150,14 @@ public class MessageEntry
         this.origin = origin;
     }
 
-    public long getTarget()
+    public long getDestination()
     {
-        return target;
+        return destination;
     }
 
-    public void setTarget(long target)
+    public void setDestination(long destination)
     {
-        this.target = target;
+        this.destination = destination;
     }
 
     public String getDirection()
