@@ -22,40 +22,16 @@
  * SOFTWARE.
  */
 
-package api.dao;
-
-import java.io.Serializable;
+package pay;
 
 /**
  * @author william.d.zk
  */
-public class ProfileEntry
-        implements
-        Serializable
+public enum Type
 {
-
-    private static final long serialVersionUID = 5409265243979234754L;
-
-    private String name;
-    private String avatar;
-
-    public String getName()
-    {
-        return name;
-    }
-
-    public void setName(String name)
-    {
-        this.name = name;
-    }
-
-    public String getAvatar()
-    {
-        return avatar;
-    }
-
-    public void setAvatar(String avatar)
-    {
-        this.avatar = avatar;
-    }
+    WECHAT,
+    ALI,
+    APPLE,
+    UNION,
+    GOOGLE
 }
