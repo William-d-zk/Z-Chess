@@ -22,13 +22,8 @@
  * SOFTWARE.
  */
 
-plugins {
-    id 'application'
-}
-description = 'Z-Pawn'
+
+description = 'Z-Auth'
 dependencies {
     compile project(':spring.z-knight')
-    compile project(':endpoint.z-rook')
-    compile project(':biz.z-auth')
 }
-mainClassName = 'com.tgx.chess.pawn.Application'
