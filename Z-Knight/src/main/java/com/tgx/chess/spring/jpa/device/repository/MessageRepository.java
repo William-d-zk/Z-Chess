@@ -54,4 +54,6 @@ public interface MessageRepository
     List<MessageEntity> findAllByTargetAndMsgIdBefore(long target, long msgId);
 
     List<MessageEntity> findAllByOriginAndMsgIdBefore(long origin, long msgId);
+
+    List<MessageEntity> findAllByOriginAndMsgIdAfter(long origin, long msgId);
 }

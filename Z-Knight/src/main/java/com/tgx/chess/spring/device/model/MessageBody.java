@@ -69,7 +69,7 @@ public class MessageBody
         try {
             return jsonMapper.readTree(content);
         }
-        catch (IOException e) {
+        catch (Exception e) {
             e.printStackTrace();
             try {
                 return jsonMapper.readTree(jsonMapper.writeValueAsString(e.getMessage()));

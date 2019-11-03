@@ -45,5 +45,10 @@
             <artifactId>endpoint.z-rook</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.tgx.service</groupId>
+            <artifactId>biz.z-auth</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

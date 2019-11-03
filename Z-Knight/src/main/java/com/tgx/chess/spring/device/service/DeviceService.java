@@ -24,9 +24,9 @@
 
 package com.tgx.chess.spring.device.service;
 
-import static com.tgx.chess.king.base.util.IoUtil.isBlank;
 import static com.tgx.chess.bishop.io.Direction.OWNER_CLIENT;
 import static com.tgx.chess.bishop.io.Direction.OWNER_SERVER;
+import static com.tgx.chess.king.base.util.IoUtil.isBlank;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -53,6 +53,7 @@ import com.tgx.chess.ZApiExecption;
 import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
 import com.tgx.chess.bishop.biz.db.dao.MessageEntry;
 import com.tgx.chess.bishop.biz.device.DeviceNode;
+import com.tgx.chess.bishop.io.Direction;
 import com.tgx.chess.bishop.io.ZSort;
 import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
 import com.tgx.chess.bishop.io.mqtt.control.X112_QttConnack;
@@ -78,9 +79,8 @@ import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
 import com.tgx.chess.queen.io.core.inf.IQoS;
-import com.tgx.chess.spring.jpa.device.dao.DeviceEntity;
-import com.tgx.chess.bishop.io.Direction;
 import com.tgx.chess.spring.device.model.MessageBody;
+import com.tgx.chess.spring.jpa.device.dao.DeviceEntity;
 import com.tgx.chess.spring.jpa.device.dao.MessageEntity;
 import com.tgx.chess.spring.jpa.device.repository.DeviceRepository;
 import com.tgx.chess.spring.jpa.device.repository.MessageRepository;
@@ -426,6 +426,14 @@ public class DeviceService
         return _MessageRepository.findById(unique)
                                  .map(MessageEntity::getPayload)
                                  .orElse(null);
+    }
+
+    public List<MessageBody> listMessageByOriginAndMsgIdAfter(long target, long offset)
+    {
+        return _MessageRepository.findAllByOriginAndMsgIdAfter(target, offset)
+                                 .stream()
+                                 .map(MessageEntity::getPayload)
+                                 .collect(Collectors.toList());
     }
 
 }
