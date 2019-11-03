@@ -29,6 +29,7 @@ include ':manage.z-bishop'
 include ':spring.z-knight'
 include ':endpoint.z-rook'
 include ':start.z-pawn'
+include ':biz.z-auth'
 
 project(':io.z-queen').projectDir = "$rootDir/Z-Queen" as File
 project(':core.z-king').projectDir = "$rootDir/Z-King" as File
