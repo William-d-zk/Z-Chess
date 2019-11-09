@@ -24,17 +24,12 @@
 
 package com.tgx.chess.auth.open.api;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tgx.chess.spring.device.model.MessageBody;
 import com.tgx.chess.spring.device.service.DeviceService;
 
 /**
@@ -53,17 +48,14 @@ public class RawContentController
         _DeviceService = deviceService;
     }
 
-    @GetMapping("/message/target")
-    public @ResponseBody Object getMessage(@RequestParam(name = "target") long target,
-                                           @RequestParam(name = "offset",
-                                                         defaultValue = "" + Long.MIN_VALUE) long offset)
-                                                                                                          throws JsonProcessingException
+    @GetMapping("/message/topic")
+    public @ResponseBody Object getMessageByTopic(@RequestParam(name = "topic") String topic,
+                                                  @RequestParam(name = "limit",
+                                                                defaultValue = "1",
+                                                                required = false) int limit)
+
     {
-
-        List<MessageBody> result = _DeviceService.listMessageByOriginAndMsgIdAfter(target, offset);
-        return result;
-//        return new ObjectMapper().writer()
-//                                 .writeValueAsString(result);
-
+        return _DeviceService.listByTopic(topic, limit);
     }
+
 }
