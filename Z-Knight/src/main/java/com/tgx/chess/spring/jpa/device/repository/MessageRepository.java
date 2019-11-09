@@ -27,6 +27,8 @@ package com.tgx.chess.spring.jpa.device.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.tgx.chess.spring.jpa.device.dao.MessageEntity;
@@ -56,4 +58,8 @@ public interface MessageRepository
     List<MessageEntity> findAllByOriginAndMsgIdBefore(long origin, long msgId);
 
     List<MessageEntity> findAllByOriginAndMsgIdAfter(long origin, long msgId);
+
+    @Query(value = "select * from \"tgx-z-chess-device\".message m where m.payload->>'topic'=:p_topic limit :p_limit",
+           nativeQuery = true)
+    List<MessageEntity> listByTopic(@Param("p_topic") String topic, @Param("p_limit") int limit);
 }
