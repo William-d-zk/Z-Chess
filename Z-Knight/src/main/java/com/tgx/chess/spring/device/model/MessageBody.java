@@ -75,7 +75,6 @@ public class MessageBody
             try {
                 RawContent content = new RawContent();
                 content.setPayload(this.content);
-                content.setRaw(new String(this.content, StandardCharsets.UTF_8));
                 return jsonMapper.valueToTree(content);
             }
             catch (Exception e1) {
