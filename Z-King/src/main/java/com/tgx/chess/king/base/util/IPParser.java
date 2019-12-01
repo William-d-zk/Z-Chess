@@ -171,13 +171,4 @@ public class IPParser
         return ip + ':' + port;
     }
 
-    public static void main(String[] args)
-    {
-        Pair<InetAddress,
-             Integer> result = parse("localhost:5226");
-        assert result != null;
-        System.out.println(result.first()
-                                 .getHostAddress());
-    }
-
 }

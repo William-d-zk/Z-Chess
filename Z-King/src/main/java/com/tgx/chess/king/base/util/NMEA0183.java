@@ -22,40 +22,13 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.auth.open.api;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.tgx.chess.spring.device.service.DeviceService;
+package com.tgx.chess.king.base.util;
 
 /**
- * @author william.d.zk
- * @date 2019/11/3
+ * @author Idempotent
+ * @date 2019/11/28
  */
-@RestController
-public class RawContentController
-{
+public class NMEA0183 {
 
-    private final DeviceService _DeviceService;
-
-    @Autowired
-    public RawContentController(DeviceService deviceService)
-    {
-        _DeviceService = deviceService;
-    }
-
-    @GetMapping("/message/topic")
-    public @ResponseBody Object getMessageByTopic(@RequestParam(name = "topic") String topic,
-                                                  @RequestParam(name = "limit",
-                                                                defaultValue = "1",
-                                                                required = false) int limit)
-
-    {
-        return _DeviceService.listByTopic(topic, limit);
-    }
 
 }

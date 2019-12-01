@@ -31,14 +31,13 @@
         <spring-boot.version>2.1.8.RELEASE</spring-boot.version>
         <!--DB-->
         <postgresql.driver.version>42.2.7</postgresql.driver.version>
-        <bdb.je.version>7.5.11</bdb.je.version>
         <hibernate-types.version>2.6.1</hibernate-types.version>
         <!--PIPELINE-->
         <disruptor.version>3.4.2</disruptor.version>
         <!--TOOLS-->
         <httpcore.version>4.4.12</httpcore.version>
         <!--TEST TOOLS VERSION-->
-        <junit.platform.version>1.5.0</junit.platform.version>
+        <junit.platform.version>1.5.2</junit.platform.version>
         <junit.vintage.version>5.5.0</junit.vintage.version>
         <junit.jupiter.version>5.5.0</junit.jupiter.version>
         <mockito.version>2.18.3</mockito.version>
@@ -88,6 +87,11 @@
             <artifactId>junit-jupiter-engine</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-commons</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>
@@ -131,11 +135,6 @@
             </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-thymeleaf</artifactId>
-                <version>${spring-boot.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-data-jpa</artifactId>
                 <version>${spring-boot.version}</version>
             </dependency>
@@ -170,12 +169,6 @@
                 <artifactId>hibernate-types-52</artifactId>
                 <version>${hibernate-types.version}</version>
             </dependency>
-            <!--local repository-->
-            <dependency>
-                <groupId>com.sleepycat</groupId>
-                <artifactId>je</artifactId>
-                <version>${bdb.je.version}</version>
-            </dependency>
             <!-- 测试用依赖 -->
             <dependency>
                 <groupId>org.junit.platform</groupId>
@@ -186,6 +179,12 @@
             <dependency>
                 <groupId>org.junit.platform</groupId>
                 <artifactId>junit-platform-engine</artifactId>
+                <version>${junit.platform.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.platform</groupId>
+                <artifactId>junit-platform-commons</artifactId>
                 <version>${junit.platform.version}</version>
                 <scope>test</scope>
             </dependency>

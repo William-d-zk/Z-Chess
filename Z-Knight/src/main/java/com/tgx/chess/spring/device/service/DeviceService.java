@@ -436,4 +436,11 @@ public class DeviceService
                                  .collect(Collectors.toList());
     }
 
+    public List<MessageBody> listByTopic(String topic, int limit)
+    {
+        return _MessageRepository.listByTopic(topic, limit)
+                                 .stream()
+                                 .map(MessageEntity::getPayload)
+                                 .collect(Collectors.toList());
+    }
 }
