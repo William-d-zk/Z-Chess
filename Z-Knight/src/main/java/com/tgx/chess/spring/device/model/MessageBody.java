@@ -71,7 +71,6 @@ public class MessageBody
             return jsonMapper.readTree(content);
         }
         catch (Exception e) {
-            e.printStackTrace();
             try {
                 RawContent content = new RawContent();
                 content.setPayload(this.content);
