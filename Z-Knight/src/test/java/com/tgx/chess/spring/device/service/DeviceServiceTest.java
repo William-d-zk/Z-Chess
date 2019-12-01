@@ -22,44 +22,26 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.spring.jpa.device.repository;
+package com.tgx.chess.spring.device.service;
 
-import java.util.List;
+import com.tgx.chess.spring.jpa.device.dao.DeviceEntity;
+import org.junit.jupiter.api.Test;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
-
-import com.tgx.chess.spring.jpa.device.dao.MessageEntity;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * @author william.d.zk
- * @date 2019-07-31
+ * @author Idempotent
+ * @date 2019/11/30
  */
-@Repository
-public interface MessageRepository
-        extends
-        JpaRepository<MessageEntity,
-                      Long>
+public class DeviceServiceTest
 {
-    List<MessageEntity> findAllByOriginAndMsgIdAndDirectionAndOwner(long origin,
-                                                                    long msgId,
-                                                                    String direction,
-                                                                    String owner);
 
-    List<MessageEntity> findAllByTargetAndMsgIdAndDirectionAndOwner(long target,
-                                                                    long msgId,
-                                                                    String direction,
-                                                                    String owner);
+    @Test
+    public void register()
+    {
+        DeviceEntity device = new DeviceEntity();
+        device.setPassword("password");
+        device.setToken("869170031813745");
 
-    List<MessageEntity> findAllByTargetAndMsgIdBefore(long target, long msgId);
-
-    List<MessageEntity> findAllByOriginAndMsgIdBefore(long origin, long msgId);
-
-    List<MessageEntity> findAllByOriginAndMsgIdAfter(long origin, long msgId);
-
-    @Query(value = "select * from \"tgx-z-chess-device\".message m where m.payload->>'topic'=:p_topic limit :p_limit",
-           nativeQuery = true)
-    List<MessageEntity> listByTopic(@Param("p_topic") String topic, @Param("p_limit") int limit);
+    }
 }

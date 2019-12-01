@@ -22,40 +22,40 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.auth.open.api;
+package com.tgx.chess.spring.device.model;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.tgx.chess.spring.device.service.DeviceService;
+import java.io.Serializable;
 
 /**
- * @author william.d.zk
- * @date 2019/11/3
+ * @author Idempotent
+ * @date 2019/12/1
  */
-@RestController
-public class RawContentController
+public class RawContent
+        implements
+        Serializable
 {
 
-    private final DeviceService _DeviceService;
+    private static final long serialVersionUID = 2945521462766851875L;
+    private String            raw;
+    private byte[]            payload;
 
-    @Autowired
-    public RawContentController(DeviceService deviceService)
+    public String getRaw()
     {
-        _DeviceService = deviceService;
+        return raw;
     }
 
-    @GetMapping("/message/topic")
-    public @ResponseBody Object getMessageByTopic(@RequestParam(name = "topic") String topic,
-                                                  @RequestParam(name = "limit",
-                                                                defaultValue = "1",
-                                                                required = false) int limit)
-
+    public void setRaw(String raw)
     {
-        return _DeviceService.listByTopic(topic, limit);
+        this.raw = raw;
     }
 
+    public byte[] getPayload()
+    {
+        return payload;
+    }
+
+    public void setPayload(byte[] payload)
+    {
+        this.payload = payload;
+    }
 }
