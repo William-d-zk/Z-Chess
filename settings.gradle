@@ -37,3 +37,4 @@ project(':manage.z-bishop').projectDir = "$rootDir/Z-Bishop" as File
 project(':spring.z-knight').projectDir = "$rootDir/Z-Knight" as File
 project(':endpoint.z-rook').projectDir = "$rootDir/Z-Rook" as File
 project(':start.z-pawn').projectDir = "$rootDir/Z-Pawn" as File
+project(':biz.z-auth').projectDir = "$rootDir/Z-Auth" as File
