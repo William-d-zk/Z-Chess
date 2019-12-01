@@ -37,7 +37,7 @@
         <!--TOOLS-->
         <httpcore.version>4.4.12</httpcore.version>
         <!--TEST TOOLS VERSION-->
-        <junit.platform.version>1.5.0</junit.platform.version>
+        <junit.platform.version>1.5.2</junit.platform.version>
         <junit.vintage.version>5.5.0</junit.vintage.version>
         <junit.jupiter.version>5.5.0</junit.jupiter.version>
         <mockito.version>2.18.3</mockito.version>
@@ -85,6 +85,11 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-commons</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -174,6 +179,12 @@
             <dependency>
                 <groupId>org.junit.platform</groupId>
                 <artifactId>junit-platform-engine</artifactId>
+                <version>${junit.platform.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.platform</groupId>
+                <artifactId>junit-platform-commons</artifactId>
                 <version>${junit.platform.version}</version>
                 <scope>test</scope>
             </dependency>
