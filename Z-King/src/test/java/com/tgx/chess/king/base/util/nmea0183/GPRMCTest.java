@@ -22,78 +22,45 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.spring.device.model;
+package com.tgx.chess.king.base.util.nmea0183;
 
-import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
+import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tgx.chess.king.base.util.Pair;
+import java.text.ParseException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
- * @author william.d.zk
- * @date 2019-07-31
+ * @author Idempotent
+ * @date 2019/11/29
  */
-
-public class MessageBody
-        implements
-        Serializable
+class GPRMCTest
 {
-    private static final long   serialVersionUID = -8904730289818144372L;
-    private static ObjectMapper jsonMapper       = new ObjectMapper();
-    private String              topic;
-    private byte[]              content;
-
-    public String getTopic()
+    @Test
+    public void test() throws ParseException
     {
-        return topic;
-    }
+        String source = "$GPRMC,081836,A,3751.65,S,14507.36,E,000.0,360.0,130998,011.3,E*62";
+        GPRMC gprmc = new GPRMC("$GPRMC,081836,A,3751.65,S,14507.36,E,000.0,360.0,130998,011.3,E*62");
+        gprmc.getTimestamp();
 
-    public void setTopic(String topic)
-    {
-        this.topic = topic;
-    }
+        Pattern pattern = Pattern.compile("\\$GPRMC,"
+                                          + "([012]\\d[012345]\\d[012345]\\d),"
+                                          + "([AV]),"
+                                          + "(\\d{4}.\\d{1,4},[NS]),"
+                                          + "([01][0-8]\\d{3}.\\d{1,4},[WE]),"
+                                          + "(\\d{3}.\\d),"
+                                          + "([0123][0-6]\\d.\\d),"
+                                          + "([0123]\\d[01]\\d{3}),"
+                                          + "(\\d{3}.\\d,[EW]),?"
+                                          + "([ADEN]?\\*.+)"
+                                          + ".*");
+        Matcher matcher = pattern.matcher(source);
+        if (matcher.find()) {
 
-    @JsonIgnore
-    public byte[] getPayload()
-    {
-        return content;
-    }
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public JsonNode getContent()
-    {
-
-        try {
-            return jsonMapper.readTree(content);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-            try {
-                RawContent content = new RawContent();
-                content.setPayload(this.content);
-                content.setRaw(new String(this.content, StandardCharsets.UTF_8));
-                return jsonMapper.valueToTree(content);
-            }
-            catch (Exception e1) {
-                e1.printStackTrace();
+            int group_count = matcher.groupCount();
+            for (int i = 0; i <= group_count; i++) {
+                System.out.println("group:" + i + "  " + matcher.group(i));
             }
         }
-        return null;
     }
-
-    public void setContent(JsonNode content)
-    {
-        setPayload(content.toString()
-                          .getBytes(StandardCharsets.UTF_8));
-    }
-
-    public void setPayload(byte[] content)
-    {
-        this.content = content;
-    }
-
 }
