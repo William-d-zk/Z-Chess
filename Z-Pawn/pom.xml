@@ -47,7 +47,7 @@
         </dependency>
         <dependency>
             <groupId>com.tgx.service</groupId>
-            <artifactId>biz.z-auth</artifactId>
+            <artifactId>biz.z-admin</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

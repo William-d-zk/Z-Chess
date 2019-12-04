@@ -26,6 +26,8 @@ package com.tgx.chess.spring.device.model;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 /**
  * @author Idempotent
  * @date 2019/12/1
@@ -39,6 +41,7 @@ public class RawContent
     private String            raw;
     private byte[]            payload;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public String getRaw()
     {
         return raw;

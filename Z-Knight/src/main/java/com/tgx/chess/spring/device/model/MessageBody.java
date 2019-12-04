@@ -31,6 +31,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.king.base.util.IoUtil;
 
 /**
  * @author william.d.zk
@@ -41,6 +43,7 @@ public class MessageBody
         implements
         Serializable
 {
+    private static Logger       _Logger          = Logger.getLogger(MessageBody.class.getSimpleName());
     private static final long   serialVersionUID = -8904730289818144372L;
     private static ObjectMapper jsonMapper       = new ObjectMapper();
     private String              topic;
@@ -72,6 +75,13 @@ public class MessageBody
             try {
                 RawContent content = new RawContent();
                 content.setPayload(this.content);
+                try {
+                    content.setRaw(new String(this.content, StandardCharsets.UTF_8));
+                }
+                catch (Exception stre) {
+                    _Logger.debug(String.format("content:%s", IoUtil.bin2Hex(this.content, ":")));
+                    //ignore
+                }
                 return jsonMapper.valueToTree(content);
             }
             catch (Exception e1) {
