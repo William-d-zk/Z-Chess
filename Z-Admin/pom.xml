@@ -32,8 +32,8 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>biz.z-auth</artifactId>
-    <name>Z-Auth</name>
+    <artifactId>biz.z-admin</artifactId>
+    <name>Z-Admin</name>
     <dependencies>
         <dependency>
             <groupId>com.tgx.service</groupId>

@@ -15,7 +15,7 @@
         <module>Z-Pawn</module>
         <module>Z-Knight</module>
         <module>Z-King</module>
-        <module>Z-Auth</module>
+        <module>Z-Admin</module>
     </modules>
     <properties>
         <!--RT-->
@@ -38,8 +38,9 @@
         <httpcore.version>4.4.12</httpcore.version>
         <!--TEST TOOLS VERSION-->
         <junit.platform.version>1.5.2</junit.platform.version>
-        <junit.vintage.version>5.5.0</junit.vintage.version>
-        <junit.jupiter.version>5.5.0</junit.jupiter.version>
+        <junit.vintage.version>5.5.2</junit.vintage.version>
+        <junit.jupiter.version>5.5.2</junit.jupiter.version>
+        <junit.engine.version>5.5.2</junit.engine.version>
         <mockito.version>2.18.3</mockito.version>
     </properties>
     <dependencies>
