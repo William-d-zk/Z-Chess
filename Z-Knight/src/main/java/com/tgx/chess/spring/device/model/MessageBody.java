@@ -31,7 +31,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tgx.chess.king.base.util.Pair;
 
 /**
  * @author william.d.zk
@@ -66,7 +65,6 @@ public class MessageBody
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public JsonNode getContent()
     {
-
         try {
             return jsonMapper.readTree(content);
         }
