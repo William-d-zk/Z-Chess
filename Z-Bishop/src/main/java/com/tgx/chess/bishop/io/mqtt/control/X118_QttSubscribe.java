@@ -27,8 +27,8 @@ package com.tgx.chess.bishop.io.mqtt.control;
 import static com.tgx.chess.queen.io.core.inf.IQoS.Level.AT_LEAST_ONCE;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 import com.tgx.chess.bishop.io.mqtt.bean.QttCommand;
@@ -53,6 +53,9 @@ public class X118_QttSubscribe
         setCtrl(generateCtrl(false, false, AT_LEAST_ONCE, QTT_TYPE.SUBSCRIBE));
     }
 
+    private List<Pair<String,
+                      Level>> mTopics;
+
     @Override
     public boolean isMapping()
     {
@@ -69,40 +72,45 @@ public class X118_QttSubscribe
     public int dataLength()
     {
         int length = super.dataLength();
-        for (IPair pair : _Topics) {
-            String topic = pair.first();
-            //2byte UTF-8 length 1byte Qos-lv
-            length += 3 + topic.getBytes(StandardCharsets.UTF_8).length;
+        if (mTopics != null) {
+            for (IPair pair : mTopics) {
+                String topic = pair.first();
+                //2byte UTF-8 length 1byte Qos-lv
+                length += 3 + topic.getBytes(StandardCharsets.UTF_8).length;
+            }
         }
         return length;
     }
 
-    private final List<Pair<String,
-                            Level>> _Topics = new ArrayList<>(3);
-
     public List<Pair<String,
                      Level>> getTopics()
     {
-        return _Topics;
+        return mTopics;
     }
 
     public void setTopics(Pair<String,
                                Level>... topics)
     {
-        Collections.addAll(_Topics, topics);
+        if (this.mTopics == null) {
+            this.mTopics = new LinkedList<>();
+        }
+        Collections.addAll(this.mTopics, topics);
     }
 
     @Override
     public int decodec(byte[] data, int pos)
     {
         pos = super.decodec(data, pos);
+        if (pos < data.length) {
+            mTopics = new LinkedList<>();
+        }
         for (int size = data.length; pos < size;) {
             int utfSize = IoUtil.readUnsignedShort(data, pos);
             pos += 2;
             String topic = IoUtil.readString(data, pos, utfSize, StandardCharsets.UTF_8);
             pos += utfSize;
             Level qosLevel = Level.valueOf(data[pos++]);
-            _Topics.add(new Pair<>(topic, qosLevel));
+            mTopics.add(new Pair<>(topic, qosLevel));
         }
         return pos;
     }
@@ -111,13 +119,15 @@ public class X118_QttSubscribe
     public int encodec(byte[] data, int pos)
     {
         pos = super.encodec(data, pos);
-        for (IPair pair : _Topics) {
-            String topic = pair.first();
-            byte[] topicData = topic.getBytes(StandardCharsets.UTF_8);
-            Level qosLevel = pair.second();
-            pos += IoUtil.writeShort(topicData.length, data, pos);
-            pos += IoUtil.write(topicData, data, pos);
-            pos += IoUtil.writeByte(qosLevel.ordinal(), data, pos);
+        if (mTopics != null) {
+            for (IPair pair : mTopics) {
+                String topic = pair.first();
+                byte[] topicData = topic.getBytes(StandardCharsets.UTF_8);
+                Level qosLevel = pair.second();
+                pos += IoUtil.writeShort(topicData.length, data, pos);
+                pos += IoUtil.write(topicData, data, pos);
+                pos += IoUtil.writeByte(qosLevel.ordinal(), data, pos);
+            }
         }
         return pos;
     }
@@ -125,6 +135,9 @@ public class X118_QttSubscribe
     @Override
     public String toString()
     {
-        return String.format("subscribe local-id:%d topics:%s", getMsgId(), _Topics);
+        return String.format("subscribe local-id:%d topics:%s",
+                             getMsgId(),
+                             mTopics != null ? mTopics.toString()
+                                            : null);
     }
 }

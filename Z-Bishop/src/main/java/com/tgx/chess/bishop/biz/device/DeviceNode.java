@@ -30,6 +30,7 @@ import static java.lang.Integer.min;
 
 import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,7 @@ import java.util.stream.Collectors;
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
 import com.tgx.chess.bishop.biz.db.dao.MessageEntry;
+import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
 import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
 import com.tgx.chess.bishop.io.mqtt.control.X112_QttConnack;
 import com.tgx.chess.bishop.io.mqtt.control.X113_QttPublish;
@@ -71,6 +73,7 @@ import com.tgx.chess.bishop.io.zprotocol.device.X50_DeviceMsg;
 import com.tgx.chess.bishop.io.zprotocol.device.X51_DeviceMsgAck;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
+import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.config.Config;
 import com.tgx.chess.queen.config.QueenCode;
 import com.tgx.chess.queen.db.inf.IRepository;
@@ -211,6 +214,7 @@ public class DeviceNode
                            .collect(Collectors.toList());
         _DeviceRepository = deviceRepository;
         _QttRouter = qttRouter;
+        _Logger.info("Device Node Bean Load");
     }
 
     @SafeVarargs
@@ -364,7 +368,14 @@ public class DeviceNode
                 X111_QttConnect x111 = (X111_QttConnect) input;
                 result = _DeviceRepository.find(x111);
                 X112_QttConnack x112 = result.second();
-                if (!x111.isCleanSession() && x111.getClientIdLength() == 0) {
+                int[] supportVersions = QttContext.getSupportVersion()
+                                                  .second();
+                if (Arrays.stream(supportVersions)
+                          .noneMatch(version -> version == x111.getProtocolVersion()))
+                {
+                    x112.rejectUnacceptableProtocol();
+                }
+                else if (!x111.isClean() && x111.getClientIdLength() == 0) {
                     x112.rejectIdentifier();
                 }
                 else if (!x112.isIllegalState()) {
@@ -376,9 +387,13 @@ public class DeviceNode
                 X118_QttSubscribe x118 = (X118_QttSubscribe) input;
                 X119_QttSuback x119 = new X119_QttSuback();
                 x119.setMsgId(x118.getMsgId());
-                x118.getTopics()
-                    .forEach(topic -> x119.addResult(_QttRouter.addTopic(topic, session.getIndex()) ? topic.second()
-                                                                                                    : IQoS.Level.FAILURE));
+                List<Pair<String,
+                          IQoS.Level>> topics = x118.getTopics();
+                if (topics != null) {
+                    topics.forEach(topic -> x119.addResult(_QttRouter.addTopic(topic,
+                                                                               session.getIndex()) ? topic.second()
+                                                                                                   : IQoS.Level.FAILURE));
+                }
                 return new IControl[] { x119 };
             case X11A_QttUnsubscribe.COMMAND:
                 X11A_QttUnsubscribe x11A = (X11A_QttUnsubscribe) input;

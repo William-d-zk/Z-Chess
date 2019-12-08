@@ -50,34 +50,36 @@ public class X119_QttSuback
         setCtrl(generateCtrl(false, false, ALMOST_ONCE, QTT_TYPE.SUBACK));
     }
 
-    private List<Level> resultList;
+    private List<Level> mResultList;
 
     public void addResult(Level qosLevel)
     {
-        if (resultList == null) {
-            resultList = new LinkedList<>();
+        if (mResultList == null) {
+            mResultList = new LinkedList<>();
         }
-        resultList.add(qosLevel);
+        mResultList.add(qosLevel);
     }
 
     public List<Level> getQosLevels()
     {
-        return resultList;
+        return mResultList;
     }
 
     @Override
     public int dataLength()
     {
-        return super.dataLength() + resultList.size();
+        return super.dataLength()
+               + (mResultList == null ? 0
+                                      : mResultList.size());
     }
 
     @Override
     public int decodec(byte[] data, int pos)
     {
         pos = super.decodec(data, pos);
-        resultList = new ArrayList<>(data.length - pos);
+        mResultList = new ArrayList<>(data.length - pos);
         for (int i = 0, size = data.length - pos; i < size; i++) {
-            resultList.add(Level.valueOf(data[pos++]));
+            mResultList.add(Level.valueOf(data[pos++]));
         }
         return pos;
     }
@@ -86,8 +88,8 @@ public class X119_QttSuback
     public int encodec(byte[] data, int pos)
     {
         pos = super.encodec(data, pos);
-        if (!resultList.isEmpty()) {
-            for (Level qosLevel : resultList) {
+        if (mResultList != null) {
+            for (Level qosLevel : mResultList) {
                 pos += IoUtil.writeByte(qosLevel.getValue(), data, pos);
             }
         }
