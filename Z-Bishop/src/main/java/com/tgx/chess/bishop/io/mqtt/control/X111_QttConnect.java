@@ -172,9 +172,6 @@ public class X111_QttConnect
         if (!mFlagWill && (mFlagWillRetain || mFlagWillQoS.ordinal() > Level.EXACTLY_ONCE.ordinal())) {
             throw new IllegalArgumentException("no will flag, will retain or will qos not 0");
         }
-        if (!mFlagWill) {
-            mFlagWillQoS = null;
-        }
         mFlagPassword = (code & Flag.Password.getMask()) != 0;
         mFlagUserName = (code & Flag.UserName.getMask()) != 0;
         checkWillOpCode();
