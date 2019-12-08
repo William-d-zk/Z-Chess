@@ -70,12 +70,13 @@ public class X111_QttConnect
         return QOS_PRIORITY_00_NETWORK_CONTROL;
     }
 
+    private byte    mProtocolVersion;
     private boolean mFlagUserName;
     private boolean mFlagPassword;
     private boolean mFlagWillRetain;
     private Level   mFlagWillQoS;
     private boolean mFlagWill;
-    private boolean mFlagCleanSession;
+    private boolean mFlagClean;
     private int     mKeepAlive;
     private String  mUserName;
     private byte[]  mPassword;
@@ -96,7 +97,7 @@ public class X111_QttConnect
         return String.format("connect:[ctrl-code %x clientId:%s clean:%s willQoS:%s willRetain:%s willTopic:%s willMessage:%s user:%s password:%s keepalive:%d ]",
                              getControlCode(),
                              getClientId(),
-                             isCleanSession(),
+                             isClean(),
                              getWillQoS(),
                              isWillRetain(),
                              getWillTopic(),
@@ -119,7 +120,7 @@ public class X111_QttConnect
         mFlagWill = false;
         mFlagWillQoS = null;
         mFlagWillRetain = false;
-        mFlagCleanSession = false;
+        mFlagClean = false;
         mUserName = null;
         mPassword = null;
         mKeepAlive = 0;
@@ -129,6 +130,16 @@ public class X111_QttConnect
         mWillMessage = null;
     }
 
+    public byte getProtocolVersion()
+    {
+        return mProtocolVersion;
+    }
+
+    public void setProtocolVersion(byte version)
+    {
+        mProtocolVersion = version;
+    }
+
     enum Flag
     {
         UserName((byte) 0x80),
@@ -136,7 +147,8 @@ public class X111_QttConnect
         WillRetain((byte) 0x20),
         WillQoS((byte) 0x18),
         Will((byte) 0x04),
-        CleanSession((byte) 0x02);
+        Clean((byte) 0x02);
+
         private final byte _Mask;
 
         Flag(byte mask)
@@ -153,7 +165,7 @@ public class X111_QttConnect
     private void setControlCode(byte code)
     {
         if ((0x01 & code) != 0) { throw new IllegalArgumentException("Flag error 0 bit->reserved 1"); }
-        mFlagCleanSession = (code & Flag.CleanSession.getMask()) != 0;
+        mFlagClean = (code & Flag.Clean.getMask()) != 0;
         mFlagWill = (code & Flag.Will.getMask()) != 0;
         mFlagWillQoS = Level.valueOf((byte) ((code & Flag.WillQoS.getMask()) >> 3));
         mFlagWillRetain = (code & Flag.WillRetain.getMask()) != 0;
@@ -165,13 +177,21 @@ public class X111_QttConnect
         }
         mFlagPassword = (code & Flag.Password.getMask()) != 0;
         mFlagUserName = (code & Flag.UserName.getMask()) != 0;
+        checkWillOpCode();
+    }
+
+    private void checkWillOpCode()
+    {
+        if (!mFlagWill && !mFlagWillQoS.equals(ALMOST_ONCE)) {
+            throw new IllegalStateException("will flag 0 must with will-Qos ALMOST_ONCE(0)");
+        }
     }
 
     private int getControlCode()
     {
         byte code = 0;
-        code |= mFlagCleanSession ? Flag.CleanSession.getMask()
-                                  : 0;
+        code |= mFlagClean ? Flag.Clean.getMask()
+                           : 0;
         code |= mFlagWill ? Flag.Will.getMask()
                           : 0;
         code |= mFlagWill ? mFlagWillQoS.ordinal() << 3
@@ -185,14 +205,14 @@ public class X111_QttConnect
         return code;
     }
 
-    public boolean isCleanSession()
+    public boolean isClean()
     {
-        return mFlagCleanSession;
+        return mFlagClean;
     }
 
-    public void setCleanSession()
+    public void setClean()
     {
-        mFlagCleanSession = true;
+        mFlagClean = true;
     }
 
     public void setKeepAlive(int seconds)
@@ -271,7 +291,7 @@ public class X111_QttConnect
         mClientIdLength = isBlank(id) ? 0
                                       : id.getBytes().length;
         if (mClientIdLength < 1) {
-            setCleanSession();
+            setClean();
         }
         mClientId = id;
     }
@@ -344,10 +364,10 @@ public class X111_QttConnect
         int mqtt = IoUtil.readInt(data, pos);
         pos += 4;
         if (mqtt != _MQTT) { throw new IllegalArgumentException("FixHead Protocol name wrong"); }
-        int level = data[pos++];
-        int globalVersion = QttContext.getVersion()
-                                      .second();
-        if (level != globalVersion) { throw new IllegalArgumentException("Protocol version unsupported"); }
+        mProtocolVersion = data[pos++];
+        if (mProtocolVersion > QttContext.getLastVersion()) {
+            throw new IllegalArgumentException("Protocol version unsupported");
+        }
         setControlCode(data[pos++]);
         mKeepAlive = IoUtil.readUnsignedShort(data, pos);
         pos += 2;
@@ -398,9 +418,7 @@ public class X111_QttConnect
         pos += IoUtil.writeShort(4, data, pos);
         pos += IoUtil.writeInt(_MQTT, data, pos);
         //此处必须分开写，否则直接写到writeByte方法中会出现类型推定错误
-        int version = QttContext.getVersion()
-                                .second();
-        pos += IoUtil.writeByte(version, data, pos);
+        pos += IoUtil.writeByte(mProtocolVersion, data, pos);
         pos += IoUtil.writeByte(getControlCode(), data, pos);
         pos += IoUtil.writeShort(getKeepAlive(), data, pos);
         pos += IoUtil.writeShort(mClientIdLength, data, pos);
@@ -425,7 +443,6 @@ public class X111_QttConnect
             }
             pos += IoUtil.writeShort(varUserName.length, data, pos);
             pos += IoUtil.write(varUserName, data, pos);
-
         }
         if (mFlagPassword) {
             if (mPassword.length > MAX_PASSWORD_LENGTH) {

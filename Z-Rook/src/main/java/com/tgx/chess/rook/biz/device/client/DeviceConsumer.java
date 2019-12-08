@@ -99,7 +99,8 @@ public class DeviceConsumer
         ISessionDismiss<ZContext>,
         ISessionCreated<ZContext>
 {
-    private final Logger                        _Logger         = Logger.getLogger(getClass().getName());
+    final Logger _Logger = Logger.getLogger(getClass().getName());
+
     private final Config                        _Config;
     private final AsynchronousChannelGroup      _ChannelGroup;
     private final ClientCore<ZContext>          _ClientCore     = new ClientCore<>();
@@ -259,7 +260,7 @@ public class DeviceConsumer
                     x111.setClientId(_CryptUtil.sha256("test-mqtt-smallbeex-0001"));
                     x111.setUserName("A06FF74D68D32FD5FE9DEB00F636BEC9C24FC400F23E6B91F2CA3AA9A3E52B7F");
                     x111.setPassword("SNju/kfjXtgAAe-`cN".getBytes(StandardCharsets.UTF_8));
-                    x111.setCleanSession();
+                    x111.setClean();
                     return new IControl[] { x111 };
                 };
                 break;
@@ -364,9 +365,9 @@ public class DeviceConsumer
     }
 
     @SafeVarargs
-    public final void sendLocal(long sessionId, IControl<ZContext>... toSends)
+    public final void sendLocal(long clientId, IControl<ZContext>... toSends)
     {
-        ISession<ZContext> session = _ClientSessions.get(sessionId);
+        ISession<ZContext> session = _ClientSessions.get(clientId);
         if (Objects.nonNull(session)) {
             _ClientCore.localSend(session,
                                   session.getContext()
@@ -375,7 +376,7 @@ public class DeviceConsumer
                                   toSends);
         }
         else {
-            throw new ZException("client-id:%d,is offline;send % failed", sessionId, Arrays.toString(toSends));
+            throw new ZException("client-id:%d,is offline;send % failed", clientId, Arrays.toString(toSends));
         }
     }
 

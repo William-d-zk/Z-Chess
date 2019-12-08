@@ -38,7 +38,10 @@ public class QttContext
         extends
         ZContext
 {
-    private final static IPair VERSION = new Pair<>("3.1.1", 4);
+    private final static IPair SUPPORT_VERSION = new Pair<>(new String[] { "5.0.0",
+                                                                           "3.1.1" },
+                                                            new int[] { 5,
+                                                                        4 });
 
     public QttContext(ISessionOption option,
                       ISort<ZContext> sort,
@@ -48,8 +51,33 @@ public class QttContext
         transfer();
     }
 
-    public static IPair getVersion()
+    public static IPair getSupportVersion()
     {
-        return VERSION;
+        return SUPPORT_VERSION;
     }
+
+    public static int getLastVersion()
+    {
+        int[] versions = SUPPORT_VERSION.second();
+        return versions[0];
+    }
+
+    public static int getCurrentVersion()
+    {
+        int[] versions = SUPPORT_VERSION.second();
+        return versions[1];
+    }
+
+    private int mVersion = getCurrentVersion();
+
+    public void setVersion(int version)
+    {
+        mVersion = version;
+    }
+
+    public int getVersion()
+    {
+        return mVersion;
+    }
+
 }
