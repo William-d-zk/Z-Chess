@@ -15,7 +15,7 @@
         <module>Z-Pawn</module>
         <module>Z-Knight</module>
         <module>Z-King</module>
-        <module>Z-Admin</module>
+        <module>Z-Player</module>
     </modules>
     <properties>
         <!--RT-->

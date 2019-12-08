@@ -23,7 +23,7 @@
  */
 
 
-description = 'Z-Auth'
+description = 'Z-Player'
 dependencies {
     compile project(':spring.z-knight')
 }
