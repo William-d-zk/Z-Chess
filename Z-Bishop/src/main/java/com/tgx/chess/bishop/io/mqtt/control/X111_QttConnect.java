@@ -374,6 +374,9 @@ public class X111_QttConnect
             mClientId = new String(data, pos, mClientIdLength, StandardCharsets.UTF_8);
             pos += mClientIdLength;
         }
+        else {
+            throw new IllegalArgumentException("unsupported anonymous access,server never create temporary client-id");
+        }
         if (mFlagWill) {
             int willTopicLength = IoUtil.readUnsignedShort(data, pos);
             pos += 2;
@@ -388,7 +391,8 @@ public class X111_QttConnect
             int userNameLength = IoUtil.readUnsignedShort(data, pos);
             pos += 2;
             if (userNameLength < 1 || userNameLength > MAX_USER_NAME_LENGTH) {
-                throw new IndexOutOfBoundsException(String.format(" user name length within [0 < length < %d], error:[%d]",
+                throw new IndexOutOfBoundsException(String.format("%s { user name length within [0 < length < %d], error:[%d] }",
+                                                                  mClientId,
                                                                   MAX_USER_NAME_LENGTH + 1,
                                                                   userNameLength));
             }
@@ -399,7 +403,8 @@ public class X111_QttConnect
             int passwordLength = IoUtil.readUnsignedShort(data, pos);
             pos += 2;
             if (passwordLength < 1 || passwordLength > MAX_PASSWORD_LENGTH) {
-                throw new IndexOutOfBoundsException(String.format(" password length within [0 < length < %d], error:[%d]",
+                throw new IndexOutOfBoundsException(String.format("%s { password length within [0 < length < %d], error:[%d] }",
+                                                                  mClientId,
                                                                   MAX_PASSWORD_LENGTH + 1,
                                                                   passwordLength));
             }
