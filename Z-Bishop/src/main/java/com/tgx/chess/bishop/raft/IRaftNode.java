@@ -34,7 +34,7 @@ public interface IRaftNode
     {
         LEADER,
         FOLLOWER,
-        CANDIDATE,
-        ELECTOR;
+        ELECTOR,
+        CANDIDATE;
     }
 }
