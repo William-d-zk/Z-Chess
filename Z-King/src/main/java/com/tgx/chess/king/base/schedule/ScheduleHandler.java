@@ -67,7 +67,9 @@ public class ScheduleHandler<A>
     @Override
     public A call() throws Exception
     {
-        if (Objects.nonNull(_Callback)) _Callback.accept(attach);
+        if (Objects.nonNull(_Callback)) {
+            _Callback.accept(attach);
+        }
         return attach;
     }
 

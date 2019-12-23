@@ -30,11 +30,28 @@ package com.tgx.chess.bishop.raft;
  */
 public interface IRaftNode
 {
-    enum STATE
+    enum RaftState
     {
         LEADER,
         FOLLOWER,
         ELECTOR,
         CANDIDATE;
     }
+
+    RaftState getState();
+
+    /** 最后一个已知任期 自然数 */
+    long getCurrentTerm();
+
+    /** 候选人 Id */
+    long getElector();
+
+    /** 主节点 Id */
+    long getLeader();
+
+    /** 已知最大的已提交日志的索引值 */
+    long getCommitIndex();
+
+    /** 最后一条被应用到状态机的索引值 */
+    long getLastAppliedIndex();
 }
