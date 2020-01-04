@@ -24,32 +24,46 @@
 
 package com.tgx.chess.king.base.schedule;
 
-import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import com.tgx.chess.king.base.schedule.TimeWheel.ITimeoutHandler;
+import com.tgx.chess.king.base.log.Logger;
 
 /**
  * @author William.d.zk
  */
 public class ScheduleHandler<A>
         implements
-        ITimeoutHandler<A>
+        TimeWheel.IWheelItem<A>
 {
-    private A             attach;
-    private final boolean _Cycle;
-    private Consumer<A>   _Callback;
+    private final static Logger _LOG = Logger.getLogger(ScheduleHandler.class.getSimpleName());
+    private A                   attach;
+    private final boolean       _Cycle;
+    private final Consumer<A>   _Callback;
+    private final int           _Priority;
+    private final long          _Tick;
 
-    public ScheduleHandler(boolean cycle,
-                           Consumer<A> callback)
+    public ScheduleHandler(long delaySecond,
+                           boolean cycle,
+                           Consumer<A> callback,
+                           int priority)
     {
         _Cycle = cycle;
+        _Tick = TimeUnit.SECONDS.toMillis(delaySecond);
         _Callback = callback;
+        _Priority = priority;
     }
 
-    public ScheduleHandler(boolean cycle)
+    public ScheduleHandler(long delaySecond,
+                           boolean cycle)
     {
-        this(cycle, null);
+        this(delaySecond, cycle, null, PRIORITY_NORMAL);
+    }
+
+    public ScheduleHandler(long delaySecond,
+                           Consumer<A> callback)
+    {
+        this(delaySecond, false, callback, PRIORITY_NORMAL);
     }
 
     @Override
@@ -65,17 +79,56 @@ public class ScheduleHandler<A>
     }
 
     @Override
-    public A call() throws Exception
+    public void onCall()
     {
-        if (Objects.nonNull(_Callback)) {
-            _Callback.accept(attach);
-        }
-        return attach;
+        long delta = expect - System.currentTimeMillis();
+        _LOG.info("on time:%s %s:%d",
+                  get(),
+                  delta > 0 ? "ahead"
+                            : "delay",
+                  Math.abs(delta));
+    }
+
+    private long expect;
+
+    @Override
+    public void setup()
+    {
+        expect = System.currentTimeMillis() + _Tick;
     }
 
     @Override
-    public void attach(A attachment)
+    public int getPriority()
     {
-        attach = attachment;
+        return _Priority;
+    }
+
+    @Override
+    public long getTick()
+    {
+        return _Tick;
+    }
+
+    @Override
+    public void attach(A a)
+    {
+        attach = a;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "ScheduleHandler{"
+               + "attach="
+               + attach
+               + ", _Cycle="
+               + _Cycle
+               + ", _Callback="
+               + _Callback
+               + ", _Priority="
+               + _Priority
+               + ", _SecondTick="
+               + _Tick
+               + '}';
     }
 }

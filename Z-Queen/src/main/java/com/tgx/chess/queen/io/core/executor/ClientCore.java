@@ -82,8 +82,7 @@ public class ClientCore<C extends IContext<C>>
                                                               }
                                                           };
     private final ReentrantLock      _LocalLock           = new ReentrantLock();
-    private final TimeWheel          _TimeWheel           = new TimeWheel(1, TimeUnit.SECONDS);
-    private final Future<Void>       _EventTimer;
+    private final TimeWheel          _TimeWheel           = new TimeWheel(1, 3);
 
     public ClientCore()
     {
@@ -91,7 +90,7 @@ public class ClientCore<C extends IContext<C>>
         _AioProducerEvent = createPipelineYield(6);
         _BizLocalCloseEvent = createPipelineLite(5);
         _BizLocalSendEvent = createPipelineLite(5);
-        _EventTimer = _TimeWheel.acquire(1, TimeUnit.SECONDS, new ScheduleHandler<>(true));
+        _TimeWheel.acquire("client event", new ScheduleHandler<>(45, true));
     }
 
     /*  ║ barrier, ━> publish event, ━━ pipeline, | handle event

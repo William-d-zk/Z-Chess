@@ -36,7 +36,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
@@ -314,7 +313,7 @@ public class DeviceConsumer
         };
         try {
             connect(_Connector, _ChannelGroup);
-            _TimeWheel.acquire(3, TimeUnit.SECONDS, _Connector, new ScheduleHandler<>(false, connector ->
+            _TimeWheel.acquire(_Connector, new ScheduleHandler<>(3, connector ->
             {
                 if (Objects.nonNull(_ClientSessions.get(_ClientId))) {
                     _Logger.info("connect -> success; %s", _ClientSessions.get(_ClientId));

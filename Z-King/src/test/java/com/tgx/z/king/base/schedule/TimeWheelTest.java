@@ -22,30 +22,38 @@
  * SOFTWARE.
  */
 
-package com.tgx.z.queen.base.schedule;
+package com.tgx.z.king.base.schedule;
 
-import java.nio.ByteBuffer;
-import java.util.Arrays;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * @author william.d.zk
- * @date 2019-05-22
- */
-public class TestX
+import com.tgx.chess.king.base.schedule.ScheduleHandler;
+import com.tgx.chess.king.base.schedule.TimeWheel;
+
+public class TimeWheelTest
 {
-    @Test
-    void x()
-    {
-        ByteBuffer buffer = ByteBuffer.allocate(10);
-        buffer.put((byte) '\r');
-        buffer.put((byte) '\n');
-        buffer.put((byte) '\r');
-        buffer.put((byte) '\n');
-        System.out.println(buffer.position());
-        String x = new String(buffer.array(), buffer.position() - 4, buffer.position());
-        System.out.println(Arrays.toString(x.split("\\s")));
 
+    static Logger LOG = LoggerFactory.getLogger(TimeWheelTest.class.getName());
+
+    @Test
+    void acquire() throws InterruptedException
+    {
+        Random random = new Random();
+        TimeWheel timeWheel = new TimeWheel();
+        timeWheel.acquire("t  1", new ScheduleHandler<>(7, true));
+        Thread.sleep(random.nextInt(1500));
+        timeWheel.acquire("t  2", new ScheduleHandler<>(7, true));
+        timeWheel.acquire("t  3", new ScheduleHandler<>(11, true));
+        timeWheel.acquire("t  4", new ScheduleHandler<>(9, true));
+        Thread.sleep(random.nextInt(8500));
+        timeWheel.acquire("t  5", new ScheduleHandler<>(5, true));
+        timeWheel.acquire("t  6", new ScheduleHandler<>(17, true));
+        timeWheel.acquire("t  7", new ScheduleHandler<>(23, true));
+        timeWheel.acquire("t  8", new ScheduleHandler<>(31, true));
+        Thread.sleep(TimeUnit.SECONDS.toMillis(200));
     }
 }

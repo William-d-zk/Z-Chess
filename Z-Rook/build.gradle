@@ -1,7 +1,0 @@
-description = 'Z-Rook'
-dependencies {
-    compile project(':manage.z-bishop')
-    compile(group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.8.RELEASE') {
-        exclude(module: 'spring-boot-starter-tomcat')
-    }
-}

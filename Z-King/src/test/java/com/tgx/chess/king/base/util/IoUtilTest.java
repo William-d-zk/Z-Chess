@@ -28,7 +28,7 @@ import java.nio.ByteBuffer;
 
 import org.junit.jupiter.api.Test;
 
-class IoUtilTest
+public class IoUtilTest
 {
 
     @Test
