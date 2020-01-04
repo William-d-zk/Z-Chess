@@ -159,7 +159,7 @@ public abstract class ServerCore<C extends IContext<C>>
                                                                                         _ClusterCacheConcurrentQueue.poll());
                                                                }
                                                            };
-    private final TimeWheel          _TimeWheel            = new TimeWheel(1, 4);
+    private final TimeWheel          _TimeWheel            = new TimeWheel();
     private final ReentrantLock      _LocalLock            = new ReentrantLock();
     private AsynchronousChannelGroup mServiceChannelGroup;
     private LinkHandler<C>           mLinkHandler;
