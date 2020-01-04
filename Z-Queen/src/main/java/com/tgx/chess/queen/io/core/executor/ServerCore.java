@@ -159,9 +159,8 @@ public abstract class ServerCore<C extends IContext<C>>
                                                                                         _ClusterCacheConcurrentQueue.poll());
                                                                }
                                                            };
-    private final TimeWheel          _TimeWheel            = new TimeWheel(1, TimeUnit.SECONDS);
+    private final TimeWheel          _TimeWheel            = new TimeWheel(1, 4);
     private final ReentrantLock      _LocalLock            = new ReentrantLock();
-    private final Future<Void>       _EventTimer;
     private AsynchronousChannelGroup mServiceChannelGroup;
     private LinkHandler<C>           mLinkHandler;
 
@@ -202,7 +201,7 @@ public abstract class ServerCore<C extends IContext<C>>
 
         _ConsistentSendEvent = createPipelineYield(_InternalPower);
         _ConsistentResultEvent = createPipelineYield(_InternalPower);
-        _EventTimer = _TimeWheel.acquire(1, TimeUnit.SECONDS, new ScheduleHandler<>(true));
+        _TimeWheel.acquire("server timer", new ScheduleHandler<>(10, true));
     }
 
     /*  ║ barrier, ━> publish event, ━━ pipeline,| mappingHandle event

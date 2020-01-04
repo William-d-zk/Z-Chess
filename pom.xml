@@ -28,7 +28,7 @@
         <slf4j.version>1.7.28</slf4j.version>
         <logback.version>1.2.3</logback.version>
         <!--SPRING-BOOT-->
-        <spring-boot.version>2.1.8.RELEASE</spring-boot.version>
+        <spring-boot.version>2.2.2.RELEASE</spring-boot.version>
         <!--DB-->
         <postgresql.driver.version>42.2.7</postgresql.driver.version>
         <hibernate-types.version>2.6.1</hibernate-types.version>
@@ -253,10 +253,6 @@
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                     <encoding>${java.encoding}</encoding>
-                    <includes>
-                        <include>src/main/ntru/**/*.java</include>
-                        <include>src/main/java/**/*.java</include>
-                    </includes>
                 </configuration>
             </plugin>
             <!-- Spring Boot Maven 插件 -->
@@ -264,6 +260,10 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring-boot.version}</version>
+                <configuration>
+                    <layout>JAR</layout>
+                    <mainClass>com.tgx.chess.pawn.Application</mainClass>
+                </configuration>
             </plugin>
             <!--Hibernate needs a Maven plugin to work with lazy attributes properly.-->
             <plugin>
