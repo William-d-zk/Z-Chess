@@ -25,7 +25,6 @@
 package com.tgx.chess.queen.io.core.executor;
 
 import java.util.Arrays;
-import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -82,7 +81,7 @@ public class ClientCore<C extends IContext<C>>
                                                               }
                                                           };
     private final ReentrantLock      _LocalLock           = new ReentrantLock();
-    private final TimeWheel          _TimeWheel           = new TimeWheel(1, 3);
+    private final TimeWheel          _TimeWheel           = new TimeWheel();
 
     public ClientCore()
     {
