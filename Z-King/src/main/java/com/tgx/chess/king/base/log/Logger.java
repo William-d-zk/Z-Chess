@@ -118,6 +118,11 @@ public class Logger
         _Logger.error(msg);
     }
 
+    public void fetal(String formatter, Object... params)
+    {
+        _Logger.error(formatter, params);
+    }
+
     public boolean isEnable(Level level)
     {
         switch (level)

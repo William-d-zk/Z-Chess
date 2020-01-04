@@ -26,17 +26,15 @@ package com.tgx.chess.bishop.raft;
 
 import java.util.List;
 
-import com.tgx.chess.bishop.biz.db.dao.MessageEntry;
-
 /**
  * @author william.d.zk
  * @date 2019/12/10
  */
 public interface IMachine
 {
-    void apply(MessageEntry msg);
+    void apply(IRaftMessage msg);
 
-    void load(List<MessageEntry> snapshot);
+    void load(List<IRaftMessage> snapshot);
 
-    void save(List<MessageEntry> snapshot);
+    void save(List<IRaftMessage> snapshot);
 }
