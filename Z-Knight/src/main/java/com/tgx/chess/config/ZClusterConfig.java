@@ -1,7 +1,7 @@
 /*
  * MIT License                                                                    
  *                                                                                
- * Copyright (c) 2016~2019 Z-Chess                                                
+ * Copyright (c) 2016~2020 Z-Chess                                                
  *                                                                                
  * Permission is hereby granted, free of charge, to any person obtaining a copy   
  * of this software and associated documentation files (the "Software"), to deal  
@@ -22,36 +22,76 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.bishop.raft;
+package com.tgx.chess.config;
 
-/**
- * @author william.d.zk
- * @date 2019/12/10
- */
-public interface IRaftNode
+import javax.annotation.PostConstruct;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+
+import com.tgx.chess.bishop.biz.db.dao.ZUID;
+
+@Configuration
+@ConfigurationProperties(prefix = "z.chess.uid")
+@PropertySource("classpath:cluster.properties")
+public class ZClusterConfig
 {
-    enum RaftState
+
+    private ZUID zuid;
+    private int  nodeId;
+    private int  idcId;
+    private int  clusterId;
+    private int  type;
+
+    public ZUID getZuid()
     {
-        FOLLOWER,
-        ELECTOR,
-        CANDIDATE,
-        LEADER;
+        return zuid;
     }
 
-    RaftState getState();
+    @PostConstruct
+    public void init()
+    {
+        zuid = new ZUID(idcId, clusterId, nodeId, type);
+    }
 
-    /** 最后一个已知任期 自然数 */
-    long getTerm();
+    public int getNodeId()
+    {
+        return nodeId;
+    }
 
-    /** 候选人 Id */
-    long getElector();
+    public void setNodeId(int nodeId)
+    {
+        this.nodeId = nodeId;
+    }
 
-    /** 主节点 Id */
-    long getLeader();
+    public int getIdcId()
+    {
+        return idcId;
+    }
 
-    /** 已知最大的已提交日志的索引值 */
-    long getCommitIndex();
+    public void setIdcId(int idcId)
+    {
+        this.idcId = idcId;
+    }
 
-    /** 最后一条被应用到状态机的索引值 */
-    long getLastAppliedIndex();
+    public int getClusterId()
+    {
+        return clusterId;
+    }
+
+    public void setClusterId(int clusterId)
+    {
+        this.clusterId = clusterId;
+    }
+
+    public int getType()
+    {
+        return type;
+    }
+
+    public void setType(int type)
+    {
+        this.type = type;
+    }
 }

@@ -79,32 +79,10 @@ public class ZUID
     private long                 sequence;
     private long                 lastTimestamp;
 
-    private static ResourceBundle bundle;
-    static {
-
-        try {
-            bundle = ResourceBundle.getBundle("zuid");
-            for (String key : bundle.keySet()) {
-                LOG.info("zuid %s:%s", key, bundle.getString(key));
-            }
-        }
-        catch (MissingResourceException e) {
-            throw new RuntimeException("FETAL ERROR: ZUID properties is missing !");
-        }
-    }
-
-    public ZUID()
-    {
-        this(Long.parseLong(bundle.getString("idc.id")),
-             Long.parseLong(bundle.getString("cluster.id")),
-             Long.parseLong(bundle.getString("node.id")),
-             Long.parseLong(bundle.getString("type")));
-    }
-
-    private ZUID(long idc_id,
-                 long cluster_id,
-                 long node_id,
-                 long type)
+    public ZUID(long idc_id,
+                long cluster_id,
+                long node_id,
+                long type)
     {
         if (idc_id > MAX_IDC_ID || idc_id < 0) {
             throw new IllegalArgumentException(String.format("idc region Id can't be greater than %d or less than 0",

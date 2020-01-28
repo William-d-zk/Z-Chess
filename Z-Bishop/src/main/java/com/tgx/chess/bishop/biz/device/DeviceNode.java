@@ -75,6 +75,7 @@ import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.config.Config;
+import com.tgx.chess.queen.config.IServerConfig;
 import com.tgx.chess.queen.config.QueenCode;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.event.handler.LogicHandler;
@@ -128,9 +129,10 @@ public class DeviceNode
 
     public DeviceNode(List<ITriple> hosts,
                       IRepository<IPair> deviceRepository,
-                      IQttRouter qttRouter)
+                      IQttRouter qttRouter,
+                      IServerConfig config)
     {
-        super(new Config("device"), new ServerCore<ZContext>()
+        super(new Config("device"), new ServerCore<ZContext>(config)
         {
 
             @Override

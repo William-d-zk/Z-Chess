@@ -58,7 +58,9 @@ public class MultiBufferBatchEventProcessor<T>
                                           SequenceBarrier[] barriers,
                                           EventHandler<T> handler)
     {
-        if (providers.length != barriers.length) { throw new IllegalArgumentException(); }
+        if (providers.length != barriers.length) {
+            throw new IllegalArgumentException();
+        }
         _Providers = providers;
         _Barriers = barriers;
         _Handler = handler;

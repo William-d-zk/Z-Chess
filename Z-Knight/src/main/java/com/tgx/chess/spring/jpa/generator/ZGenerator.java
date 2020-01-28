@@ -26,9 +26,13 @@ package com.tgx.chess.spring.jpa.generator;
 
 import java.io.Serializable;
 
+import javax.annotation.PostConstruct;
+
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.id.IdentifierGenerator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.tgx.chess.bishop.biz.db.dao.ZUID;
 import com.tgx.chess.king.base.log.Logger;
@@ -36,15 +40,29 @@ import com.tgx.chess.king.base.log.Logger;
 /**
  * @author william.d.zk
  */
+@Component
 public class ZGenerator
         implements
         IdentifierGenerator
 {
-    private final Logger      _Logger = Logger.getLogger(getClass().getName());
-    private final static ZUID _ZUID   = new ZUID();
+    private final Logger _Logger = Logger.getLogger(getClass().getName());
+
+    @Autowired
+    private ZUID zuid;
 
     public ZGenerator()
     {
+    }
+
+    @PostConstruct
+    public void init()
+    {
+        System.out.println(zuid);
+    }
+
+    public void setZuid(ZUID zuid)
+    {
+        this.zuid = zuid;
     }
 
     @Override
@@ -57,6 +75,6 @@ public class ZGenerator
 
     private long next()
     {
-        return _ZUID.getId();
+        return zuid.getId();
     }
 }
