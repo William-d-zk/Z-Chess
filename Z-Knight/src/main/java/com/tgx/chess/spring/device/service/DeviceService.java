@@ -43,6 +43,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
+import com.tgx.chess.queen.config.IServerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
@@ -117,14 +118,15 @@ public class DeviceService
                   @Value("${ws.server.host}") String wsServiceHost,
                   @Value("${ws.server.port}") int wsServicePort,
                   DeviceRepository deviceRepository,
-                  MessageRepository messageRepository)
+                  MessageRepository messageRepository,
+                  IServerConfig config)
     {
         _DeviceRepository = deviceRepository;
         _MessageRepository = messageRepository;
         List<ITriple> hosts = new ArrayList<>(2);
         hosts.add(new Triple<>(wsServiceHost, wsServicePort, ZSort.WS_SERVER));
         hosts.add(new Triple<>(qttServiceHost, qttServicePort, ZSort.QTT_SYMMETRY));
-        _DeviceNode = new DeviceNode(hosts, this, new QttRouter());
+        _DeviceNode = new DeviceNode(hosts, this, new QttRouter(), config);
     }
 
     @PostConstruct

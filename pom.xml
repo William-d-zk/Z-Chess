@@ -28,7 +28,7 @@
         <slf4j.version>1.7.28</slf4j.version>
         <logback.version>1.2.3</logback.version>
         <!--SPRING-BOOT-->
-        <spring-boot.version>2.2.2.RELEASE</spring-boot.version>
+        <spring-boot.version>2.2.4.RELEASE</spring-boot.version>
         <!--DB-->
         <postgresql.driver.version>42.2.7</postgresql.driver.version>
         <hibernate-types.version>2.6.1</hibernate-types.version>
