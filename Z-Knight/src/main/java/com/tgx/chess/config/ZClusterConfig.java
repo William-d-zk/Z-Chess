@@ -24,13 +24,9 @@
 
 package com.tgx.chess.config;
 
-import javax.annotation.PostConstruct;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-
-import com.tgx.chess.bishop.biz.db.dao.ZUID;
 
 @Configuration
 @ConfigurationProperties(prefix = "z.chess.uid")
@@ -38,22 +34,10 @@ import com.tgx.chess.bishop.biz.db.dao.ZUID;
 public class ZClusterConfig
 {
 
-    private ZUID zuid;
-    private int  nodeId;
-    private int  idcId;
-    private int  clusterId;
-    private int  type;
-
-    public ZUID getZuid()
-    {
-        return zuid;
-    }
-
-    @PostConstruct
-    public void init()
-    {
-        zuid = new ZUID(idcId, clusterId, nodeId, type);
-    }
+    private int nodeId;
+    private int idcId;
+    private int clusterId;
+    private int type;
 
     public int getNodeId()
     {
