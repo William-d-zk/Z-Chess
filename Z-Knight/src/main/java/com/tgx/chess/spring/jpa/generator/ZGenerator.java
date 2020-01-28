@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.tgx.chess.bishop.biz.db.dao.ZUID;
+import com.tgx.chess.config.ZClusterConfig;
 import com.tgx.chess.king.base.log.Logger;
 
 /**
@@ -48,7 +49,8 @@ public class ZGenerator
     private final Logger _Logger = Logger.getLogger(getClass().getName());
 
     @Autowired
-    private ZUID zuid;
+    private ZClusterConfig zClusterConfig;
+    private ZUID           zuid;
 
     public ZGenerator()
     {
@@ -57,12 +59,10 @@ public class ZGenerator
     @PostConstruct
     public void init()
     {
-        System.out.println(zuid);
-    }
-
-    public void setZuid(ZUID zuid)
-    {
-        this.zuid = zuid;
+        zuid = new ZUID(zClusterConfig.getIdcId(),
+                        zClusterConfig.getClusterId(),
+                        zClusterConfig.getNodeId(),
+                        zClusterConfig.getType());
     }
 
     @Override
