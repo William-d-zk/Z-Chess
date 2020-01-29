@@ -1,7 +1,7 @@
 /*
  * MIT License                                                                    
  *                                                                                
- * Copyright (c) 2016~2019 Z-Chess                                                
+ * Copyright (c) 2016~2020 Z-Chess
  *                                                                                
  * Permission is hereby granted, free of charge, to any person obtaining a copy   
  * of this software and associated documentation files (the "Software"), to deal  
@@ -22,19 +22,36 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.bishop.raft;
-
-import java.util.List;
+package com.tgx.chess.cluster.raft;
 
 /**
  * @author william.d.zk
  * @date 2019/12/10
  */
-public interface IMachine
+public interface IRaftNode
 {
-    void apply(IRaftMessage msg);
+    enum RaftState
+    {
+        FOLLOWER,
+        ELECTOR,
+        CANDIDATE,
+        LEADER;
+    }
 
-    void load(List<IRaftMessage> snapshot);
+    RaftState getState();
 
-    void save(List<IRaftMessage> snapshot);
+    /** 最后一个已知任期 自然数 */
+    long getTerm();
+
+    /** 候选人 Id */
+    long getElector();
+
+    /** 主节点 Id */
+    long getLeader();
+
+    /** 已知最大的已提交日志的索引值 */
+    long getCommitIndex();
+
+    /** 最后一条被应用到状态机的索引值 */
+    long getLastAppliedIndex();
 }

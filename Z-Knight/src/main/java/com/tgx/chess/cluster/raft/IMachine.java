@@ -1,7 +1,7 @@
 /*
  * MIT License                                                                    
  *                                                                                
- * Copyright (c) 2016~2020 Z-Chess                                                
+ * Copyright (c) 2016~2020 Z-Chess
  *                                                                                
  * Permission is hereby granted, free of charge, to any person obtaining a copy   
  * of this software and associated documentation files (the "Software"), to deal  
@@ -22,22 +22,19 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.bishop.raft;
+package com.tgx.chess.cluster.raft;
 
-import com.tgx.chess.queen.db.inf.IStorage;
+import java.util.List;
 
 /**
  * @author william.d.zk
- * @date 2020/1/4
+ * @date 2019/12/10
  */
-public interface IRaftMessage
-        extends
-        IStorage
+public interface IMachine
 {
-    long getNode();
+    void apply(IRaftMessage msg);
 
-    long getTerm();
+    void load(List<IRaftMessage> snapshot);
 
-    IRaftNode.RaftState getState();
-
+    void save(List<IRaftMessage> snapshot);
 }

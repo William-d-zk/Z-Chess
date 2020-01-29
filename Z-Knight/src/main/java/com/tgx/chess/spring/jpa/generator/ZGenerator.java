@@ -39,6 +39,13 @@ import com.tgx.chess.config.ZClusterConfig;
 import com.tgx.chess.king.base.log.Logger;
 
 /**
+ * 
+ * JPA 会优先初始化
+ * 且会给每一个表的都创建一个IdentifierGenerator，
+ * ZUid 是一个全局生成器，ZClusterConfig 在 spring 中是 single instance创建的
+ * 程序启动时装载 bean 也是沿用了single instance的模式，所以在init时正式注入 ZUid
+ * 通过static 同步给所有 JPA 的所有引用。
+ * 
  * @author william.d.zk
  */
 @Component
@@ -47,10 +54,15 @@ public class ZGenerator
         IdentifierGenerator
 {
     private final Logger _Logger = Logger.getLogger(getClass().getName());
+    private static ZUID  _ZUid;
+
+    private ZClusterConfig zClusterConfig;
 
     @Autowired
-    private ZClusterConfig zClusterConfig;
-    private ZUID           zuid;
+    public ZGenerator(ZClusterConfig config)
+    {
+        zClusterConfig = config;
+    }
 
     public ZGenerator()
     {
@@ -59,10 +71,10 @@ public class ZGenerator
     @PostConstruct
     public void init()
     {
-        zuid = new ZUID(zClusterConfig.getIdcId(),
-                        zClusterConfig.getClusterId(),
-                        zClusterConfig.getNodeId(),
-                        zClusterConfig.getType());
+        _ZUid = new ZUID(zClusterConfig.getIdcId(),
+                         zClusterConfig.getClusterId(),
+                         zClusterConfig.getNodeId(),
+                         zClusterConfig.getType());
     }
 
     @Override
@@ -75,6 +87,6 @@ public class ZGenerator
 
     private long next()
     {
-        return zuid.getId();
+        return _ZUid.getId();
     }
 }
