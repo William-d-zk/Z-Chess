@@ -79,7 +79,7 @@ public class ScheduleHandler<A>
     }
 
     @Override
-    public void onCall()
+    public void beforeCall()
     {
         long delta = expect - System.currentTimeMillis();
         _LOG.info("on time:%s %s:%d",
@@ -87,6 +87,11 @@ public class ScheduleHandler<A>
                   delta > 0 ? "ahead"
                             : "delay",
                   Math.abs(delta));
+    }
+
+    @Override
+    public void onCall()
+    {
     }
 
     private long expect;
