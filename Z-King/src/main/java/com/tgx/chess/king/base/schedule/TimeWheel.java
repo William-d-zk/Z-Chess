@@ -213,6 +213,8 @@ public class TimeWheel
             Supplier<A>,
             ICycle
     {
+        void beforeCall();
+
         void onCall();
     }
 
@@ -279,6 +281,7 @@ public class TimeWheel
         @Override
         public IWheelItem<V> call() throws Exception
         {
+            _Item.beforeCall();
             _Item.onCall();
             return _Item;
         }

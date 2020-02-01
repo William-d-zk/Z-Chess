@@ -56,25 +56,26 @@ public class ZGenerator
     private final Logger _Logger = Logger.getLogger(getClass().getName());
     private static ZUID  _ZUid;
 
-    private ZClusterConfig zClusterConfig;
+    private final ZClusterConfig _ZClusterConfig;
 
     @Autowired
     public ZGenerator(ZClusterConfig config)
     {
-        zClusterConfig = config;
+        _ZClusterConfig = config;
     }
 
     public ZGenerator()
     {
+        _ZClusterConfig = null;
     }
 
     @PostConstruct
     public void init()
     {
-        _ZUid = new ZUID(zClusterConfig.getIdcId(),
-                         zClusterConfig.getClusterId(),
-                         zClusterConfig.getNodeId(),
-                         zClusterConfig.getType());
+        _ZUid = new ZUID(_ZClusterConfig.getIdcId(),
+                         _ZClusterConfig.getClusterId(),
+                         _ZClusterConfig.getNodeId(),
+                         _ZClusterConfig.getType());
     }
 
     @Override
