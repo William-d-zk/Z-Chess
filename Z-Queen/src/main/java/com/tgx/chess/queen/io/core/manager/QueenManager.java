@@ -24,7 +24,8 @@
 
 package com.tgx.chess.queen.io.core.manager;
 
-import com.tgx.chess.king.config.Config;
+import com.tgx.chess.queen.config.IBizIoConfig;
+import com.tgx.chess.queen.config.ISocketConfig;
 import com.tgx.chess.queen.io.core.async.AioSessionManager;
 import com.tgx.chess.queen.io.core.executor.ServerCore;
 import com.tgx.chess.queen.io.core.inf.IContext;
@@ -42,7 +43,7 @@ public abstract class QueenManager<C extends IContext<C>>
 {
     protected final ServerCore<C> _ServerCore;
 
-    public QueenManager(Config config,
+    public QueenManager(IBizIoConfig config,
                         ServerCore<C> serverCore)
     {
         super(config);

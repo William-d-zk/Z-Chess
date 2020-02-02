@@ -37,7 +37,8 @@ public enum Code
 {
 
     PLAIN_UNSUPPORTED(0xFF00, "不支持明文"),
-    SYMMETRIC_KEY_OK(0xFF01, "对称秘钥成功");
+    SYMMETRIC_KEY_OK(0xFF01, "对称秘钥成功"),
+    ILLEGAL_PARAM(0x0010, "非法参数 %s");
 
     private final int    _Code;
     private final String _Formatter;

@@ -25,6 +25,7 @@ package com.tgx.chess.queen.io.core.inf;
 
 /**
  * @author William.d.zk
+ * @date 2018/4/8
  */
 public interface ISessionManager<C extends IContext<C>>
 {
@@ -66,9 +67,9 @@ public interface ISessionManager<C extends IContext<C>>
     long[][] portIndex(long portMask);
 
     //-2bit- 类型 10 server 11 cluster 01 internal 00 client
-    int CLIENT_SLOT   = 0;
-    int INTERNAL_SLOT = 1;
-    int SERVER_SLOT   = 2;
-    int CLUSTER_SLOT  = 3;
+    int CLIENT_SLOT  = 0;
+    int LOCAL_SLOT   = 1;
+    int SERVER_SLOT  = 2;
+    int CLUSTER_SLOT = 3;
 
 }

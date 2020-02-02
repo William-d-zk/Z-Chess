@@ -42,6 +42,9 @@ import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 
+import com.tgx.chess.queen.config.IBizIoConfig;
+import com.tgx.chess.queen.io.core.inf.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
@@ -69,22 +72,12 @@ import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.base.util.Pair;
-import com.tgx.chess.king.config.Config;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.async.AioCreator;
 import com.tgx.chess.queen.io.core.async.AioSession;
 import com.tgx.chess.queen.io.core.async.BaseAioConnector;
 import com.tgx.chess.queen.io.core.executor.ClientCore;
-import com.tgx.chess.queen.io.core.inf.IAioClient;
-import com.tgx.chess.queen.io.core.inf.ICommandCreator;
-import com.tgx.chess.queen.io.core.inf.IConnectActivity;
-import com.tgx.chess.queen.io.core.inf.IControl;
-import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.inf.ISessionCreated;
-import com.tgx.chess.queen.io.core.inf.ISessionCreator;
-import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
-import com.tgx.chess.queen.io.core.inf.ISessionOption;
 import com.tgx.chess.rook.io.ConsumerZSort;
 
 /**
@@ -100,7 +93,7 @@ public class DeviceConsumer
 {
     final Logger _Logger = Logger.getLogger(getClass().getName());
 
-    private final Config                        _Config;
+    private final IBizIoConfig                  _Config;
     private final AsynchronousChannelGroup      _ChannelGroup;
     private final ClientCore<ZContext>          _ClientCore     = new ClientCore<>();
     private final TimeWheel                     _TimeWheel      = _ClientCore.getTimeWheel();
@@ -127,10 +120,11 @@ public class DeviceConsumer
     }
 
     @SuppressWarnings("unchecked")
-    public DeviceConsumer() throws IOException
+    @Autowired
+    public DeviceConsumer(IBizIoConfig config) throws IOException
     {
         _State.set(STATE.STOP.ordinal());
-        _Config = new Config();
+        _Config = config;
         _ChannelGroup = AsynchronousChannelGroup.withFixedThreadPool(1, _ClientCore.getWorkerThreadFactory());
         _ClientCore.build((QEvent event, long sequence, boolean endOfBatch) ->
         {
@@ -267,7 +261,7 @@ public class DeviceConsumer
                 _CommandCreator = null;
                 break;
         }
-        final ISessionCreator<ZContext> _SessionCreator = new AioCreator<ZContext>(_Config)
+        final ISessionCreator<ZContext> _SessionCreator = new AioCreator<ZContext>(_Config.getBizSocketConfig(ISessionManager.CLIENT_SLOT))
         {
             @Override
             public ZContext createContext(ISessionOption option, ISort<ZContext> sort)
