@@ -24,18 +24,13 @@
 
 package com.tgx.chess.config;
 
-import com.tgx.chess.queen.config.ISocketConfig;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.util.unit.DataSize;
-
 import java.time.Duration;
 
-@ConfigurationProperties(prefix = "z.chess.server.socket")
-@Configuration
-@PropertySource("classpath:socket.properties")
-public class ServerSocketConfig
+import org.springframework.util.unit.DataSize;
+
+import com.tgx.chess.queen.config.ISocketConfig;
+
+public class SocketConfig
         implements
         ISocketConfig
 {

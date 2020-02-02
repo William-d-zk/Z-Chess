@@ -26,6 +26,7 @@ package com.tgx.chess.config;
 
 import com.tgx.chess.queen.config.IBizIoConfig;
 import com.tgx.chess.queen.config.ISocketConfig;
+import com.tgx.chess.queen.io.core.inf.ISessionManager;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -45,55 +46,71 @@ public class IoConfig
 {
 
     private Map<String,
-                Integer> sizePowers;
+                Integer>         sizePowers;
+    private SocketConfig         server;
+    private SocketConfig         cluster;
+    private SocketConfig         client;
+    private SocketConfig         local;
 
     @Override
-    public int getClientSizePower()
+    public int getSizePower(int bizType)
     {
-        return sizePowers.getOrDefault("client", 3);
-    }
-
-    @Override
-    public int getLocalSizePower()
-    {
-        return sizePowers.getOrDefault("local", 3);
-    }
-
-    @Override
-    public int getServerSizePower()
-    {
-        return sizePowers.getOrDefault("server", 10);
-    }
-
-    @Override
-    public int getClusterSizePower()
-    {
-        return sizePowers.getOrDefault("cluster", 7);
-    }
-
-    public void setClientSizePower(int clientSizePower)
-    {
-        this.clientSizePower = clientSizePower;
-    }
-
-    public void setLocalSizePower(int localSizePower)
-    {
-        this.localSizePower = localSizePower;
-    }
-
-    public void setServerSizePower(int serverSizePower)
-    {
-        this.serverSizePower = serverSizePower;
-    }
-
-    public void setClusterSizePower(int clusterSizePower)
-    {
-        this.clusterSizePower = clusterSizePower;
+        switch (bizType)
+        {
+            case ISessionManager.CLIENT_SLOT:
+                return sizePowers.getOrDefault("client.0", 3);
+            case ISessionManager.LOCAL_SLOT:
+                return sizePowers.getOrDefault("local.1", 3);
+            case ISessionManager.SERVER_SLOT:
+                return sizePowers.getOrDefault("server.2", 10);
+            case ISessionManager.CLUSTER_SLOT:
+                return sizePowers.getOrDefault("cluster.3", 7);
+            default:
+                throw new IllegalArgumentException();
+        }
     }
 
     @Override
     public ISocketConfig getBizSocketConfig(int bizType)
     {
-        return null;
+        switch (bizType)
+        {
+            case ISessionManager.CLIENT_SLOT:
+                return client;
+            case ISessionManager.LOCAL_SLOT:
+                return local;
+            case ISessionManager.SERVER_SLOT:
+                return server;
+            case ISessionManager.CLUSTER_SLOT:
+                return cluster;
+            default:
+                return null;
+        }
+    }
+
+    public void setSizePowers(Map<String,
+                                  Integer> sizePowers)
+    {
+        this.sizePowers = sizePowers;
+    }
+
+    public void setServer(SocketConfig server)
+    {
+        this.server = server;
+    }
+
+    public void setCluster(SocketConfig cluster)
+    {
+        this.cluster = cluster;
+    }
+
+    public void setClient(SocketConfig client)
+    {
+        this.client = client;
+    }
+
+    public void setLocal(SocketConfig local)
+    {
+        this.local = local;
     }
 }

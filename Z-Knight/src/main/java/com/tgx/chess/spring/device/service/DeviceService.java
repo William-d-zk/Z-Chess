@@ -45,6 +45,7 @@ import javax.annotation.PostConstruct;
 
 import com.tgx.chess.queen.config.IBizIoConfig;
 import com.tgx.chess.queen.config.IServerConfig;
+import com.tgx.chess.queen.config.ISocketConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
