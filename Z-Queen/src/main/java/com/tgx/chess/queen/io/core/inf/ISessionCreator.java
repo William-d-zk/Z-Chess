@@ -26,7 +26,6 @@ package com.tgx.chess.queen.io.core.inf;
 import java.io.IOException;
 import java.net.StandardSocketOptions;
 import java.nio.channels.AsynchronousSocketChannel;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author William.d.zk
@@ -48,55 +47,19 @@ public interface ISessionCreator<C extends IContext<C>>
     ISession<C> createSession(AsynchronousSocketChannel socketChannel, IConnectActivity<C> activity) throws IOException;
 
     @Override
-    default int setSNF()
-    {
-        return INC_SEND_SIZE;
-    }
-
-    @Override
-    default int setRCV()
-    {
-        return INC_RECV_SIZE;
-    }
-
-    @Override
     default void setOptions(AsynchronousSocketChannel channel)
     {
         if (channel != null) {
             try {
-                channel.setOption(StandardSocketOptions.TCP_NODELAY, true);
-                channel.setOption(StandardSocketOptions.SO_RCVBUF, setRCV());
-                channel.setOption(StandardSocketOptions.SO_SNDBUF, setSNF());
-                channel.setOption(StandardSocketOptions.SO_KEEPALIVE, setKeepAlive());
+                channel.setOption(StandardSocketOptions.TCP_NODELAY, isTcpNoDelay());
+                channel.setOption(StandardSocketOptions.SO_LINGER, getSoLingerInSecond());
+                channel.setOption(StandardSocketOptions.SO_RCVBUF, getRcvInByte());
+                channel.setOption(StandardSocketOptions.SO_SNDBUF, getSnfInByte());
+                channel.setOption(StandardSocketOptions.SO_KEEPALIVE, isKeepAlive());
             }
             catch (IOException e) {
                 e.printStackTrace();
             }
         }
-    }
-
-    @Override
-    default int setQueueMax()
-    {
-        return INC_QUEUE_SIZE;
-    }
-
-    @Override
-    default int setReadTimeOut()
-    {
-        return (int) TimeUnit.MINUTES.toSeconds(15);
-
-    }
-
-    @Override
-    default int setWriteTimeOut()
-    {
-        return 30;
-    }
-
-    @Override
-    default boolean setKeepAlive()
-    {
-        return false;
     }
 }

@@ -23,10 +23,8 @@
  */
 package com.tgx.chess.queen.io.core.async;
 
-import java.util.concurrent.TimeUnit;
-
-import com.tgx.chess.king.config.Config;
-import com.tgx.chess.queen.config.QueenConfigKey;
+import com.tgx.chess.king.base.util.Units;
+import com.tgx.chess.queen.config.ISocketConfig;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.ISessionCreator;
 
@@ -37,57 +35,61 @@ public abstract class AioCreator<C extends IContext<C>>
         implements
         ISessionCreator<C>
 {
-    private final Config _Config;
+    private final ISocketConfig _Config;
 
-    protected AioCreator(Config config)
+    protected AioCreator(ISocketConfig config)
     {
-        _Config = config.load(getConfigName());
+        _Config = config;
     }
 
     @Override
-    public int setSNF()
+    public int getSnfInByte()
     {
-        return _Config.getConfigValue(getConfigGroup(),
-                                      QueenConfigKey.OWNER_SOCKET_OPTION,
-                                      QueenConfigKey.KEY_OPTION_SNF);
+        return _Config.getSnfInByte();
     }
 
     @Override
-    public int setRCV()
+    public int getRcvInByte()
     {
-        return _Config.getConfigValue(getConfigGroup(),
-                                      QueenConfigKey.OWNER_SOCKET_OPTION,
-                                      QueenConfigKey.KEY_OPTION_RCV);
+        return _Config.getRcvInByte();
     }
 
     @Override
-    public int setQueueMax()
+    public int getSendQueueMax()
     {
-        return _Config.getConfigValue(getConfigGroup(),
-                                      QueenConfigKey.OWNER_SOCKET_SEND,
-                                      QueenConfigKey.KEY_SEND_QUEUE_SIZE);
+        return _Config.getSendQueueMax();
     }
 
     @Override
-    public int setReadTimeOut()
+    public int getReadTimeOutInSecond()
     {
-        int duration = _Config.getConfigValue(getConfigGroup(),
-                                              QueenConfigKey.OWNER_SOCKET_IN,
-                                              QueenConfigKey.KEY_IN_MINUTE);
-        return (int) TimeUnit.MINUTES.toSeconds(duration);
+        return (int) _Config.getReadTimeOutInMinute()
+                            .getSeconds();
     }
 
     @Override
-    public int setWriteTimeOut()
+    public int getWriteTimeOutInSecond()
     {
-        return _Config.getConfigValue(getConfigGroup(), QueenConfigKey.OWNER_SOCKET_OUT, QueenConfigKey.KEY_OUT_SECOND);
+        return (int) _Config.getWriteTimeOutInSecond()
+                            .getSeconds();
     }
 
     @Override
-    public boolean setKeepAlive()
+    public boolean isKeepAlive()
     {
-        return _Config.getConfigValue(getConfigGroup(),
-                                      QueenConfigKey.OWNER_SOCKET_OPTION,
-                                      QueenConfigKey.KEY_OPTION_KEEP_ALIVE);
+        return _Config.isKeepAlive();
+    }
+
+    @Override
+    public boolean isTcpNoDelay()
+    {
+        return _Config.isTcpNoDelay();
+    }
+
+    @Override
+    public int getSoLingerInSecond()
+    {
+        return (int) _Config.getSoLingerInSecond()
+                            .getSeconds();
     }
 }

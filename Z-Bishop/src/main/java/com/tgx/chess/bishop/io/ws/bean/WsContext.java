@@ -71,7 +71,7 @@ public class WsContext
                      ICommandCreator<ZContext> commandCreator)
     {
         super(option, sort, commandCreator);
-        _MaxPayloadSize = option.setSNF() - 2;
+        _MaxPayloadSize = option.getSnfInByte() - 2;
         if (sort.getType()
                 .equals(ISort.Type.CONSUMER))
         {

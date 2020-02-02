@@ -33,7 +33,8 @@ import java.util.Set;
 
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.ArrayUtil;
-import com.tgx.chess.king.config.Config;
+import com.tgx.chess.queen.config.IBizIoConfig;
+import com.tgx.chess.queen.config.ISocketConfig;
 import com.tgx.chess.queen.config.QueenCode;
 import com.tgx.chess.queen.config.QueenConfigKey;
 import com.tgx.chess.queen.io.core.inf.IContext;
@@ -41,6 +42,11 @@ import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
 
 /**
+ * 所有io 管理器的父类，存在一定的存储空间的浪费。
+ * 在简单场景中 client端存在大量的存储空间浪费。
+ * 单一的多对多client 是不存在local cluster server 这三个子域的
+ * 不过可以通过覆盖ISocketConfig 的方案削减空间占用。
+ * 
  * @author William.d.zk
  */
 public abstract class AioSessionManager<C extends IContext<C>>
@@ -55,60 +61,37 @@ public abstract class AioSessionManager<C extends IContext<C>>
     private final Set<ISession<C>>[]       _SessionsSets          = new Set[4];
     private final Map<Long,
                       Integer>[]           _LoadFairMaps          = new Map[4];
-    private final Config                   _Config;
 
-    public Config getConfig()
+    private final IBizIoConfig _Config;
+
+    public ISocketConfig getConfig(int bizType)
     {
-        return _Config;
+        return _Config.getBizSocketConfig(bizType);
     }
 
-    private static String getConfigGroup()
+    public AioSessionManager(IBizIoConfig config)
     {
-        return "io";
-    }
-
-    private static String getConfigName()
-    {
-        return "Io";
-    }
-
-    public AioSessionManager(Config config)
-    {
-        _Config = config.load(getConfigName());
+        _Config = config;
         Arrays.setAll(_SessionsSets, slot -> new HashSet<>(1 << getConfigPower(config, slot)));
         Arrays.setAll(_Index2SessionMaps, slot -> new HashMap<>(1 << getConfigPower(config, slot)));
         Arrays.setAll(_PortChannel2IndexMaps, slot -> new HashMap<>(23));
     }
 
-    private int getConfigPower(Config config, int slot)
+    private int getConfigPower(IBizIoConfig config, int slot)
     {
-        int power;
         switch (slot)
         {
             case CLIENT_SLOT:
-                power = config.getConfigValue(getConfigGroup(),
-                                              QueenConfigKey.OWNER_IO_POWER,
-                                              QueenConfigKey.KEY_POWER_CLIENT);
-                break;
-            case INTERNAL_SLOT:
-                power = config.getConfigValue(getConfigGroup(),
-                                              QueenConfigKey.OWNER_IO_POWER,
-                                              QueenConfigKey.KEY_POWER_INTERNAL);
-                break;
+                return config.getClientSizePower();
+            case LOCAL_SLOT:
+                return config.getLocalSizePower();
             case SERVER_SLOT:
-                power = config.getConfigValue(getConfigGroup(),
-                                              QueenConfigKey.OWNER_IO_POWER,
-                                              QueenConfigKey.KEY_POWER_SERVER);
-                break;
+                return config.getServerSizePower();
             case CLUSTER_SLOT:
-                power = config.getConfigValue(getConfigGroup(),
-                                              QueenConfigKey.OWNER_IO_POWER,
-                                              QueenConfigKey.KEY_POWER_CLUSTER);
-                break;
+                return config.getClusterSizePower();
             default:
                 throw new IllegalArgumentException();
         }
-        return power;
     }
 
     protected static <C extends IContext<C>> int getSlot(ISession<C> session)
@@ -128,9 +111,9 @@ public abstract class AioSessionManager<C extends IContext<C>>
         _Logger.info(String.format("%s add session -> set slot:%s",
                                    getClass().getSimpleName(),
                                    slot == CLIENT_SLOT ? "CLIENT"
-                                                       : slot == INTERNAL_SLOT ? "INTERNAL"
-                                                                               : slot == SERVER_SLOT ? "SERVER"
-                                                                                                     : "CLUSTER"));
+                                                       : slot == LOCAL_SLOT ? "INTERNAL"
+                                                                            : slot == SERVER_SLOT ? "SERVER"
+                                                                                                  : "CLUSTER"));
         _SessionsSets[slot].add(session);
     }
 

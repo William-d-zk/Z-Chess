@@ -74,8 +74,9 @@ import com.tgx.chess.bishop.io.zprotocol.device.X51_DeviceMsgAck;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.util.Pair;
-import com.tgx.chess.king.config.Config;
+import com.tgx.chess.queen.config.IBizIoConfig;
 import com.tgx.chess.queen.config.IServerConfig;
+import com.tgx.chess.queen.config.ISocketConfig;
 import com.tgx.chess.queen.config.QueenCode;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.event.handler.LogicHandler;
@@ -130,9 +131,10 @@ public class DeviceNode
     public DeviceNode(List<ITriple> hosts,
                       IRepository<IPair> deviceRepository,
                       IQttRouter qttRouter,
-                      IServerConfig config)
+                      IBizIoConfig bizIoConfig,
+                      IServerConfig serverConfig)
     {
-        super(new Config("device"), new ServerCore<ZContext>(config)
+        super(bizIoConfig, new ServerCore<ZContext>(serverConfig)
         {
 
             @Override
@@ -169,7 +171,7 @@ public class DeviceNode
                                final int _Port = triple.second();
                                final ISort<ZContext> _Sort = triple.third();
                                final ICommandCreator<ZContext> _CommandCreator = session -> null;
-                               final ISessionCreator<ZContext> _SessionCreator = new AioCreator<ZContext>(getConfig())
+                               final ISessionCreator<ZContext> _SessionCreator = new AioCreator<ZContext>(getConfig(SERVER_SLOT))
                                {
                                    @Override
                                    public ISession<ZContext> createSession(AsynchronousSocketChannel socketChannel,

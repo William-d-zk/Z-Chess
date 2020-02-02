@@ -63,8 +63,8 @@ public class AioSession<C extends IContext<C>>
 {
     private static Logger _Logger = Logger.getLogger(AioSession.class.getName());
     /*--------------------------------------------------------------------------------------------------------------*/
-    private final int                       _ReadTimeOut;
-    private final int                       _WriteTimeOut;
+    private final int                       _ReadTimeOutInSecond;
+    private final int                       _WriteTimeOutInSecond;
     private final AsynchronousSocketChannel _Channel;
     private final InetSocketAddress         _RemoteAddress, _LocalAddress;
     /*
@@ -129,10 +129,10 @@ public class AioSession<C extends IContext<C>>
         _PortIndex = activity.getPortIndex();
         _HaIndex = activity.getHaIndex();
         sessionOption.setOptions(channel);
-        _ReadTimeOut = sessionOption.setReadTimeOut();
-        _WriteTimeOut = sessionOption.setWriteTimeOut();
-        _RecvBuf = ByteBuffer.allocate(sessionOption.setRCV());
-        _QueueSizeMax = sessionOption.setQueueMax();
+        _ReadTimeOutInSecond = sessionOption.getReadTimeOutInSecond();
+        _WriteTimeOutInSecond = sessionOption.getWriteTimeOutInSecond();
+        _RecvBuf = ByteBuffer.allocate(sessionOption.getRcvInByte());
+        _QueueSizeMax = sessionOption.getSendQueueMax();
         _Ctx = contextCreator.createContext(sessionOption, activity.getSort());
         mSending = _Ctx.getWrBuffer();
         mSending.flip();
@@ -260,7 +260,7 @@ public class AioSession<C extends IContext<C>>
     {
         if (isClosed()) { return; }
         _RecvBuf.clear();
-        _Channel.read(_RecvBuf, _ReadTimeOut, TimeUnit.SECONDS, this, readHandler);
+        _Channel.read(_RecvBuf, _ReadTimeOutInSecond, TimeUnit.SECONDS, this, readHandler);
     }
 
     @Override
@@ -410,7 +410,7 @@ public class AioSession<C extends IContext<C>>
         if (_Ctx.channelStateLessThan(SESSION_FLUSHED) && mSending.hasRemaining()) {
             _Ctx.advanceChannelState(SESSION_FLUSHED);
             _Logger.info("session 0x%x %d,flush %d", getIndex(), getIndex(), mSending.remaining());
-            _Channel.write(mSending, _WriteTimeOut, TimeUnit.SECONDS, this, handler);
+            _Channel.write(mSending, _WriteTimeOutInSecond, TimeUnit.SECONDS, this, handler);
         }
     }
 
@@ -423,6 +423,6 @@ public class AioSession<C extends IContext<C>>
     @Override
     public int getReadTimeOutSeconds()
     {
-        return _ReadTimeOut;
+        return _ReadTimeOutInSecond;
     }
 }

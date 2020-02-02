@@ -39,25 +39,20 @@ public interface ISessionOption
 
     void setOptions(AsynchronousSocketChannel channel);
 
-    int setSNF();
+    int getSnfInByte();
 
-    int setRCV();
+    int getRcvInByte();
 
-    int setQueueMax();
+    int getSendQueueMax();
 
-    int setReadTimeOut();
+    int getReadTimeOutInSecond();
 
-    int setWriteTimeOut();
+    int getWriteTimeOutInSecond();
 
-    boolean setKeepAlive();
+    boolean isKeepAlive();
 
-    default String getConfigName()
-    {
-        return "Socket";
-    }
+    boolean isTcpNoDelay();
 
-    default String getConfigGroup()
-    {
-        return "socket";
-    }
+    int getSoLingerInSecond();
+
 }

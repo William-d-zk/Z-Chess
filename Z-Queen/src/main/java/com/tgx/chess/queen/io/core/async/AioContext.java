@@ -68,8 +68,8 @@ public abstract class AioContext<C extends IContext<C>>
                          ISort<C> sort,
                          ICommandCreator<C> commandCreator)
     {
-        _RvBuf = ByteBuffer.allocate(option.setRCV());
-        _WrBuf = ByteBuffer.allocate(option.setSNF());
+        _RvBuf = ByteBuffer.allocate(option.getRcvInByte());
+        _WrBuf = ByteBuffer.allocate(option.getSnfInByte());
         _Sort = sort;
         _CommandCreator = commandCreator;
     }
