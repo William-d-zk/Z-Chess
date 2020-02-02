@@ -72,25 +72,22 @@ public abstract class AioSessionManager<C extends IContext<C>>
     public AioSessionManager(IBizIoConfig config)
     {
         _Config = config;
-        Arrays.setAll(_SessionsSets, slot -> new HashSet<>(1 << getConfigPower(config, slot)));
-        Arrays.setAll(_Index2SessionMaps, slot -> new HashMap<>(1 << getConfigPower(config, slot)));
+        Arrays.setAll(_SessionsSets, slot -> new HashSet<>(1 << getConfigPower(slot)));
+        Arrays.setAll(_Index2SessionMaps, slot -> new HashMap<>(1 << getConfigPower(slot)));
         Arrays.setAll(_PortChannel2IndexMaps, slot -> new HashMap<>(23));
     }
 
-    private int getConfigPower(IBizIoConfig config, int slot)
+    private int getConfigPower(int slot)
     {
         switch (slot)
         {
             case CLIENT_SLOT:
-                return config.getClientSizePower();
             case LOCAL_SLOT:
-                return config.getLocalSizePower();
             case SERVER_SLOT:
-                return config.getServerSizePower();
             case CLUSTER_SLOT:
-                return config.getClusterSizePower();
+                return _Config.getSizePower(slot);
             default:
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("slot: " + slot);
         }
     }
 

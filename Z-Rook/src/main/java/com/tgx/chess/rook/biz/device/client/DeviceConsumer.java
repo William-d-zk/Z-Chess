@@ -43,6 +43,7 @@ import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
 
 import com.tgx.chess.queen.config.IBizIoConfig;
+import com.tgx.chess.queen.config.ISocketConfig;
 import com.tgx.chess.queen.io.core.inf.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -94,6 +95,7 @@ public class DeviceConsumer
     final Logger _Logger = Logger.getLogger(getClass().getName());
 
     private final IBizIoConfig                  _Config;
+    private final ISocketConfig                 _SocketConfig;
     private final AsynchronousChannelGroup      _ChannelGroup;
     private final ClientCore<ZContext>          _ClientCore     = new ClientCore<>();
     private final TimeWheel                     _TimeWheel      = _ClientCore.getTimeWheel();
@@ -121,10 +123,12 @@ public class DeviceConsumer
 
     @SuppressWarnings("unchecked")
     @Autowired
-    public DeviceConsumer(IBizIoConfig config) throws IOException
+    public DeviceConsumer(IBizIoConfig config,
+                          ISocketConfig socketConfig) throws IOException
     {
         _State.set(STATE.STOP.ordinal());
         _Config = config;
+        _SocketConfig = socketConfig;
         _ChannelGroup = AsynchronousChannelGroup.withFixedThreadPool(1, _ClientCore.getWorkerThreadFactory());
         _ClientCore.build((QEvent event, long sequence, boolean endOfBatch) ->
         {
@@ -261,7 +265,7 @@ public class DeviceConsumer
                 _CommandCreator = null;
                 break;
         }
-        final ISessionCreator<ZContext> _SessionCreator = new AioCreator<ZContext>(_Config.getBizSocketConfig(ISessionManager.CLIENT_SLOT))
+        final ISessionCreator<ZContext> _SessionCreator = new AioCreator<ZContext>(_SocketConfig)
         {
             @Override
             public ZContext createContext(ISessionOption option, ISort<ZContext> sort)

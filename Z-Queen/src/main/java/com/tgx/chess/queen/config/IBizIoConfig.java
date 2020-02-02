@@ -24,22 +24,13 @@
 
 package com.tgx.chess.queen.config;
 
-import java.util.Map;
-
 /**
  * @author william.d.zk
  * @date 2020/2/1
  */
 public interface IBizIoConfig
 {
-
-    int getClientSizePower();
-
-    int getLocalSizePower();
-
-    int getServerSizePower();
-
-    int getClusterSizePower();
+    int getSizePower(int bizType);
 
     ISocketConfig getBizSocketConfig(int bizType);
 }
