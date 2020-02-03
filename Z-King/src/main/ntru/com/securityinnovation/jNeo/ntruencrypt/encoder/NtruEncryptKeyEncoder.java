@@ -44,5 +44,5 @@ public interface NtruEncryptKeyEncoder
     /**
      * Parse a public or private key blob.
      */
-    RawKeyData decodeKeyBlob(byte keyBlob[]) throws FormatNotSupportedException, ParamSetNotSupportedException;
+    RawKeyData decodeKeyBlob(byte[] keyBlob) throws FormatNotSupportedException, ParamSetNotSupportedException;
 }

@@ -112,7 +112,7 @@ public class BitPack
      * @return the number of elements used in the output array,
      *         or 0 on error.
      */
-    public final static int pack(int numElts, int maxEltValue, short src[], int srcOffset, byte tgt[], int tgtOffset)
+    public final static int pack(int numElts, int maxEltValue, short[] src, int srcOffset, byte[] tgt, int tgtOffset)
     {
         // Get the number of bits in each element
         int bitsPerElement = countBits(maxEltValue - 1);
@@ -152,9 +152,9 @@ public class BitPack
     public final static int pack(int numElts,
                                  int maxEltValue,
                                  int maxOutLen,
-                                 short src[],
+                                 short[] src,
                                  int srcOffset,
-                                 byte tgt[],
+                                 byte[] tgt,
                                  int tgtOffset)
     {
         if (tgt == null) return maxOutLen;
@@ -237,7 +237,7 @@ public class BitPack
      * @return the number of input bytes that were consumed,
      *         or 0 on error.
      */
-    public final static int unpack(int numElts, int maxEltValue, byte src[], int srcOffset, short tgt[], int tgtOffset)
+    public final static int unpack(int numElts, int maxEltValue, byte[] src, int srcOffset, short[] tgt, int tgtOffset)
     {
         // Get the number of bits in each element
         int bitsPerElement = countBits(maxEltValue - 1);

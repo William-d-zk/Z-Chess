@@ -32,5 +32,5 @@ interface PrivKeyFormatter
 {
     byte[] encode(KeyParams keyParams, FullPolynomial h, FullPolynomial f);
 
-    RawKeyData decode(byte keyBlob[]) throws ParamSetNotSupportedException;
+    RawKeyData decode(byte[] keyBlob) throws ParamSetNotSupportedException;
 }

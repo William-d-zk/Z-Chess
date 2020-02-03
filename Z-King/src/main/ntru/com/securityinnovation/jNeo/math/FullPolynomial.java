@@ -35,7 +35,7 @@ public class FullPolynomial
     /**
      * The list of coefficients of the polynomial.
      */
-    public short p[];
+    public short[] p;
 
     /**
      * Initialize a polynomial with the given coefficient list.
@@ -44,7 +44,7 @@ public class FullPolynomial
      * @param coeffs
      *            the list of coefficients.
      */
-    public FullPolynomial(short coeffs[])
+    public FullPolynomial(short[] coeffs)
     {
         p = coeffs;
     }

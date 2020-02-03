@@ -83,7 +83,7 @@ public interface IStorage
          * 会话状态不保持
          * 每次声明会话都清除之前的状态。
          */
-        CLEAN;
+        CLEAN
     }
 
     enum Operation

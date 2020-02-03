@@ -126,7 +126,7 @@ class Sha256
      * bytes long. The object is reinialized (see
      * <code>reset()</code>).
      */
-    public void finishDigest(byte out[], int outOffset)
+    public void finishDigest(byte[] out, int outOffset)
     {
         // Sanity check inputs
         if (out == null) throw new NullPointerException("output array is null");

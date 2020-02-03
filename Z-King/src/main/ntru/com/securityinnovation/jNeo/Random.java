@@ -62,7 +62,7 @@ public class Random
      * @param _seed
      *            the new seed for the PRNG.
      */
-    public Random(byte _seed[])
+    public Random(byte[] _seed)
     {
         if (_seed == null) throw new NullPointerException("seed is null");
         rng = new X982Drbg(sha256, _seed);
@@ -105,7 +105,7 @@ public class Random
      * @param length
      *            the number of bytes to output.
      */
-    public void read(byte outbuf[], int offset, int length)
+    public void read(byte[] outbuf, int offset, int length)
     {
         rng.read(outbuf, offset, length);
     }
@@ -117,7 +117,7 @@ public class Random
      * @param outbuf
      *            the buffer to store the output into.
      */
-    public void read(byte outbuf[])
+    public void read(byte[] outbuf)
     {
         rng.read(outbuf, 0, outbuf.length);
     }

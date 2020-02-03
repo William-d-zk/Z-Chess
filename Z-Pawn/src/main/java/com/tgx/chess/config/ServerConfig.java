@@ -33,7 +33,6 @@ import com.tgx.chess.queen.config.IServerConfig;
 @Configuration
 @ConfigurationProperties(prefix = "z.chess.server")
 @PropertySource("classpath:server.properties")
-
 public class ServerConfig
         implements
         IServerConfig
