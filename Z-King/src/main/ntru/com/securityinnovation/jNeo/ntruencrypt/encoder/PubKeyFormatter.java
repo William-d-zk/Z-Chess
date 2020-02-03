@@ -32,5 +32,5 @@ interface PubKeyFormatter
 {
     byte[] encode(KeyParams keyParams, FullPolynomial h);
 
-    RawKeyData decode(byte keyBlob[]) throws ParamSetNotSupportedException;
+    RawKeyData decode(byte[] keyBlob) throws ParamSetNotSupportedException;
 }

@@ -50,7 +50,7 @@ public class PolynomialInverterModPrime
      * invModPrime[i] * i = 1 (mod prime) if the inverse of i exists
      * invModPrime[i] = 0 if the inverse of i does not exist.
      */
-    protected short invModPrime[];
+    protected short[] invModPrime;
 
     /**
      * This constructor initializes the object to calculate inverses
@@ -67,7 +67,7 @@ public class PolynomialInverterModPrime
      *            constructor.
      */
     public PolynomialInverterModPrime(int _prime,
-                                      short _invModPrime[])
+                                      short[] _invModPrime)
     {
         prime = _prime;
         invModPrime = _invModPrime;

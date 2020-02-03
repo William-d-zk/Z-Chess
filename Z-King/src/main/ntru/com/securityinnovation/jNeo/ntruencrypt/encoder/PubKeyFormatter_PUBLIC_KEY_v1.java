@@ -40,14 +40,14 @@ class PubKeyFormatter_PUBLIC_KEY_v1
         if (h.p.length != keyParams.N) return null;
 
         int len = (KeyFormatterUtil.fillHeader(tag, keyParams.OIDBytes, null) + BitPack.pack(keyParams.N, keyParams.q));
-        byte ret[] = new byte[len];
+        byte[] ret = new byte[len];
 
         int offset = KeyFormatterUtil.fillHeader(tag, keyParams.OIDBytes, ret);
         BitPack.pack(keyParams.N, keyParams.q, h.p, 0, ret, offset);
         return ret;
     }
 
-    public RawKeyData decode(byte keyBlob[]) throws ParamSetNotSupportedException
+    public RawKeyData decode(byte[] keyBlob) throws ParamSetNotSupportedException
     {
         // Parse the header, recover the key parameters.
         if (keyBlob[0] != tag) throw new IllegalArgumentException("key blob tag not recognized");

@@ -35,7 +35,7 @@ public interface IRaftNode
         FOLLOWER,
         ELECTOR,
         CANDIDATE,
-        LEADER;
+        LEADER
     }
 
     RaftState getState();

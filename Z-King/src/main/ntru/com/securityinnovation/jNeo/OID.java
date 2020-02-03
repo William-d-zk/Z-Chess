@@ -412,7 +412,7 @@ public enum OID
     /**
      * The byte sequence identifying the OID.
      */
-    byte oidBytes[];
+    byte[] oidBytes;
 
     /**
      * Return the byte array identifying the OID.

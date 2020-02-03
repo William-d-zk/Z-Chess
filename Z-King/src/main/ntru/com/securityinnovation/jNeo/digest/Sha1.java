@@ -228,7 +228,7 @@ class Sha1
     private static final int K40_59 = 0x8f1bbcdc;
     private static final int K60_79 = 0xca62c1d6;
 
-    void transform(byte X[])
+    void transform(byte[] X)
     {
         byte2int(X, 0, data, 0, 16);
 

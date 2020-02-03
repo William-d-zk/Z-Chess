@@ -205,16 +205,6 @@ public class ClientCore<C extends IContext<C>>
         ;
     }
 
-    private static String getConfigName()
-    {
-        return "ClientPipeline";
-    }
-
-    private static String getConfigGroup()
-    {
-        return "pipeline";
-    }
-
     public ThreadFactory getWorkerThreadFactory()
     {
         return _WorkerThreadFactory;

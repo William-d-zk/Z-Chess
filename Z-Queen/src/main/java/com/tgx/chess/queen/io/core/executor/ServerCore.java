@@ -140,7 +140,6 @@ public abstract class ServerCore<C extends IContext<C>>
     private final TimeWheel          _TimeWheel            = new TimeWheel();
     private final ReentrantLock      _LocalLock            = new ReentrantLock();
     private AsynchronousChannelGroup mServiceChannelGroup;
-    private LinkHandler<C>           mLinkHandler;
 
     @SuppressWarnings("unchecked")
     protected ServerCore(IServerConfig config)
@@ -402,16 +401,6 @@ public abstract class ServerCore<C extends IContext<C>>
     private RingBuffer<QEvent> createPipelineLite(int power)
     {
         return createPipeline(power, new LiteBlockingWaitStrategy());
-    }
-
-    private static String getConfigName()
-    {
-        return "Pipeline";
-    }
-
-    private static String getConfigGroup()
-    {
-        return "pipeline";
     }
 
     public int getServerCount()

@@ -55,7 +55,7 @@ public class X982Drbg
     // on digital signtures. The recommended value of t for each
     // hash algorithm is the leading <n> bytes of this string,
     // where n = the digest length of the hash algorithm.
-    private final static byte t[] = { (byte) 0xcf,
+    private final static byte[] t = { (byte) 0xcf,
                                       (byte) 0x83,
                                       (byte) 0xe1,
                                       (byte) 0x35,
@@ -172,7 +172,7 @@ public class X982Drbg
         // so that new V.length = _seed.length.
 
         // tmp = V | newSeed | 0x01
-        byte tmp[] = new byte[V.length + _seed.length + 1];
+        byte[] tmp = new byte[V.length + _seed.length + 1];
         System.arraycopy(V, 0, tmp, 0, V.length);
         System.arraycopy(_seed, 0, tmp, V.length, _seed.length);
         tmp[tmp.length - 1] = 1;
@@ -217,7 +217,7 @@ public class X982Drbg
      */
     public int read()
     {
-        byte b[] = new byte[1];
+        byte[] b = new byte[1];
         read(b, 0, 1);
         return b[0] & 0xff;
     }
@@ -287,7 +287,7 @@ public class X982Drbg
      * Add two multi-byte big-endian integers: accum += in[offset..len-1].
      * Overflow is discarded.
      */
-    void plusEquals(byte accum[], byte in[], int offset, int len)
+    void plusEquals(byte[] accum, byte[] in, int offset, int len)
     {
         int carry = 0;
         int i = len - 1, j = accum.length - 1;
@@ -304,7 +304,7 @@ public class X982Drbg
      * Add x to a multi-byte big-endian integer: accum += x.
      * Overflow is discarded.
      */
-    void plusEquals(byte accum[], int x)
+    void plusEquals(byte[] accum, int x)
     {
         int carry = 0;
         int i = 0, j = accum.length - 1;

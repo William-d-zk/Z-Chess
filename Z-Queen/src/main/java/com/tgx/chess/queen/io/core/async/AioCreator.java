@@ -23,7 +23,6 @@
  */
 package com.tgx.chess.queen.io.core.async;
 
-import com.tgx.chess.king.base.util.Units;
 import com.tgx.chess.queen.config.ISocketConfig;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.ISessionCreator;

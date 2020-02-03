@@ -71,7 +71,7 @@ public class IGF2
                 int _bitsPerIndex,
                 DigestAlgorithm hashAlg,
                 int _minNumRuns,
-                byte seed[],
+                byte[] seed,
                 int seedoff,
                 int seedLen)
     {
