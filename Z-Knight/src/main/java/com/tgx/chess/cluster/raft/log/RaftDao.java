@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.channels.FileChannel;
 import java.util.List;
 import java.util.Objects;
 import java.util.TreeMap;
@@ -38,6 +39,8 @@ import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 
+import com.tgx.chess.king.base.exception.ZException;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -57,6 +60,7 @@ public class RaftDao
     private LogMeta                      logMeta;
     private final TreeMap<Long,
                           Segment>       _Index2SegmentMap = new TreeMap<>();
+    private volatile long                totalSize;
 
     @Autowired
     public RaftDao(ZRaftConfig config)
@@ -80,6 +84,11 @@ public class RaftDao
             if (!file.mkdirs()) { throw new SecurityException(String.format("%s check mkdir authority", _LogDataDir)); }
         }
         List<Segment> segments = readSegments();
+        if (segments != null) {
+            for (Segment segment : segments) {
+                _Index2SegmentMap.put(segment.getStartIndex(), segment);
+            }
+        }
         {
             String metaFileName = _LogMetaDir + File.separator + "metadata";
             try {
@@ -143,7 +152,13 @@ public class RaftDao
         _Logger.info(" term:%d,first log index:%d,candidate:%d", term, firstLogIndex, candidate);
     }
 
-    private final static Pattern SEGMENT_NAME = Pattern.compile("z_chess_raft_seg_(\\d+)_([rw])");
+    public void updateMetaData(long firstLogIndex)
+    {
+        logMeta.setFirstLogIndex(firstLogIndex);
+        logMeta.update();
+    }
+
+    private final static Pattern SEGMENT_NAME = Pattern.compile("z_chess_raft_seg_(\\d+)-(\\d+)_([rw])");
 
     public List<Segment> readSegments()
     {
@@ -161,9 +176,10 @@ public class RaftDao
                                  Matcher matcher = SEGMENT_NAME.matcher(fileName);
                                  if (matcher.matches()) {
                                      long start = Long.parseLong(matcher.group(1));
-                                     String g2 = matcher.group(2);
-                                     boolean readOnly = !g2.equalsIgnoreCase("w");
-                                     return new Segment(sub.getName(), start, 0, !readOnly);
+                                     long end = Long.parseLong(matcher.group(2));
+                                     String g3 = matcher.group(3);
+                                     boolean readOnly = !g3.equalsIgnoreCase("w");
+                                     return new Segment(sub, start, end, !readOnly);
                                  }
                              }
                              catch (IOException e) {
@@ -172,8 +188,119 @@ public class RaftDao
                              return null;
                          })
                          .filter(Objects::nonNull)
+                         .peek(segment -> totalSize += segment.getFileSize())
                          .collect(Collectors.toList());
         }
         return null;
     }
+
+    public long append(List<LogEntry> entryList)
+    {
+        long newLastLogIndex = getLastLogIndex();
+        for (LogEntry entry : entryList) {
+            newLastLogIndex++;
+            int entrySize = entry.dataLength() + 4;
+            boolean isNeedNewSegmentFile = false;
+            if (_Index2SegmentMap.isEmpty()) {
+                isNeedNewSegmentFile = true;
+            }
+            else {
+                Segment segment = _Index2SegmentMap.lastEntry()
+                                                   .getValue();
+                if (!segment.isCanWrite()) {
+                    isNeedNewSegmentFile = true;
+                }
+                else if (segment.getFileSize() + entrySize >= _MaxSegmentSize) {
+                    isNeedNewSegmentFile = true;
+                    // 最后一个segment的文件close并改名
+                    segment.close();
+                }
+            }
+            Segment targetSegment = null;
+            if (isNeedNewSegmentFile) {
+                String newFileName = String.format("z_chess_raft_seg_%020d-%020d_w", newLastLogIndex, 0);
+                File newFile = new File(_LogDataDir + File.separator + newFileName);
+                if (!newFile.exists()) {
+                    try {
+                        newFile.createNewFile();
+                        targetSegment = new Segment(newFile, newLastLogIndex, 0, true);
+                    }
+                    catch (IOException e) {
+                        _Logger.warning("create segment file failed %s", e, newFile.getAbsolutePath());
+                        throw new ZException("raft local segment failed");
+                    }
+                }
+            }
+            else {
+                targetSegment = _Index2SegmentMap.lastEntry()
+                                                 .getValue();
+            }
+            targetSegment.addRecord(entry);
+            totalSize += entrySize;
+        }
+        return newLastLogIndex;
+    }
+
+    public void truncatePrefix(long newFirstIndex)
+    {
+        if (newFirstIndex <= getFirstLogIndex()) { return; }
+        long oldFirstIndex = getFirstLogIndex();
+        while (!_Index2SegmentMap.isEmpty()) {
+            Segment segment = _Index2SegmentMap.firstEntry()
+                                               .getValue();
+            if (segment.isCanWrite()) {
+                break;
+            }
+            if (newFirstIndex > segment.getEndIndex()) {
+                try {
+                    totalSize -= segment.drop();
+                    _Index2SegmentMap.remove(segment.getStartIndex());
+                }
+                catch (Exception ex2) {
+                    _Logger.warning("delete file exception:", ex2);
+                }
+            }
+            else {
+                break;
+            }
+        }
+        long newActualFirstIndex;
+        if (_Index2SegmentMap.isEmpty()) {
+            newActualFirstIndex = newFirstIndex;
+        }
+        else {
+            newActualFirstIndex = _Index2SegmentMap.firstKey();
+        }
+        updateMetaData(newActualFirstIndex);
+        _Logger.info("Truncating log from old first index %d to new first index %d",
+                     oldFirstIndex,
+                     newActualFirstIndex);
+    }
+
+    public void truncateSuffix(long newEndIndex)
+    {
+        if (newEndIndex >= getLastLogIndex()) { return; }
+        _Logger.info("Truncating log from old end index %d to new end index %d", getLastLogIndex(), newEndIndex);
+        while (!_Index2SegmentMap.isEmpty()) {
+            Segment segment = _Index2SegmentMap.lastEntry()
+                                               .getValue();
+            try {
+                if (newEndIndex == segment.getEndIndex()) {
+                    break;
+                }
+                else if (newEndIndex < segment.getStartIndex()) {
+                    totalSize -= segment.drop();
+                    _Index2SegmentMap.remove(segment.getStartIndex());
+                }
+
+                else if (newEndIndex < segment.getEndIndex()) {
+                    totalSize -= segment.truncate(newEndIndex);
+                }
+            }
+            catch (IOException ex) {
+                _Logger.warning("truncateSuffix error ", ex);
+            }
+        }
+    }
+
 }
