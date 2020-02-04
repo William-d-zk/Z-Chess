@@ -33,6 +33,7 @@ public class LogEntry
     private final static int _SERIAL = INTERNAL_SERIAL + 2;
 
     private long term;
+    private long index;
 
     @Override
     public int dataLength()
@@ -60,5 +61,15 @@ public class LogEntry
     public void setTerm(long term)
     {
         this.term = term;
+    }
+
+    public long getIndex()
+    {
+        return index;
+    }
+
+    public void setIndex(long index)
+    {
+        this.index = index;
     }
 }
