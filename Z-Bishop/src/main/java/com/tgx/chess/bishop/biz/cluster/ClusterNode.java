@@ -22,70 +22,7 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.cluster.raft.log;
+package com.tgx.chess.bishop.biz.cluster;
 
-import java.io.RandomAccessFile;
-
-public class LogMeta
-        extends
-        BaseMeta
-{
-    private final static int   _SERIAL     = INTERNAL_SERIAL + 1;
-    private long               firstLogIndex;
-    private long               term;
-    private long               candidate;
-
-
-    LogMeta(RandomAccessFile file)
-    {
-        super((file));
-    }
-
-    LogMeta load()
-    {
-        loadFromFile();
-        return this;
-    }
-
-    @Override
-    public int serial()
-    {
-        return _SERIAL;
-    }
-
-    @Override
-    public int superSerial()
-    {
-        return INTERNAL_SERIAL;
-    }
-
-    public long getFirstLogIndex()
-    {
-        return firstLogIndex;
-    }
-
-    public void setFirstLogIndex(long firstLogIndex)
-    {
-        this.firstLogIndex = firstLogIndex;
-    }
-
-    public long getTerm()
-    {
-        return term;
-    }
-
-    public void setTerm(long term)
-    {
-        this.term = term;
-    }
-
-    public long getCandidate()
-    {
-        return candidate;
-    }
-
-    public void setCandidate(long candidate)
-    {
-        this.candidate = candidate;
-    }
+public class ClusterNode {
 }

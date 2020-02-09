@@ -31,45 +31,31 @@ import static com.tgx.chess.king.base.util.IoUtil.isBlank;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.Date;
+import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
-import com.tgx.chess.queen.config.IBizIoConfig;
-import com.tgx.chess.queen.config.IServerConfig;
-import com.tgx.chess.queen.config.ISocketConfig;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.ConstructorBinding;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import com.tgx.chess.ZApiExecption;
+import com.tgx.chess.bishop.biz.config.IClusterConfig;
 import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
 import com.tgx.chess.bishop.biz.db.dao.MessageEntry;
 import com.tgx.chess.bishop.biz.device.DeviceNode;
 import com.tgx.chess.bishop.io.Direction;
 import com.tgx.chess.bishop.io.ZSort;
-import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
-import com.tgx.chess.bishop.io.mqtt.control.X112_QttConnack;
-import com.tgx.chess.bishop.io.mqtt.control.X113_QttPublish;
-import com.tgx.chess.bishop.io.mqtt.control.X114_QttPuback;
-import com.tgx.chess.bishop.io.mqtt.control.X116_QttPubrel;
-import com.tgx.chess.bishop.io.mqtt.handler.QttRouter;
+import com.tgx.chess.bishop.io.mqtt.control.*;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
-import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
-import com.tgx.chess.bishop.io.zprotocol.device.X21_SignUpResult;
-import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
-import com.tgx.chess.bishop.io.zprotocol.device.X23_SignInResult;
-import com.tgx.chess.bishop.io.zprotocol.device.X24_UpdateToken;
+import com.tgx.chess.bishop.io.zprotocol.device.*;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
@@ -77,6 +63,8 @@ import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.base.util.Triple;
+import com.tgx.chess.queen.config.IBizIoConfig;
+import com.tgx.chess.queen.config.IServerConfig;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.io.core.inf.IControl;
@@ -92,9 +80,9 @@ import com.tgx.chess.spring.jpa.device.repository.MessageRepository;
  * @author william.d.zk
  * @date 2019-06-10
  */
-@PropertySource({ "classpath:device.ws.properties",
-                  "classpath:device.qtt.properties",
-                  "classpath:device.config.properties" })
+@PropertySource({ "classpath:device.config.properties" })
+@ConfigurationProperties(prefix = "z.chess.device")
+@ConstructorBinding
 @Service
 public class DeviceService
         implements
@@ -109,27 +97,30 @@ public class DeviceService
                       Map<Long,
                           IControl<ZContext>>>             _DeviceMessageStateMap = new ConcurrentSkipListMap<>();
 
-    @Value("${invalid.days}")
-    private int    invalidDurationOfDays;
-    @Value("${random.seed}")
-    private String randomSeed;
+    private Duration passwordInvalidDays;
+    private String   passwordRandomSeed;
 
     @Autowired
-    DeviceService(@Value("${qtt.server.host}") String qttServiceHost,
-                  @Value("${qtt.server.port}") int qttServicePort,
-                  @Value("${ws.server.host}") String wsServiceHost,
-                  @Value("${ws.server.port}") int wsServicePort,
+    DeviceService(String addressWs,
+                  String addressQtt,
                   DeviceRepository deviceRepository,
                   MessageRepository messageRepository,
                   IBizIoConfig bizIoConfig,
+                  IClusterConfig clusterConfig,
                   IServerConfig serverConfig)
     {
         _DeviceRepository = deviceRepository;
         _MessageRepository = messageRepository;
         List<ITriple> hosts = new ArrayList<>(2);
+        String[] wsSplit = addressWs.split(":", 2);
+        String[] qttSplit = addressQtt.split(":", 2);
+        String wsServiceHost = wsSplit[0];
+        String qttServiceHost = qttSplit[0];
+        int wsServicePort = Integer.parseInt(wsSplit[1]);
+        int qttServicePort = Integer.parseInt(qttSplit[1]);
         hosts.add(new Triple<>(wsServiceHost, wsServicePort, ZSort.WS_SERVER));
-        hosts.add(new Triple<>(qttServiceHost, qttServicePort, ZSort.QTT_SYMMETRY));
-        _DeviceNode = new DeviceNode(hosts, this, new QttRouter(), bizIoConfig, serverConfig);
+        hosts.add(new Triple<>(qttServiceHost, qttServicePort, ZSort.QTT_SERVER));
+        _DeviceNode = new DeviceNode(hosts, this, bizIoConfig, clusterConfig, serverConfig);
     }
 
     @PostConstruct
@@ -164,7 +155,7 @@ public class DeviceService
         else {
             String source = String.format("sn:%s,random %s%d",
                                           device.getSn(),
-                                          randomSeed,
+                                          passwordRandomSeed,
                                           Instant.now()
                                                  .toEpochMilli());
             _Logger.info("new device %s ", source);
@@ -174,11 +165,11 @@ public class DeviceService
             device.setPassword(_CryptUtil.randomPassword(5, 32));
             device.increasePasswordId();
             device.setInvalidAt(Date.from(Instant.now()
-                                                 .plus(invalidDurationOfDays, ChronoUnit.DAYS)));
+                                                 .plus(passwordInvalidDays)));
         }
         else if (!isBlank(device.getPassword()) && device.getPasswordId() > exist.getPasswordId()) {
             device.setInvalidAt(Date.from(Instant.now()
-                                                 .plus(invalidDurationOfDays, ChronoUnit.DAYS)));
+                                                 .plus(passwordInvalidDays)));
         }
         else {
             device.setPassword(exist.getPassword());
@@ -447,5 +438,15 @@ public class DeviceService
                                  .stream()
                                  .map(MessageEntity::getPayload)
                                  .collect(Collectors.toList());
+    }
+
+    public void setPasswordInvalidDays(Duration passwordInvalidDays)
+    {
+        this.passwordInvalidDays = passwordInvalidDays;
+    }
+
+    public void setPasswordRandomSeed(String passwordRandomSeed)
+    {
+        this.passwordRandomSeed = passwordRandomSeed;
     }
 }

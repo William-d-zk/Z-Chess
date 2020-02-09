@@ -30,31 +30,18 @@ import static java.lang.Integer.min;
 
 import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.lmax.disruptor.RingBuffer;
+import com.tgx.chess.bishop.biz.config.IClusterConfig;
 import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
 import com.tgx.chess.bishop.biz.db.dao.MessageEntry;
+import com.tgx.chess.bishop.io.ZSort;
 import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
-import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
-import com.tgx.chess.bishop.io.mqtt.control.X112_QttConnack;
-import com.tgx.chess.bishop.io.mqtt.control.X113_QttPublish;
-import com.tgx.chess.bishop.io.mqtt.control.X114_QttPuback;
-import com.tgx.chess.bishop.io.mqtt.control.X115_QttPubrec;
-import com.tgx.chess.bishop.io.mqtt.control.X116_QttPubrel;
-import com.tgx.chess.bishop.io.mqtt.control.X117_QttPubcomp;
-import com.tgx.chess.bishop.io.mqtt.control.X118_QttSubscribe;
-import com.tgx.chess.bishop.io.mqtt.control.X119_QttSuback;
-import com.tgx.chess.bishop.io.mqtt.control.X11A_QttUnsubscribe;
-import com.tgx.chess.bishop.io.mqtt.control.X11B_QttUnsuback;
-import com.tgx.chess.bishop.io.mqtt.control.X11C_QttPingreq;
-import com.tgx.chess.bishop.io.mqtt.control.X11D_QttPingresp;
+import com.tgx.chess.bishop.io.mqtt.control.*;
 import com.tgx.chess.bishop.io.mqtt.handler.IQttRouter;
+import com.tgx.chess.bishop.io.mqtt.handler.QttRouter;
 import com.tgx.chess.bishop.io.ws.control.X101_HandShake;
 import com.tgx.chess.bishop.io.ws.control.X103_Close;
 import com.tgx.chess.bishop.io.ws.control.X104_Ping;
@@ -62,21 +49,13 @@ import com.tgx.chess.bishop.io.ws.control.X105_Pong;
 import com.tgx.chess.bishop.io.zcrypt.EncryptHandler;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zhandler.ZLinkedControl;
-import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
-import com.tgx.chess.bishop.io.zprotocol.device.X21_SignUpResult;
-import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
-import com.tgx.chess.bishop.io.zprotocol.device.X23_SignInResult;
-import com.tgx.chess.bishop.io.zprotocol.device.X30_EventMsg;
-import com.tgx.chess.bishop.io.zprotocol.device.X31_ConfirmMsg;
-import com.tgx.chess.bishop.io.zprotocol.device.X32_MsgStatus;
-import com.tgx.chess.bishop.io.zprotocol.device.X50_DeviceMsg;
-import com.tgx.chess.bishop.io.zprotocol.device.X51_DeviceMsgAck;
+import com.tgx.chess.bishop.io.zprotocol.device.*;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.util.Pair;
+import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.config.IBizIoConfig;
 import com.tgx.chess.queen.config.IServerConfig;
-import com.tgx.chess.queen.config.ISocketConfig;
 import com.tgx.chess.queen.config.QueenCode;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.event.handler.LogicHandler;
@@ -86,16 +65,7 @@ import com.tgx.chess.queen.io.core.async.AioCreator;
 import com.tgx.chess.queen.io.core.async.AioSession;
 import com.tgx.chess.queen.io.core.async.BaseAioServer;
 import com.tgx.chess.queen.io.core.executor.ServerCore;
-import com.tgx.chess.queen.io.core.inf.IAioServer;
-import com.tgx.chess.queen.io.core.inf.ICommandCreator;
-import com.tgx.chess.queen.io.core.inf.IConnectActivity;
-import com.tgx.chess.queen.io.core.inf.IControl;
-import com.tgx.chess.queen.io.core.inf.IQoS;
-import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.inf.ISessionCreated;
-import com.tgx.chess.queen.io.core.inf.ISessionCreator;
-import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
-import com.tgx.chess.queen.io.core.inf.ISessionOption;
+import com.tgx.chess.queen.io.core.inf.*;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
 
 /**
@@ -106,13 +76,13 @@ public class DeviceNode
         extends
         QueenManager<ZContext>
         implements
-        ISessionDismiss<ZContext>,
-        ISessionCreated<ZContext>
+        ISessionDismiss<ZContext>
 {
 
-    final List<IAioServer<ZContext>> _AioServers;
-    final IRepository<IPair>         _DeviceRepository;
-    final IQttRouter                 _QttRouter;
+    private final List<IAioServer<ZContext>> _AioServers;
+    private final List<IAioClient<ZContext>> _AioClients;
+    private final IRepository<IPair>         _DeviceRepository;
+    private final IQttRouter                 _QttRouter = new QttRouter();
 
     @Override
     public void onDismiss(ISession<ZContext> session)
@@ -120,33 +90,23 @@ public class DeviceNode
         rmSession(session);
     }
 
-    @Override
-    public void onCreate(ISession<ZContext> session)
-    {
-        /* 进入这里的都是 _AioServer 建立的链接*/
-        session.setIndex(QueenCode.CM_XID);
-        addSession(session);
-    }
-
     public DeviceNode(List<ITriple> hosts,
                       IRepository<IPair> deviceRepository,
-                      IQttRouter qttRouter,
                       IBizIoConfig bizIoConfig,
+                      IClusterConfig clusterConfig,
                       IServerConfig serverConfig)
     {
         super(bizIoConfig, new ServerCore<ZContext>(serverConfig)
         {
-
             @Override
             public RingBuffer<QEvent> getLocalPublisher(ISession<ZContext> session)
             {
                 switch (getSlot(session))
                 {
-                    case QueenCode.CM_XID_LOW:
-                    case QueenCode.RM_XID_LOW:
-                        return getClusterLocalSendEvent();
-                    default:
+                    case QueenCode.CU_XID_LOW:
                         return getBizLocalSendEvent();
+                    default:
+                        return getClusterLocalSendEvent();
                 }
             }
 
@@ -155,15 +115,16 @@ public class DeviceNode
             {
                 switch (getSlot(session))
                 {
-                    case QueenCode.CM_XID_LOW:
-                    case QueenCode.RM_XID_LOW:
-                        return getClusterLocalCloseEvent();
-                    default:
+                    case QueenCode.CU_XID_LOW:
                         return getBizLocalCloseEvent();
+                    default:
+                        return getClusterLocalCloseEvent();
+
                 }
             }
         });
-
+        IPair bind = clusterConfig.getBind();
+        hosts.add(new Triple<>(bind.first(), bind.second(), ZSort.WS_CLUSTER_SERVER));
         _AioServers = hosts.stream()
                            .map(triple ->
                            {
@@ -171,13 +132,25 @@ public class DeviceNode
                                final int _Port = triple.second();
                                final ISort<ZContext> _Sort = triple.third();
                                final ICommandCreator<ZContext> _CommandCreator = session -> null;
-                               final ISessionCreator<ZContext> _SessionCreator = new AioCreator<ZContext>(getConfig(SERVER_SLOT))
+                               ISort.Mode mode = _Sort.getMode();
+                               ISort.Type type = _Sort.getType();
+                               final long _SessionInitializeIndex;
+                               if (mode == ISort.Mode.CLUSTER && type == ISort.Type.SYMMETRY) {
+                                   _SessionInitializeIndex = _Sort == ZSort.MQ_QTT_SYMMETRY ? QueenCode.MQ_XID
+                                                                                            : QueenCode.RM_XID;
+                               }
+                               else if (mode == ISort.Mode.CLUSTER) {
+                                   _SessionInitializeIndex = QueenCode.CM_XID;
+                               }
+                               else {
+                                   _SessionInitializeIndex = QueenCode.CU_XID;
+                               }
+                               final ISessionCreator<ZContext> _SessionCreator = new AioCreator<ZContext>(getConfig(getSlot(_SessionInitializeIndex)))
                                {
                                    @Override
                                    public ISession<ZContext> createSession(AsynchronousSocketChannel socketChannel,
                                                                            IConnectActivity<ZContext> activity) throws IOException
                                    {
-
                                        return new AioSession<>(socketChannel, this, this, activity, DeviceNode.this);
                                    }
 
@@ -186,6 +159,11 @@ public class DeviceNode
                                    {
                                        return sort.newContext(option, _CommandCreator);
                                    }
+                               };
+                               final ISessionCreated<ZContext> _SessionCreated = session ->
+                               {
+                                   session.setIndex(_SessionInitializeIndex);
+                                   DeviceNode.this.addSession(session);
                                };
 
                                return new BaseAioServer<ZContext>(_Host, _Port)
@@ -205,7 +183,7 @@ public class DeviceNode
                                    @Override
                                    public ISessionCreated<ZContext> getSessionCreated()
                                    {
-                                       return DeviceNode.this;
+                                       return _SessionCreated;
                                    }
 
                                    @Override
@@ -216,15 +194,79 @@ public class DeviceNode
                                };
                            })
                            .collect(Collectors.toList());
+        List<ITriple> clientHosts = new LinkedList<>();
+        List<IPair> clusterPeers = clusterConfig.getPeers();
+        List<IPair> parents = clusterConfig.getParents();
+        if (parents != null) {
+            for (IPair pair : parents) {
+                //parent -> RM_XID
+                clientHosts.add(new Triple<>(pair.first(), pair.first(), ZSort.WS_CLUSTER_SYMMETRY));
+            }
+        }
+        if (clusterPeers != null) {
+            for (IPair pair : clusterPeers) {
+                //peer -> CM_XID
+                clientHosts.add(new Triple<>(pair.first(), pair.first(), ZSort.WS_CLUSTER_CONSUMER));
+            }
+        }
+        if (clientHosts.isEmpty()) {
+            _AioClients = null;
+        }
+        else {
+            clientHosts.stream()
+                       .map(triple ->
+                       {
+                           final String _Host = triple.first();
+                           final int _Port = triple.second();
+                           final ISort<ZContext> _Sort = triple.third();
+                           final ICommandCreator<ZContext> _CommandCreator = session -> null;
+                           ISort.Mode mode = _Sort.getMode();
+                           ISort.Type type = _Sort.getType();
+                           final long _SessionInitializeIndex;
+                           if (mode == ISort.Mode.CLUSTER && type == ISort.Type.SYMMETRY) {
+                               _SessionInitializeIndex = QueenCode.RM_XID;
+                           }
+                           else {
+                               _SessionInitializeIndex = QueenCode.CM_XID;
+                           }
+
+                           return new IAioClient<ZContext>()
+                           {
+
+                           };
+                       })
+                       .collect(Collectors.toList());
+        }
         _DeviceRepository = deviceRepository;
-        _QttRouter = qttRouter;
         _Logger.info("Device Node Bean Load");
     }
 
     @SafeVarargs
     public final void localBizSend(long deviceId, IControl<ZContext>... toSends)
     {
-        ISession<ZContext> session = findSessionByIndex(deviceId);
+        localSend(deviceId, toSends);
+    }
+
+    public void localBizClose(long deviceId)
+    {
+        localClose(deviceId);
+    }
+
+    @SafeVarargs
+    public final void localClusterSend(long nodeZuid, IControl<ZContext>... toSends)
+    {
+        localSend(nodeZuid, toSends);
+    }
+
+    public void localClusterClose(long nodeZuid)
+    {
+        localClose(nodeZuid);
+    }
+
+    @SafeVarargs
+    private final void localSend(long sessionIndex, IControl<ZContext>... toSends)
+    {
+        ISession<ZContext> session = findSessionByIndex(sessionIndex);
         if (session != null) {
             localSend(session,
                       session.getContext()
@@ -234,9 +276,9 @@ public class DeviceNode
         }
     }
 
-    public void localBizClose(long deviceId)
+    private void localClose(long sessionIndex)
     {
-        ISession<ZContext> session = findSessionByIndex(deviceId);
+        ISession<ZContext> session = findSessionByIndex(sessionIndex);
         if (session != null) {
             localClose(session,
                        session.getContext()

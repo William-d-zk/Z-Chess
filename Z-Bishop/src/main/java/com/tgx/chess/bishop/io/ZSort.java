@@ -119,51 +119,18 @@ public enum ZSort
             return new WsContext(option, this, commandCreator);
         }
     },
-    /**
-     *
-     */
-    WS_MQ_CONSUMER
+    WS_CLUSTER_SYMMETRY
     {
         @Override
         public Type getType()
         {
-            return Type.CONSUMER;
+            return Type.SYMMETRY;
         }
 
         @Override
         public Mode getMode()
         {
             return Mode.CLUSTER;
-        }
-
-        @Override
-        public IFilterChain<ZContext> getFilterChain()
-        {
-            return _WsFrameFilter;
-        }
-
-        @Override
-        public ZContext newContext(ISessionOption option, ICommandCreator<ZContext> commandCreator)
-        {
-            return new WsContext(option, this, commandCreator);
-        }
-    },
-    /**
-     *
-     */
-    WS_MQ_SERVER
-    {
-
-        @Override
-        public Mode getMode()
-        {
-            return Mode.CLUSTER;
-        }
-
-        @Override
-        public Type getType()
-        {
-            return Type.SERVER;
         }
 
         @Override
@@ -243,21 +210,18 @@ public enum ZSort
             return new WsContext(option, this, commandCreator);
         }
     },
-    /**
-     *
-     */
-    WS_SYMMETRY
+    MQ_QTT_SYMMETRY
     {
         @Override
         public IFilterChain<ZContext> getFilterChain()
         {
-            return _WsFrameFilter;
+            return _QttFrameFilter;
         }
 
         @Override
         public Mode getMode()
         {
-            return Mode.LINK;
+            return Mode.CLUSTER;
         }
 
         @Override
@@ -269,10 +233,10 @@ public enum ZSort
         @Override
         public ZContext newContext(ISessionOption option, ICommandCreator<ZContext> commandCreator)
         {
-            return new WsContext(option, this, commandCreator);
+            return new QttContext(option, this, commandCreator);
         }
     },
-    QTT_SYMMETRY
+    QTT_SERVER
     {
         @Override
         public IFilterChain<ZContext> getFilterChain()
@@ -289,7 +253,7 @@ public enum ZSort
         @Override
         public Type getType()
         {
-            return Type.SYMMETRY;
+            return Type.SERVER;
         }
 
         @Override
@@ -317,10 +281,10 @@ public enum ZSort
     }
     final WsFrameFilter _WsFrameFilter = new WsFrameFilter();
     {
+        _WsFrameFilter.linkAfter(new ZTlsFilter());
         _WsFrameFilter.linkFront(new WsControlFilter())
                       .linkFront(new ZCommandFilter(new ZServerFactory()
                       {
-
                       }));
     }
 

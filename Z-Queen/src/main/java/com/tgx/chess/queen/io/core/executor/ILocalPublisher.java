@@ -53,18 +53,18 @@ public interface ILocalPublisher<C extends IContext<C>>
     {
         Objects.requireNonNull(toSends);
         Objects.requireNonNull(session);
-        final RingBuffer<QEvent> _BizLocalSendEvent = getLocalPublisher(session);
+        final RingBuffer<QEvent> _LocalSendEvent = getLocalPublisher(session);
         final ReentrantLock _LocalLock = getLocalLock();
         if (_LocalLock.tryLock()) {
             try {
-                long sequence = _BizLocalSendEvent.next();
+                long sequence = _LocalSendEvent.next();
                 try {
-                    QEvent event = _BizLocalSendEvent.get(sequence);
+                    QEvent event = _LocalSendEvent.get(sequence);
                     event.produce(IOperator.Type.LOCAL, new Pair<>(toSends, session), operator);
                     return true;
                 }
                 finally {
-                    _BizLocalSendEvent.publish(sequence);
+                    _LocalSendEvent.publish(sequence);
                 }
             }
             finally {
@@ -77,17 +77,17 @@ public interface ILocalPublisher<C extends IContext<C>>
     default void localClose(ISession<C> session, ISessionCloser<C> closer)
     {
         Objects.requireNonNull(session);
-        final RingBuffer<QEvent> _BizLocalCloseEvent = getLocalCloser(session);
+        final RingBuffer<QEvent> _LocalCloseEvent = getLocalCloser(session);
         final ReentrantLock _LocalLock = getLocalLock();
         _LocalLock.lock();
         try {
-            long sequence = _BizLocalCloseEvent.next();
+            long sequence = _LocalCloseEvent.next();
             try {
-                QEvent event = _BizLocalCloseEvent.get(sequence);
+                QEvent event = _LocalCloseEvent.get(sequence);
                 event.produce(IOperator.Type.CLOSE, new Pair<>(null, session), closer);
             }
             finally {
-                _BizLocalCloseEvent.publish(sequence);
+                _LocalCloseEvent.publish(sequence);
             }
         }
         finally {
