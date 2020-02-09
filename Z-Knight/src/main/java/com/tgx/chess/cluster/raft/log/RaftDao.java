@@ -28,10 +28,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.channels.FileChannel;
 import java.util.List;
 import java.util.Objects;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -39,12 +41,11 @@ import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 
-import com.tgx.chess.king.base.exception.ZException;
-import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.tgx.chess.config.ZRaftConfig;
+import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.king.base.log.Logger;
 
 @Component
@@ -56,11 +57,19 @@ public class RaftDao
     private final String                 _BaseDir;
     private final String                 _LogDataDir;
     private final String                 _LogMetaDir;
+    private final String                 _SnapshotDir;
     private final int                    _MaxSegmentSize;
     private LogMeta                      logMeta;
+    private SnapshotMeta                 snapshotMeta;
     private final TreeMap<Long,
                           Segment>       _Index2SegmentMap = new TreeMap<>();
     private volatile long                totalSize;
+
+    // 表示是否正在安装snapshot，leader向follower安装，leader和follower同时处于installSnapshot状态
+    private final AtomicBoolean _InstallSnapshot = new AtomicBoolean(false);
+    // 表示节点自己是否在对状态机做snapshot
+    private final AtomicBoolean _TakeSnapshot = new AtomicBoolean(false);
+    private final Lock          _SnapshotLock = new ReentrantLock();
 
     @Autowired
     public RaftDao(ZRaftConfig config)
@@ -69,6 +78,7 @@ public class RaftDao
         _BaseDir = _Config.getBaseDir();
         _LogMetaDir = String.format("%s%s.raft", _BaseDir, File.separator);
         _LogDataDir = String.format("%s%sdata", _BaseDir, File.separator);
+        _SnapshotDir = String.format("%s%s.snapshot", _BaseDir, File.separator);
         _MaxSegmentSize = _Config.getMaxSegmentSize();
     }
 
@@ -76,12 +86,16 @@ public class RaftDao
     private void init()
     {
         File file = new File(_LogMetaDir);
-        if (!file.exists()) {
-            if (!file.mkdirs()) { throw new SecurityException(String.format("%s check mkdir authority", _LogMetaDir)); }
+        if (!file.exists() && !file.mkdirs()) {
+            throw new SecurityException(String.format("%s check mkdir authority", _LogMetaDir));
         }
         file = new File(_LogDataDir);
-        if (!file.exists()) {
-            if (!file.mkdirs()) { throw new SecurityException(String.format("%s check mkdir authority", _LogDataDir)); }
+        if (!file.exists() && !file.mkdirs()) {
+            throw new SecurityException(String.format("%s check mkdir authority", _LogDataDir));
+        }
+        file = new File(_SnapshotDir);
+        if (!file.exists() && !file.mkdirs()) {
+            throw new SecurityException(String.format("%s check mkdir authority", _SnapshotDir));
         }
         List<Segment> segments = readSegments();
         if (segments != null) {
@@ -90,10 +104,18 @@ public class RaftDao
             }
         }
         {
-            String metaFileName = _LogMetaDir + File.separator + "metadata";
+            String metaFileName = _LogMetaDir + File.separator + ".metadata";
             try {
                 RandomAccessFile metaFile = new RandomAccessFile(metaFileName, "rw");
                 logMeta = new LogMeta(metaFile).load();
+            }
+            catch (FileNotFoundException e) {
+                _Logger.warning("meta file not exist, name=%s", metaFileName);
+            }
+            metaFileName = _SnapshotDir + File.separator + ".metadata";
+            try {
+                RandomAccessFile metaFile = new RandomAccessFile(metaFileName, "rw");
+                snapshotMeta = new SnapshotMeta(metaFile).load();
             }
             catch (FileNotFoundException e) {
                 _Logger.warning("meta file not exist, name=%s", metaFileName);
@@ -152,10 +174,17 @@ public class RaftDao
         _Logger.info(" term:%d,first log index:%d,candidate:%d", term, firstLogIndex, candidate);
     }
 
-    public void updateMetaData(long firstLogIndex)
+    public void updateLogMeta(long firstLogIndex)
     {
         logMeta.setFirstLogIndex(firstLogIndex);
         logMeta.update();
+    }
+
+    public void updateSnapshotMeta(long lastIncludeIndex, long lastIncludeTerm)
+    {
+        snapshotMeta.setLastIncludeIndex(lastIncludeIndex);
+        snapshotMeta.setLastIncludeTerm(lastIncludeTerm);
+        snapshotMeta.update();
     }
 
     private final static Pattern SEGMENT_NAME = Pattern.compile("z_chess_raft_seg_(\\d+)-(\\d+)_([rw])");
@@ -271,7 +300,7 @@ public class RaftDao
         else {
             newActualFirstIndex = _Index2SegmentMap.firstKey();
         }
-        updateMetaData(newActualFirstIndex);
+        updateLogMeta(newActualFirstIndex);
         _Logger.info("Truncating log from old first index %d to new first index %d",
                      oldFirstIndex,
                      newActualFirstIndex);
@@ -303,4 +332,18 @@ public class RaftDao
         }
     }
 
+    public boolean isInstallSnapshot()
+    {
+        return _InstallSnapshot.get();
+    }
+
+    public boolean isTakeSnapshot()
+    {
+        return _TakeSnapshot.get();
+    }
+
+    public void lockSnapshot()
+    {
+        _SnapshotLock.lock();
+    }
 }

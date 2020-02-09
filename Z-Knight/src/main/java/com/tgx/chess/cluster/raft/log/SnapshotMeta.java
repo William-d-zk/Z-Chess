@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020 Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,47 +21,59 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.tgx.chess.queen.io.core.inf;
 
-import com.tgx.chess.king.base.inf.IPair;
-import com.tgx.chess.king.base.inf.ITriple;
+package com.tgx.chess.cluster.raft.log;
 
-import java.io.IOException;
-import java.nio.channels.AsynchronousChannelGroup;
-import java.nio.channels.AsynchronousSocketChannel;
-import java.util.List;
-import java.util.Objects;
+import java.io.RandomAccessFile;
 
-/**
- * @author William.d.zk
- */
-public interface IAioClient<C extends IContext<C>>
+public class SnapshotMeta
+        extends
+        BaseMeta
 {
-    default void connect(IAioConnector<C> connector, AsynchronousChannelGroup channelGroup) throws IOException
+    private final static int _SERIAL = INTERNAL_SERIAL + 3;
+    private long             lastIncludedIndex;
+    private long             lastIncludedTerm;
+
+    public SnapshotMeta(RandomAccessFile file)
     {
-        Objects.requireNonNull(channelGroup);
-        AsynchronousSocketChannel socketChannel = AsynchronousSocketChannel.open(channelGroup);
-        socketChannel.connect(connector.getRemoteAddress(), socketChannel, connector);
+        super(file);
     }
 
-    /**
-     * 备用连接地址
-     * 
-     * @return list of [host:port]
-     */
-    default List<IPair> getHaRemoteAddressList()
+    public SnapshotMeta load()
     {
-        return null;
+        loadFromFile();
+        return this;
     }
 
-    /**
-     * 管理可用性重试策略
-     * 
-     * @return 3维数数据 {address,retry duration gap,retry count}
-     */
-    default List<ITriple> getHaTimeTickRef()
+    @Override
+    public int serial()
     {
-        return null;
+        return _SERIAL;
     }
 
+    @Override
+    public int superSerial()
+    {
+        return INTERNAL_SERIAL;
+    }
+
+    public void setLastIncludeIndex(long lastIncludeIndex)
+    {
+        this.lastIncludedIndex = lastIncludeIndex;
+    }
+
+    public void setLastIncludeTerm(long lastIncludeTerm)
+    {
+        this.lastIncludedTerm = lastIncludeTerm;
+    }
+
+    public long getLastIncludedIndex()
+    {
+        return lastIncludedIndex;
+    }
+
+    public long getLastIncludedTerm()
+    {
+        return lastIncludedTerm;
+    }
 }

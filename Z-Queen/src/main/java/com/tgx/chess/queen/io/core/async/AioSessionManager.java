@@ -96,7 +96,7 @@ public abstract class AioSessionManager<C extends IContext<C>>
         return getSlot(session.getIndex());
     }
 
-    private static int getSlot(long index)
+    protected static int getSlot(long index)
     {
         return (int) ((index & QueenCode.XID_MK) >>> 62);
     }

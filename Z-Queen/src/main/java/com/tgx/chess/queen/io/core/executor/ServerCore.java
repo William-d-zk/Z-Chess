@@ -140,6 +140,7 @@ public abstract class ServerCore<C extends IContext<C>>
     private final TimeWheel          _TimeWheel            = new TimeWheel();
     private final ReentrantLock      _LocalLock            = new ReentrantLock();
     private AsynchronousChannelGroup mServiceChannelGroup;
+    private AsynchronousChannelGroup mClusterChannelGroup;
 
     @SuppressWarnings("unchecked")
     protected ServerCore(IServerConfig config)
@@ -483,5 +484,12 @@ public abstract class ServerCore<C extends IContext<C>>
                                                      : (mServiceChannelGroup = AsynchronousChannelGroup.withFixedThreadPool(getServerCount(),
                                                                                                                             getWorkerThreadFactory()));
 
+    }
+
+    public AsynchronousChannelGroup getClusterChannelGroup() throws IOException
+    {
+        return Objects.nonNull(mClusterChannelGroup) ? mClusterChannelGroup
+                                                     : (mClusterChannelGroup = AsynchronousChannelGroup.withFixedThreadPool(getClusterCount(),
+                                                                                                                            getClusterThreadFactory()));
     }
 }

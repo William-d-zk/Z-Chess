@@ -22,81 +22,68 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.config;
+package com.tgx.chess.bishop.biz.config;
 
-import com.tgx.chess.bishop.biz.config.IClusterConfig;
 import com.tgx.chess.king.base.inf.IPair;
-import com.tgx.chess.king.base.util.Pair;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-@Configuration
-@ConfigurationProperties(prefix = "z.chess")
-@PropertySource("classpath:cluster.properties")
-public class ZClusterConfig
-        implements
-        IClusterConfig
+public interface IClusterConfig
 {
-    public Uid getUid()
-    {
-        return uid;
-    }
 
-    public void setUid(Uid uid)
-    {
-        this.uid = uid;
-    }
+    List<IPair> getPeers();
 
-    public List<IPair> getPeers()
-    {
-        return peers;
-    }
+    List<IPair> getParents();
 
-    public void setPeers(List<String> peers)
-    {
-        this.peers = convert(peers);
-    }
+    IPair getBind();
 
-    private Uid         uid;
-    private List<IPair> peers;
-    private List<IPair> parents;
-    private IPair       bind;
+    Uid getUid();
 
-    @Override
-    public List<IPair> getParents()
+    class Uid
     {
-        return parents;
-    }
+        private int nodeId;
+        private int idcId;
+        private int clusterId;
+        private int type;
 
-    @Override
-    public IPair getBind()
-    {
-        return null;
-    }
+        public int getNodeId()
+        {
+            return nodeId;
+        }
 
-    public void setParents(List<String> parents)
-    {
-        this.parents = convert(parents);
-    }
+        public void setNodeId(int nodeId)
+        {
+            this.nodeId = nodeId;
+        }
 
-    private List<IPair> convert(List<String> content)
-    {
-        return content.stream()
-                      .map(str ->
-                      {
-                          String[] split = str.split(":", 2);
-                          return new Pair<>(split[0], Integer.parseInt(split[1]));
-                      })
-                      .collect(Collectors.toList());
-    }
+        public int getIdcId()
+        {
+            return idcId;
+        }
 
-    public void setBind(String bind)
-    {
-        String[] split = bind.split(":", 2);
-        this.bind = new Pair<>(split[0], Integer.parseInt(split[1]));
+        public void setIdcId(int idcId)
+        {
+            this.idcId = idcId;
+        }
+
+        public int getClusterId()
+        {
+            return clusterId;
+        }
+
+        public void setClusterId(int clusterId)
+        {
+            this.clusterId = clusterId;
+        }
+
+        public int getType()
+        {
+            return type;
+        }
+
+        public void setType(int type)
+        {
+            this.type = type;
+        }
     }
 }
