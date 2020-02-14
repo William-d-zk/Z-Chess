@@ -31,8 +31,10 @@ package com.tgx.chess.queen.io.core.inf;
  * @author william.d.zk
  * @see ICommandFactory
  */
-@FunctionalInterface
 public interface ICommandCreator<C extends IContext<C>>
 {
-    IControl<C>[] createCommands(ISession<C> session);
+    default IControl<C>[] createCommands(ISession<C> session)
+    {
+        return null;
+    }
 }

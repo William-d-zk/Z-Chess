@@ -112,10 +112,7 @@ public class LinkHandler<C extends IContext<C>>
                         ITriple connectedHandled = connectedOperator.handle(connectActivity, channel);
                         /*connectedHandled 不可能为 null*/
                         ISession<C> session = connectedHandled.second();
-                        publish(_Writer,
-                                WRITE,
-                                new Pair<>(connectedHandled.first(), session),
-                                connectedHandled.third());
+                        write(connectedHandled.first(), session);
                     }
                     catch (Exception e) {
                         _Logger.warning("link failed", e);

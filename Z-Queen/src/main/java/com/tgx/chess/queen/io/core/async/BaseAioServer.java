@@ -32,6 +32,7 @@ import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 
 import com.tgx.chess.king.base.inf.ITriple;
+import com.tgx.chess.queen.config.ISocketConfig;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.operator.AcceptFailedOperator;
 import com.tgx.chess.queen.event.operator.ConnectedOperator;
@@ -43,6 +44,8 @@ import com.tgx.chess.queen.io.core.inf.IContext;
  * @author william.d.zk
  */
 public abstract class BaseAioServer<C extends IContext<C>>
+        extends
+        AioCreator<C>
         implements
         IAioServer<C>
 {
@@ -50,8 +53,10 @@ public abstract class BaseAioServer<C extends IContext<C>>
     private final ConnectedOperator<C>    _ConnectedOperator    = new ConnectedOperator<>();
 
     protected BaseAioServer(String serverHost,
-                            int serverPort)
+                            int serverPort,
+                            ISocketConfig socketConfig)
     {
+        super(socketConfig);
         _LocalBind = new InetSocketAddress(serverHost, serverPort);
     }
 

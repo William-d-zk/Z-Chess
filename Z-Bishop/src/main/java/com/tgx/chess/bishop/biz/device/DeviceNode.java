@@ -63,8 +63,8 @@ import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.event.handler.LogicHandler;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.async.AioCreator;
 import com.tgx.chess.queen.io.core.async.AioSession;
+import com.tgx.chess.queen.io.core.async.BaseAioClient;
 import com.tgx.chess.queen.io.core.async.BaseAioConnector;
 import com.tgx.chess.queen.io.core.async.BaseAioServer;
 import com.tgx.chess.queen.io.core.executor.ServerCore;
@@ -83,9 +83,12 @@ public class DeviceNode
 {
 
     private final List<IAioServer<ZContext>>    _AioServers;
-    private final List<IAioConnector<ZContext>> _AioConnectors;
     private final IRepository<IPair>            _DeviceRepository;
     private final IQttRouter                    _QttRouter = new QttRouter();
+    private final IAioClient<ZContext>          _ClusterClient;
+    private final List<IAioConnector<ZContext>> _ClusterConnectors;
+    private final IAioClient<ZContext>          _GateClient;
+    private final List<IAioConnector<ZContext>> _GateConnectors;
 
     @Override
     public void onDismiss(ISession<ZContext> session)
@@ -97,7 +100,7 @@ public class DeviceNode
                       IRepository<IPair> deviceRepository,
                       IBizIoConfig bizIoConfig,
                       IClusterConfig clusterConfig,
-                      IServerConfig serverConfig)
+                      IServerConfig serverConfig) throws IOException
     {
         super(bizIoConfig, new ServerCore<ZContext>(serverConfig)
         {
@@ -134,7 +137,6 @@ public class DeviceNode
                                final String _Host = triple.first();
                                final int _Port = triple.second();
                                final ISort<ZContext> _Sort = triple.third();
-                               final ICommandCreator<ZContext> _CommandCreator = session -> null;
                                ISort.Mode mode = _Sort.getMode();
                                ISort.Type type = _Sort.getType();
                                final long _SessionInitializeIndex;
@@ -148,7 +150,9 @@ public class DeviceNode
                                else {
                                    _SessionInitializeIndex = QueenCode.CU_XID;
                                }
-                               final ISessionCreator<ZContext> _SessionCreator = new AioCreator<ZContext>(getConfig(getSlot(_SessionInitializeIndex)))
+                               return new BaseAioServer<ZContext>(_Host,
+                                                                  _Port,
+                                                                  getConfig(getSlot(_SessionInitializeIndex)))
                                {
                                    @Override
                                    public ISession<ZContext> createSession(AsynchronousSocketChannel socketChannel,
@@ -158,19 +162,12 @@ public class DeviceNode
                                    }
 
                                    @Override
-                                   public ZContext createContext(ISessionOption option, ISort<ZContext> sort)
+                                   public void onCreate(ISession<ZContext> session)
                                    {
-                                       return sort.newContext(option, _CommandCreator);
+                                       session.setIndex(_SessionInitializeIndex);
+                                       DeviceNode.this.addSession(session);
                                    }
-                               };
-                               final ISessionCreated<ZContext> _SessionCreated = session ->
-                               {
-                                   session.setIndex(_SessionInitializeIndex);
-                                   DeviceNode.this.addSession(session);
-                               };
 
-                               return new BaseAioServer<ZContext>(_Host, _Port)
-                               {
                                    @Override
                                    public ISort<ZContext> getSort()
                                    {
@@ -178,121 +175,43 @@ public class DeviceNode
                                    }
 
                                    @Override
-                                   public ISessionCreator<ZContext> getSessionCreator()
+                                   public ZContext createContext(ISessionOption option, ISort<ZContext> sort)
                                    {
-                                       return _SessionCreator;
-                                   }
-
-                                   @Override
-                                   public ISessionCreated<ZContext> getSessionCreated()
-                                   {
-                                       return _SessionCreated;
-                                   }
-
-                                   @Override
-                                   public ICommandCreator<ZContext> getCommandCreator()
-                                   {
-                                       return _CommandCreator;
+                                       return sort.newContext(option, this);
                                    }
                                };
                            })
                            .collect(Collectors.toList());
-        List<ITriple> clientHosts = new LinkedList<>();
         List<IPair> clusterPeers = clusterConfig.getPeers();
         List<IPair> parents = clusterConfig.getGates();
-        if (parents != null) {
+        if (parents != null && !parents.isEmpty()) {
+            _GateClient = new BaseAioClient<>(getServerCore().getTimeWheel(), getServerCore().getClusterChannelGroup());
+            _GateConnectors = new LinkedList<>();
             for (IPair pair : parents) {
                 //parent -> RM_XID
-                clientHosts.add(new Triple<>(pair.first(), pair.first(), ZSort.WS_CLUSTER_SYMMETRY));
+                IAioConnector<ZContext> connector = buildConnector(pair, ZSort.WS_CLUSTER_SYMMETRY, clusterConfig);
+                connector.attach(_GateClient);
+                _GateConnectors.add(connector);
             }
-        }
-        if (clusterPeers != null) {
-            for (IPair pair : clusterPeers) {
-                //peer -> CM_XID
-                clientHosts.add(new Triple<>(pair.first(), pair.first(), ZSort.WS_CLUSTER_CONSUMER));
-            }
-        }
-        if (clientHosts.isEmpty()) {
-            _AioConnectors = null;
         }
         else {
-            _AioConnectors = clientHosts.stream()
-                                        .map(triple ->
-                                        {
-                                            final String _Host = triple.first();
-                                            final int _Port = triple.second();
-                                            final ISort<ZContext> _Sort = triple.third();
-                                            final ZUID _ZUid = clusterConfig.createZUID();
-                                            @SuppressWarnings("unchecked")
-                                            final ICommandCreator<ZContext> _CommandCreator = session ->
-                                            {
-
-                                                X106_Identity x106 = new X106_Identity(_ZUid.getName());
-                                                return new IControl[] { x106 };
-                                            };
-                                            ISort.Mode mode = _Sort.getMode();
-                                            ISort.Type type = _Sort.getType();
-                                            final long _SessionInitializeIndex;
-                                            if (mode == ISort.Mode.CLUSTER && type == ISort.Type.SYMMETRY) {
-                                                _SessionInitializeIndex = QueenCode.RM_XID | _ZUid.getNoTypeId();
-                                            }
-                                            else {
-                                                _SessionInitializeIndex = QueenCode.CM_XID | _ZUid.getNoTypeId();
-                                            }
-                                            final ISessionCreated<ZContext> _SessionCreated = session ->
-                                            {
-                                                session.setIndex(_SessionInitializeIndex);
-                                                DeviceNode.this.addSession(session);
-                                            };
-                                            final ISessionCreator<ZContext> _SessionCreator = new AioCreator<ZContext>(getConfig(getSlot(_SessionInitializeIndex)))
-                                            {
-                                                @Override
-                                                public ISession<ZContext> createSession(AsynchronousSocketChannel socketChannel,
-                                                                                        IConnectActivity<ZContext> activity) throws IOException
-                                                {
-                                                    return new AioSession<>(socketChannel,
-                                                                            this,
-                                                                            this,
-                                                                            activity,
-                                                                            DeviceNode.this);
-                                                }
-
-                                                @Override
-                                                public ZContext createContext(ISessionOption option,
-                                                                              ISort<ZContext> sort)
-                                                {
-                                                    return sort.newContext(option, _CommandCreator);
-                                                }
-                                            };
-                                            return new BaseAioConnector<ZContext>(_Host, _Port)
-                                            {
-
-                                                @Override
-                                                public ISort<ZContext> getSort()
-                                                {
-                                                    return _Sort;
-                                                }
-
-                                                @Override
-                                                public ISessionCreator<ZContext> getSessionCreator()
-                                                {
-                                                    return _SessionCreator;
-                                                }
-
-                                                @Override
-                                                public ISessionCreated<ZContext> getSessionCreated()
-                                                {
-                                                    return _SessionCreated;
-                                                }
-
-                                                @Override
-                                                public ICommandCreator<ZContext> getCommandCreator()
-                                                {
-                                                    return _CommandCreator;
-                                                }
-                                            };
-                                        })
-                                        .collect(Collectors.toList());
+            _GateClient = null;
+            _GateConnectors = null;
+        }
+        if (clusterPeers != null && !clusterPeers.isEmpty()) {
+            _ClusterClient = new BaseAioClient<>(getServerCore().getTimeWheel(),
+                                                 getServerCore().getClusterChannelGroup());
+            _ClusterConnectors = new LinkedList<>();
+            for (IPair pair : clusterPeers) {
+                //peer -> CM_XID
+                IAioConnector<ZContext> connector = buildConnector(pair, ZSort.WS_CLUSTER_CONSUMER, clusterConfig);
+                connector.attach(_ClusterClient);
+                _ClusterConnectors.add(connector);
+            }
+        }
+        else {
+            _ClusterClient = null;
+            _ClusterConnectors = null;
         }
         _DeviceRepository = deviceRepository;
         _Logger.info("Device Node Bean Load");
@@ -347,7 +266,7 @@ public class DeviceNode
     @SuppressWarnings("unchecked")
     public void start() throws IOException
     {
-        _ServerCore.build(new LogicHandler((command, session) ->
+        _ServerCore.build(new LogicHandler<>((command, session) ->
         {
             //前置的 dispatcher 将 ICommands 拆分了
             _Logger.info(" node logic %s", command);
@@ -438,6 +357,18 @@ public class DeviceNode
             server.bindAddress(server.getLocalAddress(), _ServerCore.getServiceChannelGroup());
             server.pendingAccept();
             _Logger.info(String.format("device node start %s", server.getLocalAddress()));
+        }
+        if (_GateClient != null && _GateConnectors != null) {
+            for (IAioConnector<ZContext> connector : _GateConnectors) {
+                _GateClient.connect(connector);
+                _Logger.info(String.format("device router gate connect %s", connector.getRemoteAddress()));
+            }
+        }
+        if (_ClusterClient != null && _ClusterConnectors != null) {
+            for (IAioConnector<ZContext> connector : _ClusterConnectors) {
+                _ClusterClient.connect(connector);
+                _Logger.info(String.format("device cluster connect %s", connector.getRemoteAddress()));
+            }
         }
     }
 
@@ -546,5 +477,65 @@ public class DeviceNode
                  pushList.add(push);
              });
         _Logger.info("push %s", pushList);
+    }
+
+    private IAioConnector<ZContext> buildConnector(IPair address, ZSort sort, IClusterConfig clusterConfig)
+    {
+        {
+            final String _Host = address.first();
+            final int _Port = address.second();
+            final ISort<ZContext> _Sort = sort;
+            final ZUID _ZUid = clusterConfig.createZUID();
+
+            ISort.Mode mode = _Sort.getMode();
+            ISort.Type type = _Sort.getType();
+            final long _SessionInitializeIndex;
+            if (mode == ISort.Mode.CLUSTER && type == ISort.Type.SYMMETRY) {
+                _SessionInitializeIndex = QueenCode.RM_XID | _ZUid.getNoTypeId();
+            }
+            else {
+                _SessionInitializeIndex = QueenCode.CM_XID | _ZUid.getNoTypeId();
+            }
+            return new BaseAioConnector<ZContext>(_Host,
+                                                  _Port,
+                                                  getConfig(getSlot(_SessionInitializeIndex)),
+                                                  getServerCore())
+            {
+
+                @Override
+                public ZContext createContext(ISessionOption option, ISort<ZContext> sort)
+                {
+                    return sort.newContext(option, this);
+                }
+
+                @Override
+                public ISession<ZContext> createSession(AsynchronousSocketChannel socketChannel,
+                                                        IConnectActivity<ZContext> activity) throws IOException
+                {
+                    return new AioSession<>(socketChannel, this, this, activity, DeviceNode.this);
+                }
+
+                @Override
+                public void onCreate(ISession<ZContext> session)
+                {
+                    session.setIndex(_SessionInitializeIndex);
+                    DeviceNode.this.addSession(session);
+                }
+
+                @Override
+                @SuppressWarnings("unchecked")
+                public IControl<ZContext>[] createCommands(ISession<ZContext> session)
+                {
+                    X106_Identity x106 = new X106_Identity(_ZUid.getName());
+                    return new IControl[] { x106 };
+                }
+
+                @Override
+                public ISort<ZContext> getSort()
+                {
+                    return _Sort;
+                }
+            };
+        }
     }
 }

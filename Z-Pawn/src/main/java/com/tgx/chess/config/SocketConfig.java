@@ -35,8 +35,9 @@ public class SocketConfig
         ISocketConfig
 {
     private boolean  keepAlive;
-    private Duration writeTimeOutInSecond;
-    private Duration readTimeOutInMinute;
+    private Duration connectTimeoutInSecond;
+    private Duration writeTimeoutInSecond;
+    private Duration readTimeoutInMinute;
     private Duration soLingerInSecond;
     private DataSize sendBufferSize;
     private DataSize recvBufferSize;
@@ -50,15 +51,15 @@ public class SocketConfig
     }
 
     @Override
-    public Duration getWriteTimeOutInSecond()
+    public Duration getWriteTimeoutInSecond()
     {
-        return writeTimeOutInSecond;
+        return writeTimeoutInSecond;
     }
 
     @Override
-    public Duration getReadTimeOutInMinute()
+    public Duration getReadTimeoutInMinute()
     {
-        return readTimeOutInMinute;
+        return readTimeoutInMinute;
     }
 
     @Override
@@ -96,31 +97,49 @@ public class SocketConfig
         this.keepAlive = keepAlive;
     }
 
-    public void setWriteTimeOutInSecond(Duration writeTimeOutInSecond) {
-        this.writeTimeOutInSecond = writeTimeOutInSecond;
+    public void setWriteTimeoutInSecond(Duration writeTimeoutInSecond)
+    {
+        this.writeTimeoutInSecond = writeTimeoutInSecond;
     }
 
-    public void setReadTimeOutInMinute(Duration readTimeOutInMinute) {
-        this.readTimeOutInMinute = readTimeOutInMinute;
+    public void setReadTimeoutInMinute(Duration readTimeoutInMinute)
+    {
+        this.readTimeoutInMinute = readTimeoutInMinute;
     }
 
-    public void setSoLingerInSecond(Duration soLingerInSecond) {
+    public void setSoLingerInSecond(Duration soLingerInSecond)
+    {
         this.soLingerInSecond = soLingerInSecond;
     }
 
-    public void setSendBufferSize(DataSize sendBufferSize) {
+    public void setSendBufferSize(DataSize sendBufferSize)
+    {
         this.sendBufferSize = sendBufferSize;
     }
 
-    public void setRecvBufferSize(DataSize recvBufferSize) {
+    public void setRecvBufferSize(DataSize recvBufferSize)
+    {
         this.recvBufferSize = recvBufferSize;
     }
 
-    public void setSendQueueMax(int sendQueueMax) {
+    public void setSendQueueMax(int sendQueueMax)
+    {
         this.sendQueueMax = sendQueueMax;
     }
 
-    public void setTcpNoDelay(boolean tcpNoDelay) {
+    public void setTcpNoDelay(boolean tcpNoDelay)
+    {
         this.tcpNoDelay = tcpNoDelay;
+    }
+
+    @Override
+    public Duration getConnectTimeoutInSecond()
+    {
+        return connectTimeoutInSecond;
+    }
+
+    public void setConnectTimeoutInSecond(Duration connectTimeoutInSecond)
+    {
+        this.connectTimeoutInSecond = connectTimeoutInSecond;
     }
 }

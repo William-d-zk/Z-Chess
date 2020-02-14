@@ -61,7 +61,8 @@ public class ClientCore<C extends IContext<C>>
         extends
         ThreadPoolExecutor
         implements
-        ILocalPublisher<C>
+        ILocalPublisher<C>,
+        IPeerCore
 
 {
     private final RingBuffer<QEvent> _AioProducerEvent;

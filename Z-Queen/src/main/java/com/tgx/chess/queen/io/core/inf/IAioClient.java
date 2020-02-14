@@ -36,13 +36,10 @@ import java.util.Objects;
  * @author William.d.zk
  */
 public interface IAioClient<C extends IContext<C>>
+        extends
+        IAioConnector.IConnectFailed<C>
 {
-    default void connect(IAioConnector<C> connector, AsynchronousChannelGroup channelGroup) throws IOException
-    {
-        Objects.requireNonNull(channelGroup);
-        AsynchronousSocketChannel socketChannel = AsynchronousSocketChannel.open(channelGroup);
-        socketChannel.connect(connector.getRemoteAddress(), socketChannel, connector);
-    }
+    void connect(IAioConnector<C> connector) throws IOException;
 
     /**
      * 备用连接地址

@@ -62,14 +62,14 @@ public abstract class AioCreator<C extends IContext<C>>
     @Override
     public int getReadTimeOutInSecond()
     {
-        return (int) _Config.getReadTimeOutInMinute()
+        return (int) _Config.getReadTimeoutInMinute()
                             .getSeconds();
     }
 
     @Override
     public int getWriteTimeOutInSecond()
     {
-        return (int) _Config.getWriteTimeOutInSecond()
+        return (int) _Config.getWriteTimeoutInSecond()
                             .getSeconds();
     }
 
@@ -90,5 +90,11 @@ public abstract class AioCreator<C extends IContext<C>>
     {
         return (int) _Config.getSoLingerInSecond()
                             .getSeconds();
+    }
+
+    @Override
+    public int getConnectTimeout()
+    {
+        return (int) _Config.getConnectTimeoutInSecond().getSeconds();
     }
 }

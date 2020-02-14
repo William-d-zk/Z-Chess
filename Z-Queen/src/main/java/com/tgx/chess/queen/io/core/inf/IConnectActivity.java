@@ -29,7 +29,10 @@ package com.tgx.chess.queen.io.core.inf;
 public interface IConnectActivity<C extends IContext<C>>
         extends
         IAddress,
-        IConnectMode<C>
+        IConnectMode<C>,
+        ISessionCreator<C>,
+        ISessionCreated<C>,
+        ICommandCreator<C>
 {
     default int getHaIndex()
     {
@@ -40,11 +43,4 @@ public interface IConnectActivity<C extends IContext<C>>
     {
         return 0;
     }
-
-    ISessionCreator<C> getSessionCreator();
-
-    ISessionCreated<C> getSessionCreated();
-
-    ICommandCreator<C> getCommandCreator();
-
 }

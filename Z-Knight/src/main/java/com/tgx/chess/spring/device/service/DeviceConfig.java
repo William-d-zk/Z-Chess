@@ -22,88 +22,61 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.config;
+package com.tgx.chess.spring.device.service;
 
-import com.tgx.chess.bishop.biz.config.IClusterConfig;
-import com.tgx.chess.bishop.biz.db.dao.ZUID;
-import com.tgx.chess.king.base.inf.IPair;
-import com.tgx.chess.king.base.util.Pair;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.time.Duration;
 
+@PropertySource("classpath:device.config.properties")
+@ConfigurationProperties(prefix = "z.chess.device")
 @Configuration
-@ConfigurationProperties(prefix = "z.chess")
-@PropertySource("classpath:cluster.properties")
-public class ZClusterConfig
-        implements
-        IClusterConfig
+public class DeviceConfig
 {
-    public Uid getUid()
+    private Duration passwordInvalidDays;
+    private String   passwordRandomSeed;
+    private String   addressWs;
+    private String   addressQtt;
+
+    public Duration getPasswordInvalidDays()
     {
-        return uid;
+        return passwordInvalidDays;
     }
 
-    @Override
-    public ZUID createZUID()
+    public void setPasswordInvalidDays(Duration passwordInvalidDays)
     {
-        return new ZUID(getUid().getIdcId(), getUid().getClusterId(), getUid().getNodeId(), getUid().getType());
+        this.passwordInvalidDays = passwordInvalidDays;
     }
 
-    public void setUid(Uid uid)
+    public String getPasswordRandomSeed()
     {
-        this.uid = uid;
+        return passwordRandomSeed;
     }
 
-    public List<IPair> getPeers()
+    public void setPasswordRandomSeed(String passwordRandomSeed)
     {
-        return peers;
+        this.passwordRandomSeed = passwordRandomSeed;
     }
 
-    public void setPeers(List<String> peers)
+    public String getAddressWs()
     {
-        this.peers = convert(peers);
+        return addressWs;
     }
 
-    private Uid         uid;
-    private List<IPair> peers;
-    private List<IPair> gates;
-    private IPair       bind;
-
-    @Override
-    public List<IPair> getGates()
+    public void setAddressWs(String addressWs)
     {
-        return gates;
+        this.addressWs = addressWs;
     }
 
-    @Override
-    public IPair getBind()
+    public String getAddressQtt()
     {
-        return bind;
+        return addressQtt;
     }
 
-    public void setGates(List<String> gates)
+    public void setAddressQtt(String addressQtt)
     {
-        this.gates = convert(gates);
-    }
-
-    private List<IPair> convert(List<String> content)
-    {
-        return content.stream()
-                      .map(str ->
-                      {
-                          String[] split = str.split(":", 2);
-                          return new Pair<>(split[0], Integer.parseInt(split[1]));
-                      })
-                      .collect(Collectors.toList());
-    }
-
-    public void setBind(String bind)
-    {
-        String[] split = bind.split(":", 2);
-        this.bind = new Pair<>(split[0], Integer.parseInt(split[1]));
+        this.addressQtt = addressQtt;
     }
 }

@@ -25,6 +25,7 @@
 package com.tgx.chess.queen.config;
 
 import java.time.Duration;
+import java.util.Date;
 
 /**
  * @author william.d.zk
@@ -38,12 +39,12 @@ public interface ISocketConfig
         return true;
     }
 
-    default Duration getWriteTimeOutInSecond()
+    default Duration getWriteTimeoutInSecond()
     {
         return Duration.ofSeconds(30);
     }
 
-    default Duration getReadTimeOutInMinute()
+    default Duration getReadTimeoutInMinute()
     {
         return Duration.ofMinutes(15);
     }
@@ -71,5 +72,10 @@ public interface ISocketConfig
     default Duration getSoLingerInSecond()
     {
         return Duration.ofSeconds(30);
+    }
+
+    default Duration getConnectTimeoutInSecond()
+    {
+        return Duration.ofSeconds(5);
     }
 }

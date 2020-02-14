@@ -62,4 +62,9 @@ public abstract class QueenManager<C extends IContext<C>>
     }
 
     public abstract IControl<C>[] mappingHandle(IControl<C> input, ISession<C> session);
+
+    protected ServerCore<C> getServerCore()
+    {
+        return _ServerCore;
+    }
 }

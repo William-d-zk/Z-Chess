@@ -35,11 +35,7 @@ import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.IConnectActivity;
-import com.tgx.chess.queen.io.core.inf.IContext;
-import com.tgx.chess.queen.io.core.inf.IControl;
-import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
+import com.tgx.chess.queen.io.core.inf.*;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
 
 /**
@@ -71,8 +67,17 @@ public class ClusterHandler<C extends IContext<C>>
             switch (event.getErrorType())
             {
                 case ACCEPT_FAILED:
+                    event.ignore();
+                    break;
                 case CONNECT_FAILED:
-                    _Log.debug(String.format("error type %s,ignore ", event.getErrorType()));
+                    _Log.info(String.format("error type %s,ignore ", event.getErrorType()));
+                    IOperator<Throwable,
+                              IAioConnector<C>,
+                              IAioConnector<C>> failedOp = event.getEventOp();
+                    IPair content = event.getContent();
+                    Throwable throwable = content.first();
+                    IAioConnector<C> connector = content.second();
+                    failedOp.handle(throwable, connector);
                     event.ignore();
                     break;
                 default:
@@ -86,6 +91,7 @@ public class ClusterHandler<C extends IContext<C>>
                     boolean closed = session.isClosed();
                     closeOperator.handle(null, session);
                     if (!closed) {
+                        //所有的dismiss 都需要在控制线程里执行。
                         dismiss.onDismiss(session);
                     }
             }
@@ -102,14 +108,8 @@ public class ClusterHandler<C extends IContext<C>>
                               ITriple> connectedOperator = event.getEventOp();
                     ITriple connectedHandled = connectedOperator.handle(connectActivity, channel);
                     //connectedHandled 不可能为 null
-                    IControl[] waitToSend = connectedHandled.first();
                     ISession<C> session = connectedHandled.second();
-                    IOperator<IControl[],
-                              ISession,
-                              ITriple> sendTransferOperator = connectedHandled.third();
-                    event.produce(WRITE, new Pair<>(waitToSend, session), sendTransferOperator);
-                    connectActivity.getSessionCreated()
-                                   .onCreate(session);
+                    publish(_Writer, WRITE, new Pair<>(connectedHandled.first(), session), connectedHandled.third());
                     _Log.info(String.format("cluster link mappingHandle %s,connected", session));
                     break;
                 case LOGIC:

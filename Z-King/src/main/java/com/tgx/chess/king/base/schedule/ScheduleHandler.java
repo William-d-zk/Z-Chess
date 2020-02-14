@@ -92,6 +92,9 @@ public class ScheduleHandler<A>
     @Override
     public void onCall()
     {
+        if (_Callback != null && attach != null) {
+            _Callback.accept(attach);
+        }
     }
 
     private long expect;
