@@ -40,11 +40,11 @@
             <artifactId>spring.z-knight</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.tgx.service</groupId>
-            <artifactId>endpoint.z-rook</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.tgx.service</groupId>-->
+<!--            <artifactId>endpoint.z-rook</artifactId>-->
+<!--            <version>${project.version}</version>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>com.tgx.service</groupId>
             <artifactId>biz.z-player</artifactId>

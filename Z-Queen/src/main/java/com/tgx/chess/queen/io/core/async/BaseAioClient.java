@@ -22,71 +22,14 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.bishop.biz.config;
+package com.tgx.chess.queen.io.core.async;
 
-import com.tgx.chess.bishop.biz.db.dao.ZUID;
-import com.tgx.chess.king.base.inf.IPair;
+import com.tgx.chess.queen.io.core.inf.IAioClient;
+import com.tgx.chess.queen.io.core.inf.IContext;
 
-import java.util.List;
-
-public interface IClusterConfig
+public class BaseAioClient<C extends IContext<C>>
+        implements
+        IAioClient<C>
 {
 
-    List<IPair> getPeers();
-
-    List<IPair> getGates();
-
-    IPair getBind();
-
-    Uid getUid();
-
-    ZUID createZUID();
-
-    class Uid
-    {
-        private int nodeId;
-        private int idcId;
-        private int clusterId;
-        private int type;
-
-        public int getNodeId()
-        {
-            return nodeId;
-        }
-
-        public void setNodeId(int nodeId)
-        {
-            this.nodeId = nodeId;
-        }
-
-        public int getIdcId()
-        {
-            return idcId;
-        }
-
-        public void setIdcId(int idcId)
-        {
-            this.idcId = idcId;
-        }
-
-        public int getClusterId()
-        {
-            return clusterId;
-        }
-
-        public void setClusterId(int clusterId)
-        {
-            this.clusterId = clusterId;
-        }
-
-        public int getType()
-        {
-            return type;
-        }
-
-        public void setType(int type)
-        {
-            this.type = type;
-        }
-    }
 }

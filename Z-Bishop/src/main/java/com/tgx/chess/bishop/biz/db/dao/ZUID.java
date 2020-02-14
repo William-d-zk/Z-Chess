@@ -35,10 +35,10 @@ import com.tgx.chess.king.base.log.Logger;
 /**
  * 00-0000-000-0000000-0000000000000000000000000000000000000-000000000
  * -2bit-
+ * 00 Device consumer connection
+ * 01 Internal message queue broker
  * 10 Client manager service
  * 11 Cluster symmetry communication
- * 01 Internal message queue broker
- * 00 Device consumer connection
  * -4bit-
  * Cluster region
  * -3bit-
@@ -105,19 +105,30 @@ public class ZUID
 
     public synchronized long getId()
     {
+        return (_Type << TYPE_SHIFT) | getNoTypeId();
+    }
+
+    public String getName()
+    {
+        return String.format("%d_%d_%d_%d@%d", _Type, _IdcId, _ClusterId, _NodeId, _TimestampSupplier.get());
+    }
+
+    public long getNoTypeId()
+    {
+
         long timestamp = _TimestampSupplier.get();
         if (lastTimestamp == timestamp) {
             sequence = (sequence + 1) & SEQUENCE_MASK;
             if (sequence == 0) {
                 LockSupport.parkUntil(timestamp + 1);
+                timestamp = timestamp + 1;
             }
         }
         else {
             sequence = 0L;
         }
         lastTimestamp = timestamp;
-        return (_Type << TYPE_SHIFT)
-               | (_IdcId << IDC_SHIFT)
+        return (_IdcId << IDC_SHIFT)
                | (_ClusterId << CLUSTER_SHIFT)
                | (_NodeId << NODE_SHIFT)
                | ((timestamp - TWEPOCH) << TIMESTAMP_SHIFT)
