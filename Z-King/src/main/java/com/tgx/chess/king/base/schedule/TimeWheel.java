@@ -45,7 +45,6 @@ public class TimeWheel
         extends
         ForkJoinPool
 {
-    private final Logger        _Logger = Logger.getLogger(getClass().getName());
     private final Thread        _Timer;
     private final int           _SlotBitLeft;//must <= 10
     private final int           _HashMod;
@@ -72,8 +71,8 @@ public class TimeWheel
         _HashMod = _ModHashEntryArray.length - 1;
         _Timer = new Thread(() ->
         {
-            int correction = 23;// 5~20
-            for (long align = 0, t, sleep, expect; !isTerminated();) {
+            int correction = 13;// 5~20
+            for (long align = 0, t, sleep, expect; !isShutdown();) {
                 t = System.currentTimeMillis();
                 sleep = _Tick - align;
                 expect = t + sleep;
@@ -82,7 +81,7 @@ public class TimeWheel
                         Thread.sleep(sleep - correction);
                     }
                     catch (InterruptedException e) {
-                        _Logger.warning("timer interrupt");
+                        //ignore 没有地方执行interrupt操作
                     }
                 }
                 current_millisecond = System.currentTimeMillis();
@@ -109,7 +108,7 @@ public class TimeWheel
                 align = System.currentTimeMillis() - expect;
             }
         });
-        _Timer.setName(String.format("T-%d-TimerWheel", _Timer.getId()));
+        _Timer.setName(String.format("TimerWheel-%d", _Timer.getId()));
         _Timer.start();
     }
 
@@ -134,9 +133,6 @@ public class TimeWheel
         IWheelItem<A> item = task._Item;
         _Lock.lock();
         try {
-            _Logger.info("%s acquire",
-                         Thread.currentThread()
-                               .getName());
             int slot = task.acquire(getCurrentLoop(), getCtxSlot());
             TickSlot<A> tickSlot = (TickSlot<A>) _ModHashEntryArray[slot & _HashMod];
             int index = Collections.binarySearch(tickSlot, task);
@@ -215,11 +211,11 @@ public class TimeWheel
             extends
             ArrayList<HandleTask<V>>
     {
-
         private final int _Slot;
 
         private TickSlot(int slot)
         {
+            super(3);
             _Slot = slot;
         }
 
@@ -238,19 +234,13 @@ public class TimeWheel
         private final int           _Slot;
         private final int           _Loop;
         private int                 loop;
-        private int                 slot;
 
         HandleTask(IWheelItem<V> wheelItem)
         {
             _Item = wheelItem;
-            int tok = (int) (_Item.getTick() / _Tick);
+            int tok = (int) (_Item.getTick() / _Tick) - 1;
             _Loop = tok >>> _SlotBitLeft;
             _Slot = tok & _HashMod;
-        }
-
-        int getSlot()
-        {
-            return slot;
         }
 
         int getLoop()
@@ -260,6 +250,7 @@ public class TimeWheel
 
         int acquire(int currentLoop, int currentSlot)
         {
+            int slot;
             if (currentSlot + _Slot > _HashMod) {
                 loop = _Loop + currentLoop + 1;
                 slot = _Slot + currentSlot - _HashMod - 1;
@@ -272,12 +263,11 @@ public class TimeWheel
         }
 
         @Override
-        public IWheelItem<V> call() throws Exception
+        public IWheelItem<V> call()
         {
             _Item.beforeCall();
             _Item.onCall();
             if (_Item.isCycle()) {
-                _Logger.info("timer --- recycle");
                 TimeWheel.this.acquire(HandleTask.this);
             }
             return _Item;
@@ -305,14 +295,7 @@ public class TimeWheel
     public <A> void acquire(A attach, IWheelItem<A> item)
     {
         item.attach(attach);
-        _Lock.lock();
-        try {
-            acquire(item);
-            _Logger.info("in main timer sleeping %s", item);
-        }
-        finally {
-            _Lock.unlock();
-        }
+        acquire(item);
     }
 
 }
