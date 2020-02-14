@@ -25,6 +25,7 @@
 package com.tgx.chess.config;
 
 import com.tgx.chess.bishop.biz.config.IClusterConfig;
+import com.tgx.chess.bishop.biz.db.dao.ZUID;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.util.Pair;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -46,6 +47,12 @@ public class ZClusterConfig
         return uid;
     }
 
+    @Override
+    public ZUID createZUID()
+    {
+        return new ZUID(getUid().getIdcId(), getUid().getClusterId(), getUid().getNodeId(), getUid().getType());
+    }
+
     public void setUid(Uid uid)
     {
         this.uid = uid;
@@ -63,13 +70,13 @@ public class ZClusterConfig
 
     private Uid         uid;
     private List<IPair> peers;
-    private List<IPair> parents;
+    private List<IPair> gates;
     private IPair       bind;
 
     @Override
-    public List<IPair> getParents()
+    public List<IPair> getGates()
     {
-        return parents;
+        return gates;
     }
 
     @Override
@@ -78,9 +85,9 @@ public class ZClusterConfig
         return null;
     }
 
-    public void setParents(List<String> parents)
+    public void setGates(List<String> gates)
     {
-        this.parents = convert(parents);
+        this.gates = convert(gates);
     }
 
     private List<IPair> convert(List<String> content)

@@ -36,19 +36,23 @@ public interface QueenCode
     /**
      * ClientManager
      * Accept devices' connection request
+     * 10
      */
     long CM_XID = 0x8000000000000000L;
     /**
      * Cluster Manager
      * symmetry communication
+     * 11
      */
     long RM_XID = 0xC000000000000000L;
     /**
      * Internal system message queue
+     * 01
      */
     long MQ_XID = 0x4000000000000000L;
     /**
      * device connection
+     * 00
      */
     long CU_XID = 0x0000000000000000L;
 
@@ -57,25 +61,7 @@ public interface QueenCode
     int CM_XID_LOW = 2;
     int RM_XID_LOW = 3;
 
-    long XID_MK          = 0xC000000000000000L;
-    long XID_N_MK        = 0x3FFF000000000000L;
-    long STP_MK          = 0xFFFF000000000000L;
-    int  XID_N_MK_S      = 0x00003FFF;
-    int  XID_MK_S        = 0x0000C000;
-    long UID_TIME_27_MK  = ((1L << 27) - 1) << 21;
-    long UID_SEQ_21_MK   = (1L << 21) - 1;
-    long UID_TIME_28_MK  = ((1L << 28) - 1) << 20;
-    long UID_SEQ_20_MK   = (1L << 20) - 1;
-    long UID_SEQ_20_1_MK = ((1L << 20) - 1) << 1;
-    long UID_SEQ_18_3_MK = ((1L << 18) - 1) << 3;
-    long UID_SEQ_17_4_MK = ((1L << 17) - 1) << 4;
-
-    long UID_MK = 0x0000FFFFFFFFFFFFL;
-
-    long _IndexMask     = 0x0000FFFFFFFFFFFFL;
-    long _IndexHighMask = 0xFFFF000000000000L;
-    long _IndexPortMask = 0xFFFFFFFFFFFF0000L;
-    long _UsrIndexMask  = 0x0000FFFFFFFFFFFEL;
+    long XID_MK = 0xC000000000000000L;
 
     /* HA address max size 256 */
     int _HA_ROUTER_REMOTE_ADDRESS_INDEX_MASK = 0xFF;
@@ -115,14 +101,18 @@ public interface QueenCode
     {
         switch (code)
         {
-            case DEVICE_OK:
-                return "DEVICE_OK";
-            case USR_OK:
-                return "USR_OK";
+            case PLAIN_UNSUPPORTED:
+                return "PLAIN_UNSUPPORTED";
+            case PLAIN_VERSION_LOWER:
+                return "PLAIN_VERSION_LOWER";
             case SYMMETRIC_KEY_OK:
                 return "SYMMETRIC_KEY_OK";
             case SYMMETRIC_KEY_REROLL:
                 return "SYMMETRIC_KEY_REROLL";
+            case DEVICE_OK:
+                return "DEVICE_OK";
+            case USR_OK:
+                return "USR_OK";
             case DEVICE_AUTHORING_KEY_ERROR:
                 return "DEVICE_AUTHORING_KEY_ERROR";
             case DEVICE_AUTHORING_KEY_OUT_OF_DATE:

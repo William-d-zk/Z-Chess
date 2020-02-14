@@ -72,14 +72,8 @@ public class ZGenerator
     @PostConstruct
     public void init()
     {
-        _ZUid = new ZUID(_ZClusterConfig.getUid()
-                                        .getIdcId(),
-                         _ZClusterConfig.getUid()
-                                        .getClusterId(),
-                         _ZClusterConfig.getUid()
-                                        .getNodeId(),
-                         _ZClusterConfig.getUid()
-                                        .getType());
+        if (_ZClusterConfig == null) return;
+        _ZUid = _ZClusterConfig.createZUID();
     }
 
     @Override
