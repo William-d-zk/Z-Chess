@@ -108,7 +108,9 @@ public class BaseAioClient<C extends IContext<C>>
         _TimeWheel.acquire(connector, new ScheduleHandler<>(connector.getConnectTimeout() * 3, c ->
         {
             try {
-                _Logger.info("retry connect");
+                _Logger.info("%s retry connect",
+                             Thread.currentThread()
+                                   .getName());
                 connect(c);
             }
             catch (IOException e) {
