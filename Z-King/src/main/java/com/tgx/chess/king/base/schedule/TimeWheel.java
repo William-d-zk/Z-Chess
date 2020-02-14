@@ -31,9 +31,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
@@ -54,7 +52,7 @@ public class TimeWheel
     private final long          _Tick;
     private final TickSlot<?>[] _ModHashEntryArray;
     private final ReentrantLock _Lock;
-    private int                 ctxSlot, ctxLoop;
+    private volatile int        vCtxSlot, vCtxLoop;
 
     public TimeWheel()
     {
@@ -74,7 +72,7 @@ public class TimeWheel
         _HashMod = _ModHashEntryArray.length - 1;
         _Timer = new Thread(() ->
         {
-            int correction = 13;// 5~20
+            int correction = 23;// 5~20
             for (long align = 0, t, sleep, expect; !isTerminated();) {
                 t = System.currentTimeMillis();
                 sleep = _Tick - align;
@@ -92,35 +90,16 @@ public class TimeWheel
                 try {
                     List<HandleTask<?>> readyList = filterReady();
                     if (!readyList.isEmpty()) {
-                        try {
-                            List<Future<IWheelItem<?>>> futureList = invokeAll(readyList,
-                                                                               correction - 1,
-                                                                               TimeUnit.MILLISECONDS);
-                            for (Future<IWheelItem<?>> handlerFuture : futureList) {
-                                if (handlerFuture.isCancelled()) {
-                                    _Logger.warning("cancelled");
-                                }
-                                else if (handlerFuture.isDone()) {
-                                    IWheelItem<?> wheelItem = handlerFuture.get();
-                                    if (wheelItem.isCycle()) {
-                                        acquire(wheelItem);
-                                    }
-                                }
-                            }
-                        }
-                        catch (InterruptedException |
-                               ExecutionException e)
-                        {
-                            e.printStackTrace();
-                            continue;
+                        for (HandleTask<?> ready : readyList) {
+                            submit(ready);
                         }
                     }
-                    if (ctxSlot == _HashMod) {
-                        ctxSlot = 0;
-                        ctxLoop++;
+                    if (vCtxSlot == _HashMod) {
+                        vCtxSlot = 0;
+                        vCtxLoop++;
                     }
                     else {
-                        ctxSlot++;
+                        vCtxSlot++;
                     }
                 }
                 finally {
@@ -136,25 +115,39 @@ public class TimeWheel
 
     private int getCurrentLoop()
     {
-        return ctxLoop;
+        return vCtxLoop;
     }
 
     private int getCtxSlot()
     {
-        return ctxSlot;
+        return vCtxSlot;
+    }
+
+    private <A> void acquire(IWheelItem<A> item)
+    {
+        acquire(new HandleTask<>(item));
     }
 
     @SuppressWarnings("unchecked")
-    private <A> void acquire(IWheelItem<A> item)
+    private <A> void acquire(HandleTask<A> task)
     {
-        HandleTask<A> task = new HandleTask<>(item);
-        int slot = task.acquire(getCurrentLoop(), getCtxSlot());
-        TickSlot<A> tickSlot = (TickSlot<A>) _ModHashEntryArray[slot & _HashMod];
-        int index = Collections.binarySearch(tickSlot, task);
-        tickSlot.add(index < 0 ? -index - 1
-                               : index,
-                     task);
-        item.setup();
+        IWheelItem<A> item = task._Item;
+        _Lock.lock();
+        try {
+            _Logger.info("%s acquire",
+                         Thread.currentThread()
+                               .getName());
+            int slot = task.acquire(getCurrentLoop(), getCtxSlot());
+            TickSlot<A> tickSlot = (TickSlot<A>) _ModHashEntryArray[slot & _HashMod];
+            int index = Collections.binarySearch(tickSlot, task);
+            tickSlot.add(index < 0 ? -index - 1
+                                   : index,
+                         task);
+            item.setup();
+        }
+        finally {
+            _Lock.unlock();
+        }
     }
 
     private List<HandleTask<?>> filterReady()
@@ -283,6 +276,10 @@ public class TimeWheel
         {
             _Item.beforeCall();
             _Item.onCall();
+            if (_Item.isCycle()) {
+                _Logger.info("timer --- recycle");
+                TimeWheel.this.acquire(HandleTask.this);
+            }
             return _Item;
         }
 

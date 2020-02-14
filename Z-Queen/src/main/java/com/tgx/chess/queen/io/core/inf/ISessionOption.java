@@ -55,4 +55,6 @@ public interface ISessionOption
 
     int getSoLingerInSecond();
 
+    int getConnectTimeout();
+
 }

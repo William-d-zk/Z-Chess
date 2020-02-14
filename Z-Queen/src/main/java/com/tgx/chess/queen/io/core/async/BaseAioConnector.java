@@ -26,11 +26,20 @@ package com.tgx.chess.queen.io.core.async;
 
 import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import com.lmax.disruptor.RingBuffer;
+import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
+import com.tgx.chess.king.base.util.Pair;
+import com.tgx.chess.queen.config.ISocketConfig;
+import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.operator.ConnectFailedOperator;
 import com.tgx.chess.queen.event.operator.ConnectedOperator;
+import com.tgx.chess.queen.event.processor.QEvent;
+import com.tgx.chess.queen.io.core.async.socket.AioWorker;
+import com.tgx.chess.queen.io.core.executor.IPeerCore;
 import com.tgx.chess.queen.io.core.inf.IAioConnector;
 import com.tgx.chess.queen.io.core.inf.IConnectActivity;
 import com.tgx.chess.queen.io.core.inf.IContext;
@@ -39,20 +48,92 @@ import com.tgx.chess.queen.io.core.inf.IContext;
  * @author william.d.zk
  */
 public abstract class BaseAioConnector<C extends IContext<C>>
+        extends
+        AioCreator<C>
         implements
         IAioConnector<C>
 {
     protected BaseAioConnector(String host,
-                               int port)
+                               int port,
+                               ISocketConfig socketConfig,
+                               IPeerCore peerCore)
     {
+        super(socketConfig);
         _RemoteAddress = new InetSocketAddress(host, port);
-        _ConnectedOperator = new ConnectedOperator<>();
+        _PeerCore = peerCore;
     }
 
-    private final ConnectFailedOperator<C> _ConnectFailedOperator = new ConnectFailedOperator<>();
-    private final ConnectedOperator<C>     _ConnectedOperator;
-    private final InetSocketAddress        _RemoteAddress;
     private InetSocketAddress              mLocalBind;
+    private final ConnectFailedOperator<C> _ConnectFailedOperator = new ConnectFailedOperator<>();
+    private final ConnectedOperator<C>     _ConnectedOperator     = new ConnectedOperator<>();
+    private final InetSocketAddress        _RemoteAddress;
+    private final IPeerCore                _PeerCore;
+    private final AtomicInteger            _State                 = new AtomicInteger();
+    private static final int               COUNT_BITS             = Integer.SIZE - 7;
+    private static final int               CAPACITY               = (1 << COUNT_BITS) - 1;
+    private final static int               STOP                   = -1 << COUNT_BITS;
+    private final static int               CONNECTING             = 0;
+    private final static int               COMPLETED              = 1 << COUNT_BITS;
+    private final static int               CANCEL                 = 2 << COUNT_BITS;
+    private final static int               ERROR                  = 3 << COUNT_BITS;
+    private IConnectFailed<C>              mFailedConsumer;
+
+    private void advanceRunState(int targetState)
+    {
+        for (;;) {
+            int c = _State.get();
+            if (c >= targetState || _State.compareAndSet(c, ctlOf(targetState, retryCountOf(c)))) break;
+        }
+    }
+
+    /*对state进行拆装箱*/
+    private static int runStateOf(int state)
+    {
+        return state & ~CAPACITY;
+    }
+
+    private static int retryCountOf(int c)
+    {
+        return c & CAPACITY;
+    }
+
+    private static int ctlOf(int rs, int rc)
+    {
+        return rs | rc;
+    }
+
+    @Override
+    public void error()
+    {
+        mFailedConsumer.onFailed(this);
+    }
+
+    /**
+     * 在执行retry操作之前需要先切换到stop状态
+     */
+    @Override
+    public void retry()
+    {
+        retry:
+        for (;;) {
+            int c = _State.get();
+            int rs = runStateOf(c);
+            int target = rs < CONNECTING ? ctlOf(CONNECTING, retryCountOf(c))
+                                         : rs;
+            for (;;) {
+                int rc = retryCountOf(c);
+                if (rc >= CAPACITY) { return; }
+                if (_State.compareAndSet(c, target + 1)) {
+                    break retry;
+                }
+                c = _State.get();// reload 
+                if (runStateOf(c) != rs && runStateOf(c) != CONNECTING) {
+                    continue retry;
+                }
+                //else CAS failed 
+            }
+        }
+    }
 
     @Override
     public InetSocketAddress getRemoteAddress()
@@ -88,4 +169,29 @@ public abstract class BaseAioConnector<C extends IContext<C>>
         return _ConnectFailedOperator;
     }
 
+    @Override
+    public void completed(Void result, AsynchronousSocketChannel channel)
+    {
+        AioWorker.publish(_PeerCore.getConnectPublisher(),
+                          getConnectedOperator(),
+                          IError.Type.NO_ERROR,
+                          IOperator.Type.CONNECTED,
+                          new Pair<>(this, channel));
+    }
+
+    @Override
+    public void failed(Throwable exc, AsynchronousSocketChannel channel)
+    {
+        AioWorker.publish(_PeerCore.getConnectPublisher(),
+                          getErrorOperator(),
+                          IError.Type.CONNECT_FAILED,
+                          IOperator.Type.NULL,
+                          new Pair<>(exc, this));
+    }
+
+    @Override
+    public void attach(IConnectFailed<C> func)
+    {
+        mFailedConsumer = func;
+    }
 }

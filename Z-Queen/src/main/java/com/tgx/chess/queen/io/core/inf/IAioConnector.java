@@ -59,4 +59,15 @@ public interface IAioConnector<C extends IContext<C>>
         AioWorker worker = (AioWorker) Thread.currentThread();
         worker.publishConnectingError(getErrorOperator(), exc, this);
     }
+
+    void attach(IConnectFailed<C> func);
+
+    void error();
+
+    void retry();
+
+    interface IConnectFailed<C extends IContext<C>>
+    {
+        void onFailed(IAioConnector<C> connector);
+    }
 }

@@ -53,14 +53,11 @@ public class ConnectedOperator<C extends IContext<C>>
     @Override
     public ITriple handle(IConnectActivity<C> activity, AsynchronousSocketChannel channel) throws ZException
     {
-        ISessionCreated<C> sessionCreated = activity.getSessionCreated();
-        ISessionCreator<C> sessionCreator = activity.getSessionCreator();
-        ICommandCreator<C> commandCreator = activity.getCommandCreator();
         try {
-            ISession<C> session = sessionCreator.createSession(channel, activity);
-            sessionCreated.onCreate(session);
+            ISession<C> session = activity.createSession(channel, activity);
+            activity.onCreate(session);
             session.readNext(_AioReader);
-            IControl<C>[] commands = commandCreator.createCommands(session);
+            IControl<C>[] commands = activity.createCommands(session);
             return new Triple<>(commands,
                                 session,
                                 session.getContext()

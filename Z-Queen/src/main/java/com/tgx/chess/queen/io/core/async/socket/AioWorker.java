@@ -25,6 +25,9 @@ package com.tgx.chess.queen.io.core.async.socket;
 
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.Objects;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -85,21 +88,23 @@ public class AioWorker
             if (Objects.nonNull(_Available)) {
                 _Available.available(_Producer);
             }
+            throw e;
         }
     }
 
-    public <T,
-            A,
-            R> void publish(final IOperator<T,
-                                            A,
-                                            R> op,
-                            final IError.Type eType,
-                            final IOperator.Type type,
-                            IPair content)
+    public static <T,
+                   A,
+                   R> void publish(RingBuffer<QEvent> producer,
+                                   final IOperator<T,
+                                                   A,
+                                                   R> op,
+                                   final IError.Type eType,
+                                   final IOperator.Type type,
+                                   IPair content)
     {
-        long sequence = _Producer.next();
+        long sequence = producer.next();
         try {
-            QEvent event = _Producer.get(sequence);
+            QEvent event = producer.get(sequence);
             if (eType.equals(IError.Type.NO_ERROR)) {
                 event.produce(type, content, op);
             }
@@ -109,7 +114,7 @@ public class AioWorker
 
         }
         finally {
-            _Producer.publish(sequence);
+            producer.publish(sequence);
         }
     }
 
@@ -119,7 +124,7 @@ public class AioWorker
                                                     IPacket pack,
                                                     final ISession<C> session)
     {
-        publish(op, IError.Type.NO_ERROR, IOperator.Type.READ, new Pair<>(pack, session));
+        publish(_Producer, op, IError.Type.NO_ERROR, IOperator.Type.READ, new Pair<>(pack, session));
     }
 
     public <C extends IContext<C>> void publishWrote(final IOperator<Integer,
@@ -128,7 +133,7 @@ public class AioWorker
                                                      final int wroteCnt,
                                                      final ISession<C> session)
     {
-        publish(op, IError.Type.NO_ERROR, IOperator.Type.WROTE, new Pair<>(wroteCnt, session));
+        publish(_Producer, op, IError.Type.NO_ERROR, IOperator.Type.WROTE, new Pair<>(wroteCnt, session));
     }
 
     public <T,
@@ -139,7 +144,7 @@ public class AioWorker
                                                           final T t,
                                                           final ISession<C> session)
     {
-        publish(op, eType, IOperator.Type.NULL, new Pair<>(t, session));
+        publish(_Producer, op, eType, IOperator.Type.NULL, new Pair<>(t, session));
     }
 
     public <C extends IContext<C>> void publishConnected(final IOperator<IConnectActivity<C>,
@@ -148,7 +153,7 @@ public class AioWorker
                                                          final IConnectActivity<C> activity,
                                                          final AsynchronousSocketChannel channel)
     {
-        publish(op, IError.Type.NO_ERROR, IOperator.Type.CONNECTED, new Pair<>(activity, channel));
+        publish(_Producer, op, IError.Type.NO_ERROR, IOperator.Type.CONNECTED, new Pair<>(activity, channel));
     }
 
     public <C extends IContext<C>> void publishConnectingError(final IOperator<Throwable,
@@ -157,7 +162,7 @@ public class AioWorker
                                                                final Throwable e,
                                                                final IAioConnector<C> cActive)
     {
-        publish(op, IError.Type.CONNECT_FAILED, IOperator.Type.NULL, new Pair<>(e, cActive));
+        publish(_Producer, op, IError.Type.CONNECT_FAILED, IOperator.Type.NULL, new Pair<>(e, cActive));
     }
 
     public <C extends IContext<C>> void publishAcceptError(final IOperator<Throwable,
@@ -166,7 +171,7 @@ public class AioWorker
                                                            final Throwable e,
                                                            final IAioServer<C> cActive)
     {
-        publish(op, Type.ACCEPT_FAILED, IOperator.Type.NULL, new Pair<>(e, cActive));
+        publish(_Producer, op, Type.ACCEPT_FAILED, IOperator.Type.NULL, new Pair<>(e, cActive));
     }
 
     public <T,
@@ -177,7 +182,7 @@ public class AioWorker
                                                          final T t,
                                                          final ISession<C> session)
     {
-        publish(op, eType, IOperator.Type.NULL, new Pair<>(t, session));
+        publish(_Producer, op, eType, IOperator.Type.NULL, new Pair<>(t, session));
     }
 
 }

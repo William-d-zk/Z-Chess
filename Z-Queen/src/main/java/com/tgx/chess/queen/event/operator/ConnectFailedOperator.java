@@ -45,6 +45,7 @@ public class ConnectFailedOperator<C extends IContext<C>>
     public IAioConnector<C> handle(Throwable throwable, IAioConnector<C> aioConnector)
     {
         _Logger.warning("handler connect failed!", throwable);
+        aioConnector.error();
         return aioConnector;
     }
 }

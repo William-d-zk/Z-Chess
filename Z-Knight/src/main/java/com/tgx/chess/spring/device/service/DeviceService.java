@@ -41,7 +41,7 @@ import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.ConstructorBinding;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
@@ -80,9 +80,7 @@ import com.tgx.chess.spring.jpa.device.repository.MessageRepository;
  * @author william.d.zk
  * @date 2019-06-10
  */
-@PropertySource({ "classpath:device.config.properties" })
-@ConfigurationProperties(prefix = "z.chess.device")
-@ConstructorBinding
+
 @Service
 public class DeviceService
         implements
@@ -96,24 +94,24 @@ public class DeviceService
     private final Map<Long,
                       Map<Long,
                           IControl<ZContext>>>             _DeviceMessageStateMap = new ConcurrentSkipListMap<>();
-
-    private Duration passwordInvalidDays;
-    private String   passwordRandomSeed;
+    private final DeviceConfig                             _DeviceConfig;
 
     @Autowired
-    DeviceService(String addressWs,
-                  String addressQtt,
-                  DeviceRepository deviceRepository,
+    DeviceService(DeviceRepository deviceRepository,
                   MessageRepository messageRepository,
+                  DeviceConfig deviceConfig,
                   IBizIoConfig bizIoConfig,
                   IClusterConfig clusterConfig,
-                  IServerConfig serverConfig)
+                  IServerConfig serverConfig) throws IOException
     {
         _DeviceRepository = deviceRepository;
         _MessageRepository = messageRepository;
+        _DeviceConfig = deviceConfig;
         List<ITriple> hosts = new ArrayList<>(2);
-        String[] wsSplit = addressWs.split(":", 2);
-        String[] qttSplit = addressQtt.split(":", 2);
+        String[] wsSplit = deviceConfig.getAddressWs()
+                                       .split(":", 2);
+        String[] qttSplit = deviceConfig.getAddressQtt()
+                                        .split(":", 2);
         String wsServiceHost = wsSplit[0];
         String qttServiceHost = qttSplit[0];
         int wsServicePort = Integer.parseInt(wsSplit[1]);
@@ -155,7 +153,7 @@ public class DeviceService
         else {
             String source = String.format("sn:%s,random %s%d",
                                           device.getSn(),
-                                          passwordRandomSeed,
+                                          _DeviceConfig.getPasswordRandomSeed(),
                                           Instant.now()
                                                  .toEpochMilli());
             _Logger.info("new device %s ", source);
@@ -165,11 +163,11 @@ public class DeviceService
             device.setPassword(_CryptUtil.randomPassword(5, 32));
             device.increasePasswordId();
             device.setInvalidAt(Date.from(Instant.now()
-                                                 .plus(passwordInvalidDays)));
+                                                 .plus(_DeviceConfig.getPasswordInvalidDays())));
         }
         else if (!isBlank(device.getPassword()) && device.getPasswordId() > exist.getPasswordId()) {
             device.setInvalidAt(Date.from(Instant.now()
-                                                 .plus(passwordInvalidDays)));
+                                                 .plus(_DeviceConfig.getPasswordInvalidDays())));
         }
         else {
             device.setPassword(exist.getPassword());
@@ -440,13 +438,4 @@ public class DeviceService
                                  .collect(Collectors.toList());
     }
 
-    public void setPasswordInvalidDays(Duration passwordInvalidDays)
-    {
-        this.passwordInvalidDays = passwordInvalidDays;
-    }
-
-    public void setPasswordRandomSeed(String passwordRandomSeed)
-    {
-        this.passwordRandomSeed = passwordRandomSeed;
-    }
 }

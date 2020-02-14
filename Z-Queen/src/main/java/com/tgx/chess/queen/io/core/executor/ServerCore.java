@@ -26,13 +26,8 @@ package com.tgx.chess.queen.io.core.executor;
 
 import java.io.IOException;
 import java.nio.channels.AsynchronousChannelGroup;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.lmax.disruptor.BatchEventProcessor;
@@ -72,7 +67,8 @@ public abstract class ServerCore<C extends IContext<C>>
         extends
         ThreadPoolExecutor
         implements
-        ILocalPublisher<C>
+        ILocalPublisher<C>,
+        IPeerCore
 {
     private Logger    _Logger = Logger.getLogger(getClass().getName());
     private final int _DecoderCount;
@@ -108,39 +104,40 @@ public abstract class ServerCore<C extends IContext<C>>
     private final RingBuffer<QEvent>                        _ConsistentTransEvent;
     private final ConcurrentLinkedQueue<RingBuffer<QEvent>> _AioCacheConcurrentQueue;
     private final ConcurrentLinkedQueue<RingBuffer<QEvent>> _ClusterCacheConcurrentQueue;
+    private final List<RingBuffer<QEvent>>                  _ClusterIoList        = new ArrayList<>();
+    private final ThreadFactory                             _WorkerThreadFactory  = new ThreadFactory()
+                                                                                  {
+                                                                                      int count;
 
-    private final ThreadFactory      _WorkerThreadFactory  = new ThreadFactory()
-                                                           {
-                                                               int count;
+                                                                                      @Override
+                                                                                      public Thread newThread(Runnable r)
+                                                                                      {
+                                                                                          return new AioWorker(r,
+                                                                                                               String.format("AioWorker.server.%d",
+                                                                                                                             count++),
+                                                                                                               _AioCacheConcurrentQueue::offer,
+                                                                                                               _AioCacheConcurrentQueue.poll());
+                                                                                      }
+                                                                                  };
+    private final ThreadFactory                             _ClusterThreadFactory = new ThreadFactory()
+                                                                                  {
+                                                                                      int count;
 
-                                                               @Override
-                                                               public Thread newThread(Runnable r)
-                                                               {
-                                                                   return new AioWorker(r,
-                                                                                        String.format("AioWorker.server.%d",
-                                                                                                      count++),
-                                                                                        _AioCacheConcurrentQueue::offer,
-                                                                                        _AioCacheConcurrentQueue.poll());
-                                                               }
-                                                           };
-    private final ThreadFactory      _ClusterThreadFactory = new ThreadFactory()
-                                                           {
-                                                               int count;
-
-                                                               @Override
-                                                               public Thread newThread(Runnable r)
-                                                               {
-                                                                   return new AioWorker(r,
-                                                                                        String.format("AioWorker.cluster.%d",
-                                                                                                      count++),
-                                                                                        _ClusterCacheConcurrentQueue::offer,
-                                                                                        _ClusterCacheConcurrentQueue.poll());
-                                                               }
-                                                           };
-    private final TimeWheel          _TimeWheel            = new TimeWheel();
-    private final ReentrantLock      _LocalLock            = new ReentrantLock();
-    private AsynchronousChannelGroup mServiceChannelGroup;
-    private AsynchronousChannelGroup mClusterChannelGroup;
+                                                                                      @Override
+                                                                                      public Thread newThread(Runnable r)
+                                                                                      {
+                                                                                          return new AioWorker(r,
+                                                                                                               String.format("AioWorker.cluster.%d",
+                                                                                                                             count++),
+                                                                                                               _ClusterCacheConcurrentQueue::offer,
+                                                                                                               _ClusterCacheConcurrentQueue.poll());
+                                                                                      }
+                                                                                  };
+    private final TimeWheel                                 _TimeWheel            = new TimeWheel();
+    private final ReentrantLock                             _LocalLock            = new ReentrantLock();
+    private final Random                                    _Random               = new Random();
+    private AsynchronousChannelGroup                        mServiceChannelGroup;
+    private AsynchronousChannelGroup                        mClusterChannelGroup;
 
     @SuppressWarnings("unchecked")
     protected ServerCore(IServerConfig config)
@@ -178,6 +175,7 @@ public abstract class ServerCore<C extends IContext<C>>
             }
             return rb;
         });
+        _ClusterIoList.addAll(_ClusterCacheConcurrentQueue);
         Arrays.setAll(_AioProducerBarriers, slot -> _AioProducerEvents[slot].newBarrier());
 
         _ClusterLocalCloseEvent = createPipelineLite(_CloserPower);
@@ -191,7 +189,7 @@ public abstract class ServerCore<C extends IContext<C>>
         _ConsistentElectEvent = createPipelineYield(_ClusterPower);
         _ConsistentTransEvent = createPipelineYield(_ClusterPower);
 
-        _TimeWheel.acquire("server timer", new ScheduleHandler<>(10, true));
+//        _TimeWheel.acquire("server timer", new ScheduleHandler<>(10, true));
     }
 
     /*  ║ barrier, ━> publish event, ━━ pipeline,| mappingHandle event
@@ -491,5 +489,11 @@ public abstract class ServerCore<C extends IContext<C>>
         return Objects.nonNull(mClusterChannelGroup) ? mClusterChannelGroup
                                                      : (mClusterChannelGroup = AsynchronousChannelGroup.withFixedThreadPool(getClusterCount(),
                                                                                                                             getClusterThreadFactory()));
+    }
+
+    @Override
+    public RingBuffer<QEvent> getConnectPublisher()
+    {
+        return _ClusterIoList.get(_Random.nextInt(_ClusterIoList.size()));
     }
 }
