@@ -11,11 +11,11 @@
     <modules>
         <module>Z-Queen</module>
         <module>Z-Bishop</module>
-        <module>Z-Rook</module>
         <module>Z-Pawn</module>
         <module>Z-Knight</module>
         <module>Z-King</module>
         <module>Z-Player</module>
+        <module>Z-Rook</module>
     </modules>
     <properties>
         <!--RT-->
@@ -25,24 +25,24 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>${java.encoding}</project.build.sourceEncoding>
         <!--LOG-->
-        <slf4j.version>1.7.28</slf4j.version>
+        <slf4j.version>1.7.30</slf4j.version>
         <logback.version>1.2.3</logback.version>
         <!--SPRING-BOOT-->
         <spring-boot.version>2.2.4.RELEASE</spring-boot.version>
         <!--Commons-IO-->
         <commons-io.version>2.6</commons-io.version>
         <!--DB-->
-        <postgresql.driver.version>42.2.7</postgresql.driver.version>
-        <hibernate-types.version>2.6.1</hibernate-types.version>
+        <postgresql.driver.version>42.2.10</postgresql.driver.version>
+        <hibernate-types.version>2.9.3</hibernate-types.version>
         <!--PIPELINE-->
         <disruptor.version>3.4.2</disruptor.version>
         <!--TOOLS-->
         <httpcore.version>4.4.12</httpcore.version>
         <!--TEST TOOLS VERSION-->
-        <junit.platform.version>1.5.2</junit.platform.version>
-        <junit.vintage.version>5.5.2</junit.vintage.version>
-        <junit.jupiter.version>5.5.2</junit.jupiter.version>
-        <junit.engine.version>5.5.2</junit.engine.version>
+        <junit.platform.version>1.6.0</junit.platform.version>
+        <junit.vintage.version>5.6.0</junit.vintage.version>
+        <junit.jupiter.version>5.6.0</junit.jupiter.version>
+        <junit.engine.version>5.6.0</junit.engine.version>
         <mockito.version>2.18.3</mockito.version>
     </properties>
     <dependencies>
@@ -276,7 +276,7 @@
             <plugin>
                 <groupId>org.hibernate.orm.tooling</groupId>
                 <artifactId>hibernate-enhance-maven-plugin</artifactId>
-                <version>5.4.4.Final</version>
+                <version>5.4.12.Final</version>
                 <executions>
                     <execution>
                         <configuration>

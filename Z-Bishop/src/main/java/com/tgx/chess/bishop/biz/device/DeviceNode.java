@@ -152,7 +152,7 @@ public class DeviceNode
                                }
                                return new BaseAioServer<ZContext>(_Host,
                                                                   _Port,
-                                                                  getConfig(getSlot(_SessionInitializeIndex)))
+                                                                  getSocketConfig(getSlot(_SessionInitializeIndex)))
                                {
                                    @Override
                                    public ISession<ZContext> createSession(AsynchronousSocketChannel socketChannel,
@@ -498,7 +498,7 @@ public class DeviceNode
             }
             return new BaseAioConnector<ZContext>(_Host,
                                                   _Port,
-                                                  getConfig(getSlot(_SessionInitializeIndex)),
+                                                  getSocketConfig(getSlot(_SessionInitializeIndex)),
                                                   getServerCore())
             {
 

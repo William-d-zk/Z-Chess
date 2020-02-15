@@ -64,7 +64,7 @@ public abstract class AioSessionManager<C extends IContext<C>>
 
     private final IBizIoConfig _Config;
 
-    public ISocketConfig getConfig(int bizType)
+    public ISocketConfig getSocketConfig(int bizType)
     {
         return _Config.getBizSocketConfig(bizType);
     }
@@ -77,7 +77,7 @@ public abstract class AioSessionManager<C extends IContext<C>>
         Arrays.setAll(_PortChannel2IndexMaps, slot -> new HashMap<>(23));
     }
 
-    private int getConfigPower(int slot)
+    protected int getConfigPower(int slot)
     {
         switch (slot)
         {

@@ -103,6 +103,11 @@ public class ZUID
         _TimestampSupplier = System::currentTimeMillis;
     }
 
+    public ZUID()
+    {
+        this(0, 0, 0, 0);
+    }
+
     public synchronized long getId()
     {
         return (_Type << TYPE_SHIFT) | getNoTypeId();
