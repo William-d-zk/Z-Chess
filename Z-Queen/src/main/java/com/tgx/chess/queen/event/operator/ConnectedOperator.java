@@ -31,13 +31,10 @@ import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.io.core.inf.ICommandCreator;
 import com.tgx.chess.queen.io.core.inf.IConnectActivity;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.inf.ISessionCreated;
-import com.tgx.chess.queen.io.core.inf.ISessionCreator;
 
 /**
  * @author william.d.zk
@@ -53,8 +50,21 @@ public class ConnectedOperator<C extends IContext<C>>
     @Override
     public ITriple handle(IConnectActivity<C> activity, AsynchronousSocketChannel channel) throws ZException
     {
+
+        ISession<C> session;
         try {
-            ISession<C> session = activity.createSession(channel, activity);
+            session = activity.createSession(channel, activity);
+        }
+        catch (IOException e) {
+            try {
+                channel.close();
+            }
+            catch (IOException ex) {
+                ex.printStackTrace();
+            }
+            throw new ZException(e, "session create failed");
+        }
+        if (session != null) try {
             activity.onCreate(session);
             session.readNext(_AioReader);
             IControl<C>[] commands = activity.createCommands(session);
@@ -64,8 +74,11 @@ public class ConnectedOperator<C extends IContext<C>>
                                        .getSort()
                                        .getTransfer());
         }
-        catch (IOException e) {
-            throw new ZException("session create failed:%s", channel);
+        catch (Exception e) {
+            throw new ZException(e, "session create failed");
+        }
+        else {
+            throw new ZException("session create failed %s", channel);
         }
     }
 }

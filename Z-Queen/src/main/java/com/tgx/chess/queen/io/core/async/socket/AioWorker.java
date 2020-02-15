@@ -25,9 +25,6 @@ package com.tgx.chess.queen.io.core.async.socket;
 
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.Objects;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -68,13 +65,6 @@ public class AioWorker
         _Available = available;
         Objects.requireNonNull(producer);
         _Producer = producer;
-    }
-
-    public AioWorker(Runnable r,
-                     String name,
-                     RingBuffer<QEvent> producer)
-    {
-        this(r, name, null, producer);
     }
 
     @Override
@@ -185,4 +175,8 @@ public class AioWorker
         publish(_Producer, op, eType, IOperator.Type.NULL, new Pair<>(t, session));
     }
 
+    public RingBuffer<QEvent> getProducer()
+    {
+        return _Producer;
+    }
 }

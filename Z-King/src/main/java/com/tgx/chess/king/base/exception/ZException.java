@@ -36,4 +36,10 @@ public class ZException
     {
         super(String.format(formatter, messages));
     }
+
+    public ZException(Throwable cause,
+                      String message)
+    {
+        super(message, cause);
+    }
 }

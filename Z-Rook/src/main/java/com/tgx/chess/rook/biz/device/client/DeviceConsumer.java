@@ -40,7 +40,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 
-import com.tgx.chess.rook.config.ConsumerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -70,6 +69,7 @@ import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.config.IBizIoConfig;
+import com.tgx.chess.queen.config.QueenCode;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.async.AioSession;
@@ -83,6 +83,7 @@ import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
+import com.tgx.chess.rook.config.ConsumerConfig;
 import com.tgx.chess.rook.io.ConsumerZSort;
 
 /**
@@ -97,13 +98,13 @@ public class DeviceConsumer
         IAioClient<ZContext>,
         ISessionDismiss<ZContext>
 {
-    private final Logger                   _Logger     = Logger.getLogger(getClass().getSimpleName());
-    private final ConsumerConfig _ConsumerConfig;
+    private final Logger                   _Logger    = Logger.getLogger(getClass().getSimpleName());
+    private final ConsumerConfig           _ConsumerConfig;
     private final AsynchronousChannelGroup _ChannelGroup;
-    private final ClientCore<ZContext>     _ClientCore = new ClientCore<>();
-    private final TimeWheel                _TimeWheel  = _ClientCore.getTimeWheel();
-    private final CryptUtil                _CryptUtil  = new CryptUtil();
-    private final ZUID                     _ZUid       = new ZUID();
+    private final ClientCore<ZContext>     _ClientCore;
+    private final TimeWheel                _TimeWheel;
+    private final CryptUtil                _CryptUtil = new CryptUtil();
+    private final ZUID                     _ZUid      = new ZUID();
     private final Map<Long,
                       ZClient>             _ZClientMap;
 
@@ -115,7 +116,10 @@ public class DeviceConsumer
         super(bizIoConfig);
         _ZClientMap = new HashMap<>(1 << getConfigPower(getSlot(AioSessionManager.SERVER_SLOT)));
         _ConsumerConfig = consumerConfig;
-        _ChannelGroup = AsynchronousChannelGroup.withFixedThreadPool(3, _ClientCore.getWorkerThreadFactory());
+        int ioCount = _ConsumerConfig.getIoCount();
+        _ClientCore = new ClientCore<>(ioCount);
+        _TimeWheel = _ClientCore.getTimeWheel();
+        _ChannelGroup = AsynchronousChannelGroup.withFixedThreadPool(ioCount, _ClientCore.getWorkerThreadFactory());
         _ClientCore.build((QEvent event, long sequence, boolean endOfBatch) ->
         {
             IControl<ZContext>[] commands;
@@ -180,6 +184,8 @@ public class DeviceConsumer
                                                      close(session.getIndex());
                                                      break;
                                                  case X112_QttConnack.COMMAND:
+                                                     _Logger.info("qtt connack %s", cmd);
+                                                     break;
                                                  default:
                                                      break;
                                              }
@@ -206,6 +212,7 @@ public class DeviceConsumer
                 event.ignore();
             }
         }, new EncryptHandler());
+        _Logger.info("device consumer created");
     }
 
     @PostConstruct
@@ -245,10 +252,9 @@ public class DeviceConsumer
                 throw new UnsupportedOperationException();
 
         }
-        final long _SessionInitializeIndex = _ZUid.getId();
         BaseAioConnector<ZContext> connector = new BaseAioConnector<ZContext>(host,
                                                                               port,
-                                                                              getSocketConfig(getSlot(_SessionInitializeIndex)),
+                                                                              getSocketConfig(getSlot(QueenCode.CU_XID)),
                                                                               _ClientCore)
         {
             @Override
@@ -260,9 +266,12 @@ public class DeviceConsumer
             @Override
             public void onCreate(ISession<ZContext> session)
             {
-                session.setIndex(_SessionInitializeIndex);
+                long sessionIndex = _ZUid.getId();
+                session.setIndex(sessionIndex);
                 DeviceConsumer.this.addSession(session);
+                zClient.setSessionIndex(sessionIndex);
                 _ZClientMap.put(session.getIndex(), zClient);
+                _Logger.info("connected :%d", sessionIndex);
             }
 
             @Override
@@ -288,13 +297,19 @@ public class DeviceConsumer
                         X101_HandShake x101 = new X101_HandShake(host, wsContext.getSeKey(), wsContext.getWsVersion());
                         return new IControl[] { x101 };
                     case QTT_SYMMETRY:
-                        X111_QttConnect x111 = new X111_QttConnect();
-                        x111.setClientId(zClient.getClientId());
-                        x111.setUserName(zClient.getUsername());
-                        x111.setPassword(zClient.getPassword()
-                                                .getBytes(StandardCharsets.UTF_8));
-                        x111.setClean();
-                        return new IControl[] { x111 };
+                        try {
+                            X111_QttConnect x111 = new X111_QttConnect();
+                            x111.setClientId(zClient.getClientId());
+                            x111.setUserName(zClient.getUsername());
+                            x111.setPassword(zClient.getPassword()
+                                                    .getBytes(StandardCharsets.UTF_8));
+                            x111.setClean();
+                            return new IControl[] { x111 };
+                        }
+                        catch (Exception e) {
+                            _Logger.warning("create init commands fetal", e);
+                            return null;
+                        }
                     default:
                         throw new UnsupportedOperationException();
                 }
@@ -307,6 +322,7 @@ public class DeviceConsumer
     public void onDismiss(ISession<ZContext> session)
     {
         rmSession(session);
+        _Logger.warning("device consumer dismiss session %s", session);
     }
 
     @SafeVarargs

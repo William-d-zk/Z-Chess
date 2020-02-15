@@ -24,17 +24,21 @@
 
 package com.tgx.chess.rook.biz.device.client;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Queue;
+import java.util.TreeMap;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IQoS;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ZClient
 {
 
-    private final long                             _SessionIndex;
-    private final String                           _SN;
     private final Queue<IControl<ZContext>>        _RecvMsgQueue = new LinkedList<>();
     private final Map<IControl<ZContext>,
                       Integer>                     _ConfirmMap   = new TreeMap<>(Comparator.comparing(IControl::getSequence));
@@ -44,12 +48,11 @@ public class ZClient
     private String                                 password;
     private short                                  localMsgId;
     private long                                   sequence;
+    private long                                   sessionIndex;
+    private String                                 sn;
 
-    public ZClient(long index,
-                   String sn)
+    public ZClient()
     {
-        _SessionIndex = index;
-        _SN = sn;
     }
 
     public void offer(IControl<ZContext> recv)
@@ -87,14 +90,24 @@ public class ZClient
         this.clientId = clientId;
     }
 
-    public long get_SessionIndex()
+    public long getSessionIndex()
     {
-        return _SessionIndex;
+        return sessionIndex;
     }
 
-    public String get_SN()
+    public void setSessionIndex(long index)
     {
-        return _SN;
+        sessionIndex = index;
+    }
+
+    public String getSn()
+    {
+        return sn;
+    }
+
+    public void setSn(String sn)
+    {
+        this.sn = sn;
     }
 
     public String getToken()

@@ -25,6 +25,7 @@
 package com.tgx.chess.queen.io.core.executor;
 
 import java.util.Arrays;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -39,7 +40,6 @@ import com.lmax.disruptor.SequenceBarrier;
 import com.lmax.disruptor.WaitStrategy;
 import com.lmax.disruptor.YieldingWaitStrategy;
 import com.tgx.chess.king.base.disruptor.MultiBufferBatchEventProcessor;
-import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.event.handler.EncodeHandler;
@@ -65,45 +65,51 @@ public class ClientCore<C extends IContext<C>>
         IPeerCore
 
 {
-    private final RingBuffer<QEvent> _AioProducerEvent;
-    private final RingBuffer<QEvent> _BizLocalCloseEvent;
-    private final RingBuffer<QEvent> _BizLocalSendEvent;
-    private final ThreadFactory      _WorkerThreadFactory = new ThreadFactory()
-                                                          {
-                                                              int count;
+    private final RingBuffer<QEvent>[]                      _AioProducerEvents;
+    private final RingBuffer<QEvent>                        _BizLocalCloseEvent;
+    private final RingBuffer<QEvent>                        _BizLocalSendEvent;
+    private final ConcurrentLinkedQueue<RingBuffer<QEvent>> _AioCacheConcurrentQueue;
+    private final int                                       _IoCount;
+    private final ThreadFactory                             _WorkerThreadFactory = new ThreadFactory()
+                                                                                 {
+                                                                                     int count;
 
-                                                              @Override
-                                                              public Thread newThread(Runnable r)
-                                                              {
-                                                                  return new AioWorker(r,
-                                                                                       String.format("AioWorker.client.%d",
-                                                                                                     count++),
-                                                                                       _AioProducerEvent);
-                                                              }
-                                                          };
-    private final ReentrantLock      _LocalLock           = new ReentrantLock();
-    private final TimeWheel          _TimeWheel           = new TimeWheel();
+                                                                                     @Override
+                                                                                     public Thread newThread(Runnable r)
+                                                                                     {
+                                                                                         return new AioWorker(r,
+                                                                                                              String.format("AioWorker.client.%d",
+                                                                                                                            count++),
+                                                                                                              _AioCacheConcurrentQueue::offer,
+                                                                                                              _AioCacheConcurrentQueue.poll());
+                                                                                     }
+                                                                                 };
+    private final ReentrantLock                             _LocalLock           = new ReentrantLock();
+    private final TimeWheel                                 _TimeWheel           = new TimeWheel();
 
-    public ClientCore()
+    @SuppressWarnings("unchecked")
+    public ClientCore(int ioCount)
     {
         super(poolSize(), poolSize(), 15, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
-        _AioProducerEvent = createPipelineYield(6);
+        _AioProducerEvents = new RingBuffer[_IoCount = ioCount];
+        Arrays.setAll(_AioProducerEvents, slot -> createPipelineYield(6));
+        _AioCacheConcurrentQueue = new ConcurrentLinkedQueue<>(Arrays.asList(_AioProducerEvents));
         _BizLocalCloseEvent = createPipelineLite(5);
         _BizLocalSendEvent = createPipelineLite(5);
-//        _TimeWheel.acquire("client event", new ScheduleHandler<>(45, true));
+        //        _TimeWheel.acquire("client event", new ScheduleHandler<>(45, true));
     }
 
     /*  ║ barrier, ━> publish event, ━━ pipeline, | handle event
     
                                           ━━> _LocalSend    ║
-     ━━> _AioProducerEvent ║               ┏> _LinkIoEvent| ║
-         _BizLocalClose    ║_IoDispatcher━━┫  _ReadEvent  ||║_WriteDispatcher┏>_EncodedEvent|_EncodedProcessor┳━║[Event Done]
-    ┏━━> _ErrorEvent[2]    ║               ┃  _WroteBuffer  ║                ┗>_ErrorEvent━┓                  ┗━>_ErrorEvent━┓
-    ┃┏━> _ErrorEvent[1]    ║               ┗> _ErrorEvent━┓                                ┃                                 ┃
-    ┃┃┏> _ErrorEvent[0]    ║                              ┃                                ┃                                 ┃
-    ┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                ┃                                 ┃
-    ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                 ┃
-    ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+     ━━> _AioProducerEvents ║               ┏> _LinkIoEvent| ║
+         _BizLocalClose     ║_IoDispatcher━━┫  _ReadEvent  ||║_WriteDispatcher┏>_EncodedEvent|_EncodedProcessor┳━║[Event Done]
+    ┏━━> _ErrorEvent[2]     ║               ┃  _WroteBuffer  ║                ┗>_ErrorEvent━┓                  ┗━>_ErrorEvent━┓
+    ┃┏━> _ErrorEvent[1]     ║               ┗> _ErrorEvent━┓                                ┃                                 ┃
+    ┃┃┏> _ErrorEvent[0]     ║                              ┃                                ┃                                 ┃
+    ┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                ┃                                 ┃
+    ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                 ┃
+    ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
     */
     @SuppressWarnings("unchecked")
     public void build(final EventHandler<QEvent> _LogicHandler, IEncryptHandler encryptHandler)
@@ -111,31 +117,32 @@ public class ClientCore<C extends IContext<C>>
         final RingBuffer<QEvent> _WroteEvent = createPipelineYield(7);
         final RingBuffer<QEvent> _LinkIoEvent = createPipelineLite(2);
         final RingBuffer<QEvent>[] _ErrorEvents = new RingBuffer[3];
-        final RingBuffer<QEvent>[] _DispatchIo = new RingBuffer[5];
+        final RingBuffer<QEvent>[] _DispatchIo = new RingBuffer[4 + _IoCount];
         final RingBuffer<QEvent> _ReadAndLogicEvent = createPipelineLite(6);
         final RingBuffer<QEvent> _EncodeEvent = createPipelineLite(7);
         final SequenceBarrier[] _DispatchIoBarriers = new SequenceBarrier[_DispatchIo.length];
         final SequenceBarrier[] _ErrorBarriers = new SequenceBarrier[_ErrorEvents.length];
+        final SequenceBarrier[] _AioProducerBarriers = new SequenceBarrier[_IoCount];
         Arrays.setAll(_ErrorEvents, slot -> createPipelineLite(5));
         Arrays.setAll(_ErrorBarriers, slot -> _ErrorEvents[slot].newBarrier());
-        IoUtil.addArray(_ErrorEvents, _DispatchIo, _AioProducerEvent, _BizLocalCloseEvent);
-        IoUtil.addArray(_ErrorBarriers,
-                        _DispatchIoBarriers,
-                        _AioProducerEvent.newBarrier(),
-                        _BizLocalCloseEvent.newBarrier());
+        Arrays.setAll(_AioProducerBarriers, slot -> _AioProducerEvents[slot].newBarrier());
+        IoUtil.addArray(_AioProducerEvents, _DispatchIo, _BizLocalCloseEvent);
+        IoUtil.addArray(_AioProducerBarriers, _DispatchIoBarriers, _BizLocalCloseEvent.newBarrier());
+        IoUtil.addArray(_ErrorEvents, _DispatchIo, _IoCount + 1);
+        IoUtil.addArray(_ErrorBarriers, _DispatchIoBarriers, _IoCount + 1);
         final MultiBufferBatchEventProcessor<QEvent> _IoDispatcher = new MultiBufferBatchEventProcessor<>(_DispatchIo,
                                                                                                           _DispatchIoBarriers,
-                                                                                                          new ClientIoDispatcher(_LinkIoEvent,
-                                                                                                                                 _ReadAndLogicEvent,
-                                                                                                                                 _WroteEvent,
-                                                                                                                                 _ErrorEvents[0]));
+                                                                                                          new ClientIoDispatcher<>(_LinkIoEvent,
+                                                                                                                                   _ReadAndLogicEvent,
+                                                                                                                                   _WroteEvent,
+                                                                                                                                   _ErrorEvents[0]));
         _IoDispatcher.setThreadName("IoDispatcher");
         for (int i = 0, size = _DispatchIo.length; i < size; i++) {
             _DispatchIo[i].addGatingSequences(_IoDispatcher.getSequences()[i]);
         }
         final BatchEventProcessor<QEvent> _DecodeProcessor = new BatchEventProcessor<>(_ReadAndLogicEvent,
                                                                                        _ReadAndLogicEvent.newBarrier(),
-                                                                                       new ClientDecodeHandler(encryptHandler));
+                                                                                       new ClientDecodeHandler<>(encryptHandler));
         /* 相对 server core 做了精简，decode 错误将在 logic processor 中按照 Ignore 进行处理
            最终被
         */
@@ -144,7 +151,7 @@ public class ClientCore<C extends IContext<C>>
                                                                                       _LogicHandler);
         final BatchEventProcessor<QEvent> _LinkProcessor = new BatchEventProcessor<>(_LinkIoEvent,
                                                                                      _LinkIoEvent.newBarrier(),
-                                                                                     new ClientLinkHandler());
+                                                                                     new ClientLinkHandler<>());
         final RingBuffer<QEvent>[] _SendEvents = new RingBuffer[] { _BizLocalSendEvent,
                                                                     _LinkIoEvent,
                                                                     _ReadAndLogicEvent,
@@ -232,5 +239,12 @@ public class ClientCore<C extends IContext<C>>
     public ReentrantLock getLocalLock()
     {
         return _LocalLock;
+    }
+
+    @Override
+    public RingBuffer<QEvent> getConnectPublisher()
+    {
+        AioWorker aioWorker = (AioWorker) Thread.currentThread();
+        return aioWorker.getProducer();
     }
 }
