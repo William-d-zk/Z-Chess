@@ -75,7 +75,7 @@ public class ConnectedOperator<C extends IContext<C>>
                                        .getTransfer());
         }
         catch (Exception e) {
-            throw new ZException(e, "session create failed");
+            throw new ZException(e, "session create success,but failed onCreate || session.readNext || createCommands");
         }
         else {
             throw new ZException("session create failed %s", channel);
