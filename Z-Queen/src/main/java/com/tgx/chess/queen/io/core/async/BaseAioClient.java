@@ -74,8 +74,9 @@ public class BaseAioClient<C extends IContext<C>>
             Integer retryCount = _TargetManageMap.putIfAbsent(remoteAddress, 0);
             Future<Void> future = socketChannel.connect(remoteAddress);
             _TargetManageMap.put(remoteAddress,
-                                 retryCount == null ? 1
-                                                    : retryCount + 1);
+                                 retryCount = (retryCount == null ? 1
+                                                                  : retryCount + 1));
+            _Logger.info("%s,%d", remoteAddress, retryCount);
             _TimeWheel.acquire(connector, new ScheduleHandler<>(connector.getConnectTimeout(), c ->
             {
                 if (future.isDone()) {

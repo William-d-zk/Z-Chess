@@ -36,23 +36,18 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 
-import com.tgx.chess.queen.config.IBizIoConfig;
-import com.tgx.chess.queen.config.ISocketConfig;
-import com.tgx.chess.queen.io.core.inf.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.tgx.chess.bishop.biz.db.dao.ZUID;
 import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
 import com.tgx.chess.bishop.io.mqtt.control.X112_QttConnack;
 import com.tgx.chess.bishop.io.ws.bean.WsContext;
 import com.tgx.chess.bishop.io.ws.control.X101_HandShake;
-import com.tgx.chess.bishop.io.ws.control.X102_SslHandShake;
 import com.tgx.chess.bishop.io.ws.control.X103_Close;
 import com.tgx.chess.bishop.io.ws.control.X104_Ping;
 import com.tgx.chess.bishop.io.ws.control.X105_Pong;
@@ -73,12 +68,20 @@ import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.base.util.Pair;
+import com.tgx.chess.queen.config.IBizIoConfig;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.async.AioCreator;
 import com.tgx.chess.queen.io.core.async.AioSession;
+import com.tgx.chess.queen.io.core.async.AioSessionManager;
 import com.tgx.chess.queen.io.core.async.BaseAioConnector;
 import com.tgx.chess.queen.io.core.executor.ClientCore;
+import com.tgx.chess.queen.io.core.inf.IAioClient;
+import com.tgx.chess.queen.io.core.inf.IAioConnector;
+import com.tgx.chess.queen.io.core.inf.IConnectActivity;
+import com.tgx.chess.queen.io.core.inf.IControl;
+import com.tgx.chess.queen.io.core.inf.ISession;
+import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
+import com.tgx.chess.queen.io.core.inf.ISessionOption;
 import com.tgx.chess.rook.io.ConsumerZSort;
 
 /**
@@ -87,46 +90,31 @@ import com.tgx.chess.rook.io.ConsumerZSort;
  */
 @Component
 public class DeviceConsumer
+        extends
+        AioSessionManager<ZContext>
         implements
         IAioClient<ZContext>,
-        ISessionDismiss<ZContext>,
-        ISessionCreated<ZContext>
+        ISessionDismiss<ZContext>
 {
-    final Logger _Logger = Logger.getLogger(getClass().getName());
-
-    private final IBizIoConfig                  _Config;
-    private final AsynchronousChannelGroup      _ChannelGroup;
-    private final ClientCore<ZContext>          _ClientCore     = new ClientCore<>();
-    private final TimeWheel                     _TimeWheel      = _ClientCore.getTimeWheel();
-    private final AtomicInteger                 _State          = new AtomicInteger();
-    private final AtomicReference<byte[]>       currentTokenRef = new AtomicReference<>();
+    private final Logger                   _Logger     = Logger.getLogger(getClass().getSimpleName());
+    private final ConsumerConfig           _ConsumerConfig;
+    private final AsynchronousChannelGroup _ChannelGroup;
+    private final ClientCore<ZContext>     _ClientCore = new ClientCore<>();
+    private final TimeWheel                _TimeWheel  = _ClientCore.getTimeWheel();
+    private final CryptUtil                _CryptUtil  = new CryptUtil();
+    private final ZUID                     _ZUid       = new ZUID();
     private final Map<Long,
-                      ISession<ZContext>>       _ClientSessions = new HashMap<>(2);
-    private final CryptUtil                     _CryptUtil      = new CryptUtil();
-
-    enum STATE
-    {
-        STOP,
-        CONNECTING,
-        OFFLINE,
-        ONLINE,
-        SHUTDOWN
-    }
-
-    private void updateState(STATE state)
-    {
-        for (int s = _State.get(), retry = 0; !_State.compareAndSet(s, state.ordinal()); s = _State.get(), retry++) {
-            _Logger.warning("update state failed! retry: %d", retry);
-        }
-    }
+                      ZClient>             _ZClientMap;
 
     @SuppressWarnings("unchecked")
     @Autowired
-    public DeviceConsumer(IBizIoConfig config) throws IOException
+    public DeviceConsumer(IBizIoConfig bizIoConfig,
+                          ConsumerConfig consumerConfig) throws IOException
     {
-        _State.set(STATE.STOP.ordinal());
-        _Config = config;
-        _ChannelGroup = AsynchronousChannelGroup.withFixedThreadPool(1, _ClientCore.getWorkerThreadFactory());
+        super(bizIoConfig);
+        _ZClientMap = new HashMap<>(1 << getConfigPower(getSlot(AioSessionManager.SERVER_SLOT)));
+        _ConsumerConfig = consumerConfig;
+        _ChannelGroup = AsynchronousChannelGroup.withFixedThreadPool(3, _ClientCore.getWorkerThreadFactory());
         _ClientCore.build((QEvent event, long sequence, boolean endOfBatch) ->
         {
             IControl<ZContext>[] commands;
@@ -151,8 +139,15 @@ public class DeviceConsumer
                                                  case X21_SignUpResult.COMMAND:
                                                      X21_SignUpResult x21 = (X21_SignUpResult) cmd;
                                                      X22_SignIn x22 = new X22_SignIn();
-                                                     currentTokenRef.set(x21.getToken());
-                                                     x22.setToken(currentTokenRef.get());
+                                                     byte[] token = x22.getToken();
+                                                     ZClient zClient = _ZClientMap.get(session.getIndex());
+                                                     if (zClient == null) {
+                                                         _Logger.warning("z-client not found");
+                                                     }
+                                                     else {
+                                                         zClient.setToken(IoUtil.bin2Hex(token));
+                                                     }
+                                                     x22.setToken(token);
                                                      x22.setPassword("password");
                                                      return x22;
                                                  case X23_SignInResult.COMMAND:
@@ -218,150 +213,105 @@ public class DeviceConsumer
 
     }
 
-    @SuppressWarnings("unchecked")
-    public void connect(final String _TargetHost,
-                        final int _TargetPort,
-                        final ISort<ZContext> _Sort,
-                        final long _ClientId)
+    @Override
+    public void connect(IAioConnector<ZContext> connector) throws IOException
     {
-        final ICommandCreator<ZContext> _CommandCreator;
-        switch ((ConsumerZSort) _Sort)
+        if (_ChannelGroup.isShutdown()) return;
+        AsynchronousSocketChannel socketChannel = AsynchronousSocketChannel.open(_ChannelGroup);
+        socketChannel.connect(connector.getRemoteAddress(), socketChannel, connector);
+    }
+
+    @SuppressWarnings("unchecked")
+    public void connect(ConsumerZSort sort, ZClient zClient) throws IOException
+    {
+        final String host;
+        final int port;
+        switch (sort)
         {
             case WS_CONSUMER:
-                _CommandCreator = session ->
-                {
-                    WsContext wsContext = (WsContext) session.getContext();
-                    X101_HandShake x101 = new X101_HandShake(_TargetHost,
-                                                             wsContext.getSeKey(),
-                                                             wsContext.getWsVersion());
-                    return new IControl[] { x101 };
-                };
-                break;
-            case WS_CONSUMER_SSL:
-                _CommandCreator = session ->
-                {
-                    WsContext wsContext = (WsContext) session.getContext();
-                    X102_SslHandShake x102 = new X102_SslHandShake(_TargetHost,
-                                                                   wsContext.getSeKey(),
-                                                                   wsContext.getWsVersion());
-                    return new IControl[] { x102 };
-                };
+                host = _ConsumerConfig.getWs()
+                                      .getHost();
+                port = _ConsumerConfig.getWs()
+                                      .getPort();
                 break;
             case QTT_SYMMETRY:
-                _CommandCreator = session ->
-                {
-                    X111_QttConnect x111 = new X111_QttConnect();
-                    x111.setClientId(_CryptUtil.sha256("test-mqtt-smallbeex-0001"));
-                    x111.setUserName("A06FF74D68D32FD5FE9DEB00F636BEC9C24FC400F23E6B91F2CA3AA9A3E52B7F");
-                    x111.setPassword("SNju/kfjXtgAAe-`cN".getBytes(StandardCharsets.UTF_8));
-                    x111.setClean();
-                    return new IControl[] { x111 };
-                };
+                host = _ConsumerConfig.getQtt()
+                                      .getHost();
+                port = _ConsumerConfig.getQtt()
+                                      .getPort();
                 break;
             default:
-                _CommandCreator = null;
-                break;
+                throw new UnsupportedOperationException();
+
         }
-        final ISessionCreator<ZContext> _SessionCreator = new AioCreator<ZContext>(_Config.getBizSocketConfig(ISessionManager.CLIENT_SLOT))
+        final long _SessionInitializeIndex = _ZUid.getId();
+        BaseAioConnector<ZContext> connector = new BaseAioConnector<ZContext>(host,
+                                                                              port,
+                                                                              getSocketConfig(getSlot(_SessionInitializeIndex)),
+                                                                              _ClientCore)
         {
             @Override
-            public ZContext createContext(ISessionOption option, ISort<ZContext> sort)
+            public ISort<ZContext> getSort()
             {
-                return sort.newContext(this, _CommandCreator);
+                return sort;
+            }
+
+            @Override
+            public void onCreate(ISession<ZContext> session)
+            {
+                session.setIndex(_SessionInitializeIndex);
+                DeviceConsumer.this.addSession(session);
+                _ZClientMap.put(session.getIndex(), zClient);
             }
 
             @Override
             public ISession<ZContext> createSession(AsynchronousSocketChannel socketChannel,
                                                     IConnectActivity<ZContext> activity) throws IOException
             {
-                ISession<ZContext> session = new AioSession<>(socketChannel, this, this, activity, DeviceConsumer.this);
-                session.setIndex(_ClientId);
-                return session;
+                return new AioSession<>(socketChannel, this, this, activity, DeviceConsumer.this);
+            }
+
+            @Override
+            public ZContext createContext(ISessionOption option, ISort<ZContext> sort)
+            {
+                return sort.newContext(option, this);
+            }
+
+            @Override
+            public IControl<ZContext>[] createCommands(ISession<ZContext> session)
+            {
+                switch (sort)
+                {
+                    case WS_CONSUMER:
+                        WsContext wsContext = (WsContext) session.getContext();
+                        X101_HandShake x101 = new X101_HandShake(host, wsContext.getSeKey(), wsContext.getWsVersion());
+                        return new IControl[] { x101 };
+                    case QTT_SYMMETRY:
+                        X111_QttConnect x111 = new X111_QttConnect();
+                        x111.setClientId(zClient.getClientId());
+                        x111.setUserName(zClient.getUsername());
+                        x111.setPassword(zClient.getPassword()
+                                                .getBytes(StandardCharsets.UTF_8));
+                        x111.setClean();
+                        return new IControl[] { x111 };
+                    default:
+                        throw new UnsupportedOperationException();
+                }
             }
         };
-        final BaseAioConnector<ZContext> _Connector = new BaseAioConnector<ZContext>(_TargetHost, _TargetPort)
-        {
-
-            @Override
-            public ISort<ZContext> getSort()
-            {
-                return _Sort;
-            }
-
-            @Override
-            public ISessionCreator<ZContext> getSessionCreator()
-            {
-                return _SessionCreator;
-            }
-
-            @Override
-            public ISessionCreated<ZContext> getSessionCreated()
-            {
-                return DeviceConsumer.this;
-            }
-
-            @Override
-            public ICommandCreator<ZContext> getCommandCreator()
-            {
-                return _CommandCreator;
-            }
-        };
-        try {
-            connect(_Connector, _ChannelGroup);
-            _TimeWheel.acquire(_Connector, new ScheduleHandler<>(3, connector ->
-            {
-                if (Objects.nonNull(_ClientSessions.get(_ClientId))) {
-                    _Logger.info("connect -> success; %s", _ClientSessions.get(_ClientId));
-                }
-                else {
-                    _Logger.warning("connect status checked -> failed -> retry once");
-                    try {
-                        connect(connector, _ChannelGroup);
-                    }
-                    catch (IOException e) {
-                        e.printStackTrace();
-                        //terminate connect
-                    }
-                }
-            }));
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-            //terminate connect
-        }
-
-    }
-
-    @Override
-    public void onCreate(ISession<ZContext> session)
-    {
-        _Logger.info("client connect:%s", session);
-        long sessionIndex = session.getIndex();
-        if (_ClientSessions.containsKey(sessionIndex)) {
-            _Logger.warning("clientId %d already connected", sessionIndex);
-        }
-        else {
-            _ClientSessions.put(session.getIndex(), session);
-            updateState(STATE.OFFLINE);
-        }
+        connect(connector);
     }
 
     @Override
     public void onDismiss(ISession<ZContext> session)
     {
-        _Logger.info("dismiss:%s", session);
-        if (_ClientSessions.remove(session.getIndex()) == session) {
-            _Logger.info("drop client session %s", session);
-        }
-        if (_ClientSessions.isEmpty()) {
-            updateState(STATE.SHUTDOWN);
-        }
+        rmSession(session);
     }
 
     @SafeVarargs
-    public final void sendLocal(long clientId, IControl<ZContext>... toSends)
+    public final void sendLocal(long sessionIndex, IControl<ZContext>... toSends)
     {
-        ISession<ZContext> session = _ClientSessions.get(clientId);
+        ISession<ZContext> session = findSessionByIndex(sessionIndex);
         if (Objects.nonNull(session)) {
             _ClientCore.localSend(session,
                                   session.getContext()
@@ -370,13 +320,13 @@ public class DeviceConsumer
                                   toSends);
         }
         else {
-            throw new ZException("client-id:%d,is offline;send % failed", clientId, Arrays.toString(toSends));
+            throw new ZException("client-id:%d,is offline;send % failed", sessionIndex, Arrays.toString(toSends));
         }
     }
 
-    public void close(long clientId)
+    public void close(long sessionIndex)
     {
-        ISession<ZContext> session = _ClientSessions.get(clientId);
+        ISession<ZContext> session = findSessionByIndex(sessionIndex);
         if (Objects.nonNull(session)) {
             _ClientCore.localClose(session,
                                    session.getContext()
@@ -388,19 +338,26 @@ public class DeviceConsumer
         }
     }
 
-    public byte[] getToken()
-    {
-        return currentTokenRef.get();
-    }
-
-    public void setToken(String token)
-    {
-        currentTokenRef.set(IoUtil.hex2bin(token));
-    }
-
-    public void wsHeartbeat(long clientId, String msg)
+    public void wsHeartbeat(long sessionIndex, String msg)
     {
         Objects.requireNonNull(msg);
-        sendLocal(clientId, new X104_Ping(msg.getBytes()));
+        sendLocal(sessionIndex, new X104_Ping(msg.getBytes()));
+    }
+
+    @Override
+    public void onFailed(IAioConnector<ZContext> connector)
+    {
+        _TimeWheel.acquire(connector, new ScheduleHandler<>(connector.getConnectTimeout() * 3, c ->
+        {
+            try {
+                _Logger.info("%s retry connect",
+                             Thread.currentThread()
+                                   .getName());
+                connect(c);
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+        }));
     }
 }

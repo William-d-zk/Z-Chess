@@ -24,11 +24,9 @@
 
 package com.tgx.chess.rook.biz.device.controller;
 
-import java.util.Objects;
-
+import com.tgx.chess.rook.biz.device.client.ZClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,49 +36,34 @@ import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
 import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
 import com.tgx.chess.bishop.io.zprotocol.device.X50_DeviceMsg;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X01_EncryptRequest;
-import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.rook.biz.device.client.DeviceConsumer;
 import com.tgx.chess.rook.io.ConsumerZSort;
+
+import java.io.IOException;
 
 /**
  * @author william.d.zk
  */
 @RestController
-@PropertySource({ "classpath:ws.consumer.properties",
-                  "classpath:qtt.consumer.properties" })
 public class ConsumerController
 {
     private final DeviceConsumer _DeviceClient;
-    private final String         _WsHost;
-    private final int            _WsPort;
-    private final String         _QttHost;
-    private final int            _QttPort;
 
     @Autowired
-    ConsumerController(DeviceConsumer client,
-                       @Value("${ws.consumer.target.host}") String wsHost,
-                       @Value("${ws.consumer.target.port}") int wsPort,
-                       @Value("${qtt.consumer.target.host}") String qttHost,
-                       @Value("${qtt.consumer.target.port}") int qttPort)
+    ConsumerController(DeviceConsumer client)
     {
         _DeviceClient = client;
-        _WsHost = wsHost;
-        _WsPort = wsPort;
-        _QttHost = qttHost;
-        _QttPort = qttPort;
     }
 
     @GetMapping("/consumer/ws/start")
-    public String wsStart(@RequestParam(name = "client_id") long clientId)
-    {
-        _DeviceClient.connect(_WsHost, _WsPort, ConsumerZSort.WS_CONSUMER, clientId);
+    public String wsStart(@RequestParam(name = "z_client") ZClient zClient) throws IOException {
+        _DeviceClient.connect(ConsumerZSort.WS_CONSUMER, zClient);
         return "async commit ws_start consumer request";
     }
 
     @GetMapping("/consumer/qtt/start")
-    public String qttStart(@RequestParam(name = "client_id") long clientId)
-    {
-        _DeviceClient.connect(_QttHost, _QttPort, ConsumerZSort.QTT_SYMMETRY, clientId);
+    public String qttStart(@RequestParam(name = "z_client") ZClient zClient) throws IOException {
+        _DeviceClient.connect(ConsumerZSort.QTT_SYMMETRY, zClient);
         return "async commit qtt_start consumer request";
     }
 
@@ -137,14 +120,14 @@ public class ConsumerController
                         @RequestParam(name = "session_id") long sessionId)
     {
         X22_SignIn x22 = new X22_SignIn();
-        if (Objects.nonNull(_DeviceClient.getToken())
-            && !IoUtil.bin2Hex(_DeviceClient.getToken())
-                      .equals(token)) throw new IllegalStateException(String.format("client already login with %s ", IoUtil.bin2Hex(_DeviceClient.getToken())));
-        _DeviceClient.setToken(token);
-        x22.setToken(_DeviceClient.getToken());
-        x22.setPassword(password);
-        _DeviceClient.sendLocal(sessionId, x22);
-        return String.format("login %s : %s", IoUtil.bin2Hex(_DeviceClient.getToken()), password);
+        //        if (Objects.nonNull(_DeviceClient.getToken())
+        //            && !IoUtil.bin2Hex(_DeviceClient.getToken())
+        //                      .equals(token)) throw new IllegalStateException(String.format("client already login with %s ", IoUtil.bin2Hex(_DeviceClient.getToken())));
+        //        _DeviceClient.setToken(token);
+        //        x22.setToken(_DeviceClient.getToken());
+        //        x22.setPassword(password);
+        //        _DeviceClient.sendLocal(sessionId, x22);
+        return String.format("login %s : %s", "", password);
     }
 
     @GetMapping("/consumer/ws/ztls")

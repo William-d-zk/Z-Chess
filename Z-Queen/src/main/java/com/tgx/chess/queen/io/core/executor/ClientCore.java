@@ -90,7 +90,7 @@ public class ClientCore<C extends IContext<C>>
         _AioProducerEvent = createPipelineYield(6);
         _BizLocalCloseEvent = createPipelineLite(5);
         _BizLocalSendEvent = createPipelineLite(5);
-        _TimeWheel.acquire("client event", new ScheduleHandler<>(45, true));
+//        _TimeWheel.acquire("client event", new ScheduleHandler<>(45, true));
     }
 
     /*  ║ barrier, ━> publish event, ━━ pipeline, | handle event
