@@ -40,6 +40,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 
+import com.tgx.chess.rook.config.ConsumerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -97,7 +98,7 @@ public class DeviceConsumer
         ISessionDismiss<ZContext>
 {
     private final Logger                   _Logger     = Logger.getLogger(getClass().getSimpleName());
-    private final ConsumerConfig           _ConsumerConfig;
+    private final ConsumerConfig _ConsumerConfig;
     private final AsynchronousChannelGroup _ChannelGroup;
     private final ClientCore<ZContext>     _ClientCore = new ClientCore<>();
     private final TimeWheel                _TimeWheel  = _ClientCore.getTimeWheel();
