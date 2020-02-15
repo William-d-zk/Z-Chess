@@ -33,6 +33,7 @@ import org.springframework.context.annotation.PropertySource;
 @PropertySource("classpath:consumer.properties")
 public class ConsumerConfig
 {
+
     public static class Target
     {
         private String name;
@@ -72,6 +73,7 @@ public class ConsumerConfig
 
     private Target qtt;
     private Target ws;
+    private int    ioCount;
 
     public Target getQtt()
     {
@@ -91,5 +93,15 @@ public class ConsumerConfig
     public void setWs(Target ws)
     {
         this.ws = ws;
+    }
+
+    public int getIoCount()
+    {
+        return ioCount;
+    }
+
+    public void setIoCount(int ioCount)
+    {
+        this.ioCount = ioCount;
     }
 }

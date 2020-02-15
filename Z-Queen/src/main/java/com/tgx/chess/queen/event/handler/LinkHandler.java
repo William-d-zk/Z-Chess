@@ -115,8 +115,7 @@ public class LinkHandler<C extends IContext<C>>
                         write(connectedHandled.first(), session);
                     }
                     catch (Exception e) {
-                        _Logger.warning("link failed", e);
-                        //connection create failed! ignore exception
+                        _Logger.fetal("link create session failed", e);
                     }
                     break;
                 case LOGIC:

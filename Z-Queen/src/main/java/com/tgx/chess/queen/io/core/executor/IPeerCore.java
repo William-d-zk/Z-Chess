@@ -29,8 +29,5 @@ import com.tgx.chess.queen.event.processor.QEvent;
 
 public interface IPeerCore
 {
-    default RingBuffer<QEvent> getConnectPublisher()
-    {
-        return null;
-    }
+    RingBuffer<QEvent> getConnectPublisher();
 }

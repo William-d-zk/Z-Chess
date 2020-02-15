@@ -28,6 +28,7 @@ import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 import java.nio.channels.AsynchronousSocketChannel;
 
 import com.lmax.disruptor.RingBuffer;
+import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
@@ -100,17 +101,25 @@ public class ClusterHandler<C extends IContext<C>>
             switch (event.getEventType())
             {
                 case CONNECTED:
-                    IPair connectedContent = event.getContent();
-                    IConnectActivity<C> connectActivity = connectedContent.first();
-                    AsynchronousSocketChannel channel = connectedContent.second();
-                    IOperator<IConnectActivity<C>,
-                              AsynchronousSocketChannel,
-                              ITriple> connectedOperator = event.getEventOp();
-                    ITriple connectedHandled = connectedOperator.handle(connectActivity, channel);
-                    //connectedHandled 不可能为 null
-                    ISession<C> session = connectedHandled.second();
-                    publish(_Writer, WRITE, new Pair<>(connectedHandled.first(), session), connectedHandled.third());
-                    _Log.info(String.format("cluster link mappingHandle %s,connected", session));
+                    try {
+                        IPair connectedContent = event.getContent();
+                        IConnectActivity<C> connectActivity = connectedContent.first();
+                        AsynchronousSocketChannel channel = connectedContent.second();
+                        IOperator<IConnectActivity<C>,
+                                  AsynchronousSocketChannel,
+                                  ITriple> connectedOperator = event.getEventOp();
+                        ITriple connectedHandled = connectedOperator.handle(connectActivity, channel);
+                        //connectedHandled 不可能为 null
+                        ISession<C> session = connectedHandled.second();
+                        publish(_Writer,
+                                WRITE,
+                                new Pair<>(connectedHandled.first(), session),
+                                connectedHandled.third());
+                        _Log.info(String.format("cluster link mappingHandle %s,connected", session));
+                    }
+                    catch (Exception e) {
+                        _Log.fetal("cluster create session failed", e);
+                    }
                     break;
                 case LOGIC:
                     //TODO  逻辑处理器需要在此处完成操作。

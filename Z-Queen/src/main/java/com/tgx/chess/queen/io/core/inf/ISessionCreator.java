@@ -52,7 +52,6 @@ public interface ISessionCreator<C extends IContext<C>>
         if (channel != null) {
             try {
                 channel.setOption(StandardSocketOptions.TCP_NODELAY, isTcpNoDelay());
-                channel.setOption(StandardSocketOptions.SO_LINGER, getSoLingerInSecond());
                 channel.setOption(StandardSocketOptions.SO_RCVBUF, getRcvInByte());
                 channel.setOption(StandardSocketOptions.SO_SNDBUF, getSnfInByte());
                 channel.setOption(StandardSocketOptions.SO_KEEPALIVE, isKeepAlive());

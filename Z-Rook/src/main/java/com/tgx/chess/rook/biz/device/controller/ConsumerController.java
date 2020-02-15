@@ -24,10 +24,12 @@
 
 package com.tgx.chess.rook.biz.device.controller;
 
-import com.tgx.chess.rook.biz.device.client.ZClient;
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -37,9 +39,8 @@ import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
 import com.tgx.chess.bishop.io.zprotocol.device.X50_DeviceMsg;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X01_EncryptRequest;
 import com.tgx.chess.rook.biz.device.client.DeviceConsumer;
+import com.tgx.chess.rook.biz.device.client.ZClient;
 import com.tgx.chess.rook.io.ConsumerZSort;
-
-import java.io.IOException;
 
 /**
  * @author william.d.zk
@@ -55,14 +56,16 @@ public class ConsumerController
         _DeviceClient = client;
     }
 
-    @GetMapping("/consumer/ws/start")
-    public String wsStart(@RequestParam(name = "z_client") ZClient zClient) throws IOException {
+    @PostMapping("/consumer/ws/start")
+    public String wsStart(@RequestBody ZClient zClient) throws IOException
+    {
         _DeviceClient.connect(ConsumerZSort.WS_CONSUMER, zClient);
         return "async commit ws_start consumer request";
     }
 
-    @GetMapping("/consumer/qtt/start")
-    public String qttStart(@RequestParam(name = "z_client") ZClient zClient) throws IOException {
+    @PostMapping("/consumer/qtt/start")
+    public String qttStart(@RequestBody ZClient zClient) throws IOException
+    {
         _DeviceClient.connect(ConsumerZSort.QTT_SYMMETRY, zClient);
         return "async commit qtt_start consumer request";
     }

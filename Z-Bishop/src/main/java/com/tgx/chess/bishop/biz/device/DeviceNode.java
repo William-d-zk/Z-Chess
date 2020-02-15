@@ -137,6 +137,7 @@ public class DeviceNode
                                final String _Host = triple.first();
                                final int _Port = triple.second();
                                final ISort<ZContext> _Sort = triple.third();
+                               final ZUID _ZUid = clusterConfig.createZUID();
                                ISort.Mode mode = _Sort.getMode();
                                ISort.Type type = _Sort.getType();
                                final long _SessionInitializeIndex;
@@ -164,7 +165,7 @@ public class DeviceNode
                                    @Override
                                    public void onCreate(ISession<ZContext> session)
                                    {
-                                       session.setIndex(_SessionInitializeIndex);
+                                       session.setIndex(_SessionInitializeIndex | _ZUid.getNoTypeId());
                                        DeviceNode.this.addSession(session);
                                    }
 
@@ -481,61 +482,58 @@ public class DeviceNode
 
     private IAioConnector<ZContext> buildConnector(IPair address, ZSort sort, IClusterConfig clusterConfig)
     {
-        {
-            final String _Host = address.first();
-            final int _Port = address.second();
-            final ISort<ZContext> _Sort = sort;
-            final ZUID _ZUid = clusterConfig.createZUID();
-
-            ISort.Mode mode = _Sort.getMode();
-            ISort.Type type = _Sort.getType();
-            final long _SessionInitializeIndex;
-            if (mode == ISort.Mode.CLUSTER && type == ISort.Type.SYMMETRY) {
-                _SessionInitializeIndex = QueenCode.RM_XID | _ZUid.getNoTypeId();
-            }
-            else {
-                _SessionInitializeIndex = QueenCode.CM_XID | _ZUid.getNoTypeId();
-            }
-            return new BaseAioConnector<ZContext>(_Host,
-                                                  _Port,
-                                                  getSocketConfig(getSlot(_SessionInitializeIndex)),
-                                                  getServerCore())
-            {
-
-                @Override
-                public ZContext createContext(ISessionOption option, ISort<ZContext> sort)
-                {
-                    return sort.newContext(option, this);
-                }
-
-                @Override
-                public ISession<ZContext> createSession(AsynchronousSocketChannel socketChannel,
-                                                        IConnectActivity<ZContext> activity) throws IOException
-                {
-                    return new AioSession<>(socketChannel, this, this, activity, DeviceNode.this);
-                }
-
-                @Override
-                public void onCreate(ISession<ZContext> session)
-                {
-                    session.setIndex(_SessionInitializeIndex);
-                    DeviceNode.this.addSession(session);
-                }
-
-                @Override
-                @SuppressWarnings("unchecked")
-                public IControl<ZContext>[] createCommands(ISession<ZContext> session)
-                {
-                    X106_Identity x106 = new X106_Identity(_ZUid.getName());
-                    return new IControl[] { x106 };
-                }
-
-                @Override
-                public ISort<ZContext> getSort()
-                {
-                    return _Sort;
-                }
-            };
+        final String _Host = address.first();
+        final int _Port = address.second();
+        final ISort<ZContext> _Sort = sort;
+        final ZUID _ZUid = clusterConfig.createZUID();
+        ISort.Mode mode = _Sort.getMode();
+        ISort.Type type = _Sort.getType();
+        final long _SessionInitializeIndex;
+        if (mode == ISort.Mode.CLUSTER && type == ISort.Type.SYMMETRY) {
+            _SessionInitializeIndex = QueenCode.RM_XID;
         }
+        else {
+            _SessionInitializeIndex = QueenCode.CM_XID;
+        }
+        return new BaseAioConnector<ZContext>(_Host,
+                                              _Port,
+                                              getSocketConfig(getSlot(_SessionInitializeIndex)),
+                                              getServerCore())
+        {
+
+            @Override
+            public ZContext createContext(ISessionOption option, ISort<ZContext> sort)
+            {
+                return sort.newContext(option, this);
+            }
+
+            @Override
+            public ISession<ZContext> createSession(AsynchronousSocketChannel socketChannel,
+                                                    IConnectActivity<ZContext> activity) throws IOException
+            {
+                return new AioSession<>(socketChannel, this, this, activity, DeviceNode.this);
+            }
+
+            @Override
+            public void onCreate(ISession<ZContext> session)
+            {
+                session.setIndex(_SessionInitializeIndex | _ZUid.getNoTypeId());
+                DeviceNode.this.addSession(session);
+            }
+
+            @Override
+            @SuppressWarnings("unchecked")
+            public IControl<ZContext>[] createCommands(ISession<ZContext> session)
+            {
+                X106_Identity x106 = new X106_Identity(_ZUid.getName());
+                return new IControl[] { x106 };
+            }
+
+            @Override
+            public ISort<ZContext> getSort()
+            {
+                return _Sort;
+            }
+        };
     }
 }
