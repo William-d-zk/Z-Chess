@@ -1,7 +1,7 @@
 /*
  * MIT License                                                                    
  *                                                                                
- * Copyright (c) 2016~2019 Z-Chess                                                
+ * Copyright (c) 2016~2020 Z-Chess                                                
  *                                                                                
  * Permission is hereby granted, free of charge, to any person obtaining a copy   
  * of this software and associated documentation files (the "Software"), to deal  
@@ -22,22 +22,15 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.bishop.io;
+package com.tgx.chess.queen.event.inf;
 
-import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.io.core.inf.IControl;
+import com.tgx.chess.queen.io.core.inf.ISession;
+import com.tgx.chess.queen.io.core.manager.QueenManager;
 
-/**
- * @author william.d.zk
- * @date 2019-08-04
- */
-public interface IRouter<C extends IContext<C>>
+public interface ICustomLogic<C extends IContext<C>>
 {
-    long nextPackIdentity();
-
-    void register(ICommand<C> stateMessage, long sessionIndex);
-
-    void ack(ICommand<C> stateMessage, long sessionIndex);
-
-    void clean(long sessionIndex);
+    IControl<C>[] handle(QueenManager<C> manager, ISession<C> session, IControl<C> content) throws ZException;
 }

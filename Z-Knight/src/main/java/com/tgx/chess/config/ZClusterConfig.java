@@ -25,7 +25,7 @@
 package com.tgx.chess.config;
 
 import com.tgx.chess.bishop.biz.config.IClusterConfig;
-import com.tgx.chess.bishop.biz.db.dao.ZUID;
+import com.tgx.chess.bishop.ZUID;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.util.Pair;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -42,15 +42,21 @@ public class ZClusterConfig
         implements
         IClusterConfig
 {
+
     public Uid getUid()
     {
         return uid;
     }
 
     @Override
-    public ZUID createZUID()
+    public ZUID createZUID(boolean withType)
     {
-        return new ZUID(getUid().getIdcId(), getUid().getClusterId(), getUid().getNodeId(), getUid().getType());
+        return zuid == null ? zuid = new ZUID(getUid().getIdcId(),
+                                              getUid().getClusterId(),
+                                              getUid().getNodeId(),
+                                              (withType ? getUid().getType()
+                                                        : 0))
+                            : zuid;
     }
 
     public void setUid(Uid uid)
@@ -72,6 +78,7 @@ public class ZClusterConfig
     private List<IPair> peers;
     private List<IPair> gates;
     private IPair       bind;
+    private ZUID        zuid;
 
     @Override
     public List<IPair> getGates()

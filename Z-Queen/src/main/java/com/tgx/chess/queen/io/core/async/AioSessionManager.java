@@ -61,8 +61,7 @@ public abstract class AioSessionManager<C extends IContext<C>>
     private final Set<ISession<C>>[]       _SessionsSets          = new Set[4];
     private final Map<Long,
                       Integer>[]           _LoadFairMaps          = new Map[4];
-
-    private final IBizIoConfig _Config;
+    private final IBizIoConfig             _Config;
 
     public ISocketConfig getSocketConfig(int bizType)
     {

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020 Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,29 +22,20 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.spring.jpa.device.repository;
+package com.tgx.chess.spring.device.api;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import com.tgx.chess.spring.device.model.DeviceDo;
+import com.tgx.chess.spring.device.model.MessageBody;
 
-import com.tgx.chess.spring.jpa.device.dao.DeviceEntity;
+import java.util.List;
 
-/**
- * @author william.d.zk
- */
-@Repository
-//@Transactional
-public interface DeviceRepository
-        extends
-        JpaRepository<DeviceEntity,
-                      Long>
+public interface IDeviceService
 {
-    DeviceEntity findByTokenAndPassword(String token, String password);
+    DeviceDo saveDevice(DeviceDo deviceDo);
 
-    DeviceEntity findByTokenAndPasswordAndPasswordId(String token, String password, int passwordId);
+    DeviceDo findDevice(DeviceDo key);
 
-    DeviceEntity findByToken(String token);
+    MessageBody getMessageById(long id);
 
-    DeviceEntity findBySn(String sn);
-
+    List<MessageBody> listByTopic(String topic, int limit);
 }

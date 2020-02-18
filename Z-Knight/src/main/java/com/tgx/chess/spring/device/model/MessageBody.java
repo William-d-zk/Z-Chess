@@ -46,6 +46,7 @@ public class MessageBody
     private static Logger       _Logger          = Logger.getLogger(MessageBody.class.getSimpleName());
     private static final long   serialVersionUID = -8904730289818144372L;
     private static ObjectMapper jsonMapper       = new ObjectMapper();
+
     private String              topic;
     private byte[]              content;
 

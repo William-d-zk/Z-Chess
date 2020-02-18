@@ -24,7 +24,7 @@
 
 package com.tgx.chess.bishop.biz.config;
 
-import com.tgx.chess.bishop.biz.db.dao.ZUID;
+import com.tgx.chess.bishop.ZUID;
 import com.tgx.chess.king.base.inf.IPair;
 
 import java.util.List;
@@ -40,7 +40,7 @@ public interface IClusterConfig
 
     Uid getUid();
 
-    ZUID createZUID();
+    ZUID createZUID(boolean withType);
 
     class Uid
     {

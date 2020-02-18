@@ -1,7 +1,7 @@
 /*
  * MIT License                                                                    
  *                                                                                
- * Copyright (c) 2016~2019 Z-Chess                                                
+ * Copyright (c) 2016~2020 Z-Chess                                                
  *                                                                                
  * Permission is hereby granted, free of charge, to any person obtaining a copy   
  * of this software and associated documentation files (the "Software"), to deal  
@@ -22,22 +22,61 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.bishop.io;
+package com.tgx.chess.spring.device.service;
 
-import com.tgx.chess.queen.io.core.inf.ICommand;
-import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.bishop.ZUID;
+import com.tgx.chess.bishop.biz.config.IClusterConfig;
+import com.tgx.chess.queen.db.inf.IRepository;
+import com.tgx.chess.queen.db.inf.IStorage;
+import com.tgx.chess.spring.device.model.MessageEntry;
+import com.tgx.chess.spring.jpa.device.repository.IMessageJpaRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * @author william.d.zk
- * @date 2019-08-04
  */
-public interface IRouter<C extends IContext<C>>
+@Component
+public class MessageRepository
+        implements
+        IRepository<MessageEntry>
 {
-    long nextPackIdentity();
+    private final IClusterConfig       _ClusterConfig;
+    private final ZUID                 _ZUid;
+    private final IMessageJpaRepository _MessageJpaRepository;
 
-    void register(ICommand<C> stateMessage, long sessionIndex);
+    @Autowired
+    public MessageRepository(IClusterConfig clusterConfig,
+                             IMessageJpaRepository messageJpaRepository)
+    {
+        _ClusterConfig = clusterConfig;
+        _MessageJpaRepository = messageJpaRepository;
+        _ZUid = _ClusterConfig.createZUID(true);
+    }
 
-    void ack(ICommand<C> stateMessage, long sessionIndex);
+    @Override
+    public MessageEntry save(IStorage target)
+    {
+        return null;
+    }
 
-    void clean(long sessionIndex);
+    @Override
+    public MessageEntry find(IStorage key)
+    {
+        return null;
+    }
+
+    @Override
+    public List<MessageEntry> findAll(IStorage key)
+    {
+        return null;
+    }
+
+    @Override
+    public void saveAll(List<IStorage> targets)
+    {
+
+    }
 }

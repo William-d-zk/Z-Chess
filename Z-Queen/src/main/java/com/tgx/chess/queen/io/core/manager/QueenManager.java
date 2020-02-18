@@ -50,18 +50,16 @@ public abstract class QueenManager<C extends IContext<C>>
         _ServerCore = serverCore;
     }
 
-    protected void localClose(ISession<C> session, ISessionCloser<C> closeOperator)
+    public void localClose(ISession<C> session, ISessionCloser<C> closeOperator)
     {
         _ServerCore.localClose(session, closeOperator);
     }
 
     @SafeVarargs
-    protected final boolean localSend(ISession<C> session, IPipeTransfer<C> transfer, IControl<C>... commands)
+    public final boolean localSend(ISession<C> session, IPipeTransfer<C> transfer, IControl<C>... commands)
     {
         return _ServerCore.localSend(session, transfer, commands);
     }
-
-    public abstract IControl<C>[] mappingHandle(IControl<C> input, ISession<C> session);
 
     protected ServerCore<C> getServerCore()
     {

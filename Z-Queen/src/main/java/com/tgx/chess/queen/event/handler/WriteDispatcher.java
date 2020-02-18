@@ -24,6 +24,7 @@
 
 package com.tgx.chess.queen.event.handler;
 
+import static com.tgx.chess.queen.event.inf.IError.Type.CLOSED;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WROTE;
 
@@ -35,6 +36,7 @@ import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
+import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
@@ -50,12 +52,15 @@ public class WriteDispatcher<C extends IContext<C>>
         IPipeEventHandler<QEvent>
 {
     private final RingBuffer<QEvent>[] _Encoders;
+    private final RingBuffer<QEvent>   _Error;
     private final int                  _Mask;
     private final Logger               _Logger = Logger.getLogger(getClass().getName());
 
     @SafeVarargs
-    public WriteDispatcher(RingBuffer<QEvent>... workers)
+    public WriteDispatcher(RingBuffer<QEvent> error,
+                           RingBuffer<QEvent>... workers)
     {
+        _Error = error;
         _Encoders = workers;
         _Mask = _Encoders.length - 1;
     }
@@ -68,10 +73,22 @@ public class WriteDispatcher<C extends IContext<C>>
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
     {
-        /*
-         Write Dispatcher  不存在错误状态的输入,都已经处理完了
-         */
-        switch (event.getEventType())
+        if (event.hasError()) {
+            switch (event.getErrorType())
+            {
+                case HANDLE_DATA:// from logic
+                    IOperator<Void,
+                              ISession<C>,
+                              Void> closeOperator = event.getEventOp();
+                    IPair closeContent = event.getContent();
+                    ISession<C> session = closeContent.second();
+                    if (!session.isClosed()) {
+                        error(_Error, event.getErrorType(), closeContent, closeOperator);
+                    }
+                    break;
+            }
+        }
+        else switch (event.getEventType())
         {
             case NULL://在前一个处理器event.reset().
             case IGNORE://没有任何时间需要跨 Barrier 投递向下一层 Pipeline
@@ -83,7 +100,7 @@ public class WriteDispatcher<C extends IContext<C>>
                 IControl<C>[] commands = writeContent.first();
                 ISession<C> session = writeContent.second();
                 if (session.isValid() && Objects.nonNull(commands)) {
-                    IOperator<IControl[],
+                    IOperator<IControl<C>[],
                               ISession<C>,
                               List<ITriple>> transferOperator = event.getEventOp();
                     List<ITriple> triples = transferOperator.handle(commands, session);

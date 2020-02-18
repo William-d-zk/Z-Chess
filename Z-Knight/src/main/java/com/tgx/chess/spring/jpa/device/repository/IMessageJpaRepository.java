@@ -38,7 +38,7 @@ import com.tgx.chess.spring.jpa.device.dao.MessageEntity;
  * @date 2019-07-31
  */
 @Repository
-public interface MessageRepository
+public interface IMessageJpaRepository
         extends
         JpaRepository<MessageEntity,
                       Long>

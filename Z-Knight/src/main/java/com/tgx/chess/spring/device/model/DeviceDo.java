@@ -29,6 +29,8 @@ import org.springframework.lang.NonNull;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.time.Instant;
+
 /**
  * @author william.d.zk
  * @date 2019-06-15
@@ -37,9 +39,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 public class DeviceDo
 {
 
-    private String sn;
-    private String password;
-    private String token;
+    private String  sn;
+    private String  username;
+    private String  password;
+    private String  token;
+    private Instant invalidAt;
 
     public String getSn()
     {
@@ -77,4 +81,23 @@ public class DeviceDo
         return getToken();
     }
 
+    public Instant getInvalidAt()
+    {
+        return invalidAt;
+    }
+
+    public void setInvalidAt(Instant invalidAt)
+    {
+        this.invalidAt = invalidAt;
+    }
+
+    public String getUsername()
+    {
+        return username;
+    }
+
+    public void setUsername(String username)
+    {
+        this.username = username;
+    }
 }

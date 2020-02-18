@@ -22,10 +22,11 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.cluster.raft.node;
+package com.tgx.chess.cluster.raft.service;
 
 import java.util.List;
 
+import com.tgx.chess.bishop.ZUID;
 import com.tgx.chess.cluster.raft.IMachine;
 import com.tgx.chess.cluster.raft.IRaftMessage;
 import com.tgx.chess.cluster.raft.IRaftNode;
@@ -40,7 +41,7 @@ public class RaftNode
         IRaftNode,
         IMachine
 {
-    private final Logger _Logger = Logger.getLogger(getClass().getName());
+    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
     /**
      * 状态
      */
@@ -53,14 +54,14 @@ public class RaftNode
     /**
      * 候选人 有效值 非0，很可能是负值
      * 
-     * @see com.tgx.chess.bishop.biz.db.dao.ZUID
+     * @see ZUID
      */
     private long         candidate;
     /**
      * 已知的leader
      * 有效值 非0，很可能是负值
      * 
-     * @see com.tgx.chess.bishop.biz.db.dao.ZUID
+     * @see ZUID
      */
     private long         leader;
     /**
@@ -68,7 +69,7 @@ public class RaftNode
      * 有效值 非0，很可能是负值
      * 48bit
      * 
-     * @see com.tgx.chess.bishop.biz.db.dao.ZUID
+     * @see ZUID
      */
     private long         commit;
     /**
@@ -76,7 +77,7 @@ public class RaftNode
      * 必须 <= commit
      * 48bit
      * 
-     * @see com.tgx.chess.bishop.biz.db.dao.ZUID
+     * @see ZUID
      */
     private long         apply;
 
