@@ -24,7 +24,6 @@
 
 package com.tgx.chess.queen.event.handler;
 
-import static com.tgx.chess.queen.event.inf.IError.Type.CLOSED;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WROTE;
 
@@ -36,7 +35,6 @@ import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
-import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;

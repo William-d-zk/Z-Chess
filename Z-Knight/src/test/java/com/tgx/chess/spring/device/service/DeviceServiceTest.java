@@ -24,10 +24,9 @@
 
 package com.tgx.chess.spring.device.service;
 
-import com.tgx.chess.spring.jpa.device.dao.DeviceEntity;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import com.tgx.chess.spring.jpa.device.dao.DeviceEntity;
 
 /**
  * @author Idempotent

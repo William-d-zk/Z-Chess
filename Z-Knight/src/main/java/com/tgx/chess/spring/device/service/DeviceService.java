@@ -31,9 +31,6 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
-import com.tgx.chess.spring.device.model.DeviceDo;
-import com.tgx.chess.spring.device.model.DeviceEntry;
-import com.tgx.chess.spring.device.model.MessageBody;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -53,6 +50,9 @@ import com.tgx.chess.queen.config.IServerConfig;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.spring.device.api.IDeviceService;
+import com.tgx.chess.spring.device.model.DeviceDo;
+import com.tgx.chess.spring.device.model.DeviceEntry;
+import com.tgx.chess.spring.device.model.MessageBody;
 import com.tgx.chess.spring.device.model.MessageEntry;
 
 /**

@@ -24,14 +24,14 @@
 
 package com.tgx.chess.bishop.io.mqtt.bean;
 
+import static com.tgx.chess.bishop.io.Direction.CLIENT_TO_SERVER;
+import static com.tgx.chess.bishop.io.Direction.SERVER_TO_CLIENT;
+
 import java.util.Objects;
 
 import com.tgx.chess.bishop.io.Direction;
 import com.tgx.chess.queen.io.core.inf.IDuplicate;
 import com.tgx.chess.queen.io.core.inf.IQoS;
-
-import static com.tgx.chess.bishop.io.Direction.CLIENT_TO_SERVER;
-import static com.tgx.chess.bishop.io.Direction.SERVER_TO_CLIENT;
 
 /**
  * @author william.d.zk

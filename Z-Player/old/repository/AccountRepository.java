@@ -24,9 +24,10 @@
 
 package repository;
 
-import model.AccountEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import model.AccountEntity;
 
 /**
  * @author william.d.zk

@@ -24,10 +24,7 @@
 
 package com.tgx.chess.bishop.io.zprotocol.device;
 
-import static com.tgx.chess.bishop.io.zprotocol.device.X31_ConfirmMsg.STATUS_ACTION;
-import static com.tgx.chess.bishop.io.zprotocol.device.X31_ConfirmMsg.STATUS_CONFIRM;
-import static com.tgx.chess.bishop.io.zprotocol.device.X31_ConfirmMsg.STATUS_PENDING;
-import static com.tgx.chess.bishop.io.zprotocol.device.X31_ConfirmMsg.STATUS_RECEIVED;
+import static com.tgx.chess.bishop.io.zprotocol.device.X31_ConfirmMsg.*;
 
 import com.tgx.chess.bishop.io.zprotocol.ZCommand;
 import com.tgx.chess.king.base.util.IoUtil;

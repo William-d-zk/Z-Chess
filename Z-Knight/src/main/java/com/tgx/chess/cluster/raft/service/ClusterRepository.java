@@ -22,61 +22,41 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.spring.device.service;
+package com.tgx.chess.cluster.raft.service;
 
-import java.time.Duration;
+import java.util.List;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.stereotype.Component;
 
-@PropertySource("classpath:device.config.properties")
-@ConfigurationProperties(prefix = "z.chess.device")
-@Configuration
-public class DeviceConfig
+import com.tgx.chess.queen.db.inf.IRepository;
+import com.tgx.chess.queen.db.inf.IStorage;
+
+@Component
+public class ClusterRepository
+        implements
+        IRepository<RaftNode>
 {
-    private Duration passwordInvalidDays;
-    private String   passwordRandomSeed;
-    private String   addressWs;
-    private String   addressQtt;
-
-    public Duration getPasswordInvalidDays()
+    @Override
+    public RaftNode save(IStorage target)
     {
-        return passwordInvalidDays;
+        return null;
     }
 
-    public void setPasswordInvalidDays(Duration passwordInvalidDays)
+    @Override
+    public RaftNode find(IStorage key)
     {
-        this.passwordInvalidDays = passwordInvalidDays;
+        return null;
     }
 
-    public String getPasswordRandomSeed()
+    @Override
+    public List<RaftNode> findAll(IStorage key)
     {
-        return passwordRandomSeed;
+        return null;
     }
 
-    public void setPasswordRandomSeed(String passwordRandomSeed)
+    @Override
+    public void saveAll(List<IStorage> targets)
     {
-        this.passwordRandomSeed = passwordRandomSeed;
-    }
 
-    public String getAddressWs()
-    {
-        return addressWs;
-    }
-
-    public void setAddressWs(String addressWs)
-    {
-        this.addressWs = addressWs;
-    }
-
-    public String getAddressQtt()
-    {
-        return addressQtt;
-    }
-
-    public void setAddressQtt(String addressQtt)
-    {
-        this.addressQtt = addressQtt;
     }
 }

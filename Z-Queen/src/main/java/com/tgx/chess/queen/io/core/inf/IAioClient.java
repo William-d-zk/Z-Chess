@@ -23,14 +23,11 @@
  */
 package com.tgx.chess.queen.io.core.inf;
 
+import java.io.IOException;
+import java.util.List;
+
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
-
-import java.io.IOException;
-import java.nio.channels.AsynchronousChannelGroup;
-import java.nio.channels.AsynchronousSocketChannel;
-import java.util.List;
-import java.util.Objects;
 
 /**
  * @author William.d.zk

@@ -24,17 +24,16 @@
 
 package com.tgx.chess.cluster.raft.log;
 
-import com.tgx.chess.king.base.exception.ZException;
-import com.tgx.chess.king.base.log.Logger;
-import org.apache.commons.io.FileUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.ZipException;
+
+import org.apache.commons.io.FileUtils;
+
+import com.tgx.chess.king.base.exception.ZException;
+import com.tgx.chess.king.base.log.Logger;
 
 public class Segment
 {

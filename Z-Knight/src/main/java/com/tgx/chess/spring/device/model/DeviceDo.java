@@ -24,12 +24,12 @@
 
 package com.tgx.chess.spring.device.model;
 
+import java.time.Instant;
+
 import org.springframework.lang.NonNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-
-import java.time.Instant;
 
 /**
  * @author william.d.zk

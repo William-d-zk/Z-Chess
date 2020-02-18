@@ -1,13 +1,13 @@
 package com.tgx.chess.king.base.util;
 
-import com.tgx.chess.king.base.exception.ZException;
-import com.tgx.chess.king.base.inf.ICode;
-import com.tgx.chess.king.config.Code;
-
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+
+import com.tgx.chess.king.base.exception.ZException;
+import com.tgx.chess.king.base.inf.ICode;
+import com.tgx.chess.king.config.Code;
 
 /**
  * @author william.d.zk

@@ -24,9 +24,7 @@
 
 package com.tgx.chess.queen.event.operator;
 
-import static com.tgx.chess.queen.event.inf.IError.Type.READ_EOF;
-import static com.tgx.chess.queen.event.inf.IError.Type.READ_FAILED;
-import static com.tgx.chess.queen.event.inf.IError.Type.READ_ZERO;
+import static com.tgx.chess.queen.event.inf.IError.Type.*;
 
 import java.io.EOFException;
 import java.nio.ByteBuffer;

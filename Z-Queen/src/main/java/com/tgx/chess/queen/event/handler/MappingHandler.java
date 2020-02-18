@@ -24,6 +24,12 @@
 
 package com.tgx.chess.queen.event.handler;
 
+import static com.tgx.chess.queen.event.inf.IError.Type.LINK_ERROR;
+import static com.tgx.chess.queen.event.inf.IError.Type.LINK_LOGIN_ERROR;
+import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
+
+import java.nio.channels.AsynchronousSocketChannel;
+
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.king.base.exception.LinkRejectException;
 import com.tgx.chess.king.base.exception.ZException;
@@ -38,12 +44,6 @@ import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.*;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
-
-import java.nio.channels.AsynchronousSocketChannel;
-
-import static com.tgx.chess.queen.event.inf.IError.Type.LINK_ERROR;
-import static com.tgx.chess.queen.event.inf.IError.Type.LINK_LOGIN_ERROR;
-import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 
 /**
  * @author william.d.zk

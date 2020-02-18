@@ -24,18 +24,16 @@
 
 package com.tgx.chess.queen.event.inf;
 
-import com.lmax.disruptor.EventHandler;
-import com.tgx.chess.king.base.inf.IPair;
+import static com.tgx.chess.queen.event.inf.IOperator.Type.LOGIC;
+
+import java.util.Objects;
+
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
-
-import java.util.Objects;
-
-import static com.tgx.chess.queen.event.inf.IOperator.Type.*;
 
 public interface ILogicHandler<C extends IContext<C>>
         extends

@@ -24,10 +24,11 @@
 
 package repository;
 
-import model.RoleEntity;
-import model.RoleEnum;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import model.RoleEntity;
+import model.RoleEnum;
 
 /**
  * @author william.d.zk

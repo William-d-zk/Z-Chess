@@ -53,8 +53,8 @@ public class MessageEntity
     private static final long serialVersionUID = -6502547239976531057L;
 
     @Id
-    @GeneratedValue(generator = "ZGenerator")
-    @GenericGenerator(name = "ZGenerator", strategy = "com.tgx.chess.spring.jpa.generator.ZGenerator")
+    @GeneratedValue(generator = "ZMessageGenerator")
+    @GenericGenerator(name = "ZMessageGenerator", strategy = "com.tgx.chess.spring.jpa.generator.ZMessageGenerator")
     private long        id;
     @Column(updatable = false, nullable = false)
     private long        origin;

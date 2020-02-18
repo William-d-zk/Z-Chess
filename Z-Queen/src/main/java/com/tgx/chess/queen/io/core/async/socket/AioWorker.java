@@ -36,13 +36,7 @@ import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IError.Type;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.IAioConnector;
-import com.tgx.chess.queen.io.core.inf.IAioServer;
-import com.tgx.chess.queen.io.core.inf.IAvailable;
-import com.tgx.chess.queen.io.core.inf.IConnectActivity;
-import com.tgx.chess.queen.io.core.inf.IContext;
-import com.tgx.chess.queen.io.core.inf.IPacket;
-import com.tgx.chess.queen.io.core.inf.ISession;
+import com.tgx.chess.queen.io.core.inf.*;
 
 /**
  * @author William.d.zk

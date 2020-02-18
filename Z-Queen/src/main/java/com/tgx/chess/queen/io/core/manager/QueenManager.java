@@ -25,14 +25,9 @@
 package com.tgx.chess.queen.io.core.manager;
 
 import com.tgx.chess.queen.config.IBizIoConfig;
-import com.tgx.chess.queen.config.ISocketConfig;
 import com.tgx.chess.queen.io.core.async.AioSessionManager;
 import com.tgx.chess.queen.io.core.executor.ServerCore;
-import com.tgx.chess.queen.io.core.inf.IContext;
-import com.tgx.chess.queen.io.core.inf.IControl;
-import com.tgx.chess.queen.io.core.inf.IPipeTransfer;
-import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.inf.ISessionCloser;
+import com.tgx.chess.queen.io.core.inf.*;
 
 /**
  * @author william.d.zk
