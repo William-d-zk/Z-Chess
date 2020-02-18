@@ -24,9 +24,7 @@
 
 package com.tgx.chess.queen.event.operator;
 
-import static com.tgx.chess.queen.event.inf.IError.Type.WRITE_EOF;
-import static com.tgx.chess.queen.event.inf.IError.Type.WRITE_FAILED;
-import static com.tgx.chess.queen.event.inf.IError.Type.WRITE_ZERO;
+import static com.tgx.chess.queen.event.inf.IError.Type.*;
 
 import java.io.EOFException;
 import java.nio.channels.CompletionHandler;

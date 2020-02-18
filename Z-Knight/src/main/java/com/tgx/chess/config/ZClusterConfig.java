@@ -24,16 +24,17 @@
 
 package com.tgx.chess.config;
 
-import com.tgx.chess.bishop.biz.config.IClusterConfig;
-import com.tgx.chess.bishop.ZUID;
-import com.tgx.chess.king.base.inf.IPair;
-import com.tgx.chess.king.base.util.Pair;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import com.tgx.chess.bishop.ZUID;
+import com.tgx.chess.bishop.biz.config.IClusterConfig;
+import com.tgx.chess.king.base.inf.IPair;
+import com.tgx.chess.king.base.util.Pair;
 
 @Configuration
 @ConfigurationProperties(prefix = "z.chess")

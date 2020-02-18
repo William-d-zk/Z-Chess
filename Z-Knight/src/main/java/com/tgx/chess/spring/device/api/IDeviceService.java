@@ -24,10 +24,10 @@
 
 package com.tgx.chess.spring.device.api;
 
+import java.util.List;
+
 import com.tgx.chess.spring.device.model.DeviceDo;
 import com.tgx.chess.spring.device.model.MessageBody;
-
-import java.util.List;
 
 public interface IDeviceService
 {
@@ -38,4 +38,5 @@ public interface IDeviceService
     MessageBody getMessageById(long id);
 
     List<MessageBody> listByTopic(String topic, int limit);
+
 }

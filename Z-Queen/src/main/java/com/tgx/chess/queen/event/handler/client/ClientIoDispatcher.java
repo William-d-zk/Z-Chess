@@ -25,9 +25,7 @@
 package com.tgx.chess.queen.event.handler.client;
 
 import static com.tgx.chess.queen.event.inf.IError.Type.CLOSED;
-import static com.tgx.chess.queen.event.inf.IOperator.Type.CONNECTED;
-import static com.tgx.chess.queen.event.inf.IOperator.Type.TRANSFER;
-import static com.tgx.chess.queen.event.inf.IOperator.Type.WROTE;
+import static com.tgx.chess.queen.event.inf.IOperator.Type.*;
 
 import java.nio.channels.AsynchronousSocketChannel;
 

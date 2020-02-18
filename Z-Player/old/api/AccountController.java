@@ -30,20 +30,16 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpSession;
 
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import api.dao.AuthEntry;
-import api.dao.ProfileEntry;
 import com.tgx.chess.spring.auth.model.AccountEntity;
 import com.tgx.chess.spring.auth.model.AccountStatus;
 import com.tgx.chess.spring.auth.model.RoleEntity;
 import com.tgx.chess.spring.auth.model.RoleEnum;
 import com.tgx.chess.spring.auth.service.AccountService;
+
+import api.dao.AuthEntry;
+import api.dao.ProfileEntry;
 
 /**
  * @author william.d.zk

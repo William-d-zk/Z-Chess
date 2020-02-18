@@ -25,7 +25,6 @@
 package com.tgx.chess.queen.config;
 
 import java.time.Duration;
-import java.util.Date;
 
 /**
  * @author william.d.zk

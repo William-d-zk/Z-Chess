@@ -31,14 +31,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import repository.ProfileRepository;
-import model.BillEntity;
-import model.ItemEntity;
-import repository.BillRepository;
 import com.tgx.chess.spring.device.model.ClientEntity;
 import com.tgx.chess.spring.device.model.DeviceEntity;
 import com.tgx.chess.spring.device.repository.ClientRepository;
 import com.tgx.chess.spring.device.repository.DeviceRepository;
+
+import model.BillEntity;
+import model.ItemEntity;
+import repository.BillRepository;
+import repository.ProfileRepository;
 
 /**
  * @author william.d.zk

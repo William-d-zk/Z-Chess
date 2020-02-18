@@ -24,13 +24,9 @@
 
 package com.tgx.chess.spring.device.service;
 
-import static com.tgx.chess.king.base.util.IoUtil.isBlank;
-
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
 
-import com.tgx.chess.spring.jpa.device.dao.DeviceEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -51,6 +47,7 @@ import com.tgx.chess.queen.io.core.inf.IQoS;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
 import com.tgx.chess.spring.device.model.DeviceEntry;
+import com.tgx.chess.spring.jpa.device.dao.DeviceEntity;
 
 @Component
 public class LinkCustom

@@ -24,10 +24,10 @@
 
 package com.tgx.chess.bishop.biz.config;
 
+import java.util.List;
+
 import com.tgx.chess.bishop.ZUID;
 import com.tgx.chess.king.base.inf.IPair;
-
-import java.util.List;
 
 public interface IClusterConfig
 {

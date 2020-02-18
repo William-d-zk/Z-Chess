@@ -24,14 +24,15 @@
 
 package com.tgx.chess.config;
 
-import com.tgx.chess.queen.config.IBizIoConfig;
-import com.tgx.chess.queen.config.ISocketConfig;
-import com.tgx.chess.queen.io.core.inf.ISessionManager;
+import java.util.Map;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
-import java.util.Map;
+import com.tgx.chess.queen.config.IBizIoConfig;
+import com.tgx.chess.queen.config.ISocketConfig;
+import com.tgx.chess.queen.io.core.inf.ISessionManager;
 
 /**
  * @author william.d.zk

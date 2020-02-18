@@ -24,10 +24,10 @@
 
 package service;
 
-import model.ProfileEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import model.ProfileEntity;
 import repository.ProfileRepository;
 
 /**

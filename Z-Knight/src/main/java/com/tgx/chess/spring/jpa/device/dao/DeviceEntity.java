@@ -26,14 +26,7 @@ package com.tgx.chess.spring.jpa.device.dao;
 
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 
 import org.hibernate.annotations.GenericGenerator;
@@ -58,8 +51,8 @@ public class DeviceEntity
     private static final long serialVersionUID = -6645586986057373344L;
 
     @Id
-    @GeneratedValue(generator = "ZGenerator")
-    @GenericGenerator(name = "ZGenerator", strategy = "com.tgx.chess.spring.jpa.generator.ZDeviceGenerator")
+    @GeneratedValue(generator = "ZDeviceGenerator")
+    @GenericGenerator(name = "ZDeviceGenerator", strategy = "com.tgx.chess.spring.jpa.generator.ZDeviceGenerator")
     private long   id;
     @Column(length = 32, nullable = false, updatable = false)
     private String sn;

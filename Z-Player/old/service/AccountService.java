@@ -29,15 +29,16 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
 
-import model.AccountEntity;
-import model.ProfileEntity;
-import model.RoleEntity;
-import model.RoleEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.CryptUtil;
+
+import model.AccountEntity;
+import model.ProfileEntity;
+import model.RoleEntity;
+import model.RoleEnum;
 import repository.AccountRepository;
 import repository.ProfileRepository;
 import repository.RoleRepository;

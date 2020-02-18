@@ -24,16 +24,17 @@
 
 package com.tgx.chess.spring.device.service;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.tgx.chess.bishop.ZUID;
 import com.tgx.chess.bishop.biz.config.IClusterConfig;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.spring.device.model.MessageEntry;
 import com.tgx.chess.spring.jpa.device.repository.IMessageJpaRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 /**
  * @author william.d.zk

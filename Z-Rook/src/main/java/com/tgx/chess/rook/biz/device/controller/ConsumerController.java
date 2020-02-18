@@ -27,11 +27,7 @@ package com.tgx.chess.rook.biz.device.controller;
 import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.tgx.chess.bishop.io.ws.control.X103_Close;
 import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;

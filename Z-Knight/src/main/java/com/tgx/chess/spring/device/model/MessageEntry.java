@@ -24,8 +24,6 @@
 
 package com.tgx.chess.spring.device.model;
 
-import static com.tgx.chess.king.base.util.IoUtil.isBlank;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
