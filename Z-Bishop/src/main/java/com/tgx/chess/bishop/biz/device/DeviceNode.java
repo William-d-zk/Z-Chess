@@ -24,43 +24,28 @@
 
 package com.tgx.chess.bishop.biz.device;
 
-import static com.tgx.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
-import static com.tgx.chess.queen.io.core.inf.IQoS.Level.EXACTLY_ONCE;
-import static java.lang.Integer.min;
-
 import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.bishop.biz.config.IClusterConfig;
-import com.tgx.chess.bishop.biz.db.dao.DeviceEntry;
-import com.tgx.chess.bishop.biz.db.dao.MessageEntry;
-import com.tgx.chess.bishop.biz.db.dao.ZUID;
+import com.tgx.chess.bishop.ZUID;
 import com.tgx.chess.bishop.io.ZSort;
-import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
-import com.tgx.chess.bishop.io.mqtt.control.*;
-import com.tgx.chess.bishop.io.mqtt.handler.IQttRouter;
-import com.tgx.chess.bishop.io.mqtt.handler.QttRouter;
-import com.tgx.chess.bishop.io.ws.control.X101_HandShake;
-import com.tgx.chess.bishop.io.ws.control.X103_Close;
-import com.tgx.chess.bishop.io.ws.control.X104_Ping;
-import com.tgx.chess.bishop.io.ws.control.X105_Pong;
 import com.tgx.chess.bishop.io.zcrypt.EncryptHandler;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
-import com.tgx.chess.bishop.io.zhandler.ZLinkedControl;
 import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
-import com.tgx.chess.bishop.io.zprotocol.device.*;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
-import com.tgx.chess.king.base.util.Pair;
+import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.config.IBizIoConfig;
 import com.tgx.chess.queen.config.IServerConfig;
 import com.tgx.chess.queen.config.QueenCode;
-import com.tgx.chess.queen.db.inf.IRepository;
-import com.tgx.chess.queen.event.handler.LogicHandler;
+import com.tgx.chess.queen.event.inf.ICustomLogic;
+import com.tgx.chess.queen.event.inf.ILogicHandler;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.async.AioSession;
@@ -83,8 +68,6 @@ public class DeviceNode
 {
 
     private final List<IAioServer<ZContext>>    _AioServers;
-    private final IRepository<IPair>            _DeviceRepository;
-    private final IQttRouter                    _QttRouter = new QttRouter();
     private final IAioClient<ZContext>          _ClusterClient;
     private final List<IAioConnector<ZContext>> _ClusterConnectors;
     private final IAioClient<ZContext>          _GateClient;
@@ -97,7 +80,6 @@ public class DeviceNode
     }
 
     public DeviceNode(List<ITriple> hosts,
-                      IRepository<IPair> deviceRepository,
                       IBizIoConfig bizIoConfig,
                       IClusterConfig clusterConfig,
                       IServerConfig serverConfig) throws IOException
@@ -107,26 +89,15 @@ public class DeviceNode
             @Override
             public RingBuffer<QEvent> getLocalPublisher(ISession<ZContext> session)
             {
-                switch (getSlot(session))
-                {
-                    case QueenCode.CU_XID_LOW:
-                        return getBizLocalSendEvent();
-                    default:
-                        return getClusterLocalSendEvent();
-                }
+                return getSlot(session) == QueenCode.CU_XID_LOW ? getBizLocalSendEvent()
+                                                                : getClusterLocalSendEvent();
             }
 
             @Override
             public RingBuffer<QEvent> getLocalCloser(ISession<ZContext> session)
             {
-                switch (getSlot(session))
-                {
-                    case QueenCode.CU_XID_LOW:
-                        return getBizLocalCloseEvent();
-                    default:
-                        return getClusterLocalCloseEvent();
-
-                }
+                return getSlot(session) == QueenCode.CU_XID_LOW ? getBizLocalCloseEvent()
+                                                                : getClusterLocalCloseEvent();
             }
         });
         IPair bind = clusterConfig.getBind();
@@ -137,7 +108,7 @@ public class DeviceNode
                                final String _Host = triple.first();
                                final int _Port = triple.second();
                                final ISort<ZContext> _Sort = triple.third();
-                               final ZUID _ZUid = clusterConfig.createZUID();
+                               final ZUID _ZUid = clusterConfig.createZUID(true);
                                ISort.Mode mode = _Sort.getMode();
                                ISort.Type type = _Sort.getType();
                                final long _SessionInitializeIndex;
@@ -214,7 +185,6 @@ public class DeviceNode
             _ClusterClient = null;
             _ClusterConnectors = null;
         }
-        _DeviceRepository = deviceRepository;
         _Logger.info("Device Node Bean Load");
     }
 
@@ -265,95 +235,11 @@ public class DeviceNode
     }
 
     @SuppressWarnings("unchecked")
-    public void start() throws IOException
+    public void start(ILogicHandler<ZContext> logicHandler,
+                      ICustomLogic<ZContext> linkCustom,
+                      ICustomLogic<ZContext> clusterCustom) throws IOException
     {
-        _ServerCore.build(new LogicHandler<>((command, session) ->
-        {
-            //前置的 dispatcher 将 ICommands 拆分了
-            _Logger.info(" node logic %s", command);
-            switch (command.serial())
-            {
-                case X30_EventMsg.COMMAND:
-                    X30_EventMsg x30 = (X30_EventMsg) command;
-                    return new IControl[] { new X31_ConfirmMsg(x30.getMsgId()) };
-                case X31_ConfirmMsg.COMMAND:
-                    X31_ConfirmMsg x31 = (X31_ConfirmMsg) command;
-                    return new IControl[] { new X32_MsgStatus(x31.getMsgId()) };
-                case X50_DeviceMsg.COMMAND:
-                    X50_DeviceMsg x50 = (X50_DeviceMsg) command;
-                    return new IControl[] { new X51_DeviceMsgAck(x50.getMsgId()) };
-                case X103_Close.COMMAND:
-                    //session is not null
-                    localClose(session,
-                               session.getContext()
-                                      .getSort()
-                                      .getCloser());
-                    break;
-                case X104_Ping.COMMAND:
-                    return new IControl[] { new X105_Pong("Server pong".getBytes()) };
-                case X101_HandShake.COMMAND:
-                    return new IControl[] { command };
-                case X51_DeviceMsgAck.COMMAND:
-                case X105_Pong.COMMAND:
-                    break;
-                case X113_QttPublish.COMMAND:
-                    X113_QttPublish x113 = (X113_QttPublish) command;
-                    _DeviceRepository.receive(command);
-                    List<IControl<ZContext>> pushList = new LinkedList<>();
-                    switch (x113.getLevel())
-                    {
-                        case EXACTLY_ONCE:
-                            X115_QttPubrec x115 = new X115_QttPubrec();
-                            x115.setMsgId(x113.getMsgId());
-                            _QttRouter.register(x115, session.getIndex());
-                            return new IControl[] { x115 };
-                        case AT_LEAST_ONCE:
-                            X114_QttPuback x114 = new X114_QttPuback();
-                            x114.setMsgId(x113.getMsgId());
-                            pushList.add(x114);
-                        default:
-                            brokerTopic(x113.getTopic(), x113.getPayload(), x113.getLevel(), pushList);
-                            return pushList.toArray(new IControl[0]);
-                    }
-                case X114_QttPuback.COMMAND:
-                    X114_QttPuback x114 = (X114_QttPuback) command;
-                    _DeviceRepository.receive(x114);
-                    _QttRouter.ack(x114, session.getIndex());
-                    break;
-                case X115_QttPubrec.COMMAND:
-                    X115_QttPubrec x115 = (X115_QttPubrec) command;
-                    _DeviceRepository.receive(x115);
-                    _QttRouter.ack(x115, session.getIndex());
-                    X116_QttPubrel x116 = new X116_QttPubrel();
-                    x116.setMsgId(x115.getMsgId());
-                    _DeviceRepository.send(x116);
-                    _QttRouter.register(x116, session.getIndex());
-                    return new IControl[] { x116 };
-                case X116_QttPubrel.COMMAND:
-                    x116 = (X116_QttPubrel) command;
-                    X117_QttPubcomp x117 = new X117_QttPubcomp();
-                    x117.setMsgId(x116.getMsgId());
-                    _QttRouter.ack(x116, session.getIndex());
-                    pushList = new LinkedList<>();
-                    IPair result = _DeviceRepository.receive(x116);
-                    List<MessageEntry> msgList = result.first();
-                    msgList.forEach(messageEntry -> brokerTopic(messageEntry.getTopic(),
-                                                                messageEntry.getPayload(),
-                                                                EXACTLY_ONCE,
-                                                                pushList));
-                    pushList.add(x117);
-                    return pushList.toArray(new IControl[0]);
-                case X117_QttPubcomp.COMMAND:
-                    x117 = (X117_QttPubcomp) command;
-                    _QttRouter.ack(x117, session.getIndex());
-                    break;
-                case X11C_QttPingreq.COMMAND:
-                    return new IControl[] { new X11D_QttPingresp() };
-                default:
-                    break;
-            }
-            return null;
-        }), this, new ZLinkedControl(), new EncryptHandler());
+        _ServerCore.build(this, new EncryptHandler(), logicHandler, linkCustom, clusterCustom);
         for (IAioServer<ZContext> server : _AioServers) {
             server.bindAddress(server.getLocalAddress(), _ServerCore.getServiceChannelGroup());
             server.pendingAccept();
@@ -373,119 +259,12 @@ public class DeviceNode
         }
     }
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public IControl<ZContext>[] mappingHandle(IControl<ZContext> input, ISession<ZContext> session)
-    {
-        _Logger.info("Manage LinkHandle mappingHandle input %s", input);
-        switch (input.serial())
-        {
-            case X20_SignUp.COMMAND:
-                IPair result = _DeviceRepository.save(input);
-                X21_SignUpResult x21 = result.second();
-                DeviceEntry deviceEntry = result.first();
-                if (x21.isSuccess()) {
-                    mapSession(deviceEntry.getPrimaryKey(), session);
-                }
-                return new IControl[] { x21 };
-            case X22_SignIn.COMMAND:
-                result = _DeviceRepository.find(input);
-                X23_SignInResult x23 = result.second();
-                if (x23.isSuccess()) {
-                    deviceEntry = result.first();
-                    mapSession(deviceEntry.getPrimaryKey(), session);
-                }
-                else {
-                    x23.setFailed();
-                }
-                return new IControl[] { x23 };
-            case X111_QttConnect.COMMAND:
-                X111_QttConnect x111 = (X111_QttConnect) input;
-                result = _DeviceRepository.find(x111);
-                X112_QttConnack x112 = result.second();
-                int[] supportVersions = QttContext.getSupportVersion()
-                                                  .second();
-                if (Arrays.stream(supportVersions)
-                          .noneMatch(version -> version == x111.getProtocolVersion()))
-                {
-                    x112.rejectUnacceptableProtocol();
-                }
-                else if (!x111.isClean() && x111.getClientIdLength() == 0) {
-                    x112.rejectIdentifier();
-                }
-                else if (!x112.isIllegalState()) {
-                    deviceEntry = result.first();
-                    mapSession(deviceEntry.getPrimaryKey(), session);
-                }
-                return new IControl[] { x112 };
-            case X118_QttSubscribe.COMMAND:
-                X118_QttSubscribe x118 = (X118_QttSubscribe) input;
-                X119_QttSuback x119 = new X119_QttSuback();
-                x119.setMsgId(x118.getMsgId());
-                List<Pair<String,
-                          IQoS.Level>> topics = x118.getTopics();
-                if (topics != null) {
-                    topics.forEach(topic -> x119.addResult(_QttRouter.addTopic(topic,
-                                                                               session.getIndex()) ? topic.second()
-                                                                                                   : IQoS.Level.FAILURE));
-                }
-                return new IControl[] { x119 };
-            case X11A_QttUnsubscribe.COMMAND:
-                X11A_QttUnsubscribe x11A = (X11A_QttUnsubscribe) input;
-                x11A.getTopics()
-                    .forEach(topic -> _QttRouter.removeTopic(topic, session.getIndex()));
-                X11B_QttUnsuback x11B = new X11B_QttUnsuback();
-                x11B.setMsgId(x11A.getMsgId());
-                return new IControl[] { x11B };
-        }
-        return new IControl[0];
-    }
-
-    private void brokerTopic(String topic, byte[] payload, IQoS.Level level, List<IControl<ZContext>> pushList)
-    {
-        Objects.requireNonNull(pushList);
-        Objects.requireNonNull(topic);
-        Objects.requireNonNull(payload);
-        Objects.requireNonNull(level);
-        Map<Long,
-            IQoS.Level> route = _QttRouter.broker(topic);
-        _Logger.debug("route %s", route);
-        route.entrySet()
-             .stream()
-             .map(entry ->
-             {
-                 ISession<ZContext> targetSession = findSessionByIndex(entry.getKey());
-                 if (targetSession != null) {
-                     IQoS.Level subscribeLevel = entry.getValue();
-                     X113_QttPublish push = new X113_QttPublish();
-                     push.setLevel(IQoS.Level.valueOf(min(subscribeLevel.getValue(), level.getValue())));
-                     push.setTopic(topic);
-                     push.setPayload(payload);
-                     push.setSession(targetSession);
-                     if (push.getLevel() == ALMOST_ONCE) { return push; }
-                     long packIdentity = _QttRouter.nextPackIdentity();
-                     push.setMsgId(packIdentity);
-                     _DeviceRepository.send(push);
-                     _QttRouter.register(push, entry.getKey());
-                     return push;
-                 }
-                 return null;
-             })
-             .filter(Objects::nonNull)
-             .forEach(push ->
-             {
-                 _DeviceRepository.find(push);
-                 pushList.add(push);
-             });
-        _Logger.info("push %s", pushList);
-    }
-
     private IAioConnector<ZContext> buildConnector(IPair address, ZSort sort, IClusterConfig clusterConfig)
     {
         final String _Host = address.first();
         final int _Port = address.second();
         final ISort<ZContext> _Sort = sort;
-        final ZUID _ZUid = clusterConfig.createZUID();
+        final ZUID _ZUid = clusterConfig.createZUID(true);
         ISort.Mode mode = _Sort.getMode();
         ISort.Type type = _Sort.getType();
         final long _SessionInitializeIndex;
@@ -535,5 +314,11 @@ public class DeviceNode
                 return _Sort;
             }
         };
+    }
+
+    public <A> void acquire(A attach, ScheduleHandler<A> schedule)
+    {
+        _ServerCore.getTimeWheel()
+                   .acquire(attach, schedule);
     }
 }

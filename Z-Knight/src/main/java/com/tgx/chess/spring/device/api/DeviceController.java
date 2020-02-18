@@ -1,7 +1,7 @@
 /*
  * MIT License                                                                    
  *                                                                                
- * Copyright (c) 2016~2019 Z-Chess                                                
+ * Copyright (c) 2016~2020 Z-Chess
  *                                                                                
  * Permission is hereby granted, free of charge, to any person obtaining a copy   
  * of this software and associated documentation files (the "Software"), to deal  
@@ -22,7 +22,7 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.device.api;
+package com.tgx.chess.spring.device.api;
 
 import static com.tgx.chess.king.base.util.IoUtil.isBlank;
 
@@ -31,6 +31,7 @@ import java.util.Objects;
 
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.util.Pair;
+import org.omg.DynamicAny._DynEnumStub;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,12 +42,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tgx.chess.bishop.biz.db.dao.DeviceStatus;
+import com.tgx.chess.spring.device.model.DeviceStatus;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.spring.jpa.device.dao.DeviceEntity;
 import com.tgx.chess.spring.device.model.MessageBody;
 import com.tgx.chess.spring.device.model.DeviceDo;
-import com.tgx.chess.spring.device.service.DeviceService;
 
 /**
  * @author william.d.zk
@@ -54,11 +54,11 @@ import com.tgx.chess.spring.device.service.DeviceService;
 @RestController
 public class DeviceController
 {
-    private final Logger        _Logger = Logger.getLogger(getClass().getName());
-    private final DeviceService _DeviceService;
+    private final Logger         _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final IDeviceService _DeviceService;
 
     @Autowired
-    public DeviceController(DeviceService deviceService)
+    public DeviceController(IDeviceService deviceService)
     {
         _DeviceService = deviceService;
     }
@@ -66,12 +66,7 @@ public class DeviceController
     @PostMapping("/device/register")
     public @ResponseBody DeviceDo registerDevice(@RequestBody DeviceDo deviceDo)
     {
-        DeviceEntity deviceEntity = new DeviceEntity();
-        deviceEntity.setSn(deviceDo.getSn());
-        deviceEntity = _DeviceService.saveDevice(deviceEntity);
-        deviceDo.setPassword(deviceEntity.getPassword());
-        deviceDo.setToken(deviceEntity.getToken());
-        return deviceDo;
+        return _DeviceService.saveDevice(deviceDo);
     }
 
     private DeviceDo convertEntity2Do(DeviceEntity entity)
@@ -87,20 +82,13 @@ public class DeviceController
     public @ResponseBody IPair queryDevice(@RequestParam(required = false) String token,
                                            @RequestParam(required = false) String sn)
     {
-        DeviceEntity entity = null;
-        if (!isBlank(token)) {
-            token = token.toUpperCase();
-            entity = _DeviceService.findDeviceByToken(token);
-        }
-        else if (!isBlank(sn)) {
-            sn = sn.toUpperCase();
-            entity = _DeviceService.findDeviceBySn(sn);
-        }
-        if (Objects.nonNull(entity)) {
-            DeviceDo deviceDo = convertEntity2Do(entity);
-            if (entity.getInvalidAt()
-                      .toInstant()
-                      .isBefore(Instant.now()))
+        DeviceDo deviceDo = new DeviceDo();
+        deviceDo.setToken(token);
+        deviceDo.setSn(sn);
+        deviceDo = _DeviceService.findDevice(deviceDo);
+        if (Objects.nonNull(deviceDo)) {
+            if (deviceDo.getInvalidAt()
+                        .isBefore(Instant.now()))
             {
                 return new Pair<>(DeviceStatus.INVALID, deviceDo);
             }
@@ -114,8 +102,6 @@ public class DeviceController
     @GetMapping("/message")
     public @ResponseBody Object getMessage(@RequestParam(name = "id") long id) throws JsonProcessingException
     {
-        MessageBody result = _DeviceService.getMessageById(id);
-        return new ObjectMapper().writer()
-                                 .writeValueAsString(result);
+        return _DeviceService.getMessageById(id);
     }
 }

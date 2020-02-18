@@ -22,43 +22,29 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.bishop.biz.db.dao;
+package com.tgx.chess.spring.jpa.device.repository;
 
-import com.tgx.chess.king.base.inf.IStatus;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.tgx.chess.spring.jpa.device.dao.DeviceEntity;
 
 /**
  * @author william.d.zk
- * @date 2019-06-16
  */
-public enum DeviceStatus
-        implements
-        IStatus
+@Repository
+//@Transactional
+public interface IDeviceJpaRepository
+        extends
+        JpaRepository<DeviceEntity,
+                      Long>
 {
+    DeviceEntity findByTokenAndPassword(String token, String password);
 
-    MISS(CODE_MISS),
-    CREATED(CODE_CREATED),
-    INVALID(CODE_INVALID),
-    INCOMPLETE(CODE_INCOMPLETE),
-    AVAILABLE(CODE_AVAILABLE),
-    DISABLE(CODE_DISABLE);
+    DeviceEntity findByTokenAndPasswordAndPasswordId(String token, String password, int passwordId);
 
-    private final int _Code;
+    DeviceEntity findByToken(String token);
 
-    DeviceStatus(int code)
-    {
-        _Code = code;
-    }
-
-    @Override
-    public String getStatus()
-    {
-        return name();
-    }
-
-    @Override
-    public int getCode()
-    {
-        return _Code;
-    }
+    DeviceEntity findBySn(String sn);
 
 }

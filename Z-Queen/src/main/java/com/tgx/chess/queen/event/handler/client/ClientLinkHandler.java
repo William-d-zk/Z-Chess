@@ -56,9 +56,7 @@ public class ClientLinkHandler<C extends IContext<C>>
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
     {
         if (event.hasError()) {
-            if (event.getErrorType()
-                     .equals(CONNECT_FAILED))
-            {
+            if (event.getErrorType() == CONNECT_FAILED) {
                 event.ignore();
             }
             else {

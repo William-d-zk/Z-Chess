@@ -34,7 +34,7 @@ import org.hibernate.id.IdentifierGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.tgx.chess.bishop.biz.db.dao.ZUID;
+import com.tgx.chess.bishop.ZUID;
 import com.tgx.chess.config.ZClusterConfig;
 import com.tgx.chess.king.base.log.Logger;
 
@@ -49,7 +49,7 @@ import com.tgx.chess.king.base.log.Logger;
  * @author william.d.zk
  */
 @Component
-public class ZGenerator
+public class ZDeviceGenerator
         implements
         IdentifierGenerator
 {
@@ -59,12 +59,12 @@ public class ZGenerator
     private final ZClusterConfig _ZClusterConfig;
 
     @Autowired
-    public ZGenerator(ZClusterConfig config)
+    public ZDeviceGenerator(ZClusterConfig config)
     {
         _ZClusterConfig = config;
     }
 
-    public ZGenerator()
+    public ZDeviceGenerator()
     {
         _ZClusterConfig = null;
     }
@@ -73,7 +73,7 @@ public class ZGenerator
     public void init()
     {
         if (_ZClusterConfig == null) return;
-        _ZUid = _ZClusterConfig.createZUID();
+        _ZUid = _ZClusterConfig.createZUID(false);
     }
 
     @Override

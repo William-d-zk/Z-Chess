@@ -66,8 +66,6 @@ public class QttRouter
                           IControl<ZContext>>>             _QttStatusMap      = new ConcurrentSkipListMap<>();
     private final Queue<IPair>                             _SessionIdleQueue  = new ConcurrentLinkedQueue<>();
 
-
-
     public Map<Long,
                IQoS.Level> broker(final String topic)
     {
@@ -222,6 +220,16 @@ public class QttRouter
                 _QttStatusMap.remove(rmSessionIndex);
                 it.remove();
             }
+        }
+    }
+
+    @Override
+    public void clean(long sessionIndex)
+    {
+        final Map<Long,
+                  IControl<ZContext>> _LocalIdMessageMap = _QttStatusMap.remove(sessionIndex);
+        if (_LocalIdMessageMap != null) {
+            _LocalIdMessageMap.clear();
         }
     }
 }

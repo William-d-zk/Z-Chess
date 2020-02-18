@@ -1,7 +1,7 @@
 /*
  * MIT License                                                                    
  *                                                                                
- * Copyright (c) 2016~2019 Z-Chess                                                
+ * Copyright (c) 2016~2020 Z-Chess                                                
  *                                                                                
  * Permission is hereby granted, free of charge, to any person obtaining a copy   
  * of this software and associated documentation files (the "Software"), to deal  
@@ -22,22 +22,32 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.bishop.io;
+package com.tgx.chess.cluster.raft.service;
 
-import com.tgx.chess.queen.io.core.inf.ICommand;
-import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.bishop.io.zfilter.ZContext;
+import com.tgx.chess.king.base.exception.ZException;
+import com.tgx.chess.queen.db.inf.IRepository;
+import com.tgx.chess.queen.event.inf.ICustomLogic;
+import com.tgx.chess.queen.io.core.inf.IControl;
+import com.tgx.chess.queen.io.core.inf.ISession;
+import com.tgx.chess.queen.io.core.manager.QueenManager;
 
-/**
- * @author william.d.zk
- * @date 2019-08-04
- */
-public interface IRouter<C extends IContext<C>>
+public class ClusterCustom
+        implements
+        ICustomLogic<ZContext>
 {
-    long nextPackIdentity();
+    private final IRepository<RaftNode> _ClusterRepository;
 
-    void register(ICommand<C> stateMessage, long sessionIndex);
+    public ClusterCustom(IRepository<RaftNode> clusterRepository)
+    {
+        _ClusterRepository = clusterRepository;
+    }
 
-    void ack(ICommand<C> stateMessage, long sessionIndex);
-
-    void clean(long sessionIndex);
+    @Override
+    public IControl<ZContext>[] handle(QueenManager<ZContext> manager,
+                                       ISession<ZContext> session,
+                                       IControl<ZContext> content) throws ZException
+    {
+        return null;
+    }
 }

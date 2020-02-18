@@ -43,7 +43,7 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.tgx.chess.bishop.biz.db.dao.ZUID;
+import com.tgx.chess.bishop.ZUID;
 import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
 import com.tgx.chess.bishop.io.mqtt.control.X112_QttConnack;
 import com.tgx.chess.bishop.io.ws.bean.WsContext;
@@ -103,7 +103,6 @@ public class DeviceConsumer
     private final AsynchronousChannelGroup _ChannelGroup;
     private final ClientCore<ZContext>     _ClientCore;
     private final TimeWheel                _TimeWheel;
-    private final CryptUtil                _CryptUtil = new CryptUtil();
     private final ZUID                     _ZUid      = new ZUID();
     private final Map<Long,
                       ZClient>             _ZClientMap;
@@ -301,8 +300,7 @@ public class DeviceConsumer
                             X111_QttConnect x111 = new X111_QttConnect();
                             x111.setClientId(zClient.getClientId());
                             x111.setUserName(zClient.getUsername());
-                            x111.setPassword(zClient.getPassword()
-                                                    .getBytes(StandardCharsets.UTF_8));
+                            x111.setPassword(zClient.getPassword());
                             x111.setClean();
                             return new IControl[] { x111 };
                         }

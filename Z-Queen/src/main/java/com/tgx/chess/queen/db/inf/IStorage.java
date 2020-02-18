@@ -96,7 +96,8 @@ public interface IStorage
         OP_DELETE(Byte.parseByte("00011001", 2)),
         OP_RESET(Byte.parseByte("00100000", 2)),
         OP_RETRY(Byte.parseByte("01000000", 2)),
-        OP_INVALID(Byte.MIN_VALUE);
+        OP_INVALID(Byte.MIN_VALUE),
+        OP_FROZEN(Byte.parseByte("-127"));
 
         private final byte _Value;
 

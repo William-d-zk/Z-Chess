@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020 Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,26 +22,43 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.queen.db.inf;
+package com.tgx.chess.spring.device.model;
 
-import java.util.List;
+import com.tgx.chess.king.base.inf.IStatus;
 
 /**
  * @author william.d.zk
+ * @date 2019-06-16
  */
-public interface IRepository<T>
+public enum DeviceStatus
+        implements
+        IStatus
 {
-    /**
-     * 
-     * @param target
-     * @return old
-     */
-    T save(IStorage target);
 
-    T find(IStorage key);
+    MISS(CODE_MISS),
+    CREATED(CODE_CREATED),
+    INVALID(CODE_INVALID),
+    INCOMPLETE(CODE_INCOMPLETE),
+    AVAILABLE(CODE_AVAILABLE),
+    DISABLE(CODE_DISABLE);
 
-    List<T> findAll(IStorage key);
+    private final int _Code;
 
-    void saveAll(List<IStorage> targets);
+    DeviceStatus(int code)
+    {
+        _Code = code;
+    }
+
+    @Override
+    public String getStatus()
+    {
+        return name();
+    }
+
+    @Override
+    public int getCode()
+    {
+        return _Code;
+    }
 
 }

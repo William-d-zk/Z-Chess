@@ -1,7 +1,7 @@
 /*
  * MIT License                                                                    
  *                                                                                
- * Copyright (c) 2016~2019 Z-Chess                                                
+ * Copyright (c) 2016~2020 Z-Chess
  *                                                                                
  * Permission is hereby granted, free of charge, to any person obtaining a copy   
  * of this software and associated documentation files (the "Software"), to deal  
@@ -22,35 +22,82 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.bishop.biz.db.dao;
+package com.tgx.chess.spring.device.model;
 
 import static com.tgx.chess.king.base.util.IoUtil.isBlank;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tgx.chess.queen.db.inf.IStorage;
 
 /**
  * @author william.d.zk
  * @date 2019-08-04
  */
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class MessageEntry
         implements
         IStorage
 {
-    private final static int MESSAGE_ENTRY_SERIAL = DB_SERIAL + 2;
+    private final static int    MESSAGE_ENTRY_SERIAL = DB_SERIAL + 2;
+    private static ObjectMapper JsonMapper           = new ObjectMapper();
 
     @Override
     public int dataLength()
     {
-        return getOriginLength()
-               + getTargetLength()
-               + getMsgIdLength()
-               + getOperationLength()
-               + getStrategyLength()
-               + getTopicLength()
-               + getPayloadLength();
+        return length;
+    }
+
+    @Override
+    public byte[] encode()
+    {
+        try {
+            byte[] payload = JsonMapper.writer()
+                                       .writeValueAsBytes(this);
+            length = payload.length;
+            return payload;
+        }
+        catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public int decode(byte[] data)
+    {
+        try {
+            JsonNode json = JsonMapper.readTree(data);
+            id = json.get("primary_key")
+                     .asLong();
+            msgId = json.get("msg_id")
+                        .asLong();
+            origin = json.get("origin")
+                         .asLong();
+            destination = json.get("destination")
+                              .asLong();
+            direction = json.get("direction")
+                            .asText();
+            topic = json.get("topic")
+                        .asText();
+            owner = json.get("owner")
+                        .asText();
+            payload = json.get("payload")
+                          .asText()
+                          .getBytes(StandardCharsets.UTF_8);
+            length = data.length;
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        return length;
     }
 
     @Override
@@ -59,61 +106,31 @@ public class MessageEntry
         return MESSAGE_ENTRY_SERIAL;
     }
 
-    private int getOriginLength()
-    {
-        return 8;
-    }
+    private long   origin, destination;
+    private long   msgId;
+    private long   id;
+    private String direction;
+    private String topic;
+    private String owner;
+    private byte[] payload;
 
-    private int getTargetLength()
-    {
-        return 8;
-    }
-
-    private int getMsgIdLength()
-    {
-        return 8;
-    }
-
-    private int getOperationLength()
-    {
-        return 1;
-    }
-
-    private int getTopicLength()
-    {
-        return isBlank(topic) ? 0
-                              : topic.getBytes(StandardCharsets.UTF_8).length;
-    }
-
-    private int getPayloadLength()
-    {
-        return payload == null ? 0
-                               : payload.length;
-    }
-
-    private int getStrategyLength()
-    {
-        return 1;
-    }
-
-    private long      origin, destination;
-    private long      msgId;
-    private String    direction;
+    @JsonIgnore
+    private int       length;
+    @JsonIgnore
     private Operation operation = Operation.OP_NULL;
+    @JsonIgnore
     private Strategy  strategy  = Strategy.RETAIN;
-    private String    topic;
-    private byte[]    payload;
 
     @Override
     public long getPrimaryKey()
     {
-        return msgId;
+        return id;
     }
 
     @Override
     public void setPrimaryKey(long key)
     {
-        msgId = key;
+        id = key;
     }
 
     @Override
@@ -188,5 +205,25 @@ public class MessageEntry
     public byte[] getPayload()
     {
         return payload;
+    }
+
+    public void setOwner(String owner)
+    {
+        this.owner = owner;
+    }
+
+    public String getOwner()
+    {
+        return owner;
+    }
+
+    public long getMsgId()
+    {
+        return msgId;
+    }
+
+    public void setMsgId(long msgId)
+    {
+        this.msgId = msgId;
     }
 }

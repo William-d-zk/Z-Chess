@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020 Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,13 +22,13 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.bishop.biz.db.dao;
+package com.tgx.chess.bishop;
 
 import java.time.Instant;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.tgx.chess.king.base.log.Logger;
 
@@ -52,25 +52,27 @@ import com.tgx.chess.king.base.log.Logger;
  */
 public class ZUID
 {
-    private static final Logger LOG                = Logger.getLogger(ZUID.class.getName());
-    private static final long   TWEPOCH            = Instant.parse("2018-06-01T00:00:00.00Z")
-                                                            .toEpochMilli();
-    private static final int    MAX_IDC_ID         = 15;
-    private static final int    MAX_CLUSTER_SET_ID = 7;
-    private static final int    MAX_NODE_ID        = 127;
-    private static final int    SEQUENCE_BITS      = 10;
-    private static final long   SEQUENCE_MASK      = ~(-1L << SEQUENCE_BITS);
-    private static final int    TIMESTAMP_BITS     = 38;
-    private static final int    TIMESTAMP_SHIFT    = SEQUENCE_BITS;
-    private static final int    NODE_BITS          = 7;
-    private static final int    NODE_SHIFT         = TIMESTAMP_SHIFT + TIMESTAMP_BITS;
-    private static final int    CLUSTER_BITS       = 3;
-    private static final int    CLUSTER_SHIFT      = NODE_SHIFT + NODE_BITS;
-    private static final int    IDC_BITS           = 4;
-    private static final int    IDC_SHIFT          = CLUSTER_SHIFT + CLUSTER_BITS;
-    private static final int    TYPE_BITS          = 2;
-    private static final int    TYPE_SHIFT         = IDC_SHIFT + IDC_BITS;
-
+    private static final Logger  LOG                = Logger.getLogger(ZUID.class.getName());
+    private static final long    TWEPOCH            = Instant.parse("2018-06-01T00:00:00.00Z")
+                                                             .toEpochMilli();
+    private static final int     MAX_IDC_ID         = 15;
+    private static final int     MAX_CLUSTER_SET_ID = 7;
+    private static final int     MAX_NODE_ID        = 127;
+    private static final int     MAX_TYPE           = 3;
+    private static final int     SEQUENCE_BITS      = 10;
+    private static final long    SEQUENCE_MASK      = ~(-1L << SEQUENCE_BITS);
+    private static final int     TIMESTAMP_BITS     = 38;
+    private static final int     TIMESTAMP_SHIFT    = SEQUENCE_BITS;
+    private static final int     NODE_BITS          = 7;
+    private static final int     NODE_SHIFT         = TIMESTAMP_SHIFT + TIMESTAMP_BITS;
+    private static final int     CLUSTER_BITS       = 3;
+    private static final int     CLUSTER_SHIFT      = NODE_SHIFT + NODE_BITS;
+    private static final int     IDC_BITS           = 4;
+    private static final int     IDC_SHIFT          = CLUSTER_SHIFT + CLUSTER_BITS;
+    private static final int     TYPE_BITS          = 2;
+    private static final int     TYPE_SHIFT         = IDC_SHIFT + IDC_BITS;
+    private static final String  UNAME_FORMMATER    = "%d_%d_%d_%d@%d";
+    private static final Pattern UNAME_PATTERN      = Pattern.compile("(\\d+)_(\\d+)_(\\d+)_(\\d+)@(\\d+)");
     private final long           _IdcId;
     private final long           _ClusterId;
     private final long           _NodeId;
@@ -96,6 +98,9 @@ public class ZUID
             throw new IllegalArgumentException(String.format("node Id can't be greater than %d or less than 0",
                                                              MAX_NODE_ID));
         }
+        if (type > MAX_TYPE || type < 0) {
+            throw new IllegalArgumentException(String.format("type can't be greater than %d or less than 0", MAX_TYPE));
+        }
         _IdcId = idc_id;
         _ClusterId = cluster_id;
         _NodeId = node_id;
@@ -108,6 +113,44 @@ public class ZUID
         this(0, 0, 0, 0);
     }
 
+    public ZUID(String uname)
+    {
+        Matcher matcher = UNAME_PATTERN.matcher(uname);
+        if (matcher.matches()) {
+            long idc_id = Long.parseLong(matcher.group(1));
+            long cluster_id = Long.parseLong(matcher.group(2));
+            long node_id = Long.parseLong(matcher.group(3));
+            long type = Long.parseLong(matcher.group(4));
+            if (idc_id > MAX_IDC_ID || idc_id < 0) {
+                throw new IllegalArgumentException(String.format("idc region Id can't be greater than %d or less than 0",
+                                                                 MAX_IDC_ID));
+            }
+            if (cluster_id > MAX_CLUSTER_SET_ID || cluster_id < 0) {
+                throw new IllegalArgumentException(String.format("cluster Id can't be greater than %d or less than 0",
+                                                                 MAX_CLUSTER_SET_ID));
+            }
+            if (node_id > MAX_NODE_ID || node_id < 0) {
+                throw new IllegalArgumentException(String.format("node Id can't be greater than %d or less than 0",
+                                                                 MAX_NODE_ID));
+            }
+            if (type > MAX_TYPE || type < 0) {
+                throw new IllegalArgumentException(String.format("type can't be greater than %d or less than 0",
+                                                                 MAX_TYPE));
+            }
+            _IdcId = idc_id;
+            _ClusterId = cluster_id;
+            _NodeId = node_id;
+            _Type = type;
+        }
+        else {
+            _IdcId = 0;
+            _ClusterId = 0;
+            _NodeId = 0;
+            _Type = 0;
+        }
+        _TimestampSupplier = System::currentTimeMillis;
+    }
+
     public synchronized long getId()
     {
         return (_Type << TYPE_SHIFT) | getNoTypeId();
@@ -115,7 +158,7 @@ public class ZUID
 
     public String getName()
     {
-        return String.format("%d_%d_%d_%d@%d", _Type, _IdcId, _ClusterId, _NodeId, _TimestampSupplier.get());
+        return String.format(UNAME_FORMMATER, _Type, _IdcId, _ClusterId, _NodeId, _TimestampSupplier.get());
     }
 
     public long getNoTypeId()

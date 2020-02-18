@@ -79,7 +79,7 @@ public class X111_QttConnect
     private boolean mFlagClean;
     private int     mKeepAlive;
     private String  mUserName;
-    private byte[]  mPassword;
+    private String  mPassword;
     private String  mClientId;
     private int     mClientIdLength;
     private String  mWillTopic;
@@ -104,8 +104,7 @@ public class X111_QttConnect
                              Objects.nonNull(getWillMessage()) ? new String(getWillMessage(), StandardCharsets.UTF_8)
                                                                : null,
                              getUserName(),
-                             Objects.nonNull(getPassword()) ? new String(getPassword(), StandardCharsets.UTF_8)
-                                                            : null,
+                             getPassword(),
                              getKeepAlive()
 
         );
@@ -261,7 +260,7 @@ public class X111_QttConnect
         mFlagUserName = true;
     }
 
-    public void setPassword(byte[] password)
+    public void setPassword(String password)
     {
         if (Objects.isNull(password)) { throw new NullPointerException("password within [null]"); }
         mPassword = password;
@@ -273,7 +272,7 @@ public class X111_QttConnect
         return mUserName;
     }
 
-    public byte[] getPassword()
+    public String getPassword()
     {
         return mPassword;
     }
@@ -346,7 +345,7 @@ public class X111_QttConnect
 
     private int getPasswordLength()
     {
-        return mFlagPassword ? 2 + mPassword.length
+        return mFlagPassword ? 2 + mPassword.getBytes(StandardCharsets.UTF_8).length
                              : 0;
     }
 
@@ -408,8 +407,10 @@ public class X111_QttConnect
                                                                   MAX_PASSWORD_LENGTH + 1,
                                                                   passwordLength));
             }
-            mPassword = new byte[passwordLength];
-            pos = IoUtil.read(data, pos, mPassword, 0, passwordLength);
+            byte[] pwd = new byte[passwordLength];
+
+            pos = IoUtil.read(data, pos, pwd, 0, passwordLength);
+            mPassword = new String(pwd, StandardCharsets.UTF_8);
         }
         return pos;
     }
@@ -447,13 +448,14 @@ public class X111_QttConnect
             pos += IoUtil.write(varUserName, data, pos);
         }
         if (mFlagPassword) {
-            if (mPassword.length > MAX_PASSWORD_LENGTH) {
+            byte[] pwd = mPassword.getBytes(StandardCharsets.UTF_8);
+            if (pwd.length > MAX_PASSWORD_LENGTH) {
                 throw new IndexOutOfBoundsException(String.format(" password length within [0 < length < %d], error:[%d]",
                                                                   MAX_PASSWORD_LENGTH + 1,
-                                                                  mPassword.length));
+                                                                  pwd.length));
             }
-            pos += IoUtil.writeShort(mPassword.length, data, pos);
-            pos += IoUtil.write(mPassword, data, pos);
+            pos += IoUtil.writeShort(pwd.length, data, pos);
+            pos += IoUtil.write(pwd, data, pos);
         }
         return pos;
     }

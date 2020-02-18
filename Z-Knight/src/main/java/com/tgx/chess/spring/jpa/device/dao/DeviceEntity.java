@@ -59,7 +59,7 @@ public class DeviceEntity
 
     @Id
     @GeneratedValue(generator = "ZGenerator")
-    @GenericGenerator(name = "ZGenerator", strategy = "com.tgx.chess.spring.jpa.generator.ZGenerator")
+    @GenericGenerator(name = "ZGenerator", strategy = "com.tgx.chess.spring.jpa.generator.ZDeviceGenerator")
     private long   id;
     @Column(length = 32, nullable = false, updatable = false)
     private String sn;
@@ -67,7 +67,11 @@ public class DeviceEntity
     @Length(min = 5, max = 32, message = "*Your password must have at least 5 characters less than 32 characters")
     @NotEmpty(message = "*Please provide your password")
     private String password;
-    private long   passwordId;
+    @Column(length = 32, nullable = false, updatable = false)
+    @Length(min = 8, max = 32, message = "* Your Username must have at least 8 characters less than 32 characters")
+    @NotEmpty(message = "*Please provide your username")
+    private String username = "tgx-z-chess-device";
+    private int    passwordId;
     @Column(length = 64, nullable = false, updatable = false)
     private String token;
     @Temporal(TemporalType.TIMESTAMP)
@@ -113,9 +117,10 @@ public class DeviceEntity
     @Override
     public String toString()
     {
-        return String.format("device{id:%s,token:%s,pwdId:%d,pwd:%s,sn:%s,create:%s,update:%s,invalid:%s}",
+        return String.format("device{id:%s,token:%s,user:%s,pwdId:%d,pwd:%s,sn:%s,create:%s,update:%s,invalid:%s}",
                              getId(),
                              getToken(),
+                             getUsername(),
                              getPasswordId(),
                              getPassword(),
                              getSn(),
@@ -124,12 +129,12 @@ public class DeviceEntity
                              getInvalidAt());
     }
 
-    public long getPasswordId()
+    public int getPasswordId()
     {
         return passwordId;
     }
 
-    public void setPasswordId(long passwordId)
+    public void setPasswordId(int passwordId)
     {
         this.passwordId = passwordId;
     }
@@ -154,4 +159,13 @@ public class DeviceEntity
         this.sn = sn;
     }
 
+    public String getUsername()
+    {
+        return username;
+    }
+
+    public void setUsername(String username)
+    {
+        this.username = username;
+    }
 }
