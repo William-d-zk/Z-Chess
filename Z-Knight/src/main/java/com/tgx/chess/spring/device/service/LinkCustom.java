@@ -25,8 +25,10 @@
 package com.tgx.chess.spring.device.service;
 
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
+import com.tgx.chess.bishop.io.zprotocol.control.X108_Shutdown;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -38,9 +40,10 @@ import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
 import com.tgx.chess.bishop.io.zprotocol.device.X21_SignUpResult;
 import com.tgx.chess.bishop.io.zprotocol.device.X24_UpdateToken;
 import com.tgx.chess.bishop.io.zprotocol.device.X25_AuthorisedToken;
-import com.tgx.chess.king.base.exception.ZException;
+import com.tgx.chess.king.base.exception.LinkRejectException;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.db.inf.IRepository;
+import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.inf.ICustomLogic;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IQoS;
@@ -67,7 +70,7 @@ public class LinkCustom
     @SuppressWarnings("unchecked")
     public IControl<ZContext>[] handle(QueenManager<ZContext> manager,
                                        ISession<ZContext> session,
-                                       IControl<ZContext> content) throws ZException
+                                       IControl<ZContext> content) throws Exception
     {
         switch (content.serial())
         {
@@ -87,6 +90,7 @@ public class LinkCustom
                 device.setToken(x111.getClientId());
                 device.setUsername(x111.getUserName());
                 device.setPassword(x111.getPassword());
+                device.setOperation(IStorage.Operation.OP_APPEND);
                 device = _DeviceRepository.find(device);
                 X112_QttConnack x112 = new X112_QttConnack();
                 x112.responseOk();
@@ -118,10 +122,20 @@ public class LinkCustom
                      */
                     x112.rejectNotAuthorized();
                 }
+                List<IControl<ZContext>> pushList = new LinkedList<>();
                 if (!x112.isIllegalState()) {
-                    manager.mapSession(device.getPrimaryKey(), session);
+                    //此时device != null
+                    ISession<ZContext> old = manager.mapSession(device.getPrimaryKey(), session);
+                    pushList.add(x112);
+                    if (old != null) {
+                        X108_Shutdown x108 = new X108_Shutdown();
+                        x108.setSession(old);
+                        pushList.add(x108);
+                    }
+                    return pushList.toArray(new IControl[0]);
                 }
-                return new IControl[] { x112 };
+                throw new LinkRejectException(x112.getCode()
+                                                  .name());
             case X118_QttSubscribe.COMMAND:
                 X118_QttSubscribe x118 = (X118_QttSubscribe) content;
                 X119_QttSuback x119 = new X119_QttSuback();

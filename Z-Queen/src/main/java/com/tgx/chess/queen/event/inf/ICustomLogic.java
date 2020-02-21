@@ -24,7 +24,6 @@
 
 package com.tgx.chess.queen.event.inf;
 
-import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
@@ -32,5 +31,5 @@ import com.tgx.chess.queen.io.core.manager.QueenManager;
 
 public interface ICustomLogic<C extends IContext<C>>
 {
-    IControl<C>[] handle(QueenManager<C> manager, ISession<C> session, IControl<C> content) throws ZException;
+    IControl<C>[] handle(QueenManager<C> manager, ISession<C> session, IControl<C> content) throws Exception;
 }

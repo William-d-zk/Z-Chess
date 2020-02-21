@@ -53,7 +53,7 @@ public class ZMessageGenerator
         implements
         IdentifierGenerator
 {
-    private final Logger _Logger = Logger.getLogger(getClass().getName());
+    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
     private static ZUID  _ZUid;
 
     private final ZClusterConfig _ZClusterConfig;

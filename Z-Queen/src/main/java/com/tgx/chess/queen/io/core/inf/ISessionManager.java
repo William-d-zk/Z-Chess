@@ -32,14 +32,14 @@ public interface ISessionManager<C extends IContext<C>>
     long INVALID_INDEX = -1;
     long NULL_INDEX    = 0;
 
-    boolean mapSession(long index, ISession<C> session);
+    ISession<C> mapSession(long index, ISession<C> session);
 
-    default boolean mapSession(ISession<C> session)
+    default ISession<C> mapSession(ISession<C> session)
     {
         return mapSession(session.getIndex(), session);
     }
 
-    boolean mapSession(long index, ISession<C> session, long... filter);
+    ISession<C> mapSession(long index, ISession<C> session, long... filter);
 
     boolean findPort(long portIdx);
 

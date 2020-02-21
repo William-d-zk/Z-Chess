@@ -91,10 +91,10 @@ public class DecodedDispatcher<C extends IContext<C>>
         event.reset();
     }
 
-    private void dispatch(ISort sorter,
+    private void dispatch(ISort<C> sorter,
                           IControl<C> cmd,
                           ISession<C> session,
-                          IOperator<IControl,
+                          IOperator<IControl<C>,
                                     ISession<C>,
                                     ITriple> op)
     {

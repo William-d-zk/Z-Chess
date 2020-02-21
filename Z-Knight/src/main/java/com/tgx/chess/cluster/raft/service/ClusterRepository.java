@@ -26,6 +26,9 @@ package com.tgx.chess.cluster.raft.service;
 
 import java.util.List;
 
+import com.tgx.chess.bishop.ZUID;
+import com.tgx.chess.bishop.biz.config.IClusterConfig;
+import com.tgx.chess.king.base.exception.ZException;
 import org.springframework.stereotype.Component;
 
 import com.tgx.chess.queen.db.inf.IRepository;
@@ -36,27 +39,41 @@ public class ClusterRepository
         implements
         IRepository<RaftNode>
 {
+    private final IClusterConfig _ClusterConfig;
+    private final ZUID           _ZUid;
+
+    public ClusterRepository(IClusterConfig clusterConfig) {
+        _ClusterConfig = clusterConfig;
+        _ZUid = _ClusterConfig.createZUID(true);
+    }
+
     @Override
-    public RaftNode save(IStorage target)
+    public RaftNode save(IStorage target)  
     {
         return null;
     }
 
     @Override
-    public RaftNode find(IStorage key)
+    public RaftNode find(IStorage key)  
     {
         return null;
     }
 
     @Override
-    public List<RaftNode> findAll(IStorage key)
+    public List<RaftNode> findAll(IStorage key) 
     {
         return null;
     }
 
     @Override
-    public void saveAll(List<IStorage> targets)
+    public void saveAll(List<IStorage> targets) 
     {
 
+    }
+
+    @Override
+    public long getPeerId()
+    {
+        return _ZUid.getPeerId();
     }
 }

@@ -43,17 +43,21 @@ public interface IMessageJpaRepository
         JpaRepository<MessageEntity,
                       Long>
 {
+    MessageEntity findByOriginAndDestinationAndMsgId(long origin, long destination, long msgId);
+
+    List<MessageEntity> findAllByOriginAndDestinationAndMsgId(long origin, long destination, long msgId);
+
     List<MessageEntity> findAllByOriginAndMsgIdAndDirectionAndOwner(long origin,
                                                                     long msgId,
                                                                     String direction,
                                                                     String owner);
 
-    List<MessageEntity> findAllByTargetAndMsgIdAndDirectionAndOwner(long target,
-                                                                    long msgId,
-                                                                    String direction,
-                                                                    String owner);
+    List<MessageEntity> findAllByDestinationAndMsgIdAndDirectionAndOwner(long destination,
+                                                                         long msgId,
+                                                                         String direction,
+                                                                         String owner);
 
-    List<MessageEntity> findAllByTargetAndMsgIdBefore(long target, long msgId);
+    List<MessageEntity> findAllByDestinationAndMsgIdBefore(long destination, long msgId);
 
     List<MessageEntity> findAllByOriginAndMsgIdBefore(long origin, long msgId);
 

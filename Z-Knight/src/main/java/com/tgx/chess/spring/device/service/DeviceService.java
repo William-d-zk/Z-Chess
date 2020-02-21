@@ -31,6 +31,7 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import com.tgx.chess.king.base.exception.ZException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -115,9 +116,11 @@ public class DeviceService
     }
 
     @Override
-    public DeviceDo saveDevice(DeviceDo device)
+    public DeviceDo saveDevice(DeviceDo device) throws ZException
     {
-        return convertEntry2Do(_LinkCustom.saveDevice(convertDo2Entry(device)), device);
+        DeviceEntry entry = convertDo2Entry(device);
+        _LinkCustom.findDevice(entry);
+        return convertEntry2Do(_LinkCustom.saveDevice(entry), device);
     }
 
     private DeviceDo convertEntry2Do(DeviceEntry entry, DeviceDo deviceDo)
@@ -139,25 +142,29 @@ public class DeviceService
         deviceEntry.setSn(deviceDo.getSn());
         deviceEntry.setPassword(deviceDo.getPassword());
         deviceEntry.setUsername(deviceDo.getUsername());
-        deviceEntry.setInvalidTime(deviceDo.getInvalidAt()
-                                           .toEpochMilli());
+        if (deviceDo.getInvalidAt() != null) {
+            deviceEntry.setInvalidTime(deviceDo.getInvalidAt()
+                                               .toEpochMilli());
+        }
         return deviceEntry;
     }
 
     @Override
-    public DeviceDo findDevice(DeviceDo key)
+    public DeviceDo findDevice(DeviceDo key) throws ZException
+    {
+        DeviceEntry deviceEntry = convertDo2Entry(key);
+        _LinkCustom.findDevice(deviceEntry);
+        return convertEntry2Do(deviceEntry, key);
+    }
+
+    @Override
+    public MessageBody getMessageById(long id) throws ZException
     {
         return null;
     }
 
     @Override
-    public MessageBody getMessageById(long id)
-    {
-        return null;
-    }
-
-    @Override
-    public List<MessageBody> listByTopic(String topic, int limit)
+    public List<MessageBody> listByTopic(String topic, int limit) throws ZException
     {
         return null;
     }

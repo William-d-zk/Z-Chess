@@ -47,8 +47,8 @@ public class MessageBody
     private static final long   serialVersionUID = -8904730289818144372L;
     private static ObjectMapper jsonMapper       = new ObjectMapper();
 
-    private String              topic;
-    private byte[]              content;
+    private String topic;
+    private byte[] content;
 
     public String getTopic()
     {
@@ -69,6 +69,10 @@ public class MessageBody
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public JsonNode getContent()
     {
+        if (content == null || content.length == 0) {
+            _Logger.warning("content null");
+            return null;
+        }
         try {
             return jsonMapper.readTree(content);
         }

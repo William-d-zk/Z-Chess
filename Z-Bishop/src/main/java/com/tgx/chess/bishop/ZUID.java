@@ -183,4 +183,9 @@ public class ZUID
                | sequence;
     }
 
+    public long getPeerId()
+    {
+        return (_IdcId << IDC_SHIFT) | (_ClusterId << CLUSTER_SHIFT) | (_NodeId << NODE_SHIFT) | (_Type << TYPE_SHIFT);
+    }
+
 }

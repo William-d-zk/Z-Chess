@@ -102,7 +102,6 @@ public class DeviceEntry
     private String password;
     private int    passwordId;
 
-    private boolean   exist;
     @JsonIgnore
     private int       length;
     @JsonIgnore
@@ -210,13 +209,4 @@ public class DeviceEntry
         this.passwordId = passwordId;
     }
 
-    public boolean isExist()
-    {
-        return exist;
-    }
-
-    public void setExist(boolean exist)
-    {
-        this.exist = exist;
-    }
 }

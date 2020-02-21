@@ -25,6 +25,8 @@
 package com.tgx.chess.spring.device.service;
 
 import static com.tgx.chess.king.base.util.IoUtil.isBlank;
+import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_INSERT;
+import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_NULL;
 
 import java.nio.charset.StandardCharsets;
 import java.sql.Date;
@@ -32,6 +34,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 
+import com.tgx.chess.king.base.exception.ZException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -45,6 +48,8 @@ import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.spring.device.model.DeviceEntry;
 import com.tgx.chess.spring.jpa.device.dao.DeviceEntity;
 import com.tgx.chess.spring.jpa.device.repository.IDeviceJpaRepository;
+
+import javax.persistence.EntityNotFoundException;
 
 /**
  * @author william.d.zk
@@ -73,14 +78,20 @@ public class DeviceRepository
     }
 
     @Override
-    public DeviceEntry save(IStorage target)
+    public DeviceEntry save(IStorage target) throws ZException
     {
         if (target instanceof DeviceEntry) {
             DeviceEntry device = (DeviceEntry) target;
-            if (device.isExist()) {
-                DeviceEntity exist = _JpaRepository.findById(device.getPrimaryKey())
-                                                   .orElse(null);
-                Objects.requireNonNull(exist);
+            if (device.getOperation()
+                      .getValue() > OP_INSERT.getValue())
+            {
+                DeviceEntity exist;
+                try {
+                    exist = _JpaRepository.getOne(device.getPrimaryKey());
+                }
+                catch (EntityNotFoundException e) {
+                    throw e;
+                }
                 if (exist.getInvalidAt()
                          .toInstant()
                          .isBefore(Instant.now())
@@ -136,9 +147,25 @@ public class DeviceRepository
     @Override
     public DeviceEntry find(IStorage key)
     {
-        return key instanceof DeviceEntry ? convertDevice(_JpaRepository.findByToken(((DeviceEntry) key).getToken()),
-                                                          (DeviceEntry) key)
-                                          : null;
+        if (key instanceof DeviceEntry) {
+            DeviceEntry entry = (DeviceEntry) key;
+            if (entry.getSn() != null) {
+                convertDevice(_JpaRepository.findBySn(entry.getSn()), entry);
+            }
+            else if (entry.getToken() != null) {
+                convertDevice(_JpaRepository.findByToken(entry.getToken()), entry);
+            }
+            else {
+                try {
+                    convertDevice(_JpaRepository.getOne(entry.getPrimaryKey()), entry);
+                }
+                catch (EntityNotFoundException e) {
+                    return null;
+                }
+            }
+            return entry;
+        }
+        return null;
     }
 
     private DeviceEntry convertDevice(DeviceEntity entity, DeviceEntry entry)
@@ -171,4 +198,9 @@ public class DeviceRepository
 
     }
 
+    @Override
+    public long getPeerId()
+    {
+        return _ZUid.getPeerId();
+    }
 }

@@ -59,13 +59,13 @@ public class MessageEntity
     @Column(updatable = false, nullable = false)
     private long        origin;
     @Column(updatable = false, nullable = false)
-    private long        target;
+    private long        destination;
     @Column(updatable = false, nullable = false)
     private int         cmd;
-    @Column(length = 4, nullable = false, updatable = false)
+    @Column(length = 4, updatable = false, nullable = false)
     private String      direction;
     @Column(length = 10, nullable = false)
-    private String      owner  = "SERVER";
+    private String      owner;
     @Column(updatable = false, nullable = false)
     private long        msgId;
     @Type(type = "jsonb")
@@ -153,13 +153,13 @@ public class MessageEntity
         this.msgId = msgId;
     }
 
-    public long getTarget()
+    public long getDestination()
     {
-        return target;
+        return destination;
     }
 
-    public void setTarget(long target)
+    public void setDestination(long destination)
     {
-        this.target = target;
+        this.destination = destination;
     }
 }
