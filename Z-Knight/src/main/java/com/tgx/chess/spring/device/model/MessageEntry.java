@@ -90,6 +90,8 @@ public class MessageEntry
             payload = json.get("payload")
                           .asText()
                           .getBytes(StandardCharsets.UTF_8);
+            cmd = json.get("cmd")
+                      .asInt();
             length = data.length;
         }
         catch (IOException e) {
@@ -111,6 +113,7 @@ public class MessageEntry
     private String topic;
     private String owner;
     private byte[] payload;
+    private int    cmd;
 
     @JsonIgnore
     private int       length;
@@ -224,4 +227,15 @@ public class MessageEntry
     {
         this.msgId = msgId;
     }
+
+    public int getCmd()
+    {
+        return cmd;
+    }
+
+    public void setCmd(int cmd)
+    {
+        this.cmd = cmd;
+    }
+
 }

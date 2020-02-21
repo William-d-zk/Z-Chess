@@ -26,17 +26,18 @@ package com.tgx.chess.spring.device.api;
 
 import java.util.List;
 
+import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.spring.device.model.DeviceDo;
 import com.tgx.chess.spring.device.model.MessageBody;
 
 public interface IDeviceService
 {
-    DeviceDo saveDevice(DeviceDo deviceDo);
+    DeviceDo saveDevice(DeviceDo deviceDo) throws ZException;
 
-    DeviceDo findDevice(DeviceDo key);
+    DeviceDo findDevice(DeviceDo key) throws ZException;
 
-    MessageBody getMessageById(long id);
+    MessageBody getMessageById(long id) throws ZException;
 
-    List<MessageBody> listByTopic(String topic, int limit);
+    List<MessageBody> listByTopic(String topic, int limit) throws ZException;
 
 }

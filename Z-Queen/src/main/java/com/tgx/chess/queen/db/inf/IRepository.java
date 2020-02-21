@@ -44,4 +44,6 @@ public interface IRepository<T>
 
     void saveAll(List<IStorage> targets);
 
+    long getPeerId();
+
 }

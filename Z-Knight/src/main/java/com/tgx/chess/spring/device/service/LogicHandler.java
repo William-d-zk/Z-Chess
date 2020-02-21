@@ -25,7 +25,7 @@
 package com.tgx.chess.spring.device.service;
 
 import static com.tgx.chess.bishop.io.Direction.*;
-import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_FROZEN;
+import static com.tgx.chess.queen.db.inf.IStorage.Operation.*;
 import static com.tgx.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
 import static com.tgx.chess.queen.io.core.inf.IQoS.Level.EXACTLY_ONCE;
 import static java.lang.Math.min;
@@ -86,14 +86,17 @@ public class LogicHandler
             case X113_QttPublish.COMMAND:
                 X113_QttPublish x113 = (X113_QttPublish) content;
                 MessageEntry messageEntry = new MessageEntry();
+                messageEntry.setCmd(X113_QttPublish.COMMAND);
                 messageEntry.setTopic(x113.getTopic());
                 messageEntry.setOrigin(session.getIndex());
+                messageEntry.setDestination(_MessageRepository.getPeerId());
                 messageEntry.setDirection(CLIENT_TO_SERVER.getShort());
                 messageEntry.setPayload(x113.getPayload());
                 messageEntry.setOwner(x113.getLevel()
                                           .getValue() < EXACTLY_ONCE.getValue() ? OWNER_SERVER
                                                                                 : OWNER_CLIENT);
                 messageEntry.setMsgId(x113.getMsgId());
+                messageEntry.setOperation(OP_INSERT);
                 _MessageRepository.save(messageEntry);
                 List<IControl<ZContext>> pushList = new LinkedList<>();
                 switch (x113.getLevel())
@@ -120,16 +123,19 @@ public class LogicHandler
                 X115_QttPubrec x115 = (X115_QttPubrec) content;
                 _QttRouter.ack(x115, session.getIndex());
                 MessageEntry update = new MessageEntry();
+                update.setOrigin(_MessageRepository.getPeerId());
                 update.setDestination(session.getIndex());
-                update.setDirection(SERVER_TO_CLIENT.getShort());
-                update.setOwner(OWNER_CLIENT);
                 update.setMsgId(x115.getMsgId());
+                update.setOwner(OWNER_CLIENT);
+                update.setOperation(OP_MODIFY);
                 _MessageRepository.save(update);
                 X116_QttPubrel x116 = new X116_QttPubrel();
                 x116.setMsgId(x115.getMsgId());
                 _QttRouter.register(x116, session.getIndex());
                 return new IControl[] { x116 };
             case X116_QttPubrel.COMMAND:
+                //                throw new ZException("AA");
+
                 x116 = (X116_QttPubrel) content;
                 X117_QttPubcomp x117 = new X117_QttPubcomp();
                 x117.setMsgId(x116.getMsgId());
@@ -137,11 +143,11 @@ public class LogicHandler
                 pushList = new LinkedList<>();
                 pushList.add(x117);
                 update = new MessageEntry();
-                update.setMsgId(x116.getMsgId());
                 update.setOrigin(session.getIndex());
-                update.setDirection(CLIENT_TO_SERVER.getShort());
+                update.setDestination(_MessageRepository.getPeerId());
+                update.setMsgId(x116.getMsgId());
                 update.setOwner(OWNER_SERVER);
-                update.setOperation(OP_FROZEN);
+                update.setOperation(OP_MODIFY);
                 update = _MessageRepository.save(update);
                 brokerTopic(manager, update, EXACTLY_ONCE, pushList);
                 return pushList.toArray(new IControl[0]);
@@ -179,8 +185,12 @@ public class LogicHandler
                      if (publish.getLevel() == ALMOST_ONCE) { return publish; }
                      long packIdentity = _QttRouter.nextPackIdentity();
                      publish.setMsgId(packIdentity);
-                     message.setPrimaryKey(packIdentity);
+                     message.setMsgId(packIdentity);
+                     message.setOrigin(_MessageRepository.getPeerId());
                      message.setDestination(targetSession.getIndex());
+                     message.setOperation(OP_INSERT);
+                     message.setOwner(OWNER_SERVER);
+                     message.setDirection(SERVER_TO_CLIENT.getShort());
                      _MessageRepository.save(message);
                      _QttRouter.register(publish, entry.getKey());
                      return publish;

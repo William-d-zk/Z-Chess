@@ -128,6 +128,7 @@ public class MappingHandler<C extends IContext<C>>
                             write(_CustomLogic.handle(_QueenManager, session, content), session);
                         }
                         catch (LinkRejectException e) {
+                            _Logger.warning("mapping handler reject", e);
                             error(LINK_LOGIN_ERROR,
                                   e,
                                   session,
@@ -135,7 +136,8 @@ public class MappingHandler<C extends IContext<C>>
                                          .getSort()
                                          .getError());
                         }
-                        catch (ZException e) {
+                        catch (Exception e) {
+                            _Logger.warning("mapping handler error", e);
                             error(LINK_ERROR,
                                   e,
                                   session,

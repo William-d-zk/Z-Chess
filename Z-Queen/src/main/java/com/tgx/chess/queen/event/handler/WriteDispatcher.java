@@ -24,6 +24,7 @@
 
 package com.tgx.chess.queen.event.handler;
 
+import static com.tgx.chess.queen.event.inf.IError.Type.ILLEGAL_STATE;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WROTE;
 
@@ -35,6 +36,7 @@ import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
+import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
@@ -97,17 +99,28 @@ public class WriteDispatcher<C extends IContext<C>>
                 IPair writeContent = event.getContent();
                 IControl<C>[] commands = writeContent.first();
                 ISession<C> session = writeContent.second();
-                if (session.isValid() && Objects.nonNull(commands)) {
+                if (Objects.nonNull(commands)) {
                     IOperator<IControl<C>[],
                               ISession<C>,
                               List<ITriple>> transferOperator = event.getEventOp();
                     List<ITriple> triples = transferOperator.handle(commands, session);
                     for (ITriple triple : triples) {
                         ISession<C> targetSession = triple.second();
-                        tryPublish(dispatchEncoder(targetSession.getHashKey()),
-                                   WRITE,
-                                   new Pair<>(triple.first(), targetSession),
-                                   triple.third());
+                        IControl<C> content = triple.first();
+                        if (content.isShutdown()) {
+                            if (targetSession.isValid()) {
+                                error(_Error,
+                                      ILLEGAL_STATE,
+                                      new Pair<>(new IllegalStateException("session to shutdown"), targetSession),
+                                      targetSession.getContext()
+                                                   .getSort()
+                                                   .getError());
+                            }
+                        }
+                        else tryPublish(dispatchEncoder(targetSession.getHashKey()),
+                                        WRITE,
+                                        new Pair<>(content, targetSession),
+                                        triple.third());
                     }
                     _Logger.info("write_dispatcher, source %s, transfer:%d", event.getEventType(), commands.length);
                 }

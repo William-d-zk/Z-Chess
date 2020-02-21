@@ -51,7 +51,7 @@ public class ZMappingCustom
     @SuppressWarnings("unchecked")
     public IControl<ZContext>[] handle(QueenManager<ZContext> manager,
                                        ISession<ZContext> session,
-                                       IControl<ZContext> content) throws ZException
+                                       IControl<ZContext> content) throws Exception
     {
         _Logger.info("mapping %s", content);
         switch (content.serial())
@@ -69,12 +69,7 @@ public class ZMappingCustom
                 return new IControl[] { content };
             default:
                 if (_Then == null) return null;
-                try {
-                    return _Then.handle(manager, session, content);
-                }
-                catch (Exception e) {
-                    throw new ZException(e, "chain logic failed!");
-                }
+                return _Then.handle(manager, session, content);
         }
     }
 }

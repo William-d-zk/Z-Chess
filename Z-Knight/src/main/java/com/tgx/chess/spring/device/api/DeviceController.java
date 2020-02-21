@@ -38,6 +38,8 @@ import com.tgx.chess.spring.device.model.DeviceDo;
 import com.tgx.chess.spring.device.model.DeviceStatus;
 import com.tgx.chess.spring.jpa.device.dao.DeviceEntity;
 
+import static com.tgx.chess.king.base.util.IoUtil.isBlank;
+
 /**
  * @author william.d.zk
  */
@@ -59,32 +61,33 @@ public class DeviceController
         return _DeviceService.saveDevice(deviceDo);
     }
 
-    private DeviceDo convertEntity2Do(DeviceEntity entity)
-    {
-        DeviceDo deviceDo = new DeviceDo();
-        deviceDo.setToken(entity.getToken());
-        deviceDo.setSn(entity.getSn());
-        deviceDo.setPassword(entity.getPassword());
-        return deviceDo;
-    }
-
     @GetMapping("/device/query")
     public @ResponseBody IPair queryDevice(@RequestParam(required = false) String token,
-                                           @RequestParam(required = false) String sn)
+                                           @RequestParam(required = false) String sn,
+                                           @RequestParam(required = false) Long id)
     {
-        DeviceDo deviceDo = new DeviceDo();
-        deviceDo.setToken(token);
-        deviceDo.setSn(sn);
-        deviceDo = _DeviceService.findDevice(deviceDo);
-        if (Objects.nonNull(deviceDo)) {
-            if (deviceDo.getInvalidAt()
-                        .isBefore(Instant.now()))
-            {
-                return new Pair<>(DeviceStatus.INVALID, deviceDo);
+        if (!isBlank(token) || !isBlank(sn)) {
+            DeviceDo deviceDo = new DeviceDo();
+            deviceDo.setToken(token);
+            deviceDo.setSn(sn);
+            deviceDo = _DeviceService.findDevice(deviceDo);
+            if (Objects.nonNull(deviceDo)) {
+                if (deviceDo.getInvalidAt()
+                            .isBefore(Instant.now()))
+                {
+                    return new Pair<>(DeviceStatus.INVALID, deviceDo);
+                }
+                else {
+                    return new Pair<>(DeviceStatus.AVAILABLE, deviceDo);
+                }
             }
-            else {
-                return new Pair<>(DeviceStatus.AVAILABLE, deviceDo);
-            }
+        }
+        else {
+            DeviceDo deviceDo = new DeviceDo();
+            deviceDo.setId(id == null ? 0
+                                      : id);
+            deviceDo = _DeviceService.findDevice(deviceDo);
+            if (deviceDo != null) { return new Pair<>(DeviceStatus.AVAILABLE, deviceDo); }
         }
         return new Pair<>(DeviceStatus.MISS, null);
     }

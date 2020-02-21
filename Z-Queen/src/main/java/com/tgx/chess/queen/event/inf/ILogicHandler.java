@@ -28,6 +28,7 @@ import static com.tgx.chess.queen.event.inf.IOperator.Type.LOGIC;
 
 import java.util.Objects;
 
+import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.IContext;
@@ -40,6 +41,7 @@ public interface ILogicHandler<C extends IContext<C>>
         IPipeEventHandler<QEvent>,
         ICustomLogic<C>
 {
+    Logger _Logger = Logger.getLogger(ILogicHandler.class.getSimpleName());
 
     QueenManager<C> getQueenManager();
 
@@ -66,11 +68,12 @@ public interface ILogicHandler<C extends IContext<C>>
                     }
                 }
                 catch (Exception e) {
+                    _Logger.warning("logic handler interface", e);
                     event.error(IError.Type.HANDLE_DATA,
                                 new Pair<>(e, session),
                                 session.getContext()
                                        .getSort()
-                                       .getCloser());
+                                       .getError());
                 }
             }
             else {

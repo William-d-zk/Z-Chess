@@ -119,10 +119,12 @@ public abstract class AioSessionManager<C extends IContext<C>>
      *         PortChannel 的清理操作。
      */
     @Override
-    public boolean mapSession(long _Index, ISession<C> session)
+    public ISession<C> mapSession(long _Index, ISession<C> session)
     {
         _Logger.info("session manager map->(%d,%s)", _Index, session);
-        if (_Index == INVALID_INDEX || _Index == NULL_INDEX) { return false; }
+        if (_Index == INVALID_INDEX || _Index == NULL_INDEX) {
+            throw new IllegalArgumentException(String.format("_Index %d", _Index));
+        }
         /*
          * 1:相同 Session 不同 _Index 进行登录，产生多个 _Index 对应 相同 Session 的情况 2:相同 _Index 在不同的 Session 上登录，产生覆盖 Session 的情况。
          */
@@ -131,7 +133,7 @@ public abstract class AioSessionManager<C extends IContext<C>>
             _Index2SessionMaps[getSlot(session)].remove(sOldIndex);
         }
         // 检查可能覆盖的 Session 是否存在,_Index 已登录过
-        ISession oldSession = _Index2SessionMaps[getSlot(session)].put(_Index, session);
+        ISession<C> oldSession = _Index2SessionMaps[getSlot(session)].put(_Index, session);
         session.setIndex(_Index);
         if (oldSession != null) {
             // 已经发生覆盖
@@ -143,17 +145,23 @@ public abstract class AioSessionManager<C extends IContext<C>>
                      * 被覆盖的 Session 在 read EOF/TimeOut 时启动 Close 防止 rmSession 方法删除 _Index 的当前映射
                      */
                     oldSession.setIndex(INVALID_INDEX);
+                    if (oldSession.isValid()) {
+                        _Logger.warning("覆盖在线session: %s", oldSession);
+                        return oldSession;
+                    }
                 }
                 // 相同 Session 上相同 _Index 重复登录
             }
             // 被覆盖的 Session 持有不同的 _Index
-            else if (oldIndex != INVALID_INDEX) {
-                ISession oldMappedSession = _Index2SessionMaps[getSlot(session)].get(oldIndex);
+            else {
+                _Logger.fetal("被覆盖的session 持有不同的index，检查session.setIndex的引用;index: %d <=> old: %d", _Index, oldIndex);
+                ISession<C> oldMappedSession = _Index2SessionMaps[getSlot(session)].get(oldIndex);
                 /*
                  * oldIndex bind oldSession 已在 Map 完成其他的新的绑定关系。
+                 * 由于MapSession是现成安全的，并不会存在此种情况
                  */
                 if (oldMappedSession == oldSession) {
-                    _Logger.debug("oldMappedSession == oldSession -> Ignore");// Ignore
+                    _Logger.fetal("oldMappedSession == oldSession -> Ignore, 检查MapSession 是否存在线程安全问题");// Ignore
                 }
                 else if (oldMappedSession == null) {
                     _Logger.debug("oldMappedSession == null -> oldIndex invalid");// oldIndex 已失效
@@ -161,87 +169,85 @@ public abstract class AioSessionManager<C extends IContext<C>>
                 // else oldIndex 已完成其他的绑定过程无需做任何处理。
             }
         }
-        return true;
+        return null;
     }
 
     @Override
-    public boolean mapSession(long index, ISession<C> session, long... portIdArray)
+    public ISession<C> mapSession(long index, ISession<C> session, long... portIdArray)
     {
-        if (mapSession(index, session)) {
-            if (portIdArray != null) {
-                for (int size = portIdArray.length, lv = size - 1; lv > -1; lv--) {
-                    long portId = portIdArray[lv];
-                    if (portId == INVALID_INDEX || portId == NULL_INDEX) {
-                        continue;
+        ISession<C> old = mapSession(index, session);
+        if (portIdArray != null) {
+            for (int size = portIdArray.length, lv = size - 1; lv > -1; lv--) {
+                long portId = portIdArray[lv];
+                if (portId == INVALID_INDEX || portId == NULL_INDEX) {
+                    continue;
+                }
+                long[][] c = _PortChannel2IndexMaps[getSlot(session)].get(portId);
+                boolean put = c == null;
+                if (put) {
+                    c = new long[2][];
+                }
+                if (c[0] == null) {
+                    c[0] = new long[2];
+                }
+                _Index:
+                {
+                    int i = 0, cSize = c[0].length;
+                    for (; i < cSize; i++) {
+                        if (c[0][i] == index) {
+                            break _Index;
+                        }
+                        else if (c[0][i] == 0 || i == cSize - 2) {
+                            break;
+                        }
                     }
-                    long[][] c = _PortChannel2IndexMaps[getSlot(session)].get(portId);
-                    boolean put = c == null;
-                    if (put) {
-                        c = new long[2][];
+                    long o = c[0][i];
+                    if (o != NULL_INDEX) {
+                        long[] t = new long[cSize + 1];
+                        arraycopy(c[0], 0, t, 1, cSize);
+                        t[cSize] = cSize;
+                        t[0] = index;
+                        c[0] = t;
                     }
-                    if (c[0] == null) {
-                        c[0] = new long[2];
+                    else {
+                        c[0][i] = index;
+                        c[0][cSize - 1] += 1;
                     }
-                    _Index:
-                    {
-                        int i = 0, cSize = c[0].length;
+                }
+                _SubFilter:
+                {
+                    if (lv > 0 && (portIdArray[lv - 1] & portId) != 0) {
+                        if (c[1] == null) {
+                            c[1] = new long[2];
+                        }
+                        int i = 0, cSize = c[1].length;
                         for (; i < cSize; i++) {
-                            if (c[0][i] == index) {
-                                break _Index;
+                            if (c[1][i] == portIdArray[lv - 1]) {
+                                break _SubFilter;
                             }
-                            else if (c[0][i] == 0 || i == cSize - 2) {
+                            else if (c[1][i] == NULL_INDEX || i == cSize - 1) {
                                 break;
                             }
                         }
-                        long o = c[0][i];
-                        if (o != NULL_INDEX) {
-                            long[] t = new long[cSize + 1];
-                            arraycopy(c[0], 0, t, 1, cSize);
-                            t[cSize] = cSize;
-                            t[0] = index;
-                            c[0] = t;
+                        long o = c[1][i];
+                        if (o != 0) {
+                            long[] t = new long[cSize + 2];
+                            arraycopy(c[1], 0, t, 1, cSize);
+                            t[0] = portIdArray[lv - 1];
+                            c[1] = t;
                         }
                         else {
-                            c[0][i] = index;
-                            c[0][cSize - 1] += 1;
+                            c[1][i] = portIdArray[lv - 1];
                         }
-                    }
-                    _SubFilter:
-                    {
-                        if (lv > 0 && (portIdArray[lv - 1] & portId) != 0) {
-                            if (c[1] == null) {
-                                c[1] = new long[2];
-                            }
-                            int i = 0, cSize = c[1].length;
-                            for (; i < cSize; i++) {
-                                if (c[1][i] == portIdArray[lv - 1]) {
-                                    break _SubFilter;
-                                }
-                                else if (c[1][i] == NULL_INDEX || i == cSize - 1) {
-                                    break;
-                                }
-                            }
-                            long o = c[1][i];
-                            if (o != 0) {
-                                long[] t = new long[cSize + 2];
-                                arraycopy(c[1], 0, t, 1, cSize);
-                                t[0] = portIdArray[lv - 1];
-                                c[1] = t;
-                            }
-                            else {
-                                c[1][i] = portIdArray[lv - 1];
-                            }
-                        }
-                    }
-                    session.bindPort2Channel(portId);
-                    if (put) {
-                        _PortChannel2IndexMaps[getSlot(session)].put(portId, c);
                     }
                 }
+                session.bindPort2Channel(portId);
+                if (put) {
+                    _PortChannel2IndexMaps[getSlot(session)].put(portId, c);
+                }
             }
-            return true;
         }
-        return false;
+        return old;
     }
 
     @Override
@@ -354,7 +360,7 @@ public abstract class AioSessionManager<C extends IContext<C>>
                 if (l == NULL_INDEX) {
                     continue;
                 }
-                ISession session = findSessionByPortLoadFairKeepOld(l);
+                ISession<C> session = findSessionByPortLoadFairKeepOld(l);
                 if (session != null && !session.isClosed()) {
                     size++;
                 }
@@ -368,7 +374,7 @@ public abstract class AioSessionManager<C extends IContext<C>>
     {
         long[][] c = _PortChannel2IndexMaps[getSlot(portMask)].get(portMask);
         if (c != null && c.length > 0 && c[0] != null && c[0].length > 1) {
-            ISession session = null;
+            ISession<C> session;
             int size = (int) c[0][c[0].length - 1];
             _Logger.debug("port-size: " + size);
             if (size == 0) {
@@ -401,11 +407,11 @@ public abstract class AioSessionManager<C extends IContext<C>>
 
     // 防止同种类型的连接在数量上造成困扰，如每个cm连接4个cm，每个cm之间有4个Session，每次调用会得到同一session
     // 获取Session,但是对应的loadFair不增长，防止因getPortSessionCount而造成loadFair的自增
-    private ISession findSessionByPortLoadFairKeepOld(long portMask)
+    private ISession<C> findSessionByPortLoadFairKeepOld(long portMask)
     {
         int loadFairOld = _LoadFairMaps[getSlot(portMask)].get(portMask) == null ? 0
                                                                                  : _LoadFairMaps[getSlot(portMask)].get(portMask);
-        ISession aioSession = findSessionByPort(portMask);
+        ISession<C> aioSession = findSessionByPort(portMask);
         int loadFairAfter = _LoadFairMaps[getSlot(portMask)].get(portMask) == null ? 0
                                                                                    : _LoadFairMaps[getSlot(portMask)].get(portMask);
         if (loadFairAfter != 0) {

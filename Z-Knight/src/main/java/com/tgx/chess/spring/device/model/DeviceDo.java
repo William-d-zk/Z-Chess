@@ -39,6 +39,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 public class DeviceDo
 {
 
+    private long    id;
     private String  sn;
     private String  username;
     private String  password;
@@ -99,5 +100,15 @@ public class DeviceDo
     public void setUsername(String username)
     {
         this.username = username;
+    }
+
+    public long getId()
+    {
+        return id;
+    }
+
+    public void setId(long id)
+    {
+        this.id = id;
     }
 }
