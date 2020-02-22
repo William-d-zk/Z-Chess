@@ -24,8 +24,6 @@
 
 package model;
 
-import javax.persistence.*;
-
 /**
  * @author william.d.zk
  */

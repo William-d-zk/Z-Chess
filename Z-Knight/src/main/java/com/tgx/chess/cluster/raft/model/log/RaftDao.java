@@ -22,7 +22,7 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.cluster.raft.log;
+package com.tgx.chess.cluster.raft.model.log;
 
 import java.io.File;
 import java.io.FileNotFoundException;

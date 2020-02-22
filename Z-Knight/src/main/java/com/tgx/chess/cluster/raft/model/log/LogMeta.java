@@ -22,23 +22,29 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.cluster.raft.log;
+package com.tgx.chess.cluster.raft.model.log;
 
-import com.tgx.chess.queen.io.core.inf.IProtocol;
+import java.io.RandomAccessFile;
 
-public class LogEntry
-        implements
-        IProtocol
+public class LogMeta
+        extends
+        BaseMeta
 {
-    private final static int _SERIAL = INTERNAL_SERIAL + 2;
+    private final static int   _SERIAL     = INTERNAL_SERIAL + 1;
+    private long               firstLogIndex;
+    private long               term;
+    private long               candidate;
 
-    private long term;
-    private long index;
 
-    @Override
-    public int dataLength()
+    LogMeta(RandomAccessFile file)
     {
-        return 0;
+        super((file));
+    }
+
+    LogMeta load()
+    {
+        loadFromFile();
+        return this;
     }
 
     @Override
@@ -53,6 +59,16 @@ public class LogEntry
         return INTERNAL_SERIAL;
     }
 
+    public long getFirstLogIndex()
+    {
+        return firstLogIndex;
+    }
+
+    public void setFirstLogIndex(long firstLogIndex)
+    {
+        this.firstLogIndex = firstLogIndex;
+    }
+
     public long getTerm()
     {
         return term;
@@ -63,13 +79,13 @@ public class LogEntry
         this.term = term;
     }
 
-    public long getIndex()
+    public long getCandidate()
     {
-        return index;
+        return candidate;
     }
 
-    public void setIndex(long index)
+    public void setCandidate(long candidate)
     {
-        this.index = index;
+        this.candidate = candidate;
     }
 }

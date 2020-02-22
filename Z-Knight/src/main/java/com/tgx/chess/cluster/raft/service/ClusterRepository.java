@@ -26,11 +26,11 @@ package com.tgx.chess.cluster.raft.service;
 
 import java.util.List;
 
-import com.tgx.chess.bishop.ZUID;
-import com.tgx.chess.bishop.biz.config.IClusterConfig;
-import com.tgx.chess.king.base.exception.ZException;
+import com.tgx.chess.cluster.raft.model.RaftNode;
 import org.springframework.stereotype.Component;
 
+import com.tgx.chess.bishop.ZUID;
+import com.tgx.chess.bishop.biz.config.IClusterConfig;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.db.inf.IStorage;
 

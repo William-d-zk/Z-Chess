@@ -30,8 +30,6 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpSession;
 
-import org.springframework.web.bind.annotation.*;
-
 import com.tgx.chess.spring.auth.model.AccountEntity;
 import com.tgx.chess.spring.auth.model.AccountStatus;
 import com.tgx.chess.spring.auth.model.RoleEntity;

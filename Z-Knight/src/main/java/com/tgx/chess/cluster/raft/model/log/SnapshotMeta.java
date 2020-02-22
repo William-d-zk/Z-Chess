@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020 Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,47 +22,58 @@
  * SOFTWARE.
  */
 
-package model;
+package com.tgx.chess.cluster.raft.model.log;
 
-import com.tgx.chess.spring.jpa.model.AuditModel;
+import java.io.RandomAccessFile;
 
-/**
- * @author william.d.zk
- */
-@Entity(name = "Role")
-@Table(indexes = { @Index(name = "role_idx_role", columnList = "role") })
-public class RoleEntity
+public class SnapshotMeta
         extends
-        AuditModel
+        BaseMeta
 {
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private int    id;
-    @Column(length = 16, unique = true)
-    private String role;
+    private final static int _SERIAL = INTERNAL_SERIAL + 3;
+    private long             lastIncludedIndex;
+    private long             lastIncludedTerm;
 
-    public int getId()
+    public SnapshotMeta(RandomAccessFile file)
     {
-        return id;
+        super(file);
     }
 
-    public void setId(int id)
+    public SnapshotMeta load()
     {
-        this.id = id;
+        loadFromFile();
+        return this;
     }
 
-    public RoleEnum getRole()
+    @Override
+    public int serial()
     {
-        return RoleEnum.valueOf(role);
+        return _SERIAL;
     }
 
-    public void setRole(RoleEnum role)
+    @Override
+    public int superSerial()
     {
-        this.role = role.name();
+        return INTERNAL_SERIAL;
     }
 
-    public void setRole(String role)
+    public void setLastIncludeIndex(long lastIncludeIndex)
     {
-        this.role = role;
+        this.lastIncludedIndex = lastIncludeIndex;
+    }
+
+    public void setLastIncludeTerm(long lastIncludeTerm)
+    {
+        this.lastIncludedTerm = lastIncludeTerm;
+    }
+
+    public long getLastIncludedIndex()
+    {
+        return lastIncludedIndex;
+    }
+
+    public long getLastIncludedTerm()
+    {
+        return lastIncludedTerm;
     }
 }

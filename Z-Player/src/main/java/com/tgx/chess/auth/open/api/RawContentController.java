@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tgx.chess.spring.device.service.DeviceService;
+import com.tgx.chess.spring.device.api.IMessageService;
 
 /**
  * @author william.d.zk
@@ -40,12 +40,12 @@ import com.tgx.chess.spring.device.service.DeviceService;
 public class RawContentController
 {
 
-    private final DeviceService _DeviceService;
+    private final IMessageService _MessageService;
 
     @Autowired
-    public RawContentController(DeviceService deviceService)
+    public RawContentController(IMessageService messageService)
     {
-        _DeviceService = deviceService;
+        _MessageService = messageService;
     }
 
     @GetMapping("/message/topic")
@@ -55,7 +55,7 @@ public class RawContentController
                                                                 required = false) int limit)
 
     {
-        return _DeviceService.listByTopic(topic, limit);
+        return _MessageService.listByTopic(topic, limit);
     }
 
 }

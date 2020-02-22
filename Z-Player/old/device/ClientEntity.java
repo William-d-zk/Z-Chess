@@ -26,8 +26,6 @@ package device;
 
 import java.util.Set;
 
-import javax.persistence.*;
-
 import com.tgx.chess.spring.auth.model.AccountEntity;
 import com.tgx.chess.spring.jpa.model.AuditModel;
 

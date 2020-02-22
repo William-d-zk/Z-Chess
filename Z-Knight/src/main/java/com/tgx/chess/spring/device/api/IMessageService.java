@@ -1,7 +1,7 @@
 /*
  * MIT License                                                                    
  *                                                                                
- * Copyright (c) 2016~2020 Z-Chess
+ * Copyright (c) 2016~2020 Z-Chess                                                
  *                                                                                
  * Permission is hereby granted, free of charge, to any person obtaining a copy   
  * of this software and associated documentation files (the "Software"), to deal  
@@ -22,23 +22,17 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.cluster.raft;
+package com.tgx.chess.spring.device.api;
 
-/**
- * @author william.d.zk
- * @date 2019/12/10
- */
-public class RaftLog
+import java.util.List;
+
+import com.tgx.chess.king.base.exception.ZException;
+import com.tgx.chess.spring.device.model.MessageBody;
+import com.tgx.chess.spring.device.model.MessageEntry;
+
+public interface IMessageService
 {
-    private final long _Term;
+    List<MessageBody> listByTopic(String topic, int limit) throws ZException;
 
-    public RaftLog(long term)
-    {
-        _Term = term;
-    }
-
-    public long getTerm()
-    {
-        return _Term;
-    }
+    List<MessageEntry> findAfterId(long id) throws ZException;
 }

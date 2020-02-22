@@ -28,7 +28,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.tgx.chess.bishop.io.zprotocol.control.X108_Shutdown;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -36,6 +35,7 @@ import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
 import com.tgx.chess.bishop.io.mqtt.control.*;
 import com.tgx.chess.bishop.io.mqtt.handler.IQttRouter;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
+import com.tgx.chess.bishop.io.zprotocol.control.X108_Shutdown;
 import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
 import com.tgx.chess.bishop.io.zprotocol.device.X21_SignUpResult;
 import com.tgx.chess.bishop.io.zprotocol.device.X24_UpdateToken;

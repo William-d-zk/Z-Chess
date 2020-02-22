@@ -22,69 +22,46 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.cluster.raft.log;
+package com.tgx.chess.spring.device.service;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.util.List;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tgx.chess.queen.io.core.inf.IProtocol;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-public abstract class BaseMeta
+import com.tgx.chess.king.base.exception.ZException;
+import com.tgx.chess.spring.device.api.IMessageService;
+import com.tgx.chess.spring.device.model.MessageBody;
+import com.tgx.chess.spring.device.model.MessageEntry;
+import com.tgx.chess.spring.jpa.device.repository.IMessageJpaRepository;
+
+/**
+ * @author william.d.zk
+ * @date 2020/2/21
+ */
+@Service
+public class MessageService
         implements
-        IProtocol
+        IMessageService
 {
-    private final RandomAccessFile _File;
-    private int                    length;
-    private final ObjectMapper     _JsonMapper = new ObjectMapper();
 
-    protected BaseMeta(RandomAccessFile file)
+    private final IMessageJpaRepository _JpaRepository;
+
+    @Autowired
+    public MessageService(IMessageJpaRepository jpaRepository)
     {
-        _File = file;
-    }
-
-    void loadFromFile()
-    {
-
-        try {
-            if (_File.length() == 0) { return; }
-            _File.seek(0);
-            length = _File.readInt();
-            if (length > 0) {
-                byte[] data = new byte[length];
-                _File.read(data);
-                decode(data);
-            }
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    void update()
-    {
-        try {
-            _File.seek(0);
-            _File.writeInt(dataLength());
-            _File.write(encode());
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-        finally {
-            try {
-                _File.close();
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        _JpaRepository = jpaRepository;
     }
 
     @Override
-    public int dataLength()
+    public List<MessageBody> listByTopic(String topic, int limit) throws ZException
     {
-        return length;
+        return null;
     }
 
+    @Override
+    public List<MessageEntry> findAfterId(long id)
+    {
+        return null;
+    }
 }

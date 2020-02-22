@@ -28,11 +28,11 @@ import java.io.Serializable;
 
 import javax.persistence.*;
 
-import com.tgx.chess.spring.device.model.MessageBody;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
+import com.tgx.chess.spring.device.model.MessageBody;
 import com.tgx.chess.spring.jpa.model.AuditModel;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 
