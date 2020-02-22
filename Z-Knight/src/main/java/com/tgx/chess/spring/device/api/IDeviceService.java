@@ -38,6 +38,6 @@ public interface IDeviceService
 
     MessageBody getMessageById(long id) throws ZException;
 
-    List<MessageBody> listByTopic(String topic, int limit) throws ZException;
+    List<DeviceDo> findAllDevices() throws ZException;
 
 }

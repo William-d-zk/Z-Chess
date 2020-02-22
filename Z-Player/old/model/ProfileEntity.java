@@ -24,8 +24,6 @@
 
 package model;
 
-import javax.persistence.*;
-
 import com.tgx.chess.spring.jpa.model.AuditModel;
 
 /**

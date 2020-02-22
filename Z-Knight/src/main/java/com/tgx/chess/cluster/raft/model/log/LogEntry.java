@@ -22,27 +22,23 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.cluster.raft.log;
+package com.tgx.chess.cluster.raft.model.log;
 
-import java.io.RandomAccessFile;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 
-public class SnapshotMeta
-        extends
-        BaseMeta
+public class LogEntry
+        implements
+        IProtocol
 {
-    private final static int _SERIAL = INTERNAL_SERIAL + 3;
-    private long             lastIncludedIndex;
-    private long             lastIncludedTerm;
+    private final static int _SERIAL = INTERNAL_SERIAL + 2;
 
-    public SnapshotMeta(RandomAccessFile file)
-    {
-        super(file);
-    }
+    private long term;
+    private long index;
 
-    public SnapshotMeta load()
+    @Override
+    public int dataLength()
     {
-        loadFromFile();
-        return this;
+        return 0;
     }
 
     @Override
@@ -57,23 +53,23 @@ public class SnapshotMeta
         return INTERNAL_SERIAL;
     }
 
-    public void setLastIncludeIndex(long lastIncludeIndex)
+    public long getTerm()
     {
-        this.lastIncludedIndex = lastIncludeIndex;
+        return term;
     }
 
-    public void setLastIncludeTerm(long lastIncludeTerm)
+    public void setTerm(long term)
     {
-        this.lastIncludedTerm = lastIncludeTerm;
+        this.term = term;
     }
 
-    public long getLastIncludedIndex()
+    public long getIndex()
     {
-        return lastIncludedIndex;
+        return index;
     }
 
-    public long getLastIncludedTerm()
+    public void setIndex(long index)
     {
-        return lastIncludedTerm;
+        this.index = index;
     }
 }

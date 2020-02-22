@@ -31,7 +31,6 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
-import com.tgx.chess.king.base.exception.ZException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -43,6 +42,7 @@ import com.tgx.chess.bishop.io.mqtt.handler.QttRouter;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zhandler.ZMappingCustom;
 import com.tgx.chess.cluster.raft.service.ClusterCustom;
+import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Triple;
@@ -85,10 +85,10 @@ public class DeviceService
         _DeviceConfig = deviceConfig;
         _MessageRepository = messageRepository;
         List<ITriple> hosts = new ArrayList<>(2);
-        String[] wsSplit = deviceConfig.getAddressWs()
-                                       .split(":", 2);
-        String[] qttSplit = deviceConfig.getAddressQtt()
+        String[] wsSplit = _DeviceConfig.getAddressWs()
                                         .split(":", 2);
+        String[] qttSplit = _DeviceConfig.getAddressQtt()
+                                         .split(":", 2);
         String wsServiceHost = wsSplit[0];
         String qttServiceHost = qttSplit[0];
         int wsServicePort = Integer.parseInt(wsSplit[1]);
@@ -158,13 +158,13 @@ public class DeviceService
     }
 
     @Override
-    public MessageBody getMessageById(long id) throws ZException
+    public List<DeviceDo> findAllDevices() throws ZException
     {
         return null;
     }
 
     @Override
-    public List<MessageBody> listByTopic(String topic, int limit) throws ZException
+    public MessageBody getMessageById(long id) throws ZException
     {
         return null;
     }

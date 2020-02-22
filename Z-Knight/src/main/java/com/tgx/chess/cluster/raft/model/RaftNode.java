@@ -22,7 +22,7 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.cluster.raft.service;
+package com.tgx.chess.cluster.raft.model;
 
 import java.util.List;
 

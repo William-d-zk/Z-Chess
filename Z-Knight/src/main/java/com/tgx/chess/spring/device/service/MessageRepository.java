@@ -24,12 +24,12 @@
 
 package com.tgx.chess.spring.device.service;
 
+import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_INSERT;
+
 import java.util.List;
 
-import com.tgx.chess.king.base.exception.ZException;
-import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.spring.device.model.MessageBody;
-import com.tgx.chess.spring.jpa.device.dao.MessageEntity;
+import javax.persistence.EntityNotFoundException;
+
 import org.hibernate.LazyInitializationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.jpa.JpaObjectRetrievalFailureException;
@@ -37,15 +37,13 @@ import org.springframework.stereotype.Component;
 
 import com.tgx.chess.bishop.ZUID;
 import com.tgx.chess.bishop.biz.config.IClusterConfig;
+import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.db.inf.IStorage;
+import com.tgx.chess.spring.device.model.MessageBody;
 import com.tgx.chess.spring.device.model.MessageEntry;
+import com.tgx.chess.spring.jpa.device.dao.MessageEntity;
 import com.tgx.chess.spring.jpa.device.repository.IMessageJpaRepository;
-
-import javax.persistence.EntityNotFoundException;
-
-import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_INSERT;
-import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_NULL;
 
 /**
  * @author william.d.zk

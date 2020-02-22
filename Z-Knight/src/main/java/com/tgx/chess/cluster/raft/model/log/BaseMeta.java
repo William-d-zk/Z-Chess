@@ -22,35 +22,69 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.cluster.raft.service;
+package com.tgx.chess.cluster.raft.model.log;
 
-import com.tgx.chess.cluster.raft.model.RaftNode;
-import org.springframework.stereotype.Component;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 
-import com.tgx.chess.bishop.io.zfilter.ZContext;
-import com.tgx.chess.queen.db.inf.IRepository;
-import com.tgx.chess.queen.event.inf.ICustomLogic;
-import com.tgx.chess.queen.io.core.inf.IControl;
-import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.manager.QueenManager;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 
-@Component
-public class ClusterCustom
+public abstract class BaseMeta
         implements
-        ICustomLogic<ZContext>
+        IProtocol
 {
-    private final IRepository<RaftNode> _ClusterRepository;
+    private final RandomAccessFile _File;
+    private int                    length;
+    private final ObjectMapper     _JsonMapper = new ObjectMapper();
 
-    public ClusterCustom(IRepository<RaftNode> clusterRepository)
+    protected BaseMeta(RandomAccessFile file)
     {
-        _ClusterRepository = clusterRepository;
+        _File = file;
+    }
+
+    void loadFromFile()
+    {
+
+        try {
+            if (_File.length() == 0) { return; }
+            _File.seek(0);
+            length = _File.readInt();
+            if (length > 0) {
+                byte[] data = new byte[length];
+                _File.read(data);
+                decode(data);
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    void update()
+    {
+        try {
+            _File.seek(0);
+            _File.writeInt(dataLength());
+            _File.write(encode());
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        finally {
+            try {
+                _File.close();
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
-    public IControl<ZContext>[] handle(QueenManager<ZContext> manager,
-                                       ISession<ZContext> session,
-                                       IControl<ZContext> content) throws Exception
+    public int dataLength()
     {
-        return null;
+        return length;
     }
+
 }

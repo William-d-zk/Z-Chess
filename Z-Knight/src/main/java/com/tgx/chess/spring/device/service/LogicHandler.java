@@ -25,7 +25,8 @@
 package com.tgx.chess.spring.device.service;
 
 import static com.tgx.chess.bishop.io.Direction.*;
-import static com.tgx.chess.queen.db.inf.IStorage.Operation.*;
+import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_INSERT;
+import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_MODIFY;
 import static com.tgx.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
 import static com.tgx.chess.queen.io.core.inf.IQoS.Level.EXACTLY_ONCE;
 import static java.lang.Math.min;

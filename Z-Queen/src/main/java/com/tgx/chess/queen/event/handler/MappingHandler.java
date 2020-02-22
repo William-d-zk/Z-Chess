@@ -32,7 +32,6 @@ import java.nio.channels.AsynchronousSocketChannel;
 
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.king.base.exception.LinkRejectException;
-import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;

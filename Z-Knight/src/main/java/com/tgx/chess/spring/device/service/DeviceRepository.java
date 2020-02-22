@@ -26,20 +26,20 @@ package com.tgx.chess.spring.device.service;
 
 import static com.tgx.chess.king.base.util.IoUtil.isBlank;
 import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_INSERT;
-import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_NULL;
 
 import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.time.Instant;
 import java.util.List;
-import java.util.Objects;
 
-import com.tgx.chess.king.base.exception.ZException;
+import javax.persistence.EntityNotFoundException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.tgx.chess.bishop.ZUID;
 import com.tgx.chess.bishop.biz.config.IClusterConfig;
+import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.king.base.util.IoUtil;
@@ -48,8 +48,6 @@ import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.spring.device.model.DeviceEntry;
 import com.tgx.chess.spring.jpa.device.dao.DeviceEntity;
 import com.tgx.chess.spring.jpa.device.repository.IDeviceJpaRepository;
-
-import javax.persistence.EntityNotFoundException;
 
 /**
  * @author william.d.zk

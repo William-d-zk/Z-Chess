@@ -24,6 +24,8 @@
 
 package com.tgx.chess.spring.device.api;
 
+import static com.tgx.chess.king.base.util.IoUtil.isBlank;
+
 import java.time.Instant;
 import java.util.Objects;
 
@@ -36,9 +38,6 @@ import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.spring.device.model.DeviceDo;
 import com.tgx.chess.spring.device.model.DeviceStatus;
-import com.tgx.chess.spring.jpa.device.dao.DeviceEntity;
-
-import static com.tgx.chess.king.base.util.IoUtil.isBlank;
 
 /**
  * @author william.d.zk

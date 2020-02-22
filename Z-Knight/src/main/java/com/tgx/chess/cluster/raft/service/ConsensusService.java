@@ -24,33 +24,9 @@
 
 package com.tgx.chess.cluster.raft.service;
 
-import com.tgx.chess.cluster.raft.model.RaftNode;
-import org.springframework.stereotype.Component;
-
-import com.tgx.chess.bishop.io.zfilter.ZContext;
-import com.tgx.chess.queen.db.inf.IRepository;
-import com.tgx.chess.queen.event.inf.ICustomLogic;
-import com.tgx.chess.queen.io.core.inf.IControl;
-import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.manager.QueenManager;
-
-@Component
-public class ClusterCustom
-        implements
-        ICustomLogic<ZContext>
+/**
+ * @author william.d.zk
+ */
+public class ConsensusService
 {
-    private final IRepository<RaftNode> _ClusterRepository;
-
-    public ClusterCustom(IRepository<RaftNode> clusterRepository)
-    {
-        _ClusterRepository = clusterRepository;
-    }
-
-    @Override
-    public IControl<ZContext>[] handle(QueenManager<ZContext> manager,
-                                       ISession<ZContext> session,
-                                       IControl<ZContext> content) throws Exception
-    {
-        return null;
-    }
 }

@@ -26,7 +26,6 @@ package com.tgx.chess.bishop.io.zhandler;
 
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.ztls.*;
-import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.event.inf.ICustomLogic;
 import com.tgx.chess.queen.io.core.inf.IControl;
