@@ -30,6 +30,10 @@ import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.spring.device.model.MessageBody;
 import com.tgx.chess.spring.device.model.MessageEntry;
 
+/**
+ * @author william.d.zk
+ * @date 2020/2/21
+ */
 public interface IMessageService
 {
     List<MessageBody> listByTopic(String topic, int limit) throws ZException;

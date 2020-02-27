@@ -24,6 +24,7 @@
 
 package com.tgx.chess.config;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,6 +36,7 @@ import com.tgx.chess.bishop.ZUID;
 import com.tgx.chess.bishop.biz.config.IClusterConfig;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.util.Pair;
+import org.springframework.util.unit.DataSize;
 
 @Configuration
 @ConfigurationProperties(prefix = "z.chess")
@@ -43,6 +45,10 @@ public class ZClusterConfig
         implements
         IClusterConfig
 {
+
+    public ZClusterConfig()
+    {
+    }
 
     public Uid getUid()
     {
@@ -80,6 +86,9 @@ public class ZClusterConfig
     private List<IPair> gates;
     private IPair       bind;
     private ZUID        zuid;
+    private Duration    electInSecond;
+    private Duration    snapshotInSecond;
+    private DataSize    snapshotMinSize;
 
     @Override
     public List<IPair> getGates()
@@ -113,5 +122,37 @@ public class ZClusterConfig
     {
         String[] split = bind.split(":", 2);
         this.bind = new Pair<>(split[0], Integer.parseInt(split[1]));
+    }
+
+    public Duration getElectInSecond()
+    {
+        return electInSecond;
+    }
+
+    public void setElectInSecond(Duration electInSecond)
+    {
+        this.electInSecond = electInSecond;
+    }
+
+    @Override
+    public Duration getSnapshotInSecond()
+    {
+        return snapshotInSecond;
+    }
+
+    public void setSnapshotInSecond(Duration snapshotInSecond)
+    {
+        this.snapshotInSecond = snapshotInSecond;
+    }
+
+    @Override
+    public long getSnapshotMinSize()
+    {
+        return snapshotMinSize.toBytes();
+    }
+
+    public void setSnapshotMinSize(DataSize snapshotMinSize)
+    {
+        this.snapshotMinSize = snapshotMinSize;
     }
 }

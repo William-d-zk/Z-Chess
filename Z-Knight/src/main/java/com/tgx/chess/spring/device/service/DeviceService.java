@@ -31,6 +31,11 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import com.tgx.chess.cluster.raft.model.RaftNode;
+import com.tgx.chess.cluster.raft.model.log.RaftDao;
+import com.tgx.chess.cluster.raft.service.api.IConsensusService;
+import com.tgx.chess.king.base.schedule.ScheduleHandler;
+import com.tgx.chess.king.base.schedule.TimeWheel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -56,6 +61,8 @@ import com.tgx.chess.spring.device.model.DeviceEntry;
 import com.tgx.chess.spring.device.model.MessageBody;
 import com.tgx.chess.spring.device.model.MessageEntry;
 
+import static com.tgx.chess.king.base.schedule.TimeWheel.IWheelItem.PRIORITY_LV3;
+
 /**
  * @author william.d.zk
  * @date 2019-06-10
@@ -67,11 +74,15 @@ public class DeviceService
         IDeviceService
 {
     private final Logger                    _Logger = Logger.getLogger(getClass().getSimpleName());
-    private final DeviceNode                _DeviceNode;
     private final DeviceConfig              _DeviceConfig;
+    private final IClusterConfig            _ClusterConfig;
+    private final DeviceNode                _DeviceNode;
     private final LinkCustom                _LinkCustom;
     private final ClusterCustom             _ClusterCustom;
     private final IRepository<MessageEntry> _MessageRepository;
+    private final IConsensusService         _ConsensusService;
+    private final RaftNode                  _RaftNode;
+    private final TimeWheel                 _TimeWheel;
 
     @Autowired
     DeviceService(DeviceConfig deviceConfig,
@@ -80,10 +91,13 @@ public class DeviceService
                   IServerConfig serverConfig,
                   LinkCustom linkCustom,
                   ClusterCustom clusterCustom,
-                  IRepository<MessageEntry> messageRepository) throws IOException
+                  IRepository<MessageEntry> messageRepository,
+                  IConsensusService consensusService,
+                  RaftDao raftDao) throws IOException
     {
+        _TimeWheel = new TimeWheel();
         _DeviceConfig = deviceConfig;
-        _MessageRepository = messageRepository;
+        _ClusterConfig = clusterConfig;
         List<ITriple> hosts = new ArrayList<>(2);
         String[] wsSplit = _DeviceConfig.getAddressWs()
                                         .split(":", 2);
@@ -95,9 +109,12 @@ public class DeviceService
         int qttServicePort = Integer.parseInt(qttSplit[1]);
         hosts.add(new Triple<>(wsServiceHost, wsServicePort, ZSort.WS_SERVER));
         hosts.add(new Triple<>(qttServiceHost, qttServicePort, ZSort.QTT_SERVER));
-        _DeviceNode = new DeviceNode(hosts, bizIoConfig, clusterConfig, serverConfig);
+        _DeviceNode = new DeviceNode(hosts, bizIoConfig, clusterConfig, serverConfig, _TimeWheel);
+        _MessageRepository = messageRepository;
         _LinkCustom = linkCustom;
         _ClusterCustom = clusterCustom;
+        _RaftNode = new RaftNode(_TimeWheel, _ClusterConfig, raftDao, _ClusterCustom);
+        _ConsensusService = consensusService;
     }
 
     @PostConstruct
@@ -107,6 +124,7 @@ public class DeviceService
         LogicHandler logicHandler = new LogicHandler(_DeviceNode, _QttRouter, _MessageRepository);
         _LinkCustom.setQttRouter(_QttRouter);
         _DeviceNode.start(logicHandler, new ZMappingCustom(_LinkCustom), new ZMappingCustom(_ClusterCustom));
+        _RaftNode.init();
     }
 
     @SafeVarargs

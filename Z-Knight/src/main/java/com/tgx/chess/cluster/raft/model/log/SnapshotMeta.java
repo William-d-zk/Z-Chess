@@ -24,6 +24,10 @@
 
 package com.tgx.chess.cluster.raft.model.log;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+
+import java.io.IOException;
 import java.io.RandomAccessFile;
 
 public class SnapshotMeta
@@ -75,5 +79,35 @@ public class SnapshotMeta
     public long getLastIncludedTerm()
     {
         return lastIncludedTerm;
+    }
+
+    @Override
+    public int decode(byte[] data)
+    {
+        try {
+            JsonNode json = _JsonMapper.readTree(data);
+            lastIncludedIndex = json.get("last_include_index")
+                                    .asLong();
+            lastIncludedTerm = json.get("last_include_term")
+                                   .asLong();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        return length = data.length;
+    }
+
+    @Override
+    public byte[] encode()
+    {
+        try {
+            byte[] data = _JsonMapper.writeValueAsBytes(this);
+            length = data.length;
+            return data;
+        }
+        catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

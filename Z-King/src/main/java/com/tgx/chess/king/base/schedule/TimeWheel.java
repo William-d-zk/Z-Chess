@@ -24,7 +24,14 @@
 
 package com.tgx.chess.king.base.schedule;
 
-import java.util.*;
+import com.tgx.chess.king.base.log.Logger;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
@@ -38,6 +45,7 @@ public class TimeWheel
         extends
         ForkJoinPool
 {
+    private final Logger        _Logger = Logger.getLogger(getClass().getSimpleName());
     private final Thread        _Timer;
     private final int           _SlotBitLeft;//must <= 10
     private final int           _HashMod;
@@ -103,6 +111,7 @@ public class TimeWheel
         });
         _Timer.setName(String.format("TimerWheel-%d", _Timer.getId()));
         _Timer.start();
+        _Logger.info("timer wheel start %s", _Timer.getName());
     }
 
     private int getCurrentLoop()

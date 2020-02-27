@@ -40,6 +40,7 @@ import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.schedule.ScheduleHandler;
+import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.config.IBizIoConfig;
 import com.tgx.chess.queen.config.IServerConfig;
@@ -53,7 +54,14 @@ import com.tgx.chess.queen.io.core.async.BaseAioClient;
 import com.tgx.chess.queen.io.core.async.BaseAioConnector;
 import com.tgx.chess.queen.io.core.async.BaseAioServer;
 import com.tgx.chess.queen.io.core.executor.ServerCore;
-import com.tgx.chess.queen.io.core.inf.*;
+import com.tgx.chess.queen.io.core.inf.IAioClient;
+import com.tgx.chess.queen.io.core.inf.IAioConnector;
+import com.tgx.chess.queen.io.core.inf.IAioServer;
+import com.tgx.chess.queen.io.core.inf.IConnectActivity;
+import com.tgx.chess.queen.io.core.inf.IControl;
+import com.tgx.chess.queen.io.core.inf.ISession;
+import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
+import com.tgx.chess.queen.io.core.inf.ISessionOption;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
 
 /**
@@ -72,6 +80,7 @@ public class DeviceNode
     private final List<IAioConnector<ZContext>> _ClusterConnectors;
     private final IAioClient<ZContext>          _GateClient;
     private final List<IAioConnector<ZContext>> _GateConnectors;
+    private final TimeWheel                     _TimeWheel;
 
     @Override
     public void onDismiss(ISession<ZContext> session)
@@ -82,7 +91,8 @@ public class DeviceNode
     public DeviceNode(List<ITriple> hosts,
                       IBizIoConfig bizIoConfig,
                       IClusterConfig clusterConfig,
-                      IServerConfig serverConfig) throws IOException
+                      IServerConfig serverConfig,
+                      TimeWheel timeWheel) throws IOException
     {
         super(bizIoConfig, new ServerCore<ZContext>(serverConfig)
         {
@@ -100,6 +110,7 @@ public class DeviceNode
                                                                 : getClusterLocalCloseEvent();
             }
         });
+        _TimeWheel = timeWheel;
         IPair bind = clusterConfig.getBind();
         hosts.add(new Triple<>(bind.first(), bind.second(), ZSort.WS_CLUSTER_SERVER));
         _AioServers = hosts.stream()
@@ -157,7 +168,7 @@ public class DeviceNode
         List<IPair> clusterPeers = clusterConfig.getPeers();
         List<IPair> parents = clusterConfig.getGates();
         if (parents != null && !parents.isEmpty()) {
-            _GateClient = new BaseAioClient<>(getServerCore().getTimeWheel(), getServerCore().getClusterChannelGroup());
+            _GateClient = new BaseAioClient<>(getTimeWheel(), getServerCore().getClusterChannelGroup());
             _GateConnectors = new LinkedList<>();
             for (IPair pair : parents) {
                 //parent -> RM_XID
@@ -171,8 +182,7 @@ public class DeviceNode
             _GateConnectors = null;
         }
         if (clusterPeers != null && !clusterPeers.isEmpty()) {
-            _ClusterClient = new BaseAioClient<>(getServerCore().getTimeWheel(),
-                                                 getServerCore().getClusterChannelGroup());
+            _ClusterClient = new BaseAioClient<>(getTimeWheel(), getServerCore().getClusterChannelGroup());
             _ClusterConnectors = new LinkedList<>();
             for (IPair pair : clusterPeers) {
                 //peer -> CM_XID
@@ -188,6 +198,11 @@ public class DeviceNode
         _Logger.info("Device Node Bean Load");
     }
 
+    private TimeWheel getTimeWheel()
+    {
+        return _TimeWheel;
+    }
+
     @SafeVarargs
     public final void localBizSend(long deviceId, IControl<ZContext>... toSends)
     {
@@ -200,14 +215,14 @@ public class DeviceNode
     }
 
     @SafeVarargs
-    public final void localClusterSend(long nodeZuid, IControl<ZContext>... toSends)
+    public final void localClusterSend(long peerId, IControl<ZContext>... toSends)
     {
-        localSend(nodeZuid, toSends);
+        localSend(peerId, toSends);
     }
 
-    public void localClusterClose(long nodeZuid)
+    public void localClusterClose(long peerId)
     {
-        localClose(nodeZuid);
+        localClose(peerId);
     }
 
     @SafeVarargs
@@ -234,7 +249,6 @@ public class DeviceNode
         }
     }
 
-    @SuppressWarnings("unchecked")
     public void start(ILogicHandler<ZContext> logicHandler,
                       ICustomLogic<ZContext> linkCustom,
                       ICustomLogic<ZContext> clusterCustom) throws IOException
@@ -314,11 +328,5 @@ public class DeviceNode
                 return _Sort;
             }
         };
-    }
-
-    public <A> void acquire(A attach, ScheduleHandler<A> schedule)
-    {
-        _ServerCore.getTimeWheel()
-                   .acquire(attach, schedule);
     }
 }

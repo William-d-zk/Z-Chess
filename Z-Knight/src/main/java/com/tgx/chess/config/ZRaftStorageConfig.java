@@ -31,7 +31,7 @@ import org.springframework.context.annotation.PropertySource;
 @Configuration
 @ConfigurationProperties(prefix = "z.chess.raft")
 @PropertySource("classpath:raft.properties")
-public class ZRaftConfig
+public class ZRaftStorageConfig
 {
     private int    maxSegmentSize;
     private String baseDir;

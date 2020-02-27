@@ -24,9 +24,49 @@
 
 package com.tgx.chess.cluster.raft.service;
 
+import com.tgx.chess.cluster.raft.IRaftMessage;
+import com.tgx.chess.cluster.raft.model.RaftNode;
+import com.tgx.chess.cluster.raft.service.api.IConsensusService;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
 /**
  * @author william.d.zk
  */
+@Service
 public class ConsensusService
+        implements
+        IConsensusService
 {
+    private final RaftNode _RaftNode;
+
+    public ConsensusService(RaftNode raftNode)
+    {
+        _RaftNode = raftNode;
+    }
+
+    @Override
+    public List<IRaftMessage> prepare()
+    {
+        return null;
+    }
+
+    @Override
+    public List<IRaftMessage> elect(RaftNode candidate)
+    {
+        return null;
+    }
+
+    @Override
+    public void appendLog(IRaftMessage log)
+    {
+
+    }
+
+    @Override
+    public void installSnapshot(List<IRaftMessage> snapshot)
+    {
+
+    }
 }

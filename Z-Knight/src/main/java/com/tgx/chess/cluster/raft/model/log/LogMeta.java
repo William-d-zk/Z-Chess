@@ -24,17 +24,21 @@
 
 package com.tgx.chess.cluster.raft.model.log;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+
+import java.io.IOException;
 import java.io.RandomAccessFile;
 
 public class LogMeta
         extends
         BaseMeta
 {
-    private final static int   _SERIAL     = INTERNAL_SERIAL + 1;
-    private long               firstLogIndex;
-    private long               term;
-    private long               candidate;
+    private final static int _SERIAL = INTERNAL_SERIAL + 1;
 
+    private long firstLogIndex;
+    private long term;
+    private long candidate;
 
     LogMeta(RandomAccessFile file)
     {
@@ -45,6 +49,39 @@ public class LogMeta
     {
         loadFromFile();
         return this;
+    }
+
+    @Override
+    public int decode(byte[] data)
+    {
+        try {
+            JsonNode json = _JsonMapper.readTree(data);
+            firstLogIndex = json.get("first_log_index")
+                                .asLong();
+            term = json.get("term")
+                       .asLong();
+            candidate = json.get("candidate")
+                            .asLong();
+
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        return length = data.length;
+    }
+
+    @Override
+    public byte[] encode()
+    {
+        try {
+            byte[] data = _JsonMapper.writeValueAsBytes(this);
+            length = data.length;
+            return data;
+        }
+        catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override

@@ -25,7 +25,11 @@ package com.tgx.chess.queen.io.core.async;
 
 import static java.lang.System.arraycopy;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.ArrayUtil;

@@ -44,7 +44,7 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.tgx.chess.config.ZRaftConfig;
+import com.tgx.chess.config.ZRaftStorageConfig;
 import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.king.base.log.Logger;
 
@@ -53,7 +53,7 @@ public class RaftDao
 {
     private final Logger _Logger = Logger.getLogger(RaftDao.class.getName());
 
-    private final ZRaftConfig            _Config;
+    private final ZRaftStorageConfig     _Config;
     private final String                 _BaseDir;
     private final String                 _LogDataDir;
     private final String                 _LogMetaDir;
@@ -72,7 +72,7 @@ public class RaftDao
     private final Lock          _SnapshotLock = new ReentrantLock();
 
     @Autowired
-    public RaftDao(ZRaftConfig config)
+    public RaftDao(ZRaftStorageConfig config)
     {
         _Config = config;
         _BaseDir = _Config.getBaseDir();
@@ -345,5 +345,20 @@ public class RaftDao
     public void lockSnapshot()
     {
         _SnapshotLock.lock();
+    }
+
+    public LogMeta getLogMeta()
+    {
+        return logMeta;
+    }
+
+    public SnapshotMeta getSnapshotMeta()
+    {
+        return snapshotMeta;
+    }
+
+    public long getTotalSize()
+    {
+        return totalSize;
     }
 }
