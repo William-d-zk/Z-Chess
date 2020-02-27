@@ -22,72 +22,46 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.cluster.raft.model.log;
+package com.tgx.chess.cluster.raft.model;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.util.NavigableMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tgx.chess.queen.io.core.inf.IProtocol;
-
-public abstract class BaseMeta
-        implements
-        IProtocol
+/**
+ * @author william.d.zk
+ * @date 2020/2/21
+ *       Raft 集群的拓扑关系
+ */
+public class RaftGraph
 {
-    protected final static ObjectMapper _JsonMapper = new ObjectMapper();
-    @JsonIgnore
-    private final RandomAccessFile      _File;
-    @JsonIgnore
-    protected int                       length;
+    private final NavigableMap<Long,
+                               RaftMachine> _NodeMap = new ConcurrentSkipListMap<>();
 
-    protected BaseMeta(RandomAccessFile file)
+    public RaftGraph()
     {
-        _File = file;
     }
 
-    void loadFromFile()
+    public boolean contains(long peerId)
     {
-        try {
-            if (_File.length() == 0) { return; }
-            _File.seek(0);
-            length = _File.readInt();
-            if (length > 0) {
-                byte[] data = new byte[length];
-                _File.read(data);
-                decode(data);
-            }
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        return _NodeMap.containsKey(peerId);
     }
 
-    void update()
+    public RaftMachine getNode(long peerId)
     {
-        try {
-            _File.seek(0);
-            byte[] data = encode();
-            _File.writeInt(dataLength());
-            _File.write(data);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-        finally {
-            try {
-                _File.close();
-            }
-            catch (IOException e) {
-                e.printStackTrace();
+        return _NodeMap.get(peerId);
+    }
+
+    /**
+     * 删除过程只能forEach
+     * 
+     * @param peers
+     */
+    public void remove(long... peers)
+    {
+        if (peers != null) {
+            for (long peer : peers) {
+                _NodeMap.remove(peer);
             }
         }
     }
-
-    @Override
-    public int dataLength()
-    {
-        return length;
-    }
-
 }

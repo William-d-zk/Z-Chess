@@ -24,6 +24,7 @@
 
 package com.tgx.chess.bishop.biz.config;
 
+import java.time.Duration;
 import java.util.List;
 
 import com.tgx.chess.bishop.ZUID;
@@ -41,6 +42,12 @@ public interface IClusterConfig
     Uid getUid();
 
     ZUID createZUID(boolean withType);
+
+    Duration getElectInSecond();
+
+    Duration getSnapshotInSecond();
+
+    long getSnapshotMinSize();
 
     class Uid
     {

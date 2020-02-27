@@ -24,8 +24,44 @@
 
 package com.tgx.chess.cluster.raft.service.api;
 
+import com.tgx.chess.cluster.raft.IRaftMessage;
+import com.tgx.chess.cluster.raft.model.RaftNode;
+
+import java.util.List;
+
 /**
  * @author william.d.zk
+ * @date 2020/2/20
  */
-public interface IConsensusService {
+public interface IConsensusService
+{
+    /**
+     * 发起准备流程
+     * 
+     * @return
+     */
+    List<IRaftMessage> prepare();
+
+    /**
+     * 发起选举
+     * 
+     * @param candidate
+     * @return
+     */
+    List<IRaftMessage> elect(RaftNode candidate);
+
+    /**
+     * 追加状态机日志
+     * 
+     * @param log
+     */
+    void appendLog(IRaftMessage log);
+
+    /**
+     * 同步snapshot,
+     * 
+     * @param snapshot
+     */
+    void installSnapshot(List<IRaftMessage> snapshot);
+
 }

@@ -41,7 +41,11 @@ import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.inf.*;
+import com.tgx.chess.queen.io.core.inf.IConnectActivity;
+import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.io.core.inf.IControl;
+import com.tgx.chess.queen.io.core.inf.ISession;
+import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
 
 /**

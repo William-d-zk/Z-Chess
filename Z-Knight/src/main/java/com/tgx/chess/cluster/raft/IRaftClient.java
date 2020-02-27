@@ -1,7 +1,7 @@
 /*
  * MIT License                                                                    
  *                                                                                
- * Copyright (c) 2016~2020 Z-Chess
+ * Copyright (c) 2016~2020 Z-Chess                                                
  *                                                                                
  * Permission is hereby granted, free of charge, to any person obtaining a copy   
  * of this software and associated documentation files (the "Software"), to deal  
@@ -22,23 +22,47 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.cluster.raft.model.log;
+package com.tgx.chess.cluster.raft;
+
+import com.tgx.chess.cluster.raft.model.RaftGraph;
+import com.tgx.chess.cluster.raft.model.RaftNode;
+
+import java.util.List;
 
 /**
  * @author william.d.zk
- * @date 2019/12/10
+ * @date 2020/2/20
  */
-public class RaftLog
+public interface IRaftClient
 {
-    private final long _Term;
+    /**
+     * 获取集群的leader信息
+     * 
+     * @return
+     */
+    RaftNode getLeader();
 
-    public RaftLog(long term)
-    {
-        _Term = term;
-    }
+    /**
+     * 获取集群拓扑
+     * 
+     * @return
+     */
+    RaftGraph getTopology();
 
-    public long getTerm()
-    {
-        return _Term;
-    }
+    /**
+     * 向集群中添加节点
+     * 
+     * @param node
+     * @return
+     */
+    boolean addNode(RaftNode... node);
+
+    /**
+     * 移除集群节点
+     * 
+     * @param nodes
+     * @return
+     */
+    boolean rmNode(List<RaftNode> nodes);
+
 }

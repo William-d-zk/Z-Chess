@@ -26,18 +26,37 @@ package com.tgx.chess.queen.io.core.executor;
 
 import java.io.IOException;
 import java.nio.channels.AsynchronousChannelGroup;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Random;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.lmax.disruptor.*;
+import com.lmax.disruptor.BatchEventProcessor;
+import com.lmax.disruptor.LiteBlockingWaitStrategy;
+import com.lmax.disruptor.RingBuffer;
+import com.lmax.disruptor.SequenceBarrier;
+import com.lmax.disruptor.WaitStrategy;
+import com.lmax.disruptor.YieldingWaitStrategy;
 import com.tgx.chess.king.base.disruptor.MultiBufferBatchEventProcessor;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.config.IServerConfig;
-import com.tgx.chess.queen.event.handler.*;
+import com.tgx.chess.queen.event.handler.DecodeHandler;
+import com.tgx.chess.queen.event.handler.DecodedDispatcher;
+import com.tgx.chess.queen.event.handler.EncodeHandler;
+import com.tgx.chess.queen.event.handler.EncodedHandler;
+import com.tgx.chess.queen.event.handler.IoDispatcher;
+import com.tgx.chess.queen.event.handler.MappingHandler;
+import com.tgx.chess.queen.event.handler.WriteDispatcher;
 import com.tgx.chess.queen.event.inf.ICustomLogic;
 import com.tgx.chess.queen.event.inf.ILogicHandler;
 import com.tgx.chess.queen.event.inf.IOperator.Type;
@@ -121,7 +140,6 @@ public abstract class ServerCore<C extends IContext<C>>
                                                                                                                _ClusterCacheConcurrentQueue.poll());
                                                                                       }
                                                                                   };
-    private final TimeWheel                                 _TimeWheel            = new TimeWheel();
     private final ReentrantLock                             _LocalLock            = new ReentrantLock();
     private final Random                                    _Random               = new Random();
     private AsynchronousChannelGroup                        mServiceChannelGroup;
@@ -412,11 +430,6 @@ public abstract class ServerCore<C extends IContext<C>>
     public ThreadFactory getClusterThreadFactory()
     {
         return _ClusterThreadFactory;
-    }
-
-    public TimeWheel getTimeWheel()
-    {
-        return _TimeWheel;
     }
 
     /*close 一定发生在 linker 处理器中，单线程处理*/

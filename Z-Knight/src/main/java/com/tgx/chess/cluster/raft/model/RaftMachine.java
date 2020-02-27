@@ -22,72 +22,47 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.cluster.raft.model.log;
+package com.tgx.chess.cluster.raft.model;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tgx.chess.queen.io.core.inf.IProtocol;
-
-public abstract class BaseMeta
-        implements
-        IProtocol
+/**
+ * @author william.d.zk
+ * @date 2019/12/10
+ */
+public class RaftMachine
 {
-    protected final static ObjectMapper _JsonMapper = new ObjectMapper();
-    @JsonIgnore
-    private final RandomAccessFile      _File;
-    @JsonIgnore
-    protected int                       length;
+    private final long _Term;
+    private final long _Index;
+    private final long _Candidate;
+    private final long _Leader;
 
-    protected BaseMeta(RandomAccessFile file)
+    public RaftMachine(long term,
+                       long index,
+                       long candidate,
+                       long leader)
     {
-        _File = file;
+        _Term = term;
+        _Index = index;
+        _Candidate = candidate;
+        _Leader = leader;
     }
 
-    void loadFromFile()
+    public long getTerm()
     {
-        try {
-            if (_File.length() == 0) { return; }
-            _File.seek(0);
-            length = _File.readInt();
-            if (length > 0) {
-                byte[] data = new byte[length];
-                _File.read(data);
-                decode(data);
-            }
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        return _Term;
     }
 
-    void update()
+    public long getIndex()
     {
-        try {
-            _File.seek(0);
-            byte[] data = encode();
-            _File.writeInt(dataLength());
-            _File.write(data);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-        finally {
-            try {
-                _File.close();
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        return _Index;
     }
 
-    @Override
-    public int dataLength()
+    public long getCandidate()
     {
-        return length;
+        return _Candidate;
     }
 
+    public long getLeader()
+    {
+        return _Leader;
+    }
 }

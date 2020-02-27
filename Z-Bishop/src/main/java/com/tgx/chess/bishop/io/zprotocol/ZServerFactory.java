@@ -25,7 +25,12 @@
 package com.tgx.chess.bishop.io.zprotocol;
 
 import com.tgx.chess.bishop.io.zfilter.ZContext;
-import com.tgx.chess.bishop.io.zprotocol.device.*;
+import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
+import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
+import com.tgx.chess.bishop.io.zprotocol.device.X24_UpdateToken;
+import com.tgx.chess.bishop.io.zprotocol.device.X31_ConfirmMsg;
+import com.tgx.chess.bishop.io.zprotocol.device.X32_MsgStatus;
+import com.tgx.chess.bishop.io.zprotocol.device.X50_DeviceMsg;
 import com.tgx.chess.queen.io.core.inf.ICommandFactory;
 
 /**

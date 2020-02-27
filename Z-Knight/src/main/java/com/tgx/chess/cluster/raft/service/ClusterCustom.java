@@ -24,26 +24,36 @@
 
 package com.tgx.chess.cluster.raft.service;
 
-import com.tgx.chess.cluster.raft.model.RaftNode;
+import com.tgx.chess.king.base.log.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.tgx.chess.bishop.io.zfilter.ZContext;
+import com.tgx.chess.cluster.raft.model.RaftNode;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.event.inf.ICustomLogic;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
 
+import java.util.function.Consumer;
+
 @Component
 public class ClusterCustom
         implements
-        ICustomLogic<ZContext>
+        ICustomLogic<ZContext>,
+        Consumer<RaftNode>
 {
+    private final Logger                _Logger = Logger.getLogger(getClass().getSimpleName());
     private final IRepository<RaftNode> _ClusterRepository;
+    private final RaftNode              _RaftNode;
 
-    public ClusterCustom(IRepository<RaftNode> clusterRepository)
+    @Autowired
+    public ClusterCustom(IRepository<RaftNode> clusterRepository,
+                         RaftNode raftNode)
     {
         _ClusterRepository = clusterRepository;
+        _RaftNode = raftNode;
     }
 
     @Override
@@ -51,6 +61,13 @@ public class ClusterCustom
                                        ISession<ZContext> session,
                                        IControl<ZContext> content) throws Exception
     {
+
         return null;
+    }
+
+    @Override
+    public void accept(RaftNode raftNode)
+    {
+        
     }
 }
