@@ -103,7 +103,7 @@ public class RaftNode
         _ZUid = clusterConfig.createZUID(true);
         _RaftDao = raftDao;
         _ElectSchedule = new ScheduleHandler<>(_ClusterConfig.getElectInSecond()
-                                                             .getSeconds(),
+                                                              .getSeconds(),
                                                consumer);
     }
 

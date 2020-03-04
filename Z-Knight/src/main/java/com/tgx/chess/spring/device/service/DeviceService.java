@@ -31,12 +31,8 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
-import com.tgx.chess.cluster.raft.model.RaftNode;
-import com.tgx.chess.cluster.raft.model.log.RaftDao;
-import com.tgx.chess.cluster.raft.service.api.IConsensusService;
-import com.tgx.chess.king.base.schedule.ScheduleHandler;
-import com.tgx.chess.king.base.schedule.TimeWheel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 import com.tgx.chess.bishop.biz.config.IClusterConfig;
@@ -46,10 +42,14 @@ import com.tgx.chess.bishop.io.mqtt.handler.IQttRouter;
 import com.tgx.chess.bishop.io.mqtt.handler.QttRouter;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zhandler.ZMappingCustom;
+import com.tgx.chess.cluster.raft.model.RaftNode;
+import com.tgx.chess.cluster.raft.model.log.RaftDao;
 import com.tgx.chess.cluster.raft.service.ClusterCustom;
+import com.tgx.chess.cluster.raft.service.api.IConsensusService;
 import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.config.IBizIoConfig;
 import com.tgx.chess.queen.config.IServerConfig;
@@ -60,8 +60,6 @@ import com.tgx.chess.spring.device.model.DeviceDo;
 import com.tgx.chess.spring.device.model.DeviceEntry;
 import com.tgx.chess.spring.device.model.MessageBody;
 import com.tgx.chess.spring.device.model.MessageEntry;
-
-import static com.tgx.chess.king.base.schedule.TimeWheel.IWheelItem.PRIORITY_LV3;
 
 /**
  * @author william.d.zk
