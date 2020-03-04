@@ -46,14 +46,11 @@ public class ClusterCustom
 {
     private final Logger                _Logger = Logger.getLogger(getClass().getSimpleName());
     private final IRepository<RaftNode> _ClusterRepository;
-    private final RaftNode              _RaftNode;
 
     @Autowired
-    public ClusterCustom(IRepository<RaftNode> clusterRepository,
-                         RaftNode raftNode)
+    public ClusterCustom(IRepository<RaftNode> clusterRepository)
     {
         _ClusterRepository = clusterRepository;
-        _RaftNode = raftNode;
     }
 
     @Override
@@ -68,6 +65,6 @@ public class ClusterCustom
     @Override
     public void accept(RaftNode raftNode)
     {
-        
+
     }
 }

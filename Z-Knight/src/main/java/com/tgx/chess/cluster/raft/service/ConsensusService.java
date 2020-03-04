@@ -24,12 +24,12 @@
 
 package com.tgx.chess.cluster.raft.service;
 
+import java.util.List;
+
 import com.tgx.chess.cluster.raft.IRaftMessage;
 import com.tgx.chess.cluster.raft.model.RaftNode;
 import com.tgx.chess.cluster.raft.service.api.IConsensusService;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 /**
  * @author william.d.zk
@@ -39,11 +39,9 @@ public class ConsensusService
         implements
         IConsensusService
 {
-    private final RaftNode _RaftNode;
 
-    public ConsensusService(RaftNode raftNode)
+    public ConsensusService()
     {
-        _RaftNode = raftNode;
     }
 
     @Override
