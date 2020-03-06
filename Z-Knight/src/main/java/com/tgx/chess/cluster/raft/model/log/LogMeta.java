@@ -24,21 +24,30 @@
 
 package com.tgx.chess.cluster.raft.model.log;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-
-import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.Objects;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.tgx.chess.cluster.raft.model.RaftGraph;
+import com.tgx.chess.json.JsonUtil;
+
+@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class LogMeta
         extends
         BaseMeta
 {
     private final static int _SERIAL = INTERNAL_SERIAL + 1;
 
-    private long firstLogIndex;
-    private long term;
-    private long candidate;
+    private long      firstLogIndex;
+    private long      term;
+    private long      candidate;
+    private RaftGraph raftGraph;
+
+    LogMeta()
+    {
+        super(null);
+    }
 
     LogMeta(RandomAccessFile file)
     {
@@ -54,34 +63,22 @@ public class LogMeta
     @Override
     public int decode(byte[] data)
     {
-        try {
-            JsonNode json = _JsonMapper.readTree(data);
-            firstLogIndex = json.get("first_log_index")
-                                .asLong();
-            term = json.get("term")
-                       .asLong();
-            candidate = json.get("candidate")
-                            .asLong();
-
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        LogMeta json = JsonUtil.readValue(data, getClass());
+        Objects.requireNonNull(json);
+        firstLogIndex = json.getFirstLogIndex();
+        term = json.getTerm();
+        candidate = json.getCandidate();
+        raftGraph = json.getRaftGraph();
         return length = data.length;
     }
 
     @Override
     public byte[] encode()
     {
-        try {
-            byte[] data = _JsonMapper.writeValueAsBytes(this);
-            length = data.length;
-            return data;
-        }
-        catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return null;
+        byte[] data = JsonUtil.writeValue(this);
+        Objects.requireNonNull(data);
+        length = data.length;
+        return data;
     }
 
     @Override
@@ -124,5 +121,15 @@ public class LogMeta
     public void setCandidate(long candidate)
     {
         this.candidate = candidate;
+    }
+
+    public RaftGraph getRaftGraph()
+    {
+        return raftGraph;
+    }
+
+    public void setRaftGraph(RaftGraph raftGraph)
+    {
+        this.raftGraph = raftGraph;
     }
 }

@@ -28,18 +28,17 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 public abstract class BaseMeta
         implements
         IProtocol
 {
-    protected final static ObjectMapper _JsonMapper = new ObjectMapper();
+
     @JsonIgnore
-    private final RandomAccessFile      _File;
+    private final RandomAccessFile _File;
     @JsonIgnore
-    protected int                       length;
+    protected int                  length;
 
     protected BaseMeta(RandomAccessFile file)
     {

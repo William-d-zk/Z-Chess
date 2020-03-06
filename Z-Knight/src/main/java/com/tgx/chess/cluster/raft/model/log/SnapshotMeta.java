@@ -24,12 +24,14 @@
 
 package com.tgx.chess.cluster.raft.model.log;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-
-import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.Objects;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.tgx.chess.json.JsonUtil;
+
+@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class SnapshotMeta
         extends
         BaseMeta
@@ -37,6 +39,11 @@ public class SnapshotMeta
     private final static int _SERIAL = INTERNAL_SERIAL + 3;
     private long             lastIncludedIndex;
     private long             lastIncludedTerm;
+
+    SnapshotMeta()
+    {
+        super(null);
+    }
 
     public SnapshotMeta(RandomAccessFile file)
     {
@@ -84,30 +91,19 @@ public class SnapshotMeta
     @Override
     public int decode(byte[] data)
     {
-        try {
-            JsonNode json = _JsonMapper.readTree(data);
-            lastIncludedIndex = json.get("last_include_index")
-                                    .asLong();
-            lastIncludedTerm = json.get("last_include_term")
-                                   .asLong();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        SnapshotMeta json = JsonUtil.readValue(data, getClass());
+        Objects.requireNonNull(json);
+        lastIncludedIndex = json.getLastIncludedIndex();
+        lastIncludedTerm = json.getLastIncludedTerm();
         return length = data.length;
     }
 
     @Override
     public byte[] encode()
     {
-        try {
-            byte[] data = _JsonMapper.writeValueAsBytes(this);
-            length = data.length;
-            return data;
-        }
-        catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return null;
+        byte[] data = JsonUtil.writeValue(this);
+        Objects.requireNonNull(data);
+        length = data.length;
+        return data;
     }
 }

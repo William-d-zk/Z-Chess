@@ -53,9 +53,8 @@ public class ZDeviceGenerator
         implements
         IdentifierGenerator
 {
-    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
-    private static ZUID  _ZUid;
-
+    private static ZUID          _ZUid;
+    private final Logger         _Logger = Logger.getLogger(getClass().getSimpleName());
     private final ZClusterConfig _ZClusterConfig;
 
     @Autowired

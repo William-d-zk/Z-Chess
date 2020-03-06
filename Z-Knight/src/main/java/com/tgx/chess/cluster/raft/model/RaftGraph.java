@@ -24,6 +24,10 @@
 
 package com.tgx.chess.cluster.raft.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
 import java.util.NavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
@@ -46,6 +50,7 @@ public class RaftGraph
         return _NodeMap.containsKey(peerId);
     }
 
+    @JsonIgnore
     public RaftMachine getNode(long peerId)
     {
         return _NodeMap.get(peerId);
@@ -63,5 +68,17 @@ public class RaftGraph
                 _NodeMap.remove(peer);
             }
         }
+    }
+
+    public NavigableMap<Long,
+                        RaftMachine> getNodeMap()
+    {
+        return _NodeMap;
+    }
+
+    public void setNodeMap(NavigableMap<Long,
+                                        RaftMachine> map)
+    {
+        _NodeMap.putAll(map);
     }
 }
