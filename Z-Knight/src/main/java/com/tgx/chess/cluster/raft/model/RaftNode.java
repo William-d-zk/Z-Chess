@@ -103,14 +103,14 @@ public class RaftNode
         _ZUid = clusterConfig.createZUID(true);
         _RaftDao = raftDao;
         _ElectSchedule = new ScheduleHandler<>(_ClusterConfig.getElectInSecond()
-                                                              .getSeconds(),
+                                                             .getSeconds(),
                                                consumer);
     }
 
     public void init()
     {
         _Logger.info("raft node init");
-        /* _RaftDao 启动的时候已经装载了 snapshot*/
+        /* _RaftDao 启动的时候已经装载了 snapshot */
         term = _RaftDao.getLogMeta()
                        .getTerm();
         candidate = _RaftDao.getLogMeta()
@@ -125,7 +125,6 @@ public class RaftNode
             _RaftDao.truncatePrefix(term + 1);
         }
         apply = commit;
-        _TimeWheel.acquire(this, _ElectSchedule);
         _TimeWheel.acquire(this,
                            new ScheduleHandler<RaftNode>(_ClusterConfig.getSnapshotInSecond()
                                                                        .getSeconds(),
@@ -137,6 +136,7 @@ public class RaftNode
                                    takeSnapshot();
                                }
                            });
+        _RaftDao.updateAll();
     }
 
     private void reset()
@@ -163,25 +163,25 @@ public class RaftNode
     @Override
     public long getElector()
     {
-        return 0;
+        return candidate;
     }
 
     @Override
     public long getLeader()
     {
-        return 0;
+        return leader;
     }
 
     @Override
     public long getCommitIndex()
     {
-        return 0;
+        return commit;
     }
 
     @Override
     public long getLastAppliedIndex()
     {
-        return 0;
+        return apply;
     }
 
     @Override
@@ -214,7 +214,8 @@ public class RaftNode
         if (apply >= _RaftDao.getFirstLogIndex() && apply <= _RaftDao.getLastLogIndex()) {
             localTerm = _RaftDao.getEntryTerm(apply);
         }
-
+        RaftGraph localGraph = _RaftDao.getLogMeta()
+                                       .getRaftGraph();
     }
 
 }

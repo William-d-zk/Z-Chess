@@ -24,15 +24,13 @@
 
 package com.tgx.chess.spring.device.model;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.tgx.chess.json.JsonUtil;
 import com.tgx.chess.queen.db.inf.IStorage;
 
 /**
@@ -40,12 +38,12 @@ import com.tgx.chess.queen.db.inf.IStorage;
  * @date 2019-08-04
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
+@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class MessageEntry
         implements
         IStorage
 {
-    private final static int    MESSAGE_ENTRY_SERIAL = DB_SERIAL + 2;
-    private static ObjectMapper JsonMapper           = new ObjectMapper();
+    private final static int MESSAGE_ENTRY_SERIAL = DB_SERIAL + 2;
 
     @Override
     public int dataLength()
@@ -56,47 +54,27 @@ public class MessageEntry
     @Override
     public byte[] encode()
     {
-        try {
-            byte[] payload = JsonMapper.writer()
-                                       .writeValueAsBytes(this);
-            length = payload.length;
-            return payload;
-        }
-        catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return null;
+        byte[] payload = JsonUtil.writeValue(this);
+        Objects.requireNonNull(payload);
+        length = payload.length;
+        return payload;
     }
 
     @Override
     public int decode(byte[] data)
     {
-        try {
-            JsonNode json = JsonMapper.readTree(data);
-            id = json.get("primary_key")
-                     .asLong();
-            msgId = json.get("msg_id")
-                        .asLong();
-            origin = json.get("origin")
-                         .asLong();
-            destination = json.get("destination")
-                              .asLong();
-            direction = json.get("direction")
-                            .asText();
-            topic = json.get("topic")
-                        .asText();
-            owner = json.get("owner")
-                        .asText();
-            payload = json.get("payload")
-                          .asText()
-                          .getBytes(StandardCharsets.UTF_8);
-            cmd = json.get("cmd")
-                      .asInt();
-            length = data.length;
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        MessageEntry json = JsonUtil.readValue(data, getClass());
+        Objects.requireNonNull(json);
+        id = json.getPrimaryKey();
+        msgId = json.getMsgId();
+        origin = json.getOrigin();
+        destination = json.getDestination();
+        direction = json.getDirection();
+        topic = json.getTopic();
+        owner = json.getOwner();
+        payload = json.getPayload();
+        cmd = json.getCmd();
+        length = data.length;
         return length;
     }
 

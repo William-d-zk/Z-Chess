@@ -24,21 +24,20 @@
 
 package com.tgx.chess.spring.device.model;
 
-import java.io.IOException;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.tgx.chess.json.JsonUtil;
 import com.tgx.chess.queen.db.inf.IStorage;
 
+@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class DeviceEntry
         implements
         IStorage
 {
-    private final static int    DEVICE_ENTRY_SERIAL = DB_SERIAL + 1;
-    private static ObjectMapper JsonMapper          = new ObjectMapper();
+    private final static int DEVICE_ENTRY_SERIAL = DB_SERIAL + 1;
 
     @Override
     public int dataLength()
@@ -49,42 +48,25 @@ public class DeviceEntry
     @Override
     public byte[] encode()
     {
-        try {
-            byte[] payload = JsonMapper.writer()
-                                       .writeValueAsBytes(this);
-            length = payload.length;
-            return payload;
-        }
-        catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return null;
+        byte[] payload = JsonUtil.writeValue(this);
+        Objects.requireNonNull(payload);
+        length = payload.length;
+        return payload;
     }
 
     @Override
     public int decode(byte[] data)
     {
-        try {
-            JsonNode json = JsonMapper.readTree(data);
-            deviceId = json.get("primary_key")
-                           .asLong();
-            token = json.get("token")
-                        .asText();
-            invalidTime = json.get("invalid_time")
-                              .asLong();
-            sn = json.get("sn")
-                     .asText();
-            username = json.get("username")
-                           .asText();
-            password = json.get("password")
-                           .asText();
-            passwordId = json.get("password_id")
-                             .asInt();
-            length = data.length;
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        DeviceEntry json = JsonUtil.readValue(data, getClass());
+        Objects.requireNonNull(json);
+        deviceId = json.getPrimaryKey();
+        token = json.getToken();
+        invalidTime = json.getInvalidTime();
+        sn = json.getSn();
+        username = json.getUsername();
+        password = json.getPassword();
+        passwordId = json.getPasswordId();
+        length = data.length;
         return length;
     }
 

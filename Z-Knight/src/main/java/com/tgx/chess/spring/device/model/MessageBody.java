@@ -31,6 +31,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.tgx.chess.json.JsonUtil;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.IoUtil;
 
@@ -38,14 +41,13 @@ import com.tgx.chess.king.base.util.IoUtil;
  * @author william.d.zk
  * @date 2019-07-31
  */
-
+@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class MessageBody
         implements
         Serializable
 {
-    private static Logger       _Logger          = Logger.getLogger(MessageBody.class.getSimpleName());
-    private static final long   serialVersionUID = -8904730289818144372L;
-    private static ObjectMapper jsonMapper       = new ObjectMapper();
+    private static Logger     _Logger          = Logger.getLogger(MessageBody.class.getSimpleName());
+    private static final long serialVersionUID = -8904730289818144372L;
 
     private String topic;
     private byte[] content;
@@ -74,7 +76,7 @@ public class MessageBody
             return null;
         }
         try {
-            return jsonMapper.readTree(content);
+            return JsonUtil.readTree(content);
         }
         catch (Exception e) {
             try {
@@ -87,7 +89,7 @@ public class MessageBody
                     _Logger.debug(String.format("content:%s", IoUtil.bin2Hex(this.content, ":")));
                     //ignore
                 }
-                return jsonMapper.valueToTree(content);
+                return JsonUtil.valueToTree(content);
             }
             catch (Exception e1) {
                 e1.printStackTrace();

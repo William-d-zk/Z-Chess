@@ -24,21 +24,20 @@
 
 package com.tgx.chess.cluster.raft.model;
 
-import java.io.IOException;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.tgx.chess.cluster.raft.IRaftMessage;
 import com.tgx.chess.cluster.raft.IRaftNode;
-
+import com.tgx.chess.json.JsonUtil;
+@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class RaftMessage
         implements
         IRaftMessage
 {
-    private final static int    RAFT_MESSAGE_SERIAL = DB_SERIAL + 3;
-    private static ObjectMapper JsonMapper          = new ObjectMapper();
+    private final static int RAFT_MESSAGE_SERIAL = DB_SERIAL + 3;
 
     private IRaftNode.RaftState raftState;
     private long                peerId;
@@ -55,36 +54,22 @@ public class RaftMessage
     @Override
     public byte[] encode()
     {
-        try {
-            byte[] payload = JsonMapper.writer()
-                                       .writeValueAsBytes(this);
-            length = payload.length;
-            return payload;
-        }
-        catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return null;
+        byte[] payload = JsonUtil.writeValue(this);
+        Objects.requireNonNull(payload);
+        length = payload.length;
+        return payload;
     }
 
     @Override
     public int decode(byte[] data)
     {
-        try {
-            JsonNode json = JsonMapper.readTree(data);
-            msgId = json.get("primary_key")
-                        .asLong();
-            peerId = json.get("peer_id")
-                         .asLong();
-            term = json.get("term")
-                       .asLong();
-            raftState = IRaftNode.RaftState.valueOf(json.get("raft_state")
-                                                        .asText());
-            length = data.length;
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        RaftMessage json = JsonUtil.readValue(data, getClass());
+        Objects.requireNonNull(json);
+        msgId = json.msgId;
+        peerId = json.peerId;
+        term = json.getTerm();
+        raftState = json.getState();
+        length = data.length;
         return length;
     }
 

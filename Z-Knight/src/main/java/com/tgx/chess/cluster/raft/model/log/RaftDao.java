@@ -123,6 +123,12 @@ public class RaftDao
         }
     }
 
+    public void updateAll()
+    {
+        logMeta.update();
+        snapshotMeta.update();
+    }
+
     public long getLastLogIndex()
     {
         /* 

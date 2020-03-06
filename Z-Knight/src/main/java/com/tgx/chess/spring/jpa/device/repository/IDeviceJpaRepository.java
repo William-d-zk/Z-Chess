@@ -31,9 +31,9 @@ import com.tgx.chess.spring.jpa.device.dao.DeviceEntity;
 
 /**
  * @author william.d.zk
+ * @date 2020-1-20
  */
 @Repository
-//@Transactional
 public interface IDeviceJpaRepository
         extends
         JpaRepository<DeviceEntity,
