@@ -24,12 +24,10 @@
 
 package com.tgx.chess.cluster.raft.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
-
 import java.util.NavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * @author william.d.zk
@@ -80,5 +78,34 @@ public class RaftGraph
                                         RaftMachine> map)
     {
         _NodeMap.putAll(map);
+    }
+
+    public void append(long peerId, long term, long index, long candidate, long leader)
+    {
+        if (_NodeMap.computeIfPresent(peerId, (key, old) -> new RaftMachine(term, index, candidate, leader)) == null) {
+            _NodeMap.put(peerId, new RaftMachine(term, index, candidate, leader));
+        }
+    }
+
+    public void merge(RaftGraph other)
+    {
+        if (other != null) _NodeMap.putAll(other._NodeMap);
+    }
+
+    public void apply(long selfId, long logIndex, RaftGraph other)
+    {
+        other._NodeMap.entrySet()
+                      .stream()
+                      // 仅接受自己没有的peer 状态机更新。  
+                      .filter(entry -> entry.getKey() != selfId && !_NodeMap.containsKey(entry.getKey()))
+                      .forEach(entry ->
+                      {
+                          RaftMachine old = entry.getValue();
+                          _NodeMap.put(entry.getKey(),
+                                       new RaftMachine(old.getTerm(),
+                                                       logIndex + 1,
+                                                       old.getCandidate(),
+                                                       old.getLeader()));
+                      });
     }
 }

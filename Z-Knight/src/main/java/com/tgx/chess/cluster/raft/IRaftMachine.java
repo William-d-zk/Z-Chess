@@ -1,7 +1,7 @@
 /*
  * MIT License                                                                    
  *                                                                                
- * Copyright (c) 2016~2020 Z-Chess                                                
+ * Copyright (c) 2016~2020 Z-Chess
  *                                                                                
  * Permission is hereby granted, free of charge, to any person obtaining a copy   
  * of this software and associated documentation files (the "Software"), to deal  
@@ -22,80 +22,19 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.bishop.biz.config;
+package com.tgx.chess.cluster.raft;
 
-import java.time.Duration;
 import java.util.List;
 
-import com.tgx.chess.bishop.ZUID;
-import com.tgx.chess.king.base.inf.IPair;
-
-public interface IClusterConfig
+/**
+ * @author william.d.zk
+ * @date 2019/12/10
+ */
+public interface IRaftMachine
 {
+    void apply(IRaftMessage msg);
 
-    List<IPair> getPeers();
+    void load(List<IRaftMessage> snapshot);
 
-    List<IPair> getGates();
-
-    IPair getBind();
-
-    Uid getUid();
-
-    ZUID createZUID(boolean withType);
-
-    Duration getElectInSecond();
-
-    Duration getSnapshotInSecond();
-
-    long getSnapshotMinSize();
-
-    Duration getHeartBeatInSecond();
-
-    class Uid
-    {
-        private int nodeId;
-        private int idcId;
-        private int clusterId;
-        private int type;
-
-        public int getNodeId()
-        {
-            return nodeId;
-        }
-
-        public void setNodeId(int nodeId)
-        {
-            this.nodeId = nodeId;
-        }
-
-        public int getIdcId()
-        {
-            return idcId;
-        }
-
-        public void setIdcId(int idcId)
-        {
-            this.idcId = idcId;
-        }
-
-        public int getClusterId()
-        {
-            return clusterId;
-        }
-
-        public void setClusterId(int clusterId)
-        {
-            this.clusterId = clusterId;
-        }
-
-        public int getType()
-        {
-            return type;
-        }
-
-        public void setType(int type)
-        {
-            this.type = type;
-        }
-    }
+    boolean takeSnapshot(IRaftDao writer);
 }

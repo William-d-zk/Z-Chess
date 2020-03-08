@@ -40,4 +40,5 @@ public interface IRaftMessage
 
     IRaftNode.RaftState getState();
 
+
 }

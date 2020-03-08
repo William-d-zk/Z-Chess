@@ -52,7 +52,6 @@ import com.tgx.chess.king.base.log.Logger;
  */
 public class ZUID
 {
-    private static final Logger  LOG                = Logger.getLogger(ZUID.class.getName());
     private static final long    TWEPOCH            = Instant.parse("2018-06-01T00:00:00.00Z")
                                                              .toEpochMilli();
     private static final int     MAX_IDC_ID         = 15;
@@ -187,5 +186,7 @@ public class ZUID
     {
         return (_IdcId << IDC_SHIFT) | (_ClusterId << CLUSTER_SHIFT) | (_NodeId << NODE_SHIFT) | (_Type << TYPE_SHIFT);
     }
+
+    public final static long INVALID_PEER_ID = 0;
 
 }

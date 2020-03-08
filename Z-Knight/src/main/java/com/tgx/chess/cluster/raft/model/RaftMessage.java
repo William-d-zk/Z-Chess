@@ -24,15 +24,20 @@
 
 package com.tgx.chess.cluster.raft.model;
 
+import java.util.List;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.tgx.chess.cluster.raft.IRaftMessage;
 import com.tgx.chess.cluster.raft.IRaftNode;
+import com.tgx.chess.cluster.raft.model.log.LogEntry;
 import com.tgx.chess.json.JsonUtil;
+
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class RaftMessage
         implements
         IRaftMessage
@@ -43,6 +48,10 @@ public class RaftMessage
     private long                peerId;
     private long                term;
     private long                msgId;
+    private List<LogEntry>      entryList;
+    private long                preLogIndex;
+    private long                preLogTerm;
+    private long                commit;
 
     @JsonIgnore
     private int       length;
@@ -137,5 +146,60 @@ public class RaftMessage
     public int serial()
     {
         return RAFT_MESSAGE_SERIAL;
+    }
+
+    public void setPeerId(long peerId)
+    {
+        this.peerId = peerId;
+    }
+
+    public void setTerm(long term)
+    {
+        this.term = term;
+    }
+
+    public void setRaftState(IRaftNode.RaftState raftState)
+    {
+        this.raftState = raftState;
+    }
+
+    public List<LogEntry> getEntryList()
+    {
+        return entryList;
+    }
+
+    public void setEntryList(List<LogEntry> entryList)
+    {
+        this.entryList = entryList;
+    }
+
+    public long getPreLogIndex()
+    {
+        return preLogIndex;
+    }
+
+    public void setPreLogIndex(long preLogIndex)
+    {
+        this.preLogIndex = preLogIndex;
+    }
+
+    public long getPreLogTerm()
+    {
+        return preLogTerm;
+    }
+
+    public void setPreLogTerm(long preLogTerm)
+    {
+        this.preLogTerm = preLogTerm;
+    }
+
+    public long getCommit()
+    {
+        return commit;
+    }
+
+    public void setCommit(long commit)
+    {
+        this.commit = commit;
     }
 }
