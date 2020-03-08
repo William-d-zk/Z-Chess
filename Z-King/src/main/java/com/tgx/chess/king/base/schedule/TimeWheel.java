@@ -182,6 +182,12 @@ public class TimeWheel
 
         void setup();
 
+        void cancel();
+
+        void lock();
+
+        void unlock();
+
         @Override
         default int compareTo(IWheelItem o)
         {
@@ -207,6 +213,8 @@ public class TimeWheel
         void beforeCall();
 
         void onCall();
+
+        boolean isCanceled();
     }
 
     private class TickSlot<V>
@@ -267,12 +275,20 @@ public class TimeWheel
         @Override
         public IWheelItem<V> call()
         {
-            _Item.beforeCall();
-            _Item.onCall();
-            if (_Item.isCycle()) {
-                TimeWheel.this.acquire(HandleTask.this);
+            _Item.lock();
+            try {
+                _Item.beforeCall();
+                if (!_Item.isCanceled()) {
+                    _Item.onCall();
+                    if (_Item.isCycle()) {
+                        TimeWheel.this.acquire(HandleTask.this);
+                    }
+                }
+                return _Item;
             }
-            return _Item;
+            finally {
+                _Item.unlock();
+            }
         }
 
         @Override

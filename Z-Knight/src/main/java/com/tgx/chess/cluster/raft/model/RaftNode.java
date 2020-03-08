@@ -29,13 +29,16 @@ import java.util.function.Consumer;
 
 import com.tgx.chess.bishop.ZUID;
 import com.tgx.chess.bishop.biz.config.IClusterConfig;
-import com.tgx.chess.cluster.raft.IMachine;
+import com.tgx.chess.cluster.raft.IRaftDao;
+import com.tgx.chess.cluster.raft.IRaftMachine;
 import com.tgx.chess.cluster.raft.IRaftMessage;
 import com.tgx.chess.cluster.raft.IRaftNode;
+import com.tgx.chess.cluster.raft.model.log.LogEntry;
 import com.tgx.chess.cluster.raft.model.log.RaftDao;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.schedule.TimeWheel;
+import com.tgx.chess.queen.db.inf.IStorage;
 
 /**
  * @author william.d.zk
@@ -44,15 +47,15 @@ import com.tgx.chess.king.base.schedule.TimeWheel;
 public class RaftNode
         implements
         IRaftNode,
-        IMachine
+        IRaftMachine
 {
-    private final Logger                    _Logger    = Logger.getLogger(getClass().getSimpleName());
+    private final Logger                    _Logger = Logger.getLogger(getClass().getSimpleName());
     private final ZUID                      _ZUid;
     private final IClusterConfig            _ClusterConfig;
     private final RaftDao                   _RaftDao;
     private final TimeWheel                 _TimeWheel;
-    private final ScheduleHandler<RaftNode> _ElectSchedule;
-    private final RaftGraph                 _RaftGraph = new RaftGraph();
+    private final ScheduleHandler<RaftNode> _ElectSchedule, _HeartBeatSchedule;
+    private final RaftGraph                 _RaftGraph;
 
     /**
      * 状态
@@ -105,6 +108,30 @@ public class RaftNode
         _ElectSchedule = new ScheduleHandler<>(_ClusterConfig.getElectInSecond()
                                                              .getSeconds(),
                                                consumer);
+        _HeartBeatSchedule = new ScheduleHandler<RaftNode>(_ClusterConfig.getHeartBeatInSecond()
+                                                                         .getSeconds(),
+                                                           true)
+        {
+            @Override
+            public void onCall()
+            {
+                heartbeat();
+            }
+        };
+        _RaftGraph = new RaftGraph();
+        _RaftGraph.append(_ZUid.getPeerId(), term, apply, candidate, leader);
+    }
+
+    private void heartbeat()
+    {
+        RaftMessage message = new RaftMessage();
+        message.setPrimaryKey(_ZUid.getId());
+        message.setPeerId(_ZUid.getPeerId());
+        message.setTerm(term);
+        message.setRaftState(RaftState.LEADER);
+        message.setStrategy(IStorage.Strategy.RETAIN);
+        message.setCommit(commit);
+        
     }
 
     public void init()
@@ -125,6 +152,7 @@ public class RaftNode
             _RaftDao.truncatePrefix(term + 1);
         }
         apply = commit;
+        //启动snapshot定时回写计时器
         _TimeWheel.acquire(this,
                            new ScheduleHandler<RaftNode>(_ClusterConfig.getSnapshotInSecond()
                                                                        .getSeconds(),
@@ -197,25 +225,57 @@ public class RaftNode
     }
 
     @Override
-    public void save(List<IRaftMessage> snapshot)
+    public boolean takeSnapshot(IRaftDao snapshot)
     {
-
+        return false;
     }
 
     private void takeSnapshot()
     {
-        if (_RaftDao.isInstallSnapshot()) { return; }
         long localApply;
         long localTerm;
-        RaftGraph localRaftGraph = new RaftGraph();
+        RaftGraph localGraph = new RaftGraph();
         if (_RaftDao.getTotalSize() < _ClusterConfig.getSnapshotMinSize()) { return; }
-        if (apply <= commit) { return; }
+        if (apply <= commit) { return; }//状态迁移未完成
         localApply = apply;
         if (apply >= _RaftDao.getFirstLogIndex() && apply <= _RaftDao.getLastLogIndex()) {
             localTerm = _RaftDao.getEntryTerm(apply);
         }
-        RaftGraph localGraph = _RaftDao.getLogMeta()
-                                       .getRaftGraph();
+        localGraph.merge(_RaftDao.getLogMeta()
+                                 .getRaftGraph());
+        if (takeSnapshot(_RaftDao)) {
+            long lastSnapshotIndex = _RaftDao.getSnapshotMeta()
+                                             .getLastIncludedIndex();
+            if (lastSnapshotIndex > 0 && _RaftDao.getFirstLogIndex() <= lastSnapshotIndex) {
+                _RaftDao.truncatePrefix(lastSnapshotIndex + 1);
+            }
+        }
+    }
+
+    void applyRaftGraph(LogEntry logEntry)
+    {
+
+        RaftGraph raftGraph = logEntry.getRaftGraph();
+        _RaftGraph.apply(_ZUid.getPeerId(), logEntry.getIndex(), raftGraph);
+    }
+
+    void stepDown(long newTerm)
+    {
+        if (term > newTerm) { throw new IllegalStateException("state machine error"); }
+        if (term < newTerm) {
+            term = newTerm;
+            leader = 0;
+            candidate = 0;
+            _RaftDao.updateLogMeta(term, commit, candidate);
+        }
+        state = RaftState.FOLLOWER;
+        _HeartBeatSchedule.cancel();
+        _TimeWheel.acquire(this, _ElectSchedule);
+    }
+
+    void appendLog(RaftMessage leaderMessage)
+    {
+
     }
 
 }

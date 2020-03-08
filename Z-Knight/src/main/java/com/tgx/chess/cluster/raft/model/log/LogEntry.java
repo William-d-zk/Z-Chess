@@ -24,21 +24,32 @@
 
 package com.tgx.chess.cluster.raft.model.log;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.tgx.chess.cluster.raft.model.RaftGraph;
+import com.tgx.chess.json.JsonUtil;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
 
+import java.util.Objects;
+
+@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class LogEntry
         implements
         IProtocol
 {
     private final static int _SERIAL = INTERNAL_SERIAL + 2;
 
-    private long term;
-    private long index;
+    private long      term;
+    private long      index;
+    private RaftGraph raftGraph;
+    @JsonIgnore
+    private int       length;
 
     @Override
     public int dataLength()
     {
-        return 0;
+        return length;
     }
 
     @Override
@@ -71,5 +82,35 @@ public class LogEntry
     public void setIndex(long index)
     {
         this.index = index;
+    }
+
+    public RaftGraph getRaftGraph()
+    {
+        return raftGraph;
+    }
+
+    public void setRaftGraph(RaftGraph raftGraph)
+    {
+        this.raftGraph = raftGraph;
+    }
+
+    @Override
+    public int decode(byte[] data)
+    {
+        LogEntry json = JsonUtil.readValue(data, getClass());
+        Objects.requireNonNull(json);
+        index = json.getIndex();
+        term = json.getTerm();
+        raftGraph = json.getRaftGraph();
+        return length = data.length;
+    }
+
+    @Override
+    public byte[] encode()
+    {
+        byte[] data = JsonUtil.writeValue(this);
+        Objects.requireNonNull(data);
+        length = data.length;
+        return data;
     }
 }

@@ -41,6 +41,8 @@ import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 
+import com.tgx.chess.bishop.ZUID;
+import com.tgx.chess.cluster.raft.IRaftDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -50,9 +52,11 @@ import com.tgx.chess.king.base.log.Logger;
 
 @Component
 public class RaftDao
+        implements
+        IRaftDao
 {
-    private final Logger _Logger = Logger.getLogger(RaftDao.class.getName());
-
+    private final static long            TERM_NAN          = -1;
+    private final Logger                 _Logger           = Logger.getLogger(RaftDao.class.getName());
     private final ZRaftStorageConfig     _Config;
     private final String                 _BaseDir;
     private final String                 _LogDataDir;
@@ -123,12 +127,14 @@ public class RaftDao
         }
     }
 
+    @Override
     public void updateAll()
     {
         logMeta.update();
         snapshotMeta.update();
     }
 
+    @Override
     public long getLastLogIndex()
     {
         /* 
@@ -142,11 +148,13 @@ public class RaftDao
         return lastSegment.getEndIndex();
     }
 
+    @Override
     public long getFirstLogIndex()
     {
         return logMeta.getFirstLogIndex();
     }
 
+    @Override
     public LogEntry getEntry(long index)
     {
         long firstLogIndex = getFirstLogIndex();
@@ -164,6 +172,7 @@ public class RaftDao
         return segment.getEntry(index);
     }
 
+    @Override
     public long getEntryTerm(long index)
     {
         LogEntry entry = getEntry(index);
@@ -171,21 +180,22 @@ public class RaftDao
                              : entry.getTerm();
     }
 
+    @Override
     public void updateLogMeta(long term, long firstLogIndex, long candidate)
     {
-        logMeta.setTerm(term);
+        if (term > TERM_NAN) logMeta.setTerm(term);
         logMeta.setFirstLogIndex(firstLogIndex);
-        logMeta.setCandidate(candidate);
+        if (candidate != ZUID.INVALID_PEER_ID) logMeta.setCandidate(candidate);
         logMeta.update();
         _Logger.info(" term:%d,first log index:%d,candidate:%d", term, firstLogIndex, candidate);
     }
 
     public void updateLogMeta(long firstLogIndex)
     {
-        logMeta.setFirstLogIndex(firstLogIndex);
-        logMeta.update();
+        updateLogMeta(-1, firstLogIndex, 0);
     }
 
+    @Override
     public void updateSnapshotMeta(long lastIncludeIndex, long lastIncludeTerm)
     {
         snapshotMeta.setLastIncludeIndex(lastIncludeIndex);
@@ -195,7 +205,7 @@ public class RaftDao
 
     private final static Pattern SEGMENT_NAME = Pattern.compile("z_chess_raft_seg_(\\d+)-(\\d+)_([rw])");
 
-    public List<Segment> readSegments()
+    private List<Segment> readSegments()
     {
         File dataDir = new File(_LogDataDir);
         if (!dataDir.isDirectory()) throw new IllegalArgumentException("_LogDataDir doesn't point to a directory");
@@ -229,6 +239,7 @@ public class RaftDao
         return null;
     }
 
+    @Override
     public long append(List<LogEntry> entryList)
     {
         long newLastLogIndex = getLastLogIndex();
@@ -276,6 +287,7 @@ public class RaftDao
         return newLastLogIndex;
     }
 
+    @Override
     public void truncatePrefix(long newFirstIndex)
     {
         if (newFirstIndex <= getFirstLogIndex()) { return; }
@@ -312,6 +324,7 @@ public class RaftDao
                      newActualFirstIndex);
     }
 
+    @Override
     public void truncateSuffix(long newEndIndex)
     {
         if (newEndIndex >= getLastLogIndex()) { return; }
@@ -353,16 +366,19 @@ public class RaftDao
         _SnapshotLock.lock();
     }
 
+    @Override
     public LogMeta getLogMeta()
     {
         return logMeta;
     }
 
+    @Override
     public SnapshotMeta getSnapshotMeta()
     {
         return snapshotMeta;
     }
 
+    @Override
     public long getTotalSize()
     {
         return totalSize;

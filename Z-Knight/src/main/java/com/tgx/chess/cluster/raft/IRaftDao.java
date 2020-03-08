@@ -1,7 +1,7 @@
 /*
  * MIT License                                                                    
  *                                                                                
- * Copyright (c) 2016~2020 Z-Chess
+ * Copyright (c) 2016~2020 Z-Chess                                                
  *                                                                                
  * Permission is hereby granted, free of charge, to any person obtaining a copy   
  * of this software and associated documentation files (the "Software"), to deal  
@@ -24,17 +24,40 @@
 
 package com.tgx.chess.cluster.raft;
 
+import com.tgx.chess.cluster.raft.model.log.LogEntry;
+import com.tgx.chess.cluster.raft.model.log.LogMeta;
+import com.tgx.chess.cluster.raft.model.log.SnapshotMeta;
+
 import java.util.List;
 
 /**
  * @author william.d.zk
- * @date 2019/12/10
  */
-public interface IMachine
+public interface IRaftDao
 {
-    void apply(IRaftMessage msg);
+    void updateAll();
 
-    void load(List<IRaftMessage> snapshot);
+    long getLastLogIndex();
 
-    void save(List<IRaftMessage> snapshot);
+    long getFirstLogIndex();
+
+    LogEntry getEntry(long index);
+
+    long getEntryTerm(long index);
+
+    void updateLogMeta(long term, long firstLogIndex, long candidate);
+
+    void updateSnapshotMeta(long lastIncludeIndex, long lastIncludeTerm);
+
+    long append(List<LogEntry> entryList);
+
+    void truncatePrefix(long newFirstIndex);
+
+    void truncateSuffix(long newEndIndex);
+
+    LogMeta getLogMeta();
+
+    SnapshotMeta getSnapshotMeta();
+
+    long getTotalSize();
 }

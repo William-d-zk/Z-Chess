@@ -25,6 +25,7 @@
 package com.tgx.chess.king.base.schedule;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
 import com.tgx.chess.king.base.log.Logger;
@@ -42,6 +43,8 @@ public class ScheduleHandler<A>
     private final Consumer<A>   _Callback;
     private final int           _Priority;
     private final long          _Tick;
+    private final ReentrantLock _Lock;
+    private volatile boolean    cancel;
 
     public ScheduleHandler(long delaySecond,
                            boolean cycle,
@@ -52,6 +55,7 @@ public class ScheduleHandler<A>
         _Tick = TimeUnit.SECONDS.toMillis(delaySecond);
         _Callback = callback;
         _Priority = priority;
+        _Lock = new ReentrantLock();
     }
 
     public ScheduleHandler(long delaySecond,
@@ -121,6 +125,36 @@ public class ScheduleHandler<A>
     public void attach(A a)
     {
         attach = a;
+    }
+
+    @Override
+    public void cancel()
+    {
+        _Lock.lock();
+        try {
+            cancel = true;
+        }
+        finally {
+            _Lock.unlock();
+        }
+    }
+
+    @Override
+    public boolean isCanceled()
+    {
+        return cancel;
+    }
+
+    @Override
+    public void lock()
+    {
+        _Lock.lock();
+    }
+
+    @Override
+    public void unlock()
+    {
+        _Lock.unlock();
     }
 
     @Override
