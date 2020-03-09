@@ -30,15 +30,39 @@ import java.util.List;
 import com.tgx.chess.bishop.ZUID;
 import com.tgx.chess.king.base.inf.IPair;
 
+/**
+ * @author william.d.zk
+ */
 public interface IClusterConfig
 {
+    /**
+     * 当前集群的节点列表
+     * 
+     * @return
+     */
 
     List<IPair> getPeers();
 
+    /**
+     * 与其他独region 进行通讯的网关
+     * 
+     * @return
+     */
     List<IPair> getGates();
 
+    /**
+     * 集群服务绑定的服务地址 host:port
+     * 
+     * @return
+     */
     IPair getBind();
 
+    /**
+     * 集群标识UID 集群最大容量为 2^14 (16384) 个节点
+     * 
+     * @see ZUID
+     * @return
+     */
     Uid getUid();
 
     ZUID createZUID(boolean withType);

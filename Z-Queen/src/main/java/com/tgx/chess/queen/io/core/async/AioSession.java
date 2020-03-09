@@ -37,6 +37,7 @@ import java.nio.channels.NotYetConnectedException;
 import java.nio.channels.ReadPendingException;
 import java.nio.channels.ShutdownChannelGroupException;
 import java.nio.channels.WritePendingException;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Objects;
 import java.util.concurrent.RejectedExecutionException;
@@ -75,7 +76,6 @@ public class AioSession<C extends IContext<C>>
     private final int                _HashCode;
     private final ISessionDismiss<C> _DismissCallback;
     private final int                _QueueSizeMax;
-    private final int                _HaIndex, _PortIndex;
     /*----------------------------------------------------------------------------------------------------------------*/
 
     /*----------------------------------------------------------------------------------------------------------------*/
@@ -87,23 +87,19 @@ public class AioSession<C extends IContext<C>>
     /*
      * Session close 只能出现在 QueenManager 的工作线程中 所以关闭操作只需要做到全域线程可见即可，不需要处理写冲突
      */
-    private long[] mPortChannels;
-
-    private long mHashKey;
-    private int  mWroteExpect;
-    private int  mSendingBlank;
-    private long mReadTimeStamp;
+    private long[] mPrefix;
+    private long   mHashKey;
+    private int    mWroteExpect;
+    private int    mSendingBlank;
 
     @Override
     public String toString()
     {
-        return String.format("@%x %s->%s mode:%s HA:%x Port:%x Index:%x close:%s\nwait to write %d,queue size %d",
+        return String.format("@%x %s->%s mode:%s Index:%x close:%s\nwait to write %d,queue size %d",
                              _HashCode,
                              _LocalAddress,
                              _RemoteAddress,
                              _Ctx.getSort(),
-                             _HaIndex,
-                             _PortIndex,
                              mIndex,
                              isClosed(),
                              mSending.remaining(),
@@ -126,8 +122,6 @@ public class AioSession<C extends IContext<C>>
         mHashKey = _HashCode;
         _RemoteAddress = (InetSocketAddress) channel.getRemoteAddress();
         _LocalAddress = (InetSocketAddress) channel.getLocalAddress();
-        _PortIndex = activity.getPortIndex();
-        _HaIndex = activity.getHaIndex();
         sessionOption.setOptions(channel);
         _ReadTimeOutInSecond = sessionOption.getReadTimeOutInSecond();
         _WriteTimeOutInSecond = sessionOption.getWriteTimeOutInSecond();
@@ -171,18 +165,6 @@ public class AioSession<C extends IContext<C>>
     }
 
     @Override
-    public int getHaIndex()
-    {
-        return _HaIndex;
-    }
-
-    @Override
-    public int getPortIndex()
-    {
-        return _PortIndex;
-    }
-
-    @Override
     public void reset()
     {
         mIndex = -1;
@@ -194,7 +176,7 @@ public class AioSession<C extends IContext<C>>
         _Ctx.dispose();
         mSending = null;
         clear();
-        mPortChannels = null;
+        mPrefix = null;
         reset();
     }
 
@@ -228,16 +210,37 @@ public class AioSession<C extends IContext<C>>
     }
 
     @Override
-    public final void bindPort2Channel(long channelport)
+    public final void bindPrefix(long prefix)
     {
-        mPortChannels = mPortChannels == null ? new long[] { channelport }
-                                              : ArrayUtil.setSortAdd(channelport, mPortChannels);
+        mPrefix = mPrefix == null ? new long[] { prefix }
+                                  : ArrayUtil.setSortAdd(prefix, mPrefix);
     }
 
     @Override
-    public final long[] getPortChannels()
+    public long prefixLoad(long prefix)
     {
-        return mPortChannels;
+        int pos = Arrays.binarySearch(mPrefix, prefix);
+        if (pos < 0) { throw new IllegalArgumentException(String.format("prefix %d miss", prefix)); }
+        return mPrefix[pos] & 0xFFFFFFFFL;
+    }
+
+    @Override
+    public void prefixHit(long prefix)
+    {
+        int pos = Arrays.binarySearch(mPrefix, prefix);
+        if (pos < 0) { throw new IllegalArgumentException(String.format("prefix %d miss", prefix)); }
+        if (mPrefix[pos] < 0xFFFFFFFFL) {
+            mPrefix[pos] += 1;
+        }
+        else {
+            mPrefix[pos] &= PREFIX_MAX;
+        }
+    }
+
+    @Override
+    public final long[] getPrefixArray()
+    {
+        return mPrefix;
     }
 
     @Override

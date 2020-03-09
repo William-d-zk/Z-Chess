@@ -68,7 +68,7 @@ public class X30_EventMsg
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 35 + payloadLength;
+        return super.dataLength() + 32 + 1 + 2 + payloadLength;
     }
 
     @Override

@@ -26,6 +26,7 @@ package com.tgx.chess.json;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.tgx.chess.king.base.log.Logger;
@@ -77,6 +78,22 @@ public class JsonUtil
     {
         try {
             return objectMapper.readValue(input, clazz);
+        }
+        catch (JsonParseException |
+               JsonMappingException e)
+        {
+            e.printStackTrace();
+        }
+        catch (IOException e) {
+            _Logger.warning("read json error", e);
+        }
+        return null;
+    }
+
+    public static <T> T readValue(byte[] input, TypeReference<T> type)
+    {
+        try {
+            return objectMapper.readValue(input, type);
         }
         catch (JsonParseException |
                JsonMappingException e)

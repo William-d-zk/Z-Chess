@@ -23,6 +23,9 @@
  */
 package com.tgx.chess.queen.io.core.inf;
 
+import java.util.Collection;
+import java.util.List;
+
 /**
  * @author William.d.zk
  * @date 2018/4/8
@@ -32,39 +35,74 @@ public interface ISessionManager<C extends IContext<C>>
     long INVALID_INDEX = -1;
     long NULL_INDEX    = 0;
 
-    ISession<C> mapSession(long index, ISession<C> session);
+    /**
+     * 通过session的唯一编号管理session
+     * 凡是带有登录功能的都必须使用此方法进行管理。
+     * prefix 近似 PortChannel 的结构
+     * 
+     * @param index
+     *            session.index
+     * @param session
+     *            mapping session
+     * @param prefixArray
+     *            session prefix array
+     *            prefix 必须满足从H→L的匹配原则
+     * @return old mapping session
+     */
+    ISession<C> mapSession(long index, ISession<C> session, long... prefixArray);
 
-    default ISession<C> mapSession(ISession<C> session)
-    {
-        return mapSession(session.getIndex(), session);
-    }
+    /**
+     * 
+     * @param prefix
+     * @return
+     */
+    ISession<C> findByPrefix(long prefix);
 
-    ISession<C> mapSession(long index, ISession<C> session, long... filter);
+    /**
+     * 
+     * @param prefix
+     * @return
+     */
+    Collection<ISession<C>> findAllByPrefix(long prefix);
 
-    boolean findPort(long portIdx);
+    /**
+     * 
+     * @param index
+     * @return
+     */
+    ISession<C> findSessionByIndex(long index);
 
-    void clearSession(long index);
+    /**
+     * 获取当前前缀归属下所有session的数量
+     * 
+     * @param prefix
+     * @return count
+     */
+    int getSessionCountByPrefix(long prefix);
 
-    void clearSessionWithPort(long index, ISession<C> session);
+    /**
+     * 删除index→session 映射关系
+     * 
+     * @param index
+     */
+    ISession<C> clearSession(long index);
+
+    /**
+     * 删除所有 prefix→sessions的关系
+     * 
+     * @param prefix
+     * @return
+     */
+    Collection<ISession<C>> clearAllSessionByPrefix(long prefix);
 
     default void clearSession(ISession<C> session)
     {
-        clearSessionWithPort(session.getIndex(), session);
+        clearSession(session.getIndex());
     }
 
     void addSession(ISession<C> session);
 
     void rmSession(ISession<C> session);
-
-    ISession<C> findSessionByIndex(long index);
-
-    ISession<C> findSessionByPort(long portIdx);
-
-    int getSubPortCount(long portMask);
-
-    int getPortCount(long portMask);
-
-    long[][] portIndex(long portMask);
 
     //-2bit- 类型 10 server 11 cluster 01 internal 00 client
     int CLIENT_SLOT  = 0;

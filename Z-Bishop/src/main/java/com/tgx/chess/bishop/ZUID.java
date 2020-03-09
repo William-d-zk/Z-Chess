@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 import com.tgx.chess.king.base.log.Logger;
 
 /**
+ * session port prefix max 2^16
  * 00-0000-000-0000000-0000000000000000000000000000000000000-000000000
  * -2bit-
  * 00 Device consumer connection

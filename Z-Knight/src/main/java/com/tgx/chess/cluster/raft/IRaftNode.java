@@ -35,7 +35,8 @@ public interface IRaftNode
         FOLLOWER,
         ELECTOR,
         CANDIDATE,
-        LEADER
+        LEADER,
+        LEARNER
     }
 
     RaftState getState();
@@ -53,5 +54,5 @@ public interface IRaftNode
     long getCommitIndex();
 
     /** 最后一条被应用到状态机的索引值 */
-    long getLastAppliedIndex();
+    long getApplied();
 }
