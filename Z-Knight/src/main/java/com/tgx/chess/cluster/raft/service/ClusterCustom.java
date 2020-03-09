@@ -24,6 +24,11 @@
 
 package com.tgx.chess.cluster.raft.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
+import com.tgx.chess.bishop.io.zprotocol.raft.X7E_RaftBroadcast;
+import com.tgx.chess.cluster.raft.model.log.LogEntry;
+import com.tgx.chess.json.JsonUtil;
 import com.tgx.chess.king.base.log.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -36,6 +41,7 @@ import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 @Component
@@ -58,6 +64,22 @@ public class ClusterCustom
                                        ISession<ZContext> session,
                                        IControl<ZContext> content) throws Exception
     {
+        switch (content.serial())
+        {
+
+            case X7E_RaftBroadcast.COMMAND:
+                X7E_RaftBroadcast x7e = (X7E_RaftBroadcast) content;
+                List<LogEntry> entryList = JsonUtil.readValue(x7e.getPayload(), new TypeReference<List<LogEntry>>()
+                {
+                });
+                break;
+            case X106_Identity.COMMAND:
+                X106_Identity x106 = (X106_Identity) content;
+                long peerId = x106.getIdentity();
+                manager.mapSession(session.getIndex(), session, peerId);
+                break;
+
+        }
 
         return null;
     }

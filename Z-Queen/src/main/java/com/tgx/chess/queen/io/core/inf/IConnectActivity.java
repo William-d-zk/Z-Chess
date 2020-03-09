@@ -34,13 +34,5 @@ public interface IConnectActivity<C extends IContext<C>>
         ISessionCreated<C>,
         ICommandCreator<C>
 {
-    default int getHaIndex()
-    {
-        return 0;
-    }
 
-    default int getPortIndex()
-    {
-        return 0;
-    }
 }

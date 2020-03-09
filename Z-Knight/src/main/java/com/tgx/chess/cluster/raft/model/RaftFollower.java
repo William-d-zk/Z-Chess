@@ -1,7 +1,7 @@
 /*
  * MIT License                                                                    
  *                                                                                
- * Copyright (c) 2016~2019 Z-Chess                                                
+ * Copyright (c) 2016~2020 Z-Chess                                                
  *                                                                                
  * Permission is hereby granted, free of charge, to any person obtaining a copy   
  * of this software and associated documentation files (the "Software"), to deal  
@@ -22,101 +22,47 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.bishop.io.zprotocol;
+package com.tgx.chess.cluster.raft.model;
 
-import com.tgx.chess.bishop.io.zfilter.ZContext;
-import com.tgx.chess.queen.io.core.inf.ICommand;
-import com.tgx.chess.queen.io.core.inf.ISession;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 /**
  * @author william.d.zk
- * @date 2019-07-14
+ * @date 2020/3/8
  */
-public class ZCommand
-        extends
-        ZProtocol
-        implements
-        ICommand<ZContext>
+@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
+public class RaftFollower
 {
+    private long peerId, nextIndex, matchIndex;
 
-    protected ZCommand(int command,
-                       boolean hasMsgId)
+    public long getPeerId()
     {
-        super(command,
-              hasMsgId,
-              hasMsgId ? 0
-                       : -1);
+        return peerId;
     }
 
-    public ZCommand(int command,
-                    long msgId)
+    public void setPeerId(long peerId)
     {
-        super(command, msgId);
+        this.peerId = peerId;
     }
 
-    private ISession<ZContext> mSession;
-    private byte[]             mPayload;
-
-    @Override
-    public ICommand<ZContext> setSession(ISession<ZContext> session)
+    public long getNextIndex()
     {
-        mSession = session;
-        return this;
+        return nextIndex;
     }
 
-    @Override
-    public ISession<ZContext> getSession()
+    public void setNextIndex(long nextIndex)
     {
-        return mSession;
+        this.nextIndex = nextIndex;
     }
 
-    @Override
-    public void reset()
+    public long getMatchIndex()
     {
-        mSession = null;
+        return matchIndex;
     }
 
-    @Override
-    public void setCtrl(byte ctrl)
+    public void setMatchIndex(long matchIndex)
     {
-        setCtrlCode(ctrl);
-    }
-
-    @Override
-    public void setPayload(byte[] payload)
-    {
-        mPayload = payload;
-    }
-
-    @Override
-    public byte[] getPayload()
-    {
-        return mPayload;
-    }
-
-    @Override
-    public byte getCtrl()
-    {
-        return getCtrlCode();
-    }
-
-    @Override
-    public boolean isCtrl()
-    {
-        return false;
-    }
-
-    @Override
-    public int dataLength()
-    {
-        return minLength()
-               + (mPayload == null ? 0
-                                   : mPayload.length);
-    }
-
-    @Override
-    public int serial()
-    {
-        return getCommand();
+        this.matchIndex = matchIndex;
     }
 }

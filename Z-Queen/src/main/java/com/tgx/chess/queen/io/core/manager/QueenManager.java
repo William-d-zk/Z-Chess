@@ -55,9 +55,13 @@ public abstract class QueenManager<C extends IContext<C>>
     }
 
     @SafeVarargs
-    public final boolean localSend(ISession<C> session, IPipeTransfer<C> transfer, IControl<C>... commands)
+    public final boolean localSend(ISession<C> session, IControl<C>... commands)
     {
-        return _ServerCore.localSend(session, transfer, commands);
+        return _ServerCore.localSend(session,
+                                     session.getContext()
+                                            .getSort()
+                                            .getTransfer(),
+                                     commands);
     }
 
     protected ServerCore<C> getServerCore()

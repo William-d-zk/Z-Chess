@@ -111,7 +111,7 @@ public class DeviceService
         _MessageRepository = messageRepository;
         _LinkCustom = linkCustom;
         _ClusterCustom = clusterCustom;
-        _RaftNode = new RaftNode(_TimeWheel, _ClusterConfig, raftDao, _ClusterCustom);
+        _RaftNode = new RaftNode(_TimeWheel, _ClusterConfig, raftDao, _ClusterCustom, _DeviceNode);
         _ConsensusService = consensusService;
     }
 

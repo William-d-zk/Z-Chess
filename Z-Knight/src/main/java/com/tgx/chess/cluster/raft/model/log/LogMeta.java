@@ -42,6 +42,8 @@ public class LogMeta
     private long      firstLogIndex;
     private long      term;
     private long      candidate;
+    private long      commit;
+    private long      applied;
     private RaftGraph raftGraph;
 
     LogMeta()
@@ -131,5 +133,25 @@ public class LogMeta
     public void setRaftGraph(RaftGraph raftGraph)
     {
         this.raftGraph = raftGraph;
+    }
+
+    public long getCommit()
+    {
+        return commit;
+    }
+
+    public void setCommit(long commit)
+    {
+        this.commit = commit;
+    }
+
+    public long getApplied()
+    {
+        return applied;
+    }
+
+    public void setApplied(long applied)
+    {
+        this.applied = applied;
     }
 }

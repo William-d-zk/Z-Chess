@@ -230,11 +230,7 @@ public class DeviceNode
     {
         ISession<ZContext> session = findSessionByIndex(sessionIndex);
         if (session != null) {
-            localSend(session,
-                      session.getContext()
-                             .getSort()
-                             .getTransfer(),
-                      toSends);
+            localSend(session, toSends);
         }
     }
 
@@ -329,4 +325,5 @@ public class DeviceNode
             }
         };
     }
+
 }

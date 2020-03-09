@@ -52,6 +52,7 @@ public class RaftMessage
     private long                preLogIndex;
     private long                preLogTerm;
     private long                commit;
+    private long                leaderId;
 
     @JsonIgnore
     private int       length;
@@ -201,5 +202,15 @@ public class RaftMessage
     public void setCommit(long commit)
     {
         this.commit = commit;
+    }
+
+    public long getLeaderId()
+    {
+        return leaderId;
+    }
+
+    public void setLeaderId(long leaderId)
+    {
+        this.leaderId = leaderId;
     }
 }

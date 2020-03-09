@@ -24,14 +24,14 @@
 
 package com.tgx.chess.cluster.raft.model.log;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.tgx.chess.cluster.raft.model.RaftGraph;
 import com.tgx.chess.json.JsonUtil;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
-
-import java.util.Objects;
 
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class LogEntry
@@ -43,6 +43,7 @@ public class LogEntry
     private long      term;
     private long      index;
     private RaftGraph raftGraph;
+    private byte[]    payload;
     @JsonIgnore
     private int       length;
 
@@ -92,6 +93,16 @@ public class LogEntry
     public void setRaftGraph(RaftGraph raftGraph)
     {
         this.raftGraph = raftGraph;
+    }
+
+    public byte[] getPayload()
+    {
+        return payload;
+    }
+
+    public void setPayload(byte[] payload)
+    {
+        this.payload = payload;
     }
 
     @Override
