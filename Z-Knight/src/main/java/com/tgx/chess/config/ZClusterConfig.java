@@ -88,7 +88,7 @@ public class ZClusterConfig
     private ZUID        zuid;
     private Duration    electInSecond;
     private Duration    snapshotInSecond;
-    private Duration    heartBeatInSecond;
+    private Duration    heartbeatInSecond;
     private DataSize    snapshotMinSize;
 
     @Override
@@ -158,13 +158,13 @@ public class ZClusterConfig
     }
 
     @Override
-    public Duration getHeartBeatInSecond()
+    public Duration getHeartbeatInSecond()
     {
-        return heartBeatInSecond;
+        return heartbeatInSecond;
     }
 
-    public void setHeartBeatInSecond(Duration heartBeatInSecond)
+    public void setHeartbeatInSecond(Duration heartbeatInSecond)
     {
-        this.heartBeatInSecond = heartBeatInSecond;
+        this.heartbeatInSecond = heartbeatInSecond;
     }
 }
