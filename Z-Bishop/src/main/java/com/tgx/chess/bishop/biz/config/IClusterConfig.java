@@ -73,7 +73,7 @@ public interface IClusterConfig
 
     long getSnapshotMinSize();
 
-    Duration getHeartBeatInSecond();
+    Duration getHeartbeatInSecond();
 
     class Uid
     {

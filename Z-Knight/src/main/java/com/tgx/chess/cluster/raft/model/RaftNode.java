@@ -44,7 +44,6 @@ import com.tgx.chess.json.JsonUtil;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.schedule.TimeWheel;
-import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
 
@@ -63,7 +62,7 @@ public class RaftNode
     private final QueenManager<ZContext>           _QueenManager;
     private final RaftDao                          _RaftDao;
     private final TimeWheel                        _TimeWheel;
-    private final ScheduleHandler<RaftNode>        _ElectSchedule, _HeartBeatSchedule;
+    private final ScheduleHandler<RaftNode>        _ElectSchedule, _HeartbeatSchedule;
     private final RaftGraph                        _RaftGraph;
     private final NavigableMap<Long,
                                RaftFollower>       _FollowerMap = new TreeMap<>();
@@ -110,7 +109,6 @@ public class RaftNode
     public RaftNode(TimeWheel timeWheel,
                     IClusterConfig clusterConfig,
                     RaftDao raftDao,
-                    Consumer<RaftNode> consumer,
                     QueenManager<ZContext> manager)
     {
         _TimeWheel = timeWheel;
@@ -120,22 +118,25 @@ public class RaftNode
         _RaftDao = raftDao;
         _ElectSchedule = new ScheduleHandler<>(_ClusterConfig.getElectInSecond()
                                                              .getSeconds(),
-                                               consumer);
-        _HeartBeatSchedule = new ScheduleHandler<RaftNode>(_ClusterConfig.getHeartBeatInSecond()
+                                               raftNode ->
+                                               {
+                                                   vote();
+                                               });
+        _HeartbeatSchedule = new ScheduleHandler<RaftNode>(_ClusterConfig.getHeartbeatInSecond()
                                                                          .getSeconds(),
                                                            true)
         {
             @Override
             public void onCall()
             {
-                heartbeat();
+                leaderBroadcast();
             }
         };
         _RaftGraph = new RaftGraph();
         _RaftGraph.append(_ZUid.getPeerId(), term, applied, candidate, leader);
     }
 
-    private void heartbeat()
+    private void leaderBroadcast()
     {
         _FollowerMap.forEach((k, v) ->
         {
@@ -249,6 +250,11 @@ public class RaftNode
 
     }
 
+    private void vote()
+    {
+
+    }
+
     @Override
     public boolean takeSnapshot(IRaftDao snapshot)
     {
@@ -294,7 +300,7 @@ public class RaftNode
             _RaftDao.updateLogMeta(term, commit, candidate);
         }
         state = RaftState.FOLLOWER;
-        _HeartBeatSchedule.cancel();
+        _HeartbeatSchedule.cancel();
         _TimeWheel.acquire(this, _ElectSchedule);
     }
 

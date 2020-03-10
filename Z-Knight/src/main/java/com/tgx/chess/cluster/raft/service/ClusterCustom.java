@@ -27,6 +27,7 @@ package com.tgx.chess.cluster.raft.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7E_RaftBroadcast;
+import com.tgx.chess.cluster.raft.IRaftNode;
 import com.tgx.chess.cluster.raft.model.log.LogEntry;
 import com.tgx.chess.json.JsonUtil;
 import com.tgx.chess.king.base.log.Logger;
@@ -47,11 +48,11 @@ import java.util.function.Consumer;
 @Component
 public class ClusterCustom
         implements
-        ICustomLogic<ZContext>,
-        Consumer<RaftNode>
+        ICustomLogic<ZContext>
 {
     private final Logger                _Logger = Logger.getLogger(getClass().getSimpleName());
     private final IRepository<RaftNode> _ClusterRepository;
+    private RaftNode                    mRaftNode;
 
     @Autowired
     public ClusterCustom(IRepository<RaftNode> clusterRepository)
@@ -84,9 +85,8 @@ public class ClusterCustom
         return null;
     }
 
-    @Override
-    public void accept(RaftNode raftNode)
+    public void setRaftNode(RaftNode raftNode)
     {
-
+        mRaftNode = raftNode;
     }
 }

@@ -111,8 +111,9 @@ public class DeviceService
         _MessageRepository = messageRepository;
         _LinkCustom = linkCustom;
         _ClusterCustom = clusterCustom;
-        _RaftNode = new RaftNode(_TimeWheel, _ClusterConfig, raftDao, _ClusterCustom, _DeviceNode);
+        _RaftNode = new RaftNode(_TimeWheel, _ClusterConfig, raftDao, _DeviceNode);
         _ConsensusService = consensusService;
+        _ClusterCustom.setRaftNode(_RaftNode);
     }
 
     @PostConstruct
@@ -123,6 +124,7 @@ public class DeviceService
         _LinkCustom.setQttRouter(_QttRouter);
         _DeviceNode.start(logicHandler, new ZMappingCustom(_LinkCustom), new ZMappingCustom(_ClusterCustom));
         _RaftNode.init();
+
     }
 
     @SafeVarargs
