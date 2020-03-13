@@ -25,20 +25,15 @@ package com.tgx.chess.queen.io.core.async;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
 import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.king.base.util.ArrayUtil;
-import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.config.IBizIoConfig;
 import com.tgx.chess.queen.config.ISocketConfig;
 import com.tgx.chess.queen.config.QueenCode;
@@ -188,8 +183,8 @@ public abstract class AioSessionManager<C extends IContext<C>>
             Map<Long,
                 Set<ISession<C>>> prefix2SessionMap = _Prefix2SessionMaps[slot];
             for (long prefix : prefixArray) {
-                if ((prefix & slot) != slot) {
-                    throw new IllegalArgumentException(String.format("index: %d, prefix: %d | slot error",
+                if (getSlot(prefix) != slot) {
+                    throw new IllegalArgumentException(String.format("index: %xd, prefix: %xd | slot error",
                                                                      index,
                                                                      prefix));
                 }
