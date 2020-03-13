@@ -39,7 +39,6 @@ import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
-import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.config.IBizIoConfig;
@@ -85,6 +84,7 @@ public class DeviceNode
     @Override
     public void onDismiss(ISession<ZContext> session)
     {
+        _Logger.info("dismiss %s", session);
         rmSession(session);
     }
 
