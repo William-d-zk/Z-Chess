@@ -608,6 +608,15 @@ public interface IoUtil
                             (byte) (0xFF & v) };
     }
 
+    static byte[] writeLongArray(long... v)
+    {
+
+        if (v == null || v.length == 0) throw new IllegalArgumentException();
+        byte[] b = new byte[v.length << 3];
+        writeLongArray(v, b, 0);
+        return b;
+    }
+
     static int writeMac(long v, byte[] b, int off)
     {
         return write6BLong(v, b, off);

@@ -23,6 +23,8 @@
  */
 package com.tgx.chess.bishop.io.zprotocol.control;
 
+import static com.tgx.chess.queen.io.core.inf.ISessionManager.INVALID_INDEX;
+
 import com.tgx.chess.bishop.io.ws.bean.WsControl;
 import com.tgx.chess.bishop.io.ws.bean.WsFrame;
 import com.tgx.chess.king.base.util.IoUtil;
@@ -36,9 +38,9 @@ public class X106_Identity
 {
     public final static int COMMAND = 0x106;
 
-    public X106_Identity(long peerId)
+    public X106_Identity(long... peerId)
     {
-        this(IoUtil.writeLong(peerId));
+        this(IoUtil.writeLongArray(peerId));
     }
 
     public X106_Identity(byte[] payload)
@@ -48,6 +50,8 @@ public class X106_Identity
 
     public long getIdentity()
     {
+        if (getPayload() == null) return INVALID_INDEX;
+        if (getPayload().length < 8) throw new ArrayIndexOutOfBoundsException();
         return IoUtil.readLong(getPayload(), 0);
     }
 
