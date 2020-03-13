@@ -166,11 +166,11 @@ public class DeviceNode
                            })
                            .collect(Collectors.toList());
         List<IPair> clusterPeers = clusterConfig.getPeers();
-        List<IPair> parents = clusterConfig.getGates();
-        if (parents != null && !parents.isEmpty()) {
+        List<IPair> gates = clusterConfig.getGates();
+        if (gates != null && !gates.isEmpty()) {
             _GateClient = new BaseAioClient<>(getTimeWheel(), getServerCore().getClusterChannelGroup());
             _GateConnectors = new LinkedList<>();
-            for (IPair pair : parents) {
+            for (IPair pair : gates) {
                 //parent -> RM_XID
                 IAioConnector<ZContext> connector = buildConnector(pair, ZSort.WS_CLUSTER_SYMMETRY, clusterConfig);
                 connector.attach(_GateClient);
