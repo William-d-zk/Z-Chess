@@ -596,6 +596,18 @@ public interface IoUtil
         return 8;
     }
 
+    static byte[] writeLong(long v)
+    {
+        return new byte[] { (byte) (0xFF & (v >>> 56)),
+                            (byte) (0xFF & (v >>> 48)),
+                            (byte) (0xFF & (v >>> 40)),
+                            (byte) (0xFF & (v >>> 32)),
+                            (byte) (0xFF & (v >>> 24)),
+                            (byte) (0xFF & (v >>> 16)),
+                            (byte) (0xFF & (v >>> 8)),
+                            (byte) (0xFF & v) };
+    }
+
     static int writeMac(long v, byte[] b, int off)
     {
         return write6BLong(v, b, off);

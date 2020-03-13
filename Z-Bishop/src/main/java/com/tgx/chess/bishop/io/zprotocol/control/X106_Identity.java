@@ -23,8 +23,6 @@
  */
 package com.tgx.chess.bishop.io.zprotocol.control;
 
-import java.nio.charset.StandardCharsets;
-
 import com.tgx.chess.bishop.io.ws.bean.WsControl;
 import com.tgx.chess.bishop.io.ws.bean.WsFrame;
 import com.tgx.chess.king.base.util.IoUtil;
@@ -38,9 +36,9 @@ public class X106_Identity
 {
     public final static int COMMAND = 0x106;
 
-    public X106_Identity(String nodeName)
+    public X106_Identity(long peerId)
     {
-        this(nodeName.getBytes(StandardCharsets.UTF_8));
+        this(IoUtil.writeLong(peerId));
     }
 
     public X106_Identity(byte[] payload)
