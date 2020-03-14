@@ -168,12 +168,22 @@ public class DeviceNode
         List<IPair> clusterPeers = clusterConfig.getPeers();
         List<IPair> gates = clusterConfig.getGates();
         if (gates != null && !gates.isEmpty()) {
-            _GateClient = new BaseAioClient<>(getTimeWheel(), getServerCore().getClusterChannelGroup());
+            _GateClient = new BaseAioClient<ZContext>(getTimeWheel(), getServerCore().getClusterChannelGroup())
+            {
+                @Override
+                public void onDismiss(ISession<ZContext> session)
+                {
+                    DeviceNode.this.onDismiss(session);
+                    super.onDismiss(session);
+                }
+            };
             _GateConnectors = new LinkedList<>();
             for (IPair pair : gates) {
                 //parent -> RM_XID
-                IAioConnector<ZContext> connector = buildConnector(pair, ZSort.WS_CLUSTER_SYMMETRY, clusterConfig);
-                connector.attach(_GateClient);
+                IAioConnector<ZContext> connector = buildConnector(pair,
+                                                                   ZSort.WS_CLUSTER_SYMMETRY,
+                                                                   clusterConfig,
+                                                                   _GateClient);
                 _GateConnectors.add(connector);
             }
         }
@@ -182,12 +192,22 @@ public class DeviceNode
             _GateConnectors = null;
         }
         if (clusterPeers != null && !clusterPeers.isEmpty()) {
-            _ClusterClient = new BaseAioClient<>(getTimeWheel(), getServerCore().getClusterChannelGroup());
+            _ClusterClient = new BaseAioClient<ZContext>(getTimeWheel(), getServerCore().getClusterChannelGroup())
+            {
+                @Override
+                public void onDismiss(ISession<ZContext> session)
+                {
+                    DeviceNode.this.onDismiss(session);
+                    super.onDismiss(session);
+                }
+            };
             _ClusterConnectors = new LinkedList<>();
             for (IPair pair : clusterPeers) {
                 //peer -> CM_XID
-                IAioConnector<ZContext> connector = buildConnector(pair, ZSort.WS_CLUSTER_CONSUMER, clusterConfig);
-                connector.attach(_ClusterClient);
+                IAioConnector<ZContext> connector = buildConnector(pair,
+                                                                   ZSort.WS_CLUSTER_CONSUMER,
+                                                                   clusterConfig,
+                                                                   _ClusterClient);
                 _ClusterConnectors.add(connector);
             }
         }
@@ -269,7 +289,10 @@ public class DeviceNode
         }
     }
 
-    private IAioConnector<ZContext> buildConnector(IPair address, ZSort sort, IClusterConfig clusterConfig)
+    private IAioConnector<ZContext> buildConnector(IPair address,
+                                                   ZSort sort,
+                                                   IClusterConfig clusterConfig,
+                                                   IAioClient<ZContext> client)
     {
         final String _Host = address.first();
         final int _Port = address.second();
@@ -284,7 +307,7 @@ public class DeviceNode
         else {
             _SessionInitializeIndex = QueenCode.CM_XID;
         }
-        return new BaseAioConnector<ZContext>(_Host, _Port, getSocketConfig(getSlot(_SessionInitializeIndex)))
+        return new BaseAioConnector<ZContext>(_Host, _Port, getSocketConfig(getSlot(_SessionInitializeIndex)), client)
         {
 
             @Override
