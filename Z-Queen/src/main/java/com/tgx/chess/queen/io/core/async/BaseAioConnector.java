@@ -29,14 +29,11 @@ import java.nio.channels.AsynchronousSocketChannel;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.tgx.chess.king.base.inf.ITriple;
-import com.tgx.chess.king.base.util.Pair;
+import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.config.ISocketConfig;
-import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.operator.ConnectFailedOperator;
 import com.tgx.chess.queen.event.operator.ConnectedOperator;
-import com.tgx.chess.queen.io.core.async.socket.AioWorker;
-import com.tgx.chess.queen.io.core.executor.IPeerCore;
 import com.tgx.chess.queen.io.core.inf.IAioConnector;
 import com.tgx.chess.queen.io.core.inf.IConnectActivity;
 import com.tgx.chess.queen.io.core.inf.IContext;
@@ -50,21 +47,20 @@ public abstract class BaseAioConnector<C extends IContext<C>>
         implements
         IAioConnector<C>
 {
+    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
+
     protected BaseAioConnector(String host,
                                int port,
-                               ISocketConfig socketConfig,
-                               IPeerCore peerCore)
+                               ISocketConfig socketConfig)
     {
         super(socketConfig);
         _RemoteAddress = new InetSocketAddress(host, port);
-        _PeerCore = peerCore;
     }
 
     private InetSocketAddress              mLocalBind;
     private final ConnectFailedOperator<C> _ConnectFailedOperator = new ConnectFailedOperator<>();
     private final ConnectedOperator<C>     _ConnectedOperator     = new ConnectedOperator<>();
     private final InetSocketAddress        _RemoteAddress;
-    private final IPeerCore                _PeerCore;
     private final AtomicInteger            _State                 = new AtomicInteger();
     private static final int               COUNT_BITS             = Integer.SIZE - 7;
     private static final int               CAPACITY               = (1 << COUNT_BITS) - 1;
@@ -164,26 +160,6 @@ public abstract class BaseAioConnector<C extends IContext<C>>
                      IAioConnector<C>> getErrorOperator()
     {
         return _ConnectFailedOperator;
-    }
-
-    @Override
-    public void completed(Void result, AsynchronousSocketChannel channel)
-    {
-        AioWorker.publish(_PeerCore.getConnectPublisher(),
-                          getConnectedOperator(),
-                          IError.Type.NO_ERROR,
-                          IOperator.Type.CONNECTED,
-                          new Pair<>(this, channel));
-    }
-
-    @Override
-    public void failed(Throwable exc, AsynchronousSocketChannel channel)
-    {
-        AioWorker.publish(_PeerCore.getConnectPublisher(),
-                          getErrorOperator(),
-                          IError.Type.CONNECT_FAILED,
-                          IOperator.Type.NULL,
-                          new Pair<>(exc, this));
     }
 
     @Override

@@ -71,6 +71,15 @@ public class QEvent
         mContentList = null;
     }
 
+    public void ignore()
+    {
+        mType = Type.IGNORE;
+        mErrType = IError.Type.NO_ERROR;
+        mContent = null;
+        mOperator = null;
+        mContentList = null;
+    }
+
     public void transfer(QEvent dest)
     {
         dest.mType = mType;
@@ -131,15 +140,6 @@ public class QEvent
         mErrType = t;
         mContent = content;
         mOperator = operator;
-        mContentList = null;
-    }
-
-    public void ignore()
-    {
-        mType = Type.IGNORE;
-        mErrType = IError.Type.NO_ERROR;
-        mContent = null;
-        mOperator = null;
         mContentList = null;
     }
 

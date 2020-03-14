@@ -26,11 +26,8 @@ package com.tgx.chess.queen.io.core.executor;
 
 import java.io.IOException;
 import java.nio.channels.AsynchronousChannelGroup;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
-import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
@@ -46,7 +43,6 @@ import com.lmax.disruptor.WaitStrategy;
 import com.lmax.disruptor.YieldingWaitStrategy;
 import com.tgx.chess.king.base.disruptor.MultiBufferBatchEventProcessor;
 import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.config.IServerConfig;
@@ -74,8 +70,7 @@ public abstract class ServerCore<C extends IContext<C>>
         extends
         ThreadPoolExecutor
         implements
-        ILocalPublisher<C>,
-        IPeerCore
+        ILocalPublisher<C>
 {
     private Logger    _Logger = Logger.getLogger(getClass().getName());
     private final int _DecoderCount;
@@ -111,7 +106,6 @@ public abstract class ServerCore<C extends IContext<C>>
     private final RingBuffer<QEvent>                        _ConsistentTransEvent;
     private final ConcurrentLinkedQueue<RingBuffer<QEvent>> _AioCacheConcurrentQueue;
     private final ConcurrentLinkedQueue<RingBuffer<QEvent>> _ClusterCacheConcurrentQueue;
-    private final List<RingBuffer<QEvent>>                  _ClusterIoList        = new ArrayList<>();
     private final ThreadFactory                             _WorkerThreadFactory  = new ThreadFactory()
                                                                                   {
                                                                                       int count;
@@ -141,7 +135,6 @@ public abstract class ServerCore<C extends IContext<C>>
                                                                                       }
                                                                                   };
     private final ReentrantLock                             _LocalLock            = new ReentrantLock();
-    private final Random                                    _Random               = new Random();
     private AsynchronousChannelGroup                        mServiceChannelGroup;
     private AsynchronousChannelGroup                        mClusterChannelGroup;
 
@@ -181,7 +174,6 @@ public abstract class ServerCore<C extends IContext<C>>
             }
             return rb;
         });
-        _ClusterIoList.addAll(_ClusterCacheConcurrentQueue);
         Arrays.setAll(_AioProducerBarriers, slot -> _AioProducerEvents[slot].newBarrier());
 
         _ClusterLocalCloseEvent = createPipelineLite(_CloserPower);
@@ -194,8 +186,6 @@ public abstract class ServerCore<C extends IContext<C>>
 
         _ConsistentElectEvent = createPipelineYield(_ClusterPower);
         _ConsistentTransEvent = createPipelineYield(_ClusterPower);
-
-        //        _TimeWheel.acquire("server timer", new ScheduleHandler<>(10, true));
     }
 
     /*  ║ barrier, ━> publish event, ━━ pipeline,| mappingHandle event
@@ -496,9 +486,4 @@ public abstract class ServerCore<C extends IContext<C>>
                                                                                                                             getClusterThreadFactory()));
     }
 
-    @Override
-    public RingBuffer<QEvent> getConnectPublisher()
-    {
-        return _ClusterIoList.get(_Random.nextInt(_ClusterIoList.size()));
-    }
 }

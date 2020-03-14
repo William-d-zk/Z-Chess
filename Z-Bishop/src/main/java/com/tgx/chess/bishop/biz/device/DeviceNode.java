@@ -284,10 +284,7 @@ public class DeviceNode
         else {
             _SessionInitializeIndex = QueenCode.CM_XID;
         }
-        return new BaseAioConnector<ZContext>(_Host,
-                                              _Port,
-                                              getSocketConfig(getSlot(_SessionInitializeIndex)),
-                                              getServerCore())
+        return new BaseAioConnector<ZContext>(_Host, _Port, getSocketConfig(getSlot(_SessionInitializeIndex)))
         {
 
             @Override
