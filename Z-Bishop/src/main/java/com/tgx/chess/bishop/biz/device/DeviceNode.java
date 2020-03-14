@@ -320,7 +320,7 @@ public class DeviceNode
             public ISession<ZContext> createSession(AsynchronousSocketChannel socketChannel,
                                                     IConnectActivity<ZContext> activity) throws IOException
             {
-                return new AioSession<>(socketChannel, this, this, activity, DeviceNode.this);
+                return new AioSession<>(socketChannel, this, this, activity, client);
             }
 
             @Override
