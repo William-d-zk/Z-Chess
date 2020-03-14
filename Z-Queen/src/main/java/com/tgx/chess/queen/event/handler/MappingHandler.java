@@ -41,6 +41,7 @@ import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
+import com.tgx.chess.queen.io.core.inf.IAioConnector;
 import com.tgx.chess.queen.io.core.inf.IConnectActivity;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
@@ -79,19 +80,24 @@ public class MappingHandler<C extends IContext<C>>
     public void onEvent(QEvent event, long sequence, boolean endOfBatch)
     {
         if (event.hasError()) {
+            _Logger.info(String.format("error type %s,ignore ", event.getErrorType()));
             switch (event.getErrorType())
             {
                 case ACCEPT_FAILED:
+                    break;
                 case CONNECT_FAILED:
-                    _Logger.debug(String.format("error type %s,ignore ", event.getErrorType()));
-                    event.ignore();
+                    IOperator<Throwable,
+                              IAioConnector<C>,
+                              IAioConnector<C>> connectFailedOperator = event.getEventOp();
+                    IPair errorContent = event.getContent();
+                    connectFailedOperator.handle(errorContent.first(), errorContent.second());
                     break;
                 default:
                     _Logger.warning("server io error , do close session");
                     IOperator<Void,
                               ISession<C>,
                               Void> closeOperator = event.getEventOp();
-                    IPair errorContent = event.getContent();
+                    errorContent = event.getContent();
                     ISession<C> session = errorContent.second();
                     ISessionDismiss<C> dismiss = session.getDismissCallback();
                     boolean closed = session.isClosed();

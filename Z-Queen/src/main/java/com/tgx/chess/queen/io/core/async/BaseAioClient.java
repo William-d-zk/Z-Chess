@@ -31,11 +31,8 @@ import java.nio.channels.AsynchronousSocketChannel;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.schedule.TimeWheel;
@@ -72,31 +69,11 @@ public class BaseAioClient<C extends IContext<C>>
             AsynchronousSocketChannel socketChannel = AsynchronousSocketChannel.open(_ChannelGroup);
             InetSocketAddress remoteAddress = connector.getRemoteAddress();
             Integer retryCount = _TargetManageMap.putIfAbsent(remoteAddress, 0);
-            Future<Void> future = socketChannel.connect(remoteAddress);
+            socketChannel.connect(remoteAddress, socketChannel, connector);
             _TargetManageMap.put(remoteAddress,
                                  retryCount = (retryCount == null ? 1
                                                                   : retryCount + 1));
             _Logger.info("%s,%d", remoteAddress, retryCount);
-            _TimeWheel.acquire(connector, new ScheduleHandler<>(connector.getConnectTimeout(), c ->
-            {
-                if (future.isDone()) {
-                    try {
-                        Void result = future.get();
-                        c.completed(result, socketChannel);
-                    }
-                    catch (ExecutionException |
-                           InterruptedException e)
-                    {
-                        Throwable t = e.getCause();
-                        c.failed(t, socketChannel);
-                    }
-                }
-                else {
-                    future.cancel(true);
-                    Throwable t = new ZException("Connect time out");
-                    c.failed(t, socketChannel);
-                }
-            }));
         }
         finally {
             _Lock.unlock();
@@ -106,6 +83,7 @@ public class BaseAioClient<C extends IContext<C>>
     @Override
     public void onFailed(IAioConnector<C> connector)
     {
+        _Logger.info("connect failed: retry");
         _TimeWheel.acquire(connector, new ScheduleHandler<>(connector.getConnectTimeout() * 3, c ->
         {
             try {

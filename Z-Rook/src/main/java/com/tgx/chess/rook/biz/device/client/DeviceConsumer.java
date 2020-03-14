@@ -97,12 +97,12 @@ public class DeviceConsumer
         IAioClient<ZContext>,
         ISessionDismiss<ZContext>
 {
-    private final Logger                   _Logger    = Logger.getLogger(getClass().getSimpleName());
+    private final Logger                   _Logger = Logger.getLogger(getClass().getSimpleName());
     private final ConsumerConfig           _ConsumerConfig;
     private final AsynchronousChannelGroup _ChannelGroup;
     private final ClientCore<ZContext>     _ClientCore;
     private final TimeWheel                _TimeWheel;
-    private final ZUID                     _ZUid      = new ZUID();
+    private final ZUID                     _ZUid   = new ZUID();
     private final Map<Long,
                       ZClient>             _ZClientMap;
 
@@ -252,8 +252,7 @@ public class DeviceConsumer
         }
         BaseAioConnector<ZContext> connector = new BaseAioConnector<ZContext>(host,
                                                                               port,
-                                                                              getSocketConfig(getSlot(QueenCode.CU_XID)),
-                                                                              _ClientCore)
+                                                                              getSocketConfig(getSlot(QueenCode.CU_XID)))
         {
             @Override
             public ISort<ZContext> getSort()

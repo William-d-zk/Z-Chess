@@ -61,8 +61,7 @@ public class ClientCore<C extends IContext<C>>
         extends
         ThreadPoolExecutor
         implements
-        ILocalPublisher<C>,
-        IPeerCore
+        ILocalPublisher<C>
 
 {
     private final RingBuffer<QEvent>[]                      _AioProducerEvents;
@@ -241,10 +240,4 @@ public class ClientCore<C extends IContext<C>>
         return _LocalLock;
     }
 
-    @Override
-    public RingBuffer<QEvent> getConnectPublisher()
-    {
-        AioWorker aioWorker = (AioWorker) Thread.currentThread();
-        return aioWorker.getProducer();
-    }
 }
