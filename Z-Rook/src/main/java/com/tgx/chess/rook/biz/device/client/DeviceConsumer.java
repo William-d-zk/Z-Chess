@@ -252,7 +252,8 @@ public class DeviceConsumer
         }
         BaseAioConnector<ZContext> connector = new BaseAioConnector<ZContext>(host,
                                                                               port,
-                                                                              getSocketConfig(getSlot(QueenCode.CU_XID)))
+                                                                              getSocketConfig(getSlot(QueenCode.CU_XID)),
+                                                                              DeviceConsumer.this)
         {
             @Override
             public ISort<ZContext> getSort()

@@ -36,19 +36,22 @@ import java.util.concurrent.locks.ReentrantLock;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.schedule.TimeWheel;
+import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.io.core.inf.IAioClient;
 import com.tgx.chess.queen.io.core.inf.IAioConnector;
 import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.io.core.inf.ISession;
 
 public class BaseAioClient<C extends IContext<C>>
         implements
         IAioClient<C>
 {
-    private final Logger                          _Logger          = Logger.getLogger("AioClient");
-    private final TimeWheel                       _TimeWheel;
-    private final AsynchronousChannelGroup        _ChannelGroup;
+    private final Logger                                                  _Logger          = Logger.getLogger("AioClient");
+    private final TimeWheel                                               _TimeWheel;
+    private final AsynchronousChannelGroup                                _ChannelGroup;
     private final Map<InetSocketAddress,
-                      Integer>                    _TargetManageMap = new HashMap<>();
+                      Pair<Integer,
+                           IAioConnector<C>>>                             _TargetManageMap = new HashMap<>();
 
     public BaseAioClient(TimeWheel timeWheel,
                          AsynchronousChannelGroup channelGroup)
@@ -68,11 +71,14 @@ public class BaseAioClient<C extends IContext<C>>
         try {
             AsynchronousSocketChannel socketChannel = AsynchronousSocketChannel.open(_ChannelGroup);
             InetSocketAddress remoteAddress = connector.getRemoteAddress();
-            Integer retryCount = _TargetManageMap.putIfAbsent(remoteAddress, 0);
+            Pair<Integer,
+                 IAioConnector<C>> pair = _TargetManageMap.putIfAbsent(remoteAddress, new Pair<>(0, connector));
             socketChannel.connect(remoteAddress, socketChannel, connector);
-            _TargetManageMap.put(remoteAddress,
-                                 retryCount = (retryCount == null ? 1
-                                                                  : retryCount + 1));
+            int retryCount = 0;
+            if (pair != null) {
+                retryCount = pair.first();
+                pair.setFirst(++retryCount);
+            }
             _Logger.info("%s,%d", remoteAddress, retryCount);
         }
         finally {
@@ -84,10 +90,25 @@ public class BaseAioClient<C extends IContext<C>>
     public void onFailed(IAioConnector<C> connector)
     {
         _Logger.info("connect failed: retry");
+        delayConnect(connector);
+    }
+
+    @Override
+    public void onDismiss(ISession<C> session)
+    {
+        InetSocketAddress remoteAddress = session.getRemoteAddress();
+        IAioConnector<C> connector = _TargetManageMap.get(remoteAddress)
+                                                     .second();
+        _Logger.info("on dismiss: retry");
+        delayConnect(connector);
+    }
+
+    private void delayConnect(IAioConnector<C> connector)
+    {
         _TimeWheel.acquire(connector, new ScheduleHandler<>(connector.getConnectTimeout() * 3, c ->
         {
             try {
-                _Logger.info("%s retry connect",
+                _Logger.info("%s connect",
                              Thread.currentThread()
                                    .getName());
                 connect(c);

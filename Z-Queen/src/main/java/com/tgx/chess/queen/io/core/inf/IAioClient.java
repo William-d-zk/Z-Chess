@@ -34,7 +34,8 @@ import com.tgx.chess.king.base.inf.ITriple;
  */
 public interface IAioClient<C extends IContext<C>>
         extends
-        IAioConnector.IConnectFailed<C>
+        IAioConnector.IConnectFailed<C>,
+        ISessionDismiss<C>
 {
     void connect(IAioConnector<C> connector) throws IOException;
 

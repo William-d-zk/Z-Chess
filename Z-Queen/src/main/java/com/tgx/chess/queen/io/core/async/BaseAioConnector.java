@@ -51,10 +51,12 @@ public abstract class BaseAioConnector<C extends IContext<C>>
 
     protected BaseAioConnector(String host,
                                int port,
-                               ISocketConfig socketConfig)
+                               ISocketConfig socketConfig,
+                               IConnectFailed<C> connectFailed)
     {
         super(socketConfig);
         _RemoteAddress = new InetSocketAddress(host, port);
+        attach(connectFailed);
     }
 
     private InetSocketAddress              mLocalBind;
