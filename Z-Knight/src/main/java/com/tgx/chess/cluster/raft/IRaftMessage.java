@@ -24,7 +24,9 @@
 
 package com.tgx.chess.cluster.raft;
 
-import com.tgx.chess.queen.db.inf.IStorage;
+import com.tgx.chess.bishop.io.zfilter.ZContext;
+import com.tgx.chess.cluster.raft.IRaftNode.RaftState;
+import com.tgx.chess.queen.io.core.inf.IControl;
 
 /**
  * @author william.d.zk
@@ -32,13 +34,11 @@ import com.tgx.chess.queen.db.inf.IStorage;
  */
 public interface IRaftMessage
         extends
-        IStorage
+        IControl<ZContext>
 {
-    long getNode();
+    long getPeerId();
 
     long getTerm();
 
-    IRaftNode.RaftState getState();
-
-
+    RaftState getState();
 }

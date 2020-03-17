@@ -27,11 +27,14 @@ package com.tgx.chess.spring.device.model;
 import java.io.Serializable;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 /**
  * @author Idempotent
  * @date 2019/12/1
  */
+@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class RawContent
         implements
         Serializable

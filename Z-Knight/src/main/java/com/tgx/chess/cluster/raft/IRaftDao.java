@@ -28,8 +28,6 @@ import com.tgx.chess.cluster.raft.model.log.LogEntry;
 import com.tgx.chess.cluster.raft.model.log.LogMeta;
 import com.tgx.chess.cluster.raft.model.log.SnapshotMeta;
 
-import java.util.List;
-
 /**
  * @author william.d.zk
  */
@@ -37,9 +35,9 @@ public interface IRaftDao
 {
     void updateAll();
 
-    long getLastLogIndex();
+    long getEndIndex();
 
-    long getFirstLogIndex();
+    long getStartIndex();
 
     LogEntry getEntry(long index);
 
@@ -49,7 +47,7 @@ public interface IRaftDao
 
     void updateSnapshotMeta(long lastIncludeIndex, long lastIncludeTerm);
 
-    long append(List<LogEntry> entryList);
+    long append(LogEntry entry);
 
     void truncatePrefix(long newFirstIndex);
 

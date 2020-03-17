@@ -22,47 +22,13 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.cluster.raft.model;
-
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
+package com.tgx.chess.king.base.schedule;
 
 /**
  * @author william.d.zk
- * @date 2020/3/8
+ * @date 2020/3/18
  */
-@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
-public class RaftFollower
+public interface ICancelable
 {
-    private long peerId, nextIndex, matchIndex;
-
-    public long getPeerId()
-    {
-        return peerId;
-    }
-
-    public void setPeerId(long peerId)
-    {
-        this.peerId = peerId;
-    }
-
-    public long getNextIndex()
-    {
-        return nextIndex;
-    }
-
-    public void setNextIndex(long nextIndex)
-    {
-        this.nextIndex = nextIndex;
-    }
-
-    public long getMatchIndex()
-    {
-        return matchIndex;
-    }
-
-    public void setMatchIndex(long matchIndex)
-    {
-        this.matchIndex = matchIndex;
-    }
+    void cancel();
 }
