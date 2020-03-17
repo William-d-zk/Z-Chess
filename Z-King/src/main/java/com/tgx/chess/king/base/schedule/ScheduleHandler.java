@@ -44,7 +44,6 @@ public class ScheduleHandler<A>
     private final int           _Priority;
     private final long          _Tick;
     private final ReentrantLock _Lock;
-    private volatile boolean    cancel;
 
     public ScheduleHandler(long delaySecond,
                            boolean cycle,
@@ -128,24 +127,6 @@ public class ScheduleHandler<A>
     }
 
     @Override
-    public void cancel()
-    {
-        _Lock.lock();
-        try {
-            cancel = true;
-        }
-        finally {
-            _Lock.unlock();
-        }
-    }
-
-    @Override
-    public boolean isCanceled()
-    {
-        return cancel;
-    }
-
-    @Override
     public void lock()
     {
         _Lock.lock();
@@ -169,8 +150,9 @@ public class ScheduleHandler<A>
                + _Callback
                + ", _Priority="
                + _Priority
-               + ", _SecondTick="
+               + ", _MilliTick="
                + _Tick
                + '}';
     }
+
 }

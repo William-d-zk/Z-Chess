@@ -26,7 +26,6 @@ package com.tgx.chess.bishop.io.zprotocol.raft;
 
 import com.tgx.chess.bishop.io.zprotocol.ZCommand;
 import com.tgx.chess.king.base.util.IoUtil;
-import com.tgx.chess.queen.event.handler.IoDispatcher;
 
 /**
  * @author william.d.zk
@@ -116,7 +115,11 @@ public class X7F_RaftResponse
     {
         SUCCESS(0, "success"),
         LOWER_TERM(1, "term < current,reject"),
-        INCORRECT_TERM(2, "pre-log-index&pre-log-term inconsistent,reject");
+        INCORRECT_TERM(2, "pre-log-index&pre-log-term inconsistent,reject"),
+        ILLEGAL_STATE(3, "illegal state,reject"),
+        SPLIT_CLUSTER(4, "split cluster,reject"),
+        ALREADY_VOTE(5, "already vote,reject"),
+        OBSOLETE(6, "index obsolete,reject");
 
         private final int    _Code;
         private final String _Description;

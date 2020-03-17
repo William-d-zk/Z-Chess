@@ -24,16 +24,16 @@
 
 package com.tgx.chess.cluster.raft.model;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.NavigableMap;
-import java.util.TreeMap;
-import java.util.function.Consumer;
+import java.util.Random;
 
 import com.tgx.chess.bishop.ZUID;
 import com.tgx.chess.bishop.biz.config.IClusterConfig;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7E_RaftBroadcast;
+import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
 import com.tgx.chess.cluster.raft.IRaftDao;
 import com.tgx.chess.cluster.raft.IRaftMachine;
 import com.tgx.chess.cluster.raft.IRaftMessage;
@@ -42,6 +42,7 @@ import com.tgx.chess.cluster.raft.model.log.LogEntry;
 import com.tgx.chess.cluster.raft.model.log.RaftDao;
 import com.tgx.chess.json.JsonUtil;
 import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.king.base.schedule.ICancelable;
 import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.queen.io.core.inf.ISession;
@@ -53,58 +54,20 @@ import com.tgx.chess.queen.io.core.manager.QueenManager;
  */
 public class RaftNode
         implements
-        IRaftNode,
-        IRaftMachine
+        IRaftNode
 {
-    private final Logger                           _Logger      = Logger.getLogger(getClass().getSimpleName());
-    private final ZUID                             _ZUid;
-    private final IClusterConfig                   _ClusterConfig;
-    private final QueenManager<ZContext>           _QueenManager;
-    private final RaftDao                          _RaftDao;
-    private final TimeWheel                        _TimeWheel;
-    private final ScheduleHandler<RaftNode>        _ElectSchedule, _HeartbeatSchedule;
-    private final RaftGraph                        _RaftGraph;
-    private final NavigableMap<Long,
-                               RaftFollower>       _FollowerMap = new TreeMap<>();
-
-    /**
-     * 状态
-     */
-    private RaftState state = RaftState.FOLLOWER;
-    /**
-     * 当前选举的轮次
-     * 有效值 > 0
-     */
-    private long      term  = 0;
-    /**
-     * 候选人 有效值 非0，很可能是负值
-     *
-     * @see ZUID
-     */
-    private long      candidate;
-    /**
-     * 已知的leader
-     * 有效值 非0，很可能是负值
-     *
-     * @see ZUID
-     */
-    private long      leader;
-    /**
-     * 已被提交的日志ID
-     * 有效值 非0，很可能是负值
-     * 48bit
-     *
-     * @see ZUID
-     */
-    private long      commit;
-    /**
-     * 已被状态机采纳的纪录ID
-     * 必须 <= commit
-     * 48bit
-     *
-     * @see ZUID
-     */
-    private long      applied;
+    private final Logger                    _Logger        = Logger.getLogger(getClass().getSimpleName());
+    private final ZUID                      _ZUid;
+    private final IClusterConfig            _ClusterConfig;
+    private final QueenManager<ZContext>    _QueenManager;
+    private final RaftDao                   _RaftDao;
+    private final TimeWheel                 _TimeWheel;
+    private final ScheduleHandler<RaftNode> _ElectSchedule, _HeartbeatSchedule, _TickSheSchedule;
+    private final RaftGraph                 _RaftGraph;
+    private final RaftMachine               _SelfMachine;
+    private final List<LogEntry>            _AppendLogList = new LinkedList<>();
+    private final Random                    _Random        = new Random();
+    private ICancelable                     mElectTask, mHeartbeatTask, mTickTask;
 
     public RaftNode(TimeWheel timeWheel,
                     IClusterConfig clusterConfig,
@@ -118,10 +81,7 @@ public class RaftNode
         _RaftDao = raftDao;
         _ElectSchedule = new ScheduleHandler<>(_ClusterConfig.getElectInSecond()
                                                              .getSeconds(),
-                                               raftNode ->
-                                               {
-                                                   vote();
-                                               });
+                                               RaftNode::startVote);
         _HeartbeatSchedule = new ScheduleHandler<RaftNode>(_ClusterConfig.getHeartbeatInSecond()
                                                                          .getSeconds(),
                                                            true)
@@ -132,52 +92,57 @@ public class RaftNode
                 leaderBroadcast();
             }
         };
+        _TickSheSchedule = new ScheduleHandler<>(_ClusterConfig.getHeartbeatInSecond()
+                                                               .getSeconds()
+                                                 * 2,
+                                                 RaftNode::startVote);
         _RaftGraph = new RaftGraph();
-        _RaftGraph.append(_ZUid.getPeerId(), term, applied, candidate, leader);
+        _SelfMachine = new RaftMachine(_ZUid.getPeerId());
+        _RaftGraph.append(_SelfMachine);
     }
 
     private void leaderBroadcast()
     {
-        _FollowerMap.forEach((k, v) ->
-        {
-            X7E_RaftBroadcast x7e = new X7E_RaftBroadcast(_ZUid.getId());
-            x7e.setPeerId(k);
-            x7e.setTerm(term);
-            x7e.setCommit(commit);
-            x7e.setLeaderId(_ZUid.getPeerId());
-            x7e.setPreLogIndex(v.getMatchIndex());
-            x7e.setPreLogTerm(_RaftDao.getEntryTerm(v.getMatchIndex()));
-            long preLogIndex = v.getMatchIndex();
-            if (preLogIndex < applied) {
-                List<LogEntry> entryList = new LinkedList<>();
-                for (long i = preLogIndex; i <= applied; i++) {
-                    entryList.add(_RaftDao.getEntry(i));
-                }
-                x7e.setPayload(JsonUtil.writeValue(entryList));
-            }
-            ISession<ZContext> session = _QueenManager.findByPrefix(k);
-            _QueenManager.localSend(session, x7e);
-        });
+        _RaftGraph.getNodeMap()
+                  .forEach((k, v) ->
+                  {
+
+                      X7E_RaftBroadcast x7e = new X7E_RaftBroadcast(_ZUid.getId());
+                      x7e.setPeerId(k);
+                      x7e.setTerm(v.getTerm());
+                      x7e.setCommit(_SelfMachine.getCommit());
+                      x7e.setLeaderId(_ZUid.getPeerId());
+                      if (v.getIndex() < _SelfMachine.getIndex()) {
+                          List<LogEntry> entryList = new LinkedList<>();
+                          for (long i = v.getIndex() + 1, l = _SelfMachine.getIndex(); i <= l; i++) {
+                              entryList.add(_RaftDao.getEntry(i));
+                          }
+                          x7e.setPayload(JsonUtil.writeValue(entryList));
+                      }
+                      ISession<ZContext> session = _QueenManager.findByPrefix(k);
+                      _QueenManager.localSend(session, x7e);
+                  });
     }
 
     public void init()
     {
         _Logger.info("raft node init");
         /* _RaftDao 启动的时候已经装载了 snapshot */
-        term = _RaftDao.getLogMeta()
-                       .getTerm();
-        candidate = _RaftDao.getLogMeta()
-                            .getCandidate();
-        commit = _RaftDao.getSnapshotMeta()
-                         .getLastIncludedIndex();
+        _SelfMachine.setTerm(_RaftDao.getLogMeta()
+                                     .getTerm());
+        _SelfMachine.setCandidate(_RaftDao.getLogMeta()
+                                          .getCandidate());
+        _SelfMachine.setCommit(_RaftDao.getLogMeta()
+                                       .getCommit());
+        _SelfMachine.setApplied(_RaftDao.getLogMeta()
+                                        .getApplied());
         // 删除前序日志，只保留snapshot结果
-        if (commit > 0
+        if (_SelfMachine.getCommit() > 0
             && _RaftDao.getLogMeta()
-                       .getFirstLogIndex() <= commit)
+                       .getStart() <= _SelfMachine.getCommit())
         {
-            _RaftDao.truncatePrefix(term + 1);
+            _RaftDao.truncatePrefix(_SelfMachine.getTerm() + 1);
         }
-        applied = commit;
         //启动snapshot定时回写计时器
         _TimeWheel.acquire(this,
                            new ScheduleHandler<RaftNode>(_ClusterConfig.getSnapshotInSecond()
@@ -193,64 +158,8 @@ public class RaftNode
         _RaftDao.updateAll();
     }
 
-    private void reset()
-    {
-        leader = 0;
-        candidate = 0;
-        term = 0;
-        commit = 0;
-        applied = 0;
-    }
-
-    @Override
-    public RaftState getState()
-    {
-        return state;
-    }
-
-    @Override
-    public long getTerm()
-    {
-        return term;
-    }
-
-    @Override
-    public long getElector()
-    {
-        return candidate;
-    }
-
-    @Override
-    public long getLeader()
-    {
-        return leader;
-    }
-
-    @Override
-    public long getCommitIndex()
-    {
-        return commit;
-    }
-
-    @Override
-    public long getApplied()
-    {
-        return applied;
-    }
-
-    @Override
-    public void apply(IRaftMessage msg)
-    {
-
-    }
-
     @Override
     public void load(List<IRaftMessage> snapshot)
-    {
-
-    }
-
-    private void vote()
     {
 
     }
@@ -261,52 +170,190 @@ public class RaftNode
         return false;
     }
 
+    @Override
+    public IRaftMachine getMachine() {
+        return null;
+    }
+
     private void takeSnapshot()
     {
         long localApply;
         long localTerm;
         RaftGraph localGraph = new RaftGraph();
         if (_RaftDao.getTotalSize() < _ClusterConfig.getSnapshotMinSize()) { return; }
-        if (applied <= commit) { return; }//状态迁移未完成
-        localApply = applied;
-        if (applied >= _RaftDao.getFirstLogIndex() && applied <= _RaftDao.getLastLogIndex()) {
-            localTerm = _RaftDao.getEntryTerm(applied);
+        if (_SelfMachine.getApplied() <= _SelfMachine.getCommit()) { return; }//状态迁移未完成
+        if (_SelfMachine.getApplied() >= _RaftDao.getStartIndex()
+            && _SelfMachine.getApplied() <= _RaftDao.getEndIndex())
+        {
+            localTerm = _RaftDao.getEntryTerm(_SelfMachine.getApplied());
         }
         localGraph.merge(_RaftDao.getLogMeta()
                                  .getRaftGraph());
         if (takeSnapshot(_RaftDao)) {
             long lastSnapshotIndex = _RaftDao.getSnapshotMeta()
-                                             .getLastIncludedIndex();
-            if (lastSnapshotIndex > 0 && _RaftDao.getFirstLogIndex() <= lastSnapshotIndex) {
+                                             .getCommit();
+            if (lastSnapshotIndex > 0 && _RaftDao.getStartIndex() <= lastSnapshotIndex) {
                 _RaftDao.truncatePrefix(lastSnapshotIndex + 1);
             }
         }
     }
 
-    void applyRaftGraph(LogEntry logEntry)
+    /**
+     * 此方法会在各种超时处理器中被启用，所以执行线程为TimeWheel.pool中的任意子线程
+     */
+    private void startVote()
     {
-
-        RaftGraph raftGraph = logEntry.getRaftGraph();
-        _RaftGraph.apply(_ZUid.getPeerId(), logEntry.getIndex(), raftGraph);
-    }
-
-    void stepDown(long newTerm)
-    {
-        if (term > newTerm) { throw new IllegalStateException("state machine error"); }
-        if (term < newTerm) {
-            term = newTerm;
-            leader = 0;
-            candidate = 0;
-            _RaftDao.updateLogMeta(term, commit, candidate);
+        try {
+            Thread.currentThread()
+                  .wait(_Random.nextInt(150) + 50);
         }
-        state = RaftState.FOLLOWER;
-        _HeartbeatSchedule.cancel();
-        _TimeWheel.acquire(this, _ElectSchedule);
+        catch (InterruptedException e) {
+            //ignore
+        }
+        RaftMachine update = new RaftMachine(_ZUid.getPeerId());
+        update.setTerm(_SelfMachine.getTerm() + 1);
+        update.setCandidate(_ZUid.getPeerId());
+        update.setIndex(_SelfMachine.getIndex());
+        if (mTickTask != null) {
+            mTickTask.cancel();
+        }
     }
 
-    void appendLog(RaftMessage leaderMessage)
+    private X7F_RaftResponse success(long peerId)
     {
+        X7F_RaftResponse x7f = new X7F_RaftResponse(_ZUid.getId());
+        x7f.setTerm(_SelfMachine.getTerm());
+        x7f.setCode(X7F_RaftResponse.Code.SUCCESS.getCode());
+        x7f.setSession(_QueenManager.findByPrefix(peerId));
+        return x7f;
+    }
 
+    @Override
+    public X7F_RaftResponse reject(long peerId, int code)
+    {
+        X7F_RaftResponse x7f = new X7F_RaftResponse(_ZUid.getId());
+        x7f.setTerm(_SelfMachine.getTerm());
+        x7f.setCode(code);
+        x7f.setSession(_QueenManager.findByPrefix(peerId));
+        return x7f;
+    }
+
+    @Override
+    public X7F_RaftResponse stepUp(long peerId)
+    {
+        if (mTickTask != null) {
+            mTickTask.cancel();
+        }
+        mElectTask = _TimeWheel.acquire(this, _ElectSchedule);
+        return success(peerId);
+    }
+
+    @Override
+    public X7F_RaftResponse stepDown(long peerId)
+    {
+        if (mHeartbeatTask != null) {
+            mHeartbeatTask.cancel();
+        }
+        mTickTask = _TimeWheel.acquire(this, _TickSheSchedule);
+        _SelfMachine.setLeader(ZUID.INVALID_PEER_ID);
+        _SelfMachine.setCandidate(ZUID.INVALID_PEER_ID);
+        return success(peerId);
+    }
+
+    @Override
+    public X7F_RaftResponse follow(long peerId)
+    {
+        return success(peerId);
+    }
+
+    /**
+     * 接收到LEADER的心跳或者日志复写
+     * 接收到的日志已经按顺序存入 _AppendLogList
+     * 
+     * @param peerId
+     * @return
+     */
+    @Override
+    public X7F_RaftResponse reTick(long peerId)
+    {
+        if (mTickTask != null) {
+            mTickTask.cancel();
+            mTickTask = _TimeWheel.acquire(this, _TickSheSchedule);
+        }
+        catchUp();
+        X7F_RaftResponse x7f = success(peerId);
+        x7f.setCatchUp(_SelfMachine.getIndex());
+        return x7f;
+    }
+
+    @Override
+    public X7F_RaftResponse rejectAndStepDown(long peerId, int code) {
+        return null;
+    }
+
+    @Override
+    public void apply(long applied) {
+
+    }
+
+    private void catchUp()
+    {
+        if (_SelfMachine.getState() == RaftState.LEADER) {
+            _Logger.warning("leader needn't catch up any log.");
+            return;
+        }
+        IT_APPEND:
+        {
+            for (Iterator<LogEntry> it = _AppendLogList.iterator(); it.hasNext();) {
+                LogEntry entry = it.next();
+                if (_RaftDao.getEndIndex() < entry.getIndex()) {
+                    long newEndIndex = _RaftDao.append(entry);
+                    if (newEndIndex != entry.getIndex()) {
+                        _Logger.warning("conflict{ self expect index %d,entry index %d }",
+                                        newEndIndex,
+                                        entry.getIndex());
+                        break IT_APPEND;
+                    }
+                    else {
+                        _SelfMachine.setIndex(newEndIndex);
+                    }
+                }
+                else {
+                    LogEntry old = _RaftDao.getEntry(entry.getIndex());
+                    if (old != null && old.getTerm() != entry.getTerm()) {
+                        _Logger.warning("log conflict OT:%d <-> NT%d I:%d",
+                                        old.getTerm(),
+                                        entry.getTerm(),
+                                        entry.getIndex());
+                        /*
+                           此处存在一个可优化点，将此冲突对应的 term 下所有的index 都注销，向leader反馈
+                           上一个term.end_index,能有效减少以-1进行删除的数据量。此种优化的意义不是很大。
+                        */
+                        _RaftDao.truncateSuffix(entry.getIndex() - 1);
+                        _SelfMachine.setIndex(_RaftDao.getEndIndex());
+                    }
+                    else {
+                        /*
+                            1.old ==  null entry.index 处于 未正常管控的位置
+                            启动协商之后是不会出现此类情况的。
+                            2.old.term==entry.term已经完成了日志存储，不再重复append 
+                         */
+                        _SelfMachine.setIndex(entry.getIndex());
+                    }
+                }
+                it.remove();
+            }
+            return;
+        }
+        _AppendLogList.clear();
+    }
+
+    @Override
+    public void applyAndResponse(X7F_RaftResponse response)
+    {
+        if (response == null) return;//ignore
+
+        response.setCatchUp(_SelfMachine.getCommit());
     }
 
 }

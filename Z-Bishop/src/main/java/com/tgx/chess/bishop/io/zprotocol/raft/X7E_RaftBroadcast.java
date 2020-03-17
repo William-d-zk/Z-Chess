@@ -50,8 +50,6 @@ public class X7E_RaftBroadcast
     private long mLeaderId;
     private long mTerm;
     private long mCommit;
-    private long mPreLogIndex;
-    private long mPreLogTerm;
 
     @Override
     public int getPriority()
@@ -76,10 +74,6 @@ public class X7E_RaftBroadcast
         pos += 8;
         mCommit = IoUtil.readLong(data, pos);
         pos += 8;
-        mPreLogIndex = IoUtil.readLong(data, pos);
-        pos += 8;
-        mPreLogTerm = IoUtil.readLong(data, pos);
-        pos += 8;
         int pLength = data.length - pos;
         byte[] m = new byte[pLength];
         IoUtil.read(data, pos, m, 0, pLength);
@@ -94,8 +88,6 @@ public class X7E_RaftBroadcast
         pos += IoUtil.writeLong(mLeaderId, data, pos);
         pos += IoUtil.writeLong(mTerm, data, pos);
         pos += IoUtil.writeLong(mCommit, data, pos);
-        pos += IoUtil.writeLong(mPreLogIndex, data, pos);
-        pos += IoUtil.writeLong(mPreLogTerm, data, pos);
         pos += IoUtil.write(getPayload(), data, pos);
         return pos;
     }
@@ -138,26 +130,6 @@ public class X7E_RaftBroadcast
     public void setCommit(long commit)
     {
         this.mCommit = commit;
-    }
-
-    public long getPreLogIndex()
-    {
-        return mPreLogIndex;
-    }
-
-    public void setPreLogIndex(long preLogIndex)
-    {
-        this.mPreLogIndex = preLogIndex;
-    }
-
-    public long getPreLogTerm()
-    {
-        return mPreLogTerm;
-    }
-
-    public void setPreLogTerm(long preLogTerm)
-    {
-        this.mPreLogTerm = preLogTerm;
     }
 
 }

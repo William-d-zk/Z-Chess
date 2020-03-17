@@ -24,7 +24,9 @@
 
 package com.tgx.chess.cluster.raft;
 
-import java.util.List;
+import java.util.Set;
+
+import com.tgx.chess.cluster.raft.IRaftNode.RaftState;
 
 /**
  * @author william.d.zk
@@ -32,9 +34,39 @@ import java.util.List;
  */
 public interface IRaftMachine
 {
-    void apply(IRaftMessage msg);
+    /** @return 当前任期 自然数 */
+    long getTerm();
 
-    void load(List<IRaftMessage> snapshot);
+    /** @return 当前任期的 log-index */
+    long getIndex();
 
-    boolean takeSnapshot(IRaftDao writer);
+    /** @return 候选人 Id */
+    long getCandidate();
+
+    /** @return 主节点 Id */
+    long getLeader();
+
+    /** @return 节点的全局ID */
+    long getPeerId();
+
+    /** @return 节点状态 */
+    RaftState getState();
+
+    /** @return 已知最大的已提交日志的索引值 */
+    long getCommit();
+
+    /** @return 最后一条被应用到状态机的索引值 */
+    long getApplied();
+
+    /** @return 集群中所有节点 */
+    Set<Long> getNodeSet();
+
+    /**
+     * 接收另一个machine的状态更新
+     * 
+     * @param update
+     * @return success or reject
+     */
+    void merge(IRaftMachine update, IRaftNode self);
+
 }

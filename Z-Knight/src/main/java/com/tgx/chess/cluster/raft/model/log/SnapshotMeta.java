@@ -37,8 +37,8 @@ public class SnapshotMeta
         BaseMeta
 {
     private final static int _SERIAL = INTERNAL_SERIAL + 3;
-    private long             lastIncludedIndex;
-    private long             lastIncludedTerm;
+    private long             mCommit;
+    private long             mTerm;
 
     SnapshotMeta()
     {
@@ -68,24 +68,24 @@ public class SnapshotMeta
         return INTERNAL_SERIAL;
     }
 
-    public void setLastIncludeIndex(long lastIncludeIndex)
+    public void setCommit(long commit)
     {
-        this.lastIncludedIndex = lastIncludeIndex;
+        this.mCommit = commit;
     }
 
-    public void setLastIncludeTerm(long lastIncludeTerm)
+    public void setTerm(long term)
     {
-        this.lastIncludedTerm = lastIncludeTerm;
+        this.mTerm = term;
     }
 
-    public long getLastIncludedIndex()
+    public long getCommit()
     {
-        return lastIncludedIndex;
+        return mCommit;
     }
 
-    public long getLastIncludedTerm()
+    public long getTerm()
     {
-        return lastIncludedTerm;
+        return mTerm;
     }
 
     @Override
@@ -93,8 +93,8 @@ public class SnapshotMeta
     {
         SnapshotMeta json = JsonUtil.readValue(data, getClass());
         Objects.requireNonNull(json);
-        lastIncludedIndex = json.getLastIncludedIndex();
-        lastIncludedTerm = json.getLastIncludedTerm();
+        mCommit = json.getCommit();
+        mTerm = json.getTerm();
         return length = data.length;
     }
 

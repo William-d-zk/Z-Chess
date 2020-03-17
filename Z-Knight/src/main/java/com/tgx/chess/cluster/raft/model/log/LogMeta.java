@@ -39,11 +39,17 @@ public class LogMeta
 {
     private final static int _SERIAL = INTERNAL_SERIAL + 1;
 
-    private long      firstLogIndex;
+    /** 已存储日志的start index */
+    private long      start;
+    /** 已存储日志的最大任期号 */
     private long      term;
+    /** 当前状态机候选人 */
     private long      candidate;
+    /** 集群中已知的最大的被提交的日志index */
     private long      commit;
+    /** 已被应用到状态机日志index */
     private long      applied;
+    /** 集群节点信息 */
     private RaftGraph raftGraph;
 
     LogMeta()
@@ -67,7 +73,7 @@ public class LogMeta
     {
         LogMeta json = JsonUtil.readValue(data, getClass());
         Objects.requireNonNull(json);
-        firstLogIndex = json.getFirstLogIndex();
+        start = json.getStart();
         term = json.getTerm();
         candidate = json.getCandidate();
         raftGraph = json.getRaftGraph();
@@ -95,14 +101,14 @@ public class LogMeta
         return INTERNAL_SERIAL;
     }
 
-    public long getFirstLogIndex()
+    public long getStart()
     {
-        return firstLogIndex;
+        return start;
     }
 
-    public void setFirstLogIndex(long firstLogIndex)
+    public void setStart(long start)
     {
-        this.firstLogIndex = firstLogIndex;
+        this.start = start;
     }
 
     public long getTerm()

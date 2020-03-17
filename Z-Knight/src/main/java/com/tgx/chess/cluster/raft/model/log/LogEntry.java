@@ -29,7 +29,6 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.tgx.chess.cluster.raft.model.RaftGraph;
 import com.tgx.chess.json.JsonUtil;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
 
@@ -40,12 +39,12 @@ public class LogEntry
 {
     private final static int _SERIAL = INTERNAL_SERIAL + 2;
 
-    private long      term;
-    private long      index;
-    private RaftGraph raftGraph;
-    private byte[]    payload;
+    private long   term;
+    private long   index;
+    private byte[] payload;
+
     @JsonIgnore
-    private int       length;
+    private int length;
 
     @Override
     public int dataLength()
@@ -85,16 +84,6 @@ public class LogEntry
         this.index = index;
     }
 
-    public RaftGraph getRaftGraph()
-    {
-        return raftGraph;
-    }
-
-    public void setRaftGraph(RaftGraph raftGraph)
-    {
-        this.raftGraph = raftGraph;
-    }
-
     public byte[] getPayload()
     {
         return payload;
@@ -112,7 +101,6 @@ public class LogEntry
         Objects.requireNonNull(json);
         index = json.getIndex();
         term = json.getTerm();
-        raftGraph = json.getRaftGraph();
         return length = data.length;
     }
 

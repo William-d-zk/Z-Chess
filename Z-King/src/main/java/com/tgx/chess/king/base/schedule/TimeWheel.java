@@ -124,13 +124,13 @@ public class TimeWheel
         return vCtxSlot;
     }
 
-    private <A> void acquire(IWheelItem<A> item)
+    private <A> ICancelable acquire(IWheelItem<A> item)
     {
-        acquire(new HandleTask<>(item));
+        return acquire(new HandleTask<>(item));
     }
 
     @SuppressWarnings("unchecked")
-    private <A> void acquire(HandleTask<A> task)
+    private <A> ICancelable acquire(HandleTask<A> task)
     {
         IWheelItem<A> item = task._Item;
         _Lock.lock();
@@ -146,6 +146,7 @@ public class TimeWheel
         finally {
             _Lock.unlock();
         }
+        return task;
     }
 
     private List<HandleTask<?>> filterReady()
@@ -155,7 +156,7 @@ public class TimeWheel
                                                                        & _HashMod].iterator(); it.hasNext();)
         {
             HandleTask<?> handleTask = it.next();
-            if (handleTask.getLoop() == getCurrentLoop()) {
+            if (handleTask.getLoop() == getCurrentLoop() && handleTask.isValid()) {
                 readyList.add(handleTask);
                 it.remove();
             }
@@ -181,8 +182,6 @@ public class TimeWheel
         void attach(V v);
 
         void setup();
-
-        void cancel();
 
         void lock();
 
@@ -213,8 +212,6 @@ public class TimeWheel
         void beforeCall();
 
         void onCall();
-
-        boolean isCanceled();
     }
 
     private class TickSlot<V>
@@ -238,12 +235,14 @@ public class TimeWheel
     private class HandleTask<V>
             implements
             Callable<IWheelItem<V>>,
-            Comparable<HandleTask<V>>
+            Comparable<HandleTask<V>>,
+            ICancelable
     {
         private final IWheelItem<V> _Item;
         private final int           _Slot;
         private final int           _Loop;
         private int                 loop;
+        private volatile boolean    vCancel;
 
         HandleTask(IWheelItem<V> wheelItem)
         {
@@ -278,7 +277,7 @@ public class TimeWheel
             _Item.lock();
             try {
                 _Item.beforeCall();
-                if (!_Item.isCanceled()) {
+                if (isValid()) {
                     _Item.onCall();
                     if (_Item.isCycle()) {
                         TimeWheel.this.acquire(HandleTask.this);
@@ -296,6 +295,23 @@ public class TimeWheel
         {
             return _Item.compareTo(o._Item);
         }
+
+        public boolean isValid()
+        {
+            return !vCancel;
+        }
+
+        @Override
+        public void cancel()
+        {
+            _Item.lock();
+            try {
+                vCancel = true;
+            }
+            finally {
+                _Item.unlock();
+            }
+        }
     }
 
     private volatile long current_millisecond;
@@ -310,10 +326,10 @@ public class TimeWheel
         return TimeUnit.MILLISECONDS.toSeconds(current_millisecond);
     }
 
-    public <A> void acquire(A attach, IWheelItem<A> item)
+    public <A> ICancelable acquire(A attach, IWheelItem<A> item)
     {
         item.attach(attach);
-        acquire(item);
+        return acquire(item);
     }
 
 }
