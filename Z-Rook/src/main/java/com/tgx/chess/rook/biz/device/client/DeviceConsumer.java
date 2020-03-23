@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Arrays;
@@ -361,17 +362,20 @@ public class DeviceConsumer
     @Override
     public void onFailed(IAioConnector<ZContext> connector)
     {
-        _TimeWheel.acquire(connector, new ScheduleHandler<>(connector.getConnectTimeout() * 3, c ->
-        {
-            try {
-                _Logger.info("%s retry connect",
-                             Thread.currentThread()
-                                   .getName());
-                connect(c);
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-        }));
+        _TimeWheel.acquire(connector,
+                           new ScheduleHandler<>(connector.getConnectTimeout()
+                                                          .multipliedBy(3),
+                                                 c ->
+                                                 {
+                                                     try {
+                                                         _Logger.info("%s retry connect",
+                                                                      Thread.currentThread()
+                                                                            .getName());
+                                                         connect(c);
+                                                     }
+                                                     catch (IOException e) {
+                                                         e.printStackTrace();
+                                                     }
+                                                 }));
     }
 }
