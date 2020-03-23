@@ -79,22 +79,12 @@ public class RaftNode
         _QueenManager = manager;
         _ZUid = clusterConfig.createZUID(true);
         _RaftDao = raftDao;
-        _ElectSchedule = new ScheduleHandler<>(_ClusterConfig.getElectInSecond()
-                                                             .getSeconds(),
-                                               RaftNode::startVote);
-        _HeartbeatSchedule = new ScheduleHandler<RaftNode>(_ClusterConfig.getHeartbeatInSecond()
-                                                                         .getSeconds(),
-                                                           true)
-        {
-            @Override
-            public void onCall()
-            {
-                leaderBroadcast();
-            }
-        };
+        _ElectSchedule = new ScheduleHandler<>(_ClusterConfig.getElectInSecond(), RaftNode::startVote);
+        _HeartbeatSchedule = new ScheduleHandler<>(_ClusterConfig.getHeartbeatInSecond(),
+                                                   true,
+                                                   RaftNode::leaderBroadcast);
         _TickSheSchedule = new ScheduleHandler<>(_ClusterConfig.getHeartbeatInSecond()
-                                                               .getSeconds()
-                                                 * 2,
+                                                               .multipliedBy(2),
                                                  RaftNode::startVote);
         _RaftGraph = new RaftGraph();
         _SelfMachine = new RaftMachine(_ZUid.getPeerId());
@@ -145,16 +135,9 @@ public class RaftNode
         }
         //启动snapshot定时回写计时器
         _TimeWheel.acquire(this,
-                           new ScheduleHandler<RaftNode>(_ClusterConfig.getSnapshotInSecond()
-                                                                       .getSeconds(),
-                                                         true)
-                           {
-                               @Override
-                               public void onCall()
-                               {
-                                   takeSnapshot();
-                               }
-                           });
+                           new ScheduleHandler<RaftNode>(_ClusterConfig.getSnapshotInSecond(),
+                                                         true,
+                                                         RaftNode::takeSnapshot));
         _RaftDao.updateAll();
     }
 
@@ -171,7 +154,8 @@ public class RaftNode
     }
 
     @Override
-    public IRaftMachine getMachine() {
+    public IRaftMachine getMachine()
+    {
         return null;
     }
 
@@ -287,12 +271,14 @@ public class RaftNode
     }
 
     @Override
-    public X7F_RaftResponse rejectAndStepDown(long peerId, int code) {
+    public X7F_RaftResponse rejectAndStepDown(long peerId, int code)
+    {
         return null;
     }
 
     @Override
-    public void apply(long applied) {
+    public void apply(long applied)
+    {
 
     }
 

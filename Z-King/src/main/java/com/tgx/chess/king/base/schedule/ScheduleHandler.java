@@ -24,6 +24,7 @@
 
 package com.tgx.chess.king.base.schedule;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
@@ -37,7 +38,7 @@ public class ScheduleHandler<A>
         implements
         TimeWheel.IWheelItem<A>
 {
-    private final static Logger _LOG = Logger.getLogger(ScheduleHandler.class.getSimpleName());
+    private final static Logger _LOGGER = Logger.getLogger(ScheduleHandler.class.getSimpleName());
     private A                   attach;
     private final boolean       _Cycle;
     private final Consumer<A>   _Callback;
@@ -45,28 +46,35 @@ public class ScheduleHandler<A>
     private final long          _Tick;
     private final ReentrantLock _Lock;
 
-    public ScheduleHandler(long delaySecond,
+    public ScheduleHandler(Duration delay,
                            boolean cycle,
                            Consumer<A> callback,
                            int priority)
     {
         _Cycle = cycle;
-        _Tick = TimeUnit.SECONDS.toMillis(delaySecond);
+        _Tick = delay.toMillis();
         _Callback = callback;
         _Priority = priority;
         _Lock = new ReentrantLock();
     }
 
-    public ScheduleHandler(long delaySecond,
+    public ScheduleHandler(Duration delay,
                            boolean cycle)
     {
-        this(delaySecond, cycle, null, PRIORITY_NORMAL);
+        this(delay, cycle, null, PRIORITY_NORMAL);
     }
 
-    public ScheduleHandler(long delaySecond,
+    public ScheduleHandler(Duration delay,
                            Consumer<A> callback)
     {
-        this(delaySecond, false, callback, PRIORITY_NORMAL);
+        this(delay, false, callback, PRIORITY_NORMAL);
+    }
+
+    public ScheduleHandler(Duration delay,
+                           boolean cycle,
+                           Consumer<A> callback)
+    {
+        this(delay, cycle, callback, PRIORITY_NORMAL);
     }
 
     @Override
@@ -85,11 +93,6 @@ public class ScheduleHandler<A>
     public void beforeCall()
     {
         long delta = expect - System.currentTimeMillis();
-        _LOG.info("on time:%s %s:%d",
-                  get(),
-                  delta > 0 ? "ahead"
-                            : "delay",
-                  Math.abs(delta));
     }
 
     @Override

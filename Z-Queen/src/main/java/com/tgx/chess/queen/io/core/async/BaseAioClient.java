@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -105,17 +106,20 @@ public class BaseAioClient<C extends IContext<C>>
 
     private void delayConnect(IAioConnector<C> connector)
     {
-        _TimeWheel.acquire(connector, new ScheduleHandler<>(connector.getConnectTimeout() * 3, c ->
-        {
-            try {
-                _Logger.info("%s connect",
-                             Thread.currentThread()
-                                   .getName());
-                connect(c);
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-        }));
+        _TimeWheel.acquire(connector,
+                           new ScheduleHandler<>(connector.getConnectTimeout()
+                                                          .multipliedBy(3),
+                                                 c ->
+                                                 {
+                                                     try {
+                                                         _Logger.info("%s connect",
+                                                                      Thread.currentThread()
+                                                                            .getName());
+                                                         connect(c);
+                                                     }
+                                                     catch (IOException e) {
+                                                         e.printStackTrace();
+                                                     }
+                                                 }));
     }
 }

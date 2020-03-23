@@ -27,6 +27,8 @@ import com.tgx.chess.queen.config.ISocketConfig;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.ISessionCreator;
 
+import java.time.Duration;
+
 /**
  * @author William.d.zk
  */
@@ -86,15 +88,14 @@ public abstract class AioCreator<C extends IContext<C>>
     }
 
     @Override
-    public int getSoLingerInSecond()
+    public Duration getSoLingerInSecond()
     {
-        return (int) _Config.getSoLingerInSecond()
-                            .getSeconds();
+        return _Config.getSoLingerInSecond();
     }
 
     @Override
-    public int getConnectTimeout()
+    public Duration getConnectTimeout()
     {
-        return (int) _Config.getConnectTimeoutInSecond().getSeconds();
+        return _Config.getConnectTimeoutInSecond();
     }
 }

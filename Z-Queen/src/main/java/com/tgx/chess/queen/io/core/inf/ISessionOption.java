@@ -24,6 +24,7 @@
 package com.tgx.chess.queen.io.core.inf;
 
 import java.nio.channels.AsynchronousSocketChannel;
+import java.time.Duration;
 
 /**
  * @author William.d.zk
@@ -53,8 +54,8 @@ public interface ISessionOption
 
     boolean isTcpNoDelay();
 
-    int getSoLingerInSecond();
+    Duration getSoLingerInSecond();
 
-    int getConnectTimeout();
+    Duration getConnectTimeout();
 
 }
