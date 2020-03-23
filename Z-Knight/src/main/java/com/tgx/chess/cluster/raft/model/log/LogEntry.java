@@ -107,7 +107,7 @@ public class LogEntry
     @Override
     public byte[] encode()
     {
-        byte[] data = JsonUtil.writeValue(this);
+        byte[] data = JsonUtil.writeValueAsBytes(this);
         Objects.requireNonNull(data);
         length = data.length;
         return data;

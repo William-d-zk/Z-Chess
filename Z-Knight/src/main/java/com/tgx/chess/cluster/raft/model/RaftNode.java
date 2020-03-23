@@ -117,7 +117,7 @@ public class RaftNode
                           for (long i = v.getIndex() + 1, l = _SelfMachine.getIndex(); i <= l; i++) {
                               entryList.add(_RaftDao.getEntry(i));
                           }
-                          x7e.setPayload(JsonUtil.writeValue(entryList));
+                          x7e.setPayload(JsonUtil.writeValueAsBytes(entryList));
                       }
                       ISession<ZContext> session = _QueenManager.findByPrefix(k);
                       _QueenManager.localSend(session, x7e);
