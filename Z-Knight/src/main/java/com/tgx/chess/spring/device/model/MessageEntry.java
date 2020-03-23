@@ -54,7 +54,7 @@ public class MessageEntry
     @Override
     public byte[] encode()
     {
-        byte[] payload = JsonUtil.writeValue(this);
+        byte[] payload = JsonUtil.writeValueAsBytes(this);
         Objects.requireNonNull(payload);
         length = payload.length;
         return payload;
