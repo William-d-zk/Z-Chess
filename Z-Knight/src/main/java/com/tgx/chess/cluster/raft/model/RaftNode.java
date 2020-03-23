@@ -96,7 +96,6 @@ public class RaftNode
         _RaftGraph.getNodeMap()
                   .forEach((k, v) ->
                   {
-
                       X7E_RaftBroadcast x7e = new X7E_RaftBroadcast(_ZUid.getId());
                       x7e.setPeerId(k);
                       x7e.setTerm(v.getTerm());
@@ -163,7 +162,6 @@ public class RaftNode
     {
         long localApply;
         long localTerm;
-        RaftGraph localGraph = new RaftGraph();
         if (_RaftDao.getTotalSize() < _ClusterConfig.getSnapshotMinSize()) { return; }
         if (_SelfMachine.getApplied() <= _SelfMachine.getCommit()) { return; }//状态迁移未完成
         if (_SelfMachine.getApplied() >= _RaftDao.getStartIndex()
@@ -171,8 +169,6 @@ public class RaftNode
         {
             localTerm = _RaftDao.getEntryTerm(_SelfMachine.getApplied());
         }
-        localGraph.merge(_RaftDao.getLogMeta()
-                                 .getRaftGraph());
         if (takeSnapshot(_RaftDao)) {
             long lastSnapshotIndex = _RaftDao.getSnapshotMeta()
                                              .getCommit();

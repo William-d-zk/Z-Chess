@@ -47,14 +47,13 @@ import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
  */
 @Entity(name = "Message")
 @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
-@Table(schema = "\"tgx-z-chess-device\"", indexes = { @Index(name = "message_idx_msg_id", columnList = "msgId") })
+@Table(indexes = { @Index(name = "message_idx_msg_id", columnList = "msgId") })
 public class MessageEntity
         extends
         AuditModel
         implements
         Serializable
 {
-
     private static final long serialVersionUID = -6502547239976531057L;
 
     @Id

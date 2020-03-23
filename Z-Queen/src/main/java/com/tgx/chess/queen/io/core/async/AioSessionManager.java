@@ -53,7 +53,7 @@ public abstract class AioSessionManager<C extends IContext<C>>
         implements
         ISessionManager<C>
 {
-    protected final Logger                      _Logger             = Logger.getLogger(getClass().getName());
+    protected final Logger                      _Logger             = Logger.getLogger(getClass().getSimpleName());
     private final Map<Long,
                       ISession<C>>[]            _Index2SessionMaps  = new Map[4];
     private final Map<Long,

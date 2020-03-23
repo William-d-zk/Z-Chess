@@ -96,6 +96,8 @@ public class DeviceNode
     {
         super(bizIoConfig, new ServerCore<ZContext>(serverConfig)
         {
+
+
             @Override
             public RingBuffer<QEvent> getLocalPublisher(ISession<ZContext> session)
             {
@@ -109,6 +111,7 @@ public class DeviceNode
                 return getSlot(session) == QueenCode.CU_XID_LOW ? getBizLocalCloseEvent()
                                                                 : getClusterLocalCloseEvent();
             }
+
         });
         _TimeWheel = timeWheel;
         IPair bind = clusterConfig.getBind();
@@ -202,7 +205,6 @@ public class DeviceNode
                 }
             };
             _ClusterConnectors = new LinkedList<>();
-
             for (int i = 0, size = clusterPeers.size(); i < size
                                                         && i < clusterConfig.getUid()
                                                                             .getNodeId(); i++)

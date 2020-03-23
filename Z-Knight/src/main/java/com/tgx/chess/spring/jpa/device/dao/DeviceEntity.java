@@ -46,8 +46,7 @@ import com.tgx.chess.spring.jpa.model.AuditModel;
  * @author william.d.zk
  */
 @Entity(name = "Device")
-@Table(schema = "\"tgx-z-chess-device\"",
-       indexes = { @Index(name = "device_idx_token_pwd_id", columnList = "token,password,passwordId"),
+@Table(indexes = { @Index(name = "device_idx_token_pwd_id", columnList = "token,password,passwordId"),
                    @Index(name = "device_idx_token_pwd", columnList = "token,password"),
                    @Index(name = "device_idx_sn", columnList = "sn"),
                    @Index(name = "device_idx_token", columnList = "token") })

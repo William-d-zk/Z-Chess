@@ -22,61 +22,26 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.spring.device.service;
+package com.tgx.chess.queen.io.core.executor;
 
-import java.time.Duration;
+import java.util.concurrent.locks.ReentrantLock;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.io.core.inf.IControl;
+import com.tgx.chess.queen.io.core.inf.IPipeTransfer;
+import com.tgx.chess.queen.io.core.inf.ISession;
 
-@PropertySource("classpath:device.properties")
-@ConfigurationProperties(prefix = "z.chess.device")
-@Configuration
-public class DeviceConfig
+/**
+ * @author william.d.zk
+ * @date 2020-02-10
+ */
+public interface IClusterPublisher<C extends IContext<C>>
 {
-    private Duration passwordInvalidDays;
-    private String   passwordRandomSeed;
-    private String   addressWs;
-    private String   addressQtt;
+    ReentrantLock getConsistentTransLock();
 
-    public Duration getPasswordInvalidDays()
-    {
-        return passwordInvalidDays;
-    }
+    ReentrantLock getConsistentElectLock();
 
-    public void setPasswordInvalidDays(Duration passwordInvalidDays)
-    {
-        this.passwordInvalidDays = passwordInvalidDays;
-    }
+    void consistentTrans(ISession<C> session, IPipeTransfer<C> operator, IControl<C>... toSends);
 
-    public String getPasswordRandomSeed()
-    {
-        return passwordRandomSeed;
-    }
-
-    public void setPasswordRandomSeed(String passwordRandomSeed)
-    {
-        this.passwordRandomSeed = passwordRandomSeed;
-    }
-
-    public String getAddressWs()
-    {
-        return addressWs;
-    }
-
-    public void setAddressWs(String addressWs)
-    {
-        this.addressWs = addressWs;
-    }
-
-    public String getAddressQtt()
-    {
-        return addressQtt;
-    }
-
-    public void setAddressQtt(String addressQtt)
-    {
-        this.addressQtt = addressQtt;
-    }
+    void consistentElect(ISession<C> session, IPipeTransfer<C> operator, IControl<C>... toSends);
 }
