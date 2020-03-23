@@ -35,6 +35,10 @@ import com.tgx.chess.king.base.inf.IPair;
  */
 public interface IClusterConfig
 {
+    IPair getPeerTest();
+
+    IPair getGateTest();
+
     /**
      * 当前集群的节点列表
      * 

@@ -116,10 +116,21 @@ public class JsonUtil
         return objectMapper.valueToTree(data);
     }
 
-    public static <T> byte[] writeValue(T input)
+    public static <T> byte[] writeValueAsBytes(T input)
     {
         try {
             return objectMapper.writeValueAsBytes(input);
+        }
+        catch (JsonProcessingException e) {
+            _Logger.warning("write json error", e);
+        }
+        return null;
+    }
+
+    public static <T> String writeValueAsString(T input)
+    {
+        try {
+            return objectMapper.writeValueAsString(input);
         }
         catch (JsonProcessingException e) {
             _Logger.warning("write json error", e);

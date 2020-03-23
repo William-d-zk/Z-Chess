@@ -24,19 +24,26 @@
 
 package com.tgx.chess.config;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.util.unit.DataSize;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tgx.chess.bishop.ZUID;
 import com.tgx.chess.bishop.biz.config.IClusterConfig;
 import com.tgx.chess.king.base.inf.IPair;
+import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
-import org.springframework.util.unit.DataSize;
 
 @Configuration
 @ConfigurationProperties(prefix = "z.chess")
@@ -45,14 +52,32 @@ public class ZClusterConfig
         implements
         IClusterConfig
 {
-
-    public ZClusterConfig()
-    {
-    }
+    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
 
     public Uid getUid()
     {
         return uid;
+    }
+
+    @PostConstruct
+    void initUid() throws IOException
+    {
+        if (peerTest != null) {
+            String peerTestHost = peerTest.first();
+            InetSocketAddress peerTestAddr = new InetSocketAddress(peerTestHost, peerTest.second());
+            Socket socket = new Socket();
+            try {
+                socket.connect(peerTestAddr, 3000);
+                if (!socket.isConnected()) { throw new RuntimeException("peer test connect failed"); }
+                InetSocketAddress localAddr = (InetSocketAddress) socket.getLocalSocketAddress();
+                String localHostStr = localAddr.getHostString();
+                bind.setFirst(localHostStr);
+                setNodeId(localHostStr);
+            }
+            finally {
+                socket.close();
+            }
+        }
     }
 
     @Override
@@ -81,15 +106,18 @@ public class ZClusterConfig
         this.peers = convert(peers);
     }
 
-    private Uid         uid;
-    private List<IPair> peers;
-    private List<IPair> gates;
-    private IPair       bind;
-    private ZUID        zuid;
-    private Duration    electInSecond;
-    private Duration    snapshotInSecond;
-    private Duration    heartbeatInSecond;
-    private DataSize    snapshotMinSize;
+    private Uid                   uid;
+    private List<IPair>           peers;
+    private List<IPair>           gates;
+    private Pair<String,
+                 Integer>         bind;
+    private ZUID                  zuid;
+    private Duration              electInSecond;
+    private Duration              snapshotInSecond;
+    private Duration              heartbeatInSecond;
+    private DataSize              snapshotMinSize;
+    private IPair                 peerTest;
+    private IPair                 gateTest;
 
     @Override
     public List<IPair> getGates()
@@ -101,6 +129,18 @@ public class ZClusterConfig
     public IPair getBind()
     {
         return bind;
+    }
+
+    @Override
+    public IPair getPeerTest()
+    {
+        return peerTest;
+    }
+
+    @Override
+    public IPair getGateTest()
+    {
+        return gateTest;
     }
 
     public void setGates(List<String> gates)
@@ -123,6 +163,18 @@ public class ZClusterConfig
     {
         String[] split = bind.split(":", 2);
         this.bind = new Pair<>(split[0], Integer.parseInt(split[1]));
+    }
+
+    public void setPeerTest(String test)
+    {
+        String[] split = test.split(":", 2);
+        peerTest = new Pair<>(split[0], Integer.parseInt(split[1]));
+    }
+
+    public void setGateTest(String test)
+    {
+        String[] split = test.split(":", 2);
+        gateTest = new Pair<>(split[0], Integer.parseInt(split[1]));
     }
 
     public Duration getElectInSecond()
@@ -166,5 +218,24 @@ public class ZClusterConfig
     public void setHeartbeatInSecond(Duration heartbeatInSecond)
     {
         this.heartbeatInSecond = heartbeatInSecond;
+    }
+
+    @JsonIgnore
+    private void setNodeId(String localHostStr)
+    {
+        boolean set = false;
+        for (int i = 0, size = peers.size(); i < size; i++) {
+            if (peers.get(i)
+                     .first()
+                     .equals(localHostStr))
+            {
+                uid.setNodeId(i);
+                set = true;
+                break;
+            }
+        }
+        if (!set) {
+            _Logger.warning("no set node-id,Learner?");
+        }
     }
 }

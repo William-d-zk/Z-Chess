@@ -202,7 +202,12 @@ public class DeviceNode
                 }
             };
             _ClusterConnectors = new LinkedList<>();
-            for (IPair pair : clusterPeers) {
+
+            for (int i = 0, size = clusterPeers.size(); i < size
+                                                        && i < clusterConfig.getUid()
+                                                                            .getNodeId(); i++)
+            {
+                IPair pair = clusterPeers.get(i);
                 //peer -> CM_XID
                 IAioConnector<ZContext> connector = buildConnector(pair,
                                                                    ZSort.WS_CLUSTER_CONSUMER,
