@@ -46,7 +46,7 @@ import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 
 @Configuration
-@ConfigurationProperties(prefix = "z.chess")
+@ConfigurationProperties(prefix = "z.chess.cluster")
 @PropertySource("classpath:cluster.properties")
 public class ZClusterConfig
         implements
