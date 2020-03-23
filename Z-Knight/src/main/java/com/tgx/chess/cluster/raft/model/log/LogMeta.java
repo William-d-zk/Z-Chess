@@ -26,6 +26,7 @@ package com.tgx.chess.cluster.raft.model.log;
 
 import java.io.RandomAccessFile;
 import java.util.Objects;
+import java.util.Set;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -50,7 +51,7 @@ public class LogMeta
     /** 已被应用到状态机日志index */
     private long      applied;
     /** 集群节点信息 */
-    private RaftGraph raftGraph;
+    private Set<Long> nodeSet;
 
     LogMeta()
     {
@@ -76,7 +77,7 @@ public class LogMeta
         start = json.getStart();
         term = json.getTerm();
         candidate = json.getCandidate();
-        raftGraph = json.getRaftGraph();
+        nodeSet = json.getNodeSet();
         return length = data.length;
     }
 
@@ -131,16 +132,6 @@ public class LogMeta
         this.candidate = candidate;
     }
 
-    public RaftGraph getRaftGraph()
-    {
-        return raftGraph;
-    }
-
-    public void setRaftGraph(RaftGraph raftGraph)
-    {
-        this.raftGraph = raftGraph;
-    }
-
     public long getCommit()
     {
         return commit;
@@ -159,5 +150,15 @@ public class LogMeta
     public void setApplied(long applied)
     {
         this.applied = applied;
+    }
+
+    public Set<Long> getNodeSet()
+    {
+        return nodeSet;
+    }
+
+    public void setNodeSet(Set<Long> nodeSet)
+    {
+        this.nodeSet = nodeSet;
     }
 }

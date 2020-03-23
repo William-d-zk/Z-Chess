@@ -55,11 +55,14 @@ import com.tgx.chess.queen.event.handler.MappingHandler;
 import com.tgx.chess.queen.event.handler.WriteDispatcher;
 import com.tgx.chess.queen.event.inf.ICustomLogic;
 import com.tgx.chess.queen.event.inf.ILogicHandler;
+import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IOperator.Type;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.async.socket.AioWorker;
 import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
+import com.tgx.chess.queen.io.core.inf.IPipeTransfer;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
 
@@ -70,7 +73,8 @@ public abstract class ServerCore<C extends IContext<C>>
         extends
         ThreadPoolExecutor
         implements
-        ILocalPublisher<C>
+        ILocalPublisher<C>,
+        IClusterPublisher<C>
 {
     private Logger    _Logger = Logger.getLogger(getClass().getName());
     private final int _DecoderCount;
@@ -135,6 +139,8 @@ public abstract class ServerCore<C extends IContext<C>>
                                                                                       }
                                                                                   };
     private final ReentrantLock                             _LocalLock            = new ReentrantLock();
+    private final ReentrantLock                             _ConsistentElectLock  = new ReentrantLock();
+    private final ReentrantLock                             _ConsistentTransLock  = new ReentrantLock();
     private AsynchronousChannelGroup                        mServiceChannelGroup;
     private AsynchronousChannelGroup                        mClusterChannelGroup;
 
@@ -441,6 +447,18 @@ public abstract class ServerCore<C extends IContext<C>>
         return _LocalLock;
     }
 
+    @Override
+    public ReentrantLock getConsistentTransLock()
+    {
+        return _ConsistentTransLock;
+    }
+
+    @Override
+    public ReentrantLock getConsistentElectLock()
+    {
+        return _ConsistentElectLock;
+    }
+
     protected RingBuffer<QEvent> getBizLocalCloseEvent()
     {
         return _BizLocalCloseEvent;
@@ -486,4 +504,50 @@ public abstract class ServerCore<C extends IContext<C>>
                                                                                                                             getClusterThreadFactory()));
     }
 
+    @Override
+    public void consistentTrans(ISession<C> session, IPipeTransfer<C> operator, IControl<C>... toSends)
+    {
+        Objects.requireNonNull(session);
+        Objects.requireNonNull(toSends);
+        getConsistentTransLock().lock();
+        {
+            try {
+                long sequence = _ConsistentTransEvent.next();
+                try {
+                    QEvent event = _ConsistentTransEvent.get(sequence);
+                    event.produce(Type.CONSISTENT, new Pair<>(toSends, session), operator);
+                }
+                finally {
+                    _ConsistentTransEvent.publish(sequence);
+                }
+            }
+            finally {
+                getConsistentTransLock().unlock();
+            }
+        }
+
+    }
+
+    @Override
+    public void consistentElect(ISession<C> session, IPipeTransfer<C> operator, IControl<C>... toSends)
+    {
+        Objects.requireNonNull(session);
+        Objects.requireNonNull(toSends);
+        getConsistentElectLock().lock();
+        {
+            try {
+                long sequence = _ConsistentTransEvent.next();
+                try {
+                    QEvent event = _ConsistentTransEvent.get(sequence);
+                    event.produce(Type.CONSISTENT, new Pair<>(toSends, session), operator);
+                }
+                finally {
+                    _ConsistentTransEvent.publish(sequence);
+                }
+            }
+            finally {
+                getConsistentElectLock().unlock();
+            }
+        }
+    }
 }

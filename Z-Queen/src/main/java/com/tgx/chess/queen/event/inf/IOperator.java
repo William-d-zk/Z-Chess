@@ -56,6 +56,7 @@ public interface IOperator<T,
         WROTE,
         TRANSFER,
         LOCAL,
+        CONSISTENT,
         LOGIC,
         DISPATCH,
         IGNORE
