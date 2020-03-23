@@ -65,17 +65,15 @@ public class ZClusterConfig
         if (peerTest != null) {
             String peerTestHost = peerTest.first();
             InetSocketAddress peerTestAddr = new InetSocketAddress(peerTestHost, peerTest.second());
-            Socket socket = new Socket();
-            try {
+            try (Socket socket = new Socket()) {
                 socket.connect(peerTestAddr, 3000);
-                if (!socket.isConnected()) { throw new RuntimeException("peer test connect failed"); }
+                if (!socket.isConnected()) {
+                    throw new RuntimeException("peer test connect failed");
+                }
                 InetSocketAddress localAddr = (InetSocketAddress) socket.getLocalSocketAddress();
                 String localHostStr = localAddr.getHostString();
                 bind.setFirst(localHostStr);
                 setNodeId(localHostStr);
-            }
-            finally {
-                socket.close();
             }
         }
     }
