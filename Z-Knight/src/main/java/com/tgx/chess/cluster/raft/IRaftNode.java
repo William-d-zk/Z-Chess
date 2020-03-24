@@ -92,7 +92,7 @@ public interface IRaftNode
 
     void load(List<IRaftMessage> snapshot);
 
-    boolean takeSnapshot(IRaftDao writer);
+    void takeSnapshot(IRaftDao writer);
 
     IRaftMachine getMachine();
 }

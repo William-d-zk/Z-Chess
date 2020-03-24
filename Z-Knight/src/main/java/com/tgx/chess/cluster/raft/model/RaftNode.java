@@ -133,10 +133,8 @@ public class RaftNode
             _RaftDao.truncatePrefix(_SelfMachine.getTerm() + 1);
         }
         //启动snapshot定时回写计时器
-        _TimeWheel.acquire(this,
-                           new ScheduleHandler<RaftNode>(_ClusterConfig.getSnapshotInSecond(),
-                                                         true,
-                                                         RaftNode::takeSnapshot));
+        _TimeWheel.acquire(_RaftDao,
+                           new ScheduleHandler<>(_ClusterConfig.getSnapshotInSecond(), true, this::takeSnapshot));
         _RaftDao.updateAll();
     }
 
@@ -147,18 +145,7 @@ public class RaftNode
     }
 
     @Override
-    public boolean takeSnapshot(IRaftDao snapshot)
-    {
-        return false;
-    }
-
-    @Override
-    public IRaftMachine getMachine()
-    {
-        return null;
-    }
-
-    private void takeSnapshot()
+    public void takeSnapshot(IRaftDao snapshot)
     {
         long localApply;
         long localTerm;
@@ -169,13 +156,17 @@ public class RaftNode
         {
             localTerm = _RaftDao.getEntryTerm(_SelfMachine.getApplied());
         }
-        if (takeSnapshot(_RaftDao)) {
-            long lastSnapshotIndex = _RaftDao.getSnapshotMeta()
-                                             .getCommit();
-            if (lastSnapshotIndex > 0 && _RaftDao.getStartIndex() <= lastSnapshotIndex) {
-                _RaftDao.truncatePrefix(lastSnapshotIndex + 1);
-            }
+        long lastSnapshotIndex = _RaftDao.getSnapshotMeta()
+                                         .getCommit();
+        if (lastSnapshotIndex > 0 && _RaftDao.getStartIndex() <= lastSnapshotIndex) {
+            _RaftDao.truncatePrefix(lastSnapshotIndex + 1);
         }
+    }
+
+    @Override
+    public IRaftMachine getMachine()
+    {
+        return _SelfMachine;
     }
 
     /**
@@ -290,19 +281,18 @@ public class RaftNode
                 LogEntry entry = it.next();
                 if (_RaftDao.getEndIndex() < entry.getIndex()) {
                     long newEndIndex = _RaftDao.append(entry);
+                    _SelfMachine.setIndex(newEndIndex);
                     if (newEndIndex != entry.getIndex()) {
                         _Logger.warning("conflict{ self expect index %d,entry index %d }",
                                         newEndIndex,
                                         entry.getIndex());
+
                         break IT_APPEND;
-                    }
-                    else {
-                        _SelfMachine.setIndex(newEndIndex);
                     }
                 }
                 else {
                     LogEntry old = _RaftDao.getEntry(entry.getIndex());
-                    if (old != null && old.getTerm() != entry.getTerm()) {
+                    if (old == null || old.getTerm() != entry.getTerm()) {
                         _Logger.warning("log conflict OT:%d <-> NT%d I:%d",
                                         old.getTerm(),
                                         entry.getTerm(),
@@ -311,8 +301,10 @@ public class RaftNode
                            此处存在一个可优化点，将此冲突对应的 term 下所有的index 都注销，向leader反馈
                            上一个term.end_index,能有效减少以-1进行删除的数据量。此种优化的意义不是很大。
                         */
-                        _RaftDao.truncateSuffix(entry.getIndex() - 1);
-                        _SelfMachine.setIndex(_RaftDao.getEndIndex());
+                        long newEndIndex = entry.getIndex() - 1;
+                        _RaftDao.truncateSuffix(newEndIndex);
+                        _SelfMachine.setIndex(newEndIndex);
+                        break IT_APPEND;
                     }
                     else {
                         /*
