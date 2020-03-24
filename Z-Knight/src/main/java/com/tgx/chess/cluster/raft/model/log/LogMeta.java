@@ -30,7 +30,6 @@ import java.util.Set;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.tgx.chess.cluster.raft.model.RaftGraph;
 import com.tgx.chess.json.JsonUtil;
 
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
@@ -41,17 +40,19 @@ public class LogMeta
     private final static int _SERIAL = INTERNAL_SERIAL + 1;
 
     /** 已存储日志的start index */
-    private long      start;
+    private long      mStart;
+    /** 本机存储日志的 index */
+    private long      mIndex;
     /** 已存储日志的最大任期号 */
-    private long      term;
+    private long      mTerm;
     /** 当前状态机候选人 */
-    private long      candidate;
+    private long      mCandidate;
     /** 集群中已知的最大的被提交的日志index */
-    private long      commit;
+    private long      mCommit;
     /** 已被应用到状态机日志index */
-    private long      applied;
+    private long      mApplied;
     /** 集群节点信息 */
-    private Set<Long> nodeSet;
+    private Set<Long> mNodeSet;
 
     LogMeta()
     {
@@ -74,11 +75,11 @@ public class LogMeta
     {
         LogMeta json = JsonUtil.readValue(data, getClass());
         Objects.requireNonNull(json);
-        start = json.getStart();
-        term = json.getTerm();
-        candidate = json.getCandidate();
-        nodeSet = json.getNodeSet();
-        return length = data.length;
+        mStart = json.getStart();
+        mTerm = json.getTerm();
+        mCandidate = json.getCandidate();
+        mNodeSet = json.getNodeSet();
+        return mLength = data.length;
     }
 
     @Override
@@ -86,7 +87,7 @@ public class LogMeta
     {
         byte[] data = JsonUtil.writeValueAsBytes(this);
         Objects.requireNonNull(data);
-        length = data.length;
+        mLength = data.length;
         return data;
     }
 
@@ -104,61 +105,71 @@ public class LogMeta
 
     public long getStart()
     {
-        return start;
+        return mStart;
     }
 
     public void setStart(long start)
     {
-        this.start = start;
+        mStart = start;
     }
 
     public long getTerm()
     {
-        return term;
+        return mTerm;
     }
 
     public void setTerm(long term)
     {
-        this.term = term;
+        mTerm = term;
     }
 
     public long getCandidate()
     {
-        return candidate;
+        return mCandidate;
     }
 
     public void setCandidate(long candidate)
     {
-        this.candidate = candidate;
+        mCandidate = candidate;
     }
 
     public long getCommit()
     {
-        return commit;
+        return mCommit;
     }
 
     public void setCommit(long commit)
     {
-        this.commit = commit;
+        mCommit = commit;
     }
 
     public long getApplied()
     {
-        return applied;
+        return mApplied;
     }
 
     public void setApplied(long applied)
     {
-        this.applied = applied;
+        mApplied = applied;
     }
 
     public Set<Long> getNodeSet()
     {
-        return nodeSet;
+        return mNodeSet;
     }
 
     public void setNodeSet(Set<Long> nodeSet)
     {
-        this.nodeSet = nodeSet;
+        mNodeSet = nodeSet;
+    }
+
+    public long getIndex()
+    {
+        return mIndex;
+    }
+
+    public void setIndex(long index)
+    {
+        this.mIndex = index;
     }
 }
