@@ -95,7 +95,7 @@ public class SnapshotMeta
         Objects.requireNonNull(json);
         mCommit = json.getCommit();
         mTerm = json.getTerm();
-        return length = data.length;
+        return mLength = data.length;
     }
 
     @Override
@@ -103,7 +103,7 @@ public class SnapshotMeta
     {
         byte[] data = JsonUtil.writeValueAsBytes(this);
         Objects.requireNonNull(data);
-        length = data.length;
+        mLength = data.length;
         return data;
     }
 }

@@ -38,7 +38,7 @@ public abstract class BaseMeta
     @JsonIgnore
     private final RandomAccessFile _File;
     @JsonIgnore
-    protected int                  length;
+    protected int                  mLength;
 
     protected BaseMeta(RandomAccessFile file)
     {
@@ -50,9 +50,9 @@ public abstract class BaseMeta
         try {
             if (_File.length() == 0) { return; }
             _File.seek(0);
-            length = _File.readInt();
-            if (length > 0) {
-                byte[] data = new byte[length];
+            mLength = _File.readInt();
+            if (mLength > 0) {
+                byte[] data = new byte[mLength];
                 _File.read(data);
                 decode(data);
             }
@@ -86,7 +86,7 @@ public abstract class BaseMeta
     @Override
     public int dataLength()
     {
-        return length;
+        return mLength;
     }
 
 }
