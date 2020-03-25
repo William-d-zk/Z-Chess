@@ -24,6 +24,7 @@
 
 package com.tgx.chess.cluster.raft.model;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -41,25 +42,28 @@ import com.tgx.chess.cluster.raft.IRaftNode;
 import com.tgx.chess.cluster.raft.model.log.LogEntry;
 import com.tgx.chess.cluster.raft.model.log.RaftDao;
 import com.tgx.chess.json.JsonUtil;
+import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.schedule.ICancelable;
 import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.schedule.TimeWheel;
+import com.tgx.chess.queen.io.core.inf.IActivity;
+import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.manager.QueenManager;
+import com.tgx.chess.queen.io.core.inf.ISessionManager;
 
 /**
  * @author william.d.zk
  * @date 2020/1/4
  */
-public class RaftNode
+public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> & IClusterPeer>
         implements
         IRaftNode
 {
     private final Logger                    _Logger        = Logger.getLogger(getClass().getSimpleName());
-    private final ZUID                      _ZUid;
+    private final ZUID                      _ZUID;
     private final IClusterConfig            _ClusterConfig;
-    private final QueenManager<ZContext>    _QueenManager;
+    private final T                         _SessionManager;
     private final RaftDao                   _RaftDao;
     private final TimeWheel                 _TimeWheel;
     private final ScheduleHandler<RaftNode> _ElectSchedule, _HeartbeatSchedule, _TickSheSchedule;
@@ -72,12 +76,12 @@ public class RaftNode
     public RaftNode(TimeWheel timeWheel,
                     IClusterConfig clusterConfig,
                     RaftDao raftDao,
-                    QueenManager<ZContext> manager)
+                    T manager)
     {
         _TimeWheel = timeWheel;
         _ClusterConfig = clusterConfig;
-        _QueenManager = manager;
-        _ZUid = clusterConfig.createZUID(true);
+        _SessionManager = manager;
+        _ZUID = clusterConfig.createZUID(true);
         _RaftDao = raftDao;
         _ElectSchedule = new ScheduleHandler<>(_ClusterConfig.getElectInSecond(), RaftNode::startVote);
         _HeartbeatSchedule = new ScheduleHandler<>(_ClusterConfig.getHeartbeatInSecond(),
@@ -87,7 +91,7 @@ public class RaftNode
                                                                .multipliedBy(2),
                                                  RaftNode::startVote);
         _RaftGraph = new RaftGraph();
-        _SelfMachine = new RaftMachine(_ZUid.getPeerId());
+        _SelfMachine = new RaftMachine(_ZUID.getPeerId());
         _RaftGraph.append(_SelfMachine);
     }
 
@@ -96,11 +100,11 @@ public class RaftNode
         _RaftGraph.getNodeMap()
                   .forEach((k, v) ->
                   {
-                      X7E_RaftBroadcast x7e = new X7E_RaftBroadcast(_ZUid.getId());
+                      X7E_RaftBroadcast x7e = new X7E_RaftBroadcast(_ZUID.getId());
                       x7e.setPeerId(k);
                       x7e.setTerm(v.getTerm());
                       x7e.setCommit(_SelfMachine.getCommit());
-                      x7e.setLeaderId(_ZUid.getPeerId());
+                      x7e.setLeaderId(_ZUID.getPeerId());
                       if (v.getIndex() < _SelfMachine.getIndex()) {
                           List<LogEntry> entryList = new LinkedList<>();
                           for (long i = v.getIndex() + 1, l = _SelfMachine.getIndex(); i <= l; i++) {
@@ -108,12 +112,12 @@ public class RaftNode
                           }
                           x7e.setPayload(JsonUtil.writeValueAsBytes(entryList));
                       }
-                      ISession<ZContext> session = _QueenManager.findSessionByPrefix(k);
-                      _QueenManager.send(session, x7e);
+                      ISession<ZContext> session = _SessionManager.findSessionByPrefix(k);
+                      _SessionManager.send(session, x7e);
                   });
     }
 
-    public void init()
+    public void init() throws IOException
     {
         _Logger.info("raft node init");
         /* _RaftDao 启动的时候已经装载了 snapshot */
@@ -130,7 +134,16 @@ public class RaftNode
         _SelfMachine.setNodeSet(_RaftDao.getLogMeta()
                                         .getNodeSet());
         if (_SelfMachine.getNodeSet() == null) {
-            /*首次启动或删除本地状态机重启*/
+            /*首次启动或删除本地状态机重启,仅需要连接node_id< self.node_id的peer*/
+            List<IPair> peers = _ClusterConfig.getPeers();
+            for (int i = 0, size = peers.size(); i < size; i++) {
+                if (i < _ClusterConfig.getUid()
+                                      .getNodeId())
+                {
+                    _SessionManager.addPeer(peers.get(i));
+                }
+                else break;
+            }
 
         }
         //启动snapshot定时回写计时器
@@ -182,9 +195,9 @@ public class RaftNode
         catch (InterruptedException e) {
             //ignore
         }
-        RaftMachine update = new RaftMachine(_ZUid.getPeerId());
+        RaftMachine update = new RaftMachine(_ZUID.getPeerId());
         update.setTerm(_SelfMachine.getTerm() + 1);
-        update.setCandidate(_ZUid.getPeerId());
+        update.setCandidate(_ZUID.getPeerId());
         update.setIndex(_SelfMachine.getIndex());
         if (mTickTask != null) {
             mTickTask.cancel();
@@ -193,20 +206,20 @@ public class RaftNode
 
     private X7F_RaftResponse success(long peerId)
     {
-        X7F_RaftResponse x7f = new X7F_RaftResponse(_ZUid.getId());
+        X7F_RaftResponse x7f = new X7F_RaftResponse(_ZUID.getId());
         x7f.setTerm(_SelfMachine.getTerm());
         x7f.setCode(X7F_RaftResponse.Code.SUCCESS.getCode());
-        x7f.setSession(_QueenManager.findSessionByPrefix(peerId));
+        x7f.setSession(_SessionManager.findSessionByPrefix(peerId));
         return x7f;
     }
 
     @Override
     public X7F_RaftResponse reject(long peerId, int code)
     {
-        X7F_RaftResponse x7f = new X7F_RaftResponse(_ZUid.getId());
+        X7F_RaftResponse x7f = new X7F_RaftResponse(_ZUID.getId());
         x7f.setTerm(_SelfMachine.getTerm());
         x7f.setCode(code);
-        x7f.setSession(_QueenManager.findSessionByPrefix(peerId));
+        x7f.setSession(_SessionManager.findSessionByPrefix(peerId));
         return x7f;
     }
 

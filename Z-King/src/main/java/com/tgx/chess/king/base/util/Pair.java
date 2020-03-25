@@ -23,6 +23,8 @@
  */
 package com.tgx.chess.king.base.util;
 
+import java.util.Objects;
+
 import com.tgx.chess.king.base.inf.IDisposable;
 import com.tgx.chess.king.base.inf.IPair;
 
@@ -99,6 +101,12 @@ public class Pair<FIRST,
     public String toString()
     {
         return String.format("< %s, %s >", first, second);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(first, second);
     }
 
     public FIRST getFirst()

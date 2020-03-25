@@ -1,7 +1,7 @@
 /*
  * MIT License                                                                    
  *                                                                                
- * Copyright (c) 2016~2020 Z-Chess
+ * Copyright (c) 2016~2020 Z-Chess                                                
  *                                                                                
  * Permission is hereby granted, free of charge, to any person obtaining a copy   
  * of this software and associated documentation files (the "Software"), to deal  
@@ -22,52 +22,19 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.cluster.raft;
+package com.tgx.chess.queen.io.core.inf;
 
-import java.util.Set;
+import java.io.IOException;
 
-import com.tgx.chess.cluster.raft.IRaftNode.RaftState;
-import com.tgx.chess.king.base.inf.ITriple;
+import com.tgx.chess.king.base.inf.IPair;
 
 /**
  * @author william.d.zk
- * @date 2019/12/10
+ * @date 2020/3/25
  */
-public interface IRaftMachine
+public interface IClusterPeer
 {
-    /** @return 当前任期 自然数 */
-    long getTerm();
+    void addPeer(IPair remote) throws IOException;
 
-    /** @return 当前任期的 log-index */
-    long getIndex();
-
-    /** @return 候选人 Id */
-    long getCandidate();
-
-    /** @return 主节点 Id */
-    long getLeader();
-
-    /** @return 节点的全局ID */
-    long getPeerId();
-
-    /** @return 节点状态 */
-    RaftState getState();
-
-    /** @return 已知最大的已提交日志的索引值 */
-    long getCommit();
-
-    /** @return 最后一条被应用到状态机的索引值 */
-    long getApplied();
-
-    /** @return 集群中所有节点 */
-    Set<ITriple> getNodeSet();
-
-    /**
-     * 接收另一个machine的状态更新
-     * 
-     * @param update
-     * @return success or reject
-     */
-    void merge(IRaftMachine update, IRaftNode self);
-
+    void addGate(IPair remote) throws IOException;
 }

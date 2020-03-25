@@ -55,6 +55,7 @@ import com.tgx.chess.queen.io.core.executor.ServerCore;
 import com.tgx.chess.queen.io.core.inf.IAioClient;
 import com.tgx.chess.queen.io.core.inf.IAioConnector;
 import com.tgx.chess.queen.io.core.inf.IAioServer;
+import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.IConnectActivity;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
@@ -70,7 +71,8 @@ public class DeviceNode
         extends
         QueenManager<ZContext>
         implements
-        ISessionDismiss<ZContext>
+        ISessionDismiss<ZContext>,
+        IClusterPeer
 {
 
     private final List<IAioServer<ZContext>> _AioServers;
@@ -192,7 +194,7 @@ public class DeviceNode
     @SafeVarargs
     public final void localBizSend(long deviceId, IControl<ZContext>... toSends)
     {
-        localSend(deviceId, toSends);
+        sendByIndex(deviceId, toSends);
     }
 
     public void bizClose(long deviceId)
@@ -201,23 +203,14 @@ public class DeviceNode
     }
 
     @SafeVarargs
-    public final void localClusterSend(long peerId, IControl<ZContext>... toSends)
+    public final void clusterSend(long peerId, IControl<ZContext>... toSends)
     {
-        localSend(peerId, toSends);
+        sendByPrefix(peerId, toSends);
     }
 
     public void clusterClose(long peerId)
     {
         closeByPrefix(peerId);
-    }
-
-    @SafeVarargs
-    private final void localSend(long sessionIndex, IControl<ZContext>... toSends)
-    {
-        ISession<ZContext> session = findSessionByIndex(sessionIndex);
-        if (session != null) {
-            send(session, toSends);
-        }
     }
 
     private void closeByIndex(long sessionIndex)
@@ -305,4 +298,16 @@ public class DeviceNode
         };
     }
 
+    @Override
+    public void addPeer(IPair remote) throws IOException
+    {
+        _ClusterClient.connect(buildConnector(remote, ZSort.WS_CLUSTER_CONSUMER, _ClusterClient));
+
+    }
+
+    @Override
+    public void addGate(IPair remote) throws IOException
+    {
+        _GateClient.connect(buildConnector(remote, ZSort.WS_CLUSTER_SYMMETRY, _GateClient));
+    }
 }

@@ -23,6 +23,8 @@
  */
 package com.tgx.chess.king.base.util;
 
+import java.util.Objects;
+
 import com.tgx.chess.king.base.inf.ITriple;
 
 /**
@@ -116,5 +118,11 @@ public class Triple<FIRST,
     public String toString()
     {
         return String.format("<%s,%s,%s>", first, second, third);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(first, second, third);
     }
 }

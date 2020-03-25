@@ -31,6 +31,7 @@ import java.util.Set;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.tgx.chess.json.JsonUtil;
+import com.tgx.chess.king.base.inf.ITriple;
 
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class LogMeta
@@ -40,19 +41,19 @@ public class LogMeta
     private final static int _SERIAL = INTERNAL_SERIAL + 1;
 
     /** 已存储日志的start index */
-    private long      mStart;
+    private long         mStart;
     /** 本机存储日志的 index */
-    private long      mIndex;
+    private long         mIndex;
     /** 已存储日志的最大任期号 */
-    private long      mTerm;
+    private long         mTerm;
     /** 当前状态机候选人 */
-    private long      mCandidate;
+    private long         mCandidate;
     /** 集群中已知的最大的被提交的日志index */
-    private long      mCommit;
+    private long         mCommit;
     /** 已被应用到状态机日志index */
-    private long      mApplied;
+    private long         mApplied;
     /** 集群节点信息 */
-    private Set<Long> mNodeSet;
+    private Set<ITriple> mNodeSet;
 
     LogMeta()
     {
@@ -153,12 +154,12 @@ public class LogMeta
         mApplied = applied;
     }
 
-    public Set<Long> getNodeSet()
+    public Set<ITriple> getNodeSet()
     {
         return mNodeSet;
     }
 
-    public void setNodeSet(Set<Long> nodeSet)
+    public void setNodeSet(Set<ITriple> nodeSet)
     {
         mNodeSet = nodeSet;
     }
