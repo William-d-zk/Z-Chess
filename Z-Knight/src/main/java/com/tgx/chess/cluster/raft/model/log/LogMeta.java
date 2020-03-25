@@ -53,7 +53,9 @@ public class LogMeta
     /** 已被应用到状态机日志index */
     private long         mApplied;
     /** 集群节点信息 */
-    private Set<ITriple> mNodeSet;
+    private Set<ITriple> mPeerSet;
+    /** 集群跨分区网关 */
+    private Set<ITriple> mGateSet;
 
     LogMeta()
     {
@@ -79,7 +81,8 @@ public class LogMeta
         mStart = json.getStart();
         mTerm = json.getTerm();
         mCandidate = json.getCandidate();
-        mNodeSet = json.getNodeSet();
+        mPeerSet = json.getPeerSet();
+        mGateSet = json.getGateSet();
         return mLength = data.length;
     }
 
@@ -154,14 +157,24 @@ public class LogMeta
         mApplied = applied;
     }
 
-    public Set<ITriple> getNodeSet()
+    public Set<ITriple> getPeerSet()
     {
-        return mNodeSet;
+        return mPeerSet;
     }
 
-    public void setNodeSet(Set<ITriple> nodeSet)
+    public void setPeerSet(Set<ITriple> peerSet)
     {
-        mNodeSet = nodeSet;
+        mPeerSet = peerSet;
+    }
+
+    public Set<ITriple> getGateSet()
+    {
+        return mGateSet;
+    }
+
+    public void setGateSet(Set<ITriple> gateSet)
+    {
+        mGateSet = gateSet;
     }
 
     public long getIndex()
@@ -173,4 +186,5 @@ public class LogMeta
     {
         this.mIndex = index;
     }
+
 }

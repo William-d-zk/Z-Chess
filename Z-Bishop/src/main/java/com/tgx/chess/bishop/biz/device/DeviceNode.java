@@ -122,20 +122,18 @@ public class DeviceNode
                                final ISort<ZContext> _Sort = triple.getThird();
                                ISort.Mode mode = _Sort.getMode();
                                ISort.Type type = _Sort.getType();
-                               final long _SessionInitializeIndex;
+                               final long _SessionType;
                                if (mode == ISort.Mode.CLUSTER && type == ISort.Type.SYMMETRY) {
-                                   _SessionInitializeIndex = _Sort == ZSort.MQ_QTT_SYMMETRY ? QueenCode.MQ_XID
-                                                                                            : QueenCode.RM_XID;
+                                   _SessionType = _Sort == ZSort.MQ_QTT_SYMMETRY ? QueenCode.MQ_XID
+                                                                                 : QueenCode.RM_XID;
                                }
                                else if (mode == ISort.Mode.CLUSTER) {
-                                   _SessionInitializeIndex = QueenCode.CM_XID;
+                                   _SessionType = QueenCode.CM_XID;
                                }
                                else {
-                                   _SessionInitializeIndex = QueenCode.CU_XID;
+                                   _SessionType = QueenCode.CU_XID;
                                }
-                               return new BaseAioServer<ZContext>(_Host,
-                                                                  _Port,
-                                                                  getSocketConfig(getSlot(_SessionInitializeIndex)))
+                               return new BaseAioServer<ZContext>(_Host, _Port, getSocketConfig(getSlot(_SessionType)))
                                {
                                    @Override
                                    public ISession<ZContext> createSession(AsynchronousSocketChannel socketChannel,
@@ -147,7 +145,7 @@ public class DeviceNode
                                    @Override
                                    public void onCreate(ISession<ZContext> session)
                                    {
-                                       session.setIndex(_SessionInitializeIndex | _ZUID.getNoTypeId());
+                                       session.setIndex(_ZUID.getId(_SessionType));
                                        DeviceNode.this.addSession(session);
                                    }
 
@@ -252,14 +250,14 @@ public class DeviceNode
         final ISort<ZContext> _Sort = sort;
         ISort.Mode mode = _Sort.getMode();
         ISort.Type type = _Sort.getType();
-        final long _SessionInitializeIndex;
+        final long _SessionType;
         if (mode == ISort.Mode.CLUSTER && type == ISort.Type.SYMMETRY) {
-            _SessionInitializeIndex = QueenCode.RM_XID;
+            _SessionType = QueenCode.RM_XID;
         }
         else {
-            _SessionInitializeIndex = QueenCode.CM_XID;
+            _SessionType = QueenCode.CM_XID;
         }
-        return new BaseAioConnector<ZContext>(_Host, _Port, getSocketConfig(getSlot(_SessionInitializeIndex)), client)
+        return new BaseAioConnector<ZContext>(_Host, _Port, getSocketConfig(getSlot(_SessionType)), client)
         {
 
             @Override
@@ -278,7 +276,7 @@ public class DeviceNode
             @Override
             public void onCreate(ISession<ZContext> session)
             {
-                session.setIndex(_SessionInitializeIndex | _ZUID.getNoTypeId());
+                session.setIndex(_ZUID.getId(_SessionType));
                 DeviceNode.this.addSession(session);
             }
 

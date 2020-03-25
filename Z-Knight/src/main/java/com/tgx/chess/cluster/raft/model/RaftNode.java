@@ -43,11 +43,14 @@ import com.tgx.chess.cluster.raft.model.log.LogEntry;
 import com.tgx.chess.cluster.raft.model.log.RaftDao;
 import com.tgx.chess.json.JsonUtil;
 import com.tgx.chess.king.base.inf.IPair;
+import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.schedule.ICancelable;
 import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.schedule.TimeWheel;
+import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.base.util.Triple;
+import com.tgx.chess.queen.config.QueenCode;
 import com.tgx.chess.queen.io.core.inf.IActivity;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.ISession;
@@ -132,27 +135,52 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
                                         .getApplied());
         _SelfMachine.setIndex(_RaftDao.getLogMeta()
                                       .getIndex());
-        _SelfMachine.setNodeSet(_RaftDao.getLogMeta()
-                                        .getNodeSet());
-        if (_SelfMachine.getNodeSet() == null) {
-            /*首次启动或删除本地状态机重启,仅需要连接node_id< self.node_id的peer*/
+        _SelfMachine.setPeerSet(_RaftDao.getLogMeta()
+                                        .getPeerSet());
+        _SelfMachine.setGateSet(_RaftDao.getLogMeta()
+                                        .getGateSet());
+        if (_SelfMachine.getPeerSet() == null && _SelfMachine.getGateSet() == null) {
+            /*首次启动或删除本地状态机重启,仅需要连接node_id < self.node_id的peer*/
             List<IPair> peers = _ClusterConfig.getPeers();
-            for (int i = 0, size = peers.size(); i < size; i++) {
-                IPair pair = peers.get(i);
-                if (i < _ClusterConfig.getUid()
-                                      .getNodeId())
-                {
-                    _SessionManager.addPeer(pair);
+            if (peers != null) {
+                for (int i = 0, size = peers.size(); i < size; i++) {
+                    IPair pair = peers.get(i);
+                    _SelfMachine.appendPeer(new Triple<>(_ZUID.getPeerId(i), pair.getFirst(), pair.getSecond()));
                 }
-                _SelfMachine.appendNode(new Triple<>(_ZUID.getPeerId(i), pair.getFirst(), pair.getSecond()));
+                _RaftDao.getLogMeta()
+                        .setPeerSet(_SelfMachine.getPeerSet());
             }
-            _RaftDao.getLogMeta()
-                    .setNodeSet(_SelfMachine.getNodeSet());
+            List<IPair> gates = _ClusterConfig.getGates();
+            if (gates != null) {
+                for (int i = 0, size = gates.size(); i < size; i++) {
+                    IPair pair = gates.get(i);
+                    _SelfMachine.appendGate(new Triple<>(_ZUID.getClusterId(i), pair.getFirst(), pair.getSecond()));
+                }
+                _RaftDao.getLogMeta()
+                        .setGateSet(_SelfMachine.getGateSet());
+            }
         }
         //启动snapshot定时回写计时器
         _TimeWheel.acquire(_RaftDao,
                            new ScheduleHandler<>(_ClusterConfig.getSnapshotInSecond(), true, this::takeSnapshot));
         _RaftDao.updateAll();
+        //启动集群连接
+        if (_SelfMachine.getPeerSet() != null) {
+            for (ITriple remote : _SelfMachine.getPeerSet()) {
+                long peerId = remote.getFirst();
+                if (peerId < _SelfMachine.getPeerId()) {
+                    _SessionManager.addPeer(new Pair<>(remote.getSecond(), remote.getThird()));
+                }
+            }
+        }
+        if (_SelfMachine.getGateSet() != null) {
+            for (ITriple remote : _SelfMachine.getGateSet()) {
+                long gateId = remote.getFirst();
+                if (gateId != _ZUID.getClusterId()) {
+                    _SessionManager.addGate(new Pair<>(remote.getSecond(), remote.getThird()));
+                }
+            }
+        }
     }
 
     @Override

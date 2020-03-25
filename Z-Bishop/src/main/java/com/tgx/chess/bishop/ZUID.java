@@ -30,8 +30,6 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.tgx.chess.king.base.log.Logger;
-
 /**
  * session port prefix max 2^16
  * 00-0000-000-0000000-0000000000000000000000000000000000000-000000000
@@ -153,7 +151,7 @@ public class ZUID
 
     public synchronized long getId()
     {
-        return (_Type << TYPE_SHIFT) | getNoTypeId();
+        return getId(_Type);
     }
 
     public String getName()
@@ -161,9 +159,9 @@ public class ZUID
         return String.format(UNAME_FORMMATER, _Type, _IdcId, _ClusterId, _NodeId, _TimestampSupplier.get());
     }
 
-    public long getNoTypeId()
+    public long getId(long type)
     {
-
+        type &= (1 << TYPE_BITS) - 1;
         long timestamp = _TimestampSupplier.get();
         if (lastTimestamp == timestamp) {
             sequence = (sequence + 1) & SEQUENCE_MASK;
@@ -180,6 +178,7 @@ public class ZUID
                | (_ClusterId << CLUSTER_SHIFT)
                | (_NodeId << NODE_SHIFT)
                | ((timestamp - TWEPOCH) << TIMESTAMP_SHIFT)
+               | (type << TYPE_SHIFT)
                | sequence;
     }
 
@@ -192,6 +191,17 @@ public class ZUID
     {
         nodeId &= (1 << NODE_BITS) - 1;
         return (_IdcId << IDC_SHIFT) | (_ClusterId << CLUSTER_SHIFT) | (nodeId << NODE_SHIFT) | (_Type << TYPE_SHIFT);
+    }
+
+    public long getClusterId(long clusterId)
+    {
+        clusterId &= (1 << CLUSTER_BITS) - 1;
+        return (_IdcId << IDC_SHIFT) | (clusterId << CLUSTER_SHIFT) | (_Type << TYPE_SHIFT);
+    }
+
+    public long getClusterId()
+    {
+        return (_IdcId << IDC_SHIFT) | (_ClusterId << CLUSTER_SHIFT) | (_Type << TYPE_SHIFT);
     }
 
     public final static long INVALID_PEER_ID = 0;
