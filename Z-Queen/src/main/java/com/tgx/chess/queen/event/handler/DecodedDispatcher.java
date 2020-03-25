@@ -66,8 +66,8 @@ public class DecodedDispatcher<C extends IContext<C>>
                 case LOGIC:
                 case DISPATCH:
                     IPair dispatchContent = event.getContent();
-                    ISession<C> session = dispatchContent.second();
-                    IControl<C>[] commands = dispatchContent.first();
+                    ISession<C> session = dispatchContent.getSecond();
+                    IControl<C>[] commands = dispatchContent.getFirst();
                     if (Objects.nonNull(commands)) {
                         for (IControl<C> cmd : commands) {
                             //dispatch 到对应的 处理器里
@@ -84,8 +84,8 @@ public class DecodedDispatcher<C extends IContext<C>>
         }
         else {//错误处理
             IPair dispatchError = event.getContent();
-            Throwable throwable = dispatchError.first();
-            ISession<C> session = dispatchError.second();
+            Throwable throwable = dispatchError.getFirst();
+            ISession<C> session = dispatchError.getSecond();
             error(_Error, event.getErrorType(), new Pair<>(throwable, session), event.getEventOp());
         }
         event.reset();

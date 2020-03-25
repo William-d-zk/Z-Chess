@@ -188,6 +188,12 @@ public class ZUID
         return (_IdcId << IDC_SHIFT) | (_ClusterId << CLUSTER_SHIFT) | (_NodeId << NODE_SHIFT) | (_Type << TYPE_SHIFT);
     }
 
+    public long getPeerId(long nodeId)
+    {
+        nodeId &= (1 << NODE_BITS) - 1;
+        return (_IdcId << IDC_SHIFT) | (_ClusterId << CLUSTER_SHIFT) | (nodeId << NODE_SHIFT) | (_Type << TYPE_SHIFT);
+    }
+
     public final static long INVALID_PEER_ID = 0;
 
 }

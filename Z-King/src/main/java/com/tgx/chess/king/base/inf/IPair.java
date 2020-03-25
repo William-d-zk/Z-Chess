@@ -29,13 +29,12 @@ package com.tgx.chess.king.base.inf;
  */
 public interface IPair
         extends
-        IDisposable,
         Cloneable
 {
 
-    <A> A first();
+    <FIRST> FIRST getFirst();
 
-    <B> B second();
+    <SECOND> SECOND getSecond();
 
     IPair clone();
 

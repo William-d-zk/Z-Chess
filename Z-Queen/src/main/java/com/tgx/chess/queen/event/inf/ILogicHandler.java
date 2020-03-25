@@ -50,9 +50,9 @@ public interface ILogicHandler<C extends IContext<C>>
     {
         if (event.getEventType() == LOGIC) {
             IControl<C> content = event.getContent()
-                                       .first();
+                                       .getFirst();
             ISession<C> session = event.getContent()
-                                       .second();
+                                       .getSecond();
             if (content != null) {
                 try {
                     IControl<C>[] response = handle(getQueenManager(), session, content);

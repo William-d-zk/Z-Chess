@@ -69,19 +69,19 @@ public class DecodeHandler<C extends IContext<C>>
         错误事件已在同级旁路中处理，此处不再关心错误处理
          */
         IPair packetContent = event.getContent();
-        ISession<C> session = packetContent.second();
+        ISession<C> session = packetContent.getSecond();
         IOperator<IPacket,
                   ISession<C>,
                   ITriple> packetOperator = event.getEventOp();
         C context = session.getContext();
         context.setEncryptHandler(_EncryptHandler);
-        IPacket packet = packetContent.first();
+        IPacket packet = packetContent.getFirst();
         if (!context.isInErrorState()) {
             try {
                 ITriple result = packetOperator.handle(packet, session);
-                IControl<C>[] commands = result.first();
+                IControl<C>[] commands = result.getFirst();
                 _Logger.info("decoded commands:\n%s", Arrays.toString(commands));
-                transfer(event, commands, session, result.third());
+                transfer(event, commands, session, result.getThird());
             }
             catch (Exception e) {
                 _Logger.warning(String.format("read decode error\n%s", session.toString()), e);

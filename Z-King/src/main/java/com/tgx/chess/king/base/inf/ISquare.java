@@ -22,23 +22,19 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.cluster.raft.model;
+package com.tgx.chess.king.base.inf;
 
-import com.tgx.chess.bishop.ZUID;
-import org.junit.jupiter.api.Test;
-
-import java.util.Map;
-import java.util.TreeMap;
-
-class RaftNodeTest
+public interface ISquare
+        extends
+        Cloneable
 {
+    <FIRST> FIRST getFirst();
 
-    @Test
-    void raftGraphAdd()
-    {
-        ZUID zuid = new ZUID();
-        int i = 10;
-        System.out.println(zuid.getPeerId(i));
-    }
+    <SECOND> SECOND getSecond();
 
+    <THIRD> THIRD getThird();
+
+    <FOURTH> FOURTH getFourth();
+
+    ISquare clone();
 }

@@ -80,15 +80,15 @@ public class ClientWriteDispatcher<C extends IContext<C>>
                 case WRITE://from LinkIo
                 case LOGIC://from read->logic
                     IPair writeContent = event.getContent();
-                    IControl<C>[] commands = writeContent.first();
-                    ISession<C> session = writeContent.second();
+                    IControl<C>[] commands = writeContent.getFirst();
+                    ISession<C> session = writeContent.getSecond();
                     if (session.isValid() && Objects.nonNull(commands)) {
                         IOperator<IControl<C>[],
                                   ISession<C>,
                                   List<ITriple>> transferOperator = event.getEventOp();
                         List<ITriple> triples = transferOperator.handle(commands, session);
                         for (ITriple triple : triples) {
-                            if (!tryPublish(_EncoderPipe, WRITE, new Pair<>(triple.first(), session), triple.third())) {
+                            if (!tryPublish(_EncoderPipe, WRITE, new Pair<>(triple.getFirst(), session), triple.getThird())) {
                                 _Logger.warning("publish write event to encoder failed");
                             }
                         }
@@ -96,7 +96,7 @@ public class ClientWriteDispatcher<C extends IContext<C>>
                     break;
                 case WROTE://from io-wrote
                     IPair wroteContent = event.getContent();
-                    session = wroteContent.second();
+                    session = wroteContent.getSecond();
                     if (session.isValid()) {
                         if (!tryPublish(_EncoderPipe, WROTE, wroteContent, event.getEventOp())) {
                             _Logger.warning("publish wrote event to encoder failed");

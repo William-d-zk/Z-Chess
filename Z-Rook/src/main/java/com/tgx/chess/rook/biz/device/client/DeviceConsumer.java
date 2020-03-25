@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Arrays;
@@ -128,8 +127,8 @@ public class DeviceConsumer
                 case LOGIC:
                     //与 Server Node 处理过程存在较大的差异，中间去掉一个decoded dispatcher 所以此处入参为 IControl[]
                     IPair logicContent = event.getContent();
-                    commands = logicContent.first();
-                    session = logicContent.second();
+                    commands = logicContent.getFirst();
+                    session = logicContent.getSecond();
                     if (Objects.nonNull(commands)) {
                         commands = Stream.of(commands)
                                          .map(cmd ->

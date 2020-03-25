@@ -108,8 +108,8 @@ public class ZCommandFilter
                      byte[]> keyPair = encryptHandler.getAsymmetricPubKey(x01.pubKeyId);
                 if (keyPair != null) {
                     X02_AsymmetricPub x02 = new X02_AsymmetricPub();
-                    context.setPubKeyId(keyPair.first());
-                    x02.setPubKey(keyPair.first(), keyPair.second());
+                    context.setPubKeyId(keyPair.getFirst());
+                    x02.setPubKey(keyPair.getFirst(), keyPair.getSecond());
                     return x02;
                 }
                 else throw new NullPointerException("create public-key failed!");
@@ -123,12 +123,12 @@ public class ZCommandFilter
                 keyPair = encryptHandler.getCipher(x02.pubKey, symmetricKey);
                 if (keyPair != null) {
                     context.setPubKeyId(x02.pubKeyId);
-                    context.setSymmetricKeyId(keyPair.first());
+                    context.setSymmetricKeyId(keyPair.getFirst());
                     context.reRollKey(symmetricKey);
                     X03_Cipher x03 = new X03_Cipher();
                     x03.pubKeyId = x02.pubKeyId;
-                    x03.symmetricKeyId = keyPair.first();
-                    x03.cipher = keyPair.second();
+                    x03.symmetricKeyId = keyPair.getFirst();
+                    x03.cipher = keyPair.getSecond();
                     return x03;
                 }
                 else throw new NullPointerException("encrypt symmetric-key failed!");
@@ -150,8 +150,8 @@ public class ZCommandFilter
                     keyPair = encryptHandler.getAsymmetricPubKey(x03.pubKeyId);
                     if (keyPair != null) {
                         x02 = new X02_AsymmetricPub();
-                        context.setPubKeyId(keyPair.first());
-                        x02.setPubKey(keyPair.first(), keyPair.second());
+                        context.setPubKeyId(keyPair.getFirst());
+                        x02.setPubKey(keyPair.getFirst(), keyPair.getSecond());
                         return x02;
                     }
                     else throw new NullPointerException("create public-key failed!");

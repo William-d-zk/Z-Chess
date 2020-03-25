@@ -70,8 +70,8 @@ public class EncodeHandler<C extends IContext<C>>
             {
                 case WRITE:
                     IPair pairWriteContent = event.getContent();
-                    IControl<C> cmd = pairWriteContent.first();
-                    ISession<C> session = pairWriteContent.second();
+                    IControl<C> cmd = pairWriteContent.getFirst();
+                    ISession<C> session = pairWriteContent.getSecond();
                     IOperator<IControl<C>,
                               ISession<C>,
                               ITriple> writeOperator = event.getEventOp();
@@ -80,8 +80,8 @@ public class EncodeHandler<C extends IContext<C>>
                     break;
                 case WROTE:
                     IPair pairWroteContent = event.getContent();
-                    int wroteCnt = pairWroteContent.first();
-                    session = pairWroteContent.second();
+                    int wroteCnt = pairWroteContent.getFirst();
+                    session = pairWroteContent.getSecond();
                     IOperator<Integer,
                               ISession<C>,
                               ITriple> wroteOperator = event.getEventOp();
@@ -104,8 +104,8 @@ public class EncodeHandler<C extends IContext<C>>
         if (!context.isOutErrorState()) {
             ITriple result = operator.handle(a, session);
             if (Objects.nonNull(result)) {
-                Throwable throwable = result.first();
-                event.error(IError.Type.FILTER_ENCODE, new Pair<>(throwable, session), result.third());
+                Throwable throwable = result.getFirst();
+                event.error(IError.Type.FILTER_ENCODE, new Pair<>(throwable, session), result.getThird());
                 context.setOutState(ENCODE_ERROR);
             }
             else {

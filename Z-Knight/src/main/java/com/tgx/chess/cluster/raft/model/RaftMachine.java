@@ -26,6 +26,7 @@ package com.tgx.chess.cluster.raft.model;
 
 import static java.lang.Math.min;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
@@ -162,12 +163,10 @@ public class RaftMachine
     public void appendNode(ITriple... nodes)
     {
         if (mNodeSet == null) {
-            mNodeSet = new TreeSet<>(Comparator.comparing(ITriple::first));
+            mNodeSet = new TreeSet<>(Comparator.comparing(ITriple::getFirst));
         }
-        if (nodes == null) { return; }
-        for (ITriple node : nodes) {
-            mNodeSet.add(node);
-        }
+        if (nodes == null || nodes.length == 0) { return; }
+        mNodeSet.addAll(Arrays.asList(nodes));
     }
 
     @Override

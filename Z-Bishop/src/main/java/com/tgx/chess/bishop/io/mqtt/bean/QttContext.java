@@ -58,13 +58,13 @@ public class QttContext
 
     public static int getLastVersion()
     {
-        int[] versions = SUPPORT_VERSION.second();
+        int[] versions = SUPPORT_VERSION.getSecond();
         return versions[0];
     }
 
     public static int getCurrentVersion()
     {
-        int[] versions = SUPPORT_VERSION.second();
+        int[] versions = SUPPORT_VERSION.getSecond();
         return versions[1];
     }
 

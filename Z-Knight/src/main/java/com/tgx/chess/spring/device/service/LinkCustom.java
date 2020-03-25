@@ -101,7 +101,7 @@ public class LinkCustom
                 x112.responseOk();
                 /*--检查X112 是否正常--*/
                 int[] supportVersions = QttContext.getSupportVersion()
-                                                  .second();
+                                                  .getSecond();
                 if (Arrays.stream(supportVersions)
                           .noneMatch(version -> version == x111.getProtocolVersion()))
                 {
@@ -149,7 +149,7 @@ public class LinkCustom
                           IQoS.Level>> topics = x118.getTopics();
                 if (topics != null) {
                     topics.forEach(topic -> x119.addResult(mQttRouter.addTopic(topic,
-                                                                               session.getIndex()) ? topic.second()
+                                                                               session.getIndex()) ? topic.getSecond()
                                                                                                    : IQoS.Level.FAILURE));
                 }
                 return new IControl[] { x119 };

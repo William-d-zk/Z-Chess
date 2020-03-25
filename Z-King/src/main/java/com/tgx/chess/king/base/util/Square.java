@@ -23,6 +23,10 @@
  */
 package com.tgx.chess.king.base.util;
 
+import com.tgx.chess.king.base.inf.ISquare;
+
+import java.util.Objects;
+
 /**
  * @author William.d.zk
  */
@@ -30,6 +34,8 @@ public class Square<FIRST,
                     SECOND,
                     THIRD,
                     FOURTH>
+        implements
+        ISquare
 {
     private FIRST  first;
     private SECOND second;
@@ -47,23 +53,89 @@ public class Square<FIRST,
         this.fourth = fourth;
     }
 
-    public FIRST first()
+    @Override
+    public FIRST getFirst()
     {
         return first;
     }
 
-    public SECOND second()
+    @Override
+    public SECOND getSecond()
     {
         return second;
     }
 
-    public THIRD third()
+    @Override
+    public THIRD getThird()
     {
         return third;
     }
 
-    public FOURTH fourth()
+    @Override
+    public FOURTH getFourth()
     {
         return fourth;
+    }
+
+    public void setFirst(FIRST first)
+    {
+        this.first = first;
+    }
+
+    public void setSecond(SECOND second)
+    {
+        this.second = second;
+    }
+
+    public void setThird(THIRD third)
+    {
+        this.third = third;
+    }
+
+    public void setFourth(FOURTH fourth)
+    {
+        this.fourth = fourth;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (!(obj instanceof Square)) { return false; }
+        if (this != obj) {
+            @SuppressWarnings("unchecked")
+            Square<FIRST,
+                   SECOND,
+                   THIRD,
+                   FOURTH> other = (Square<FIRST,
+                                           SECOND,
+                                           THIRD,
+                                           FOURTH>) obj;
+            return first.equals(other.first)
+                   && second.equals(other.second)
+                   && third.equals(other.third)
+                   && fourth.equals(other.fourth);
+        }
+        return true;
+    }
+
+    @Override
+    public String toString()
+    {
+        return String.format("<%s,%s,%s,%s>", first, second, third, fourth);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(first, second, third, fourth);
+    }
+
+    @Override
+    public Square<FIRST,
+                  SECOND,
+                  THIRD,
+                  FOURTH> clone()
+    {
+        return new Square<>(first, second, third, fourth);
     }
 }

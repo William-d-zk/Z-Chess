@@ -47,6 +47,7 @@ import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.schedule.ICancelable;
 import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.schedule.TimeWheel;
+import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.io.core.inf.IActivity;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.ISession;
@@ -137,14 +138,16 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
             /*首次启动或删除本地状态机重启,仅需要连接node_id< self.node_id的peer*/
             List<IPair> peers = _ClusterConfig.getPeers();
             for (int i = 0, size = peers.size(); i < size; i++) {
+                IPair pair = peers.get(i);
                 if (i < _ClusterConfig.getUid()
                                       .getNodeId())
                 {
-                    _SessionManager.addPeer(peers.get(i));
+                    _SessionManager.addPeer(pair);
                 }
-                else break;
+                _SelfMachine.appendNode(new Triple<>(_ZUID.getPeerId(i), pair.getFirst(), pair.getSecond()));
             }
-
+            _RaftDao.getLogMeta()
+                    .setNodeSet(_SelfMachine.getNodeSet());
         }
         //启动snapshot定时回写计时器
         _TimeWheel.acquire(_RaftDao,

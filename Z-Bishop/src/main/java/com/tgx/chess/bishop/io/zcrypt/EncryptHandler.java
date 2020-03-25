@@ -129,7 +129,7 @@ public class EncryptHandler
         Pair<Integer,
              byte[][]> keyPair = createPair(_Random, _InPubKeyId);
         if (keyPair == null) { return null; }
-        return new Pair<>(keyPair.first(), keyPair.second()[KEY_PAIR_INDEX_PUBLIC_KEY]);
+        return new Pair<>(keyPair.getFirst(), keyPair.getSecond()[KEY_PAIR_INDEX_PUBLIC_KEY]);
     }
 
     @Override

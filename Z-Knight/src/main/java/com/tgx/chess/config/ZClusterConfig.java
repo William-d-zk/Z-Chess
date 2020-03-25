@@ -63,8 +63,8 @@ public class ZClusterConfig
     void initUid() throws IOException
     {
         if (peerTest != null) {
-            String peerTestHost = peerTest.first();
-            InetSocketAddress peerTestAddr = new InetSocketAddress(peerTestHost, peerTest.second());
+            String peerTestHost = peerTest.getFirst();
+            InetSocketAddress peerTestAddr = new InetSocketAddress(peerTestHost, peerTest.getSecond());
             try (Socket socket = new Socket()) {
                 socket.connect(peerTestAddr, 3000);
                 if (!socket.isConnected()) { throw new RuntimeException("peer test connect failed"); }
@@ -222,7 +222,7 @@ public class ZClusterConfig
         boolean set = false;
         for (int i = 0, size = peers.size(); i < size; i++) {
             if (peers.get(i)
-                     .first()
+                     .getFirst()
                      .equals(localHostStr))
             {
                 uid.setNodeId(i);

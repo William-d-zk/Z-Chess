@@ -50,19 +50,19 @@ public class Triple<FIRST,
     }
 
     @Override
-    public FIRST first()
+    public FIRST getFirst()
     {
         return first;
     }
 
     @Override
-    public SECOND second()
+    public SECOND getSecond()
     {
         return second;
     }
 
     @Override
-    public THIRD third()
+    public THIRD getThird()
     {
         return third;
     }
@@ -80,14 +80,6 @@ public class Triple<FIRST,
     public void setThird(THIRD t)
     {
         third = t;
-    }
-
-    @Override
-    public void dispose()
-    {
-        first = null;
-        second = null;
-        third = null;
     }
 
     @Override
