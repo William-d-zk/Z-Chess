@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020 Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,22 +21,42 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.tgx.chess.queen.io.core.inf;
 
-/**
- * @author William.d.zk
- */
-public interface IConnectActivity<C extends IContext<C>>
-        extends
-        IAddress,
-        IConnectMode<C>,
-        ISessionCreator<C>,
-        ISessionCreated<C>,
-        ICommandCreator<C>
+package com.tgx.chess.queen.io.core.manager;
+
+import com.tgx.chess.king.base.inf.IPair;
+import com.tgx.chess.king.base.util.Pair;
+import org.junit.jupiter.api.Test;
+
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class QueenManagerTest
 {
-    boolean isShutdown();
 
-    void shutdown();
+    @Test
+    void addPeer()
+    {
+        List<IPair> list = new ArrayList<>();
+        add(0, list, new Pair<>(0, new InetSocketAddress(5678)));
+    }
 
-    boolean isRunning();
+    private void add(int index, List<IPair> pairs, IPair pair)
+    {
+        Objects.requireNonNull(pairs);
+        Objects.requireNonNull(pair);
+        if (index >= pairs.size()) {
+            for (int i = pairs.size(); i < index; i++) {
+                pairs.add(new Pair<>(-1, null));
+            }
+            pairs.add(pair);
+        }
+        else {
+            pairs.set(index, pair);
+        }
+    }
 }

@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousSocketChannel;
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -100,12 +99,13 @@ public class BaseAioClient<C extends IContext<C>>
         InetSocketAddress remoteAddress = session.getRemoteAddress();
         IAioConnector<C> connector = _TargetManageMap.get(remoteAddress)
                                                      .second();
-        _Logger.info("on dismiss: retry");
+        _Logger.info("on dismiss: [shutdown: %s ]", connector.isShutdown());
         delayConnect(connector);
     }
 
     private void delayConnect(IAioConnector<C> connector)
     {
+        if (connector.isShutdown()) { return; }
         _TimeWheel.acquire(connector,
                            new ScheduleHandler<>(connector.getConnectTimeout()
                                                           .multipliedBy(3),
@@ -121,5 +121,16 @@ public class BaseAioClient<C extends IContext<C>>
                                                          e.printStackTrace();
                                                      }
                                                  }));
+    }
+
+    @Override
+    public void shutdown(ISession<C> session)
+    {
+        InetSocketAddress remoteAddress = session.getRemoteAddress();
+        if (_TargetManageMap.containsKey(remoteAddress)) {
+            IAioConnector<C> connector = _TargetManageMap.get(remoteAddress)
+                                                         .second();
+            connector.shutdown();
+        }
     }
 }

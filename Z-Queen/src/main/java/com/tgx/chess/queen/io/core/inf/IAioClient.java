@@ -24,6 +24,7 @@
 package com.tgx.chess.queen.io.core.inf;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.List;
 
 import com.tgx.chess.king.base.inf.IPair;
@@ -39,24 +40,6 @@ public interface IAioClient<C extends IContext<C>>
 {
     void connect(IAioConnector<C> connector) throws IOException;
 
-    /**
-     * 备用连接地址
-     * 
-     * @return list of [host:port]
-     */
-    default List<IPair> getHaRemoteAddressList()
-    {
-        return null;
-    }
-
-    /**
-     * 管理可用性重试策略
-     * 
-     * @return 3维数数据 {address,retry duration gap,retry count}
-     */
-    default List<ITriple> getHaTimeTickRef()
-    {
-        return null;
-    }
+    void shutdown(ISession<C> session);
 
 }
