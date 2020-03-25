@@ -223,9 +223,15 @@ public class DeviceConsumer
     @Override
     public void connect(IAioConnector<ZContext> connector) throws IOException
     {
-        if (_ChannelGroup.isShutdown()) return;
+        if (_ChannelGroup.isShutdown() || connector.isShutdown()) return;
         AsynchronousSocketChannel socketChannel = AsynchronousSocketChannel.open(_ChannelGroup);
         socketChannel.connect(connector.getRemoteAddress(), socketChannel, connector);
+    }
+
+    @Override
+    public void shutdown(ISession<ZContext> session)
+    {
+
     }
 
     @SuppressWarnings("unchecked")
@@ -328,11 +334,7 @@ public class DeviceConsumer
     {
         ISession<ZContext> session = findSessionByIndex(sessionIndex);
         if (Objects.nonNull(session)) {
-            _ClientCore.localSend(session,
-                                  session.getContext()
-                                         .getSort()
-                                         .getTransfer(),
-                                  toSends);
+            _ClientCore.send(session, toSends);
         }
         else {
             throw new ZException("client-id:%d,is offline;send % failed", sessionIndex, Arrays.toString(toSends));
@@ -343,10 +345,7 @@ public class DeviceConsumer
     {
         ISession<ZContext> session = findSessionByIndex(sessionIndex);
         if (Objects.nonNull(session)) {
-            _ClientCore.localClose(session,
-                                   session.getContext()
-                                          .getSort()
-                                          .getCloser());
+            _ClientCore.close(session);
         }
         else {
             throw new ZException("client session is not exist");

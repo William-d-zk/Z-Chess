@@ -107,4 +107,22 @@ public abstract class BaseAioServer<C extends IContext<C>>
     {
         return _ConnectedOperator;
     }
+
+    @Override
+    public boolean isShutdown()
+    {
+        return false;
+    }
+
+    @Override
+    public boolean isRunning()
+    {
+        return true;
+    }
+
+    @Override
+    public void shutdown()
+    {
+        throw new UnsupportedOperationException();
+    }
 }

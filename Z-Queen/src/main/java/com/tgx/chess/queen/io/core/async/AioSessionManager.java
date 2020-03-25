@@ -59,16 +59,16 @@ public abstract class AioSessionManager<C extends IContext<C>>
     private final Map<Long,
                       Set<ISession<C>>>[]       _Prefix2SessionMaps = new Map[4];
     private final Set<ISession<C>>[]            _SessionsSets       = new Set[4];
-    private final IBizIoConfig                  _Config;
+    private final IBizIoConfig                  _BizIoConfig;
 
     public ISocketConfig getSocketConfig(int bizType)
     {
-        return _Config.getBizSocketConfig(bizType);
+        return _BizIoConfig.getBizSocketConfig(bizType);
     }
 
     public AioSessionManager(IBizIoConfig config)
     {
-        _Config = config;
+        _BizIoConfig = config;
         Arrays.setAll(_SessionsSets, slot -> new HashSet<>(1 << getConfigPower(slot)));
         Arrays.setAll(_Index2SessionMaps, slot -> new HashMap<>(1 << getConfigPower(slot)));
         Arrays.setAll(_Prefix2SessionMaps, slot -> new HashMap<>(23));
@@ -82,7 +82,7 @@ public abstract class AioSessionManager<C extends IContext<C>>
             case LOCAL_SLOT:
             case SERVER_SLOT:
             case CLUSTER_SLOT:
-                return _Config.getSizePower(slot);
+                return _BizIoConfig.getSizePower(slot);
             default:
                 throw new IllegalArgumentException("slot: " + slot);
         }
@@ -226,7 +226,7 @@ public abstract class AioSessionManager<C extends IContext<C>>
     }
 
     @Override
-    public ISession<C> findByPrefix(long prefix)
+    public ISession<C> findSessionByPrefix(long prefix)
     {
         Set<ISession<C>> sessions = _Prefix2SessionMaps[getSlot(prefix)].get(prefix);
         Optional<ISession<C>> optional = sessions.stream()

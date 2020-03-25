@@ -56,7 +56,7 @@ public interface ISessionManager<C extends IContext<C>>
      * @param prefix
      * @return
      */
-    ISession<C> findByPrefix(long prefix);
+    ISession<C> findSessionByPrefix(long prefix);
 
     /**
      * 

@@ -108,8 +108,8 @@ public class RaftNode
                           }
                           x7e.setPayload(JsonUtil.writeValueAsBytes(entryList));
                       }
-                      ISession<ZContext> session = _QueenManager.findByPrefix(k);
-                      _QueenManager.localSend(session, x7e);
+                      ISession<ZContext> session = _QueenManager.findSessionByPrefix(k);
+                      _QueenManager.send(session, x7e);
                   });
     }
 
@@ -125,12 +125,13 @@ public class RaftNode
                                        .getCommit());
         _SelfMachine.setApplied(_RaftDao.getLogMeta()
                                         .getApplied());
-        // 删除前序日志，只保留snapshot结果
-        if (_SelfMachine.getCommit() > 0
-            && _RaftDao.getLogMeta()
-                       .getStart() <= _SelfMachine.getCommit())
-        {
-            _RaftDao.truncatePrefix(_SelfMachine.getTerm() + 1);
+        _SelfMachine.setIndex(_RaftDao.getLogMeta()
+                                      .getIndex());
+        _SelfMachine.setNodeSet(_RaftDao.getLogMeta()
+                                        .getNodeSet());
+        if (_SelfMachine.getNodeSet() == null) {
+            /*首次启动或删除本地状态机重启*/
+
         }
         //启动snapshot定时回写计时器
         _TimeWheel.acquire(_RaftDao,
@@ -195,7 +196,7 @@ public class RaftNode
         X7F_RaftResponse x7f = new X7F_RaftResponse(_ZUid.getId());
         x7f.setTerm(_SelfMachine.getTerm());
         x7f.setCode(X7F_RaftResponse.Code.SUCCESS.getCode());
-        x7f.setSession(_QueenManager.findByPrefix(peerId));
+        x7f.setSession(_QueenManager.findSessionByPrefix(peerId));
         return x7f;
     }
 
@@ -205,7 +206,7 @@ public class RaftNode
         X7F_RaftResponse x7f = new X7F_RaftResponse(_ZUid.getId());
         x7f.setTerm(_SelfMachine.getTerm());
         x7f.setCode(code);
-        x7f.setSession(_QueenManager.findByPrefix(peerId));
+        x7f.setSession(_QueenManager.findSessionByPrefix(peerId));
         return x7f;
     }
 

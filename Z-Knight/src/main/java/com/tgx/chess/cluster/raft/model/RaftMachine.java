@@ -27,6 +27,7 @@ package com.tgx.chess.cluster.raft.model;
 import static java.lang.Math.min;
 
 import java.util.Set;
+import java.util.TreeSet;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -118,42 +119,53 @@ public class RaftMachine
 
     public void setTerm(long term)
     {
-        this.mTerm = term;
+        mTerm = term;
     }
 
     public void setIndex(long index)
     {
-        this.mIndex = index;
+        mIndex = index;
     }
 
     public void setCandidate(long candidate)
     {
-        this.mCandidate = candidate;
+        mCandidate = candidate;
     }
 
     public void setLeader(long leader)
     {
-        this.mLeader = leader;
+        mLeader = leader;
     }
 
     public void setState(RaftState state)
     {
-        this.mState = state.getCode();
+        mState = state.getCode();
     }
 
     public void setCommit(long commit)
     {
-        this.mCommit = commit;
+        mCommit = commit;
     }
 
     public void setApplied(long applied)
     {
-        this.mApplied = applied;
+        mApplied = applied;
     }
 
     public void setNodeSet(Set<Long> nodeSet)
     {
         mNodeSet = nodeSet;
+    }
+
+    public void appendNode(long... nodes)
+    {
+        if (mNodeSet == null) {
+            mNodeSet = new TreeSet<>();
+        }
+        if (nodes == null) { return; }
+        for (long node : nodes) {
+            mNodeSet.add(node);
+        }
     }
 
     @Override

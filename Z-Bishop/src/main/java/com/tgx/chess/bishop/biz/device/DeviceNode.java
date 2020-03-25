@@ -26,7 +26,6 @@ package com.tgx.chess.bishop.biz.device;
 
 import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -74,12 +73,11 @@ public class DeviceNode
         ISessionDismiss<ZContext>
 {
 
-    private final List<IAioServer<ZContext>>    _AioServers;
-    private final IAioClient<ZContext>          _ClusterClient;
-    private final List<IAioConnector<ZContext>> _ClusterConnectors;
-    private final IAioClient<ZContext>          _GateClient;
-    private final List<IAioConnector<ZContext>> _GateConnectors;
-    private final TimeWheel                     _TimeWheel;
+    private final List<IAioServer<ZContext>> _AioServers;
+    private final IAioClient<ZContext>       _ClusterClient;
+    private final IAioClient<ZContext>       _GateClient;
+    private final TimeWheel                  _TimeWheel;
+    private final ZUID                       _ZUID;
 
     @Override
     public void onDismiss(ISession<ZContext> session)
@@ -96,8 +94,6 @@ public class DeviceNode
     {
         super(bizIoConfig, new ServerCore<ZContext>(serverConfig)
         {
-
-
             @Override
             public RingBuffer<QEvent> getLocalPublisher(ISession<ZContext> session)
             {
@@ -111,9 +107,9 @@ public class DeviceNode
                 return getSlot(session) == QueenCode.CU_XID_LOW ? getBizLocalCloseEvent()
                                                                 : getClusterLocalCloseEvent();
             }
-
         });
         _TimeWheel = timeWheel;
+        _ZUID = clusterConfig.createZUID(true);
         IPair bind = clusterConfig.getBind();
         hosts.add(new Triple<>(bind.first(), bind.second(), ZSort.WS_CLUSTER_SERVER));
         _AioServers = hosts.stream()
@@ -122,7 +118,6 @@ public class DeviceNode
                                final String _Host = triple.first();
                                final int _Port = triple.second();
                                final ISort<ZContext> _Sort = triple.third();
-                               final ZUID _ZUid = clusterConfig.createZUID(true);
                                ISort.Mode mode = _Sort.getMode();
                                ISort.Type type = _Sort.getType();
                                final long _SessionInitializeIndex;
@@ -150,7 +145,7 @@ public class DeviceNode
                                    @Override
                                    public void onCreate(ISession<ZContext> session)
                                    {
-                                       session.setIndex(_SessionInitializeIndex | _ZUid.getNoTypeId());
+                                       session.setIndex(_SessionInitializeIndex | _ZUID.getNoTypeId());
                                        DeviceNode.this.addSession(session);
                                    }
 
@@ -168,60 +163,24 @@ public class DeviceNode
                                };
                            })
                            .collect(Collectors.toList());
-        List<IPair> clusterPeers = clusterConfig.getPeers();
-        List<IPair> gates = clusterConfig.getGates();
-        if (gates != null && !gates.isEmpty()) {
-            _GateClient = new BaseAioClient<ZContext>(getTimeWheel(), getServerCore().getClusterChannelGroup())
+        _GateClient = new BaseAioClient<ZContext>(getTimeWheel(), getServerCore().getClusterChannelGroup())
+        {
+            @Override
+            public void onDismiss(ISession<ZContext> session)
             {
-                @Override
-                public void onDismiss(ISession<ZContext> session)
-                {
-                    DeviceNode.this.onDismiss(session);
-                    super.onDismiss(session);
-                }
-            };
-            _GateConnectors = new LinkedList<>();
-            for (IPair pair : gates) {
-                //parent -> RM_XID
-                IAioConnector<ZContext> connector = buildConnector(pair,
-                                                                   ZSort.WS_CLUSTER_SYMMETRY,
-                                                                   clusterConfig,
-                                                                   _GateClient);
-                _GateConnectors.add(connector);
+                DeviceNode.this.onDismiss(session);
+                super.onDismiss(session);
             }
-        }
-        else {
-            _GateClient = null;
-            _GateConnectors = null;
-        }
-        if (clusterPeers != null && !clusterPeers.isEmpty()) {
-            _ClusterClient = new BaseAioClient<ZContext>(getTimeWheel(), getServerCore().getClusterChannelGroup())
+        };
+        _ClusterClient = new BaseAioClient<ZContext>(getTimeWheel(), getServerCore().getClusterChannelGroup())
+        {
+            @Override
+            public void onDismiss(ISession<ZContext> session)
             {
-                @Override
-                public void onDismiss(ISession<ZContext> session)
-                {
-                    DeviceNode.this.onDismiss(session);
-                    super.onDismiss(session);
-                }
-            };
-            _ClusterConnectors = new LinkedList<>();
-            for (int i = 0, size = clusterPeers.size(); i < size
-                                                        && i < clusterConfig.getUid()
-                                                                            .getNodeId(); i++)
-            {
-                IPair pair = clusterPeers.get(i);
-                //peer -> CM_XID
-                IAioConnector<ZContext> connector = buildConnector(pair,
-                                                                   ZSort.WS_CLUSTER_CONSUMER,
-                                                                   clusterConfig,
-                                                                   _ClusterClient);
-                _ClusterConnectors.add(connector);
+                DeviceNode.this.onDismiss(session);
+                super.onDismiss(session);
             }
-        }
-        else {
-            _ClusterClient = null;
-            _ClusterConnectors = null;
-        }
+        };
         _Logger.info("Device Node Bean Load");
     }
 
@@ -236,9 +195,9 @@ public class DeviceNode
         localSend(deviceId, toSends);
     }
 
-    public void localBizClose(long deviceId)
+    public void bizClose(long deviceId)
     {
-        localClose(deviceId);
+        closeByIndex(deviceId);
     }
 
     @SafeVarargs
@@ -247,9 +206,9 @@ public class DeviceNode
         localSend(peerId, toSends);
     }
 
-    public void localClusterClose(long peerId)
+    public void clusterClose(long peerId)
     {
-        localClose(peerId);
+        closeByPrefix(peerId);
     }
 
     @SafeVarargs
@@ -257,19 +216,28 @@ public class DeviceNode
     {
         ISession<ZContext> session = findSessionByIndex(sessionIndex);
         if (session != null) {
-            localSend(session, toSends);
+            send(session, toSends);
         }
     }
 
-    private void localClose(long sessionIndex)
+    private void closeByIndex(long sessionIndex)
     {
-        ISession<ZContext> session = findSessionByIndex(sessionIndex);
-        if (session != null) {
-            localClose(session,
-                       session.getContext()
-                              .getSort()
-                              .getCloser());
-        }
+        close(findSessionByIndex(sessionIndex));
+    }
+
+    private void closeByPrefix(long sessionPrefix)
+    {
+        close(findSessionByPrefix(sessionPrefix));
+    }
+
+    private void sendByIndex(long sessionIndex, IControl<ZContext>... toSends)
+    {
+        send(findSessionByIndex(sessionIndex), toSends);
+    }
+
+    private void sendByPrefix(long sessionPrefix, IControl<ZContext>... toSends)
+    {
+        send(findSessionByPrefix(sessionPrefix), toSends);
     }
 
     public void start(ILogicHandler<ZContext> logicHandler,
@@ -282,29 +250,13 @@ public class DeviceNode
             server.pendingAccept();
             _Logger.info(String.format("device node start %s", server.getLocalAddress()));
         }
-        if (_GateClient != null && _GateConnectors != null) {
-            for (IAioConnector<ZContext> connector : _GateConnectors) {
-                _GateClient.connect(connector);
-                _Logger.info(String.format("device router gate connect %s", connector.getRemoteAddress()));
-            }
-        }
-        if (_ClusterClient != null && _ClusterConnectors != null) {
-            for (IAioConnector<ZContext> connector : _ClusterConnectors) {
-                _ClusterClient.connect(connector);
-                _Logger.info(String.format("device cluster connect %s", connector.getRemoteAddress()));
-            }
-        }
     }
 
-    private IAioConnector<ZContext> buildConnector(IPair address,
-                                                   ZSort sort,
-                                                   IClusterConfig clusterConfig,
-                                                   IAioClient<ZContext> client)
+    private IAioConnector<ZContext> buildConnector(IPair address, ZSort sort, IAioClient<ZContext> client)
     {
         final String _Host = address.first();
         final int _Port = address.second();
         final ISort<ZContext> _Sort = sort;
-        final ZUID _ZUid = clusterConfig.createZUID(true);
         ISort.Mode mode = _Sort.getMode();
         ISort.Type type = _Sort.getType();
         final long _SessionInitializeIndex;
@@ -333,7 +285,7 @@ public class DeviceNode
             @Override
             public void onCreate(ISession<ZContext> session)
             {
-                session.setIndex(_SessionInitializeIndex | _ZUid.getNoTypeId());
+                session.setIndex(_SessionInitializeIndex | _ZUID.getNoTypeId());
                 DeviceNode.this.addSession(session);
             }
 
@@ -341,7 +293,7 @@ public class DeviceNode
             @SuppressWarnings("unchecked")
             public IControl<ZContext>[] createCommands(ISession<ZContext> session)
             {
-                X106_Identity x106 = new X106_Identity(_ZUid.getPeerId());
+                X106_Identity x106 = new X106_Identity(_ZUID.getPeerId());
                 return new IControl[] { x106 };
             }
 

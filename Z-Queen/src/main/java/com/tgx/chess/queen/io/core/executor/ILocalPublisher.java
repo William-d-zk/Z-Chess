@@ -31,6 +31,7 @@ import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
+import com.tgx.chess.queen.io.core.inf.IActivity;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IPipeTransfer;
@@ -41,6 +42,8 @@ import com.tgx.chess.queen.io.core.inf.ISessionCloser;
  * @author william.d.zk
  */
 public interface ILocalPublisher<C extends IContext<C>>
+        extends
+        IActivity<C>
 {
     RingBuffer<QEvent> getLocalPublisher(ISession<C> session);
 
@@ -49,10 +52,10 @@ public interface ILocalPublisher<C extends IContext<C>>
     ReentrantLock getLocalLock();
 
     @SuppressWarnings("unchecked")
-    default boolean localSend(ISession<C> session, IPipeTransfer<C> operator, IControl<C>... toSends)
+    @Override
+    default boolean send(ISession<C> session, IControl<C>... toSends)
     {
-        Objects.requireNonNull(toSends);
-        Objects.requireNonNull(session);
+        if (session == null || toSends == null || toSends.length == 0) { return false; }
         final RingBuffer<QEvent> _LocalSendEvent = getLocalPublisher(session);
         final ReentrantLock _LocalLock = getLocalLock();
         if (_LocalLock.tryLock()) {
@@ -60,7 +63,11 @@ public interface ILocalPublisher<C extends IContext<C>>
                 long sequence = _LocalSendEvent.next();
                 try {
                     QEvent event = _LocalSendEvent.get(sequence);
-                    event.produce(IOperator.Type.LOCAL, new Pair<>(toSends, session), operator);
+                    event.produce(IOperator.Type.LOCAL,
+                                  new Pair<>(toSends, session),
+                                  session.getContext()
+                                         .getSort()
+                                         .getTransfer());
                     return true;
                 }
                 finally {
@@ -74,9 +81,10 @@ public interface ILocalPublisher<C extends IContext<C>>
         return false;
     }
 
-    default void localClose(ISession<C> session, ISessionCloser<C> closer)
+    @Override
+    default void close(ISession<C> session)
     {
-        Objects.requireNonNull(session);
+        if (session == null) { return; }
         final RingBuffer<QEvent> _LocalCloseEvent = getLocalCloser(session);
         final ReentrantLock _LocalLock = getLocalLock();
         _LocalLock.lock();
@@ -84,7 +92,11 @@ public interface ILocalPublisher<C extends IContext<C>>
             long sequence = _LocalCloseEvent.next();
             try {
                 QEvent event = _LocalCloseEvent.get(sequence);
-                event.produce(IOperator.Type.CLOSE, new Pair<>(null, session), closer);
+                event.produce(IOperator.Type.CLOSE,
+                              new Pair<>(null, session),
+                              session.getContext()
+                                     .getSort()
+                                     .getCloser());
             }
             finally {
                 _LocalCloseEvent.publish(sequence);
