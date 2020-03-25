@@ -26,6 +26,7 @@ package com.tgx.chess.cluster.raft.model;
 
 import static java.lang.Math.min;
 
+import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -37,6 +38,7 @@ import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
 import com.tgx.chess.cluster.raft.IRaftMachine;
 import com.tgx.chess.cluster.raft.IRaftNode;
 import com.tgx.chess.cluster.raft.IRaftNode.RaftState;
+import com.tgx.chess.king.base.inf.ITriple;
 
 /**
  * @author william.d.zk
@@ -47,15 +49,15 @@ public class RaftMachine
         implements
         IRaftMachine
 {
-    private final long _PeerId;
-    private long       mTerm;
-    private long       mIndex;
-    private long       mCandidate;
-    private long       mLeader;
-    private long       mCommit;
-    private long       mApplied;
-    private int        mState;
-    private Set<Long>  mNodeSet;
+    private final long   _PeerId;
+    private long         mTerm;
+    private long         mIndex;
+    private long         mCandidate;
+    private long         mLeader;
+    private long         mCommit;
+    private long         mApplied;
+    private int          mState;
+    private Set<ITriple> mNodeSet;
 
     @JsonCreator
     public RaftMachine(@JsonProperty("peer_id") long peerId)
@@ -112,7 +114,7 @@ public class RaftMachine
     }
 
     @Override
-    public Set<Long> getNodeSet()
+    public Set<ITriple> getNodeSet()
     {
         return mNodeSet;
     }
@@ -152,18 +154,18 @@ public class RaftMachine
         mApplied = applied;
     }
 
-    public void setNodeSet(Set<Long> nodeSet)
+    public void setNodeSet(Set<ITriple> nodeSet)
     {
         mNodeSet = nodeSet;
     }
 
-    public void appendNode(long... nodes)
+    public void appendNode(ITriple... nodes)
     {
         if (mNodeSet == null) {
-            mNodeSet = new TreeSet<>();
+            mNodeSet = new TreeSet<>(Comparator.comparing(ITriple::first));
         }
         if (nodes == null) { return; }
-        for (long node : nodes) {
+        for (ITriple node : nodes) {
             mNodeSet.add(node);
         }
     }
