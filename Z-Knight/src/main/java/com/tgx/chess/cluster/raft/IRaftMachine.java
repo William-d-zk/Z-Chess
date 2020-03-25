@@ -60,7 +60,10 @@ public interface IRaftMachine
     long getApplied();
 
     /** @return 集群中所有节点 */
-    Set<ITriple> getNodeSet();
+    Set<ITriple> getPeerSet();
+
+    /** @return 跨集群网关 */
+    Set<ITriple> getGateSet();
 
     /**
      * 接收另一个machine的状态更新

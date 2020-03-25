@@ -28,6 +28,7 @@ import static java.lang.Math.min;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -58,7 +59,8 @@ public class RaftMachine
     private long         mCommit;
     private long         mApplied;
     private int          mState;
-    private Set<ITriple> mNodeSet;
+    private Set<ITriple> mPeerSet;
+    private Set<ITriple> mGateSet;
 
     @JsonCreator
     public RaftMachine(@JsonProperty("peer_id") long peerId)
@@ -115,9 +117,15 @@ public class RaftMachine
     }
 
     @Override
-    public Set<ITriple> getNodeSet()
+    public Set<ITriple> getPeerSet()
     {
-        return mNodeSet;
+        return mPeerSet;
+    }
+
+    @Override
+    public Set<ITriple> getGateSet()
+    {
+        return mGateSet;
     }
 
     public void setTerm(long term)
@@ -155,18 +163,37 @@ public class RaftMachine
         mApplied = applied;
     }
 
-    public void setNodeSet(Set<ITriple> nodeSet)
+    public void setPeerSet(Set<ITriple> peerSet)
     {
-        mNodeSet = nodeSet;
+        mPeerSet = peerSet;
     }
 
-    public void appendNode(ITriple... nodes)
+    public void setGateSet(Set<ITriple> gateSet)
     {
-        if (mNodeSet == null) {
-            mNodeSet = new TreeSet<>(Comparator.comparing(ITriple::getFirst));
+        mGateSet = gateSet;
+    }
+
+    public void appendPeer(ITriple... peers)
+    {
+        if (mPeerSet == null) {
+            mPeerSet = new TreeSet<>(Comparator.comparing(ITriple::getFirst));
         }
-        if (nodes == null || nodes.length == 0) { return; }
-        mNodeSet.addAll(Arrays.asList(nodes));
+        append(mPeerSet, peers);
+    }
+
+    public void appendGate(ITriple... gates)
+    {
+        if (mGateSet == null) {
+            mGateSet = new TreeSet<>(Comparator.comparing(ITriple::getFirst));
+        }
+        append(mGateSet, gates);
+    }
+
+    private void append(Set<ITriple> set, ITriple... a)
+    {
+        Objects.requireNonNull(set);
+        if (a == null || a.length == 0) { return; }
+        mPeerSet.addAll(Arrays.asList(a));
     }
 
     @Override
