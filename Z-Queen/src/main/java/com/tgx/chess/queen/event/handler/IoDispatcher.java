@@ -71,8 +71,8 @@ public class IoDispatcher<C extends IContext<C>>
         {
             case CONNECT_FAILED:
                 IPair connectFailedContent = event.getContent();
-                Throwable throwable = connectFailedContent.first();
-                IConnectActivity<C> connectActive = connectFailedContent.second();
+                Throwable throwable = connectFailedContent.getFirst();
+                IConnectActivity<C> connectActive = connectFailedContent.getSecond();
                 dispatchError(connectActive.getSort(), errorType, throwable, connectActive, event.getEventOp());
                 break;
             case CLOSED:
@@ -81,12 +81,12 @@ public class IoDispatcher<C extends IContext<C>>
                           ISession<C>,
                           Void> closedOperator = event.getEventOp();
                 IPair closedContent = event.getContent();
-                ISession<C> session = closedContent.second();
+                ISession<C> session = closedContent.getSecond();
                 if (!session.isClosed()) {
                     dispatchError(session.getContext()
                                          .getSort(),
                                   CLOSED,
-                                  closedContent.first(),
+                                  closedContent.getFirst(),
                                   session,
                                   closedOperator);
                 }
@@ -96,8 +96,8 @@ public class IoDispatcher<C extends IContext<C>>
                 {
                     case CONNECTED:
                         IPair connectContent = event.getContent();
-                        IConnectActivity<C> context = connectContent.first();
-                        AsynchronousSocketChannel channel = connectContent.second();
+                        IConnectActivity<C> context = connectContent.getFirst();
+                        AsynchronousSocketChannel channel = connectContent.getSecond();
                         IOperator<IConnectActivity<C>,
                                   AsynchronousSocketChannel,
                                   ITriple> connectOperator = event.getEventOp();
@@ -105,7 +105,7 @@ public class IoDispatcher<C extends IContext<C>>
                         break;
                     case READ:
                         IPair readContent = event.getContent();
-                        session = readContent.second();
+                        session = readContent.getSecond();
                         publish(dispatchWorker(session.getHashKey()), TRANSFER, readContent, event.getEventOp());
                         break;
                     case WROTE:
@@ -117,7 +117,7 @@ public class IoDispatcher<C extends IContext<C>>
                                   ISession<C>,
                                   Void> closeOperator = event.getEventOp();
                         IPair closeContent = event.getContent();
-                        session = closeContent.second();
+                        session = closeContent.getSecond();
                         if (!session.isClosed()) {
                             error(_Error, CLOSED, closeContent, closeOperator);
                         }
@@ -132,16 +132,16 @@ public class IoDispatcher<C extends IContext<C>>
                           ISession<C>,
                           ITriple> errorOperator = event.getEventOp();
                 IPair errorContent = event.getContent();
-                session = errorContent.second();
+                session = errorContent.getSecond();
                 if (!session.isClosed()) {
-                    throwable = errorContent.first();
+                    throwable = errorContent.getFirst();
                     ITriple result = errorOperator.handle(throwable, session);
                     dispatchError(session.getContext()
                                          .getSort(),
                                   CLOSED,
-                                  result.first(),
+                                  result.getFirst(),
                                   session,
-                                  result.third());
+                                  result.getThird());
                 }
                 break;
         }

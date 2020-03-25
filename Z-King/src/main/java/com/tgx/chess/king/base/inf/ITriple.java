@@ -29,15 +29,14 @@ package com.tgx.chess.king.base.inf;
  */
 public interface ITriple
         extends
-        IDisposable,
         Cloneable
 {
 
-    <A> A first();
+    <FIRST> FIRST getFirst();
 
-    <B> B second();
+    <SECOND> SECOND getSecond();
 
-    <C> C third();
+    <THIRD> THIRD getThird();
 
     ITriple clone();
 

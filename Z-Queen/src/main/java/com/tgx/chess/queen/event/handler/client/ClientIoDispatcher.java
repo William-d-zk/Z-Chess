@@ -75,8 +75,8 @@ public class ClientIoDispatcher<C extends IContext<C>>
         {
             case CONNECT_FAILED:
                 IPair connectFailedContent = event.getContent();
-                Throwable throwable = connectFailedContent.first();
-                IConnectActivity<C> connectActive = connectFailedContent.second();
+                Throwable throwable = connectFailedContent.getFirst();
+                IConnectActivity<C> connectActive = connectFailedContent.getSecond();
                 IOperator<Throwable,
                           IConnectActivity<C>,
                           ITriple> connectFailedOperator = event.getEventOp();
@@ -85,7 +85,7 @@ public class ClientIoDispatcher<C extends IContext<C>>
             case CLOSED:
                 //transfer
                 IPair closedContent = event.getContent();
-                ISession<C> session = closedContent.second();
+                ISession<C> session = closedContent.getSecond();
                 IOperator<Void,
                           ISession<C>,
                           Void> closedOperator = event.getEventOp();
@@ -99,8 +99,8 @@ public class ClientIoDispatcher<C extends IContext<C>>
                 {
                     case CONNECTED:
                         IPair connectContent = event.getContent();
-                        IConnectActivity<C> connectActivity = connectContent.first();
-                        AsynchronousSocketChannel channel = connectContent.second();
+                        IConnectActivity<C> connectActivity = connectContent.getFirst();
+                        AsynchronousSocketChannel channel = connectContent.getSecond();
                         IOperator<IConnectActivity<C>,
                                   AsynchronousSocketChannel,
                                   ITriple> connectOperator = event.getEventOp();
@@ -119,7 +119,7 @@ public class ClientIoDispatcher<C extends IContext<C>>
                                   ISession<C>,
                                   Void> closeOperator = event.getEventOp();
                         IPair closeContent = event.getContent();
-                        session = closeContent.second();
+                        session = closeContent.getSecond();
                         if (!session.isClosed()) {
                             error(_ErrorPipe, CLOSED, closeContent, closeOperator);
                         }
@@ -136,14 +136,14 @@ public class ClientIoDispatcher<C extends IContext<C>>
                 IOperator<Throwable,
                           ISession<C>,
                           ITriple> errorOperator = event.getEventOp();
-                session = errorContent.second();
+                session = errorContent.getSecond();
                 if (!session.isClosed()) {
-                    throwable = errorContent.first();
+                    throwable = errorContent.getFirst();
                     ITriple transferResult = errorOperator.handle(throwable, session);
                     error(_LinkIoPipe,
                           event.getErrorType(),
-                          new Pair<>(transferResult.first(), session),
-                          transferResult.third());
+                          new Pair<>(transferResult.getFirst(), session),
+                          transferResult.getThird());
                 }
                 break;
         }

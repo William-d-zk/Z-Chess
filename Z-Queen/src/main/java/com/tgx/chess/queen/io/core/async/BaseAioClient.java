@@ -76,7 +76,7 @@ public class BaseAioClient<C extends IContext<C>>
             socketChannel.connect(remoteAddress, socketChannel, connector);
             int retryCount = 0;
             if (pair != null) {
-                retryCount = pair.first();
+                retryCount = pair.getFirst();
                 pair.setFirst(++retryCount);
             }
             _Logger.info("%s,%d", remoteAddress, retryCount);
@@ -98,7 +98,7 @@ public class BaseAioClient<C extends IContext<C>>
     {
         InetSocketAddress remoteAddress = session.getRemoteAddress();
         IAioConnector<C> connector = _TargetManageMap.get(remoteAddress)
-                                                     .second();
+                                                     .getSecond();
         _Logger.info("on dismiss: [shutdown: %s ]", connector.isShutdown());
         delayConnect(connector);
     }
@@ -129,7 +129,7 @@ public class BaseAioClient<C extends IContext<C>>
         InetSocketAddress remoteAddress = session.getRemoteAddress();
         if (_TargetManageMap.containsKey(remoteAddress)) {
             IAioConnector<C> connector = _TargetManageMap.get(remoteAddress)
-                                                         .second();
+                                                         .getSecond();
             connector.shutdown();
         }
     }

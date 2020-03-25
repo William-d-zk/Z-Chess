@@ -34,7 +34,6 @@ import com.tgx.chess.king.base.inf.IPair;
 public class Pair<FIRST,
                   SECOND>
         implements
-        IDisposable,
         IPair
 {
     private FIRST  first;
@@ -58,20 +57,13 @@ public class Pair<FIRST,
     }
 
     @Override
-    public void dispose()
-    {
-        first = null;
-        second = null;
-    }
-
-    @Override
-    public FIRST first()
+    public FIRST getFirst()
     {
         return first;
     }
 
     @Override
-    public SECOND second()
+    public SECOND getSecond()
     {
         return second;
     }
@@ -109,13 +101,4 @@ public class Pair<FIRST,
         return Objects.hash(first, second);
     }
 
-    public FIRST getFirst()
-    {
-        return first;
-    }
-
-    public SECOND getSecond()
-    {
-        return second;
-    }
 }

@@ -113,13 +113,13 @@ public class DeviceNode
         _TimeWheel = timeWheel;
         _ZUID = clusterConfig.createZUID(true);
         IPair bind = clusterConfig.getBind();
-        hosts.add(new Triple<>(bind.first(), bind.second(), ZSort.WS_CLUSTER_SERVER));
+        hosts.add(new Triple<>(bind.getFirst(), bind.getSecond(), ZSort.WS_CLUSTER_SERVER));
         _AioServers = hosts.stream()
                            .map(triple ->
                            {
-                               final String _Host = triple.first();
-                               final int _Port = triple.second();
-                               final ISort<ZContext> _Sort = triple.third();
+                               final String _Host = triple.getFirst();
+                               final int _Port = triple.getSecond();
+                               final ISort<ZContext> _Sort = triple.getThird();
                                ISort.Mode mode = _Sort.getMode();
                                ISort.Type type = _Sort.getType();
                                final long _SessionInitializeIndex;
@@ -247,8 +247,8 @@ public class DeviceNode
 
     private IAioConnector<ZContext> buildConnector(IPair address, ZSort sort, IAioClient<ZContext> client)
     {
-        final String _Host = address.first();
-        final int _Port = address.second();
+        final String _Host = address.getFirst();
+        final int _Port = address.getSecond();
         final ISort<ZContext> _Sort = sort;
         ISort.Mode mode = _Sort.getMode();
         ISort.Type type = _Sort.getType();

@@ -74,7 +74,7 @@ public class X118_QttSubscribe
         int length = super.dataLength();
         if (mTopics != null) {
             for (IPair pair : mTopics) {
-                String topic = pair.first();
+                String topic = pair.getFirst();
                 //2byte UTF-8 length 1byte Qos-lv
                 length += 3 + topic.getBytes(StandardCharsets.UTF_8).length;
             }
@@ -121,9 +121,9 @@ public class X118_QttSubscribe
         pos = super.encodec(data, pos);
         if (mTopics != null) {
             for (IPair pair : mTopics) {
-                String topic = pair.first();
+                String topic = pair.getFirst();
                 byte[] topicData = topic.getBytes(StandardCharsets.UTF_8);
-                Level qosLevel = pair.second();
+                Level qosLevel = pair.getSecond();
                 pos += IoUtil.writeShort(topicData.length, data, pos);
                 pos += IoUtil.write(topicData, data, pos);
                 pos += IoUtil.writeByte(qosLevel.ordinal(), data, pos);

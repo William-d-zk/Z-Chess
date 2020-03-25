@@ -859,19 +859,19 @@ public enum Units
     {
         return Stream.of(Units.values())
                      .map(units -> units.parse(input))
-                     .filter(Triple::first)
+                     .filter(Triple::getFirst)
                      .findAny()
                      .orElseThrow(() -> new ZException(errorCode.getMsg(catalog, input)))
-                     .second();
+                     .getSecond();
     }
 
     public static float parseValue(String input) throws ZException
     {
         return Stream.of(Units.values())
                      .map(units -> units.parse(input))
-                     .filter(Triple::first)
+                     .filter(Triple::getFirst)
                      .findAny()
                      .orElseThrow(() -> new ZException(Code.ILLEGAL_PARAM.getMsg(input)))
-                     .second();
+                     .getSecond();
     }
 }

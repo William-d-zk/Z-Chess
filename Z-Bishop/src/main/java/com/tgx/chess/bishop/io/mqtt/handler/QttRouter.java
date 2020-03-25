@@ -93,8 +93,8 @@ public class QttRouter
                                  IQoS.Level> pair,
                             long sessionIndex)
     {
-        String topic = pair.first();
-        IQoS.Level qosLevel = pair.second();
+        String topic = pair.getFirst();
+        IQoS.Level qosLevel = pair.getSecond();
         try {
             Pattern pattern = topicToRegex(topic);
             _Logger.info("topic %s,pattern %s", topic, pattern);
@@ -212,8 +212,8 @@ public class QttRouter
         }
         for (Iterator<IPair> it = _SessionIdleQueue.iterator(); it.hasNext();) {
             IPair pair = it.next();
-            long rmSessionIndex = pair.first();
-            Instant idle = pair.second();
+            long rmSessionIndex = pair.getFirst();
+            Instant idle = pair.getSecond();
             if (Instant.now()
                        .isAfter(idle.plusSeconds(idleMax)))
             {

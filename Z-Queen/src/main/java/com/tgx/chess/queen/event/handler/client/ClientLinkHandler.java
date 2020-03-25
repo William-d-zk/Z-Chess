@@ -62,7 +62,7 @@ public class ClientLinkHandler<C extends IContext<C>>
             else {
                 _Logger.warning("client io error , do close session");
                 IPair errorContent = event.getContent();
-                ISession<C> session = errorContent.second();
+                ISession<C> session = errorContent.getSecond();
                 ISessionDismiss<C> dismiss = session.getDismissCallback();
                 IOperator<Void,
                           ISession<C>,
@@ -79,18 +79,18 @@ public class ClientLinkHandler<C extends IContext<C>>
                 case CONNECTED:
                     try {
                         IPair connectedContent = event.getContent();
-                        IConnectActivity<C> connectActivity = connectedContent.first();
-                        AsynchronousSocketChannel channel = connectedContent.second();
+                        IConnectActivity<C> connectActivity = connectedContent.getFirst();
+                        AsynchronousSocketChannel channel = connectedContent.getSecond();
                         IOperator<IConnectActivity<C>,
                                   AsynchronousSocketChannel,
                                   ITriple> connectedOperator = event.getEventOp();
                         ITriple connectedHandled = connectedOperator.handle(connectActivity, channel);
                         //connectedHandled 不可能为 null
-                        IControl<C>[] waitToSend = connectedHandled.first();
-                        ISession<C> session = connectedHandled.second();
+                        IControl<C>[] waitToSend = connectedHandled.getFirst();
+                        ISession<C> session = connectedHandled.getSecond();
                         IOperator<IControl<C>[],
                                   ISession<C>,
-                                  List<ITriple>> sendTransferOperator = connectedHandled.third();
+                                  List<ITriple>> sendTransferOperator = connectedHandled.getThird();
                         event.produce(WRITE, new Pair<>(waitToSend, session), sendTransferOperator);
                         _Logger.info(String.format("link mappingHandle %s,connected", session));
                     }

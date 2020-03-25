@@ -63,13 +63,13 @@ public class EncodedHandler<C extends IContext<C>>
                 case ILLEGAL_BIZ_STATE:
                 default:
                     IPair errorContent = event.getContent();
-                    Throwable throwable = errorContent.first();
-                    ISession<C> session = errorContent.second();
+                    Throwable throwable = errorContent.getFirst();
+                    ISession<C> session = errorContent.getSecond();
                     IOperator<Throwable,
                               ISession<C>,
                               ITriple> errorOperator = event.getEventOp();
                     ITriple errorResult = errorOperator.handle(throwable, session);
-                    error(_Error, IError.Type.CLOSED, new Pair<>(null, session), errorResult.third());
+                    error(_Error, IError.Type.CLOSED, new Pair<>(null, session), errorResult.getThird());
                     break;
             }
         }

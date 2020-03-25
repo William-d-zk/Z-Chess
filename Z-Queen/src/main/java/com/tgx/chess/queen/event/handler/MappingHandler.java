@@ -90,7 +90,7 @@ public class MappingHandler<C extends IContext<C>>
                               IAioConnector<C>,
                               IAioConnector<C>> connectFailedOperator = event.getEventOp();
                     IPair errorContent = event.getContent();
-                    connectFailedOperator.handle(errorContent.first(), errorContent.second());
+                    connectFailedOperator.handle(errorContent.getFirst(), errorContent.getSecond());
                     break;
                 default:
                     _Logger.warning("server io error , do close session");
@@ -98,7 +98,7 @@ public class MappingHandler<C extends IContext<C>>
                               ISession<C>,
                               Void> closeOperator = event.getEventOp();
                     errorContent = event.getContent();
-                    ISession<C> session = errorContent.second();
+                    ISession<C> session = errorContent.getSecond();
                     ISessionDismiss<C> dismiss = session.getDismissCallback();
                     boolean closed = session.isClosed();
                     closeOperator.handle(null, session);
@@ -113,15 +113,15 @@ public class MappingHandler<C extends IContext<C>>
                 case CONNECTED:
                     try {
                         IPair connectedContent = event.getContent();
-                        AsynchronousSocketChannel channel = connectedContent.second();
-                        IConnectActivity<C> connectActivity = connectedContent.first();
+                        AsynchronousSocketChannel channel = connectedContent.getSecond();
+                        IConnectActivity<C> connectActivity = connectedContent.getFirst();
                         IOperator<IConnectActivity<C>,
                                   AsynchronousSocketChannel,
                                   ITriple> connectedOperator = event.getEventOp();
                         ITriple connectedHandled = connectedOperator.handle(connectActivity, channel);
                         /*connectedHandled 不可能为 null*/
-                        ISession<C> session = connectedHandled.second();
-                        write(connectedHandled.first(), session);
+                        ISession<C> session = connectedHandled.getSecond();
+                        write(connectedHandled.getFirst(), session);
                     }
                     catch (Exception e) {
                         _Logger.fetal("link create session failed", e);
@@ -129,9 +129,9 @@ public class MappingHandler<C extends IContext<C>>
                     break;
                 case LOGIC:
                     ISession<C> session = event.getContent()
-                                               .second();
+                                               .getSecond();
                     IControl<C> content = event.getContent()
-                                               .first();
+                                               .getFirst();
                     if (content != null) {
                         try {
                             write(_CustomLogic.handle(_QueenManager, session, content), session);

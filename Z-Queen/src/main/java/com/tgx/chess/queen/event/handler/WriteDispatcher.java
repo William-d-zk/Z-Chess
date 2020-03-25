@@ -80,7 +80,7 @@ public class WriteDispatcher<C extends IContext<C>>
                               ISession<C>,
                               Void> closeOperator = event.getEventOp();
                     IPair closeContent = event.getContent();
-                    ISession<C> session = closeContent.second();
+                    ISession<C> session = closeContent.getSecond();
                     if (!session.isClosed()) {
                         error(_Error, event.getErrorType(), closeContent, closeOperator);
                     }
@@ -96,16 +96,16 @@ public class WriteDispatcher<C extends IContext<C>>
             case WRITE://from LinkIo/Cluster
             case LOGIC://from read->logic
                 IPair writeContent = event.getContent();
-                IControl<C>[] commands = writeContent.first();
-                ISession<C> session = writeContent.second();
+                IControl<C>[] commands = writeContent.getFirst();
+                ISession<C> session = writeContent.getSecond();
                 if (Objects.nonNull(commands)) {
                     IOperator<IControl<C>[],
                               ISession<C>,
                               List<ITriple>> transferOperator = event.getEventOp();
                     List<ITriple> triples = transferOperator.handle(commands, session);
                     for (ITriple triple : triples) {
-                        ISession<C> targetSession = triple.second();
-                        IControl<C> content = triple.first();
+                        ISession<C> targetSession = triple.getSecond();
+                        IControl<C> content = triple.getFirst();
                         if (content.isShutdown()) {
                             if (targetSession.isValid()) {
                                 error(_Error,
@@ -119,15 +119,15 @@ public class WriteDispatcher<C extends IContext<C>>
                         else tryPublish(dispatchEncoder(targetSession.getHashKey()),
                                         WRITE,
                                         new Pair<>(content, targetSession),
-                                        triple.third());
+                                        triple.getThird());
                     }
                     _Logger.info("write_dispatcher, source %s, transfer:%d", event.getEventType(), commands.length);
                 }
                 break;
             case WROTE://from io-wrote
                 IPair wroteContent = event.getContent();
-                int wroteCount = wroteContent.first();
-                session = wroteContent.second();
+                int wroteCount = wroteContent.getFirst();
+                session = wroteContent.getSecond();
                 if (session.isValid()) {
                     tryPublish(dispatchEncoder(session.getHashKey()),
                                WROTE,
