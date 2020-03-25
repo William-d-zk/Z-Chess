@@ -24,7 +24,6 @@
 
 package com.tgx.chess.queen.io.core.executor;
 
-import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.lmax.disruptor.RingBuffer;
@@ -34,9 +33,7 @@ import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.IActivity;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
-import com.tgx.chess.queen.io.core.inf.IPipeTransfer;
 import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.inf.ISessionCloser;
 
 /**
  * @author william.d.zk
@@ -51,8 +48,8 @@ public interface ILocalPublisher<C extends IContext<C>>
 
     ReentrantLock getLocalLock();
 
-    @SuppressWarnings("unchecked")
     @Override
+    @SuppressWarnings("unchecked")
     default boolean send(ISession<C> session, IControl<C>... toSends)
     {
         if (session == null || toSends == null || toSends.length == 0) { return false; }
