@@ -161,7 +161,7 @@ public class ZUID
 
     public long getId(long type)
     {
-        type &= (1 << TYPE_BITS) - 1;
+        type &= (1L << TYPE_BITS) - 1;
         long timestamp = _TimestampSupplier.get();
         if (lastTimestamp == timestamp) {
             sequence = (sequence + 1) & SEQUENCE_MASK;
@@ -189,13 +189,13 @@ public class ZUID
 
     public long getPeerId(long nodeId)
     {
-        nodeId &= (1 << NODE_BITS) - 1;
+        nodeId &= (1L << NODE_BITS) - 1;
         return (_IdcId << IDC_SHIFT) | (_ClusterId << CLUSTER_SHIFT) | (nodeId << NODE_SHIFT) | (_Type << TYPE_SHIFT);
     }
 
     public long getClusterId(long clusterId)
     {
-        clusterId &= (1 << CLUSTER_BITS) - 1;
+        clusterId &= (1L << CLUSTER_BITS) - 1;
         return (_IdcId << IDC_SHIFT) | (clusterId << CLUSTER_SHIFT) | (_Type << TYPE_SHIFT);
     }
 
