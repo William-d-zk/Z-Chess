@@ -70,6 +70,7 @@ public class ZClusterConfig
                 if (!socket.isConnected()) { throw new RuntimeException("peer test connect failed"); }
                 InetSocketAddress localAddr = (InetSocketAddress) socket.getLocalSocketAddress();
                 String localHostStr = localAddr.getHostString();
+                _Logger.info("local host:%s", localHostStr);
                 bind.setFirst(localHostStr);
                 setNodeId(localHostStr);
             }
@@ -227,6 +228,7 @@ public class ZClusterConfig
             {
                 uid.setNodeId(i);
                 set = true;
+                _Logger.info("node-id:%d", i);
                 break;
             }
         }
