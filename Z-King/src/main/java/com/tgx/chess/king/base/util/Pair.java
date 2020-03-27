@@ -46,6 +46,11 @@ public class Pair<FIRST,
         this.second = second;
     }
 
+    public Pair()
+    {
+
+    }
+
     public void setFirst(FIRST f)
     {
         first = f;
