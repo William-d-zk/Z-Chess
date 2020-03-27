@@ -32,6 +32,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.tgx.chess.json.JsonUtil;
 import com.tgx.chess.king.base.inf.ITriple;
+import com.tgx.chess.king.base.util.Triple;
 
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class LogMeta
@@ -41,21 +42,25 @@ public class LogMeta
     private final static int _SERIAL = INTERNAL_SERIAL + 1;
 
     /** 已存储日志的start index */
-    private long         mStart;
+    private long                               mStart;
     /** 本机存储日志的 index */
-    private long         mIndex;
+    private long                               mIndex;
     /** 已存储日志的最大任期号 */
-    private long         mTerm;
+    private long                               mTerm;
     /** 当前状态机候选人 */
-    private long         mCandidate;
+    private long                               mCandidate;
     /** 集群中已知的最大的被提交的日志index */
-    private long         mCommit;
+    private long                               mCommit;
     /** 已被应用到状态机日志index */
-    private long         mApplied;
+    private long                               mApplied;
     /** 集群节点信息 */
-    private Set<ITriple> mPeerSet;
+    private Set<Triple<Long,
+                       String,
+                       Integer>>               mPeerSet;
     /** 集群跨分区网关 */
-    private Set<ITriple> mGateSet;
+    private Set<Triple<Long,
+                       String,
+                       Integer>>               mGateSet;
 
     LogMeta()
     {
@@ -157,22 +162,30 @@ public class LogMeta
         mApplied = applied;
     }
 
-    public Set<ITriple> getPeerSet()
+    public Set<Triple<Long,
+                      String,
+                      Integer>> getPeerSet()
     {
         return mPeerSet;
     }
 
-    public void setPeerSet(Set<ITriple> peerSet)
+    public void setPeerSet(Set<Triple<Long,
+                                      String,
+                                      Integer>> peerSet)
     {
         mPeerSet = peerSet;
     }
 
-    public Set<ITriple> getGateSet()
+    public Set<Triple<Long,
+                      String,
+                      Integer>> getGateSet()
     {
         return mGateSet;
     }
 
-    public void setGateSet(Set<ITriple> gateSet)
+    public void setGateSet(Set<Triple<Long,
+                                      String,
+                                      Integer>> gateSet)
     {
         mGateSet = gateSet;
     }

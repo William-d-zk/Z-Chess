@@ -41,6 +41,7 @@ import com.tgx.chess.cluster.raft.IRaftMachine;
 import com.tgx.chess.cluster.raft.IRaftNode;
 import com.tgx.chess.cluster.raft.IRaftNode.RaftState;
 import com.tgx.chess.king.base.inf.ITriple;
+import com.tgx.chess.king.base.util.Triple;
 
 /**
  * @author william.d.zk
@@ -51,16 +52,20 @@ public class RaftMachine
         implements
         IRaftMachine
 {
-    private final long   _PeerId;
-    private long         mTerm;
-    private long         mIndex;
-    private long         mCandidate;
-    private long         mLeader;
-    private long         mCommit;
-    private long         mApplied;
-    private int          mState;
-    private Set<ITriple> mPeerSet;
-    private Set<ITriple> mGateSet;
+    private final long                         _PeerId;
+    private long                               mTerm;
+    private long                               mIndex;
+    private long                               mCandidate;
+    private long                               mLeader;
+    private long                               mCommit;
+    private long                               mApplied;
+    private int                                mState;
+    private Set<Triple<Long,
+                       String,
+                       Integer>>               mPeerSet;
+    private Set<Triple<Long,
+                       String,
+                       Integer>>               mGateSet;
 
     @JsonCreator
     public RaftMachine(@JsonProperty("peer_id") long peerId)
@@ -117,13 +122,17 @@ public class RaftMachine
     }
 
     @Override
-    public Set<ITriple> getPeerSet()
+    public Set<Triple<Long,
+                      String,
+                      Integer>> getPeerSet()
     {
         return mPeerSet;
     }
 
     @Override
-    public Set<ITriple> getGateSet()
+    public Set<Triple<Long,
+                      String,
+                      Integer>> getGateSet()
     {
         return mGateSet;
     }
@@ -163,17 +172,23 @@ public class RaftMachine
         mApplied = applied;
     }
 
-    public void setPeerSet(Set<ITriple> peerSet)
+    public void setPeerSet(Set<Triple<Long,
+                                      String,
+                                      Integer>> peerSet)
     {
         mPeerSet = peerSet;
     }
 
-    public void setGateSet(Set<ITriple> gateSet)
+    public void setGateSet(Set<Triple<Long,
+                                      String,
+                                      Integer>> gateSet)
     {
         mGateSet = gateSet;
     }
 
-    public void appendPeer(ITriple... peers)
+    public void appendPeer(Triple<Long,
+                                  String,
+                                  Integer>... peers)
     {
         if (mPeerSet == null) {
             mPeerSet = new TreeSet<>(Comparator.comparing(ITriple::getFirst));
@@ -181,7 +196,9 @@ public class RaftMachine
         append(mPeerSet, peers);
     }
 
-    public void appendGate(ITriple... gates)
+    public void appendGate(Triple<Long,
+                                  String,
+                                  Integer>... gates)
     {
         if (mGateSet == null) {
             mGateSet = new TreeSet<>(Comparator.comparing(ITriple::getFirst));
@@ -189,7 +206,12 @@ public class RaftMachine
         append(mGateSet, gates);
     }
 
-    private void append(Set<ITriple> set, ITriple... a)
+    private void append(Set<Triple<Long,
+                                   String,
+                                   Integer>> set,
+                        Triple<Long,
+                               String,
+                               Integer>... a)
     {
         Objects.requireNonNull(set);
         if (a == null || a.length == 0) { return; }

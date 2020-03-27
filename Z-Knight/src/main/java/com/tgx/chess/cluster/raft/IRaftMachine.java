@@ -28,6 +28,7 @@ import java.util.Set;
 
 import com.tgx.chess.cluster.raft.IRaftNode.RaftState;
 import com.tgx.chess.king.base.inf.ITriple;
+import com.tgx.chess.king.base.util.Triple;
 
 /**
  * @author william.d.zk
@@ -60,10 +61,14 @@ public interface IRaftMachine
     long getApplied();
 
     /** @return 集群中所有节点 */
-    Set<ITriple> getPeerSet();
+    Set<Triple<Long,
+               String,
+               Integer>> getPeerSet();
 
     /** @return 跨集群网关 */
-    Set<ITriple> getGateSet();
+    Set<Triple<Long,
+               String,
+               Integer>> getGateSet();
 
     /**
      * 接收另一个machine的状态更新

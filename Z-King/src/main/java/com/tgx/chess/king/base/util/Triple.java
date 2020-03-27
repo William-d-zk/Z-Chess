@@ -49,6 +49,10 @@ public class Triple<FIRST,
         this.third = third;
     }
 
+    public Triple()
+    {
+    }
+
     @Override
     public FIRST getFirst()
     {
