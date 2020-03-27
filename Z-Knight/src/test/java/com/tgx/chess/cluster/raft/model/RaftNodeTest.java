@@ -24,11 +24,7 @@
 
 package com.tgx.chess.cluster.raft.model;
 
-import com.tgx.chess.bishop.ZUID;
 import org.junit.jupiter.api.Test;
-
-import java.util.Map;
-import java.util.TreeMap;
 
 class RaftNodeTest
 {
@@ -36,9 +32,8 @@ class RaftNodeTest
     @Test
     void raftGraphAdd()
     {
-        ZUID zuid = new ZUID();
-        int i = 10;
-        System.out.println(zuid.getPeerId(i));
+        long a = 0x8892301123L;
+        System.out.println(String.format("%#x", a));
     }
 
 }
