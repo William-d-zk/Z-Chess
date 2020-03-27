@@ -186,7 +186,7 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
     @Override
     public void load(List<IRaftMessage> snapshot)
     {
-
+        
     }
 
     @Override
