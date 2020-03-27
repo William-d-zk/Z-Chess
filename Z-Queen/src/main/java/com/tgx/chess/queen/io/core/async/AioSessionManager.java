@@ -184,7 +184,7 @@ public abstract class AioSessionManager<C extends IContext<C>>
                 Set<ISession<C>>> prefix2SessionMap = _Prefix2SessionMaps[slot];
             for (long prefix : prefixArray) {
                 if (getSlot(prefix) != slot) {
-                    throw new IllegalArgumentException(String.format("index: %xd, prefix: %xd | slot error",
+                    throw new IllegalArgumentException(String.format("index: %#x, prefix: %#x | slot error",
                                                                      index,
                                                                      prefix));
                 }

@@ -41,6 +41,5 @@ public class DeviceServiceTest
         DeviceEntity device = new DeviceEntity();
         device.setPassword("password");
         device.setToken("869170031813745");
-
     }
 }
