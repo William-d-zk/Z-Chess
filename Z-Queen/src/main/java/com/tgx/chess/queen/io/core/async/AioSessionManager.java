@@ -123,7 +123,7 @@ public abstract class AioSessionManager<C extends IContext<C>>
      */
     private ISession<C> mapSession(long _Index, ISession<C> session)
     {
-        _Logger.info("session manager map->(%d,%s)", _Index, session);
+        _Logger.info("session manager map-> %#x,%s", _Index, session);
         if (_Index == INVALID_INDEX || _Index == NULL_INDEX) {
             throw new IllegalArgumentException(String.format("index error %d", _Index));
         }
