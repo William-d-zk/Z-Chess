@@ -186,9 +186,10 @@ public class RaftMachine
         mGateSet = gateSet;
     }
 
-    public void appendPeer(Triple<Long,
-                                  String,
-                                  Integer>... peers)
+    @SafeVarargs
+    public final void appendPeer(Triple<Long,
+                                        String,
+                                        Integer>... peers)
     {
         if (mPeerSet == null) {
             mPeerSet = new TreeSet<>(Comparator.comparing(ITriple::getFirst));
@@ -196,9 +197,10 @@ public class RaftMachine
         append(mPeerSet, peers);
     }
 
-    public void appendGate(Triple<Long,
-                                  String,
-                                  Integer>... gates)
+    @SafeVarargs
+    public final void appendGate(Triple<Long,
+                                        String,
+                                        Integer>... gates)
     {
         if (mGateSet == null) {
             mGateSet = new TreeSet<>(Comparator.comparing(ITriple::getFirst));
@@ -206,12 +208,13 @@ public class RaftMachine
         append(mGateSet, gates);
     }
 
-    private void append(Set<Triple<Long,
-                                   String,
-                                   Integer>> set,
-                        Triple<Long,
-                               String,
-                               Integer>... a)
+    @SafeVarargs
+    private final void append(Set<Triple<Long,
+                                         String,
+                                         Integer>> set,
+                              Triple<Long,
+                                     String,
+                                     Integer>... a)
     {
         Objects.requireNonNull(set);
         if (a == null || a.length == 0) { return; }
