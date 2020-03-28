@@ -24,6 +24,8 @@
 
 package com.tgx.chess.bishop;
 
+import com.tgx.chess.queen.config.QueenCode;
+
 import java.time.Instant;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.Supplier;
@@ -161,7 +163,7 @@ public class ZUID
 
     public long getId(long type)
     {
-        type &= (1L << TYPE_BITS) - 1;
+        type &= QueenCode.XID_MK;
         long timestamp = _TimestampSupplier.get();
         if (lastTimestamp == timestamp) {
             sequence = (sequence + 1) & SEQUENCE_MASK;
@@ -178,7 +180,7 @@ public class ZUID
                | (_ClusterId << CLUSTER_SHIFT)
                | (_NodeId << NODE_SHIFT)
                | ((timestamp - TWEPOCH) << TIMESTAMP_SHIFT)
-               | (type << TYPE_SHIFT)
+               | type
                | sequence;
     }
 

@@ -300,7 +300,6 @@ public class DeviceNode
     public void addPeer(IPair remote) throws IOException
     {
         _ClusterClient.connect(buildConnector(remote, ZSort.WS_CLUSTER_CONSUMER, _ClusterClient));
-
     }
 
     @Override
