@@ -48,6 +48,7 @@ public abstract class BaseAioConnector<C extends IContext<C>>
         implements
         IAioConnector<C>
 {
+
     private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
 
     protected BaseAioConnector(String host,
@@ -60,19 +61,21 @@ public abstract class BaseAioConnector<C extends IContext<C>>
         attach(connectFailed);
     }
 
-    private InetSocketAddress              mLocalBind;
+    private static final int COUNT_BITS = Integer.SIZE - 7;
+    private static final int CAPACITY   = (1 << COUNT_BITS) - 1;
+    private static final int RUNNING    = -1 << COUNT_BITS;
+    private static final int SHUTDOWN   = 0 << COUNT_BITS;
+    private static final int STOP       = 1 << COUNT_BITS;
+    private static final int TIDYING    = 2 << COUNT_BITS;
+    private static final int TERMINATED = 3 << COUNT_BITS;
+
     private final ConnectFailedOperator<C> _ConnectFailedOperator = new ConnectFailedOperator<>();
     private final ConnectedOperator<C>     _ConnectedOperator     = new ConnectedOperator<>();
     private final InetSocketAddress        _RemoteAddress;
-    private final AtomicInteger            _State                 = new AtomicInteger();
-    private static final int               COUNT_BITS             = Integer.SIZE - 7;
-    private static final int               CAPACITY               = (1 << COUNT_BITS) - 1;
-    private static final int               RUNNING                = -1 << COUNT_BITS;
-    private static final int               SHUTDOWN               = 0 << COUNT_BITS;
-    private static final int               STOP                   = 1 << COUNT_BITS;
-    private static final int               TIDYING                = 2 << COUNT_BITS;
-    private static final int               TERMINATED             = 3 << COUNT_BITS;
-    private IConnectFailed<C>              mFailedConsumer;
+    private final AtomicInteger            _State                 = new AtomicInteger(ctlOf(RUNNING, 0));
+
+    private InetSocketAddress mLocalBind;
+    private IConnectFailed<C> mFailedConsumer;
 
     private void advanceRunState(int targetState)
     {
