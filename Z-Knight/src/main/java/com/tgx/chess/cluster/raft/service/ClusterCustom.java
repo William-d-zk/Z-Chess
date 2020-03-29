@@ -25,12 +25,16 @@
 package com.tgx.chess.cluster.raft.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.tgx.chess.bishop.biz.device.DeviceNode;
 import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7E_RaftBroadcast;
 import com.tgx.chess.cluster.raft.IRaftNode;
 import com.tgx.chess.cluster.raft.model.log.LogEntry;
 import com.tgx.chess.json.JsonUtil;
 import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.queen.io.core.inf.IActivity;
+import com.tgx.chess.queen.io.core.inf.IClusterPeer;
+import com.tgx.chess.queen.io.core.inf.ISessionManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -46,16 +50,16 @@ import java.util.List;
 import java.util.function.Consumer;
 
 @Component
-public class ClusterCustom
+public class ClusterCustom<T extends ISessionManager<ZContext> & IActivity<ZContext> & IClusterPeer>
         implements
         ICustomLogic<ZContext>
 {
-    private final Logger                _Logger = Logger.getLogger(getClass().getSimpleName());
-    private final IRepository<RaftNode> _ClusterRepository;
-    private RaftNode                    mRaftNode;
+    private final Logger                   _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final IRepository<RaftNode<T>> _ClusterRepository;
+    private RaftNode<T>                    mRaftNode;
 
     @Autowired
-    public ClusterCustom(IRepository<RaftNode> clusterRepository)
+    public ClusterCustom(IRepository<RaftNode<T>> clusterRepository)
     {
         _ClusterRepository = clusterRepository;
     }
@@ -85,7 +89,7 @@ public class ClusterCustom
         return null;
     }
 
-    public void setRaftNode(RaftNode raftNode)
+    public void setRaftNode(RaftNode<T> raftNode)
     {
         mRaftNode = raftNode;
     }

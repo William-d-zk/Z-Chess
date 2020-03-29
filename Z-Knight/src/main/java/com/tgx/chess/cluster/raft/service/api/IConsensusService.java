@@ -24,8 +24,12 @@
 
 package com.tgx.chess.cluster.raft.service.api;
 
+import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.cluster.raft.IRaftMessage;
 import com.tgx.chess.cluster.raft.model.RaftNode;
+import com.tgx.chess.queen.io.core.inf.IActivity;
+import com.tgx.chess.queen.io.core.inf.IClusterPeer;
+import com.tgx.chess.queen.io.core.inf.ISessionManager;
 
 import java.util.List;
 
@@ -33,7 +37,7 @@ import java.util.List;
  * @author william.d.zk
  * @date 2020/2/20
  */
-public interface IConsensusService
+public interface IConsensusService<T extends ISessionManager<ZContext> & IActivity<ZContext> & IClusterPeer>
 {
     /**
      * 发起准备流程
@@ -48,7 +52,7 @@ public interface IConsensusService
      * @param candidate
      * @return
      */
-    List<IRaftMessage> elect(RaftNode candidate);
+    List<IRaftMessage> elect(RaftNode<T> candidate);
 
     /**
      * 追加状态机日志

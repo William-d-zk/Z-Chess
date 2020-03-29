@@ -26,6 +26,10 @@ package com.tgx.chess.cluster.raft.service;
 
 import java.util.List;
 
+import com.tgx.chess.bishop.io.zfilter.ZContext;
+import com.tgx.chess.queen.io.core.inf.IActivity;
+import com.tgx.chess.queen.io.core.inf.IClusterPeer;
+import com.tgx.chess.queen.io.core.inf.ISessionManager;
 import org.springframework.stereotype.Component;
 
 import com.tgx.chess.bishop.ZUID;
@@ -35,38 +39,39 @@ import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.db.inf.IStorage;
 
 @Component
-public class ClusterRepository
+public class ClusterRepository<T extends ISessionManager<ZContext> & IActivity<ZContext> & IClusterPeer>
         implements
-        IRepository<RaftNode>
+        IRepository<RaftNode<T>>
 {
     private final IClusterConfig _ClusterConfig;
     private final ZUID           _ZUid;
 
-    public ClusterRepository(IClusterConfig clusterConfig) {
+    public ClusterRepository(IClusterConfig clusterConfig)
+    {
         _ClusterConfig = clusterConfig;
         _ZUid = _ClusterConfig.createZUID(true);
     }
 
     @Override
-    public RaftNode save(IStorage target)  
+    public RaftNode<T> save(IStorage target)
     {
         return null;
     }
 
     @Override
-    public RaftNode find(IStorage key)  
+    public RaftNode<T> find(IStorage key)
     {
         return null;
     }
 
     @Override
-    public List<RaftNode> findAll(IStorage key) 
+    public List<RaftNode<T>> findAll(IStorage key)
     {
         return null;
     }
 
     @Override
-    public void saveAll(List<IStorage> targets) 
+    public void saveAll(List<IStorage> targets)
     {
 
     }

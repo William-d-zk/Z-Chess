@@ -24,8 +24,12 @@
 
 package com.tgx.chess.cluster.raft;
 
+import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.cluster.raft.model.RaftGraph;
 import com.tgx.chess.cluster.raft.model.RaftNode;
+import com.tgx.chess.queen.io.core.inf.IActivity;
+import com.tgx.chess.queen.io.core.inf.IClusterPeer;
+import com.tgx.chess.queen.io.core.inf.ISessionManager;
 
 import java.util.List;
 
@@ -33,14 +37,14 @@ import java.util.List;
  * @author william.d.zk
  * @date 2020/2/20
  */
-public interface IRaftClient
+public interface IRaftClient<T extends ISessionManager<ZContext> & IActivity<ZContext> & IClusterPeer>
 {
     /**
      * 获取集群的leader信息
      * 
      * @return
      */
-    RaftNode getLeader();
+    RaftNode<T> getLeader();
 
     /**
      * 获取集群拓扑
@@ -55,7 +59,7 @@ public interface IRaftClient
      * @param node
      * @return
      */
-    boolean addNode(RaftNode... node);
+    boolean addNode(RaftNode<T>... node);
 
     /**
      * 移除集群节点
@@ -63,6 +67,6 @@ public interface IRaftClient
      * @param nodes
      * @return
      */
-    boolean rmNode(List<RaftNode> nodes);
+    boolean rmNode(List<RaftNode<T>> nodes);
 
 }

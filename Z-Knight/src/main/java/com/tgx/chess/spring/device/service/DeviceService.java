@@ -31,6 +31,9 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import com.tgx.chess.queen.io.core.inf.IActivity;
+import com.tgx.chess.queen.io.core.inf.IClusterPeer;
+import com.tgx.chess.queen.io.core.inf.ISessionManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -70,16 +73,16 @@ public class DeviceService
         implements
         IDeviceService
 {
-    private final Logger                    _Logger = Logger.getLogger(getClass().getSimpleName());
-    private final DeviceConfig              _DeviceConfig;
-    private final IClusterConfig            _ClusterConfig;
-    private final DeviceNode                _DeviceNode;
-    private final LinkCustom                _LinkCustom;
-    private final ClusterCustom             _ClusterCustom;
-    private final IRepository<MessageEntry> _MessageRepository;
-    private final IConsensusService         _ConsensusService;
-    private final RaftNode                  _RaftNode;
-    private final TimeWheel                 _TimeWheel;
+    private final Logger                        _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final DeviceConfig                  _DeviceConfig;
+    private final IClusterConfig                _ClusterConfig;
+    private final DeviceNode                    _DeviceNode;
+    private final LinkCustom                    _LinkCustom;
+    private final ClusterCustom<DeviceNode>     _ClusterCustom;
+    private final IRepository<MessageEntry>     _MessageRepository;
+    private final IConsensusService<DeviceNode> _ConsensusService;
+    private final RaftNode<DeviceNode>          _RaftNode;
+    private final TimeWheel                     _TimeWheel;
 
     @Autowired
     DeviceService(DeviceConfig deviceConfig,
@@ -87,9 +90,9 @@ public class DeviceService
                   IClusterConfig clusterConfig,
                   IServerConfig serverConfig,
                   LinkCustom linkCustom,
-                  ClusterCustom clusterCustom,
+                  ClusterCustom<DeviceNode> clusterCustom,
                   IRepository<MessageEntry> messageRepository,
-                  IConsensusService consensusService,
+                  IConsensusService<DeviceNode> consensusService,
                   RaftDao raftDao) throws IOException
     {
         _TimeWheel = new TimeWheel();
