@@ -57,6 +57,13 @@
                     <layout>JAR</layout>
                     <mainClass>com.tgx.chess.pawn.ApplicationPawn</mainClass>
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
