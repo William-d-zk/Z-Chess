@@ -32,6 +32,7 @@ import java.util.Random;
 
 import com.tgx.chess.bishop.ZUID;
 import com.tgx.chess.bishop.biz.config.IClusterConfig;
+import com.tgx.chess.bishop.biz.device.DeviceNode;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7E_RaftBroadcast;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
@@ -64,18 +65,18 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         implements
         IRaftNode
 {
-    private final Logger                    _Logger        = Logger.getLogger(getClass().getSimpleName());
-    private final ZUID                      _ZUID;
-    private final IClusterConfig            _ClusterConfig;
-    private final T                         _SessionManager;
-    private final RaftDao                   _RaftDao;
-    private final TimeWheel                 _TimeWheel;
-    private final ScheduleHandler<RaftNode> _ElectSchedule, _HeartbeatSchedule, _TickSheSchedule;
-    private final RaftGraph                 _RaftGraph;
-    private final RaftMachine               _SelfMachine;
-    private final List<LogEntry>            _AppendLogList = new LinkedList<>();
-    private final Random                    _Random        = new Random();
-    private ICancelable                     mElectTask, mHeartbeatTask, mTickTask;
+    private final Logger                       _Logger        = Logger.getLogger(getClass().getSimpleName());
+    private final ZUID                         _ZUID;
+    private final IClusterConfig               _ClusterConfig;
+    private final T                            _SessionManager;
+    private final RaftDao                      _RaftDao;
+    private final TimeWheel                    _TimeWheel;
+    private final ScheduleHandler<RaftNode<T>> _ElectSchedule, _HeartbeatSchedule, _TickSheSchedule;
+    private final RaftGraph                    _RaftGraph;
+    private final RaftMachine                  _SelfMachine;
+    private final List<LogEntry>               _AppendLogList = new LinkedList<>();
+    private final Random                       _Random        = new Random();
+    private ICancelable                        mElectTask, mHeartbeatTask, mTickTask;
 
     public RaftNode(TimeWheel timeWheel,
                     IClusterConfig clusterConfig,
