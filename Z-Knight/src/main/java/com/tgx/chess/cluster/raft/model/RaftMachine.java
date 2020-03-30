@@ -55,6 +55,7 @@ public class RaftMachine
     private final long                         _PeerId;
     private long                               mTerm;
     private long                               mIndex;
+    private long                               mIndexTerm;
     private long                               mCandidate;
     private long                               mLeader;
     private long                               mCommit;
@@ -83,6 +84,12 @@ public class RaftMachine
     public long getIndex()
     {
         return mIndex;
+    }
+
+    @Override
+    public long getIndexTerm()
+    {
+        return mIndexTerm;
     }
 
     @Override
@@ -145,6 +152,11 @@ public class RaftMachine
     public void setIndex(long index)
     {
         mIndex = index;
+    }
+
+    public void setIndexTerm(long term)
+    {
+        mIndexTerm = term;
     }
 
     public void setCandidate(long candidate)
@@ -219,6 +231,12 @@ public class RaftMachine
         Objects.requireNonNull(set);
         if (a == null || a.length == 0) { return; }
         mPeerSet.addAll(Arrays.asList(a));
+    }
+
+    @Override
+    public long increaseTerm()
+    {
+        return ++mTerm;
     }
 
     @Override

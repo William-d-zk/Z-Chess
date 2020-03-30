@@ -45,6 +45,7 @@ import com.tgx.chess.queen.config.IServerConfig;
 import com.tgx.chess.queen.config.QueenCode;
 import com.tgx.chess.queen.event.inf.ICustomLogic;
 import com.tgx.chess.queen.event.inf.ILogicHandler;
+import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.async.AioSession;
@@ -62,6 +63,9 @@ import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
+
+import static com.tgx.chess.queen.event.inf.IOperator.Type.CLUSTER_LOCAL;
+import static com.tgx.chess.queen.event.inf.IOperator.Type.LOCAL;
 
 /**
  * @author william.d.zk
@@ -97,17 +101,57 @@ public class DeviceNode
         super(bizIoConfig, new ServerCore<ZContext>(serverConfig)
         {
             @Override
-            public RingBuffer<QEvent> getLocalPublisher(ISession<ZContext> session)
+            public RingBuffer<QEvent> getPublisher(ISession<ZContext> session, IOperator.Type type)
             {
-                return getSlot(session) == QueenCode.CU_XID_LOW ? getBizLocalSendEvent()
-                                                                : getClusterLocalSendEvent();
+                int slot = getSlot(session);
+                switch (type)
+                {
+                    case LOCAL:
+                        if (slot != QueenCode.CU_XID_LOW) {
+                            throw new IllegalArgumentException("device local slot error");
+                        }
+                        return getBizLocalSendEvent();
+                    case CLUSTER_LOCAL:
+                        if (slot != QueenCode.CM_XID_LOW) {
+                            throw new IllegalArgumentException("cluster local slot error");
+                        }
+                        return getClusterLocalSendEvent();
+                    case CONSISTENT_TRANS:
+                        if (slot != QueenCode.CM_XID_LOW) {
+                            throw new IllegalArgumentException("cluster local slot error");
+                        }
+                        return getConsistentTransEvent();
+                    case CONSISTENT_ELECT:
+                        if (slot != QueenCode.CM_XID_LOW) {
+                            throw new IllegalArgumentException("cluster local slot error");
+                        }
+                        return getConsistentElectEvent();
+                    default:
+                        throw new IllegalArgumentException(String.format("get publisher type error:%s ", type.name()));
+                }
             }
 
             @Override
-            public RingBuffer<QEvent> getLocalCloser(ISession<ZContext> session)
+            public RingBuffer<QEvent> getCloser(ISession<ZContext> session, IOperator.Type type)
             {
-                return getSlot(session) == QueenCode.CU_XID_LOW ? getBizLocalCloseEvent()
-                                                                : getClusterLocalCloseEvent();
+                int slot = getSlot(session);
+                switch (type)
+                {
+                    case LOCAL:
+                        if (slot != QueenCode.CU_XID_LOW) {
+                            throw new IllegalArgumentException("device local slot error");
+                        }
+                        return getBizLocalCloseEvent();
+                    case CLUSTER_LOCAL:
+                    case CONSISTENT_TRANS:
+                    case CONSISTENT_ELECT:
+                        if (slot != QueenCode.CM_XID_LOW) {
+                            throw new IllegalArgumentException("cluster local slot error");
+                        }
+                        return getClusterLocalCloseEvent();
+                    default:
+                        throw new IllegalArgumentException(String.format("get closer type error:%s ", type.name()));
+                }
             }
         });
         _TimeWheel = timeWheel;
@@ -187,48 +231,6 @@ public class DeviceNode
     private TimeWheel getTimeWheel()
     {
         return _TimeWheel;
-    }
-
-    @SafeVarargs
-    public final void localBizSend(long deviceId, IControl<ZContext>... toSends)
-    {
-        sendByIndex(deviceId, toSends);
-    }
-
-    public void bizClose(long deviceId)
-    {
-        closeByIndex(deviceId);
-    }
-
-    @SafeVarargs
-    public final void clusterSend(long peerId, IControl<ZContext>... toSends)
-    {
-        sendByPrefix(peerId, toSends);
-    }
-
-    public void clusterClose(long peerId)
-    {
-        closeByPrefix(peerId);
-    }
-
-    private void closeByIndex(long sessionIndex)
-    {
-        close(findSessionByIndex(sessionIndex));
-    }
-
-    private void closeByPrefix(long sessionPrefix)
-    {
-        close(findSessionByPrefix(sessionPrefix));
-    }
-
-    private void sendByIndex(long sessionIndex, IControl<ZContext>... toSends)
-    {
-        send(findSessionByIndex(sessionIndex), toSends);
-    }
-
-    private void sendByPrefix(long sessionPrefix, IControl<ZContext>... toSends)
-    {
-        send(findSessionByPrefix(sessionPrefix), toSends);
     }
 
     public void start(ILogicHandler<ZContext> logicHandler,

@@ -25,6 +25,7 @@
 package com.tgx.chess.queen.io.core.manager;
 
 import com.tgx.chess.queen.config.IBizIoConfig;
+import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.io.core.async.AioSessionManager;
 import com.tgx.chess.queen.io.core.executor.ServerCore;
 import com.tgx.chess.queen.io.core.inf.IActivity;
@@ -51,16 +52,16 @@ public abstract class QueenManager<C extends IContext<C>>
     }
 
     @Override
-    public void close(ISession<C> session)
+    public void close(ISession<C> session, IOperator.Type type)
     {
-        _ServerCore.close(session);
+        _ServerCore.close(session, type);
     }
 
     @Override
     @SafeVarargs
-    public final boolean send(ISession<C> session, IControl<C>... commands)
+    public final boolean send(ISession<C> session, IOperator.Type type, IControl<C>... commands)
     {
-        return _ServerCore.send(session, commands);
+        return _ServerCore.send(session, type, commands);
     }
 
     protected ServerCore<C> getServerCore()

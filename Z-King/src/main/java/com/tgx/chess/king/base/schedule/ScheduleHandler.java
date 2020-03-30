@@ -65,16 +65,20 @@ public class ScheduleHandler<A>
     }
 
     public ScheduleHandler(Duration delay,
-                           Consumer<A> callback)
+                           Consumer<A> callback,
+                           A a)
     {
         this(delay, false, callback, PRIORITY_NORMAL);
+        attach(a);
     }
 
     public ScheduleHandler(Duration delay,
                            boolean cycle,
-                           Consumer<A> callback)
+                           Consumer<A> callback,
+                           A a)
     {
         this(delay, cycle, callback, PRIORITY_NORMAL);
+        attach(a);
     }
 
     @Override
