@@ -32,8 +32,8 @@ import java.util.Random;
 
 import com.tgx.chess.bishop.ZUID;
 import com.tgx.chess.bishop.biz.config.IClusterConfig;
-import com.tgx.chess.bishop.biz.device.DeviceNode;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
+import com.tgx.chess.bishop.io.zprotocol.raft.X72_RaftVote;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7E_RaftBroadcast;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
 import com.tgx.chess.cluster.raft.IRaftDao;
@@ -51,11 +51,16 @@ import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.base.util.Triple;
-import com.tgx.chess.queen.config.QueenCode;
+import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.io.core.inf.IActivity;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
+import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
+
+import static com.tgx.chess.queen.event.inf.IOperator.Type.CLUSTER_LOCAL;
+import static com.tgx.chess.queen.event.inf.IOperator.Type.CONSISTENT_ELECT;
 
 /**
  * @author william.d.zk
@@ -71,7 +76,7 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
     private final T                            _SessionManager;
     private final RaftDao                      _RaftDao;
     private final TimeWheel                    _TimeWheel;
-    private final ScheduleHandler<RaftNode<T>> _ElectSchedule, _HeartbeatSchedule, _TickSheSchedule;
+    private final ScheduleHandler<RaftNode<T>> _ElectSchedule, _HeartbeatSchedule, _TickSchedule;
     private final RaftGraph                    _RaftGraph;
     private final RaftMachine                  _SelfMachine;
     private final List<LogEntry>               _AppendLogList = new LinkedList<>();
@@ -88,13 +93,15 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         _SessionManager = manager;
         _ZUID = clusterConfig.createZUID(true);
         _RaftDao = raftDao;
-        _ElectSchedule = new ScheduleHandler<>(_ClusterConfig.getElectInSecond(), RaftNode::startVote);
+        _ElectSchedule = new ScheduleHandler<>(_ClusterConfig.getElectInSecond(), RaftNode::startVote, this);
         _HeartbeatSchedule = new ScheduleHandler<>(_ClusterConfig.getHeartbeatInSecond(),
                                                    true,
-                                                   RaftNode::leaderBroadcast);
-        _TickSheSchedule = new ScheduleHandler<>(_ClusterConfig.getHeartbeatInSecond()
-                                                               .multipliedBy(2),
-                                                 RaftNode::startVote);
+                                                   RaftNode::leaderBroadcast,
+                                                   this);
+        _TickSchedule = new ScheduleHandler<>(_ClusterConfig.getHeartbeatInSecond()
+                                                            .multipliedBy(2),
+                                              RaftNode::startVote,
+                                              this);
         _RaftGraph = new RaftGraph();
         _SelfMachine = new RaftMachine(_ZUID.getPeerId());
         _RaftGraph.append(_SelfMachine);
@@ -118,7 +125,20 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
                           x7e.setPayload(JsonUtil.writeValueAsBytes(entryList));
                       }
                       ISession<ZContext> session = _SessionManager.findSessionByPrefix(k);
-                      _SessionManager.send(session, x7e);
+                      _SessionManager.send(session, CLUSTER_LOCAL, x7e);
+                  });
+    }
+
+    @SuppressWarnings("unchecked")
+    private void broadcast(IOperator.Type type, IControl<ZContext> raftCmd)
+    {
+        _RaftGraph.getNodeMap()
+                  .forEach((k, v) ->
+                  {
+                      if (k != _SelfMachine.getPeerId()) {
+                          ISession<ZContext> session = _SessionManager.findSessionByPrefix(k);
+                          _SessionManager.send(session, type, raftCmd);
+                      }
                   });
     }
 
@@ -136,6 +156,8 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
                                         .getApplied());
         _SelfMachine.setIndex(_RaftDao.getLogMeta()
                                       .getIndex());
+        _SelfMachine.setIndexTerm(_RaftDao.getLogMeta()
+                                          .getTerm());
         _SelfMachine.setPeerSet(_RaftDao.getLogMeta()
                                         .getPeerSet());
         _SelfMachine.setGateSet(_RaftDao.getLogMeta()
@@ -163,12 +185,20 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         }
         //启动snapshot定时回写计时器
         _TimeWheel.acquire(_RaftDao,
-                           new ScheduleHandler<>(_ClusterConfig.getSnapshotInSecond(), true, this::takeSnapshot));
+                           new ScheduleHandler<>(_ClusterConfig.getSnapshotInSecond(),
+                                                 true,
+                                                 this::takeSnapshot,
+                                                 _RaftDao));
         _RaftDao.updateAll();
         //启动集群连接
         if (_SelfMachine.getPeerSet() != null) {
             for (ITriple remote : _SelfMachine.getPeerSet()) {
                 long peerId = remote.getFirst();
+                //Graph中转装入所有需要管理的集群状态机，self已经装入了，此处不再重复
+                if (peerId != _SelfMachine.getPeerId()) {
+                    _RaftGraph.append(new RaftMachine(peerId));
+                }
+                //仅连接NodeId<自身的节点
                 if (peerId < _SelfMachine.getPeerId()) {
                     _SessionManager.addPeer(new Pair<>(remote.getSecond(), remote.getThird()));
                 }
@@ -182,6 +212,8 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
                 }
             }
         }
+        //初始化为FOLLOW 状态，等待LEADER的HEARTBEAT 
+        mTickTask = _TimeWheel.acquire(this, _TickSchedule);
     }
 
     @Override
@@ -193,6 +225,7 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
     @Override
     public void takeSnapshot(IRaftDao snapshot)
     {
+        _Logger.info("take snapshot");
         long localApply;
         long localTerm;
         if (_RaftDao.getTotalSize() < _ClusterConfig.getSnapshotMinSize()) { return; }
@@ -220,20 +253,27 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
      */
     private void startVote()
     {
+        _Logger.info("start vote ");
+        /*关闭TickTask,此时执行容器可能为ElectTask 或 TickTask自身
+          由于Elect.timeout << Tick.timeout,此处不应出现Tick无法
+          关闭的，或关闭异常。同时cancel 配置了lock 防止意外出现。
+        */
+        if (mTickTask != null) {
+            mTickTask.cancel();
+        }
         try {
-            Thread.currentThread()
-                  .wait(_Random.nextInt(150) + 50);
+            Thread.sleep(_Random.nextInt(150) + 50);
         }
         catch (InterruptedException e) {
             //ignore
         }
-        RaftMachine update = new RaftMachine(_ZUID.getPeerId());
-        update.setTerm(_SelfMachine.getTerm() + 1);
-        update.setCandidate(_ZUID.getPeerId());
-        update.setIndex(_SelfMachine.getIndex());
-        if (mTickTask != null) {
-            mTickTask.cancel();
-        }
+
+        X72_RaftVote x72 = new X72_RaftVote(_ZUID.getId());
+        x72.setTerm(_SelfMachine.increaseTerm());
+        x72.setPeerId(_SelfMachine.getPeerId());
+        x72.setLogIndex(_SelfMachine.getIndex());
+        x72.setLogTerm(_SelfMachine.getIndexTerm());
+        broadcast(CONSISTENT_ELECT, x72);
     }
 
     private X7F_RaftResponse success(long peerId)
@@ -271,7 +311,7 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         if (mHeartbeatTask != null) {
             mHeartbeatTask.cancel();
         }
-        mTickTask = _TimeWheel.acquire(this, _TickSheSchedule);
+        mTickTask = _TimeWheel.acquire(this, _TickSchedule);
         _SelfMachine.setLeader(ZUID.INVALID_PEER_ID);
         _SelfMachine.setCandidate(ZUID.INVALID_PEER_ID);
         return success(peerId);
@@ -295,7 +335,7 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
     {
         if (mTickTask != null) {
             mTickTask.cancel();
-            mTickTask = _TimeWheel.acquire(this, _TickSheSchedule);
+            mTickTask = _TimeWheel.acquire(this, _TickSchedule);
         }
         catchUp();
         X7F_RaftResponse x7f = success(peerId);

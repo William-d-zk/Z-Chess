@@ -42,6 +42,8 @@ public interface IRaftMachine
     /** @return 当前任期的 log-index */
     long getIndex();
 
+    long getIndexTerm();
+
     /** @return 候选人 Id */
     long getCandidate();
 
@@ -69,6 +71,8 @@ public interface IRaftMachine
     Set<Triple<Long,
                String,
                Integer>> getGateSet();
+
+    long increaseTerm();
 
     /**
      * 接收另一个machine的状态更新

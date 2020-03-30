@@ -42,25 +42,25 @@ public interface ILocalPublisher<C extends IContext<C>>
         extends
         IActivity<C>
 {
-    RingBuffer<QEvent> getLocalPublisher(ISession<C> session);
+    RingBuffer<QEvent> getPublisher(ISession<C> session, IOperator.Type type);
 
-    RingBuffer<QEvent> getLocalCloser(ISession<C> session);
+    RingBuffer<QEvent> getCloser(ISession<C> session, IOperator.Type type);
 
-    ReentrantLock getLocalLock();
+    ReentrantLock getLock(ISession<C> session, IOperator.Type type);
 
     @Override
     @SuppressWarnings("unchecked")
-    default boolean send(ISession<C> session, IControl<C>... toSends)
+    default boolean send(ISession<C> session, IOperator.Type type, IControl<C>... toSends)
     {
         if (session == null || toSends == null || toSends.length == 0) { return false; }
-        final RingBuffer<QEvent> _LocalSendEvent = getLocalPublisher(session);
-        final ReentrantLock _LocalLock = getLocalLock();
+        final RingBuffer<QEvent> _LocalSendEvent = getPublisher(session, type);
+        final ReentrantLock _LocalLock = getLock(session, type);
         if (_LocalLock.tryLock()) {
             try {
                 long sequence = _LocalSendEvent.next();
                 try {
                     QEvent event = _LocalSendEvent.get(sequence);
-                    event.produce(IOperator.Type.LOCAL,
+                    event.produce(type,
                                   new Pair<>(toSends, session),
                                   session.getContext()
                                          .getSort()
@@ -79,11 +79,11 @@ public interface ILocalPublisher<C extends IContext<C>>
     }
 
     @Override
-    default void close(ISession<C> session)
+    default void close(ISession<C> session, IOperator.Type type)
     {
         if (session == null) { return; }
-        final RingBuffer<QEvent> _LocalCloseEvent = getLocalCloser(session);
-        final ReentrantLock _LocalLock = getLocalLock();
+        final RingBuffer<QEvent> _LocalCloseEvent = getCloser(session, type);
+        final ReentrantLock _LocalLock = getLock(session, type);
         _LocalLock.lock();
         try {
             long sequence = _LocalCloseEvent.next();

@@ -24,6 +24,7 @@
 
 package com.tgx.chess.rook.biz.device.client;
 
+import static com.tgx.chess.queen.event.inf.IOperator.Type.LOCAL;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 
 import java.io.IOException;
@@ -333,7 +334,7 @@ public class DeviceConsumer
     {
         ISession<ZContext> session = findSessionByIndex(sessionIndex);
         if (Objects.nonNull(session)) {
-            _ClientCore.send(session, toSends);
+            _ClientCore.send(session, LOCAL, toSends);
         }
         else {
             throw new ZException("client-id:%d,is offline;send % failed", sessionIndex, Arrays.toString(toSends));
@@ -344,7 +345,7 @@ public class DeviceConsumer
     {
         ISession<ZContext> session = findSessionByIndex(sessionIndex);
         if (Objects.nonNull(session)) {
-            _ClientCore.close(session);
+            _ClientCore.close(session, LOCAL);
         }
         else {
             throw new ZException("client session is not exist");
@@ -374,6 +375,7 @@ public class DeviceConsumer
                                                      catch (IOException e) {
                                                          e.printStackTrace();
                                                      }
-                                                 }));
+                                                 },
+                                                 connector));
     }
 }

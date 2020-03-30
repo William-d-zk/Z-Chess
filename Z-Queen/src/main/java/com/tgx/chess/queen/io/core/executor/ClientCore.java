@@ -48,6 +48,7 @@ import com.tgx.chess.queen.event.handler.client.ClientDecodeHandler;
 import com.tgx.chess.queen.event.handler.client.ClientIoDispatcher;
 import com.tgx.chess.queen.event.handler.client.ClientLinkHandler;
 import com.tgx.chess.queen.event.handler.client.ClientWriteDispatcher;
+import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.async.socket.AioWorker;
 import com.tgx.chess.queen.io.core.inf.IContext;
@@ -223,19 +224,19 @@ public class ClientCore<C extends IContext<C>>
     }
 
     @Override
-    public RingBuffer<QEvent> getLocalPublisher(ISession<C> session)
+    public RingBuffer<QEvent> getPublisher(ISession<C> session, IOperator.Type type)
     {
         return _BizLocalSendEvent;
     }
 
     @Override
-    public RingBuffer<QEvent> getLocalCloser(ISession<C> session)
+    public RingBuffer<QEvent> getCloser(ISession<C> session, IOperator.Type type)
     {
         return _BizLocalCloseEvent;
     }
 
     @Override
-    public ReentrantLock getLocalLock()
+    public ReentrantLock getLock(ISession<C> session, IOperator.Type type)
     {
         return _LocalLock;
     }

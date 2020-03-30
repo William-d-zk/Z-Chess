@@ -128,12 +128,6 @@ public class DeviceService
         _RaftNode.init();
     }
 
-    @SafeVarargs
-    public final void localBizSend(long deviceId, IControl<ZContext>... toSends)
-    {
-        _DeviceNode.localBizSend(deviceId, toSends);
-    }
-
     @Override
     public DeviceDo saveDevice(DeviceDo device) throws ZException
     {

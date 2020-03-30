@@ -73,10 +73,9 @@ public abstract class ServerCore<C extends IContext<C>>
         extends
         ThreadPoolExecutor
         implements
-        ILocalPublisher<C>,
-        IClusterPublisher<C>
+        ILocalPublisher<C>
 {
-    private Logger    _Logger = Logger.getLogger(getClass().getName());
+    protected Logger  _Logger = Logger.getLogger(getClass().getName());
     private final int _DecoderCount;
     private final int _EncoderCount;
     private final int _LogicCount;
@@ -139,6 +138,7 @@ public abstract class ServerCore<C extends IContext<C>>
                                                                                       }
                                                                                   };
     private final ReentrantLock                             _LocalLock            = new ReentrantLock();
+    private final ReentrantLock                             _ClusterLock          = new ReentrantLock();
     private final ReentrantLock                             _ConsistentElectLock  = new ReentrantLock();
     private final ReentrantLock                             _ConsistentTransLock  = new ReentrantLock();
     private AsynchronousChannelGroup                        mServiceChannelGroup;
@@ -428,37 +428,6 @@ public abstract class ServerCore<C extends IContext<C>>
         return _ClusterThreadFactory;
     }
 
-    /*close 一定发生在 linker 处理器中，单线程处理*/
-    public void localClose(ISession<C> session)
-    {
-        long sequence = _BizLocalCloseEvent.next();
-        QEvent event = _BizLocalCloseEvent.get(sequence);
-        event.produce(Type.CLOSE,
-                      new Pair<>(null, session),
-                      session.getContext()
-                             .getSort()
-                             .getCloser());
-        _BizLocalCloseEvent.publish(sequence);
-    }
-
-    @Override
-    public ReentrantLock getLocalLock()
-    {
-        return _LocalLock;
-    }
-
-    @Override
-    public ReentrantLock getConsistentTransLock()
-    {
-        return _ConsistentTransLock;
-    }
-
-    @Override
-    public ReentrantLock getConsistentElectLock()
-    {
-        return _ConsistentElectLock;
-    }
-
     protected RingBuffer<QEvent> getBizLocalCloseEvent()
     {
         return _BizLocalCloseEvent;
@@ -469,16 +438,6 @@ public abstract class ServerCore<C extends IContext<C>>
         return _ClusterLocalCloseEvent;
     }
 
-    public RingBuffer<QEvent> getConsistentResultEvent()
-    {
-        return _ConsistentTransEvent;
-    }
-
-    public RingBuffer<QEvent> getConsistentLocalSendEvent()
-    {
-        return _ConsistentElectEvent;
-    }
-
     protected RingBuffer<QEvent> getBizLocalSendEvent()
     {
         return _BizLocalSendEvent;
@@ -487,6 +446,16 @@ public abstract class ServerCore<C extends IContext<C>>
     protected RingBuffer<QEvent> getClusterLocalSendEvent()
     {
         return _ClusterLocalSendEvent;
+    }
+
+    protected RingBuffer<QEvent> getConsistentTransEvent()
+    {
+        return _ConsistentTransEvent;
+    }
+
+    protected RingBuffer<QEvent> getConsistentElectEvent()
+    {
+        return _ConsistentElectEvent;
     }
 
     public AsynchronousChannelGroup getServiceChannelGroup() throws IOException
@@ -505,49 +474,21 @@ public abstract class ServerCore<C extends IContext<C>>
     }
 
     @Override
-    public void consistentTrans(ISession<C> session, IPipeTransfer<C> operator, IControl<C>... toSends)
+    public ReentrantLock getLock(ISession<C> session, IOperator.Type type)
     {
-        Objects.requireNonNull(session);
-        Objects.requireNonNull(toSends);
-        getConsistentTransLock().lock();
+        switch (type)
         {
-            try {
-                long sequence = _ConsistentTransEvent.next();
-                try {
-                    QEvent event = _ConsistentTransEvent.get(sequence);
-                    event.produce(Type.CONSISTENT, new Pair<>(toSends, session), operator);
-                }
-                finally {
-                    _ConsistentTransEvent.publish(sequence);
-                }
-            }
-            finally {
-                getConsistentTransLock().unlock();
-            }
-        }
-
-    }
-
-    @Override
-    public void consistentElect(ISession<C> session, IPipeTransfer<C> operator, IControl<C>... toSends)
-    {
-        Objects.requireNonNull(session);
-        Objects.requireNonNull(toSends);
-        getConsistentElectLock().lock();
-        {
-            try {
-                long sequence = _ConsistentTransEvent.next();
-                try {
-                    QEvent event = _ConsistentTransEvent.get(sequence);
-                    event.produce(Type.CONSISTENT, new Pair<>(toSends, session), operator);
-                }
-                finally {
-                    _ConsistentTransEvent.publish(sequence);
-                }
-            }
-            finally {
-                getConsistentElectLock().unlock();
-            }
+            case LOCAL:
+                return _LocalLock;
+            case CLUSTER_LOCAL:
+                return _ClusterLock;
+            case CONSISTENT_TRANS:
+                return _ConsistentTransLock;
+            case CONSISTENT_ELECT:
+                return _ConsistentElectLock;
+            default:
+                throw new IllegalArgumentException(String.format("error type:%s", type));
         }
     }
+
 }

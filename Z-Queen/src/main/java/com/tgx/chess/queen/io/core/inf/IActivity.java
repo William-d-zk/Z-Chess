@@ -24,9 +24,11 @@
 
 package com.tgx.chess.queen.io.core.inf;
 
+import com.tgx.chess.queen.event.inf.IOperator;
+
 public interface IActivity<C extends IContext<C>>
 {
-    boolean send(ISession<C> session, IControl<C>... toSends);
+    boolean send(ISession<C> session, IOperator.Type eventType, IControl<C>... toSends);
 
-    void close(ISession<C> session);
+    void close(ISession<C> session, IOperator.Type eventType);
 }

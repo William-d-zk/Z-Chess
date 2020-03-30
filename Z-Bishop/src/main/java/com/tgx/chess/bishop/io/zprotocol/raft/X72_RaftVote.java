@@ -24,10 +24,107 @@
 
 package com.tgx.chess.bishop.io.zprotocol.raft;
 
+import com.tgx.chess.bishop.io.zprotocol.ZCommand;
+import com.tgx.chess.king.base.util.IoUtil;
+
 /**
  * @author william.d.zk
  * @date 2019/12/10
  */
 public class X72_RaftVote
+        extends
+        ZCommand
 {
+    public final static int COMMAND = 0x72;
+
+    public X72_RaftVote(long msgId)
+    {
+        super(COMMAND, msgId);
+    }
+
+    public X72_RaftVote()
+    {
+        super(COMMAND, true);
+    }
+
+    @Override
+    public int getPriority()
+    {
+        return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
+    }
+
+    private long mPeerId;
+    private long mTerm;
+    private long mLogIndex;
+    private long mLogTerm;
+
+    @Override
+    public int dataLength()
+    {
+        return super.dataLength() + 8 * 4;
+    }
+
+    @Override
+    public int decodec(byte[] data, int pos)
+    {
+        mPeerId = IoUtil.readLong(data, pos);
+        pos += 8;
+        mTerm = IoUtil.readLong(data, pos);
+        pos += 8;
+        mLogIndex = IoUtil.readLong(data, pos);
+        pos += 8;
+        mLogTerm = IoUtil.readLong(data, pos);
+        pos += 8;
+        return pos;
+    }
+
+    @Override
+    public int encodec(byte[] data, int pos)
+    {
+        pos += IoUtil.writeLong(mPeerId, data, pos);
+        pos += IoUtil.writeLong(mTerm, data, pos);
+        pos += IoUtil.writeLong(mLogIndex, data, pos);
+        pos += IoUtil.writeLong(mLogTerm, data, pos);
+        return pos;
+    }
+
+    public long getPeerId()
+    {
+        return mPeerId;
+    }
+
+    public void setPeerId(long peerId)
+    {
+        this.mPeerId = peerId;
+    }
+
+    public long getTerm()
+    {
+        return mTerm;
+    }
+
+    public void setTerm(long term)
+    {
+        mTerm = term;
+    }
+
+    public long getLogIndex()
+    {
+        return mLogIndex;
+    }
+
+    public void setLogIndex(long logIndex)
+    {
+        mLogIndex = logIndex;
+    }
+
+    public long getLogTerm()
+    {
+        return mLogTerm;
+    }
+
+    public void setLogTerm(long logTerm)
+    {
+        mLogTerm = logTerm;
+    }
 }
