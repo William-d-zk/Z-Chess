@@ -66,5 +66,5 @@ public interface IAioServer<C extends IContext<C>>
     @Override
     IOperator<Throwable,
               IAioServer<C>,
-              IAioServer<C>> getErrorOperator();
+              Void> getErrorOperator();
 }

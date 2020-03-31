@@ -33,5 +33,5 @@ public interface IConnectError<C extends IContext<C>>
 {
     IOperator<Throwable,
               ? extends IConnectActivity<C>,
-              ? extends IConnectActivity<C>> getErrorOperator();
+              Void> getErrorOperator();
 }

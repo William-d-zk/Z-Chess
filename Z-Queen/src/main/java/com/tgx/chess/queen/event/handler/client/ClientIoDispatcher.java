@@ -24,7 +24,7 @@
 
 package com.tgx.chess.queen.event.handler.client;
 
-import static com.tgx.chess.queen.event.inf.IError.Type.CLOSED;
+import static com.tgx.chess.queen.event.inf.IError.Type.SHUTDOWN;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.CONNECTED;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.TRANSFER;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WROTE;
@@ -82,7 +82,7 @@ public class ClientIoDispatcher<C extends IContext<C>>
                           ITriple> connectFailedOperator = event.getEventOp();
                 error(_LinkIoPipe, event.getErrorType(), new Pair<>(throwable, connectActive), connectFailedOperator);
                 break;
-            case CLOSED:
+            case SHUTDOWN:
                 //transfer
                 IPair closedContent = event.getContent();
                 ISession<C> session = closedContent.getSecond();
@@ -121,7 +121,7 @@ public class ClientIoDispatcher<C extends IContext<C>>
                         IPair closeContent = event.getContent();
                         session = closeContent.getSecond();
                         if (!session.isClosed()) {
-                            error(_ErrorPipe, CLOSED, closeContent, closeOperator);
+                            error(_ErrorPipe, SHUTDOWN, closeContent, closeOperator);
                         }
                         break;
                     default:

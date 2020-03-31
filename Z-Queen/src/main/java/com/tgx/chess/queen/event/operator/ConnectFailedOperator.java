@@ -36,16 +36,16 @@ public class ConnectFailedOperator<C extends IContext<C>>
         implements
         IOperator<Throwable,
                   IAioConnector<C>,
-                  IAioConnector<C>>
+                  Void>
 {
 
     private final Logger _Logger = Logger.getLogger(getClass().getName());
 
     @Override
-    public IAioConnector<C> handle(Throwable throwable, IAioConnector<C> aioConnector)
+    public Void handle(Throwable throwable, IAioConnector<C> aioConnector)
     {
         _Logger.warning("handler connect failed!", throwable);
         aioConnector.error();
-        return aioConnector;
+        return null;
     }
 }

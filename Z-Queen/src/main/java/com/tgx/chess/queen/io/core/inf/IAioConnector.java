@@ -44,7 +44,7 @@ public interface IAioConnector<C extends IContext<C>>
     @Override
     IOperator<Throwable,
               IAioConnector<C>,
-              IAioConnector<C>> getErrorOperator();
+              Void> getErrorOperator();
 
     @Override
     default void completed(Void result, AsynchronousSocketChannel channel)

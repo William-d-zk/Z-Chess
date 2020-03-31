@@ -114,9 +114,9 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
                   {
                       X7E_RaftBroadcast x7e = new X7E_RaftBroadcast(_ZUID.getId());
                       x7e.setPeerId(k);
-                      x7e.setTerm(v.getTerm());
+                      x7e.setTerm(_SelfMachine.getTerm());
                       x7e.setCommit(_SelfMachine.getCommit());
-                      x7e.setLeaderId(_ZUID.getPeerId());
+                      x7e.setLeaderId(_SelfMachine.getPeerId());
                       if (v.getIndex() < _SelfMachine.getIndex()) {
                           List<LogEntry> entryList = new LinkedList<>();
                           for (long i = v.getIndex() + 1, l = _SelfMachine.getIndex(); i <= l; i++) {

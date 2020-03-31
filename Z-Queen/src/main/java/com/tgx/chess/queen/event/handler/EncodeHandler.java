@@ -109,7 +109,7 @@ public class EncodeHandler<C extends IContext<C>>
                 context.setOutState(ENCODE_ERROR);
             }
             else {
-                event.ignore();
+                event.terminate();
             }
         }
     }

@@ -50,13 +50,14 @@ public class ClientLinkHandler<C extends IContext<C>>
         implements
         EventHandler<QEvent>
 {
-    private final Logger _Logger = Logger.getLogger(getClass().getName());
+    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
 
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
     {
         if (event.hasError()) {
             if (event.getErrorType() == CONNECT_FAILED) {
+                /* 多路连接不执行 retry*/
                 event.ignore();
             }
             else {
