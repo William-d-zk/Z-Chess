@@ -43,7 +43,7 @@ public class EncodedHandler<C extends IContext<C>>
         implements
         IPipeEventHandler<QEvent>
 {
-    private final Logger _Logger = Logger.getLogger(getClass().getName());
+    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
 
     private final RingBuffer<QEvent> _Error;
 
@@ -63,13 +63,10 @@ public class EncodedHandler<C extends IContext<C>>
                 case ILLEGAL_BIZ_STATE:
                 default:
                     IPair errorContent = event.getContent();
-                    Throwable throwable = errorContent.getFirst();
                     ISession<C> session = errorContent.getSecond();
-                    IOperator<Throwable,
-                              ISession<C>,
-                              ITriple> errorOperator = event.getEventOp();
-                    ITriple errorResult = errorOperator.handle(throwable, session);
-                    error(_Error, IError.Type.SHUTDOWN, new Pair<>(null, session), errorResult.getThird());
+                    if (!session.isClosed()) {
+                        error(_Error, event.getErrorType(), errorContent, event.getEventOp());
+                    }
                     break;
             }
         }

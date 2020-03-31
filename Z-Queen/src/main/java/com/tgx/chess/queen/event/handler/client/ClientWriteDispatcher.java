@@ -49,7 +49,7 @@ public class ClientWriteDispatcher<C extends IContext<C>>
         implements
         IPipeEventHandler<QEvent>
 {
-    private final Logger _Logger = Logger.getLogger(getClass().getName());
+    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
 
     final RingBuffer<QEvent> _ErrorPipe;
     final RingBuffer<QEvent> _EncoderPipe;
@@ -88,7 +88,11 @@ public class ClientWriteDispatcher<C extends IContext<C>>
                                   List<ITriple>> transferOperator = event.getEventOp();
                         List<ITriple> triples = transferOperator.handle(commands, session);
                         for (ITriple triple : triples) {
-                            if (!tryPublish(_EncoderPipe, WRITE, new Pair<>(triple.getFirst(), session), triple.getThird())) {
+                            if (!tryPublish(_EncoderPipe,
+                                            WRITE,
+                                            new Pair<>(triple.getFirst(), session),
+                                            triple.getThird()))
+                            {
                                 _Logger.warning("publish write event to encoder failed");
                             }
                         }

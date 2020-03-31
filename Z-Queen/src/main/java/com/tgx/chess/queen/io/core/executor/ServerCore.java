@@ -197,15 +197,15 @@ public abstract class ServerCore<C extends IContext<C>>
     /*  ║ barrier, ━> publish event, ━━ pipeline,| mappingHandle event
     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
     ┃                                                                                                        ║                 ┏━>_ErrorEvent━┛
-    ┃┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓                                             ┏━║_LinkProcessor━━━┻━>_LinkWriteEvent  ━━━━║                  
-    ┃┃ ━> _AioProducerEvents                                 ┃  ━>_ConsistentTransEvent  ━━━━━━━━━━━━━━━━━━┫ ║              ━━>_BizLocalSendEvent  ━━━━║                ┏>_EncodedEvents[0]|║
-    ┃┃ ━> _ClusterLocalClose║                 ┏>_ErrorEvent ━┛  ━>_ConsistentElectEvent  ━━━━━━━━━━━━━┓    ┃                                           ║                ┃ _EncodedEvents[1]|║
-    ┃┃ ━> _BizLocalClose    ║                 ┃ _LinkIoEvent    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━┫                                           ║_WriteDispatcher┫ _EncodedEvents[2]|║_EncodedProcessor┳━║[Event Done]
-    ┃┗━━> _ErrorEvent[3]    ║                 ┃ _ClusterIoEvent ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫    ┃ ║              ━>_ClusterLocalSendEvent ━━║                ┃ _EncodedEvents[3]|║                 ┗━>_ErrorEvent━┓
+    ┃                                                                                                      ┏━║_LinkProcessor━━━┻━>_LinkWriteEvent  ━━━━║
+    ┃                                                           ━>_ConsistentTransEvent  ━━━━━━━━━━━━━━━━━━┫ ║              ━━>_BizLocalSendEvent  ━━━━║                ┏>_EncodedEvents[0]|║
+    ┃  ━> _AioProducerEvents║                                   ━>_ConsistentElectEvent  ━━━━━━━━━━━━━┓    ┃                                           ║                ┃ _EncodedEvents[1]|║
+    ┃  ━> _ClusterLocalClose║                 ┏>_LinkIoEvent    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━┫                                           ║_WriteDispatcher┫ _EncodedEvents[2]|║_EncodedProcessor┳━║[Event Done]
+    ┃  ━> _BizLocalClose    ║                 ┃ _ClusterIoEvent ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫    ┃ ║              ━>_ClusterLocalSendEvent ━━║                ┃ _EncodedEvents[3]|║                 ┗━>_ErrorEvent━┓
     ┗━━━> _ErrorEvent[0]    ║_IoDispatcher━━> ┫ _ReadEvents[0]|━║                  ┏>_ClusterDecoded ━┻━━━━╋━║_ClusterProcessor┳━>_ClusterWriteEvent ━━║                ┃ _EncodedEvents[M]|║                                ┃
-    ┏━━━> _ErrorEvent[5]    ║                 ┃ _ReadEvents[1]|━║_DecodedDispatcher┫ _LinkDecoded    ━━━━━━┛ ║                 ┗━>_ErrorEvent━┓        ║                ┗>_ErrorEvent━┓                                      ┃
-    ┃┏━━> _ErrorEvent[4]    ║                 ┃ _ReadEvents[2]|━║                  ┃ _Logic          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━║                              ┃                                      ┃
-    ┃┃┏━> _ErrorEvent[2]    ║                 ┃ _ReadEvents[N]|━║                  ┗>_ErrorEvent     ━━━━━━┓                                  ┃        ║                              ┃                                      ┃
+    ┏━━━> _ErrorEvent[4]    ║                 ┃ _ReadEvents[1]|━║_DecodedDispatcher┫ _LinkDecoded    ━━━━━━┛ ║                 ┗━>_ErrorEvent━┓        ║                ┗>_ErrorEvent━┓                                      ┃
+    ┃┏━━> _ErrorEvent[3]    ║                 ┃ _ReadEvents[2]|━║                  ┃ _Logic          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━║                              ┃                                      ┃
+    ┃┃┏━> _ErrorEvent[1]    ║                 ┃ _ReadEvents[N]|━║                  ┗>_ErrorEvent     ━━━━━━┓                                  ┃        ║                              ┃                                      ┃
     ┃┃┃┏> _ErrorEvent[2]    ║                 ┗>_WroteBuffer  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━║                              ┃                                      ┃
     ┃┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                  ┃                                       ┃                                      ┃
     ┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                       ┃                                      ┃
@@ -227,7 +227,7 @@ public abstract class ServerCore<C extends IContext<C>>
         final RingBuffer<QEvent> _WroteEvent = createPipelineYield(_AioQueuePower + 1);
         final RingBuffer<QEvent> _LinkIoEvent = createPipelineYield(_LinkPower);
         final RingBuffer<QEvent> _ClusterIoEvent = createPipelineYield(_ClusterPower);
-        final RingBuffer<QEvent>[] _ErrorEvents = new RingBuffer[6];
+        final RingBuffer<QEvent>[] _ErrorEvents = new RingBuffer[5];
         final RingBuffer<QEvent>[] _DispatchIo = new RingBuffer[_BizIoCount
                                                                 + _ClusterIoCount
                                                                 + _ErrorEvents.length
@@ -305,7 +305,6 @@ public abstract class ServerCore<C extends IContext<C>>
                                                                                                           new IoDispatcher<>(_LinkIoEvent,
                                                                                                                              _ClusterIoEvent,
                                                                                                                              _WroteEvent,
-                                                                                                                             _ErrorEvents[2],
                                                                                                                              _ReadEvents));
         _IoDispatcher.setThreadName("IoDispatcher");
         for (int i = 0, size = _DispatchIo.length; i < size; i++) {
@@ -325,7 +324,7 @@ public abstract class ServerCore<C extends IContext<C>>
                                                                                                                _DecodedBarriers,
                                                                                                                new DecodedDispatcher<>(_LinkDecoded,
                                                                                                                                        _ClusterDecoded,
-                                                                                                                                       _ErrorEvents[3],
+                                                                                                                                       _ErrorEvents[2],
                                                                                                                                        _LogicEvents));
         _DecodedDispatcher.setThreadName("DecodedDispatcher");
         for (int i = 0; i < _DecoderCount; i++) {
@@ -354,7 +353,7 @@ public abstract class ServerCore<C extends IContext<C>>
         */
         final MultiBufferBatchEventProcessor<QEvent> _WriteDispatcher = new MultiBufferBatchEventProcessor<>(_SendEvents,
                                                                                                              _SendBarriers,
-                                                                                                             new WriteDispatcher<>(_ErrorEvents[4],
+                                                                                                             new WriteDispatcher<>(_ErrorEvents[3],
                                                                                                                                    _WriteEvents));
         _WriteDispatcher.setThreadName("WriteDispatcher");
         for (int i = 0, size = _SendEvents.length; i < size; i++) {
@@ -372,7 +371,7 @@ public abstract class ServerCore<C extends IContext<C>>
         Arrays.setAll(_EncodedBarriers, slot -> _EncodedEvents[slot].newBarrier(_EncodeProcessors[slot].getSequence()));
         final MultiBufferBatchEventProcessor<QEvent> _EncodedProcessor = new MultiBufferBatchEventProcessor<>(_EncodedEvents,
                                                                                                               _EncodedBarriers,
-                                                                                                              new EncodedHandler<>(_ErrorEvents[5]));
+                                                                                                              new EncodedHandler<>(_ErrorEvents[4]));
         _EncodedProcessor.setThreadName("EncodedProcessor");
         for (int i = 0; i < _EncoderCount; i++) {
             _EncodedEvents[i].addGatingSequences(_EncodedProcessor.getSequences()[i]);

@@ -47,7 +47,7 @@ public class EncodeHandler<C extends IContext<C>>
         implements
         EventHandler<QEvent>
 {
-    private final Logger _Logger = Logger.getLogger(getClass().getName());
+    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
 
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
@@ -109,7 +109,7 @@ public class EncodeHandler<C extends IContext<C>>
                 context.setOutState(ENCODE_ERROR);
             }
             else {
-                event.terminate();
+                event.reset();
             }
         }
     }

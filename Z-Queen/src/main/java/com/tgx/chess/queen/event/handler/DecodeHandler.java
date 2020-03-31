@@ -100,6 +100,7 @@ public class DecodeHandler<C extends IContext<C>>
         }
     }
 
+
     protected void transfer(QEvent event,
                             IControl<C>[] commands,
                             ISession<C> session,

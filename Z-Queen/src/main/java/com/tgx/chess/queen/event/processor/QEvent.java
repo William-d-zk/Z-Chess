@@ -80,15 +80,6 @@ public class QEvent
         mContentList = null;
     }
 
-    public void terminate()
-    {
-        mType = Type.TERMINATE;
-        mErrType = IError.Type.NO_ERROR;
-        mContent = null;
-        mOperator = null;
-        mContentList = null;
-    }
-
     public void transfer(QEvent dest)
     {
         dest.mType = mType;

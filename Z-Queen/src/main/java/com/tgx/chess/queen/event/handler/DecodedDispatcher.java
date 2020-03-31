@@ -32,9 +32,11 @@ import java.util.Objects;
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
+import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IOperator;
+import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.IContext;
@@ -45,16 +47,29 @@ import com.tgx.chess.queen.io.core.inf.ISession;
  * @author william.d.zk
  */
 public class DecodedDispatcher<C extends IContext<C>>
-        extends
-        BaseDispatcher<C>
+        implements
+        IPipeEventHandler<QEvent>
 {
+    private final Logger               _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final RingBuffer<QEvent>   _Link;
+    private final RingBuffer<QEvent>   _Cluster;
+    private final RingBuffer<QEvent>   _Error;
+    private final RingBuffer<QEvent>[] _LogicWorkers;
+    private final int                  _WorkerMask;
 
     public DecodedDispatcher(RingBuffer<QEvent> link,
                              RingBuffer<QEvent> cluster,
                              RingBuffer<QEvent> error,
                              RingBuffer<QEvent>[] logic)
     {
-        super(link, cluster, error, logic);
+        _Link = link;
+        _Cluster = cluster;
+        _Error = error;
+        _LogicWorkers = logic;
+        _WorkerMask = _LogicWorkers.length - 1;
+        if (Integer.bitCount(_LogicWorkers.length) != 1) {
+            throw new IllegalArgumentException("workers' length must be a power of 2");
+        }
     }
 
     @Override
@@ -120,5 +135,10 @@ public class DecodedDispatcher<C extends IContext<C>>
                 // ignore consumer event
                 break;
         }
+    }
+
+    private RingBuffer<QEvent> dispatchWorker(long seq)
+    {
+        return _LogicWorkers[(int) (seq & _WorkerMask)];
     }
 }
