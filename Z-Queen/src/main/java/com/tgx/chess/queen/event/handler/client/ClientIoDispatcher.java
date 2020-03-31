@@ -24,7 +24,7 @@
 
 package com.tgx.chess.queen.event.handler.client;
 
-import static com.tgx.chess.queen.event.inf.IError.Type.SHUTDOWN;
+import static com.tgx.chess.queen.event.inf.IError.Type.WAIT_CLOSE;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.CONNECTED;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.TRANSFER;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WROTE;
@@ -82,17 +82,7 @@ public class ClientIoDispatcher<C extends IContext<C>>
                           ITriple> connectFailedOperator = event.getEventOp();
                 error(_LinkIoPipe, event.getErrorType(), new Pair<>(throwable, connectActive), connectFailedOperator);
                 break;
-            case SHUTDOWN:
-                //transfer
-                IPair closedContent = event.getContent();
-                ISession<C> session = closedContent.getSecond();
-                IOperator<Void,
-                          ISession<C>,
-                          Void> closedOperator = event.getEventOp();
-                if (!session.isClosed()) {
-                    error(_LinkIoPipe, event.getErrorType(), new Pair<>(null, session), closedOperator);
-                }
-                break;
+
             case NO_ERROR:
             {
                 switch (event.getEventType())
@@ -119,9 +109,9 @@ public class ClientIoDispatcher<C extends IContext<C>>
                                   ISession<C>,
                                   Void> closeOperator = event.getEventOp();
                         IPair closeContent = event.getContent();
-                        session = closeContent.getSecond();
+                        ISession<C> session = closeContent.getSecond();
                         if (!session.isClosed()) {
-                            error(_ErrorPipe, SHUTDOWN, closeContent, closeOperator);
+                            error(_LinkIoPipe, WAIT_CLOSE, closeContent, closeOperator);
                         }
                         break;
                     default:
@@ -136,14 +126,11 @@ public class ClientIoDispatcher<C extends IContext<C>>
                 IOperator<Throwable,
                           ISession<C>,
                           ITriple> errorOperator = event.getEventOp();
-                session = errorContent.getSecond();
+                ISession<C> session = errorContent.getSecond();
                 if (!session.isClosed()) {
                     throwable = errorContent.getFirst();
                     ITriple transferResult = errorOperator.handle(throwable, session);
-                    error(_LinkIoPipe,
-                          event.getErrorType(),
-                          new Pair<>(transferResult.getFirst(), session),
-                          transferResult.getThird());
+                    error(_LinkIoPipe, WAIT_CLOSE, new Pair<>(null, session), transferResult.getThird());
                 }
                 break;
         }

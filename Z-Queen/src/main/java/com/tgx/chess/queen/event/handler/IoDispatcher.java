@@ -24,8 +24,8 @@
 
 package com.tgx.chess.queen.event.handler;
 
-import static com.tgx.chess.queen.event.inf.IError.Type.SHUTDOWN;
 import static com.tgx.chess.queen.event.inf.IError.Type.WAIT_CLOSE;
+import static com.tgx.chess.queen.event.inf.IOperator.Type.CONNECTED;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.TRANSFER;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WROTE;
 
@@ -35,8 +35,11 @@ import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IOperator;
+import com.tgx.chess.queen.event.inf.IPipeEventHandler;
+import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.IConnectActivity;
 import com.tgx.chess.queen.io.core.inf.IContext;
@@ -46,21 +49,30 @@ import com.tgx.chess.queen.io.core.inf.ISession;
  * @author william.d.zk
  */
 public class IoDispatcher<C extends IContext<C>>
-        extends
-        BaseDispatcher<C>
+        implements
+        IPipeEventHandler<QEvent>
 {
-    private final Logger             _Logger = Logger.getLogger(getClass().getName());
-    private final RingBuffer<QEvent> _IoWrote;
+    private final Logger               _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final RingBuffer<QEvent>   _IoWrote;
+    private final RingBuffer<QEvent>   _Link;
+    private final RingBuffer<QEvent>   _Cluster;
+    private final RingBuffer<QEvent>[] _Workers;
+    private final int                  _WorkerMask;
 
     @SafeVarargs
     public IoDispatcher(RingBuffer<QEvent> link,
                         RingBuffer<QEvent> cluster,
                         RingBuffer<QEvent> wrote,
-                        RingBuffer<QEvent> error,
                         RingBuffer<QEvent>... read)
     {
-        super(link, cluster, error, read);
+        _Link = link;
+        _Cluster = cluster;
         _IoWrote = wrote;
+        _Workers = read;
+        _WorkerMask = _Workers.length - 1;
+        if (Integer.bitCount(_Workers.length) != 1) {
+            throw new IllegalArgumentException("workers' length must be a power of 2");
+        }
     }
 
     @Override
@@ -76,23 +88,6 @@ public class IoDispatcher<C extends IContext<C>>
                 IConnectActivity<C> connectActive = connectFailedContent.getSecond();
                 dispatchError(connectActive.getSort(), errorType, throwable, connectActive, event.getEventOp());
                 break;
-            case SHUTDOWN:
-                /* 将其他 dispatcher 投递来的 Event Error 转换为 closed 进行定向分发 给对应的MappingHandler */
-                IOperator<Throwable,
-                          ISession<C>,
-                          ITriple> sessionError = event.getEventOp(); //ISessionError
-                IPair errorContent = event.getContent();
-                ITriple result = sessionError.handle(errorContent.getFirst(), errorContent.getSecond());
-                ISession<C> session = result.getSecond();
-                if (!session.isClosed()) {
-                    dispatchError(session.getContext()
-                                         .getSort(),
-                                  WAIT_CLOSE,
-                                  null,
-                                  session,
-                                  result.getThird());
-                }
-                break;
             case NO_ERROR:
                 switch (event.getEventType())
                 {
@@ -107,7 +102,7 @@ public class IoDispatcher<C extends IContext<C>>
                         break;
                     case READ:
                         IPair readContent = event.getContent();
-                        session = readContent.getSecond();
+                        ISession<C> session = readContent.getSecond();
                         publish(dispatchWorker(session.getHashKey()), TRANSFER, readContent, event.getEventOp());
                         break;
                     case WROTE:
@@ -136,11 +131,11 @@ public class IoDispatcher<C extends IContext<C>>
                 IOperator<Throwable,
                           ISession<C>,
                           ITriple> errorOperator = event.getEventOp();
-                errorContent = event.getContent();
-                session = errorContent.getSecond();
+                IPair errorContent = event.getContent();
+                ISession<C> session = errorContent.getSecond();
                 if (!session.isClosed()) {
                     throwable = errorContent.getFirst();
-                    result = errorOperator.handle(throwable, session);
+                    ITriple result = errorOperator.handle(throwable, session);
                     dispatchError(session.getContext()
                                          .getSort(),
                                   WAIT_CLOSE,
@@ -153,4 +148,53 @@ public class IoDispatcher<C extends IContext<C>>
         event.reset();
     }
 
+    private RingBuffer<QEvent> dispatchWorker(long seq)
+    {
+        return _Workers[(int) (seq & _WorkerMask)];
+    }
+
+    private <V,
+             A,
+             R> void dispatchConnected(ISort<C> sorter,
+                                       V v,
+                                       A a,
+                                       IOperator<V,
+                                                 A,
+                                                 R> op)
+    {
+        switch (sorter.getMode())
+        {
+            case CLUSTER:
+                publish(_Cluster, CONNECTED, new Pair<>(v, a), op);
+                break;
+            case LINK:
+                publish(_Link, CONNECTED, new Pair<>(v, a), op);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private <V,
+             A,
+             R> void dispatchError(ISort<C> sorter,
+                                   IError.Type type,
+                                   V v,
+                                   A a,
+                                   IOperator<V,
+                                             A,
+                                             R> op)
+    {
+        switch (sorter.getMode())
+        {
+            case CLUSTER:
+                error(_Cluster, type, new Pair<>(v, a), op);
+                break;
+            case LINK:
+                error(_Link, type, new Pair<>(v, a), op);
+                break;
+            default:
+                break;
+        }
+    }
 }

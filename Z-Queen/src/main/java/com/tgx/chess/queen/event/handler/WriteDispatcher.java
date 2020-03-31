@@ -24,8 +24,8 @@
 
 package com.tgx.chess.queen.event.handler;
 
+import static com.tgx.chess.queen.event.inf.IError.Type.HANDLE_DATA;
 import static com.tgx.chess.queen.event.inf.IError.Type.ILLEGAL_STATE;
-import static com.tgx.chess.queen.event.inf.IError.Type.SHUTDOWN;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WROTE;
 
@@ -43,7 +43,6 @@ import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.inf.ISessionError;
 
 /**
  * @author william.d.zk
@@ -55,7 +54,7 @@ public class WriteDispatcher<C extends IContext<C>>
     private final RingBuffer<QEvent>[] _Encoders;
     private final RingBuffer<QEvent>   _Error;
     private final int                  _Mask;
-    private final Logger               _Logger = Logger.getLogger(getClass().getName());
+    private final Logger               _Logger = Logger.getLogger(getClass().getSimpleName());
 
     @SafeVarargs
     public WriteDispatcher(RingBuffer<QEvent> error,
@@ -64,6 +63,9 @@ public class WriteDispatcher<C extends IContext<C>>
         _Error = error;
         _Encoders = workers;
         _Mask = _Encoders.length - 1;
+        if (Integer.bitCount(_Encoders.length) != 1) {
+            throw new IllegalArgumentException("workers' length must be a power of 2");
+        }
     }
 
     private RingBuffer<QEvent> dispatchEncoder(long seq)
@@ -81,7 +83,7 @@ public class WriteDispatcher<C extends IContext<C>>
                     /* logic 处理错误，转换为shutdown目标投递给 _Error
                      交由 IoDispatcher转发给对应的MappingHandler 执行close 
                     */
-                    error(_Error, SHUTDOWN, event.getContent(), event.getEventOp());
+                    error(_Error, HANDLE_DATA, event.getContent(), event.getEventOp());
                     break;
             }
         }
