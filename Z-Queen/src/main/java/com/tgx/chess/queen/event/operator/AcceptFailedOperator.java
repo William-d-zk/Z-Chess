@@ -36,15 +36,15 @@ public class AcceptFailedOperator<C extends IContext<C>>
         implements
         IOperator<Throwable,
                   IAioServer<C>,
-                  IAioServer<C>>
+                  Void>
 {
 
     private final Logger _Logger = Logger.getLogger(getClass().getName());
 
     @Override
-    public IAioServer<C> handle(Throwable throwable, IAioServer<C> aioServer)
+    public Void handle(Throwable throwable, IAioServer<C> aioServer)
     {
-        _Logger.warning("accept failed!", throwable);
-        return aioServer;
+        _Logger.warning("accept failed,ignore!", throwable);
+        return null;
     }
 }

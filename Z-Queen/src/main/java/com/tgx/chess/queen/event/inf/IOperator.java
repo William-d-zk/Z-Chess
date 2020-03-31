@@ -61,6 +61,7 @@ public interface IOperator<T,
         CONSISTENT_ELECT,
         LOGIC,
         DISPATCH,
-        IGNORE
+        IGNORE,
+        TERMINATE
     }
 }

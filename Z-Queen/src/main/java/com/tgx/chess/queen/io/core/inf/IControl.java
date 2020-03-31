@@ -66,6 +66,7 @@ public interface IControl<C extends IContext<C>>
         return false;
     }
 
+
     default boolean isShutdown()
     {
         return false;

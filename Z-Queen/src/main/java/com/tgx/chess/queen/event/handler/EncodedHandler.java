@@ -69,7 +69,7 @@ public class EncodedHandler<C extends IContext<C>>
                               ISession<C>,
                               ITriple> errorOperator = event.getEventOp();
                     ITriple errorResult = errorOperator.handle(throwable, session);
-                    error(_Error, IError.Type.CLOSED, new Pair<>(null, session), errorResult.getThird());
+                    error(_Error, IError.Type.SHUTDOWN, new Pair<>(null, session), errorResult.getThird());
                     break;
             }
         }

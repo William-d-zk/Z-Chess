@@ -24,8 +24,8 @@
 
 package com.tgx.chess.queen.event.handler;
 
-import static com.tgx.chess.queen.event.inf.IError.Type.CLOSED;
-import static com.tgx.chess.queen.event.inf.IOperator.Type.CONNECTED;
+import static com.tgx.chess.queen.event.inf.IError.Type.SHUTDOWN;
+import static com.tgx.chess.queen.event.inf.IError.Type.WAIT_CLOSE;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.TRANSFER;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WROTE;
 
@@ -69,26 +69,28 @@ public class IoDispatcher<C extends IContext<C>>
         IError.Type errorType = event.getErrorType();
         switch (errorType)
         {
+            case ACCEPT_FAILED:
             case CONNECT_FAILED:
                 IPair connectFailedContent = event.getContent();
                 Throwable throwable = connectFailedContent.getFirst();
                 IConnectActivity<C> connectActive = connectFailedContent.getSecond();
                 dispatchError(connectActive.getSort(), errorType, throwable, connectActive, event.getEventOp());
                 break;
-            case CLOSED:
-                /* 将其他 Event Error 转换为 closed 进行定向分发 */
-                IOperator<Void,
+            case SHUTDOWN:
+                /* 将其他 dispatcher 投递来的 Event Error 转换为 closed 进行定向分发 给对应的MappingHandler */
+                IOperator<Throwable,
                           ISession<C>,
-                          Void> closedOperator = event.getEventOp();
-                IPair closedContent = event.getContent();
-                ISession<C> session = closedContent.getSecond();
+                          ITriple> sessionError = event.getEventOp(); //ISessionError
+                IPair errorContent = event.getContent();
+                ITriple result = sessionError.handle(errorContent.getFirst(), errorContent.getSecond());
+                ISession<C> session = result.getSecond();
                 if (!session.isClosed()) {
                     dispatchError(session.getContext()
                                          .getSort(),
-                                  CLOSED,
-                                  closedContent.getFirst(),
+                                  WAIT_CLOSE,
+                                  null,
                                   session,
-                                  closedOperator);
+                                  result.getThird());
                 }
                 break;
             case NO_ERROR:
@@ -101,7 +103,7 @@ public class IoDispatcher<C extends IContext<C>>
                         IOperator<IConnectActivity<C>,
                                   AsynchronousSocketChannel,
                                   ITriple> connectOperator = event.getEventOp();
-                        dispatch(context.getSort(), CONNECTED, context, channel, connectOperator);
+                        dispatchConnected(context.getSort(), context, channel, connectOperator);
                         break;
                     case READ:
                         IPair readContent = event.getContent();
@@ -113,13 +115,15 @@ public class IoDispatcher<C extends IContext<C>>
                         publish(_IoWrote, WROTE, wroteContent, event.getEventOp());
                         break;
                     case CLOSE:// local close
-                        IOperator<Void,
-                                  ISession<C>,
-                                  Void> closeOperator = event.getEventOp();
                         IPair closeContent = event.getContent();
                         session = closeContent.getSecond();
                         if (!session.isClosed()) {
-                            error(_Error, CLOSED, closeContent, closeOperator);
+                            dispatchError(session.getContext()
+                                                 .getSort(),
+                                          WAIT_CLOSE,
+                                          null,
+                                          session,
+                                          event.getEventOp());
                         }
                         break;
                     default:
@@ -128,18 +132,19 @@ public class IoDispatcher<C extends IContext<C>>
                 }
                 break;
             default:
+                /*未指定类型的错误 来自Decoded/Encoded Dispatcher */
                 IOperator<Throwable,
                           ISession<C>,
                           ITriple> errorOperator = event.getEventOp();
-                IPair errorContent = event.getContent();
+                errorContent = event.getContent();
                 session = errorContent.getSecond();
                 if (!session.isClosed()) {
                     throwable = errorContent.getFirst();
-                    ITriple result = errorOperator.handle(throwable, session);
+                    result = errorOperator.handle(throwable, session);
                     dispatchError(session.getContext()
                                          .getSort(),
-                                  CLOSED,
-                                  result.getFirst(),
+                                  WAIT_CLOSE,
+                                  null,
                                   session,
                                   result.getThird());
                 }

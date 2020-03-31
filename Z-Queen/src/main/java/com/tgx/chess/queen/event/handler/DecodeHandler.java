@@ -29,6 +29,7 @@ import static com.tgx.chess.queen.io.core.inf.IContext.DECODE_ERROR;
 
 import java.util.Arrays;
 
+import com.lmax.disruptor.EventHandler;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
@@ -47,7 +48,7 @@ import com.tgx.chess.queen.io.core.inf.ISession;
  */
 public class DecodeHandler<C extends IContext<C>>
         implements
-        IPipeEventHandler<QEvent>
+        EventHandler<QEvent>
 {
     protected final Logger        _Logger = Logger.getLogger(getClass().getName());
     private final IEncryptHandler _EncryptHandler;

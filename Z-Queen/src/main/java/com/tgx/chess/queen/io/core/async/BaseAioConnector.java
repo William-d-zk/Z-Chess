@@ -164,7 +164,7 @@ public abstract class BaseAioConnector<C extends IContext<C>>
     @Override
     public IOperator<Throwable,
                      IAioConnector<C>,
-                     IAioConnector<C>> getErrorOperator()
+                     Void> getErrorOperator()
     {
         return _ConnectFailedOperator;
     }

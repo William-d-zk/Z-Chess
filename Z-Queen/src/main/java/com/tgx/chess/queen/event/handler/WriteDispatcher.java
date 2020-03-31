@@ -25,6 +25,7 @@
 package com.tgx.chess.queen.event.handler;
 
 import static com.tgx.chess.queen.event.inf.IError.Type.ILLEGAL_STATE;
+import static com.tgx.chess.queen.event.inf.IError.Type.SHUTDOWN;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WROTE;
 
@@ -42,6 +43,7 @@ import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
+import com.tgx.chess.queen.io.core.inf.ISessionError;
 
 /**
  * @author william.d.zk
@@ -75,15 +77,11 @@ public class WriteDispatcher<C extends IContext<C>>
         if (event.hasError()) {
             switch (event.getErrorType())
             {
-                case HANDLE_DATA:// from logic
-                    IOperator<Void,
-                              ISession<C>,
-                              Void> closeOperator = event.getEventOp();
-                    IPair closeContent = event.getContent();
-                    ISession<C> session = closeContent.getSecond();
-                    if (!session.isClosed()) {
-                        error(_Error, event.getErrorType(), closeContent, closeOperator);
-                    }
+                case HANDLE_DATA:// from logic handler 
+                    /* logic 处理错误，转换为shutdown目标投递给 _Error
+                     交由 IoDispatcher转发给对应的MappingHandler 执行close 
+                    */
+                    error(_Error, SHUTDOWN, event.getContent(), event.getEventOp());
                     break;
             }
         }

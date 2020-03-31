@@ -25,6 +25,7 @@
 package com.tgx.chess.queen.event.handler;
 
 import com.lmax.disruptor.RingBuffer;
+import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IOperator;
@@ -33,6 +34,8 @@ import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.IContext;
 
+import static com.tgx.chess.queen.event.inf.IOperator.Type.CONNECTED;
+
 /**
  * @author william.d.zk
  */
@@ -40,10 +43,10 @@ abstract class BaseDispatcher<C extends IContext<C>>
         implements
         IPipeEventHandler<QEvent>
 {
-    final RingBuffer<QEvent> _Link;
-    final RingBuffer<QEvent> _Cluster;
-    final RingBuffer<QEvent> _Error;
-
+    final RingBuffer<QEvent>           _Link;
+    final RingBuffer<QEvent>           _Cluster;
+    final RingBuffer<QEvent>           _Error;
+    final Logger                       _Logger = Logger.getLogger("DISPATCHER");
     private final RingBuffer<QEvent>[] _Workers;
     private final int                  _WorkerMask;
 
@@ -70,21 +73,20 @@ abstract class BaseDispatcher<C extends IContext<C>>
 
     <V,
      A,
-     R> void dispatch(ISort sorter,
-                      IOperator.Type type,
-                      V v,
-                      A a,
-                      IOperator<V,
-                                A,
-                                R> op)
+     R> void dispatchConnected(ISort<C> sorter,
+                               V v,
+                               A a,
+                               IOperator<V,
+                                         A,
+                                         R> op)
     {
         switch (sorter.getMode())
         {
             case CLUSTER:
-                publish(_Cluster, type, new Pair<>(v, a), op);
+                publish(_Cluster, CONNECTED, new Pair<>(v, a), op);
                 break;
             case LINK:
-                publish(_Link, type, new Pair<>(v, a), op);
+                publish(_Link, CONNECTED, new Pair<>(v, a), op);
                 break;
             default:
                 break;
@@ -93,7 +95,7 @@ abstract class BaseDispatcher<C extends IContext<C>>
 
     <V,
      A,
-     R> void dispatchError(ISort sorter,
+     R> void dispatchError(ISort<C> sorter,
                            IError.Type type,
                            V v,
                            A a,

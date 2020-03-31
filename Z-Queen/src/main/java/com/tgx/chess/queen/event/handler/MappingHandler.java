@@ -42,6 +42,7 @@ import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.IAioConnector;
+import com.tgx.chess.queen.io.core.inf.IAioServer;
 import com.tgx.chess.queen.io.core.inf.IConnectActivity;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
@@ -84,15 +85,20 @@ public class MappingHandler<C extends IContext<C>>
             switch (event.getErrorType())
             {
                 case ACCEPT_FAILED:
+                    IOperator<Throwable,
+                              IAioServer<C>,
+                              Void> acceptFailedOperator = event.getEventOp();
+                    IPair errorContent = event.getContent();
+                    acceptFailedOperator.handle(errorContent.getFirst(), errorContent.getSecond());
                     break;
                 case CONNECT_FAILED:
                     IOperator<Throwable,
                               IAioConnector<C>,
-                              IAioConnector<C>> connectFailedOperator = event.getEventOp();
-                    IPair errorContent = event.getContent();
+                              Void> connectFailedOperator = event.getEventOp();
+                    errorContent = event.getContent();
                     connectFailedOperator.handle(errorContent.getFirst(), errorContent.getSecond());
                     break;
-                default:
+                case SHUTDOWN:
                     _Logger.warning("server io error , do close session");
                     IOperator<Void,
                               ISession<C>,
@@ -105,6 +111,12 @@ public class MappingHandler<C extends IContext<C>>
                     if (!closed) {
                         dismiss.onDismiss(session);
                     }
+                    break;
+                default:
+                    _Logger.warning("can't handle %s",
+                                    event.getErrorType()
+                                         .name());
+                    break;
             }
         }
         else {

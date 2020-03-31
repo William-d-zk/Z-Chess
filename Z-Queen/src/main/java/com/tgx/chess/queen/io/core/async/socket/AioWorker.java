@@ -148,7 +148,7 @@ public class AioWorker
 
     public <C extends IContext<C>> void publishConnectingError(final IOperator<Throwable,
                                                                                IAioConnector<C>,
-                                                                               IAioConnector<C>> op,
+                                                                               Void> op,
                                                                final Throwable e,
                                                                final IAioConnector<C> cActive)
     {
@@ -157,7 +157,7 @@ public class AioWorker
 
     public <C extends IContext<C>> void publishAcceptError(final IOperator<Throwable,
                                                                            IAioServer<C>,
-                                                                           IAioServer<C>> op,
+                                                                           Void> op,
                                                            final Throwable e,
                                                            final IAioServer<C> cActive)
     {
@@ -173,10 +173,5 @@ public class AioWorker
                                                          final ISession<C> session)
     {
         publish(_Producer, op, eType, IOperator.Type.NULL, new Pair<>(t, session));
-    }
-
-    public RingBuffer<QEvent> getProducer()
-    {
-        return _Producer;
     }
 }

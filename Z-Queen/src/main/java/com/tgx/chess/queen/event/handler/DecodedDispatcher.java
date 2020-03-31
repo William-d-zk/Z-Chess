@@ -24,6 +24,7 @@
 
 package com.tgx.chess.queen.event.handler;
 
+import static com.tgx.chess.queen.event.inf.IOperator.Type.DISPATCH;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.LOGIC;
 
 import java.util.Objects;
@@ -59,34 +60,34 @@ public class DecodedDispatcher<C extends IContext<C>>
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
     {
-        if (IError.Type.NO_ERROR.equals(event.getErrorType())) {
-            switch (event.getEventType())
-            {
-                case TRANSFER:
-                case LOGIC:
-                case DISPATCH:
-                    IPair dispatchContent = event.getContent();
-                    ISession<C> session = dispatchContent.getSecond();
-                    IControl<C>[] commands = dispatchContent.getFirst();
-                    if (Objects.nonNull(commands)) {
-                        for (IControl<C> cmd : commands) {
-                            //dispatch 到对应的 处理器里
-                            dispatch(session.getContext()
-                                            .getSort(),
-                                     cmd,
-                                     session,
-                                     event.getEventOp());
-                        }
+        if (event.getErrorType() == IError.Type.NO_ERROR) {
+            if (event.getEventType() == DISPATCH) {
+                IPair dispatchContent = event.getContent();
+                ISession<C> session = dispatchContent.getSecond();
+                IControl<C>[] commands = dispatchContent.getFirst();
+                if (Objects.nonNull(commands)) {
+                    for (IControl<C> cmd : commands) {
+                        //dispatch 到对应的 处理器里
+                        dispatch(session.getContext()
+                                        .getSort(),
+                                 cmd,
+                                 session,
+                                 event.getEventOp());
                     }
-                default:
-                    break;
+                }
+            }
+            else {
+                _Logger.warning("decoded dispatcher event type error: %s",
+                                event.getEventType()
+                                     .name());
             }
         }
         else {//错误处理
             IPair dispatchError = event.getContent();
-            Throwable throwable = dispatchError.getFirst();
             ISession<C> session = dispatchError.getSecond();
-            error(_Error, event.getErrorType(), new Pair<>(throwable, session), event.getEventOp());
+            if (!session.isClosed()) {
+                error(_Error, event.getErrorType(), dispatchError, event.getEventOp());
+            }
         }
         event.reset();
     }
@@ -102,6 +103,9 @@ public class DecodedDispatcher<C extends IContext<C>>
         switch (sorter.getMode())
         {
             case CLUSTER:
+                /*cluster 相关处理逻辑都在单个cluster 事务处理线程中执行，所以此处全部单一投递
+                  不考虑性能损失，多线程状态同步损失更大，且 cluster 需要处理的数据量远低于biz侧
+                * */
                 publish(_Cluster, LOGIC, new Pair<>(cmd, session), op);
                 break;
             case LINK:

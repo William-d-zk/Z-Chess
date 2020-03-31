@@ -95,7 +95,7 @@ public abstract class BaseAioServer<C extends IContext<C>>
     @Override
     public IOperator<Throwable,
                      IAioServer<C>,
-                     IAioServer<C>> getErrorOperator()
+                     Void> getErrorOperator()
     {
         return _AcceptFailedOperator;
     }
