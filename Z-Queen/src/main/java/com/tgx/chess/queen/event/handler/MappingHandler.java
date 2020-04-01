@@ -133,7 +133,15 @@ public class MappingHandler<C extends IContext<C>>
                         ITriple connectedHandled = connectedOperator.handle(connectActivity, channel);
                         /*connectedHandled 不可能为 null*/
                         ISession<C> session = connectedHandled.getSecond();
-                        write(connectedHandled.getFirst(), session);
+                        IControl<C>[] toSends = connectedHandled.getFirst();
+                        if (toSends != null) {
+                            publish(_Writer,
+                                    WRITE,
+                                    new Pair<>(toSends, session),
+                                    session.getContext()
+                                           .getSort()
+                                           .getTransfer());
+                        }
                     }
                     catch (Exception e) {
                         _Logger.fetal("link create session failed", e);
@@ -142,26 +150,34 @@ public class MappingHandler<C extends IContext<C>>
                 case LOGIC:
                     ISession<C> session = event.getContent()
                                                .getSecond();
-                    IControl<C> content = event.getContent()
-                                               .getFirst();
-                    if (content != null) {
+                    IControl<C> received = event.getContent()
+                                                .getFirst();
+                    if (received != null) {
                         try {
-                            write(_CustomLogic.handle(_QueenManager, session, content), session);
+                            IControl<C>[] toSends = _CustomLogic.handle(_QueenManager, session, received);
+                            if (toSends != null) {
+                                publish(_Writer,
+                                        WRITE,
+                                        new Pair<>(toSends, session),
+                                        session.getContext()
+                                               .getSort()
+                                               .getTransfer());
+                            }
                         }
                         catch (LinkRejectException e) {
                             _Logger.warning("mapping handler reject", e);
-                            error(LINK_LOGIN_ERROR,
-                                  e,
-                                  session,
+                            error(_Error,
+                                  LINK_LOGIN_ERROR,
+                                  new Pair<>(e, session),
                                   session.getContext()
                                          .getSort()
                                          .getError());
                         }
                         catch (Exception e) {
                             _Logger.warning("mapping handler error", e);
-                            error(LINK_ERROR,
-                                  e,
-                                  session,
+                            error(_Error,
+                                  LINK_ERROR,
+                                  new Pair<>(e, session),
                                   session.getContext()
                                          .getSort()
                                          .getError());
@@ -176,27 +192,5 @@ public class MappingHandler<C extends IContext<C>>
             }
         }
         event.reset();
-    }
-
-    public final void error(IError.Type type,
-                            Throwable e,
-                            ISession<C> session,
-                            IOperator<Throwable,
-                                      ISession<C>,
-                                      ITriple> errorOperator)
-    {
-        error(_Error, type, new Pair<>(e, session), errorOperator);
-    }
-
-    public final void write(IControl<C>[] waitToSends, ISession<C> session)
-    {
-        if (waitToSends != null) {
-            publish(_Writer,
-                    WRITE,
-                    new Pair<>(waitToSends, session),
-                    session.getContext()
-                           .getSort()
-                           .getTransfer());
-        }
     }
 }
