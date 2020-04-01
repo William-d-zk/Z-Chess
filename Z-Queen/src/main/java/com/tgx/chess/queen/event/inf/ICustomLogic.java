@@ -32,4 +32,6 @@ import com.tgx.chess.queen.io.core.manager.QueenManager;
 public interface ICustomLogic<C extends IContext<C>>
 {
     IControl<C>[] handle(QueenManager<C> manager, ISession<C> session, IControl<C> content) throws Exception;
+
+    void onTransfer(IControl<C> content);
 }

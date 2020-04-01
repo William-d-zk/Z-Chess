@@ -144,8 +144,6 @@ public class LogicHandler
                 _QttRouter.register(x116, session.getIndex());
                 return new IControl[] { x116 };
             case X116_QttPubrel.COMMAND:
-                //                throw new ZException("AA");
-
                 x116 = (X116_QttPubrel) content;
                 X117_QttPubcomp x117 = new X117_QttPubcomp();
                 x117.setMsgId(x116.getMsgId());

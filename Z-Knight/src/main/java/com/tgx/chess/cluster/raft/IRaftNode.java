@@ -26,7 +26,7 @@ package com.tgx.chess.cluster.raft;
 
 import java.util.List;
 
-import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
+import com.tgx.chess.cluster.raft.model.RaftResponse;
 
 /**
  * @author william.d.zk
@@ -34,19 +34,19 @@ import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
  */
 public interface IRaftNode
 {
-    void applyAndResponse(X7F_RaftResponse response);
+    void applyAndResponse(RaftResponse response);
 
-    X7F_RaftResponse reject(long peerId, int code);
+    RaftResponse reject(long peerId, int code);
 
-    X7F_RaftResponse stepDown(long peerId);
+    RaftResponse stepDown(long peerId);
 
-    X7F_RaftResponse follow(long peerId);
+    RaftResponse follow(long peerId);
 
-    X7F_RaftResponse stepUp(long peerId);
+    RaftResponse stepUp(long peerId);
 
-    X7F_RaftResponse reTick(long peerId);
+    RaftResponse reTick(long peerId);
 
-    X7F_RaftResponse rejectAndStepDown(long peerId, int code);
+    RaftResponse rejectAndStepDown(long peerId, int code);
 
     enum RaftState
     {
