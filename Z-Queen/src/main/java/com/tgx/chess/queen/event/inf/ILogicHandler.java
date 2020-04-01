@@ -38,8 +38,7 @@ import com.tgx.chess.queen.io.core.manager.QueenManager;
 
 public interface ILogicHandler<C extends IContext<C>>
         extends
-        IPipeEventHandler<QEvent>,
-        ICustomLogic<C>
+        IPipeEventHandler<QEvent>
 {
     Logger _Logger = Logger.getLogger(ILogicHandler.class.getSimpleName());
 
@@ -81,4 +80,7 @@ public interface ILogicHandler<C extends IContext<C>>
             }
         }
     }
+
+    IControl<C>[] handle(QueenManager<C> manager, ISession<C> session, IControl<C> content) throws Exception;
+
 }

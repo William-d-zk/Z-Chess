@@ -55,7 +55,6 @@ import com.tgx.chess.queen.io.core.inf.IQoS;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
 import com.tgx.chess.spring.device.model.DeviceEntry;
-import com.tgx.chess.spring.jpa.device.dao.DeviceEntity;
 
 @Component
 public class LinkCustom
@@ -119,7 +118,7 @@ public class LinkCustom
                          || !device.getPassword()
                                    .equals(x111.getPassword()))
                 {
-                    /**
+                    /*
                      * @see DeviceEntity
                      *      username >=8 && <=32
                      *      password >=5 && <=32
@@ -161,8 +160,16 @@ public class LinkCustom
                 x11B.setMsgId(x11A.getMsgId());
                 return new IControl[] { x11B };
         }
-
         return null;
+    }
+
+    @Override
+    public void onTransfer(IControl<ZContext> content)
+    {
+        switch (content.serial())
+        {
+
+        }
     }
 
     public void setQttRouter(IQttRouter qttRouter)

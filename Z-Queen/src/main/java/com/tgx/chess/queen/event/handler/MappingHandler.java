@@ -29,6 +29,7 @@ import static com.tgx.chess.queen.event.inf.IError.Type.LINK_LOGIN_ERROR;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 
 import java.nio.channels.AsynchronousSocketChannel;
+import java.util.Objects;
 
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.king.base.exception.LinkRejectException;
@@ -175,6 +176,34 @@ public class MappingHandler<C extends IContext<C>>
                         }
                         catch (Exception e) {
                             _Logger.warning("mapping handler error", e);
+                            error(_Error,
+                                  LINK_ERROR,
+                                  new Pair<>(e, session),
+                                  session.getContext()
+                                         .getSort()
+                                         .getError());
+                        }
+                    }
+                    break;
+                case CONSISTENT_ELECT:
+                case CONSISTENT_TRANS:
+                    /*CONSISTENT 必然是单个IControl,通过前项RingBuffer 向MappingHandler 投递*/
+                    session = event.getContent()
+                                   .getSecond();
+                    IControl<C> consistent = event.getContent()
+                                                  .getFirst();
+                    if (consistent != null) {
+                        try {
+                            IControl<C>[] toSends = _CustomLogic.handle(_QueenManager, session, consistent);
+                            publish(_Writer,
+                                    WRITE,
+                                    new Pair<>(toSends, session),
+                                    session.getContext()
+                                           .getSort()
+                                           .getTransfer());
+                        }
+                        catch (Exception e) {
+                            _Logger.warning("handle CONSISTENT send error", e);
                             error(_Error,
                                   LINK_ERROR,
                                   new Pair<>(e, session),

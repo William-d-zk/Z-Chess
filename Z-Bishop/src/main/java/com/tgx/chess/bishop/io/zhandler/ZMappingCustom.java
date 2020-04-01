@@ -76,4 +76,11 @@ public class ZMappingCustom
                 return _Then.handle(manager, session, content);
         }
     }
+
+    @Override
+    public void onTransfer(IControl<ZContext> content)
+    {
+        if (_Then == null) return;
+        _Then.onTransfer(content);
+    }
 }

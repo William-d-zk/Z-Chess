@@ -24,6 +24,9 @@
 
 package com.tgx.chess.cluster.raft.model;
 
+import static com.tgx.chess.queen.event.inf.IOperator.Type.CLUSTER_LOCAL;
+import static com.tgx.chess.queen.event.inf.IOperator.Type.CONSISTENT_ELECT;
+
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -35,7 +38,6 @@ import com.tgx.chess.bishop.biz.config.IClusterConfig;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.raft.X72_RaftVote;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7E_RaftBroadcast;
-import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
 import com.tgx.chess.cluster.raft.IRaftDao;
 import com.tgx.chess.cluster.raft.IRaftMachine;
 import com.tgx.chess.cluster.raft.IRaftMessage;
@@ -54,13 +56,9 @@ import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.io.core.inf.IActivity;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
-import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
-
-import static com.tgx.chess.queen.event.inf.IOperator.Type.CLUSTER_LOCAL;
-import static com.tgx.chess.queen.event.inf.IOperator.Type.CONSISTENT_ELECT;
 
 /**
  * @author william.d.zk
@@ -267,7 +265,6 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         catch (InterruptedException e) {
             //ignore
         }
-
         X72_RaftVote x72 = new X72_RaftVote(_ZUID.getId());
         x72.setTerm(_SelfMachine.increaseTerm());
         x72.setPeerId(_SelfMachine.getPeerId());
@@ -276,27 +273,25 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         broadcast(CONSISTENT_ELECT, x72);
     }
 
-    private X7F_RaftResponse success(long peerId)
+    private RaftResponse success(long peerId)
     {
-        X7F_RaftResponse x7f = new X7F_RaftResponse(_ZUID.getId());
-        x7f.setTerm(_SelfMachine.getTerm());
-        x7f.setCode(X7F_RaftResponse.Code.SUCCESS.getCode());
-        x7f.setSession(_SessionManager.findSessionByPrefix(peerId));
-        return x7f;
+        RaftResponse response = new RaftResponse(peerId);
+        response.setTerm(_SelfMachine.getTerm());
+        response.setCode(RaftResponse.Code.SUCCESS.getCode());
+        return response;
     }
 
     @Override
-    public X7F_RaftResponse reject(long peerId, int code)
+    public RaftResponse reject(long peerId, int code)
     {
-        X7F_RaftResponse x7f = new X7F_RaftResponse(_ZUID.getId());
-        x7f.setTerm(_SelfMachine.getTerm());
-        x7f.setCode(code);
-        x7f.setSession(_SessionManager.findSessionByPrefix(peerId));
-        return x7f;
+        RaftResponse response = new RaftResponse(peerId);
+        response.setTerm(_SelfMachine.getTerm());
+        response.setCode(code);
+        return response;
     }
 
     @Override
-    public X7F_RaftResponse stepUp(long peerId)
+    public RaftResponse stepUp(long peerId)
     {
         if (mTickTask != null) {
             mTickTask.cancel();
@@ -306,7 +301,7 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
     }
 
     @Override
-    public X7F_RaftResponse stepDown(long peerId)
+    public RaftResponse stepDown(long peerId)
     {
         if (mHeartbeatTask != null) {
             mHeartbeatTask.cancel();
@@ -318,7 +313,7 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
     }
 
     @Override
-    public X7F_RaftResponse follow(long peerId)
+    public RaftResponse follow(long peerId)
     {
         return success(peerId);
     }
@@ -331,20 +326,20 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
      * @return
      */
     @Override
-    public X7F_RaftResponse reTick(long peerId)
+    public RaftResponse reTick(long peerId)
     {
         if (mTickTask != null) {
             mTickTask.cancel();
             mTickTask = _TimeWheel.acquire(this, _TickSchedule);
         }
         catchUp();
-        X7F_RaftResponse x7f = success(peerId);
-        x7f.setCatchUp(_SelfMachine.getIndex());
-        return x7f;
+        RaftResponse response = success(peerId);
+        response.setCatchUp(_SelfMachine.getIndex());
+        return response;
     }
 
     @Override
-    public X7F_RaftResponse rejectAndStepDown(long peerId, int code)
+    public RaftResponse rejectAndStepDown(long peerId, int code)
     {
         return null;
     }
@@ -409,11 +404,20 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
     }
 
     @Override
-    public void applyAndResponse(X7F_RaftResponse response)
+    public void applyAndResponse(RaftResponse response)
     {
         if (response == null) return;//ignore
 
         response.setCatchUp(_SelfMachine.getCommit());
     }
 
+    public void onTransfer(IControl<ZContext> content)
+    {
+
+    }
+
+    public void onReceived(IControl<ZContext> content)
+    {
+
+    }
 }

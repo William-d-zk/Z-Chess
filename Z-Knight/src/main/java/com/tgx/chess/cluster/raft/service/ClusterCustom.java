@@ -24,30 +24,28 @@
 
 package com.tgx.chess.cluster.raft.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.tgx.chess.bishop.biz.device.DeviceNode;
-import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
-import com.tgx.chess.bishop.io.zprotocol.raft.X7E_RaftBroadcast;
-import com.tgx.chess.cluster.raft.IRaftNode;
-import com.tgx.chess.cluster.raft.model.log.LogEntry;
-import com.tgx.chess.json.JsonUtil;
-import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.queen.io.core.inf.IActivity;
-import com.tgx.chess.queen.io.core.inf.IClusterPeer;
-import com.tgx.chess.queen.io.core.inf.ISessionManager;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
+import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
+import com.tgx.chess.bishop.io.zprotocol.raft.X72_RaftVote;
+import com.tgx.chess.bishop.io.zprotocol.raft.X7E_RaftBroadcast;
 import com.tgx.chess.cluster.raft.model.RaftNode;
+import com.tgx.chess.cluster.raft.model.log.LogEntry;
+import com.tgx.chess.json.JsonUtil;
+import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.event.inf.ICustomLogic;
+import com.tgx.chess.queen.io.core.inf.IActivity;
+import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
+import com.tgx.chess.queen.io.core.inf.ISessionManager;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
-
-import java.util.List;
-import java.util.function.Consumer;
 
 @Component
 public class ClusterCustom<T extends ISessionManager<ZContext> & IActivity<ZContext> & IClusterPeer>
@@ -87,6 +85,18 @@ public class ClusterCustom<T extends ISessionManager<ZContext> & IActivity<ZCont
         }
 
         return null;
+    }
+
+    @Override
+    public void onTransfer(IControl<ZContext> content)
+    {
+        switch (content.serial())
+        {
+            case X72_RaftVote.COMMAND:
+                mRaftNode.onTransfer(content);
+                break;
+
+        }
     }
 
     public void setRaftNode(RaftNode<T> raftNode)

@@ -22,52 +22,36 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.bishop.io.zprotocol.raft;
+package com.tgx.chess.cluster.raft.model;
 
-import com.tgx.chess.bishop.io.zprotocol.ZCommand;
-import com.tgx.chess.king.base.util.IoUtil;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @author william.d.zk
+ * @date 2020/4/2
  */
-public class X7F_RaftResponse
-        extends
-        ZCommand
+public class RaftResponse
 {
-    public final static int COMMAND = 0x7F;
-
-    protected X7F_RaftResponse()
-    {
-        super(COMMAND, true);
-    }
-
-    public X7F_RaftResponse(long msgId)
-    {
-        super(COMMAND, msgId);
-    }
-
+    private long mPeerId;
     private long mTerm;
     private int  mCode;
     private long mCatchUp;
 
-    @Override
-    public int decodec(byte[] data, int pos)
+    @JsonCreator
+    public RaftResponse(@JsonProperty("peer_id") long peerId)
     {
-        mTerm = IoUtil.readLong(data, pos);
-        pos += 8;
-        mCode = data[pos++];
-        mCatchUp = IoUtil.readLong(data, pos);
-        pos += 8;
-        return pos;
+        mPeerId = peerId;
     }
 
-    @Override
-    public int encodec(byte[] data, int pos)
+    public long getPeerId()
     {
-        pos += IoUtil.writeLong(mTerm, data, pos);
-        pos += IoUtil.writeByte(mCode, data, pos);
-        pos += IoUtil.writeLong(mCatchUp, data, pos);
-        return pos;
+        return mPeerId;
+    }
+
+    public void setPeerId(long peerId)
+    {
+        mPeerId = peerId;
     }
 
     public long getTerm()
@@ -90,6 +74,17 @@ public class X7F_RaftResponse
         this.mCode = code;
     }
 
+    public boolean isApply()
+    {
+        return mCode == Code.SUCCESS.getCode();
+    }
+
+    public String getRejectReason()
+    {
+        return Code.valueOf(mCode)
+                   .getDescription();
+    }
+
     public long getCatchUp()
     {
         return mCatchUp;
@@ -100,4 +95,49 @@ public class X7F_RaftResponse
         mCatchUp = catchUp;
     }
 
+    public enum Code
+    {
+        SUCCESS(0, "success"),
+        LOWER_TERM(1, "term < current,reject"),
+        INCORRECT_TERM(2, "pre-log-index&pre-log-term inconsistent,reject"),
+        ILLEGAL_STATE(3, "illegal state,reject"),
+        SPLIT_CLUSTER(4, "split cluster,reject"),
+        ALREADY_VOTE(5, "already vote,reject"),
+        OBSOLETE(6, "index obsolete,reject");
+
+        private final int    _Code;
+        private final String _Description;
+
+        Code(int code,
+             String des)
+        {
+            _Code = code;
+            _Description = des;
+        }
+
+        public int getCode()
+        {
+            return _Code;
+        }
+
+        public String getDescription()
+        {
+            return _Description;
+        }
+
+        static Code valueOf(int code)
+        {
+            switch (code)
+            {
+                case 0:
+                    return SUCCESS;
+                case 1:
+                    return LOWER_TERM;
+                case 2:
+                    return INCORRECT_TERM;
+                default:
+                    throw new UnsupportedOperationException();
+            }
+        }
+    }
 }
