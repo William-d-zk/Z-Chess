@@ -161,6 +161,7 @@ public class X112_QttConnack
         REJECT_SERVER_UNAVAILABLE(3),
         REJECT_BAD_USER_OR_PASSWORD(4),
         REJECT_NOT_AUTHORIZED(5);
+
         private final byte _Code;
 
         Code(int code)

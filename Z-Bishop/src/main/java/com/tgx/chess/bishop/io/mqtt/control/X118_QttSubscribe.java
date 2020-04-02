@@ -138,6 +138,6 @@ public class X118_QttSubscribe
         return String.format("subscribe local-id:%d topics:%s",
                              getMsgId(),
                              mTopics != null ? mTopics.toString()
-                                            : null);
+                                             : null);
     }
 }

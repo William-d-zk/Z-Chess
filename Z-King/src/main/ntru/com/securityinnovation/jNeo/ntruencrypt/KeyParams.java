@@ -46,19 +46,19 @@ import com.securityinnovation.jNeo.math.PolynomialInverterModPowerOfPrime;
  */
 public class KeyParams
 {
-    public final OID   OIDEnum;
+    public final OID    OIDEnum;
     public final byte[] OIDBytes;
-    public final short N;
-    public final short p;
-    public final short q;
-    public final short df;
-    public final short dg;
-    public final short lLen;
-    public final short db;
-    public final short maxMsgLenBytes;
-    public final short bufferLenBits;
-    public final short bufferLenTrits;
-    public final short dm0;
+    public final short  N;
+    public final short  p;
+    public final short  q;
+    public final short  df;
+    public final short  dg;
+    public final short  lLen;
+    public final short  db;
+    public final short  maxMsgLenBytes;
+    public final short  bufferLenBits;
+    public final short  bufferLenTrits;
+    public final short  dm0;
 
     // Mask generation params, used in the generation of mask from R mod 4.
     public final DigestAlgorithm mgfHash;
@@ -160,13 +160,13 @@ public class KeyParams
 
     // An object to find the inverse of a polynomial mod 2048
     // and a table of inverses mod 2 needed to construct the inverter.
-    private static short[] invMod2 = { 0,
+    private static short[]            invMod2         = { 0,
                                                           1 };
     private static PolynomialInverter inverterMod2048 = new PolynomialInverterModPowerOfPrime(2048, 2, invMod2);
 
     // The master list of parameter sets.
     private static KeyParams[] paramSets;
-    private static byte      numParamSets = 0;
+    private static byte        numParamSets = 0;
 
     private static void initParamSets()
     {

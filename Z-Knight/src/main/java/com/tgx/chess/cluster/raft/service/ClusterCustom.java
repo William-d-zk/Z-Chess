@@ -24,16 +24,16 @@
 
 package com.tgx.chess.cluster.raft.service;
 
+import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Stream;
 
-import com.tgx.chess.cluster.raft.model.RaftResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
+import com.tgx.chess.bishop.io.zprotocol.raft.X72_RaftVote;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7E_RaftBroadcast;
 import com.tgx.chess.cluster.raft.model.RaftNode;
 import com.tgx.chess.cluster.raft.model.log.LogEntry;
@@ -51,8 +51,7 @@ import com.tgx.chess.queen.io.core.manager.QueenManager;
 @Component
 public class ClusterCustom<T extends ISessionManager<ZContext> & IActivity<ZContext> & IClusterPeer>
         implements
-        ICustomLogic<ZContext,
-                     RaftResponse>
+        ICustomLogic<ZContext>
 {
     private final Logger                   _Logger = Logger.getLogger(getClass().getSimpleName());
     private final IRepository<RaftNode<T>> _ClusterRepository;
@@ -90,10 +89,34 @@ public class ClusterCustom<T extends ISessionManager<ZContext> & IActivity<ZCont
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public IControl<ZContext>[] onTransfer(IControl<ZContext>[] content)
     {
         if (content == null || content.length == 0) { return null; }
-
+        if (content.length > 1) {
+            List<IControl<ZContext>> resultList = new LinkedList<>();
+            for (IControl<ZContext> control : content) {
+                switch (control.serial())
+                {
+                    case X7E_RaftBroadcast.COMMAND:
+                        if (mRaftNode.checkLogAppend((X7E_RaftBroadcast) control)) {
+                            resultList.add(control);
+                        }
+                        break;
+                }
+            }
+            if (!resultList.isEmpty()) { return resultList.toArray(new IControl[0]); }
+        }
+        else {
+            IControl<ZContext> control = content[0];
+            switch (control.serial())
+            {
+                case X72_RaftVote.COMMAND:
+                    if (mRaftNode.checkVoteState((X72_RaftVote) control)) { return content; }
+                    break;
+            }
+        }
+        return null;
     }
 
     public void setRaftNode(RaftNode<T> raftNode)

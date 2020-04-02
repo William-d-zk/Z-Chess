@@ -26,8 +26,9 @@ package com.tgx.chess.cluster.raft;
 
 import java.util.List;
 
+import com.tgx.chess.bishop.io.zprotocol.raft.X72_RaftVote;
+import com.tgx.chess.bishop.io.zprotocol.raft.X7E_RaftBroadcast;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
-import com.tgx.chess.cluster.raft.model.RaftResponse;
 
 /**
  * @author william.d.zk
@@ -48,6 +49,10 @@ public interface IRaftNode
     X7F_RaftResponse reTick(long peerId);
 
     X7F_RaftResponse rejectAndStepDown(long peerId, int code);
+
+    boolean checkVoteState(X72_RaftVote x72);
+
+    boolean checkLogAppend(X7E_RaftBroadcast x7e);
 
     enum RaftState
     {

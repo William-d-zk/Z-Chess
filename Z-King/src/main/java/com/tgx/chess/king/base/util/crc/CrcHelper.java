@@ -27,14 +27,14 @@ package com.tgx.chess.king.base.util.crc;
 /**
  * Created by anthony on 13.05.2017.
  */
-public class CrcHelper {
+public class CrcHelper
+{
 
     static long ReverseBits(long ul, int valueLength)
     {
         long newValue = 0;
 
-        for (int i = valueLength - 1; i >= 0; i--)
-        {
+        for (int i = valueLength - 1; i >= 0; i--) {
             newValue |= (ul & 1) << i;
             ul >>= 1;
         }

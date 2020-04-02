@@ -64,12 +64,11 @@ public class BillController
     }
 
     @GetMapping("/bill/pay")
-    public @ResponseBody
-    BillEntry pay(@RequestParam("type") String type,
-                  @RequestParam("bill") String bill,
-                  @RequestParam("mac") String mac,
-                  @RequestParam("amount") double amount,
-                  @RequestParam("item") long id) throws ZApiExecption
+    public @ResponseBody BillEntry pay(@RequestParam("type") String type,
+                                       @RequestParam("bill") String bill,
+                                       @RequestParam("mac") String mac,
+                                       @RequestParam("amount") double amount,
+                                       @RequestParam("item") long id) throws ZApiExecption
     {
         BillEntity billEntity = new BillEntity();
         billEntity.setAmount(amount);
