@@ -23,9 +23,9 @@
  */
 package com.tgx.chess.king.base.util;
 
-import com.tgx.chess.king.base.inf.ISquare;
-
 import java.util.Objects;
+
+import com.tgx.chess.king.base.inf.ISquare;
 
 /**
  * @author William.d.zk

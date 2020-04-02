@@ -24,7 +24,6 @@
 package com.tgx.chess.queen.io.core.inf;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * @author William.d.zk

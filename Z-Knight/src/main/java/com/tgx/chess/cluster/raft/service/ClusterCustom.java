@@ -35,6 +35,9 @@ import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
 import com.tgx.chess.bishop.io.zprotocol.raft.X72_RaftVote;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7E_RaftBroadcast;
+import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
+import com.tgx.chess.cluster.raft.IRaftNode;
+import com.tgx.chess.cluster.raft.model.RaftMachine;
 import com.tgx.chess.cluster.raft.model.RaftNode;
 import com.tgx.chess.cluster.raft.model.log.LogEntry;
 import com.tgx.chess.json.JsonUtil;
@@ -53,9 +56,12 @@ public class ClusterCustom<T extends ISessionManager<ZContext> & IActivity<ZCont
         implements
         ICustomLogic<ZContext>
 {
-    private final Logger                   _Logger = Logger.getLogger(getClass().getSimpleName());
-    private final IRepository<RaftNode<T>> _ClusterRepository;
-    private RaftNode<T>                    mRaftNode;
+    private final Logger                        _Logger                      = Logger.getLogger(getClass().getSimpleName());
+    private final IRepository<RaftNode<T>>      _ClusterRepository;
+    private final TypeReference<List<LogEntry>> _TypeReferenceOfLogEntryList = new TypeReference<List<LogEntry>>()
+                                                                             {
+                                                                             };
+    private RaftNode<T>                         mRaftNode;
 
     @Autowired
     public ClusterCustom(IRepository<RaftNode<T>> clusterRepository)
@@ -64,19 +70,40 @@ public class ClusterCustom<T extends ISessionManager<ZContext> & IActivity<ZCont
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public IControl<ZContext>[] handle(QueenManager<ZContext> manager,
                                        ISession<ZContext> session,
                                        IControl<ZContext> content) throws Exception
     {
         switch (content.serial())
         {
-
+            case X72_RaftVote.COMMAND:
+                X72_RaftVote x72 = (X72_RaftVote) content;
+                RaftMachine machine = new RaftMachine(x72.getPeerId());
+                machine.setIndex(x72.getLogIndex());
+                machine.setIndexTerm(x72.getLogTerm());
+                machine.setTerm(x72.getTerm());
+                machine.setCandidate(x72.getPeerId());
+                machine.setState(IRaftNode.RaftState.CANDIDATE);
+                X7F_RaftResponse x7f = mRaftNode.getMachine()
+                                                .merge(machine, mRaftNode);
+                return x7f != null ? new IControl[] { x7f }
+                                   : null;
             case X7E_RaftBroadcast.COMMAND:
                 X7E_RaftBroadcast x7e = (X7E_RaftBroadcast) content;
-                List<LogEntry> entryList = JsonUtil.readValue(x7e.getPayload(), new TypeReference<List<LogEntry>>()
-                {
-                });
-                break;
+                List<LogEntry> entryList = JsonUtil.readValue(x7e.getPayload(), _TypeReferenceOfLogEntryList);
+                if (entryList != null && !entryList.isEmpty()) {
+                    mRaftNode.appendLogs(entryList);
+                }
+                machine = new RaftMachine(x7e.getPeerId());
+                machine.setState(IRaftNode.RaftState.LEADER);
+                machine.setTerm(x7e.getTerm());
+                machine.setCommit(x7e.getCommit());
+                machine.setLeader(x7e.getLeaderId());
+                x7f = mRaftNode.getMachine()
+                               .merge(machine, mRaftNode);
+                return x7f != null ? new IControl[] { x7f }
+                                   : null;
             case X106_Identity.COMMAND:
                 X106_Identity x106 = (X106_Identity) content;
                 long peerId = x106.getIdentity();

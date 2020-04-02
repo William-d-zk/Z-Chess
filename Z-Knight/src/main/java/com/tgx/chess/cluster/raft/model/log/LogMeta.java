@@ -31,7 +31,6 @@ import java.util.Set;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.tgx.chess.json.JsonUtil;
-import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.util.Triple;
 
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)

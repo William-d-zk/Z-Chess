@@ -25,7 +25,6 @@ package com.tgx.chess.king.base.util;
 
 import java.util.Objects;
 
-import com.tgx.chess.king.base.inf.IDisposable;
 import com.tgx.chess.king.base.inf.IPair;
 
 /**

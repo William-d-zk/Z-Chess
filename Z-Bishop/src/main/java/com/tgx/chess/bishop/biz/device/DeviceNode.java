@@ -64,9 +64,6 @@ import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
 
-import static com.tgx.chess.queen.event.inf.IOperator.Type.CLUSTER_LOCAL;
-import static com.tgx.chess.queen.event.inf.IOperator.Type.LOCAL;
-
 /**
  * @author william.d.zk
  * @date 2019-05-12

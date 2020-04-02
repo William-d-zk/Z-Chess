@@ -25,7 +25,6 @@
 package com.tgx.chess.king.base.schedule;
 
 import java.time.Duration;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 

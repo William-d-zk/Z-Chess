@@ -24,13 +24,13 @@
 
 package com.tgx.chess.bishop;
 
-import com.tgx.chess.queen.config.QueenCode;
-
 import java.time.Instant;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.tgx.chess.queen.config.QueenCode;
 
 /**
  * session port prefix max 2^16
