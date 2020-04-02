@@ -88,12 +88,16 @@ public class ClusterCustom<T extends ISessionManager<ZContext> & IActivity<ZCont
     }
 
     @Override
-    public void onTransfer(IControl<ZContext> content)
+    @SuppressWarnings("unchecked")
+    public IControl<ZContext>[] onTransfer(IControl<ZContext> content)
     {
         switch (content.serial())
         {
             case X72_RaftVote.COMMAND:
-                mRaftNode.onTransfer(content);
+                X72_RaftVote x72 = (X72_RaftVote) content;
+                if (mRaftNode.checkStatus(x72.getPeerId(), x72.getTerm(), x72.getLogIndex())) {
+                    return new IControl[] { x72 };
+                }
                 break;
 
         }

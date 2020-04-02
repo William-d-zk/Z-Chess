@@ -33,5 +33,5 @@ public interface ICustomLogic<C extends IContext<C>>
 {
     IControl<C>[] handle(QueenManager<C> manager, ISession<C> session, IControl<C> content) throws Exception;
 
-    void onTransfer(IControl<C> content);
+    IControl<C>[] onTransfer(IControl<C> content);
 }
