@@ -47,7 +47,7 @@ import repository.ProfileRepository;
 @Service
 public class BillService
 {
-    private final BillRepository _BillRepository;
+    private final BillRepository    _BillRepository;
     private final ProfileRepository _ProfileRepository;
     private final ClientRepository  _ClientRepository;
     private final DeviceRepository  _DeviceRepository;

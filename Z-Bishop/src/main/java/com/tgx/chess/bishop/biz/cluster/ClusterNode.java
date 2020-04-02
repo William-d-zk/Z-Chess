@@ -24,5 +24,6 @@
 
 package com.tgx.chess.bishop.biz.cluster;
 
-public class ClusterNode {
+public class ClusterNode
+{
 }

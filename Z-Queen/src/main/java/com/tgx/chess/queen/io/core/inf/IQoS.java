@@ -93,6 +93,7 @@ public interface IQoS
          * 故障
          */
         FAILURE(0x80);
+
         final int _Value;
 
         Level(int value)

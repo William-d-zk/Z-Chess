@@ -24,16 +24,15 @@
 
 package com.tgx.chess.queen.io.core.manager;
 
-import com.tgx.chess.king.base.inf.IPair;
-import com.tgx.chess.king.base.util.Pair;
-import org.junit.jupiter.api.Test;
-
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+
+import com.tgx.chess.king.base.inf.IPair;
+import com.tgx.chess.king.base.util.Pair;
 
 class QueenManagerTest
 {

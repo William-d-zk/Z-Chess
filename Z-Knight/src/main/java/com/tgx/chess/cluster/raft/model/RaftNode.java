@@ -377,7 +377,7 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
                 else {
                     LogEntry old = _RaftDao.getEntry(entry.getIndex());
                     if (old == null || old.getTerm() != entry.getTerm()) {
-                        _Logger.warning("log conflict OT:%d <-> NT%d I:%d",
+                        _Logger.warning("log conflict OT:%d <-> NT:%d I:%d",
                                         old.getTerm(),
                                         entry.getTerm(),
                                         entry.getIndex());
@@ -410,8 +410,24 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
     public void onMergeCompleted(X7F_RaftResponse response)
     {
         if (response == null) return;//ignore
-
         response.setCatchUp(_SelfMachine.getCommit());
     }
 
+    @Override
+    public boolean checkVoteState(X72_RaftVote x72)
+    {
+        return x72.getPeerId() == _SelfMachine.getPeerId()
+               && x72.getTerm() == _SelfMachine.getTerm()
+               && x72.getLogIndex() == _SelfMachine.getIndex()
+               && _SelfMachine.getState() == RaftState.ELECTOR;
+    }
+
+    @Override
+    public boolean checkLogAppend(X7E_RaftBroadcast x7e)
+    {
+        return _SelfMachine.getState() == RaftState.LEADER
+               && _SelfMachine.getTerm() == x7e.getTerm()
+               && _SelfMachine.getCommit() >= x7e.getCommit()
+               && _SelfMachine.getPeerId() == x7e.getLeaderId();
+    }
 }

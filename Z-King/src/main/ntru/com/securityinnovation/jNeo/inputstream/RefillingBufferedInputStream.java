@@ -53,7 +53,7 @@ public class RefillingBufferedInputStream
 {
     InputStream is;
     int         next;
-    byte[] buf;
+    byte[]      buf;
 
     /**
      * Constructor.
