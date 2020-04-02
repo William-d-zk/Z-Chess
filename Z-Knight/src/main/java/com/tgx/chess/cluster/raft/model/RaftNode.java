@@ -411,13 +411,13 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         response.setCatchUp(_SelfMachine.getCommit());
     }
 
-    public void onTransfer(IControl<ZContext> content)
+    @Override
+    public boolean checkStatus(long peerId, long term, long index, RaftState state)
     {
 
-    }
-
-    public void onReceived(IControl<ZContext> content)
-    {
-
+        return state == _SelfMachine.getState()
+               && _SelfMachine.getPeerId() == peerId
+               && _SelfMachine.getTerm() <= term
+               && _SelfMachine.getIndex() == index;
     }
 }

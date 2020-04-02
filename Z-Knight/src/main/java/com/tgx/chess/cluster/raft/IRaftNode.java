@@ -95,4 +95,6 @@ public interface IRaftNode
     void takeSnapshot(IRaftDao writer);
 
     IRaftMachine getMachine();
+
+    boolean checkStatus(long peerId, long term, long index, RaftState state);
 }

@@ -29,7 +29,6 @@ import static com.tgx.chess.queen.event.inf.IError.Type.LINK_LOGIN_ERROR;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 
 import java.nio.channels.AsynchronousSocketChannel;
-import java.util.Objects;
 
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.king.base.exception.LinkRejectException;
@@ -38,7 +37,6 @@ import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.ICustomLogic;
-import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
@@ -193,23 +191,14 @@ public class MappingHandler<C extends IContext<C>>
                     IControl<C> consistent = event.getContent()
                                                   .getFirst();
                     if (consistent != null) {
-                        try {
-                            IControl<C>[] toSends = _CustomLogic.handle(_QueenManager, session, consistent);
+                        IControl<C>[] toSends = _CustomLogic.onTransfer(consistent);
+                        if (toSends != null) {
                             publish(_Writer,
                                     WRITE,
                                     new Pair<>(toSends, session),
                                     session.getContext()
                                            .getSort()
                                            .getTransfer());
-                        }
-                        catch (Exception e) {
-                            _Logger.warning("handle CONSISTENT send error", e);
-                            error(_Error,
-                                  LINK_ERROR,
-                                  new Pair<>(e, session),
-                                  session.getContext()
-                                         .getSort()
-                                         .getError());
                         }
                     }
                     break;
