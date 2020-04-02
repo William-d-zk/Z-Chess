@@ -31,7 +31,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author william.d.zk
  * @date 2020/4/2
  */
-public class RaftData
+public class RaftResponse
 {
     private long mPeerId;
     private long mTerm;
@@ -39,7 +39,7 @@ public class RaftData
     private long mCatchUp;
 
     @JsonCreator
-    public RaftData(@JsonProperty("peer_id") long peerId)
+    public RaftResponse(@JsonProperty("peer_id") long peerId)
     {
         mPeerId = peerId;
     }

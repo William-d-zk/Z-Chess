@@ -78,9 +78,9 @@ public class ZMappingCustom
     }
 
     @Override
-    public void onTransfer(IControl<ZContext> content)
+    public IControl<ZContext>[] onTransfer(IControl<ZContext>[] content)
     {
-        if (_Then == null) return;
-        _Then.onTransfer(content);
+        return _Then != null ? _Then.onTransfer(content)
+                             : null;
     }
 }

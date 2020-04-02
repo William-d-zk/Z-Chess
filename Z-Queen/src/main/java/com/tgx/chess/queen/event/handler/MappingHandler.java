@@ -154,7 +154,7 @@ public class MappingHandler<C extends IContext<C>>
                     if (received != null) {
                         try {
                             IControl<C>[] toSends = _CustomLogic.handle(_QueenManager, session, received);
-                            if (toSends != null) {
+                            if (toSends != null && toSends.length > 0) {
                                 publish(_Writer,
                                         WRITE,
                                         new Pair<>(toSends, session),
@@ -188,18 +188,16 @@ public class MappingHandler<C extends IContext<C>>
                     /*CONSISTENT 必然是单个IControl,通过前项RingBuffer 向MappingHandler 投递*/
                     session = event.getContent()
                                    .getSecond();
-                    IControl<C> consistent = event.getContent()
-                                                  .getFirst();
-                    if (consistent != null) {
-                        IControl<C>[] toSends = _CustomLogic.onTransfer(consistent);
-                        if (toSends != null) {
-                            publish(_Writer,
-                                    WRITE,
-                                    new Pair<>(toSends, session),
-                                    session.getContext()
-                                           .getSort()
-                                           .getTransfer());
-                        }
+                    IControl<C>[] toSends = event.getContent()
+                                                 .getFirst();
+                    toSends = _CustomLogic.onTransfer(toSends);
+                    if (toSends != null && toSends.length > 0) {
+                        publish(_Writer,
+                                WRITE,
+                                new Pair<>(toSends, session),
+                                session.getContext()
+                                       .getSort()
+                                       .getTransfer());
                     }
                     break;
                 default:
