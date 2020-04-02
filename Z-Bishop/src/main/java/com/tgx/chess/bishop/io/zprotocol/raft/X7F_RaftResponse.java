@@ -46,6 +46,7 @@ public class X7F_RaftResponse
         super(COMMAND, msgId);
     }
 
+    private long mPeerId;
     private long mTerm;
     private int  mCode;
     private long mCatchUp;
@@ -53,6 +54,8 @@ public class X7F_RaftResponse
     @Override
     public int decodec(byte[] data, int pos)
     {
+        mPeerId = IoUtil.readLong(data, pos);
+        pos += 8;
         mTerm = IoUtil.readLong(data, pos);
         pos += 8;
         mCode = data[pos++];
@@ -64,6 +67,7 @@ public class X7F_RaftResponse
     @Override
     public int encodec(byte[] data, int pos)
     {
+        pos += IoUtil.writeLong(mPeerId, data, pos);
         pos += IoUtil.writeLong(mTerm, data, pos);
         pos += IoUtil.writeByte(mCode, data, pos);
         pos += IoUtil.writeLong(mCatchUp, data, pos);
@@ -100,4 +104,13 @@ public class X7F_RaftResponse
         mCatchUp = catchUp;
     }
 
+    public long getPeerId()
+    {
+        return mPeerId;
+    }
+
+    public void setPeerId(long peerId)
+    {
+        this.mPeerId = peerId;
+    }
 }

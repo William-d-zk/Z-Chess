@@ -98,7 +98,7 @@ public class WriteDispatcher<C extends IContext<C>>
                 IPair writeContent = event.getContent();
                 IControl<C>[] commands = writeContent.getFirst();
                 ISession<C> session = writeContent.getSecond();
-                if (Objects.nonNull(commands)) {
+                if (commands != null && commands.length > 0) {
                     IOperator<IControl<C>[],
                               ISession<C>,
                               List<ITriple>> transferOperator = event.getEventOp();

@@ -27,6 +27,7 @@ package com.tgx.chess.spring.device.service;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -164,12 +165,10 @@ public class LinkCustom
     }
 
     @Override
-    public void onTransfer(IControl<ZContext> content)
+    public IControl<ZContext>[] onTransfer(IControl<ZContext>[] content)
     {
-        switch (content.serial())
-        {
-
-        }
+        if (content == null || content.length == 0) { return null; }
+        return content;
     }
 
     public void setQttRouter(IQttRouter qttRouter)

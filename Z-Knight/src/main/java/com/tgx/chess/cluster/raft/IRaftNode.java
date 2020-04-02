@@ -26,6 +26,7 @@ package com.tgx.chess.cluster.raft;
 
 import java.util.List;
 
+import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
 import com.tgx.chess.cluster.raft.model.RaftResponse;
 
 /**
@@ -34,19 +35,19 @@ import com.tgx.chess.cluster.raft.model.RaftResponse;
  */
 public interface IRaftNode
 {
-    void applyAndResponse(RaftResponse response);
+    void onMergeCompleted(X7F_RaftResponse response);
 
-    RaftResponse reject(long peerId, int code);
+    X7F_RaftResponse reject(long peerId, int code);
 
-    RaftResponse stepDown(long peerId);
+    X7F_RaftResponse stepDown(long peerId);
 
-    RaftResponse follow(long peerId);
+    X7F_RaftResponse follow(long peerId);
 
-    RaftResponse stepUp(long peerId);
+    X7F_RaftResponse stepUp(long peerId);
 
-    RaftResponse reTick(long peerId);
+    X7F_RaftResponse reTick(long peerId);
 
-    RaftResponse rejectAndStepDown(long peerId, int code);
+    X7F_RaftResponse rejectAndStepDown(long peerId, int code);
 
     enum RaftState
     {
@@ -96,5 +97,4 @@ public interface IRaftNode
 
     IRaftMachine getMachine();
 
-    boolean checkStatus(long peerId, long term, long index, RaftState state);
 }
