@@ -24,14 +24,14 @@
 
 package com.tgx.chess.cluster.raft;
 
+import java.util.List;
+
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.cluster.raft.model.RaftGraph;
 import com.tgx.chess.cluster.raft.model.RaftNode;
 import com.tgx.chess.queen.io.core.inf.IActivity;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
-
-import java.util.List;
 
 /**
  * @author william.d.zk

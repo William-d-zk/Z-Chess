@@ -26,8 +26,8 @@ package com.tgx.chess.cluster.raft;
 
 import java.util.Set;
 
+import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
 import com.tgx.chess.cluster.raft.IRaftNode.RaftState;
-import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.util.Triple;
 
 /**
@@ -80,6 +80,6 @@ public interface IRaftMachine
      * @param update
      * @return success or reject
      */
-    void merge(IRaftMachine update, IRaftNode self);
+    X7F_RaftResponse merge(IRaftMachine update, IRaftNode self);
 
 }

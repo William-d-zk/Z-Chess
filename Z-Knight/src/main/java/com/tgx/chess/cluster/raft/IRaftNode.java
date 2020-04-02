@@ -29,6 +29,7 @@ import java.util.List;
 import com.tgx.chess.bishop.io.zprotocol.raft.X72_RaftVote;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7E_RaftBroadcast;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
+import com.tgx.chess.cluster.raft.model.log.LogEntry;
 
 /**
  * @author william.d.zk
@@ -101,5 +102,7 @@ public interface IRaftNode
     void takeSnapshot(IRaftDao writer);
 
     IRaftMachine getMachine();
+
+    void appendLogs(List<LogEntry> entryList);
 
 }

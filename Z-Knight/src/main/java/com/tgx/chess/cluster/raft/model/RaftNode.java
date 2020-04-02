@@ -279,7 +279,7 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         X7F_RaftResponse response = new X7F_RaftResponse(_ZUID.getId());
         response.setPeerId(peerId);
         response.setTerm(_SelfMachine.getTerm());
-        response.setCode(RaftResponse.Code.SUCCESS.getCode());
+        response.setCode(RaftCode.SUCCESS.getCode());
         return response;
     }
 
@@ -429,5 +429,11 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
                && _SelfMachine.getTerm() == x7e.getTerm()
                && _SelfMachine.getCommit() >= x7e.getCommit()
                && _SelfMachine.getPeerId() == x7e.getLeaderId();
+    }
+
+    @Override
+    public void appendLogs(List<LogEntry> entryList)
+    {
+
     }
 }

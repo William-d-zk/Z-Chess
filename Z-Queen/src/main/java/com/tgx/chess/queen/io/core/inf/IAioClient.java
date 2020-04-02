@@ -24,11 +24,6 @@
 package com.tgx.chess.queen.io.core.inf;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.List;
-
-import com.tgx.chess.king.base.inf.IPair;
-import com.tgx.chess.king.base.inf.ITriple;
 
 /**
  * @author William.d.zk

@@ -23,11 +23,11 @@
  */
 package com.tgx.chess.queen.io.core.async;
 
+import java.time.Duration;
+
 import com.tgx.chess.queen.config.ISocketConfig;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.ISessionCreator;
-
-import java.time.Duration;
 
 /**
  * @author William.d.zk

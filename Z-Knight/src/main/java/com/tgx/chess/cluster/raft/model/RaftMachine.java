@@ -240,13 +240,13 @@ public class RaftMachine
     }
 
     @Override
-    public void merge(IRaftMachine update, IRaftNode selfNode)
+    public X7F_RaftResponse merge(IRaftMachine update, IRaftNode selfNode)
     {
         X7F_RaftResponse response = null;
         APPLY:
         {
             if (getTerm() > update.getTerm()) {
-                response = selfNode.reject(update.getPeerId(), RaftResponse.Code.LOWER_TERM.getCode());
+                response = selfNode.reject(update.getPeerId(), RaftCode.LOWER_TERM.getCode());
                 break APPLY;
             }
             if (update.getTerm() > getTerm()) {
@@ -268,7 +268,7 @@ public class RaftMachine
             {
                 case ELECTOR:
                     if (update.getState() == RaftState.CANDIDATE && getCandidate() != update.getCandidate()) {
-                        response = selfNode.reject(update.getPeerId(), RaftResponse.Code.ALREADY_VOTE.getCode());
+                        response = selfNode.reject(update.getPeerId(), RaftCode.ALREADY_VOTE.getCode());
                         break APPLY;
                     }
                     if (update.getState() == RaftState.LEADER) {
@@ -283,7 +283,7 @@ public class RaftMachine
                             response = selfNode.stepUp(update.getPeerId());
                         }
                         else {
-                            response = selfNode.reject(update.getPeerId(), RaftResponse.Code.OBSOLETE.getCode());
+                            response = selfNode.reject(update.getPeerId(), RaftCode.OBSOLETE.getCode());
                             break APPLY;
                         }
                     }
@@ -291,15 +291,14 @@ public class RaftMachine
                         response = selfNode.reTick(update.getPeerId());
                     }
                     else {
-                        response = selfNode.reject(update.getPeerId(), RaftResponse.Code.ILLEGAL_STATE.getCode());
+                        response = selfNode.reject(update.getPeerId(), RaftCode.ILLEGAL_STATE.getCode());
                         break APPLY;
                     }
                     break;
                 case LEADER:
                     if (update.getState() == RaftState.LEADER) {
                         if (update.getPeerId() != getPeerId()) {
-                            response = selfNode.rejectAndStepDown(update.getPeerId(),
-                                                                  RaftResponse.Code.SPLIT_CLUSTER.getCode());
+                            response = selfNode.rejectAndStepDown(update.getPeerId(), RaftCode.SPLIT_CLUSTER.getCode());
                         }
                         else {
                             //ignore
@@ -307,7 +306,7 @@ public class RaftMachine
                         }
                     }
                     else {
-                        selfNode.reject(update.getPeerId(), RaftResponse.Code.ILLEGAL_STATE.getCode());
+                        selfNode.reject(update.getPeerId(), RaftCode.ILLEGAL_STATE.getCode());
                     }
                     break APPLY;
                 case LEARNER:
@@ -319,5 +318,6 @@ public class RaftMachine
             }
         }
         selfNode.onMergeCompleted(response);
+        return response;
     }
 }

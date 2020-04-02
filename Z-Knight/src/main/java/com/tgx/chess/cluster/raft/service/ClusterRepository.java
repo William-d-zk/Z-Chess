@@ -26,17 +26,17 @@ package com.tgx.chess.cluster.raft.service;
 
 import java.util.List;
 
-import com.tgx.chess.bishop.io.zfilter.ZContext;
-import com.tgx.chess.queen.io.core.inf.IActivity;
-import com.tgx.chess.queen.io.core.inf.IClusterPeer;
-import com.tgx.chess.queen.io.core.inf.ISessionManager;
 import org.springframework.stereotype.Component;
 
 import com.tgx.chess.bishop.ZUID;
 import com.tgx.chess.bishop.biz.config.IClusterConfig;
+import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.cluster.raft.model.RaftNode;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.db.inf.IStorage;
+import com.tgx.chess.queen.io.core.inf.IActivity;
+import com.tgx.chess.queen.io.core.inf.IClusterPeer;
+import com.tgx.chess.queen.io.core.inf.ISessionManager;
 
 @Component
 public class ClusterRepository<T extends ISessionManager<ZContext> & IActivity<ZContext> & IClusterPeer>

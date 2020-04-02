@@ -26,7 +26,6 @@ package com.tgx.chess.queen.io.core.async;
 
 import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousSocketChannel;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.tgx.chess.king.base.inf.ITriple;

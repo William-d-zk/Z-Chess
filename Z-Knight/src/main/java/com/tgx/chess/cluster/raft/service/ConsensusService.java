@@ -26,6 +26,8 @@ package com.tgx.chess.cluster.raft.service;
 
 import java.util.List;
 
+import org.springframework.stereotype.Service;
+
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.cluster.raft.IRaftMessage;
 import com.tgx.chess.cluster.raft.model.RaftNode;
@@ -33,7 +35,6 @@ import com.tgx.chess.cluster.raft.service.api.IConsensusService;
 import com.tgx.chess.queen.io.core.inf.IActivity;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
-import org.springframework.stereotype.Service;
 
 /**
  * @author william.d.zk

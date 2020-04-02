@@ -30,7 +30,6 @@ import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WROTE;
 
 import java.util.List;
-import java.util.Objects;
 
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.king.base.inf.IPair;

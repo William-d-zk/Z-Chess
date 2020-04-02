@@ -22,97 +22,50 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.bishop.io.zprotocol.raft;
+package com.tgx.chess.cluster.raft.model;
 
-import com.tgx.chess.bishop.io.zprotocol.ZCommand;
-import com.tgx.chess.king.base.util.IoUtil;
-
-/**
- * @author william.d.zk
- */
-public class X7F_RaftResponse
-        extends
-        ZCommand
+public enum RaftCode
 {
-    public final static int COMMAND = 0x7F;
+    SUCCESS(0, "success"),
+    LOWER_TERM(1, "term < current,reject"),
+    INCORRECT_TERM(2, "pre-log-index&pre-log-term inconsistent,reject"),
+    ILLEGAL_STATE(3, "illegal state,reject"),
+    SPLIT_CLUSTER(4, "split cluster,reject"),
+    ALREADY_VOTE(5, "already vote,reject"),
+    OBSOLETE(6, "index obsolete,reject");
 
-    protected X7F_RaftResponse()
+    private final int    _Code;
+    private final String _Description;
+
+    RaftCode(int code,
+             String des)
     {
-        super(COMMAND, true);
-    }
-
-    public X7F_RaftResponse(long msgId)
-    {
-        super(COMMAND, msgId);
-    }
-
-    private long mPeerId;
-    private long mTerm;
-    private int  mCode;
-    private long mCatchUp;
-
-    @Override
-    public int decodec(byte[] data, int pos)
-    {
-        mPeerId = IoUtil.readLong(data, pos);
-        pos += 8;
-        mTerm = IoUtil.readLong(data, pos);
-        pos += 8;
-        mCode = data[pos++];
-        mCatchUp = IoUtil.readLong(data, pos);
-        pos += 8;
-        return pos;
-    }
-
-    @Override
-    public int encodec(byte[] data, int pos)
-    {
-        pos += IoUtil.writeLong(mPeerId, data, pos);
-        pos += IoUtil.writeLong(mTerm, data, pos);
-        pos += IoUtil.writeByte(mCode, data, pos);
-        pos += IoUtil.writeLong(mCatchUp, data, pos);
-        return pos;
-    }
-
-    public long getTerm()
-    {
-        return mTerm;
-    }
-
-    public void setTerm(long term)
-    {
-        this.mTerm = term;
+        _Code = code;
+        _Description = des;
     }
 
     public int getCode()
     {
-        return mCode;
+        return _Code;
     }
 
-    public void setCode(int code)
+    public String getDescription()
     {
-        this.mCode = code;
+        return _Description;
     }
 
-    public long getCatchUp()
+    static RaftCode valueOf(int code)
     {
-        return mCatchUp;
+        switch (code)
+        {
+            case 0:
+                return SUCCESS;
+            case 1:
+                return LOWER_TERM;
+            case 2:
+                return INCORRECT_TERM;
+            default:
+                throw new UnsupportedOperationException();
+        }
     }
-
-    public void setCatchUp(long catchUp)
-    {
-        mCatchUp = catchUp;
-    }
-
-    public long getPeerId()
-    {
-        return mPeerId;
-    }
-
-    public void setPeerId(long peerId)
-    {
-        this.mPeerId = peerId;
-    }
-
-
 }
