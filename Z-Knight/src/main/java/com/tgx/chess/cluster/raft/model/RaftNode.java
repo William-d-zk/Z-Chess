@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Random;
 
 import com.tgx.chess.bishop.ZUID;
@@ -78,7 +79,7 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
     private final ScheduleHandler<RaftNode<T>> _ElectSchedule, _HeartbeatSchedule, _TickSchedule;
     private final RaftGraph                    _RaftGraph;
     private final RaftMachine                  _SelfMachine;
-    private final List<LogEntry>               _AppendLogList = new LinkedList<>();
+    private final Queue<LogEntry>              _AppendLogList = new LinkedList<>();
     private final Random                       _Random        = new Random();
     private ICancelable                        mElectTask, mHeartbeatTask, mTickTask;
 
@@ -272,6 +273,7 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         x72.setLogIndex(_SelfMachine.getIndex());
         x72.setLogTerm(_SelfMachine.getIndexTerm());
         broadcast(CONSISTENT_ELECT, x72);
+        _Logger.info("self {%s}", _SelfMachine.toString());
     }
 
     private X7F_RaftResponse success(long peerId)
@@ -434,6 +436,7 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
     @Override
     public void appendLogs(List<LogEntry> entryList)
     {
-
+        //offer all
+        _AppendLogList.addAll(entryList);
     }
 }

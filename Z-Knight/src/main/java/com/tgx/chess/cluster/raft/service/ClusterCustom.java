@@ -111,7 +111,6 @@ public class ClusterCustom<T extends ISessionManager<ZContext> & IActivity<ZCont
                 break;
 
         }
-
         return null;
     }
 
