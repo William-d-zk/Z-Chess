@@ -201,6 +201,17 @@ public class DeviceNode
                                    {
                                        return sort.newContext(option, this);
                                    }
+
+                                   @Override
+                                   @SuppressWarnings("unchecked")
+                                   public IControl<ZContext>[] createCommands(ISession<ZContext> session)
+                                   {
+                                       if (_SessionType != QueenCode.CU_XID) {
+                                           X106_Identity x106 = new X106_Identity(_ZUID.getPeerId());
+                                           return new IControl[] { x106 };
+                                       }
+                                       return null;
+                                   }
                                };
                            })
                            .collect(Collectors.toList());

@@ -320,4 +320,31 @@ public class RaftMachine
         selfNode.onMergeCompleted(response);
         return response;
     }
+
+    @Override
+    public String toString()
+    {
+        return "RaftMachine{"
+               + "_PeerId="
+               + _PeerId
+               + ", mTerm="
+               + mTerm
+               + ", mIndex="
+               + mIndex
+               + ", mIndexTerm="
+               + mIndexTerm
+               + ", mCandidate="
+               + mCandidate
+               + ", mLeader="
+               + mLeader
+               + ", mCommit="
+               + mCommit
+               + ", mApplied="
+               + mApplied
+               + ", mState="
+               + RaftState.valueOf(mState)
+               + ", mPeerSet="
+               + mPeerSet
+               + '}';
+    }
 }
