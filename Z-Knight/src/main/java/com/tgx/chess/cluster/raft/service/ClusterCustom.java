@@ -85,8 +85,7 @@ public class ClusterCustom<T extends ISessionManager<ZContext> & IActivity<ZCont
                 machine.setTerm(x72.getTerm());
                 machine.setCandidate(x72.getPeerId());
                 machine.setState(IRaftNode.RaftState.CANDIDATE);
-                X7F_RaftResponse x7f = mRaftNode.getMachine()
-                                                .merge(machine, mRaftNode);
+                X7F_RaftResponse x7f = mRaftNode.merge(machine);
                 return x7f != null ? new IControl[] { x7f }
                                    : null;
             case X7E_RaftBroadcast.COMMAND:
@@ -100,8 +99,7 @@ public class ClusterCustom<T extends ISessionManager<ZContext> & IActivity<ZCont
                 machine.setTerm(x7e.getTerm());
                 machine.setCommit(x7e.getCommit());
                 machine.setLeader(x7e.getLeaderId());
-                x7f = mRaftNode.getMachine()
-                               .merge(machine, mRaftNode);
+                x7f = mRaftNode.merge(machine);
                 return x7f != null ? new IControl[] { x7f }
                                    : null;
             case X106_Identity.COMMAND:

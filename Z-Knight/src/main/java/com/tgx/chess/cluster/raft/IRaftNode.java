@@ -37,23 +37,72 @@ import com.tgx.chess.cluster.raft.model.log.LogEntry;
  */
 public interface IRaftNode
 {
-    void onMergeCompleted(X7F_RaftResponse response);
 
+    /**
+     * 
+     * @param peerId
+     * @param code
+     * @return
+     */
     X7F_RaftResponse reject(long peerId, int code);
 
+    /**
+     * 
+     * @param peerId
+     * @return
+     */
     X7F_RaftResponse stepDown(long peerId);
 
+    /**
+     * 
+     * @param peerId
+     * @return
+     */
     X7F_RaftResponse follow(long peerId);
 
+    /**
+     * 
+     * @param peerId
+     * @return
+     */
     X7F_RaftResponse stepUp(long peerId);
 
+    /**
+     * 
+     * @param peerId
+     * @return
+     */
     X7F_RaftResponse reTick(long peerId);
 
+    /**
+     * 
+     * @param peerId
+     * @param code
+     * @return
+     */
     X7F_RaftResponse rejectAndStepDown(long peerId, int code);
+
+    /**
+     * 接收另一个machine的状态更新
+     *
+     * @param update
+     * @return success or reject
+     */
+    X7F_RaftResponse merge(IRaftMachine update);
 
     boolean checkVoteState(X72_RaftVote x72);
 
     boolean checkLogAppend(X7E_RaftBroadcast x7e);
+
+    void apply(long applied);
+
+    void load(List<IRaftMessage> snapshot);
+
+    void takeSnapshot(IRaftDao writer);
+
+    IRaftMachine getMachine();
+
+    void appendLogs(List<LogEntry> entryList);
 
     enum RaftState
     {
@@ -94,15 +143,4 @@ public interface IRaftNode
             }
         }
     }
-
-    void apply(long applied);
-
-    void load(List<IRaftMessage> snapshot);
-
-    void takeSnapshot(IRaftDao writer);
-
-    IRaftMachine getMachine();
-
-    void appendLogs(List<LogEntry> entryList);
-
 }
