@@ -24,8 +24,6 @@
 
 package com.tgx.chess.cluster.raft.model;
 
-import static java.lang.Math.min;
-
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Objects;
@@ -36,9 +34,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
 import com.tgx.chess.cluster.raft.IRaftMachine;
-import com.tgx.chess.cluster.raft.IRaftNode;
 import com.tgx.chess.cluster.raft.IRaftNode.RaftState;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.util.Triple;
@@ -237,88 +233,6 @@ public class RaftMachine
     public long increaseTerm()
     {
         return ++mTerm;
-    }
-
-    @Override
-    public X7F_RaftResponse merge(IRaftMachine update, IRaftNode selfNode)
-    {
-        X7F_RaftResponse response = null;
-        APPLY:
-        {
-            if (getTerm() > update.getTerm()) {
-                response = selfNode.reject(update.getPeerId(), RaftCode.LOWER_TERM.getCode());
-                break APPLY;
-            }
-            if (update.getTerm() > getTerm()) {
-                setTerm(update.getTerm());
-                if (getState() == RaftState.FOLLOWER
-                    && getIndex() <= update.getIndex()
-                    && update.getState() == RaftState.CANDIDATE)
-                {
-                    setCandidate(update.getCandidate());
-                    setState(RaftState.ELECTOR);
-                    response = selfNode.stepUp(update.getPeerId());
-                }
-                else if (getState() != RaftState.LEARNER) {
-                    setState(RaftState.FOLLOWER);
-                    response = selfNode.stepDown(update.getPeerId());
-                }
-            }
-            else switch (getState())
-            {
-                case ELECTOR:
-                    if (update.getState() == RaftState.CANDIDATE && getCandidate() != update.getCandidate()) {
-                        response = selfNode.reject(update.getPeerId(), RaftCode.ALREADY_VOTE.getCode());
-                        break APPLY;
-                    }
-                    if (update.getState() == RaftState.LEADER) {
-                        response = selfNode.follow(update.getPeerId());
-                    }
-                    break;
-                case FOLLOWER:
-                    if (update.getState() == RaftState.CANDIDATE) {
-                        if (getIndex() <= update.getIndex()) {
-                            setCandidate(update.getCandidate());
-                            setState(RaftState.ELECTOR);
-                            response = selfNode.stepUp(update.getPeerId());
-                        }
-                        else {
-                            response = selfNode.reject(update.getPeerId(), RaftCode.OBSOLETE.getCode());
-                            break APPLY;
-                        }
-                    }
-                    else if (update.getState() == RaftState.LEADER) {
-                        response = selfNode.reTick(update.getPeerId());
-                    }
-                    else {
-                        response = selfNode.reject(update.getPeerId(), RaftCode.ILLEGAL_STATE.getCode());
-                        break APPLY;
-                    }
-                    break;
-                case LEADER:
-                    if (update.getState() == RaftState.LEADER) {
-                        if (update.getPeerId() != getPeerId()) {
-                            response = selfNode.rejectAndStepDown(update.getPeerId(), RaftCode.SPLIT_CLUSTER.getCode());
-                        }
-                        else {
-                            //ignore
-                            break;
-                        }
-                    }
-                    else {
-                        selfNode.reject(update.getPeerId(), RaftCode.ILLEGAL_STATE.getCode());
-                    }
-                    break APPLY;
-                case LEARNER:
-                    break;
-            }
-
-            if (update.getState() == RaftState.LEADER && getCommit() < update.getCommit()) {
-                setCommit(min(update.getCommit(), update.getIndex()));
-            }
-        }
-        selfNode.onMergeCompleted(response);
-        return response;
     }
 
     @Override

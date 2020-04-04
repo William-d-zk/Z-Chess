@@ -238,55 +238,56 @@ public class RaftDao
     }
 
     @Override
-    public long append(LogEntry entry)
+    public boolean append(LogEntry entry)
     {
         Objects.requireNonNull(entry);
         long newEndIndex = getEndIndex();
-        newEndIndex++;
-        if (entry.getIndex() != newEndIndex) { return newEndIndex; }
-        int entrySize = entry.dataLength() + 4;
-        boolean isNeedNewSegmentFile = false;
-        if (_Index2SegmentMap.isEmpty()) {
-            isNeedNewSegmentFile = true;
-        }
-        else {
-            Segment segment = _Index2SegmentMap.lastEntry()
-                                               .getValue();
-            if (!segment.isCanWrite()) {
+        if (entry.getIndex() == newEndIndex + 1) {
+            int entrySize = entry.dataLength() + 4;
+            boolean isNeedNewSegmentFile = false;
+            if (_Index2SegmentMap.isEmpty()) {
                 isNeedNewSegmentFile = true;
             }
-            else if (segment.getFileSize() + entrySize >= _MaxSegmentSize) {
-                isNeedNewSegmentFile = true;
-                // 最后一个segment的文件close并改名
-                segment.close();
+            else {
+                Segment segment = _Index2SegmentMap.lastEntry()
+                                                   .getValue();
+                if (!segment.isCanWrite()) {
+                    isNeedNewSegmentFile = true;
+                }
+                else if (segment.getFileSize() + entrySize >= _MaxSegmentSize) {
+                    isNeedNewSegmentFile = true;
+                    //segment的文件close并改名
+                    segment.close();
+                }
             }
-        }
-        Segment targetSegment = null;
-        if (isNeedNewSegmentFile) {
-            String newFileName = String.format("z_chess_raft_seg_%020d-%020d_w", newEndIndex, 0);
-            File newFile = new File(_LogDataDir + File.separator + newFileName);
-            if (!newFile.exists()) {
-                try {
-                    if (newFile.createNewFile()) {
-                        targetSegment = new Segment(newFile, newEndIndex, 0, true);
-                        _Index2SegmentMap.put(newEndIndex, targetSegment);
+            Segment targetSegment = null;
+            if (isNeedNewSegmentFile) {
+                String newFileName = String.format("z_chess_raft_seg_%020d-%020d_w", newEndIndex, 0);
+                File newFile = new File(_LogDataDir + File.separator + newFileName);
+                if (!newFile.exists()) {
+                    try {
+                        if (newFile.createNewFile()) {
+                            targetSegment = new Segment(newFile, newEndIndex, 0, true);
+                            _Index2SegmentMap.put(newEndIndex, targetSegment);
+                        }
+                        else throw new IOException();
                     }
-                    else throw new IOException(String.format("create segment %s failed", newFileName));
-                }
-                catch (IOException e) {
-                    _Logger.warning("create segment file failed %s", e, newFile.getAbsolutePath());
-                    throw new ZException("raft local segment failed");
+                    catch (IOException e) {
+                        _Logger.warning("create segment file failed %s", e, newFileName);
+                        throw new ZException("raft local segment failed");
+                    }
                 }
             }
+            else {
+                targetSegment = _Index2SegmentMap.lastEntry()
+                                                 .getValue();
+            }
+            Objects.requireNonNull(targetSegment);
+            targetSegment.addRecord(entry);
+            vTotalSize += entrySize;
+            return true;
         }
-        else {
-            targetSegment = _Index2SegmentMap.lastEntry()
-                                             .getValue();
-        }
-        Objects.requireNonNull(targetSegment);
-        targetSegment.addRecord(entry);
-        vTotalSize += entrySize;
-        return newEndIndex;
+        return false;
     }
 
     @Override
@@ -327,16 +328,16 @@ public class RaftDao
     }
 
     @Override
-    public void truncateSuffix(long newEndIndex)
+    public LogEntry truncateSuffix(long newEndIndex)
     {
-        if (newEndIndex >= getEndIndex()) { return; }
+        if (newEndIndex >= getEndIndex()) { return null; }
         _Logger.info("Truncating log from old end index %d to new end index %d", getEndIndex(), newEndIndex);
         while (!_Index2SegmentMap.isEmpty()) {
             Segment segment = _Index2SegmentMap.lastEntry()
                                                .getValue();
             try {
                 if (newEndIndex == segment.getEndIndex()) {
-                    break;
+                    return getEntry(newEndIndex);
                 }
                 else if (newEndIndex < segment.getStartIndex()) {
                     vTotalSize -= segment.drop();
@@ -348,8 +349,10 @@ public class RaftDao
             }
             catch (IOException ex) {
                 _Logger.warning("truncateSuffix error ", ex);
+                return null;
             }
         }
+        return null;
     }
 
     public boolean isInstallSnapshot()

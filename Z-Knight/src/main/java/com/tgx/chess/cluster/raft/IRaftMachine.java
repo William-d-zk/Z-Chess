@@ -74,12 +74,5 @@ public interface IRaftMachine
 
     long increaseTerm();
 
-    /**
-     * 接收另一个machine的状态更新
-     * 
-     * @param update
-     * @return success or reject
-     */
-    X7F_RaftResponse merge(IRaftMachine update, IRaftNode self);
 
 }

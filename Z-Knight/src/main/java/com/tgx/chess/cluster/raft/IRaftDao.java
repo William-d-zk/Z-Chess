@@ -47,11 +47,11 @@ public interface IRaftDao
 
     void updateSnapshotMeta(long lastIncludeIndex, long lastIncludeTerm);
 
-    long append(LogEntry entry);
+    boolean append(LogEntry entry);
 
     void truncatePrefix(long newFirstIndex);
 
-    void truncateSuffix(long newEndIndex);
+    LogEntry truncateSuffix(long newEndIndex);
 
     LogMeta getLogMeta();
 
