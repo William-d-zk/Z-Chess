@@ -50,6 +50,8 @@ public class X7E_RaftBroadcast
     private long mLeaderId;
     private long mTerm;
     private long mCommit;
+    private long mPreIndex;
+    private long mPreIndexTerm;
 
     @Override
     public int getPriority()
@@ -74,10 +76,16 @@ public class X7E_RaftBroadcast
         pos += 8;
         mCommit = IoUtil.readLong(data, pos);
         pos += 8;
+        mPreIndex = IoUtil.readLong(data, pos);
+        pos += 8;
+        mPreIndexTerm = IoUtil.readLong(data, pos);
+        pos += 8;
         int pLength = data.length - pos;
-        byte[] m = new byte[pLength];
-        IoUtil.read(data, pos, m, 0, pLength);
-        setPayload(m);
+        if (pLength > 0) {
+            byte[] m = new byte[pLength];
+            pos = IoUtil.read(data, pos, m, 0, pLength);
+            setPayload(m);
+        }
         return pos;
     }
 
@@ -88,6 +96,8 @@ public class X7E_RaftBroadcast
         pos += IoUtil.writeLong(mLeaderId, data, pos);
         pos += IoUtil.writeLong(mTerm, data, pos);
         pos += IoUtil.writeLong(mCommit, data, pos);
+        pos += IoUtil.writeLong(mPreIndex, data, pos);
+        pos += IoUtil.writeLong(mPreIndexTerm, data, pos);
         pos += IoUtil.write(getPayload(), data, pos);
         return pos;
     }
@@ -132,4 +142,23 @@ public class X7E_RaftBroadcast
         this.mCommit = commit;
     }
 
+    public long getPreIndex()
+    {
+        return mPreIndex;
+    }
+
+    public void setPreIndex(long preIndex)
+    {
+        mPreIndex = preIndex;
+    }
+
+    public long getPreIndexTerm()
+    {
+        return mPreIndexTerm;
+    }
+
+    public void setPreIndexTerm(long preIndexTerm)
+    {
+        mPreIndexTerm = preIndexTerm;
+    }
 }
