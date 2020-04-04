@@ -29,7 +29,6 @@ import static com.tgx.chess.cluster.raft.IRaftNode.RaftState.CANDIDATE;
 import static com.tgx.chess.cluster.raft.IRaftNode.RaftState.ELECTOR;
 import static com.tgx.chess.cluster.raft.IRaftNode.RaftState.FOLLOWER;
 import static com.tgx.chess.cluster.raft.IRaftNode.RaftState.LEADER;
-import static com.tgx.chess.cluster.raft.IRaftNode.RaftState.LEARNER;
 import static com.tgx.chess.cluster.raft.model.RaftCode.ALREADY_VOTE;
 import static com.tgx.chess.cluster.raft.model.RaftCode.ILLEGAL_STATE;
 import static com.tgx.chess.cluster.raft.model.RaftCode.INCORRECT_TERM;
@@ -69,10 +68,8 @@ import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.base.util.Triple;
-import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.io.core.inf.IActivity;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
-import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
 
@@ -131,6 +128,8 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
                       x7e.setTerm(_SelfMachine.getTerm());
                       x7e.setCommit(_SelfMachine.getCommit());
                       x7e.setLeaderId(_SelfMachine.getPeerId());
+                      x7e.setPreIndex(_SelfMachine.getIndex());
+                      x7e.setPreIndexTerm(_SelfMachine.getIndexTerm());
                       if (v.getIndex() < _SelfMachine.getIndex()) {
                           List<LogEntry> entryList = new LinkedList<>();
                           for (long i = v.getIndex() + 1, l = _SelfMachine.getIndex(); i <= l; i++) {
@@ -140,19 +139,6 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
                       }
                       ISession<ZContext> session = _SessionManager.findSessionByPrefix(k);
                       _SessionManager.send(session, CLUSTER_LOCAL, x7e);
-                  });
-    }
-
-    @SuppressWarnings("unchecked")
-    private void broadcast(IOperator.Type type, IControl<ZContext> raftCmd)
-    {
-        _RaftGraph.getNodeMap()
-                  .forEach((k, v) ->
-                  {
-                      if (k != _SelfMachine.getPeerId()) {
-                          ISession<ZContext> session = _SessionManager.findSessionByPrefix(k);
-                          _SessionManager.send(session, type, raftCmd);
-                      }
                   });
     }
 
@@ -289,12 +275,20 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         catch (InterruptedException e) {
             //ignore
         }
+        _SelfMachine.setState(CANDIDATE);
         X72_RaftVote x72 = new X72_RaftVote(_ZUID.getId());
         x72.setTerm(_SelfMachine.increaseTerm());
         x72.setPeerId(_SelfMachine.getPeerId());
         x72.setLogIndex(_SelfMachine.getIndex());
         x72.setLogTerm(_SelfMachine.getIndexTerm());
-        broadcast(CONSISTENT_ELECT, x72);
+        _RaftGraph.getNodeMap()
+                  .forEach((k, v) ->
+                  {
+                      if (k != _SelfMachine.getPeerId()) {
+                          ISession<ZContext> session = _SessionManager.findSessionByPrefix(k);
+                          _SessionManager.send(session, CONSISTENT_ELECT, x72);
+                      }
+                  });
         _Logger.info("start vote self {%s}", _SelfMachine.toString());
     }
 
@@ -320,9 +314,6 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
     @Override
     public X7F_RaftResponse stepUp(long peerId)
     {
-        if (mTickTask != null) {
-            mTickTask.cancel();
-        }
         _SelfMachine.setState(ELECTOR);
         _SelfMachine.setCandidate(peerId);
         mElectTask = _TimeWheel.acquire(this, _ElectSchedule);
@@ -332,9 +323,6 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
     @Override
     public X7F_RaftResponse stepDown(long peerId)
     {
-        if (mHeartbeatTask != null) {
-            mHeartbeatTask.cancel();
-        }
         _SelfMachine.setState(FOLLOWER);
         _SelfMachine.setLeader(INVALID_PEER_ID);
         _SelfMachine.setCandidate(INVALID_PEER_ID);
@@ -362,9 +350,7 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
     @Override
     public X7F_RaftResponse reTick(long peerId)
     {
-        if (mTickTask != null) {
-            mTickTask.cancel();
-        }
+        tickCancel();
         X7F_RaftResponse response = catchUp() ? success(peerId)
                                               : reject(peerId, INCORRECT_TERM.getCode());
         response.setCatchUp(_SelfMachine.getIndex());
@@ -372,12 +358,19 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         return response;
     }
 
+    private void tickCancel()
+    {
+        if (mTickTask != null) mTickTask.cancel();
+    }
+
+    private void heartbeatCancel()
+    {
+        if (mHeartbeatTask != null) mHeartbeatTask.cancel();
+    }
+
     @Override
     public X7F_RaftResponse rejectAndStepDown(long peerId, int code)
     {
-        if (mHeartbeatTask != null) {
-            mHeartbeatTask.cancel();
-        }
         _SelfMachine.setState(FOLLOWER);
         _SelfMachine.setLeader(INVALID_PEER_ID);
         _SelfMachine.setCandidate(INVALID_PEER_ID);
@@ -391,25 +384,34 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         X7F_RaftResponse response = null;
         APPLY:
         {
+            //RaftGraph中不存LEARNER 节点所以集群广播和RPC时不涉及LEARNER
             if (_SelfMachine.getTerm() > update.getTerm()) {
                 response = reject(update.getPeerId(), LOWER_TERM.getCode());
                 break APPLY;
             }
             if (update.getTerm() > _SelfMachine.getTerm()) {
                 _SelfMachine.setTerm(update.getTerm());
-                //follower -> elector
-                if (_SelfMachine.getState() == FOLLOWER
-                    && _SelfMachine.getIndex() <= update.getIndex()
+                tickCancel();
+                heartbeatCancel();
+                //* ->follower -> elector
+                if (_SelfMachine.getIndex() <= update.getIndex()
                     && _SelfMachine.getIndexTerm() <= update.getIndexTerm()
                     && _SelfMachine.getCommit() <= update.getCommit()
                     && update.getState() == CANDIDATE)
                 {
                     response = stepUp(update.getPeerId());
                 }
-                //elector || leader || follower
-                else if (_SelfMachine.getState() != LEARNER) {
+                else if ((_SelfMachine.getIndex() > update.getIndex()
+                          || _SelfMachine.getIndexTerm() > update.getIndexTerm())
+                         && update.getState() == CANDIDATE)
+                {
                     response = rejectAndStepDown(update.getPeerId(), OBSOLETE.getCode());
+                    break APPLY;
                 }
+                else if (update.getState() == LEADER) {
+                    response = follow(update.getPeerId());
+                }
+                //else ignore { follower elector 都不会成为update.getState的结果，所以此处忽略}
             }
             else switch (_SelfMachine.getState())
             {
@@ -424,9 +426,9 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
                     break;
                 case FOLLOWER:
                     if (update.getState() == CANDIDATE) {
-                        if (_SelfMachine.getIndex() <= update.getIndex()) {
-                            _SelfMachine.setCandidate(update.getCandidate());
-                            _SelfMachine.setState(ELECTOR);
+                        if (_SelfMachine.getIndex() <= update.getIndex()
+                            && _SelfMachine.getIndexTerm() <= update.getIndexTerm())
+                        {
                             response = stepUp(update.getPeerId());
                         }
                         else {
@@ -448,12 +450,11 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
                             response = rejectAndStepDown(update.getPeerId(), SPLIT_CLUSTER.getCode());
                         }
                         else {
-                            //ignore
-                            break;
+                            _Logger.warning("check raft graph & broadcast leader self->self");
                         }
                     }
                     else {
-                        reject(update.getPeerId(), ILLEGAL_STATE.getCode());
+                        response = reject(update.getPeerId(), ILLEGAL_STATE.getCode());
                     }
                     break APPLY;
                 case LEARNER:

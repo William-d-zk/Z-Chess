@@ -24,6 +24,9 @@
 
 package com.tgx.chess.cluster.raft.service;
 
+import static com.tgx.chess.cluster.raft.IRaftNode.RaftState.CANDIDATE;
+import static com.tgx.chess.cluster.raft.IRaftNode.RaftState.LEADER;
+
 import java.util.LinkedList;
 import java.util.List;
 
@@ -36,7 +39,6 @@ import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
 import com.tgx.chess.bishop.io.zprotocol.raft.X72_RaftVote;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7E_RaftBroadcast;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
-import com.tgx.chess.cluster.raft.IRaftNode;
 import com.tgx.chess.cluster.raft.model.RaftMachine;
 import com.tgx.chess.cluster.raft.model.RaftNode;
 import com.tgx.chess.cluster.raft.model.log.LogEntry;
@@ -84,7 +86,7 @@ public class ClusterCustom<T extends ISessionManager<ZContext> & IActivity<ZCont
                 machine.setIndexTerm(x72.getLogTerm());
                 machine.setTerm(x72.getTerm());
                 machine.setCandidate(x72.getPeerId());
-                machine.setState(IRaftNode.RaftState.CANDIDATE);
+                machine.setState(CANDIDATE);
                 X7F_RaftResponse x7f = mRaftNode.merge(machine);
                 return x7f != null ? new IControl[] { x7f }
                                    : null;
@@ -95,10 +97,12 @@ public class ClusterCustom<T extends ISessionManager<ZContext> & IActivity<ZCont
                     mRaftNode.appendLogs(entryList);
                 }
                 machine = new RaftMachine(x7e.getPeerId());
-                machine.setState(IRaftNode.RaftState.LEADER);
+                machine.setState(LEADER);
                 machine.setTerm(x7e.getTerm());
                 machine.setCommit(x7e.getCommit());
                 machine.setLeader(x7e.getLeaderId());
+                machine.setIndexTerm(x7e.getPreIndexTerm());
+                machine.setIndex(x7e.getPreIndex());
                 x7f = mRaftNode.merge(machine);
                 return x7f != null ? new IControl[] { x7f }
                                    : null;
