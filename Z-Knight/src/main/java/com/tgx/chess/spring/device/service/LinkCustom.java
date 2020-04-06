@@ -128,7 +128,7 @@ public class LinkCustom
                 }
                 List<IControl<ZContext>> pushList = new LinkedList<>();
                 if (!x112.isIllegalState()) {
-                    //此时device != null
+                    //此时device != null x112已经判定了状态
                     ISession<ZContext> old = manager.mapSession(device.getPrimaryKey(), session);
                     pushList.add(x112);
                     if (old != null) {
@@ -184,4 +184,5 @@ public class LinkCustom
     {
         return _DeviceRepository.find(entry);
     }
+
 }

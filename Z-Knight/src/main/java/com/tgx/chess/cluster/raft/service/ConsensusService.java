@@ -24,52 +24,42 @@
 
 package com.tgx.chess.cluster.raft.service;
 
-import java.util.List;
-
 import org.springframework.stereotype.Service;
 
-import com.tgx.chess.bishop.io.zfilter.ZContext;
-import com.tgx.chess.cluster.raft.IRaftMessage;
-import com.tgx.chess.cluster.raft.model.RaftNode;
-import com.tgx.chess.cluster.raft.service.api.IConsensusService;
-import com.tgx.chess.queen.io.core.inf.IActivity;
-import com.tgx.chess.queen.io.core.inf.IClusterPeer;
-import com.tgx.chess.queen.io.core.inf.ISessionManager;
+import com.tgx.chess.bishop.ZUID;
+import com.tgx.chess.cluster.raft.IRaftService;
+import com.tgx.chess.cluster.raft.model.RaftGraph;
+import com.tgx.chess.king.base.inf.IPair;
 
 /**
  * @author william.d.zk
  */
 @Service
-public class ConsensusService<T extends ISessionManager<ZContext> & IActivity<ZContext> & IClusterPeer>
+public class ConsensusService
         implements
-        IConsensusService<T>
+        IRaftService
 {
-
-    public ConsensusService()
+    @Override
+    public long getLeader()
     {
+        return ZUID.INVALID_PEER_ID;
     }
 
     @Override
-    public List<IRaftMessage> prepare()
+    public RaftGraph getTopology()
     {
         return null;
     }
 
     @Override
-    public List<IRaftMessage> elect(RaftNode<T> candidate)
+    public final boolean addNode(IPair... node)
     {
-        return null;
+        return false;
     }
 
     @Override
-    public void appendLog(IRaftMessage log)
+    public boolean rmNode(IPair... nodes)
     {
-
-    }
-
-    @Override
-    public void installSnapshot(List<IRaftMessage> snapshot)
-    {
-
+        return false;
     }
 }

@@ -32,6 +32,7 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 import com.tgx.chess.bishop.biz.config.IClusterConfig;
@@ -43,7 +44,6 @@ import com.tgx.chess.bishop.io.zhandler.ZMappingCustom;
 import com.tgx.chess.cluster.raft.model.RaftNode;
 import com.tgx.chess.cluster.raft.model.log.RaftDao;
 import com.tgx.chess.cluster.raft.service.ClusterCustom;
-import com.tgx.chess.cluster.raft.service.api.IConsensusService;
 import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
@@ -68,16 +68,15 @@ public class DeviceService
         implements
         IDeviceService
 {
-    private final Logger                        _Logger = Logger.getLogger(getClass().getSimpleName());
-    private final DeviceConfig                  _DeviceConfig;
-    private final IClusterConfig                _ClusterConfig;
-    private final DeviceNode                    _DeviceNode;
-    private final LinkCustom                    _LinkCustom;
-    private final ClusterCustom<DeviceNode>     _ClusterCustom;
-    private final IRepository<MessageEntry>     _MessageRepository;
-    private final IConsensusService<DeviceNode> _ConsensusService;
-    private final RaftNode<DeviceNode>          _RaftNode;
-    private final TimeWheel                     _TimeWheel;
+    private final Logger                    _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final DeviceConfig              _DeviceConfig;
+    private final IClusterConfig            _ClusterConfig;
+    private final DeviceNode                _DeviceNode;
+    private final LinkCustom                _LinkCustom;
+    private final ClusterCustom<DeviceNode> _ClusterCustom;
+    private final IRepository<MessageEntry> _MessageRepository;
+    private final RaftNode<DeviceNode>      _RaftNode;
+    private final TimeWheel                 _TimeWheel;
 
     @Autowired
     DeviceService(DeviceConfig deviceConfig,
@@ -87,7 +86,6 @@ public class DeviceService
                   LinkCustom linkCustom,
                   ClusterCustom<DeviceNode> clusterCustom,
                   IRepository<MessageEntry> messageRepository,
-                  IConsensusService<DeviceNode> consensusService,
                   RaftDao raftDao) throws IOException
     {
         _TimeWheel = new TimeWheel();
@@ -109,7 +107,6 @@ public class DeviceService
         _LinkCustom = linkCustom;
         _ClusterCustom = clusterCustom;
         _RaftNode = new RaftNode<>(_TimeWheel, _ClusterConfig, raftDao, _DeviceNode);
-        _ConsensusService = consensusService;
         _ClusterCustom.setRaftNode(_RaftNode);
     }
 
@@ -129,6 +126,12 @@ public class DeviceService
         DeviceEntry entry = convertDo2Entry(device);
         _LinkCustom.findDevice(entry);
         return convertEntry2Do(_LinkCustom.saveDevice(entry), device);
+    }
+
+    @Bean
+    public RaftNode<DeviceNode> getRaftNode()
+    {
+        return _RaftNode;
     }
 
     private DeviceDo convertEntry2Do(DeviceEntry entry, DeviceDo deviceDo)

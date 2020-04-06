@@ -51,6 +51,7 @@ public interface IPipeTransfer<C extends IContext<C>>
             throw new MissingParameterException(toString() + ".transfer", "commands");
         }
         return Stream.of(commands)
+                     .filter(Objects::nonNull)
                      .map(command ->
                      {
                          ISession<C> targetSession = command.getSession();
