@@ -47,7 +47,6 @@ public class X7E_RaftBroadcast
     }
 
     private long mPeerId;
-    private long mLeaderId;
     private long mTerm;
     private long mCommit;
     private long mPreIndex;
@@ -70,8 +69,6 @@ public class X7E_RaftBroadcast
     {
         mPeerId = IoUtil.readLong(data, pos);
         pos += 8;
-        mLeaderId = IoUtil.readLong(data, pos);
-        pos += 8;
         mTerm = IoUtil.readLong(data, pos);
         pos += 8;
         mCommit = IoUtil.readLong(data, pos);
@@ -93,7 +90,6 @@ public class X7E_RaftBroadcast
     public int encodec(byte[] data, int pos)
     {
         pos += IoUtil.writeLong(mPeerId, data, pos);
-        pos += IoUtil.writeLong(mLeaderId, data, pos);
         pos += IoUtil.writeLong(mTerm, data, pos);
         pos += IoUtil.writeLong(mCommit, data, pos);
         pos += IoUtil.writeLong(mPreIndex, data, pos);
@@ -110,16 +106,6 @@ public class X7E_RaftBroadcast
     public void setPeerId(long peerId)
     {
         this.mPeerId = peerId;
-    }
-
-    public long getLeaderId()
-    {
-        return mLeaderId;
-    }
-
-    public void setLeaderId(long leaderId)
-    {
-        this.mLeaderId = leaderId;
     }
 
     public long getTerm()

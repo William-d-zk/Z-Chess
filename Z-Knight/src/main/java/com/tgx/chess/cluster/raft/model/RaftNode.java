@@ -41,6 +41,7 @@ import static com.tgx.chess.queen.event.inf.IOperator.Type.CONSENSUS_ELECT;
 import static java.lang.Math.min;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -124,10 +125,9 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
                   .forEach((k, v) ->
                   {
                       X7E_RaftBroadcast x7e = new X7E_RaftBroadcast(_ZUID.getId());
-                      x7e.setPeerId(k);
+                      x7e.setPeerId(_SelfMachine.getPeerId());
                       x7e.setTerm(_SelfMachine.getTerm());
                       x7e.setCommit(_SelfMachine.getCommit());
-                      x7e.setLeaderId(_SelfMachine.getPeerId());
                       x7e.setPreIndex(_SelfMachine.getIndex());
                       x7e.setPreIndexTerm(_SelfMachine.getIndexTerm());
                       if (v.getIndex() < _SelfMachine.getIndex()) {
@@ -472,7 +472,26 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
     }
 
     @Override
-    public void apply(long applied)
+    public List<LogEntry> diff()
+    {
+        long start = _SelfMachine.getApplied();
+        long end = _SelfMachine.getCommit();
+        if (start >= end) {
+            return null;
+        }
+        else {
+            List<LogEntry> result = new ArrayList<>((int) (end - start));
+            for (long i = start; i <= end; i++) {
+                LogEntry entry = _RaftDao.getEntry(i);
+                if (entry != null) result.add(entry);
+            }
+            return result.isEmpty() ? null
+                                    : result;
+        }
+    }
+
+    @Override
+    public void apply()
     {
 
     }
@@ -548,7 +567,7 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         return _SelfMachine.getState() == LEADER
                && _SelfMachine.getTerm() == x7e.getTerm()
                && _SelfMachine.getCommit() >= x7e.getCommit()
-               && _SelfMachine.getPeerId() == x7e.getLeaderId();
+               && _SelfMachine.getPeerId() == x7e.getPeerId();
     }
 
     @Override
@@ -557,4 +576,5 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         //offer all
         _AppendLogList.addAll(entryList);
     }
+
 }

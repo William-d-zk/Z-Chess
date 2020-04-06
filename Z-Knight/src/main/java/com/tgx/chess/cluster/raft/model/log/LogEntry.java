@@ -101,6 +101,7 @@ public class LogEntry
         Objects.requireNonNull(json);
         index = json.getIndex();
         term = json.getTerm();
+        payload = json.getPayload();
         return length = data.length;
     }
 

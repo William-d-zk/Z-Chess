@@ -42,9 +42,4 @@ public class X109_Consensus
         super(COMMAND, false);
     }
 
-    @Override
-    public boolean isMapping()
-    {
-        return true;
-    }
 }

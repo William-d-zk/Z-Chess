@@ -59,7 +59,7 @@ public interface IControl<C extends IContext<C>>
     /**
      * 当前 Command 是否对route-mapping 存在影响
      *
-     * @return
+     * @return success / failed
      */
     default boolean isMapping()
     {
@@ -67,6 +67,16 @@ public interface IControl<C extends IContext<C>>
     }
 
     default boolean isShutdown()
+    {
+        return false;
+    }
+
+    /**
+     * 当前 Command 的数据 是否需要强一致
+     * 
+     * @return true/false
+     */
+    default boolean isConsensus()
     {
         return false;
     }

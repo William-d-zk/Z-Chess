@@ -36,6 +36,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
+import com.tgx.chess.bishop.io.zprotocol.control.X109_Consensus;
 import com.tgx.chess.bishop.io.zprotocol.raft.X72_RaftVote;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7E_RaftBroadcast;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
@@ -100,7 +101,6 @@ public class ClusterCustom<T extends ISessionManager<ZContext> & IActivity<ZCont
                 machine.setState(LEADER);
                 machine.setTerm(x7e.getTerm());
                 machine.setCommit(x7e.getCommit());
-                machine.setLeader(x7e.getLeaderId());
                 machine.setIndexTerm(x7e.getPreIndexTerm());
                 machine.setIndex(x7e.getPreIndex());
                 x7f = mRaftNode.merge(machine);
@@ -124,7 +124,17 @@ public class ClusterCustom<T extends ISessionManager<ZContext> & IActivity<ZCont
 
         switch (content.serial())
         {
-
+            case X7E_RaftBroadcast.COMMAND:
+                //状态机已完成merge 但并未执行apply，此处执行apply 操作，并将diff发送给LINK 完成业务端的一致化
+                List<LogEntry> diff = mRaftNode.diff();
+                mRaftNode.apply();
+                if (diff != null) {
+                    byte[] payload = JsonUtil.writeValueAsBytes(diff);
+                    X109_Consensus x109 = new X109_Consensus();
+                    x109.setPayload(payload);
+                    return x109;
+                }
+                break;
         }
 
         return null;
