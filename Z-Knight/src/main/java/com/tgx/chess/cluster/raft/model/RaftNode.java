@@ -37,7 +37,7 @@ import static com.tgx.chess.cluster.raft.model.RaftCode.OBSOLETE;
 import static com.tgx.chess.cluster.raft.model.RaftCode.SPLIT_CLUSTER;
 import static com.tgx.chess.cluster.raft.model.RaftCode.SUCCESS;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.CLUSTER_LOCAL;
-import static com.tgx.chess.queen.event.inf.IOperator.Type.CONSISTENT_ELECT;
+import static com.tgx.chess.queen.event.inf.IOperator.Type.CONSENSUS_ELECT;
 import static java.lang.Math.min;
 
 import java.io.IOException;
@@ -286,7 +286,7 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
                   {
                       if (k != _SelfMachine.getPeerId()) {
                           ISession<ZContext> session = _SessionManager.findSessionByPrefix(k);
-                          _SessionManager.send(session, CONSISTENT_ELECT, x72);
+                          _SessionManager.send(session, CONSENSUS_ELECT, x72);
                       }
                   });
         _Logger.info("start vote self {%s}", _SelfMachine.toString());

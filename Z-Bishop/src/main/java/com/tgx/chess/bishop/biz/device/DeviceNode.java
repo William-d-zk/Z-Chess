@@ -113,12 +113,7 @@ public class DeviceNode
                             throw new IllegalArgumentException("cluster local slot error");
                         }
                         return getClusterLocalSendEvent();
-                    case CONSISTENT_TRANS:
-                        if (slot != QueenCode.CM_XID_LOW) {
-                            throw new IllegalArgumentException("cluster local slot error");
-                        }
-                        return getConsistentTransEvent();
-                    case CONSISTENT_ELECT:
+                    case CONSENSUS_ELECT:
                         if (slot != QueenCode.CM_XID_LOW) {
                             throw new IllegalArgumentException("cluster local slot error");
                         }
@@ -140,8 +135,7 @@ public class DeviceNode
                         }
                         return getBizLocalCloseEvent();
                     case CLUSTER_LOCAL:
-                    case CONSISTENT_TRANS:
-                    case CONSISTENT_ELECT:
+                    case CONSENSUS_ELECT:
                         if (slot != QueenCode.CM_XID_LOW) {
                             throw new IllegalArgumentException("cluster local slot error");
                         }

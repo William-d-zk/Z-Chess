@@ -24,8 +24,10 @@
 
 package com.tgx.chess.queen.event.handler;
 
-import static com.tgx.chess.queen.event.inf.IError.Type.LINK_ERROR;
-import static com.tgx.chess.queen.event.inf.IError.Type.LINK_LOGIN_ERROR;
+import static com.tgx.chess.queen.event.inf.IError.Type.MAPPING_ERROR;
+import static com.tgx.chess.queen.event.inf.IError.Type.MAPPING_LOGIN_ERROR;
+import static com.tgx.chess.queen.event.inf.IOperator.Type.CONSENSUS;
+import static com.tgx.chess.queen.event.inf.IOperator.Type.LINK;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 
 import java.nio.channels.AsynchronousSocketChannel;
@@ -60,6 +62,7 @@ public class MappingHandler<C extends IContext<C>>
     private final Logger             _Logger;
     private final RingBuffer<QEvent> _Error;
     private final RingBuffer<QEvent> _Writer;
+    private final RingBuffer<QEvent> _Transfer;
     private final QueenManager<C>    _QueenManager;
     private final ICustomLogic<C>    _CustomLogic;
 
@@ -67,12 +70,14 @@ public class MappingHandler<C extends IContext<C>>
                           QueenManager<C> manager,
                           RingBuffer<QEvent> error,
                           RingBuffer<QEvent> writer,
+                          RingBuffer<QEvent> transfer,
                           ICustomLogic<C> customLogic)
     {
         _Logger = Logger.getLogger(mapper);
         _QueenManager = manager;
         _Writer = writer;
         _Error = error;
+        _Transfer = transfer;
         _CustomLogic = customLogic;
     }
 
@@ -146,7 +151,8 @@ public class MappingHandler<C extends IContext<C>>
                         _Logger.fetal("link create session failed", e);
                     }
                     break;
-                case LOGIC:
+                case LINK:
+                case CONSENSUS:
                     ISession<C> session = event.getContent()
                                                .getSecond();
                     IControl<C> received = event.getContent()
@@ -162,11 +168,16 @@ public class MappingHandler<C extends IContext<C>>
                                                .getSort()
                                                .getTransfer());
                             }
+                            publish(_Transfer,
+                                    event.getEventType() == LINK ? CONSENSUS
+                                                                 : LINK,
+                                    new Pair<>(received, session),
+                                    event.getEventOp());
                         }
                         catch (LinkRejectException e) {
                             _Logger.warning("mapping handler reject", e);
                             error(_Error,
-                                  LINK_LOGIN_ERROR,
+                                  MAPPING_LOGIN_ERROR,
                                   new Pair<>(e, session),
                                   session.getContext()
                                          .getSort()
@@ -175,7 +186,7 @@ public class MappingHandler<C extends IContext<C>>
                         catch (Exception e) {
                             _Logger.warning("mapping handler error", e);
                             error(_Error,
-                                  LINK_ERROR,
+                                  MAPPING_ERROR,
                                   new Pair<>(e, session),
                                   session.getContext()
                                          .getSort()
@@ -183,9 +194,8 @@ public class MappingHandler<C extends IContext<C>>
                         }
                     }
                     break;
-                case CONSISTENT_ELECT:
-                case CONSISTENT_TRANS:
-                    /*CONSISTENT 必然是单个IControl,通过前项RingBuffer 向MappingHandler 投递*/
+                case CONSENSUS_ELECT://ClusterConsumer Timeout->start_vote
+                    /*CONSENSUS 必然是单个IControl,通过前项RingBuffer 向MappingHandler 投递*/
                     session = event.getContent()
                                    .getSecond();
                     IControl<C>[] toSends = event.getContent()

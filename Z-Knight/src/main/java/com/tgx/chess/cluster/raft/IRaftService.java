@@ -24,11 +24,44 @@
 
 package com.tgx.chess.cluster.raft;
 
+import com.tgx.chess.cluster.raft.model.RaftGraph;
+import com.tgx.chess.king.base.inf.IPair;
+
 /**
  * @author william.d.zk
- * @date 2020/2/5
+ * @date 2020/2/20
  */
-public interface IRaftClient
+public interface IRaftService
 {
-    void setConsensusData(byte[] payload);
+    /**
+     * 获取集群的leader信息
+     * 
+     * @return leader peer_id
+     */
+    long getLeader();
+
+    /**
+     * 获取集群拓扑
+     * 
+     * @return
+     */
+    RaftGraph getTopology();
+
+    /**
+     * 向集群中添加节点
+     * triple [first#peerId|second#address:port]
+     * 
+     * @param nodes
+     * @return success / failed
+     */
+    boolean addNode(IPair... nodes);
+
+    /**
+     * 移除集群节点
+     * 
+     * @param nodes
+     * @return success / failed
+     */
+    boolean rmNode(IPair... nodes);
+
 }
