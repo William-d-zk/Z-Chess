@@ -26,7 +26,7 @@ package com.tgx.chess.bishop.io.mqtt.filter;
 
 import java.nio.ByteBuffer;
 
-import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
+import com.tgx.chess.bishop.io.mqtt.QttFrame;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.async.AioPacket;

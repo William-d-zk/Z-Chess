@@ -26,7 +26,7 @@ package com.tgx.chess.bishop.io.zfilter;
 import java.util.Arrays;
 import java.util.Objects;
 
-import com.tgx.chess.bishop.io.ws.bean.WsFrame;
+import com.tgx.chess.bishop.io.ws.WsFrame;
 import com.tgx.chess.bishop.io.zprotocol.ZCommand;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X01_EncryptRequest;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X02_AsymmetricPub;

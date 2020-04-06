@@ -30,8 +30,8 @@ import static com.tgx.chess.queen.io.core.inf.IContext.ENCODE_FRAME;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
-import com.tgx.chess.bishop.io.ws.bean.WsContext;
-import com.tgx.chess.bishop.io.ws.bean.WsHandshake;
+import com.tgx.chess.bishop.io.ws.WsContext;
+import com.tgx.chess.bishop.io.ws.WsHandshake;
 import com.tgx.chess.bishop.io.ws.control.X101_HandShake;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.queen.event.inf.ISort;

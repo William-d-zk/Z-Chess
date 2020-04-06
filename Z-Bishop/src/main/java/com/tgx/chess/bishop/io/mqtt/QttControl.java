@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020 Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,63 +21,41 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.tgx.chess.bishop.io.mqtt.bean;
+
+package com.tgx.chess.bishop.io.mqtt;
+
+import java.util.Objects;
 
 import com.tgx.chess.bishop.io.zfilter.ZContext;
-import com.tgx.chess.king.base.util.IoUtil;
-import com.tgx.chess.queen.io.core.inf.ICommand;
+import com.tgx.chess.queen.io.core.inf.IControl;
+import com.tgx.chess.queen.io.core.inf.IRouteLv4;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
 /**
  * @author william.d.zk
- * @date 2019-05-25
+ * @date 2019-05-13
  */
-public abstract class QttCommand
+public abstract class QttControl
         extends
         MqttProtocol
         implements
-        ICommand<ZContext>
+        IControl<ZContext>,
+        IRouteLv4
 {
+    private final int          _Command;
+    private byte[]             mPayload;
+    private ISession<ZContext> mSession;
 
-    private final int _Command;
-
-    public QttCommand(int command)
+    public QttControl(int command)
     {
         _Command = command;
     }
 
-    private long               mMsgId = -1;
-    private ISession<ZContext> mSession;
-    private byte[]             mPayload;
-
     @Override
-    public void setCtrl(byte ctrl)
+    public int dataLength()
     {
-        setOpCode(ctrl);
-    }
-
-    @Override
-    public void setMsgId(long id)
-    {
-        mMsgId = id;
-    }
-
-    @Override
-    public long getMsgId()
-    {
-        return mMsgId;
-    }
-
-    @Override
-    public void setPayload(byte[] payload)
-    {
-        mPayload = payload;
-    }
-
-    @Override
-    public byte[] getPayload()
-    {
-        return mPayload;
+        return Objects.nonNull(mPayload) ? mPayload.length
+                                         : 0;
     }
 
     @Override
@@ -87,15 +65,22 @@ public abstract class QttCommand
     }
 
     @Override
-    public boolean isCtrl()
+    public void setCtrl(byte ctrl)
     {
-        return false;
+        setOpCode(ctrl);
     }
 
     @Override
-    public void reset()
+    public boolean isCtrl()
     {
-        mPayload = null;
+        return true;
+    }
+
+    @Override
+    public IControl<ZContext> setSession(ISession<ZContext> session)
+    {
+        mSession = session;
+        return this;
     }
 
     @Override
@@ -105,44 +90,27 @@ public abstract class QttCommand
     }
 
     @Override
-    public ICommand<ZContext> setSession(ISession<ZContext> session)
-    {
-        mSession = session;
-        return this;
-    }
-
-    @Override
     public ISession<ZContext> getSession()
     {
         return mSession;
     }
 
-    @Override
-    public int getPriority()
+    public byte[] getPayload()
     {
-        return QOS_PRIORITY_08_IMMEDIATE_MESSAGE;
+        return mPayload;
     }
 
     @Override
-    public int decodec(byte[] data, int pos)
+    public void setPayload(byte[] payload)
     {
-        mMsgId = IoUtil.readUnsignedShort(data, pos);
-        pos += 2;
-        return pos;
+        mPayload = payload;
     }
 
     @Override
-    public int encodec(byte[] data, int pos)
+    public void reset()
     {
-        pos += IoUtil.writeShort((int) mMsgId, data, pos);
-        return pos;
+        mSession = null;
+        mPayload = null;
     }
 
-    @Override
-    public int dataLength()
-    {
-        return 2
-               + (mPayload == null ? 0
-                                   : mPayload.length);
-    }
 }

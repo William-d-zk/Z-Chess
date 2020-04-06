@@ -25,8 +25,8 @@ package com.tgx.chess.bishop.io.zprotocol.control;
 
 import static com.tgx.chess.queen.io.core.inf.ISessionManager.INVALID_INDEX;
 
-import com.tgx.chess.bishop.io.ws.bean.WsControl;
-import com.tgx.chess.bishop.io.ws.bean.WsFrame;
+import com.tgx.chess.bishop.io.ws.WsControl;
+import com.tgx.chess.bishop.io.ws.WsFrame;
 import com.tgx.chess.king.base.util.IoUtil;
 
 /**

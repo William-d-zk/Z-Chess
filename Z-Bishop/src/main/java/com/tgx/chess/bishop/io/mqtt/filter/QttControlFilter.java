@@ -24,8 +24,8 @@
 
 package com.tgx.chess.bishop.io.mqtt.filter;
 
-import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
-import com.tgx.chess.bishop.io.mqtt.bean.QttFrame;
+import com.tgx.chess.bishop.io.mqtt.QttControl;
+import com.tgx.chess.bishop.io.mqtt.QttFrame;
 import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
 import com.tgx.chess.bishop.io.mqtt.control.X112_QttConnack;
 import com.tgx.chess.bishop.io.mqtt.control.X11C_QttPingreq;

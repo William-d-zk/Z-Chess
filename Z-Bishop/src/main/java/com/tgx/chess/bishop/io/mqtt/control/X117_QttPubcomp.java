@@ -26,7 +26,7 @@ package com.tgx.chess.bishop.io.mqtt.control;
 
 import static com.tgx.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
 
-import com.tgx.chess.bishop.io.mqtt.bean.QttCommand;
+import com.tgx.chess.bishop.io.mqtt.QttCommand;
 
 /**
  * @author william.d.zk

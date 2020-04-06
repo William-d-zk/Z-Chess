@@ -1,7 +1,7 @@
 /*
  * MIT License                                                                    
  *                                                                                
- * Copyright (c) 2016~2019 Z-Chess                                                
+ * Copyright (c) 2016~2020 Z-Chess
  *                                                                                
  * Permission is hereby granted, free of charge, to any person obtaining a copy   
  * of this software and associated documentation files (the "Software"), to deal  
@@ -22,7 +22,7 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.bishop.io.mqtt.bean;
+package com.tgx.chess.bishop.io.mqtt;
 
 import static com.tgx.chess.bishop.io.Direction.CLIENT_TO_SERVER;
 import static com.tgx.chess.bishop.io.Direction.SERVER_TO_CLIENT;
