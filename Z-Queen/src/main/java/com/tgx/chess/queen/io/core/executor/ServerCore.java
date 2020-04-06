@@ -448,7 +448,7 @@ public abstract class ServerCore<C extends IContext<C>>
         return _ClusterLocalSendEvent;
     }
 
-    protected RingBuffer<QEvent> getConsistentElectEvent()
+    protected RingBuffer<QEvent> getElectEvent()
     {
         return _ElectEvent;
     }

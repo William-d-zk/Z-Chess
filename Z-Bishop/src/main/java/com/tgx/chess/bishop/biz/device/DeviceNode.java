@@ -117,7 +117,7 @@ public class DeviceNode
                         if (slot != QueenCode.CM_XID_LOW) {
                             throw new IllegalArgumentException("cluster local slot error");
                         }
-                        return getConsistentElectEvent();
+                        return getElectEvent();
                     default:
                         throw new IllegalArgumentException(String.format("get publisher type error:%s ", type.name()));
                 }

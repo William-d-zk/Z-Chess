@@ -164,6 +164,22 @@ public class LinkCustom
     }
 
     @Override
+    public IControl<ZContext> consensus(QueenManager<ZContext> manager,
+                                        ISession<ZContext> session,
+                                        IControl<ZContext> content) throws Exception
+    {
+
+        switch (content.serial())
+        {
+            case X111_QttConnect.COMMAND:
+            case X118_QttSubscribe.COMMAND:
+            case X11A_QttUnsubscribe.COMMAND:
+                return content;
+        }
+        return null;
+    }
+
+    @Override
     public IControl<ZContext>[] onTransfer(IControl<ZContext>[] content)
     {
         if (content == null || content.length == 0) { return null; }
