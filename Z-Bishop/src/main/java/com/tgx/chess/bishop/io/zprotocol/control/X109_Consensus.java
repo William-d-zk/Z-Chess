@@ -22,18 +22,29 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.queen.event.inf;
+package com.tgx.chess.bishop.io.zprotocol.control;
 
-import com.tgx.chess.queen.io.core.inf.IContext;
-import com.tgx.chess.queen.io.core.inf.IControl;
-import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.manager.QueenManager;
+import com.tgx.chess.bishop.io.zprotocol.ZCommand;
 
-public interface ICustomLogic<C extends IContext<C>>
+/**
+ * @author william.d.zk
+ * @date 2020/4/6
+ */
+public class X109_Consensus
+        extends
+        ZCommand
 {
-    IControl<C>[] handle(QueenManager<C> manager, ISession<C> session, IControl<C> content) throws Exception;
 
-    IControl<C> consensus(QueenManager<C> manager, ISession<C> session, IControl<C> content) throws Exception;
+    public final static int COMMAND = 0x109;
 
-    IControl<C>[] onTransfer(IControl<C>[] content);
+    public X109_Consensus()
+    {
+        super(COMMAND, false);
+    }
+
+    @Override
+    public boolean isMapping()
+    {
+        return true;
+    }
 }

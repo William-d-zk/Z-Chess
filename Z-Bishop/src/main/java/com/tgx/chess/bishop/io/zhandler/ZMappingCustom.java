@@ -83,4 +83,13 @@ public class ZMappingCustom
         return _Then != null ? _Then.onTransfer(content)
                              : null;
     }
+
+    @Override
+    public IControl<ZContext> consensus(QueenManager<ZContext> manager,
+                                        ISession<ZContext> session,
+                                        IControl<ZContext> content) throws Exception
+    {
+        return _Then != null ? _Then.consensus(manager, session, content)
+                             : null;
+    }
 }

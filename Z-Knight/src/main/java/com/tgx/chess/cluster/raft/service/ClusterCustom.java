@@ -117,6 +117,20 @@ public class ClusterCustom<T extends ISessionManager<ZContext> & IActivity<ZCont
     }
 
     @Override
+    public IControl<ZContext> consensus(QueenManager<ZContext> manager,
+                                        ISession<ZContext> session,
+                                        IControl<ZContext> content) throws Exception
+    {
+
+        switch (content.serial())
+        {
+
+        }
+
+        return null;
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public IControl<ZContext>[] onTransfer(IControl<ZContext>[] content)
     {

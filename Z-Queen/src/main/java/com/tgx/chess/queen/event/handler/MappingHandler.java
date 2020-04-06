@@ -168,11 +168,14 @@ public class MappingHandler<C extends IContext<C>>
                                                .getSort()
                                                .getTransfer());
                             }
-                            publish(_Transfer,
-                                    event.getEventType() == LINK ? CONSENSUS
-                                                                 : LINK,
-                                    new Pair<>(received, session),
-                                    event.getEventOp());
+                            IControl<C> consensus = _CustomLogic.consensus(_QueenManager, session, received);
+                            if (consensus != null) {//终止循环传递的条件为 null 
+                                publish(_Transfer,
+                                        event.getEventType() == LINK ? CONSENSUS
+                                                                     : LINK,
+                                        new Pair<>(consensus, session),
+                                        event.getEventOp());
+                            }
                         }
                         catch (LinkRejectException e) {
                             _Logger.warning("mapping handler reject", e);
