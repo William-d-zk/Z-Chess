@@ -46,6 +46,7 @@ public class X7E_RaftBroadcast
         super(COMMAND, true);
     }
 
+    //leaderId
     private long mPeerId;
     private long mTerm;
     private long mCommit;

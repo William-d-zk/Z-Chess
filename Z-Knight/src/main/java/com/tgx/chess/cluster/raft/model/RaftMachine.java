@@ -49,13 +49,13 @@ public class RaftMachine
         IRaftMachine
 {
     private final long                         _PeerId;
-    private long                               mTerm;
-    private long                               mIndex;
-    private long                               mIndexTerm;
+    private long                               mTerm;//触发选举时 mTerm>mIndexTerm
+    private long                               mIndex;//本地日志Index，Leader：mIndex>=mCommit 其他状态：mIndex<=mCommit
+    private long                               mIndexTerm; //本地日志对应的Term
     private long                               mCandidate;
     private long                               mLeader;
-    private long                               mCommit;
-    private long                               mApplied;
+    private long                               mCommit;   //集群中已知的最大CommitIndex
+    private long                               mApplied;  //本地已被应用的Index
     private int                                mState;
     private Set<Triple<Long,
                        String,
@@ -233,6 +233,12 @@ public class RaftMachine
     public long increaseTerm()
     {
         return ++mTerm;
+    }
+
+    @Override
+    public void increaseApplied()
+    {
+        mApplied++;
     }
 
     @Override

@@ -53,6 +53,7 @@ public class X72_RaftVote
         return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
     }
 
+    //candidateId
     private long mPeerId;
     private long mTerm;
     private long mLogIndex;

@@ -81,7 +81,7 @@ public class X7F_RaftResponse
 
     public void setTerm(long term)
     {
-        this.mTerm = term;
+        mTerm = term;
     }
 
     public int getCode()
@@ -91,7 +91,7 @@ public class X7F_RaftResponse
 
     public void setCode(int code)
     {
-        this.mCode = code;
+        mCode = code;
     }
 
     public long getCatchUp()
@@ -111,8 +111,7 @@ public class X7F_RaftResponse
 
     public void setPeerId(long peerId)
     {
-        this.mPeerId = peerId;
+        mPeerId = peerId;
     }
-
 
 }
