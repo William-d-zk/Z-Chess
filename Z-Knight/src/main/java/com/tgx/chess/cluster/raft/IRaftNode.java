@@ -39,26 +39,22 @@ public interface IRaftNode
 {
 
     /**
-     * 
-     * @param peerId
      * @param code
      * @return
      */
-    X7F_RaftResponse reject(long peerId, int code);
+    X7F_RaftResponse reject(int code);
+
+    /**
+     * @return
+     */
+    X7F_RaftResponse stepDown();
 
     /**
      * 
      * @param peerId
      * @return
      */
-    X7F_RaftResponse stepDown(long peerId);
-
-    /**
-     * 
-     * @param peerId
-     * @return
-     */
-    X7F_RaftResponse follow(long peerId);
+    X7F_RaftResponse follow(long peerId, long commit);
 
     /**
      * 
@@ -75,12 +71,10 @@ public interface IRaftNode
     X7F_RaftResponse reTick(long peerId);
 
     /**
-     * 
-     * @param peerId
      * @param code
      * @return
      */
-    X7F_RaftResponse rejectAndStepDown(long peerId, int code);
+    X7F_RaftResponse rejectAndStepDown(int code);
 
     /**
      * 接收另一个machine的状态更新

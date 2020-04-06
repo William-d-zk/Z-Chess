@@ -292,22 +292,24 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         _Logger.info("start vote self {%s}", _SelfMachine.toString());
     }
 
-    private X7F_RaftResponse success(long peerId)
+    private X7F_RaftResponse success()
     {
         X7F_RaftResponse response = new X7F_RaftResponse(_ZUID.getId());
-        response.setPeerId(peerId);
+        response.setPeerId(_SelfMachine.getPeerId());
         response.setTerm(_SelfMachine.getTerm());
         response.setCode(SUCCESS.getCode());
+        response.setCatchUp(_SelfMachine.getIndex());
         return response;
     }
 
     @Override
-    public X7F_RaftResponse reject(long peerId, int code)
+    public X7F_RaftResponse reject(int code)
     {
         X7F_RaftResponse response = new X7F_RaftResponse(_ZUID.getId());
-        response.setPeerId(peerId);
+        response.setPeerId(_SelfMachine.getPeerId());
         response.setTerm(_SelfMachine.getTerm());
         response.setCode(code);
+        response.setCatchUp(_SelfMachine.getIndex());
         return response;
     }
 
@@ -316,28 +318,30 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
     {
         _SelfMachine.setState(ELECTOR);
         _SelfMachine.setCandidate(peerId);
+        _SelfMachine.setLeader(INVALID_PEER_ID);
         mElectTask = _TimeWheel.acquire(this, _ElectSchedule);
-        return success(peerId);
+        return success();
     }
 
     @Override
-    public X7F_RaftResponse stepDown(long peerId)
+    public X7F_RaftResponse stepDown()
     {
         _SelfMachine.setState(FOLLOWER);
         _SelfMachine.setLeader(INVALID_PEER_ID);
         _SelfMachine.setCandidate(INVALID_PEER_ID);
         mTickTask = _TimeWheel.acquire(this, _TickSchedule);
-        return success(peerId);
+        return success();
     }
 
     @Override
-    public X7F_RaftResponse follow(long peerId)
+    public X7F_RaftResponse follow(long peerId, long commit)
     {
         _SelfMachine.setState(FOLLOWER);
         _SelfMachine.setLeader(peerId);
         _SelfMachine.setCandidate(INVALID_PEER_ID);
+        _SelfMachine.setCommit(commit);
         mTickTask = _TimeWheel.acquire(this, _TickSchedule);
-        return success(peerId);
+        return success();
     }
 
     /**
@@ -351,8 +355,8 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
     public X7F_RaftResponse reTick(long peerId)
     {
         tickCancel();
-        X7F_RaftResponse response = catchUp() ? success(peerId)
-                                              : reject(peerId, INCORRECT_TERM.getCode());
+        X7F_RaftResponse response = catchUp() ? success()
+                                              : reject(INCORRECT_TERM.getCode());
         response.setCatchUp(_SelfMachine.getIndex());
         mTickTask = _TimeWheel.acquire(this, _TickSchedule);
         return response;
@@ -368,105 +372,100 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         if (mHeartbeatTask != null) mHeartbeatTask.cancel();
     }
 
+    private void electCancel()
+    {
+        if (mElectTask != null) mElectTask.cancel();
+    }
+
     @Override
-    public X7F_RaftResponse rejectAndStepDown(long peerId, int code)
+    public X7F_RaftResponse rejectAndStepDown(int code)
     {
         _SelfMachine.setState(FOLLOWER);
         _SelfMachine.setLeader(INVALID_PEER_ID);
         _SelfMachine.setCandidate(INVALID_PEER_ID);
         mTickTask = _TimeWheel.acquire(this, _TickSchedule);
-        return reject(peerId, code);
+        return reject(code);
     }
 
     @Override
     public X7F_RaftResponse merge(IRaftMachine update)
     {
         X7F_RaftResponse response = null;
-        APPLY:
-        {
-            //RaftGraph中不存LEARNER 节点所以集群广播和RPC时不涉及LEARNER
-            if (_SelfMachine.getTerm() > update.getTerm()) {
-                response = reject(update.getPeerId(), LOWER_TERM.getCode());
-                break APPLY;
-            }
-            if (update.getTerm() > _SelfMachine.getTerm()) {
-                _SelfMachine.setTerm(update.getTerm());
-                tickCancel();
-                heartbeatCancel();
-                //* ->follower -> elector
+        //RaftGraph中不存LEARNER 节点所以集群广播和RPC时不涉及LEARNER
+        if (_SelfMachine.getTerm() > update.getTerm()) { return reject(LOWER_TERM.getCode()); }
+        if (update.getTerm() > _SelfMachine.getTerm()) {
+            _SelfMachine.setTerm(update.getTerm());
+            tickCancel();
+            heartbeatCancel();
+            electCancel();
+            // * -> follower -> elector
+            if (update.getState() == CANDIDATE) {
                 if (_SelfMachine.getIndex() <= update.getIndex()
                     && _SelfMachine.getIndexTerm() <= update.getIndexTerm()
-                    && _SelfMachine.getCommit() <= update.getCommit()
-                    && update.getState() == CANDIDATE)
+                    && _SelfMachine.getCommit() <= update.getCommit())
                 {
                     response = stepUp(update.getPeerId());
                 }
-                else if ((_SelfMachine.getIndex() > update.getIndex()
-                          || _SelfMachine.getIndexTerm() > update.getIndexTerm())
-                         && update.getState() == CANDIDATE)
-                {
-                    response = rejectAndStepDown(update.getPeerId(), OBSOLETE.getCode());
-                    break APPLY;
+                else {
+                    return rejectAndStepDown(OBSOLETE.getCode());
+                }
+            }
+            else if (update.getState() == LEADER) {
+                response = follow(update.getPeerId(), update.getCommit());
+            }
+            //else ignore { follower elector 都不会成为update.getState的结果，所以此处忽略}
+        }
+        //_SelfMachine.getTerm == update.getTerm
+        else switch (_SelfMachine.getState())
+        {
+            case ELECTOR:
+                if (update.getState() == CANDIDATE) {
+                    if (_SelfMachine.getCandidate() != update.getPeerId()) {
+                        return reject(ALREADY_VOTE.getCode());
+                    }
+                    else {
+                        _Logger.warning("already vote for %x", update.getPeerId());
+                        //response => null
+                        //此时不重置elect-timer
+                    }
+                }
+                if (update.getState() == LEADER) {
+                    response = follow(update.getPeerId(), update.getCommit());
+                }
+                break;
+            case FOLLOWER:
+                if (update.getState() == CANDIDATE) {
+                    if (_SelfMachine.getIndex() <= update.getIndex()
+                        && _SelfMachine.getIndexTerm() <= update.getIndexTerm())
+                    {
+                        response = stepUp(update.getPeerId());
+                    }
+                    else {
+                        return reject(OBSOLETE.getCode());
+                    }
                 }
                 else if (update.getState() == LEADER) {
-                    response = follow(update.getPeerId());
+                    response = reTick(update.getPeerId());
                 }
-                //else ignore { follower elector 都不会成为update.getState的结果，所以此处忽略}
-            }
-            else switch (_SelfMachine.getState())
-            {
-                case ELECTOR:
-                    if (update.getState() == CANDIDATE && _SelfMachine.getCandidate() != update.getCandidate()) {
-                        response = reject(update.getPeerId(), ALREADY_VOTE.getCode());
-                        break APPLY;
-                    }
-                    if (update.getState() == LEADER) {
-                        response = follow(update.getPeerId());
-                    }
-                    break;
-                case FOLLOWER:
-                    if (update.getState() == CANDIDATE) {
-                        if (_SelfMachine.getIndex() <= update.getIndex()
-                            && _SelfMachine.getIndexTerm() <= update.getIndexTerm())
-                        {
-                            response = stepUp(update.getPeerId());
-                        }
-                        else {
-                            response = reject(update.getPeerId(), OBSOLETE.getCode());
-                            break APPLY;
-                        }
-                    }
-                    else if (update.getState() == LEADER) {
-                        response = reTick(update.getPeerId());
+                else {
+                    return reject(ILLEGAL_STATE.getCode());
+                }
+                break;
+            case LEADER:
+                if (update.getState() == LEADER) {
+                    if (update.getPeerId() != _SelfMachine.getPeerId()) {
+                        return rejectAndStepDown(SPLIT_CLUSTER.getCode());
                     }
                     else {
-                        response = reject(update.getPeerId(), ILLEGAL_STATE.getCode());
-                        break APPLY;
+                        _Logger.warning("check raft graph & broadcast leader self->self");
+                        return null;
                     }
-                    break;
-                case LEADER:
-                    if (update.getState() == LEADER) {
-                        if (update.getPeerId() != _SelfMachine.getPeerId()) {
-                            response = rejectAndStepDown(update.getPeerId(), SPLIT_CLUSTER.getCode());
-                        }
-                        else {
-                            _Logger.warning("check raft graph & broadcast leader self->self");
-                        }
-                    }
-                    else {
-                        response = reject(update.getPeerId(), ILLEGAL_STATE.getCode());
-                    }
-                    break APPLY;
-                case LEARNER:
-                    break;
-            }
-
-            if (update.getState() == LEADER && _SelfMachine.getCommit() < update.getCommit()) {
-                _SelfMachine.setCommit(min(update.getCommit(), update.getIndex()));
-            }
-        }
-        if (response != null) {
-            response.setCatchUp(_SelfMachine.getCommit());
+                }
+                else {
+                    return reject(ILLEGAL_STATE.getCode());
+                }
+            case LEARNER:
+                break;
         }
         return response;
     }
@@ -475,11 +474,13 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
     public List<LogEntry> diff()
     {
         long start = _SelfMachine.getApplied();
-        long end = _SelfMachine.getCommit();
-        if (start >= end) {
+        long commit = _SelfMachine.getCommit();
+        long current = _SelfMachine.getIndex();
+        if (start >= commit) {
             return null;
         }
         else {
+            long end = min(current, commit);
             List<LogEntry> result = new ArrayList<>((int) (end - start));
             for (long i = start; i <= end; i++) {
                 LogEntry entry = _RaftDao.getEntry(i);
@@ -493,7 +494,10 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
     @Override
     public void apply()
     {
-
+        long end = min(_SelfMachine.getIndex(), _SelfMachine.getCommit());
+        while (_SelfMachine.getApplied() < end) {
+            _SelfMachine.increaseApplied();
+        }
     }
 
     private boolean catchUp()
@@ -558,6 +562,7 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         return x72.getPeerId() == _SelfMachine.getPeerId()
                && x72.getTerm() == _SelfMachine.getTerm()
                && x72.getLogIndex() == _SelfMachine.getIndex()
+               && x72.getLogTerm() == _SelfMachine.getIndexTerm()
                && _SelfMachine.getState() == ELECTOR;
     }
 
@@ -567,7 +572,9 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         return _SelfMachine.getState() == LEADER
                && _SelfMachine.getTerm() == x7e.getTerm()
                && _SelfMachine.getCommit() >= x7e.getCommit()
-               && _SelfMachine.getPeerId() == x7e.getPeerId();
+               && _SelfMachine.getPeerId() == x7e.getPeerId()
+               && _SelfMachine.getIndex() == x7e.getPreIndex()
+               && _SelfMachine.getIndexTerm() == x7e.getPreIndexTerm();
     }
 
     @Override
