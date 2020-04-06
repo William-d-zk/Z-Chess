@@ -341,25 +341,8 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         _SelfMachine.setCandidate(INVALID_PEER_ID);
         _SelfMachine.setCommit(commit);
         mTickTask = _TimeWheel.acquire(this, _TickSchedule);
-        return success();
-    }
-
-    /**
-     * 接收到LEADER的心跳或者日志复写
-     * 接收到的日志已经按顺序存入 _AppendLogList
-     * 
-     * @param peerId
-     * @return
-     */
-    @Override
-    public X7F_RaftResponse reTick(long peerId)
-    {
-        tickCancel();
-        X7F_RaftResponse response = catchUp() ? success()
-                                              : reject(INCORRECT_TERM.getCode());
-        response.setCatchUp(_SelfMachine.getIndex());
-        mTickTask = _TimeWheel.acquire(this, _TickSchedule);
-        return response;
+        return catchUp() ? success()
+                         : reject(INCORRECT_TERM.getCode());
     }
 
     private void tickCancel()
@@ -380,6 +363,7 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
     @Override
     public X7F_RaftResponse rejectAndStepDown(int code)
     {
+        electCancel();
         _SelfMachine.setState(FOLLOWER);
         _SelfMachine.setLeader(INVALID_PEER_ID);
         _SelfMachine.setCandidate(INVALID_PEER_ID);
@@ -420,16 +404,17 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         {
             case ELECTOR:
                 if (update.getState() == CANDIDATE) {
+                    //不重置elect-timer
                     if (_SelfMachine.getCandidate() != update.getPeerId()) {
                         return reject(ALREADY_VOTE.getCode());
                     }
                     else {
                         _Logger.warning("already vote for %x", update.getPeerId());
                         //response => null
-                        //此时不重置elect-timer
                     }
                 }
                 if (update.getState() == LEADER) {
+                    electCancel();
                     response = follow(update.getPeerId(), update.getCommit());
                 }
                 break;
@@ -438,6 +423,7 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
                     if (_SelfMachine.getIndex() <= update.getIndex()
                         && _SelfMachine.getIndexTerm() <= update.getIndexTerm())
                     {
+                        tickCancel();
                         response = stepUp(update.getPeerId());
                     }
                     else {
@@ -445,7 +431,8 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
                     }
                 }
                 else if (update.getState() == LEADER) {
-                    response = reTick(update.getPeerId());
+                    tickCancel();
+                    response = follow(update.getPeerId(), update.getCommit());
                 }
                 else {
                     return reject(ILLEGAL_STATE.getCode());
@@ -551,6 +538,7 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
                 it.remove();
             }
             return true;
+            //end of IT_APPEND
         }
         _AppendLogList.clear();
         return false;
