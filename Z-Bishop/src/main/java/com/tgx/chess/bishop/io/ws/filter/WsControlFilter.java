@@ -23,8 +23,8 @@
  */
 package com.tgx.chess.bishop.io.ws.filter;
 
-import com.tgx.chess.bishop.io.ws.bean.WsControl;
-import com.tgx.chess.bishop.io.ws.bean.WsFrame;
+import com.tgx.chess.bishop.io.ws.WsControl;
+import com.tgx.chess.bishop.io.ws.WsFrame;
 import com.tgx.chess.bishop.io.ws.control.X101_HandShake;
 import com.tgx.chess.bishop.io.ws.control.X102_SslHandShake;
 import com.tgx.chess.bishop.io.ws.control.X103_Close;

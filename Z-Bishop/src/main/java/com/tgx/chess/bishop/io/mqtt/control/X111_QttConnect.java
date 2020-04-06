@@ -29,8 +29,8 @@ import static com.tgx.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
-import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
-import com.tgx.chess.bishop.io.mqtt.bean.QttControl;
+import com.tgx.chess.bishop.io.mqtt.QttContext;
+import com.tgx.chess.bishop.io.mqtt.QttControl;
 import com.tgx.chess.king.base.util.IoUtil;
 
 /**

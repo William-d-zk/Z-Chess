@@ -24,11 +24,11 @@
 
 package com.tgx.chess.rook.io;
 
-import com.tgx.chess.bishop.io.mqtt.bean.QttContext;
+import com.tgx.chess.bishop.io.mqtt.QttContext;
 import com.tgx.chess.bishop.io.mqtt.filter.QttCommandFilter;
 import com.tgx.chess.bishop.io.mqtt.filter.QttControlFilter;
 import com.tgx.chess.bishop.io.mqtt.filter.QttFrameFilter;
-import com.tgx.chess.bishop.io.ws.bean.WsContext;
+import com.tgx.chess.bishop.io.ws.WsContext;
 import com.tgx.chess.bishop.io.ws.filter.WsControlFilter;
 import com.tgx.chess.bishop.io.ws.filter.WsFrameFilter;
 import com.tgx.chess.bishop.io.ws.filter.WsHandShakeFilter;

@@ -47,7 +47,7 @@ import org.springframework.stereotype.Component;
 import com.tgx.chess.bishop.ZUID;
 import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
 import com.tgx.chess.bishop.io.mqtt.control.X112_QttConnack;
-import com.tgx.chess.bishop.io.ws.bean.WsContext;
+import com.tgx.chess.bishop.io.ws.WsContext;
 import com.tgx.chess.bishop.io.ws.control.X101_HandShake;
 import com.tgx.chess.bishop.io.ws.control.X103_Close;
 import com.tgx.chess.bishop.io.ws.control.X104_Ping;

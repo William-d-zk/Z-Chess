@@ -25,8 +25,8 @@ package com.tgx.chess.bishop.io.ws.filter;
 
 import java.nio.ByteBuffer;
 
-import com.tgx.chess.bishop.io.ws.bean.WsContext;
-import com.tgx.chess.bishop.io.ws.bean.WsFrame;
+import com.tgx.chess.bishop.io.ws.WsContext;
+import com.tgx.chess.bishop.io.ws.WsFrame;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.async.AioPacket;

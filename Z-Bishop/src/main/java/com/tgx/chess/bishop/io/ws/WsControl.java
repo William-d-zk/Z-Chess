@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020 Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,66 +21,73 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.tgx.chess.bishop.io.ws;
 
-package com.tgx.chess.bishop.io.mqtt.bean;
+import static com.tgx.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import com.tgx.chess.bishop.io.zfilter.ZContext;
+import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.io.core.inf.IControl;
-import com.tgx.chess.queen.io.core.inf.IRouteLv4;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
 /**
- * @author william.d.zk
- * @date 2019-05-13
+ * @author William.d.zk
  */
-public abstract class QttControl
-        extends
-        MqttProtocol
+public abstract class WsControl
         implements
-        IControl<ZContext>,
-        IRouteLv4
+        IControl<ZContext>
 {
+
+    private final byte[]       _Msg;
     private final int          _Command;
-    private byte[]             mPayload;
+    private final byte         _CtrlCode;
     private ISession<ZContext> mSession;
 
-    public QttControl(int command)
+    public WsControl(byte code,
+                     int command,
+                     byte[] msg)
     {
+        _CtrlCode = code;
         _Command = command;
+        _Msg = msg;
+    }
+
+    public WsControl(byte code,
+                     int command)
+    {
+        this(code, command, null);
     }
 
     @Override
-    public int dataLength()
+    public void dispose()
     {
-        return Objects.nonNull(mPayload) ? mPayload.length
-                                         : 0;
+        reset();
     }
 
     @Override
-    public byte getCtrl()
+    public void reset()
     {
-        return getOpCode();
+        setSession(null);
+    }
+
+    public byte[] getPayload()
+    {
+        return _Msg;
+    }
+
+    public void setPayload(byte[] payload)
+    {
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public void setCtrl(byte ctrl)
+    public int encodec(byte[] data, int pos)
     {
-        setOpCode(ctrl);
-    }
-
-    @Override
-    public boolean isCtrl()
-    {
-        return true;
-    }
-
-    @Override
-    public IControl<ZContext> setSession(ISession<ZContext> session)
-    {
-        mSession = session;
-        return this;
+        pos += IoUtil.write(_Msg, data, pos);
+        return pos;
     }
 
     @Override
@@ -90,27 +97,53 @@ public abstract class QttControl
     }
 
     @Override
+    public void setCtrl(byte ctrl)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public byte getCtrl()
+    {
+        return _CtrlCode;
+    }
+
+    @Override
+    public boolean isCtrl()
+    {
+        return true;
+    }
+
+    @Override
     public ISession<ZContext> getSession()
     {
         return mSession;
     }
 
-    public byte[] getPayload()
+    @Override
+    public WsControl setSession(ISession<ZContext> session)
     {
-        return mPayload;
+        mSession = session;
+        return this;
     }
 
     @Override
-    public void setPayload(byte[] payload)
+    public int dataLength()
     {
-        mPayload = payload;
+        return Objects.nonNull(_Msg) ? _Msg.length
+                                     : 0;
     }
 
     @Override
-    public void reset()
+    public String toString()
     {
-        mSession = null;
-        mPayload = null;
+        int command = serial();
+        return String.format("cmd: 0X%X, %s", command, new String(_Msg, StandardCharsets.UTF_8));
     }
 
+    @Override
+    public Level getLevel()
+    {
+        return ALMOST_ONCE;
+    }
 }

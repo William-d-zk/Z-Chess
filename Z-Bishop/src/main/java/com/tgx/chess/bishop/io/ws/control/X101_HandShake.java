@@ -23,7 +23,7 @@
  */
 package com.tgx.chess.bishop.io.ws.control;
 
-import com.tgx.chess.bishop.io.ws.bean.WsHandshake;
+import com.tgx.chess.bishop.io.ws.WsHandshake;
 
 /**
  * @author William.d.zk
