@@ -169,14 +169,8 @@ public class LinkCustom
                                         IControl<ZContext> content) throws Exception
     {
 
-        switch (content.serial())
-        {
-            case X111_QttConnect.COMMAND:
-            case X118_QttSubscribe.COMMAND:
-            case X11A_QttUnsubscribe.COMMAND:
-                return content;
-        }
-        return null;
+        return content.isConsensus() ? content
+                                     : null;
     }
 
     @Override

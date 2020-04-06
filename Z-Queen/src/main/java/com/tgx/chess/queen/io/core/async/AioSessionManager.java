@@ -130,9 +130,9 @@ public abstract class AioSessionManager<C extends IContext<C>>
         /*
          * 1:相同 Session 不同 _Index 进行登录，产生多个 _Index 对应 相同 Session 的情况 2:相同 _Index 在不同的 Session 上登录，产生覆盖 Session 的情况。
          */
-        long sOldIndex = session.getIndex();
-        if (sOldIndex != INVALID_INDEX) {
-            _Index2SessionMaps[getSlot(session)].remove(sOldIndex);
+        long sessionIndex = session.getIndex();
+        if (sessionIndex != INVALID_INDEX) {
+            _Index2SessionMaps[getSlot(session)].remove(sessionIndex);
         }
         // 检查可能覆盖的 Session 是否存在,_Index 已登录过
         ISession<C> oldSession = _Index2SessionMaps[getSlot(session)].put(_Index, session);

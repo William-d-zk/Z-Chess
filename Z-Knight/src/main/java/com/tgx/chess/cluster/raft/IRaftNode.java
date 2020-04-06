@@ -94,13 +94,15 @@ public interface IRaftNode
 
     boolean checkLogAppend(X7E_RaftBroadcast x7e);
 
-    void apply(long applied);
+    void apply();
 
     void load(List<IRaftMessage> snapshot);
 
     void takeSnapshot(IRaftDao writer);
 
     IRaftMachine getMachine();
+
+    List<LogEntry> diff();
 
     void appendLogs(List<LogEntry> entryList);
 
