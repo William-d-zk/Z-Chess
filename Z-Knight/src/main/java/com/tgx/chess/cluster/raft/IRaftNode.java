@@ -64,13 +64,6 @@ public interface IRaftNode
     X7F_RaftResponse stepUp(long peerId);
 
     /**
-     * 
-     * @param peerId
-     * @return
-     */
-    X7F_RaftResponse reTick(long peerId);
-
-    /**
      * @param code
      * @return
      */
