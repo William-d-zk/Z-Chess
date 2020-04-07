@@ -289,6 +289,7 @@ public class DeviceNode
             @SuppressWarnings("unchecked")
             public IControl<ZContext>[] createCommands(ISession<ZContext> session)
             {
+                _Logger.info("peerId:%#x", _ZUID.getPeerId());
                 X106_Identity x106 = new X106_Identity(_ZUID.getPeerId());
                 return new IControl[] { x106 };
             }
