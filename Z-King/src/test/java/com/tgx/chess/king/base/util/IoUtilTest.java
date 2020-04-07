@@ -47,4 +47,12 @@ public class IoUtilTest
         ByteBuffer buf = ByteBuffer.wrap(varLength);
         assert IoUtil.readVariableIntLength(buf) == 16384;
     }
+
+    @Test
+    void writeAndReadLong()
+    {
+        byte[] p = IoUtil.writeLongArray(2L << 62);
+        System.out.println(String.format("%#x", 2L << 62));
+        System.out.println(String.format("%#x", IoUtil.readLong(p, 0)));
+    }
 }
