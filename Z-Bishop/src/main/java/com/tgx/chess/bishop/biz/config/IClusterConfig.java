@@ -69,7 +69,7 @@ public interface IClusterConfig
      */
     Uid getUid();
 
-    ZUID createZUID(boolean withType);
+    ZUID createZUID();
 
     Duration getElectInSecond();
 

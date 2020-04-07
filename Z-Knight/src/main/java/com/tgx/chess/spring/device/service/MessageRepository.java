@@ -64,7 +64,7 @@ public class MessageRepository
     {
         _ClusterConfig = clusterConfig;
         _JpaRepository = jpaRepository;
-        _ZUid = _ClusterConfig.createZUID(true);
+        _ZUid = _ClusterConfig.createZUID();
     }
 
     @Override
@@ -149,12 +149,11 @@ public class MessageRepository
     @Override
     public void saveAll(List<IStorage> targets)
     {
-        _ZUid.getPeerId();
     }
 
     @Override
     public long getPeerId()
     {
-        return _ZUid.getPeerId();
+        return _ZUid.getDevicePeerId();
     }
 }

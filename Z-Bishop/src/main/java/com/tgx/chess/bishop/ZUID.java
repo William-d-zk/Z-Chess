@@ -195,6 +195,11 @@ public class ZUID
         return (_IdcId << IDC_SHIFT) | (_ClusterId << CLUSTER_SHIFT) | (nodeId << NODE_SHIFT) | (_Type << TYPE_SHIFT);
     }
 
+    public long getDevicePeerId()
+    {
+        return (_IdcId << IDC_SHIFT) | (_ClusterId << CLUSTER_SHIFT) | (_NodeId << NODE_SHIFT) | QueenCode.CU_XID;
+    }
+
     public long getClusterId(long clusterId)
     {
         clusterId &= (1L << CLUSTER_BITS) - 1;

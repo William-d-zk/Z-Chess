@@ -78,13 +78,12 @@ public class ZClusterConfig
     }
 
     @Override
-    public ZUID createZUID(boolean withType)
+    public ZUID createZUID()
     {
         return zuid == null ? zuid = new ZUID(getUid().getIdcId(),
                                               getUid().getClusterId(),
                                               getUid().getNodeId(),
-                                              (withType ? getUid().getType()
-                                                        : 0))
+                                              getUid().getType())
                             : zuid;
     }
 

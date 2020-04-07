@@ -103,7 +103,7 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         _TimeWheel = timeWheel;
         _ClusterConfig = clusterConfig;
         _SessionManager = manager;
-        _ZUID = clusterConfig.createZUID(true);
+        _ZUID = clusterConfig.createZUID();
         _RaftDao = raftDao;
         _ElectSchedule = new ScheduleHandler<>(_ClusterConfig.getElectInSecond(), RaftNode::startVote, this);
         _HeartbeatSchedule = new ScheduleHandler<>(_ClusterConfig.getHeartbeatInSecond(),

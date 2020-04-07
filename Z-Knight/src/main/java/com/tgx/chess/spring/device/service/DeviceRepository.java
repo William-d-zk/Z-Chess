@@ -72,7 +72,7 @@ public class DeviceRepository
         _JpaRepository = jpaRepository;
         _ClusterConfig = clusterConfig;
         _DeviceConfig = deviceConfig;
-        _ZUid = _ClusterConfig.createZUID(false);
+        _ZUid = _ClusterConfig.createZUID();
     }
 
     @Override
@@ -199,6 +199,6 @@ public class DeviceRepository
     @Override
     public long getPeerId()
     {
-        return _ZUid.getPeerId();
+        return _ZUid.getDevicePeerId();
     }
 }

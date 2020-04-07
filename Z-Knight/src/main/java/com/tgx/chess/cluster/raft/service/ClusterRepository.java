@@ -49,7 +49,7 @@ public class ClusterRepository<T extends ISessionManager<ZContext> & IActivity<Z
     public ClusterRepository(IClusterConfig clusterConfig)
     {
         _ClusterConfig = clusterConfig;
-        _ZUid = _ClusterConfig.createZUID(true);
+        _ZUid = _ClusterConfig.createZUID();
     }
 
     @Override
