@@ -72,7 +72,7 @@ public class ZDeviceGenerator
     public void init()
     {
         if (_ZClusterConfig == null) return;
-        _ZUid = _ZClusterConfig.createZUID(false);
+        _ZUid = _ZClusterConfig.createZUID();
     }
 
     @Override
