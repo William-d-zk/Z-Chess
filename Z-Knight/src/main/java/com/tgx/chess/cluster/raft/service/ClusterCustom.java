@@ -109,7 +109,7 @@ public class ClusterCustom<T extends ISessionManager<ZContext> & IActivity<ZCont
             case X106_Identity.COMMAND:
                 X106_Identity x106 = (X106_Identity) content;
                 long peerId = x106.getIdentity();
-                _Logger.info("peerId:%#x", peerId);
+                _Logger.info("recv peerId:%#x", peerId);
                 manager.mapSession(session.getIndex(), session, peerId);
                 break;
 
