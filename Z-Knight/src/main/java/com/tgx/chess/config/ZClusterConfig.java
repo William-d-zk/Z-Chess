@@ -228,7 +228,7 @@ public class ZClusterConfig
             {
                 uid.setNodeId(i);
                 set = true;
-                _Logger.info("node-id:%d", i);
+                _Logger.info("node-id: %d", i);
                 break;
             }
         }
