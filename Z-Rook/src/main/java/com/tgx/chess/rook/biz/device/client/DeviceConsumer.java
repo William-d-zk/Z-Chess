@@ -271,7 +271,7 @@ public class DeviceConsumer
             @Override
             public void onCreate(ISession<ZContext> session)
             {
-                long sessionIndex = _ZUid.getId();
+                long sessionIndex = _ZUid.getId(QueenCode.CU_XID);
                 session.setIndex(sessionIndex);
                 DeviceConsumer.this.addSession(session);
                 zClient.setSessionIndex(sessionIndex);

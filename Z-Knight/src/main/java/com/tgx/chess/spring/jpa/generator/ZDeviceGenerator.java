@@ -37,6 +37,7 @@ import org.springframework.stereotype.Component;
 import com.tgx.chess.bishop.ZUID;
 import com.tgx.chess.config.ZClusterConfig;
 import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.queen.config.QueenCode;
 
 /**
  * 
@@ -85,6 +86,6 @@ public class ZDeviceGenerator
 
     private long next()
     {
-        return _ZUid.getId();
+        return _ZUid.getId(QueenCode.CU_XID);
     }
 }
