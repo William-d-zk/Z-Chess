@@ -113,7 +113,7 @@ public class Triple<FIRST,
     @Override
     public String toString()
     {
-        return String.format("<%s,%s,%s>", first, second, third);
+        return String.format("< %s, %s, %s >", first, second, third);
     }
 
     @Override

@@ -147,6 +147,7 @@ public class DeviceNode
         });
         _TimeWheel = timeWheel;
         _ZUID = clusterConfig.createZUID(true);
+        _Logger.info(_ZUID);
         IPair bind = clusterConfig.getBind();
         hosts.add(new Triple<>(bind.getFirst(), bind.getSecond(), ZSort.WS_CLUSTER_SERVER));
         _AioServers = hosts.stream()

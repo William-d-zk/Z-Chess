@@ -208,4 +208,20 @@ public class ZUID
 
     public final static long INVALID_PEER_ID = 0;
 
+    @Override
+    public String toString()
+    {
+        return "ZUID{"
+               + "IdcId="
+               + _IdcId
+               + ", ClusterId="
+               + _ClusterId
+               + ", NodeId="
+               + _NodeId
+               + ", Type="
+               + _Type
+               + ", sequence="
+               + sequence
+               + '}';
+    }
 }
