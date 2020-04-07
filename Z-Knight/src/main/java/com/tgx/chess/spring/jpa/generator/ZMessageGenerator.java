@@ -79,7 +79,7 @@ public class ZMessageGenerator
     public Serializable generate(SharedSessionContractImplementor session, Object object) throws HibernateException
     {
         long id = next();
-        _Logger.debug("generate z-id %x, %s", id, object);
+        _Logger.debug("generate z-id %#x, %s", id, object);
         return id;
     }
 
