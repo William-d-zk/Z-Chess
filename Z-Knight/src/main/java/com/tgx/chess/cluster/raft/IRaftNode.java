@@ -95,11 +95,11 @@ public interface IRaftNode
 
     enum RaftState
     {
-        LEARNER(0),
-        FOLLOWER(1),
-        ELECTOR(2),
-        CANDIDATE(3),
-        LEADER(4);
+        FOLLOWER(0),
+        ELECTOR(1),
+        CANDIDATE(2),
+        LEADER(3),
+        LEARNER(4);
 
         private final int _Code;
 

@@ -114,6 +114,7 @@ public class ZClusterConfig
     private DataSize              snapshotMinSize;
     private IPair                 peerTest;
     private IPair                 gateTest;
+    private boolean               inCongress;
 
     @Override
     public List<IPair> getGates()
@@ -219,20 +220,31 @@ public class ZClusterConfig
     @JsonIgnore
     private void setNodeId(String localHostStr)
     {
-        boolean set = false;
+
         for (int i = 0, size = peers.size(); i < size; i++) {
             if (peers.get(i)
                      .getFirst()
                      .equals(localHostStr))
             {
                 uid.setNodeId(i);
-                set = true;
+                setInCongress(true);
                 _Logger.info("node-id: %d", i);
                 break;
             }
         }
-        if (!set) {
+        if (!inCongress) {
             _Logger.warning("no set node-id,Learner?");
         }
+    }
+
+    @Override
+    public boolean isInCongress()
+    {
+        return inCongress;
+    }
+
+    public void setInCongress(boolean in)
+    {
+        inCongress = in;
     }
 }

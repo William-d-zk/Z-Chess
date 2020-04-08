@@ -69,6 +69,8 @@ public interface IClusterConfig
      */
     Uid getUid();
 
+    boolean isInCongress();
+
     ZUID createZUID();
 
     Duration getElectInSecond();
