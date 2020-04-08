@@ -25,10 +25,10 @@
 package com.tgx.chess.cluster.raft.model;
 
 import static com.tgx.chess.bishop.ZUID.INVALID_PEER_ID;
-import static com.tgx.chess.cluster.raft.IRaftNode.RaftState.CANDIDATE;
-import static com.tgx.chess.cluster.raft.IRaftNode.RaftState.ELECTOR;
-import static com.tgx.chess.cluster.raft.IRaftNode.RaftState.FOLLOWER;
-import static com.tgx.chess.cluster.raft.IRaftNode.RaftState.LEADER;
+import static com.tgx.chess.cluster.raft.RaftState.CANDIDATE;
+import static com.tgx.chess.cluster.raft.RaftState.ELECTOR;
+import static com.tgx.chess.cluster.raft.RaftState.FOLLOWER;
+import static com.tgx.chess.cluster.raft.RaftState.LEADER;
 import static com.tgx.chess.cluster.raft.model.RaftCode.ALREADY_VOTE;
 import static com.tgx.chess.cluster.raft.model.RaftCode.ILLEGAL_STATE;
 import static com.tgx.chess.cluster.raft.model.RaftCode.INCORRECT_TERM;
@@ -57,7 +57,6 @@ import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
 import com.tgx.chess.cluster.raft.IRaftDao;
 import com.tgx.chess.cluster.raft.IRaftMachine;
 import com.tgx.chess.cluster.raft.IRaftMessage;
-import com.tgx.chess.cluster.raft.IRaftNode;
 import com.tgx.chess.cluster.raft.model.log.LogEntry;
 import com.tgx.chess.cluster.raft.model.log.RaftDao;
 import com.tgx.chess.json.JsonUtil;
@@ -79,8 +78,6 @@ import com.tgx.chess.queen.io.core.inf.ISessionManager;
  * @date 2020/1/4
  */
 public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> & IClusterPeer>
-        implements
-        IRaftNode
 {
     private final Logger                       _Logger        = Logger.getLogger(getClass().getSimpleName());
     private final ZUID                         _ZUID;
@@ -216,13 +213,11 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         mTickTask = _TimeWheel.acquire(this, _TickSchedule);
     }
 
-    @Override
     public void load(List<IRaftMessage> snapshot)
     {
 
     }
 
-    @Override
     public void takeSnapshot(IRaftDao snapshot)
     {
         long localTerm;
@@ -251,7 +246,6 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
 
     }
 
-    @Override
     public IRaftMachine getMachine()
     {
         return _SelfMachine;
@@ -266,18 +260,15 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
           由于Elect.timeout << Tick.timeout,此处不应出现Tick无法
           关闭的，或关闭异常。同时cancel 配置了lock 防止意外出现。
         */
-        if (mTickTask != null) {
-            mTickTask.cancel();
-        }
+        tickCancel();
         try {
             Thread.sleep(_Random.nextInt(150) + 50);
         }
         catch (InterruptedException e) {
             //ignore
         }
-        _SelfMachine.setState(CANDIDATE);
         X72_RaftVote x72 = new X72_RaftVote(_ZUID.getId());
-        x72.setTerm(_SelfMachine.increaseTerm());
+        x72.setTerm(_SelfMachine.getTerm() + 1);
         x72.setPeerId(_SelfMachine.getPeerId());
         x72.setLogIndex(_SelfMachine.getIndex());
         x72.setLogTerm(_SelfMachine.getIndexTerm());
@@ -302,8 +293,7 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         return response;
     }
 
-    @Override
-    public X7F_RaftResponse reject(int code)
+    private X7F_RaftResponse reject(int code)
     {
         X7F_RaftResponse response = new X7F_RaftResponse(_ZUID.getId());
         response.setPeerId(_SelfMachine.getPeerId());
@@ -313,8 +303,7 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         return response;
     }
 
-    @Override
-    public X7F_RaftResponse stepUp(long peerId)
+    private X7F_RaftResponse stepUp(long peerId)
     {
         _SelfMachine.setState(ELECTOR);
         _SelfMachine.setCandidate(peerId);
@@ -323,18 +312,15 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         return success();
     }
 
-    @Override
-    public X7F_RaftResponse stepDown()
+    private void stepDown()
     {
         _SelfMachine.setState(FOLLOWER);
         _SelfMachine.setLeader(INVALID_PEER_ID);
         _SelfMachine.setCandidate(INVALID_PEER_ID);
         mTickTask = _TimeWheel.acquire(this, _TickSchedule);
-        return success();
     }
 
-    @Override
-    public X7F_RaftResponse follow(long peerId, long commit)
+    private X7F_RaftResponse follow(long peerId, long commit)
     {
         _SelfMachine.setState(FOLLOWER);
         _SelfMachine.setLeader(peerId);
@@ -343,6 +329,14 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         mTickTask = _TimeWheel.acquire(this, _TickSchedule);
         return catchUp() ? success()
                          : reject(INCORRECT_TERM.getCode());
+    }
+
+    private void vote4me()
+    {
+        _SelfMachine.setState(CANDIDATE);
+        _SelfMachine.setLeader(INVALID_PEER_ID);
+        _SelfMachine.increaseTerm();
+        mElectTask = _TimeWheel.acquire(this, _ElectSchedule);
     }
 
     private void tickCancel()
@@ -360,8 +354,7 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         if (mElectTask != null) mElectTask.cancel();
     }
 
-    @Override
-    public X7F_RaftResponse rejectAndStepDown(int code)
+    private X7F_RaftResponse rejectAndStepDown(int code)
     {
         electCancel();
         _SelfMachine.setState(FOLLOWER);
@@ -371,7 +364,6 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         return reject(code);
     }
 
-    @Override
     public X7F_RaftResponse merge(IRaftMachine update)
     {
         X7F_RaftResponse response = null;
@@ -405,22 +397,7 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         //_SelfMachine.getTerm == update.getTerm
         else switch (_SelfMachine.getState())
         {
-            case ELECTOR:
-                if (update.getState() == CANDIDATE) {
-                    //不重置elect-timer
-                    if (_SelfMachine.getCandidate() != update.getPeerId()) {
-                        return reject(ALREADY_VOTE.getCode());
-                    }
-                    else {
-                        _Logger.warning("already vote for %x", update.getPeerId());
-                        //response => null
-                    }
-                }
-                if (update.getState() == LEADER) {
-                    electCancel();
-                    response = follow(update.getPeerId(), update.getCommit());
-                }
-                break;
+
             case FOLLOWER:
                 if (update.getState() == CANDIDATE) {
                     if (_SelfMachine.getIndex() <= update.getIndex()
@@ -439,6 +416,27 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
                 }
                 else {
                     return reject(ILLEGAL_STATE.getCode());
+                }
+                break;
+            case ELECTOR:
+                if (update.getState() == CANDIDATE) {
+                    //不重置elect-timer
+                    if (_SelfMachine.getCandidate() != update.getPeerId()) {
+                        return reject(ALREADY_VOTE.getCode());
+                    }
+                    else {
+                        _Logger.warning("already vote for %x", update.getPeerId());
+                        //response => null
+                    }
+                }
+                if (update.getState() == LEADER) {
+                    electCancel();
+                    response = follow(update.getPeerId(), update.getCommit());
+                }
+                break;
+            case CANDIDATE:
+                if (update.getState() == CANDIDATE) {
+
                 }
                 break;
             case LEADER:
@@ -460,7 +458,6 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         return response;
     }
 
-    @Override
     public List<LogEntry> diff()
     {
         long start = _SelfMachine.getApplied();
@@ -481,7 +478,6 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         }
     }
 
-    @Override
     public void apply()
     {
         long end = min(_SelfMachine.getIndex(), _SelfMachine.getCommit());
@@ -547,17 +543,17 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         return false;
     }
 
-    @Override
     public boolean checkVoteState(X72_RaftVote x72)
     {
-        return x72.getPeerId() == _SelfMachine.getPeerId()
-               && x72.getTerm() == _SelfMachine.getTerm()
-               && x72.getLogIndex() == _SelfMachine.getIndex()
-               && x72.getLogTerm() == _SelfMachine.getIndexTerm()
-               && _SelfMachine.getState() == CANDIDATE;
+        boolean result = x72.getPeerId() == _SelfMachine.getPeerId()
+                         && x72.getTerm() == _SelfMachine.getTerm() + 1
+                         && x72.getLogIndex() == _SelfMachine.getIndex()
+                         && x72.getLogTerm() == _SelfMachine.getIndexTerm()
+                         && _SelfMachine.getState() == FOLLOWER;
+        vote4me();
+        return result;
     }
 
-    @Override
     public boolean checkLogAppend(X7E_RaftBroadcast x7e)
     {
         return _SelfMachine.getState() == LEADER
@@ -568,7 +564,6 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
                && _SelfMachine.getCommit() >= x7e.getCommit();
     }
 
-    @Override
     public void appendLogs(List<LogEntry> entryList)
     {
         //offer all
