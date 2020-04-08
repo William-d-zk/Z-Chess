@@ -24,73 +24,46 @@
 
 package com.tgx.chess.cluster.raft;
 
-import java.util.Set;
-
-import com.tgx.chess.king.base.util.Triple;
-
 /**
  * @author william.d.zk
- * @date 2019/12/10
+ * @date 2019/12/9
  */
-public interface IRaftMachine
+public enum RaftState
 {
-    /**
-     * @return 当前任期 自然数
-     */
-    long getTerm();
+    FOLLOWER(0),
+    ELECTOR(1),
+    CANDIDATE(2),
+    LEADER(3),
+    LEARNER(4);
 
-    /**
-     * @return 当前任期的 log-index
-     */
-    long getIndex();
+    private final int _Code;
 
-    long getIndexTerm();
+    RaftState(int code)
+    {
+        _Code = code;
+    }
 
-    /**
-     * @return 候选人 Id
-     */
-    long getCandidate();
+    public int getCode()
+    {
+        return _Code;
+    }
 
-    /**
-     * @return 主节点 Id
-     */
-    long getLeader();
-
-    /**
-     * @return 节点的全局ID
-     */
-    long getPeerId();
-
-    /**
-     * @return 节点状态
-     */
-    RaftState getState();
-
-    /**
-     * @return 已知最大的已提交日志的索引值
-     */
-    long getCommit();
-
-    /**
-     * @return 最后一条被应用到状态机的索引值
-     */
-    long getApplied();
-
-    /**
-     * @return 集群中所有节点
-     */
-    Set<Triple<Long,
-               String,
-               Integer>> getPeerSet();
-
-    /**
-     * @return 跨集群网关
-     */
-    Set<Triple<Long,
-               String,
-               Integer>> getGateSet();
-
-    void increaseTerm();
-
-    void increaseApplied();
+    public static RaftState valueOf(int code)
+    {
+        switch (code)
+        {
+            case 0:
+                return FOLLOWER;
+            case 1:
+                return ELECTOR;
+            case 2:
+                return CANDIDATE;
+            case 3:
+                return LEADER;
+            case 4:
+                return LEARNER;
+            default:
+                throw new IllegalArgumentException();
+        }
+    }
 }

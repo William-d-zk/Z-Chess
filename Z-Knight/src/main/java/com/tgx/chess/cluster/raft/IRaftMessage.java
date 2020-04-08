@@ -25,7 +25,6 @@
 package com.tgx.chess.cluster.raft;
 
 import com.tgx.chess.bishop.io.zfilter.ZContext;
-import com.tgx.chess.cluster.raft.IRaftNode.RaftState;
 import com.tgx.chess.queen.io.core.inf.IControl;
 
 /**

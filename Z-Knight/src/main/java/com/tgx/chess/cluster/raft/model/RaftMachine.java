@@ -35,7 +35,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.tgx.chess.cluster.raft.IRaftMachine;
-import com.tgx.chess.cluster.raft.IRaftNode.RaftState;
+import com.tgx.chess.cluster.raft.RaftState;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.util.Triple;
 
@@ -230,9 +230,9 @@ public class RaftMachine
     }
 
     @Override
-    public long increaseTerm()
+    public void increaseTerm()
     {
-        return ++mTerm;
+        ++mTerm;
     }
 
     @Override

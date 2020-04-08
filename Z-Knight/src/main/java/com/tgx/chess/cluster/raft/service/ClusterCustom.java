@@ -24,8 +24,8 @@
 
 package com.tgx.chess.cluster.raft.service;
 
-import static com.tgx.chess.cluster.raft.IRaftNode.RaftState.CANDIDATE;
-import static com.tgx.chess.cluster.raft.IRaftNode.RaftState.LEADER;
+import static com.tgx.chess.cluster.raft.RaftState.CANDIDATE;
+import static com.tgx.chess.cluster.raft.RaftState.LEADER;
 
 import java.util.LinkedList;
 import java.util.List;
