@@ -28,7 +28,6 @@ import java.util.Objects;
 
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
-import com.tgx.chess.queen.io.core.inf.IRouteLv4;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
 /**
@@ -39,8 +38,7 @@ public abstract class QttControl
         extends
         MqttProtocol
         implements
-        IControl<ZContext>,
-        IRouteLv4
+        IControl<ZContext>
 {
     private final int          _Command;
     private byte[]             mPayload;

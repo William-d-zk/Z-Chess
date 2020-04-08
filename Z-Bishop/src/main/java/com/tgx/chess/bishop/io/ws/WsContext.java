@@ -29,7 +29,6 @@ import java.util.Random;
 
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.queen.event.inf.ISort;
-import com.tgx.chess.queen.io.core.inf.ICommandCreator;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 
 /**
@@ -67,10 +66,9 @@ public class WsContext
     private WsHandshake     mHandshake;
 
     public WsContext(ISessionOption option,
-                     ISort<ZContext> sort,
-                     ICommandCreator<ZContext> commandCreator)
+                     ISort<ZContext> sort)
     {
-        super(option, sort, commandCreator);
+        super(option, sort);
         _MaxPayloadSize = option.getSnfInByte() - 2;
         if (sort.getType()
                 .equals(ISort.Type.CONSUMER))

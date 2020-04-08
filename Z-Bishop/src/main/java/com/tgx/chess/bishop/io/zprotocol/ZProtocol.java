@@ -26,19 +26,20 @@ package com.tgx.chess.bishop.io.zprotocol;
 import java.nio.charset.Charset;
 import java.util.Objects;
 
+import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.king.base.util.I18nUtil;
 import com.tgx.chess.king.base.util.IoUtil;
-import com.tgx.chess.queen.io.core.inf.IDecode;
+import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.IDuplicate;
-import com.tgx.chess.queen.io.core.inf.IEncode;
 import com.tgx.chess.queen.io.core.inf.IQoS;
 
 /**
  * @author William.d.zk
  */
-public class ZProtocol
+public abstract class ZProtocol
         implements
+        ICommand<ZContext>,
         IQoS,
         IDuplicate
 {
@@ -178,26 +179,44 @@ public class ZProtocol
         return lastPos + 4;
     }
 
-    public final int encode(byte[] output, int pos, int length, IEncode encoder)
+    @Override
+    public final byte[] encode()
     {
-        Objects.requireNonNull(output);
-        if (output.length < length || pos + length > output.length) {
-            throw new ArrayIndexOutOfBoundsException("data length is too long for input buf");
-        }
+        int length = dataLength();
+        if (length == 0) { throw new ArrayIndexOutOfBoundsException("data_length == 0"); }
+        byte[] output = new byte[length];
+        prefix(output, 0);
+        return output;
+    }
+
+    private int prefix(byte[] output, int pos)
+    {
         pos += IoUtil.writeByte(mHAttr, output, pos);
         pos += IoUtil.writeByte(_Command, output, pos);
         if (isGlobalMsg()) {
             pos += IoUtil.writeLong(mMsgId, output, pos);
         }
         pos += IoUtil.writeByte(mTypeByte, output, pos);
-        pos = addCrc(output, encoder.encodec(output, pos));
-        return pos;
+        return addCrc(output, encodec(output, pos));
     }
 
-    public final int decode(byte[] input, int pos, int length, IDecode decoder)
+    @Override
+    public final int encode(byte[] output, int pos, int length)
+    {
+        Objects.requireNonNull(output);
+        if (output.length < length || pos + length > output.length) {
+            throw new ArrayIndexOutOfBoundsException("data length is too long for input buf");
+        }
+        return prefix(output, pos);
+    }
+
+    @Override
+    public final int decode(byte[] input, int pos, int length)
     {
         Objects.requireNonNull(input);
-        if (input.length - length < minLength() || pos + length > input.length) {
+        //dataLength 此处表达了最短长度值
+        int len = dataLength();
+        if (len > length || (input.length < len || pos + length > input.length)) {
             throw new ArrayIndexOutOfBoundsException();
         }
         mHAttr = input[pos++];
@@ -207,7 +226,7 @@ public class ZProtocol
             pos += 8;
         }
         mTypeByte = input[pos++];
-        return checkCrc(input, decoder.decodec(input, pos));
+        return checkCrc(input, decodec(input, pos));
     }
 
     public Charset getCharset()
@@ -264,11 +283,13 @@ public class ZProtocol
         return this;
     }
 
+    @Override
     public long getMsgId()
     {
         return mMsgId;
     }
 
+    @Override
     public void setMsgId(long uid)
     {
         if (!_HasMsgId) { throw new UnsupportedOperationException(); }

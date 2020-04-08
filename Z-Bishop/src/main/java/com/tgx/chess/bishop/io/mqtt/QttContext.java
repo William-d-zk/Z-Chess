@@ -28,7 +28,6 @@ import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.ISort;
-import com.tgx.chess.queen.io.core.inf.ICommandCreator;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 
 /**
@@ -44,10 +43,9 @@ public class QttContext
                                                                         4 });
 
     public QttContext(ISessionOption option,
-                      ISort<ZContext> sort,
-                      ICommandCreator<ZContext> commandCreator)
+                      ISort<ZContext> sort)
     {
-        super(option, sort, commandCreator);
+        super(option, sort);
         transfer();
     }
 
