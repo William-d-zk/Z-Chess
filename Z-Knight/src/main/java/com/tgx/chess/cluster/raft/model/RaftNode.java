@@ -545,13 +545,16 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
 
     public boolean checkVoteState(X72_RaftVote x72)
     {
-        boolean result = x72.getPeerId() == _SelfMachine.getPeerId()
-                         && x72.getTerm() == _SelfMachine.getTerm() + 1
-                         && x72.getLogIndex() == _SelfMachine.getIndex()
-                         && x72.getLogTerm() == _SelfMachine.getIndexTerm()
-                         && _SelfMachine.getState() == FOLLOWER;
-        vote4me();
-        return result;
+        if (x72.getPeerId() == _SelfMachine.getPeerId()
+            && x72.getTerm() == _SelfMachine.getTerm() + 1
+            && x72.getLogIndex() == _SelfMachine.getIndex()
+            && x72.getLogTerm() == _SelfMachine.getIndexTerm()
+            && _SelfMachine.getState() == FOLLOWER)
+        {
+            vote4me();
+            return true;
+        }
+        return false;
     }
 
     public boolean checkLogAppend(X7E_RaftBroadcast x7e)
