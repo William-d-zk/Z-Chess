@@ -117,16 +117,17 @@ public interface IRaftNode
         {
             switch (code)
             {
+
                 case 0:
-                    return LEARNER;
-                case 1:
                     return FOLLOWER;
-                case 2:
+                case 1:
                     return ELECTOR;
-                case 3:
+                case 2:
                     return CANDIDATE;
-                case 4:
+                case 3:
                     return LEADER;
+                case 4:
+                    return LEARNER;
                 default:
                     throw new IllegalArgumentException();
             }
