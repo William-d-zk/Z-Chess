@@ -105,7 +105,7 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         _SessionManager = manager;
         _ZUID = clusterConfig.createZUID();
         _RaftDao = raftDao;
-        _ElectSchedule = new ScheduleHandler<>(_ClusterConfig.getElectInSecond(), RaftNode::startVote, this);
+        _ElectSchedule = new ScheduleHandler<>(_ClusterConfig.getElectInSecond(), RaftNode::stepDown, this);
         _HeartbeatSchedule = new ScheduleHandler<>(_ClusterConfig.getHeartbeatInSecond(),
                                                    true,
                                                    RaftNode::leaderBroadcast,
@@ -389,12 +389,15 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
                     && _SelfMachine.getCommit() <= update.getCommit())
                 {
                     response = stepUp(update.getPeerId());
+                    _Logger.info("follower -> elector candidate: %#x", _SelfMachine.getPeerId());
                 }
                 else {
+                    _Logger.info("reject and step down");
                     return rejectAndStepDown(OBSOLETE.getCode());
                 }
             }
             else if (update.getState() == LEADER) {
+                _Logger.info("follow leader %#x leader_commit: %d", update.getPeerId(), update.getCommit());
                 response = follow(update.getPeerId(), update.getCommit());
             }
             //else ignore { follower elector 都不会成为update.getState的结果，所以此处忽略}
@@ -551,18 +554,18 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
                && x72.getTerm() == _SelfMachine.getTerm()
                && x72.getLogIndex() == _SelfMachine.getIndex()
                && x72.getLogTerm() == _SelfMachine.getIndexTerm()
-               && _SelfMachine.getState() == ELECTOR;
+               && _SelfMachine.getState() == CANDIDATE;
     }
 
     @Override
     public boolean checkLogAppend(X7E_RaftBroadcast x7e)
     {
         return _SelfMachine.getState() == LEADER
-               && _SelfMachine.getTerm() == x7e.getTerm()
-               && _SelfMachine.getCommit() >= x7e.getCommit()
                && _SelfMachine.getPeerId() == x7e.getPeerId()
+               && _SelfMachine.getTerm() == x7e.getTerm()
                && _SelfMachine.getIndex() == x7e.getPreIndex()
-               && _SelfMachine.getIndexTerm() == x7e.getPreIndexTerm();
+               && _SelfMachine.getIndexTerm() == x7e.getPreIndexTerm()
+               && _SelfMachine.getCommit() >= x7e.getCommit();
     }
 
     @Override
