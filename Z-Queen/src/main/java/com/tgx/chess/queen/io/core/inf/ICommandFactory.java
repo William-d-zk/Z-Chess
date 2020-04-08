@@ -34,7 +34,7 @@ package com.tgx.chess.queen.io.core.inf;
  * @see ICommandCreator
  */
 public interface ICommandFactory<C extends IContext<C>,
-                                 T extends IRouteLv4 & IControl<C>>
+                                 T extends IControl<C>>
 {
     T create(int command);
 }

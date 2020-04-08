@@ -31,14 +31,16 @@ import java.util.Objects;
 
 import com.tgx.chess.bishop.io.Direction;
 import com.tgx.chess.queen.io.core.inf.IDuplicate;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 import com.tgx.chess.queen.io.core.inf.IQoS;
 
 /**
  * @author william.d.zk
  * @date 2019-05-25
  */
-public class MqttProtocol
+public abstract class MqttProtocol
         implements
+        IProtocol,
         IQoS,
         IDuplicate
 {

@@ -35,6 +35,7 @@ import com.tgx.chess.bishop.io.ws.filter.WsHandShakeFilter;
 import com.tgx.chess.bishop.io.zfilter.ZCommandFilter;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zfilter.ZTlsFilter;
+import com.tgx.chess.bishop.io.zprotocol.ZClusterFactory;
 import com.tgx.chess.bishop.io.zprotocol.ZServerFactory;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.operator.AioWriter;
@@ -43,7 +44,6 @@ import com.tgx.chess.queen.event.operator.ErrorOperator;
 import com.tgx.chess.queen.event.operator.PipeDecoder;
 import com.tgx.chess.queen.event.operator.PipeEncoder;
 import com.tgx.chess.queen.event.operator.TransferOperator;
-import com.tgx.chess.queen.io.core.inf.ICommandCreator;
 import com.tgx.chess.queen.io.core.inf.IFilterChain;
 import com.tgx.chess.queen.io.core.inf.IPipeDecoder;
 import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
@@ -81,13 +81,13 @@ public enum ZSort
         @Override
         public IFilterChain<ZContext> getFilterChain()
         {
-            return _WsFrameFilter;
+            return _ClusterFrameFilter;
         }
 
         @Override
-        public ZContext newContext(ISessionOption option, ICommandCreator<ZContext> commandCreator)
+        public ZContext newContext(ISessionOption option)
         {
-            return new WsContext(option, this, commandCreator);
+            return new WsContext(option, this);
         }
     },
     /**
@@ -110,13 +110,13 @@ public enum ZSort
         @Override
         public IFilterChain<ZContext> getFilterChain()
         {
-            return _WsFrameFilter;
+            return _ClusterFrameFilter;
         }
 
         @Override
-        public ZContext newContext(ISessionOption option, ICommandCreator<ZContext> commandCreator)
+        public ZContext newContext(ISessionOption option)
         {
-            return new WsContext(option, this, commandCreator);
+            return new WsContext(option, this);
         }
     },
     WS_CLUSTER_SYMMETRY
@@ -136,13 +136,13 @@ public enum ZSort
         @Override
         public IFilterChain<ZContext> getFilterChain()
         {
-            return _WsFrameFilter;
+            return _ClusterFrameFilter;
         }
 
         @Override
-        public ZContext newContext(ISessionOption option, ICommandCreator<ZContext> commandCreator)
+        public ZContext newContext(ISessionOption option)
         {
-            return new WsContext(option, this, commandCreator);
+            return new WsContext(option, this);
         }
     },
     /**
@@ -170,9 +170,9 @@ public enum ZSort
         }
 
         @Override
-        public ZContext newContext(ISessionOption option, ICommandCreator<ZContext> commandCreator)
+        public ZContext newContext(ISessionOption option)
         {
-            return new WsContext(option, this, commandCreator);
+            return new WsContext(option, this);
         }
     },
     /**
@@ -205,9 +205,9 @@ public enum ZSort
         }
 
         @Override
-        public ZContext newContext(ISessionOption option, ICommandCreator<ZContext> commandCreator)
+        public ZContext newContext(ISessionOption option)
         {
-            return new WsContext(option, this, commandCreator);
+            return new WsContext(option, this);
         }
     },
     MQ_QTT_SYMMETRY
@@ -231,9 +231,9 @@ public enum ZSort
         }
 
         @Override
-        public ZContext newContext(ISessionOption option, ICommandCreator<ZContext> commandCreator)
+        public ZContext newContext(ISessionOption option)
         {
-            return new QttContext(option, this, commandCreator);
+            return new QttContext(option, this);
         }
     },
     QTT_SERVER
@@ -257,9 +257,9 @@ public enum ZSort
         }
 
         @Override
-        public ZContext newContext(ISessionOption option, ICommandCreator<ZContext> commandCreator)
+        public ZContext newContext(ISessionOption option)
         {
-            return new QttContext(option, this, commandCreator);
+            return new QttContext(option, this);
         }
     };
 
@@ -279,13 +279,14 @@ public enum ZSort
                           {
                           }));
     }
-    final WsFrameFilter _WsFrameFilter = new WsFrameFilter();
+
+    final WsFrameFilter _ClusterFrameFilter = new WsFrameFilter();
     {
-        _WsFrameFilter.linkAfter(new ZTlsFilter());
-        _WsFrameFilter.linkFront(new WsControlFilter())
-                      .linkFront(new ZCommandFilter(new ZServerFactory()
-                      {
-                      }));
+        _ClusterFrameFilter.linkAfter(new ZTlsFilter());
+        _ClusterFrameFilter.linkFront(new WsControlFilter())
+                           .linkFront(new ZCommandFilter(new ZClusterFactory()
+                           {
+                           }));
     }
 
     private final AioWriter<ZContext>      _AioWriter     = new AioWriter<>();

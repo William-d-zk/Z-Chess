@@ -64,8 +64,8 @@ public interface IProtocol
     {
         int len = dataLength();
         if (len > length
-            || len > 0 && Objects.isNull(buf)
-            || (Objects.nonNull(buf) && (buf.length < len || pos + length > buf.length)))
+            || len > 0 && buf == null
+            || (buf != null && (buf.length < len || pos + length > buf.length)))
         {
             throw new ArrayIndexOutOfBoundsException("data length is too long for input buf");
         }
@@ -73,21 +73,20 @@ public interface IProtocol
         return pos;
     }
 
-    default int decode(byte[] data, int pos, int length)
+    default int decode(byte[] input, int pos, int length)
     {
+        Objects.requireNonNull(input);
         //dataLength 此处表达了最短长度值
         int len = dataLength();
-        if (len > length || (Objects.nonNull(data) && (data.length < len || pos + length > data.length))) {
+        if (len > length || (input.length < len || pos + length > input.length)) {
             throw new ArrayIndexOutOfBoundsException();
         }
-        return decodec(data, pos);
+        return decodec(input, pos);
     }
 
     default int decode(byte[] data)
     {
-        //dataLength 此处表达了最短长度值
-        if (Objects.nonNull(data) && data.length < dataLength()) { throw new ArrayIndexOutOfBoundsException(); }
-        return decodec(data, 0);
+        return decode(data, 0, data.length);
     }
 
     default boolean idempotent(int bitIdempotent)

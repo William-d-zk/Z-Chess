@@ -35,8 +35,6 @@ import com.tgx.chess.queen.io.core.inf.ISession;
 public class ZCommand
         extends
         ZProtocol
-        implements
-        ICommand<ZContext>
 {
 
     protected ZCommand(int command,

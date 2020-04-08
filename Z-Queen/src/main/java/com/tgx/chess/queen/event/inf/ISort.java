@@ -24,7 +24,6 @@
 
 package com.tgx.chess.queen.event.inf;
 
-import com.tgx.chess.queen.io.core.inf.ICommandCreator;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IFilterChain;
 import com.tgx.chess.queen.io.core.inf.IPipeDecoder;
@@ -82,5 +81,5 @@ public interface ISort<C extends IContext<C>>
 
     ISessionError<C> getError();
 
-    C newContext(ISessionOption option, ICommandCreator<C> commandCreator);
+    C newContext(ISessionOption option);
 }

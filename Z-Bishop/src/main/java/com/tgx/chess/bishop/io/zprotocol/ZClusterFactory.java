@@ -25,6 +25,9 @@
 package com.tgx.chess.bishop.io.zprotocol;
 
 import com.tgx.chess.bishop.io.zfilter.ZContext;
+import com.tgx.chess.bishop.io.zprotocol.raft.X72_RaftVote;
+import com.tgx.chess.bishop.io.zprotocol.raft.X7E_RaftBroadcast;
+import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
 import com.tgx.chess.queen.io.core.inf.ICommandFactory;
 
 /**
@@ -44,6 +47,16 @@ public interface ZClusterFactory
 
     default ZCommand clusterCommand(int command)
     {
-        return null;
+        switch (command)
+        {
+            case X72_RaftVote.COMMAND:
+                return new X72_RaftVote();
+            case X7E_RaftBroadcast.COMMAND:
+                return new X7E_RaftBroadcast();
+            case X7F_RaftResponse.COMMAND:
+                return new X7F_RaftResponse();
+            default:
+                return null;
+        }
     }
 }

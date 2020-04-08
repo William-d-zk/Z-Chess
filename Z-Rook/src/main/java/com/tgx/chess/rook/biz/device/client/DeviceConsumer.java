@@ -289,7 +289,7 @@ public class DeviceConsumer
             @Override
             public ZContext createContext(ISessionOption option, ISort<ZContext> sort)
             {
-                return sort.newContext(option, this);
+                return sort.newContext(option);
             }
 
             @Override

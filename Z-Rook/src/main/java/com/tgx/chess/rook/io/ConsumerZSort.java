@@ -43,7 +43,6 @@ import com.tgx.chess.queen.event.operator.ErrorOperator;
 import com.tgx.chess.queen.event.operator.PipeDecoder;
 import com.tgx.chess.queen.event.operator.PipeEncoder;
 import com.tgx.chess.queen.event.operator.TransferOperator;
-import com.tgx.chess.queen.io.core.inf.ICommandCreator;
 import com.tgx.chess.queen.io.core.inf.IFilterChain;
 import com.tgx.chess.queen.io.core.inf.IPipeDecoder;
 import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
@@ -67,9 +66,9 @@ public enum ConsumerZSort
     WS_CONSUMER
     {
         @Override
-        public ZContext newContext(ISessionOption option, ICommandCreator<ZContext> commandCreator)
+        public ZContext newContext(ISessionOption option )
         {
-            return new WsContext(option, this, commandCreator);
+            return new WsContext(option, this);
         }
 
         @Override
@@ -87,9 +86,9 @@ public enum ConsumerZSort
         }
 
         @Override
-        public ZContext newContext(ISessionOption option, ICommandCreator<ZContext> commandCreator)
+        public ZContext newContext(ISessionOption option)
         {
-            return new WsContext(option, this, commandCreator);
+            return new WsContext(option, this);
         }
 
         @Override
@@ -113,9 +112,9 @@ public enum ConsumerZSort
         }
 
         @Override
-        public ZContext newContext(ISessionOption option, ICommandCreator<ZContext> commandCreator)
+        public ZContext newContext(ISessionOption option)
         {
-            return new QttContext(option, this, commandCreator);
+            return new QttContext(option, this);
         }
 
     };

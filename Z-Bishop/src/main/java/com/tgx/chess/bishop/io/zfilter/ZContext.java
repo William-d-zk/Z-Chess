@@ -27,7 +27,6 @@ import com.tgx.chess.king.base.crypt.util.Rc4;
 import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.io.core.async.AioContext;
-import com.tgx.chess.queen.io.core.inf.ICommandCreator;
 import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
 import com.tgx.chess.queen.io.core.inf.IFrame;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
@@ -52,10 +51,9 @@ public class ZContext
     private IFrame          mCarrier;
 
     public ZContext(ISessionOption option,
-                    ISort<ZContext> sort,
-                    ICommandCreator<ZContext> commandCreator)
+                    ISort<ZContext> sort)
     {
-        super(option, sort, commandCreator);
+        super(option, sort);
     }
 
     @Override

@@ -224,5 +224,4 @@ public interface IContext<C extends IContext<C>>
      */
     ISort<C> getSort();
 
-    ICommandCreator<C> getCommandCreator();
 }

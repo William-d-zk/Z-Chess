@@ -32,8 +32,7 @@ public interface ICommand<C extends IContext<C>>
         extends
         IControl<C>,
         IChannel,
-        IStreamProtocol<C>,
-        IRouteLv4
+        IStreamProtocol<C>
 {
     @Override
     default int superSerial()
