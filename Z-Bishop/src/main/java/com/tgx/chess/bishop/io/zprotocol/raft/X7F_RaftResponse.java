@@ -36,7 +36,7 @@ public class X7F_RaftResponse
 {
     public final static int COMMAND = 0x7F;
 
-    protected X7F_RaftResponse()
+    public X7F_RaftResponse()
     {
         super(COMMAND, true);
     }

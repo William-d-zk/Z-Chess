@@ -31,6 +31,9 @@ import com.tgx.chess.bishop.io.zprotocol.device.X24_UpdateToken;
 import com.tgx.chess.bishop.io.zprotocol.device.X31_ConfirmMsg;
 import com.tgx.chess.bishop.io.zprotocol.device.X32_MsgStatus;
 import com.tgx.chess.bishop.io.zprotocol.device.X50_DeviceMsg;
+import com.tgx.chess.bishop.io.zprotocol.raft.X72_RaftVote;
+import com.tgx.chess.bishop.io.zprotocol.raft.X7E_RaftBroadcast;
+import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
 import com.tgx.chess.queen.io.core.inf.ICommandFactory;
 
 /**
@@ -65,6 +68,12 @@ public interface ZServerFactory
                 return new X32_MsgStatus();
             case X50_DeviceMsg.COMMAND:
                 return new X50_DeviceMsg();
+            case X72_RaftVote.COMMAND:
+                return new X72_RaftVote();
+            case X7E_RaftBroadcast.COMMAND:
+                return new X7E_RaftBroadcast();
+            case X7F_RaftResponse.COMMAND:
+                return new X7F_RaftResponse();
             default:
                 return null;
         }
