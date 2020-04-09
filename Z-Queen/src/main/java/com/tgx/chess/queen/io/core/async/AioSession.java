@@ -23,6 +23,7 @@
  */
 package com.tgx.chess.queen.io.core.async;
 
+import static com.tgx.chess.king.base.util.IoUtil.longArrayToHex;
 import static com.tgx.chess.queen.io.core.inf.IContext.SESSION_FLUSHED;
 import static com.tgx.chess.queen.io.core.inf.IContext.SESSION_IDLE;
 import static com.tgx.chess.queen.io.core.inf.IContext.SESSION_PENDING;
@@ -220,7 +221,9 @@ public class AioSession<C extends IContext<C>>
     public long prefixLoad(long prefix)
     {
         int pos = Arrays.binarySearch(mPrefix, prefix);
-        if (pos < 0) { throw new IllegalArgumentException(String.format("prefix %d miss", prefix)); }
+        if (pos < 0) {
+            throw new IllegalArgumentException(String.format("prefix %#x miss, %s", prefix, longArrayToHex(mPrefix)));
+        }
         return mPrefix[pos] & 0xFFFFFFFFL;
     }
 
@@ -228,7 +231,9 @@ public class AioSession<C extends IContext<C>>
     public void prefixHit(long prefix)
     {
         int pos = Arrays.binarySearch(mPrefix, prefix);
-        if (pos < 0) { throw new IllegalArgumentException(String.format("prefix %d miss", prefix)); }
+        if (pos < 0) {
+            throw new IllegalArgumentException(String.format("prefix %#x miss, %s", prefix, longArrayToHex(mPrefix)));
+        }
         if (mPrefix[pos] < 0xFFFFFFFFL) {
             mPrefix[pos] += 1;
         }
