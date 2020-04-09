@@ -24,17 +24,8 @@
 
 package com.tgx.chess.queen.io.core.manager;
 
-import static com.tgx.chess.queen.event.inf.IOperator.Type.CONSENSUS;
-
-import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
-
-import com.lmax.disruptor.RingBuffer;
-import com.tgx.chess.king.base.inf.ITriple;
-import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.config.IBizIoConfig;
 import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.async.AioSessionManager;
 import com.tgx.chess.queen.io.core.executor.ServerCore;
 import com.tgx.chess.queen.io.core.inf.IActivity;
@@ -78,28 +69,4 @@ public abstract class QueenManager<C extends IContext<C>>
         return _ServerCore;
     }
 
-    public <T> void publishConsensus(T content,
-                                     IOperator<T,
-                                               Void,
-                                               List<ITriple>> operator)
-    {
-        final RingBuffer<QEvent> _LocalSendEvent = _ServerCore.getConsensusEvent();
-        final ReentrantLock _LocalLock = _ServerCore.getConsensusLock();
-        if (_LocalLock.tryLock()) {
-            try {
-                long sequence = _LocalSendEvent.next();
-                try {
-                    QEvent event = _LocalSendEvent.get(sequence);
-                    event.produce(CONSENSUS, new Pair<>(content, null), operator);
-
-                }
-                finally {
-                    _LocalSendEvent.publish(sequence);
-                }
-            }
-            finally {
-                _LocalLock.unlock();
-            }
-        }
-    }
 }

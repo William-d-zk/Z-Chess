@@ -36,10 +36,10 @@ import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.io.core.inf.IActivity;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
-import com.tgx.chess.queen.io.core.inf.ISessionManager;
+import com.tgx.chess.queen.io.core.inf.IConsensus;
 
 @Component
-public class ClusterRepository<T extends ISessionManager<ZContext> & IActivity<ZContext> & IClusterPeer>
+public class ClusterRepository<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         implements
         IRepository<RaftNode<T>>
 {
