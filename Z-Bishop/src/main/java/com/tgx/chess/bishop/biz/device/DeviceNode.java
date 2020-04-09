@@ -24,9 +24,12 @@
 
 package com.tgx.chess.bishop.biz.device;
 
+import static com.tgx.chess.queen.event.inf.IOperator.Type.CONSENSUS;
+
 import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import com.lmax.disruptor.RingBuffer;
@@ -39,6 +42,7 @@ import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.schedule.TimeWheel;
+import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.config.IBizIoConfig;
 import com.tgx.chess.queen.config.IServerConfig;
@@ -59,6 +63,7 @@ import com.tgx.chess.queen.io.core.inf.IAioConnector;
 import com.tgx.chess.queen.io.core.inf.IAioServer;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.IConnectActivity;
+import com.tgx.chess.queen.io.core.inf.IConsensus;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
@@ -74,7 +79,8 @@ public class DeviceNode
         QueenManager<ZContext>
         implements
         ISessionDismiss<ZContext>,
-        IClusterPeer
+        IClusterPeer,
+        IConsensus
 {
 
     private final List<IAioServer<ZContext>> _AioServers;
@@ -315,5 +321,28 @@ public class DeviceNode
     public void addGate(IPair remote) throws IOException
     {
         _GateClient.connect(buildConnector(remote, ZSort.WS_CLUSTER_SYMMETRY, _GateClient));
+    }
+
+    @Override
+    public <T extends IStorage> void publishConsensus(T content)
+    {
+        final RingBuffer<QEvent> _LocalSendEvent = _ServerCore.getConsensusEvent();
+        final ReentrantLock _LocalLock = _ServerCore.getConsensusLock();
+        if (_LocalLock.tryLock()) {
+            try {
+                long sequence = _LocalSendEvent.next();
+                try {
+                    QEvent event = _LocalSendEvent.get(sequence);
+                    event.produce(CONSENSUS, new Pair<>(content, null), null);
+
+                }
+                finally {
+                    _LocalSendEvent.publish(sequence);
+                }
+            }
+            finally {
+                _LocalLock.unlock();
+            }
+        }
     }
 }

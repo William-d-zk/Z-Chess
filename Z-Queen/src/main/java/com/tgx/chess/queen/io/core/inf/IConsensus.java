@@ -22,27 +22,15 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.queen.event.operator;
+package com.tgx.chess.queen.io.core.inf;
 
-import com.tgx.chess.king.base.inf.ITriple;
-import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.io.core.inf.IContext;
-import com.tgx.chess.queen.io.core.inf.IControl;
-import com.tgx.chess.queen.io.core.manager.QueenManager;
+import com.tgx.chess.queen.db.inf.IStorage;
 
 /**
  * @author william.d.zk
  * @date 2020/4/9
  */
-public class PojoOperator<C extends IContext<C>>
-        implements
-        IOperator<QueenManager<C>,
-                  IControl<C>,
-                  ITriple>
+public interface IConsensus
 {
-    @Override
-    public ITriple handle(QueenManager<C> cQueenManager, IControl<C> ciControl)
-    {
-        return null;
-    }
+    <T extends IStorage> void publishConsensus(T content);
 }

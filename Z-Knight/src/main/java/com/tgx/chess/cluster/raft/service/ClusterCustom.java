@@ -51,13 +51,13 @@ import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.event.inf.ICustomLogic;
 import com.tgx.chess.queen.io.core.inf.IActivity;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
+import com.tgx.chess.queen.io.core.inf.IConsensus;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.inf.ISessionManager;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
 
 @Component
-public class ClusterCustom<T extends ISessionManager<ZContext> & IActivity<ZContext> & IClusterPeer>
+public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         implements
         ICustomLogic<ZContext,
                      RaftMachine>

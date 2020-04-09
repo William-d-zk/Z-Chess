@@ -36,7 +36,6 @@ import static com.tgx.chess.cluster.raft.model.RaftCode.LOWER_TERM;
 import static com.tgx.chess.cluster.raft.model.RaftCode.OBSOLETE;
 import static com.tgx.chess.cluster.raft.model.RaftCode.SPLIT_CLUSTER;
 import static com.tgx.chess.cluster.raft.model.RaftCode.SUCCESS;
-import static com.tgx.chess.queen.event.inf.IOperator.Type.CONSENSUS;
 import static java.lang.Math.min;
 
 import java.io.IOException;
@@ -70,19 +69,18 @@ import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.io.core.inf.IActivity;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
-import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.inf.ISessionManager;
+import com.tgx.chess.queen.io.core.inf.IConsensus;
 
 /**
  * @author william.d.zk
  * @date 2020/1/4
  */
-public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> & IClusterPeer>
+public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
 {
     private final Logger                       _Logger        = Logger.getLogger(getClass().getSimpleName());
     private final ZUID                         _ZUID;
     private final IClusterConfig               _ClusterConfig;
-    private final T                            _SessionManager;
+    private final T                            _ClusterPeer;
     private final RaftDao                      _RaftDao;
     private final TimeWheel                    _TimeWheel;
     private final ScheduleHandler<RaftNode<T>> _ElectSchedule, _HeartbeatSchedule, _TickSchedule;
@@ -99,7 +97,7 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
     {
         _TimeWheel = timeWheel;
         _ClusterConfig = clusterConfig;
-        _SessionManager = manager;
+        _ClusterPeer = manager;
         _ZUID = clusterConfig.createZUID();
         _RaftDao = raftDao;
         _ElectSchedule = new ScheduleHandler<>(_ClusterConfig.getElectInSecond(), RaftNode::stepDown, this);
@@ -179,7 +177,7 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
                 }
                 //仅连接NodeId<自身的节点
                 if (peerId < _SelfMachine.getPeerId()) {
-                    _SessionManager.addPeer(new Pair<>(remote.getSecond(), remote.getThird()));
+                    _ClusterPeer.addPeer(new Pair<>(remote.getSecond(), remote.getThird()));
                 }
             }
         }
@@ -187,7 +185,7 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
             for (ITriple remote : _SelfMachine.getGateSet()) {
                 long gateId = remote.getFirst();
                 if (gateId != _ZUID.getClusterId()) {
-                    _SessionManager.addGate(new Pair<>(remote.getSecond(), remote.getThird()));
+                    _ClusterPeer.addGate(new Pair<>(remote.getSecond(), remote.getThird()));
                 }
             }
         }
@@ -249,19 +247,12 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         catch (InterruptedException e) {
             //ignore
         }
-        X72_RaftVote x72 = new X72_RaftVote(_ZUID.getId());
-        x72.setTerm(_SelfMachine.getTerm() + 1);
-        x72.setPeerId(_SelfMachine.getPeerId());
-        x72.setLogIndex(_SelfMachine.getIndex());
-        x72.setLogTerm(_SelfMachine.getIndexTerm());
-        _RaftGraph.getNodeMap()
-                  .forEach((k, v) ->
-                  {
-                      if (k != _SelfMachine.getPeerId()) {
-                          ISession<ZContext> session = _SessionManager.findSessionByPrefix(k);
-                          _SessionManager.send(session, CONSENSUS, x72);
-                      }
-                  });
+
+        RaftMachine update = new RaftMachine(_SelfMachine.getPeerId());
+        update.setTerm(_SelfMachine.getTerm() + 1);
+        update.setIndex(_SelfMachine.getIndex());
+        update.setIndexTerm(_SelfMachine.getIndexTerm());
+        _ClusterPeer.publishConsensus(update);
         _Logger.info("start vote self {%s}", _SelfMachine.toString());
     }
 
@@ -576,12 +567,12 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
                                  x7e.setPreIndexTerm(_SelfMachine.getIndexTerm());
                                  if (entry.getValue()
                                           .getIndex() < _SelfMachine.getIndex())
-                                 {
+                             {
                                      List<LogEntry> entryList = new LinkedList<>();
                                      for (long i = entry.getValue()
                                                         .getIndex()
                                                    + 1, l = _SelfMachine.getIndex(); i <= l; i++)
-                                     {
+                             {
                                          entryList.add(_RaftDao.getEntry(i));
                                      }
                                      x7e.setPayload(JsonUtil.writeValueAsBytes(entryList));
