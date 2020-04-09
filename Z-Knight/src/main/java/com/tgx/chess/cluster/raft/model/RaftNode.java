@@ -300,6 +300,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         _SelfMachine.setLeader(INVALID_PEER_ID);
         _SelfMachine.setCandidate(INVALID_PEER_ID);
         mTickTask = _TimeWheel.acquire(this, _TickSchedule);
+        _Logger.info("step down => follower");
     }
 
     private X7F_RaftResponse follow(long peerId, long commit)
@@ -534,6 +535,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
             && update.getState() == CANDIDATE)
         {
             vote4me();
+            _Logger.info("follower => candidate");
             return _RaftGraph.getNodeMap()
                              .keySet()
                              .stream()
@@ -550,6 +552,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
                              })
                              .collect(Collectors.toList());
         }
+        _Logger.warning("machine state checked failed { %s }", _SelfMachine);
         return null;
     }
 
