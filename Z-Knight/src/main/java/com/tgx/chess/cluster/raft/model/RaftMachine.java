@@ -341,28 +341,26 @@ public class RaftMachine
     @Override
     public String toString()
     {
-        return "RaftMachine{"
-               + "_PeerId="
-               + _PeerId
-               + ", mTerm="
-               + mTerm
-               + ", mIndex="
-               + mIndex
-               + ", mIndexTerm="
-               + mIndexTerm
-               + ", mCandidate="
-               + mCandidate
-               + ", mLeader="
-               + mLeader
-               + ", mCommit="
-               + mCommit
-               + ", mApplied="
-               + mApplied
-               + ", mState="
-               + RaftState.valueOf(mState)
-               + ", mPeerSet="
-               + mPeerSet
-               + '}';
+        return String.format("{\\n peerId:%#x \\n"
+                             + "state:%s\\n"
+                             + " term:%d \\n "
+                             + "index:%d\\n "
+                             + "index_term:%d\\n"
+                             + "commit:%d\\n"
+                             + "applied:%d\\n"
+                             + "leader:%#x\\n"
+                             + "candidate:%#x\\n"
+                             + "peers:%s}",
+                             _PeerId,
+                             getState(),
+                             mTerm,
+                             mIndex,
+                             mIndexTerm,
+                             mCommit,
+                             mApplied,
+                             mLeader,
+                             mCandidate,
+                             mPeerSet);
     }
 
 }

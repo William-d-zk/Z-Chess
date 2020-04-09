@@ -389,20 +389,18 @@ public interface IoUtil
 
     static String longToMacStr(long mac)
     {
-        StringBuilder sb = new StringBuilder();
-        sb.append(Long.toHexString((mac >> 40) & 0xFF))
-          .append(":");
-        sb.append(Long.toHexString((mac >> 32) & 0xFF))
-          .append(":");
-        sb.append(Long.toHexString((mac >> 24) & 0xFF))
-          .append(":");
-        sb.append(Long.toHexString((mac >> 16) & 0xFF))
-          .append(":");
-        sb.append(Long.toHexString((mac >> 8) & 0xFF))
-          .append(":");
-        sb.append(Long.toHexString(mac & 0xFF))
-          .append(":");
-        return sb.toString();
+        return Long.toHexString((mac >> 40) & 0xFF)
+               + ":"
+               + Long.toHexString((mac >> 32) & 0xFF)
+               + ":"
+               + Long.toHexString((mac >> 24) & 0xFF)
+               + ":"
+               + Long.toHexString((mac >> 16) & 0xFF)
+               + ":"
+               + Long.toHexString((mac >> 8) & 0xFF)
+               + ":"
+               + Long.toHexString(mac & 0xFF)
+               + ":";
     }
 
     static int writeIp(String ipAddr)
@@ -578,8 +576,8 @@ public interface IoUtil
     static int writeShortArray(short[] v, byte[] b, int off)
     {
         if (v == null) return 0;
-        for (int i = 0; i < v.length; i++)
-            off += writeShort(v[i] & 0xFFFF, b, off);
+        for (short value : v)
+            off += writeShort(value & 0xFFFF, b, off);
         return v.length << 1;
     }
 
@@ -832,5 +830,15 @@ public interface IoUtil
             if (!Character.isWhitespace(cs.charAt(i))) { return false; }
         }
         return true;
+    }
+
+    static String longArrayToHex(long[] l)
+    {
+        StringBuilder sb = new StringBuilder("[");
+        if (l != null) for (long value : l) {
+            sb.append(String.format("%#x", value));
+        }
+        sb.append("]");
+        return sb.toString();
     }
 }
