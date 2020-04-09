@@ -151,7 +151,7 @@ public class WriteDispatcher<C extends IContext<C>>
                     }
                     else tryPublish(dispatchEncoder(session.getHashKey()),
                                     WRITE,
-                                    new Pair<>(content, session),
+                                    new Pair<>(command, session),
                                     content.getThird());
                 }
             default:

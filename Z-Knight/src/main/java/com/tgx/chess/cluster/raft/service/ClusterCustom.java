@@ -28,6 +28,7 @@ import static com.tgx.chess.cluster.raft.RaftState.CANDIDATE;
 import static com.tgx.chess.cluster.raft.RaftState.LEADER;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -157,13 +158,20 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
                                   .map(x7E ->
                                   {
                                       ISession<ZContext> session = manager.findSessionByPrefix(x7E.getFollower());
-                                      x7E.setSession(session);
-                                      return new Triple<>(x7E,
-                                                          session,
-                                                          session.getContext()
-                                                                 .getSort()
-                                                                 .getEncoder());
+                                      if (session == null) {
+                                          _Logger.warning("not found peerId:%#d session", x7E.getFollower());
+                                          return null;
+                                      }
+                                      else {
+                                          x7E.setSession(session);
+                                          return new Triple<>(x7E,
+                                                              session,
+                                                              session.getContext()
+                                                                     .getSort()
+                                                                     .getEncoder());
+                                      }
                                   })
+                                  .filter(Objects::nonNull)
                                   .collect(Collectors.toList());
                 }
                 break;
@@ -174,13 +182,20 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
                                   .map(x72 ->
                                   {
                                       ISession<ZContext> session = manager.findSessionByPrefix(x72.getElector());
-                                      x72.setSession(session);
-                                      return new Triple<>(x72,
-                                                          session,
-                                                          session.getContext()
-                                                                 .getSort()
-                                                                 .getEncoder());
+                                      if (session == null) {
+                                          _Logger.warning("not found peerId:%#x session", x72.getElector());
+                                          return null;
+                                      }
+                                      else {
+                                          x72.setSession(session);
+                                          return new Triple<>(x72,
+                                                              session,
+                                                              session.getContext()
+                                                                     .getSort()
+                                                                     .getEncoder());
+                                      }
                                   })
+                                  .filter(Objects::nonNull)
                                   .collect(Collectors.toList());
                 }
                 break;
