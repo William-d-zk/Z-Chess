@@ -52,6 +52,12 @@ public class X7F_RaftResponse
     private long mCatchUp;
 
     @Override
+    public int dataLength()
+    {
+        return super.dataLength() + 25;
+    }
+
+    @Override
     public int decodec(byte[] data, int pos)
     {
         mPeerId = IoUtil.readLong(data, pos);
