@@ -120,27 +120,45 @@ public class RaftMachine
     }
 
     @Override
+    @JsonIgnore
     public long getPrimaryKey()
     {
         return _PeerId;
     }
 
     @Override
+    @JsonIgnore
     public void setPrimaryKey(long key)
     {
         throw new UnsupportedOperationException();
     }
 
     @Override
+    @JsonIgnore
     public void setOperation(Operation op)
     {
         mOperation = op;
     }
 
     @Override
+    @JsonIgnore
+    public Operation getOperation()
+    {
+        return mOperation;
+    }
+
+    @Override
+    @JsonIgnore
     public void setStrategy(Strategy strategy)
     {
         mStrategy = strategy;
+    }
+
+    @Override
+    @JsonIgnore
+    public Strategy getStrategy()
+    {
+        return mStrategy;
     }
 
     @JsonCreator

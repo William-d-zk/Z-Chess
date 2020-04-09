@@ -58,11 +58,12 @@ public class X72_RaftVote
     private long mTerm;
     private long mLogIndex;
     private long mLogTerm;
+    private long mElector;
 
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 8 * 4;
+        return super.dataLength() + 8 * 5;
     }
 
     @Override
@@ -76,6 +77,8 @@ public class X72_RaftVote
         pos += 8;
         mLogTerm = IoUtil.readLong(data, pos);
         pos += 8;
+        mElector = IoUtil.readLong(data, pos);
+        pos += 8;
         return pos;
     }
 
@@ -86,6 +89,7 @@ public class X72_RaftVote
         pos += IoUtil.writeLong(mTerm, data, pos);
         pos += IoUtil.writeLong(mLogIndex, data, pos);
         pos += IoUtil.writeLong(mLogTerm, data, pos);
+        pos += IoUtil.writeLong(mElector, data, pos);
         return pos;
     }
 
@@ -127,5 +131,15 @@ public class X72_RaftVote
     public void setLogTerm(long logTerm)
     {
         mLogTerm = logTerm;
+    }
+
+    public long getElector()
+    {
+        return mElector;
+    }
+
+    public void setElector(long elector)
+    {
+        mElector = elector;
     }
 }

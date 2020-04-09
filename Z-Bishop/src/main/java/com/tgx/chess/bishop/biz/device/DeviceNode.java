@@ -334,7 +334,6 @@ public class DeviceNode
                 try {
                     QEvent event = _LocalSendEvent.get(sequence);
                     event.produce(CONSENSUS, new Pair<>(content, null), null);
-
                 }
                 finally {
                     _LocalSendEvent.publish(sequence);
