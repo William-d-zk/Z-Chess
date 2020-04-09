@@ -229,12 +229,14 @@ public abstract class AioSessionManager<C extends IContext<C>>
     public ISession<C> findSessionByPrefix(long prefix)
     {
         Set<ISession<C>> sessions = _Prefix2SessionMaps[getSlot(prefix)].get(prefix);
-        Optional<ISession<C>> optional = sessions.stream()
-                                                 .min(Comparator.comparing(session -> session.prefixLoad(prefix)));
-        if (optional.isPresent()) {
-            ISession<C> session = optional.get();
-            session.prefixHit(prefix);
-            return session;
+        if (sessions != null) {
+            Optional<ISession<C>> optional = sessions.stream()
+                                                     .min(Comparator.comparing(session -> session.prefixLoad(prefix)));
+            if (optional.isPresent()) {
+                ISession<C> session = optional.get();
+                session.prefixHit(prefix);
+                return session;
+            }
         }
         return null;
     }

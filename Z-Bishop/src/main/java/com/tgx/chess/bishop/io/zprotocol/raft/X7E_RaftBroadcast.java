@@ -52,6 +52,7 @@ public class X7E_RaftBroadcast
     private long mCommit;
     private long mPreIndex;
     private long mPreIndexTerm;
+    private long mFollower;
 
     @Override
     public int getPriority()
@@ -78,6 +79,8 @@ public class X7E_RaftBroadcast
         pos += 8;
         mPreIndexTerm = IoUtil.readLong(data, pos);
         pos += 8;
+        mFollower = IoUtil.readLong(data, pos);
+        pos += 8;
         int pLength = data.length - pos;
         if (pLength > 0) {
             byte[] m = new byte[pLength];
@@ -95,6 +98,7 @@ public class X7E_RaftBroadcast
         pos += IoUtil.writeLong(mCommit, data, pos);
         pos += IoUtil.writeLong(mPreIndex, data, pos);
         pos += IoUtil.writeLong(mPreIndexTerm, data, pos);
+        pos += IoUtil.writeLong(mFollower, data, pos);
         pos += IoUtil.write(getPayload(), data, pos);
         return pos;
     }
@@ -147,5 +151,15 @@ public class X7E_RaftBroadcast
     public void setPreIndexTerm(long preIndexTerm)
     {
         mPreIndexTerm = preIndexTerm;
+    }
+
+    public void setFollower(long follower)
+    {
+        mFollower = follower;
+    }
+
+    public long getFollower()
+    {
+        return mFollower;
     }
 }

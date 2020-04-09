@@ -36,6 +36,8 @@ import static com.tgx.chess.cluster.raft.model.RaftCode.LOWER_TERM;
 import static com.tgx.chess.cluster.raft.model.RaftCode.OBSOLETE;
 import static com.tgx.chess.cluster.raft.model.RaftCode.SPLIT_CLUSTER;
 import static com.tgx.chess.cluster.raft.model.RaftCode.SUCCESS;
+import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_APPEND;
+import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_INSERT;
 import static java.lang.Math.min;
 
 import java.io.IOException;
@@ -116,7 +118,13 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
 
     private void leaderBroadcast()
     {
-
+        RaftMachine update = new RaftMachine(_SelfMachine.getPeerId());
+        update.setOperation(OP_APPEND);
+        update.setIndex(_SelfMachine.getIndex());
+        update.setIndexTerm(_SelfMachine.getIndexTerm());
+        update.setCommit(_SelfMachine.getCommit());
+        _ClusterPeer.publishConsensus(update);
+        _Logger.info("leader broadcast {%s}", _SelfMachine.toString());
     }
 
     public void init() throws IOException
@@ -247,11 +255,12 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         catch (InterruptedException e) {
             //ignore
         }
-
         RaftMachine update = new RaftMachine(_SelfMachine.getPeerId());
         update.setTerm(_SelfMachine.getTerm() + 1);
         update.setIndex(_SelfMachine.getIndex());
         update.setIndexTerm(_SelfMachine.getIndexTerm());
+        update.setState(CANDIDATE);
+        update.setOperation(OP_INSERT);
         _ClusterPeer.publishConsensus(update);
         _Logger.info("start vote self {%s}", _SelfMachine.toString());
     }
@@ -370,7 +379,6 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         //_SelfMachine.getTerm == update.getTerm
         else switch (_SelfMachine.getState())
         {
-
             case FOLLOWER:
                 if (update.getState() == CANDIDATE) {
                     if (_SelfMachine.getIndex() <= update.getIndex()
@@ -527,16 +535,17 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         {
             vote4me();
             return _RaftGraph.getNodeMap()
-                             .entrySet()
+                             .keySet()
                              .stream()
-                             .filter(entry -> entry.getKey() != _SelfMachine.getPeerId())
-                             .map(entry ->
+                             .filter(peerId -> peerId != _SelfMachine.getPeerId())
+                             .map(peerId ->
                              {
                                  X72_RaftVote x72 = new X72_RaftVote(_ZUID.getId());
                                  x72.setTerm(update.getTerm());
                                  x72.setPeerId(update.getPeerId());
                                  x72.setLogIndex(update.getIndex());
                                  x72.setLogTerm(update.getIndexTerm());
+                                 x72.setElector(peerId);
                                  return x72;
                              })
                              .collect(Collectors.toList());
@@ -565,18 +574,19 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
                                  x7e.setCommit(_SelfMachine.getCommit());
                                  x7e.setPreIndex(_SelfMachine.getIndex());
                                  x7e.setPreIndexTerm(_SelfMachine.getIndexTerm());
+                                 x7e.setFollower(entry.getKey());
                                  if (entry.getValue()
-                                          .getIndex() < _SelfMachine.getIndex())
-                             {
-                                     List<LogEntry> entryList = new LinkedList<>();
-                                     for (long i = entry.getValue()
-                                                        .getIndex()
-                                                   + 1, l = _SelfMachine.getIndex(); i <= l; i++)
-                             {
-                                         entryList.add(_RaftDao.getEntry(i));
-                                     }
-                                     x7e.setPayload(JsonUtil.writeValueAsBytes(entryList));
-                                 }
+                                          .getIndex() == _SelfMachine.getIndex()) return x7e;
+                                 List<LogEntry> entryList = new LinkedList<>();
+                                 RaftMachine follower = entry.getValue();
+                                 LogEntry logEntry = _RaftDao.getEntry(follower.getIndex() + 1);
+                                 if (logEntry == null) return x7e;//leader 也没有这么久远的数据需要等install snapshot之后才能恢复正常同步
+                                 x7e.setPreIndex(logEntry.getIndex());
+                                 x7e.setPreIndexTerm(logEntry.getTerm());
+                                 entryList.add(logEntry);
+                                 for (long i = logEntry.getIndex() + 1, l = _SelfMachine.getIndex(); i <= l; i++)
+                                     entryList.add(_RaftDao.getEntry(i));
+                                 x7e.setPayload(JsonUtil.writeValueAsBytes(entryList));
                                  return x7e;
                              })
                              .collect(Collectors.toList());

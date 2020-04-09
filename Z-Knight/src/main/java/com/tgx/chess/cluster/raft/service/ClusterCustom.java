@@ -156,7 +156,7 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
                     return x7EList.stream()
                                   .map(x7E ->
                                   {
-                                      ISession<ZContext> session = manager.findSessionByPrefix(x7E.getPeerId());
+                                      ISession<ZContext> session = manager.findSessionByPrefix(x7E.getFollower());
                                       x7E.setSession(session);
                                       return new Triple<>(x7E,
                                                           session,
@@ -173,7 +173,7 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
                     return x72List.stream()
                                   .map(x72 ->
                                   {
-                                      ISession<ZContext> session = manager.findSessionByPrefix(x72.getPeerId());
+                                      ISession<ZContext> session = manager.findSessionByPrefix(x72.getElector());
                                       x72.setSession(session);
                                       return new Triple<>(x72,
                                                           session,
