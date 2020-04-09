@@ -38,7 +38,6 @@ import java.nio.channels.NotYetConnectedException;
 import java.nio.channels.ReadPendingException;
 import java.nio.channels.ShutdownChannelGroupException;
 import java.nio.channels.WritePendingException;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Objects;
 import java.util.concurrent.RejectedExecutionException;
@@ -214,13 +213,13 @@ public class AioSession<C extends IContext<C>>
     public final void bindPrefix(long prefix)
     {
         mPrefix = mPrefix == null ? new long[] { prefix }
-                                  : ArrayUtil.setSortAdd(prefix, mPrefix);
+                                  : ArrayUtil.setSortAdd(prefix, mPrefix, 0xFFFFFFFF00000000L);
     }
 
     @Override
     public long prefixLoad(long prefix)
     {
-        int pos = Arrays.binarySearch(mPrefix, prefix);
+        int pos = ArrayUtil.binarySearch0(mPrefix, prefix, 0xFFFFFFFF00000000L);
         if (pos < 0) {
             throw new IllegalArgumentException(String.format("prefix %#x miss, %s", prefix, longArrayToHex(mPrefix)));
         }
@@ -230,7 +229,7 @@ public class AioSession<C extends IContext<C>>
     @Override
     public void prefixHit(long prefix)
     {
-        int pos = Arrays.binarySearch(mPrefix, prefix);
+        int pos = ArrayUtil.binarySearch0(mPrefix, prefix, 0xFFFFFFFF00000000L);
         if (pos < 0) {
             throw new IllegalArgumentException(String.format("prefix %#x miss, %s", prefix, longArrayToHex(mPrefix)));
         }

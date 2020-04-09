@@ -59,17 +59,48 @@ public interface ArrayUtil
         int pos = Arrays.binarySearch(a, _l);
         if (pos >= 0) return a;
         else {
-            pos = -1 - pos;
-            long[] t = new long[a.length + 1];
-            t[pos] = _l;
-            if (pos > 0 && pos < a.length) {
-                arraycopy(a, 0, t, 0, pos);
-                arraycopy(a, pos, t, pos + 1, a.length - pos);
-            }
-            else if (pos == 0) arraycopy(a, 0, t, 1, a.length);
-            else arraycopy(a, 0, t, 0, a.length);
-            return t;
+            return setAdd(_l, a, pos);
         }
+    }
+
+    static long[] setSortAdd(long _l, long[] a, long prefix)
+    {
+        if (a == null) throw new NullPointerException();
+        int pos = binarySearch0(a, _l, prefix);
+        if (pos >= 0) return a;
+        else {
+            return setAdd(_l, a, pos);
+        }
+    }
+
+    static long[] setAdd(long _l, long[] a, int pos)
+    {
+        pos = -1 - pos;
+        long[] t = new long[a.length + 1];
+        t[pos] = _l;
+        if (pos > 0 && pos < a.length) {
+            arraycopy(a, 0, t, 0, pos);
+            arraycopy(a, pos, t, pos + 1, a.length - pos);
+        }
+        else if (pos == 0) arraycopy(a, 0, t, 1, a.length);
+        else arraycopy(a, 0, t, 0, a.length);
+        return t;
+    }
+
+    static int binarySearch0(long[] a, long key, long prefix)
+    {
+        int low = 0;
+        int high = a.length - 1;
+
+        while (low <= high) {
+            int mid = (low + high) >>> 1;
+            long midVal = a[mid] & prefix;
+
+            if (midVal < key) low = mid + 1;
+            else if (midVal > key) high = mid - 1;
+            else return mid; // key found
+        }
+        return -(low + 1);  // key not found.
     }
 
     static long[] setNoZeroFiFoRm(long _l, final long[] a)
