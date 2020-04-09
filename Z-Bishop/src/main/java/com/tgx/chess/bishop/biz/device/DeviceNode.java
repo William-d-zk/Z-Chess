@@ -239,9 +239,9 @@ public class DeviceNode
 
     public void start(ILogicHandler<ZContext> logicHandler,
                       ICustomLogic<ZContext,
-                                   IStorage> linkCustom,
+                                   ? extends IStorage> linkCustom,
                       ICustomLogic<ZContext,
-                                   IStorage> clusterCustom) throws IOException
+                                   ? extends IStorage> clusterCustom) throws IOException
     {
         _ServerCore.build(this, new EncryptHandler(), logicHandler, linkCustom, clusterCustom);
         for (IAioServer<ZContext> server : _AioServers) {
