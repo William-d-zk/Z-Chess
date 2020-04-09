@@ -45,6 +45,7 @@ import com.tgx.chess.king.base.disruptor.MultiBufferBatchEventProcessor;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.config.IServerConfig;
+import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.handler.DecodeHandler;
 import com.tgx.chess.queen.event.handler.DecodedDispatcher;
 import com.tgx.chess.queen.event.handler.EncodeHandler;
@@ -97,12 +98,12 @@ public abstract class ServerCore<C extends IContext<C>>
      * 用于选举功能的处理pipeline，用于local timer 和 cluster segment log 处理结果向集群中其他节点发送
      * 选举结果都在 cluster processor 中统一由集群处理逻辑执行。
      */
-    private final RingBuffer<QEvent>                        _ElectEvent;
+    private final RingBuffer<QEvent>                        _ConsensusEvent;
     /**
      * 集群一致性处理结果与Local Logic的桥梁，用于业务一致性数据向集群写入后，集群向业务系统反馈执行结果的
      * cluster -> biz 层投递
      */
-    private final RingBuffer<QEvent>                        _ConsensusEvent;
+    private final RingBuffer<QEvent>                        _ClusterEvent;
     private final RingBuffer<QEvent>                        _LinkEvent;
     private final ConcurrentLinkedQueue<RingBuffer<QEvent>> _AioCacheConcurrentQueue;
     private final ConcurrentLinkedQueue<RingBuffer<QEvent>> _ClusterCacheConcurrentQueue;
@@ -136,7 +137,7 @@ public abstract class ServerCore<C extends IContext<C>>
                                                                                   };
     private final ReentrantLock                             _LocalLock            = new ReentrantLock();
     private final ReentrantLock                             _ClusterLock          = new ReentrantLock();
-    private final ReentrantLock                             _ConsensusElectLock   = new ReentrantLock();
+    private final ReentrantLock                             _ConsensusLock        = new ReentrantLock();
     private AsynchronousChannelGroup                        mServiceChannelGroup;
     private AsynchronousChannelGroup                        mClusterChannelGroup;
 
@@ -186,17 +187,17 @@ public abstract class ServerCore<C extends IContext<C>>
         _BizLocalSendEvent = createPipelineLite(_LocalPower);
         _LinkWriteEvent = createPipelineYield(_LinkPower);
 
-        _ElectEvent = createPipelineYield(_ClusterPower);
         _ConsensusEvent = createPipelineYield(_ClusterPower);
+        _ClusterEvent = createPipelineYield(_ClusterPower);
         _LinkEvent = createPipelineYield(_ClusterPower);
     }
     /*  ║ barrier, ━> publish event, ━━ pipeline,| mappingHandle event
     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
     ┃                                                                                                 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓ ┃
-    ┃                                                                                                 ┃       ║                 ┏━>_ConsensusEvent  ━┛ ┃
+    ┃                                                                                                 ┃       ║                 ┏━>_ClusterEvent    ━┛ ┃
     ┃                                                                                                 ┃    ┏━>║_LinkProcessor━━━╋━>_ErrorEvent      ━━━┛
     ┃                                                                                                 ┃    ┃  ║                 ┗━>_LinkWriteEvent  ━━━>║                 ┏>_EncodedEvents[0]|║
-    ┃  ━> _AioProducerEvents║                             Timer ━> _ElectEvent  ━━━━━━━━━━━━━┫    ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓  ║                 ┃ _EncodedEvents[1]|║
+    ┃  ━> _AioProducerEvents║                                  Timer ━> _ConsensusEvent  ━━━━━━━━━━━━━┫    ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓  ║                 ┃ _EncodedEvents[1]|║
     ┃  ━> _ClusterLocalClose║                 ┏>_LinkIoEvent    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━┫                 ━━> _BizLocalSendEvent ━╋━>║_WriteDispatcher━┫ _EncodedEvents[2]|║_EncodedProcessor┳━━>║[Event Done]
     ┃  ━> _BizLocalClose    ║                 ┃ _ClusterIoEvent ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫    ┃  ║                 ┏━>_LinkEvent   ━━━━━┛  ║                 ┃ _EncodedEvents[3]|║                 ┗━━>_ErrorEvent━┓
     ┗━━━> _ErrorEvent[0]    ║_IoDispatcher━━> ┫ _ReadEvents[0]|━║                  ┏>_ClusterDecoded ━┻━━━━╋━>║_ClusterProcessor┳━>_ClusterWriteEvent ━>║                 ┃ _EncodedEvents[M]|║                                ┃
@@ -218,8 +219,10 @@ public abstract class ServerCore<C extends IContext<C>>
     public void build(QueenManager<C> manager,
                       IEncryptHandler encryptHandler,
                       ILogicHandler<C> logicHandler,
-                      ICustomLogic<C> linkCustom,
-                      ICustomLogic<C> clusterCustom)
+                      ICustomLogic<C,
+                                   IStorage> linkCustom,
+                      ICustomLogic<C,
+                                   IStorage> clusterCustom)
     {
         final RingBuffer<QEvent> _WroteEvent = createPipelineYield(_AioQueuePower + 1);
         final RingBuffer<QEvent> _LinkIoEvent = createPipelineYield(_LinkPower);
@@ -272,7 +275,7 @@ public abstract class ServerCore<C extends IContext<C>>
                                                                                                                                 manager,
                                                                                                                                 _ErrorEvents[0],
                                                                                                                                 _LinkWriteEvent,
-                                                                                                                                _ConsensusEvent,
+                                                                                                                                _ClusterEvent,
                                                                                                                                 linkCustom));
         _LinkProcessor.setThreadName("LinkProcessor");
         for (int i = 0, size = _LinkEvents.length; i < size; i++) {
@@ -283,12 +286,12 @@ public abstract class ServerCore<C extends IContext<C>>
         final RingBuffer<QEvent> _ClusterDecoded = createPipelineLite(_ClusterPower);
         final RingBuffer<QEvent>[] _ClusterEvents = new RingBuffer[] { _ClusterIoEvent,
                                                                        _ClusterDecoded,
-                                                                       _ElectEvent,
-                                                                       _ConsensusEvent };
+                                                                       _ConsensusEvent,
+                                                                       _ClusterEvent };
         final SequenceBarrier[] _ClusterBarriers = new SequenceBarrier[] { _ClusterIoEvent.newBarrier(),
                                                                            _ClusterDecoded.newBarrier(),
-                                                                           _ElectEvent.newBarrier(),
-                                                                           _ConsensusEvent.newBarrier() };
+                                                                           _ConsensusEvent.newBarrier(),
+                                                                           _ClusterEvent.newBarrier() };
         final MultiBufferBatchEventProcessor<QEvent> _ClusterProcessor = new MultiBufferBatchEventProcessor<>(_ClusterEvents,
                                                                                                               _ClusterBarriers,
                                                                                                               new MappingHandler<>("CONSENSUS",
@@ -448,9 +451,9 @@ public abstract class ServerCore<C extends IContext<C>>
         return _ClusterLocalSendEvent;
     }
 
-    protected RingBuffer<QEvent> getElectEvent()
+    public RingBuffer<QEvent> getConsensusEvent()
     {
-        return _ElectEvent;
+        return _ConsensusEvent;
     }
 
     public AsynchronousChannelGroup getServiceChannelGroup() throws IOException
@@ -477,11 +480,15 @@ public abstract class ServerCore<C extends IContext<C>>
                 return _LocalLock;
             case CLUSTER_LOCAL:
                 return _ClusterLock;
-            case CONSENSUS_ELECT:
-                return _ConsensusElectLock;
+            case CONSENSUS:
+                return _ConsensusLock;
             default:
                 throw new IllegalArgumentException(String.format("error type:%s", type));
         }
     }
 
+    public ReentrantLock getConsensusLock()
+    {
+        return _ConsensusLock;
+    }
 }

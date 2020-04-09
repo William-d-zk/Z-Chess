@@ -43,6 +43,7 @@ import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.config.IBizIoConfig;
 import com.tgx.chess.queen.config.IServerConfig;
 import com.tgx.chess.queen.config.QueenCode;
+import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.inf.ICustomLogic;
 import com.tgx.chess.queen.event.inf.ILogicHandler;
 import com.tgx.chess.queen.event.inf.IOperator;
@@ -113,11 +114,11 @@ public class DeviceNode
                             throw new IllegalArgumentException("cluster local slot error");
                         }
                         return getClusterLocalSendEvent();
-                    case CONSENSUS_ELECT:
+                    case CONSENSUS:
                         if (slot != QueenCode.CM_XID_LOW) {
                             throw new IllegalArgumentException("cluster local slot error");
                         }
-                        return getElectEvent();
+                        return getConsensusEvent();
                     default:
                         throw new IllegalArgumentException(String.format("get publisher type error:%s ", type.name()));
                 }
@@ -135,7 +136,7 @@ public class DeviceNode
                         }
                         return getBizLocalCloseEvent();
                     case CLUSTER_LOCAL:
-                    case CONSENSUS_ELECT:
+                    case CONSENSUS:
                         if (slot != QueenCode.CM_XID_LOW) {
                             throw new IllegalArgumentException("cluster local slot error");
                         }
@@ -237,8 +238,10 @@ public class DeviceNode
     }
 
     public void start(ILogicHandler<ZContext> logicHandler,
-                      ICustomLogic<ZContext> linkCustom,
-                      ICustomLogic<ZContext> clusterCustom) throws IOException
+                      ICustomLogic<ZContext,
+                                   IStorage> linkCustom,
+                      ICustomLogic<ZContext,
+                                   IStorage> clusterCustom) throws IOException
     {
         _ServerCore.build(this, new EncryptHandler(), logicHandler, linkCustom, clusterCustom);
         for (IAioServer<ZContext> server : _AioServers) {

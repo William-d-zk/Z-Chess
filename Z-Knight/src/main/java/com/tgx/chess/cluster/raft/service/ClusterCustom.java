@@ -27,8 +27,8 @@ package com.tgx.chess.cluster.raft.service;
 import static com.tgx.chess.cluster.raft.RaftState.CANDIDATE;
 import static com.tgx.chess.cluster.raft.RaftState.LEADER;
 
-import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -44,7 +44,9 @@ import com.tgx.chess.cluster.raft.model.RaftMachine;
 import com.tgx.chess.cluster.raft.model.RaftNode;
 import com.tgx.chess.cluster.raft.model.log.LogEntry;
 import com.tgx.chess.json.JsonUtil;
+import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.event.inf.ICustomLogic;
 import com.tgx.chess.queen.io.core.inf.IActivity;
@@ -57,7 +59,8 @@ import com.tgx.chess.queen.io.core.manager.QueenManager;
 @Component
 public class ClusterCustom<T extends ISessionManager<ZContext> & IActivity<ZContext> & IClusterPeer>
         implements
-        ICustomLogic<ZContext>
+        ICustomLogic<ZContext,
+                     RaftMachine>
 {
     private final Logger                        _Logger                      = Logger.getLogger(getClass().getSimpleName());
     private final IRepository<RaftNode<T>>      _ClusterRepository;
@@ -142,32 +145,45 @@ public class ClusterCustom<T extends ISessionManager<ZContext> & IActivity<ZCont
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public IControl<ZContext>[] onTransfer(IControl<ZContext>[] content)
+    public List<ITriple> onTransfer(QueenManager<ZContext> manager, RaftMachine machine)
     {
-        if (content == null || content.length == 0) { return null; }
-        if (content.length > 1) {
-            List<IControl<ZContext>> resultList = new LinkedList<>();
-            for (IControl<ZContext> control : content) {
-                switch (control.serial())
-                {
-                    case X7E_RaftBroadcast.COMMAND:
-                        if (mRaftNode.checkLogAppend((X7E_RaftBroadcast) control)) {
-                            resultList.add(control);
-                        }
-                        break;
+        if (machine == null) { return null; }
+        switch (machine.getOperation())
+        {
+            case OP_APPEND:
+                List<X7E_RaftBroadcast> x7EList = mRaftNode.checkLogAppend(machine);
+                if (x7EList != null) {
+                    return x7EList.stream()
+                                  .map(x7E ->
+                                  {
+                                      ISession<ZContext> session = manager.findSessionByPrefix(x7E.getPeerId());
+                                      x7E.setSession(session);
+                                      return new Triple<>(x7E,
+                                                          session,
+                                                          session.getContext()
+                                                                 .getSort()
+                                                                 .getEncoder());
+                                  })
+                                  .collect(Collectors.toList());
                 }
-            }
-            if (!resultList.isEmpty()) { return resultList.toArray(new IControl[0]); }
-        }
-        else {
-            IControl<ZContext> control = content[0];
-            switch (control.serial())
-            {
-                case X72_RaftVote.COMMAND:
-                    if (mRaftNode.checkVoteState((X72_RaftVote) control)) { return content; }
-                    break;
-            }
+                break;
+            case OP_INSERT:
+                List<X72_RaftVote> x72List = mRaftNode.checkVoteState(machine);
+                if (x72List != null) {
+                    return x72List.stream()
+                                  .map(x72 ->
+                                  {
+                                      ISession<ZContext> session = manager.findSessionByPrefix(x72.getPeerId());
+                                      x72.setSession(session);
+                                      return new Triple<>(x72,
+                                                          session,
+                                                          session.getContext()
+                                                                 .getSort()
+                                                                 .getEncoder());
+                                  })
+                                  .collect(Collectors.toList());
+                }
+                break;
         }
         return null;
     }

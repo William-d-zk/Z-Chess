@@ -23,10 +23,13 @@
  */
 package com.tgx.chess.queen.event.inf;
 
+import java.util.List;
+
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.InsufficientCapacityException;
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.king.base.inf.IPair;
+import com.tgx.chess.king.base.inf.ITriple;
 
 /**
  * @author William.d.zk
@@ -77,6 +80,19 @@ public interface IPipeEventHandler<E extends IEvent>
         try {
             E event = publisher.get(sequence);
             event.produce(type, content, operator);
+        }
+        finally {
+            publisher.publish(sequence);
+        }
+    }
+
+    default void publish(RingBuffer<E> publisher, List<ITriple> contents)
+    {
+        if (publisher == null) { return; }
+        long sequence = publisher.next();
+        try {
+            E event = publisher.get(sequence);
+            event.produce(IOperator.Type.DISPATCH, contents);
         }
         finally {
             publisher.publish(sequence);
