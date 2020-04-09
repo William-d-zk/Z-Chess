@@ -116,7 +116,7 @@ public class DeviceService
         final IQttRouter _QttRouter = new QttRouter();
         LogicHandler logicHandler = new LogicHandler(_DeviceNode, _QttRouter, _MessageRepository);
         _LinkCustom.setQttRouter(_QttRouter);
-        _DeviceNode.start(logicHandler, new ZMappingCustom(_LinkCustom), new ZMappingCustom(_ClusterCustom));
+        _DeviceNode.start(logicHandler, new ZMappingCustom<>(_LinkCustom), new ZMappingCustom<>(_ClusterCustom));
         _RaftNode.init();
     }
 

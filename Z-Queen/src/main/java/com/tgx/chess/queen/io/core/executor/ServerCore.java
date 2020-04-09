@@ -220,9 +220,9 @@ public abstract class ServerCore<C extends IContext<C>>
                       IEncryptHandler encryptHandler,
                       ILogicHandler<C> logicHandler,
                       ICustomLogic<C,
-                                   IStorage> linkCustom,
+                                   ? extends IStorage> linkCustom,
                       ICustomLogic<C,
-                                   IStorage> clusterCustom)
+                                   ? extends IStorage> clusterCustom)
     {
         final RingBuffer<QEvent> _WroteEvent = createPipelineYield(_AioQueuePower + 1);
         final RingBuffer<QEvent> _LinkIoEvent = createPipelineYield(_LinkPower);
