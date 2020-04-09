@@ -46,6 +46,7 @@ import com.tgx.chess.bishop.io.zprotocol.device.X21_SignUpResult;
 import com.tgx.chess.bishop.io.zprotocol.device.X24_UpdateToken;
 import com.tgx.chess.bishop.io.zprotocol.device.X25_AuthorisedToken;
 import com.tgx.chess.king.base.exception.LinkRejectException;
+import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.db.inf.IStorage;
@@ -55,11 +56,13 @@ import com.tgx.chess.queen.io.core.inf.IQoS;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
 import com.tgx.chess.spring.device.model.DeviceEntry;
+import com.tgx.chess.spring.device.model.MessageEntry;
 
 @Component
 public class LinkCustom
         implements
-        ICustomLogic<ZContext>
+        ICustomLogic<ZContext,
+                     MessageEntry>
 {
     private final IRepository<DeviceEntry> _DeviceRepository;
     private IQttRouter                     mQttRouter;
@@ -174,10 +177,9 @@ public class LinkCustom
     }
 
     @Override
-    public IControl<ZContext>[] onTransfer(IControl<ZContext>[] content)
+    public List<ITriple> onTransfer(QueenManager<ZContext> manager, MessageEntry content)
     {
-        if (content == null || content.length == 0) { return null; }
-        return content;
+        return null;
     }
 
     public void setQttRouter(IQttRouter qttRouter)

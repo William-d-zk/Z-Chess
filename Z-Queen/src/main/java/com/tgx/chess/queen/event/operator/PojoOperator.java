@@ -22,23 +22,27 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.queen.event.inf;
-
-import java.util.List;
+package com.tgx.chess.queen.event.operator;
 
 import com.tgx.chess.king.base.inf.ITriple;
-import com.tgx.chess.queen.db.inf.IStorage;
+import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
-import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
 
-public interface ICustomLogic<C extends IContext<C>,
-                              T extends IStorage>
+/**
+ * @author william.d.zk
+ * @date 2020/4/9
+ */
+public class PojoOperator<C extends IContext<C>>
+        implements
+        IOperator<QueenManager<C>,
+                  IControl<C>,
+                  ITriple>
 {
-    IControl<C>[] handle(QueenManager<C> manager, ISession<C> session, IControl<C> content) throws Exception;
-
-    IControl<C> consensus(QueenManager<C> manager, ISession<C> session, IControl<C> content) throws Exception;
-
-    List<ITriple> onTransfer(QueenManager<C> manager, T content);
+    @Override
+    public ITriple handle(QueenManager<C> cQueenManager, IControl<C> ciControl)
+    {
+        return null;
+    }
 }

@@ -24,6 +24,9 @@
 
 package com.tgx.chess.cluster.raft.model;
 
+import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_NULL;
+import static com.tgx.chess.queen.db.inf.IStorage.Strategy.RETAIN;
+
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Objects;
@@ -31,13 +34,16 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.tgx.chess.cluster.raft.IRaftMachine;
 import com.tgx.chess.cluster.raft.RaftState;
+import com.tgx.chess.json.JsonUtil;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.util.Triple;
+import com.tgx.chess.queen.db.inf.IStorage;
 
 /**
  * @author william.d.zk
@@ -46,12 +52,14 @@ import com.tgx.chess.king.base.util.Triple;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class RaftMachine
         implements
-        IRaftMachine
+        IRaftMachine,
+        IStorage
 {
+    private final static int                   RAFT_MACHINE_SERIAL = DB_SERIAL + 3;
     private final long                         _PeerId;
-    private long                               mTerm;//触发选举时 mTerm>mIndexTerm
-    private long                               mIndex;//本地日志Index，Leader：mIndex>=mCommit 其他状态：mIndex<=mCommit
-    private long                               mIndexTerm; //本地日志对应的Term
+    private long                               mTerm;     //触发选举时 mTerm>mIndexTerm
+    private long                               mIndex;    //本地日志Index，Leader：mIndex>=mCommit 其他状态：mIndex<=mCommit
+    private long                               mIndexTerm;//本地日志对应的Term
     private long                               mCandidate;
     private long                               mLeader;
     private long                               mCommit;   //集群中已知的最大CommitIndex
@@ -63,6 +71,77 @@ public class RaftMachine
     private Set<Triple<Long,
                        String,
                        Integer>>               mGateSet;
+    @JsonIgnore
+    private Operation                          mOperation          = OP_NULL;
+    @JsonIgnore
+    private Strategy                           mStrategy           = RETAIN;
+    @JsonIgnore
+    private int                                mLength;
+
+    @Override
+    public int dataLength()
+    {
+        return 0;
+    }
+
+    @Override
+    public int decode(byte[] data)
+    {
+        RaftMachine json = JsonUtil.readValue(data, getClass());
+        Objects.requireNonNull(json);
+        mTerm = json.getTerm();
+        mIndex = json.getIndex();
+        mIndexTerm = json.getIndexTerm();
+        mCandidate = json.getCandidate();
+        mLeader = json.getLeader();
+        mCommit = json.getCommit();
+        mApplied = json.getApplied();
+        mState = json.getState()
+                     .getCode();
+        mPeerSet = json.getPeerSet();
+        mGateSet = json.getGateSet();
+        mLength = data.length;
+        return mLength;
+    }
+
+    @Override
+    public byte[] encode()
+    {
+        byte[] payload = JsonUtil.writeValueAsBytes(this);
+        Objects.requireNonNull(payload);
+        mLength = payload.length;
+        return payload;
+    }
+
+    @Override
+    public int serial()
+    {
+        return RAFT_MACHINE_SERIAL;
+    }
+
+    @Override
+    public long getPrimaryKey()
+    {
+        return _PeerId;
+    }
+
+    @Override
+    public void setPrimaryKey(long key)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setOperation(Operation op)
+    {
+        mOperation = op;
+    }
+
+    @Override
+    public void setStrategy(Strategy strategy)
+    {
+        mStrategy = strategy;
+    }
 
     @JsonCreator
     public RaftMachine(@JsonProperty("peer_id") long peerId)
@@ -267,4 +346,5 @@ public class RaftMachine
                + mPeerSet
                + '}';
     }
+
 }

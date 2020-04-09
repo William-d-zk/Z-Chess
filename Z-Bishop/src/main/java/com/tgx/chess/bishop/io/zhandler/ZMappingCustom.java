@@ -24,6 +24,8 @@
 
 package com.tgx.chess.bishop.io.zhandler;
 
+import java.util.List;
+
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X01_EncryptRequest;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X02_AsymmetricPub;
@@ -31,22 +33,27 @@ import com.tgx.chess.bishop.io.zprotocol.ztls.X03_Cipher;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X04_EncryptConfirm;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X05_EncryptStart;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X06_EncryptComp;
+import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.inf.ICustomLogic;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
 
-public class ZMappingCustom
+public class ZMappingCustom<T extends IStorage>
         implements
-        ICustomLogic<ZContext>
+        ICustomLogic<ZContext,
+                     T>
 {
 
     private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
 
-    private final ICustomLogic<ZContext> _Then;
+    private final ICustomLogic<ZContext,
+                               T> _Then;
 
-    public ZMappingCustom(ICustomLogic<ZContext> andThen)
+    public ZMappingCustom(ICustomLogic<ZContext,
+                                       T> andThen)
     {
         _Then = andThen;
     }
@@ -78,9 +85,9 @@ public class ZMappingCustom
     }
 
     @Override
-    public IControl<ZContext>[] onTransfer(IControl<ZContext>[] content)
+    public List<ITriple> onTransfer(QueenManager<ZContext> manager, T content)
     {
-        return _Then != null ? _Then.onTransfer(content)
+        return _Then != null ? _Then.onTransfer(manager, content)
                              : null;
     }
 

@@ -26,11 +26,12 @@ package com.tgx.chess.queen.event.handler;
 
 import static com.tgx.chess.queen.event.inf.IError.Type.MAPPING_ERROR;
 import static com.tgx.chess.queen.event.inf.IError.Type.MAPPING_LOGIN_ERROR;
-import static com.tgx.chess.queen.event.inf.IOperator.Type.CONSENSUS;
+import static com.tgx.chess.queen.event.inf.IOperator.Type.CLUSTER;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.LINK;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 
 import java.nio.channels.AsynchronousSocketChannel;
+import java.util.List;
 
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.king.base.exception.LinkRejectException;
@@ -38,6 +39,7 @@ import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
+import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.inf.ICustomLogic;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
@@ -55,7 +57,8 @@ import com.tgx.chess.queen.io.core.manager.QueenManager;
  * @author william.d.zk
  * @date 2020/2/15
  */
-public class MappingHandler<C extends IContext<C>>
+public class MappingHandler<C extends IContext<C>,
+                            T extends IStorage>
         implements
         IPipeEventHandler<QEvent>
 {
@@ -64,14 +67,16 @@ public class MappingHandler<C extends IContext<C>>
     private final RingBuffer<QEvent> _Writer;
     private final RingBuffer<QEvent> _Transfer;
     private final QueenManager<C>    _QueenManager;
-    private final ICustomLogic<C>    _CustomLogic;
+    private final ICustomLogic<C,
+                               T>    _CustomLogic;
 
     public MappingHandler(String mapper,
                           QueenManager<C> manager,
                           RingBuffer<QEvent> error,
                           RingBuffer<QEvent> writer,
                           RingBuffer<QEvent> transfer,
-                          ICustomLogic<C> customLogic)
+                          ICustomLogic<C,
+                                       T> customLogic)
     {
         _Logger = Logger.getLogger(mapper);
         _QueenManager = manager;
@@ -152,7 +157,7 @@ public class MappingHandler<C extends IContext<C>>
                     }
                     break;
                 case LINK:
-                case CONSENSUS:
+                case CLUSTER:
                     ISession<C> session = event.getContent()
                                                .getSecond();
                     IControl<C> received = event.getContent()
@@ -171,7 +176,7 @@ public class MappingHandler<C extends IContext<C>>
                             IControl<C> consensus = _CustomLogic.consensus(_QueenManager, session, received);
                             if (consensus != null) {//终止循环传递的条件为 null 
                                 publish(_Transfer,
-                                        event.getEventType() == LINK ? CONSENSUS
+                                        event.getEventType() == LINK ? CLUSTER
                                                                      : LINK,
                                         new Pair<>(consensus, session),
                                         event.getEventOp());
@@ -197,20 +202,13 @@ public class MappingHandler<C extends IContext<C>>
                         }
                     }
                     break;
-                case CONSENSUS_ELECT://ClusterConsumer Timeout->start_vote
+                case CONSENSUS://ClusterConsumer Timeout->start_vote
                     /*CONSENSUS 必然是单个IControl,通过前项RingBuffer 向MappingHandler 投递*/
-                    session = event.getContent()
-                                   .getSecond();
-                    IControl<C>[] toSends = event.getContent()
-                                                 .getFirst();
-                    toSends = _CustomLogic.onTransfer(toSends);
-                    if (toSends != null && toSends.length > 0) {
-                        publish(_Writer,
-                                WRITE,
-                                new Pair<>(toSends, session),
-                                session.getContext()
-                                       .getSort()
-                                       .getTransfer());
+                    T content = event.getContent()
+                                     .getFirst();
+                    List<ITriple> toSends = _CustomLogic.onTransfer(_QueenManager, content);
+                    if (toSends != null && !toSends.isEmpty()) {
+                        publish(_Writer, toSends);
                     }
                     break;
                 default:

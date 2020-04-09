@@ -36,8 +36,7 @@ import static com.tgx.chess.cluster.raft.model.RaftCode.LOWER_TERM;
 import static com.tgx.chess.cluster.raft.model.RaftCode.OBSOLETE;
 import static com.tgx.chess.cluster.raft.model.RaftCode.SPLIT_CLUSTER;
 import static com.tgx.chess.cluster.raft.model.RaftCode.SUCCESS;
-import static com.tgx.chess.queen.event.inf.IOperator.Type.CLUSTER_LOCAL;
-import static com.tgx.chess.queen.event.inf.IOperator.Type.CONSENSUS_ELECT;
+import static com.tgx.chess.queen.event.inf.IOperator.Type.CONSENSUS;
 import static java.lang.Math.min;
 
 import java.io.IOException;
@@ -47,6 +46,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 import com.tgx.chess.bishop.ZUID;
 import com.tgx.chess.bishop.biz.config.IClusterConfig;
@@ -118,25 +118,7 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
 
     private void leaderBroadcast()
     {
-        _RaftGraph.getNodeMap()
-                  .forEach((k, v) ->
-                  {
-                      X7E_RaftBroadcast x7e = new X7E_RaftBroadcast(_ZUID.getId());
-                      x7e.setPeerId(_SelfMachine.getPeerId());
-                      x7e.setTerm(_SelfMachine.getTerm());
-                      x7e.setCommit(_SelfMachine.getCommit());
-                      x7e.setPreIndex(_SelfMachine.getIndex());
-                      x7e.setPreIndexTerm(_SelfMachine.getIndexTerm());
-                      if (v.getIndex() < _SelfMachine.getIndex()) {
-                          List<LogEntry> entryList = new LinkedList<>();
-                          for (long i = v.getIndex() + 1, l = _SelfMachine.getIndex(); i <= l; i++) {
-                              entryList.add(_RaftDao.getEntry(i));
-                          }
-                          x7e.setPayload(JsonUtil.writeValueAsBytes(entryList));
-                      }
-                      ISession<ZContext> session = _SessionManager.findSessionByPrefix(k);
-                      _SessionManager.send(session, CLUSTER_LOCAL, x7e);
-                  });
+
     }
 
     public void init() throws IOException
@@ -277,7 +259,7 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
                   {
                       if (k != _SelfMachine.getPeerId()) {
                           ISession<ZContext> session = _SessionManager.findSessionByPrefix(k);
-                          _SessionManager.send(session, CONSENSUS_ELECT, x72);
+                          _SessionManager.send(session, CONSENSUS, x72);
                       }
                   });
         _Logger.info("start vote self {%s}", _SelfMachine.toString());
@@ -543,28 +525,72 @@ public class RaftNode<T extends ISessionManager<ZContext> & IActivity<ZContext> 
         return false;
     }
 
-    public boolean checkVoteState(X72_RaftVote x72)
+    public List<X72_RaftVote> checkVoteState(RaftMachine update)
     {
-        if (x72.getPeerId() == _SelfMachine.getPeerId()
-            && x72.getTerm() == _SelfMachine.getTerm() + 1
-            && x72.getLogIndex() == _SelfMachine.getIndex()
-            && x72.getLogTerm() == _SelfMachine.getIndexTerm()
-            && _SelfMachine.getState() == FOLLOWER)
+        if (update.getPeerId() == _SelfMachine.getPeerId()
+            && update.getTerm() == _SelfMachine.getTerm() + 1
+            && update.getIndex() == _SelfMachine.getIndex()
+            && update.getIndexTerm() == _SelfMachine.getIndexTerm()
+            && _SelfMachine.getState() == FOLLOWER
+            && update.getState() == CANDIDATE)
         {
             vote4me();
-            return true;
+            return _RaftGraph.getNodeMap()
+                             .entrySet()
+                             .stream()
+                             .filter(entry -> entry.getKey() != _SelfMachine.getPeerId())
+                             .map(entry ->
+                             {
+                                 X72_RaftVote x72 = new X72_RaftVote(_ZUID.getId());
+                                 x72.setTerm(update.getTerm());
+                                 x72.setPeerId(update.getPeerId());
+                                 x72.setLogIndex(update.getIndex());
+                                 x72.setLogTerm(update.getIndexTerm());
+                                 return x72;
+                             })
+                             .collect(Collectors.toList());
         }
-        return false;
+        return null;
     }
 
-    public boolean checkLogAppend(X7E_RaftBroadcast x7e)
+    public List<X7E_RaftBroadcast> checkLogAppend(RaftMachine update)
     {
-        return _SelfMachine.getState() == LEADER
-               && _SelfMachine.getPeerId() == x7e.getPeerId()
-               && _SelfMachine.getTerm() == x7e.getTerm()
-               && _SelfMachine.getIndex() == x7e.getPreIndex()
-               && _SelfMachine.getIndexTerm() == x7e.getPreIndexTerm()
-               && _SelfMachine.getCommit() >= x7e.getCommit();
+        if (_SelfMachine.getState() == LEADER
+            && _SelfMachine.getPeerId() == update.getPeerId()
+            && _SelfMachine.getTerm() >= update.getTerm()
+            && _SelfMachine.getIndex() >= update.getIndex()
+            && _SelfMachine.getIndexTerm() >= update.getIndexTerm()
+            && _SelfMachine.getCommit() >= update.getCommit())
+        {
+            return _RaftGraph.getNodeMap()
+                             .entrySet()
+                             .stream()
+                             .filter(entry -> entry.getKey() != _SelfMachine.getPeerId())
+                             .map(entry ->
+                             {
+                                 X7E_RaftBroadcast x7e = new X7E_RaftBroadcast(_ZUID.getId());
+                                 x7e.setPeerId(_SelfMachine.getPeerId());
+                                 x7e.setTerm(_SelfMachine.getTerm());
+                                 x7e.setCommit(_SelfMachine.getCommit());
+                                 x7e.setPreIndex(_SelfMachine.getIndex());
+                                 x7e.setPreIndexTerm(_SelfMachine.getIndexTerm());
+                                 if (entry.getValue()
+                                          .getIndex() < _SelfMachine.getIndex())
+                                 {
+                                     List<LogEntry> entryList = new LinkedList<>();
+                                     for (long i = entry.getValue()
+                                                        .getIndex()
+                                                   + 1, l = _SelfMachine.getIndex(); i <= l; i++)
+                                     {
+                                         entryList.add(_RaftDao.getEntry(i));
+                                     }
+                                     x7e.setPayload(JsonUtil.writeValueAsBytes(entryList));
+                                 }
+                                 return x7e;
+                             })
+                             .collect(Collectors.toList());
+        }
+        return null;
     }
 
     public void appendLogs(List<LogEntry> entryList)

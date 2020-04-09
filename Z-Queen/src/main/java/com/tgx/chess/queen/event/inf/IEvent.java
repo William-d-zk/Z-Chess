@@ -26,6 +26,7 @@ package com.tgx.chess.queen.event.inf;
 import java.util.List;
 
 import com.tgx.chess.king.base.inf.IPair;
+import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.queen.event.inf.IError.Type;
 
 /**
@@ -45,7 +46,7 @@ public interface IEvent
 
     IPair getContent();
 
-    List<IPair> getContentList();
+    List<ITriple> getContentList();
 
     <V,
      A,
@@ -63,7 +64,7 @@ public interface IEvent
                              H,
                              R> operator);
 
-    void produce(IOperator.Type t, List<IPair> cp);
+    void produce(IOperator.Type t, List<ITriple> cp);
 
     default boolean hasError()
     {

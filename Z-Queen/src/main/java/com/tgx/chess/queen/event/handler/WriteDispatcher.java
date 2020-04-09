@@ -97,10 +97,10 @@ public class WriteDispatcher<C extends IContext<C>>
                 IPair writeContent = event.getContent();
                 IControl<C>[] commands = writeContent.getFirst();
                 ISession<C> session = writeContent.getSecond();
+                IOperator<IControl<C>[],
+                          ISession<C>,
+                          List<ITriple>> transferOperator = event.getEventOp();
                 if (commands != null && commands.length > 0) {
-                    IOperator<IControl<C>[],
-                              ISession<C>,
-                              List<ITriple>> transferOperator = event.getEventOp();
                     List<ITriple> triples = transferOperator.handle(commands, session);
                     for (ITriple triple : triples) {
                         ISession<C> targetSession = triple.getSecond();
@@ -134,9 +134,30 @@ public class WriteDispatcher<C extends IContext<C>>
                                event.getEventOp());
                 }
                 break;
+            case DISPATCH:
+                List<ITriple> writeContents = event.getContentList();
+                for (ITriple content : writeContents) {
+                    IControl<C> command = content.getFirst();
+                    session = content.getSecond();
+                    if (command.isShutdown()) {
+                        if (session.isValid()) {
+                            error(_Error,
+                                  ILLEGAL_STATE,
+                                  new Pair<>(new IllegalStateException("session to shutdown"), session),
+                                  session.getContext()
+                                         .getSort()
+                                         .getError());
+                        }
+                    }
+                    else tryPublish(dispatchEncoder(session.getHashKey()),
+                                    WRITE,
+                                    new Pair<>(content, session),
+                                    content.getThird());
+                }
             default:
                 break;
         }
         event.reset();
     }
+
 }
