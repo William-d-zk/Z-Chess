@@ -213,13 +213,14 @@ public class AioSession<C extends IContext<C>>
     public final void bindPrefix(long prefix)
     {
         mPrefix = mPrefix == null ? new long[] { prefix }
-                                  : ArrayUtil.setSortAdd(prefix, mPrefix, 0xFFFFFFFF00000000L);
+                                  : ArrayUtil.setSortAdd(prefix, mPrefix, PREFIX_MAX);
     }
 
     @Override
     public long prefixLoad(long prefix)
     {
-        int pos = ArrayUtil.binarySearch0(mPrefix, prefix, 0xFFFFFFFF00000000L);
+        _Logger.info("prefixLoad: %#x, %s", prefix, longArrayToHex(mPrefix));
+        int pos = ArrayUtil.binarySearch0(mPrefix, prefix, PREFIX_MAX);
         if (pos < 0) {
             throw new IllegalArgumentException(String.format("prefix %#x miss, %s", prefix, longArrayToHex(mPrefix)));
         }
@@ -229,11 +230,12 @@ public class AioSession<C extends IContext<C>>
     @Override
     public void prefixHit(long prefix)
     {
-        int pos = ArrayUtil.binarySearch0(mPrefix, prefix, 0xFFFFFFFF00000000L);
+        _Logger.info("prefixHit: %#x, %s", prefix, longArrayToHex(mPrefix));
+        int pos = ArrayUtil.binarySearch0(mPrefix, prefix, PREFIX_MAX);
         if (pos < 0) {
             throw new IllegalArgumentException(String.format("prefix %#x miss, %s", prefix, longArrayToHex(mPrefix)));
         }
-        if (mPrefix[pos] < 0xFFFFFFFFL) {
+        if ((mPrefix[pos] & SUFFIX_MASK) < 0xFFFFFFFFL) {
             mPrefix[pos] += 1;
         }
         else {
