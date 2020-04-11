@@ -41,7 +41,6 @@ import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.ICommandFactory;
 import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
-import com.tgx.chess.queen.io.core.inf.IFrame;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
@@ -51,23 +50,20 @@ public class ZCommandFilter
         extends
         AioFilterChain<ZContext,
                        ICommand<ZContext>,
-                       IFrame>
+                       WsFrame>
 {
 
-    private ICommandFactory<ZContext,
-                            ZCommand>           commandFactory;
-    private final Logger                        _Logger = Logger.getLogger(getClass().getName());
-
-    public ZCommandFilter()
-    {
-        this(null);
-    }
+    private final ICommandFactory<ZContext,
+                                  ZCommand,
+                                  WsFrame>                     _CommandFactory;
+    private final Logger                                       _Logger = Logger.getLogger(getClass().getName());
 
     public ZCommandFilter(ICommandFactory<ZContext,
-                                          ZCommand> factory)
+                                          ZCommand,
+                                          WsFrame> factory)
     {
         super("queen-command-zfilter");
-        this.commandFactory = factory;
+        this._CommandFactory = factory;
     }
 
     @Override
@@ -77,7 +73,7 @@ public class ZCommandFilter
     }
 
     @Override
-    public IFrame encode(ZContext context, ICommand<ZContext> output)
+    public WsFrame encode(ZContext context, ICommand<ZContext> output)
     {
         WsFrame frame = new WsFrame();
         frame.setPayload(output.encode(context));
@@ -86,19 +82,18 @@ public class ZCommandFilter
     }
 
     @Override
-    public ResultType preDecode(ZContext context, IFrame input)
+    public ResultType preDecode(ZContext context, WsFrame input)
     {
         return preCommandDecode(context, input);
     }
 
     @Override
-    public ICommand<ZContext> decode(ZContext context, IFrame input)
+    public ICommand<ZContext> decode(ZContext context, WsFrame input)
     {
-        int command = input.getPayload()[1] & 0xFF;
-        ZCommand _command = create(command);
+        ZCommand _command = create(input);
         if (Objects.isNull(_command)) return null;
         _command.decode(input.getPayload(), context);
-        switch (command)
+        switch (_command.getCommand())
         {
             case X01_EncryptRequest.COMMAND:
                 X01_EncryptRequest x01 = (X01_EncryptRequest) _command;
@@ -182,9 +177,9 @@ public class ZCommandFilter
         }
     }
 
-    private ZCommand create(int command)
+    private ZCommand create(WsFrame frame)
     {
-        switch (command)
+        switch (frame.getPayload()[1] & 0xFF)
         {
             case X01_EncryptRequest.COMMAND:
                 return new X01_EncryptRequest();
@@ -201,14 +196,9 @@ public class ZCommandFilter
             case 0xFF:
                 throw new UnsupportedOperationException();
             default:
-                return Objects.nonNull(commandFactory) ? commandFactory.create(command)
-                                                       : null;
+                return _CommandFactory != null ? _CommandFactory.create(frame)
+                                               : null;
         }
     }
 
-    public void setCommandFactory(ICommandFactory<ZContext,
-                                                  ZCommand> factory)
-    {
-        commandFactory = factory;
-    }
 }

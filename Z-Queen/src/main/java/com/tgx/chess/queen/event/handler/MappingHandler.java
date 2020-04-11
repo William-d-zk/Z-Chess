@@ -26,8 +26,7 @@ package com.tgx.chess.queen.event.handler;
 
 import static com.tgx.chess.queen.event.inf.IError.Type.MAPPING_ERROR;
 import static com.tgx.chess.queen.event.inf.IError.Type.MAPPING_LOGIN_ERROR;
-import static com.tgx.chess.queen.event.inf.IOperator.Type.CLUSTER;
-import static com.tgx.chess.queen.event.inf.IOperator.Type.LINK;
+import static com.tgx.chess.queen.event.inf.IOperator.Type.CONSENSUS;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 
 import java.nio.channels.AsynchronousSocketChannel;
@@ -158,10 +157,10 @@ public class MappingHandler<C extends IContext<C>,
                     break;
                 case LINK:
                 case CLUSTER:
-                    ISession<C> session = event.getContent()
-                                               .getSecond();
                     IControl<C> received = event.getContent()
                                                 .getFirst();
+                    ISession<C> session = event.getContent()
+                                               .getSecond();
                     if (received != null) {
                         try {
                             IControl<C>[] toSends = _CustomLogic.handle(_QueenManager, session, received);
@@ -173,13 +172,8 @@ public class MappingHandler<C extends IContext<C>,
                                                .getSort()
                                                .getTransfer());
                             }
-                            IControl<C> consensus = _CustomLogic.consensus(_QueenManager, session, received);
-                            if (consensus != null) {//终止循环传递的条件为 null 
-                                publish(_Transfer,
-                                        event.getEventType() == LINK ? CLUSTER
-                                                                     : LINK,
-                                        new Pair<>(consensus, session),
-                                        event.getEventOp());
+                            if (received.isConsensus()) {
+                                publish(_Transfer, CONSENSUS, new Pair<>(received, session), null);
                             }
                         }
                         catch (LinkRejectException e) {
@@ -200,10 +194,32 @@ public class MappingHandler<C extends IContext<C>,
                                          .getSort()
                                          .getError());
                         }
+                        break;
                     }
                     break;
-                case CONSENSUS://ClusterConsumer Timeout->start_vote
-                    /*CONSENSUS 必然是单个IControl,通过前项RingBuffer 向MappingHandler 投递*/
+                case CONSENSUS:
+                    received = event.getContent()
+                                    .getFirst();
+                    session = event.getContent()
+                                   .getSecond();
+                    try {
+                        List<ITriple> result = _CustomLogic.consensus(_QueenManager, received, session);
+                        if (result != null) {
+                            publish(_Writer, result);
+                        }
+                    }
+                    catch (Exception e) {
+                        _Logger.warning("mapping consensus error", e);
+                        error(_Error,
+                              MAPPING_ERROR,
+                              new Pair<>(e, session),
+                              session.getContext()
+                                     .getSort()
+                                     .getError());
+                    }
+                    break;
+                case TIMER://ClusterConsumer Timeout->start_vote
+                    /*TIMER 必然是单个IControl,通过前项RingBuffer 向MappingHandler 投递*/
                     T content = event.getContent()
                                      .getFirst();
                     List<ITriple> toSends = _CustomLogic.onTransfer(_QueenManager, content);

@@ -57,10 +57,11 @@ public interface IOperator<T,
         TRANSFER,
         LOCAL,
         CLUSTER_LOCAL,
-        CONSENSUS,
         LINK,
         CLUSTER,
         LOGIC,
+        TIMER,
+        CONSENSUS,
         DISPATCH,
         IGNORE
     }

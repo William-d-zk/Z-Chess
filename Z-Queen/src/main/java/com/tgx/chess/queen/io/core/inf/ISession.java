@@ -96,6 +96,6 @@ public interface ISession<C extends IContext<C>>
         return Long.compare(getIndex(), o.getIndex());
     }
 
-    long PREFIX_MAX = 0xFFFFL << 48;
+    long PREFIX_MAX  = 0xFFFFL << 48;
     long SUFFIX_MASK = (1L << 48) - 1;
 }

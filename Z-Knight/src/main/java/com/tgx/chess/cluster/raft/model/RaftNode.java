@@ -38,6 +38,7 @@ import static com.tgx.chess.cluster.raft.model.RaftCode.SPLIT_CLUSTER;
 import static com.tgx.chess.cluster.raft.model.RaftCode.SUCCESS;
 import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_APPEND;
 import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_INSERT;
+import static com.tgx.chess.queen.event.inf.IOperator.Type.CONSENSUS;
 import static java.lang.Math.min;
 
 import java.io.IOException;
@@ -72,6 +73,7 @@ import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.io.core.inf.IActivity;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.IConsensus;
+import com.tgx.chess.queen.io.core.inf.IControl;
 
 /**
  * @author william.d.zk
@@ -79,7 +81,7 @@ import com.tgx.chess.queen.io.core.inf.IConsensus;
  */
 public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
 {
-    private final Logger                       _Logger        = Logger.getLogger(getClass().getSimpleName());
+    private final Logger                       _Logger         = Logger.getLogger(getClass().getSimpleName());
     private final ZUID                         _ZUID;
     private final IClusterConfig               _ClusterConfig;
     private final T                            _ClusterPeer;
@@ -88,8 +90,8 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
     private final ScheduleHandler<RaftNode<T>> _ElectSchedule, _HeartbeatSchedule, _TickSchedule;
     private final RaftGraph                    _RaftGraph;
     private final RaftMachine                  _SelfMachine;
-    private final Queue<LogEntry>              _AppendLogList = new LinkedList<>();
-    private final Random                       _Random        = new Random();
+    private final Queue<LogEntry>              _AppendLogQueue = new LinkedList<>();
+    private final Random                       _Random         = new Random();
     private ICancelable                        mElectTask, mHeartbeatTask, mTickTask;
 
     public RaftNode(TimeWheel timeWheel,
@@ -105,7 +107,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         _ElectSchedule = new ScheduleHandler<>(_ClusterConfig.getElectInSecond(), RaftNode::stepDown, this);
         _HeartbeatSchedule = new ScheduleHandler<>(_ClusterConfig.getHeartbeatInSecond(),
                                                    true,
-                                                   RaftNode::leaderBroadcast,
+                                                   RaftNode::heartbeat,
                                                    this);
         _TickSchedule = new ScheduleHandler<>(_ClusterConfig.getHeartbeatInSecond()
                                                             .multipliedBy(2),
@@ -116,14 +118,14 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         _RaftGraph.append(_SelfMachine);
     }
 
-    private void leaderBroadcast()
+    private void heartbeat()
     {
         RaftMachine update = new RaftMachine(_SelfMachine.getPeerId());
         update.setOperation(OP_APPEND);
         update.setIndex(_SelfMachine.getIndex());
         update.setIndexTerm(_SelfMachine.getIndexTerm());
         update.setCommit(_SelfMachine.getCommit());
-        _ClusterPeer.publishConsensus(update);
+        _ClusterPeer.publishConsensus(CONSENSUS, update);
         _Logger.info("leader broadcast {%s}", _SelfMachine.toString());
     }
 
@@ -261,7 +263,8 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         update.setIndexTerm(_SelfMachine.getIndexTerm());
         update.setState(CANDIDATE);
         update.setOperation(OP_INSERT);
-        _ClusterPeer.publishConsensus(update);
+        update.setLeader(INVALID_PEER_ID);
+        _ClusterPeer.publishConsensus(CONSENSUS, update);
         _Logger.info("start vote self {%s}", _SelfMachine.toString());
     }
 
@@ -476,7 +479,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         }
         IT_APPEND:
         {
-            for (Iterator<LogEntry> it = _AppendLogList.iterator(); it.hasNext();) {
+            for (Iterator<LogEntry> it = _AppendLogQueue.iterator(); it.hasNext();) {
                 LogEntry entry = it.next();
                 if (_RaftDao.append(entry)) {
                     _SelfMachine.setIndex(entry.getIndex());
@@ -521,7 +524,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
             return true;
             //end of IT_APPEND
         }
-        _AppendLogList.clear();
+        _AppendLogQueue.clear();
         return false;
     }
 
@@ -565,34 +568,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
             && _SelfMachine.getIndexTerm() >= update.getIndexTerm()
             && _SelfMachine.getCommit() >= update.getCommit())
         {
-            return _RaftGraph.getNodeMap()
-                             .entrySet()
-                             .stream()
-                             .filter(entry -> entry.getKey() != _SelfMachine.getPeerId())
-                             .map(entry ->
-                             {
-                                 X7E_RaftBroadcast x7e = new X7E_RaftBroadcast(_ZUID.getId());
-                                 x7e.setPeerId(_SelfMachine.getPeerId());
-                                 x7e.setTerm(_SelfMachine.getTerm());
-                                 x7e.setCommit(_SelfMachine.getCommit());
-                                 x7e.setPreIndex(_SelfMachine.getIndex());
-                                 x7e.setPreIndexTerm(_SelfMachine.getIndexTerm());
-                                 x7e.setFollower(entry.getKey());
-                                 if (entry.getValue()
-                                          .getIndex() == _SelfMachine.getIndex()) return x7e;
-                                 List<LogEntry> entryList = new LinkedList<>();
-                                 RaftMachine follower = entry.getValue();
-                                 LogEntry logEntry = _RaftDao.getEntry(follower.getIndex() + 1);
-                                 if (logEntry == null) return x7e;//leader 也没有这么久远的数据需要等install snapshot之后才能恢复正常同步
-                                 x7e.setPreIndex(logEntry.getIndex());
-                                 x7e.setPreIndexTerm(logEntry.getTerm());
-                                 entryList.add(logEntry);
-                                 for (long i = logEntry.getIndex() + 1, l = _SelfMachine.getIndex(); i <= l; i++)
-                                     entryList.add(_RaftDao.getEntry(i));
-                                 x7e.setPayload(JsonUtil.writeValueAsBytes(entryList));
-                                 return x7e;
-                             })
-                             .collect(Collectors.toList());
+            return createBroadcasts();
         }
         return null;
     }
@@ -600,7 +576,53 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
     public void appendLogs(List<LogEntry> entryList)
     {
         //offer all
-        _AppendLogList.addAll(entryList);
+        _AppendLogQueue.addAll(entryList);
     }
 
+    public List<X7E_RaftBroadcast> newLogEntry(IControl<ZContext> request, long raftClientId)
+    {
+        LogEntry newEntry = new LogEntry();
+        newEntry.setIndex(_SelfMachine.getIndex() + 1);
+        newEntry.setTerm(_SelfMachine.getTerm());
+        newEntry.setRaftClientId(raftClientId);
+        newEntry.setPayloadSerial(request.serial());
+        newEntry.setPayload(request.encode());
+        if (_RaftDao.append(newEntry)) {
+            _SelfMachine.increaseIndex();
+            return createBroadcasts();
+        }
+        throw new IllegalStateException("Raft WAL failed!");
+    }
+
+    private List<X7E_RaftBroadcast> createBroadcasts()
+    {
+        return _RaftGraph.getNodeMap()
+                         .entrySet()
+                         .stream()
+                         .filter(entry -> entry.getKey() != _SelfMachine.getPeerId())
+                         .map(entry ->
+                         {
+                             X7E_RaftBroadcast x7e = new X7E_RaftBroadcast(_ZUID.getId());
+                             x7e.setPeerId(_SelfMachine.getPeerId());
+                             x7e.setTerm(_SelfMachine.getTerm());
+                             x7e.setCommit(_SelfMachine.getCommit());
+                             x7e.setPreIndex(_SelfMachine.getIndex());
+                             x7e.setPreIndexTerm(_SelfMachine.getIndexTerm());
+                             x7e.setFollower(entry.getKey());
+                             if (entry.getValue()
+                                      .getIndex() == _SelfMachine.getIndex()) return x7e;
+                             List<LogEntry> entryList = new LinkedList<>();
+                             RaftMachine follower = entry.getValue();
+                             LogEntry logEntry = _RaftDao.getEntry(follower.getIndex() + 1);
+                             if (logEntry == null) return x7e;//leader 也没有这么久远的数据需要等install snapshot之后才能恢复正常同步
+                             x7e.setPreIndex(logEntry.getIndex());
+                             x7e.setPreIndexTerm(logEntry.getTerm());
+                             entryList.add(logEntry);
+                             for (long i = logEntry.getIndex() + 1, l = _SelfMachine.getIndex(); i <= l; i++)
+                                 entryList.add(_RaftDao.getEntry(i));
+                             x7e.setPayload(JsonUtil.writeValueAsBytes(entryList));
+                             return x7e;
+                         })
+                         .collect(Collectors.toList());
+    }
 }

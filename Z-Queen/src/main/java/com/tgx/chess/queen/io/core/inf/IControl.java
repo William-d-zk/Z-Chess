@@ -81,4 +81,8 @@ public interface IControl<C extends IContext<C>>
         return false;
     }
 
+    default IControl<C> failed(int code)
+    {
+        return null;
+    }
 }

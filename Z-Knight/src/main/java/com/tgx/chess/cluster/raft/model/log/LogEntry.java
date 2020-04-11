@@ -37,11 +37,13 @@ public class LogEntry
         implements
         IProtocol
 {
-    private final static int _SERIAL = INTERNAL_SERIAL + 2;
+    private final static int _LOG_SERIAL = INTERNAL_SERIAL + 2;
 
-    private long   term;
-    private long   index;
-    private byte[] payload;
+    private long   mTerm;
+    private long   mIndex;
+    private long   mRaftClientId;
+    private int    mPayloadSerial;
+    private byte[] mPayload;
 
     @JsonIgnore
     private int length;
@@ -55,7 +57,7 @@ public class LogEntry
     @Override
     public int serial()
     {
-        return _SERIAL;
+        return _LOG_SERIAL;
     }
 
     @Override
@@ -66,42 +68,37 @@ public class LogEntry
 
     public long getTerm()
     {
-        return term;
+        return mTerm;
     }
 
     public void setTerm(long term)
     {
-        this.term = term;
+        this.mTerm = term;
     }
 
     public long getIndex()
     {
-        return index;
+        return mIndex;
     }
 
     public void setIndex(long index)
     {
-        this.index = index;
+        this.mIndex = index;
     }
 
     public byte[] getPayload()
     {
-        return payload;
+        return mPayload;
     }
 
     public void setPayload(byte[] payload)
     {
-        this.payload = payload;
+        this.mPayload = payload;
     }
 
     @Override
     public int decode(byte[] data)
     {
-        LogEntry json = JsonUtil.readValue(data, getClass());
-        Objects.requireNonNull(json);
-        index = json.getIndex();
-        term = json.getTerm();
-        payload = json.getPayload();
         return length = data.length;
     }
 
@@ -112,5 +109,25 @@ public class LogEntry
         Objects.requireNonNull(data);
         length = data.length;
         return data;
+    }
+
+    public int getPayloadSerial()
+    {
+        return mPayloadSerial;
+    }
+
+    public void setPayloadSerial(int payloadSerial)
+    {
+        mPayloadSerial = payloadSerial;
+    }
+
+    public long getRaftClientId()
+    {
+        return mRaftClientId;
+    }
+
+    public void setRaftClientId(long raftClientId)
+    {
+        mRaftClientId = raftClientId;
     }
 }
