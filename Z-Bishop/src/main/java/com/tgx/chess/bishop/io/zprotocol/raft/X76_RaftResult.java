@@ -22,23 +22,75 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.queen.event.inf;
+package com.tgx.chess.bishop.io.zprotocol.raft;
 
-import java.util.List;
+import com.tgx.chess.bishop.io.zprotocol.ZCommand;
+import com.tgx.chess.king.base.util.IoUtil;
 
-import com.tgx.chess.king.base.inf.ITriple;
-import com.tgx.chess.queen.db.inf.IStorage;
-import com.tgx.chess.queen.io.core.inf.IContext;
-import com.tgx.chess.queen.io.core.inf.IControl;
-import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.manager.QueenManager;
-
-public interface ICustomLogic<C extends IContext<C>,
-                              T extends IStorage>
+/**
+ * @author william.d.zk
+ * @date 2020/4/11
+ */
+public class X76_RaftResult
+        extends
+        ZCommand
 {
-    IControl<C>[] handle(QueenManager<C> manager, ISession<C> session, IControl<C> content) throws Exception;
+    public final static int COMMAND = 0x76;
 
-    List<ITriple> consensus(QueenManager<C> manager, IControl<C> request, ISession<C> session);
+    public X76_RaftResult()
+    {
+        super(COMMAND, true);
+    }
 
-    List<ITriple> onTransfer(QueenManager<C> manager, T content);
+    public X76_RaftResult(long msgId)
+    {
+        super(COMMAND, msgId);
+    }
+
+    private int mCommandId;
+    private int mCode;
+
+    public int getCommandId()
+    {
+        return mCommandId;
+    }
+
+    public void setCommandId(int commandId)
+    {
+        mCommandId = commandId;
+    }
+
+    @Override
+    public int encodec(byte[] data, int pos)
+    {
+        pos += IoUtil.writeByte(mCommandId, data, pos);
+        pos += IoUtil.write(getPayload(), data, pos);
+        return pos;
+    }
+
+    @Override
+    public int decodec(byte[] data, int pos)
+    {
+        mCommandId = data[pos++] & 0xFF;
+        byte[] payload = new byte[data.length - pos];
+        setPayload(payload);
+        pos += payload.length;
+        return pos;
+    }
+
+    @Override
+    public int dataLength()
+    {
+        return super.dataLength() + 1;
+    }
+
+    public int getCode()
+    {
+        return mCode;
+    }
+
+    public void setCode(int code)
+    {
+        mCode = code;
+    }
 }

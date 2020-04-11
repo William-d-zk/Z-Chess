@@ -24,13 +24,10 @@
 
 package com.tgx.chess.bishop.io.mqtt.filter;
 
+import static com.tgx.chess.bishop.io.mqtt.filter.QttCommandFactory.createQttControl;
+
 import com.tgx.chess.bishop.io.mqtt.QttControl;
 import com.tgx.chess.bishop.io.mqtt.QttFrame;
-import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
-import com.tgx.chess.bishop.io.mqtt.control.X112_QttConnack;
-import com.tgx.chess.bishop.io.mqtt.control.X11C_QttPingreq;
-import com.tgx.chess.bishop.io.mqtt.control.X11D_QttPingresp;
-import com.tgx.chess.bishop.io.mqtt.control.X11E_QttDisconnect;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
@@ -75,28 +72,8 @@ public class QttControlFilter
     @Override
     public QttControl decode(ZContext context, QttFrame input)
     {
-        QttControl qttControl;
-        switch (input.getType())
-        {
-            case CONNECT:
-                qttControl = new X111_QttConnect();
-                break;
-            case CONNACK:
-                qttControl = new X112_QttConnack();
-                break;
-            case PINGREQ:
-                qttControl = new X11C_QttPingreq();
-                break;
-            case PINGRESP:
-                qttControl = new X11D_QttPingresp();
-                break;
-            case DISCONNECT:
-                qttControl = new X11E_QttDisconnect();
-                break;
-            default:
-                throw new IllegalArgumentException("MQTT type error");
-        }
-        qttControl.decode(input.getPayload());
-        return qttControl;
+        QttControl qttControl = createQttControl(input);
+        if (qttControl == null) throw new IllegalArgumentException("MQTT type error");
+        else return qttControl;
     }
 }

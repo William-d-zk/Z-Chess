@@ -24,8 +24,6 @@
 
 package com.tgx.chess.bishop.biz.device;
 
-import static com.tgx.chess.queen.event.inf.IOperator.Type.CONSENSUS;
-
 import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.List;
@@ -324,7 +322,7 @@ public class DeviceNode
     }
 
     @Override
-    public <T extends IStorage> void publishConsensus(T content)
+    public <T extends IStorage> void publishConsensus(IOperator.Type type, T content)
     {
         final RingBuffer<QEvent> _LocalSendEvent = _ServerCore.getConsensusEvent();
         final ReentrantLock _LocalLock = _ServerCore.getConsensusLock();
@@ -333,7 +331,7 @@ public class DeviceNode
                 long sequence = _LocalSendEvent.next();
                 try {
                     QEvent event = _LocalSendEvent.get(sequence);
-                    event.produce(CONSENSUS, new Pair<>(content, null), null);
+                    event.produce(type, new Pair<>(content, null), null);
                 }
                 finally {
                     _LocalSendEvent.publish(sequence);

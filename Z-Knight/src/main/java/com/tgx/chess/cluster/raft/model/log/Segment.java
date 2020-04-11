@@ -32,6 +32,7 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 
+import com.tgx.chess.json.JsonUtil;
 import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.king.base.log.Logger;
 
@@ -158,13 +159,15 @@ public class Segment
             long entryStart = mRandomAccessFile.getFilePointer();
             byte[] data = new byte[length];
             mRandomAccessFile.read(data);
-            LogEntry entry = new LogEntry();
-            entry.decode(data);
-            endIndex = entry.getIndex();
-            if (startIndex < 0) {
-                startIndex = endIndex;
+            LogEntry entry = JsonUtil.readValue(data, LogEntry.class);
+            if (entry != null) {
+                entry.decode(data);
+                endIndex = entry.getIndex();
+                if (startIndex < 0) {
+                    startIndex = endIndex;
+                }
+                mRecords.add(new Record(entryStart, entry));
             }
-            mRecords.add(new Record(entryStart, entry));
             offset = mRandomAccessFile.getFilePointer();
         }
         if (startIndex != _StartIndex) {

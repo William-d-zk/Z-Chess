@@ -25,16 +25,20 @@
 package com.tgx.chess.rook.io;
 
 import com.tgx.chess.bishop.io.mqtt.QttContext;
+import com.tgx.chess.bishop.io.mqtt.QttFrame;
+import com.tgx.chess.bishop.io.mqtt.filter.QttCommandFactory;
 import com.tgx.chess.bishop.io.mqtt.filter.QttCommandFilter;
 import com.tgx.chess.bishop.io.mqtt.filter.QttControlFilter;
 import com.tgx.chess.bishop.io.mqtt.filter.QttFrameFilter;
 import com.tgx.chess.bishop.io.ws.WsContext;
+import com.tgx.chess.bishop.io.ws.WsFrame;
 import com.tgx.chess.bishop.io.ws.filter.WsControlFilter;
 import com.tgx.chess.bishop.io.ws.filter.WsFrameFilter;
 import com.tgx.chess.bishop.io.ws.filter.WsHandShakeFilter;
 import com.tgx.chess.bishop.io.zfilter.ZCommandFilter;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zfilter.ZTlsFilter;
+import com.tgx.chess.bishop.io.zprotocol.ZCommand;
 import com.tgx.chess.bishop.io.zprotocol.ZConsumerFactory;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.operator.AioWriter;
@@ -43,6 +47,8 @@ import com.tgx.chess.queen.event.operator.ErrorOperator;
 import com.tgx.chess.queen.event.operator.PipeDecoder;
 import com.tgx.chess.queen.event.operator.PipeEncoder;
 import com.tgx.chess.queen.event.operator.TransferOperator;
+import com.tgx.chess.queen.io.core.inf.ICommandFactory;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IFilterChain;
 import com.tgx.chess.queen.io.core.inf.IPipeDecoder;
 import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
@@ -66,9 +72,17 @@ public enum ConsumerZSort
     WS_CONSUMER
     {
         @Override
-        public ZContext newContext(ISessionOption option )
+        public ZContext newContext(ISessionOption option)
         {
             return new WsContext(option, this);
+        }
+
+        @Override
+        public ICommandFactory<ZContext,
+                               ZCommand,
+                               WsFrame> getCommandFactory()
+        {
+            return _ZConsumerFactory;
         }
 
         @Override
@@ -96,6 +110,14 @@ public enum ConsumerZSort
         {
             return _HandshakeFilter;
         }
+
+        @Override
+        public ICommandFactory<ZContext,
+                               ZCommand,
+                               WsFrame> getCommandFactory()
+        {
+            return _ZConsumerFactory;
+        }
     },
     QTT_SYMMETRY
     {
@@ -117,6 +139,13 @@ public enum ConsumerZSort
             return new QttContext(option, this);
         }
 
+        @Override
+        public ICommandFactory<ZContext,
+                               IControl<ZContext>,
+                               QttFrame> getCommandFactory()
+        {
+            return _QttCommandFactory;
+        }
     };
 
     @Override
@@ -137,15 +166,16 @@ public enum ConsumerZSort
     private final IPipeEncoder<ZContext>   _ConsumerEncoder  = new PipeEncoder<>(_AioWriter);
     private final IPipeTransfer<ZContext>  _ConsumerTransfer = new TransferOperator<>();
     private final IPipeDecoder<ZContext>   _ConsumerDecoder  = new PipeDecoder<>();
-    final WsHandShakeFilter                _HandshakeFilter  = new WsHandShakeFilter();
+
+    final ZConsumerFactory  _ZConsumerFactory  = new ZConsumerFactory();
+    final QttCommandFactory _QttCommandFactory = new QttCommandFactory();
+    final WsHandShakeFilter _HandshakeFilter   = new WsHandShakeFilter();
     {
         IFilterChain<ZContext> header = new ZTlsFilter();
         _HandshakeFilter.linkAfter(header)
                         .linkFront(new WsFrameFilter())
                         .linkFront(new WsControlFilter())
-                        .linkFront(new ZCommandFilter(new ZConsumerFactory()
-                        {
-                        }));
+                        .linkFront(new ZCommandFilter(_ZConsumerFactory));
     }
 
     final QttFrameFilter _QttFrameFilter = new QttFrameFilter();

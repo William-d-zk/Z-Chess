@@ -25,6 +25,7 @@
 package com.tgx.chess.queen.io.core.inf;
 
 import com.tgx.chess.queen.db.inf.IStorage;
+import com.tgx.chess.queen.event.inf.IOperator;
 
 /**
  * @author william.d.zk
@@ -32,5 +33,5 @@ import com.tgx.chess.queen.db.inf.IStorage;
  */
 public interface IConsensus
 {
-    <T extends IStorage> void publishConsensus(T content);
+    <T extends IStorage> void publishConsensus(IOperator.Type type, T content);
 }

@@ -27,6 +27,8 @@ package com.tgx.chess.spring.device.service;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -45,9 +47,13 @@ import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
 import com.tgx.chess.bishop.io.zprotocol.device.X21_SignUpResult;
 import com.tgx.chess.bishop.io.zprotocol.device.X24_UpdateToken;
 import com.tgx.chess.bishop.io.zprotocol.device.X25_AuthorisedToken;
+import com.tgx.chess.bishop.io.zprotocol.raft.X75_RaftRequest;
+import com.tgx.chess.bishop.io.zprotocol.raft.X76_RaftResult;
+import com.tgx.chess.cluster.raft.model.RaftCode;
 import com.tgx.chess.king.base.exception.LinkRejectException;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.util.Pair;
+import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.inf.ICustomLogic;
@@ -64,8 +70,12 @@ public class LinkCustom
         ICustomLogic<ZContext,
                      MessageEntry>
 {
-    private final IRepository<DeviceEntry> _DeviceRepository;
-    private IQttRouter                     mQttRouter;
+    private final IRepository<DeviceEntry>                                                     _DeviceRepository;
+    private final NavigableMap<Long,
+                               Triple<IControl<ZContext>,
+                                      ISession<ZContext>,
+                                      RaftCode>>                                               _NotifyMap = new TreeMap<>();
+    private IQttRouter                                                                         mQttRouter;
 
     @Autowired
     public LinkCustom(IRepository<DeviceEntry> deviceRepository)
@@ -91,6 +101,9 @@ public class LinkCustom
                 X24_UpdateToken x24 = (X24_UpdateToken) content;
                 X25_AuthorisedToken x25 = new X25_AuthorisedToken();
                 return new IControl[] { x25 };
+            case X75_RaftRequest.COMMAND:
+
+                return new IControl[] {};
             case X111_QttConnect.COMMAND:
                 X111_QttConnect x111 = (X111_QttConnect) content;
                 DeviceEntry device = new DeviceEntry();
@@ -167,13 +180,13 @@ public class LinkCustom
     }
 
     @Override
-    public IControl<ZContext> consensus(QueenManager<ZContext> manager,
-                                        ISession<ZContext> session,
-                                        IControl<ZContext> content) throws Exception
+    public Pair<IControl<ZContext>,
+                ISession<ZContext>> consensus(IControl<ZContext> request, ISession<ZContext> session)
     {
-
-        return content.isConsensus() ? content
-                                     : null;
+        long zid = _DeviceRepository.getZid();
+        X75_RaftRequest x75 = new X75_RaftRequest(zid);
+        x75.setPayload(request.encode());
+        return new Pair<>(x75, session);
     }
 
     @Override
@@ -195,6 +208,11 @@ public class LinkCustom
     public DeviceEntry findDevice(DeviceEntry entry)
     {
         return _DeviceRepository.find(entry);
+    }
+
+    private void onConsensusResult(X76_RaftResult x76)
+    {
+
     }
 
 }

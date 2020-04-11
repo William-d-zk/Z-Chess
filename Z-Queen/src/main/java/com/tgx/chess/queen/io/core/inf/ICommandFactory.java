@@ -34,7 +34,10 @@ package com.tgx.chess.queen.io.core.inf;
  * @see ICommandCreator
  */
 public interface ICommandFactory<C extends IContext<C>,
-                                 T extends IControl<C>>
+                                 T extends IControl<C>,
+                                 I extends IFrame>
 {
-    T create(int command);
+    T create(I frame);
+
+    T create(int serial);
 }

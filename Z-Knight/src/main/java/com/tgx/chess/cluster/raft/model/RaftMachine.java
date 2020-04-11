@@ -81,7 +81,7 @@ public class RaftMachine
     @Override
     public int dataLength()
     {
-        return 0;
+        return mLength;
     }
 
     @Override
@@ -89,6 +89,7 @@ public class RaftMachine
     {
         RaftMachine json = JsonUtil.readValue(data, getClass());
         Objects.requireNonNull(json);
+        assert (_PeerId == json.getPeerId());
         mTerm = json.getTerm();
         mIndex = json.getIndex();
         mIndexTerm = json.getIndexTerm();
@@ -336,6 +337,12 @@ public class RaftMachine
     public void increaseApplied()
     {
         mApplied++;
+    }
+
+    @Override
+    public void increaseIndex()
+    {
+        ++mIndex;
     }
 
     @Override

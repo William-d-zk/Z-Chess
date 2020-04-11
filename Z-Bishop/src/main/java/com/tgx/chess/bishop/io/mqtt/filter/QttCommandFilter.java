@@ -24,17 +24,10 @@
 
 package com.tgx.chess.bishop.io.mqtt.filter;
 
+import static com.tgx.chess.bishop.io.mqtt.filter.QttCommandFactory.createQttCommand;
+
 import com.tgx.chess.bishop.io.mqtt.QttCommand;
 import com.tgx.chess.bishop.io.mqtt.QttFrame;
-import com.tgx.chess.bishop.io.mqtt.control.X113_QttPublish;
-import com.tgx.chess.bishop.io.mqtt.control.X114_QttPuback;
-import com.tgx.chess.bishop.io.mqtt.control.X115_QttPubrec;
-import com.tgx.chess.bishop.io.mqtt.control.X116_QttPubrel;
-import com.tgx.chess.bishop.io.mqtt.control.X117_QttPubcomp;
-import com.tgx.chess.bishop.io.mqtt.control.X118_QttSubscribe;
-import com.tgx.chess.bishop.io.mqtt.control.X119_QttSuback;
-import com.tgx.chess.bishop.io.mqtt.control.X11A_QttUnsubscribe;
-import com.tgx.chess.bishop.io.mqtt.control.X11B_QttUnsuback;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
@@ -66,42 +59,9 @@ public class QttCommandFilter
     @Override
     public QttCommand decode(ZContext context, QttFrame input)
     {
-        QttCommand cmd;
-        switch (input.getType())
-        {
-            case PUBLISH:
-                cmd = new X113_QttPublish();
-                break;
-            case PUBACK:
-                cmd = new X114_QttPuback();
-                break;
-            case PUBREC:
-                cmd = new X115_QttPubrec();
-                break;
-            case PUBREL:
-                cmd = new X116_QttPubrel();
-                break;
-            case PUBCOMP:
-                cmd = new X117_QttPubcomp();
-                break;
-            case SUBSCRIBE:
-                cmd = new X118_QttSubscribe();
-                break;
-            case SUBACK:
-                cmd = new X119_QttSuback();
-                break;
-            case UNSUBSCRIBE:
-                cmd = new X11A_QttUnsubscribe();
-                break;
-            case UNSUBACK:
-                cmd = new X11B_QttUnsuback();
-                break;
-            default:
-                throw new IllegalArgumentException("MQTT type error");
-        }
-        cmd.setCtrl(input.getCtrl());
-        cmd.decode(input.getPayload());
-        return cmd;
+        QttCommand qttCommand = createQttCommand(input);
+        if (qttCommand == null) throw new IllegalArgumentException("MQTT type error");
+        else return qttCommand;
     }
 
     @Override

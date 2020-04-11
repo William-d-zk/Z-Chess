@@ -46,4 +46,5 @@ public interface IRepository<T>
 
     long getPeerId();
 
+    long getZid();
 }

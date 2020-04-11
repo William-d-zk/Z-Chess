@@ -156,4 +156,10 @@ public class MessageRepository
     {
         return _ZUid.getDevicePeerId();
     }
+
+    @Override
+    public long getZid()
+    {
+        return _ZUid.getId();
+    }
 }

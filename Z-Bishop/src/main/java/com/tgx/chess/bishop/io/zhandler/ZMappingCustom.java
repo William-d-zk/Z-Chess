@@ -92,11 +92,11 @@ public class ZMappingCustom<T extends IStorage>
     }
 
     @Override
-    public IControl<ZContext> consensus(QueenManager<ZContext> manager,
-                                        ISession<ZContext> session,
-                                        IControl<ZContext> content) throws Exception
+    public List<ITriple> consensus(QueenManager<ZContext> manager,
+                                   IControl<ZContext> request,
+                                   ISession<ZContext> session)
     {
-        return _Then != null ? _Then.consensus(manager, session, content)
+        return _Then != null ? _Then.consensus(manager, request, session)
                              : null;
     }
 }

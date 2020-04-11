@@ -25,10 +25,13 @@
 package com.tgx.chess.bishop.io;
 
 import com.tgx.chess.bishop.io.mqtt.QttContext;
+import com.tgx.chess.bishop.io.mqtt.QttFrame;
+import com.tgx.chess.bishop.io.mqtt.filter.QttCommandFactory;
 import com.tgx.chess.bishop.io.mqtt.filter.QttCommandFilter;
 import com.tgx.chess.bishop.io.mqtt.filter.QttControlFilter;
 import com.tgx.chess.bishop.io.mqtt.filter.QttFrameFilter;
 import com.tgx.chess.bishop.io.ws.WsContext;
+import com.tgx.chess.bishop.io.ws.WsFrame;
 import com.tgx.chess.bishop.io.ws.filter.WsControlFilter;
 import com.tgx.chess.bishop.io.ws.filter.WsFrameFilter;
 import com.tgx.chess.bishop.io.ws.filter.WsHandShakeFilter;
@@ -36,6 +39,7 @@ import com.tgx.chess.bishop.io.zfilter.ZCommandFilter;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zfilter.ZTlsFilter;
 import com.tgx.chess.bishop.io.zprotocol.ZClusterFactory;
+import com.tgx.chess.bishop.io.zprotocol.ZCommand;
 import com.tgx.chess.bishop.io.zprotocol.ZServerFactory;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.operator.AioWriter;
@@ -44,6 +48,8 @@ import com.tgx.chess.queen.event.operator.ErrorOperator;
 import com.tgx.chess.queen.event.operator.PipeDecoder;
 import com.tgx.chess.queen.event.operator.PipeEncoder;
 import com.tgx.chess.queen.event.operator.TransferOperator;
+import com.tgx.chess.queen.io.core.inf.ICommandFactory;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IFilterChain;
 import com.tgx.chess.queen.io.core.inf.IPipeDecoder;
 import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
@@ -89,6 +95,14 @@ public enum ZSort
         {
             return new WsContext(option, this);
         }
+
+        @Override
+        public ICommandFactory<ZContext,
+                               ZCommand,
+                               WsFrame> getCommandFactory()
+        {
+            return _ClusterFactory;
+        }
     },
     /**
      *
@@ -118,6 +132,14 @@ public enum ZSort
         {
             return new WsContext(option, this);
         }
+
+        @Override
+        public ICommandFactory<ZContext,
+                               ZCommand,
+                               WsFrame> getCommandFactory()
+        {
+            return _ClusterFactory;
+        }
     },
     WS_CLUSTER_SYMMETRY
     {
@@ -143,6 +165,14 @@ public enum ZSort
         public ZContext newContext(ISessionOption option)
         {
             return new WsContext(option, this);
+        }
+
+        @Override
+        public ICommandFactory<ZContext,
+                               ZCommand,
+                               WsFrame> getCommandFactory()
+        {
+            return _ClusterFactory;
         }
     },
     /**
@@ -173,6 +203,14 @@ public enum ZSort
         public ZContext newContext(ISessionOption option)
         {
             return new WsContext(option, this);
+        }
+
+        @Override
+        public ICommandFactory<ZContext,
+                               ZCommand,
+                               WsFrame> getCommandFactory()
+        {
+            return _ServerFactory;
         }
     },
     /**
@@ -209,6 +247,14 @@ public enum ZSort
         {
             return new WsContext(option, this);
         }
+
+        @Override
+        public ICommandFactory<ZContext,
+                               ZCommand,
+                               WsFrame> getCommandFactory()
+        {
+            return _ServerFactory;
+        }
     },
     MQ_QTT_SYMMETRY
     {
@@ -234,6 +280,14 @@ public enum ZSort
         public ZContext newContext(ISessionOption option)
         {
             return new QttContext(option, this);
+        }
+
+        @Override
+        public ICommandFactory<ZContext,
+                               IControl<ZContext>,
+                               QttFrame> getCommandFactory()
+        {
+            return _QttCommandFactory;
         }
     },
     QTT_SERVER
@@ -261,9 +315,20 @@ public enum ZSort
         {
             return new QttContext(option, this);
         }
+
+        @Override
+        public ICommandFactory<ZContext,
+                               IControl<ZContext>,
+                               QttFrame> getCommandFactory()
+        {
+            return _QttCommandFactory;
+        }
     };
 
-    final QttFrameFilter _QttFrameFilter = new QttFrameFilter();
+    final ZServerFactory    _ServerFactory     = new ZServerFactory();
+    final ZClusterFactory   _ClusterFactory    = new ZClusterFactory();
+    final QttCommandFactory _QttCommandFactory = new QttCommandFactory();
+    final QttFrameFilter    _QttFrameFilter    = new QttFrameFilter();
     {
         _QttFrameFilter.linkAfter(new ZTlsFilter());
         _QttFrameFilter.linkFront(new QttControlFilter())
@@ -275,18 +340,14 @@ public enum ZSort
         _WsHandshakeFilter.linkAfter(header);
         _WsHandshakeFilter.linkFront(new WsFrameFilter())
                           .linkFront(new WsControlFilter())
-                          .linkFront(new ZCommandFilter(new ZServerFactory()
-                          {
-                          }));
+                          .linkFront(new ZCommandFilter(_ServerFactory));
     }
 
     final WsFrameFilter _ClusterFrameFilter = new WsFrameFilter();
     {
         _ClusterFrameFilter.linkAfter(new ZTlsFilter());
         _ClusterFrameFilter.linkFront(new WsControlFilter())
-                           .linkFront(new ZCommandFilter(new ZClusterFactory()
-                           {
-                           }));
+                           .linkFront(new ZCommandFilter(_ClusterFactory));
     }
 
     private final AioWriter<ZContext>      _AioWriter     = new AioWriter<>();
@@ -325,5 +386,4 @@ public enum ZSort
     {
         return _ErrorOperator;
     }
-
 }

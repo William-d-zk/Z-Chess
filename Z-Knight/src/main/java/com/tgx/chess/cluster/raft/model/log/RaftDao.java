@@ -190,7 +190,7 @@ public class RaftDao
 
     public void updateLogMeta(long start)
     {
-        updateLogMeta(-1, start, 0);
+        updateLogMeta(TERM_NAN, start, ZUID.INVALID_PEER_ID);
     }
 
     @Override
@@ -285,6 +285,7 @@ public class RaftDao
             Objects.requireNonNull(targetSegment);
             targetSegment.addRecord(entry);
             vTotalSize += entrySize;
+            mLogMeta.setIndex(newEndIndex);
             return true;
         }
         return false;

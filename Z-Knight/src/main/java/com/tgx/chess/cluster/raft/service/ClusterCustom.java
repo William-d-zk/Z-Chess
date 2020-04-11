@@ -27,6 +27,7 @@ package com.tgx.chess.cluster.raft.service;
 import static com.tgx.chess.cluster.raft.RaftState.CANDIDATE;
 import static com.tgx.chess.cluster.raft.RaftState.LEADER;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -35,12 +36,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.tgx.chess.bishop.ZUID;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
-import com.tgx.chess.bishop.io.zprotocol.control.X109_Consensus;
 import com.tgx.chess.bishop.io.zprotocol.raft.X72_RaftVote;
+import com.tgx.chess.bishop.io.zprotocol.raft.X75_RaftRequest;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7E_RaftBroadcast;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
+import com.tgx.chess.cluster.raft.model.RaftCode;
 import com.tgx.chess.cluster.raft.model.RaftMachine;
 import com.tgx.chess.cluster.raft.model.RaftNode;
 import com.tgx.chess.cluster.raft.model.log.LogEntry;
@@ -68,7 +71,8 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
     private final TypeReference<List<LogEntry>> _TypeReferenceOfLogEntryList = new TypeReference<List<LogEntry>>()
                                                                              {
                                                                              };
-    private RaftNode<T>                         mRaftNode;
+
+    private RaftNode<T> mRaftNode;
 
     @Autowired
     public ClusterCustom(IRepository<RaftNode<T>> clusterRepository)
@@ -118,30 +122,6 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
                 break;
 
         }
-        return null;
-    }
-
-    @Override
-    public IControl<ZContext> consensus(QueenManager<ZContext> manager,
-                                        ISession<ZContext> session,
-                                        IControl<ZContext> content) throws Exception
-    {
-
-        switch (content.serial())
-        {
-            case X7E_RaftBroadcast.COMMAND:
-                //状态机已完成merge 但并未执行apply，此处执行apply 操作，并将diff发送给LINK 完成业务端的一致化
-                List<LogEntry> diff = mRaftNode.diff();
-                mRaftNode.apply();
-                if (diff != null) {
-                    byte[] payload = JsonUtil.writeValueAsBytes(diff);
-                    X109_Consensus x109 = new X109_Consensus();
-                    x109.setPayload(payload);
-                    return x109;
-                }
-                break;
-        }
-
         return null;
     }
 
@@ -201,6 +181,63 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
                 break;
         }
         return null;
+    }
+
+    @Override
+    public List<ITriple> consensus(QueenManager<ZContext> manager,
+                                   IControl<ZContext> request,
+                                   ISession<ZContext> session)
+    {
+        if (mRaftNode.getMachine()
+                     .getState() == LEADER)
+        {
+            List<X7E_RaftBroadcast> broadcasts = mRaftNode.newLogEntry(request, session.getIndex());
+            return broadcasts.stream()
+                             .map(x7e ->
+                             {
+                                 long follower = x7e.getFollower();
+                                 ISession<ZContext> targetSession = manager.findSessionByPrefix(follower);
+                                 if (targetSession != null) {
+                                     //此处不用判断是否管理，执行线程与 onDismiss在同一线程，只要存在此时的状态一定为valid
+                                     x7e.setSession(targetSession);
+                                     return new Triple<>(x7e,
+                                                         targetSession,
+                                                         targetSession.getContext()
+                                                                      .getSort()
+                                                                      .getEncoder());
+                                 }
+                                 else return null;
+                             })
+                             .filter(Objects::nonNull)
+                             .collect(Collectors.toList());
+        }
+        else if (mRaftNode.getMachine()
+                          .getLeader() != ZUID.INVALID_PEER_ID)
+        {
+            X75_RaftRequest x75 = new X75_RaftRequest(_ClusterRepository.getZid());
+            x75.setCommandId(request.serial());
+            x75.setPayload(request.encode());
+            ISession<ZContext> targetSession = manager.findSessionByPrefix(mRaftNode.getMachine()
+                                                                                    .getLeader());
+
+            return targetSession == null ? Collections.singletonList(new Triple<>(request.failed(RaftCode.LEADER_DIS.getCode()),
+                                                                                  session,
+                                                                                  session.getContext()
+                                                                                         .getSort()
+                                                                                         .getEncoder()))
+                                         : Collections.singletonList(new Triple<>(x75,
+                                                                                  targetSession,
+                                                                                  targetSession.getContext()
+                                                                                               .getSort()
+                                                                                               .getEncoder()));
+        }
+        else {
+            return Collections.singletonList(new Triple<>(request.failed(RaftCode.NO_LEADER.getCode()),
+                                                          session,
+                                                          session.getContext()
+                                                                 .getSort()
+                                                                 .getEncoder()));
+        }
     }
 
     public void setRaftNode(RaftNode<T> raftNode)

@@ -93,4 +93,6 @@ public interface IRaftMachine
     void increaseTerm();
 
     void increaseApplied();
+
+    void increaseIndex();
 }

@@ -81,4 +81,10 @@ public class ClusterRepository<T extends IActivity<ZContext> & IClusterPeer & IC
     {
         return _ZUid.getPeerId();
     }
+
+    @Override
+    public long getZid()
+    {
+        return _ZUid.getId();
+    }
 }

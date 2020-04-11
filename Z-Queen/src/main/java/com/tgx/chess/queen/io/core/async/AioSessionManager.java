@@ -23,6 +23,8 @@
  */
 package com.tgx.chess.queen.io.core.async;
 
+import static com.tgx.chess.queen.io.core.inf.ISession.PREFIX_MAX;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -114,7 +116,17 @@ public abstract class AioSessionManager<C extends IContext<C>>
     @Override
     public void rmSession(ISession<C> session)
     {
-        _SessionsSets[getSlot(session)].remove(session);
+        int slot = getSlot(session);
+        _SessionsSets[slot].remove(session);
+        long[] prefixArray = session.getPrefixArray();
+        for (long prefix : prefixArray) {
+            _Prefix2SessionMaps[slot].get(prefix & PREFIX_MAX)
+                                     .remove(session);
+        }
+        ISession<C> old = _Index2SessionMaps[slot].get(session.getIndex());
+        if (old == session) {
+            _Index2SessionMaps[slot].remove(session.getIndex());
+        }
     }
 
     /**

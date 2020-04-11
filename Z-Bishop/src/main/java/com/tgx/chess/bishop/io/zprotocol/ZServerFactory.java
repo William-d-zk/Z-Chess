@@ -24,6 +24,7 @@
 
 package com.tgx.chess.bishop.io.zprotocol;
 
+import com.tgx.chess.bishop.io.ws.WsFrame;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
 import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
@@ -37,21 +38,23 @@ import com.tgx.chess.queen.io.core.inf.ICommandFactory;
  * @author william.d.zk
  * @date 2019-05-08
  */
-public interface ZServerFactory
-        extends
+public class ZServerFactory
+        implements
         ICommandFactory<ZContext,
-                        ZCommand>
+                        ZCommand,
+                        WsFrame>
 {
 
     @Override
-    default ZCommand create(int command)
+    public ZCommand create(WsFrame frame)
     {
-        return serverCommand(command);
+        return create(frame.getPayload()[1] & 0xFF);
     }
 
-    default ZCommand serverCommand(int command)
+    @Override
+    public ZCommand create(int serial)
     {
-        switch (command)
+        switch (serial)
         {
             case X20_SignUp.COMMAND:
                 return new X20_SignUp();
@@ -69,4 +72,5 @@ public interface ZServerFactory
                 return null;
         }
     }
+
 }
