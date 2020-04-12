@@ -24,7 +24,6 @@
 package com.tgx.chess.bishop.io.zfilter;
 
 import java.util.Arrays;
-import java.util.Objects;
 
 import com.tgx.chess.bishop.io.ws.WsFrame;
 import com.tgx.chess.bishop.io.zprotocol.ZCommand;
@@ -91,7 +90,7 @@ public class ZCommandFilter
     public ICommand<ZContext> decode(ZContext context, WsFrame input)
     {
         ZCommand _command = create(input);
-        if (Objects.isNull(_command)) return null;
+        if (_command == null) return null;
         _command.decode(input.getPayload(), context);
         switch (_command.getCommand())
         {

@@ -63,7 +63,6 @@ public class X75_RaftRequest
     public int encodec(byte[] data, int pos)
     {
         pos += IoUtil.writeByte(mCommandId, data, pos);
-        pos += IoUtil.write(getPayload(), data, pos);
         return pos;
     }
 
@@ -71,9 +70,6 @@ public class X75_RaftRequest
     public int decodec(byte[] data, int pos)
     {
         mCommandId = data[pos++] & 0xFF;
-        byte[] payload = new byte[data.length - pos];
-        setPayload(payload);
-        pos += payload.length;
         return pos;
     }
 

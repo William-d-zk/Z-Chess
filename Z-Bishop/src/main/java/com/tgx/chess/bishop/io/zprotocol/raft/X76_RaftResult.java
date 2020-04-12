@@ -64,7 +64,7 @@ public class X76_RaftResult
     public int encodec(byte[] data, int pos)
     {
         pos += IoUtil.writeByte(mCommandId, data, pos);
-        pos += IoUtil.write(getPayload(), data, pos);
+        pos += IoUtil.writeByte(mCode, data, pos);
         return pos;
     }
 
@@ -72,16 +72,14 @@ public class X76_RaftResult
     public int decodec(byte[] data, int pos)
     {
         mCommandId = data[pos++] & 0xFF;
-        byte[] payload = new byte[data.length - pos];
-        setPayload(payload);
-        pos += payload.length;
+        mCode = data[pos++] & 0xFF;
         return pos;
     }
 
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 1;
+        return super.dataLength() + 2;
     }
 
     public int getCode()

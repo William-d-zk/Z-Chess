@@ -197,7 +197,11 @@ public abstract class ZProtocol
             pos += IoUtil.writeLong(mMsgId, output, pos);
         }
         pos += IoUtil.writeByte(mTypeByte, output, pos);
-        return addCrc(output, encodec(output, pos));
+        pos = encodec(output, pos);
+        if (pos < output.length - 5) {
+            pos += IoUtil.write(getPayload(), output, pos);
+        }
+        return addCrc(output, pos);
     }
 
     @Override
@@ -226,7 +230,13 @@ public abstract class ZProtocol
             pos += 8;
         }
         mTypeByte = input[pos++];
-        return checkCrc(input, decodec(input, pos));
+        pos = decodec(input, pos);
+        if (pos < input.length - 5) {
+            byte[] payload = new byte[input.length - 4 - pos];
+            pos = IoUtil.read(input, pos, payload);
+            setPayload(payload);
+        }
+        return checkCrc(input, pos);
     }
 
     public Charset getCharset()

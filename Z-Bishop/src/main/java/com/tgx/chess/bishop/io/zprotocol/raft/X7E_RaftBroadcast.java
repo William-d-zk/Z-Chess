@@ -81,12 +81,6 @@ public class X7E_RaftBroadcast
         pos += 8;
         mFollower = IoUtil.readLong(data, pos);
         pos += 8;
-        int pLength = data.length - pos;
-        if (pLength > 0) {
-            byte[] m = new byte[pLength];
-            pos = IoUtil.read(data, pos, m, 0, pLength);
-            setPayload(m);
-        }
         return pos;
     }
 
@@ -99,9 +93,6 @@ public class X7E_RaftBroadcast
         pos += IoUtil.writeLong(mPreIndex, data, pos);
         pos += IoUtil.writeLong(mPreIndexTerm, data, pos);
         pos += IoUtil.writeLong(mFollower, data, pos);
-        if (getPayload() != null && getPayload().length > 0) {
-            pos += IoUtil.write(getPayload(), data, pos);
-        }
         return pos;
     }
 
