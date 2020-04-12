@@ -204,7 +204,7 @@ public class MappingHandler<C extends IContext<C>,
                                    .getSecond();
                     try {
                         List<ITriple> result = _CustomLogic.consensus(_QueenManager, received, session);
-                        if (result != null) {
+                        if (result != null && !result.isEmpty()) {
                             publish(_Writer, result);
                         }
                     }
