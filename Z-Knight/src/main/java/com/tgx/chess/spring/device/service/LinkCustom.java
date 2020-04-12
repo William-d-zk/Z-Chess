@@ -180,19 +180,17 @@ public class LinkCustom
     }
 
     @Override
-    public Pair<IControl<ZContext>,
-                ISession<ZContext>> consensus(IControl<ZContext> request, ISession<ZContext> session)
+    public List<ITriple> consensus(QueenManager<ZContext> manager,
+                                   IControl<ZContext> request,
+                                   ISession<ZContext> session)
     {
-        long zid = _DeviceRepository.getZid();
-        X75_RaftRequest x75 = new X75_RaftRequest(zid);
-        x75.setPayload(request.encode());
-        return new Pair<>(x75, session);
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public List<ITriple> onTransfer(QueenManager<ZContext> manager, MessageEntry content)
     {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     public void setQttRouter(IQttRouter qttRouter)

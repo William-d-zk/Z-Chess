@@ -38,7 +38,7 @@ import static com.tgx.chess.cluster.raft.model.RaftCode.SPLIT_CLUSTER;
 import static com.tgx.chess.cluster.raft.model.RaftCode.SUCCESS;
 import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_APPEND;
 import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_INSERT;
-import static com.tgx.chess.queen.event.inf.IOperator.Type.CONSENSUS;
+import static com.tgx.chess.queen.event.inf.IOperator.Type.TIMER;
 import static java.lang.Math.min;
 
 import java.io.IOException;
@@ -125,7 +125,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         update.setIndex(_SelfMachine.getIndex());
         update.setIndexTerm(_SelfMachine.getIndexTerm());
         update.setCommit(_SelfMachine.getCommit());
-        _ClusterPeer.publishConsensus(CONSENSUS, update);
+        _ClusterPeer.publishConsensus(TIMER, update);
         _Logger.info("leader broadcast {%s}", _SelfMachine.toString());
     }
 
@@ -264,7 +264,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         update.setState(CANDIDATE);
         update.setOperation(OP_INSERT);
         update.setLeader(INVALID_PEER_ID);
-        _ClusterPeer.publishConsensus(CONSENSUS, update);
+        _ClusterPeer.publishConsensus(TIMER, update);
         _Logger.info("start vote self {%s}", _SelfMachine.toString());
     }
 
