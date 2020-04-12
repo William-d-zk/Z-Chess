@@ -50,11 +50,12 @@ public class X7F_RaftResponse
     private long mTerm;
     private int  mCode;
     private long mCatchUp;
+    private int  mState;
 
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 25;
+        return super.dataLength() + 26;
     }
 
     @Override
@@ -67,6 +68,7 @@ public class X7F_RaftResponse
         mCode = data[pos++];
         mCatchUp = IoUtil.readLong(data, pos);
         pos += 8;
+        mState = data[pos++];
         return pos;
     }
 
@@ -77,6 +79,7 @@ public class X7F_RaftResponse
         pos += IoUtil.writeLong(mTerm, data, pos);
         pos += IoUtil.writeByte(mCode, data, pos);
         pos += IoUtil.writeLong(mCatchUp, data, pos);
+        pos += IoUtil.writeByte(mState, data, pos);
         return pos;
     }
 
@@ -120,4 +123,13 @@ public class X7F_RaftResponse
         mPeerId = peerId;
     }
 
+    public int getState()
+    {
+        return mState;
+    }
+
+    public void setState(int state)
+    {
+        mState = state;
+    }
 }

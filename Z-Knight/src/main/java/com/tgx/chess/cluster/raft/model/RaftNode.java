@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Random;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.tgx.chess.bishop.ZUID;
 import com.tgx.chess.bishop.biz.config.IClusterConfig;
@@ -59,6 +60,7 @@ import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
 import com.tgx.chess.cluster.raft.IRaftDao;
 import com.tgx.chess.cluster.raft.IRaftMachine;
 import com.tgx.chess.cluster.raft.IRaftMessage;
+import com.tgx.chess.cluster.raft.RaftState;
 import com.tgx.chess.cluster.raft.model.log.LogEntry;
 import com.tgx.chess.cluster.raft.model.log.RaftDao;
 import com.tgx.chess.json.JsonUtil;
@@ -263,6 +265,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         update.setIndexTerm(_SelfMachine.getIndexTerm());
         update.setState(CANDIDATE);
         update.setOperation(OP_INSERT);
+        update.setCandidate(_SelfMachine.getPeerId());
         update.setLeader(INVALID_PEER_ID);
         _ClusterPeer.publishConsensus(TIMER, update);
         _Logger.info("start vote self {%s}", _SelfMachine.toString());
@@ -321,6 +324,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
     {
         _SelfMachine.setState(CANDIDATE);
         _SelfMachine.setLeader(INVALID_PEER_ID);
+        _SelfMachine.setCandidate(_SelfMachine.getPeerId());
         _SelfMachine.increaseTerm();
         mElectTask = _TimeWheel.acquire(this, _ElectSchedule);
     }
@@ -443,6 +447,26 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         return response;
     }
 
+    public X7E_RaftBroadcast[] onResponse(long peerId, long term, long index, long candidate, RaftState state)
+    {
+
+        RaftMachine peerMachine = _RaftGraph.getMachine(peerId);
+        if (peerMachine == null) {
+            _Logger.warning("peer %#x is not found", peerId);
+            return null;
+        }
+        peerMachine.setIndex(index);
+        peerMachine.setTerm(term);
+        peerMachine.setState(state);
+        peerMachine.setCandidate(candidate);
+        if (_RaftGraph.isMajorAccept(_SelfMachine.getPeerId(), _SelfMachine.getTerm())) {
+            _SelfMachine.setLeader(_SelfMachine.getPeerId());
+            _SelfMachine.setState(LEADER);
+            return createBroadcasts().toArray(X7E_RaftBroadcast[]::new);
+        }
+        return null;
+    }
+
     public List<LogEntry> diff()
     {
         long start = _SelfMachine.getApplied();
@@ -534,6 +558,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
             && update.getTerm() == _SelfMachine.getTerm() + 1
             && update.getIndex() == _SelfMachine.getIndex()
             && update.getIndexTerm() == _SelfMachine.getIndexTerm()
+            && update.getCandidate() == _SelfMachine.getPeerId()
             && _SelfMachine.getState() == FOLLOWER
             && update.getState() == CANDIDATE)
         {
@@ -568,7 +593,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
             && _SelfMachine.getIndexTerm() >= update.getIndexTerm()
             && _SelfMachine.getCommit() >= update.getCommit())
         {
-            return createBroadcasts();
+            return createBroadcasts().collect(Collectors.toList());
         }
         return null;
     }
@@ -589,12 +614,12 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         newEntry.setPayload(request.encode());
         if (_RaftDao.append(newEntry)) {
             _SelfMachine.increaseIndex();
-            return createBroadcasts();
+            return createBroadcasts().collect(Collectors.toList());
         }
         throw new IllegalStateException("Raft WAL failed!");
     }
 
-    private List<X7E_RaftBroadcast> createBroadcasts()
+    private Stream<X7E_RaftBroadcast> createBroadcasts()
     {
         return _RaftGraph.getNodeMap()
                          .entrySet()
@@ -622,7 +647,6 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
                                  entryList.add(_RaftDao.getEntry(i));
                              x7e.setPayload(JsonUtil.writeValueAsBytes(entryList));
                              return x7e;
-                         })
-                         .collect(Collectors.toList());
+                         });
     }
 }

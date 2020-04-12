@@ -94,4 +94,16 @@ public class RaftGraph
         _NodeMap.putAll(other._NodeMap);
     }
 
+    @JsonIgnore
+    public boolean isMajorAccept(long selfPeerId, long term)
+    {
+        return _NodeMap.entrySet()
+                       .stream()
+                       .filter(entry -> entry.getValue()
+                                             .getTerm() == term
+                                        && entry.getValue()
+                                                .getCandidate() == selfPeerId)
+                       .count() > _NodeMap.size() / 2;
+    }
+
 }
