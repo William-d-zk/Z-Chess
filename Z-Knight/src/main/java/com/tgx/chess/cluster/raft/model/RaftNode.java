@@ -434,7 +434,18 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
                 break;
             case CANDIDATE:
                 if (update.getState() == CANDIDATE) {
-
+                    if (_SelfMachine.getIndex() < update.getIndex()
+                        || _SelfMachine.getIndexTerm() < update.getIndexTerm())
+                    {
+                        _Logger.warning("other %#x better; candidate => elector");
+                        electCancel();
+                        response = stepUp(update.getPeerId());
+                    }
+                    else return reject(OBSOLETE.getCode());
+                }
+                else if (update.getState() == LEADER) {
+                    electCancel();
+                    response = follow(update.getPeerId(), update.getCommit());
                 }
                 break;
             case LEADER:
@@ -456,9 +467,8 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         return response;
     }
 
-    public X7E_RaftBroadcast[] onResponse(long peerId, long term, long index, long candidate, RaftState state)
+    public X7E_RaftBroadcast[] onResponse(long peerId, long term, long index, RaftState state, RaftCode code)
     {
-
         RaftMachine peerMachine = _RaftGraph.getMachine(peerId);
         if (peerMachine == null) {
             _Logger.warning("peer %#x is not found", peerId);
@@ -467,11 +477,32 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         peerMachine.setIndex(index);
         peerMachine.setTerm(term);
         peerMachine.setState(state);
-        peerMachine.setCandidate(candidate);
-        if (_RaftGraph.isMajorAccept(_SelfMachine.getPeerId(), _SelfMachine.getTerm())) {
-            beLeader();
-            return createBroadcasts().toArray(X7E_RaftBroadcast[]::new);
+        peerMachine.setCandidate(code == SUCCESS ? _SelfMachine.getPeerId()
+                                                 : INVALID_PEER_ID);
+        switch (code)
+        {
+            case SUCCESS:
+                if (_SelfMachine.getState() == CANDIDATE
+                    && _RaftGraph.isMajorAccept(_SelfMachine.getPeerId(), _SelfMachine.getTerm()))
+                {
+                    beLeader();
+                    return createBroadcasts().toArray(X7E_RaftBroadcast[]::new);
+                }
+                else if (_SelfMachine.getState() == LEADER && peerMachine.getIndex() < _SelfMachine.getIndex()) {
+                    return new X7E_RaftBroadcast[] { createBroadcast(peerMachine) };
+                }
+                break;
+            case OBSOLETE:
+            case ILLEGAL_STATE:
+            case LOWER_TERM:
+                _Logger.warning("response : %s step_down", code.getDescription());
+                stepDown();
+                break;
+            case ALREADY_VOTE:
+                break;
+
         }
+
         return null;
     }
 
@@ -630,31 +661,31 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
     private Stream<X7E_RaftBroadcast> createBroadcasts()
     {
         return _RaftGraph.getNodeMap()
-                         .entrySet()
+                         .values()
                          .stream()
-                         .filter(entry -> entry.getKey() != _SelfMachine.getPeerId())
-                         .map(entry ->
-                         {
-                             X7E_RaftBroadcast x7e = new X7E_RaftBroadcast(_ZUID.getId());
-                             x7e.setPeerId(_SelfMachine.getPeerId());
-                             x7e.setTerm(_SelfMachine.getTerm());
-                             x7e.setCommit(_SelfMachine.getCommit());
-                             x7e.setPreIndex(_SelfMachine.getIndex());
-                             x7e.setPreIndexTerm(_SelfMachine.getIndexTerm());
-                             x7e.setFollower(entry.getKey());
-                             if (entry.getValue()
-                                      .getIndex() == _SelfMachine.getIndex()) return x7e;
-                             List<LogEntry> entryList = new LinkedList<>();
-                             RaftMachine follower = entry.getValue();
-                             LogEntry logEntry = _RaftDao.getEntry(follower.getIndex() + 1);
-                             if (logEntry == null) return x7e;//leader 也没有这么久远的数据需要等install snapshot之后才能恢复正常同步
-                             x7e.setPreIndex(logEntry.getIndex());
-                             x7e.setPreIndexTerm(logEntry.getTerm());
-                             entryList.add(logEntry);
-                             for (long i = logEntry.getIndex() + 1, l = _SelfMachine.getIndex(); i <= l; i++)
-                                 entryList.add(_RaftDao.getEntry(i));
-                             x7e.setPayload(JsonUtil.writeValueAsBytes(entryList));
-                             return x7e;
-                         });
+                         .filter(other -> other.getPeerId() != _SelfMachine.getPeerId())
+                         .map(this::createBroadcast);
+    }
+
+    private X7E_RaftBroadcast createBroadcast(RaftMachine follower)
+    {
+        X7E_RaftBroadcast x7e = new X7E_RaftBroadcast(_ZUID.getId());
+        x7e.setPeerId(_SelfMachine.getPeerId());
+        x7e.setTerm(_SelfMachine.getTerm());
+        x7e.setCommit(_SelfMachine.getCommit());
+        x7e.setPreIndex(_SelfMachine.getIndex());
+        x7e.setPreIndexTerm(_SelfMachine.getIndexTerm());
+        x7e.setFollower(follower.getPeerId());
+        if (follower.getIndex() == _SelfMachine.getIndex()) return x7e;
+        List<LogEntry> entryList = new LinkedList<>();
+        LogEntry logEntry = _RaftDao.getEntry(follower.getIndex() + 1);
+        if (logEntry == null) return x7e;//leader 也没有这么久远的数据需要等install snapshot之后才能恢复正常同步
+        x7e.setPreIndex(logEntry.getIndex());
+        x7e.setPreIndexTerm(logEntry.getTerm());
+        entryList.add(logEntry);
+        for (long i = logEntry.getIndex() + 1, l = _SelfMachine.getIndex(); i <= l; i++)
+            entryList.add(_RaftDao.getEntry(i));
+        x7e.setPayload(JsonUtil.writeValueAsBytes(entryList));
+        return x7e;
     }
 }

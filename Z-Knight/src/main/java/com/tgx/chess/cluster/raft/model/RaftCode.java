@@ -56,7 +56,7 @@ public enum RaftCode
         return _Description;
     }
 
-    static RaftCode valueOf(int code)
+    public static RaftCode valueOf(int code)
     {
         switch (code)
         {
@@ -68,11 +68,16 @@ public enum RaftCode
                 return INCORRECT_TERM;
             case 3:
                 return ILLEGAL_STATE;
-            case 4:return SPLIT_CLUSTER;
-            case 5:return ALREADY_VOTE;
-            case 6:return OBSOLETE;
-            case 1000:return NO_LEADER;
-            case 1001:return LEADER_DIS;
+            case 4:
+                return SPLIT_CLUSTER;
+            case 5:
+                return ALREADY_VOTE;
+            case 6:
+                return OBSOLETE;
+            case 1000:
+                return NO_LEADER;
+            case 1001:
+                return LEADER_DIS;
             default:
                 throw new UnsupportedOperationException();
         }

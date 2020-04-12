@@ -26,7 +26,6 @@ package com.tgx.chess.cluster.raft.service;
 
 import static com.tgx.chess.cluster.raft.RaftState.CANDIDATE;
 import static com.tgx.chess.cluster.raft.RaftState.LEADER;
-import static com.tgx.chess.cluster.raft.model.RaftCode.SUCCESS;
 
 import java.util.Collections;
 import java.util.List;
@@ -123,10 +122,8 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
                 return mRaftNode.onResponse(x7f.getPeerId(),
                                             x7f.getTerm(),
                                             x7f.getCatchUp(),
-                                            x7f.getCode() == SUCCESS.getCode() ? mRaftNode.getMachine()
-                                                                                          .getPeerId()
-                                                                               : ZUID.INVALID_PEER_ID,
-                                            RaftState.valueOf(x7f.getState()));
+                                            RaftState.valueOf(x7f.getState()),
+                                            RaftCode.valueOf(x7f.getCode()));
             case X106_Identity.COMMAND:
                 X106_Identity x106 = (X106_Identity) content;
                 long peerId = x106.getIdentity();
