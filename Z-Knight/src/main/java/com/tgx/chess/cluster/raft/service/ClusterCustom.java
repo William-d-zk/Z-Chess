@@ -103,9 +103,11 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
                                    : null;
             case X7E_RaftBroadcast.COMMAND:
                 X7E_RaftBroadcast x7e = (X7E_RaftBroadcast) content;
-                List<LogEntry> entryList = JsonUtil.readValue(x7e.getPayload(), _TypeReferenceOfLogEntryList);
-                if (entryList != null && !entryList.isEmpty()) {
-                    mRaftNode.appendLogs(entryList);
+                if (x7e.getPayload() != null) {
+                    List<LogEntry> entryList = JsonUtil.readValue(x7e.getPayload(), _TypeReferenceOfLogEntryList);
+                    if (entryList != null && !entryList.isEmpty()) {
+                        mRaftNode.appendLogs(entryList);
+                    }
                 }
                 machine = new RaftMachine(x7e.getPeerId());
                 machine.setState(LEADER);
@@ -118,13 +120,13 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
                                    : null;
             case X7F_RaftResponse.COMMAND:
                 x7f = (X7F_RaftResponse) content;
-               return mRaftNode.onResponse(x7f.getPeerId(),
-                                     x7f.getTerm(),
-                                     x7f.getCatchUp(),
-                                     x7f.getCode() == SUCCESS.getCode() ? mRaftNode.getMachine()
-                                                                                   .getPeerId()
-                                                                        : ZUID.INVALID_PEER_ID,
-                                     RaftState.valueOf(x7f.getState()));
+                return mRaftNode.onResponse(x7f.getPeerId(),
+                                            x7f.getTerm(),
+                                            x7f.getCatchUp(),
+                                            x7f.getCode() == SUCCESS.getCode() ? mRaftNode.getMachine()
+                                                                                          .getPeerId()
+                                                                               : ZUID.INVALID_PEER_ID,
+                                            RaftState.valueOf(x7f.getState()));
             case X106_Identity.COMMAND:
                 X106_Identity x106 = (X106_Identity) content;
                 long peerId = x106.getIdentity();
