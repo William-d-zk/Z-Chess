@@ -99,7 +99,9 @@ public class X7E_RaftBroadcast
         pos += IoUtil.writeLong(mPreIndex, data, pos);
         pos += IoUtil.writeLong(mPreIndexTerm, data, pos);
         pos += IoUtil.writeLong(mFollower, data, pos);
-        pos += IoUtil.write(getPayload(), data, pos);
+        if (getPayload() != null) {
+            pos += IoUtil.write(getPayload(), data, pos);
+        }
         return pos;
     }
 
