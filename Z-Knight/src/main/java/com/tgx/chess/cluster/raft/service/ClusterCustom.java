@@ -26,6 +26,7 @@ package com.tgx.chess.cluster.raft.service;
 
 import static com.tgx.chess.cluster.raft.RaftState.CANDIDATE;
 import static com.tgx.chess.cluster.raft.RaftState.LEADER;
+import static com.tgx.chess.cluster.raft.model.RaftCode.SUCCESS;
 
 import java.util.Collections;
 import java.util.List;
@@ -43,6 +44,7 @@ import com.tgx.chess.bishop.io.zprotocol.raft.X72_RaftVote;
 import com.tgx.chess.bishop.io.zprotocol.raft.X75_RaftRequest;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7E_RaftBroadcast;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
+import com.tgx.chess.cluster.raft.RaftState;
 import com.tgx.chess.cluster.raft.model.RaftCode;
 import com.tgx.chess.cluster.raft.model.RaftMachine;
 import com.tgx.chess.cluster.raft.model.RaftNode;
@@ -114,6 +116,15 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
                 x7f = mRaftNode.merge(machine);
                 return x7f != null ? new IControl[] { x7f }
                                    : null;
+            case X7F_RaftResponse.COMMAND:
+                x7f = (X7F_RaftResponse) content;
+               return mRaftNode.onResponse(x7f.getPeerId(),
+                                     x7f.getTerm(),
+                                     x7f.getCatchUp(),
+                                     x7f.getCode() == SUCCESS.getCode() ? mRaftNode.getMachine()
+                                                                                   .getPeerId()
+                                                                        : ZUID.INVALID_PEER_ID,
+                                     RaftState.valueOf(x7f.getState()));
             case X106_Identity.COMMAND:
                 X106_Identity x106 = (X106_Identity) content;
                 long peerId = x106.getIdentity();
