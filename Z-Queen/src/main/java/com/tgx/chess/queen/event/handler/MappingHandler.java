@@ -186,7 +186,7 @@ public class MappingHandler<C extends IContext<C>,
                                          .getError());
                         }
                         catch (Exception e) {
-                            _Logger.warning("mapping handler error", e);
+                            _Logger.warning("link mapping handler error", e);
                             error(_Error,
                                   MAPPING_ERROR,
                                   new Pair<>(e, session),
