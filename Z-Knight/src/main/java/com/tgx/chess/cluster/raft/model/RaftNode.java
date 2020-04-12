@@ -311,6 +311,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
 
     private X7F_RaftResponse follow(long peerId, long commit)
     {
+        _Logger.info("follow %#x leader_commit: %d", peerId, commit);
         _SelfMachine.setState(FOLLOWER);
         _SelfMachine.setLeader(peerId);
         _SelfMachine.setCandidate(INVALID_PEER_ID);
@@ -327,6 +328,14 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         _SelfMachine.setCandidate(_SelfMachine.getPeerId());
         _SelfMachine.increaseTerm();
         mElectTask = _TimeWheel.acquire(this, _ElectSchedule);
+    }
+
+    private void beLeader()
+    {
+        _SelfMachine.setState(LEADER);
+        _SelfMachine.setLeader(_SelfMachine.getPeerId());
+        mHeartbeatTask = _TimeWheel.acquire(this, _HeartbeatSchedule);
+        _Logger.info("be leader=>%s", _SelfMachine);
     }
 
     private void tickCancel()
@@ -460,8 +469,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         peerMachine.setState(state);
         peerMachine.setCandidate(candidate);
         if (_RaftGraph.isMajorAccept(_SelfMachine.getPeerId(), _SelfMachine.getTerm())) {
-            _SelfMachine.setLeader(_SelfMachine.getPeerId());
-            _SelfMachine.setState(LEADER);
+            beLeader();
             return createBroadcasts().toArray(X7E_RaftBroadcast[]::new);
         }
         return null;
