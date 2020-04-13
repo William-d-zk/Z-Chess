@@ -309,7 +309,8 @@ public abstract class ZProtocol
     @Override
     public String toString()
     {
-        return String.format("CMD: 0x%X | version:%d charset:%s serial-type:%s qos:%s msgId:%d |",
+        return String.format("%s CMD: 0x%X | version:%d charset:%s serial-type:%s qos:%s msgId:%d |",
+                             getClass().getSimpleName(),
                              _Command,
                              getVersion(),
                              getCharset(),

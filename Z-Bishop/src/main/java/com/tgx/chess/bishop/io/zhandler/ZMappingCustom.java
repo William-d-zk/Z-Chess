@@ -64,7 +64,7 @@ public class ZMappingCustom<T extends IStorage>
                                        ISession<ZContext> session,
                                        IControl<ZContext> content) throws Exception
     {
-        _Logger.info("mapping %s", content);
+        _Logger.info("mapping receive %s", content);
         switch (content.serial())
         {
             case X01_EncryptRequest.COMMAND:
