@@ -57,13 +57,14 @@ public class RaftMachine
 {
     private final static int                   RAFT_MACHINE_SERIAL = DB_SERIAL + 3;
     private final long                         _PeerId;
-    private long                               mTerm;     //触发选举时 mTerm>mIndexTerm
-    private long                               mIndex;    //本地日志Index，Leader：mIndex>=mCommit 其他状态：mIndex<=mCommit
-    private long                               mIndexTerm;//本地日志对应的Term
+    private long                               mTerm;      //触发选举时 mTerm > mIndexTerm
+    private long                               mIndex;     //本地日志Index，Leader：mIndex >= mCommit 其他状态：mIndex <= mCommit
+    private long                               mIndexTerm; //本地日志对应的Term
+    private long                               mMatchIndex;//Leader: 记录 follower 已经接收的记录
     private long                               mCandidate;
     private long                               mLeader;
-    private long                               mCommit;   //集群中已知的最大CommitIndex
-    private long                               mApplied;  //本地已被应用的Index
+    private long                               mCommit;    //集群中已知的最大CommitIndex
+    private long                               mApplied;   //本地已被应用的Index
     private int                                mState;
     private Set<Triple<Long,
                        String,
@@ -223,6 +224,12 @@ public class RaftMachine
     }
 
     @Override
+    public long getMatchIndex()
+    {
+        return mMatchIndex;
+    }
+
+    @Override
     public Set<Triple<Long,
                       String,
                       Integer>> getPeerSet()
@@ -251,6 +258,11 @@ public class RaftMachine
     public void setIndexTerm(long term)
     {
         mIndexTerm = term;
+    }
+
+    public void setMatchIndex(long matchIndex)
+    {
+        mMatchIndex = matchIndex;
     }
 
     public void setCandidate(long candidate)
@@ -353,6 +365,7 @@ public class RaftMachine
                              + " term:%d \\n "
                              + "index:%d\\n "
                              + "index_term:%d\\n"
+                             + "match_index:%d\\n"
                              + "commit:%d\\n"
                              + "applied:%d\\n"
                              + "leader:%#x\\n"
@@ -363,6 +376,7 @@ public class RaftMachine
                              mTerm,
                              mIndex,
                              mIndexTerm,
+                             mMatchIndex,
                              mCommit,
                              mApplied,
                              mLeader,

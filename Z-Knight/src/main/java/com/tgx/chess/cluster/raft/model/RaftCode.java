@@ -28,7 +28,7 @@ public enum RaftCode
 {
     SUCCESS(0, "success"),
     LOWER_TERM(1, "term < current,reject"),
-    INCORRECT_TERM(2, "pre-log-index&pre-log-term inconsistent,reject"),
+    CONFLICT(2, "pre-log-index&pre-log-term inconsistent,reject"),
     ILLEGAL_STATE(3, "illegal state,reject"),
     SPLIT_CLUSTER(4, "split cluster,reject"),
     ALREADY_VOTE(5, "already vote,reject"),
@@ -65,7 +65,7 @@ public enum RaftCode
             case 1:
                 return LOWER_TERM;
             case 2:
-                return INCORRECT_TERM;
+                return CONFLICT;
             case 3:
                 return ILLEGAL_STATE;
             case 4:
