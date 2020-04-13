@@ -76,6 +76,8 @@ public interface IRaftMachine
      */
     long getApplied();
 
+    long getMatchIndex();
+
     /**
      * @return 集群中所有节点
      */

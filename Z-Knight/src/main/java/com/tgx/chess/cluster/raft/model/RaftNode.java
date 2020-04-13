@@ -30,8 +30,8 @@ import static com.tgx.chess.cluster.raft.RaftState.ELECTOR;
 import static com.tgx.chess.cluster.raft.RaftState.FOLLOWER;
 import static com.tgx.chess.cluster.raft.RaftState.LEADER;
 import static com.tgx.chess.cluster.raft.model.RaftCode.ALREADY_VOTE;
+import static com.tgx.chess.cluster.raft.model.RaftCode.CONFLICT;
 import static com.tgx.chess.cluster.raft.model.RaftCode.ILLEGAL_STATE;
-import static com.tgx.chess.cluster.raft.model.RaftCode.INCORRECT_TERM;
 import static com.tgx.chess.cluster.raft.model.RaftCode.LOWER_TERM;
 import static com.tgx.chess.cluster.raft.model.RaftCode.OBSOLETE;
 import static com.tgx.chess.cluster.raft.model.RaftCode.SPLIT_CLUSTER;
@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -122,20 +123,13 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
 
     private void heartbeat()
     {
-        if (_RaftGraph.isMajorAccept(_SelfMachine.getPeerId(), _SelfMachine.getTerm())) {
-            RaftMachine update = new RaftMachine(_SelfMachine.getPeerId());
-            update.setOperation(OP_APPEND);
-            update.setIndex(_SelfMachine.getIndex());
-            update.setIndexTerm(_SelfMachine.getIndexTerm());
-            update.setCommit(_SelfMachine.getCommit());
-            _ClusterPeer.publishConsensus(TIMER, update);
-            _Logger.info("leader heartbeat broadcast {%s}", _SelfMachine.toString());
-        }
-        else {
-            _Logger.info("major confirm failed");
-            mHeartbeatTask.cancel();
-            stepDown();
-        }
+        RaftMachine update = new RaftMachine(_SelfMachine.getPeerId());
+        update.setOperation(OP_APPEND);
+        update.setIndex(_SelfMachine.getIndex());
+        update.setIndexTerm(_SelfMachine.getIndexTerm());
+        update.setCommit(_SelfMachine.getCommit());
+        _ClusterPeer.publishConsensus(TIMER, update);
+        _Logger.info("leader heartbeat");
     }
 
     public void init() throws IOException
@@ -280,22 +274,23 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
 
     private X7F_RaftResponse success()
     {
-        X7F_RaftResponse response = new X7F_RaftResponse(_ZUID.getId());
-        response.setPeerId(_SelfMachine.getPeerId());
-        response.setTerm(_SelfMachine.getTerm());
-        response.setCode(SUCCESS.getCode());
-        response.setCatchUp(_SelfMachine.getIndex());
-        return response;
+        return response(SUCCESS.getCode());
     }
 
-    private X7F_RaftResponse reject(int code)
+    private X7F_RaftResponse response(int code)
     {
         X7F_RaftResponse response = new X7F_RaftResponse(_ZUID.getId());
         response.setPeerId(_SelfMachine.getPeerId());
         response.setTerm(_SelfMachine.getTerm());
         response.setCode(code);
         response.setCatchUp(_SelfMachine.getIndex());
+        response.setCandidate(_SelfMachine.getCandidate());
         return response;
+    }
+
+    private X7F_RaftResponse reject(int code)
+    {
+        return response(code);
     }
 
     private X7F_RaftResponse stepUp(long peerId)
@@ -313,7 +308,6 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         _SelfMachine.setLeader(INVALID_PEER_ID);
         _SelfMachine.setCandidate(INVALID_PEER_ID);
         mTickTask = _TimeWheel.acquire(this, _TickSchedule);
-        _Logger.info("step down => follower");
     }
 
     private X7F_RaftResponse follow(long peerId, long commit)
@@ -321,11 +315,11 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         _Logger.info("follow %#x leader_commit: %d", peerId, commit);
         _SelfMachine.setState(FOLLOWER);
         _SelfMachine.setLeader(peerId);
-        _SelfMachine.setCandidate(INVALID_PEER_ID);
+        _SelfMachine.setCandidate(peerId);
         _SelfMachine.setCommit(commit);
         mTickTask = _TimeWheel.acquire(this, _TickSchedule);
         return catchUp() ? success()
-                         : reject(INCORRECT_TERM.getCode());
+                         : reject(CONFLICT.getCode());
     }
 
     private void vote4me()
@@ -335,12 +329,14 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         _SelfMachine.setCandidate(_SelfMachine.getPeerId());
         _SelfMachine.increaseTerm();
         mElectTask = _TimeWheel.acquire(this, _ElectSchedule);
+        _Logger.info("follower => candidate ");
     }
 
     private void beLeader()
     {
         _SelfMachine.setState(LEADER);
         _SelfMachine.setLeader(_SelfMachine.getPeerId());
+        _SelfMachine.setIndexTerm(_SelfMachine.getTerm());
         mHeartbeatTask = _TimeWheel.acquire(this, _HeartbeatSchedule);
         _Logger.info("be leader=>%s", _SelfMachine);
     }
@@ -362,7 +358,6 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
 
     private X7F_RaftResponse rejectAndStepDown(int code)
     {
-        electCancel();
         _SelfMachine.setState(FOLLOWER);
         _SelfMachine.setLeader(INVALID_PEER_ID);
         _SelfMachine.setCandidate(INVALID_PEER_ID);
@@ -373,7 +368,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
     public X7F_RaftResponse merge(IRaftMachine update)
     {
         X7F_RaftResponse response = null;
-        //RaftGraph中不存LEARNER 节点所以集群广播和RPC时不涉及LEARNER
+        //RaftGraph中不存LEARNER节点,所以集群广播和RPC时不涉及LEARNER
         if (_SelfMachine.getTerm() > update.getTerm()) { return reject(LOWER_TERM.getCode()); }
         if (update.getTerm() > _SelfMachine.getTerm()) {
             _SelfMachine.setTerm(update.getTerm());
@@ -387,10 +382,12 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
                     && _SelfMachine.getCommit() <= update.getCommit())
                 {
                     response = stepUp(update.getPeerId());
-                    _Logger.info("follower -> elector candidate: %#x", _SelfMachine.getPeerId());
+                    _Logger.info("new term %d input follower -> elector candidate: %#x",
+                                 _SelfMachine.getTerm(),
+                                 _SelfMachine.getPeerId());
                 }
                 else {
-                    _Logger.info("reject and step down");
+                    _Logger.info("less than me; reject and step down");
                     return rejectAndStepDown(OBSOLETE.getCode());
                 }
             }
@@ -448,7 +445,12 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
                         electCancel();
                         response = stepUp(update.getPeerId());
                     }
-                    else return reject(OBSOLETE.getCode());
+                    else if (_SelfMachine.getIndex() > update.getIndex()
+                             || _SelfMachine.getIndexTerm() > update.getIndexTerm())
+                    {
+                        return reject(OBSOLETE.getCode());
+                    }
+                    else return reject(ALREADY_VOTE.getCode());
                 }
                 else if (update.getState() == LEADER) {
                     electCancel();
@@ -458,6 +460,8 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
             case LEADER:
                 if (update.getState() == LEADER) {
                     if (update.getPeerId() != _SelfMachine.getPeerId()) {
+                        _Logger.fetal("add new peer more than old-graph-size / 2");
+                        heartbeatCancel();
                         return rejectAndStepDown(SPLIT_CLUSTER.getCode());
                     }
                     else {
@@ -465,16 +469,19 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
                         return null;
                     }
                 }
-                else {
-                    return reject(ILLEGAL_STATE.getCode());
-                }
+                else if (update.getState() == CANDIDATE) { return reject(ALREADY_VOTE.getCode()); }
             case LEARNER:
                 break;
         }
         return response;
     }
 
-    public X7E_RaftBroadcast[] onResponse(long peerId, long term, long index, RaftState state, RaftCode code)
+    public X7E_RaftBroadcast[] onResponse(long peerId,
+                                          long term,
+                                          long index,
+                                          long candidate,
+                                          RaftState state,
+                                          RaftCode code)
     {
         RaftMachine peerMachine = _RaftGraph.getMachine(peerId);
         if (peerMachine == null) {
@@ -484,26 +491,51 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         peerMachine.setIndex(index);
         peerMachine.setTerm(term);
         peerMachine.setState(state);
-        peerMachine.setCandidate(code == SUCCESS ? _SelfMachine.getPeerId()
-                                                 : INVALID_PEER_ID);
+        peerMachine.setCandidate(candidate);
         switch (code)
         {
             case SUCCESS:
-                if (_RaftGraph.isMajorAccept(_SelfMachine.getPeerId(), _SelfMachine.getTerm())) {
-                    if (_SelfMachine.getState() == CANDIDATE) {
+                if (_SelfMachine.getState() == CANDIDATE) {
+                    //granted
+                    if (_RaftGraph.isMajorAccept(_SelfMachine.getPeerId(), _SelfMachine.getTerm())) {
                         beLeader();
                         return createBroadcasts().toArray(X7E_RaftBroadcast[]::new);
                     }
-                    else if (_SelfMachine.getState() == LEADER && peerMachine.getIndex() < _SelfMachine.getIndex()) {
+                }
+                else if (_SelfMachine.getState() == LEADER) {
+                    peerMachine.setMatchIndex(index);
+                    if (peerMachine.getIndex() < _SelfMachine.getIndex()) {
                         return new X7E_RaftBroadcast[] { createBroadcast(peerMachine) };
                     }
                 }
                 break;
-            case OBSOLETE:
-            case ILLEGAL_STATE:
             case LOWER_TERM:
-                _Logger.warning("response : %s step_down", code.getDescription());
+                tickCancel();
+                heartbeatCancel();
+                electCancel();
+                _Logger.info("self.term %d < response.term %d => step_down",
+                             _SelfMachine.getTerm(),
+                             peerMachine.getTerm());
                 stepDown();
+                break;
+            case CONFLICT:
+                if (_SelfMachine.getState() == LEADER) {
+                    _Logger.info("follower %#x,match failed,rollback %d",
+                                 peerMachine.getPeerId(),
+                                 peerMachine.getIndex());
+                    return new X7E_RaftBroadcast[] { createBroadcast(peerMachine, 1) };
+                }
+                else {
+                    _Logger.warning("self %#x is old leader & send logs=> %#x,next-index wasn't catchup");
+                    //Ignore
+                }
+                break;
+            case ILLEGAL_STATE:
+                //Ignore 
+                if (_SelfMachine.getState() == CANDIDATE) {
+                    _Logger.info("my term is over,the leader will be %#x and receive x7E_raftBroadcast then step_down",
+                                 peerMachine.getPeerId());
+                }
                 break;
             case ALREADY_VOTE:
                 break;
@@ -607,7 +639,6 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
             && update.getState() == CANDIDATE)
         {
             vote4me();
-            _Logger.info("follower => candidate");
             return _RaftGraph.getNodeMap()
                              .keySet()
                              .stream()
@@ -615,8 +646,8 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
                              .map(peerId ->
                              {
                                  X72_RaftVote x72 = new X72_RaftVote(_ZUID.getId());
-                                 x72.setTerm(update.getTerm());
                                  x72.setPeerId(update.getPeerId());
+                                 x72.setTerm(update.getTerm());
                                  x72.setLogIndex(update.getIndex());
                                  x72.setLogTerm(update.getIndexTerm());
                                  x72.setElector(peerId);
@@ -669,10 +700,16 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
                          .values()
                          .stream()
                          .filter(other -> other.getPeerId() != _SelfMachine.getPeerId())
-                         .map(this::createBroadcast);
+                         .map(this::createBroadcast)
+                         .filter(Objects::nonNull);
     }
 
     private X7E_RaftBroadcast createBroadcast(RaftMachine follower)
+    {
+        return createBroadcast(follower, -1);
+    }
+
+    private X7E_RaftBroadcast createBroadcast(RaftMachine follower, int limit)
     {
         X7E_RaftBroadcast x7e = new X7E_RaftBroadcast(_ZUID.getId());
         x7e.setPeerId(_SelfMachine.getPeerId());
@@ -684,12 +721,19 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         if (follower.getIndex() == _SelfMachine.getIndex()) return x7e;
         List<LogEntry> entryList = new LinkedList<>();
         LogEntry logEntry = _RaftDao.getEntry(follower.getIndex() + 1);
-        if (logEntry == null) return x7e;//leader 也没有这么久远的数据需要等install snapshot之后才能恢复正常同步
+        if (logEntry == null) {
+            _Logger.warning("leader truncate prefix，wait for installing snapshot");
+            return null;//leader 也没有这么久远的数据需要等install snapshot之后才能恢复正常同步
+        }
         x7e.setPreIndex(logEntry.getIndex());
         x7e.setPreIndexTerm(logEntry.getTerm());
         entryList.add(logEntry);
-        for (long i = logEntry.getIndex() + 1, l = _SelfMachine.getIndex(); i <= l; i++)
+        for (long i = logEntry.getIndex() + 1, l = _SelfMachine.getIndex(); i <= l; i++) {
+            if (limit > 0 && entryList.size() >= limit) {
+                break;
+            }
             entryList.add(_RaftDao.getEntry(i));
+        }
         x7e.setPayload(JsonUtil.writeValueAsBytes(entryList));
         return x7e;
     }

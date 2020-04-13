@@ -122,6 +122,7 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
                 return mRaftNode.onResponse(x7f.getPeerId(),
                                             x7f.getTerm(),
                                             x7f.getCatchUp(),
+                                            x7f.getCandidate(),
                                             RaftState.valueOf(x7f.getState()),
                                             RaftCode.valueOf(x7f.getCode()));
             case X106_Identity.COMMAND:
