@@ -122,13 +122,20 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
 
     private void heartbeat()
     {
-        RaftMachine update = new RaftMachine(_SelfMachine.getPeerId());
-        update.setOperation(OP_APPEND);
-        update.setIndex(_SelfMachine.getIndex());
-        update.setIndexTerm(_SelfMachine.getIndexTerm());
-        update.setCommit(_SelfMachine.getCommit());
-        _ClusterPeer.publishConsensus(TIMER, update);
-        _Logger.info("leader broadcast {%s}", _SelfMachine.toString());
+        if (_RaftGraph.isMajorAccept(_SelfMachine.getPeerId(), _SelfMachine.getTerm())) {
+            RaftMachine update = new RaftMachine(_SelfMachine.getPeerId());
+            update.setOperation(OP_APPEND);
+            update.setIndex(_SelfMachine.getIndex());
+            update.setIndexTerm(_SelfMachine.getIndexTerm());
+            update.setCommit(_SelfMachine.getCommit());
+            _ClusterPeer.publishConsensus(TIMER, update);
+            _Logger.info("leader heartbeat broadcast {%s}", _SelfMachine.toString());
+        }
+        else {
+            _Logger.info("major confirm failed");
+            mHeartbeatTask.cancel();
+            stepDown();
+        }
     }
 
     public void init() throws IOException
@@ -482,14 +489,14 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         switch (code)
         {
             case SUCCESS:
-                if (_SelfMachine.getState() == CANDIDATE
-                    && _RaftGraph.isMajorAccept(_SelfMachine.getPeerId(), _SelfMachine.getTerm()))
-                {
-                    beLeader();
-                    return createBroadcasts().toArray(X7E_RaftBroadcast[]::new);
-                }
-                else if (_SelfMachine.getState() == LEADER && peerMachine.getIndex() < _SelfMachine.getIndex()) {
-                    return new X7E_RaftBroadcast[] { createBroadcast(peerMachine) };
+                if (_RaftGraph.isMajorAccept(_SelfMachine.getPeerId(), _SelfMachine.getTerm())) {
+                    if (_SelfMachine.getState() == CANDIDATE) {
+                        beLeader();
+                        return createBroadcasts().toArray(X7E_RaftBroadcast[]::new);
+                    }
+                    else if (_SelfMachine.getState() == LEADER && peerMachine.getIndex() < _SelfMachine.getIndex()) {
+                        return new X7E_RaftBroadcast[] { createBroadcast(peerMachine) };
+                    }
                 }
                 break;
             case OBSOLETE:
