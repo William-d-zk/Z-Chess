@@ -80,11 +80,11 @@ public class DecodeHandler<C extends IContext<C>>
             try {
                 ITriple result = packetOperator.handle(packet, session);
                 IControl<C>[] commands = result.getFirst();
-                _Logger.info("decoded commands:\n%s", Arrays.toString(commands));
+                _Logger.info("decoded commands:%s", Arrays.toString(commands));
                 transfer(event, commands, session, result.getThird());
             }
             catch (Exception e) {
-                _Logger.warning(String.format("read decode error\n%s", session.toString()), e);
+                _Logger.warning(String.format("read decode error: %s", session.toString()), e);
                 context.setInState(DECODE_ERROR);
                 //此处为Pipeline中间环节，使用event进行事件传递，不使用dispatcher
                 event.error(FILTER_DECODE,

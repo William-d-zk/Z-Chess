@@ -360,17 +360,18 @@ public class RaftMachine
     @Override
     public String toString()
     {
-        return String.format("{\\n peerId:%#x \\n"
-                             + "state:%s\\n"
-                             + " term:%d \\n "
-                             + "index:%d\\n "
-                             + "index_term:%d\\n"
-                             + "match_index:%d\\n"
-                             + "commit:%d\\n"
-                             + "applied:%d\\n"
-                             + "leader:%#x\\n"
-                             + "candidate:%#x\\n"
-                             + "peers:%s}",
+        return String.format("{\n"
+                             + "peerId:%#x\n"
+                             + "state:%s\n"
+                             + " term:%d\n"
+                             + "index:%d\n"
+                             + "index_term:%d\n"
+                             + "match_index:%d\n"
+                             + "commit:%d\n"
+                             + "applied:%d\n"
+                             + "leader:%#x\n"
+                             + "candidate:%#x\n"
+                             + "peers:%s\n}",
                              _PeerId,
                              getState(),
                              mTerm,
