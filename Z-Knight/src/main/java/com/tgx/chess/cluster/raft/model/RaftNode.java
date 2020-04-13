@@ -500,9 +500,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
                 break;
             case ALREADY_VOTE:
                 break;
-
         }
-
         return null;
     }
 
