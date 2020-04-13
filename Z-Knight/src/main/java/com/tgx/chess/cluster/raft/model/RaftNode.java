@@ -507,6 +507,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
                 if (_SelfMachine.getState() == CANDIDATE) {
                     //granted
                     if (_RaftGraph.isMajorAccept(_SelfMachine.getPeerId(), _SelfMachine.getTerm())) {
+                        electCancel();
                         beLeader();
                         return createBroadcasts().toArray(X7E_RaftBroadcast[]::new);
                     }
