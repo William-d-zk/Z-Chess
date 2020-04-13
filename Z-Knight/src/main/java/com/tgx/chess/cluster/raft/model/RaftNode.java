@@ -343,17 +343,26 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
 
     private void tickCancel()
     {
-        if (mTickTask != null) mTickTask.cancel();
+        if (mTickTask != null) {
+            _Logger.info("cancel tick");
+            mTickTask.cancel();
+        }
     }
 
     private void heartbeatCancel()
     {
-        if (mHeartbeatTask != null) mHeartbeatTask.cancel();
+        if (mHeartbeatTask != null) {
+            _Logger.info("cancel heartbeat");
+            mHeartbeatTask.cancel();
+        }
     }
 
     private void electCancel()
     {
-        if (mElectTask != null) mElectTask.cancel();
+        if (mElectTask != null) {
+            _Logger.info("cancel elect");
+            mElectTask.cancel();
+        }
     }
 
     private X7F_RaftResponse rejectAndStepDown(int code)
