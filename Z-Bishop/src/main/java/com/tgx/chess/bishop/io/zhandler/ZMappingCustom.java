@@ -85,9 +85,9 @@ public class ZMappingCustom<T extends IStorage>
     }
 
     @Override
-    public List<ITriple> onTransfer(QueenManager<ZContext> manager, T content)
+    public List<ITriple> onTimer(QueenManager<ZContext> manager, T content)
     {
-        return _Then != null ? _Then.onTransfer(manager, content)
+        return _Then != null ? _Then.onTimer(manager, content)
                              : null;
     }
 
