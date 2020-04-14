@@ -41,6 +41,7 @@ import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
 import com.tgx.chess.bishop.io.zprotocol.raft.X72_RaftVote;
 import com.tgx.chess.bishop.io.zprotocol.raft.X75_RaftRequest;
+import com.tgx.chess.bishop.io.zprotocol.raft.X76_RaftResult;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7E_RaftBroadcast;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
 import com.tgx.chess.cluster.raft.RaftState;
@@ -119,25 +120,39 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
                                    : null;
             case X7F_RaftResponse.COMMAND:
                 x7f = (X7F_RaftResponse) content;
-                return mRaftNode.onResponse(x7f.getPeerId(),
-                                            x7f.getTerm(),
-                                            x7f.getCatchUp(),
-                                            x7f.getCandidate(),
-                                            RaftState.valueOf(x7f.getState()),
-                                            RaftCode.valueOf(x7f.getCode()));
+                IControl<ZContext>[] r = mRaftNode.onResponse(x7f.getPeerId(),
+                                                              x7f.getTerm(),
+                                                              x7f.getCatchUp(),
+                                                              x7f.getCandidate(),
+                                                              RaftState.valueOf(x7f.getState()),
+                                                              RaftCode.valueOf(x7f.getCode()));
+                for (IControl<ZContext> c : r) {
+                    if (c.serial() == X7E_RaftBroadcast.COMMAND) {
+                        x7e = (X7E_RaftBroadcast) c;
+                        ISession<ZContext> s = manager.findSessionByPrefix(x7e.getFollower());
+                        x7e.setSession(s);
+                    }
+                    else if (c.serial() == X76_RaftResult.COMMAND) {
+                        X76_RaftResult x76 = (X76_RaftResult) c;
+                        ISession<ZContext> s = manager.findSessionByPrefix(x76.getClientId());
+                        x76.setSession(s);
+                    }
+                }
+                return r;
             case X106_Identity.COMMAND:
                 X106_Identity x106 = (X106_Identity) content;
                 long peerId = x106.getIdentity();
                 _Logger.info("recv peerId:%#x", peerId);
                 manager.mapSession(session.getIndex(), session, peerId);
                 break;
-
+            default:
+                throw new IllegalStateException("Unexpected value: " + content.serial());
         }
         return null;
     }
 
     @Override
-    public List<ITriple> onTransfer(QueenManager<ZContext> manager, RaftMachine machine)
+    public List<ITriple> onTimer(QueenManager<ZContext> manager, RaftMachine machine)
     {
         if (machine == null) { return null; }
         switch (machine.getOperation())

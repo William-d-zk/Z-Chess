@@ -47,8 +47,9 @@ public class X76_RaftResult
         super(COMMAND, msgId);
     }
 
-    private int mCommandId;
-    private int mCode;
+    private long mClientId;
+    private int  mCommandId;
+    private int  mCode;
 
     public int getCommandId()
     {
@@ -63,6 +64,7 @@ public class X76_RaftResult
     @Override
     public int encodec(byte[] data, int pos)
     {
+        pos += IoUtil.writeLong(mClientId, data, pos);
         pos += IoUtil.writeByte(mCommandId, data, pos);
         pos += IoUtil.writeByte(mCode, data, pos);
         return pos;
@@ -71,6 +73,8 @@ public class X76_RaftResult
     @Override
     public int decodec(byte[] data, int pos)
     {
+        mClientId = IoUtil.readLong(data, pos);
+        pos += 8;
         mCommandId = data[pos++] & 0xFF;
         mCode = data[pos++] & 0xFF;
         return pos;
@@ -79,7 +83,7 @@ public class X76_RaftResult
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 2;
+        return super.dataLength() + 10;
     }
 
     public int getCode()
@@ -90,5 +94,15 @@ public class X76_RaftResult
     public void setCode(int code)
     {
         mCode = code;
+    }
+
+    public void setClientId(long clientId)
+    {
+        mClientId = clientId;
+    }
+
+    public long getClientId()
+    {
+        return mClientId;
     }
 }

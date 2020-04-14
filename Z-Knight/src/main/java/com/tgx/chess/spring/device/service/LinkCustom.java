@@ -188,7 +188,7 @@ public class LinkCustom
     }
 
     @Override
-    public List<ITriple> onTransfer(QueenManager<ZContext> manager, MessageEntry content)
+    public List<ITriple> onTimer(QueenManager<ZContext> manager, MessageEntry content)
     {
         throw new UnsupportedOperationException();
     }

@@ -56,6 +56,7 @@ import com.tgx.chess.bishop.ZUID;
 import com.tgx.chess.bishop.biz.config.IClusterConfig;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.raft.X72_RaftVote;
+import com.tgx.chess.bishop.io.zprotocol.raft.X76_RaftResult;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7E_RaftBroadcast;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
 import com.tgx.chess.cluster.raft.IRaftDao;
@@ -485,12 +486,12 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         return response;
     }
 
-    public X7E_RaftBroadcast[] onResponse(long peerId,
-                                          long term,
-                                          long index,
-                                          long candidate,
-                                          RaftState state,
-                                          RaftCode code)
+    public IControl<ZContext>[] onResponse(long peerId,
+                                           long term,
+                                           long index,
+                                           long candidate,
+                                           RaftState state,
+                                           RaftCode code)
     {
         RaftMachine peerMachine = _RaftGraph.getMachine(peerId);
         if (peerMachine == null) {
@@ -516,6 +517,19 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
                     peerMachine.setMatchIndex(index);
                     if (peerMachine.getIndex() < _SelfMachine.getIndex()) {
                         return new X7E_RaftBroadcast[] { createBroadcast(peerMachine) };
+                    }
+                    LogEntry logEntry = _RaftDao.getEntry(index);
+                    if (index > _SelfMachine.getCommit()
+                        && logEntry.getTerm() == _SelfMachine.getTerm()
+                        && _RaftGraph.isMajorAccept(_SelfMachine.getPeerId(), _SelfMachine.getTerm(), index))
+                    {
+                        _SelfMachine.setCommit(index);
+                        X76_RaftResult x76 = new X76_RaftResult();
+                        x76.setCommandId(logEntry.getPayloadSerial());
+                        x76.setCode(SUCCESS.getCode());
+                        x76.setPayload(logEntry.getPayload());
+                        x76.setClientId(logEntry.getRaftClientId());
+                        return new X76_RaftResult[] { x76 };
                     }
                 }
                 break;
@@ -701,6 +715,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
             _SelfMachine.increaseIndex();
             return createBroadcasts().collect(Collectors.toList());
         }
+        _Logger.fetal("Raft WAL failed!");
         throw new IllegalStateException("Raft WAL failed!");
     }
 

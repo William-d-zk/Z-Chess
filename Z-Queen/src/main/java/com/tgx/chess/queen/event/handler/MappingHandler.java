@@ -156,7 +156,6 @@ public class MappingHandler<C extends IContext<C>,
                     }
                     break;
                 case LINK:
-                case CLUSTER:
                     IControl<C> received = event.getContent()
                                                 .getFirst();
                     ISession<C> session = event.getContent()
@@ -197,6 +196,34 @@ public class MappingHandler<C extends IContext<C>,
                         break;
                     }
                     break;
+                case CLUSTER:
+                    received = event.getContent()
+                                    .getFirst();
+                    session = event.getContent()
+                                   .getSecond();
+                    if (received != null) {
+                        try {
+                            IControl<C>[] toSends = _CustomLogic.handle(_QueenManager, session, received);
+                            if (toSends != null && toSends.length > 0) {
+                                publish(_Writer,
+                                        WRITE,
+                                        new Pair<>(toSends, session),
+                                        session.getContext()
+                                               .getSort()
+                                               .getTransfer());
+                            }
+                        }
+                        catch (Exception e) {
+                            _Logger.warning("cluster mapping handler error", e);
+                            error(_Error,
+                                  MAPPING_ERROR,
+                                  new Pair<>(e, session),
+                                  session.getContext()
+                                         .getSort()
+                                         .getError());
+                        }
+                    }
+                    break;
                 case CONSENSUS:
                     received = event.getContent()
                                     .getFirst();
@@ -222,7 +249,7 @@ public class MappingHandler<C extends IContext<C>,
                     /*TIMER 必然是单个IControl,通过前项RingBuffer 向MappingHandler 投递*/
                     T content = event.getContent()
                                      .getFirst();
-                    List<ITriple> toSends = _CustomLogic.onTransfer(_QueenManager, content);
+                    List<ITriple> toSends = _CustomLogic.onTimer(_QueenManager, content);
                     if (toSends != null && !toSends.isEmpty()) {
                         publish(_Writer, toSends);
                     }

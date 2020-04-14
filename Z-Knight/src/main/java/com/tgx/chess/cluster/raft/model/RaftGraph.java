@@ -99,21 +99,18 @@ public class RaftGraph
     {
         return _NodeMap.values()
                        .stream()
-                       .filter(entry -> entry.getTerm() == term && entry.getCandidate() == selfPeerId)
+                       .filter(machine -> machine.getTerm() == term && machine.getCandidate() == selfPeerId)
                        .count() > _NodeMap.size() / 2;
     }
 
     @JsonIgnore
     public boolean isMajorAccept(long selfPeerId, long term, long index)
     {
-        return _NodeMap.entrySet()
+        return _NodeMap.values()
                        .stream()
-                       .filter(entry -> entry.getValue()
-                                             .getTerm() == term
-                                        && entry.getValue()
-                                                .getIndex() == index
-                                        && entry.getValue()
-                                                .getCandidate() == selfPeerId)
+                       .filter(machine -> machine.getTerm() == term
+                                          && machine.getMatchIndex() >= index
+                                          && machine.getCandidate() == selfPeerId)
                        .count() > _NodeMap.size() / 2;
     }
 

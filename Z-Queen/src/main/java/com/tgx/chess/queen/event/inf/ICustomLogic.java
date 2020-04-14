@@ -40,5 +40,5 @@ public interface ICustomLogic<C extends IContext<C>,
 
     List<ITriple> consensus(QueenManager<C> manager, IControl<C> request, ISession<C> session);
 
-    List<ITriple> onTransfer(QueenManager<C> manager, T content);
+    List<ITriple> onTimer(QueenManager<C> manager, T content);
 }
