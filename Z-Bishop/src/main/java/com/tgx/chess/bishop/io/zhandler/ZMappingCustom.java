@@ -33,8 +33,10 @@ import com.tgx.chess.bishop.io.zprotocol.ztls.X03_Cipher;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X04_EncryptConfirm;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X05_EncryptStart;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X06_EncryptComp;
+import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.inf.ICustomLogic;
 import com.tgx.chess.queen.io.core.inf.IControl;
@@ -60,9 +62,9 @@ public class ZMappingCustom<T extends IStorage>
 
     @Override
     @SuppressWarnings("unchecked")
-    public IControl<ZContext>[] handle(QueenManager<ZContext> manager,
-                                       ISession<ZContext> session,
-                                       IControl<ZContext> content) throws Exception
+    public IPair handle(QueenManager<ZContext> manager,
+                        ISession<ZContext> session,
+                        IControl<ZContext> content) throws Exception
     {
         _Logger.info("mapping receive %s", content);
         switch (content.serial())
@@ -77,7 +79,7 @@ public class ZMappingCustom<T extends IStorage>
                  *  内嵌逻辑，在ZCommandFilter中已经处理结束
                  *  此处仅执行转发逻辑
                  */
-                return new IControl[] { content };
+                return new Pair<>(new IControl[] { content }, null);
             default:
                 if (_Then == null) return null;
                 return _Then.handle(manager, session, content);

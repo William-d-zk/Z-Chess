@@ -47,10 +47,10 @@ import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
 import com.tgx.chess.bishop.io.zprotocol.device.X21_SignUpResult;
 import com.tgx.chess.bishop.io.zprotocol.device.X24_UpdateToken;
 import com.tgx.chess.bishop.io.zprotocol.device.X25_AuthorisedToken;
-import com.tgx.chess.bishop.io.zprotocol.raft.X75_RaftRequest;
 import com.tgx.chess.bishop.io.zprotocol.raft.X76_RaftResult;
 import com.tgx.chess.cluster.raft.model.RaftCode;
 import com.tgx.chess.king.base.exception.LinkRejectException;
+import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.base.util.Triple;
@@ -84,10 +84,9 @@ public class LinkCustom
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public IControl<ZContext>[] handle(QueenManager<ZContext> manager,
-                                       ISession<ZContext> session,
-                                       IControl<ZContext> content) throws Exception
+    public IPair handle(QueenManager<ZContext> manager,
+                        ISession<ZContext> session,
+                        IControl<ZContext> content) throws Exception
     {
         switch (content.serial())
         {
@@ -95,15 +94,17 @@ public class LinkCustom
                 //TODO 重新设计X20
                 X20_SignUp x20 = (X20_SignUp) content;
                 X21_SignUpResult x21 = new X21_SignUpResult();
-                return new IControl[] { x21 };
+                return new Pair<>(new IControl[] { x21 }, null);
             case X24_UpdateToken.COMMAND:
                 //TODO 重新设计X24
                 X24_UpdateToken x24 = (X24_UpdateToken) content;
                 X25_AuthorisedToken x25 = new X25_AuthorisedToken();
-                return new IControl[] { x25 };
-            case X75_RaftRequest.COMMAND:
+                return new Pair<>(new IControl[] { x25 }, null);
+            case X76_RaftResult.COMMAND:
+                X76_RaftResult x76 = (X76_RaftResult) content;
+                long commandId = x76.getCommandId();
 
-                return new IControl[] {};
+                return new Pair<>(new IControl[] {}, null);
             case X111_QttConnect.COMMAND:
                 X111_QttConnect x111 = (X111_QttConnect) content;
                 DeviceEntry device = new DeviceEntry();
@@ -152,7 +153,7 @@ public class LinkCustom
                         x108.setSession(old);
                         pushList.add(x108);
                     }
-                    return pushList.toArray(new IControl[0]);
+                    return new Pair<>(pushList.toArray(new IControl[0]), null);
                 }
                 throw new LinkRejectException(x112.getCode()
                                                   .name());
@@ -167,14 +168,14 @@ public class LinkCustom
                                                                                session.getIndex()) ? topic.getSecond()
                                                                                                    : IQoS.Level.FAILURE));
                 }
-                return new IControl[] { x119 };
+                return new Pair<>(new IControl[] { x119 }, x118);
             case X11A_QttUnsubscribe.COMMAND:
                 X11A_QttUnsubscribe x11A = (X11A_QttUnsubscribe) content;
                 x11A.getTopics()
                     .forEach(topic -> mQttRouter.removeTopic(topic, session.getIndex()));
                 X11B_QttUnsuback x11B = new X11B_QttUnsuback();
                 x11B.setMsgId(x11A.getMsgId());
-                return new IControl[] { x11B };
+                return new Pair<>(new IControl[] { x11B }, x11A);
         }
         return null;
     }

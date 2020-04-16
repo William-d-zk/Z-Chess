@@ -63,12 +63,6 @@ public class X118_QttSubscribe
     }
 
     @Override
-    public boolean isConsensus()
-    {
-        return true;
-    }
-
-    @Override
     public int getPriority()
     {
         return QOS_PRIORITY_06_META_CREATE;

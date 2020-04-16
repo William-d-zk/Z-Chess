@@ -47,9 +47,9 @@ public class X76_RaftResult
         super(COMMAND, msgId);
     }
 
-    private long mClientId;
     private int  mCommandId;
     private int  mCode;
+    private long mOrigin;
 
     public int getCommandId()
     {
@@ -64,19 +64,18 @@ public class X76_RaftResult
     @Override
     public int encodec(byte[] data, int pos)
     {
-        pos += IoUtil.writeLong(mClientId, data, pos);
         pos += IoUtil.writeByte(mCommandId, data, pos);
         pos += IoUtil.writeByte(mCode, data, pos);
+        pos += IoUtil.writeLong(mOrigin, data, pos);
         return pos;
     }
 
     @Override
     public int decodec(byte[] data, int pos)
     {
-        mClientId = IoUtil.readLong(data, pos);
-        pos += 8;
         mCommandId = data[pos++] & 0xFF;
         mCode = data[pos++] & 0xFF;
+        mOrigin = IoUtil.readLong(data, pos);
         return pos;
     }
 
@@ -96,13 +95,13 @@ public class X76_RaftResult
         mCode = code;
     }
 
-    public void setClientId(long clientId)
+    public long getOrigin()
     {
-        mClientId = clientId;
+        return mOrigin;
     }
 
-    public long getClientId()
+    public void setOrigin(long origin)
     {
-        return mClientId;
+        mOrigin = origin;
     }
 }

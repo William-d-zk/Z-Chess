@@ -58,6 +58,7 @@ public interface IPipeTransfer<C extends IContext<C>>
                          if (targetSession == null) {
                              command.setSession(session);
                              targetSession = session;
+                             if (session == null) { return null; }
                          }
                          return new Triple<>(command,
                                              targetSession,

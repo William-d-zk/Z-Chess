@@ -24,9 +24,9 @@
 
 package com.tgx.chess.queen.event.operator;
 
-import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
 /**
@@ -34,18 +34,15 @@ import com.tgx.chess.queen.io.core.inf.ISession;
  */
 public class IgnoreOperator<C extends IContext<C>>
         implements
-        IOperator<Throwable,
+        IOperator<IControl<C>,
                   ISession<C>,
-                  Void>
+                  IControl<C>>
 {
 
-    private final Logger _Logger = Logger.getLogger(getClass().getName());
-
     @Override
-    public Void handle(Throwable throwable, ISession<C> session)
+    public IControl<C> handle(IControl<C> input, ISession<C> session)
     {
-        _Logger.warning("error session:%s", throwable, session);
-        return null;
+        return input;
     }
 
     @Override
