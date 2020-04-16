@@ -24,6 +24,7 @@
 
 package com.tgx.chess.queen.event.inf;
 
+import com.tgx.chess.queen.event.operator.IgnoreOperator;
 import com.tgx.chess.queen.io.core.inf.ICommandFactory;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
@@ -42,6 +43,7 @@ import com.tgx.chess.queen.io.core.inf.ISessionOption;
  */
 public interface ISort<C extends IContext<C>>
 {
+
     enum Mode
     {
         CLUSTER,
@@ -83,6 +85,8 @@ public interface ISort<C extends IContext<C>>
     ISessionCloser<C> getCloser();
 
     ISessionError<C> getError();
+
+    IgnoreOperator<C> getIgnore();
 
     C newContext(ISessionOption option);
 

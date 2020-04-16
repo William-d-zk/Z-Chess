@@ -156,13 +156,16 @@ public class MappingHandler<C extends IContext<C>,
                     }
                     break;
                 case LINK:
+                case CLUSTER:
                     IControl<C> received = event.getContent()
                                                 .getFirst();
                     ISession<C> session = event.getContent()
                                                .getSecond();
                     if (received != null) {
                         try {
-                            IControl<C>[] toSends = _CustomLogic.handle(_QueenManager, session, received);
+                            IPair handled = _CustomLogic.handle(_QueenManager, session, received);
+                            if (handled == null) break;
+                            IControl<C>[] toSends = handled.getFirst();
                             if (toSends != null && toSends.length > 0) {
                                 publish(_Writer,
                                         WRITE,
@@ -171,8 +174,14 @@ public class MappingHandler<C extends IContext<C>,
                                                .getSort()
                                                .getTransfer());
                             }
-                            if (received.isConsensus()) {
-                                publish(_Transfer, CONSENSUS, new Pair<>(received, session), null);
+                            IControl<C> transfer = handled.getSecond();
+                            if (transfer != null) {
+                                publish(_Transfer,
+                                        CONSENSUS,
+                                        new Pair<>(transfer, session),
+                                        session.getContext()
+                                               .getSort()
+                                               .getIgnore());
                             }
                         }
                         catch (LinkRejectException e) {
@@ -185,7 +194,7 @@ public class MappingHandler<C extends IContext<C>,
                                          .getError());
                         }
                         catch (Exception e) {
-                            _Logger.warning("link mapping handler error", e);
+                            _Logger.warning("mapping handler error", e);
                             error(_Error,
                                   MAPPING_ERROR,
                                   new Pair<>(e, session),
@@ -194,34 +203,6 @@ public class MappingHandler<C extends IContext<C>,
                                          .getError());
                         }
                         break;
-                    }
-                    break;
-                case CLUSTER:
-                    received = event.getContent()
-                                    .getFirst();
-                    session = event.getContent()
-                                   .getSecond();
-                    if (received != null) {
-                        try {
-                            IControl<C>[] toSends = _CustomLogic.handle(_QueenManager, session, received);
-                            if (toSends != null && toSends.length > 0) {
-                                publish(_Writer,
-                                        WRITE,
-                                        new Pair<>(toSends, session),
-                                        session.getContext()
-                                               .getSort()
-                                               .getTransfer());
-                            }
-                        }
-                        catch (Exception e) {
-                            _Logger.warning("cluster mapping handler error", e);
-                            error(_Error,
-                                  MAPPING_ERROR,
-                                  new Pair<>(e, session),
-                                  session.getContext()
-                                         .getSort()
-                                         .getError());
-                        }
                     }
                     break;
                 case CONSENSUS:

@@ -71,16 +71,6 @@ public interface IControl<C extends IContext<C>>
         return false;
     }
 
-    /**
-     * 当前 Command 的数据 是否需要强一致
-     * 
-     * @return true/false
-     */
-    default boolean isConsensus()
-    {
-        return false;
-    }
-
     default IControl<C> failed(int code)
     {
         return null;

@@ -78,6 +78,7 @@ import com.tgx.chess.queen.io.core.inf.IActivity;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.IConsensus;
 import com.tgx.chess.queen.io.core.inf.IControl;
+import com.tgx.chess.queen.io.core.manager.QueenManager;
 
 /**
  * @author william.d.zk
@@ -486,17 +487,18 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         return response;
     }
 
-    public IControl<ZContext>[] onResponse(long peerId,
-                                           long term,
-                                           long index,
-                                           long candidate,
-                                           RaftState state,
-                                           RaftCode code)
+    public IPair onResponse(long peerId,
+                            long term,
+                            long index,
+                            long candidate,
+                            RaftState state,
+                            RaftCode code,
+                            QueenManager<ZContext> manager)
     {
         RaftMachine peerMachine = _RaftGraph.getMachine(peerId);
         if (peerMachine == null) {
             _Logger.warning("peer %#x is not found", peerId);
-            return null;
+            return new Pair<>();
         }
         peerMachine.setIndex(index);
         peerMachine.setTerm(term);
@@ -510,13 +512,16 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
                     if (_RaftGraph.isMajorAccept(_SelfMachine.getPeerId(), _SelfMachine.getTerm())) {
                         electCancel();
                         beLeader();
-                        return createBroadcasts().toArray(X7E_RaftBroadcast[]::new);
+                        return new Pair<>(createBroadcasts().toArray(X7E_RaftBroadcast[]::new), null);
                     }
                 }
                 else if (_SelfMachine.getState() == LEADER) {
                     peerMachine.setMatchIndex(index);
+                    X7E_RaftBroadcast x7e = null;
                     if (peerMachine.getIndex() < _SelfMachine.getIndex()) {
-                        return new X7E_RaftBroadcast[] { createBroadcast(peerMachine) };
+                        //append log -> follower
+                        x7e = createBroadcast(peerMachine);
+                        x7e.setSession(manager.findSessionByPrefix(peerId));
                     }
                     LogEntry logEntry = _RaftDao.getEntry(index);
                     if (index > _SelfMachine.getCommit()
@@ -524,12 +529,25 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
                         && _RaftGraph.isMajorAccept(_SelfMachine.getPeerId(), _SelfMachine.getTerm(), index))
                     {
                         _SelfMachine.setCommit(index);
-                        X76_RaftResult x76 = new X76_RaftResult();
+                        X76_RaftResult x76 = new X76_RaftResult(_ZUID.getId());
                         x76.setCommandId(logEntry.getPayloadSerial());
                         x76.setCode(SUCCESS.getCode());
                         x76.setPayload(logEntry.getPayload());
-                        x76.setClientId(logEntry.getRaftClientId());
-                        return new X76_RaftResult[] { x76 };
+                        x76.setOrigin(logEntry.getOrigin());
+                        if (logEntry.getRaftClientId() != _SelfMachine.getPeerId()) {
+                            //leader -> follower -> client
+                            x76.setSession(manager.findSessionByPrefix(peerId));
+                            return x7e != null ? new Pair<>(new IControl[] { x7e,
+                                                                             x76 },
+                                                            null)
+                                               : new Pair<>(new IControl[] { x76 }, null);
+                        }
+                        else {
+                            //leader -> client
+                            x76.setSession(manager.findSessionByIndex(x76.getOrigin()));
+                            return x7e != null ? new Pair<>(new IControl[] { x7e }, x76)
+                                               : new Pair<>(null, x76);
+                        }
                     }
                 }
                 break;
@@ -547,7 +565,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
                     _Logger.info("follower %#x,match failed,rollback %d",
                                  peerMachine.getPeerId(),
                                  peerMachine.getIndex());
-                    return new X7E_RaftBroadcast[] { createBroadcast(peerMachine, 1) };
+                    return new Pair<>(new X7E_RaftBroadcast[] { createBroadcast(peerMachine, 1) }, null);
                 }
                 else {
                     _Logger.warning("self %#x is old leader & send logs=> %#x,next-index wasn't catchup");
@@ -564,7 +582,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
             case ALREADY_VOTE:
                 break;
         }
-        return null;
+        return new Pair<>();
     }
 
     public List<LogEntry> diff()
@@ -703,12 +721,13 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         _AppendLogQueue.addAll(entryList);
     }
 
-    public List<X7E_RaftBroadcast> newLogEntry(IControl<ZContext> request, long raftClientId)
+    public List<X7E_RaftBroadcast> newLogEntry(IControl<ZContext> request, long raftClientId, long origin)
     {
         LogEntry newEntry = new LogEntry();
         newEntry.setIndex(_SelfMachine.getIndex() + 1);
         newEntry.setTerm(_SelfMachine.getTerm());
         newEntry.setRaftClientId(raftClientId);
+        newEntry.setOrigin(origin);
         newEntry.setPayloadSerial(request.serial());
         newEntry.setPayload(request.encode());
         if (_RaftDao.append(newEntry)) {

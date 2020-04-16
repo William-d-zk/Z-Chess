@@ -45,6 +45,7 @@ import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.operator.AioWriter;
 import com.tgx.chess.queen.event.operator.CloseOperator;
 import com.tgx.chess.queen.event.operator.ErrorOperator;
+import com.tgx.chess.queen.event.operator.IgnoreOperator;
 import com.tgx.chess.queen.event.operator.PipeDecoder;
 import com.tgx.chess.queen.event.operator.PipeEncoder;
 import com.tgx.chess.queen.event.operator.TransferOperator;
@@ -356,6 +357,7 @@ public enum ZSort
     private final IPipeEncoder<ZContext>   _Encoder       = new PipeEncoder<>(_AioWriter);
     private final IPipeTransfer<ZContext>  _Transfer      = new TransferOperator<>();
     private final IPipeDecoder<ZContext>   _Decoder       = new PipeDecoder<>();
+    private final IgnoreOperator<ZContext> _Ignore        = new IgnoreOperator<>();
 
     @Override
     public IPipeEncoder<ZContext> getEncoder()
@@ -385,5 +387,11 @@ public enum ZSort
     public ISessionError<ZContext> getError()
     {
         return _ErrorOperator;
+    }
+
+    @Override
+    public IgnoreOperator<ZContext> getIgnore()
+    {
+        return _Ignore;
     }
 }

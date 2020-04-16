@@ -42,6 +42,7 @@ public class LogEntry
     private long   mTerm;
     private long   mIndex;
     private long   mRaftClientId;
+    private long   mOrigin;
     private int    mPayloadSerial;
     private byte[] mPayload;
 
@@ -129,5 +130,15 @@ public class LogEntry
     public void setRaftClientId(long raftClientId)
     {
         mRaftClientId = raftClientId;
+    }
+
+    public long getOrigin()
+    {
+        return mOrigin;
+    }
+
+    public void setOrigin(long origin)
+    {
+        mOrigin = origin;
     }
 }

@@ -41,7 +41,6 @@ import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
 import com.tgx.chess.bishop.io.zprotocol.raft.X72_RaftVote;
 import com.tgx.chess.bishop.io.zprotocol.raft.X75_RaftRequest;
-import com.tgx.chess.bishop.io.zprotocol.raft.X76_RaftResult;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7E_RaftBroadcast;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
 import com.tgx.chess.cluster.raft.RaftState;
@@ -50,8 +49,10 @@ import com.tgx.chess.cluster.raft.model.RaftMachine;
 import com.tgx.chess.cluster.raft.model.RaftNode;
 import com.tgx.chess.cluster.raft.model.log.LogEntry;
 import com.tgx.chess.json.JsonUtil;
+import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.event.inf.ICustomLogic;
@@ -83,10 +84,9 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public IControl<ZContext>[] handle(QueenManager<ZContext> manager,
-                                       ISession<ZContext> session,
-                                       IControl<ZContext> content) throws Exception
+    public IPair handle(QueenManager<ZContext> manager,
+                        ISession<ZContext> session,
+                        IControl<ZContext> content) throws Exception
     {
         switch (content.serial())
         {
@@ -99,7 +99,7 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
                 machine.setCandidate(x72.getPeerId());
                 machine.setState(CANDIDATE);
                 X7F_RaftResponse x7f = mRaftNode.merge(machine);
-                return x7f != null ? new IControl[] { x7f }
+                return x7f != null ? new Pair<>(new X7F_RaftResponse[] { x7f }, null)
                                    : null;
             case X7E_RaftBroadcast.COMMAND:
                 X7E_RaftBroadcast x7e = (X7E_RaftBroadcast) content;
@@ -116,29 +116,17 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
                 machine.setIndexTerm(x7e.getPreIndexTerm());
                 machine.setIndex(x7e.getPreIndex());
                 x7f = mRaftNode.merge(machine);
-                return x7f != null ? new IControl[] { x7f }
+                return x7f != null ? new Pair<>(new X7F_RaftResponse[] { x7f }, null)
                                    : null;
             case X7F_RaftResponse.COMMAND:
                 x7f = (X7F_RaftResponse) content;
-                IControl<ZContext>[] r = mRaftNode.onResponse(x7f.getPeerId(),
-                                                              x7f.getTerm(),
-                                                              x7f.getCatchUp(),
-                                                              x7f.getCandidate(),
-                                                              RaftState.valueOf(x7f.getState()),
-                                                              RaftCode.valueOf(x7f.getCode()));
-                for (IControl<ZContext> c : r) {
-                    if (c.serial() == X7E_RaftBroadcast.COMMAND) {
-                        x7e = (X7E_RaftBroadcast) c;
-                        ISession<ZContext> s = manager.findSessionByPrefix(x7e.getFollower());
-                        x7e.setSession(s);
-                    }
-                    else if (c.serial() == X76_RaftResult.COMMAND) {
-                        X76_RaftResult x76 = (X76_RaftResult) c;
-                        ISession<ZContext> s = manager.findSessionByPrefix(x76.getClientId());
-                        x76.setSession(s);
-                    }
-                }
-                return r;
+                return mRaftNode.onResponse(x7f.getPeerId(),
+                                            x7f.getTerm(),
+                                            x7f.getCatchUp(),
+                                            x7f.getCandidate(),
+                                            RaftState.valueOf(x7f.getState()),
+                                            RaftCode.valueOf(x7f.getCode()),
+                                            manager);
             case X106_Identity.COMMAND:
                 X106_Identity x106 = (X106_Identity) content;
                 long peerId = x106.getIdentity();
@@ -157,7 +145,7 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
         if (machine == null) { return null; }
         switch (machine.getOperation())
         {
-            case OP_APPEND:
+            case OP_APPEND://heartbeat
                 List<X7E_RaftBroadcast> x7EList = mRaftNode.checkLogAppend(machine);
                 if (x7EList != null) {
                     return x7EList.stream()
@@ -165,7 +153,7 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
                                   {
                                       ISession<ZContext> session = manager.findSessionByPrefix(x7E.getFollower());
                                       if (session == null) {
-                                          _Logger.warning("not found peerId:%#d session", x7E.getFollower());
+                                          _Logger.warning("not found peerId:%#x session", x7E.getFollower());
                                           return null;
                                       }
                                       else {
@@ -181,7 +169,7 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
                                   .collect(Collectors.toList());
                 }
                 break;
-            case OP_INSERT:
+            case OP_INSERT://vote
                 List<X72_RaftVote> x72List = mRaftNode.checkVoteState(machine);
                 if (x72List != null) {
                     return x72List.stream()
@@ -217,7 +205,14 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
         if (mRaftNode.getMachine()
                      .getState() == LEADER)
         {
-            List<X7E_RaftBroadcast> broadcasts = mRaftNode.newLogEntry(request, session.getIndex());
+            /*
+             * session belong to Link
+             * 
+             */
+            List<X7E_RaftBroadcast> broadcasts = mRaftNode.newLogEntry(request,
+                                                                       mRaftNode.getMachine()
+                                                                                .getPeerId(),
+                                                                       session.getIndex());
             return broadcasts.stream()
                              .map(x7e ->
                              {

@@ -47,7 +47,6 @@ public class Pair<FIRST,
 
     public Pair()
     {
-
     }
 
     public void setFirst(FIRST f)

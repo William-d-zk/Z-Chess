@@ -26,6 +26,7 @@ package com.tgx.chess.queen.event.inf;
 
 import java.util.List;
 
+import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.io.core.inf.IContext;
@@ -36,9 +37,38 @@ import com.tgx.chess.queen.io.core.manager.QueenManager;
 public interface ICustomLogic<C extends IContext<C>,
                               T extends IStorage>
 {
-    IControl<C>[] handle(QueenManager<C> manager, ISession<C> session, IControl<C> content) throws Exception;
+    /**
+     * 
+     * @param manager
+     * @param session
+     * @param content
+     * @return pair
+     *         first: to_send_array 1:N
+     *         second: to_transfer
+     *         Link->Cluster, consensus | Cluster->Link,consensus_result
+     * @throws Exception
+     */
+    IPair handle(QueenManager<C> manager, ISession<C> session, IControl<C> content) throws Exception;
 
+    /**
+     * Link -> Cluster.consensus(Link.consensus_data)
+     * Cluster->Link.consensus(Cluster.consensus_result)
+     * 
+     * @param manager
+     * @param request
+     * @param session
+     * @return
+     */
     List<ITriple> consensus(QueenManager<C> manager, IControl<C> request, ISession<C> session);
 
+    /**
+     * Cluster.Leader heartbeat timeout event
+     * Cluster.Follower check leader available,timeout -> start vote
+     * Cluster.Candidate check elector response,timeout -> restart vote
+     * 
+     * @param manager
+     * @param content
+     * @return
+     */
     List<ITriple> onTimer(QueenManager<C> manager, T content);
 }
