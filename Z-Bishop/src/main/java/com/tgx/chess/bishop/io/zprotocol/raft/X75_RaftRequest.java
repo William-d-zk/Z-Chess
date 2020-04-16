@@ -47,35 +47,64 @@ public class X75_RaftRequest
         super(COMMAND, msgId);
     }
 
-    private int mCommandId;
+    private long mPeerId;
+    private int  mPayloadSerial;
+    private long mOrigin;
 
-    public int getCommandId()
+    public int getPayloadSerial()
     {
-        return mCommandId;
+        return mPayloadSerial;
     }
 
-    public void setCommandId(int commandId)
+    public void setPayloadSerial(int serial)
     {
-        mCommandId = commandId;
+        mPayloadSerial = serial;
+    }
+
+    public void setOrigin(long origin)
+    {
+        mOrigin = origin;
+
+    }
+
+    public long getOrigin()
+    {
+        return mOrigin;
     }
 
     @Override
     public int encodec(byte[] data, int pos)
     {
-        pos += IoUtil.writeByte(mCommandId, data, pos);
+        pos += IoUtil.writeByte(mPayloadSerial, data, pos);
+        pos += IoUtil.writeLong(mOrigin, data, pos);
+        pos += IoUtil.writeLong(mPeerId, data, pos);
         return pos;
     }
 
     @Override
     public int decodec(byte[] data, int pos)
     {
-        mCommandId = data[pos++] & 0xFF;
+        mPayloadSerial = data[pos++] & 0xFF;
+        mOrigin = IoUtil.readLong(data, pos);
+        pos += 8;
+        mPeerId = IoUtil.readLong(data, pos);
+        pos += 8;
         return pos;
     }
 
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 1;
+        return super.dataLength() + 17;
+    }
+
+    public long getPeerId()
+    {
+        return mPeerId;
+    }
+
+    public void setPeerId(long peerId)
+    {
+        mPeerId = peerId;
     }
 }

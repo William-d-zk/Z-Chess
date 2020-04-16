@@ -530,7 +530,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
                     {
                         _SelfMachine.setCommit(index);
                         X76_RaftResult x76 = new X76_RaftResult(_ZUID.getId());
-                        x76.setCommandId(logEntry.getPayloadSerial());
+                        x76.setPayloadSerial(logEntry.getPayloadSerial());
                         x76.setCode(SUCCESS.getCode());
                         x76.setPayload(logEntry.getPayload());
                         x76.setOrigin(logEntry.getOrigin());
@@ -723,16 +723,21 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
 
     public List<X7E_RaftBroadcast> newLogEntry(IControl<ZContext> request, long raftClientId, long origin)
     {
+        return newLogEntry(request.serial(), request.encode(), raftClientId, origin).collect(Collectors.toList());
+    }
+
+    public Stream<X7E_RaftBroadcast> newLogEntry(int requestSerial, byte[] requestData, long raftClientId, long origin)
+    {
         LogEntry newEntry = new LogEntry();
         newEntry.setIndex(_SelfMachine.getIndex() + 1);
         newEntry.setTerm(_SelfMachine.getTerm());
         newEntry.setRaftClientId(raftClientId);
         newEntry.setOrigin(origin);
-        newEntry.setPayloadSerial(request.serial());
-        newEntry.setPayload(request.encode());
+        newEntry.setPayloadSerial(requestSerial);
+        newEntry.setPayload(requestData);
         if (_RaftDao.append(newEntry)) {
             _SelfMachine.increaseIndex();
-            return createBroadcasts().collect(Collectors.toList());
+            return createBroadcasts();
         }
         _Logger.fetal("Raft WAL failed!");
         throw new IllegalStateException("Raft WAL failed!");

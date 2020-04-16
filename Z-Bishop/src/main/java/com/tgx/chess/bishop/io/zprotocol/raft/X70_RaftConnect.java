@@ -30,4 +30,5 @@ package com.tgx.chess.bishop.io.zprotocol.raft;
  */
 public class X70_RaftConnect
 {
+
 }

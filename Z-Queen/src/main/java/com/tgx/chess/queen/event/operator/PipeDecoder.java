@@ -51,8 +51,8 @@ public class PipeDecoder<C extends IContext<C>>
     }
 
     @Override
-    public String toString()
+    public String getName()
     {
-        return "PipeDecoder";
+        return "operator.pipe.decoder";
     }
 }

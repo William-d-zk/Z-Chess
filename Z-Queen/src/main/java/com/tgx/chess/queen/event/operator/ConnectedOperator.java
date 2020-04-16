@@ -87,4 +87,10 @@ public class ConnectedOperator<C extends IContext<C>>
             throw new ZException("session create failed %s", channel);
         }
     }
+
+    @Override
+    public String getName()
+    {
+        return "operator.connected";
+    }
 }

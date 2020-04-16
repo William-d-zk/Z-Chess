@@ -37,8 +37,8 @@ public class ErrorOperator<C extends IContext<C>>
 
 {
     @Override
-    public String toString()
+    public String getName()
     {
-        return "error_operator";
+        return "operator.error";
     }
 }

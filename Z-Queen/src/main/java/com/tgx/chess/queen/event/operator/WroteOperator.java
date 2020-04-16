@@ -59,4 +59,10 @@ public class WroteOperator<C extends IContext<C>>
         }
         return null;
     }
+
+    @Override
+    public String getName()
+    {
+        return "operator.wrote";
+    }
 }

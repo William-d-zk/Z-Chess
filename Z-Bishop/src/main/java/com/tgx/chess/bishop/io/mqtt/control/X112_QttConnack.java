@@ -143,13 +143,18 @@ public class X112_QttConnack
 
     public boolean isIllegalState()
     {
-        return !mPresent && mResponseCode > 0;
+        return !mPresent || mResponseCode > 0;
+    }
+
+    public boolean isOk()
+    {
+        return mPresent && mResponseCode == 0;
     }
 
     @Override
     public String toString()
     {
-        return String.format("connack:[present:%s,result:%s]", mPresent, getCode());
+        return String.format("%#x connack:[present:%s,result:%s]", COMMAND, mPresent, getCode());
     }
 
     public enum Code
