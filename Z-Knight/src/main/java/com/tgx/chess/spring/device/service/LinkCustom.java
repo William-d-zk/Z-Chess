@@ -25,14 +25,17 @@
 package com.tgx.chess.spring.device.service;
 
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.NavigableMap;
+import java.util.Objects;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.tgx.chess.bishop.io.ZSort;
 import com.tgx.chess.bishop.io.mqtt.QttContext;
 import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
 import com.tgx.chess.bishop.io.mqtt.control.X112_QttConnack;
@@ -43,15 +46,11 @@ import com.tgx.chess.bishop.io.mqtt.control.X11B_QttUnsuback;
 import com.tgx.chess.bishop.io.mqtt.handler.IQttRouter;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.control.X108_Shutdown;
-import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
-import com.tgx.chess.bishop.io.zprotocol.device.X21_SignUpResult;
-import com.tgx.chess.bishop.io.zprotocol.device.X24_UpdateToken;
-import com.tgx.chess.bishop.io.zprotocol.device.X25_AuthorisedToken;
 import com.tgx.chess.bishop.io.zprotocol.raft.X76_RaftResult;
 import com.tgx.chess.cluster.raft.model.RaftCode;
-import com.tgx.chess.king.base.exception.LinkRejectException;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
+import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.db.inf.IRepository;
@@ -70,6 +69,7 @@ public class LinkCustom
         ICustomLogic<ZContext,
                      MessageEntry>
 {
+    private final Logger                                                                       _Logger    = Logger.getLogger(getClass().getSimpleName());
     private final IRepository<DeviceEntry>                                                     _DeviceRepository;
     private final NavigableMap<Long,
                                Triple<IControl<ZContext>,
@@ -86,27 +86,12 @@ public class LinkCustom
     @Override
     public IPair handle(QueenManager<ZContext> manager,
                         ISession<ZContext> session,
-                        IControl<ZContext> content) throws Exception
+                        IControl<ZContext> input) throws Exception
     {
-        switch (content.serial())
+        switch (input.serial())
         {
-            case X20_SignUp.COMMAND:
-                //TODO 重新设计X20
-                X20_SignUp x20 = (X20_SignUp) content;
-                X21_SignUpResult x21 = new X21_SignUpResult();
-                return new Pair<>(new IControl[] { x21 }, null);
-            case X24_UpdateToken.COMMAND:
-                //TODO 重新设计X24
-                X24_UpdateToken x24 = (X24_UpdateToken) content;
-                X25_AuthorisedToken x25 = new X25_AuthorisedToken();
-                return new Pair<>(new IControl[] { x25 }, null);
-            case X76_RaftResult.COMMAND:
-                X76_RaftResult x76 = (X76_RaftResult) content;
-                long commandId = x76.getCommandId();
-
-                return new Pair<>(new IControl[] {}, null);
             case X111_QttConnect.COMMAND:
-                X111_QttConnect x111 = (X111_QttConnect) content;
+                X111_QttConnect x111 = (X111_QttConnect) input;
                 DeviceEntry device = new DeviceEntry();
                 device.setToken(x111.getClientId());
                 device.setUsername(x111.getUserName());
@@ -143,49 +128,57 @@ public class LinkCustom
                      */
                     x112.rejectNotAuthorized();
                 }
-                List<IControl<ZContext>> pushList = new LinkedList<>();
-                if (!x112.isIllegalState()) {
-                    //此时device != null x112已经判定了状态
+                if (x112.isOk() && device != null) {
                     ISession<ZContext> old = manager.mapSession(device.getPrimaryKey(), session);
-                    pushList.add(x112);
                     if (old != null) {
                         X108_Shutdown x108 = new X108_Shutdown();
                         x108.setSession(old);
-                        pushList.add(x108);
+                        return new Pair<>(x108, x111);
                     }
-                    return new Pair<>(pushList.toArray(new IControl[0]), null);
+                    else {
+                        return new Pair<>(null, x111);
+                    }
                 }
-                throw new LinkRejectException(x112.getCode()
-                                                  .name());
+                else {
+                    return new Pair<>(new X112_QttConnack[] { x112 }, null);
+                }
             case X118_QttSubscribe.COMMAND:
-                X118_QttSubscribe x118 = (X118_QttSubscribe) content;
-                X119_QttSuback x119 = new X119_QttSuback();
-                x119.setMsgId(x118.getMsgId());
-                List<Pair<String,
-                          IQoS.Level>> topics = x118.getTopics();
-                if (topics != null) {
-                    topics.forEach(topic -> x119.addResult(mQttRouter.addTopic(topic,
-                                                                               session.getIndex()) ? topic.getSecond()
-                                                                                                   : IQoS.Level.FAILURE));
-                }
-                return new Pair<>(new IControl[] { x119 }, x118);
             case X11A_QttUnsubscribe.COMMAND:
-                X11A_QttUnsubscribe x11A = (X11A_QttUnsubscribe) content;
-                x11A.getTopics()
-                    .forEach(topic -> mQttRouter.removeTopic(topic, session.getIndex()));
-                X11B_QttUnsuback x11B = new X11B_QttUnsuback();
-                x11B.setMsgId(x11A.getMsgId());
-                return new Pair<>(new IControl[] { x11B }, x11A);
+                return new Pair<>(new IControl[] { input }, null);
         }
         return null;
     }
 
     @Override
     public List<ITriple> consensus(QueenManager<ZContext> manager,
-                                   IControl<ZContext> request,
+                                   IControl<ZContext> response,
                                    ISession<ZContext> session)
     {
-        throw new UnsupportedOperationException();
+        /*
+         raft_client -> Link,session belong to cluster
+         */
+        if (response.serial() == X76_RaftResult.COMMAND) {
+            X76_RaftResult x76 = (X76_RaftResult) response;
+            int cmd = x76.getPayloadSerial();
+            IControl<ZContext> request = ZSort.getCommandFactory(cmd)
+                                              .create(cmd);
+            request.decode(x76.getPayload());
+            Stream<IControl<ZContext>> handled = mappingHandle(manager, request, x76.getOrigin());
+            if (handled != null) {
+                return handled.filter(Objects::nonNull)
+                              .map(control -> new Triple<>(control,
+                                                           control.getSession(),
+                                                           control.getSession()
+                                                                  .getContext()
+                                                                  .getSort()
+                                                                  .getEncoder()))
+                              .collect(Collectors.toList());
+            }
+        }
+        else {
+            _Logger.warning("Link.consensus error,recv:%s", response.toString());
+        }
+        return null;
     }
 
     @Override
@@ -209,9 +202,48 @@ public class LinkCustom
         return _DeviceRepository.find(entry);
     }
 
-    private void onConsensusResult(X76_RaftResult x76)
+    private Stream<IControl<ZContext>> mappingHandle(QueenManager<ZContext> manager,
+                                                     IControl<ZContext> input,
+                                                     long sessionIndex)
     {
-
+        ISession<ZContext> session = manager.findSessionByIndex(sessionIndex);
+        switch (input.serial())
+        {
+            case X111_QttConnect.COMMAND:
+                if (session != null) {
+                    X112_QttConnack x112 = new X112_QttConnack();
+                    x112.responseOk();
+                    x112.setSession(session);
+                    return Stream.of(x112);
+                }
+                break;
+            case X118_QttSubscribe.COMMAND:
+                X118_QttSubscribe x118 = (X118_QttSubscribe) input;
+                List<Pair<String,
+                          IQoS.Level>> topics = x118.getTopics();
+                if (topics != null) {
+                    X119_QttSuback x119 = new X119_QttSuback();
+                    x119.setMsgId(x118.getMsgId());
+                    topics.forEach(topic -> x119.addResult(mQttRouter.addTopic(topic, sessionIndex) ? topic.getSecond()
+                                                                                                    : IQoS.Level.FAILURE));
+                    if (session != null) {
+                        x119.setSession(session);
+                        return Stream.of(x119);
+                    }
+                }
+                break;
+            case X11A_QttUnsubscribe.COMMAND:
+                X11A_QttUnsubscribe x11A = (X11A_QttUnsubscribe) input;
+                x11A.getTopics()
+                    .forEach(topic -> mQttRouter.removeTopic(topic, sessionIndex));
+                if (session != null) {
+                    X11B_QttUnsuback x11B = new X11B_QttUnsuback();
+                    x11B.setMsgId(x11A.getMsgId());
+                    x11B.setSession(session);
+                    return Stream.of(x11B);
+                }
+                break;
+        }
+        return null;
     }
-
 }

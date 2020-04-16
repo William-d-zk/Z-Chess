@@ -41,6 +41,7 @@ import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
 import com.tgx.chess.bishop.io.zprotocol.raft.X72_RaftVote;
 import com.tgx.chess.bishop.io.zprotocol.raft.X75_RaftRequest;
+import com.tgx.chess.bishop.io.zprotocol.raft.X76_RaftResult;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7E_RaftBroadcast;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
 import com.tgx.chess.cluster.raft.RaftState;
@@ -101,6 +102,37 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
                 X7F_RaftResponse x7f = mRaftNode.merge(machine);
                 return x7f != null ? new Pair<>(new X7F_RaftResponse[] { x7f }, null)
                                    : null;
+            case X75_RaftRequest.COMMAND:
+                if (mRaftNode.getMachine()
+                             .getState() != LEADER)
+                {
+                    _Logger.warning("state error,expect:'LEADER',real:%s",
+                                    mRaftNode.getMachine()
+                                             .getState()
+                                             .name());
+                    break;
+                }
+                X75_RaftRequest x75 = (X75_RaftRequest) content;
+                return new Pair<>(mRaftNode.newLogEntry(x75.getPayloadSerial(),
+                                                        x75.getPayload(),
+                                                        x75.getPeerId(),
+                                                        x75.getOrigin())
+                                           .map(x7e ->
+                                           {
+                                               long follower = x7e.getFollower();
+                                               ISession<ZContext> targetSession = manager.findSessionByPrefix(follower);
+                                               if (targetSession != null) {
+                                                   //此处不用判断是否管理，执行线程与 onDismiss在同一线程，只要存在此时的状态一定为valid
+                                                   x7e.setSession(targetSession);
+                                                   return x7e;
+                                               }
+                                               else return null;
+                                           })
+                                           .filter(Objects::nonNull)
+                                           .toArray(X7E_RaftBroadcast[]::new),
+                                  null);
+            case X76_RaftResult.COMMAND:
+                return new Pair<>(null, content);
             case X7E_RaftBroadcast.COMMAND:
                 X7E_RaftBroadcast x7e = (X7E_RaftBroadcast) content;
                 if (x7e.getPayload() != null) {
@@ -207,58 +239,54 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
         {
             /*
              * session belong to Link
-             * 
              */
-            List<X7E_RaftBroadcast> broadcasts = mRaftNode.newLogEntry(request,
-                                                                       mRaftNode.getMachine()
-                                                                                .getPeerId(),
-                                                                       session.getIndex());
-            return broadcasts.stream()
-                             .map(x7e ->
-                             {
-                                 long follower = x7e.getFollower();
-                                 ISession<ZContext> targetSession = manager.findSessionByPrefix(follower);
-                                 if (targetSession != null) {
-                                     //此处不用判断是否管理，执行线程与 onDismiss在同一线程，只要存在此时的状态一定为valid
-                                     x7e.setSession(targetSession);
-                                     return new Triple<>(x7e,
-                                                         targetSession,
-                                                         targetSession.getContext()
-                                                                      .getSort()
-                                                                      .getEncoder());
-                                 }
-                                 else return null;
-                             })
-                             .filter(Objects::nonNull)
-                             .collect(Collectors.toList());
+            return mRaftNode.newLogEntry(request,
+                                         mRaftNode.getMachine()
+                                                  .getPeerId(),
+                                         session.getIndex())
+                            .stream()
+                            .map(x7e ->
+                            {
+                                long follower = x7e.getFollower();
+                                ISession<ZContext> targetSession = manager.findSessionByPrefix(follower);
+                                if (targetSession != null) {
+                                    //此处不用判断是否管理，执行线程与 onDismiss在同一线程，只要存在此时的状态一定为valid
+                                    x7e.setSession(targetSession);
+                                    return new Triple<>(x7e,
+                                                        targetSession,
+                                                        targetSession.getContext()
+                                                                     .getSort()
+                                                                     .getEncoder());
+                                }
+                                else return null;
+                            })
+                            .filter(Objects::nonNull)
+                            .collect(Collectors.toList());
         }
         else if (mRaftNode.getMachine()
                           .getLeader() != ZUID.INVALID_PEER_ID)
         {
             X75_RaftRequest x75 = new X75_RaftRequest(_ClusterRepository.getZid());
-            x75.setCommandId(request.serial());
+            x75.setPayloadSerial(request.serial());
             x75.setPayload(request.encode());
+            x75.setOrigin(session.getIndex());
+            x75.setPeerId(mRaftNode.getMachine()
+                                   .getPeerId());
             ISession<ZContext> targetSession = manager.findSessionByPrefix(mRaftNode.getMachine()
                                                                                     .getLeader());
-
-            return targetSession == null ? Collections.singletonList(new Triple<>(request.failed(RaftCode.LEADER_DIS.getCode()),
-                                                                                  session,
-                                                                                  session.getContext()
-                                                                                         .getSort()
-                                                                                         .getEncoder()))
-                                         : Collections.singletonList(new Triple<>(x75,
-                                                                                  targetSession,
-                                                                                  targetSession.getContext()
-                                                                                               .getSort()
-                                                                                               .getEncoder()));
+            if (targetSession != null) {
+                return Collections.singletonList(new Triple<>(x75,
+                                                              targetSession,
+                                                              targetSession.getContext()
+                                                                           .getSort()
+                                                                           .getEncoder()));
+            }
+            else {
+                _Logger.warning("Leader connection miss");
+            }
         }
-        else {
-            return Collections.singletonList(new Triple<>(request.failed(RaftCode.NO_LEADER.getCode()),
-                                                          session,
-                                                          session.getContext()
-                                                                 .getSort()
-                                                                 .getEncoder()));
-        }
+        _Logger.warning("cluster is electing");
+        return null;
     }
 
     public void setRaftNode(RaftNode<T> raftNode)

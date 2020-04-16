@@ -36,8 +36,8 @@ public class CloseOperator<C extends IContext<C>>
         ISessionCloser<C>
 {
     @Override
-    public String toString()
+    public String getName()
     {
-        return "close_operator";
+        return "operator.close";
     }
 }

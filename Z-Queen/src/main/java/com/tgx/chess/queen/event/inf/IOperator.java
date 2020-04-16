@@ -62,7 +62,13 @@ public interface IOperator<T,
         LOGIC,
         TIMER,
         CONSENSUS,
+        NOTIFY,
         DISPATCH,
         IGNORE
+    }
+
+    default String getName()
+    {
+        return "operator.";
     }
 }

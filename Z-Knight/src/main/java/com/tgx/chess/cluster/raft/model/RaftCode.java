@@ -32,9 +32,7 @@ public enum RaftCode
     ILLEGAL_STATE(3, "illegal state,reject"),
     SPLIT_CLUSTER(4, "split cluster,reject"),
     ALREADY_VOTE(5, "already vote,reject"),
-    OBSOLETE(6, "index obsolete,reject"),
-    NO_LEADER(1000, "cluster electing leader"),
-    LEADER_DIS(1001, "leader disconnect");
+    OBSOLETE(6, "index obsolete,reject");
 
     private final int    _Code;
     private final String _Description;
@@ -74,10 +72,6 @@ public enum RaftCode
                 return ALREADY_VOTE;
             case 6:
                 return OBSOLETE;
-            case 1000:
-                return NO_LEADER;
-            case 1001:
-                return LEADER_DIS;
             default:
                 throw new UnsupportedOperationException();
         }

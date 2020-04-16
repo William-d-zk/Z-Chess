@@ -52,6 +52,7 @@ import com.tgx.chess.queen.event.operator.TransferOperator;
 import com.tgx.chess.queen.io.core.inf.ICommandFactory;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IFilterChain;
+import com.tgx.chess.queen.io.core.inf.IFrame;
 import com.tgx.chess.queen.io.core.inf.IPipeDecoder;
 import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
 import com.tgx.chess.queen.io.core.inf.IPipeTransfer;
@@ -326,10 +327,11 @@ public enum ZSort
         }
     };
 
-    final ZServerFactory    _ServerFactory     = new ZServerFactory();
-    final ZClusterFactory   _ClusterFactory    = new ZClusterFactory();
-    final QttCommandFactory _QttCommandFactory = new QttCommandFactory();
-    final QttFrameFilter    _QttFrameFilter    = new QttFrameFilter();
+    final static ZServerFactory    _ServerFactory     = new ZServerFactory();
+    final static ZClusterFactory   _ClusterFactory    = new ZClusterFactory();
+    final static QttCommandFactory _QttCommandFactory = new QttCommandFactory();
+
+    final QttFrameFilter _QttFrameFilter = new QttFrameFilter();
     {
         _QttFrameFilter.linkAfter(new ZTlsFilter());
         _QttFrameFilter.linkFront(new QttControlFilter())
@@ -341,14 +343,14 @@ public enum ZSort
         _WsHandshakeFilter.linkAfter(header);
         _WsHandshakeFilter.linkFront(new WsFrameFilter())
                           .linkFront(new WsControlFilter())
-                          .linkFront(new ZCommandFilter(_ServerFactory));
+                          .linkFront(new ZCommandFilter(new ZServerFactory()));
     }
 
     final WsFrameFilter _ClusterFrameFilter = new WsFrameFilter();
     {
         _ClusterFrameFilter.linkAfter(new ZTlsFilter());
         _ClusterFrameFilter.linkFront(new WsControlFilter())
-                           .linkFront(new ZCommandFilter(_ClusterFactory));
+                           .linkFront(new ZCommandFilter(new ZClusterFactory()));
     }
 
     private final AioWriter<ZContext>      _AioWriter     = new AioWriter<>();
@@ -393,5 +395,15 @@ public enum ZSort
     public IgnoreOperator<ZContext> getIgnore()
     {
         return _Ignore;
+    }
+
+    public static ICommandFactory<ZContext,
+                                  ? extends IControl<ZContext>,
+                                  ? extends IFrame> getCommandFactory(int serial)
+    {
+        if (serial > 0x110 && serial < 0x11F) { return _QttCommandFactory; }
+        if (serial > 0x1F && serial < 0x6F) { return _ServerFactory; }
+        if (serial >= 0x70 && serial <= 0x7F) { return _ClusterFactory; }
+        throw new IllegalArgumentException();
     }
 }

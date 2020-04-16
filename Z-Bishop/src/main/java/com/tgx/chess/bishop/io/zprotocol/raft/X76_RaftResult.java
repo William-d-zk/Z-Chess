@@ -47,24 +47,24 @@ public class X76_RaftResult
         super(COMMAND, msgId);
     }
 
-    private int  mCommandId;
+    private int  mPayloadSerial;
     private int  mCode;
     private long mOrigin;
 
-    public int getCommandId()
+    public int getPayloadSerial()
     {
-        return mCommandId;
+        return mPayloadSerial;
     }
 
-    public void setCommandId(int commandId)
+    public void setPayloadSerial(int serial)
     {
-        mCommandId = commandId;
+        mPayloadSerial = serial;
     }
 
     @Override
     public int encodec(byte[] data, int pos)
     {
-        pos += IoUtil.writeByte(mCommandId, data, pos);
+        pos += IoUtil.writeByte(mPayloadSerial, data, pos);
         pos += IoUtil.writeByte(mCode, data, pos);
         pos += IoUtil.writeLong(mOrigin, data, pos);
         return pos;
@@ -73,7 +73,7 @@ public class X76_RaftResult
     @Override
     public int decodec(byte[] data, int pos)
     {
-        mCommandId = data[pos++] & 0xFF;
+        mPayloadSerial = data[pos++] & 0xFF;
         mCode = data[pos++] & 0xFF;
         mOrigin = IoUtil.readLong(data, pos);
         return pos;

@@ -48,7 +48,7 @@ public interface IPipeTransfer<C extends IContext<C>>
     default List<ITriple> handle(IControl<C>[] commands, ISession<C> session)
     {
         if (Objects.isNull(commands) || commands.length == 0) {
-            throw new MissingParameterException(toString() + ".transfer", "commands");
+            throw new MissingParameterException(getName(), "commands");
         }
         return Stream.of(commands)
                      .filter(Objects::nonNull)

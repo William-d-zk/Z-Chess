@@ -59,12 +59,6 @@ public class X111_QttConnect
     }
 
     @Override
-    public boolean isConsensus()
-    {
-        return true;
-    }
-
-    @Override
     public int dataLength()
     {
         return 10 + getClientIdLength() + getWillLength() + getUserNameLength() + getPasswordLength();

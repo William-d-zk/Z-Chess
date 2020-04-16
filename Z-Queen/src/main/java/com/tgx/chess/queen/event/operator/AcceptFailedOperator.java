@@ -47,4 +47,10 @@ public class AcceptFailedOperator<C extends IContext<C>>
         _Logger.warning("accept failed,ignore!", throwable);
         return null;
     }
+
+    @Override
+    public String getName()
+    {
+        return "operator.accept-failed";
+    }
 }

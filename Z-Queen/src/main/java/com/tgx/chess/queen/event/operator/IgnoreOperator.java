@@ -46,8 +46,8 @@ public class IgnoreOperator<C extends IContext<C>>
     }
 
     @Override
-    public String toString()
+    public String getName()
     {
-        return "ignore_operator";
+        return "operator.ignore";
     }
 }

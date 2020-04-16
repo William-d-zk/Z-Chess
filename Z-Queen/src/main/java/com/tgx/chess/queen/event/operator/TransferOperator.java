@@ -35,9 +35,8 @@ public class TransferOperator<C extends IContext<C>>
         IPipeTransfer<C>
 {
     @Override
-    public String toString()
+    public String getName()
     {
-        return "transfer";
+        return "operator.transfer";
     }
-
 }

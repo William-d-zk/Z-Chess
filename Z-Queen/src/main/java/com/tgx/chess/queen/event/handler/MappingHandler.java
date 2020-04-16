@@ -25,15 +25,14 @@
 package com.tgx.chess.queen.event.handler;
 
 import static com.tgx.chess.queen.event.inf.IError.Type.MAPPING_ERROR;
-import static com.tgx.chess.queen.event.inf.IError.Type.MAPPING_LOGIN_ERROR;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.CONSENSUS;
+import static com.tgx.chess.queen.event.inf.IOperator.Type.NOTIFY;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.List;
 
 import com.lmax.disruptor.RingBuffer;
-import com.tgx.chess.king.base.exception.LinkRejectException;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
@@ -156,54 +155,18 @@ public class MappingHandler<C extends IContext<C>,
                     }
                     break;
                 case LINK:
-                case CLUSTER:
                     IControl<C> received = event.getContent()
                                                 .getFirst();
                     ISession<C> session = event.getContent()
                                                .getSecond();
-                    if (received != null) {
-                        try {
-                            IPair handled = _CustomLogic.handle(_QueenManager, session, received);
-                            if (handled == null) break;
-                            IControl<C>[] toSends = handled.getFirst();
-                            if (toSends != null && toSends.length > 0) {
-                                publish(_Writer,
-                                        WRITE,
-                                        new Pair<>(toSends, session),
-                                        session.getContext()
-                                               .getSort()
-                                               .getTransfer());
-                            }
-                            IControl<C> transfer = handled.getSecond();
-                            if (transfer != null) {
-                                publish(_Transfer,
-                                        CONSENSUS,
-                                        new Pair<>(transfer, session),
-                                        session.getContext()
-                                               .getSort()
-                                               .getIgnore());
-                            }
-                        }
-                        catch (LinkRejectException e) {
-                            _Logger.warning("mapping handler reject", e);
-                            error(_Error,
-                                  MAPPING_LOGIN_ERROR,
-                                  new Pair<>(e, session),
-                                  session.getContext()
-                                         .getSort()
-                                         .getError());
-                        }
-                        catch (Exception e) {
-                            _Logger.warning("mapping handler error", e);
-                            error(_Error,
-                                  MAPPING_ERROR,
-                                  new Pair<>(e, session),
-                                  session.getContext()
-                                         .getSort()
-                                         .getError());
-                        }
-                        break;
-                    }
+                    handle0(received, session, CONSENSUS);
+                    break;
+                case CLUSTER:
+                    received = event.getContent()
+                                    .getFirst();
+                    session = event.getContent()
+                                   .getSecond();
+                    handle0(received, session, NOTIFY);
                     break;
                 case CONSENSUS:
                     received = event.getContent()
@@ -217,13 +180,28 @@ public class MappingHandler<C extends IContext<C>,
                         }
                     }
                     catch (Exception e) {
-                        _Logger.warning("mapping consensus error", e);
+                        _Logger.warning("mapping consensus error, link session close", e);
                         error(_Error,
                               MAPPING_ERROR,
                               new Pair<>(e, session),
                               session.getContext()
                                      .getSort()
                                      .getError());
+                    }
+                    break;
+                case NOTIFY:
+                    received = event.getContent()
+                                    .getFirst();
+                    session = event.getContent()
+                                   .getSecond();
+                    try {
+                        List<ITriple> result = _CustomLogic.consensus(_QueenManager, received, session);
+                        if (result != null && !result.isEmpty()) {
+                            publish(_Writer, result);
+                        }
+                    }
+                    catch (Exception e) {
+                        _Logger.warning("mapping notify error, cluster's session keep alive", e);
                     }
                     break;
                 case TIMER://ClusterConsumer Timeout->start_vote
@@ -243,5 +221,41 @@ public class MappingHandler<C extends IContext<C>,
             }
         }
         event.reset();
+    }
+
+    private void handle0(IControl<C> received, ISession<C> session, IOperator.Type next)
+    {
+        if (received == null) { return; }
+        try {
+            IPair handled = _CustomLogic.handle(_QueenManager, session, received);
+            if (handled == null) return;
+            IControl<C>[] toSends = handled.getFirst();
+            if (toSends != null && toSends.length > 0) {
+                publish(_Writer,
+                        WRITE,
+                        new Pair<>(toSends, session),
+                        session.getContext()
+                               .getSort()
+                               .getTransfer());
+            }
+            IControl<C> transfer = handled.getSecond();
+            if (transfer != null) {
+                publish(_Transfer,
+                        next,
+                        new Pair<>(transfer, session),
+                        session.getContext()
+                               .getSort()
+                               .getIgnore());
+            }
+        }
+        catch (Exception e) {
+            _Logger.warning("mapping handler error", e);
+            error(_Error,
+                  MAPPING_ERROR,
+                  new Pair<>(e, session),
+                  session.getContext()
+                         .getSort()
+                         .getError());
+        }
     }
 }

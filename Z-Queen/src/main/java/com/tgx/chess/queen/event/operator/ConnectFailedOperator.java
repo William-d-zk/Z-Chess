@@ -39,7 +39,7 @@ public class ConnectFailedOperator<C extends IContext<C>>
                   Void>
 {
 
-    private final Logger _Logger = Logger.getLogger(getClass().getName());
+    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
 
     @Override
     public Void handle(Throwable throwable, IAioConnector<C> aioConnector)
@@ -47,5 +47,11 @@ public class ConnectFailedOperator<C extends IContext<C>>
         _Logger.warning("handler connect failed!", throwable);
         aioConnector.error();
         return null;
+    }
+
+    @Override
+    public String getName()
+    {
+        return "operator.connected-failed";
     }
 }
