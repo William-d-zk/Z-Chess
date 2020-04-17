@@ -44,6 +44,7 @@ import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.operator.AioWriter;
 import com.tgx.chess.queen.event.operator.CloseOperator;
 import com.tgx.chess.queen.event.operator.ErrorOperator;
+import com.tgx.chess.queen.event.operator.IgnoreOperator;
 import com.tgx.chess.queen.event.operator.PipeDecoder;
 import com.tgx.chess.queen.event.operator.PipeEncoder;
 import com.tgx.chess.queen.event.operator.TransferOperator;
@@ -90,6 +91,7 @@ public enum ConsumerZSort
         {
             return _HandshakeFilter;
         }
+
     },
     WS_CONSUMER_SSL
     {
@@ -166,16 +168,18 @@ public enum ConsumerZSort
     private final IPipeEncoder<ZContext>   _ConsumerEncoder  = new PipeEncoder<>(_AioWriter);
     private final IPipeTransfer<ZContext>  _ConsumerTransfer = new TransferOperator<>();
     private final IPipeDecoder<ZContext>   _ConsumerDecoder  = new PipeDecoder<>();
+    private final IgnoreOperator<ZContext> _Ignore           = new IgnoreOperator<>();
 
-    final ZConsumerFactory  _ZConsumerFactory  = new ZConsumerFactory();
-    final QttCommandFactory _QttCommandFactory = new QttCommandFactory();
-    final WsHandShakeFilter _HandshakeFilter   = new WsHandShakeFilter();
+    final static ZConsumerFactory  _ZConsumerFactory  = new ZConsumerFactory();
+    final static QttCommandFactory _QttCommandFactory = new QttCommandFactory();
+
+    final WsHandShakeFilter _HandshakeFilter = new WsHandShakeFilter();
     {
         IFilterChain<ZContext> header = new ZTlsFilter();
         _HandshakeFilter.linkAfter(header)
                         .linkFront(new WsFrameFilter())
                         .linkFront(new WsControlFilter())
-                        .linkFront(new ZCommandFilter(_ZConsumerFactory));
+                        .linkFront(new ZCommandFilter(new ZConsumerFactory()));
     }
 
     final QttFrameFilter _QttFrameFilter = new QttFrameFilter();
@@ -214,4 +218,11 @@ public enum ConsumerZSort
     {
         return _ErrorOperator;
     }
+
+    @Override
+    public IgnoreOperator<ZContext> getIgnore()
+    {
+        return _Ignore;
+    }
+
 }
