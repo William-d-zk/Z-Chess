@@ -26,8 +26,8 @@ package device;
 
 import java.util.Set;
 
-import com.tgx.chess.spring.auth.model.AccountEntity;
-import com.tgx.chess.spring.jpa.model.AuditModel;
+import com.tgx.chess.knight.endpoint.spring.auth.model.AccountEntity;
+import com.tgx.chess.knight.endpoint.spring.jpa.model.AuditModel;
 
 /**
  * @author william.d.zk

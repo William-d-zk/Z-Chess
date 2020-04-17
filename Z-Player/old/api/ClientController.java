@@ -35,13 +35,13 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.spring.auth.model.AccountEntity;
-import com.tgx.chess.spring.auth.service.AccountService;
-import com.tgx.chess.spring.auth.service.ClientService;
-import com.tgx.chess.spring.device.model.ClientEntity;
-import com.tgx.chess.spring.device.model.DeviceEntity;
-import com.tgx.chess.spring.device.service.ClientDo;
-import com.tgx.chess.spring.device.service.DeviceService;
+import com.tgx.chess.knight.endpoint.spring.auth.model.AccountEntity;
+import com.tgx.chess.knight.endpoint.spring.auth.service.AccountService;
+import com.tgx.chess.knight.endpoint.spring.auth.service.ClientService;
+import com.tgx.chess.knight.endpoint.spring.device.model.ClientEntity;
+import com.tgx.chess.knight.endpoint.spring.device.model.DeviceEntity;
+import com.tgx.chess.knight.endpoint.spring.device.service.ClientDo;
+import com.tgx.chess.knight.endpoint.spring.device.service.DeviceService;
 
 /**
  * @author william.d.zk
