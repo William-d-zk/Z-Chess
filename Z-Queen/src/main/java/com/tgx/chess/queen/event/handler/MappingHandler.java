@@ -204,7 +204,7 @@ public class MappingHandler<C extends IContext<C>,
                         _Logger.warning("mapping notify error, cluster's session keep alive", e);
                     }
                     break;
-                case TIMER://ClusterConsumer Timeout->start_vote
+                case EXTERNAL://ClusterConsumer Timeout->start_vote
                     /*TIMER 必然是单个IControl,通过前项RingBuffer 向MappingHandler 投递*/
                     T content = event.getContent()
                                      .getFirst();

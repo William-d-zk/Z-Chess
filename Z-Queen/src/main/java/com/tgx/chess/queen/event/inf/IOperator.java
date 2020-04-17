@@ -60,9 +60,9 @@ public interface IOperator<T,
         LINK,
         CLUSTER,
         LOGIC,
-        TIMER,
         CONSENSUS,
         NOTIFY,
+        EXTERNAL,
         DISPATCH,
         IGNORE
     }

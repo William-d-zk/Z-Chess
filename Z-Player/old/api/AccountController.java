@@ -30,11 +30,11 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpSession;
 
-import com.tgx.chess.spring.auth.model.AccountEntity;
-import com.tgx.chess.spring.auth.model.AccountStatus;
-import com.tgx.chess.spring.auth.model.RoleEntity;
-import com.tgx.chess.spring.auth.model.RoleEnum;
-import com.tgx.chess.spring.auth.service.AccountService;
+import com.tgx.chess.knight.endpoint.spring.auth.model.AccountEntity;
+import com.tgx.chess.knight.endpoint.spring.auth.model.AccountStatus;
+import com.tgx.chess.knight.endpoint.spring.auth.model.RoleEntity;
+import com.tgx.chess.knight.endpoint.spring.auth.model.RoleEnum;
+import com.tgx.chess.knight.endpoint.spring.auth.service.AccountService;
 
 import api.dao.AuthEntry;
 import api.dao.ProfileEntry;

@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tgx.chess.spring.device.api.IMessageService;
+import com.tgx.chess.knight.endpoint.spring.device.api.IMessageService;
 
 /**
  * @author william.d.zk

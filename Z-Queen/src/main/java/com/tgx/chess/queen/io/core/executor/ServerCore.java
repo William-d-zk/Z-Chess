@@ -99,6 +99,7 @@ public abstract class ServerCore<C extends IContext<C>>
      * 选举结果都在 cluster processor 中统一由集群处理逻辑执行。
      */
     private final RingBuffer<QEvent>                        _ConsensusEvent;
+    private final RingBuffer<QEvent>                        _ConsensusApiEvent;
     /**
      * 集群一致性处理结果与Local Logic的桥梁，用于业务一致性数据向集群写入后，集群向业务系统反馈执行结果的
      * cluster -> biz 层投递
@@ -138,6 +139,7 @@ public abstract class ServerCore<C extends IContext<C>>
     private final ReentrantLock                             _LocalLock            = new ReentrantLock();
     private final ReentrantLock                             _ClusterLock          = new ReentrantLock();
     private final ReentrantLock                             _ConsensusLock        = new ReentrantLock();
+    private final ReentrantLock                             _ConsensusApiLock     = new ReentrantLock();
     private AsynchronousChannelGroup                        mServiceChannelGroup;
     private AsynchronousChannelGroup                        mClusterChannelGroup;
 
@@ -188,15 +190,17 @@ public abstract class ServerCore<C extends IContext<C>>
         _LinkWriteEvent = createPipelineYield(_LinkPower);
 
         _ConsensusEvent = createPipelineYield(_ClusterPower);
+        _ConsensusApiEvent = createPipelineLite(_ClusterPower);
         _ClusterEvent = createPipelineYield(_ClusterPower);
         _LinkEvent = createPipelineYield(_ClusterPower);
+
     }
     /*  ║ barrier, ━> publish event, ━━ pipeline,| mappingHandle event
     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
     ┃                                                                                                 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓ ┃
     ┃                                                                                                 ┃       ║                 ┏━>_ClusterEvent    ━┛ ┃
     ┃                                                                                                 ┃    ┏━>║_LinkProcessor━━━╋━>_ErrorEvent      ━━━┛
-    ┃                                                                                                 ┃    ┃  ║                 ┗━>_LinkWriteEvent  ━━━>║                 ┏>_EncodedEvents[0]|║
+    ┃                                                          Api   ━> _ConsensusApiEvent ━━━━━━━━━━━╋━━━━┫  ║                 ┗━>_LinkWriteEvent  ━━━>║                 ┏>_EncodedEvents[0]|║
     ┃  ━> _AioProducerEvents║                                  Timer ━> _ConsensusEvent  ━━━━━━━━━━━━━┫    ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓  ║                 ┃ _EncodedEvents[1]|║
     ┃  ━> _ClusterLocalClose║                 ┏>_LinkIoEvent    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━┫                 ━━> _BizLocalSendEvent ━╋━>║_WriteDispatcher━┫ _EncodedEvents[2]|║_EncodedProcessor┳━━>║[Event Done]
     ┃  ━> _BizLocalClose    ║                 ┃ _ClusterIoEvent ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫    ┃  ║                 ┏━>_LinkEvent   ━━━━━┛  ║                 ┃ _EncodedEvents[3]|║                 ┗━━>_ErrorEvent━┓
@@ -265,9 +269,11 @@ public abstract class ServerCore<C extends IContext<C>>
         final RingBuffer<QEvent> _LinkDecoded = createPipelineLite(_LinkPower);
         final RingBuffer<QEvent>[] _LinkEvents = new RingBuffer[] { _LinkIoEvent,
                                                                     _LinkDecoded,
+                                                                    _ConsensusApiEvent,
                                                                     _LinkEvent };
         final SequenceBarrier[] _LinkBarriers = new SequenceBarrier[] { _LinkIoEvent.newBarrier(),
                                                                         _LinkDecoded.newBarrier(),
+                                                                        _ConsensusApiEvent.newBarrier(),
                                                                         _LinkEvent.newBarrier() };
         final MultiBufferBatchEventProcessor<QEvent> _LinkProcessor = new MultiBufferBatchEventProcessor<>(_LinkEvents,
                                                                                                            _LinkBarriers,
@@ -490,5 +496,10 @@ public abstract class ServerCore<C extends IContext<C>>
     public ReentrantLock getConsensusLock()
     {
         return _ConsensusLock;
+    }
+
+    public ReentrantLock getConsensusApiLock()
+    {
+        return _ConsensusApiLock;
     }
 }

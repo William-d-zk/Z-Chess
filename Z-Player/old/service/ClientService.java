@@ -27,8 +27,8 @@ package service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.tgx.chess.spring.device.model.ClientEntity;
-import com.tgx.chess.spring.device.repository.ClientRepository;
+import com.tgx.chess.knight.endpoint.spring.device.model.ClientEntity;
+import com.tgx.chess.knight.endpoint.spring.device.repository.ClientRepository;
 
 /**
  * @author william.d.zk

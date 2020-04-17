@@ -31,8 +31,8 @@ import javax.validation.constraints.NotEmpty;
 
 import org.hibernate.validator.constraints.Length;
 
-import com.tgx.chess.spring.device.model.ClientEntity;
-import com.tgx.chess.spring.jpa.model.AuditModel;
+import com.tgx.chess.knight.endpoint.spring.device.model.ClientEntity;
+import com.tgx.chess.knight.endpoint.spring.jpa.model.AuditModel;
 
 /**
  * @author william.d.zk

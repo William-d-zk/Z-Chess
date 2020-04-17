@@ -31,10 +31,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import com.tgx.chess.spring.device.model.ClientEntity;
-import com.tgx.chess.spring.device.model.DeviceEntity;
-import com.tgx.chess.spring.device.repository.ClientRepository;
-import com.tgx.chess.spring.device.repository.DeviceRepository;
+import com.tgx.chess.knight.endpoint.spring.device.model.ClientEntity;
+import com.tgx.chess.knight.endpoint.spring.device.model.DeviceEntity;
+import com.tgx.chess.knight.endpoint.spring.device.repository.ClientRepository;
+import com.tgx.chess.knight.endpoint.spring.device.repository.DeviceRepository;
 
 import model.BillEntity;
 import model.ItemEntity;
