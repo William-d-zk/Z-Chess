@@ -24,6 +24,15 @@
 
 package com.tgx.chess.knight.raft.model.log;
 
+import com.tgx.chess.bishop.ZUID;
+import com.tgx.chess.king.base.exception.ZException;
+import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.knight.raft.IRaftDao;
+import com.tgx.chess.knight.raft.config.ZRaftStorageConfig;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -39,17 +48,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.annotation.PostConstruct;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import com.tgx.chess.bishop.ZUID;
-import com.tgx.chess.knight.raft.IRaftDao;
-import com.tgx.chess.knight.raft.config.ZRaftStorageConfig;
-import com.tgx.chess.king.base.exception.ZException;
-import com.tgx.chess.king.base.log.Logger;
-
 @Component
 public class RaftDao
         implements
@@ -58,8 +56,6 @@ public class RaftDao
     private final static long            TERM_NAN          = -1;
     private final static long            INDEX_NAN         = -1;
     private final Logger                 _Logger           = Logger.getLogger(RaftDao.class.getName());
-    private final ZRaftStorageConfig     _Config;
-    private final String                 _BaseDir;
     private final String                 _LogDataDir;
     private final String                 _LogMetaDir;
     private final String                 _SnapshotDir;
@@ -79,12 +75,11 @@ public class RaftDao
     @Autowired
     public RaftDao(ZRaftStorageConfig config)
     {
-        _Config = config;
-        _BaseDir = _Config.getBaseDir();
-        _LogMetaDir = String.format("%s%s.raft", _BaseDir, File.separator);
-        _LogDataDir = String.format("%s%sdata", _BaseDir, File.separator);
-        _SnapshotDir = String.format("%s%s.snapshot", _BaseDir, File.separator);
-        _MaxSegmentSize = _Config.getMaxSegmentSize();
+        String baseDir = config.getBaseDir();
+        _LogMetaDir = String.format("%s%s.raft", baseDir, File.separator);
+        _LogDataDir = String.format("%s%sdata", baseDir, File.separator);
+        _SnapshotDir = String.format("%s%s.snapshot", baseDir, File.separator);
+        _MaxSegmentSize = config.getMaxSegmentSize();
     }
 
     @PostConstruct
@@ -108,23 +103,21 @@ public class RaftDao
                 _Index2SegmentMap.put(segment.getStartIndex(), segment);
             }
         }
-        {
-            String metaFileName = _LogMetaDir + File.separator + ".metadata";
-            try {
-                RandomAccessFile metaFile = new RandomAccessFile(metaFileName, "rw");
-                mLogMeta = new LogMeta(metaFile).load();
-            }
-            catch (FileNotFoundException e) {
-                _Logger.warning("meta file not exist, name=%s", metaFileName);
-            }
-            metaFileName = _SnapshotDir + File.separator + ".metadata";
-            try {
-                RandomAccessFile metaFile = new RandomAccessFile(metaFileName, "rw");
-                mSnapshotMeta = new SnapshotMeta(metaFile).load();
-            }
-            catch (FileNotFoundException e) {
-                _Logger.warning("meta file not exist, name=%s", metaFileName);
-            }
+        String metaFileName = _LogMetaDir + File.separator + ".metadata";
+        try {
+            RandomAccessFile metaFile = new RandomAccessFile(metaFileName, "rw");
+            mLogMeta = new LogMeta(metaFile).load();
+        }
+        catch (FileNotFoundException e) {
+            _Logger.warning("meta file not exist, name=%s", metaFileName);
+        }
+        metaFileName = _SnapshotDir + File.separator + ".metadata";
+        try {
+            RandomAccessFile metaFile = new RandomAccessFile(metaFileName, "rw");
+            mSnapshotMeta = new SnapshotMeta(metaFile).load();
+        }
+        catch (FileNotFoundException e) {
+            _Logger.warning("meta file not exist, name=%s", metaFileName);
         }
     }
 
@@ -140,8 +133,8 @@ public class RaftDao
     {
         /* 
          有两种情况segment为空
-         1、第一次初始化，firstLogIndex = 1，lastLogIndex = 0
-         2、snapshot刚完成，日志正好被清理掉，firstLogIndex = snapshotIndex + 1， lastLogIndex = snapshotIndex
+         1、第一次初始化，start = 1，end = 0
+         2、snapshot刚完成，日志正好被清理掉，start = snapshot + 1， end = snapshot
         */
         if (_Index2SegmentMap.isEmpty()) { return getStartIndex() - 1; }
         Segment lastSegment = _Index2SegmentMap.lastEntry()
