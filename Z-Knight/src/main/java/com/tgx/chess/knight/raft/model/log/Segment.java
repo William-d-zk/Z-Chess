@@ -24,121 +24,137 @@
 
 package com.tgx.chess.knight.raft.model.log;
 
-import com.tgx.chess.king.base.exception.ZException;
-import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.knight.json.JsonUtil;
-import org.apache.commons.io.FileUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Segment {
+import org.apache.commons.io.FileUtils;
 
-    public static class Record {
-        private final long _Offset;
+import com.tgx.chess.king.base.exception.ZException;
+import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.knight.json.JsonUtil;
+
+public class Segment
+{
+
+    public static class Record
+    {
+        private final long     _Offset;
         private final LogEntry _Entry;
 
         public Record(long offset,
-                      LogEntry entry) {
+                      LogEntry entry)
+        {
             _Offset = offset;
             _Entry = entry;
         }
 
-        public long getOffset() {
+        public long getOffset()
+        {
             return _Offset;
         }
 
-        public LogEntry getEntry() {
+        public LogEntry getEntry()
+        {
             return _Entry;
         }
     }
 
-    private final static Logger _Logger = Logger.getLogger(Segment.class.getName());
-    private final long _StartIndex;
-    private final String _FileDirectory;
-    private RandomAccessFile mRandomAccessFile;
-    private String mFileName;
-    private long mEndIndex;
-    private long mFileSize;
-    private boolean mCanWrite;
-    private List<Record> mRecords = new ArrayList<>();
+    private final static Logger _Logger  = Logger.getLogger(Segment.class.getName());
+    private final long          _StartIndex;
+    private final String        _FileDirectory;
+    private RandomAccessFile    mRandomAccessFile;
+    private String              mFileName;
+    private long                mEndIndex;
+    private long                mFileSize;
+    private boolean             mCanWrite;
+    private List<Record>        mRecords = new ArrayList<>();
 
-    public LogEntry getEntry(long index) {
-        if (_StartIndex == 0 || mEndIndex == 0) {
-            return null;
-        }
-        if (index < _StartIndex || index > mEndIndex) {
-            return null;
-        }
+    public LogEntry getEntry(long index)
+    {
+        if (_StartIndex == 0 || mEndIndex == 0) { return null; }
+        if (index < _StartIndex || index > mEndIndex) { return null; }
         int indexInList = (int) (index - _StartIndex);
         return mRecords.get(indexInList)
-                .getEntry();
+                       .getEntry();
     }
 
     public Segment(File file,
                    long startIndex,
                    long endIndex,
-                   boolean canWrite) throws IOException {
+                   boolean canWrite) throws IOException
+    {
         mFileName = file.getAbsolutePath();
         _FileDirectory = file.getParent();
         mCanWrite = canWrite;
         mRandomAccessFile = new RandomAccessFile(file,
-                isCanWrite() ? "rw"
-                        : "r");
+                                                 isCanWrite() ? "rw"
+                                                              : "r");
         _StartIndex = startIndex;
         mEndIndex = endIndex;
         mFileSize = mRandomAccessFile.length();
         loadRecord();
     }
 
-    public String getFileName() {
+    public String getFileName()
+    {
         return mFileName;
     }
 
-    public RandomAccessFile getRandomAccessFile() {
+    public RandomAccessFile getRandomAccessFile()
+    {
         return mRandomAccessFile;
     }
 
-    public long getStartIndex() {
+    public long getStartIndex()
+    {
         return _StartIndex;
     }
 
-    public long getEndIndex() {
+    public long getEndIndex()
+    {
         return mEndIndex;
     }
 
-    public void setEndIndex(long newEndIndex) {
+    public void setEndIndex(long newEndIndex)
+    {
         mEndIndex = newEndIndex;
     }
 
-    public long getFileSize() {
+    public long getFileSize()
+    {
         return mFileSize;
     }
 
-    public boolean isCanWrite() {
+    public boolean isCanWrite()
+    {
         return mCanWrite;
     }
 
-    public List<Record> getRecords() {
+    public List<Record> getRecords()
+    {
         return mRecords;
     }
 
-    public void setFileSize(long newFileSize) {
+    public void setFileSize(long newFileSize)
+    {
         mFileSize = newFileSize;
         try {
             mRandomAccessFile.setLength(mFileSize);
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void loadRecord() throws IOException {
+    private void loadRecord() throws IOException
+    {
         long offset = 0;
-        long startIndex = 0;
+        long startIndex = -1;
         long endIndex = 0;
+        if (offset == mFileSize) { return; }
         while (offset < mFileSize) {
             int length = mRandomAccessFile.readInt();
             long entryStart = mRandomAccessFile.getFilePointer();
@@ -148,7 +164,7 @@ public class Segment {
             if (entry != null) {
                 entry.decode(data);
                 endIndex = entry.getIndex();
-                if (startIndex < 1) {
+                if (startIndex < 0) {
                     startIndex = endIndex;
                 }
                 mRecords.add(new Record(entryStart, entry));
@@ -160,13 +176,14 @@ public class Segment {
         }
         if (endIndex != mEndIndex) {
             _Logger.warning("input end_index isn't equal read end_index, update mEndIndex %d-> endIndex %d",
-                    mEndIndex,
-                    endIndex);
+                            mEndIndex,
+                            endIndex);
             mEndIndex = endIndex;
         }
     }
 
-    public void close() {
+    public void close()
+    {
         String newFileName = String.format("z_chess_raft_seg_%020d-%020d_r", _StartIndex, mEndIndex);
         String newAbsolutePath = _FileDirectory + File.separator + newFileName;
         File newFile = new File(newAbsolutePath);
@@ -176,12 +193,14 @@ public class Segment {
             FileUtils.moveFile(oldFile, newFile);
             mRandomAccessFile = new RandomAccessFile(newFile, "r");
             mCanWrite = false;
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             _Logger.warning("close error || mv old[%s]->new[%s] ", e, mFileName, newFileName);
         }
     }
 
-    public void addRecord(LogEntry entry) {
+    public void addRecord(LogEntry entry)
+    {
         try {
             int length = entry.dataLength();
             mRandomAccessFile.writeInt(length);
@@ -189,25 +208,28 @@ public class Segment {
             mRecords.add(new Record(offset, entry));
             mRandomAccessFile.write(entry.encode());
             mEndIndex = entry.getIndex();
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             _Logger.warning("add record failed ", e);
             throw new ZException("add record failed ");
         }
     }
 
-    public long drop() throws IOException {
+    public long drop() throws IOException
+    {
         mRandomAccessFile.close();
         File file = new File(mFileName);
         FileUtils.forceDelete(file);
         return mFileSize;
     }
 
-    public long truncate(long newEndIndex) throws IOException {
+    public long truncate(long newEndIndex) throws IOException
+    {
         int i = (int) (newEndIndex + 1 - getStartIndex());
         setEndIndex(newEndIndex);
         long newFileSize = getRecords().get(i)
-                .getOffset()
-                - 4;
+                                       .getOffset()
+                           - 4;
         long size = getFileSize() - newFileSize;
         setFileSize(newFileSize);
         for (int j = mRecords.size(); j > i; j--) {
@@ -220,7 +242,8 @@ public class Segment {
         if (new File(getFileName()).renameTo(new File(newFullFileName))) {
             mRandomAccessFile = new RandomAccessFile(newFullFileName, "rw");
             mFileName = newFullFileName;
-        } else {
+        }
+        else {
             throw new ZException("file [%s] rename to [%s] failed", getFileName(), newFileName);
         }
         return size;
