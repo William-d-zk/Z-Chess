@@ -24,8 +24,17 @@
 
 package com.tgx.chess.knight.raft.model;
 
-import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_NULL;
-import static com.tgx.chess.queen.db.inf.IStorage.Strategy.RETAIN;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.tgx.chess.king.base.inf.ITriple;
+import com.tgx.chess.king.base.util.Triple;
+import com.tgx.chess.knight.json.JsonUtil;
+import com.tgx.chess.knight.raft.IRaftMachine;
+import com.tgx.chess.knight.raft.RaftState;
+import com.tgx.chess.queen.db.inf.IStorage;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -33,17 +42,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.tgx.chess.knight.raft.IRaftMachine;
-import com.tgx.chess.knight.raft.RaftState;
-import com.tgx.chess.knight.json.JsonUtil;
-import com.tgx.chess.king.base.inf.ITriple;
-import com.tgx.chess.king.base.util.Triple;
-import com.tgx.chess.queen.db.inf.IStorage;
+import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_NULL;
+import static com.tgx.chess.queen.db.inf.IStorage.Strategy.RETAIN;
 
 /**
  * @author william.d.zk
@@ -360,10 +360,10 @@ public class RaftMachine
     @Override
     public String toString()
     {
-        return String.format("{\n"
+        return String.format("\n{"
                              + "peerId:%#x\n"
                              + "state:%s\n"
-                             + " term:%d\n"
+                             + "term:%d\n"
                              + "index:%d\n"
                              + "index_term:%d\n"
                              + "match_index:%d\n"

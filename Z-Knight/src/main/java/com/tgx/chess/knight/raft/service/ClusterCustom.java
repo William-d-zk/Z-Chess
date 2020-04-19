@@ -24,17 +24,6 @@
 
 package com.tgx.chess.knight.raft.service;
 
-import static com.tgx.chess.knight.raft.RaftState.CANDIDATE;
-import static com.tgx.chess.knight.raft.RaftState.LEADER;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.tgx.chess.bishop.ZUID;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
@@ -44,17 +33,17 @@ import com.tgx.chess.bishop.io.zprotocol.raft.X75_RaftRequest;
 import com.tgx.chess.bishop.io.zprotocol.raft.X76_RaftResult;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7E_RaftBroadcast;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
-import com.tgx.chess.knight.raft.RaftState;
-import com.tgx.chess.knight.raft.model.RaftCode;
-import com.tgx.chess.knight.raft.model.RaftMachine;
-import com.tgx.chess.knight.raft.model.RaftNode;
-import com.tgx.chess.knight.raft.model.log.LogEntry;
-import com.tgx.chess.knight.json.JsonUtil;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.base.util.Triple;
+import com.tgx.chess.knight.json.JsonUtil;
+import com.tgx.chess.knight.raft.RaftState;
+import com.tgx.chess.knight.raft.model.RaftCode;
+import com.tgx.chess.knight.raft.model.RaftMachine;
+import com.tgx.chess.knight.raft.model.RaftNode;
+import com.tgx.chess.knight.raft.model.log.LogEntry;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.event.inf.ICustomLogic;
 import com.tgx.chess.queen.io.core.inf.IActivity;
@@ -63,6 +52,16 @@ import com.tgx.chess.queen.io.core.inf.IConsensus;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import static com.tgx.chess.knight.raft.RaftState.CANDIDATE;
+import static com.tgx.chess.knight.raft.RaftState.LEADER;
 
 @Component
 public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
@@ -282,10 +281,10 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
                                                                            .getEncoder()));
             }
             else {
-                _Logger.warning("Leader connection miss");
+                _Logger.fetal("Leader connection miss");
             }
         }
-        _Logger.warning("cluster is electing");
+        _Logger.fetal("cluster is electing");
         return null;
     }
 
