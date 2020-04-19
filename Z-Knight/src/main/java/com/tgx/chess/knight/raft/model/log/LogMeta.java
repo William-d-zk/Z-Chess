@@ -24,14 +24,14 @@
 
 package com.tgx.chess.knight.raft.model.log;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.tgx.chess.king.base.util.Triple;
+import com.tgx.chess.knight.json.JsonUtil;
+
 import java.io.RandomAccessFile;
 import java.util.Objects;
 import java.util.Set;
-
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.tgx.chess.knight.json.JsonUtil;
-import com.tgx.chess.king.base.util.Triple;
 
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class LogMeta
@@ -41,7 +41,7 @@ public class LogMeta
     private final static int _SERIAL = INTERNAL_SERIAL + 1;
 
     /** 已存储日志的start index */
-    private long                               mStart;
+    private long                               mStart = 1;
     /** 本机存储日志的 index */
     private long                               mIndex;
     /** 已存储日志的最大任期号 */
