@@ -261,7 +261,9 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         */
         tickCancel();
         try {
-            Thread.sleep(_Random.nextInt(150) + 50);
+            long wait = _Random.nextInt(150) + 100;
+            Thread.sleep(wait);
+            _Logger.info("random wait for %d mills", wait);
         }
         catch (InterruptedException e) {
             //ignore
@@ -286,9 +288,9 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
     private X7F_RaftResponse response(int code)
     {
         X7F_RaftResponse response = new X7F_RaftResponse(_ZUID.getId());
+        response.setCode(code);
         response.setPeerId(_SelfMachine.getPeerId());
         response.setTerm(_SelfMachine.getTerm());
-        response.setCode(code);
         response.setCatchUp(_SelfMachine.getIndex());
         response.setCandidate(_SelfMachine.getCandidate());
         return response;
