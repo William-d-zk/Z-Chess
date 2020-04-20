@@ -45,7 +45,7 @@ public class LogMeta
     private final static int _SERIAL = INTERNAL_SERIAL + 1;
 
     /** 已存储日志的start index */
-    private long                               mStart = 1;
+    private long                               mStart;
     /** 本机存储日志的 index */
     private long                               mIndex;
     /** 已存储日志的最大任期号 */
@@ -89,6 +89,13 @@ public class LogMeta
         mApplied = applied;
         mPeerSet = peerSet;
         mGateSet = gateSet;
+        encode();
+    }
+
+    private LogMeta()
+    {
+        mStart = 1;
+        encode();
     }
 
     public static LogMeta loadFromFile(RandomAccessFile file)
@@ -106,6 +113,7 @@ public class LogMeta
                     logMeta.decode(data);
                     return logMeta;
                 }
+                else return new LogMeta();
             }
         }
         catch (IOException e) {
