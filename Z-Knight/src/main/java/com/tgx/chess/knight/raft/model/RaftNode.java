@@ -728,13 +728,12 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
 
     public Stream<X7E_RaftBroadcast> newLogEntry(int requestSerial, byte[] requestData, long raftClientId, long origin)
     {
-        LogEntry newEntry = new LogEntry();
-        newEntry.setIndex(_SelfMachine.getIndex() + 1);
-        newEntry.setTerm(_SelfMachine.getTerm());
-        newEntry.setRaftClientId(raftClientId);
-        newEntry.setOrigin(origin);
-        newEntry.setPayloadSerial(requestSerial);
-        newEntry.setPayload(requestData);
+        LogEntry newEntry = new LogEntry(_SelfMachine.getTerm(),
+                                         _SelfMachine.getIndex() + 1,
+                                         raftClientId,
+                                         origin,
+                                         requestSerial,
+                                         requestData);
         newEntry.encode();
         if (_RaftDao.append(newEntry)) {
             _SelfMachine.increaseIndex();

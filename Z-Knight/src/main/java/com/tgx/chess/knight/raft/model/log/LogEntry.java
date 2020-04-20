@@ -26,6 +26,7 @@ package com.tgx.chess.knight.raft.model.log;
 
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -40,12 +41,12 @@ public class LogEntry
 {
     private final static int _LOG_SERIAL = INTERNAL_SERIAL + 2;
 
-    private long   mTerm;
-    private long   mIndex;
-    private long   mRaftClientId;
-    private long   mOrigin;
-    private int    mPayloadSerial;
-    private byte[] mPayload;
+    private final long   _Term;
+    private final long   _Index;
+    private final long   _RaftClientId;
+    private final long   _Origin;
+    private final int    _PayloadSerial;
+    private final byte[] _Payload;
 
     @JsonIgnore
     private transient byte[] tData;
@@ -57,6 +58,22 @@ public class LogEntry
     public int dataLength()
     {
         return length;
+    }
+
+    @JsonCreator
+    public LogEntry(long term,
+                    long index,
+                    long raftClientId,
+                    long origin,
+                    int payloadSerial,
+                    byte[] payload)
+    {
+        _Term = term;
+        _Index = index;
+        _RaftClientId = raftClientId;
+        _Origin = origin;
+        _PayloadSerial = payloadSerial;
+        _Payload = payload;
     }
 
     @Override
@@ -73,32 +90,17 @@ public class LogEntry
 
     public long getTerm()
     {
-        return mTerm;
-    }
-
-    public void setTerm(long term)
-    {
-        this.mTerm = term;
+        return _Term;
     }
 
     public long getIndex()
     {
-        return mIndex;
-    }
-
-    public void setIndex(long index)
-    {
-        this.mIndex = index;
+        return _Index;
     }
 
     public byte[] getPayload()
     {
-        return mPayload;
-    }
-
-    public void setPayload(byte[] payload)
-    {
-        this.mPayload = payload;
+        return _Payload;
     }
 
     @Override
@@ -119,52 +121,35 @@ public class LogEntry
 
     public int getPayloadSerial()
     {
-        return mPayloadSerial;
-    }
-
-    public void setPayloadSerial(int payloadSerial)
-    {
-        mPayloadSerial = payloadSerial;
+        return _PayloadSerial;
     }
 
     public long getRaftClientId()
     {
-        return mRaftClientId;
-    }
-
-    public void setRaftClientId(long raftClientId)
-    {
-        mRaftClientId = raftClientId;
+        return _RaftClientId;
     }
 
     public long getOrigin()
     {
-        return mOrigin;
-    }
-
-    public void setOrigin(long origin)
-    {
-        mOrigin = origin;
+        return _Origin;
     }
 
     @Override
     public String toString()
     {
         return "LogEntry{"
-               + "mTerm="
-               + mTerm
-               + ", mIndex="
-               + mIndex
-               + ", mRaftClientId="
-               + mRaftClientId
-               + ", mOrigin="
-               + mOrigin
-               + ", mPayloadSerial="
-               + mPayloadSerial
-               + ", mPayload="
-               + IoUtil.bin2Hex(mPayload)
-               + ", length="
-               + length
+               + "_Term="
+               + _Term
+               + ", _Index="
+               + _Index
+               + ", _RaftClientId="
+               + _RaftClientId
+               + ", _Origin="
+               + _Origin
+               + ", _PayloadSerial="
+               + _PayloadSerial
+               + ", _Payload="
+               + IoUtil.bin2Hex(_Payload)
                + '}';
     }
 }
