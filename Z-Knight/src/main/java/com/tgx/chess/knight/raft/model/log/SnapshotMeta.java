@@ -61,17 +61,18 @@ public class SnapshotMeta
     public static SnapshotMeta loadFromFile(RandomAccessFile file)
     {
         try {
-            if (file.length() == 0) { return null; }
-            file.seek(0);
-            int length = file.readInt();
-            if (length > 0) {
-                byte[] data = new byte[length];
-                file.read(data);
-                SnapshotMeta snapshotMeta = JsonUtil.readValue(data, SnapshotMeta.class);
-                if (snapshotMeta != null) {
-                    snapshotMeta.setFile(file);
-                    snapshotMeta.decode(data);
-                    return snapshotMeta;
+            if (file.length() > 0) {
+                file.seek(0);
+                int length = file.readInt();
+                if (length > 0) {
+                    byte[] data = new byte[length];
+                    file.read(data);
+                    SnapshotMeta snapshotMeta = JsonUtil.readValue(data, SnapshotMeta.class);
+                    if (snapshotMeta != null) {
+                        snapshotMeta.setFile(file);
+                        snapshotMeta.decode(data);
+                        return snapshotMeta;
+                    }
                 }
             }
         }
