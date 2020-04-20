@@ -786,4 +786,9 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         x7e.setPayload(JsonUtil.writeValueAsBytes(entryList));
         return x7e;
     }
+
+    public boolean isClusterModel()
+    {
+        return _ClusterConfig.isClusterModel();
+    }
 }

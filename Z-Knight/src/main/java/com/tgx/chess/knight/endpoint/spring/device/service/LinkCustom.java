@@ -53,11 +53,10 @@ import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.knight.endpoint.spring.device.model.DeviceEntry;
-import com.tgx.chess.knight.endpoint.spring.device.model.MessageEntry;
 import com.tgx.chess.knight.raft.model.RaftCode;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.db.inf.IStorage;
-import com.tgx.chess.queen.event.inf.ICustomLogic;
+import com.tgx.chess.queen.event.inf.ILinkCustom;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IQoS;
 import com.tgx.chess.queen.io.core.inf.ISession;
@@ -66,8 +65,7 @@ import com.tgx.chess.queen.io.core.manager.QueenManager;
 @Component
 public class LinkCustom
         implements
-        ICustomLogic<ZContext,
-                     MessageEntry>
+        ILinkCustom<ZContext>
 {
     private final Logger                                                                       _Logger    = Logger.getLogger(getClass().getSimpleName());
     private final IRepository<DeviceEntry>                                                     _DeviceRepository;
@@ -150,9 +148,7 @@ public class LinkCustom
     }
 
     @Override
-    public List<ITriple> consensus(QueenManager<ZContext> manager,
-                                   IControl<ZContext> response,
-                                   ISession<ZContext> session)
+    public List<ITriple> notify(QueenManager<ZContext> manager, IControl<ZContext> response, ISession<ZContext> session)
     {
         /*
          raft_client -> Link,session belong to cluster
@@ -179,12 +175,6 @@ public class LinkCustom
             _Logger.warning("Link.consensus error,recv:%s", response.toString());
         }
         return null;
-    }
-
-    @Override
-    public List<ITriple> onTimer(QueenManager<ZContext> manager, MessageEntry content)
-    {
-        throw new UnsupportedOperationException();
     }
 
     public void setQttRouter(IQttRouter qttRouter)

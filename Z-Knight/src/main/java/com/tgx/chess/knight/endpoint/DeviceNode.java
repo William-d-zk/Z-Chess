@@ -46,7 +46,8 @@ import com.tgx.chess.queen.config.IBizIoConfig;
 import com.tgx.chess.queen.config.IServerConfig;
 import com.tgx.chess.queen.config.QueenCode;
 import com.tgx.chess.queen.db.inf.IStorage;
-import com.tgx.chess.queen.event.inf.ICustomLogic;
+import com.tgx.chess.queen.event.inf.IClusterCustom;
+import com.tgx.chess.queen.event.inf.ILinkCustom;
 import com.tgx.chess.queen.event.inf.ILogicHandler;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.ISort;
@@ -242,10 +243,9 @@ public class DeviceNode
     }
 
     public void start(ILogicHandler<ZContext> logicHandler,
-                      ICustomLogic<ZContext,
-                                   ? extends IStorage> linkCustom,
-                      ICustomLogic<ZContext,
-                                   ? extends IStorage> clusterCustom) throws IOException
+                      ILinkCustom<ZContext> linkCustom,
+                      IClusterCustom<ZContext,
+                                     ? extends IStorage> clusterCustom) throws IOException
     {
         _ServerCore.build(this, new EncryptHandler(), logicHandler, linkCustom, clusterCustom);
         for (IAioServer<ZContext> server : _AioServers) {

@@ -38,7 +38,8 @@ import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.db.inf.IStorage;
-import com.tgx.chess.queen.event.inf.ICustomLogic;
+import com.tgx.chess.queen.event.inf.IClusterCustom;
+import com.tgx.chess.queen.event.inf.ILinkCustom;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
@@ -60,28 +61,31 @@ public class MappingHandler<C extends IContext<C>,
         implements
         IPipeEventHandler<QEvent>
 {
-    private final Logger             _Logger;
-    private final RingBuffer<QEvent> _Error;
-    private final RingBuffer<QEvent> _Writer;
-    private final RingBuffer<QEvent> _Transfer;
-    private final QueenManager<C>    _QueenManager;
-    private final ICustomLogic<C,
-                               T>    _CustomLogic;
+    private final Logger               _Logger;
+    private final RingBuffer<QEvent>   _Error;
+    private final RingBuffer<QEvent>   _Writer;
+    private final RingBuffer<QEvent>   _Transfer;
+    private final QueenManager<C>      _QueenManager;
+    private final ILinkCustom<C>       _LinkCustom;
+    private final IClusterCustom<C,
+                                 T>    _ClusterCustom;
 
     public MappingHandler(String mapper,
                           QueenManager<C> manager,
                           RingBuffer<QEvent> error,
                           RingBuffer<QEvent> writer,
                           RingBuffer<QEvent> transfer,
-                          ICustomLogic<C,
-                                       T> customLogic)
+                          ILinkCustom<C> linkCustom,
+                          IClusterCustom<C,
+                                         T> clusterCustom)
     {
         _Logger = Logger.getLogger(mapper);
         _QueenManager = manager;
         _Writer = writer;
         _Error = error;
         _Transfer = transfer;
-        _CustomLogic = customLogic;
+        _LinkCustom = linkCustom;
+        _ClusterCustom = clusterCustom;
     }
 
     @Override
@@ -159,14 +163,86 @@ public class MappingHandler<C extends IContext<C>,
                                                 .getFirst();
                     ISession<C> session = event.getContent()
                                                .getSecond();
-                    handle0(received, session, CONSENSUS);
+                    if (received == null) { return; }
+                    try {
+                        IPair handled = _LinkCustom.handle(_QueenManager, session, received);
+                        if (handled == null) return;
+                        IControl<C>[] toSends = handled.getFirst();
+                        if (toSends != null && toSends.length > 0) {
+                            publish(_Writer,
+                                    WRITE,
+                                    new Pair<>(toSends, session),
+                                    session.getContext()
+                                           .getSort()
+                                           .getTransfer());
+                        }
+                        IControl<C> transfer = handled.getSecond();
+                        if (transfer != null) {
+                            if (_ClusterCustom.waitForCommit()) {
+                                publish(_Transfer,
+                                        CONSENSUS,
+                                        new Pair<>(transfer, session),
+                                        session.getContext()
+                                               .getSort()
+                                               .getIgnore());
+                            }
+                            else {
+                                List<ITriple> result = _LinkCustom.notify(_QueenManager, transfer, session);
+                                if (result != null && !result.isEmpty()) {
+                                    publish(_Writer, result);
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception e) {
+                        _Logger.warning("link mapping handler error", e);
+                        error(_Error,
+                              MAPPING_ERROR,
+                              new Pair<>(e, session),
+                              session.getContext()
+                                     .getSort()
+                                     .getError());
+                    }
                     break;
                 case CLUSTER:
                     received = event.getContent()
                                     .getFirst();
                     session = event.getContent()
                                    .getSecond();
-                    handle0(received, session, NOTIFY);
+
+                    if (received == null) { return; }
+                    try {
+                        IPair handled = _ClusterCustom.handle(_QueenManager, session, received);
+                        if (handled == null) return;
+                        IControl<C>[] toSends = handled.getFirst();
+                        if (toSends != null && toSends.length > 0) {
+                            publish(_Writer,
+                                    WRITE,
+                                    new Pair<>(toSends, session),
+                                    session.getContext()
+                                           .getSort()
+                                           .getTransfer());
+                        }
+                        IControl<C> transfer = handled.getSecond();
+                        if (transfer != null) {
+                            publish(_Transfer,
+                                    NOTIFY,
+                                    new Pair<>(transfer, session),
+                                    session.getContext()
+                                           .getSort()
+                                           .getIgnore());
+                        }
+                    }
+                    catch (Exception e) {
+                        _Logger.warning("cluster mapping handler error", e);
+                        error(_Error,
+                              MAPPING_ERROR,
+                              new Pair<>(e, session),
+                              session.getContext()
+                                     .getSort()
+                                     .getError());
+                    }
+
                     break;
                 case CONSENSUS:
                     received = event.getContent()
@@ -174,7 +250,7 @@ public class MappingHandler<C extends IContext<C>,
                     session = event.getContent()
                                    .getSecond();
                     try {
-                        List<ITriple> result = _CustomLogic.consensus(_QueenManager, received, session);
+                        List<ITriple> result = _ClusterCustom.consensus(_QueenManager, received, session);
                         if (result != null && !result.isEmpty()) {
                             publish(_Writer, result);
                         }
@@ -195,7 +271,7 @@ public class MappingHandler<C extends IContext<C>,
                     session = event.getContent()
                                    .getSecond();
                     try {
-                        List<ITriple> result = _CustomLogic.consensus(_QueenManager, received, session);
+                        List<ITriple> result = _LinkCustom.notify(_QueenManager, received, session);
                         if (result != null && !result.isEmpty()) {
                             publish(_Writer, result);
                         }
@@ -208,7 +284,7 @@ public class MappingHandler<C extends IContext<C>,
                     /*TIMER 必然是单个IControl,通过前项RingBuffer 向MappingHandler 投递*/
                     T content = event.getContent()
                                      .getFirst();
-                    List<ITriple> toSends = _CustomLogic.onTimer(_QueenManager, content);
+                    List<ITriple> toSends = _ClusterCustom.onTimer(_QueenManager, content);
                     if (toSends != null && !toSends.isEmpty()) {
                         publish(_Writer, toSends);
                     }
@@ -223,39 +299,4 @@ public class MappingHandler<C extends IContext<C>,
         event.reset();
     }
 
-    private void handle0(IControl<C> received, ISession<C> session, IOperator.Type next)
-    {
-        if (received == null) { return; }
-        try {
-            IPair handled = _CustomLogic.handle(_QueenManager, session, received);
-            if (handled == null) return;
-            IControl<C>[] toSends = handled.getFirst();
-            if (toSends != null && toSends.length > 0) {
-                publish(_Writer,
-                        WRITE,
-                        new Pair<>(toSends, session),
-                        session.getContext()
-                               .getSort()
-                               .getTransfer());
-            }
-            IControl<C> transfer = handled.getSecond();
-            if (transfer != null) {
-                publish(_Transfer,
-                        next,
-                        new Pair<>(transfer, session),
-                        session.getContext()
-                               .getSort()
-                               .getIgnore());
-            }
-        }
-        catch (Exception e) {
-            _Logger.warning("mapping handler error", e);
-            error(_Error,
-                  MAPPING_ERROR,
-                  new Pair<>(e, session),
-                  session.getContext()
-                         .getSort()
-                         .getError());
-        }
-    }
 }

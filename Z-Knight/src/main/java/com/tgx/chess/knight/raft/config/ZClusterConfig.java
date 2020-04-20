@@ -114,6 +114,7 @@ public class ZClusterConfig
     private IPair                 peerTest;
     private IPair                 gateTest;
     private boolean               inCongress;
+    private boolean               clusterModel;
 
     @Override
     public List<IPair> getGates()
@@ -245,5 +246,16 @@ public class ZClusterConfig
     public void setInCongress(boolean in)
     {
         inCongress = in;
+    }
+
+    @Override
+    public boolean isClusterModel()
+    {
+        return clusterModel;
+    }
+
+    public void setClusterModel(boolean model)
+    {
+        clusterModel = model;
     }
 }
