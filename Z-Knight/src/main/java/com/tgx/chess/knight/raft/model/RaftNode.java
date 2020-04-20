@@ -735,6 +735,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         newEntry.setOrigin(origin);
         newEntry.setPayloadSerial(requestSerial);
         newEntry.setPayload(requestData);
+        newEntry.encode();
         if (_RaftDao.append(newEntry)) {
             _SelfMachine.increaseIndex();
             return createBroadcasts();

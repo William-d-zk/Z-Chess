@@ -29,6 +29,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.knight.json.JsonUtil;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
 
@@ -45,6 +46,9 @@ public class LogEntry
     private long   mOrigin;
     private int    mPayloadSerial;
     private byte[] mPayload;
+
+    @JsonIgnore
+    private transient byte[] tData;
 
     @JsonIgnore
     private int length;
@@ -106,10 +110,11 @@ public class LogEntry
     @Override
     public byte[] encode()
     {
-        byte[] data = JsonUtil.writeValueAsBytes(this);
-        Objects.requireNonNull(data);
-        length = data.length;
-        return data;
+        if (tData != null) { return tData; }
+        tData = JsonUtil.writeValueAsBytes(this);
+        Objects.requireNonNull(tData);
+        length = tData.length;
+        return tData;
     }
 
     public int getPayloadSerial()
@@ -140,5 +145,26 @@ public class LogEntry
     public void setOrigin(long origin)
     {
         mOrigin = origin;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "LogEntry{"
+               + "mTerm="
+               + mTerm
+               + ", mIndex="
+               + mIndex
+               + ", mRaftClientId="
+               + mRaftClientId
+               + ", mOrigin="
+               + mOrigin
+               + ", mPayloadSerial="
+               + mPayloadSerial
+               + ", mPayload="
+               + IoUtil.bin2Hex(mPayload)
+               + ", length="
+               + length
+               + '}';
     }
 }
