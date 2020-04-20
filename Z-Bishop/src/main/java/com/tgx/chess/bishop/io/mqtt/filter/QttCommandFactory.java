@@ -134,7 +134,10 @@ public class QttCommandFactory
                 default:
                     return null;
             }
-            qttControl.decode(frame.getPayload());
+            byte[] payload = frame.getPayload();
+            if (payload != null) {
+                qttControl.decode(payload);
+            }
             return qttControl;
         }
     }
@@ -175,7 +178,10 @@ public class QttCommandFactory
                 return null;
         }
         qttCommand.setCtrl(frame.getCtrl());
-        qttCommand.decode(frame.getPayload());
+        byte[] payload = frame.getPayload();
+        if (payload != null) {
+            qttCommand.decode(payload);
+        }
         return qttCommand;
     }
 }
