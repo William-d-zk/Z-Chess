@@ -622,6 +622,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         long end = min(_SelfMachine.getIndex(), _SelfMachine.getCommit());
         while (_SelfMachine.getApplied() < end) {
             _SelfMachine.increaseApplied();
+            _RaftDao.updateLogApplied(_SelfMachine.getApplied());
         }
     }
 
