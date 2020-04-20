@@ -36,9 +36,9 @@ public abstract class BaseMeta
 {
 
     @JsonIgnore
-    private RandomAccessFile mFile;
+    protected RandomAccessFile mFile;
     @JsonIgnore
-    protected int            mLength;
+    protected int              mLength;
 
     void update()
     {
@@ -68,12 +68,6 @@ public abstract class BaseMeta
     public int dataLength()
     {
         return mLength;
-    }
-
-    @JsonIgnore
-    public void setFile(RandomAccessFile source)
-    {
-        mFile = source;
     }
 
 }

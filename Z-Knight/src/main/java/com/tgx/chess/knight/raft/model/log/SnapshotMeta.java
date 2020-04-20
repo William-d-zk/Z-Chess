@@ -82,6 +82,13 @@ public class SnapshotMeta
         return new SnapshotMeta();
     }
 
+    @JsonIgnore
+    public SnapshotMeta setFile(RandomAccessFile source)
+    {
+        mFile = source;
+        return this;
+    }
+
     @Override
     public int serial()
     {

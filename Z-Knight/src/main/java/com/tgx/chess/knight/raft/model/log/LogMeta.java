@@ -117,7 +117,14 @@ public class LogMeta
         catch (IOException e) {
             e.printStackTrace();
         }
-        return new LogMeta();
+        return new LogMeta().setFile(file);
+    }
+
+    @JsonIgnore
+    public LogMeta setFile(RandomAccessFile source)
+    {
+        mFile = source;
+        return this;
     }
 
     @Override
