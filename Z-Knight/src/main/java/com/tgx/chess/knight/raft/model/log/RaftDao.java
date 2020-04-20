@@ -58,7 +58,7 @@ public class RaftDao
 {
     private final static long            TERM_NAN          = -1;
     private final static long            INDEX_NAN         = -1;
-    private final Logger                 _Logger           = Logger.getLogger(RaftDao.class.getName());
+    private final Logger                 _Logger           = Logger.getLogger(getClass().getSimpleName());
     private final String                 _LogDataDir;
     private final String                 _LogMetaDir;
     private final String                 _SnapshotDir;

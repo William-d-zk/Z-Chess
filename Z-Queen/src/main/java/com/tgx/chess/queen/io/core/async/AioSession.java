@@ -62,7 +62,7 @@ public class AioSession<C extends IContext<C>>
         implements
         ISession<C>
 {
-    private static Logger _Logger = Logger.getLogger(AioSession.class.getName());
+    private static Logger _Logger = Logger.getLogger(AioSession.class.getSimpleName());
     /*--------------------------------------------------------------------------------------------------------------*/
     private final int                       _ReadTimeOutInSecond;
     private final int                       _WriteTimeOutInSecond;

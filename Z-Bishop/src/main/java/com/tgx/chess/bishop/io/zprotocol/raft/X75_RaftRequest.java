@@ -75,7 +75,7 @@ public class X75_RaftRequest
     @Override
     public int encodec(byte[] data, int pos)
     {
-        pos += IoUtil.writeByte(mPayloadSerial, data, pos);
+        pos += IoUtil.writeShort(mPayloadSerial, data, pos);
         pos += IoUtil.writeLong(mOrigin, data, pos);
         pos += IoUtil.writeLong(mPeerId, data, pos);
         return pos;
@@ -84,7 +84,8 @@ public class X75_RaftRequest
     @Override
     public int decodec(byte[] data, int pos)
     {
-        mPayloadSerial = data[pos++] & 0xFF;
+        mPayloadSerial = IoUtil.readUnsignedShort(data, pos);
+        pos += 2;
         mOrigin = IoUtil.readLong(data, pos);
         pos += 8;
         mPeerId = IoUtil.readLong(data, pos);
@@ -95,7 +96,7 @@ public class X75_RaftRequest
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 17;
+        return super.dataLength() + 18;
     }
 
     public long getPeerId()

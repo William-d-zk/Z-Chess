@@ -46,7 +46,7 @@ public class AioReader<C extends IContext<C>>
         CompletionHandler<Integer,
                           ISession<C>>
 {
-    private final Logger _Logger = Logger.getLogger(getClass().getName());
+    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
 
     @Override
     public void completed(Integer result, ISession<C> session)
