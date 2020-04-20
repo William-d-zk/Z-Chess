@@ -131,7 +131,7 @@ public class LinkCustom
                     if (old != null) {
                         X108_Shutdown x108 = new X108_Shutdown();
                         x108.setSession(old);
-                        return new Pair<>(x108, x111);
+                        return new Pair<>(new X108_Shutdown[] { x108 }, x111);
                     }
                     else {
                         return new Pair<>(null, x111);

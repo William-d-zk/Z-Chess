@@ -77,6 +77,7 @@ public class X76_RaftResult
         pos += 2;
         mCode = data[pos++] & 0xFF;
         mOrigin = IoUtil.readLong(data, pos);
+        pos += 8;
         return pos;
     }
 
