@@ -28,6 +28,7 @@ import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.tgx.chess.king.base.util.IoUtil;
@@ -61,12 +62,12 @@ public class LogEntry
     }
 
     @JsonCreator
-    public LogEntry(long term,
-                    long index,
-                    long raftClientId,
-                    long origin,
-                    int payloadSerial,
-                    byte[] payload)
+    public LogEntry(@JsonProperty("term") long term,
+                    @JsonProperty("index") long index,
+                    @JsonProperty("raft_client_id") long raftClientId,
+                    @JsonProperty("origin") long origin,
+                    @JsonProperty("payload_serial") int payloadSerial,
+                    @JsonProperty("payload") byte[] payload)
     {
         _Term = term;
         _Index = index;
