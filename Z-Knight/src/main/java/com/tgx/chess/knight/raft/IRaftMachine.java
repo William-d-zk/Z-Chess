@@ -96,5 +96,8 @@ public interface IRaftMachine
 
     void increaseApplied();
 
+    /**
+     * 成功完成WAL之后增加machine的index编号
+     */
     void increaseIndex();
 }
