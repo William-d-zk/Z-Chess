@@ -109,7 +109,7 @@ public class RaftDao
         String metaFileName = _LogMetaDir + File.separator + ".metadata";
         try {
             RandomAccessFile metaFile = new RandomAccessFile(metaFileName, "rw");
-            mLogMeta = new LogMeta(metaFile).load();
+            mLogMeta = LogMeta.loadFromFile(metaFile);
         }
         catch (FileNotFoundException e) {
             _Logger.warning("meta file not exist, name=%s", metaFileName);
@@ -117,7 +117,7 @@ public class RaftDao
         metaFileName = _SnapshotDir + File.separator + ".metadata";
         try {
             RandomAccessFile metaFile = new RandomAccessFile(metaFileName, "rw");
-            mSnapshotMeta = new SnapshotMeta(metaFile).load();
+            mSnapshotMeta = SnapshotMeta.loadFromFile(metaFile);
         }
         catch (FileNotFoundException e) {
             _Logger.warning("meta file not exist, name=%s", metaFileName);

@@ -24,14 +24,18 @@
 
 package com.tgx.chess.knight.raft.model.log;
 
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.Objects;
+import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.knight.json.JsonUtil;
-
-import java.io.RandomAccessFile;
-import java.util.Objects;
-import java.util.Set;
 
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class LogMeta
@@ -60,43 +64,69 @@ public class LogMeta
     private Set<Triple<Long,
                        String,
                        Integer>>               mGateSet;
+    @JsonIgnore
+    private transient byte[]                   tData;
 
-    LogMeta()
+    @JsonCreator
+    public LogMeta(@JsonProperty("term") long term,
+                   @JsonProperty("index") long index,
+                   @JsonProperty("start") long start,
+                   @JsonProperty("candidate") long candidate,
+                   @JsonProperty("commit") long commit,
+                   @JsonProperty("applied") long applied,
+                   @JsonProperty("peer_set") Set<Triple<Long,
+                                                        String,
+                                                        Integer>> peerSet,
+                   @JsonProperty("gate_set") Set<Triple<Long,
+                                                        String,
+                                                        Integer>> gateSet)
     {
-        super(null);
+        mTerm = term;
+        mIndex = index;
+        mStart = start;
+        mCandidate = candidate;
+        mCommit = commit;
+        mApplied = applied;
+        mPeerSet = peerSet;
+        mGateSet = gateSet;
     }
 
-    LogMeta(RandomAccessFile file)
+    public static LogMeta loadFromFile(RandomAccessFile file)
     {
-        super((file));
-    }
-
-    LogMeta load()
-    {
-        loadFromFile();
-        return this;
+        try {
+            if (file.length() == 0) { return null; }
+            file.seek(0);
+            int mLength = file.readInt();
+            if (mLength > 0) {
+                byte[] data = new byte[mLength];
+                file.read(data);
+                LogMeta logMeta = JsonUtil.readValue(data, LogMeta.class);
+                if (logMeta != null) {
+                    logMeta.setFile(file);
+                    logMeta.decode(data);
+                    return logMeta;
+                }
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override
     public int decode(byte[] data)
     {
-        LogMeta json = JsonUtil.readValue(data, getClass());
-        Objects.requireNonNull(json);
-        mStart = json.getStart();
-        mTerm = json.getTerm();
-        mCandidate = json.getCandidate();
-        mPeerSet = json.getPeerSet();
-        mGateSet = json.getGateSet();
         return mLength = data.length;
     }
 
     @Override
     public byte[] encode()
     {
-        byte[] data = JsonUtil.writeValueAsBytes(this);
-        Objects.requireNonNull(data);
-        mLength = data.length;
-        return data;
+        tData = JsonUtil.writeValueAsBytes(this);
+        Objects.requireNonNull(tData);
+        mLength = tData.length;
+        return tData;
     }
 
     @Override

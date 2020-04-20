@@ -24,9 +24,13 @@
 
 package com.tgx.chess.knight.raft.model.log;
 
+import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.tgx.chess.knight.json.JsonUtil;
@@ -39,21 +43,38 @@ public class SnapshotMeta
     private final static int _SERIAL = INTERNAL_SERIAL + 3;
     private long             mCommit;
     private long             mTerm;
+    @JsonIgnore
+    private transient byte[] tData;
 
-    SnapshotMeta()
+    @JsonCreator
+    public SnapshotMeta(@JsonProperty("term") long term,
+                        @JsonProperty("commit") long commit)
     {
-        super(null);
+        mTerm = term;
+        mCommit = commit;
     }
 
-    public SnapshotMeta(RandomAccessFile file)
+    public static SnapshotMeta loadFromFile(RandomAccessFile file)
     {
-        super(file);
-    }
-
-    public SnapshotMeta load()
-    {
-        loadFromFile();
-        return this;
+        try {
+            if (file.length() == 0) { return null; }
+            file.seek(0);
+            int length = file.readInt();
+            if (length > 0) {
+                byte[] data = new byte[length];
+                file.read(data);
+                SnapshotMeta snapshotMeta = JsonUtil.readValue(data, SnapshotMeta.class);
+                if (snapshotMeta != null) {
+                    snapshotMeta.setFile(file);
+                    snapshotMeta.decode(data);
+                    return snapshotMeta;
+                }
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override
@@ -91,19 +112,15 @@ public class SnapshotMeta
     @Override
     public int decode(byte[] data)
     {
-        SnapshotMeta json = JsonUtil.readValue(data, getClass());
-        Objects.requireNonNull(json);
-        mCommit = json.getCommit();
-        mTerm = json.getTerm();
         return mLength = data.length;
     }
 
     @Override
     public byte[] encode()
     {
-        byte[] data = JsonUtil.writeValueAsBytes(this);
-        Objects.requireNonNull(data);
-        mLength = data.length;
-        return data;
+        tData = JsonUtil.writeValueAsBytes(this);
+        Objects.requireNonNull(tData);
+        mLength = tData.length;
+        return tData;
     }
 }
