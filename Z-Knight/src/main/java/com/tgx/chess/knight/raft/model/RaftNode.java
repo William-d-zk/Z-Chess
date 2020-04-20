@@ -338,6 +338,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         _SelfMachine.setLeader(INVALID_PEER_ID);
         _SelfMachine.setCandidate(_SelfMachine.getPeerId());
         _SelfMachine.increaseTerm();
+        _RaftDao.updateLogTerm(_SelfMachine.getTerm());
         mElectTask = _TimeWheel.acquire(this, _ElectSchedule);
         _Logger.info("follower => candidate ");
     }
@@ -391,6 +392,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         if (_SelfMachine.getTerm() > update.getTerm()) { return reject(LOWER_TERM.getCode()); }
         if (update.getTerm() > _SelfMachine.getTerm()) {
             _SelfMachine.setTerm(update.getTerm());
+            _RaftDao.updateLogTerm(_SelfMachine.getTerm());
             tickCancel();
             heartbeatCancel();
             electCancel();
@@ -537,6 +539,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
                         && _RaftGraph.isMajorAccept(_SelfMachine.getPeerId(), _SelfMachine.getTerm(), index))
                     {
                         _SelfMachine.setCommit(index);
+                        _RaftDao.updateLogCommit(index);
                         X76_RaftResult x76 = new X76_RaftResult(_ZUID.getId());
                         x76.setPayloadSerial(logEntry.getPayloadSerial());
                         x76.setCode(SUCCESS.getCode());
