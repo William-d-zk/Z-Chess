@@ -351,10 +351,14 @@ public class RaftMachine
         mApplied++;
     }
 
+    /**
+     * 此方法同时更新自身的matchIndex = index
+     */
     @Override
     public void increaseIndex()
     {
         ++mIndex;
+        mMatchIndex = mIndex;
     }
 
     @Override

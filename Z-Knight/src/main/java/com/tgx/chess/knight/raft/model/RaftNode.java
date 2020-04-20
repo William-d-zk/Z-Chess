@@ -538,6 +538,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
                         x76.setCode(SUCCESS.getCode());
                         x76.setPayload(logEntry.getPayload());
                         x76.setOrigin(logEntry.getOrigin());
+                        _Logger.info("consensus done->");
                         if (logEntry.getRaftClientId() != _SelfMachine.getPeerId()) {
                             //leader -> follower -> client
                             x76.setSession(manager.findSessionByPrefix(peerId));
@@ -725,9 +726,9 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         _AppendLogQueue.addAll(entryList);
     }
 
-    public List<X7E_RaftBroadcast> newLogEntry(IControl<ZContext> request, long raftClientId, long origin)
+    public Stream<X7E_RaftBroadcast> newLogEntry(IControl<ZContext> request, long raftClientId, long origin)
     {
-        return newLogEntry(request.serial(), request.encode(), raftClientId, origin).collect(Collectors.toList());
+        return newLogEntry(request.serial(), request.encode(), raftClientId, origin);
     }
 
     public Stream<X7E_RaftBroadcast> newLogEntry(int requestSerial, byte[] requestData, long raftClientId, long origin)

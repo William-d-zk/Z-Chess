@@ -249,7 +249,6 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
                                          mRaftNode.getMachine()
                                                   .getPeerId(),
                                          session.getIndex())
-                            .stream()
                             .map(x7e ->
                             {
                                 long follower = x7e.getFollower();
