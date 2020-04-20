@@ -175,7 +175,7 @@ public class Segment
             throw new IllegalStateException("first entry index isn't equal segment's start_index");
         }
         if (endIndex != mEndIndex) {
-            _Logger.warning("input end_index isn't equal read end_index, update mEndIndex %d-> endIndex %d",
+            _Logger.info("input end_index isn't equal read end_index, update mEndIndex %d-> endIndex %d",
                             mEndIndex,
                             endIndex);
             mEndIndex = endIndex;
