@@ -53,7 +53,8 @@ import com.tgx.chess.queen.event.handler.EncodedHandler;
 import com.tgx.chess.queen.event.handler.IoDispatcher;
 import com.tgx.chess.queen.event.handler.MappingHandler;
 import com.tgx.chess.queen.event.handler.WriteDispatcher;
-import com.tgx.chess.queen.event.inf.ICustomLogic;
+import com.tgx.chess.queen.event.inf.IClusterCustom;
+import com.tgx.chess.queen.event.inf.ILinkCustom;
 import com.tgx.chess.queen.event.inf.ILogicHandler;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
@@ -223,10 +224,9 @@ public abstract class ServerCore<C extends IContext<C>>
     public void build(QueenManager<C> manager,
                       IEncryptHandler encryptHandler,
                       ILogicHandler<C> logicHandler,
-                      ICustomLogic<C,
-                                   ? extends IStorage> linkCustom,
-                      ICustomLogic<C,
-                                   ? extends IStorage> clusterCustom)
+                      ILinkCustom<C> linkCustom,
+                      IClusterCustom<C,
+                                     ? extends IStorage> clusterCustom)
     {
         final RingBuffer<QEvent> _WroteEvent = createPipelineYield(_AioQueuePower + 1);
         final RingBuffer<QEvent> _LinkIoEvent = createPipelineYield(_LinkPower);
@@ -282,7 +282,8 @@ public abstract class ServerCore<C extends IContext<C>>
                                                                                                                                 _ErrorEvents[0],
                                                                                                                                 _LinkWriteEvent,
                                                                                                                                 _ClusterEvent,
-                                                                                                                                linkCustom));
+                                                                                                                                linkCustom,
+                                                                                                                                clusterCustom));
         _LinkProcessor.setThreadName("LinkProcessor");
         for (int i = 0, size = _LinkEvents.length; i < size; i++) {
             _LinkEvents[i].addGatingSequences(_LinkProcessor.getSequences()[i]);
@@ -305,6 +306,7 @@ public abstract class ServerCore<C extends IContext<C>>
                                                                                                                                    _ErrorEvents[1],
                                                                                                                                    _ClusterWriteEvent,
                                                                                                                                    _LinkEvent,
+                                                                                                                                   linkCustom,
                                                                                                                                    clusterCustom));
         _ClusterProcessor.setThreadName("ClusterProcessor");
         for (int i = 0, size = _ClusterEvents.length; i < size; i++) {

@@ -24,6 +24,17 @@
 
 package com.tgx.chess.knight.raft.service;
 
+import static com.tgx.chess.knight.raft.RaftState.CANDIDATE;
+import static com.tgx.chess.knight.raft.RaftState.LEADER;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.tgx.chess.bishop.ZUID;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
@@ -45,29 +56,19 @@ import com.tgx.chess.knight.raft.model.RaftMachine;
 import com.tgx.chess.knight.raft.model.RaftNode;
 import com.tgx.chess.knight.raft.model.log.LogEntry;
 import com.tgx.chess.queen.db.inf.IRepository;
-import com.tgx.chess.queen.event.inf.ICustomLogic;
+import com.tgx.chess.queen.event.inf.IClusterCustom;
 import com.tgx.chess.queen.io.core.inf.IActivity;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.IConsensus;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.manager.QueenManager;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import static com.tgx.chess.knight.raft.RaftState.CANDIDATE;
-import static com.tgx.chess.knight.raft.RaftState.LEADER;
 
 @Component
 public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         implements
-        ICustomLogic<ZContext,
-                     RaftMachine>
+        IClusterCustom<ZContext,
+                       RaftMachine>
 {
     private final Logger                        _Logger                      = Logger.getLogger(getClass().getSimpleName());
     private final IRepository<RaftNode<T>>      _ClusterRepository;
@@ -291,5 +292,11 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
     public void setRaftNode(RaftNode<T> raftNode)
     {
         mRaftNode = raftNode;
+    }
+
+    @Override
+    public boolean waitForCommit()
+    {
+        return mRaftNode.isClusterModel();
     }
 }

@@ -81,6 +81,8 @@ public interface IClusterConfig
 
     Duration getHeartbeatInSecond();
 
+    boolean isClusterModel();
+
     class Uid
     {
         private int nodeId;

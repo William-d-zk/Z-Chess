@@ -35,28 +35,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
-import com.tgx.chess.knight.raft.config.IClusterConfig;
-import com.tgx.chess.knight.endpoint.DeviceNode;
 import com.tgx.chess.bishop.io.ZSort;
 import com.tgx.chess.bishop.io.mqtt.handler.IQttRouter;
 import com.tgx.chess.bishop.io.mqtt.handler.QttRouter;
-import com.tgx.chess.bishop.io.zhandler.ZMappingCustom;
-import com.tgx.chess.knight.raft.model.RaftNode;
-import com.tgx.chess.knight.raft.model.log.RaftDao;
-import com.tgx.chess.knight.raft.service.ClusterCustom;
+import com.tgx.chess.bishop.io.zhandler.ZClusterMappingCustom;
+import com.tgx.chess.bishop.io.zhandler.ZLinkMappingCustom;
 import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.base.util.Triple;
-import com.tgx.chess.queen.config.IBizIoConfig;
-import com.tgx.chess.queen.config.IServerConfig;
-import com.tgx.chess.queen.db.inf.IRepository;
+import com.tgx.chess.knight.endpoint.DeviceNode;
 import com.tgx.chess.knight.endpoint.spring.device.api.IDeviceService;
 import com.tgx.chess.knight.endpoint.spring.device.model.DeviceDo;
 import com.tgx.chess.knight.endpoint.spring.device.model.DeviceEntry;
 import com.tgx.chess.knight.endpoint.spring.device.model.MessageBody;
 import com.tgx.chess.knight.endpoint.spring.device.model.MessageEntry;
+import com.tgx.chess.knight.raft.config.IClusterConfig;
+import com.tgx.chess.knight.raft.model.RaftNode;
+import com.tgx.chess.knight.raft.model.log.RaftDao;
+import com.tgx.chess.knight.raft.service.ClusterCustom;
+import com.tgx.chess.queen.config.IBizIoConfig;
+import com.tgx.chess.queen.config.IServerConfig;
+import com.tgx.chess.queen.db.inf.IRepository;
 
 /**
  * @author william.d.zk
@@ -116,7 +117,9 @@ public class DeviceService
         final IQttRouter _QttRouter = new QttRouter();
         LogicHandler logicHandler = new LogicHandler(_DeviceNode, _QttRouter, _MessageRepository);
         _LinkCustom.setQttRouter(_QttRouter);
-        _DeviceNode.start(logicHandler, new ZMappingCustom<>(_LinkCustom), new ZMappingCustom<>(_ClusterCustom));
+        _DeviceNode.start(logicHandler,
+                          new ZLinkMappingCustom(_LinkCustom),
+                          new ZClusterMappingCustom<>(_ClusterCustom));
         _RaftNode.init();
     }
 
