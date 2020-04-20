@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -121,6 +122,14 @@ public class RaftDao
         catch (FileNotFoundException e) {
             _Logger.warning("meta file not exist, name=%s", metaFileName);
         }
+    }
+
+    @PreDestroy
+    void dispose()
+    {
+        mLogMeta.close();
+        mSnapshotMeta.close();
+        _Logger.info("raft dao dispose");
     }
 
     @Override

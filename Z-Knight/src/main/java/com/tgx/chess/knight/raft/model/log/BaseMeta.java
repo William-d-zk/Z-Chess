@@ -73,13 +73,16 @@ public abstract class BaseMeta
         catch (IOException e) {
             e.printStackTrace();
         }
-        finally {
-            try {
-                _File.close();
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
+    }
+
+    void close()
+    {
+        update();
+        try {
+            _File.close();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
