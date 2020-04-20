@@ -59,11 +59,12 @@ public class X72_RaftVote
     private long mLogIndex;
     private long mLogTerm;
     private long mElector;
+    private long mCommit;
 
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 8 * 5;
+        return super.dataLength() + 8 * 6;
     }
 
     @Override
@@ -141,5 +142,15 @@ public class X72_RaftVote
     public void setElector(long elector)
     {
         mElector = elector;
+    }
+
+    public void setCommit(long commit)
+    {
+        mCommit = commit;
+    }
+
+    public long getCommit()
+    {
+        return mCommit;
     }
 }

@@ -277,6 +277,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         update.setOperation(OP_INSERT);
         update.setCandidate(_SelfMachine.getPeerId());
         update.setLeader(INVALID_PEER_ID);
+        update.setCommit(_SelfMachine.getCommit());
         _ClusterPeer.publishConsensus(EXTERNAL, update);
         _Logger.info("start vote self %s", _SelfMachine.toString());
     }
@@ -685,6 +686,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
             && update.getIndex() == _SelfMachine.getIndex()
             && update.getIndexTerm() == _SelfMachine.getIndexTerm()
             && update.getCandidate() == _SelfMachine.getPeerId()
+            && update.getCommit() == _SelfMachine.getCommit()
             && _SelfMachine.getState() == FOLLOWER
             && update.getState() == CANDIDATE)
         {
@@ -701,6 +703,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
                                  x72.setLogIndex(update.getIndex());
                                  x72.setLogTerm(update.getIndexTerm());
                                  x72.setElector(peerId);
+                                 x72.setCommit(update.getCommit());
                                  return x72;
                              })
                              .collect(Collectors.toList());
