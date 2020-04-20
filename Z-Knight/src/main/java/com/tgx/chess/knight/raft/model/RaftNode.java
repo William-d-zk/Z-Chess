@@ -140,7 +140,6 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
             _Logger.info("single model skip init raft node");
             return;
         }
-        _Logger.info("raft node init");
         /* _RaftDao 启动的时候已经装载了 snapshot */
         _SelfMachine.setTerm(_RaftDao.getLogMeta()
                                      .getTerm());
@@ -210,6 +209,8 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         }
         //初始化为FOLLOW 状态，等待LEADER的HEARTBEAT 
         mTickTask = _TimeWheel.acquire(this, _TickSchedule);
+
+        _Logger.info("raft node init -> %s", _SelfMachine);
     }
 
     public void load(List<IRaftMessage> snapshot)
