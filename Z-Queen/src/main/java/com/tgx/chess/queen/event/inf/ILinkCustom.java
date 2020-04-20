@@ -36,7 +36,7 @@ public interface ILinkCustom<C extends IContext<C>>
      * @param request
      *            link发来 强一致的请求
      * @param session
-     *            request 来源 session
+     *            session == request.session
      * @return
      */
     List<ITriple> notify(QueenManager<C> manager, IControl<C> request, ISession<C> session);
