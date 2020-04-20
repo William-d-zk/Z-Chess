@@ -43,7 +43,7 @@ public interface IRaftDao
 
     long getEntryTerm(long index);
 
-    void updateLogMeta(long term, long firstLogIndex, long candidate);
+    void updateLogStart(long firstLogIndex);
 
     void updateSnapshotMeta(long lastIncludeIndex, long lastIncludeTerm);
 

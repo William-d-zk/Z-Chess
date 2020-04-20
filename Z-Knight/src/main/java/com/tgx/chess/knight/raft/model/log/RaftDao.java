@@ -45,7 +45,6 @@ import javax.annotation.PreDestroy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.tgx.chess.bishop.ZUID;
 import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.knight.raft.IRaftDao;
@@ -184,18 +183,19 @@ public class RaftDao
     }
 
     @Override
-    public void updateLogMeta(long term, long start, long candidate)
+    public void updateLogStart(long start)
     {
-        if (term > TERM_NAN) mLogMeta.setTerm(term);
         mLogMeta.setStart(start);
-        if (candidate != ZUID.INVALID_PEER_ID) mLogMeta.setCandidate(candidate);
-        mLogMeta.update();
-        _Logger.info(" term:%d,first log index:%d,candidate:%d", term, start, candidate);
     }
 
-    public void updateLogMeta(long start)
+    public void updateLogCommit(long commit)
     {
-        updateLogMeta(TERM_NAN, start, ZUID.INVALID_PEER_ID);
+        mLogMeta.setCommit(commit);
+    }
+
+    public void updateLogTerm(long term)
+    {
+        mLogMeta.setTerm(term);
     }
 
     @Override
@@ -330,7 +330,7 @@ public class RaftDao
         else {
             newActualFirstIndex = _Index2SegmentMap.firstKey();
         }
-        updateLogMeta(newActualFirstIndex);
+        updateLogStart(newActualFirstIndex);
         _Logger.info("Truncating log from old first index %d to new first index %d",
                      oldFirstIndex,
                      newActualFirstIndex);
