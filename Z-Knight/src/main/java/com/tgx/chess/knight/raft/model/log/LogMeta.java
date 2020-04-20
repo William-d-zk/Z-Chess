@@ -99,17 +99,18 @@ public class LogMeta
     public static LogMeta loadFromFile(RandomAccessFile file)
     {
         try {
-            if (file.length() == 0) { return null; }
-            file.seek(0);
-            int mLength = file.readInt();
-            if (mLength > 0) {
-                byte[] data = new byte[mLength];
-                file.read(data);
-                LogMeta logMeta = JsonUtil.readValue(data, LogMeta.class);
-                if (logMeta != null) {
-                    logMeta.setFile(file);
-                    logMeta.decode(data);
-                    return logMeta;
+            if (file.length() > 0) {
+                file.seek(0);
+                int mLength = file.readInt();
+                if (mLength > 0) {
+                    byte[] data = new byte[mLength];
+                    file.read(data);
+                    LogMeta logMeta = JsonUtil.readValue(data, LogMeta.class);
+                    if (logMeta != null) {
+                        logMeta.setFile(file);
+                        logMeta.decode(data);
+                        return logMeta;
+                    }
                 }
             }
         }
