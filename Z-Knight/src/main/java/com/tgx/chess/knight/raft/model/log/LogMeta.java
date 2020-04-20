@@ -113,13 +113,12 @@ public class LogMeta
                     logMeta.decode(data);
                     return logMeta;
                 }
-                else return new LogMeta();
             }
         }
         catch (IOException e) {
             e.printStackTrace();
         }
-        return null;
+        return new LogMeta();
     }
 
     @Override

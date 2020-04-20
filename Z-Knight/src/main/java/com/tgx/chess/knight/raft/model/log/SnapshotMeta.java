@@ -75,13 +75,12 @@ public class SnapshotMeta
                     snapshotMeta.decode(data);
                     return snapshotMeta;
                 }
-                else return new SnapshotMeta();
             }
         }
         catch (IOException e) {
             e.printStackTrace();
         }
-        return null;
+        return new SnapshotMeta();
     }
 
     @Override
