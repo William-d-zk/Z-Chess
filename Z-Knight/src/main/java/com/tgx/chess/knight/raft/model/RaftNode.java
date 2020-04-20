@@ -741,7 +741,6 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
                                          origin,
                                          requestSerial,
                                          requestData);
-        newEntry.encode();
         if (_RaftDao.append(newEntry)) {
             _SelfMachine.increaseIndex();
             return createBroadcasts();

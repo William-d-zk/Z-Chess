@@ -176,13 +176,13 @@ public class Segment
         }
         if (endIndex != mEndIndex) {
             _Logger.info("input end_index isn't equal read end_index, update mEndIndex %d-> endIndex %d",
-                            mEndIndex,
-                            endIndex);
+                         mEndIndex,
+                         endIndex);
             mEndIndex = endIndex;
         }
     }
 
-    public void close()
+    public void freeze()
     {
         String newFileName = String.format("z_chess_raft_seg_%020d-%020d_r", _StartIndex, mEndIndex);
         String newAbsolutePath = _FileDirectory + File.separator + newFileName;

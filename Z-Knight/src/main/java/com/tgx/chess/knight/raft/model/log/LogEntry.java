@@ -75,6 +75,7 @@ public class LogEntry
         _Origin = origin;
         _PayloadSerial = payloadSerial;
         _Payload = payload;
+        encode();
     }
 
     @Override

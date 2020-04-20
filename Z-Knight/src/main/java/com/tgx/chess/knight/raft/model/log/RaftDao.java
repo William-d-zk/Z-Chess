@@ -262,7 +262,7 @@ public class RaftDao
                 else if (segment.getFileSize() + entrySize >= _MaxSegmentSize) {
                     isNeedNewSegmentFile = true;
                     //segment的文件close并改名
-                    segment.close();
+                    segment.freeze();
                 }
             }
             Segment targetSegment = null;
