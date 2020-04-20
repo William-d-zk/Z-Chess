@@ -225,6 +225,7 @@ public class MappingHandler<C extends IContext<C>,
                         }
                         IControl<C> transfer = handled.getSecond();
                         if (transfer != null) {
+                            session = transfer.getSession();
                             publish(_Transfer,
                                     NOTIFY,
                                     new Pair<>(transfer, session),
@@ -242,7 +243,6 @@ public class MappingHandler<C extends IContext<C>,
                                      .getSort()
                                      .getError());
                     }
-
                     break;
                 case CONSENSUS:
                     received = event.getContent()
