@@ -122,6 +122,7 @@ public class RaftDao
         catch (FileNotFoundException e) {
             _Logger.warning("meta file not exist, name=%s", metaFileName);
         }
+        installSnapshot();
     }
 
     @PreDestroy
@@ -394,5 +395,10 @@ public class RaftDao
     public long getTotalSize()
     {
         return vTotalSize;
+    }
+
+    private void installSnapshot()
+    {
+
     }
 }
