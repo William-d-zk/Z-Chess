@@ -52,12 +52,10 @@ public class SnapshotMeta
     {
         mTerm = term;
         mCommit = commit;
-        encode();
     }
 
     private SnapshotMeta()
     {
-        encode();
     }
 
     public static SnapshotMeta loadFromFile(RandomAccessFile file)

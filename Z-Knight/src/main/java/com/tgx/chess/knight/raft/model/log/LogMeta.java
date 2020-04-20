@@ -89,13 +89,11 @@ public class LogMeta
         mApplied = applied;
         mPeerSet = peerSet;
         mGateSet = gateSet;
-        encode();
     }
 
     private LogMeta()
     {
         mStart = 1;
-        encode();
     }
 
     public static LogMeta loadFromFile(RandomAccessFile file)
