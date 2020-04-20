@@ -79,7 +79,7 @@ public class SnapshotMeta
         catch (IOException e) {
             e.printStackTrace();
         }
-        return new SnapshotMeta();
+        return new SnapshotMeta().setFile(file);
     }
 
     @JsonIgnore
