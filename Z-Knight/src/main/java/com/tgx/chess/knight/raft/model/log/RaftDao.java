@@ -201,6 +201,12 @@ public class RaftDao
     }
 
     @Override
+    public void updateLogApplied(long applied)
+    {
+        mLogMeta.setApplied(applied);
+    }
+
+    @Override
     public void updateSnapshotMeta(long lastIncludeIndex, long lastIncludeTerm)
     {
         mSnapshotMeta.setCommit(lastIncludeIndex);
