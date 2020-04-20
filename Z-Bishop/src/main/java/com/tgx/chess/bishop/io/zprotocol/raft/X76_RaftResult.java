@@ -64,7 +64,7 @@ public class X76_RaftResult
     @Override
     public int encodec(byte[] data, int pos)
     {
-        pos += IoUtil.writeByte(mPayloadSerial, data, pos);
+        pos += IoUtil.writeShort(mPayloadSerial, data, pos);
         pos += IoUtil.writeByte(mCode, data, pos);
         pos += IoUtil.writeLong(mOrigin, data, pos);
         return pos;
@@ -73,7 +73,8 @@ public class X76_RaftResult
     @Override
     public int decodec(byte[] data, int pos)
     {
-        mPayloadSerial = data[pos++] & 0xFF;
+        mPayloadSerial = IoUtil.readUnsignedShort(data, pos);
+        pos += 2;
         mCode = data[pos++] & 0xFF;
         mOrigin = IoUtil.readLong(data, pos);
         return pos;
@@ -82,7 +83,7 @@ public class X76_RaftResult
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 10;
+        return super.dataLength() + 11;
     }
 
     public int getCode()
