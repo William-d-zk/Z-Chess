@@ -36,39 +36,17 @@ public abstract class BaseMeta
 {
 
     @JsonIgnore
-    private final RandomAccessFile _File;
+    private RandomAccessFile mFile;
     @JsonIgnore
-    protected int                  mLength;
-
-    protected BaseMeta(RandomAccessFile file)
-    {
-        _File = file;
-    }
-
-    void loadFromFile()
-    {
-        try {
-            if (_File.length() == 0) { return; }
-            _File.seek(0);
-            mLength = _File.readInt();
-            if (mLength > 0) {
-                byte[] data = new byte[mLength];
-                _File.read(data);
-                decode(data);
-            }
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    protected int            mLength;
 
     void update()
     {
         try {
-            _File.seek(0);
+            mFile.seek(0);
             byte[] data = encode();
-            _File.writeInt(dataLength());
-            _File.write(data);
+            mFile.writeInt(dataLength());
+            mFile.write(data);
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -79,7 +57,7 @@ public abstract class BaseMeta
     {
         update();
         try {
-            _File.close();
+            mFile.close();
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -90,6 +68,12 @@ public abstract class BaseMeta
     public int dataLength()
     {
         return mLength;
+    }
+
+    @JsonIgnore
+    public void setFile(RandomAccessFile source)
+    {
+        mFile = source;
     }
 
 }
