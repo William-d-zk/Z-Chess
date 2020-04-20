@@ -136,6 +136,10 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
 
     public void init() throws IOException
     {
+        if (!_ClusterConfig.isClusterModel()) {
+            _Logger.info("single model skip init raft node");
+            return;
+        }
         _Logger.info("raft node init");
         /* _RaftDao 启动的时候已经装载了 snapshot */
         _SelfMachine.setTerm(_RaftDao.getLogMeta()

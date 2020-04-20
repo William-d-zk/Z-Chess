@@ -132,6 +132,11 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
                                            .toArray(X7E_RaftBroadcast[]::new),
                                   null);
             case X76_RaftResult.COMMAND:
+                /*
+                leader -> follow, self::follow
+                由于x76.origin == request.session.sessionIndex
+                LinkCustom中专门有对应findSession的操作，所以此处不再执行此操作，且在LinkCustom中执行更为安全
+                */
                 return new Pair<>(null, content);
             case X7E_RaftBroadcast.COMMAND:
                 X7E_RaftBroadcast x7e = (X7E_RaftBroadcast) content;
