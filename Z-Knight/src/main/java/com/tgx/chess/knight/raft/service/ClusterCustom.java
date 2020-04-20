@@ -98,6 +98,7 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
                 machine.setIndexTerm(x72.getLogTerm());
                 machine.setTerm(x72.getTerm());
                 machine.setCandidate(x72.getPeerId());
+                machine.setCommit(x72.getCommit());
                 machine.setState(CANDIDATE);
                 X7F_RaftResponse x7f = mRaftNode.merge(machine);
                 return x7f != null ? new Pair<>(new X7F_RaftResponse[] { x7f }, null)
