@@ -80,6 +80,8 @@ public class X72_RaftVote
         pos += 8;
         mElector = IoUtil.readLong(data, pos);
         pos += 8;
+        mCommit = IoUtil.readLong(data, pos);
+        pos += 8;
         return pos;
     }
 
@@ -91,6 +93,7 @@ public class X72_RaftVote
         pos += IoUtil.writeLong(mLogIndex, data, pos);
         pos += IoUtil.writeLong(mLogTerm, data, pos);
         pos += IoUtil.writeLong(mElector, data, pos);
+        pos += IoUtil.writeLong(mCommit, data, pos);
         return pos;
     }
 
