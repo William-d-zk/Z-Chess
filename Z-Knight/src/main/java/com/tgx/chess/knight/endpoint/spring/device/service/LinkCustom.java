@@ -142,7 +142,7 @@ public class LinkCustom
                 }
             case X118_QttSubscribe.COMMAND:
             case X11A_QttUnsubscribe.COMMAND:
-                return new Pair<>(new IControl[] { input }, null);
+                return new Pair<>(null, input);
         }
         return null;
     }
@@ -151,28 +151,34 @@ public class LinkCustom
     public List<ITriple> notify(QueenManager<ZContext> manager, IControl<ZContext> response, ISession<ZContext> session)
     {
         /*
-         raft_client -> Link,session belong to cluster
+        标准情况是 request.session, 但是在集群处理时x76携带了cluster 领域的session 作为入参，
+        在transfer 之前并未按照接口要求进行转换，此处实现为一个优化项，使findSessionByIndex操作线程更为安全
          */
+        IControl<ZContext> request;
         if (response.serial() == X76_RaftResult.COMMAND) {
+            /*
+            raft_client -> Link, session belong to cluster
+            */
             X76_RaftResult x76 = (X76_RaftResult) response;
             int cmd = x76.getPayloadSerial();
-            IControl<ZContext> request = ZSort.getCommandFactory(cmd)
-                                              .create(cmd);
+            request = ZSort.getCommandFactory(cmd)
+                           .create(cmd);
             request.decode(x76.getPayload());
-            Stream<IControl<ZContext>> handled = mappingHandle(manager, request, x76.getOrigin());
-            if (handled != null) {
-                return handled.filter(Objects::nonNull)
-                              .map(control -> new Triple<>(control,
-                                                           control.getSession(),
-                                                           control.getSession()
-                                                                  .getContext()
-                                                                  .getSort()
-                                                                  .getEncoder()))
-                              .collect(Collectors.toList());
-            }
+            session = manager.findSessionByIndex(x76.getOrigin());
         }
         else {
-            _Logger.warning("Link.consensus error,recv:%s", response.toString());
+            request = response;
+        }
+        Stream<IControl<ZContext>> handled = mappingHandle(manager, request, session);
+        if (handled != null) {
+            return handled.filter(Objects::nonNull)
+                          .map(control -> new Triple<>(control,
+                                                       control.getSession(),
+                                                       control.getSession()
+                                                              .getContext()
+                                                              .getSort()
+                                                              .getEncoder()))
+                          .collect(Collectors.toList());
         }
         return null;
     }
@@ -192,11 +198,11 @@ public class LinkCustom
         return _DeviceRepository.find(entry);
     }
 
-    private Stream<IControl<ZContext>> mappingHandle(QueenManager<ZContext> manager,
+    private Stream<IControl<ZContext>> mappingHandle(QueenManager manager,
                                                      IControl<ZContext> input,
-                                                     long sessionIndex)
+                                                     ISession<ZContext> session)
     {
-        ISession<ZContext> session = manager.findSessionByIndex(sessionIndex);
+
         switch (input.serial())
         {
             case X111_QttConnect.COMMAND:
@@ -214,8 +220,9 @@ public class LinkCustom
                 if (topics != null) {
                     X119_QttSuback x119 = new X119_QttSuback();
                     x119.setMsgId(x118.getMsgId());
-                    topics.forEach(topic -> x119.addResult(mQttRouter.addTopic(topic, sessionIndex) ? topic.getSecond()
-                                                                                                    : IQoS.Level.FAILURE));
+                    topics.forEach(topic -> x119.addResult(mQttRouter.addTopic(topic,
+                                                                               session.getIndex()) ? topic.getSecond()
+                                                                                                   : IQoS.Level.FAILURE));
                     if (session != null) {
                         x119.setSession(session);
                         return Stream.of(x119);
@@ -225,7 +232,7 @@ public class LinkCustom
             case X11A_QttUnsubscribe.COMMAND:
                 X11A_QttUnsubscribe x11A = (X11A_QttUnsubscribe) input;
                 x11A.getTopics()
-                    .forEach(topic -> mQttRouter.removeTopic(topic, sessionIndex));
+                    .forEach(topic -> mQttRouter.removeTopic(topic, session.getIndex()));
                 if (session != null) {
                     X11B_QttUnsuback x11B = new X11B_QttUnsuback();
                     x11B.setMsgId(x11A.getMsgId());
