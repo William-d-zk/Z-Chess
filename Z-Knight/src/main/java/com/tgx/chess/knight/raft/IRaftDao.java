@@ -45,6 +45,10 @@ public interface IRaftDao
 
     void updateLogStart(long firstLogIndex);
 
+    void updateLogCommit(long commit);
+
+    void updateLogTerm(long term);
+
     void updateSnapshotMeta(long lastIncludeIndex, long lastIncludeTerm);
 
     boolean append(LogEntry entry);

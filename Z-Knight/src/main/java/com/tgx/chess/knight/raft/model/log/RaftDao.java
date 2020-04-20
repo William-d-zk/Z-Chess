@@ -188,11 +188,13 @@ public class RaftDao
         mLogMeta.setStart(start);
     }
 
+    @Override
     public void updateLogCommit(long commit)
     {
         mLogMeta.setCommit(commit);
     }
 
+    @Override
     public void updateLogTerm(long term)
     {
         mLogMeta.setTerm(term);
