@@ -15,9 +15,9 @@ import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.handler.IClusterCustom;
+import com.tgx.chess.queen.io.core.async.AioSessionManager;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.manager.MixManager;
 
 /**
  * @author william.d.zk
@@ -40,7 +40,7 @@ public class ZClusterMappingCustom<T extends IStorage>
     }
 
     @Override
-    public IPair handle(MixManager<ZContext> manager,
+    public IPair handle(AioSessionManager<ZContext> manager,
                         ISession<ZContext> session,
                         IControl<ZContext> content) throws Exception
     {
@@ -65,14 +65,14 @@ public class ZClusterMappingCustom<T extends IStorage>
     }
 
     @Override
-    public List<ITriple> onTimer(MixManager<ZContext> manager, T content)
+    public List<ITriple> onTimer(AioSessionManager<ZContext> manager, T content)
     {
         return _Then != null ? _Then.onTimer(manager, content)
                              : null;
     }
 
     @Override
-    public List<ITriple> consensus(MixManager<ZContext> manager, IControl<ZContext> request, long origin)
+    public List<ITriple> consensus(AioSessionManager<ZContext> manager, IControl<ZContext> request, long origin)
     {
         return _Then != null ? _Then.consensus(manager, request, origin)
                              : null;

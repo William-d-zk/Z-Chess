@@ -42,12 +42,12 @@ import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.IConsensus;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
-import com.tgx.chess.queen.io.core.manager.MixManager;
+import com.tgx.chess.queen.io.core.manager.ClusterManager;
 
 @Component
 public class ClusterNode
         extends
-        MixManager<ZContext>
+        ClusterManager<ZContext>
         implements
         ISessionDismiss<ZContext>,
         IClusterPeer,

@@ -73,11 +73,11 @@ import com.tgx.chess.knight.raft.IRaftMessage;
 import com.tgx.chess.knight.raft.RaftState;
 import com.tgx.chess.knight.raft.config.IClusterConfig;
 import com.tgx.chess.knight.raft.model.log.LogEntry;
+import com.tgx.chess.queen.io.core.async.AioSessionManager;
 import com.tgx.chess.queen.io.core.inf.IActivity;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.IConsensus;
 import com.tgx.chess.queen.io.core.inf.IControl;
-import com.tgx.chess.queen.io.core.manager.MixManager;
 
 /**
  * @author william.d.zk
@@ -502,7 +502,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
                             long candidate,
                             RaftState state,
                             RaftCode code,
-                            MixManager<ZContext> manager)
+                            AioSessionManager<ZContext> manager)
     {
         RaftMachine peerMachine = _RaftGraph.getMachine(peerId);
         if (peerMachine == null) {
