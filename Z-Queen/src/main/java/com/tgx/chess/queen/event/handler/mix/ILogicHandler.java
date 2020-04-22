@@ -22,7 +22,7 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.queen.event.inf;
+package com.tgx.chess.queen.event.handler.mix;
 
 import static com.tgx.chess.queen.event.inf.IOperator.Type.LOGIC;
 
@@ -30,6 +30,8 @@ import java.util.Objects;
 
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
+import com.tgx.chess.queen.event.inf.IError;
+import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;

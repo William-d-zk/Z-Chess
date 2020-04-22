@@ -37,6 +37,7 @@ import com.tgx.chess.queen.io.core.inf.ISession;
 
 /**
  * @author william.d.zk
+ * @date 2016/12/22
  */
 public interface ILocalPublisher<C extends IContext<C>>
         extends

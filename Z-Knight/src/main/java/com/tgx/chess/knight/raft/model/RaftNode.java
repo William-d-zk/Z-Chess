@@ -73,7 +73,6 @@ import com.tgx.chess.knight.raft.IRaftMessage;
 import com.tgx.chess.knight.raft.RaftState;
 import com.tgx.chess.knight.raft.config.IClusterConfig;
 import com.tgx.chess.knight.raft.model.log.LogEntry;
-import com.tgx.chess.knight.raft.model.log.RaftDao;
 import com.tgx.chess.queen.io.core.inf.IActivity;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.IConsensus;
@@ -90,7 +89,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
     private final ZUID                         _ZUID;
     private final IClusterConfig               _ClusterConfig;
     private final T                            _ClusterPeer;
-    private final RaftDao                      _RaftDao;
+    private final IRaftDao                     _RaftDao;
     private final TimeWheel                    _TimeWheel;
     private final ScheduleHandler<RaftNode<T>> _ElectSchedule, _HeartbeatSchedule, _TickSchedule;
     private final RaftGraph                    _RaftGraph;
@@ -101,7 +100,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
 
     public RaftNode(TimeWheel timeWheel,
                     IClusterConfig clusterConfig,
-                    RaftDao raftDao,
+                    IRaftDao raftDao,
                     T manager)
     {
         _TimeWheel = timeWheel;

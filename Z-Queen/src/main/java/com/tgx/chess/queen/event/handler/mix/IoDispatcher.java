@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.queen.event.handler;
+package com.tgx.chess.queen.event.handler.mix;
 
 import static com.tgx.chess.queen.event.inf.IError.Type.WAIT_CLOSE;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.CONNECTED;

@@ -22,7 +22,7 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.knight.endpoint.config;
+package com.tgx.chess.knight.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;

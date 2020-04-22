@@ -58,9 +58,8 @@ public class DecodeHandler<C extends IContext<C>>
     }
 
     /**
-     * 错误由接下去的 Handler 负责投递 Close 事件给 IoDispatcher
-     *
-     * @see IoDispatcher
+     * 错误由接下去的 Handler 负责投递
+     * 标记为Error后交由BarrierHandler进行分发
      */
     @Override
     public void onEvent(QEvent event, long sequence, boolean batch) throws Exception
