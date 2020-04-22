@@ -22,23 +22,25 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.pawn;
+package com.tgx.chess.knight.cluster.spring.jpa;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
  * @author william.d.zk
  */
-
-@SpringBootApplication(scanBasePackages = { "com.tgx.chess.knight.config",
-                                            "com.tgx.chess.knight.raft",
-                                            "com.tgx.chess.knight.json",
-                                            "com.tgx.chess.knight.endpoint" })
-public class ApplicationPawn
+@EnableJpaAuditing
+@EnableJpaRepositories({ "com.tgx.chess.knight.cluster.spring.jpa.consensus.repository" })
+@EntityScan({ "com.tgx.chess.knight.cluster.spring.jpa.consensus.dao" })
+@EnableTransactionManagement
+@Configuration
+@PropertySource({ "classpath:db.properties" })
+public class JpaConfig
 {
-    public static void main(String[] args)
-    {
-        SpringApplication.run(ApplicationPawn.class, args);
-    }
+
 }

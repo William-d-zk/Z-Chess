@@ -173,7 +173,7 @@ public class MappingHandler<C extends IContext<C>,
                         }
                         IProtocol notify = result.getSecond();
                         if (notify != null) {
-                            publishNotify(notify, notify.getChannel());
+                            publishNotify(notify, notify.channel());
                         }
                     }
                     catch (Exception e) {
