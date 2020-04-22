@@ -8,7 +8,7 @@ import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.manager.QueenManager;
+import com.tgx.chess.queen.io.core.manager.MixManager;
 
 /**
  * @author william.d.zk
@@ -28,7 +28,7 @@ public interface IClusterCustom<C extends IContext<C>,
      *         Cluster->Link,consensus_result
      * @throws Exception
      */
-    IPair handle(QueenManager<C> manager, ISession<C> session, IControl<C> content) throws Exception;
+    IPair handle(MixManager<C> manager, ISession<C> session, IControl<C> content) throws Exception;
 
     /**
      * Cluster.Leader heartbeat timeout event
@@ -39,7 +39,7 @@ public interface IClusterCustom<C extends IContext<C>,
      * @param content
      * @return
      */
-    List<ITriple> onTimer(QueenManager<C> manager, T content);
+    List<ITriple> onTimer(MixManager<C> manager, T content);
 
     /**
      * Link -> Cluster.consensus(Link.consensus_data,consensus_data.origin)
@@ -53,7 +53,7 @@ public interface IClusterCustom<C extends IContext<C>,
      * @return triples
      *         [托管给集群IoSwitch.write(triples) 或 Transfer → Link.notify(triples)]
      */
-    List<ITriple> consensus(QueenManager<C> manager, IControl<C> request, long origin);
+    List<ITriple> consensus(MixManager<C> manager, IControl<C> request, long origin);
 
     /**
      * 用于验证是否需要执行集群commit

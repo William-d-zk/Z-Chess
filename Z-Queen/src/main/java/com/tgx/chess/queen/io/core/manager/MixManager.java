@@ -36,7 +36,7 @@ import com.tgx.chess.queen.io.core.inf.ISession;
 /**
  * @author william.d.zk
  */
-public abstract class QueenManager<C extends IContext<C>>
+public abstract class MixManager<C extends IContext<C>>
         extends
         AioSessionManager<C>
         implements
@@ -44,8 +44,8 @@ public abstract class QueenManager<C extends IContext<C>>
 {
     protected final ServerCore<C> _ServerCore;
 
-    public QueenManager(IBizIoConfig config,
-                        ServerCore<C> serverCore)
+    public MixManager(IBizIoConfig config,
+                      ServerCore<C> serverCore)
     {
         super(config);
         _ServerCore = serverCore;
