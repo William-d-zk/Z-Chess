@@ -19,8 +19,11 @@ import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.config.IServerConfig;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.handler.DecodeHandler;
-import com.tgx.chess.queen.event.handler.DecodedDispatcher;
+import com.tgx.chess.queen.event.handler.EncodeHandler;
+import com.tgx.chess.queen.event.handler.EncodedHandler;
 import com.tgx.chess.queen.event.handler.IClusterCustom;
+import com.tgx.chess.queen.event.handler.WriteDispatcher;
+import com.tgx.chess.queen.event.handler.cluster.DecodedDispatcher;
 import com.tgx.chess.queen.event.handler.cluster.INotifyCustom;
 import com.tgx.chess.queen.event.handler.cluster.IoDispatcher;
 import com.tgx.chess.queen.event.handler.cluster.MappingHandler;
@@ -205,7 +208,52 @@ public class ClusterCore<C extends IContext<C>>
                                                                                                                new DecodedDispatcher<>(_ClusterDecoded,
                                                                                                                                        _ErrorEvents[1]));
         _DecodedDispatcher.setThreadName("DecodedDispatcher");
-
+        for (int i = 0; i < _DecoderCount; i++) {
+            _ReadEvents[i].addGatingSequences(_DecodedDispatcher.getSequences()[i]);
+        }
+        /* wait to send */
+        final RingBuffer<QEvent>[] _SendEvents = new RingBuffer[] { _ClusterWriteEvent,
+                                                                    _WroteEvent };
+        final SequenceBarrier[] _SendBarriers = new SequenceBarrier[_SendEvents.length];
+        Arrays.setAll(_SendBarriers, slot -> _SendEvents[slot].newBarrier());
+        final RingBuffer<QEvent>[] _WriteEvents = new RingBuffer[_EncoderCount];
+        Arrays.setAll(_WriteEvents, slot -> createPipelineLite(_AioQueuePower));
+        final MultiBufferBatchEventProcessor<QEvent> _WriteDispatcher = new MultiBufferBatchEventProcessor<>(_SendEvents,
+                                                                                                             _SendBarriers,
+                                                                                                             new WriteDispatcher<>(_ErrorEvents[2],
+                                                                                                                                   _WriteEvents));
+        _WriteDispatcher.setThreadName("WriteDispatcher");
+        for (int i = 0, size = _SendEvents.length; i < size; i++) {
+            _SendEvents[i].addGatingSequences(_WriteDispatcher.getSequences()[i]);
+        }
+        final BatchEventProcessor<QEvent>[] _EncodeProcessors = new BatchEventProcessor[_EncoderCount];
+        Arrays.setAll(_EncodeProcessors,
+                      slot -> new BatchEventProcessor<>(_WriteEvents[slot],
+                                                        _WriteEvents[slot].newBarrier(),
+                                                        new EncodeHandler<>()));
+        final RingBuffer<QEvent>[] _EncodedEvents = new RingBuffer[_EncoderCount];
+        IoUtil.addArray(_WriteEvents, _EncodedEvents);
+        final SequenceBarrier[] _EncodedBarriers = new SequenceBarrier[_EncodedEvents.length];
+        Arrays.setAll(_EncodedBarriers, slot -> _EncodedEvents[slot].newBarrier(_EncodeProcessors[slot].getSequence()));
+        final MultiBufferBatchEventProcessor<QEvent> _EncodedProcessor = new MultiBufferBatchEventProcessor<>(_EncodedEvents,
+                                                                                                              _EncodedBarriers,
+                                                                                                              new EncodedHandler<>(_ErrorEvents[3]));
+        _EncodedProcessor.setThreadName("EncodedProcessor");
+        for (int i = 0; i < _EncoderCount; i++) {
+            _EncodedEvents[i].addGatingSequences(_EncodedProcessor.getSequences()[i]);
+        }
+        /*-------------------------------------------------------------------------------------------------------------------------------------*/
+        submit(_IoDispatcher);
+        Arrays.stream(_DecodeProcessors)
+              .forEach(this::submit);
+        submit(_ClusterProcessor);
+        Arrays.stream(_ClusterNotifyProcessors)
+              .forEach(this::submit);
+        submit(_DecodedDispatcher);
+        submit(_WriteDispatcher);
+        Arrays.stream(_EncodeProcessors)
+              .forEach(this::submit);
+        submit(_EncodedProcessor);
     }
 
     @Override
