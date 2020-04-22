@@ -24,20 +24,75 @@
 
 package com.tgx.chess.knight.cluster;
 
+import java.io.IOException;
+
 import javax.annotation.PostConstruct;
 
 import org.springframework.stereotype.Component;
 
+import com.tgx.chess.bishop.io.zfilter.ZContext;
+import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.queen.config.IBizIoConfig;
+import com.tgx.chess.queen.db.inf.IStorage;
+import com.tgx.chess.queen.event.inf.IOperator;
+import com.tgx.chess.queen.io.core.inf.IClusterPeer;
+import com.tgx.chess.queen.io.core.inf.IConsensus;
+import com.tgx.chess.queen.io.core.inf.ISession;
+import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
+import com.tgx.chess.queen.io.core.manager.QueenManager;
 
 @Component
 public class ClusterNode
+        extends
+        QueenManager<ZContext>
+        implements
+        ISessionDismiss<ZContext>,
+        IClusterPeer,
+        IConsensus
 {
     private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
+
+    @Override
+    public void onDismiss(ISession<ZContext> session)
+    {
+        _Logger.info("dismiss %s", session);
+        rmSession(session);
+    }
+
+    public ClusterNode(IBizIoConfig config)
+    {
+        super(config, serverCore);
+    }
 
     @PostConstruct
     void init()
     {
         _Logger.info("load cluster node");
     }
+
+    @Override
+    public void close(ISession<ZContext> session, IOperator.Type eventType)
+    {
+
+    }
+
+    @Override
+    public void addPeer(IPair remote) throws IOException
+    {
+
+    }
+
+    @Override
+    public void addGate(IPair remote) throws IOException
+    {
+
+    }
+
+    @Override
+    public <T extends IStorage> void publishConsensus(IOperator.Type type, T content)
+    {
+
+    }
+
 }

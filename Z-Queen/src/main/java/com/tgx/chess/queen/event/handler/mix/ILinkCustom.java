@@ -1,4 +1,4 @@
-package com.tgx.chess.queen.event.inf;
+package com.tgx.chess.queen.event.handler.mix;
 
 import java.util.List;
 
@@ -26,6 +26,7 @@ public interface ILinkCustom<C extends IContext<C>>
      *         second: to_transfer
      *         Link->Cluster, consensus
      * @throws Exception
+     *             handle error
      */
     IPair handle(QueenManager<C> manager, ISession<C> session, IControl<C> content) throws Exception;
 
@@ -37,7 +38,7 @@ public interface ILinkCustom<C extends IContext<C>>
      *            link发来 强一致的请求
      * @param session
      *            session == request.session
-     * @return
+     * @return response
      */
     List<ITriple> notify(QueenManager<C> manager, IControl<C> request, ISession<C> session);
 

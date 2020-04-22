@@ -56,7 +56,7 @@ import com.tgx.chess.knight.raft.model.RaftMachine;
 import com.tgx.chess.knight.raft.model.RaftNode;
 import com.tgx.chess.knight.raft.model.log.LogEntry;
 import com.tgx.chess.queen.db.inf.IRepository;
-import com.tgx.chess.queen.event.inf.IClusterCustom;
+import com.tgx.chess.queen.event.handler.mix.IClusterCustom;
 import com.tgx.chess.queen.io.core.inf.IActivity;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.IConsensus;
@@ -236,9 +236,7 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
     }
 
     @Override
-    public List<ITriple> consensus(QueenManager<ZContext> manager,
-                                   IControl<ZContext> request,
-                                   ISession<ZContext> session)
+    public List<ITriple> consensus(QueenManager<ZContext> manager, IControl<ZContext> request, long origin)
     {
         if (mRaftNode.getMachine()
                      .getState() == LEADER)
@@ -249,7 +247,7 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
             return mRaftNode.newLogEntry(request,
                                          mRaftNode.getMachine()
                                                   .getPeerId(),
-                                         session.getIndex())
+                                         origin)
                             .map(x7e ->
                             {
                                 long follower = x7e.getFollower();
@@ -274,7 +272,7 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
             X75_RaftRequest x75 = new X75_RaftRequest(_ClusterRepository.getZid());
             x75.setPayloadSerial(request.serial());
             x75.setPayload(request.encode());
-            x75.setOrigin(session.getIndex());
+            x75.setOrigin(origin);
             x75.setPeerId(mRaftNode.getMachine()
                                    .getPeerId());
             ISession<ZContext> targetSession = manager.findSessionByPrefix(mRaftNode.getMachine()

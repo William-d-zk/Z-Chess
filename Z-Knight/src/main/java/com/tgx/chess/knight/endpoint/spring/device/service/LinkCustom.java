@@ -56,7 +56,7 @@ import com.tgx.chess.knight.endpoint.spring.device.model.DeviceEntry;
 import com.tgx.chess.knight.raft.model.RaftCode;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.db.inf.IStorage;
-import com.tgx.chess.queen.event.inf.ILinkCustom;
+import com.tgx.chess.queen.event.handler.mix.ILinkCustom;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IQoS;
 import com.tgx.chess.queen.io.core.inf.ISession;

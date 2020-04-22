@@ -1,4 +1,4 @@
-package com.tgx.chess.queen.event.inf;
+package com.tgx.chess.queen.event.handler.cluster;
 
 import java.util.List;
 
@@ -42,17 +42,19 @@ public interface IClusterCustom<C extends IContext<C>,
     List<ITriple> onTimer(QueenManager<C> manager, T content);
 
     /**
-     * Link -> Cluster.consensus(Link.consensus_data,Link)
+     * Link -> Cluster.consensus(Link.consensus_data,consensus_data.origin)
      *
      * @param manager
      *            session 管理器
      * @param request
      *            需要进行强一致的指令
-     * @param session
-     *            发送此request的 session
-     * @return
+     * @param origin
+     *            request 的源ID
+     * @return pair
+     *         first: 托管给集群IoSwitch.write(triples)
+     *         second: → Notifier.notify(protocol)
      */
-    List<ITriple> consensus(QueenManager<C> manager, IControl<C> request, ISession<C> session);
+    IPair consensus(QueenManager<C> manager, IControl<C> request, long origin);
 
     /**
      * 用于验证是否需要执行集群commit

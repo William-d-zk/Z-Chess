@@ -13,7 +13,7 @@ import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
-import com.tgx.chess.queen.event.inf.ILinkCustom;
+import com.tgx.chess.queen.event.handler.mix.ILinkCustom;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.manager.QueenManager;

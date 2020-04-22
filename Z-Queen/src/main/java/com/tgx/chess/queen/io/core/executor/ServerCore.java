@@ -27,7 +27,6 @@ package com.tgx.chess.queen.io.core.executor;
 import java.io.IOException;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
@@ -36,11 +35,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.lmax.disruptor.BatchEventProcessor;
-import com.lmax.disruptor.LiteBlockingWaitStrategy;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.SequenceBarrier;
-import com.lmax.disruptor.WaitStrategy;
-import com.lmax.disruptor.YieldingWaitStrategy;
 import com.tgx.chess.king.base.disruptor.MultiBufferBatchEventProcessor;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.IoUtil;
@@ -50,12 +46,12 @@ import com.tgx.chess.queen.event.handler.DecodeHandler;
 import com.tgx.chess.queen.event.handler.DecodedDispatcher;
 import com.tgx.chess.queen.event.handler.EncodeHandler;
 import com.tgx.chess.queen.event.handler.EncodedHandler;
-import com.tgx.chess.queen.event.handler.IoDispatcher;
-import com.tgx.chess.queen.event.handler.MappingHandler;
 import com.tgx.chess.queen.event.handler.WriteDispatcher;
-import com.tgx.chess.queen.event.inf.IClusterCustom;
-import com.tgx.chess.queen.event.inf.ILinkCustom;
-import com.tgx.chess.queen.event.inf.ILogicHandler;
+import com.tgx.chess.queen.event.handler.mix.IClusterCustom;
+import com.tgx.chess.queen.event.handler.mix.ILinkCustom;
+import com.tgx.chess.queen.event.handler.mix.ILogicHandler;
+import com.tgx.chess.queen.event.handler.mix.IoDispatcher;
+import com.tgx.chess.queen.event.handler.mix.MappingHandler;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.async.socket.AioWorker;
@@ -71,6 +67,7 @@ public abstract class ServerCore<C extends IContext<C>>
         extends
         ThreadPoolExecutor
         implements
+        IBizCore,
         ILocalPublisher<C>
 {
     protected Logger  _Logger = Logger.getLogger(getClass().getName());
@@ -87,20 +84,22 @@ public abstract class ServerCore<C extends IContext<C>>
     private final int _CloserPower;
     private final int _ErrorPower;
 
-    private final RingBuffer<QEvent>[]                      _AioProducerEvents;
-    private final SequenceBarrier[]                         _AioProducerBarriers;
-    private final RingBuffer<QEvent>                        _ClusterLocalCloseEvent;
-    private final RingBuffer<QEvent>                        _BizLocalCloseEvent;
-    private final RingBuffer<QEvent>                        _ClusterLocalSendEvent;
-    private final RingBuffer<QEvent>                        _BizLocalSendEvent;
-    private final RingBuffer<QEvent>                        _ClusterWriteEvent;
-    private final RingBuffer<QEvent>                        _LinkWriteEvent;
+    private final RingBuffer<QEvent>[] _AioProducerEvents;
+    private final SequenceBarrier[]    _AioProducerBarriers;
+    private final RingBuffer<QEvent>   _ClusterLocalCloseEvent;
+    private final RingBuffer<QEvent>   _BizLocalCloseEvent;
+    private final RingBuffer<QEvent>   _ClusterLocalSendEvent;
+    private final RingBuffer<QEvent>   _BizLocalSendEvent;
+    private final RingBuffer<QEvent>   _ClusterWriteEvent;
+    private final RingBuffer<QEvent>   _LinkWriteEvent;
+
     /**
      * 用于选举功能的处理pipeline，用于local timer 和 cluster segment log 处理结果向集群中其他节点发送
      * 选举结果都在 cluster processor 中统一由集群处理逻辑执行。
      */
-    private final RingBuffer<QEvent>                        _ConsensusEvent;
-    private final RingBuffer<QEvent>                        _ConsensusApiEvent;
+    private final RingBuffer<QEvent> _ConsensusEvent;
+    private final RingBuffer<QEvent> _ConsensusApiEvent;
+
     /**
      * 集群一致性处理结果与Local Logic的桥梁，用于业务一致性数据向集群写入后，集群向业务系统反馈执行结果的
      * cluster -> biz 层投递
@@ -109,40 +108,41 @@ public abstract class ServerCore<C extends IContext<C>>
     private final RingBuffer<QEvent>                        _LinkEvent;
     private final ConcurrentLinkedQueue<RingBuffer<QEvent>> _AioCacheConcurrentQueue;
     private final ConcurrentLinkedQueue<RingBuffer<QEvent>> _ClusterCacheConcurrentQueue;
-    private final ThreadFactory                             _WorkerThreadFactory  = new ThreadFactory()
-                                                                                  {
-                                                                                      int count;
 
-                                                                                      @Override
-                                                                                      public Thread newThread(Runnable r)
-                                                                                      {
-                                                                                          return new AioWorker(r,
-                                                                                                               String.format("AioWorker.server.%d",
-                                                                                                                             count++),
-                                                                                                               _AioCacheConcurrentQueue::offer,
-                                                                                                               _AioCacheConcurrentQueue.poll());
-                                                                                      }
-                                                                                  };
-    private final ThreadFactory                             _ClusterThreadFactory = new ThreadFactory()
-                                                                                  {
-                                                                                      int count;
+    private final ThreadFactory _WorkerThreadFactory = new ThreadFactory()
+    {
+        int count;
 
-                                                                                      @Override
-                                                                                      public Thread newThread(Runnable r)
-                                                                                      {
-                                                                                          return new AioWorker(r,
-                                                                                                               String.format("AioWorker.cluster.%d",
-                                                                                                                             count++),
-                                                                                                               _ClusterCacheConcurrentQueue::offer,
-                                                                                                               _ClusterCacheConcurrentQueue.poll());
-                                                                                      }
-                                                                                  };
-    private final ReentrantLock                             _LocalLock            = new ReentrantLock();
-    private final ReentrantLock                             _ClusterLock          = new ReentrantLock();
-    private final ReentrantLock                             _ConsensusLock        = new ReentrantLock();
-    private final ReentrantLock                             _ConsensusApiLock     = new ReentrantLock();
-    private AsynchronousChannelGroup                        mServiceChannelGroup;
-    private AsynchronousChannelGroup                        mClusterChannelGroup;
+        @Override
+        public Thread newThread(Runnable r)
+        {
+            return new AioWorker(r,
+                                 String.format("AioWorker.server.%d", count++),
+                                 _AioCacheConcurrentQueue::offer,
+                                 _AioCacheConcurrentQueue.poll());
+        }
+    };
+
+    private final ThreadFactory _ClusterThreadFactory = new ThreadFactory()
+    {
+        int count;
+
+        @Override
+        public Thread newThread(Runnable r)
+        {
+            return new AioWorker(r,
+                                 String.format("AioWorker.cluster.%d", count++),
+                                 _ClusterCacheConcurrentQueue::offer,
+                                 _ClusterCacheConcurrentQueue.poll());
+        }
+    };
+
+    private final ReentrantLock      _LocalLock        = new ReentrantLock();
+    private final ReentrantLock      _ClusterLock      = new ReentrantLock();
+    private final ReentrantLock      _ConsensusLock    = new ReentrantLock();
+    private final ReentrantLock      _ConsensusApiLock = new ReentrantLock();
+    private AsynchronousChannelGroup mServiceChannelGroup;
+    private AsynchronousChannelGroup mClusterChannelGroup;
 
     @SuppressWarnings("unchecked")
     protected ServerCore(IServerConfig config)
@@ -196,7 +196,7 @@ public abstract class ServerCore<C extends IContext<C>>
         _LinkEvent = createPipelineYield(_ClusterPower);
 
     }
-    /*  ║ barrier, ━> publish event, ━━ pipeline,| mappingHandle event
+    /*  ║ barrier, ━> publish event, ━━ pipeline, | event handler
     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
     ┃                                                                                                 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓ ┃
     ┃                                                                                                 ┃       ║                 ┏━>_ClusterEvent    ━┛ ┃
@@ -205,15 +205,15 @@ public abstract class ServerCore<C extends IContext<C>>
     ┃  ━> _AioProducerEvents║                                  Timer ━> _ConsensusEvent  ━━━━━━━━━━━━━┫    ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓  ║                 ┃ _EncodedEvents[1]|║
     ┃  ━> _ClusterLocalClose║                 ┏>_LinkIoEvent    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━┫                 ━━> _BizLocalSendEvent ━╋━>║_WriteDispatcher━┫ _EncodedEvents[2]|║_EncodedProcessor┳━━>║[Event Done]
     ┃  ━> _BizLocalClose    ║                 ┃ _ClusterIoEvent ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫    ┃  ║                 ┏━>_LinkEvent   ━━━━━┛  ║                 ┃ _EncodedEvents[3]|║                 ┗━━>_ErrorEvent━┓
-    ┗━━━> _ErrorEvent[0]    ║_IoDispatcher━━> ┫ _ReadEvents[0]|━║                  ┏>_ClusterDecoded ━┻━━━━╋━>║_ClusterProcessor┳━>_ClusterWriteEvent ━>║                 ┃ _EncodedEvents[M]|║                                ┃
-    ┏━━━> _ErrorEvent[4]    ║                 ┃ _ReadEvents[1]|━║_DecodedDispatcher┫ _LinkDecoded    ━━━━━━┛  ║                 ┗━>_ErrorEvent━┓        ║                 ┗>_ErrorEvent━┓                                      ┃
-    ┃┏━━> _ErrorEvent[3]    ║                 ┃ _ReadEvents[2]|━║                  ┃ _Logic          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━>║                               ┃                                      ┃
-    ┃┃┏━> _ErrorEvent[1]    ║                 ┃ _ReadEvents[N]|━║                  ┗>_ErrorEvent     ━━━━━━┓      ━━> _ClusterLocalSendEvent ━━╋━━━━━━━>║                               ┃                                      ┃
-    ┃┃┃┏> _ErrorEvent[2]    ║                 ┗>_WroteBuffer  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━>║                               ┃                                      ┃
-    ┃┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                   ┃                                        ┃                                      ┃
-    ┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                        ┃                                      ┃
-    ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                      ┃
-    ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+    ┗━━━> _ErrorEvent[0]    ║_IoDispatcher ━━━┫ _ReadEvents[0]|━║                  ┏>_ClusterDecoded ━┻━━━━╋━>║_ClusterProcessor┳━>_ClusterWriteEvent ━>║                 ┃ _EncodedEvents[M]|║                                 ┃
+    ┏━━━> _ErrorEvent[4]    ║                 ┃ _ReadEvents[1]|━║_DecodedDispatcher┫ _LinkDecoded    ━━━━━━┛  ║                 ┗━>_ErrorEvent━┓        ║                 ┗>_ErrorEvent━┓                                       ┃
+    ┃┏━━> _ErrorEvent[3]    ║                 ┃ _ReadEvents[2]|━║                  ┃ _Logic          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━>║                               ┃                                       ┃
+    ┃┃┏━> _ErrorEvent[1]    ║                 ┃ _ReadEvents[N]|━║                  ┗>_ErrorEvent     ━━━━━━┓      ━━> _ClusterLocalSendEvent ━━╋━━━━━━━>║                               ┃                                       ┃
+    ┃┃┃┏> _ErrorEvent[2]    ║                 ┗>_WroteBuffer  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━>║                               ┃                                       ┃
+    ┃┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                   ┃                                        ┃                                       ┃
+    ┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                        ┃                                       ┃
+    ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                       ┃
+    ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
     
      每一个 Dispatcher 都需要将之前发生的错误信息转换为 session close 事件传递回 IoBarrier，从而将 session close 事件归并到 _LinkIoEvent|_ClusterIoEvent  处理器上进行集中处理。
      (.*)IoEvent 只处理 Connected | Close 事件，所以平行需要一个_ErrorEvent 接受 IoDispatcher 获取的 READ_WRITE_DECODE_ENCODE_ENCRYPT_TIMEOUT_INTERRUPT_CANCEL等错误转换为
@@ -221,12 +221,12 @@ public abstract class ServerCore<C extends IContext<C>>
      */
 
     @SuppressWarnings("unchecked")
-    public void build(QueenManager<C> manager,
-                      IEncryptHandler encryptHandler,
-                      ILogicHandler<C> logicHandler,
-                      ILinkCustom<C> linkCustom,
-                      IClusterCustom<C,
-                                     ? extends IStorage> clusterCustom)
+    public <T extends IStorage> void build(QueenManager<C> manager,
+                                           IEncryptHandler encryptHandler,
+                                           ILogicHandler<C> logicHandler,
+                                           ILinkCustom<C> linkCustom,
+                                           IClusterCustom<C,
+                                                          T> clusterCustom)
     {
         final RingBuffer<QEvent> _WroteEvent = createPipelineYield(_AioQueuePower + 1);
         final RingBuffer<QEvent> _LinkIoEvent = createPipelineYield(_LinkPower);
@@ -404,41 +404,6 @@ public abstract class ServerCore<C extends IContext<C>>
         submit(_EncodedProcessor);
     }
 
-    private RingBuffer<QEvent> createPipeline(int power, WaitStrategy waitStrategy)
-    {
-        return RingBuffer.createSingleProducer(QEvent.EVENT_FACTORY, 1 << power, waitStrategy);
-    }
-
-    private RingBuffer<QEvent> createPipelineYield(int power)
-    {
-        return createPipeline(power, new YieldingWaitStrategy());
-    }
-
-    private RingBuffer<QEvent> createPipelineLite(int power)
-    {
-        return createPipeline(power, new LiteBlockingWaitStrategy());
-    }
-
-    public int getServerCount()
-    {
-        return _BizIoCount;
-    }
-
-    public int getClusterCount()
-    {
-        return _ClusterIoCount;
-    }
-
-    public ThreadFactory getWorkerThreadFactory()
-    {
-        return _WorkerThreadFactory;
-    }
-
-    public ThreadFactory getClusterThreadFactory()
-    {
-        return _ClusterThreadFactory;
-    }
-
     protected RingBuffer<QEvent> getBizLocalCloseEvent()
     {
         return _BizLocalCloseEvent;
@@ -464,19 +429,23 @@ public abstract class ServerCore<C extends IContext<C>>
         return _ConsensusEvent;
     }
 
+    @Override
     public AsynchronousChannelGroup getServiceChannelGroup() throws IOException
     {
-        return Objects.nonNull(mServiceChannelGroup) ? mServiceChannelGroup
-                                                     : (mServiceChannelGroup = AsynchronousChannelGroup.withFixedThreadPool(getServerCount(),
-                                                                                                                            getWorkerThreadFactory()));
+        if (mServiceChannelGroup == null) {
+            mServiceChannelGroup = AsynchronousChannelGroup.withFixedThreadPool(_BizIoCount, _WorkerThreadFactory);
+        }
+        return mServiceChannelGroup;
 
     }
 
+    @Override
     public AsynchronousChannelGroup getClusterChannelGroup() throws IOException
     {
-        return Objects.nonNull(mClusterChannelGroup) ? mClusterChannelGroup
-                                                     : (mClusterChannelGroup = AsynchronousChannelGroup.withFixedThreadPool(getClusterCount(),
-                                                                                                                            getClusterThreadFactory()));
+        if (mClusterChannelGroup == null) {
+            mClusterChannelGroup = AsynchronousChannelGroup.withFixedThreadPool(_ClusterIoCount, _ClusterThreadFactory);
+        }
+        return mClusterChannelGroup;
     }
 
     @Override
