@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.queen.event.handler;
+package com.tgx.chess.queen.event.handler.cluster;
 
 import static com.tgx.chess.queen.event.inf.IOperator.Type.CLUSTER;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.DISPATCH;
@@ -52,26 +52,15 @@ public class DecodedDispatcher<C extends IContext<C>>
         implements
         IPipeEventHandler<QEvent>
 {
-    private final Logger               _Logger = Logger.getLogger(getClass().getSimpleName());
-    private final RingBuffer<QEvent>   _Link;
-    private final RingBuffer<QEvent>   _Cluster;
-    private final RingBuffer<QEvent>   _Error;
-    private final RingBuffer<QEvent>[] _LogicWorkers;
-    private final int                  _WorkerMask;
+    private final Logger             _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final RingBuffer<QEvent> _Cluster;
+    private final RingBuffer<QEvent> _Error;
 
-    public DecodedDispatcher(RingBuffer<QEvent> link,
-                             RingBuffer<QEvent> cluster,
-                             RingBuffer<QEvent> error,
-                             RingBuffer<QEvent>[] logic)
+    public DecodedDispatcher(RingBuffer<QEvent> cluster,
+                             RingBuffer<QEvent> error)
     {
-        _Link = link;
         _Cluster = cluster;
         _Error = error;
-        _LogicWorkers = logic;
-        _WorkerMask = _LogicWorkers.length - 1;
-        if (Integer.bitCount(_LogicWorkers.length) != 1) {
-            throw new IllegalArgumentException("workers' length must be a power of 2");
-        }
     }
 
     @Override

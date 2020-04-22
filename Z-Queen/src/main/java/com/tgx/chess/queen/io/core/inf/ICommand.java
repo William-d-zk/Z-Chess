@@ -31,7 +31,6 @@ package com.tgx.chess.queen.io.core.inf;
 public interface ICommand<C extends IContext<C>>
         extends
         IControl<C>,
-        IChannel,
         IStreamProtocol<C>
 {
     @Override

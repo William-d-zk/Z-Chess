@@ -19,10 +19,12 @@ import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.config.IServerConfig;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.handler.DecodeHandler;
-import com.tgx.chess.queen.event.handler.cluster.IClusterCustom;
+import com.tgx.chess.queen.event.handler.DecodedDispatcher;
+import com.tgx.chess.queen.event.handler.IClusterCustom;
 import com.tgx.chess.queen.event.handler.cluster.INotifyCustom;
 import com.tgx.chess.queen.event.handler.cluster.IoDispatcher;
 import com.tgx.chess.queen.event.handler.cluster.MappingHandler;
+import com.tgx.chess.queen.event.handler.cluster.NotifyHandler;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.async.socket.AioWorker;
@@ -152,6 +154,18 @@ public class ClusterCore<C extends IContext<C>>
                       slot -> new BatchEventProcessor<>(_ReadEvents[slot],
                                                         _ReadBarriers[slot],
                                                         new DecodeHandler<>(encryptHandler)));
+        final RingBuffer<QEvent>[] _ClusterNotifiers = new RingBuffer[_LogicCount + 1];
+        final SequenceBarrier[] _ClusterNotifyBarriers = new SequenceBarrier[_ClusterNotifiers.length];
+        final BatchEventProcessor<QEvent>[] _ClusterNotifyProcessors = new BatchEventProcessor[_ClusterNotifiers.length];
+        Arrays.setAll(_ClusterNotifiers, slot -> createPipelineLite(_ClusterPower));
+        Arrays.setAll(_ClusterNotifyBarriers, slot -> _ClusterNotifiers[slot].newBarrier());
+        Arrays.setAll(_ClusterNotifyProcessors,
+                      slot -> new BatchEventProcessor<>(_ClusterNotifiers[slot],
+                                                        _ClusterNotifyBarriers[slot],
+                                                        new NotifyHandler()));
+        for (int i = 0, size = _ClusterNotifiers.length; i < size; i++) {
+            _ClusterNotifiers[i].addGatingSequences(_ClusterNotifyProcessors[i].getSequence());
+        }
         final RingBuffer<QEvent> _ClusterDecoded = createPipelineLite(_ClusterPower);
         final RingBuffer<QEvent>[] _ClusterEvents = new RingBuffer[] { _ClusterIoEvent,
                                                                        _ClusterDecoded,
@@ -167,7 +181,7 @@ public class ClusterCore<C extends IContext<C>>
                                                                                                                                    manager,
                                                                                                                                    _ErrorEvents[0],
                                                                                                                                    _ClusterWriteEvent,
-                                                                                                                                   _ClusterNotifyEvent,
+                                                                                                                                   _ClusterNotifiers,
                                                                                                                                    notifyCustom,
                                                                                                                                    clusterCustom));
         _ClusterProcessor.setThreadName("ClusterProcessor");
@@ -186,6 +200,12 @@ public class ClusterCore<C extends IContext<C>>
         /* Decoded dispatch */
         final SequenceBarrier[] _DecodedBarriers = new SequenceBarrier[_DecoderCount];
         Arrays.setAll(_DecodedBarriers, slot -> _ReadEvents[slot].newBarrier(_DecodeProcessors[slot].getSequence()));
+        final MultiBufferBatchEventProcessor<QEvent> _DecodedDispatcher = new MultiBufferBatchEventProcessor<>(_ReadEvents,
+                                                                                                               _DecodedBarriers,
+                                                                                                               new DecodedDispatcher<>(_ClusterDecoded,
+                                                                                                                                       _ErrorEvents[1]));
+        _DecodedDispatcher.setThreadName("DecodedDispatcher");
+
     }
 
     @Override
@@ -216,9 +236,9 @@ public class ClusterCore<C extends IContext<C>>
     {
         switch (type)
         {
-            case CLUSTER_LOCAL:
-                return _ClusterNotifyEvent;
             case CONSENSUS:
+                return _ConsensusApiEvent;
+            case EXTERNAL:
                 return _ConsensusEvent;
             default:
                 throw new IllegalArgumentException(String.format("get publisher type error:%s ", type.name()));

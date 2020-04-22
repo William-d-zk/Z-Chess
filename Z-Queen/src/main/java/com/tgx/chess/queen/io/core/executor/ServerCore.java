@@ -47,7 +47,7 @@ import com.tgx.chess.queen.event.handler.DecodedDispatcher;
 import com.tgx.chess.queen.event.handler.EncodeHandler;
 import com.tgx.chess.queen.event.handler.EncodedHandler;
 import com.tgx.chess.queen.event.handler.WriteDispatcher;
-import com.tgx.chess.queen.event.handler.mix.IClusterCustom;
+import com.tgx.chess.queen.event.handler.IClusterCustom;
 import com.tgx.chess.queen.event.handler.mix.ILinkCustom;
 import com.tgx.chess.queen.event.handler.mix.ILogicHandler;
 import com.tgx.chess.queen.event.handler.mix.IoDispatcher;
