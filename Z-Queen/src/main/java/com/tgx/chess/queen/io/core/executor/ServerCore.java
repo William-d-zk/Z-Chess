@@ -43,7 +43,7 @@ import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.config.IServerConfig;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.handler.DecodeHandler;
-import com.tgx.chess.queen.event.handler.DecodedDispatcher;
+import com.tgx.chess.queen.event.handler.mix.DecodedDispatcher;
 import com.tgx.chess.queen.event.handler.EncodeHandler;
 import com.tgx.chess.queen.event.handler.EncodedHandler;
 import com.tgx.chess.queen.event.handler.WriteDispatcher;
