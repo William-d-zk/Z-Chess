@@ -26,8 +26,6 @@ package com.tgx.chess.queen.event.handler.cluster;
 
 import static com.tgx.chess.queen.event.inf.IOperator.Type.CLUSTER;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.DISPATCH;
-import static com.tgx.chess.queen.event.inf.IOperator.Type.LINK;
-import static com.tgx.chess.queen.event.inf.IOperator.Type.LOGIC;
 
 import java.util.Objects;
 
@@ -106,30 +104,8 @@ public class DecodedDispatcher<C extends IContext<C>>
                                     ITriple> op)
     {
         cmd.setSession(session);
-        switch (sorter.getMode())
-        {
-            case CLUSTER:
-                /*cluster 相关处理逻辑都在单个cluster 事务处理线程中执行，所以此处全部单一投递
-                  不考虑性能损失，多线程状态同步损失更大，且 cluster 需要处理的数据量远低于biz侧
-                * */
-                publish(_Cluster, CLUSTER, new Pair<>(cmd, session), op);
-                break;
-            case LINK:
-                if (cmd.isMapping()) {
-                    publish(_Link, LINK, new Pair<>(cmd, session), op);
-                }
-                else {
-                    publish(dispatchWorker(session.getHashKey()), LOGIC, new Pair<>(cmd, session), op);
-                }
-                break;
-            default:
-                // ignore consumer event
-                break;
+        if (sorter.getMode() == ISort.Mode.CLUSTER) {
+            publish(_Cluster, CLUSTER, new Pair<>(cmd, session), op);
         }
-    }
-
-    private RingBuffer<QEvent> dispatchWorker(long seq)
-    {
-        return _LogicWorkers[(int) (seq & _WorkerMask)];
     }
 }

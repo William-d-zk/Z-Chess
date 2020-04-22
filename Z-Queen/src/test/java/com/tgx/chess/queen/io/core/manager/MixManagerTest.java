@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Test;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.util.Pair;
 
-class QueenManagerTest
+class MixManagerTest
 {
 
     @Test
