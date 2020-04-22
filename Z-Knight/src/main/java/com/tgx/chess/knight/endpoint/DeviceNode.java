@@ -67,7 +67,7 @@ import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
-import com.tgx.chess.queen.io.core.manager.QueenManager;
+import com.tgx.chess.queen.io.core.manager.MixManager;
 
 /**
  * @author william.d.zk
@@ -75,7 +75,7 @@ import com.tgx.chess.queen.io.core.manager.QueenManager;
  */
 public class DeviceNode
         extends
-        QueenManager<ZContext>
+        MixManager<ZContext>
         implements
         ISessionDismiss<ZContext>,
         IClusterPeer,

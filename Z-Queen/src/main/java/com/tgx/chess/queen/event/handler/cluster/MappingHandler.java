@@ -50,7 +50,7 @@ import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
-import com.tgx.chess.queen.io.core.manager.QueenManager;
+import com.tgx.chess.queen.io.core.manager.MixManager;
 
 /**
  * @author william.d.zk
@@ -65,13 +65,13 @@ public class MappingHandler<C extends IContext<C>,
     private final RingBuffer<QEvent>   _Error;
     private final RingBuffer<QEvent>   _Writer;
     private final RingBuffer<QEvent>[] _Notifiers;
-    private final QueenManager<C>      _QueenManager;
+    private final MixManager<C> _MixManager;
     private final INotifyCustom        _NotifyCustom;
     private final IClusterCustom<C,
                                  T>    _ClusterCustom;
 
     public MappingHandler(String mapper,
-                          QueenManager<C> manager,
+                          MixManager<C> manager,
                           RingBuffer<QEvent> error,
                           RingBuffer<QEvent> writer,
                           RingBuffer<QEvent>[] notifiers,
@@ -80,7 +80,7 @@ public class MappingHandler<C extends IContext<C>,
                                          T> clusterCustom)
     {
         _Logger = Logger.getLogger(mapper);
-        _QueenManager = manager;
+        _MixManager = manager;
         _Writer = writer;
         _Error = error;
         _Notifiers = notifiers;
@@ -165,7 +165,7 @@ public class MappingHandler<C extends IContext<C>,
                                                .getSecond();
                     if (received == null) { return; }
                     try {
-                        IPair result = _ClusterCustom.handle(_QueenManager, session, received);
+                        IPair result = _ClusterCustom.handle(_MixManager, session, received);
                         if (result == null) return;
                         List<ITriple> broadcast = result.getFirst();
                         if (broadcast != null && !broadcast.isEmpty()) {
@@ -193,7 +193,7 @@ public class MappingHandler<C extends IContext<C>,
                                       .getSecond();
                     if (_ClusterCustom.waitForCommit()) {
                         try {
-                            List<ITriple> broadcast = _ClusterCustom.consensus(_QueenManager, received, origin);
+                            List<ITriple> broadcast = _ClusterCustom.consensus(_MixManager, received, origin);
                             if (broadcast != null && !broadcast.isEmpty()) {
                                 publish(_Writer, broadcast);
                             }
@@ -210,7 +210,7 @@ public class MappingHandler<C extends IContext<C>,
                     /*TIMER 必然是单个IControl,通过前项RingBuffer 向MappingHandler 投递*/
                     T content = event.getContent()
                                      .getFirst();
-                    List<ITriple> toSends = _ClusterCustom.onTimer(_QueenManager, content);
+                    List<ITriple> toSends = _ClusterCustom.onTimer(_MixManager, content);
                     if (toSends != null && !toSends.isEmpty()) {
                         publish(_Writer, toSends);
                     }

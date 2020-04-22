@@ -60,7 +60,7 @@ import com.tgx.chess.queen.event.handler.mix.ILinkCustom;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IQoS;
 import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.manager.QueenManager;
+import com.tgx.chess.queen.io.core.manager.MixManager;
 
 @Component
 public class LinkCustom
@@ -82,7 +82,7 @@ public class LinkCustom
     }
 
     @Override
-    public IPair handle(QueenManager<ZContext> manager,
+    public IPair handle(MixManager<ZContext> manager,
                         ISession<ZContext> session,
                         IControl<ZContext> input) throws Exception
     {
@@ -148,7 +148,7 @@ public class LinkCustom
     }
 
     @Override
-    public List<ITriple> notify(QueenManager<ZContext> manager, IControl<ZContext> response, ISession<ZContext> session)
+    public List<ITriple> notify(MixManager<ZContext> manager, IControl<ZContext> response, ISession<ZContext> session)
     {
         /*
         标准情况是 request.session, 但是在集群处理时x76携带了cluster 领域的session 作为入参，
@@ -198,7 +198,7 @@ public class LinkCustom
         return _DeviceRepository.find(entry);
     }
 
-    private Stream<IControl<ZContext>> mappingHandle(QueenManager manager,
+    private Stream<IControl<ZContext>> mappingHandle(MixManager manager,
                                                      IControl<ZContext> input,
                                                      ISession<ZContext> session)
     {

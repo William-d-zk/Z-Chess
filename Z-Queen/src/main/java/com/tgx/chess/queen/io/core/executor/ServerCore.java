@@ -43,11 +43,11 @@ import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.queen.config.IServerConfig;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.handler.DecodeHandler;
-import com.tgx.chess.queen.event.handler.mix.DecodedDispatcher;
 import com.tgx.chess.queen.event.handler.EncodeHandler;
 import com.tgx.chess.queen.event.handler.EncodedHandler;
-import com.tgx.chess.queen.event.handler.WriteDispatcher;
 import com.tgx.chess.queen.event.handler.IClusterCustom;
+import com.tgx.chess.queen.event.handler.WriteDispatcher;
+import com.tgx.chess.queen.event.handler.mix.DecodedDispatcher;
 import com.tgx.chess.queen.event.handler.mix.ILinkCustom;
 import com.tgx.chess.queen.event.handler.mix.ILogicHandler;
 import com.tgx.chess.queen.event.handler.mix.IoDispatcher;
@@ -58,7 +58,7 @@ import com.tgx.chess.queen.io.core.async.socket.AioWorker;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
 import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.manager.QueenManager;
+import com.tgx.chess.queen.io.core.manager.MixManager;
 
 /**
  * @author william.d.zk
@@ -221,7 +221,7 @@ public abstract class ServerCore<C extends IContext<C>>
      */
 
     @SuppressWarnings("unchecked")
-    public <T extends IStorage> void build(QueenManager<C> manager,
+    public <T extends IStorage> void build(MixManager<C> manager,
                                            IEncryptHandler encryptHandler,
                                            ILogicHandler<C> logicHandler,
                                            ILinkCustom<C> linkCustom,

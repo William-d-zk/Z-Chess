@@ -7,7 +7,7 @@ import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.manager.QueenManager;
+import com.tgx.chess.queen.io.core.manager.MixManager;
 
 /**
  * @author william.d.zk
@@ -28,7 +28,7 @@ public interface ILinkCustom<C extends IContext<C>>
      * @throws Exception
      *             handle error
      */
-    IPair handle(QueenManager<C> manager, ISession<C> session, IControl<C> content) throws Exception;
+    IPair handle(MixManager<C> manager, ISession<C> session, IControl<C> content) throws Exception;
 
     /**
      * Cluster->Link.notify(Cluster.consensus_result)
@@ -40,6 +40,6 @@ public interface ILinkCustom<C extends IContext<C>>
      *            session == request.session
      * @return response
      */
-    List<ITriple> notify(QueenManager<C> manager, IControl<C> request, ISession<C> session);
+    List<ITriple> notify(MixManager<C> manager, IControl<C> request, ISession<C> session);
 
 }
