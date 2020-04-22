@@ -38,6 +38,7 @@ import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.db.inf.IStorage;
+import com.tgx.chess.queen.event.handler.IClusterCustom;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
@@ -66,7 +67,7 @@ public class MappingHandler<C extends IContext<C>,
     private final QueenManager<C>      _QueenManager;
     private final ILinkCustom<C>       _LinkCustom;
     private final IClusterCustom<C,
-                                 T>    _ClusterCustom;
+                                     T> _ClusterCustom;
 
     public MappingHandler(String mapper,
                           QueenManager<C> manager,

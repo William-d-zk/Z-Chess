@@ -31,7 +31,8 @@ import java.util.Objects;
 public interface IProtocol
         extends
         IEncode,
-        IDecode
+        IDecode,
+        IChannel
 {
     int PACKET_SERIAL   = 0;
     int COMMAND_SERIAL  = 0x0FF;//1~0xFE(254)

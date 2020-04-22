@@ -46,7 +46,7 @@ import com.tgx.chess.queen.config.IBizIoConfig;
 import com.tgx.chess.queen.config.IServerConfig;
 import com.tgx.chess.queen.config.QueenCode;
 import com.tgx.chess.queen.db.inf.IStorage;
-import com.tgx.chess.queen.event.handler.mix.IClusterCustom;
+import com.tgx.chess.queen.event.handler.IClusterCustom;
 import com.tgx.chess.queen.event.handler.mix.ILinkCustom;
 import com.tgx.chess.queen.event.handler.mix.ILogicHandler;
 import com.tgx.chess.queen.event.inf.IOperator;

@@ -1,4 +1,4 @@
-package com.tgx.chess.queen.event.handler.cluster;
+package com.tgx.chess.queen.event.handler;
 
 import java.util.List;
 
@@ -50,11 +50,10 @@ public interface IClusterCustom<C extends IContext<C>,
      *            需要进行强一致的指令
      * @param origin
      *            request 的源ID
-     * @return pair
-     *         first: 托管给集群IoSwitch.write(triples)
-     *         second: → Notifier.notify(protocol)
+     * @return triples
+     *         [托管给集群IoSwitch.write(triples) 或 Transfer → Link.notify(triples)]
      */
-    IPair consensus(QueenManager<C> manager, IControl<C> request, long origin);
+    List<ITriple> consensus(QueenManager<C> manager, IControl<C> request, long origin);
 
     /**
      * 用于验证是否需要执行集群commit

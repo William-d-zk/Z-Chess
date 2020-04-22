@@ -30,6 +30,7 @@ import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.List;
+import java.util.Objects;
 
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.king.base.inf.IPair;
@@ -37,6 +38,7 @@ import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.db.inf.IStorage;
+import com.tgx.chess.queen.event.handler.IClusterCustom;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
@@ -162,53 +164,38 @@ public class MappingHandler<C extends IContext<C>,
                     ISession<C> session = event.getContent()
                                                .getSecond();
                     if (received == null) { return; }
-                    if (_ClusterCustom.waitForCommit()) {
-                        try {
-                            IPair handled = _ClusterCustom.handle(_QueenManager, session, received);
-                            if (handled == null) return;
-                            IControl<C>[] toSends = handled.getFirst();
-                            if (toSends != null && toSends.length > 0) {
-                                publish(_Writer,
-                                        WRITE,
-                                        new Pair<>(toSends, session),
-                                        session.getContext()
-                                               .getSort()
-                                               .getTransfer());
-                            }
-                            IProtocol notify = handled.getSecond();
-                            if (notify != null) {
-                                publish(_Notify, NOTIFY, new Pair<>(notify, null), null);
-                            }
+                    try {
+                        IPair result = _ClusterCustom.handle(_QueenManager, session, received);
+                        if (result == null) return;
+                        List<ITriple> broadcast = result.getFirst();
+                        if (broadcast != null && !broadcast.isEmpty()) {
+                            publish(_Writer, broadcast);
                         }
-                        catch (Exception e) {
-                            _Logger.warning("cluster mapping handler error", e);
-                            error(_Error,
-                                  MAPPING_ERROR,
-                                  new Pair<>(e, session),
-                                  session.getContext()
-                                         .getSort()
-                                         .getError());
+                        IProtocol notify = result.getSecond();
+                        if (notify != null) {
+                            publishNotify(notify, notify.getChannel());
                         }
+                    }
+                    catch (Exception e) {
+                        _Logger.warning("cluster mapping handler error", e);
+                        error(_Error,
+                              MAPPING_ERROR,
+                              new Pair<>(e, session),
+                              session.getContext()
+                                     .getSort()
+                                     .getError());
                     }
                     break;
                 case CONSENSUS:
                     received = event.getContent()
                                     .getFirst();
-                    long origin = event.getContent()
-                                       .getSecond();
+                    int origin = event.getContent()
+                                      .getSecond();
                     if (_ClusterCustom.waitForCommit()) {
-
                         try {
-                            IPair result = _ClusterCustom.consensus(_QueenManager, received, origin);
-                            if (result != null) {
-                                List<ITriple> toSends = result.getFirst();
-                                IProtocol notify = result.getSecond();
-                                if (toSends != null && !toSends.isEmpty()) {
-                                    publish(_Writer, toSends);
-                                }
-                                if (notify != null) {
-                                    publish(_Notify, NOTIFY, new Pair<>(notify, null), null);
-                                }
+                            List<ITriple> broadcast = _ClusterCustom.consensus(_QueenManager, received, origin);
+                            if (broadcast != null && !broadcast.isEmpty()) {
+                                publish(_Writer, broadcast);
                             }
                         }
                         catch (Exception e) {
@@ -216,7 +203,7 @@ public class MappingHandler<C extends IContext<C>,
                         }
                     }
                     else {
-                        _NotifyCustom.notify(received);
+                        publishNotify(received, origin);
                     }
                     break;
                 case EXTERNAL://ClusterConsumer Timeout->start_vote
@@ -238,8 +225,11 @@ public class MappingHandler<C extends IContext<C>,
         event.reset();
     }
 
-    private void publishNotify(IProtocol request)
+    private void publishNotify(IProtocol request, int channel)
     {
-        request.
+        Objects.requireNonNull(request);
+        int slot = channel % _Notifiers.length;
+        RingBuffer<QEvent> notifier = _Notifiers[slot];
+        publish(notifier, NOTIFY, new Pair<>(request, null), _NotifyCustom);
     }
 }
