@@ -58,7 +58,8 @@ public class DeviceEntity
 
     @Id
     @GeneratedValue(generator = "ZDeviceGenerator")
-    @GenericGenerator(name = "ZDeviceGenerator", strategy = "com.tgx.chess.knight.endpoint.spring.jpa.generator.ZDeviceGenerator")
+    @GenericGenerator(name = "ZDeviceGenerator",
+                      strategy = "com.tgx.chess.knight.endpoint.spring.jpa.generator.ZDeviceGenerator")
     private long   id;
     @Column(length = 32, nullable = false, updatable = false)
     private String sn;

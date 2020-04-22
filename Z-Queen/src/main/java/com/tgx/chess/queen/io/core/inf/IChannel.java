@@ -34,7 +34,7 @@ public interface IChannel
      *         target channel.
      * 
      */
-    default int getChannel()
+    default int channel()
     {
         return 0;
     }
