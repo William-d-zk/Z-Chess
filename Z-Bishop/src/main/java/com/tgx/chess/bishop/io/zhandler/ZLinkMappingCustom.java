@@ -16,7 +16,7 @@ import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.handler.mix.ILinkCustom;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.manager.QueenManager;
+import com.tgx.chess.queen.io.core.manager.MixManager;
 
 /**
  * @author william.d.zk
@@ -37,7 +37,7 @@ public class ZLinkMappingCustom
     }
 
     @Override
-    public IPair handle(QueenManager<ZContext> manager,
+    public IPair handle(MixManager<ZContext> manager,
                         ISession<ZContext> session,
                         IControl<ZContext> content) throws Exception
     {
@@ -62,7 +62,7 @@ public class ZLinkMappingCustom
     }
 
     @Override
-    public List<ITriple> notify(QueenManager<ZContext> manager, IControl<ZContext> request, ISession<ZContext> session)
+    public List<ITriple> notify(MixManager<ZContext> manager, IControl<ZContext> request, ISession<ZContext> session)
     {
         return _Then != null ? _Then.notify(manager, request, session)
                              : null;
