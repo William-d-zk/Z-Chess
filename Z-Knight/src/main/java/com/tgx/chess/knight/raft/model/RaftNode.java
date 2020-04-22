@@ -77,7 +77,7 @@ import com.tgx.chess.queen.io.core.inf.IActivity;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.IConsensus;
 import com.tgx.chess.queen.io.core.inf.IControl;
-import com.tgx.chess.queen.io.core.manager.QueenManager;
+import com.tgx.chess.queen.io.core.manager.MixManager;
 
 /**
  * @author william.d.zk
@@ -502,7 +502,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
                             long candidate,
                             RaftState state,
                             RaftCode code,
-                            QueenManager<ZContext> manager)
+                            MixManager<ZContext> manager)
     {
         RaftMachine peerMachine = _RaftGraph.getMachine(peerId);
         if (peerMachine == null) {

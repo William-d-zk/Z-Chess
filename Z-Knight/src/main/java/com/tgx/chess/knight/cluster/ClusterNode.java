@@ -34,18 +34,20 @@ import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.config.IBizIoConfig;
+import com.tgx.chess.queen.config.IServerConfig;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.inf.IOperator;
+import com.tgx.chess.queen.io.core.executor.ClusterCore;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.IConsensus;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
-import com.tgx.chess.queen.io.core.manager.QueenManager;
+import com.tgx.chess.queen.io.core.manager.MixManager;
 
 @Component
 public class ClusterNode
         extends
-        QueenManager<ZContext>
+        MixManager<ZContext>
         implements
         ISessionDismiss<ZContext>,
         IClusterPeer,
@@ -60,9 +62,10 @@ public class ClusterNode
         rmSession(session);
     }
 
-    public ClusterNode(IBizIoConfig config)
+    public ClusterNode(IBizIoConfig config,
+                       IServerConfig serverConfig)
     {
-        super(config, serverCore);
+        super(config, new ClusterCore<ZContext>(serverConfig));
     }
 
     @PostConstruct
