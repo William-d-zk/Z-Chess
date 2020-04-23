@@ -37,13 +37,13 @@ import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.topology.ZUID;
+import com.tgx.chess.knight.cluster.spring.ICluserNode;
 import com.tgx.chess.knight.raft.config.IRaftConfig;
 import com.tgx.chess.queen.config.IAioConfig;
 import com.tgx.chess.queen.config.IClusterConfig;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.handler.IClusterCustom;
 import com.tgx.chess.queen.event.handler.cluster.INotifyCustom;
-import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.io.core.async.AioSession;
 import com.tgx.chess.queen.io.core.async.BaseAioClient;
@@ -51,9 +51,7 @@ import com.tgx.chess.queen.io.core.async.BaseAioServer;
 import com.tgx.chess.queen.io.core.executor.ClusterCore;
 import com.tgx.chess.queen.io.core.inf.IAioClient;
 import com.tgx.chess.queen.io.core.inf.IAioServer;
-import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.IConnectActivity;
-import com.tgx.chess.queen.io.core.inf.IConsensus;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
@@ -65,13 +63,12 @@ public class ClusterNode
         ClusterManager<ZContext>
         implements
         ISessionDismiss<ZContext>,
-        IClusterPeer,
-        IConsensus
+        ICluserNode
 {
     private final Logger               _Logger = Logger.getLogger(getClass().getSimpleName());
     private final TimeWheel            _TimeWheel;
     private final IAioServer<ZContext> _AioServer;
-    private final IAioClient<ZContext> _GateClient, _ClusterClient;
+    private final IAioClient<ZContext> _GateClient, _PeerClient;
     private final ZUID                 _ZUID;
 
     @Override
@@ -139,7 +136,7 @@ public class ClusterNode
                 super.onDismiss(session);
             }
         };
-        _ClusterClient = new BaseAioClient<ZContext>(_TimeWheel, getClusterCore().getClusterChannelGroup())
+        _PeerClient = new BaseAioClient<ZContext>(_TimeWheel, getClusterCore().getClusterChannelGroup())
         {
             @Override
             public void onDismiss(ISession<ZContext> session)
@@ -167,27 +164,27 @@ public class ClusterNode
     }
 
     @Override
-    public void close(ISession<ZContext> session, IOperator.Type eventType)
-    {
-
-    }
-
-    @Override
     public void addPeer(IPair remote) throws IOException
     {
-
+        _PeerClient.connect(buildConnector(remote,
+                                           getSocketConfig(ZUID.TYPE_CLUSTER_SLOT),
+                                           _PeerClient,
+                                           ZUID.TYPE_CLUSTER,
+                                           this,
+                                           ZSort.WS_CLUSTER_CONSUMER,
+                                           _ZUID));
     }
 
     @Override
     public void addGate(IPair remote) throws IOException
     {
-
-    }
-
-    @Override
-    public <T extends IStorage> void publishConsensus(IOperator.Type type, T content)
-    {
-
+        _GateClient.connect(buildConnector(remote,
+                                           getSocketConfig(ZUID.TYPE_INTERNAL_SLOT),
+                                           _GateClient,
+                                           ZUID.TYPE_INTERNAL,
+                                           this,
+                                           ZSort.WS_CLUSTER_SYMMETRY,
+                                           _ZUID));
     }
 
 }

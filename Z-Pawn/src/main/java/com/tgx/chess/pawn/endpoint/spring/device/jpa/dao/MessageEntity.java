@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.pawn.endpoint.spring.jpa.device.dao;
+package com.tgx.chess.pawn.endpoint.spring.device.jpa.dao;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -36,7 +36,7 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
 import com.tgx.chess.pawn.endpoint.spring.device.model.MessageBody;
-import com.tgx.chess.pawn.endpoint.spring.jpa.model.AuditModel;
+import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.AuditModel;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 
 /**
@@ -55,7 +55,7 @@ public class MessageEntity
     @Id
     @GeneratedValue(generator = "ZMessageGenerator")
     @GenericGenerator(name = "ZMessageGenerator",
-                      strategy = "com.tgx.com.tgx.chess.pawn.endpoint.spring.jpa.generator.ZMessageGenerator")
+                      strategy = "com.tgx.com.tgx.chess.pawn.endpoint.spring.device.jpa.generator.ZMessageGenerator")
     private long        id;
     @Column(updatable = false, nullable = false)
     private long        origin;

@@ -31,10 +31,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author william.d.zk
  */
 
-@SpringBootApplication(scanBasePackages = { "com.tgx.com.tgx.chess.knight.config",
-                                            "com.tgx.com.tgx.chess.knight.raft",
-                                            "com.tgx.com.tgx.chess.knight.json",
-                                            "com.tgx.com.tgx.chess.pawn.endpoint" })
+@SpringBootApplication(scanBasePackages = { "com.tgx.chess.knight",
+                                            "com.tgx.chess.pawn.endpoint" })
 public class ApplicationPawn
 {
     public static void main(String[] args)

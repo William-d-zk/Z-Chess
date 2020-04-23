@@ -79,8 +79,8 @@ public class ZUID
     public static final long TYPE_INTERNAL      = 3L << TYPE_SHIFT;
     public static final int  TYPE_CONSUMER_SLOT = 0;
     public static final int  TYPE_PROVIDER_SLOT = 1;
-    public static final int  TYPE_INTERNAL_SLOT = 2;
-    public static final int  TYPE_CLUSTER_SLOT  = 3;
+    public static final int  TYPE_CLUSTER_SLOT  = 2;
+    public static final int  TYPE_INTERNAL_SLOT = 3;
     /*==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==*/
     private final long           _IdcId;
     private final long           _ClusterId;

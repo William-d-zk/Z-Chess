@@ -34,6 +34,7 @@ import java.util.List;
 
 import javax.persistence.EntityNotFoundException;
 
+import com.tgx.chess.pawn.endpoint.spring.device.config.DeviceConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -44,8 +45,8 @@ import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.topology.ZUID;
 import com.tgx.chess.knight.raft.config.IRaftConfig;
 import com.tgx.chess.pawn.endpoint.spring.device.model.DeviceEntry;
-import com.tgx.chess.pawn.endpoint.spring.jpa.device.dao.DeviceEntity;
-import com.tgx.chess.pawn.endpoint.spring.jpa.device.repository.IDeviceJpaRepository;
+import com.tgx.chess.pawn.endpoint.spring.device.jpa.dao.DeviceEntity;
+import com.tgx.chess.pawn.endpoint.spring.device.jpa.repository.IDeviceJpaRepository;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.db.inf.IStorage;
 
@@ -59,7 +60,7 @@ public class DeviceRepository
 {
     private final IDeviceJpaRepository _JpaRepository;
     private final ZUID                 _ZUID;
-    private final DeviceConfig         _DeviceConfig;
+    private final DeviceConfig _DeviceConfig;
     private final CryptUtil            _CryptUtil = new CryptUtil();
     private final Logger               _Logger    = Logger.getLogger(getClass().getSimpleName());
 

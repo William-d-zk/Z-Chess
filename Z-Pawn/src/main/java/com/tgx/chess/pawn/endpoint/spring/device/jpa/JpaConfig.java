@@ -22,61 +22,25 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.pawn.endpoint.spring.device.service;
+package com.tgx.chess.pawn.endpoint.spring.device.jpa;
 
-import java.time.Duration;
-
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-@PropertySource("classpath:device.properties")
-@ConfigurationProperties(prefix = "z.com.tgx.chess.device")
+/**
+ * @author william.d.zk
+ */
+@EnableJpaAuditing
+@EnableJpaRepositories({"com.tgx.chess.pawn.endpoint.spring.device.jpa.repository"})
+@EntityScan({ "com.tgx.com.tgx.chess.pawn.endpoint.spring.device.jpa.dao" })
+@EnableTransactionManagement
 @Configuration
-public class DeviceConfig
+@PropertySource({"classpath:db.properties"})
+public class JpaConfig
 {
-    private Duration passwordInvalidDays;
-    private String   passwordRandomSeed;
-    private String   addressWs;
-    private String   addressQtt;
 
-    public Duration getPasswordInvalidDays()
-    {
-        return passwordInvalidDays;
-    }
-
-    public void setPasswordInvalidDays(Duration passwordInvalidDays)
-    {
-        this.passwordInvalidDays = passwordInvalidDays;
-    }
-
-    public String getPasswordRandomSeed()
-    {
-        return passwordRandomSeed;
-    }
-
-    public void setPasswordRandomSeed(String passwordRandomSeed)
-    {
-        this.passwordRandomSeed = passwordRandomSeed;
-    }
-
-    public String getAddressWs()
-    {
-        return addressWs;
-    }
-
-    public void setAddressWs(String addressWs)
-    {
-        this.addressWs = addressWs;
-    }
-
-    public String getAddressQtt()
-    {
-        return addressQtt;
-    }
-
-    public void setAddressQtt(String addressQtt)
-    {
-        this.addressQtt = addressQtt;
-    }
 }

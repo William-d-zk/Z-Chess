@@ -1,7 +1,7 @@
 /*
  * MIT License                                                                   
  *                                                                               
- * Copyright (c) 2016~2020. Z-Chess                                          
+ * Copyright (c) 2016~2020. Z-Chess
  *                                                                               
  * Permission is hereby granted, free of charge, to any person obtaining a copy  
  * of this software and associated documentation files (the "Software"), to deal 
@@ -22,7 +22,7 @@
  * SOFTWARE.                                                                     
  */
 
-package com.tgx.chess.pawn.endpoint;
+package com.tgx.chess.pawn.endpoint.spring.device;
 
 import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
@@ -323,21 +323,21 @@ public class DeviceNode
     @Override
     public <T extends IStorage> void publishConsensus(IOperator.Type type, T content)
     {
-        final RingBuffer<QEvent> _LocalSendEvent = _ServerCore.getConsensusEvent();
-        final ReentrantLock _LocalLock = _ServerCore.getConsensusLock();
-        if (_LocalLock.tryLock()) {
+        final RingBuffer<QEvent> _ConsensusEvent = _ServerCore.getConsensusEvent();
+        final ReentrantLock _ConsensusLock = _ServerCore.getConsensusLock();
+        if (_ConsensusLock.tryLock()) {
             try {
-                long sequence = _LocalSendEvent.next();
+                long sequence = _ConsensusEvent.next();
                 try {
-                    QEvent event = _LocalSendEvent.get(sequence);
+                    QEvent event = _ConsensusEvent.get(sequence);
                     event.produce(type, new Pair<>(content, null), null);
                 }
                 finally {
-                    _LocalSendEvent.publish(sequence);
+                    _ConsensusEvent.publish(sequence);
                 }
             }
             finally {
-                _LocalLock.unlock();
+                _ConsensusLock.unlock();
             }
         }
     }

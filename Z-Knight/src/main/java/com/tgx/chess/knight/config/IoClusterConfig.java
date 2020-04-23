@@ -49,25 +49,41 @@ public class IoClusterConfig
     private Map<String,
                 Integer>         sizePowers;
     private SocketConfig         cluster;
+    private SocketConfig         internal;
 
     @Override
     public boolean isDomainActive(int type)
     {
-        return type == ZUID.TYPE_CLUSTER_SLOT;
+        return type == ZUID.TYPE_CLUSTER_SLOT || type == ZUID.TYPE_INTERNAL_SLOT;
     }
 
     @Override
-    public int getSizePower(int bizType)
+    public int getSizePower(int type)
     {
-        if (bizType == ZUID.TYPE_CLUSTER_SLOT) { return sizePowers.getOrDefault("cluster.0", 7); }
-        throw new IllegalArgumentException();
+        switch (type)
+        {
+            case ZUID.TYPE_CLUSTER_SLOT:
+                return sizePowers.getOrDefault("cluster.2", 7);
+            case ZUID.TYPE_INTERNAL_SLOT:
+                return sizePowers.getOrDefault("internal.3", 7);
+            default:
+                throw new IllegalArgumentException();
+        }
+
     }
 
     @Override
-    public ISocketConfig getSocketConfig(int bizType)
+    public ISocketConfig getSocketConfig(int type)
     {
-        return bizType == ZUID.TYPE_CLUSTER_SLOT ? cluster
-                                                 : null;
+        switch (type)
+        {
+            case ZUID.TYPE_CLUSTER_SLOT:
+                return cluster;
+            case ZUID.TYPE_INTERNAL_SLOT:
+                return internal;
+            default:
+                throw new IllegalArgumentException();
+        }
     }
 
     public void setSizePowers(Map<String,
@@ -81,4 +97,8 @@ public class IoClusterConfig
         this.cluster = cluster;
     }
 
+    public void setInternal(SocketConfig internal)
+    {
+        this.internal = internal;
+    }
 }

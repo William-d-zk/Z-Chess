@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.pawn.endpoint.spring.jpa.device.dao;
+package com.tgx.chess.pawn.endpoint.spring.device.jpa.dao;
 
 import java.util.Date;
 
@@ -40,7 +40,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.validator.constraints.Length;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.tgx.chess.pawn.endpoint.spring.jpa.model.AuditModel;
+import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.AuditModel;
 
 /**
  * @author william.d.zk
@@ -59,7 +59,7 @@ public class DeviceEntity
     @Id
     @GeneratedValue(generator = "ZDeviceGenerator")
     @GenericGenerator(name = "ZDeviceGenerator",
-                      strategy = "com.tgx.com.tgx.chess.pawn.endpoint.spring.jpa.generator.ZDeviceGenerator")
+                      strategy = "com.tgx.com.tgx.chess.pawn.endpoint.spring.device.jpa.generator.ZDeviceGenerator")
     private long   id;
     @Column(length = 32, nullable = false, updatable = false)
     private String sn;
