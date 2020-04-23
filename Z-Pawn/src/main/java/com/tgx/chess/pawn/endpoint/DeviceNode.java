@@ -44,7 +44,6 @@ import com.tgx.chess.king.topology.ZUID;
 import com.tgx.chess.knight.raft.config.IRaftConfig;
 import com.tgx.chess.queen.config.IAioConfig;
 import com.tgx.chess.queen.config.IMixConfig;
-import com.tgx.chess.queen.config.QueenCode;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.handler.IClusterCustom;
 import com.tgx.chess.queen.event.handler.mix.ILinkCustom;
@@ -109,18 +108,18 @@ public class DeviceNode
                 int slot = getSlot(session);
                 switch (type)
                 {
-                    case LOCAL:
-                        if (slot != QueenCode.CU_XID_LOW) {
+                    case BIZ_LOCAL:
+                        if (slot != ZUID.TYPE_CONSUMER_SLOT) {
                             throw new IllegalArgumentException("device local slot error");
                         }
                         return getBizLocalSendEvent();
                     case CLUSTER_LOCAL:
-                        if (slot != QueenCode.CM_XID_LOW) {
+                        if (slot != ZUID.TYPE_CLUSTER_SLOT) {
                             throw new IllegalArgumentException("cluster local slot error");
                         }
                         return getClusterLocalSendEvent();
                     case CONSENSUS:
-                        if (slot != QueenCode.CM_XID_LOW) {
+                        if (slot != ZUID.TYPE_CLUSTER_SLOT) {
                             throw new IllegalArgumentException("cluster local slot error");
                         }
                         return getConsensusEvent();
@@ -135,14 +134,14 @@ public class DeviceNode
                 int slot = getSlot(session);
                 switch (type)
                 {
-                    case LOCAL:
-                        if (slot != QueenCode.CU_XID_LOW) {
+                    case BIZ_LOCAL:
+                        if (slot != ZUID.TYPE_CONSUMER_SLOT) {
                             throw new IllegalArgumentException("device local slot error");
                         }
                         return getBizLocalCloseEvent();
                     case CLUSTER_LOCAL:
                     case CONSENSUS:
-                        if (slot != QueenCode.CM_XID_LOW) {
+                        if (slot != ZUID.TYPE_CLUSTER_SLOT) {
                             throw new IllegalArgumentException("cluster local slot error");
                         }
                         return getClusterLocalCloseEvent();
@@ -166,14 +165,14 @@ public class DeviceNode
                                ISort.Type type = _Sort.getType();
                                final long _SessionType;
                                if (mode == ISort.Mode.CLUSTER && type == ISort.Type.SYMMETRY) {
-                                   _SessionType = _Sort == ZSort.MQ_QTT_SYMMETRY ? QueenCode.MQ_XID
-                                                                                 : QueenCode.RM_XID;
+                                   _SessionType = _Sort == ZSort.MQ_QTT_SYMMETRY ? ZUID.TYPE_INTERNAL
+                                                                                 : ZUID.TYPE_CLUSTER;
                                }
                                else if (mode == ISort.Mode.CLUSTER) {
-                                   _SessionType = QueenCode.CM_XID;
+                                   _SessionType = ZUID.TYPE_PROVIDER;
                                }
                                else {
-                                   _SessionType = QueenCode.CU_XID;
+                                   _SessionType = ZUID.TYPE_CONSUMER;
                                }
                                return new BaseAioServer<ZContext>(_Host, _Port, getSocketConfig(getSlot(_SessionType)))
                                {
@@ -207,7 +206,7 @@ public class DeviceNode
                                    @SuppressWarnings("unchecked")
                                    public IControl<ZContext>[] createCommands(ISession<ZContext> session)
                                    {
-                                       if (_SessionType != QueenCode.CU_XID) {
+                                       if (_SessionType != ZUID.TYPE_CONSUMER) {
                                            X106_Identity x106 = new X106_Identity(_ZUID.getPeerId());
                                            return new IControl[] { x106 };
                                        }
@@ -264,10 +263,10 @@ public class DeviceNode
         ISort.Type type = _Sort.getType();
         final long _SessionType;
         if (mode == ISort.Mode.CLUSTER && type == ISort.Type.SYMMETRY) {
-            _SessionType = QueenCode.RM_XID;
+            _SessionType = ZUID.TYPE_CLUSTER;
         }
         else {
-            _SessionType = QueenCode.CM_XID;
+            _SessionType = ZUID.TYPE_PROVIDER;
         }
         return new BaseAioConnector<ZContext>(_Host, _Port, getSocketConfig(getSlot(_SessionType)), client)
         {

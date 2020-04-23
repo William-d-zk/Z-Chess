@@ -42,13 +42,13 @@ import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import com.tgx.chess.knight.raft.config.ZRaftConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.knight.raft.IRaftDao;
-import com.tgx.chess.knight.raft.config.ZRaftStorageConfig;
 
 @Component
 public class RaftDao
@@ -75,7 +75,7 @@ public class RaftDao
     private final Lock          _SnapshotLock = new ReentrantLock();
 
     @Autowired
-    public RaftDao(ZRaftStorageConfig config)
+    public RaftDao(ZRaftConfig config)
     {
         String baseDir = config.getBaseDir();
         _LogMetaDir = String.format("%s%s.raft", baseDir, File.separator);

@@ -24,7 +24,7 @@
 
 package com.tgx.chess.rook.biz.device.client;
 
-import static com.tgx.chess.queen.event.inf.IOperator.Type.LOCAL;
+import static com.tgx.chess.queen.event.inf.IOperator.Type.BIZ_LOCAL;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 
 import java.io.IOException;
@@ -69,7 +69,6 @@ import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.topology.ZUID;
 import com.tgx.chess.queen.config.IAioConfig;
-import com.tgx.chess.queen.config.QueenCode;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.async.AioSession;
@@ -259,7 +258,7 @@ public class DeviceConsumer
         }
         BaseAioConnector<ZContext> connector = new BaseAioConnector<ZContext>(host,
                                                                               port,
-                                                                              getSocketConfig(getSlot(QueenCode.CU_XID)),
+                                                                              getSocketConfig(getSlot(ZUID.TYPE_CONSUMER)),
                                                                               DeviceConsumer.this)
         {
             @Override
@@ -271,7 +270,7 @@ public class DeviceConsumer
             @Override
             public void onCreate(ISession<ZContext> session)
             {
-                long sessionIndex = _ZUid.getId(QueenCode.CU_XID);
+                long sessionIndex = _ZUid.getId(ZUID.TYPE_CONSUMER);
                 session.setIndex(sessionIndex);
                 DeviceConsumer.this.addSession(session);
                 zClient.setSessionIndex(sessionIndex);
@@ -334,7 +333,7 @@ public class DeviceConsumer
     {
         ISession<ZContext> session = findSessionByIndex(sessionIndex);
         if (Objects.nonNull(session)) {
-            _ClientCore.send(session, LOCAL, toSends);
+            _ClientCore.send(session, BIZ_LOCAL, toSends);
         }
         else {
             throw new ZException("client-id:%d,is offline;send % failed", sessionIndex, Arrays.toString(toSends));
@@ -345,7 +344,7 @@ public class DeviceConsumer
     {
         ISession<ZContext> session = findSessionByIndex(sessionIndex);
         if (Objects.nonNull(session)) {
-            _ClientCore.close(session, LOCAL);
+            _ClientCore.close(session, BIZ_LOCAL);
         }
         else {
             throw new ZException("client session is not exist");

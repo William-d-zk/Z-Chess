@@ -65,7 +65,7 @@ public class ClusterNode
     public ClusterNode(IAioConfig config,
                        IMixConfig serverConfig)
     {
-        super(config, new ClusterCore<ZContext>(serverConfig));
+        super(config, new ClusterCore<>(serverConfig));
     }
 
     @PostConstruct

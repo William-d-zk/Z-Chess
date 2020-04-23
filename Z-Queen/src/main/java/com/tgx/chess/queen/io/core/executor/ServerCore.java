@@ -78,10 +78,8 @@ public abstract class ServerCore<C extends IContext<C>>
     private final int _ClusterIoCount;
     private final int _AioQueuePower;
     private final int _ClusterPower;
-    private final int _LocalPower;
     private final int _LinkPower;
     private final int _LogicPower;
-    private final int _CloserPower;
     private final int _ErrorPower;
 
     private final RingBuffer<QEvent>[] _AioProducerEvents;
@@ -156,10 +154,8 @@ public abstract class ServerCore<C extends IContext<C>>
         _AioQueuePower = config.getAioQueuePower();
         _ClusterPower = config.getClusterPower();
         _LinkPower = config.getLinkPower();
-        _LocalPower = config.getLocalPower();
         _LogicPower = config.getLogicPower();
         _ErrorPower = config.getErrorPower();
-        _CloserPower = config.getCloserPower();
         /* Aio event producer  */
         _AioProducerEvents = new RingBuffer[_BizIoCount + _ClusterIoCount];
         _AioProducerBarriers = new SequenceBarrier[_AioProducerEvents.length];
@@ -182,12 +178,12 @@ public abstract class ServerCore<C extends IContext<C>>
         });
         Arrays.setAll(_AioProducerBarriers, slot -> _AioProducerEvents[slot].newBarrier());
 
-        _ClusterLocalCloseEvent = createPipelineLite(_CloserPower);
+        _ClusterLocalCloseEvent = createPipelineLite(config.getCloserPower());
         _ClusterLocalSendEvent = createPipelineLite(_ClusterPower);
         _ClusterWriteEvent = createPipelineYield(_ClusterPower);
 
-        _BizLocalCloseEvent = createPipelineLite(_CloserPower);
-        _BizLocalSendEvent = createPipelineLite(_LocalPower);
+        _BizLocalCloseEvent = createPipelineLite(config.getCloserPower());
+        _BizLocalSendEvent = createPipelineLite(config.getLocalPower());
         _LinkWriteEvent = createPipelineYield(_LinkPower);
 
         _ConsensusEvent = createPipelineYield(_ClusterPower);
@@ -453,7 +449,7 @@ public abstract class ServerCore<C extends IContext<C>>
     {
         switch (type)
         {
-            case LOCAL:
+            case BIZ_LOCAL:
                 return _LocalLock;
             case CLUSTER_LOCAL:
                 return _ClusterLock;

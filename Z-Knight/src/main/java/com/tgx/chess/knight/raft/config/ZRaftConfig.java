@@ -45,8 +45,8 @@ import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.topology.ZUID;
 
 @Configuration
-@ConfigurationProperties(prefix = "z.com.tgx.chess.cluster")
-@PropertySource("classpath:cluster.properties")
+@ConfigurationProperties(prefix = "z.com.tgx.chess.raft")
+@PropertySource("classpath:raft.properties")
 public class ZRaftConfig
         implements
         IRaftConfig
@@ -115,6 +115,28 @@ public class ZRaftConfig
     private IPair                 gateTest;
     private boolean               inCongress;
     private boolean               clusterModel;
+    private int                   maxSegmentSize;
+    private String                baseDir;
+
+    public int getMaxSegmentSize()
+    {
+        return maxSegmentSize;
+    }
+
+    public void setMaxSegmentSize(int maxSegmentSize)
+    {
+        this.maxSegmentSize = maxSegmentSize;
+    }
+
+    public String getBaseDir()
+    {
+        return baseDir;
+    }
+
+    public void setBaseDir(String baseDir)
+    {
+        this.baseDir = baseDir;
+    }
 
     @Override
     public List<IPair> getGates()
