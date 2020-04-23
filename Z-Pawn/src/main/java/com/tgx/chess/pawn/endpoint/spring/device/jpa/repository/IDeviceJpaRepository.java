@@ -22,46 +22,29 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.pawn.endpoint.spring.device.service;
+package com.tgx.chess.pawn.endpoint.spring.device.jpa.repository;
 
-import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import com.tgx.chess.king.base.exception.ZException;
-import com.tgx.chess.pawn.endpoint.spring.device.api.IMessageService;
-import com.tgx.chess.pawn.endpoint.spring.device.model.MessageBody;
-import com.tgx.chess.pawn.endpoint.spring.device.model.MessageEntry;
-import com.tgx.chess.pawn.endpoint.spring.device.jpa.repository.IMessageJpaRepository;
+import com.tgx.chess.pawn.endpoint.spring.device.jpa.dao.DeviceEntity;
 
 /**
  * @author william.d.zk
- * @date 2020/2/21
+ * @date 2020-1-20
  */
-@Service
-public class MessageService
-        implements
-        IMessageService
+@Repository
+public interface IDeviceJpaRepository
+        extends
+        JpaRepository<DeviceEntity,
+                      Long>
 {
+    DeviceEntity findByTokenAndPassword(String token, String password);
 
-    private final IMessageJpaRepository _JpaRepository;
+    DeviceEntity findByTokenAndPasswordAndPasswordId(String token, String password, int passwordId);
 
-    @Autowired
-    public MessageService(IMessageJpaRepository jpaRepository)
-    {
-        _JpaRepository = jpaRepository;
-    }
+    DeviceEntity findByToken(String token);
 
-    @Override
-    public List<MessageBody> listByTopic(String topic, int limit) throws ZException
-    {
-        return null;
-    }
+    DeviceEntity findBySn(String sn);
 
-    @Override
-    public List<MessageEntry> findAfterId(long id)
-    {
-        return null;
-    }
 }

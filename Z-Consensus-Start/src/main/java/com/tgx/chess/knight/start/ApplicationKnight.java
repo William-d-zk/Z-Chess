@@ -22,12 +22,21 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.pawn.endpoint.spring.jpa.model;
+package com.tgx.chess.knight.start;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
  * @author william.d.zk
- * @date 2019-06-15
+ * @date 2020/4/23
  */
-public class JpaStatus
+
+@SpringBootApplication(scanBasePackages = { "com.tgx.chess.knight" })
+public class ApplicationKnight
 {
+    public static void main(String[] args)
+    {
+        SpringApplication.run(ApplicationKnight.class, args);
+    }
 }

@@ -22,29 +22,12 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.pawn.endpoint.spring.jpa.device.repository;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
-import com.tgx.chess.pawn.endpoint.spring.jpa.device.dao.DeviceEntity;
+package com.tgx.chess.pawn.endpoint.spring.device.jpa.model;
 
 /**
  * @author william.d.zk
- * @date 2020-1-20
+ * @date 2019-06-15
  */
-@Repository
-public interface IDeviceJpaRepository
-        extends
-        JpaRepository<DeviceEntity,
-                      Long>
+public class JpaStatus
 {
-    DeviceEntity findByTokenAndPassword(String token, String password);
-
-    DeviceEntity findByTokenAndPasswordAndPasswordId(String token, String password, int passwordId);
-
-    DeviceEntity findByToken(String token);
-
-    DeviceEntity findBySn(String sn);
-
 }

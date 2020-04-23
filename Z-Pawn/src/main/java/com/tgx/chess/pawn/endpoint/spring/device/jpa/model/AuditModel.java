@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.pawn.endpoint.spring.jpa.model;
+package com.tgx.chess.pawn.endpoint.spring.device.jpa.model;
 
 import java.io.Serializable;
 import java.util.Date;

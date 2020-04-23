@@ -40,8 +40,8 @@ import com.tgx.chess.king.topology.ZUID;
 import com.tgx.chess.knight.raft.config.IRaftConfig;
 import com.tgx.chess.pawn.endpoint.spring.device.model.MessageBody;
 import com.tgx.chess.pawn.endpoint.spring.device.model.MessageEntry;
-import com.tgx.chess.pawn.endpoint.spring.jpa.device.dao.MessageEntity;
-import com.tgx.chess.pawn.endpoint.spring.jpa.device.repository.IMessageJpaRepository;
+import com.tgx.chess.pawn.endpoint.spring.device.jpa.dao.MessageEntity;
+import com.tgx.chess.pawn.endpoint.spring.device.jpa.repository.IMessageJpaRepository;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.db.inf.IStorage;
 

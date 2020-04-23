@@ -22,7 +22,7 @@
  * SOFTWARE.                                                                     
  */
 
-package com.tgx.chess.pawn.endpoint.spring.jpa.generator;
+package com.tgx.chess.pawn.endpoint.spring.device.jpa.generator;
 
 import java.io.Serializable;
 
@@ -49,7 +49,7 @@ import com.tgx.chess.knight.raft.config.ZRaftConfig;
  * @author william.d.zk
  */
 @Component
-public class ZMessageGenerator
+public class ZDeviceGenerator
         implements
         IdentifierGenerator
 {
@@ -58,12 +58,12 @@ public class ZMessageGenerator
     private final ZRaftConfig _ZClusterConfig;
 
     @Autowired
-    public ZMessageGenerator(ZRaftConfig config)
+    public ZDeviceGenerator(ZRaftConfig config)
     {
         _ZClusterConfig = config;
     }
 
-    public ZMessageGenerator()
+    public ZDeviceGenerator()
     {
         _ZClusterConfig = null;
     }
@@ -79,12 +79,12 @@ public class ZMessageGenerator
     public Serializable generate(SharedSessionContractImplementor session, Object object) throws HibernateException
     {
         long id = next();
-        _Logger.debug("generate z-id %#x, %s", id, object);
+        _Logger.debug("generate z-id %x, %s", id, object);
         return id;
     }
 
     private long next()
     {
-        return _ZUID.getId();
+        return _ZUID.getId(ZUID.TYPE_CONSUMER);
     }
 }

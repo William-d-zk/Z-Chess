@@ -37,6 +37,8 @@ import com.tgx.chess.knight.raft.IRaftDao;
 import com.tgx.chess.knight.raft.config.IRaftConfig;
 import com.tgx.chess.knight.raft.model.RaftNode;
 import com.tgx.chess.knight.raft.service.ClusterCustom;
+import com.tgx.chess.queen.config.IAioConfig;
+import com.tgx.chess.queen.config.IClusterConfig;
 
 @Service
 public class ClusterService
@@ -50,17 +52,18 @@ public class ClusterService
     private final RaftNode<ClusterNode>      _RaftNode;
 
     @Autowired
-    public ClusterService(ClusterNode clusterNode,
-                          IRaftConfig clusterConfig,
+    public ClusterService(IAioConfig ioConfig,
+                          IClusterConfig clusterConfig,
+                          IRaftConfig raftConfig,
                           ConsistentCustom consistentCustom,
                           ClusterCustom<ClusterNode> clusterCustom,
-                          IRaftDao raftDao)
+                          IRaftDao raftDao) throws IOException
     {
         _TimeWheel = new TimeWheel();
-        _ClusterNode = clusterNode;
-        _ClusterConfig = clusterConfig;
+        _ClusterConfig = raftConfig;
         _ConsistentCustom = consistentCustom;
         _ClusterCustom = clusterCustom;
+        _ClusterNode = new ClusterNode(ioConfig, clusterConfig, raftConfig, _TimeWheel);
         _RaftNode = new RaftNode<>(_TimeWheel, _ClusterConfig, raftDao, _ClusterNode);
         _ClusterCustom.setRaftNode(_RaftNode);
     }

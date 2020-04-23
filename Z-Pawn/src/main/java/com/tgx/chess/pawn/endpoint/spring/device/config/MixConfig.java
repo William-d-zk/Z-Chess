@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.knight.config;
+package com.tgx.chess.pawn.endpoint.spring.device.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;

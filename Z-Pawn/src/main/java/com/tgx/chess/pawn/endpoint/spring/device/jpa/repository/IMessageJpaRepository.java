@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.pawn.endpoint.spring.jpa.device.repository;
+package com.tgx.chess.pawn.endpoint.spring.device.jpa.repository;
 
 import java.util.List;
 
@@ -31,7 +31,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.tgx.chess.pawn.endpoint.spring.jpa.device.dao.MessageEntity;
+import com.tgx.chess.pawn.endpoint.spring.device.jpa.dao.MessageEntity;
 
 /**
  * @author william.d.zk
