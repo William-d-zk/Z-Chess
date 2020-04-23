@@ -25,8 +25,18 @@ package com.tgx.chess.knight.cluster.spring.service;
 
 import org.springframework.stereotype.Component;
 
+import com.tgx.chess.queen.event.handler.cluster.INotifyCustom;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
+
 @Component
 public class ConsistentCustom
+        implements
+        INotifyCustom
 {
 
+    @Override
+    public Void handle(IProtocol iProtocol, Void aVoid)
+    {
+        return null;
+    }
 }

@@ -23,9 +23,14 @@
  */
 package com.tgx.chess.knight.cluster.spring.service;
 
+import java.io.IOException;
+
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.tgx.chess.bishop.io.zhandler.ZClusterMappingCustom;
 import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.knight.cluster.ClusterNode;
 import com.tgx.chess.knight.raft.IRaftDao;
@@ -38,7 +43,7 @@ public class ClusterService
 {
 
     private final ClusterNode                _ClusterNode;
-    private final IRaftConfig _ClusterConfig;
+    private final IRaftConfig                _ClusterConfig;
     private final ConsistentCustom           _ConsistentCustom;
     private final ClusterCustom<ClusterNode> _ClusterCustom;
     private final TimeWheel                  _TimeWheel;
@@ -58,5 +63,12 @@ public class ClusterService
         _ClusterCustom = clusterCustom;
         _RaftNode = new RaftNode<>(_TimeWheel, _ClusterConfig, raftDao, _ClusterNode);
         _ClusterCustom.setRaftNode(_RaftNode);
+    }
+
+    @PostConstruct
+    private void start() throws IOException
+    {
+        _ClusterNode.start(_ConsistentCustom, new ZClusterMappingCustom<>(_ClusterCustom));
+        _RaftNode.init();
     }
 }

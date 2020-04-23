@@ -30,6 +30,7 @@ import java.nio.channels.AsynchronousSocketChannel;
 import javax.annotation.PostConstruct;
 
 import com.tgx.chess.bishop.io.ZSort;
+import com.tgx.chess.bishop.io.zcrypt.EncryptHandler;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
 import com.tgx.chess.king.base.inf.IPair;
@@ -40,6 +41,8 @@ import com.tgx.chess.knight.raft.config.IRaftConfig;
 import com.tgx.chess.queen.config.IAioConfig;
 import com.tgx.chess.queen.config.IClusterConfig;
 import com.tgx.chess.queen.db.inf.IStorage;
+import com.tgx.chess.queen.event.handler.IClusterCustom;
+import com.tgx.chess.queen.event.handler.cluster.INotifyCustom;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.io.core.async.AioSession;
@@ -151,6 +154,16 @@ public class ClusterNode
     void init()
     {
         _Logger.info("load cluster node");
+    }
+
+    public <T extends IStorage> void start(INotifyCustom notifyCustom,
+                                           IClusterCustom<ZContext,
+                                                          T> clusterCustom) throws IOException
+    {
+        _ClusterCore.build(this, new EncryptHandler(), notifyCustom, clusterCustom);
+        _AioServer.bindAddress(_AioServer.getLocalAddress(), _ClusterCore.getClusterChannelGroup());
+        _AioServer.pendingAccept();
+        _Logger.info(String.format("cluster start: %s", _AioServer.getLocalAddress()));
     }
 
     @Override
