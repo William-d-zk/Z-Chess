@@ -25,26 +25,38 @@
 package com.tgx.chess.knight.cluster;
 
 import java.io.IOException;
+import java.nio.channels.AsynchronousSocketChannel;
 
 import javax.annotation.PostConstruct;
 
-import org.springframework.stereotype.Component;
-
+import com.tgx.chess.bishop.io.ZSort;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
+import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.king.base.schedule.TimeWheel;
+import com.tgx.chess.king.topology.ZUID;
+import com.tgx.chess.knight.raft.config.IRaftConfig;
 import com.tgx.chess.queen.config.IAioConfig;
-import com.tgx.chess.queen.config.IMixConfig;
+import com.tgx.chess.queen.config.IClusterConfig;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.inf.IOperator;
+import com.tgx.chess.queen.event.inf.ISort;
+import com.tgx.chess.queen.io.core.async.AioSession;
+import com.tgx.chess.queen.io.core.async.BaseAioClient;
+import com.tgx.chess.queen.io.core.async.BaseAioServer;
 import com.tgx.chess.queen.io.core.executor.ClusterCore;
+import com.tgx.chess.queen.io.core.inf.IAioClient;
+import com.tgx.chess.queen.io.core.inf.IAioServer;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
+import com.tgx.chess.queen.io.core.inf.IConnectActivity;
 import com.tgx.chess.queen.io.core.inf.IConsensus;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
+import com.tgx.chess.queen.io.core.inf.ISessionOption;
 import com.tgx.chess.queen.io.core.manager.ClusterManager;
 
-@Component
 public class ClusterNode
         extends
         ClusterManager<ZContext>
@@ -53,7 +65,11 @@ public class ClusterNode
         IClusterPeer,
         IConsensus
 {
-    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final Logger               _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final TimeWheel            _TimeWheel;
+    private final IAioServer<ZContext> _AioServer;
+    private final IAioClient<ZContext> _GateClient, _ClusterClient;
+    private final ZUID                 _ZUID;
 
     @Override
     public void onDismiss(ISession<ZContext> session)
@@ -63,9 +79,72 @@ public class ClusterNode
     }
 
     public ClusterNode(IAioConfig config,
-                       IMixConfig serverConfig)
+                       IClusterConfig clusterConfig,
+                       IRaftConfig raftConfig,
+                       TimeWheel timeWheel) throws IOException
     {
-        super(config, new ClusterCore<>(serverConfig));
+        super(config, new ClusterCore<>(clusterConfig));
+        _TimeWheel = timeWheel;
+        _ZUID = raftConfig.createZUID();
+        _Logger.info(_ZUID);
+        IPair bind = raftConfig.getBind();
+        final String _Host = bind.getFirst();
+        final int _Port = bind.getSecond();
+        _AioServer = new BaseAioServer<ZContext>(_Host, _Port, getSocketConfig(getSlot(ZUID.TYPE_CLUSTER)))
+        {
+            @Override
+            public ISort<ZContext> getSort()
+            {
+                return ZSort.WS_CLUSTER_SERVER;
+            }
+
+            @Override
+            public void onCreate(ISession<ZContext> session)
+            {
+                session.setIndex(_ZUID.getId());
+                ClusterNode.this.addSession(session);
+            }
+
+            @Override
+            public ISession<ZContext> createSession(AsynchronousSocketChannel socketChannel,
+                                                    IConnectActivity<ZContext> activity) throws IOException
+            {
+                return new AioSession<>(socketChannel, this, this, activity, ClusterNode.this);
+
+            }
+
+            @Override
+            public ZContext createContext(ISessionOption option, ISort<ZContext> sort)
+            {
+                return sort.newContext(option);
+            }
+
+            @Override
+            @SuppressWarnings("unchecked")
+            public IControl<ZContext>[] createCommands(ISession<ZContext> session)
+            {
+                X106_Identity x106 = new X106_Identity(_ZUID.getPeerId());
+                return new IControl[] { x106 };
+            }
+        };
+        _GateClient = new BaseAioClient<ZContext>(_TimeWheel, getClusterCore().getClusterChannelGroup())
+        {
+            @Override
+            public void onDismiss(ISession<ZContext> session)
+            {
+                ClusterNode.this.onDismiss(session);
+                super.onDismiss(session);
+            }
+        };
+        _ClusterClient = new BaseAioClient<ZContext>(_TimeWheel, getClusterCore().getClusterChannelGroup())
+        {
+            @Override
+            public void onDismiss(ISession<ZContext> session)
+            {
+                ClusterNode.this.onDismiss(session);
+                super.onDismiss(session);
+            }
+        };
     }
 
     @PostConstruct

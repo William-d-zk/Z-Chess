@@ -96,7 +96,7 @@ public class DeviceNode
 
     public DeviceNode(List<ITriple> hosts,
                       IAioConfig bizIoConfig,
-                      IRaftConfig clusterConfig,
+                      IRaftConfig raftConfig,
                       IMixConfig serverConfig,
                       TimeWheel timeWheel) throws IOException
     {
@@ -151,9 +151,9 @@ public class DeviceNode
             }
         });
         _TimeWheel = timeWheel;
-        _ZUID = clusterConfig.createZUID();
+        _ZUID = raftConfig.createZUID();
         _Logger.info(_ZUID);
-        IPair bind = clusterConfig.getBind();
+        IPair bind = raftConfig.getBind();
         hosts.add(new Triple<>(bind.getFirst(), bind.getSecond(), ZSort.WS_CLUSTER_SERVER));
         _AioServers = hosts.stream()
                            .map(triple ->
