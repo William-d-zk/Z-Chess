@@ -28,7 +28,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.tgx.service</groupId>
-    <artifactId>framework.z-com.tgx.chess</artifactId>
+    <artifactId>framework.z-chess</artifactId>
     <name>Z-Chess</name>
     <packaging>pom</packaging>
     <version>1.0.0-SNAPSHOT</version>
@@ -40,7 +40,8 @@
         <module>Z-Rook</module>
         <module>Z-Pawn</module>
         <module>Z-Player</module>
-        <module>Z-Start</module>
+        <module>Z-Endpoint-Start</module>
+        <module>Z-Consensus-Start</module>
     </modules>
     <properties>
         <!--RT-->
