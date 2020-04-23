@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,8 +33,8 @@ import org.springframework.stereotype.Component;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.queen.config.IBizIoConfig;
-import com.tgx.chess.queen.config.IServerConfig;
+import com.tgx.chess.queen.config.IAioConfig;
+import com.tgx.chess.queen.config.IMixConfig;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.io.core.executor.ClusterCore;
@@ -62,8 +62,8 @@ public class ClusterNode
         rmSession(session);
     }
 
-    public ClusterNode(IBizIoConfig config,
-                       IServerConfig serverConfig)
+    public ClusterNode(IAioConfig config,
+                       IMixConfig serverConfig)
     {
         super(config, new ClusterCore<ZContext>(serverConfig));
     }

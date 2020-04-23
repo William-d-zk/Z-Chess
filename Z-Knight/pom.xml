@@ -2,7 +2,7 @@
 <!--
   ~ MIT License
   ~
-  ~ Copyright (c) 2016~2019 Z-Chess
+  ~ Copyright (c) 2016~2020. Z-Chess
   ~
   ~ Permission is hereby granted, free of charge, to any person obtaining a copy
   ~ of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>framework.z-chess</artifactId>
+        <artifactId>framework.z-com.tgx.chess</artifactId>
         <groupId>com.tgx.service</groupId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
@@ -52,20 +52,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-        <!--JPA-->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.vladmihalcea</groupId>
-            <artifactId>hibernate-types-52</artifactId>
-        </dependency>
-        <!--DB-->
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
         </dependency>
         <!--Commons-Io-->
         <dependency>

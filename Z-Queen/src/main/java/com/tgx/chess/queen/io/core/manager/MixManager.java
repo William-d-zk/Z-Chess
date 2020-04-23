@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@
 
 package com.tgx.chess.queen.io.core.manager;
 
-import com.tgx.chess.queen.config.IBizIoConfig;
+import com.tgx.chess.queen.config.IAioConfig;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.io.core.async.AioSessionManager;
 import com.tgx.chess.queen.io.core.executor.ServerCore;
@@ -44,7 +44,7 @@ public abstract class MixManager<C extends IContext<C>>
 {
     protected final ServerCore<C> _ServerCore;
 
-    public MixManager(IBizIoConfig config,
+    public MixManager(IAioConfig config,
                       ServerCore<C> serverCore)
     {
         super(config);

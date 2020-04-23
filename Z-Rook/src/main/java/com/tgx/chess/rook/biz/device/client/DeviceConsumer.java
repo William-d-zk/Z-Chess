@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,7 +44,6 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.tgx.chess.bishop.ZUID;
 import com.tgx.chess.bishop.io.mqtt.control.X111_QttConnect;
 import com.tgx.chess.bishop.io.mqtt.control.X112_QttConnack;
 import com.tgx.chess.bishop.io.ws.WsContext;
@@ -68,7 +67,8 @@ import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.base.util.Pair;
-import com.tgx.chess.queen.config.IBizIoConfig;
+import com.tgx.chess.king.topology.ZUID;
+import com.tgx.chess.queen.config.IAioConfig;
 import com.tgx.chess.queen.config.QueenCode;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.processor.QEvent;
@@ -109,7 +109,7 @@ public class DeviceConsumer
 
     @SuppressWarnings("unchecked")
     @Autowired
-    public DeviceConsumer(IBizIoConfig bizIoConfig,
+    public DeviceConsumer(IAioConfig bizIoConfig,
                           ConsumerConfig consumerConfig) throws IOException
     {
         super(bizIoConfig);

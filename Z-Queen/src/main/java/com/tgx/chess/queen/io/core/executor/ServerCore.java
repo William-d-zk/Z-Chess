@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,7 @@ import com.lmax.disruptor.SequenceBarrier;
 import com.tgx.chess.king.base.disruptor.MultiBufferBatchEventProcessor;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.IoUtil;
-import com.tgx.chess.queen.config.IServerConfig;
+import com.tgx.chess.queen.config.IMixConfig;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.handler.DecodeHandler;
 import com.tgx.chess.queen.event.handler.EncodeHandler;
@@ -145,7 +145,7 @@ public abstract class ServerCore<C extends IContext<C>>
     private AsynchronousChannelGroup mClusterChannelGroup;
 
     @SuppressWarnings("unchecked")
-    protected ServerCore(IServerConfig config)
+    protected ServerCore(IMixConfig config)
     {
         super(config.getPoolSize(), config.getPoolSize(), 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
         _LogicCount = config.getLogicCount();

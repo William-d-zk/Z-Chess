@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@
 
 package com.tgx.chess.knight.raft.model;
 
-import static com.tgx.chess.bishop.ZUID.INVALID_PEER_ID;
+import static com.tgx.chess.king.topology.ZUID.INVALID_PEER_ID;
 import static com.tgx.chess.knight.raft.RaftState.CANDIDATE;
 import static com.tgx.chess.knight.raft.RaftState.ELECTOR;
 import static com.tgx.chess.knight.raft.RaftState.FOLLOWER;
@@ -52,7 +52,6 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.tgx.chess.bishop.ZUID;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.raft.X72_RaftVote;
 import com.tgx.chess.bishop.io.zprotocol.raft.X76_RaftResult;
@@ -66,12 +65,13 @@ import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.base.util.Triple;
+import com.tgx.chess.king.topology.ZUID;
 import com.tgx.chess.knight.json.JsonUtil;
 import com.tgx.chess.knight.raft.IRaftDao;
 import com.tgx.chess.knight.raft.IRaftMachine;
 import com.tgx.chess.knight.raft.IRaftMessage;
 import com.tgx.chess.knight.raft.RaftState;
-import com.tgx.chess.knight.raft.config.IClusterConfig;
+import com.tgx.chess.knight.raft.config.IRaftConfig;
 import com.tgx.chess.knight.raft.model.log.LogEntry;
 import com.tgx.chess.queen.io.core.async.AioSessionManager;
 import com.tgx.chess.queen.io.core.inf.IActivity;
@@ -87,7 +87,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
 {
     private final Logger                       _Logger         = Logger.getLogger(getClass().getSimpleName());
     private final ZUID                         _ZUID;
-    private final IClusterConfig               _ClusterConfig;
+    private final IRaftConfig _ClusterConfig;
     private final T                            _ClusterPeer;
     private final IRaftDao                     _RaftDao;
     private final TimeWheel                    _TimeWheel;
@@ -99,7 +99,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
     private ICancelable                        mElectTask, mHeartbeatTask, mTickTask;
 
     public RaftNode(TimeWheel timeWheel,
-                    IClusterConfig clusterConfig,
+                    IRaftConfig clusterConfig,
                     IRaftDao raftDao,
                     T manager)
     {
