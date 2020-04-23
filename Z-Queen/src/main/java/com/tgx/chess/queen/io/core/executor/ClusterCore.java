@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2016~2020. Z-Chess
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.tgx.chess.queen.io.core.executor;
 
 import java.io.IOException;
@@ -16,7 +40,7 @@ import com.lmax.disruptor.SequenceBarrier;
 import com.tgx.chess.king.base.disruptor.MultiBufferBatchEventProcessor;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.IoUtil;
-import com.tgx.chess.queen.config.IServerConfig;
+import com.tgx.chess.queen.config.IClusterConfig;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.handler.DecodeHandler;
 import com.tgx.chess.queen.event.handler.EncodeHandler;
@@ -50,7 +74,6 @@ public class ClusterCore<C extends IContext<C>>
     private final int                  _ClusterPower;
     private final int                  _AioQueuePower;
     private final int                  _ErrorPower;
-    private final int                  _CloserPower;
     private final RingBuffer<QEvent>[] _AioProducerEvents;
     private final SequenceBarrier[]    _AioProducerBarriers;
     private final RingBuffer<QEvent>   _ClusterLocalCloseEvent;
@@ -85,7 +108,7 @@ public class ClusterCore<C extends IContext<C>>
     private AsynchronousChannelGroup mClusterChannelGroup;
 
     @SuppressWarnings("unchecked")
-    public ClusterCore(IServerConfig config)
+    public ClusterCore(IClusterConfig config)
     {
         super(config.getPoolSize(), config.getPoolSize(), 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
 
@@ -97,7 +120,6 @@ public class ClusterCore<C extends IContext<C>>
         _ClusterPower = config.getClusterPower();
         _AioQueuePower = config.getAioQueuePower();
         _ErrorPower = config.getErrorPower();
-        _CloserPower = config.getCloserPower();
         _AioProducerEvents = new RingBuffer[_ClusterIoCount];
         _AioProducerBarriers = new SequenceBarrier[_AioProducerEvents.length];
         Arrays.setAll(_AioProducerEvents, slot ->
@@ -110,7 +132,7 @@ public class ClusterCore<C extends IContext<C>>
         });
         Arrays.setAll(_AioProducerBarriers, slot -> _AioProducerEvents[slot].newBarrier());
 
-        _ClusterLocalCloseEvent = createPipelineLite(_CloserPower);
+        _ClusterLocalCloseEvent = createPipelineLite(config.getCloserPower());
         _ClusterWriteEvent = createPipelineYield(_ClusterPower);
         _ConsensusEvent = createPipelineYield(_ClusterPower);
         _ConsensusApiEvent = createPipelineLite(_ClusterPower);

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,9 +36,9 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.queen.config.IBizIoConfig;
+import com.tgx.chess.king.topology.ZUID;
+import com.tgx.chess.queen.config.IAioConfig;
 import com.tgx.chess.queen.config.ISocketConfig;
-import com.tgx.chess.queen.config.QueenCode;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
@@ -55,22 +55,26 @@ public abstract class AioSessionManager<C extends IContext<C>>
         implements
         ISessionManager<C>
 {
-    protected final Logger                      _Logger             = Logger.getLogger(getClass().getSimpleName());
+    protected final Logger                      _Logger = Logger.getLogger(getClass().getSimpleName());
     private final Map<Long,
-                      ISession<C>>[]            _Index2SessionMaps  = new Map[4];
+                      ISession<C>>[]            _Index2SessionMaps;
     private final Map<Long,
-                      Set<ISession<C>>>[]       _Prefix2SessionMaps = new Map[4];
-    private final Set<ISession<C>>[]            _SessionsSets       = new Set[4];
-    private final IBizIoConfig                  _BizIoConfig;
+                      Set<ISession<C>>>[]       _Prefix2SessionMaps;
+    private final Set<ISession<C>>[]            _SessionsSets;
+    private final IAioConfig                    _AioConfig;
 
     public ISocketConfig getSocketConfig(int bizType)
     {
-        return _BizIoConfig.getBizSocketConfig(bizType);
+        return _AioConfig.getSocketConfig(bizType);
     }
 
-    public AioSessionManager(IBizIoConfig config)
+    @SuppressWarnings("unchecked")
+    public AioSessionManager(IAioConfig config)
     {
-        _BizIoConfig = config;
+        _AioConfig = config;
+        _Index2SessionMaps = new Map[config.getDomainCount()];
+        _Prefix2SessionMaps = new Map[config.getDomainCount()];
+        _SessionsSets = new Set[config.getDomainCount()];
         Arrays.setAll(_SessionsSets, slot -> new HashSet<>(1 << getConfigPower(slot)));
         Arrays.setAll(_Index2SessionMaps, slot -> new HashMap<>(1 << getConfigPower(slot)));
         Arrays.setAll(_Prefix2SessionMaps, slot -> new HashMap<>(23));
@@ -78,16 +82,8 @@ public abstract class AioSessionManager<C extends IContext<C>>
 
     protected int getConfigPower(int slot)
     {
-        switch (slot)
-        {
-            case CLIENT_SLOT:
-            case LOCAL_SLOT:
-            case SERVER_SLOT:
-            case CLUSTER_SLOT:
-                return _BizIoConfig.getSizePower(slot);
-            default:
-                throw new IllegalArgumentException("slot: " + slot);
-        }
+        if (ZUID.MAX_TYPE < slot || slot < 0) { throw new IllegalArgumentException("slot: " + slot); }
+        return _AioConfig.getSizePower(slot);
     }
 
     protected static <C extends IContext<C>> int getSlot(ISession<C> session)
@@ -97,7 +93,7 @@ public abstract class AioSessionManager<C extends IContext<C>>
 
     protected static int getSlot(long index)
     {
-        return (int) ((index & QueenCode.XID_MK) >>> 62);
+        return (int) ((index & ZUID.TYPE_MASK) >>> ZUID.TYPE_SHIFT);
     }
 
     @Override

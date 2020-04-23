@@ -2,7 +2,7 @@
 <!--
   ~ MIT License
   ~
-  ~ Copyright (c) 2016~2019 Z-Chess
+  ~ Copyright (c) 2016~2020. Z-Chess
   ~
   ~ Permission is hereby granted, free of charge, to any person obtaining a copy
   ~ of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>framework.z-chess</artifactId>
+        <artifactId>framework.z-com.tgx.chess</artifactId>
         <groupId>com.tgx.service</groupId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
@@ -37,7 +37,7 @@
     <dependencies>
         <dependency>
             <groupId>com.tgx.service</groupId>
-            <artifactId>spring.z-knight</artifactId>
+            <artifactId>endpoint.z-pawn</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
