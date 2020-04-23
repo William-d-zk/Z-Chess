@@ -63,9 +63,9 @@ public abstract class AioSessionManager<C extends IContext<C>>
     private final Set<ISession<C>>[]            _SessionsSets;
     private final IAioConfig                    _AioConfig;
 
-    public ISocketConfig getSocketConfig(int bizType)
+    public ISocketConfig getSocketConfig(int type)
     {
-        return _AioConfig.getSocketConfig(bizType);
+        return _AioConfig.getSocketConfig(type);
     }
 
     @SuppressWarnings("unchecked")

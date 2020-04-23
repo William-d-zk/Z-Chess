@@ -111,7 +111,6 @@ public class ClusterCore<C extends IContext<C>>
     public ClusterCore(IClusterConfig config)
     {
         super(config.getPoolSize(), config.getPoolSize(), 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
-
         _ClusterCacheConcurrentQueue = new ConcurrentLinkedQueue<>();
         _ClusterIoCount = config.getClusterIoCount();
         _DecoderCount = config.getDecoderCount();
