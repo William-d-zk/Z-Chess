@@ -76,7 +76,7 @@ public class ClientWriteDispatcher<C extends IContext<C>>
         else {
             switch (event.getEventType())
             {
-                case LOCAL://from biz local
+                case BIZ_LOCAL://from biz local
                 case WRITE://from LinkIo
                 case LOGIC://from read->logic
                     IPair writeContent = event.getContent();

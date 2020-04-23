@@ -73,14 +73,14 @@ public class ZUID
     private static final Pattern UNAME_PATTERN      = Pattern.compile("(\\d+)_(\\d+)_(\\d+)_(\\d+)@(\\d+)");
     /*==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==*/
     public static final long TYPE_MASK          = ((1L << TYPE_BITS) - 1) << TYPE_SHIFT;
-    public static final long TYPE_CLUSTER       = 0;
-    public static final long TYPE_INTERNAL      = 1L << TYPE_SHIFT;
-    public static final long TYPE_CONSUMER      = 2L << TYPE_SHIFT;
-    public static final long TYPE_PROVIDER      = 3L << TYPE_SHIFT;
-    public static final int  TYPE_CLUSTER_SLOT  = 0;
-    public static final int  TYPE_INTERNAL_SLOT = 1;
-    public static final int  TYPE_CONSUMER_SLOT = 2;
-    public static final int  TYPE_PROVIDER_SLOT = 3;
+    public static final long TYPE_CONSUMER      = 0;
+    public static final long TYPE_PROVIDER      = 1L << TYPE_SHIFT;
+    public static final long TYPE_CLUSTER       = 2L << TYPE_SHIFT;
+    public static final long TYPE_INTERNAL      = 3L << TYPE_SHIFT;
+    public static final int  TYPE_CONSUMER_SLOT = 0;
+    public static final int  TYPE_PROVIDER_SLOT = 1;
+    public static final int  TYPE_INTERNAL_SLOT = 2;
+    public static final int  TYPE_CLUSTER_SLOT  = 3;
     /*==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==*/
     private final long           _IdcId;
     private final long           _ClusterId;

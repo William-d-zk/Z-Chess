@@ -33,35 +33,6 @@ public interface QueenCode
         extends
         KingCode
 {
-    /**
-     * ClientManager
-     * Accept devices' connection request
-     * 10
-     */
-    long CM_XID = 0x8000000000000000L;
-    /**
-     * Cluster Manager
-     * symmetry communication
-     * 11
-     */
-    long RM_XID = 0xC000000000000000L;
-    /**
-     * Internal system message queue
-     * 01
-     */
-    long MQ_XID = 0x4000000000000000L;
-    /**
-     * device connection
-     * 00
-     */
-    long CU_XID = 0x0000000000000000L;
-
-    int CU_XID_LOW = 0;
-    int MQ_XID_LOW = 1;
-    int CM_XID_LOW = 2;
-    int RM_XID_LOW = 3;
-
-    long XID_MK = 0xC000000000000000L;
 
     /* HA address max size 256 */
     int _HA_ROUTER_REMOTE_ADDRESS_INDEX_MASK = 0xFF;
