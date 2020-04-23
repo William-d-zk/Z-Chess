@@ -30,9 +30,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
+import com.tgx.chess.king.topology.ZUID;
 import com.tgx.chess.queen.config.IAioConfig;
 import com.tgx.chess.queen.config.ISocketConfig;
-import com.tgx.chess.queen.io.core.inf.ISessionManager;
 
 /**
  * @author william.d.zk
@@ -40,46 +40,46 @@ import com.tgx.chess.queen.io.core.inf.ISessionManager;
  */
 @Configuration
 @ConfigurationProperties(prefix = "z.com.tgx.chess.io")
-@PropertySource("classpath:io.properties")
-public class IoConfig
+@PropertySource("classpath:io.consumer.properties")
+public class IoConsumerConfig
         implements
         IAioConfig
 {
 
     private Map<String,
                 Integer>         sizePowers;
-    private SocketConfig         client;
-    private SocketConfig         local;
+    private SocketConfig         consumer;
+    private SocketConfig         internal;
 
     @Override
-    public int getDomainCount()
+    public boolean isDomainActive(int type)
     {
-        return 2;
+        return type == ZUID.TYPE_CONSUMER_SLOT || type == ZUID.TYPE_INTERNAL_SLOT;
     }
 
     @Override
-    public int getSizePower(int bizType)
+    public int getSizePower(int type)
     {
-        switch (bizType)
+        switch (type)
         {
-            case ISessionManager.CLIENT_SLOT:
-                return sizePowers.getOrDefault("client.0", 3);
-            case ISessionManager.LOCAL_SLOT:
-                return sizePowers.getOrDefault("local.1", 3);
+            case ZUID.TYPE_INTERNAL_SLOT:
+                return sizePowers.getOrDefault("internal.1", 9);
+            case ZUID.TYPE_CONSUMER_SLOT:
+                return sizePowers.getOrDefault("consumer.2", 3);
             default:
                 throw new IllegalArgumentException();
         }
     }
 
     @Override
-    public ISocketConfig getSocketConfig(int bizType)
+    public ISocketConfig getSocketConfig(int type)
     {
-        switch (bizType)
+        switch (type)
         {
-            case ISessionManager.CLIENT_SLOT:
-                return client;
-            case ISessionManager.LOCAL_SLOT:
-                return local;
+            case ZUID.TYPE_INTERNAL_SLOT:
+                return internal;
+            case ZUID.TYPE_CONSUMER_SLOT:
+                return consumer;
             default:
                 return null;
         }
@@ -91,13 +91,13 @@ public class IoConfig
         this.sizePowers = sizePowers;
     }
 
-    public void setClient(SocketConfig client)
+    public void setConsumer(SocketConfig consumer)
     {
-        this.client = client;
+        this.consumer = consumer;
     }
 
-    public void setLocal(SocketConfig local)
+    public void setInternal(SocketConfig internal)
     {
-        this.local = local;
+        this.internal = internal;
     }
 }
