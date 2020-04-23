@@ -72,12 +72,18 @@ public abstract class AioSessionManager<C extends IContext<C>>
     public AioSessionManager(IAioConfig config)
     {
         _AioConfig = config;
-        _Index2SessionMaps = new Map[config.getDomainCount()];
-        _Prefix2SessionMaps = new Map[config.getDomainCount()];
-        _SessionsSets = new Set[config.getDomainCount()];
-        Arrays.setAll(_SessionsSets, slot -> new HashSet<>(1 << getConfigPower(slot)));
-        Arrays.setAll(_Index2SessionMaps, slot -> new HashMap<>(1 << getConfigPower(slot)));
-        Arrays.setAll(_Prefix2SessionMaps, slot -> new HashMap<>(23));
+        _Index2SessionMaps = new Map[4];
+        _Prefix2SessionMaps = new Map[4];
+        _SessionsSets = new Set[4];
+        Arrays.setAll(_SessionsSets,
+                      slot -> _AioConfig.isDomainActive(slot) ? new HashSet<>(1 << getConfigPower(slot))
+                                                              : null);
+        Arrays.setAll(_Index2SessionMaps,
+                      slot -> _AioConfig.isDomainActive(slot) ? new HashMap<>(1 << getConfigPower(slot))
+                                                              : null);
+        Arrays.setAll(_Prefix2SessionMaps,
+                      slot -> _AioConfig.isDomainActive(slot) ? new HashMap<>(23)
+                                                              : null);
     }
 
     protected int getConfigPower(int slot)

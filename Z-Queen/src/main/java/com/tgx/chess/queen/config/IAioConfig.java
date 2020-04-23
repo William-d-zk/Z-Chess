@@ -30,9 +30,9 @@ package com.tgx.chess.queen.config;
  */
 public interface IAioConfig
 {
-    int getDomainCount();
+    boolean isDomainActive(int type);
 
-    int getSizePower(int bizType);
+    int getSizePower(int type);
 
-    ISocketConfig getSocketConfig(int bizType);
+    ISocketConfig getSocketConfig(int type);
 }

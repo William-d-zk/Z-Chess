@@ -39,7 +39,7 @@ import com.tgx.chess.queen.config.ISocketConfig;
  * @date 2020/2/1
  */
 @Configuration
-@ConfigurationProperties(prefix = "z.com.tgx.chess.io.cluster")
+@ConfigurationProperties(prefix = "z.com.tgx.chess.io")
 @PropertySource("classpath:io.cluster.properties")
 public class IoClusterConfig
         implements
@@ -48,18 +48,17 @@ public class IoClusterConfig
 
     private Map<String,
                 Integer>         sizePowers;
-    private SocketConfig cluster;
+    private SocketConfig         cluster;
 
     @Override
-    public int getDomainCount()
+    public boolean isDomainActive(int type)
     {
-        return 1;
+        return type == ZUID.TYPE_CLUSTER_SLOT;
     }
 
     @Override
     public int getSizePower(int bizType)
     {
-
         if (bizType == ZUID.TYPE_CLUSTER_SLOT) { return sizePowers.getOrDefault("cluster.0", 7); }
         throw new IllegalArgumentException();
     }
