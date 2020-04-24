@@ -61,6 +61,7 @@ import com.tgx.chess.queen.io.core.inf.IActivity;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.IClusterTimer;
 import com.tgx.chess.queen.io.core.inf.IControl;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
 
@@ -236,7 +237,7 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IClust
     }
 
     @Override
-    public List<ITriple> consensus(ISessionManager<ZContext> manager, IControl<ZContext> request, long origin)
+    public List<ITriple> consensus(ISessionManager<ZContext> manager, IProtocol request, long origin)
     {
         if (mRaftNode.getMachine()
                      .getState() == LEADER)

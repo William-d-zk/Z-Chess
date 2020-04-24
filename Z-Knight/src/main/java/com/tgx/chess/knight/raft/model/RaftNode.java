@@ -76,6 +76,7 @@ import com.tgx.chess.queen.io.core.inf.IActivity;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.IClusterTimer;
 import com.tgx.chess.queen.io.core.inf.IControl;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
 
 /**
@@ -734,7 +735,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
         _AppendLogQueue.addAll(entryList);
     }
 
-    public Stream<X7E_RaftBroadcast> newLogEntry(IControl<ZContext> request, long raftClientId, long origin)
+    public Stream<X7E_RaftBroadcast> newLogEntry(IProtocol request, long raftClientId, long origin)
     {
         return newLogEntry(request.serial(), request.encode(), raftClientId, origin);
     }
