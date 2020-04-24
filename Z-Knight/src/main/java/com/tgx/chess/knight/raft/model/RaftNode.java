@@ -547,7 +547,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                         _Logger.info("consensus done->");
                         if (logEntry.getRaftClientId() != _SelfMachine.getPeerId()) {
                             //leader -> follower -> client
-                            x76.setSession(manager.findSessionByPrefix(peerId));
+                            x76.setSession(manager.findSessionByPrefix(logEntry.getRaftClientId()));
                             return x7e != null ? new Pair<>(new IControl[] { x7e,
                                                                              x76 },
                                                             null)
@@ -555,7 +555,6 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                         }
                         else {
                             //leader -> client
-                            x76.setSession(manager.findSessionByIndex(x76.getOrigin()));
                             return x7e != null ? new Pair<>(new IControl[] { x7e }, x76)
                                                : new Pair<>(null, x76);
                         }

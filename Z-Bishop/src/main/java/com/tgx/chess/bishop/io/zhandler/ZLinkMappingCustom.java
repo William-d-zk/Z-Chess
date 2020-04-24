@@ -86,11 +86,9 @@ public class ZLinkMappingCustom
     }
 
     @Override
-    public List<ITriple> notify(ISessionManager<ZContext> manager,
-                                IControl<ZContext> request,
-                                ISession<ZContext> session)
+    public List<ITriple> notify(ISessionManager<ZContext> manager, IControl<ZContext> request, long origin)
     {
-        return _Then != null ? _Then.notify(manager, request, session)
+        return _Then != null ? _Then.notify(manager, request, origin)
                              : null;
     }
 }

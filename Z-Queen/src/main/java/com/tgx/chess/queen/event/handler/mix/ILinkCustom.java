@@ -60,10 +60,10 @@ public interface ILinkCustom<C extends IContext<C>>
      * @param manager
      * @param request
      *            link发来 强一致的请求
-     * @param session
-     *            session == request.session
+     * @param origin
+     *            origin == request.session_index
      * @return response
      */
-    List<ITriple> notify(ISessionManager<C> manager, IControl<C> request, ISession<C> session);
+    List<ITriple> notify(ISessionManager<C> manager, IControl<C> request, long origin);
 
 }
