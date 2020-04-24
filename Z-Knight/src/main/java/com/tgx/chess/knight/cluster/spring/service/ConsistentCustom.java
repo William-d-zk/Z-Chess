@@ -25,7 +25,10 @@ package com.tgx.chess.knight.cluster.spring.service;
 
 import org.springframework.stereotype.Component;
 
+import com.tgx.chess.bishop.io.zprotocol.raft.X76_RaftResult;
 import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.knight.cluster.spring.model.ConsistentProtocol;
+import com.tgx.chess.knight.json.JsonUtil;
 import com.tgx.chess.queen.event.handler.cluster.INotifyCustom;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
 
@@ -37,9 +40,14 @@ public class ConsistentCustom
     private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
 
     @Override
-    public Void handle(IProtocol iProtocol, Void aVoid)
+    public Void handle(IProtocol protocol, Void aVoid)
     {
         _Logger.info("notify---consistent");
+        X76_RaftResult x76 = (X76_RaftResult) protocol;
+        byte[] data = x76.getPayload();
+        int payloadSerial = x76.getPayloadSerial();
+        ConsistentProtocol consistentProtocol = JsonUtil.readValue(data, ConsistentProtocol.class);
+        _Logger.info("notify ok");
         return null;
     }
 
