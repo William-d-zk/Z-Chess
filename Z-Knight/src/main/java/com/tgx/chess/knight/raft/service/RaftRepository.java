@@ -36,20 +36,20 @@ import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.io.core.inf.IActivity;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
-import com.tgx.chess.queen.io.core.inf.IConsensus;
+import com.tgx.chess.queen.io.core.inf.IClusterTimer;
 
 @Component
-public class ClusterRepository<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
+public class RaftRepository<T extends IActivity<ZContext> & IClusterPeer & IClusterTimer>
         implements
         IRepository<RaftNode<T>>
 {
-    private final IRaftConfig _ClusterConfig;
-    private final ZUID           _ZUid;
+    private final IRaftConfig _RaftConfig;
+    private final ZUID        _ZUid;
 
-    public ClusterRepository(IRaftConfig clusterConfig)
+    public RaftRepository(IRaftConfig raftConfig)
     {
-        _ClusterConfig = clusterConfig;
-        _ZUid = _ClusterConfig.createZUID();
+        _RaftConfig = raftConfig;
+        _ZUid = _RaftConfig.createZUID();
     }
 
     @Override

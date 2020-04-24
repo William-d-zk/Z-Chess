@@ -29,7 +29,6 @@ import java.nio.channels.AsynchronousSocketChannel;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.bishop.io.ZSort;
 import com.tgx.chess.bishop.io.zcrypt.EncryptHandler;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
@@ -47,9 +46,7 @@ import com.tgx.chess.queen.config.IMixConfig;
 import com.tgx.chess.queen.event.handler.IClusterCustom;
 import com.tgx.chess.queen.event.handler.mix.ILinkCustom;
 import com.tgx.chess.queen.event.handler.mix.ILogicHandler;
-import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.ISort;
-import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.async.AioSession;
 import com.tgx.chess.queen.io.core.async.BaseAioClient;
 import com.tgx.chess.queen.io.core.async.BaseAioServer;
@@ -94,56 +91,7 @@ public class DeviceNode
                       IMixConfig serverConfig,
                       TimeWheel timeWheel) throws IOException
     {
-        super(bizIoConfig, new ServerCore<ZContext>(serverConfig)
-        {
-            @Override
-            public RingBuffer<QEvent> getPublisher(ISession<ZContext> session, IOperator.Type type)
-            {
-                int slot = getSlot(session);
-                switch (type)
-                {
-                    case BIZ_LOCAL:
-                        if (slot != ZUID.TYPE_CONSUMER_SLOT) {
-                            throw new IllegalArgumentException("device local slot error");
-                        }
-                        return getBizLocalSendEvent();
-                    case CLUSTER_LOCAL:
-                        if (slot != ZUID.TYPE_CLUSTER_SLOT) {
-                            throw new IllegalArgumentException("cluster local slot error");
-                        }
-                        return getClusterLocalSendEvent();
-                    case CONSENSUS:
-                        if (slot != ZUID.TYPE_CLUSTER_SLOT) {
-                            throw new IllegalArgumentException("cluster local slot error");
-                        }
-                        return getConsensusEvent();
-                    default:
-                        throw new IllegalArgumentException(String.format("get publisher type error:%s ", type.name()));
-                }
-            }
-
-            @Override
-            public RingBuffer<QEvent> getCloser(ISession<ZContext> session, IOperator.Type type)
-            {
-                int slot = getSlot(session);
-                switch (type)
-                {
-                    case BIZ_LOCAL:
-                        if (slot != ZUID.TYPE_CONSUMER_SLOT) {
-                            throw new IllegalArgumentException("device local slot error");
-                        }
-                        return getBizLocalCloseEvent();
-                    case CLUSTER_LOCAL:
-                    case CONSENSUS:
-                        if (slot != ZUID.TYPE_CLUSTER_SLOT) {
-                            throw new IllegalArgumentException("cluster local slot error");
-                        }
-                        return getClusterLocalCloseEvent();
-                    default:
-                        throw new IllegalArgumentException(String.format("get closer type error:%s ", type.name()));
-                }
-            }
-        });
+        super(bizIoConfig, new ServerCore<>(serverConfig));
         _TimeWheel = timeWheel;
         _ZUID = raftConfig.createZUID();
         _Logger.info(_ZUID);

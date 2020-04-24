@@ -57,7 +57,6 @@ import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.async.socket.AioWorker;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
-import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.manager.ClusterManager;
 
 public class ClusterCore<C extends IContext<C>>
@@ -287,7 +286,7 @@ public class ClusterCore<C extends IContext<C>>
     }
 
     @Override
-    public ReentrantLock getLock(ISession<C> session, IOperator.Type type)
+    public ReentrantLock getLock(IOperator.Type type)
     {
         switch (type)
         {
@@ -295,7 +294,7 @@ public class ClusterCore<C extends IContext<C>>
                 return _ClusterLock;
             case CONSENSUS:
                 return _ConsensusApiLock;
-            case EXTERNAL:
+            case CLUSTER_TIMER:
                 return _ConsensusLock;
             default:
                 throw new IllegalArgumentException(String.format("error type:%s", type));
@@ -303,13 +302,13 @@ public class ClusterCore<C extends IContext<C>>
     }
 
     @Override
-    public RingBuffer<QEvent> getPublisher(ISession<C> session, IOperator.Type type)
+    public RingBuffer<QEvent> getPublisher(IOperator.Type type)
     {
         switch (type)
         {
             case CONSENSUS:
                 return _ConsensusApiEvent;
-            case EXTERNAL:
+            case CLUSTER_TIMER:
                 return _ConsensusEvent;
             default:
                 throw new IllegalArgumentException(String.format("get publisher type error:%s ", type.name()));
@@ -317,7 +316,7 @@ public class ClusterCore<C extends IContext<C>>
     }
 
     @Override
-    public RingBuffer<QEvent> getCloser(ISession<C> session, IOperator.Type type)
+    public RingBuffer<QEvent> getCloser(IOperator.Type type)
     {
         switch (type)
         {
@@ -340,4 +339,5 @@ public class ClusterCore<C extends IContext<C>>
     {
         return _ConsensusLock;
     }
+
 }
