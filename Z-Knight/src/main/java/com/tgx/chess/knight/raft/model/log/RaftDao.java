@@ -42,13 +42,13 @@ import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-import com.tgx.chess.knight.raft.config.ZRaftConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.knight.raft.IRaftDao;
+import com.tgx.chess.knight.raft.config.ZRaftConfig;
 
 @Component
 public class RaftDao
@@ -164,7 +164,7 @@ public class RaftDao
     {
         long startIndex = getStartIndex();
         long endIndex = getEndIndex();
-        if (index == INDEX_NAN || index < startIndex || index > endIndex) {
+        if (index == INDEX_NAN || (index < startIndex && index > 0) || index > endIndex) {
             _Logger.info("index out of range, index=%d, start_index=%d, end_index=%d", index, startIndex, endIndex);
             return null;
         }
