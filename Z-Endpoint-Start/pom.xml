@@ -33,7 +33,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>start.z-start</artifactId>
-    <name>Z-Start</name>
+    <name>Z-Endpoint-Start</name>
     <dependencies>
         <dependency>
             <groupId>com.tgx.service</groupId>
