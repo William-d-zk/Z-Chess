@@ -49,6 +49,7 @@ import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
+import com.tgx.chess.queen.io.core.inf.ISessionManager;
 import com.tgx.chess.queen.io.core.manager.MixManager;
 
 /**
@@ -64,10 +65,10 @@ public class MappingHandler<C extends IContext<C>,
     private final RingBuffer<QEvent>   _Error;
     private final RingBuffer<QEvent>   _Writer;
     private final RingBuffer<QEvent>   _Transfer;
-    private final MixManager<C> _MixManager;
+    private final ISessionManager<C>   _SessionManager;
     private final ILinkCustom<C>       _LinkCustom;
     private final IClusterCustom<C,
-                                     T> _ClusterCustom;
+                                 T>    _ClusterCustom;
 
     public MappingHandler(String mapper,
                           MixManager<C> manager,
@@ -79,7 +80,7 @@ public class MappingHandler<C extends IContext<C>,
                                          T> clusterCustom)
     {
         _Logger = Logger.getLogger(mapper);
-        _MixManager = manager;
+        _SessionManager = manager;
         _Writer = writer;
         _Error = error;
         _Transfer = transfer;
@@ -164,7 +165,7 @@ public class MappingHandler<C extends IContext<C>,
                                                .getSecond();
                     if (received == null) { return; }
                     try {
-                        IPair handled = _LinkCustom.handle(_MixManager, session, received);
+                        IPair handled = _LinkCustom.handle(_SessionManager, session, received);
                         if (handled == null) return;
                         IControl<C>[] toSends = handled.getFirst();
                         if (toSends != null && toSends.length > 0) {
@@ -186,7 +187,7 @@ public class MappingHandler<C extends IContext<C>,
                                                .getIgnore());
                             }
                             else {
-                                List<ITriple> result = _LinkCustom.notify(_MixManager, transfer, session);
+                                List<ITriple> result = _LinkCustom.notify(_SessionManager, transfer, session);
                                 if (result != null && !result.isEmpty()) {
                                     publish(_Writer, result);
                                 }
@@ -211,7 +212,7 @@ public class MappingHandler<C extends IContext<C>,
 
                     if (received == null) { return; }
                     try {
-                        IPair handled = _ClusterCustom.handle(_MixManager, session, received);
+                        IPair handled = _ClusterCustom.handle(_SessionManager, session, received);
                         if (handled == null) return;
                         IControl<C>[] toSends = handled.getFirst();
                         if (toSends != null && toSends.length > 0) {
@@ -249,7 +250,7 @@ public class MappingHandler<C extends IContext<C>,
                     session = event.getContent()
                                    .getSecond();
                     try {
-                        List<ITriple> result = _ClusterCustom.consensus(_MixManager, received, session.getIndex());
+                        List<ITriple> result = _ClusterCustom.consensus(_SessionManager, received, session.getIndex());
                         if (result != null && !result.isEmpty()) {
                             publish(_Writer, result);
                         }
@@ -270,7 +271,7 @@ public class MappingHandler<C extends IContext<C>,
                     session = event.getContent()
                                    .getSecond();
                     try {
-                        List<ITriple> result = _LinkCustom.notify(_MixManager, received, session);
+                        List<ITriple> result = _LinkCustom.notify(_SessionManager, received, session);
                         if (result != null && !result.isEmpty()) {
                             publish(_Writer, result);
                         }
@@ -283,7 +284,7 @@ public class MappingHandler<C extends IContext<C>,
                     /*TIMER 必然是单个IControl,通过前项RingBuffer 向MappingHandler 投递*/
                     T content = event.getContent()
                                      .getFirst();
-                    List<ITriple> toSends = _ClusterCustom.onTimer(_MixManager, content);
+                    List<ITriple> toSends = _ClusterCustom.onTimer(_SessionManager, content);
                     if (toSends != null && !toSends.isEmpty()) {
                         publish(_Writer, toSends);
                     }

@@ -36,7 +36,7 @@ import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.manager.MixManager;
+import com.tgx.chess.queen.io.core.inf.ISessionManager;
 
 public interface ILogicHandler<C extends IContext<C>>
         extends
@@ -44,7 +44,7 @@ public interface ILogicHandler<C extends IContext<C>>
 {
     Logger _Logger = Logger.getLogger(ILogicHandler.class.getSimpleName());
 
-    MixManager<C> getQueenManager();
+    ISessionManager<C> getISessionManager();
 
     @Override
     default void onEvent(QEvent event, long sequence, boolean endOfBatch)
@@ -56,7 +56,7 @@ public interface ILogicHandler<C extends IContext<C>>
                                        .getSecond();
             if (content != null) {
                 try {
-                    IControl<C>[] response = handle(getQueenManager(), session, content);
+                    IControl<C>[] response = handle(getISessionManager(), session, content);
                     if (Objects.nonNull(response) && response.length > 0) {
                         event.produce(LOGIC,
                                       new Pair<>(response, session),
@@ -83,6 +83,6 @@ public interface ILogicHandler<C extends IContext<C>>
         }
     }
 
-    IControl<C>[] handle(MixManager<C> manager, ISession<C> session, IControl<C> content) throws Exception;
+    IControl<C>[] handle(ISessionManager<C> manager, ISession<C> session, IControl<C> content) throws Exception;
 
 }
