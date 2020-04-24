@@ -39,9 +39,9 @@ import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.topology.ZUID;
 import com.tgx.chess.knight.cluster.spring.IClusterNode;
 import com.tgx.chess.knight.raft.config.IRaftConfig;
+import com.tgx.chess.knight.raft.model.RaftMachine;
 import com.tgx.chess.queen.config.IAioConfig;
 import com.tgx.chess.queen.config.IClusterConfig;
-import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.handler.IClusterCustom;
 import com.tgx.chess.queen.event.handler.cluster.INotifyCustom;
 import com.tgx.chess.queen.event.inf.ISort;
@@ -153,9 +153,9 @@ public class ClusterNode
         _Logger.info("load cluster node");
     }
 
-    public <T extends IStorage> void start(INotifyCustom notifyCustom,
-                                           IClusterCustom<ZContext,
-                                                          T> clusterCustom) throws IOException
+    public void start(INotifyCustom notifyCustom,
+                      IClusterCustom<ZContext,
+                                     RaftMachine> clusterCustom) throws IOException
     {
         getCore().build(this, new EncryptHandler(), notifyCustom, clusterCustom);
         _AioServer.bindAddress(_AioServer.getLocalAddress(), getCore().getClusterChannelGroup());

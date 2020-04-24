@@ -79,5 +79,6 @@
                 </executions>
             </plugin>
         </plugins>
+        <directory>${user.home}/Z-Chess/${project.name}/target</directory>
     </build>
 </project>

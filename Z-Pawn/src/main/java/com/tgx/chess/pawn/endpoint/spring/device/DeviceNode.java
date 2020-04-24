@@ -41,9 +41,9 @@ import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.king.topology.ZUID;
 import com.tgx.chess.knight.cluster.spring.IClusterNode;
 import com.tgx.chess.knight.raft.config.IRaftConfig;
+import com.tgx.chess.knight.raft.model.RaftMachine;
 import com.tgx.chess.queen.config.IAioConfig;
 import com.tgx.chess.queen.config.IMixConfig;
-import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.handler.IClusterCustom;
 import com.tgx.chess.queen.event.handler.mix.ILinkCustom;
 import com.tgx.chess.queen.event.handler.mix.ILogicHandler;
@@ -233,7 +233,7 @@ public class DeviceNode
     public void start(ILogicHandler<ZContext> logicHandler,
                       ILinkCustom<ZContext> linkCustom,
                       IClusterCustom<ZContext,
-                                     ? extends IStorage> clusterCustom) throws IOException
+                                     RaftMachine> clusterCustom) throws IOException
     {
         getCore().build(this, new EncryptHandler(), logicHandler, linkCustom, clusterCustom);
         for (IAioServer<ZContext> server : _AioServers) {
