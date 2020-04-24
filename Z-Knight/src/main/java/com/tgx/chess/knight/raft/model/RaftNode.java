@@ -278,7 +278,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
         update.setLeader(INVALID_PEER_ID);
         update.setCommit(_SelfMachine.getCommit());
         _ClusterPeer.timerEvent(update);
-        _Logger.info("start vote self %s", _SelfMachine.toString());
+        _Logger.info("start vote %s", update.toString());
     }
 
     private X7F_RaftResponse success()
@@ -590,6 +590,20 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                 }
                 break;
             case ALREADY_VOTE:
+                if (_SelfMachine.getState() == CANDIDATE
+                    && _RaftGraph.isMajorReject(_SelfMachine.getPeerId(), _SelfMachine.getTerm()))
+                {
+                    _Logger.info("major reject step down => follower");
+                    electCancel();
+                    stepDown();
+                }
+                break;
+            case OBSOLETE:
+                electCancel();
+                if (_SelfMachine.getState() == CANDIDATE) {
+                    _Logger.info("self obsolete => follower");
+                    stepDown();
+                }
                 break;
         }
         return new Pair<>();
