@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.knight.config;
+package com.tgx.chess.knight.cluster.spring.config;
 
 import java.time.Duration;
 

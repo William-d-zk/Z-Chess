@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.knight.config;
+package com.tgx.chess.knight.cluster.spring.config;
 
 import java.util.Map;
 
@@ -62,10 +62,10 @@ public class IoClusterConfig
     {
         switch (type)
         {
-            case ZUID.TYPE_CLUSTER_SLOT:
-                return sizePowers.getOrDefault("cluster.2", 7);
             case ZUID.TYPE_INTERNAL_SLOT:
-                return sizePowers.getOrDefault("internal.3", 7);
+                return sizePowers.getOrDefault("internal.1", 7);
+            case ZUID.TYPE_CLUSTER_SLOT:
+                return sizePowers.getOrDefault("cluster.3", 7);
             default:
                 throw new IllegalArgumentException();
         }
@@ -77,10 +77,10 @@ public class IoClusterConfig
     {
         switch (type)
         {
-            case ZUID.TYPE_CLUSTER_SLOT:
-                return cluster;
             case ZUID.TYPE_INTERNAL_SLOT:
                 return internal;
+            case ZUID.TYPE_CLUSTER_SLOT:
+                return cluster;
             default:
                 throw new IllegalArgumentException();
         }

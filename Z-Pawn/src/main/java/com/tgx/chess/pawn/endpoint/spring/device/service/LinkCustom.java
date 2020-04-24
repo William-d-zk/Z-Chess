@@ -26,9 +26,7 @@ package com.tgx.chess.pawn.endpoint.spring.device.service;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.NavigableMap;
 import java.util.Objects;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -52,7 +50,6 @@ import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.base.util.Triple;
-import com.tgx.chess.knight.raft.model.RaftCode;
 import com.tgx.chess.pawn.endpoint.spring.device.model.DeviceEntry;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.db.inf.IStorage;
@@ -67,13 +64,9 @@ public class LinkCustom
         implements
         ILinkCustom<ZContext>
 {
-    private final Logger                                                                       _Logger    = Logger.getLogger(getClass().getSimpleName());
-    private final IRepository<DeviceEntry>                                                     _DeviceRepository;
-    private final NavigableMap<Long,
-                               Triple<IControl<ZContext>,
-                                      ISession<ZContext>,
-                                      RaftCode>>                                               _NotifyMap = new TreeMap<>();
-    private IQttRouter                                                                         mQttRouter;
+    private final Logger                   _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final IRepository<DeviceEntry> _DeviceRepository;
+    private IQttRouter                     mQttRouter;
 
     @Autowired
     public LinkCustom(IRepository<DeviceEntry> deviceRepository)

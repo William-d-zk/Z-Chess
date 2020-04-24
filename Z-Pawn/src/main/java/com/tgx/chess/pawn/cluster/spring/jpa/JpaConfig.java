@@ -36,7 +36,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  */
 @EnableJpaAuditing
 @EnableJpaRepositories({ "com.tgx.chess.pawn.cluster.spring.jpa.consensus.repository" })
-@EntityScan({ "com.tgx.com.tgx.chess.pawn.cluster.spring.jpa.consensus.dao" })
+@EntityScan({ "com.tgx.chess.pawn.cluster.spring.jpa.consensus.dao" })
 @EnableTransactionManagement
 @Configuration
 @PropertySource({"classpath:db.properties"})

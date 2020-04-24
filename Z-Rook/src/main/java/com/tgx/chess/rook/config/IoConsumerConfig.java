@@ -65,7 +65,7 @@ public class IoConsumerConfig
             case ZUID.TYPE_INTERNAL_SLOT:
                 return sizePowers.getOrDefault("internal.1", 9);
             case ZUID.TYPE_CONSUMER_SLOT:
-                return sizePowers.getOrDefault("consumer.2", 3);
+                return sizePowers.getOrDefault("consumer.0", 3);
             default:
                 throw new IllegalArgumentException();
         }
