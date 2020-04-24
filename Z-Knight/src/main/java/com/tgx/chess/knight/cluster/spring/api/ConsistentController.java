@@ -23,21 +23,30 @@
  */
 package com.tgx.chess.knight.cluster.spring.api;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tgx.chess.knight.cluster.spring.model.ConsistentEntry;
+import com.tgx.chess.knight.cluster.spring.service.ConsistentService;
 
 @RestController
 public class ConsistentController
 {
+    private final ConsistentService _ConsistentService;
+
+    @Autowired
+    public ConsistentController(ConsistentService consistentService)
+    {
+        _ConsistentService = consistentService;
+    }
 
     @PostMapping("")
     public @ResponseBody ConsistentEntry consistentPut(@RequestBody ConsistentEntry input)
     {
-
-        return null;
+        _ConsistentService.consistentPut(input);
+        return input;
     }
 }
