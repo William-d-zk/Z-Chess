@@ -87,7 +87,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
 {
     private final Logger                       _Logger         = Logger.getLogger(getClass().getSimpleName());
     private final ZUID                         _ZUID;
-    private final IRaftConfig _ClusterConfig;
+    private final IRaftConfig                  _ClusterConfig;
     private final T                            _ClusterPeer;
     private final IRaftDao                     _RaftDao;
     private final TimeWheel                    _TimeWheel;

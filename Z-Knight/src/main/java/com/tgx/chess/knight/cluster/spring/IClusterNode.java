@@ -26,20 +26,28 @@ package com.tgx.chess.knight.cluster.spring;
 
 import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.util.concurrent.locks.ReentrantLock;
 
+import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.bishop.io.ZSort;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
 import com.tgx.chess.king.base.inf.IPair;
+import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.topology.ZUID;
 import com.tgx.chess.queen.config.ISocketConfig;
+import com.tgx.chess.queen.db.inf.IStorage;
+import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.ISort;
+import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.async.AioSession;
 import com.tgx.chess.queen.io.core.async.BaseAioConnector;
+import com.tgx.chess.queen.io.core.executor.IPipeCore;
 import com.tgx.chess.queen.io.core.inf.IAioClient;
 import com.tgx.chess.queen.io.core.inf.IAioConnector;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.IConnectActivity;
+import com.tgx.chess.queen.io.core.inf.IConsensus;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
@@ -49,9 +57,10 @@ import com.tgx.chess.queen.io.core.inf.ISessionOption;
  * @author william.d.zk
  * @date 2020/4/23
  */
-public interface ICluserNode
+public interface IClusterNode<K extends IPipeCore>
         extends
-        IClusterPeer
+        IClusterPeer,
+        IConsensus
 {
     default IAioConnector<ZContext> buildConnector(IPair address,
                                                    ISocketConfig socketConfig,
@@ -102,5 +111,29 @@ public interface ICluserNode
                 return _Sort;
             }
         };
+    }
+
+    K getCore();
+
+    @Override
+    default <T extends IStorage> void publishConsensus(IOperator.Type type, T content)
+    {
+        final RingBuffer<QEvent> _ConsensusEvent = getCore().getConsensusEvent();
+        final ReentrantLock _ConsensusLock = getCore().getConsensusLock();
+        if (_ConsensusLock.tryLock()) {
+            try {
+                long sequence = _ConsensusEvent.next();
+                try {
+                    QEvent event = _ConsensusEvent.get(sequence);
+                    event.produce(type, new Pair<>(content, null), null);
+                }
+                finally {
+                    _ConsensusEvent.publish(sequence);
+                }
+            }
+            finally {
+                _ConsensusLock.unlock();
+            }
+        }
     }
 }

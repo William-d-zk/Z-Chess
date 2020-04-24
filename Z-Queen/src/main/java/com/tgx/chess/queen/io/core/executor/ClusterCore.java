@@ -294,6 +294,8 @@ public class ClusterCore<C extends IContext<C>>
             case CLUSTER_LOCAL:
                 return _ClusterLock;
             case CONSENSUS:
+                return _ConsensusApiLock;
+            case EXTERNAL:
                 return _ConsensusLock;
             default:
                 throw new IllegalArgumentException(String.format("error type:%s", type));
@@ -325,5 +327,17 @@ public class ClusterCore<C extends IContext<C>>
             default:
                 throw new IllegalArgumentException(String.format("get closer type error:%s ", type.name()));
         }
+    }
+
+    @Override
+    public RingBuffer<QEvent> getConsensusEvent()
+    {
+        return _ConsensusEvent;
+    }
+
+    @Override
+    public ReentrantLock getConsensusLock()
+    {
+        return _ConsensusLock;
     }
 }

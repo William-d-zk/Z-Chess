@@ -37,7 +37,7 @@ import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.topology.ZUID;
-import com.tgx.chess.knight.cluster.spring.ICluserNode;
+import com.tgx.chess.knight.cluster.spring.IClusterNode;
 import com.tgx.chess.knight.raft.config.IRaftConfig;
 import com.tgx.chess.queen.config.IAioConfig;
 import com.tgx.chess.queen.config.IClusterConfig;
@@ -63,7 +63,7 @@ public class ClusterNode
         ClusterManager<ZContext>
         implements
         ISessionDismiss<ZContext>,
-        ICluserNode
+        IClusterNode<ClusterCore<ZContext>>
 {
     private final Logger               _Logger = Logger.getLogger(getClass().getSimpleName());
     private final TimeWheel            _TimeWheel;
@@ -127,7 +127,7 @@ public class ClusterNode
                 return new IControl[] { x106 };
             }
         };
-        _GateClient = new BaseAioClient<ZContext>(_TimeWheel, getClusterCore().getClusterChannelGroup())
+        _GateClient = new BaseAioClient<ZContext>(_TimeWheel, getCore().getClusterChannelGroup())
         {
             @Override
             public void onDismiss(ISession<ZContext> session)
@@ -136,7 +136,7 @@ public class ClusterNode
                 super.onDismiss(session);
             }
         };
-        _PeerClient = new BaseAioClient<ZContext>(_TimeWheel, getClusterCore().getClusterChannelGroup())
+        _PeerClient = new BaseAioClient<ZContext>(_TimeWheel, getCore().getClusterChannelGroup())
         {
             @Override
             public void onDismiss(ISession<ZContext> session)
@@ -157,8 +157,8 @@ public class ClusterNode
                                            IClusterCustom<ZContext,
                                                           T> clusterCustom) throws IOException
     {
-        _ClusterCore.build(this, new EncryptHandler(), notifyCustom, clusterCustom);
-        _AioServer.bindAddress(_AioServer.getLocalAddress(), _ClusterCore.getClusterChannelGroup());
+        getCore().build(this, new EncryptHandler(), notifyCustom, clusterCustom);
+        _AioServer.bindAddress(_AioServer.getLocalAddress(), getCore().getClusterChannelGroup());
         _AioServer.pendingAccept();
         _Logger.info(String.format("cluster start: %s", _AioServer.getLocalAddress()));
     }
@@ -187,4 +187,9 @@ public class ClusterNode
                                            _ZUID));
     }
 
+    @Override
+    public ClusterCore<ZContext> getCore()
+    {
+        return super.getCore();
+    }
 }

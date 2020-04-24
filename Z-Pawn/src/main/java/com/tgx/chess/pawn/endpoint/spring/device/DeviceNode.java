@@ -27,7 +27,6 @@ package com.tgx.chess.pawn.endpoint.spring.device;
 import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import com.lmax.disruptor.RingBuffer;
@@ -38,9 +37,9 @@ import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.schedule.TimeWheel;
-import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.king.topology.ZUID;
+import com.tgx.chess.knight.cluster.spring.IClusterNode;
 import com.tgx.chess.knight.raft.config.IRaftConfig;
 import com.tgx.chess.queen.config.IAioConfig;
 import com.tgx.chess.queen.config.IMixConfig;
@@ -59,9 +58,7 @@ import com.tgx.chess.queen.io.core.executor.ServerCore;
 import com.tgx.chess.queen.io.core.inf.IAioClient;
 import com.tgx.chess.queen.io.core.inf.IAioConnector;
 import com.tgx.chess.queen.io.core.inf.IAioServer;
-import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.IConnectActivity;
-import com.tgx.chess.queen.io.core.inf.IConsensus;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
@@ -77,8 +74,7 @@ public class DeviceNode
         MixManager<ZContext>
         implements
         ISessionDismiss<ZContext>,
-        IClusterPeer,
-        IConsensus
+        IClusterNode<ServerCore<ZContext>>
 {
 
     private final List<IAioServer<ZContext>> _AioServers;
@@ -215,7 +211,7 @@ public class DeviceNode
                                };
                            })
                            .collect(Collectors.toList());
-        _GateClient = new BaseAioClient<ZContext>(getTimeWheel(), getServerCore().getClusterChannelGroup())
+        _GateClient = new BaseAioClient<ZContext>(getTimeWheel(), getCore().getClusterChannelGroup())
         {
             @Override
             public void onDismiss(ISession<ZContext> session)
@@ -224,7 +220,7 @@ public class DeviceNode
                 super.onDismiss(session);
             }
         };
-        _ClusterClient = new BaseAioClient<ZContext>(getTimeWheel(), getServerCore().getClusterChannelGroup())
+        _ClusterClient = new BaseAioClient<ZContext>(getTimeWheel(), getCore().getClusterChannelGroup())
         {
             @Override
             public void onDismiss(ISession<ZContext> session)
@@ -246,9 +242,9 @@ public class DeviceNode
                       IClusterCustom<ZContext,
                                      ? extends IStorage> clusterCustom) throws IOException
     {
-        _ServerCore.build(this, new EncryptHandler(), logicHandler, linkCustom, clusterCustom);
+        getCore().build(this, new EncryptHandler(), logicHandler, linkCustom, clusterCustom);
         for (IAioServer<ZContext> server : _AioServers) {
-            server.bindAddress(server.getLocalAddress(), _ServerCore.getServiceChannelGroup());
+            server.bindAddress(server.getLocalAddress(), getCore().getServiceChannelGroup());
             server.pendingAccept();
             _Logger.info(String.format("device node start %s", server.getLocalAddress()));
         }
@@ -321,24 +317,8 @@ public class DeviceNode
     }
 
     @Override
-    public <T extends IStorage> void publishConsensus(IOperator.Type type, T content)
+    public ServerCore<ZContext> getCore()
     {
-        final RingBuffer<QEvent> _ConsensusEvent = _ServerCore.getConsensusEvent();
-        final ReentrantLock _ConsensusLock = _ServerCore.getConsensusLock();
-        if (_ConsensusLock.tryLock()) {
-            try {
-                long sequence = _ConsensusEvent.next();
-                try {
-                    QEvent event = _ConsensusEvent.get(sequence);
-                    event.produce(type, new Pair<>(content, null), null);
-                }
-                finally {
-                    _ConsensusEvent.publish(sequence);
-                }
-            }
-            finally {
-                _ConsensusLock.unlock();
-            }
-        }
+        return super.getCore();
     }
 }

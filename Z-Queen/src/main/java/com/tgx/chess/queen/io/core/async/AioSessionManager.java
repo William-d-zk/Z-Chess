@@ -39,6 +39,7 @@ import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.topology.ZUID;
 import com.tgx.chess.queen.config.IAioConfig;
 import com.tgx.chess.queen.config.ISocketConfig;
+import com.tgx.chess.queen.io.core.executor.IPipeCore;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
@@ -51,7 +52,8 @@ import com.tgx.chess.queen.io.core.inf.ISessionManager;
  *
  * @author William.d.zk
  */
-public abstract class AioSessionManager<C extends IContext<C>>
+public abstract class AioSessionManager<C extends IContext<C>,
+                                        K extends IPipeCore>
         implements
         ISessionManager<C>
 {
@@ -261,4 +263,6 @@ public abstract class AioSessionManager<C extends IContext<C>>
     {
         return _Prefix2SessionMaps[getSlot(prefix)].get(prefix);
     }
+
+    protected abstract K getCore();
 }
