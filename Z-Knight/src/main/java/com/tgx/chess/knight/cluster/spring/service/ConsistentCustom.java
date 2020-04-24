@@ -45,8 +45,15 @@ public class ConsistentCustom
         _Logger.info("notify---consistent");
         X76_RaftResult x76 = (X76_RaftResult) protocol;
         byte[] data = x76.getPayload();
-        int payloadSerial = x76.getPayloadSerial();
-        ConsistentProtocol consistentProtocol = JsonUtil.readValue(data, ConsistentProtocol.class);
+        switch (x76.getPayloadSerial())
+        {
+            case ConsistentProtocol._SERIAL:
+                ConsistentProtocol consistentProtocol = JsonUtil.readValue(data, ConsistentProtocol.class);
+                break;
+            default:
+                _Logger.fetal("consistent notify failed");
+                break;
+        }
         _Logger.info("notify ok");
         return null;
     }
