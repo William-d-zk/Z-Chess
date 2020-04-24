@@ -38,11 +38,12 @@ import com.tgx.chess.queen.io.core.inf.ISession;
  */
 public abstract class MixManager<C extends IContext<C>>
         extends
-        AioSessionManager<C>
+        AioSessionManager<C,
+                          ServerCore<C>>
         implements
         IActivity<C>
 {
-    protected final ServerCore<C> _ServerCore;
+    private final ServerCore<C> _ServerCore;
 
     public MixManager(IAioConfig config,
                       ServerCore<C> serverCore)
@@ -64,9 +65,9 @@ public abstract class MixManager<C extends IContext<C>>
         return _ServerCore.send(session, type, commands);
     }
 
-    protected ServerCore<C> getServerCore()
+    @Override
+    protected ServerCore<C> getCore()
     {
         return _ServerCore;
     }
-
 }

@@ -35,11 +35,12 @@ import com.tgx.chess.queen.io.core.inf.ISession;
 
 public class ClusterManager<C extends IContext<C>>
         extends
-        AioSessionManager<C>
+        AioSessionManager<C,
+                          ClusterCore<C>>
         implements
         IActivity<C>
 {
-    protected final ClusterCore<C> _ClusterCore;
+    private final ClusterCore<C> _ClusterCore;
 
     public ClusterManager(IAioConfig config,
                           ClusterCore<C> clusterCore)
@@ -61,9 +62,9 @@ public class ClusterManager<C extends IContext<C>>
         return _ClusterCore.send(session, type, commands);
     }
 
-    protected ClusterCore<C> getClusterCore()
+    @Override
+    protected ClusterCore<C> getCore()
     {
         return _ClusterCore;
     }
-
 }
