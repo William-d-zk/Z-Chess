@@ -114,4 +114,12 @@ public class RaftGraph
                        .count() > _NodeMap.size() / 2;
     }
 
+    public boolean isMajorReject(long selfPeerId, long term)
+    {
+        return _NodeMap.values()
+                       .stream()
+                       .filter(machine -> machine.getTerm() >= term && machine.getCandidate() != selfPeerId)
+                       .count() > _NodeMap.size() / 2;
+    }
+
 }
