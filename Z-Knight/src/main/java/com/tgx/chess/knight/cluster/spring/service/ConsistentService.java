@@ -48,7 +48,7 @@ import com.tgx.chess.queen.config.IClusterConfig;
 import com.tgx.chess.queen.event.processor.QEvent;
 
 @Service
-public class ClusterService
+public class ConsistentService
 {
 
     private final ClusterNode                _ClusterNode;
@@ -58,12 +58,12 @@ public class ClusterService
     private final TimeWheel                  _TimeWheel;
 
     @Autowired
-    public ClusterService(IAioConfig ioConfig,
-                          IClusterConfig clusterConfig,
-                          IRaftConfig raftConfig,
-                          ConsistentCustom consistentCustom,
-                          ClusterCustom<ClusterNode> clusterCustom,
-                          IRaftDao raftDao) throws IOException
+    public ConsistentService(IAioConfig ioConfig,
+                             IClusterConfig clusterConfig,
+                             IRaftConfig raftConfig,
+                             ConsistentCustom consistentCustom,
+                             ClusterCustom<ClusterNode> clusterCustom,
+                             IRaftDao raftDao) throws IOException
     {
         _TimeWheel = new TimeWheel();
         _ConsistentCustom = consistentCustom;
@@ -91,7 +91,7 @@ public class ClusterService
                 long sequence = _Publish.next();
                 try {
                     QEvent event = _Publish.get(sequence);
-                    event.produce(CONSENSUS, new Pair<>(entry.getPayload(), null), null);
+                    event.produce(CONSENSUS, new Pair<>(entry.getProtocol(), null), null);
                 }
                 finally {
                     _Publish.publish(sequence);
