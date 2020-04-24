@@ -162,7 +162,7 @@ public class ZUID
 
     public synchronized long getId()
     {
-        return getId(_Type);
+        return getId(_Type << TYPE_SHIFT);
     }
 
     public String getName()
