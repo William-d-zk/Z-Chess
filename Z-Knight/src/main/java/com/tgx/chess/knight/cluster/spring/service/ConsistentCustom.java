@@ -25,6 +25,7 @@ package com.tgx.chess.knight.cluster.spring.service;
 
 import org.springframework.stereotype.Component;
 
+import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.event.handler.cluster.INotifyCustom;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
 
@@ -33,10 +34,18 @@ public class ConsistentCustom
         implements
         INotifyCustom
 {
+    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
 
     @Override
     public Void handle(IProtocol iProtocol, Void aVoid)
     {
+        _Logger.info("notify---consistent");
         return null;
+    }
+
+    @Override
+    public String getName()
+    {
+        return "operator.consistent";
     }
 }
