@@ -24,6 +24,7 @@
 
 package com.tgx.chess.knight.cluster.spring.model;
 
+import java.time.Instant;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -45,6 +46,7 @@ public class ConsistentProtocol
 {
     public final static int  _SERIAL = CONSISTENT_SERIAL + 1;
     private final byte[]     _Content;
+    private final Instant    _Instant;
     private int              mLength;
     @JsonIgnore
     private transient byte[] tData;
@@ -53,6 +55,7 @@ public class ConsistentProtocol
     public ConsistentProtocol(@JsonProperty("content") byte[] content)
     {
         _Content = content;
+        _Instant = Instant.now();
     }
 
     @Override
@@ -92,5 +95,10 @@ public class ConsistentProtocol
     public byte[] getContent()
     {
         return _Content;
+    }
+
+    public Instant getInstant()
+    {
+        return _Instant;
     }
 }

@@ -192,13 +192,13 @@ public class MappingHandler<C extends IContext<C>,
                     }
                     break;
                 case CONSENSUS:
-                    received = event.getContent()
-                                    .getFirst();
+                    IProtocol request = event.getContent()
+                                             .getFirst();
                     int origin = event.getContent()
                                       .getSecond();
                     if (_ClusterCustom.waitForCommit()) {
                         try {
-                            List<ITriple> broadcast = _ClusterCustom.consensus(_SessionManager, received, origin);
+                            List<ITriple> broadcast = _ClusterCustom.consensus(_SessionManager, request, origin);
                             if (broadcast != null && !broadcast.isEmpty()) {
                                 publish(_Writer, broadcast);
                             }
@@ -208,7 +208,7 @@ public class MappingHandler<C extends IContext<C>,
                         }
                     }
                     else {
-                        publishNotify(received, origin);
+                        publishNotify(request, origin);
                     }
                     break;
                 case CLUSTER_TIMER://ClusterConsumer Timeout->start_vote

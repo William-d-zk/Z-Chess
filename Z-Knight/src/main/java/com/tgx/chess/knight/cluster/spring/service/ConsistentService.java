@@ -91,7 +91,11 @@ public class ConsistentService
                 long sequence = _Publish.next();
                 try {
                     QEvent event = _Publish.get(sequence);
-                    event.produce(CONSENSUS, new Pair<>(entry.getProtocol(), null), null);
+                    event.produce(CONSENSUS,
+                                  new Pair<>(entry.getProtocol(),
+                                             Thread.currentThread()
+                                                   .hashCode()),
+                                  _ConsistentCustom);
                 }
                 finally {
                     _Publish.publish(sequence);
