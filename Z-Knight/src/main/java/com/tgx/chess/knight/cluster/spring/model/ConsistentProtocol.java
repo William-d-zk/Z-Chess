@@ -25,6 +25,8 @@
 package com.tgx.chess.knight.cluster.spring.model;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -53,11 +55,10 @@ public class ConsistentProtocol
 
     @JsonCreator
     public ConsistentProtocol(@JsonProperty("content") byte[] content,
-                              @JsonProperty("instant") Instant instant)
+                              @JsonProperty("instant") String localTime)
     {
         _Content = content;
-        _Instant = instant == null ? Instant.now()
-                                   : instant;
+        _Instant = Instant.from(LocalDateTime.parse(localTime, DateTimeFormatter.ISO_INSTANT));
     }
 
     @Override
@@ -99,8 +100,8 @@ public class ConsistentProtocol
         return _Content;
     }
 
-    public Instant getInstant()
+    public String getInstant()
     {
-        return _Instant;
+        return _Instant.toString();
     }
 }

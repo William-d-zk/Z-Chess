@@ -43,18 +43,20 @@ public class ConsistentCustom
     public Void handle(IProtocol protocol, Void aVoid)
     {
         _Logger.info("notify---consistent");
-        X76_RaftResult x76 = (X76_RaftResult) protocol;
-        byte[] data = x76.getPayload();
-        switch (x76.getPayloadSerial())
-        {
-            case ConsistentProtocol._SERIAL:
-                ConsistentProtocol consistentProtocol = JsonUtil.readValue(data, ConsistentProtocol.class);
-                break;
-            default:
-                _Logger.fetal("consistent notify failed");
-                break;
+        if (protocol.serial() == X76_RaftResult.COMMAND) {
+            X76_RaftResult x76 = (X76_RaftResult) protocol;
+            byte[] data = x76.getPayload();
+            switch (x76.getPayloadSerial())
+            {
+                case ConsistentProtocol._SERIAL:
+                    ConsistentProtocol consistentProtocol = JsonUtil.readValue(data, ConsistentProtocol.class);
+                    break;
+                default:
+                    _Logger.fetal("consistent notify failed");
+                    break;
+            }
+            _Logger.info("notify ok");
         }
-        _Logger.info("notify ok");
         return null;
     }
 
