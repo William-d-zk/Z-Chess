@@ -187,7 +187,9 @@ public class MappingHandler<C extends IContext<C>,
                                                .getIgnore());
                             }
                             else {
-                                List<ITriple> result = _LinkCustom.notify(_SessionManager, transfer, session);
+                                List<ITriple> result = _LinkCustom.notify(_SessionManager,
+                                                                          transfer,
+                                                                          session.getIndex());
                                 if (result != null && !result.isEmpty()) {
                                     publish(_Writer, result);
                                 }
@@ -225,7 +227,6 @@ public class MappingHandler<C extends IContext<C>,
                         }
                         IControl<C> transfer = handled.getSecond();
                         if (transfer != null) {
-                            session = transfer.getSession();
                             publish(_Transfer,
                                     NOTIFY,
                                     new Pair<>(transfer, session),
@@ -271,7 +272,7 @@ public class MappingHandler<C extends IContext<C>,
                     session = event.getContent()
                                    .getSecond();
                     try {
-                        List<ITriple> result = _LinkCustom.notify(_SessionManager, received, session);
+                        List<ITriple> result = _LinkCustom.notify(_SessionManager, received, session.getIndex());
                         if (result != null && !result.isEmpty()) {
                             publish(_Writer, result);
                         }

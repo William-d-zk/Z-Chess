@@ -140,13 +140,21 @@ public class WriteDispatcher<C extends IContext<C>>
                     IControl<C> command = content.getFirst();
                     session = content.getSecond();
                     if (command.isShutdown()) {
-                        if (session.isValid()) {
+                        if (session != null && session.isValid()) {
                             error(_Error,
                                   ILLEGAL_STATE,
                                   new Pair<>(new IllegalStateException("session to shutdown"), session),
                                   session.getContext()
                                          .getSort()
                                          .getError());
+                        }
+                        /*
+                        session == null 意味着 _SessionManager.find..失败
+                        !session.isValid 意味着 session 已经被关闭
+                        这两种情形都忽略执行即可 
+                         */
+                        else {
+                            _Logger.warning("dispatch failed [ %s ]", session);
                         }
                     }
                     else tryPublish(dispatchEncoder(session.getHashKey()),
