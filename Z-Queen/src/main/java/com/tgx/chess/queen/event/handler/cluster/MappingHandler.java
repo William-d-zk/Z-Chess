@@ -42,7 +42,6 @@ import com.tgx.chess.queen.event.handler.IClusterCustom;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.async.AioSessionManager;
 import com.tgx.chess.queen.io.core.inf.IAioConnector;
 import com.tgx.chess.queen.io.core.inf.IAioServer;
 import com.tgx.chess.queen.io.core.inf.IConnectActivity;
@@ -51,6 +50,7 @@ import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
+import com.tgx.chess.queen.io.core.inf.ISessionManager;
 
 /**
  * @author william.d.zk
@@ -65,13 +65,13 @@ public class MappingHandler<C extends IContext<C>,
     private final RingBuffer<QEvent>   _Error;
     private final RingBuffer<QEvent>   _Writer;
     private final RingBuffer<QEvent>[] _Notifiers;
-    private final AioSessionManager<C> _SessionManager;
+    private final ISessionManager<C>   _SessionManager;
     private final INotifyCustom        _NotifyCustom;
     private final IClusterCustom<C,
                                  T>    _ClusterCustom;
 
     public MappingHandler(String mapper,
-                          AioSessionManager<C> manager,
+                          ISessionManager<C> manager,
                           RingBuffer<QEvent> error,
                           RingBuffer<QEvent> writer,
                           RingBuffer<QEvent>[] notifiers,

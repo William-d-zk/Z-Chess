@@ -92,7 +92,8 @@ import com.tgx.chess.rook.io.ConsumerZSort;
 @Component
 public class DeviceConsumer
         extends
-        AioSessionManager<ZContext>
+        AioSessionManager<ZContext,
+                          ClientCore<ZContext>>
         implements
         IAioClient<ZContext>,
         ISessionDismiss<ZContext>
@@ -376,5 +377,11 @@ public class DeviceConsumer
                                                      }
                                                  },
                                                  connector));
+    }
+
+    @Override
+    protected ClientCore<ZContext> getCore()
+    {
+        return _ClientCore;
     }
 }

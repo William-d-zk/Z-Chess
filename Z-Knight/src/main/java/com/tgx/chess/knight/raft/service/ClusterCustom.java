@@ -63,6 +63,7 @@ import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.IConsensus;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
+import com.tgx.chess.queen.io.core.inf.ISessionManager;
 
 @Component
 public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
@@ -85,7 +86,7 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
     }
 
     @Override
-    public IPair handle(AioSessionManager<ZContext> manager,
+    public IPair handle(ISessionManager<ZContext> manager,
                         ISession<ZContext> session,
                         IControl<ZContext> content) throws Exception
     {
@@ -178,7 +179,7 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
     }
 
     @Override
-    public List<ITriple> onTimer(AioSessionManager<ZContext> manager, RaftMachine machine)
+    public List<ITriple> onTimer(ISessionManager<ZContext> manager, RaftMachine machine)
     {
         if (machine == null) { return null; }
         switch (machine.getOperation())
@@ -236,7 +237,7 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConse
     }
 
     @Override
-    public List<ITriple> consensus(AioSessionManager<ZContext> manager, IControl<ZContext> request, long origin)
+    public List<ITriple> consensus(ISessionManager<ZContext> manager, IControl<ZContext> request, long origin)
     {
         if (mRaftNode.getMachine()
                      .getState() == LEADER)
