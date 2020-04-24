@@ -39,7 +39,7 @@ import com.tgx.chess.queen.config.ISocketConfig;
  * @date 2020/2/1
  */
 @Configuration
-@ConfigurationProperties(prefix = "z.com.tgx.chess.io")
+@ConfigurationProperties(prefix = "z.com.tgx.chess.cluster.io")
 @PropertySource("classpath:io.cluster.properties")
 public class IoClusterConfig
         implements

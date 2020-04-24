@@ -32,8 +32,8 @@ import com.tgx.chess.queen.config.IClusterConfig;
 
 @Configuration
 @ConfigurationProperties(prefix = "z.com.tgx.chess.cluster")
-@PropertySource("classpath:cluster.properties")
-public class ClusterConfig
+@PropertySource("classpath:core.cluster.properties")
+public class CoreClusterConfig
         implements
         IClusterConfig
 {
