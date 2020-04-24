@@ -47,5 +47,6 @@ public class NotifyHandler
                   Void,
                   Void> notifier = event.getEventOp();
         notifier.handle(protocol, null);
+        event.reset();
     }
 }
