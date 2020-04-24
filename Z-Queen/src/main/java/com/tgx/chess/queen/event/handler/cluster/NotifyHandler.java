@@ -46,7 +46,9 @@ public class NotifyHandler
         IOperator<IProtocol,
                   Void,
                   Void> notifier = event.getEventOp();
-        notifier.handle(protocol, null);
+        if (notifier != null) {
+            notifier.handle(protocol, null);
+        }
         event.reset();
     }
 }
