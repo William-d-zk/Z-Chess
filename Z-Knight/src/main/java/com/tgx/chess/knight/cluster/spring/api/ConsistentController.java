@@ -43,7 +43,7 @@ public class ConsistentController
         _ConsistentService = consistentService;
     }
 
-    @PostMapping("")
+    @PostMapping("/consistent")
     public @ResponseBody ConsistentEntry consistentPut(@RequestBody ConsistentEntry input)
     {
         _ConsistentService.consistentPut(input);
