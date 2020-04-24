@@ -58,7 +58,7 @@ public class ConsistentEntity
     @Id
     @GeneratedValue(generator = "ZConsistentGenerator")
     @GenericGenerator(name = "ZConsistentGenerator",
-                      strategy = "com.tgx.com.tgx.chess.pawn.cluster.spring.jpa.generator.ZConsistentGenerator")
+                      strategy = "com.tgx.chess.pawn.cluster.spring.jpa.generator.ZConsistentGenerator")
     private long id;
 
     @Temporal(TemporalType.TIMESTAMP)
