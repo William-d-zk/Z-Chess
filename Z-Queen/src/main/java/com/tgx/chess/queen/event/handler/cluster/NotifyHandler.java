@@ -45,7 +45,7 @@ public class NotifyHandler
         IProtocol protocol = content.getFirst();
         IOperator<IProtocol,
                   Void,
-                  Void> notifier = content.getSecond();
+                  Void> notifier = event.getEventOp();
         notifier.handle(protocol, null);
     }
 }
