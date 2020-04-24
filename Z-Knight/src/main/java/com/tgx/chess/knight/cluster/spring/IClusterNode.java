@@ -24,6 +24,8 @@
 
 package com.tgx.chess.knight.cluster.spring;
 
+import static com.tgx.chess.queen.event.inf.IOperator.Type.CLUSTER_TIMER;
+
 import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.concurrent.locks.ReentrantLock;
@@ -37,7 +39,6 @@ import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.topology.ZUID;
 import com.tgx.chess.queen.config.ISocketConfig;
 import com.tgx.chess.queen.db.inf.IStorage;
-import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.async.AioSession;
@@ -46,8 +47,8 @@ import com.tgx.chess.queen.io.core.executor.IPipeCore;
 import com.tgx.chess.queen.io.core.inf.IAioClient;
 import com.tgx.chess.queen.io.core.inf.IAioConnector;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
+import com.tgx.chess.queen.io.core.inf.IClusterTimer;
 import com.tgx.chess.queen.io.core.inf.IConnectActivity;
-import com.tgx.chess.queen.io.core.inf.IConsensus;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
@@ -60,7 +61,7 @@ import com.tgx.chess.queen.io.core.inf.ISessionOption;
 public interface IClusterNode<K extends IPipeCore>
         extends
         IClusterPeer,
-        IConsensus
+        IClusterTimer
 {
     default IAioConnector<ZContext> buildConnector(IPair address,
                                                    ISocketConfig socketConfig,
@@ -116,7 +117,7 @@ public interface IClusterNode<K extends IPipeCore>
     K getCore();
 
     @Override
-    default <T extends IStorage> void publishConsensus(IOperator.Type type, T content)
+    default <T extends IStorage> void timerEvent(T content)
     {
         final RingBuffer<QEvent> _ConsensusEvent = getCore().getConsensusEvent();
         final ReentrantLock _ConsensusLock = getCore().getConsensusLock();
@@ -125,7 +126,7 @@ public interface IClusterNode<K extends IPipeCore>
                 long sequence = _ConsensusEvent.next();
                 try {
                     QEvent event = _ConsensusEvent.get(sequence);
-                    event.produce(type, new Pair<>(content, null), null);
+                    event.produce(CLUSTER_TIMER, new Pair<>(content, null), null);
                 }
                 finally {
                     _ConsensusEvent.publish(sequence);
