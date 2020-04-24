@@ -38,7 +38,6 @@ import static com.tgx.chess.knight.raft.model.RaftCode.SPLIT_CLUSTER;
 import static com.tgx.chess.knight.raft.model.RaftCode.SUCCESS;
 import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_APPEND;
 import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_INSERT;
-import static com.tgx.chess.queen.event.inf.IOperator.Type.EXTERNAL;
 import static java.lang.Math.min;
 
 import java.io.IOException;
@@ -75,7 +74,7 @@ import com.tgx.chess.knight.raft.config.IRaftConfig;
 import com.tgx.chess.knight.raft.model.log.LogEntry;
 import com.tgx.chess.queen.io.core.inf.IActivity;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
-import com.tgx.chess.queen.io.core.inf.IConsensus;
+import com.tgx.chess.queen.io.core.inf.IClusterTimer;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
 
@@ -83,7 +82,7 @@ import com.tgx.chess.queen.io.core.inf.ISessionManager;
  * @author william.d.zk
  * @date 2020/1/4
  */
-public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
+public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTimer>
 {
     private final Logger                       _Logger         = Logger.getLogger(getClass().getSimpleName());
     private final ZUID                         _ZUID;
@@ -129,7 +128,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         update.setIndex(_SelfMachine.getIndex());
         update.setIndexTerm(_SelfMachine.getIndexTerm());
         update.setCommit(_SelfMachine.getCommit());
-        _ClusterPeer.publishConsensus(EXTERNAL, update);
+        _ClusterPeer.timerEvent(update);
         _Logger.info("leader heartbeat");
     }
 
@@ -277,7 +276,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
         update.setCandidate(_SelfMachine.getPeerId());
         update.setLeader(INVALID_PEER_ID);
         update.setCommit(_SelfMachine.getCommit());
-        _ClusterPeer.publishConsensus(EXTERNAL, update);
+        _ClusterPeer.timerEvent(update);
         _Logger.info("start vote self %s", _SelfMachine.toString());
     }
 

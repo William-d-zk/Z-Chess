@@ -57,13 +57,12 @@ import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.async.socket.AioWorker;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
-import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.manager.MixManager;
 
 /**
  * @author william.d.zk
  */
-public abstract class ServerCore<C extends IContext<C>>
+public class ServerCore<C extends IContext<C>>
         extends
         ThreadPoolExecutor
         implements
@@ -143,7 +142,7 @@ public abstract class ServerCore<C extends IContext<C>>
     private AsynchronousChannelGroup mClusterChannelGroup;
 
     @SuppressWarnings("unchecked")
-    protected ServerCore(IMixConfig config)
+    public ServerCore(IMixConfig config)
     {
         super(config.getPoolSize(), config.getPoolSize(), 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
         _LogicCount = config.getLogicCount();
@@ -400,31 +399,6 @@ public abstract class ServerCore<C extends IContext<C>>
         submit(_EncodedProcessor);
     }
 
-    protected RingBuffer<QEvent> getBizLocalCloseEvent()
-    {
-        return _BizLocalCloseEvent;
-    }
-
-    protected RingBuffer<QEvent> getClusterLocalCloseEvent()
-    {
-        return _ClusterLocalCloseEvent;
-    }
-
-    protected RingBuffer<QEvent> getBizLocalSendEvent()
-    {
-        return _BizLocalSendEvent;
-    }
-
-    protected RingBuffer<QEvent> getClusterLocalSendEvent()
-    {
-        return _ClusterLocalSendEvent;
-    }
-
-    public RingBuffer<QEvent> getConsensusEvent()
-    {
-        return _ConsensusEvent;
-    }
-
     @Override
     public AsynchronousChannelGroup getServiceChannelGroup() throws IOException
     {
@@ -445,7 +419,22 @@ public abstract class ServerCore<C extends IContext<C>>
     }
 
     @Override
-    public ReentrantLock getLock(ISession<C> session, IOperator.Type type)
+    public RingBuffer<QEvent> getCloser(IOperator.Type type)
+    {
+        switch (type)
+        {
+            case BIZ_LOCAL:
+                return _BizLocalCloseEvent;
+            case CLUSTER_LOCAL:
+            case CONSENSUS:
+                return _ClusterLocalCloseEvent;
+            default:
+                throw new IllegalArgumentException(String.format("get closer type error:%s ", type.name()));
+        }
+    }
+
+    @Override
+    public ReentrantLock getLock(IOperator.Type type)
     {
         switch (type)
         {
@@ -454,15 +443,40 @@ public abstract class ServerCore<C extends IContext<C>>
             case CLUSTER_LOCAL:
                 return _ClusterLock;
             case CONSENSUS:
+                return _ConsensusApiLock;
+            case CLUSTER_TIMER:
                 return _ConsensusLock;
             default:
                 throw new IllegalArgumentException(String.format("error type:%s", type));
         }
     }
 
+    @Override
+    public RingBuffer<QEvent> getPublisher(IOperator.Type type)
+    {
+        switch (type)
+        {
+            case BIZ_LOCAL:
+                return _BizLocalSendEvent;
+            case CLUSTER_LOCAL:
+                return _ClusterLocalSendEvent;
+            case CONSENSUS:
+                return _ConsensusApiEvent;
+            default:
+                throw new IllegalArgumentException(String.format("get publisher type error:%s ", type.name()));
+        }
+    }
+
+    @Override
     public ReentrantLock getConsensusLock()
     {
         return _ConsensusLock;
+    }
+
+    @Override
+    public RingBuffer<QEvent> getConsensusEvent()
+    {
+        return _ConsensusEvent;
     }
 
     public ReentrantLock getConsensusApiLock()

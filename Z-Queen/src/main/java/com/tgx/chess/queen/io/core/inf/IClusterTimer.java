@@ -25,13 +25,12 @@
 package com.tgx.chess.queen.io.core.inf;
 
 import com.tgx.chess.queen.db.inf.IStorage;
-import com.tgx.chess.queen.event.inf.IOperator;
 
 /**
  * @author william.d.zk
  * @date 2020/4/9
  */
-public interface IConsensus
+public interface IClusterTimer
 {
-    <T extends IStorage> void publishConsensus(IOperator.Type type, T content);
+    <T extends IStorage> void timerEvent(T content);
 }

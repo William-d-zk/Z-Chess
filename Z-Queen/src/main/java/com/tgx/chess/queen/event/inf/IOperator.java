@@ -62,7 +62,7 @@ public interface IOperator<T,
         LOGIC,
         CONSENSUS,
         NOTIFY,
-        EXTERNAL,
+        CLUSTER_TIMER,
         DISPATCH,
         IGNORE
     }

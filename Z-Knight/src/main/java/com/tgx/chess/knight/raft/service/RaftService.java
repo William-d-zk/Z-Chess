@@ -35,7 +35,7 @@ import com.tgx.chess.knight.raft.model.RaftGraph;
  * @author william.d.zk
  */
 @Service
-public class ConsensusService
+public class RaftService
         implements
         IRaftService
 {

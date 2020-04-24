@@ -57,16 +57,15 @@ import com.tgx.chess.knight.raft.model.RaftNode;
 import com.tgx.chess.knight.raft.model.log.LogEntry;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.event.handler.IClusterCustom;
-import com.tgx.chess.queen.io.core.async.AioSessionManager;
 import com.tgx.chess.queen.io.core.inf.IActivity;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
-import com.tgx.chess.queen.io.core.inf.IConsensus;
+import com.tgx.chess.queen.io.core.inf.IClusterTimer;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
 
 @Component
-public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IConsensus>
+public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IClusterTimer>
         implements
         IClusterCustom<ZContext,
                        RaftMachine>

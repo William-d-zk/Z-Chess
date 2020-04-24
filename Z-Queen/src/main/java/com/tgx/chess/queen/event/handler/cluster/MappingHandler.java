@@ -211,7 +211,7 @@ public class MappingHandler<C extends IContext<C>,
                         publishNotify(received, origin);
                     }
                     break;
-                case EXTERNAL://ClusterConsumer Timeout->start_vote
+                case CLUSTER_TIMER://ClusterConsumer Timeout->start_vote
                     /*TIMER 必然是单个IControl,通过前项RingBuffer 向MappingHandler 投递*/
                     T content = event.getContent()
                                      .getFirst();
