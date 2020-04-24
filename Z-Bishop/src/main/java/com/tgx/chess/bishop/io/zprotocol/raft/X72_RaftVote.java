@@ -156,4 +156,23 @@ public class X72_RaftVote
     {
         return mCommit;
     }
+
+    @Override
+    public String toString()
+    {
+        return "X72_RaftVote{"
+               + "mPeerId="
+               + mPeerId
+               + ", mTerm="
+               + mTerm
+               + ", mLogIndex="
+               + mLogIndex
+               + ", mLogTerm="
+               + mLogTerm
+               + ", mElector="
+               + mElector
+               + ", mCommit="
+               + mCommit
+               + '}';
+    }
 }

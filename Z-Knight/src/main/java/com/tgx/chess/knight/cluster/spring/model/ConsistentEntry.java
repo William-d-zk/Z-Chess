@@ -25,7 +25,6 @@ package com.tgx.chess.knight.cluster.spring.model;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
  * @author william.d.zk
@@ -34,10 +33,10 @@ import com.tgx.chess.queen.io.core.inf.IProtocol;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class ConsistentEntry
 {
-    private long      session;
-    private long      zuid;
-    private boolean   commit;
-    private IProtocol protocol;
+    private long               session;
+    private long               zuid;
+    private boolean            commit;
+    private ConsistentProtocol protocol;
 
     public boolean isCommit()
     {
@@ -69,12 +68,12 @@ public class ConsistentEntry
         this.zuid = zuid;
     }
 
-    public IProtocol getProtocol()
+    public ConsistentProtocol getProtocol()
     {
         return protocol;
     }
 
-    public void setProtocol(IProtocol protocol)
+    public void setProtocol(ConsistentProtocol protocol)
     {
         this.protocol = protocol;
     }
