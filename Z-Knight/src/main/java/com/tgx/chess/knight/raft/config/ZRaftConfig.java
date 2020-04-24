@@ -61,7 +61,7 @@ public class ZRaftConfig
     @PostConstruct
     void initUid() throws IOException
     {
-        if (peerTest != null) {
+        if (peerTest != null && isClusterModel()) {
             String peerTestHost = peerTest.getFirst();
             InetSocketAddress peerTestAddr = new InetSocketAddress(peerTestHost, peerTest.getSecond());
             try (Socket socket = new Socket()) {
