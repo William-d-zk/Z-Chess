@@ -25,15 +25,27 @@
 package com.tgx.chess.queen.event.handler.cluster;
 
 import com.lmax.disruptor.EventHandler;
+import com.tgx.chess.king.base.inf.IPair;
+import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 public class NotifyHandler
         implements
         EventHandler<QEvent>
 {
+    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
+
     @Override
     public void onEvent(QEvent event, long seq, boolean batch) throws Exception
     {
-
+        _Logger.info("notify handler: -> %s", event);
+        IPair content = event.getContent();
+        IProtocol protocol = content.getFirst();
+        IOperator<IProtocol,
+                  Void,
+                  Void> notifier = content.getSecond();
+        notifier.handle(protocol, null);
     }
 }
