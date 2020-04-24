@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.knight.raft.model.log;
+package com.tgx.chess.knight.cluster.spring.model;
 
 import java.util.Objects;
 
@@ -31,29 +31,29 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.knight.json.JsonUtil;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
 
+/**
+ * @author william.d.zk
+ * @date 2020/4/25
+ */
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
-public class LogEntry
+public class ConsistentProtocol
         implements
         IProtocol
 {
-    private final static int _LOG_SERIAL = INTERNAL_SERIAL + 2;
-
-    private final long   _Term;
-    private final long   _Index;
-    private final long   _RaftClientId;
-    private final long   _Origin;
-    private final int    _PayloadSerial;
-    private final byte[] _Payload;
-
+    public final static int  _SERIAL = CONSISTENT_SERIAL + 1;
+    private final byte[]     _Content;
+    private int              mLength;
     @JsonIgnore
     private transient byte[] tData;
 
-    @JsonIgnore
-    private int mLength;
+    @JsonCreator
+    public ConsistentProtocol(@JsonProperty("content") byte[] content)
+    {
+        _Content = content;
+    }
 
     @Override
     public int dataLength()
@@ -61,48 +61,16 @@ public class LogEntry
         return mLength;
     }
 
-    @JsonCreator
-    public LogEntry(@JsonProperty("term") long term,
-                    @JsonProperty("index") long index,
-                    @JsonProperty("raft_client_id") long raftClientId,
-                    @JsonProperty("origin") long origin,
-                    @JsonProperty("payload_serial") int payloadSerial,
-                    @JsonProperty("payload") byte[] payload)
-    {
-        _Term = term;
-        _Index = index;
-        _RaftClientId = raftClientId;
-        _Origin = origin;
-        _PayloadSerial = payloadSerial;
-        _Payload = payload;
-        encode();
-    }
-
     @Override
     public int serial()
     {
-        return _LOG_SERIAL;
+        return _SERIAL;
     }
 
     @Override
     public int superSerial()
     {
-        return INTERNAL_SERIAL;
-    }
-
-    public long getTerm()
-    {
-        return _Term;
-    }
-
-    public long getIndex()
-    {
-        return _Index;
-    }
-
-    public byte[] getPayload()
-    {
-        return _Payload;
+        return CONSISTENT_SERIAL;
     }
 
     @Override
@@ -121,37 +89,8 @@ public class LogEntry
         return tData;
     }
 
-    public int getPayloadSerial()
+    public byte[] getContent()
     {
-        return _PayloadSerial;
-    }
-
-    public long getRaftClientId()
-    {
-        return _RaftClientId;
-    }
-
-    public long getOrigin()
-    {
-        return _Origin;
-    }
-
-    @Override
-    public String toString()
-    {
-        return "LogEntry{"
-               + "_Term="
-               + _Term
-               + ", _Index="
-               + _Index
-               + ", _RaftClientId="
-               + _RaftClientId
-               + ", _Origin="
-               + _Origin
-               + ", _PayloadSerial="
-               + _PayloadSerial
-               + ", _Payload="
-               + IoUtil.bin2Hex(_Payload)
-               + '}';
+        return _Content;
     }
 }
