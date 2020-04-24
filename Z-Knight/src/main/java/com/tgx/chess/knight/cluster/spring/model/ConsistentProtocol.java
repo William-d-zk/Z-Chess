@@ -52,10 +52,12 @@ public class ConsistentProtocol
     private transient byte[] tData;
 
     @JsonCreator
-    public ConsistentProtocol(@JsonProperty("content") byte[] content)
+    public ConsistentProtocol(@JsonProperty("content") byte[] content,
+                              @JsonProperty("instant") Instant instant)
     {
         _Content = content;
-        _Instant = Instant.now();
+        _Instant = instant == null ? Instant.now()
+                                   : instant;
     }
 
     @Override
