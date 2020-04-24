@@ -113,7 +113,7 @@ public class DeviceConsumer
                           ConsumerConfig consumerConfig) throws IOException
     {
         super(bizIoConfig);
-        _ZClientMap = new HashMap<>(1 << getConfigPower(getSlot(AioSessionManager.SERVER_SLOT)));
+        _ZClientMap = new HashMap<>(1 << getConfigPower(getSlot(ZUID.TYPE_PROVIDER)));
         _ConsumerConfig = consumerConfig;
         int ioCount = _ConsumerConfig.getIoCount();
         _ClientCore = new ClientCore<>(ioCount);

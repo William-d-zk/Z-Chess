@@ -32,8 +32,8 @@ import com.tgx.chess.queen.config.IMixConfig;
 
 @Configuration
 @ConfigurationProperties(prefix = "z.com.tgx.chess.mix")
-@PropertySource("classpath:mix.properties")
-public class MixConfig
+@PropertySource("classpath:core.mix.properties")
+public class CoreMixConfig
         implements
         IMixConfig
 {

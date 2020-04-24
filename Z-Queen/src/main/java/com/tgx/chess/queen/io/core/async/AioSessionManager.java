@@ -110,10 +110,11 @@ public abstract class AioSessionManager<C extends IContext<C>,
         int slot = getSlot(session);
         _Logger.info(String.format("%s add session -> set slot:%s",
                                    getClass().getSimpleName(),
-                                   slot == CLIENT_SLOT ? "CLIENT"
-                                                       : slot == LOCAL_SLOT ? "INTERNAL"
-                                                                            : slot == SERVER_SLOT ? "SERVER"
-                                                                                                  : "CLUSTER"));
+                                   slot == ZUID.TYPE_CONSUMER_SLOT ? "CONSUMER"
+                                                                   : slot == ZUID.TYPE_INTERNAL_SLOT ? "INTERNAL"
+                                                                                                     : slot == ZUID.TYPE_PROVIDER_SLOT ? "PROVIDER"
+                                                                                                                                       : slot == ZUID.TYPE_CLUSTER_SLOT ? "CLUSTER"
+                                                                                                                                                                        : "Illegal"));
         _SessionsSets[slot].add(session);
     }
 
