@@ -24,7 +24,6 @@
 
 package com.tgx.chess.knight.cluster.spring.model;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
@@ -46,19 +45,20 @@ public class ConsistentProtocol
         implements
         IProtocol
 {
-    public final static int  _SERIAL = CONSISTENT_SERIAL + 1;
-    private final byte[]     _Content;
-    private final Instant    _Instant;
-    private int              mLength;
+    public final static int     _SERIAL = CONSISTENT_SERIAL + 1;
+    private final byte[]        _Content;
+    private final LocalDateTime _TimeStamp;
+    private int                 mLength;
     @JsonIgnore
-    private transient byte[] tData;
+    private transient byte[]    tData;
 
     @JsonCreator
     public ConsistentProtocol(@JsonProperty("content") byte[] content,
-                              @JsonProperty("instant") String localTime)
+                              @JsonProperty("instant") String input)
     {
         _Content = content;
-        _Instant = Instant.from(LocalDateTime.parse(localTime, DateTimeFormatter.ISO_INSTANT));
+        _TimeStamp = input != null ? LocalDateTime.parse(input, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+                                   : LocalDateTime.now();
     }
 
     @Override
@@ -102,6 +102,6 @@ public class ConsistentProtocol
 
     public String getInstant()
     {
-        return _Instant.toString();
+        return _TimeStamp.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
     }
 }
