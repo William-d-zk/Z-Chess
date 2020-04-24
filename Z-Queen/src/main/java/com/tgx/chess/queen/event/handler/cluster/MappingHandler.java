@@ -165,13 +165,18 @@ public class MappingHandler<C extends IContext<C>,
                                                .getSecond();
                     if (received == null) { return; }
                     try {
-                        IPair result = _ClusterCustom.handle(_SessionManager, session, received);
-                        if (result == null) return;
-                        List<ITriple> broadcast = result.getFirst();
-                        if (broadcast != null && !broadcast.isEmpty()) {
-                            publish(_Writer, broadcast);
+                        IPair handled = _ClusterCustom.handle(_SessionManager, session, received);
+                        if (handled == null) return;
+                        IControl<C>[] toSends = handled.getFirst();
+                        if (toSends != null && toSends.length > 0) {
+                            publish(_Writer,
+                                    WRITE,
+                                    new Pair<>(toSends, session),
+                                    session.getContext()
+                                           .getSort()
+                                           .getTransfer());
                         }
-                        IProtocol notify = result.getSecond();
+                        IProtocol notify = handled.getSecond();
                         if (notify != null) {
                             publishNotify(notify, notify.channel());
                         }

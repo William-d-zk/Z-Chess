@@ -56,6 +56,7 @@ import com.tgx.chess.queen.event.handler.mix.ILogicHandler;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IQoS;
 import com.tgx.chess.queen.io.core.inf.ISession;
+import com.tgx.chess.queen.io.core.inf.ISessionManager;
 import com.tgx.chess.queen.io.core.manager.MixManager;
 
 /**
@@ -66,7 +67,7 @@ public class LogicHandler
         ILogicHandler<ZContext>
 {
     private final Logger                    _Logger = Logger.getLogger(getClass().getSimpleName());
-    private final MixManager<ZContext> _Manager;
+    private final ISessionManager<ZContext> _Manager;
     private final IQttRouter                _QttRouter;
     private final IRepository<MessageEntry> _MessageRepository;
 
@@ -80,14 +81,14 @@ public class LogicHandler
     }
 
     @Override
-    public MixManager<ZContext> getQueenManager()
+    public ISessionManager<ZContext> getISessionManager()
     {
         return _Manager;
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public IControl<ZContext>[] handle(MixManager<ZContext> manager,
+    public IControl<ZContext>[] handle(ISessionManager<ZContext> manager,
                                        ISession<ZContext> session,
                                        IControl<ZContext> content) throws ZException
     {
@@ -170,7 +171,7 @@ public class LogicHandler
         return new IControl[0];
     }
 
-    private void brokerTopic(MixManager<ZContext> manager,
+    private void brokerTopic(ISessionManager<ZContext> manager,
                              MessageEntry message,
                              IQoS.Level level,
                              List<IControl<ZContext>> pushList)
