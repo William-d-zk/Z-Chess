@@ -40,6 +40,7 @@ import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.handler.IClusterCustom;
 import com.tgx.chess.queen.io.core.inf.IControl;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
 
@@ -96,7 +97,7 @@ public class ZClusterMappingCustom<T extends IStorage>
     }
 
     @Override
-    public List<ITriple> consensus(ISessionManager<ZContext> manager, IControl<ZContext> request, long origin)
+    public List<ITriple> consensus(ISessionManager<ZContext> manager, IProtocol request, long origin)
     {
         return _Then != null ? _Then.consensus(manager, request, origin)
                              : null;
