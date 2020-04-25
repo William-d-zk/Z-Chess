@@ -29,7 +29,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 @Configuration
-@ConfigurationProperties(prefix = "z.com.tgx.chess.consumer")
+@ConfigurationProperties(prefix = "z.chess.consumer")
 @PropertySource("classpath:consumer.properties")
 public class ConsumerConfig
 {

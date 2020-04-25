@@ -45,7 +45,7 @@ import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.topology.ZUID;
 
 @Configuration
-@ConfigurationProperties(prefix = "z.com.tgx.chess.raft")
+@ConfigurationProperties(prefix = "z.chess.raft")
 @PropertySource("classpath:raft.properties")
 public class ZRaftConfig
         implements
