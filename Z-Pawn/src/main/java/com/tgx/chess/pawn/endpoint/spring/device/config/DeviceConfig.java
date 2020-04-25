@@ -31,7 +31,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 @PropertySource("classpath:device.properties")
-@ConfigurationProperties(prefix = "z.com.tgx.chess.device")
+@ConfigurationProperties(prefix = "z.chess.device")
 @Configuration
 public class DeviceConfig
 {

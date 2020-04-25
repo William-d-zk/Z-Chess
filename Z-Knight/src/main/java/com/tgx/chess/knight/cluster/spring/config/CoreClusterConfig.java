@@ -31,7 +31,7 @@ import org.springframework.context.annotation.PropertySource;
 import com.tgx.chess.queen.config.IClusterConfig;
 
 @Configuration
-@ConfigurationProperties(prefix = "z.com.tgx.chess.cluster")
+@ConfigurationProperties(prefix = "z.chess.cluster")
 @PropertySource("classpath:core.cluster.properties")
 public class CoreClusterConfig
         implements
