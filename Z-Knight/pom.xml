@@ -32,7 +32,7 @@
         <groupId>com.tgx.service</groupId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-    <artifactId>spring.z-knight</artifactId>
+    <artifactId>cluster.z-knight</artifactId>
     <name>Z-Knight</name>
     <dependencies>
         <dependency>
