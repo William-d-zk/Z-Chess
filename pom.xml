@@ -30,8 +30,8 @@
     <groupId>com.tgx.service</groupId>
     <artifactId>framework.z-chess</artifactId>
     <name>Z-Chess</name>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <version>1.0.0-SNAPSHOT</version>
     <modules>
         <module>Z-King</module>
         <module>Z-Queen</module>

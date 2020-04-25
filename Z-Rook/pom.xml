@@ -30,7 +30,7 @@
     <parent>
         <artifactId>framework.z-chess</artifactId>
         <groupId>com.tgx.service</groupId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>client.z-rook</artifactId>
     <name>Z-Rook</name>
@@ -49,7 +49,7 @@
         </dependency>
         <dependency>
             <groupId>com.tgx.service</groupId>
-            <artifactId>manage.z-bishop</artifactId>
+            <artifactId>protocol.z-bishop</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
