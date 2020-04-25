@@ -50,6 +50,7 @@ public class ConsistentCustom
             {
                 case ConsistentProtocol._SERIAL:
                     ConsistentProtocol consistentProtocol = JsonUtil.readValue(data, ConsistentProtocol.class);
+                    consistentProtocol.decode(data);
                     break;
                 default:
                     _Logger.fetal("consistent notify failed");
