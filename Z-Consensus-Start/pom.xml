@@ -22,21 +22,22 @@
   ~ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   ~ SOFTWARE.
   -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>framework.z-chess</artifactId>
         <groupId>com.tgx.service</groupId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.1-SNAPSHOT</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
     <artifactId>consensus.z-start</artifactId>
     <name>Z-Consensus-Start</name>
     <dependencies>
         <dependency>
             <groupId>com.tgx.service</groupId>
-            <artifactId>spring.z-knight</artifactId>
+            <artifactId>cluster.z-knight</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
