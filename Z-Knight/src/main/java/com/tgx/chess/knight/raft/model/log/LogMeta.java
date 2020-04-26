@@ -24,8 +24,6 @@
 
 package com.tgx.chess.knight.raft.model.log;
 
-import static java.lang.Long.min;
-
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Objects;
@@ -249,6 +247,5 @@ public class LogMeta
     {
         mIndex = endIndex;
         mTerm = endIndexTerm;
-        mApplied = min(mCommit, mIndex);
     }
 }

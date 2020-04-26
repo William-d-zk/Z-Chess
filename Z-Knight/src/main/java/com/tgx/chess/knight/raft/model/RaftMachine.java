@@ -24,6 +24,12 @@
 
 package com.tgx.chess.knight.raft.model;
 
+import static com.tgx.chess.king.topology.ZUID.INVALID_PEER_ID;
+import static com.tgx.chess.knight.raft.RaftState.CANDIDATE;
+import static com.tgx.chess.knight.raft.RaftState.ELECTOR;
+import static com.tgx.chess.knight.raft.RaftState.FOLLOWER;
+import static com.tgx.chess.knight.raft.RaftState.LEADER;
+import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_INSERT;
 import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_NULL;
 import static com.tgx.chess.queen.db.inf.IStorage.Strategy.RETAIN;
 
@@ -41,6 +47,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.knight.json.JsonUtil;
+import com.tgx.chess.knight.raft.IRaftDao;
 import com.tgx.chess.knight.raft.IRaftMachine;
 import com.tgx.chess.knight.raft.RaftState;
 import com.tgx.chess.queen.db.inf.IStorage;
@@ -340,15 +347,109 @@ public class RaftMachine
     }
 
     @Override
-    public void increaseTerm()
+    public void apply(IRaftDao dao)
     {
-        ++mTerm;
+        if (mIndex < mApplied) { throw new IllegalStateException(); }
+        mApplied = Long.min(mIndex, mCommit);
+        dao.updateLogApplied(mApplied);
     }
 
     @Override
-    public void apply()
+    public void commit(long index, IRaftDao dao)
     {
-        mApplied = Long.min(mIndex, mCommit);
+        /*
+         只有Leader 能执行此操作
+         */
+        mCommit = index;
+        dao.updateLogCommit(index);
+        mApplied = mCommit;
+        dao.updateLogApplied(mApplied);
+    }
+
+    @Override
+    public void beLeader(IRaftDao dao)
+    {
+        mState = LEADER.getCode();
+        mLeader = _PeerId;
+        mCandidate = _PeerId;
+        dao.updateCandidate(_PeerId);
+        mIndexTerm = mTerm;
+        dao.updateTerm(mTerm);
+        mIndex++;
+        dao.updateLogIndex(mIndex);
+    }
+
+    @Override
+    public void beCandidate(IRaftDao dao)
+    {
+        mState = CANDIDATE.getCode();
+        mLeader = INVALID_PEER_ID;
+        mCandidate = _PeerId;
+        dao.updateCandidate(_PeerId);
+        mTerm++;
+        dao.updateTerm(mTerm);
+    }
+
+    @Override
+    public void beElector(long candidate, long term, IRaftDao dao)
+    {
+        mState = ELECTOR.getCode();
+        mCandidate = candidate;
+        dao.updateCandidate(candidate);
+        mLeader = INVALID_PEER_ID;
+        mTerm = term;
+        dao.updateTerm(term);
+    }
+
+    @Override
+    public void follow(long leader, long term, long commit, IRaftDao dao)
+    {
+        mState = FOLLOWER.getCode();
+        mLeader = leader;
+        mCandidate = leader;
+        dao.updateCandidate(leader);
+        mTerm = term;
+        dao.updateTerm(term);
+        mCommit = commit;
+        dao.updateLogCommit(commit);
+    }
+
+    @Override
+    public void follow(long term, IRaftDao dao)
+    {
+        mState = FOLLOWER.getCode();
+        mLeader = INVALID_PEER_ID;
+        mCandidate = INVALID_PEER_ID;
+        dao.updateCandidate(INVALID_PEER_ID);
+        mTerm = term;
+        dao.updateTerm(term);
+    }
+
+    public void follow(IRaftDao dao)
+    {
+        follow(mTerm, dao);
+    }
+
+    @Override
+    public RaftMachine createCandidate()
+    {
+        RaftMachine candidate = new RaftMachine(_PeerId);
+        candidate.setTerm(mTerm + 1);
+        candidate.setIndex(mIndex);
+        candidate.setIndexTerm(mIndexTerm);
+        candidate.setState(CANDIDATE);
+        candidate.setOperation(OP_INSERT);
+        candidate.setCandidate(_PeerId);
+        candidate.setLeader(INVALID_PEER_ID);
+        candidate.setCommit(mCommit);
+        return candidate;
+    }
+
+    public void append(long index, long indexTerm)
+    {
+        mIndex = index;
+        mMatchIndex = index;
+        mIndexTerm = indexTerm;
     }
 
     /**
