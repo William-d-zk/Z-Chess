@@ -299,6 +299,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
 
     private X7F_RaftResponse reject(int code)
     {
+        _AppendLogQueue.clear();
         return response(code);
     }
 
@@ -307,6 +308,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
         _SelfMachine.setState(ELECTOR);
         _SelfMachine.setCandidate(peerId);
         _SelfMachine.setLeader(INVALID_PEER_ID);
+        _RaftDao.updateCandidate(peerId);
         mElectTask = _TimeWheel.acquire(this, _ElectSchedule);
         return success();
     }
@@ -315,7 +317,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
     {
         _SelfMachine.setState(FOLLOWER);
         _SelfMachine.setLeader(INVALID_PEER_ID);
-        _SelfMachine.setCandidate(INVALID_PEER_ID);
+        updateCandidate(INVALID_PEER_ID);
         mTickTask = _TimeWheel.acquire(this, _TickSchedule);
     }
 
@@ -324,8 +326,8 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
         _Logger.info("follow %#x leader_commit: %d", peerId, commit);
         _SelfMachine.setState(FOLLOWER);
         _SelfMachine.setLeader(peerId);
-        _SelfMachine.setCandidate(peerId);
-        _SelfMachine.setCommit(commit);
+        updateCandidate(peerId);
+        commit(commit);
         mTickTask = _TimeWheel.acquire(this, _TickSchedule);
         return catchUp() ? success()
                          : reject(CONFLICT.getCode());
@@ -335,9 +337,8 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
     {
         _SelfMachine.setState(CANDIDATE);
         _SelfMachine.setLeader(INVALID_PEER_ID);
-        _SelfMachine.setCandidate(_SelfMachine.getPeerId());
-        _SelfMachine.increaseTerm();
-        _RaftDao.updateLogTerm(_SelfMachine.getTerm());
+        updateCandidate(_SelfMachine.getPeerId());
+        applyTerm(_SelfMachine.getTerm() + 1);
         mElectTask = _TimeWheel.acquire(this, _ElectSchedule);
         _Logger.info("follower => candidate ");
     }
@@ -380,6 +381,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
         _SelfMachine.setState(FOLLOWER);
         _SelfMachine.setLeader(INVALID_PEER_ID);
         _SelfMachine.setCandidate(INVALID_PEER_ID);
+        _RaftDao.updateCandidate(INVALID_PEER_ID);
         mTickTask = _TimeWheel.acquire(this, _TickSchedule);
         return reject(code);
     }
@@ -390,27 +392,29 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
         //RaftGraph中不存LEARNER节点,所以集群广播和RPC时不涉及LEARNER
         if (_SelfMachine.getTerm() > update.getTerm()) { return reject(LOWER_TERM.getCode()); }
         if (update.getTerm() > _SelfMachine.getTerm()) {
-            _SelfMachine.setTerm(update.getTerm());
-            _RaftDao.updateLogTerm(_SelfMachine.getTerm());
+            applyTerm(update.getTerm());
             tickCancel();
             heartbeatCancel();
             electCancel();
-            // * -> follower -> elector
+            // * -> follower -> elector X72_RaftVote
             if (update.getState() == CANDIDATE) {
                 if (_SelfMachine.getIndex() <= update.getIndex()
-                    && _SelfMachine.getIndexTerm() <= update.getIndexTerm()
-                    && _SelfMachine.getCommit() <= update.getCommit())
+                    && _SelfMachine.getIndexTerm() <= update.getIndexTerm())
                 {
                     response = stepUp(update.getPeerId());
-                    _Logger.info("new term %d input follower -> elector candidate: %#x",
+                    _Logger.info("new term %d [follower → elector] | candidate: %#x",
                                  _SelfMachine.getTerm(),
-                                 _SelfMachine.getPeerId());
+                                 _SelfMachine.getCandidate());
                 }
                 else {
-                    _Logger.info("less than me; reject and step down");
+                    _Logger.info("less than me; reject and step down [→ follower] | mine:%d@%d > in:%d@%d",
+                                 _SelfMachine.getIndex(),
+                                 _SelfMachine.getIndexTerm(),
+                                 update.getIndex(),
+                                 update.getIndexTerm());
                     return rejectAndStepDown(OBSOLETE.getCode());
                 }
-            }
+            }//X7E_RaftBroadcast
             else if (update.getState() == LEADER) {
                 _Logger.info("follow leader %#x leader_commit: %d", update.getPeerId(), update.getCommit());
                 response = follow(update.getPeerId(), update.getCommit());
@@ -629,13 +633,22 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
         }
     }
 
-    public void apply()
+    private void applyTerm(long term)
     {
-        long end = min(_SelfMachine.getIndex(), _SelfMachine.getCommit());
-        while (_SelfMachine.getApplied() < end) {
-            _SelfMachine.increaseApplied();
-            _RaftDao.updateLogApplied(_SelfMachine.getApplied());
-        }
+        _RaftDao.updateTerm(term);
+        _SelfMachine.setTerm(term);
+    }
+
+    private void updateCandidate(long candidate)
+    {
+        _SelfMachine.setCandidate(candidate);
+        _RaftDao.updateCandidate(candidate);
+    }
+
+    private void commit(long commit)
+    {
+        _SelfMachine.setCommit(commit);
+        _RaftDao.updateLogCommit(commit);
     }
 
     private boolean catchUp()
@@ -644,7 +657,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
             _Logger.warning("leader needn't catch up any log.");
             return false;
         }
-        IT_APPEND:
+        ITERATE_APPEND:
         {
             for (Iterator<LogEntry> it = _AppendLogQueue.iterator(); it.hasNext();) {
                 LogEntry entry = it.next();
@@ -656,10 +669,11 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                     LogEntry old = _RaftDao.getEntry(entry.getIndex());
                     if (old == null || old.getTerm() != entry.getTerm()) {
                         if (old != null) {
-                            _Logger.warning("log conflict OT:%d <-> NT:%d I:%d",
+                            _Logger.warning("log conflict [old: %d@%d <=>new: %d@%d ]",
+                                            entry.getIndex(),
                                             old.getTerm(),
-                                            entry.getTerm(),
-                                            entry.getIndex());
+                                            entry.getIndex(),
+                                            entry.getTerm());
                         }
                         else {
                             _Logger.warning("log %d miss", entry.getIndex());
@@ -674,7 +688,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                             _SelfMachine.setIndex(newEndIndex);
                             _SelfMachine.setIndexTerm(logEntry.getTerm());
                         }
-                        break IT_APPEND;
+                        break ITERATE_APPEND;
                     }
                     else {
                         /*
@@ -686,6 +700,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                         _SelfMachine.setIndexTerm(entry.getTerm());
                     }
                 }
+                _SelfMachine.apply();
                 it.remove();
             }
             return true;

@@ -40,7 +40,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableTransactionManagement
 @Configuration
 @PropertySource({"classpath:db.properties"})
-public class JpaConfig
+public class EndpointJpaConfig
 {
 
 }

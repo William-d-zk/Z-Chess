@@ -192,12 +192,20 @@ public class RaftDao
     public void updateLogCommit(long commit)
     {
         mLogMeta.setCommit(commit);
+        mSnapshotMeta.setCommit(commit);
     }
 
     @Override
-    public void updateLogTerm(long term)
+    public void updateTerm(long term)
     {
         mLogMeta.setTerm(term);
+        mSnapshotMeta.setTerm(term);
+    }
+
+    @Override
+    public void updateCandidate(long candidate)
+    {
+        mLogMeta.setCandidate(candidate);
     }
 
     @Override
@@ -256,6 +264,7 @@ public class RaftDao
         _Logger.info("append %s", entry);
         Objects.requireNonNull(entry);
         long newEndIndex = getEndIndex() + 1;
+        long newEndTerm = entry.getTerm();
         if (entry.getIndex() == newEndIndex) {
             int entrySize = entry.dataLength() + 4;
             boolean isNeedNewSegmentFile = false;
@@ -300,7 +309,7 @@ public class RaftDao
             Objects.requireNonNull(targetSegment);
             targetSegment.addRecord(entry);
             vTotalSize += entrySize;
-            mLogMeta.setIndex(newEndIndex);
+            mLogMeta.append(newEndIndex, newEndTerm);
             _Logger.info("append ok: %d", newEndIndex);
             return true;
         }
@@ -347,14 +356,19 @@ public class RaftDao
     @Override
     public LogEntry truncateSuffix(long newEndIndex)
     {
-        if (newEndIndex >= getEndIndex()) { return null; }
+        long endIndex = getEndIndex();
+        if (newEndIndex >= endIndex) { return null; }
         _Logger.info("Truncating log from old end index %d to new end index %d", getEndIndex(), newEndIndex);
+
         while (!_Index2SegmentMap.isEmpty()) {
             Segment segment = _Index2SegmentMap.lastEntry()
                                                .getValue();
             try {
                 if (newEndIndex == segment.getEndIndex()) {
-                    return getEntry(newEndIndex);
+                    LogEntry newEndEntry = getEntry(newEndIndex);
+                    //此时entry 不会为null
+                    mLogMeta.append(newEndIndex, newEndEntry.getTerm());
+                    return newEndEntry;
                 }
                 else if (newEndIndex < segment.getStartIndex()) {
                     vTotalSize -= segment.drop();

@@ -22,21 +22,22 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.pawn.endpoint.spring.device.api;
+package com.tgx.chess.pawn.endpoint.spring.device.spi;
 
 import java.util.List;
 
 import com.tgx.chess.king.base.exception.ZException;
+import com.tgx.chess.pawn.endpoint.spring.device.model.DeviceDo;
 import com.tgx.chess.pawn.endpoint.spring.device.model.MessageBody;
-import com.tgx.chess.pawn.endpoint.spring.device.model.MessageEntry;
 
-/**
- * @author william.d.zk
- * @date 2020/2/21
- */
-public interface IMessageService
+public interface IDeviceService
 {
-    List<MessageBody> listByTopic(String topic, int limit) throws ZException;
+    DeviceDo saveDevice(DeviceDo deviceDo) throws ZException;
 
-    List<MessageEntry> findAfterId(long id) throws ZException;
+    DeviceDo findDevice(DeviceDo key) throws ZException;
+
+    MessageBody getMessageById(long id) throws ZException;
+
+    List<DeviceDo> findAllDevices() throws ZException;
+
 }

@@ -22,40 +22,21 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.auth.open.api;
+package com.tgx.chess.pawn.endpoint.spring.device.spi;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import java.util.List;
 
-import com.tgx.chess.pawn.endpoint.spring.device.api.IMessageService;
+import com.tgx.chess.king.base.exception.ZException;
+import com.tgx.chess.pawn.endpoint.spring.device.model.MessageBody;
+import com.tgx.chess.pawn.endpoint.spring.device.model.MessageEntry;
 
 /**
  * @author william.d.zk
- * @date 2019/11/3
+ * @date 2020/2/21
  */
-@RestController
-public class RawContentController
+public interface IMessageService
 {
+    List<MessageBody> listByTopic(String topic, int limit) throws ZException;
 
-    private final IMessageService _MessageService;
-
-    @Autowired
-    public RawContentController(IMessageService messageService)
-    {
-        _MessageService = messageService;
-    }
-
-    @GetMapping("/message/topic")
-    public @ResponseBody Object getMessageByTopic(@RequestParam(name = "topic") String topic,
-                                                  @RequestParam(name = "limit",
-                                                                defaultValue = "1",
-                                                                required = false) int limit)
-
-    {
-        return _MessageService.listByTopic(topic, limit);
-    }
-
+    List<MessageEntry> findAfterId(long id) throws ZException;
 }

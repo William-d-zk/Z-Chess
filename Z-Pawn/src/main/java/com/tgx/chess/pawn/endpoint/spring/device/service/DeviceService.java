@@ -50,7 +50,7 @@ import com.tgx.chess.knight.raft.model.RaftNode;
 import com.tgx.chess.knight.raft.model.log.RaftDao;
 import com.tgx.chess.knight.raft.service.ClusterCustom;
 import com.tgx.chess.pawn.endpoint.spring.device.DeviceNode;
-import com.tgx.chess.pawn.endpoint.spring.device.api.IDeviceService;
+import com.tgx.chess.pawn.endpoint.spring.device.spi.IDeviceService;
 import com.tgx.chess.pawn.endpoint.spring.device.config.DeviceConfig;
 import com.tgx.chess.pawn.endpoint.spring.device.model.DeviceDo;
 import com.tgx.chess.pawn.endpoint.spring.device.model.DeviceEntry;
