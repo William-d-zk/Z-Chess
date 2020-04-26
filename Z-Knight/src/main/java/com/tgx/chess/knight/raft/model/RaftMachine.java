@@ -319,7 +319,7 @@ public class RaftMachine
         if (mPeerSet == null) {
             mPeerSet = new TreeSet<>(Comparator.comparing(ITriple::getFirst));
         }
-        append(mPeerSet, peers);
+        appendGraph(mPeerSet, peers);
     }
 
     @SafeVarargs
@@ -330,16 +330,16 @@ public class RaftMachine
         if (mGateSet == null) {
             mGateSet = new TreeSet<>(Comparator.comparing(ITriple::getFirst));
         }
-        append(mGateSet, gates);
+        appendGraph(mGateSet, gates);
     }
 
     @SafeVarargs
-    private final void append(Set<Triple<Long,
-                                         String,
-                                         Integer>> set,
-                              Triple<Long,
-                                     String,
-                                     Integer>... a)
+    private final void appendGraph(Set<Triple<Long,
+                                              String,
+                                              Integer>> set,
+                                   Triple<Long,
+                                          String,
+                                          Integer>... a)
     {
         Objects.requireNonNull(set);
         if (a == null || a.length == 0) { return; }
@@ -375,8 +375,6 @@ public class RaftMachine
         dao.updateCandidate(_PeerId);
         mIndexTerm = mTerm;
         dao.updateTerm(mTerm);
-        mIndex++;
-        dao.updateLogIndex(mIndex);
     }
 
     @Override
@@ -445,7 +443,8 @@ public class RaftMachine
         return candidate;
     }
 
-    public void append(long index, long indexTerm)
+    @Override
+    public void appendLog(long index, long indexTerm)
     {
         mIndex = index;
         mMatchIndex = index;
