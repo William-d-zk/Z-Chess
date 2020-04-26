@@ -644,7 +644,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
             for (Iterator<LogEntry> it = _AppendLogQueue.iterator(); it.hasNext();) {
                 LogEntry entry = it.next();
                 if (_RaftDao.append(entry)) {
-                    _SelfMachine.append(entry.getIndex(), entry.getTerm());
+                    _SelfMachine.appendLog(entry.getIndex(), entry.getTerm());
                     _Logger.info("catch up %d@%d", entry.getIndex(), entry.getTerm());
                 }
                 else {
@@ -667,7 +667,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                         long newEndIndex = entry.getIndex() - 1;
                         LogEntry rollback = _RaftDao.truncateSuffix(newEndIndex);
                         if (rollback != null) {
-                            _SelfMachine.append(rollback.getIndex(), rollback.getTerm());
+                            _SelfMachine.appendLog(rollback.getIndex(), rollback.getTerm());
                             _Logger.warning("machine rollback %d@%d", rollback.getIndex(), rollback.getTerm());
                         }
                         else {
