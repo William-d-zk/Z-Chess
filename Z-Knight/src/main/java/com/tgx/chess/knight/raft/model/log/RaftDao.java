@@ -189,6 +189,12 @@ public class RaftDao
     }
 
     @Override
+    public void updateLogIndex(long index)
+    {
+        mLogMeta.setIndex(index);
+    }
+
+    @Override
     public void updateLogCommit(long commit)
     {
         mLogMeta.setCommit(commit);
@@ -261,7 +267,7 @@ public class RaftDao
     @Override
     public boolean append(LogEntry entry)
     {
-        _Logger.info("append %s", entry);
+        _Logger.info("wait to append %s", entry);
         Objects.requireNonNull(entry);
         long newEndIndex = getEndIndex() + 1;
         long newEndTerm = entry.getTerm();
@@ -313,6 +319,7 @@ public class RaftDao
             _Logger.info("append ok: %d", newEndIndex);
             return true;
         }
+        _Logger.warning("append failed: [new end %d|expect %d]", newEndIndex, entry.getIndex());
         return false;
     }
 

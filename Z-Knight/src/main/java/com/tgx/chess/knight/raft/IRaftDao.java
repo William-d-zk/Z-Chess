@@ -31,7 +31,8 @@ import com.tgx.chess.knight.raft.model.log.SnapshotMeta;
 /**
  * @author william.d.zk
  */
-public interface IRaftDao {
+public interface IRaftDao
+{
     void updateAll();
 
     long getEndIndex();
@@ -44,9 +45,15 @@ public interface IRaftDao {
 
     void updateLogStart(long firstLogIndex);
 
+    void updateLogIndex(long index);
+
     void updateLogCommit(long commit);
 
     void updateTerm(long term);
+
+    void updateCandidate(long candidate);
+
+    void updateLogApplied(long applied);
 
     void updateSnapshotMeta(long lastIncludeIndex, long lastIncludeTerm);
 
@@ -62,7 +69,4 @@ public interface IRaftDao {
 
     long getTotalSize();
 
-    void updateCandidate(long candidate);
-
-    void updateLogApplied(long applied);
 }

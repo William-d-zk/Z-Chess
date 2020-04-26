@@ -92,9 +92,21 @@ public interface IRaftMachine
                String,
                Integer>> getGateSet();
 
-    void increaseTerm();
+    void apply(IRaftDao dao);
 
-    void apply();
+    void commit(long index, IRaftDao dao);
+
+    void beLeader(IRaftDao dao);
+
+    void beCandidate(IRaftDao dao);
+
+    void beElector(long candidate, long term, IRaftDao dao);
+
+    void follow(long leader, long term, long commit, IRaftDao dao);
+
+    void follow(long term, IRaftDao dao);
+
+    IRaftMachine createCandidate();
 
     /**
      * 成功完成WAL之后增加machine的index编号
