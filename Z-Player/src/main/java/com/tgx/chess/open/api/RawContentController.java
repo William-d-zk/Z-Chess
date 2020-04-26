@@ -22,47 +22,40 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.knight.raft;
+package com.tgx.chess.open.api;
 
-import com.tgx.chess.knight.raft.model.log.LogEntry;
-import com.tgx.chess.knight.raft.model.log.LogMeta;
-import com.tgx.chess.knight.raft.model.log.SnapshotMeta;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.tgx.chess.pawn.endpoint.spring.device.spi.IMessageService;
 
 /**
  * @author william.d.zk
+ * @date 2019/11/3
  */
-public interface IRaftDao {
-    void updateAll();
+@RestController
+public class RawContentController
+{
 
-    long getEndIndex();
+    private final IMessageService _MessageService;
 
-    long getStartIndex();
+    @Autowired
+    public RawContentController(IMessageService messageService)
+    {
+        _MessageService = messageService;
+    }
 
-    LogEntry getEntry(long index);
+    @GetMapping("/message/topic")
+    public @ResponseBody Object getMessageByTopic(@RequestParam(name = "topic") String topic,
+                                                  @RequestParam(name = "limit",
+                                                                defaultValue = "1",
+                                                                required = false) int limit)
 
-    long getEntryTerm(long index);
+    {
+        return _MessageService.listByTopic(topic, limit);
+    }
 
-    void updateLogStart(long firstLogIndex);
-
-    void updateLogCommit(long commit);
-
-    void updateTerm(long term);
-
-    void updateSnapshotMeta(long lastIncludeIndex, long lastIncludeTerm);
-
-    boolean append(LogEntry entry);
-
-    void truncatePrefix(long newFirstIndex);
-
-    LogEntry truncateSuffix(long newEndIndex);
-
-    LogMeta getLogMeta();
-
-    SnapshotMeta getSnapshotMeta();
-
-    long getTotalSize();
-
-    void updateCandidate(long candidate);
-
-    void updateLogApplied(long applied);
 }

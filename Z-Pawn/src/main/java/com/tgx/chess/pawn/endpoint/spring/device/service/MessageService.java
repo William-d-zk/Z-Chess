@@ -30,7 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.tgx.chess.king.base.exception.ZException;
-import com.tgx.chess.pawn.endpoint.spring.device.api.IMessageService;
+import com.tgx.chess.pawn.endpoint.spring.device.spi.IMessageService;
 import com.tgx.chess.pawn.endpoint.spring.device.model.MessageBody;
 import com.tgx.chess.pawn.endpoint.spring.device.model.MessageEntry;
 import com.tgx.chess.pawn.endpoint.spring.device.jpa.repository.IMessageJpaRepository;

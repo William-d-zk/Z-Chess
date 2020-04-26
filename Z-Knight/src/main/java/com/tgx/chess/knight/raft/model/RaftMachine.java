@@ -346,9 +346,9 @@ public class RaftMachine
     }
 
     @Override
-    public void increaseApplied()
+    public void apply()
     {
-        mApplied++;
+        mApplied = Long.min(mIndex, mCommit);
     }
 
     /**

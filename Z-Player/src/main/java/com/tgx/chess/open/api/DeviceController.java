@@ -22,13 +22,14 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.pawn.endpoint.spring.device.api;
+package com.tgx.chess.open.api;
 
 import static com.tgx.chess.king.base.util.IoUtil.isBlank;
 
 import java.time.Instant;
 import java.util.Objects;
 
+import com.tgx.chess.pawn.endpoint.spring.device.spi.IDeviceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
