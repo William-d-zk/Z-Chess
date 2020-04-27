@@ -444,11 +444,12 @@ public class RaftMachine
     }
 
     @Override
-    public void appendLog(long index, long indexTerm)
+    public void appendLog(long index, long indexTerm, IRaftDao dao)
     {
         mIndex = index;
         mMatchIndex = index;
         mIndexTerm = indexTerm;
+        dao.updateLogIndex(index);
     }
 
     @Override
