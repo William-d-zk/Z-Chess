@@ -766,7 +766,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                                          requestSerial,
                                          requestData);
         if (_RaftDao.append(newEntry)) {
-            _SelfMachine.increaseIndex();
+            _SelfMachine.appendLog(newEntry.getIndex(), newEntry.getTerm());
             return createBroadcasts();
         }
         _Logger.fetal("Raft WAL failed!");

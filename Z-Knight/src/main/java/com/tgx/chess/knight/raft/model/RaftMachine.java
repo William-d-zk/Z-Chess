@@ -451,16 +451,6 @@ public class RaftMachine
         mIndexTerm = indexTerm;
     }
 
-    /**
-     * 此方法同时更新自身的matchIndex = index
-     */
-    @Override
-    public void increaseIndex()
-    {
-        ++mIndex;
-        mMatchIndex = mIndex;
-    }
-
     @Override
     public String toString()
     {

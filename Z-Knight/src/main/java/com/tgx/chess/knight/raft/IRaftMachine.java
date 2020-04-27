@@ -110,8 +110,4 @@ public interface IRaftMachine
 
     void appendLog(long index, long indexTerm);
 
-    /**
-     * 成功完成WAL之后增加machine的index编号
-     */
-    void increaseIndex();
 }
