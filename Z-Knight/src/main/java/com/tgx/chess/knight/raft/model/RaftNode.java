@@ -310,7 +310,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
         _SelfMachine.follow(peerId, term, commit, _RaftDao);
         mTickTask = _TimeWheel.acquire(this, _TickSchedule);
         if (catchUp()) {
-            _Logger.info("catch up => %s", _SelfMachine);
+            _Logger.info("follow appended from %#x@%d-^%d=> %s", peerId, term, commit, _SelfMachine);
             return success();
         }
         else {
@@ -643,8 +643,9 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
         {
             for (Iterator<LogEntry> it = _AppendLogQueue.iterator(); it.hasNext();) {
                 LogEntry entry = it.next();
-                if (_RaftDao.append(entry)) {
-                    _SelfMachine.appendLog(entry.getIndex(), entry.getTerm());
+                if (_RaftDao.appendLog(entry)) {
+                    _SelfMachine.appendLog(entry.getIndex(), entry.getTerm(), _RaftDao);
+                    _SelfMachine.apply(_RaftDao);
                     _Logger.info("catch up %d@%d", entry.getIndex(), entry.getTerm());
                 }
                 else {
@@ -667,7 +668,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                         long newEndIndex = entry.getIndex() - 1;
                         LogEntry rollback = _RaftDao.truncateSuffix(newEndIndex);
                         if (rollback != null) {
-                            _SelfMachine.appendLog(rollback.getIndex(), rollback.getTerm());
+                            _SelfMachine.appendLog(rollback.getIndex(), rollback.getTerm(), _RaftDao);
                             _Logger.warning("machine rollback %d@%d", rollback.getIndex(), rollback.getTerm());
                         }
                         else {
@@ -689,7 +690,6 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                         _Logger.info("already has the log -> %d@%d | ignore", entry.getIndex(), entry.getTerm());
                     }
                 }
-                _SelfMachine.apply(_RaftDao);
                 it.remove();
             }
             return true;
@@ -765,8 +765,9 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                                          origin,
                                          requestSerial,
                                          requestData);
-        if (_RaftDao.append(newEntry)) {
-            _SelfMachine.appendLog(newEntry.getIndex(), newEntry.getTerm());
+        if (_RaftDao.appendLog(newEntry)) {
+            _SelfMachine.appendLog(newEntry.getIndex(), newEntry.getTerm(), _RaftDao);
+            _Logger.info("leader appended log %d@%d", newEntry.getIndex(), newEntry.getTerm());
             return createBroadcasts();
         }
         _Logger.fetal("Raft WAL failed!");

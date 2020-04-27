@@ -265,7 +265,7 @@ public class RaftDao
     }
 
     @Override
-    public boolean append(LogEntry entry)
+    public boolean appendLog(LogEntry entry)
     {
         _Logger.info("wait to append %s", entry);
         Objects.requireNonNull(entry);
@@ -315,7 +315,6 @@ public class RaftDao
             Objects.requireNonNull(targetSegment);
             targetSegment.addRecord(entry);
             vTotalSize += entrySize;
-            mLogMeta.append(newEndIndex, newEndTerm);
             _Logger.info("append ok: %d", newEndIndex);
             return true;
         }

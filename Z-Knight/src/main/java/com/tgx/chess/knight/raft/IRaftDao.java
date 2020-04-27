@@ -57,7 +57,7 @@ public interface IRaftDao
 
     void updateSnapshotMeta(long lastIncludeIndex, long lastIncludeTerm);
 
-    boolean append(LogEntry entry);
+    boolean appendLog(LogEntry entry);
 
     void truncatePrefix(long newFirstIndex);
 

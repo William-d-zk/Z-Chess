@@ -108,6 +108,6 @@ public interface IRaftMachine
 
     IRaftMachine createCandidate();
 
-    void appendLog(long index, long indexTerm);
+    void appendLog(long index, long indexTerm, IRaftDao dao);
 
 }
