@@ -304,7 +304,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
         _SelfMachine.follow(peerId, term, commit, _RaftDao);
         mTickTask = _TimeWheel.acquire(this, _TickSchedule);
         if (catchUp()) {
-            _Logger.info("follow appended from %#x@%d-^%d=> %s", peerId, term, commit, _SelfMachine);
+            _Logger.info("follower appended from %#x@%d-^%d=> %s", peerId, term, commit, _SelfMachine);
             return success();
         }
         else {
@@ -657,6 +657,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                         LogEntry rollback = _RaftDao.truncateSuffix(newEndIndex);
                         if (rollback != null) {
                             _SelfMachine.appendLog(rollback.getIndex(), rollback.getTerm(), _RaftDao);
+                            _SelfMachine.apply(_RaftDao);
                             _Logger.warning("machine rollback %d@%d", rollback.getIndex(), rollback.getTerm());
                         }
                         else {

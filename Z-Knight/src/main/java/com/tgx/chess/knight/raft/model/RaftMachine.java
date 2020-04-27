@@ -46,6 +46,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.tgx.chess.king.base.inf.ITriple;
+import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.knight.json.JsonUtil;
 import com.tgx.chess.knight.raft.IRaftDao;
@@ -63,6 +64,8 @@ public class RaftMachine
         IRaftMachine,
         IStorage
 {
+    private static final Logger _Logger = Logger.getLogger(RaftMachine.class.getSimpleName());
+
     private final static int                   RAFT_MACHINE_SERIAL = DB_SERIAL + 3;
     private final long                         _PeerId;
     private long                               mTerm;      //触发选举时 mTerm > mIndexTerm
@@ -353,6 +356,7 @@ public class RaftMachine
         if (mIndex < mApplied) { throw new IllegalStateException(); }
         mApplied = Long.min(mIndex, mCommit);
         dao.updateLogApplied(mApplied);
+        _Logger.info("apply => %d | [index %d commit %d]", mApplied, mIndex, mCommit);
     }
 
     @Override
