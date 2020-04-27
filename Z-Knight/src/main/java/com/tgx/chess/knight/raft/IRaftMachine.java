@@ -92,9 +92,11 @@ public interface IRaftMachine
                String,
                Integer>> getGateSet();
 
-    void apply(IRaftDao dao);
+    void appendLog(long index, long indexTerm, IRaftDao dao);
 
     void commit(long index, IRaftDao dao);
+
+    void apply(IRaftDao dao);
 
     void beLeader(IRaftDao dao);
 
@@ -108,6 +110,6 @@ public interface IRaftMachine
 
     IRaftMachine createCandidate();
 
-    void appendLog(long index, long indexTerm, IRaftDao dao);
+    IRaftMachine createLeader();
 
 }
