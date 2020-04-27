@@ -57,8 +57,6 @@ public interface IMixConfig
      */
     int getLinkPower();
 
-
-
     default int getPoolSize()
     {
         return 1 // aioDispatch

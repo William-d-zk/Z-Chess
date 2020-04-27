@@ -31,7 +31,6 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.tgx.chess.knight.json.JsonUtil;
 import com.tgx.chess.queen.db.inf.IStorage;
-import org.springframework.stereotype.Component;
 
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class DeviceEntry

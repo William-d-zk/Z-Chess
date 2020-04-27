@@ -29,7 +29,6 @@ import static com.tgx.chess.king.base.util.IoUtil.isBlank;
 import java.time.Instant;
 import java.util.Objects;
 
-import com.tgx.chess.pawn.endpoint.spring.device.spi.IDeviceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,31 +42,34 @@ import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.pawn.endpoint.spring.device.model.DeviceDo;
 import com.tgx.chess.pawn.endpoint.spring.device.model.DeviceStatus;
+import com.tgx.chess.pawn.endpoint.spring.device.spi.IDeviceService;
 
 /**
  * @author william.d.zk
  */
 @RestController
-public class DeviceController {
-    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
+public class DeviceController
+{
+    private final Logger         _Logger = Logger.getLogger(getClass().getSimpleName());
     private final IDeviceService _DeviceService;
 
     @Autowired
-    public DeviceController(IDeviceService deviceService) {
+    public DeviceController(IDeviceService deviceService)
+    {
         _DeviceService = deviceService;
     }
 
     @PostMapping("/device/register")
-    public @ResponseBody
-    DeviceDo registerDevice(@RequestBody DeviceDo deviceDo) {
+    public @ResponseBody DeviceDo registerDevice(@RequestBody DeviceDo deviceDo)
+    {
         return _DeviceService.saveDevice(deviceDo);
     }
 
     @GetMapping("/device/query")
-    public @ResponseBody
-    IPair queryDevice(@RequestParam(required = false) String token,
-                      @RequestParam(required = false) String sn,
-                      @RequestParam(required = false) Long id) {
+    public @ResponseBody IPair queryDevice(@RequestParam(required = false) String token,
+                                           @RequestParam(required = false) String sn,
+                                           @RequestParam(required = false) Long id)
+    {
         if (!isBlank(token) || !isBlank(sn)) {
             DeviceDo deviceDo = new DeviceDo();
             deviceDo.setToken(token);
@@ -75,27 +77,28 @@ public class DeviceController {
             deviceDo = _DeviceService.findDevice(deviceDo);
             if (Objects.nonNull(deviceDo)) {
                 if (deviceDo.getInvalidAt()
-                        .isBefore(Instant.now())) {
+                            .isBefore(Instant.now()))
+                {
                     return new Pair<>(DeviceStatus.INVALID, deviceDo);
-                } else {
+                }
+                else {
                     return new Pair<>(DeviceStatus.AVAILABLE, deviceDo);
                 }
             }
-        } else {
+        }
+        else {
             DeviceDo deviceDo = new DeviceDo();
             deviceDo.setId(id == null ? 0
-                    : id);
+                                      : id);
             deviceDo = _DeviceService.findDevice(deviceDo);
-            if (deviceDo != null) {
-                return new Pair<>(DeviceStatus.AVAILABLE, deviceDo);
-            }
+            if (deviceDo != null) { return new Pair<>(DeviceStatus.AVAILABLE, deviceDo); }
         }
         return new Pair<>(DeviceStatus.MISS, null);
     }
 
     @GetMapping("/message/query")
-    public @ResponseBody
-    Object getMessage(@RequestParam(name = "id") long id) {
+    public @ResponseBody Object getMessage(@RequestParam(name = "id") long id)
+    {
         return _DeviceService.getMessageById(id);
     }
 }
