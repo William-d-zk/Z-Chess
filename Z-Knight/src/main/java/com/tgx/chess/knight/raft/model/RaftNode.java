@@ -633,8 +633,6 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                 LogEntry entry = it.next();
                 if (_RaftDao.appendLog(entry)) {
                     _SelfMachine.appendLog(entry.getIndex(), entry.getTerm(), _RaftDao);
-                    _SelfMachine.apply(_RaftDao);
-                    _Logger.info("catch up %d@%d", entry.getIndex(), entry.getTerm());
                 }
                 else {
                     LogEntry old = _RaftDao.getEntry(entry.getIndex());
@@ -681,6 +679,8 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                 }
                 it.remove();
             }
+            _SelfMachine.apply(_RaftDao);
+            _Logger.info("catch up %d@%d", _SelfMachine.getIndex(), _SelfMachine.getIndexTerm());
             return true;
             //end of IT_APPEND
         }
