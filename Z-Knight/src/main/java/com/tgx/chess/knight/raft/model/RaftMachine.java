@@ -29,6 +29,7 @@ import static com.tgx.chess.knight.raft.RaftState.CANDIDATE;
 import static com.tgx.chess.knight.raft.RaftState.ELECTOR;
 import static com.tgx.chess.knight.raft.RaftState.FOLLOWER;
 import static com.tgx.chess.knight.raft.RaftState.LEADER;
+import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_APPEND;
 import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_INSERT;
 import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_NULL;
 import static com.tgx.chess.queen.db.inf.IStorage.Strategy.RETAIN;
@@ -441,6 +442,19 @@ public class RaftMachine
         candidate.setLeader(INVALID_PEER_ID);
         candidate.setCommit(mCommit);
         return candidate;
+    }
+
+    @Override
+    public RaftMachine createLeader()
+    {
+        RaftMachine leader = new RaftMachine(_PeerId);
+        leader.setOperation(OP_APPEND);
+        leader.setIndex(mIndex);
+        leader.setIndexTerm(mIndexTerm);
+        leader.setCommit(mCommit);
+        leader.setLeader(_PeerId);
+        leader.setCandidate(_PeerId);
+        return leader;
     }
 
     @Override

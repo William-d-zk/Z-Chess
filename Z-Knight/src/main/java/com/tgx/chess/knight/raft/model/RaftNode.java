@@ -34,7 +34,6 @@ import static com.tgx.chess.knight.raft.model.RaftCode.LOWER_TERM;
 import static com.tgx.chess.knight.raft.model.RaftCode.OBSOLETE;
 import static com.tgx.chess.knight.raft.model.RaftCode.SPLIT_CLUSTER;
 import static com.tgx.chess.knight.raft.model.RaftCode.SUCCESS;
-import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_APPEND;
 import static java.lang.Math.min;
 
 import java.io.IOException;
@@ -120,12 +119,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
 
     private void heartbeat()
     {
-        RaftMachine update = new RaftMachine(_SelfMachine.getPeerId());
-        update.setOperation(OP_APPEND);
-        update.setIndex(_SelfMachine.getIndex());
-        update.setIndexTerm(_SelfMachine.getIndexTerm());
-        update.setCommit(_SelfMachine.getCommit());
-        _ClusterPeer.timerEvent(update);
+        _ClusterPeer.timerEvent(_SelfMachine.createLeader());
         _Logger.info("leader heartbeat");
     }
 
@@ -625,12 +619,6 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
             return result.isEmpty() ? null
                                     : result;
         }
-    }
-
-    private void commit(long commit)
-    {
-        _SelfMachine.setCommit(commit);
-        _RaftDao.updateLogCommit(commit);
     }
 
     private boolean catchUp()
