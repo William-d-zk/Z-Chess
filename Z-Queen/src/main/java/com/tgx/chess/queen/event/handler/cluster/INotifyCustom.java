@@ -36,5 +36,5 @@ public interface INotifyCustom
                   Void,
                   Void>
 {
-    
+
 }

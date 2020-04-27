@@ -35,8 +35,8 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
-import com.tgx.chess.pawn.endpoint.spring.device.model.MessageBody;
 import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.AuditModel;
+import com.tgx.chess.pawn.endpoint.spring.device.model.MessageBody;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 
 /**
