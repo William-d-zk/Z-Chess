@@ -53,7 +53,7 @@ public class ZClusterMappingCustom<T extends IStorage>
         IClusterCustom<ZContext,
                        T>
 {
-    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("protocol.bishop." + getClass().getSimpleName());
 
     private final IClusterCustom<ZContext,
                                  T> _Then;

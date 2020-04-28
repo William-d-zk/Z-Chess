@@ -52,7 +52,8 @@ public class AioWorker
         Thread
 {
 
-    private final Logger                         _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final Logger                         _Logger = Logger.getLogger("io.queen.operator."
+                                                                            + getClass().getSimpleName());
     private final IAvailable<RingBuffer<QEvent>> _Available;
     private final RingBuffer<QEvent>             _Producer;
 

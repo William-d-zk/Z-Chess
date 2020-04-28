@@ -62,7 +62,7 @@ public class DeviceRepository
     private final ZUID                 _ZUID;
     private final DeviceConfig         _DeviceConfig;
     private final CryptUtil            _CryptUtil = new CryptUtil();
-    private final Logger               _Logger    = Logger.getLogger(getClass().getSimpleName());
+    private final Logger               _Logger    = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
     @Autowired
     public DeviceRepository(IDeviceJpaRepository jpaRepository,

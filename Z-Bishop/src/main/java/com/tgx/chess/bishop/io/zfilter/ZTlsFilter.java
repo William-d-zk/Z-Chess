@@ -43,7 +43,7 @@ public class ZTlsFilter
         super("queen-tls-zfilter");
     }
 
-    private final Logger _Logger = Logger.getLogger(getClass().getName());
+    private final Logger _Logger = Logger.getLogger("protocol.bishop." + getClass().getName());
 
     @Override
     public ResultType preEncode(ZContext context, IProtocol output)

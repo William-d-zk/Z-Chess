@@ -57,7 +57,8 @@ public abstract class AioSessionManager<C extends IContext<C>,
         implements
         ISessionManager<C>
 {
-    protected final Logger                      _Logger = Logger.getLogger(getClass().getSimpleName());
+    protected final Logger                      _Logger = Logger.getLogger("io.queen.session."
+                                                                           + getClass().getSimpleName());
     private final Map<Long,
                       ISession<C>>[]            _Index2SessionMaps;
     private final Map<Long,
@@ -109,12 +110,12 @@ public abstract class AioSessionManager<C extends IContext<C>,
     {
         int slot = getSlot(session);
         _Logger.debug(String.format("%s add session -> set slot:%s",
-                                   getClass().getSimpleName(),
-                                   slot == ZUID.TYPE_CONSUMER_SLOT ? "CONSUMER"
-                                                                   : slot == ZUID.TYPE_INTERNAL_SLOT ? "INTERNAL"
-                                                                                                     : slot == ZUID.TYPE_PROVIDER_SLOT ? "PROVIDER"
-                                                                                                                                       : slot == ZUID.TYPE_CLUSTER_SLOT ? "CLUSTER"
-                                                                                                                                                                        : "Illegal"));
+                                    getClass().getSimpleName(),
+                                    slot == ZUID.TYPE_CONSUMER_SLOT ? "CONSUMER"
+                                                                    : slot == ZUID.TYPE_INTERNAL_SLOT ? "INTERNAL"
+                                                                                                      : slot == ZUID.TYPE_PROVIDER_SLOT ? "PROVIDER"
+                                                                                                                                        : slot == ZUID.TYPE_CLUSTER_SLOT ? "CLUSTER"
+                                                                                                                                                                         : "Illegal"));
         _SessionsSets[slot].add(session);
     }
 

@@ -158,8 +158,8 @@ public class DeviceConsumer
                                                      X23_SignInResult x23 = (X23_SignInResult) cmd;
                                                      if (x23.isSuccess()) {
                                                          _Logger.debug("sign in success token invalid @ %s",
-                                                                      Instant.ofEpochMilli(x23.getInvalidTime())
-                                                                             .atZone(ZoneId.of("GMT+8")));
+                                                                       Instant.ofEpochMilli(x23.getInvalidTime())
+                                                                              .atZone(ZoneId.of("GMT+8")));
                                                      }
                                                      else {
                                                          return new X103_Close("sign in failed! ws_close".getBytes());
@@ -168,7 +168,8 @@ public class DeviceConsumer
                                                  case X30_EventMsg.COMMAND:
                                                      X30_EventMsg x30 = (X30_EventMsg) cmd;
                                                      _Logger.debug("x30 payload: %s",
-                                                                  new String(x30.getPayload(), StandardCharsets.UTF_8));
+                                                                   new String(x30.getPayload(),
+                                                                              StandardCharsets.UTF_8));
                                                      X31_ConfirmMsg x31 = new X31_ConfirmMsg(x30.getMsgId());
                                                      x31.setStatus(X31_ConfirmMsg.STATUS_RECEIVED);
                                                      x31.setToken(x30.getToken());
@@ -368,8 +369,8 @@ public class DeviceConsumer
                                                  {
                                                      try {
                                                          _Logger.debug("%s retry connect",
-                                                                      Thread.currentThread()
-                                                                            .getName());
+                                                                       Thread.currentThread()
+                                                                             .getName());
                                                          connect(c);
                                                      }
                                                      catch (IOException e) {

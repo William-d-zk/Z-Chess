@@ -29,7 +29,6 @@ import java.nio.channels.AsynchronousSocketChannel;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.tgx.chess.king.base.inf.ITriple;
-import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.config.ISocketConfig;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.operator.ConnectFailedOperator;
@@ -47,8 +46,6 @@ public abstract class BaseAioConnector<C extends IContext<C>>
         implements
         IAioConnector<C>
 {
-
-    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
 
     protected BaseAioConnector(String host,
                                int port,

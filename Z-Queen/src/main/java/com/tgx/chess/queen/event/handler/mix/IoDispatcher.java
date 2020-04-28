@@ -52,7 +52,7 @@ public class IoDispatcher<C extends IContext<C>>
         implements
         IPipeEventHandler<QEvent>
 {
-    private final Logger               _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final Logger               _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
     private final RingBuffer<QEvent>   _IoWrote;
     private final RingBuffer<QEvent>   _Link;
     private final RingBuffer<QEvent>   _Cluster;

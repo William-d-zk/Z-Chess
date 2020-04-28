@@ -46,7 +46,8 @@ public class BaseAioClient<C extends IContext<C>>
         implements
         IAioClient<C>
 {
-    private final Logger                                                  _Logger          = Logger.getLogger("AioClient");
+    private final Logger _Logger = Logger.getLogger("io.queen.session." + getClass().getSimpleName());
+
     private final TimeWheel                                               _TimeWheel;
     private final AsynchronousChannelGroup                                _ChannelGroup;
     private final Map<InetSocketAddress,
@@ -113,8 +114,8 @@ public class BaseAioClient<C extends IContext<C>>
                                                  {
                                                      try {
                                                          _Logger.debug("%s connect",
-                                                                      Thread.currentThread()
-                                                                            .getName());
+                                                                       Thread.currentThread()
+                                                                             .getName());
                                                          connect(c);
                                                      }
                                                      catch (IOException e) {

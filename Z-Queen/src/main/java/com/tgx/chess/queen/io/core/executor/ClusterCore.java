@@ -86,7 +86,8 @@ public class ClusterCore<C extends IContext<C>>
     private final ReentrantLock _ConsensusApiLock = new ReentrantLock();
 
     private final ConcurrentLinkedQueue<RingBuffer<QEvent>> _ClusterCacheConcurrentQueue;
-    private final Logger                                    _Logger = Logger.getLogger(getClass().getSimpleName());
+
+    private final Logger _Logger = Logger.getLogger("io.queen.core." + getClass().getSimpleName());
 
     private final ThreadFactory _ClusterThreadFactory = new ThreadFactory()
     {

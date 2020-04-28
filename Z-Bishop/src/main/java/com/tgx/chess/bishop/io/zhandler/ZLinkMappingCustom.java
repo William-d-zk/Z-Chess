@@ -51,7 +51,7 @@ public class ZLinkMappingCustom
         ILinkCustom<ZContext>
 {
 
-    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("protocol.bishop." + getClass().getSimpleName());
 
     private final ILinkCustom<ZContext> _Then;
 

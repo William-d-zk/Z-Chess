@@ -80,7 +80,8 @@ import com.tgx.chess.queen.io.core.inf.ISessionManager;
  */
 public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTimer>
 {
-    private final Logger                       _Logger         = Logger.getLogger(getClass().getSimpleName());
+    private final Logger                       _Logger         = Logger.getLogger("cluster.knight"
+                                                                                  + getClass().getSimpleName());
     private final ZUID                         _ZUID;
     private final IRaftConfig                  _ClusterConfig;
     private final T                            _ClusterPeer;
@@ -374,15 +375,15 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                 {
                     response = stepUp(update.getPeerId(), update.getTerm());
                     _Logger.debug("new term %d [follower → elector] | candidate: %#x",
-                                 _SelfMachine.getTerm(),
-                                 _SelfMachine.getCandidate());
+                                  _SelfMachine.getTerm(),
+                                  _SelfMachine.getCandidate());
                 }
                 else {
                     _Logger.debug("less than me; reject and step down [→ follower] | mine:%d@%d > in:%d@%d",
-                                 _SelfMachine.getIndex(),
-                                 _SelfMachine.getIndexTerm(),
-                                 update.getIndex(),
-                                 update.getIndexTerm());
+                                  _SelfMachine.getIndex(),
+                                  _SelfMachine.getIndexTerm(),
+                                  update.getIndex(),
+                                  update.getIndexTerm());
                     return rejectAndStepDown(update.getTerm(), OBSOLETE);
                 }
             }//X7E_RaftBroadcast
@@ -409,10 +410,10 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                     }
                     else {
                         _Logger.debug("less than me,reject | mine:%d@%d > in:%d@%d",
-                                     _SelfMachine.getIndex(),
-                                     _SelfMachine.getIndexTerm(),
-                                     update.getIndex(),
-                                     update.getIndexTerm());
+                                      _SelfMachine.getIndex(),
+                                      _SelfMachine.getIndexTerm(),
+                                      update.getIndex(),
+                                      update.getIndexTerm());
                         return reject(OBSOLETE);
                     }
                 }
@@ -428,8 +429,8 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                     //不重置elect-timer
                     if (_SelfMachine.getCandidate() != update.getPeerId()) {
                         _Logger.debug("already vote [elector ×] | vote for:%#x not ♂ %#x",
-                                     _SelfMachine.getCandidate(),
-                                     update.getCandidate());
+                                      _SelfMachine.getCandidate(),
+                                      update.getCandidate());
                         return reject(ALREADY_VOTE);
                     }
                     else {
@@ -554,15 +555,15 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                 heartbeatCancel();
                 electCancel();
                 _Logger.debug("self.term %d < response.term %d => step_down",
-                             _SelfMachine.getTerm(),
-                             peerMachine.getTerm());
+                              _SelfMachine.getTerm(),
+                              peerMachine.getTerm());
                 stepDown();
                 break;
             case CONFLICT:
                 if (_SelfMachine.getState() == LEADER) {
                     _Logger.debug("follower %#x,match failed,rollback %d",
-                                 peerMachine.getPeerId(),
-                                 peerMachine.getIndex());
+                                  peerMachine.getPeerId(),
+                                  peerMachine.getIndex());
                     return new Pair<>(new X7E_RaftBroadcast[] { createBroadcast(peerMachine, 1) }, null);
                 }
                 else {
@@ -574,7 +575,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                 //Ignore 
                 if (_SelfMachine.getState() == CANDIDATE) {
                     _Logger.debug("my term is over,the leader will be %#x and receive x7E_raftBroadcast then step_down",
-                                 peerMachine.getPeerId());
+                                  peerMachine.getPeerId());
                 }
                 break;
             case ALREADY_VOTE:

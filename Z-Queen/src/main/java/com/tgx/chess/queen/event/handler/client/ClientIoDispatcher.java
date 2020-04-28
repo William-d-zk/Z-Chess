@@ -54,7 +54,7 @@ public class ClientIoDispatcher<C extends IContext<C>>
     private final RingBuffer<QEvent> _DecoderPipe;
     private final RingBuffer<QEvent> _WrotePipe;
     private final RingBuffer<QEvent> _ErrorPipe;
-    private final Logger             _Logger = Logger.getLogger(getClass().getName());
+    private final Logger             _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getName());
 
     public ClientIoDispatcher(RingBuffer<QEvent> linkIoPipe,
                               RingBuffer<QEvent> decoderPipe,
@@ -138,7 +138,8 @@ public class ClientIoDispatcher<C extends IContext<C>>
     }
 
     @Override
-    public Logger getLogger() {
+    public Logger getLogger()
+    {
         return _Logger;
     }
 }

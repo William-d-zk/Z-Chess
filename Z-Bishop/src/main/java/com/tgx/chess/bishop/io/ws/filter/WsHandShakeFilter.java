@@ -166,8 +166,8 @@ public class WsHandShakeFilter
                                             break;
                                         default:
                                             _Logger.debug("unchecked httpKey and content: [%s %s]",
-                                                         httpKey,
-                                                         rowSplit[1]);
+                                                          httpKey,
+                                                          rowSplit[1]);
                                             break;
                                     }
                                     break;
@@ -207,8 +207,8 @@ public class WsHandShakeFilter
                                             break;
                                         default:
                                             _Logger.debug("unchecked httpKey and content: [%s %s]",
-                                                         httpKey,
-                                                         rowSplit[1]);
+                                                          httpKey,
+                                                          rowSplit[1]);
                                             break;
                                     }
                                     break;

@@ -79,7 +79,7 @@ public class MappingHandler<C extends IContext<C>,
                           IClusterCustom<C,
                                          T> clusterCustom)
     {
-        _Logger = Logger.getLogger(mapper);
+        _Logger = Logger.getLogger("io.queen.dispatcher." + mapper);
         _SessionManager = manager;
         _Writer = writer;
         _Error = error;
@@ -301,7 +301,8 @@ public class MappingHandler<C extends IContext<C>,
     }
 
     @Override
-    public Logger getLogger() {
+    public Logger getLogger()
+    {
         return _Logger;
     }
 }

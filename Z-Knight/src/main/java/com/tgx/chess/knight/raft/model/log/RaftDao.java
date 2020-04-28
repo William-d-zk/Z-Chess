@@ -57,7 +57,8 @@ public class RaftDao
 {
     private final static long            TERM_NAN          = -1;
     private final static long            INDEX_NAN         = -1;
-    private final Logger                 _Logger           = Logger.getLogger(getClass().getSimpleName());
+    private final Logger                 _Logger           = Logger.getLogger("cluster.knight"
+                                                                              + getClass().getSimpleName());
     private final String                 _LogDataDir;
     private final String                 _LogMetaDir;
     private final String                 _SnapshotDir;
@@ -355,8 +356,8 @@ public class RaftDao
         }
         updateLogStart(newActualFirstIndex);
         _Logger.debug("Truncating log from old first index %d to new first index %d",
-                     oldFirstIndex,
-                     newActualFirstIndex);
+                      oldFirstIndex,
+                      newActualFirstIndex);
     }
 
     @Override

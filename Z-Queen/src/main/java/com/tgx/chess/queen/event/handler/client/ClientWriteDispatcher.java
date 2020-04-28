@@ -49,7 +49,7 @@ public class ClientWriteDispatcher<C extends IContext<C>>
         implements
         IPipeEventHandler<QEvent>
 {
-    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
 
     final RingBuffer<QEvent> _ErrorPipe;
     final RingBuffer<QEvent> _EncoderPipe;
@@ -115,7 +115,8 @@ public class ClientWriteDispatcher<C extends IContext<C>>
     }
 
     @Override
-    public Logger getLogger() {
+    public Logger getLogger()
+    {
         return _Logger;
     }
 }

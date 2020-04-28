@@ -39,7 +39,7 @@ public class ConnectFailedOperator<C extends IContext<C>>
                   Void>
 {
 
-    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("io.queen.operator." + getClass().getSimpleName());
 
     @Override
     public Void handle(Throwable throwable, IAioConnector<C> aioConnector)
