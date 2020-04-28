@@ -197,4 +197,10 @@ public class IoDispatcher<C extends IContext<C>>
                 break;
         }
     }
+
+    @Override
+    public Logger getLogger()
+    {
+        return _Logger;
+    }
 }

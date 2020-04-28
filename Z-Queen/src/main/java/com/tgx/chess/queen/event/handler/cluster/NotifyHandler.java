@@ -40,7 +40,7 @@ public class NotifyHandler
     @Override
     public void onEvent(QEvent event, long seq, boolean batch) throws Exception
     {
-        _Logger.info("notify handler: -> %s", event);
+        _Logger.debug("notify handler: -> %s", event);
         IPair content = event.getContent();
         IProtocol protocol = content.getFirst();
         IOperator<IProtocol,

@@ -28,18 +28,32 @@
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <property name="APP_NAME" value="Z-Chess"/>
     <property name="LOG_PATH" value="${user.home}/${APP_NAME}/logs"/>
-    <property name="LOG_FILE" value="${LOG_PATH}/application.log"/>
+    <property name="APP_LOG_FILE" value="${LOG_PATH}/application.log"/>
+    <property name="CLUSTER_LOG_FILE" value="${LOG_PATH}/cluster.log"/>
     <appender name="APPLICATION"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_FILE}</file>
+        <file>${APP_LOG_FILE}</file>
         <encoder>
             <pattern>${FILE_LOG_PATTERN}</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_FILE}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <fileNamePattern>${APP_LOG_FILE}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <maxHistory>7</maxHistory>
             <maxFileSize>50MB</maxFileSize>
-            <totalSizeCap>20GB</totalSizeCap>
+            <totalSizeCap>2GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+    <appender name="CLUSTER"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${CLUSTER_LOG_FILE}</file>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${CLUSTER_LOG_FILE}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxHistory>7</maxHistory>
+            <maxFileSize>50MB</maxFileSize>
+            <totalSizeCap>1GB</totalSizeCap>
         </rollingPolicy>
     </appender>
 
@@ -50,9 +64,11 @@
         </encoder>
     </appender>
 
-    <root level="INFO">
+    <root level="ERROR">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="APPLICATION"/>
+        <appender-ref ref="CLUSTER"/>
     </root>
-    <logger name="com.tgx.com.tgx.chess.queen.io.core.executor.ServerCore" level="DEBUG"/>
+    <logger name="RaftNode" level="DEBUG"/>
+    <logger name="RaftMachine" level="DEBUG"/>
 </configuration>

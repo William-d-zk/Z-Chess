@@ -69,7 +69,7 @@ public class ZClusterMappingCustom<T extends IStorage>
                         ISession<ZContext> session,
                         IControl<ZContext> content) throws Exception
     {
-        _Logger.info("cluster mapping receive %s", content);
+        _Logger.debug("cluster mapping receive %s", content);
         switch (content.serial())
         {
             case X01_EncryptRequest.COMMAND:

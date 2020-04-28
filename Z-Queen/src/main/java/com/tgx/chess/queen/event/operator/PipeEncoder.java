@@ -58,7 +58,7 @@ public class PipeEncoder<C extends IContext<C>>
         try {
             IPacket send = filterWrite(command, session.getContext());
             Objects.requireNonNull(send);
-            _Logger.info("%s send:%s",
+            _Logger.debug("%s send:%s",
                          command,
                          IoUtil.bin2Hex(send.getBuffer()
                                             .array(),

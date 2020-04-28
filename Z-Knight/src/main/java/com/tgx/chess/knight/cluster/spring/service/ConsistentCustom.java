@@ -42,7 +42,7 @@ public class ConsistentCustom
     @Override
     public Void handle(IProtocol protocol, Void aVoid)
     {
-        _Logger.info("notify---consistent");
+        _Logger.debug("notify---consistent");
         if (protocol.serial() == X76_RaftResult.COMMAND) {
             X76_RaftResult x76 = (X76_RaftResult) protocol;
             byte[] data = x76.getPayload();
@@ -56,7 +56,7 @@ public class ConsistentCustom
                     _Logger.fetal("consistent notify failed");
                     break;
             }
-            _Logger.info("notify ok");
+            _Logger.debug("notify ok");
         }
         return null;
     }

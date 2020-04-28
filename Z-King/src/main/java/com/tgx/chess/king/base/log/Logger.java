@@ -55,17 +55,17 @@ public class Logger
 
     public void info(String msg)
     {
-        _Logger.info(msg);
+        _Logger.debug(msg);
     }
 
     public void info(Object object)
     {
-        _Logger.info(object.toString());
+        _Logger.debug(object.toString());
     }
 
     public void info(String formatter, Object... content)
     {
-        _Logger.info(String.format(formatter, content));
+        _Logger.debug(String.format(formatter, content));
     }
 
     public void warning(String msg)
@@ -127,14 +127,14 @@ public class Logger
     {
         switch (level)
         {
+            case ERROR:
+                return _Logger.isErrorEnabled();
+            case WARN:
+                return _Logger.isWarnEnabled();
             case INFO:
                 return _Logger.isInfoEnabled();
             case DEBUG:
                 return _Logger.isDebugEnabled();
-            case WARN:
-                return _Logger.isWarnEnabled();
-            case ERROR:
-                return _Logger.isErrorEnabled();
             case TRACE:
                 return _Logger.isTraceEnabled();
             default:

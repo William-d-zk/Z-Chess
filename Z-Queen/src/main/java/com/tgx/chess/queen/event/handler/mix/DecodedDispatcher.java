@@ -143,4 +143,9 @@ public class DecodedDispatcher<C extends IContext<C>>
     {
         return _LogicWorkers[(int) (seq & _WorkerMask)];
     }
+
+    @Override
+    public Logger getLogger() {
+        return _Logger;
+    }
 }

@@ -93,7 +93,7 @@ public class ClientLinkHandler<C extends IContext<C>>
                                   ISession<C>,
                                   List<ITriple>> sendTransferOperator = connectedHandled.getThird();
                         event.produce(WRITE, new Pair<>(waitToSend, session), sendTransferOperator);
-                        _Logger.info(String.format("link mappingHandle %s,connected", session));
+                        _Logger.debug(String.format("link mappingHandle %s,connected", session));
                     }
                     catch (Exception e) {
                         _Logger.fetal("client session create failed", e);

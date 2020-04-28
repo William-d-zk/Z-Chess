@@ -79,7 +79,7 @@ public class BaseAioClient<C extends IContext<C>>
                 retryCount = pair.getFirst();
                 pair.setFirst(++retryCount);
             }
-            _Logger.info("client connect to %s,@ %d", remoteAddress, retryCount);
+            _Logger.debug("client connect to %s,@ %d", remoteAddress, retryCount);
         }
         finally {
             _Lock.unlock();
@@ -89,7 +89,7 @@ public class BaseAioClient<C extends IContext<C>>
     @Override
     public void onFailed(IAioConnector<C> connector)
     {
-        _Logger.info("connect failed: retry");
+        _Logger.debug("connect failed: retry");
         delayConnect(connector);
     }
 
@@ -99,7 +99,7 @@ public class BaseAioClient<C extends IContext<C>>
         InetSocketAddress remoteAddress = session.getRemoteAddress();
         IAioConnector<C> connector = _TargetManageMap.get(remoteAddress)
                                                      .getSecond();
-        _Logger.info("on dismiss: [shutdown: %s ]", connector.isShutdown());
+        _Logger.debug("on dismiss: [shutdown: %s ]", connector.isShutdown());
         delayConnect(connector);
     }
 
@@ -112,7 +112,7 @@ public class BaseAioClient<C extends IContext<C>>
                                                  c ->
                                                  {
                                                      try {
-                                                         _Logger.info("%s connect",
+                                                         _Logger.debug("%s connect",
                                                                       Thread.currentThread()
                                                                             .getName());
                                                          connect(c);

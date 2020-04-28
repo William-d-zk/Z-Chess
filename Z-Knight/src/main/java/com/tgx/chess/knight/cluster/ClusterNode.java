@@ -74,7 +74,7 @@ public class ClusterNode
     @Override
     public void onDismiss(ISession<ZContext> session)
     {
-        _Logger.info("dismiss %s", session);
+        _Logger.debug("dismiss %s", session);
         rmSession(session);
     }
 
@@ -86,7 +86,7 @@ public class ClusterNode
         super(config, new ClusterCore<>(clusterConfig));
         _TimeWheel = timeWheel;
         _ZUID = raftConfig.createZUID();
-        _Logger.info(_ZUID);
+        _Logger.debug(_ZUID);
         IPair bind = raftConfig.getBind();
         final String _Host = bind.getFirst();
         final int _Port = bind.getSecond();
@@ -150,7 +150,7 @@ public class ClusterNode
     @PostConstruct
     void init()
     {
-        _Logger.info("load cluster node");
+        _Logger.debug("load cluster node");
     }
 
     public void start(INotifyCustom notifyCustom,
@@ -160,7 +160,7 @@ public class ClusterNode
         getCore().build(this, new EncryptHandler(), notifyCustom, clusterCustom);
         _AioServer.bindAddress(_AioServer.getLocalAddress(), getCore().getClusterChannelGroup());
         _AioServer.pendingAccept();
-        _Logger.info(String.format("cluster start: %s", _AioServer.getLocalAddress()));
+        _Logger.debug(String.format("cluster start: %s", _AioServer.getLocalAddress()));
     }
 
     @Override

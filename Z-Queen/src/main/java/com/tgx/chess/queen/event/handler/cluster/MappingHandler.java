@@ -92,7 +92,7 @@ public class MappingHandler<C extends IContext<C>,
     public void onEvent(QEvent event, long sequence, boolean endOfBatch)
     {
         if (event.hasError()) {
-            _Logger.info(String.format("error type %s,ignore ", event.getErrorType()));
+            _Logger.debug(String.format("error type %s,ignore ", event.getErrorType()));
             switch (event.getErrorType())
             {
                 case ACCEPT_FAILED:
@@ -236,5 +236,11 @@ public class MappingHandler<C extends IContext<C>,
         int slot = channel % _Notifiers.length;
         RingBuffer<QEvent> notifier = _Notifiers[slot];
         publish(notifier, NOTIFY, new Pair<>(request, null), _NotifyCustom);
+    }
+
+    @Override
+    public Logger getLogger()
+    {
+        return _Logger;
     }
 }

@@ -88,7 +88,7 @@ public class WsHandShakeFilter
                     if (CRLFCRLF.equals(x)) {
                         cRvBuf.flip();
                         x = new String(cRvBuf.array(), cRvBuf.position(), cRvBuf.limit(), StandardCharsets.UTF_8);
-                        _Logger.info("receive handshake\r\n%s", x);
+                        _Logger.debug("receive handshake\r\n%s", x);
                         String[] split = x.split(CRLF);
                         StringBuilder response = new StringBuilder();
                         for (String row : split) {
@@ -136,7 +136,7 @@ public class WsHandShakeFilter
                                             break;
                                         case "SEC-WEBSOCKET-VERSION:":
                                             if (rowSplit[1].contains("7") || rowSplit[1].contains("8")) {
-                                                _Logger.info("sec-websokcet-version : %s, ignore", rowSplit[1]);
+                                                _Logger.debug("sec-websokcet-version : %s, ignore", rowSplit[1]);
                                             }
                                             if (!rowSplit[1].contains("13")) {
                                                 _Logger.warning("sec-websokcet-version to low");
@@ -165,7 +165,7 @@ public class WsHandShakeFilter
                                                                           wsContext.getSecAccept(rowSplit[1])));
                                             break;
                                         default:
-                                            _Logger.info("unchecked httpKey and content: [%s %s]",
+                                            _Logger.debug("unchecked httpKey and content: [%s %s]",
                                                          httpKey,
                                                          rowSplit[1]);
                                             break;
@@ -206,7 +206,7 @@ public class WsHandShakeFilter
                                             wsContext.updateHandshakeState(WsContext.HS_State_SEC_ACCEPT);
                                             break;
                                         default:
-                                            _Logger.info("unchecked httpKey and content: [%s %s]",
+                                            _Logger.debug("unchecked httpKey and content: [%s %s]",
                                                          httpKey,
                                                          rowSplit[1]);
                                             break;

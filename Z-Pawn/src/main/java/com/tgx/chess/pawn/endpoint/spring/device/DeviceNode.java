@@ -81,7 +81,7 @@ public class DeviceNode
     @Override
     public void onDismiss(ISession<ZContext> session)
     {
-        _Logger.info("dismiss %s", session);
+        _Logger.debug("dismiss %s", session);
         rmSession(session);
     }
 
@@ -94,7 +94,7 @@ public class DeviceNode
         super(bizIoConfig, new ServerCore<>(serverConfig));
         _TimeWheel = timeWheel;
         _ZUID = raftConfig.createZUID();
-        _Logger.info(_ZUID);
+        _Logger.debug(_ZUID);
         IPair bind = raftConfig.getBind();
         hosts.add(new Triple<>(bind.getFirst(), bind.getSecond(), ZSort.WS_CLUSTER_SERVER));
         _AioServers = hosts.stream()
@@ -175,7 +175,7 @@ public class DeviceNode
                 super.onDismiss(session);
             }
         };
-        _Logger.info("Device Node Bean Load");
+        _Logger.debug("Device Node Bean Load");
     }
 
     public void start(ILogicHandler<ZContext> logicHandler,
@@ -187,7 +187,7 @@ public class DeviceNode
         for (IAioServer<ZContext> server : _AioServers) {
             server.bindAddress(server.getLocalAddress(), getCore().getServiceChannelGroup());
             server.pendingAccept();
-            _Logger.info(String.format("device node start %s", server.getLocalAddress()));
+            _Logger.debug(String.format("device node start %s", server.getLocalAddress()));
         }
     }
 

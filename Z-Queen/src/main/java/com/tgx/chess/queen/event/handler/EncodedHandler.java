@@ -68,4 +68,10 @@ public class EncodedHandler<C extends IContext<C>>
         }
         event.reset();
     }
+
+    @Override
+    public Logger getLogger()
+    {
+        return _Logger;
+    }
 }

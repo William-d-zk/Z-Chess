@@ -136,4 +136,9 @@ public class ClientIoDispatcher<C extends IContext<C>>
         }
         event.reset();
     }
+
+    @Override
+    public Logger getLogger() {
+        return _Logger;
+    }
 }

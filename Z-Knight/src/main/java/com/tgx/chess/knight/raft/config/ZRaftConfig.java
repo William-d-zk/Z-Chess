@@ -69,7 +69,7 @@ public class ZRaftConfig
                 if (!socket.isConnected()) { throw new RuntimeException("peer test connect failed"); }
                 InetSocketAddress localAddr = (InetSocketAddress) socket.getLocalSocketAddress();
                 String localHostStr = localAddr.getHostString();
-                _Logger.info("local host:%s", localHostStr);
+                _Logger.debug("local host:%s", localHostStr);
                 bind.setFirst(localHostStr);
                 setNodeId(localHostStr);
             }
@@ -250,7 +250,6 @@ public class ZRaftConfig
             {
                 uid.setNodeId(i);
                 setInCongress(true);
-                _Logger.info("node-id: %d", i);
                 break;
             }
         }

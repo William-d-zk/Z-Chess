@@ -108,7 +108,7 @@ public abstract class AioSessionManager<C extends IContext<C>,
     public void addSession(ISession<C> session)
     {
         int slot = getSlot(session);
-        _Logger.info(String.format("%s add session -> set slot:%s",
+        _Logger.debug(String.format("%s add session -> set slot:%s",
                                    getClass().getSimpleName(),
                                    slot == ZUID.TYPE_CONSUMER_SLOT ? "CONSUMER"
                                                                    : slot == ZUID.TYPE_INTERNAL_SLOT ? "INTERNAL"
@@ -142,7 +142,7 @@ public abstract class AioSessionManager<C extends IContext<C>,
      */
     private ISession<C> mapSession(long _Index, ISession<C> session)
     {
-        _Logger.info("session manager map-> %#x,%s", _Index, session);
+        _Logger.debug("session manager map-> %#x,%s", _Index, session);
         if (_Index == INVALID_INDEX || _Index == NULL_INDEX) {
             throw new IllegalArgumentException(String.format("index error %d", _Index));
         }

@@ -356,7 +356,7 @@ public class RaftMachine
         if (mIndex < mApplied) { throw new IllegalStateException(); }
         mApplied = Long.min(mIndex, mCommit);
         dao.updateLogApplied(mApplied);
-        _Logger.info("apply => %d | [index %d commit %d]", mApplied, mIndex, mCommit);
+        _Logger.debug("apply => %d | [index %d commit %d]", mApplied, mIndex, mCommit);
     }
 
     @Override
