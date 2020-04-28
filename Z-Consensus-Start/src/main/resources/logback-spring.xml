@@ -57,7 +57,7 @@
         </rollingPolicy>
     </appender>
 
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender" level="">
         <encoder>
             <pattern>${CONSOLE_LOG_PATTERN}</pattern>
             <charset>utf8</charset>
@@ -69,6 +69,7 @@
         <appender-ref ref="APPLICATION"/>
         <appender-ref ref="CLUSTER"/>
     </root>
+
     <logger name="RaftNode" level="DEBUG"/>
     <logger name="RaftMachine" level="DEBUG"/>
 </configuration>

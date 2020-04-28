@@ -139,13 +139,13 @@ public class ClusterCore<C extends IContext<C>>
 
     /*  ║ barrier, ━> publish event, ━━ pipeline, | event handler
      ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-     ┃                                                                   Api   ━> _ConsensusApiEvent ━━━━━━━━━━━┓                                                                                                                             ┃
-     ┃  ━> _AioProducerEvents ║                                          Timer ━> _ConsensusEvent  ━━━━━━━━━━━━━┫                      ┏━> _ClusterNotifiers[0] | [CallBack]                                                                  ┃
-     ┃  ━> _ClusterLocalClose ║                  ┏> _ClusterIoEvent ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫                      ┃   _ClusterNotifiers[.] | [CallBack]                                                                  ┃
-     ┗━━━> _ErrorEvent[0]     ║ _IoDispatcher ━━━┫  _ReadEvents[0]|━║                                           ┃                      ┃   _ClusterNotifiers[N] | [CallBack]         ┏>_EncodedEvents[0]|║                                    ┃
-     ┏━━━> _ErrorEvent[3]     ║                  ┃  _ReadEvents[.]|━║ _DecodedDispatcher ━┳━━> _ClusterDecoded ━┻━> ║_ClusterProcessor ╋━> _ClusterWriteEvent ━━>║ _WriteDispatcher ━┫ _EncodedEvents[.]|║ _EncodedProcessor┳━━> _ErrorEvent ━┛
-     ┃┏━━> _ErrorEvent[2]     ║                  ┃  _ReadEvents[N]|━║                     ┗━━> _ErrorEvent ━━━━━┓                      ┗━> _ErrorEvent ━━┓       ║                   ┃ _EncodedEvents[M]|║                  ┗━━>║ [Event Done]
-     ┃┃┏━> _ErrorEvent[1]     ║                  ┗> _WroteBuffer  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━║                   ┗>_ErrorEvent ━┓
+     ┃                                                                   Api   ━> _ConsensusApiEvent ━━━━━━━━━━━━━━━║                                                                                                                         ┃
+     ┃  ━> _AioProducerEvents ║                                          Timer ━> _ConsensusEvent  ━━━━━━━━━━━━━━━━━║                  ┏━> _ClusterNotifiers[0] | [CallBack]                                                                  ┃
+     ┃  ━> _ClusterLocalClose ║                  ┏> _ClusterIoEvent ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━║                  ┃   _ClusterNotifiers[.] | [CallBack]                                                                  ┃
+     ┗━━━> _ErrorEvent[0]     ║ _IoDispatcher ━━━┫  _ReadEvents[0]|━║                                               ║                  ┃   _ClusterNotifiers[N] | [CallBack]         ┏>_EncodedEvents[0]|║                                    ┃
+     ┏━━━> _ErrorEvent[1]     ║                  ┃  _ReadEvents[.]|━║ _DecodedDispatcher ━┳━━> _ClusterDecoded ━━━━━║_ClusterProcessor ╋━> _ClusterWriteEvent ━━━║ _WriteDispatcher ━┫ _EncodedEvents[.]|║ _EncodedProcessor┳━━> _ErrorEvent ━┛
+     ┃┏━━> _ErrorEvent[2]     ║                  ┃  _ReadEvents[N]|━║                     ┗━━> _ErrorEvent ━━━━━┓                      ┗━> _ErrorEvent ━━┓       ║                   ┃ _EncodedEvents[M]|║                  ┗━━║ [Event Done]
+     ┃┃┏━> _ErrorEvent[3]     ║                  ┗> _WroteBuffer  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━║                   ┗>_ErrorEvent ━┓
      ┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                        ┃                                          ┃
      ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                          ┃
      ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                                                                                                                                                                                          ┃
@@ -203,7 +203,7 @@ public class ClusterCore<C extends IContext<C>>
                                                                                                               _ClusterBarriers,
                                                                                                               new MappingHandler<>("CONSENSUS",
                                                                                                                                    manager,
-                                                                                                                                   _ErrorEvents[0],
+                                                                                                                                   _ErrorEvents[2],
                                                                                                                                    _ClusterWriteEvent,
                                                                                                                                    _ClusterNotifiers,
                                                                                                                                    notifyCustom,
@@ -227,7 +227,7 @@ public class ClusterCore<C extends IContext<C>>
         final MultiBufferBatchEventProcessor<QEvent> _DecodedDispatcher = new MultiBufferBatchEventProcessor<>(_ReadEvents,
                                                                                                                _DecodedBarriers,
                                                                                                                new DecodedDispatcher<>(_ClusterDecoded,
-                                                                                                                                       _ErrorEvents[1]));
+                                                                                                                                       _ErrorEvents[3]));
         _DecodedDispatcher.setThreadName("DecodedDispatcher");
         for (int i = 0; i < _DecoderCount; i++) {
             _ReadEvents[i].addGatingSequences(_DecodedDispatcher.getSequences()[i]);
@@ -241,7 +241,7 @@ public class ClusterCore<C extends IContext<C>>
         Arrays.setAll(_WriteEvents, slot -> createPipelineLite(_AioQueuePower));
         final MultiBufferBatchEventProcessor<QEvent> _WriteDispatcher = new MultiBufferBatchEventProcessor<>(_SendEvents,
                                                                                                              _SendBarriers,
-                                                                                                             new WriteDispatcher<>(_ErrorEvents[2],
+                                                                                                             new WriteDispatcher<>(_ErrorEvents[1],
                                                                                                                                    _WriteEvents));
         _WriteDispatcher.setThreadName("WriteDispatcher");
         for (int i = 0, size = _SendEvents.length; i < size; i++) {
@@ -258,7 +258,7 @@ public class ClusterCore<C extends IContext<C>>
         Arrays.setAll(_EncodedBarriers, slot -> _EncodedEvents[slot].newBarrier(_EncodeProcessors[slot].getSequence()));
         final MultiBufferBatchEventProcessor<QEvent> _EncodedProcessor = new MultiBufferBatchEventProcessor<>(_EncodedEvents,
                                                                                                               _EncodedBarriers,
-                                                                                                              new EncodedHandler<>(_ErrorEvents[3]));
+                                                                                                              new EncodedHandler<>(_ErrorEvents[0]));
         _EncodedProcessor.setThreadName("EncodedProcessor");
         for (int i = 0; i < _EncoderCount; i++) {
             _EncodedEvents[i].addGatingSequences(_EncodedProcessor.getSequences()[i]);
