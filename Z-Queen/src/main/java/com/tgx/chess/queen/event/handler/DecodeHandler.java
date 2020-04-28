@@ -49,7 +49,7 @@ public class DecodeHandler<C extends IContext<C>>
         implements
         EventHandler<QEvent>
 {
-    protected final Logger        _Logger = Logger.getLogger(getClass().getSimpleName());
+    protected final Logger        _Logger = Logger.getLogger("io.queen.processor." + getClass().getSimpleName());
     private final IEncryptHandler _EncryptHandler;
 
     public DecodeHandler(IEncryptHandler encryptHandler)

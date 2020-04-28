@@ -35,7 +35,7 @@ public class NotifyHandler
         implements
         EventHandler<QEvent>
 {
-    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("io.queen.processor." + getClass().getSimpleName());
 
     @Override
     public void onEvent(QEvent event, long seq, boolean batch) throws Exception

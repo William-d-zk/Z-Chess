@@ -70,7 +70,7 @@ public class DeviceService
         implements
         IDeviceService
 {
-    private final Logger                    _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final Logger                    _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
     private final DeviceNode                _DeviceNode;
     private final LinkCustom                _LinkCustom;
     private final ClusterCustom<DeviceNode> _ClusterCustom;

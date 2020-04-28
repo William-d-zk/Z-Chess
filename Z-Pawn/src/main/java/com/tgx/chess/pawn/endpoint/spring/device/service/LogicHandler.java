@@ -66,7 +66,7 @@ public class LogicHandler
         implements
         ILogicHandler<ZContext>
 {
-    private final Logger                    _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final Logger                    _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
     private final ISessionManager<ZContext> _Manager;
     private final IQttRouter                _QttRouter;
     private final IRepository<MessageEntry> _MessageRepository;

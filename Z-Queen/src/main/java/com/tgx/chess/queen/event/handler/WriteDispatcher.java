@@ -53,7 +53,7 @@ public class WriteDispatcher<C extends IContext<C>>
     private final RingBuffer<QEvent>[] _Encoders;
     private final RingBuffer<QEvent>   _Error;
     private final int                  _Mask;
-    private final Logger               _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final Logger               _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
 
     @SafeVarargs
     public WriteDispatcher(RingBuffer<QEvent> error,

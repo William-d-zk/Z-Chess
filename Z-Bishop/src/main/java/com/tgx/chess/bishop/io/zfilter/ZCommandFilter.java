@@ -55,7 +55,8 @@ public class ZCommandFilter
     private final ICommandFactory<ZContext,
                                   ZCommand,
                                   WsFrame>                     _CommandFactory;
-    private final Logger                                       _Logger = Logger.getLogger(getClass().getName());
+    private final Logger                                       _Logger = Logger.getLogger("protocol.bishop."
+                                                                                          + getClass().getName());
 
     public ZCommandFilter(ICommandFactory<ZContext,
                                           ZCommand,

@@ -65,7 +65,7 @@ public class ClusterNode
         ISessionDismiss<ZContext>,
         IClusterNode<ClusterCore<ZContext>>
 {
-    private final Logger               _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final Logger               _Logger = Logger.getLogger("cluster.knight" + getClass().getSimpleName());
     private final TimeWheel            _TimeWheel;
     private final IAioServer<ZContext> _AioServer;
     private final IAioClient<ZContext> _GateClient, _PeerClient;

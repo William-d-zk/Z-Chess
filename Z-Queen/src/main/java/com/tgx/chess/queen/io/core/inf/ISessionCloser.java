@@ -40,7 +40,7 @@ public interface ISessionCloser<C extends IContext<C>>
                   Void>
 {
 
-    Logger _Logger = Logger.getLogger(ISessionCloser.class.getSimpleName());
+    Logger _Logger = Logger.getLogger("io.queen.operator." + ISessionCloser.class.getSimpleName());
 
     @Override
     default Void handle(Void v, ISession<C> session)

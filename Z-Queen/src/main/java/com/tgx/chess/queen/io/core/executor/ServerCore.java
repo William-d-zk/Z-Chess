@@ -69,7 +69,8 @@ public class ServerCore<C extends IContext<C>>
         IBizCore,
         ILocalPublisher<C>
 {
-    protected Logger  _Logger = Logger.getLogger(getClass().getSimpleName());
+    protected Logger _Logger = Logger.getLogger("io.queen.core." + getClass().getSimpleName());
+
     private final int _DecoderCount;
     private final int _EncoderCount;
     private final int _LogicCount;

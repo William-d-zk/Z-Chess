@@ -30,6 +30,7 @@
     <property name="LOG_PATH" value="${user.home}/${APP_NAME}/logs"/>
     <property name="APP_LOG_FILE" value="${LOG_PATH}/application.log"/>
     <property name="CLUSTER_LOG_FILE" value="${LOG_PATH}/cluster.log"/>
+    <property name="TRACE_FILE" value="${LOG_PATH}/trace.log"/>
     <appender name="APPLICATION"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${APP_LOG_FILE}</file>
@@ -56,7 +57,19 @@
             <totalSizeCap>1GB</totalSizeCap>
         </rollingPolicy>
     </appender>
-
+    <appender name="TRACE"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${TRACE_FILE}</file>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${TRACE_FILE}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxHistory>7</maxHistory>
+            <maxFileSize>50MB</maxFileSize>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender" level="">
         <encoder>
             <pattern>${CONSOLE_LOG_PATTERN}</pattern>
@@ -64,12 +77,23 @@
         </encoder>
     </appender>
 
-    <root level="ERROR">
+    <root level="WARNING">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="APPLICATION"/>
-        <appender-ref ref="CLUSTER"/>
     </root>
 
-    <logger name="RaftNode" level="DEBUG"/>
-    <logger name="RaftMachine" level="DEBUG"/>
+    <logger name="cluster.knight" level="DEBUG">
+        <appender-ref ref="CLUSTER"/>
+    </logger>
+    <logger name="io.queen" level="DEBUG">
+        <appender-ref ref="TRACE"/>
+    </logger>
+    <logger name="protocol.bishop" level="DEBUG">
+        <appender-ref ref="TRACE"/>
+    </logger>
+
+    <logger name="endpoint.pawn" level=" DEBUG">
+        <appender-ref ref="TRACE"/>
+    </logger>
+
 </configuration>

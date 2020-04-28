@@ -71,7 +71,8 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IClust
         IClusterCustom<ZContext,
                        RaftMachine>
 {
-    private final Logger                        _Logger                      = Logger.getLogger(getClass().getSimpleName());
+    private final Logger                        _Logger                      = Logger.getLogger("cluster.knight"
+                                                                                                + getClass().getSimpleName());
     private final IRepository<RaftNode<T>>      _ClusterRepository;
     private final TypeReference<List<LogEntry>> _TypeReferenceOfLogEntryList = new TypeReference<List<LogEntry>>()
                                                                              {

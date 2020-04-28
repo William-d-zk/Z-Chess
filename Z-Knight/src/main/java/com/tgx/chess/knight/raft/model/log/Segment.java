@@ -62,7 +62,7 @@ public class Segment
         }
     }
 
-    private final static Logger _Logger  = Logger.getLogger(Segment.class.getName());
+    private final static Logger _Logger  = Logger.getLogger("cluster.knight" + Segment.class.getSimpleName());
     private final long          _StartIndex;
     private final String        _FileDirectory;
     private RandomAccessFile    mRandomAccessFile;
@@ -176,8 +176,8 @@ public class Segment
         }
         if (endIndex != mEndIndex) {
             _Logger.debug("input end_index isn't equal read end_index, update mEndIndex %d-> endIndex %d",
-                         mEndIndex,
-                         endIndex);
+                          mEndIndex,
+                          endIndex);
             mEndIndex = endIndex;
         }
     }

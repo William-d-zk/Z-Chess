@@ -50,7 +50,7 @@ public class ClientLinkHandler<C extends IContext<C>>
         implements
         EventHandler<QEvent>
 {
-    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("io.queen.processor." + getClass().getSimpleName());
 
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception

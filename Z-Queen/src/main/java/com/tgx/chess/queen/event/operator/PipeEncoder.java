@@ -44,7 +44,7 @@ public class PipeEncoder<C extends IContext<C>>
         implements
         IPipeEncoder<C>
 {
-    private final Logger       _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final Logger       _Logger = Logger.getLogger("io.queen.operator." + getClass().getSimpleName());
     private final AioWriter<C> _AioWriter;
 
     public PipeEncoder(AioWriter<C> aioWriter)
@@ -59,10 +59,10 @@ public class PipeEncoder<C extends IContext<C>>
             IPacket send = filterWrite(command, session.getContext());
             Objects.requireNonNull(send);
             _Logger.debug("%s send:%s",
-                         command,
-                         IoUtil.bin2Hex(send.getBuffer()
-                                            .array(),
-                                        "."));
+                          command,
+                          IoUtil.bin2Hex(send.getBuffer()
+                                             .array(),
+                                         "."));
             session.write(send, _AioWriter);
         }
         catch (Exception e) {
