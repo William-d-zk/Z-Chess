@@ -208,6 +208,12 @@ public class LogicHandler
              })
              .filter(Objects::nonNull)
              .forEach(pushList::add);
-        _Logger.info("push %s", pushList);
+        _Logger.debug("push %s", pushList);
+    }
+
+    @Override
+    public Logger getLogger()
+    {
+        return _Logger;
     }
 }

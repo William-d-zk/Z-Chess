@@ -66,7 +66,7 @@ public class WsControlFilter
     public WsFrame encode(ZContext context, WsControl output)
     {
         WsFrame frame = new WsFrame();
-        _Logger.info("control %s", output);
+        _Logger.debug("control %s", output);
         frame.setPayload(output.getPayload());
         frame.setCtrl(output.getCtrl());
         return frame;

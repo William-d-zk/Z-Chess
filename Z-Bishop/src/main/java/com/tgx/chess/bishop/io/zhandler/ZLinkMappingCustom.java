@@ -65,7 +65,7 @@ public class ZLinkMappingCustom
                         ISession<ZContext> session,
                         IControl<ZContext> content) throws Exception
     {
-        _Logger.info("link mapping receive %s", content);
+        _Logger.debug("link mapping receive %s", content);
         switch (content.serial())
         {
             case X01_EncryptRequest.COMMAND:

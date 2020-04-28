@@ -30,6 +30,7 @@ import com.lmax.disruptor.InsufficientCapacityException;
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
+import com.tgx.chess.king.base.log.Logger;
 
 /**
  * @author William.d.zk
@@ -38,6 +39,8 @@ public interface IPipeEventHandler<E extends IEvent>
         extends
         EventHandler<E>
 {
+
+    Logger getLogger();
 
     default <V,
              A,
@@ -61,7 +64,7 @@ public interface IPipeEventHandler<E extends IEvent>
             }
         }
         catch (InsufficientCapacityException e) {
-            e.printStackTrace();
+            getLogger().warning("%s.tryPublish=> insufficient capacity", getClass().getSimpleName(), e);
         }
         return false;
     }
@@ -121,7 +124,7 @@ public interface IPipeEventHandler<E extends IEvent>
             }
         }
         catch (InsufficientCapacityException e) {
-            e.printStackTrace();
+            getLogger().warning("%s.tryError=> insufficient capacity", getClass().getSimpleName(), e);
         }
         return false;
     }

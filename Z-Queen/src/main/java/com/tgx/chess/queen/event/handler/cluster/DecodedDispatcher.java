@@ -108,4 +108,9 @@ public class DecodedDispatcher<C extends IContext<C>>
             publish(_Cluster, CLUSTER, new Pair<>(cmd, session), op);
         }
     }
+
+    @Override
+    public Logger getLogger() {
+        return _Logger;
+    }
 }

@@ -70,7 +70,7 @@ public class AioWriter<C extends IContext<C>>
                                          session);
                 break;
             default:
-                _Logger.info("aio wrote %d", result);
+                _Logger.debug("aio wrote %d", result);
                 worker.publishWrote(_WroteOperator, result, session);
                 break;
         }

@@ -79,7 +79,7 @@ public class DecodeHandler<C extends IContext<C>>
             try {
                 ITriple result = packetOperator.handle(packet, session);
                 IControl<C>[] commands = result.getFirst();
-                _Logger.info("decoded commands:%s", Arrays.toString(commands));
+                _Logger.debug("decoded commands:%s", Arrays.toString(commands));
                 transfer(event, commands, session, result.getThird());
             }
             catch (Exception e) {

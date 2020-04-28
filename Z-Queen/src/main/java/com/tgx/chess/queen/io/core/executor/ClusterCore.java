@@ -66,6 +66,7 @@ public class ClusterCore<C extends IContext<C>>
         IPipeCore,
         ILocalPublisher<C>
 {
+
     private final int                  _DecoderCount;
     private final int                  _EncoderCount;
     private final int                  _LogicCount;
@@ -274,6 +275,7 @@ public class ClusterCore<C extends IContext<C>>
         Arrays.stream(_EncodeProcessors)
               .forEach(this::submit);
         submit(_EncodedProcessor);
+        _Logger.debug("%s =>>>>>>>>>>start", getClass().getSimpleName());
     }
 
     @Override

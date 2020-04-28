@@ -129,7 +129,7 @@ public class RaftDao
     {
         mLogMeta.close();
         mSnapshotMeta.close();
-        _Logger.info("raft dao dispose");
+        _Logger.debug("raft dao dispose");
     }
 
     @Override
@@ -165,7 +165,7 @@ public class RaftDao
         long startIndex = getStartIndex();
         long endIndex = getEndIndex();
         if (index == INDEX_NAN || (index < startIndex && index > 0) || index > endIndex) {
-            _Logger.info("index out of range, index=%d, start_index=%d, end_index=%d", index, startIndex, endIndex);
+            _Logger.debug("index out of range, index=%d, start_index=%d, end_index=%d", index, startIndex, endIndex);
             return null;
         }
         if (_Index2SegmentMap.isEmpty()) { return null; }
@@ -242,7 +242,7 @@ public class RaftDao
                          {
                              try {
                                  String fileName = sub.getName();
-                                 _Logger.info("sub:%s", fileName);
+                                 _Logger.debug("sub:%s", fileName);
                                  Matcher matcher = SEGMENT_NAME.matcher(fileName);
                                  if (matcher.matches()) {
                                      long start = Long.parseLong(matcher.group(1));
@@ -267,7 +267,7 @@ public class RaftDao
     @Override
     public boolean appendLog(LogEntry entry)
     {
-        _Logger.info("wait to append %s", entry);
+        _Logger.debug("wait to append %s", entry);
         Objects.requireNonNull(entry);
         long newEndIndex = getEndIndex() + 1;
         long newEndTerm = entry.getTerm();
@@ -292,7 +292,7 @@ public class RaftDao
             Segment targetSegment = null;
             if (isNeedNewSegmentFile) {
                 String newFileName = String.format("z_chess_raft_seg_%020d-%020d_w", newEndIndex, 0);
-                _Logger.info("new segment file :%s", newFileName);
+                _Logger.debug("new segment file :%s", newFileName);
                 File newFile = new File(_LogDataDir + File.separator + newFileName);
                 if (!newFile.exists()) {
                     try {
@@ -315,7 +315,7 @@ public class RaftDao
             Objects.requireNonNull(targetSegment);
             targetSegment.addRecord(entry);
             vTotalSize += entrySize;
-            _Logger.info("append ok: %d", newEndIndex);
+            _Logger.debug("append ok: %d", newEndIndex);
             return true;
         }
         _Logger.warning("append failed: [new end %d|expect %d]", newEndIndex, entry.getIndex());
@@ -354,7 +354,7 @@ public class RaftDao
             newActualFirstIndex = _Index2SegmentMap.firstKey();
         }
         updateLogStart(newActualFirstIndex);
-        _Logger.info("Truncating log from old first index %d to new first index %d",
+        _Logger.debug("Truncating log from old first index %d to new first index %d",
                      oldFirstIndex,
                      newActualFirstIndex);
     }
@@ -364,7 +364,7 @@ public class RaftDao
     {
         long endIndex = getEndIndex();
         if (newEndIndex >= endIndex) { return null; }
-        _Logger.info("Truncating log from old end index %d to new end index %d", getEndIndex(), newEndIndex);
+        _Logger.debug("Truncating log from old end index %d to new end index %d", getEndIndex(), newEndIndex);
 
         while (!_Index2SegmentMap.isEmpty()) {
             Segment segment = _Index2SegmentMap.lastEntry()

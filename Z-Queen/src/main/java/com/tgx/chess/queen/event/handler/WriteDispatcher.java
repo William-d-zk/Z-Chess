@@ -120,7 +120,7 @@ public class WriteDispatcher<C extends IContext<C>>
                                         new Pair<>(content, targetSession),
                                         triple.getThird());
                     }
-                    _Logger.info("write_dispatcher, source %s, transfer:%d", event.getEventType(), commands.length);
+                    _Logger.debug("write_dispatcher, source %s, transfer:%d", event.getEventType(), commands.length);
                 }
                 break;
             case WROTE://from io-wrote
@@ -168,4 +168,9 @@ public class WriteDispatcher<C extends IContext<C>>
         event.reset();
     }
 
+    @Override
+    public Logger getLogger()
+    {
+        return _Logger;
+    }
 }

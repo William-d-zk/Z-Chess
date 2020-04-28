@@ -134,7 +134,7 @@ public class DeviceConsumer
                         commands = Stream.of(commands)
                                          .map(cmd ->
                                          {
-                                             _Logger.info("recv:{ %s }", cmd);
+                                             _Logger.debug("recv:{ %s }", cmd);
                                              switch (cmd.serial())
                                              {
                                                  case X03_Cipher.COMMAND:
@@ -157,7 +157,7 @@ public class DeviceConsumer
                                                  case X23_SignInResult.COMMAND:
                                                      X23_SignInResult x23 = (X23_SignInResult) cmd;
                                                      if (x23.isSuccess()) {
-                                                         _Logger.info("sign in success token invalid @ %s",
+                                                         _Logger.debug("sign in success token invalid @ %s",
                                                                       Instant.ofEpochMilli(x23.getInvalidTime())
                                                                              .atZone(ZoneId.of("GMT+8")));
                                                      }
@@ -167,23 +167,23 @@ public class DeviceConsumer
                                                      break;
                                                  case X30_EventMsg.COMMAND:
                                                      X30_EventMsg x30 = (X30_EventMsg) cmd;
-                                                     _Logger.info("x30 payload: %s",
+                                                     _Logger.debug("x30 payload: %s",
                                                                   new String(x30.getPayload(), StandardCharsets.UTF_8));
                                                      X31_ConfirmMsg x31 = new X31_ConfirmMsg(x30.getMsgId());
                                                      x31.setStatus(X31_ConfirmMsg.STATUS_RECEIVED);
                                                      x31.setToken(x30.getToken());
                                                      return x31;
                                                  case X101_HandShake.COMMAND:
-                                                     _Logger.info("ws_handshake ok");
+                                                     _Logger.debug("ws_handshake ok");
                                                      break;
                                                  case X105_Pong.COMMAND:
-                                                     _Logger.info("ws_heartbeat ok");
+                                                     _Logger.debug("ws_heartbeat ok");
                                                      break;
                                                  case X103_Close.COMMAND:
                                                      close(session.getIndex());
                                                      break;
                                                  case X112_QttConnack.COMMAND:
-                                                     _Logger.info("qtt connack %s", cmd);
+                                                     _Logger.debug("qtt connack %s", cmd);
                                                      break;
                                                  default:
                                                      break;
@@ -211,7 +211,7 @@ public class DeviceConsumer
                 event.ignore();
             }
         }, new EncryptHandler());
-        _Logger.info("device consumer created");
+        _Logger.debug("device consumer created");
     }
 
     @PostConstruct
@@ -276,7 +276,7 @@ public class DeviceConsumer
                 DeviceConsumer.this.addSession(session);
                 zClient.setSessionIndex(sessionIndex);
                 _ZClientMap.put(session.getIndex(), zClient);
-                _Logger.info("connected :%d", sessionIndex);
+                _Logger.debug("connected :%d", sessionIndex);
             }
 
             @Override
@@ -367,7 +367,7 @@ public class DeviceConsumer
                                                  c ->
                                                  {
                                                      try {
-                                                         _Logger.info("%s retry connect",
+                                                         _Logger.debug("%s retry connect",
                                                                       Thread.currentThread()
                                                                             .getName());
                                                          connect(c);

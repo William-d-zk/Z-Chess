@@ -69,7 +69,7 @@ public class ServerCore<C extends IContext<C>>
         IBizCore,
         ILocalPublisher<C>
 {
-    protected Logger  _Logger = Logger.getLogger(getClass().getName());
+    protected Logger  _Logger = Logger.getLogger(getClass().getSimpleName());
     private final int _DecoderCount;
     private final int _EncoderCount;
     private final int _LogicCount;
@@ -397,6 +397,7 @@ public class ServerCore<C extends IContext<C>>
         Arrays.stream(_EncodeProcessors)
               .forEach(this::submit);
         submit(_EncodedProcessor);
+        _Logger.debug("%s =>>>>>>>>>>> start", getClass().getSimpleName());
     }
 
     @Override

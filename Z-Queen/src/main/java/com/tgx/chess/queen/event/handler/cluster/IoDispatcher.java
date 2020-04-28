@@ -178,4 +178,10 @@ public class IoDispatcher<C extends IContext<C>>
             error(_Cluster, type, new Pair<>(v, a), op);
         }
     }
+
+    @Override
+    public Logger getLogger()
+    {
+        return _Logger;
+    }
 }

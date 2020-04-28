@@ -77,7 +77,7 @@ public class AioReader<C extends IContext<C>>
                 }
                 break;
             default:
-                _Logger.info("read count: %d", result);
+                _Logger.debug("read count: %d", result);
                 try {
                     ByteBuffer recvBuf = session.read(result);
                     worker.publishRead(session.getContext()

@@ -69,7 +69,7 @@ public class QttRouter
     public Map<Long,
                IQoS.Level> broker(final String topic)
     {
-        _Logger.info("broker topic: %s", topic);
+        _Logger.debug("broker topic: %s", topic);
         return _Topic2SessionsMap.entrySet()
                                  .parallelStream()
                                  .map(entry ->
@@ -97,7 +97,7 @@ public class QttRouter
         IQoS.Level qosLevel = pair.getSecond();
         try {
             Pattern pattern = topicToRegex(topic);
-            _Logger.info("topic %s,pattern %s", topic, pattern);
+            _Logger.debug("topic %s,pattern %s", topic, pattern);
             Map<Long,
                 IQoS.Level> value = _Topic2SessionsMap.get(pattern);
             if (Objects.isNull(value)) {
@@ -184,7 +184,7 @@ public class QttRouter
         {
             IControl<ZContext> old = _LocalIdMessageMap.put(msgId, stateMessage);
             if (old == null) {
-                _Logger.info("retry recv: %s", stateMessage);
+                _Logger.debug("retry recv: %s", stateMessage);
             }
             return _LocalIdMessageMap;
         }) == null) {
@@ -192,7 +192,7 @@ public class QttRouter
                       IControl<ZContext>> _LocalIdMessageMap = new HashMap<>(7);
             _LocalIdMessageMap.put(msgId, stateMessage);
             _QttStatusMap.put(sessionIndex, _LocalIdMessageMap);
-            _Logger.info("first recv: %s", stateMessage);
+            _Logger.debug("first recv: %s", stateMessage);
         }
     }
 

@@ -119,7 +119,7 @@ public class DeviceRepository
                                                   _DeviceConfig.getPasswordRandomSeed(),
                                                   Instant.now()
                                                          .toEpochMilli());
-                    _Logger.info("new device %s ", source);
+                    _Logger.debug("new device %s ", source);
                     entity.setToken(IoUtil.bin2Hex(_CryptUtil.sha256(source.getBytes(StandardCharsets.UTF_8))));
                     entity.setSn(device.getSn());
                     entity.setUsername(device.getUsername());
