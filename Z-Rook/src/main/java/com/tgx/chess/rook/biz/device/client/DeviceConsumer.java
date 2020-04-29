@@ -324,6 +324,12 @@ public class DeviceConsumer
     }
 
     @Override
+    public void onCreate(ISession<ZContext> session)
+    {
+
+    }
+
+    @Override
     public void onDismiss(ISession<ZContext> session)
     {
         rmSession(session);
