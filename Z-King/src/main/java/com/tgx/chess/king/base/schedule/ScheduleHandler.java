@@ -28,8 +28,6 @@ import java.time.Duration;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
-import com.tgx.chess.king.base.log.Logger;
-
 /**
  * @author William.d.zk
  */
@@ -37,7 +35,6 @@ public class ScheduleHandler<A>
         implements
         TimeWheel.IWheelItem<A>
 {
-    private final static Logger _LOGGER = Logger.getLogger(ScheduleHandler.class.getSimpleName());
     private A                   attach;
     private final boolean       _Cycle;
     private final Consumer<A>   _Callback;

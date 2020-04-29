@@ -190,7 +190,6 @@ public class ServerCore<C extends IContext<C>>
         _ConsensusApiEvent = createPipelineLite(_ClusterPower);
         _ClusterEvent = createPipelineYield(_ClusterPower);
         _LinkEvent = createPipelineYield(_ClusterPower);
-
     }
     /*  ║ barrier, ━> publish event, ━━ pipeline, | event handler
     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
@@ -428,7 +427,6 @@ public class ServerCore<C extends IContext<C>>
             case BIZ_LOCAL:
                 return _BizLocalCloseEvent;
             case CLUSTER_LOCAL:
-            case CONSENSUS:
                 return _ClusterLocalCloseEvent;
             default:
                 throw new IllegalArgumentException(String.format("get closer type error:%s ", type.name()));
