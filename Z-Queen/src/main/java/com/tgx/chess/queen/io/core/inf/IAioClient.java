@@ -31,10 +31,10 @@ import java.io.IOException;
 public interface IAioClient<C extends IContext<C>>
         extends
         IAioConnector.IConnectFailed<C>,
+        ISessionCreated<C>,
         ISessionDismiss<C>
 {
     void connect(IAioConnector<C> connector) throws IOException;
 
     void shutdown(ISession<C> session);
-
 }
