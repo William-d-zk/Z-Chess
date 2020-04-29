@@ -64,7 +64,7 @@ public class RaftMachine
         IRaftMachine,
         IStorage
 {
-    private static final Logger _Logger = Logger.getLogger("cluster.knight" + RaftMachine.class.getSimpleName());
+    private static final Logger _Logger = Logger.getLogger("cluster.knight." + RaftMachine.class.getSimpleName());
 
     private final static int                   RAFT_MACHINE_SERIAL = DB_SERIAL + 3;
     private final long                         _PeerId;

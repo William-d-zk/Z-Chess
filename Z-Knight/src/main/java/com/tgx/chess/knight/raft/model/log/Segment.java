@@ -62,7 +62,7 @@ public class Segment
         }
     }
 
-    private final static Logger _Logger  = Logger.getLogger("cluster.knight" + Segment.class.getSimpleName());
+    private final static Logger _Logger  = Logger.getLogger("cluster.knight." + Segment.class.getSimpleName());
     private final long          _StartIndex;
     private final String        _FileDirectory;
     private RandomAccessFile    mRandomAccessFile;

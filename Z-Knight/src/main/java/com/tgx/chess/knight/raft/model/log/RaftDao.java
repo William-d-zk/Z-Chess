@@ -57,7 +57,7 @@ public class RaftDao
 {
     private final static long            TERM_NAN          = -1;
     private final static long            INDEX_NAN         = -1;
-    private final Logger                 _Logger           = Logger.getLogger("cluster.knight"
+    private final Logger                 _Logger           = Logger.getLogger("cluster.knight."
                                                                               + getClass().getSimpleName());
     private final String                 _LogDataDir;
     private final String                 _LogMetaDir;

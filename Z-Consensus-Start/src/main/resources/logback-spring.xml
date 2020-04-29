@@ -29,13 +29,12 @@
     <property name="APP_NAME" value="Z-Chess"/>
     <property name="LOG_PATH" value="${user.home}/${APP_NAME}/logs"/>
     <property name="APP_LOG_FILE" value="${LOG_PATH}/application.log"/>
-    <property name="CLUSTER_LOG_FILE" value="${LOG_PATH}/cluster.log"/>
-    <property name="TRACE_FILE" value="${LOG_PATH}/trace.log"/>
     <appender name="APPLICATION"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${APP_LOG_FILE}</file>
         <encoder>
             <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>utf8</charset>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>${APP_LOG_FILE}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
@@ -44,56 +43,28 @@
             <totalSizeCap>2GB</totalSizeCap>
         </rollingPolicy>
     </appender>
-    <appender name="CLUSTER"
-              class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${CLUSTER_LOG_FILE}</file>
-        <encoder>
-            <pattern>${FILE_LOG_PATTERN}</pattern>
-        </encoder>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${CLUSTER_LOG_FILE}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <maxHistory>7</maxHistory>
-            <maxFileSize>50MB</maxFileSize>
-            <totalSizeCap>1GB</totalSizeCap>
-        </rollingPolicy>
-    </appender>
-    <appender name="TRACE"
-              class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${TRACE_FILE}</file>
-        <encoder>
-            <pattern>${FILE_LOG_PATTERN}</pattern>
-        </encoder>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${TRACE_FILE}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <maxHistory>7</maxHistory>
-            <maxFileSize>50MB</maxFileSize>
-            <totalSizeCap>1GB</totalSizeCap>
-        </rollingPolicy>
-    </appender>
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender" level="">
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>${CONSOLE_LOG_PATTERN}</pattern>
             <charset>utf8</charset>
         </encoder>
     </appender>
 
-    <root level="WARNING">
+    <root level="ERROR">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="APPLICATION"/>
     </root>
-
-    <logger name="cluster.knight" level="DEBUG">
-        <appender-ref ref="CLUSTER"/>
+    <logger name="cluster.knight" level="debug">
+        <appender-ref ref="APPLICATION"/>
     </logger>
-    <logger name="io.queen" level="DEBUG">
-        <appender-ref ref="TRACE"/>
+    <logger name="io.queen" level="debug">
+        <appender-ref ref="APPLICATION"/>
     </logger>
-    <logger name="protocol.bishop" level="DEBUG">
-        <appender-ref ref="TRACE"/>
+    <logger name="protocol.bishop" level="debug">
+        <appender-ref ref="APPLICATION"/>
     </logger>
-
-    <logger name="endpoint.pawn" level=" DEBUG">
-        <appender-ref ref="TRACE"/>
+    <logger name="endpoint.pawn" level="debug">
+        <appender-ref ref="APPLICATION"/>
     </logger>
 
 </configuration>
