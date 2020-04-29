@@ -88,12 +88,12 @@ public class ZCommandFilter
     }
 
     @Override
-    public ICommand<ZContext> decode(ZContext context, WsFrame input)
+    public ZCommand decode(ZContext context, WsFrame input)
     {
         ZCommand _command = create(input);
         if (_command == null) return null;
         _command.decode(input.getPayload(), context);
-        switch (_command.getCommand())
+        switch (_command.serial())
         {
             case X01_EncryptRequest.COMMAND:
                 X01_EncryptRequest x01 = (X01_EncryptRequest) _command;
