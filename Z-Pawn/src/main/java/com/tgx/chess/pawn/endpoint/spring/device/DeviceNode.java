@@ -24,17 +24,23 @@
 
 package com.tgx.chess.pawn.endpoint.spring.device;
 
+import static com.tgx.chess.king.base.schedule.TimeWheel.IWheelItem.PRIORITY_NORMAL;
+import static com.tgx.chess.queen.event.inf.IOperator.Type.CLUSTER_LOCAL;
+
 import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.tgx.chess.bishop.io.ZSort;
+import com.tgx.chess.bishop.io.ws.control.X104_Ping;
 import com.tgx.chess.bishop.io.zcrypt.EncryptHandler;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
+import com.tgx.chess.king.base.schedule.ICancelable;
+import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.king.topology.ZUID;
@@ -72,11 +78,14 @@ public class DeviceNode
         IClusterNode<ServerCore<ZContext>>
 {
 
-    private final List<IAioServer<ZContext>> _AioServers;
-    private final IAioClient<ZContext>       _PeerClient;
-    private final IAioClient<ZContext>       _GateClient;
-    private final TimeWheel                  _TimeWheel;
-    private final ZUID                       _ZUID;
+    private final List<IAioServer<ZContext>>          _AioServers;
+    private final IAioClient<ZContext>                _PeerClient;
+    private final IAioClient<ZContext>                _GateClient;
+    private final TimeWheel                           _TimeWheel;
+    private final ZUID                                _ZUID;
+    private final ScheduleHandler<ISession<ZContext>> _HeartbeatSchedule;
+    private final X104_Ping                           _Ping = new X104_Ping();
+    private ICancelable                               mHeartbeatTask;
 
     @Override
     public void onDismiss(ISession<ZContext> session)
@@ -97,6 +106,10 @@ public class DeviceNode
         _Logger.debug(_ZUID);
         IPair bind = raftConfig.getBind();
         hosts.add(new Triple<>(bind.getFirst(), bind.getSecond(), ZSort.WS_CLUSTER_SERVER));
+        _HeartbeatSchedule = new ScheduleHandler<>(raftConfig.getHeartbeatInSecond(),
+                                                   true,
+                                                   this::heartbeat,
+                                                   PRIORITY_NORMAL);
         _AioServers = hosts.stream()
                            .map(triple ->
                            {
@@ -122,7 +135,13 @@ public class DeviceNode
                                    public ISession<ZContext> createSession(AsynchronousSocketChannel socketChannel,
                                                                            IConnectActivity<ZContext> activity) throws IOException
                                    {
-                                       return new AioSession<>(socketChannel, this, this, activity, DeviceNode.this);
+                                       ISession<ZContext> session = new AioSession<>(socketChannel,
+                                                                                     this,
+                                                                                     this,
+                                                                                     activity,
+                                                                                     DeviceNode.this);
+                                       mHeartbeatTask = _TimeWheel.acquire(session, _HeartbeatSchedule);
+                                       return session;
                                    }
 
                                    @Override
@@ -171,6 +190,9 @@ public class DeviceNode
             @Override
             public void onDismiss(ISession<ZContext> session)
             {
+                if (mHeartbeatTask != null) {
+                    mHeartbeatTask.cancel();
+                }
                 DeviceNode.this.onDismiss(session);
                 super.onDismiss(session);
             }
@@ -219,5 +241,10 @@ public class DeviceNode
     public ServerCore<ZContext> getCore()
     {
         return super.getCore();
+    }
+
+    private void heartbeat(ISession<ZContext> session)
+    {
+        getCore().send(session, CLUSTER_LOCAL, _Ping);
     }
 }

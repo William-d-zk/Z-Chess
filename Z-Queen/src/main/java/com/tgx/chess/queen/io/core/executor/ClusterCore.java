@@ -77,6 +77,7 @@ public class ClusterCore<C extends IContext<C>>
     private final RingBuffer<QEvent>[] _AioProducerEvents;
     private final SequenceBarrier[]    _AioProducerBarriers;
     private final RingBuffer<QEvent>   _ClusterLocalCloseEvent;
+    private final RingBuffer<QEvent>   _ClusterLocalSendEvent;
     private final RingBuffer<QEvent>   _ClusterWriteEvent;
     private final RingBuffer<QEvent>   _ConsensusEvent;
     private final RingBuffer<QEvent>   _ConsensusApiEvent;
@@ -133,6 +134,7 @@ public class ClusterCore<C extends IContext<C>>
         Arrays.setAll(_AioProducerBarriers, slot -> _AioProducerEvents[slot].newBarrier());
 
         _ClusterLocalCloseEvent = createPipelineLite(config.getCloserPower());
+        _ClusterLocalSendEvent = createPipelineLite(config.getCloserPower());
         _ClusterWriteEvent = createPipelineYield(_ClusterPower);
         _ConsensusEvent = createPipelineYield(_ClusterPower);
         _ConsensusApiEvent = createPipelineLite(_ClusterPower);
@@ -147,7 +149,7 @@ public class ClusterCore<C extends IContext<C>>
      ┏━━━> _ErrorEvent[1]     ║                  ┃  _ReadEvents[.]|━║ _DecodedDispatcher ━┳━━> _ClusterDecoded ━━━━━║_ClusterProcessor ╋━> _ClusterWriteEvent ━━━║ _WriteDispatcher ━┫ _EncodedEvents[.]|║ _EncodedProcessor┳━━> _ErrorEvent ━┛
      ┃┏━━> _ErrorEvent[2]     ║                  ┃  _ReadEvents[N]|━║                     ┗━━> _ErrorEvent ━━━━━┓                      ┗━> _ErrorEvent ━━┓       ║                   ┃ _EncodedEvents[M]|║                  ┗━━║ [Event Done]
      ┃┃┏━> _ErrorEvent[3]     ║                  ┗> _WroteBuffer  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━║                   ┗>_ErrorEvent ━┓
-     ┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                        ┃                                          ┃
+     ┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛           ━> _ClusterLocalSendEvent ━━━╋━━━━━━━║                                  ┃
      ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                          ┃
      ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                                                                                                                                                                                          ┃
     */
@@ -235,6 +237,7 @@ public class ClusterCore<C extends IContext<C>>
         }
         /* wait to send */
         final RingBuffer<QEvent>[] _SendEvents = new RingBuffer[] { _ClusterWriteEvent,
+                                                                    _ClusterLocalSendEvent,
                                                                     _WroteEvent };
         final SequenceBarrier[] _SendBarriers = new SequenceBarrier[_SendEvents.length];
         Arrays.setAll(_SendBarriers, slot -> _SendEvents[slot].newBarrier());
@@ -309,6 +312,8 @@ public class ClusterCore<C extends IContext<C>>
     {
         switch (type)
         {
+            case CLUSTER_LOCAL:
+                return _ClusterLocalSendEvent;
             case CONSENSUS:
                 return _ConsensusApiEvent;
             case CLUSTER_TIMER:
@@ -321,14 +326,8 @@ public class ClusterCore<C extends IContext<C>>
     @Override
     public RingBuffer<QEvent> getCloser(IOperator.Type type)
     {
-        switch (type)
-        {
-            case CLUSTER_LOCAL:
-            case CONSENSUS:
-                return _ClusterLocalCloseEvent;
-            default:
-                throw new IllegalArgumentException(String.format("get closer type error:%s ", type.name()));
-        }
+        if (type == IOperator.Type.CLUSTER_LOCAL) { return _ClusterLocalCloseEvent; }
+        throw new IllegalArgumentException(String.format("get closer type error:%s ", type.name()));
     }
 
     @Override
