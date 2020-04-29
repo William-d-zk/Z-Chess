@@ -217,6 +217,7 @@ public class ClusterNode
 
     private void heartbeat(ISession<ZContext> session)
     {
+        _Logger.debug("cluster heartbeat");
         getCore().send(session, CLUSTER_LOCAL, _Ping);
     }
 }
