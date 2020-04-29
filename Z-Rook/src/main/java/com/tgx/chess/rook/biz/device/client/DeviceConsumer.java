@@ -24,6 +24,7 @@
 
 package com.tgx.chess.rook.biz.device.client;
 
+import static com.tgx.chess.king.base.schedule.TimeWheel.IWheelItem.PRIORITY_NORMAL;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.BIZ_LOCAL;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 
@@ -31,6 +32,7 @@ import java.io.IOException;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Arrays;
@@ -63,6 +65,7 @@ import com.tgx.chess.bishop.io.zprotocol.ztls.X05_EncryptStart;
 import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.king.base.schedule.ICancelable;
 import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.base.util.IoUtil;
@@ -106,6 +109,7 @@ public class DeviceConsumer
     private final ZUID                     _ZUid   = new ZUID();
     private final Map<Long,
                       ZClient>             _ZClientMap;
+    private final X104_Ping                _Ping   = new X104_Ping();
 
     @SuppressWarnings("unchecked")
     @Autowired
@@ -323,10 +327,17 @@ public class DeviceConsumer
         connect(connector);
     }
 
+    private ICancelable mHeartbeatTask;
+
     @Override
     public void onCreate(ISession<ZContext> session)
     {
-
+        Duration gap = Duration.ofSeconds(session.getReadTimeOutSeconds() / 2);
+        mHeartbeatTask = _TimeWheel.acquire(session,
+                                            new ScheduleHandler<>(gap,
+                                                                  true,
+                                                                  DeviceConsumer.this::heartbeat,
+                                                                  PRIORITY_NORMAL));
     }
 
     @Override
@@ -334,6 +345,11 @@ public class DeviceConsumer
     {
         rmSession(session);
         _Logger.warning("device consumer dismiss session %s", session);
+    }
+
+    private void heartbeat(ISession<ZContext> session)
+    {
+        getCore().send(session, BIZ_LOCAL, _Ping);
     }
 
     @SafeVarargs
