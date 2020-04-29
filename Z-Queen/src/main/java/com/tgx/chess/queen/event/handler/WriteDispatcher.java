@@ -92,6 +92,7 @@ public class WriteDispatcher<C extends IContext<C>>
             case IGNORE://没有任何时间需要跨 Barrier 投递向下一层 Pipeline
                 break;
             case BIZ_LOCAL://from biz local
+            case CLUSTER_LOCAL://from cluster local
             case WRITE://from LinkIo/Cluster
             case LOGIC://from read->logic
                 IPair writeContent = event.getContent();
