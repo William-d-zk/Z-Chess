@@ -343,6 +343,7 @@ public class DeviceConsumer
     @Override
     public void onDismiss(ISession<ZContext> session)
     {
+        mHeartbeatTask.cancel();
         rmSession(session);
         _Logger.warning("device consumer dismiss session %s", session);
     }
