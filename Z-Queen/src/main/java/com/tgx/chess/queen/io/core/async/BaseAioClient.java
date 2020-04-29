@@ -80,7 +80,7 @@ public class BaseAioClient<C extends IContext<C>>
                 retryCount = pair.getFirst();
                 pair.setFirst(++retryCount);
             }
-            _Logger.debug("client connect to %s,@ %d", remoteAddress, retryCount);
+            _Logger.info("client connect to %s,@ %d", remoteAddress, retryCount);
         }
         finally {
             _Lock.unlock();
