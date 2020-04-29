@@ -24,17 +24,22 @@
 
 package com.tgx.chess.knight.cluster;
 
+import static com.tgx.chess.king.base.schedule.TimeWheel.IWheelItem.PRIORITY_NORMAL;
+import static com.tgx.chess.queen.event.inf.IOperator.Type.CLUSTER_LOCAL;
+
 import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
 
 import javax.annotation.PostConstruct;
 
 import com.tgx.chess.bishop.io.ZSort;
+import com.tgx.chess.bishop.io.ws.control.X104_Ping;
 import com.tgx.chess.bishop.io.zcrypt.EncryptHandler;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.topology.ZUID;
 import com.tgx.chess.knight.cluster.spring.IClusterNode;
@@ -65,11 +70,14 @@ public class ClusterNode
         ISessionDismiss<ZContext>,
         IClusterNode<ClusterCore<ZContext>>
 {
-    private final Logger               _Logger = Logger.getLogger("cluster.knight" + getClass().getSimpleName());
-    private final TimeWheel            _TimeWheel;
-    private final IAioServer<ZContext> _AioServer;
-    private final IAioClient<ZContext> _GateClient, _PeerClient;
-    private final ZUID                 _ZUID;
+    private final Logger                              _Logger = Logger.getLogger("cluster.knight"
+                                                                                 + getClass().getSimpleName());
+    private final TimeWheel                           _TimeWheel;
+    private final IAioServer<ZContext>                _AioServer;
+    private final IAioClient<ZContext>                _GateClient, _PeerClient;
+    private final ZUID                                _ZUID;
+    private final ScheduleHandler<ISession<ZContext>> _PingSchedule;
+    private final X104_Ping                           _Ping   = new X104_Ping();
 
     @Override
     public void onDismiss(ISession<ZContext> session)
@@ -90,6 +98,10 @@ public class ClusterNode
         IPair bind = raftConfig.getBind();
         final String _Host = bind.getFirst();
         final int _Port = bind.getSecond();
+        _PingSchedule = new ScheduleHandler<>(raftConfig.getHeartbeatInSecond(),
+                                              true,
+                                              this::heartbeat,
+                                              PRIORITY_NORMAL);
         _AioServer = new BaseAioServer<ZContext>(_Host, _Port, getSocketConfig(getSlot(ZUID.TYPE_CLUSTER)))
         {
             @Override
@@ -109,8 +121,9 @@ public class ClusterNode
             public ISession<ZContext> createSession(AsynchronousSocketChannel socketChannel,
                                                     IConnectActivity<ZContext> activity) throws IOException
             {
-                return new AioSession<>(socketChannel, this, this, activity, ClusterNode.this);
-
+                ISession<ZContext> session = new AioSession<>(socketChannel, this, this, activity, ClusterNode.this);
+                _TimeWheel.acquire(session, _PingSchedule);
+                return session;
             }
 
             @Override
@@ -191,5 +204,10 @@ public class ClusterNode
     public ClusterCore<ZContext> getCore()
     {
         return super.getCore();
+    }
+
+    private void heartbeat(ISession<ZContext> session)
+    {
+        getCore().send(session, CLUSTER_LOCAL, _Ping);
     }
 }
