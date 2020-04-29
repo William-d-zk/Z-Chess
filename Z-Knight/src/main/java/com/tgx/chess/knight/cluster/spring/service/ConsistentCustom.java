@@ -37,7 +37,7 @@ public class ConsistentCustom
         implements
         INotifyCustom
 {
-    private final Logger _Logger = Logger.getLogger("cluster.knight" + getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
 
     @Override
     public Void handle(IProtocol protocol, Void aVoid)

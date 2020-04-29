@@ -51,7 +51,7 @@ public class ZRaftConfig
         implements
         IRaftConfig
 {
-    private final Logger _Logger = Logger.getLogger("cluster.knight" + getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
 
     public Uid getUid()
     {

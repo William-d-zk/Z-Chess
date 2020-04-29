@@ -80,7 +80,7 @@ import com.tgx.chess.queen.io.core.inf.ISessionManager;
  */
 public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTimer>
 {
-    private final Logger                       _Logger         = Logger.getLogger("cluster.knight"
+    private final Logger                       _Logger         = Logger.getLogger("cluster.knight."
                                                                                   + getClass().getSimpleName());
     private final ZUID                         _ZUID;
     private final IRaftConfig                  _ClusterConfig;
