@@ -46,7 +46,7 @@ public class BaseAioClient<C extends IContext<C>>
         implements
         IAioClient<C>
 {
-    private final Logger _Logger = Logger.getLogger("io.queen.session." + getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("io.queen.client." + getClass().getSimpleName());
 
     private final TimeWheel                                               _TimeWheel;
     private final AsynchronousChannelGroup                                _ChannelGroup;
@@ -92,6 +92,12 @@ public class BaseAioClient<C extends IContext<C>>
     {
         _Logger.debug("connect failed: retry");
         delayConnect(connector);
+    }
+
+    @Override
+    public void onCreate(ISession<C> session)
+    {
+        _Logger.debug("connected :%s", session);
     }
 
     @Override

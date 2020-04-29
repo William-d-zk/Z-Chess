@@ -96,6 +96,7 @@ public interface IClusterNode<K extends IPipeCore>
             {
                 session.setIndex(_ZUID.getId(_Type));
                 _Manager.addSession(session);
+                client.onCreate(session);
             }
 
             @Override

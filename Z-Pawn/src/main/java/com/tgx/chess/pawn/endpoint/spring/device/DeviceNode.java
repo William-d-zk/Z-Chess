@@ -29,6 +29,7 @@ import static com.tgx.chess.queen.event.inf.IOperator.Type.CLUSTER_LOCAL;
 
 import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -78,14 +79,12 @@ public class DeviceNode
         IClusterNode<ServerCore<ZContext>>
 {
 
-    private final List<IAioServer<ZContext>>          _AioServers;
-    private final IAioClient<ZContext>                _PeerClient;
-    private final IAioClient<ZContext>                _GateClient;
-    private final TimeWheel                           _TimeWheel;
-    private final ZUID                                _ZUID;
-    private final ScheduleHandler<ISession<ZContext>> _HeartbeatSchedule;
-    private final X104_Ping                           _Ping = new X104_Ping();
-    private ICancelable                               mHeartbeatTask;
+    private final List<IAioServer<ZContext>> _AioServers;
+    private final IAioClient<ZContext>       _PeerClient;
+    private final IAioClient<ZContext>       _GateClient;
+    private final TimeWheel                  _TimeWheel;
+    private final ZUID                       _ZUID;
+    private final X104_Ping                  _Ping = new X104_Ping();
 
     @Override
     public void onDismiss(ISession<ZContext> session)
@@ -106,10 +105,6 @@ public class DeviceNode
         _Logger.debug(_ZUID);
         IPair bind = raftConfig.getBind();
         hosts.add(new Triple<>(bind.getFirst(), bind.getSecond(), ZSort.WS_CLUSTER_SERVER));
-        _HeartbeatSchedule = new ScheduleHandler<>(raftConfig.getHeartbeatInSecond(),
-                                                   true,
-                                                   this::heartbeat,
-                                                   PRIORITY_NORMAL);
         _AioServers = hosts.stream()
                            .map(triple ->
                            {
@@ -135,13 +130,7 @@ public class DeviceNode
                                    public ISession<ZContext> createSession(AsynchronousSocketChannel socketChannel,
                                                                            IConnectActivity<ZContext> activity) throws IOException
                                    {
-                                       ISession<ZContext> session = new AioSession<>(socketChannel,
-                                                                                     this,
-                                                                                     this,
-                                                                                     activity,
-                                                                                     DeviceNode.this);
-                                       mHeartbeatTask = _TimeWheel.acquire(session, _HeartbeatSchedule);
-                                       return session;
+                                       return new AioSession<>(socketChannel, this, this, activity, DeviceNode.this);
                                    }
 
                                    @Override
@@ -187,12 +176,23 @@ public class DeviceNode
         };
         _PeerClient = new BaseAioClient<ZContext>(_TimeWheel, getCore().getClusterChannelGroup())
         {
+            private ICancelable mHeartbeatTask;
+
+            @Override
+            public void onCreate(ISession<ZContext> session)
+            {
+                Duration gap = Duration.ofSeconds(session.getReadTimeOutSeconds() / 2);
+                mHeartbeatTask = _TimeWheel.acquire(session,
+                                                    new ScheduleHandler<>(gap,
+                                                                          true,
+                                                                          DeviceNode.this::heartbeat,
+                                                                          PRIORITY_NORMAL));
+            }
+
             @Override
             public void onDismiss(ISession<ZContext> session)
             {
-                if (mHeartbeatTask != null) {
-                    mHeartbeatTask.cancel();
-                }
+                mHeartbeatTask.cancel();
                 DeviceNode.this.onDismiss(session);
                 super.onDismiss(session);
             }
