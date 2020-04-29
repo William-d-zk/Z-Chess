@@ -47,6 +47,8 @@ import com.tgx.chess.bishop.io.mqtt.control.X117_QttPubcomp;
 import com.tgx.chess.bishop.io.mqtt.control.X11C_QttPingreq;
 import com.tgx.chess.bishop.io.mqtt.control.X11D_QttPingresp;
 import com.tgx.chess.bishop.io.mqtt.handler.IQttRouter;
+import com.tgx.chess.bishop.io.ws.control.X104_Ping;
+import com.tgx.chess.bishop.io.ws.control.X105_Pong;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.king.base.log.Logger;
@@ -94,6 +96,9 @@ public class LogicHandler
     {
         switch (content.serial())
         {
+            case X104_Ping.COMMAND:
+                X104_Ping x104 = (X104_Ping) content;
+                return new IControl[] { new X105_Pong(x104.getPayload()) };
             case X113_QttPublish.COMMAND:
                 X113_QttPublish x113 = (X113_QttPublish) content;
                 MessageEntry messageEntry = new MessageEntry();
@@ -167,7 +172,6 @@ public class LogicHandler
             case X11C_QttPingreq.COMMAND:
                 return new IControl[] { new X11D_QttPingresp() };
         }
-
         return new IControl[0];
     }
 

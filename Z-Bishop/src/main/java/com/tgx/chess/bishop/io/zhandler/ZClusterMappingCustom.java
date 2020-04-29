@@ -26,6 +26,10 @@ package com.tgx.chess.bishop.io.zhandler;
 
 import java.util.List;
 
+import com.tgx.chess.bishop.io.mqtt.control.X11C_QttPingreq;
+import com.tgx.chess.bishop.io.mqtt.control.X11D_QttPingresp;
+import com.tgx.chess.bishop.io.ws.control.X104_Ping;
+import com.tgx.chess.bishop.io.ws.control.X105_Pong;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X01_EncryptRequest;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X02_AsymmetricPub;
@@ -83,6 +87,11 @@ public class ZClusterMappingCustom<T extends IStorage>
                  *  此处仅执行转发逻辑
                  */
                 return new Pair<>(new IControl[] { content }, null);
+            case X104_Ping.COMMAND:
+                X104_Ping x104 = (X104_Ping) content;
+                return new Pair<>(new IControl[] { new X105_Pong(x104.getPayload()) }, null);
+            case X11C_QttPingreq.COMMAND:
+                return new Pair<>(new IControl[] { new X11D_QttPingresp() }, null);
             default:
                 if (_Then == null) return null;
                 return _Then.handle(manager, session, content);
