@@ -103,6 +103,7 @@ public class WriteDispatcher<C extends IContext<C>>
                     for (ITriple triple : triples) {
                         ISession<C> targetSession = triple.getSecond();
                         IControl<C> content = triple.getFirst();
+                        _Logger.debug("write %s", content);
                         if (content.isShutdown()) {
                             if (targetSession.isValid()) {
                                 error(_Error,

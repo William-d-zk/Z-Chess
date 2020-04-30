@@ -138,7 +138,10 @@ public abstract class WsControl
     public String toString()
     {
         int command = serial();
-        return String.format("cmd: 0X%X, %s", command, new String(_Payload, StandardCharsets.UTF_8));
+        return String.format("cmd: 0X%X, %s",
+                             command,
+                             _Payload == null ? "[NULL] payload"
+                                              : new String(_Payload, StandardCharsets.UTF_8));
     }
 
     @Override
