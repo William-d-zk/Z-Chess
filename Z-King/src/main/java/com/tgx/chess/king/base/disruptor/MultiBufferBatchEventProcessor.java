@@ -34,7 +34,7 @@ import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.EventProcessor;
 import com.lmax.disruptor.Sequence;
 import com.lmax.disruptor.SequenceBarrier;
-import com.lmax.disruptor.TimeoutException;
+import com.tgx.chess.king.base.log.Logger;
 
 /**
  * @author William.d.zk
@@ -43,11 +43,12 @@ public class MultiBufferBatchEventProcessor<T>
         implements
         EventProcessor
 {
+    private final Logger     _Logger = Logger.getLogger("base.king." + getClass().getSimpleName());
     private static final int IDLE    = 0;
     private static final int HALTED  = IDLE + 1;
     private static final int RUNNING = HALTED + 1;
 
-    private final AtomicInteger     running = new AtomicInteger(IDLE);
+    private final AtomicInteger     _Running = new AtomicInteger(IDLE);
     private final DataProvider<T>[] _Providers;
     private final SequenceBarrier[] _Barriers;
     private final EventHandler<T>   _Handler;
@@ -76,7 +77,7 @@ public class MultiBufferBatchEventProcessor<T>
     @Override
     public void run()
     {
-        if (running.compareAndSet(IDLE, RUNNING)) {
+        if (_Running.compareAndSet(IDLE, RUNNING)) {
             if (threadName != null) Thread.currentThread()
                                           .setName(threadName);
             for (SequenceBarrier barrier : _Barriers) {
@@ -93,7 +94,6 @@ public class MultiBufferBatchEventProcessor<T>
 
                         long available = _Barriers[i].waitFor(-1);
                         Sequence sequence = _Sequences[i];
-
                         long nextSequence = sequence.get() + 1;
                         for (long l = nextSequence; l <= available; l++) {
                             _Handler.onEvent(_Providers[i].get(l), l, nextSequence == available);
@@ -116,19 +116,14 @@ public class MultiBufferBatchEventProcessor<T>
                         break;
                     }
                 }
-                catch (InterruptedException |
-                       TimeoutException e)
-                {
-                    e.printStackTrace();
-                }
                 catch (Exception e) {
-                    e.printStackTrace();
-                    break;
+                    _Logger.warning(" %s → %d", threadName, e);
+                    //keep working
                 }
             }
         }
         else {
-            if (running.get() == RUNNING) { throw new IllegalStateException("Thread is already running"); }
+            if (_Running.get() == RUNNING) { throw new IllegalStateException("Thread is already running"); }
         }
 
     }
@@ -147,13 +142,13 @@ public class MultiBufferBatchEventProcessor<T>
     @Override
     public void halt()
     {
-        running.set(HALTED);
+        _Running.set(HALTED);
         _Barriers[0].alert();
     }
 
     @Override
     public boolean isRunning()
     {
-        return running.get() != IDLE;
+        return _Running.get() != IDLE;
     }
 }
