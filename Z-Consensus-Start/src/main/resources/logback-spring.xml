@@ -50,20 +50,20 @@
         </encoder>
     </appender>
 
-    <root level="WARN">
+    <root level="DEBUG">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="Z-CHESS"/>
     </root>
     <logger name="cluster.knight" level="DEBUG">
         <appender-ref ref="Z-CHESS"/>
     </logger>
-    <logger name="io.queen" level="INFO">
+    <logger name="io.queen" level="DEBUG">
         <appender-ref ref="Z-CHESS"/>
     </logger>
-    <logger name="protocol.bishop" level="INFO">
+    <logger name="protocol.bishop" level="DEBUG">
         <appender-ref ref="Z-CHESS"/>
     </logger>
-    <logger name="endpoint.pawn" level="INFO">
+    <logger name="endpoint.pawn" level="DEBUG">
         <appender-ref ref="Z-CHESS"/>
     </logger>
 
