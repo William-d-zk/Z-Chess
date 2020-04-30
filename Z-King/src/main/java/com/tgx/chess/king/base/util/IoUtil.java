@@ -684,9 +684,9 @@ public interface IoUtil
     @SafeVarargs
     static <T> void addArray(T[] src, T[] dst, T... add)
     {
-        if (src != null && dst != null && dst.length > src.length) {
+        if (src != null && dst != null && dst.length >= src.length) {
             arraycopy(src, 0, dst, 0, src.length);
-            if (add != null && add.length > 0) {
+            if (add != null && add.length > 0 && dst.length >= src.length + add.length) {
                 arraycopy(add, 0, dst, src.length, add.length);
             }
         }
@@ -694,14 +694,14 @@ public interface IoUtil
 
     static void addArray(Object[] src, Object[] dst, int pos)
     {
-        if (src != null && dst != null && dst.length > src.length) {
+        if (src != null && dst != null && dst.length >= pos + src.length) {
             arraycopy(src, 0, dst, pos, src.length);
         }
     }
 
     static void addArray(Object[] dst, int pos, Object... add)
     {
-        if (add != null && dst != null && add.length > 0 && dst.length - pos > add.length) {
+        if (add != null && dst != null && add.length > 0 && dst.length >= pos + add.length) {
             arraycopy(add, 0, dst, pos, add.length);
         }
     }
