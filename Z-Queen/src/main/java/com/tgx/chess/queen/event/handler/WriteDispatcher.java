@@ -76,14 +76,11 @@ public class WriteDispatcher<C extends IContext<C>>
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
     {
         if (event.hasError()) {
-            switch (event.getErrorType())
-            {
-                case HANDLE_DATA:// from logic handler 
-                    /* logic 处理错误，转换为shutdown目标投递给 _Error
-                     交由 IoDispatcher转发给对应的MappingHandler 执行close 
-                    */
-                    error(_Error, HANDLE_DATA, event.getContent(), event.getEventOp());
-                    break;
+            if (event.getErrorType() == HANDLE_DATA) {// from logic handler 
+                /* logic 处理错误，转换为shutdown目标投递给 _Error
+                 交由 IoDispatcher转发给对应的MappingHandler 执行close 
+                */
+                error(_Error, HANDLE_DATA, event.getContent(), event.getEventOp());
             }
         }
         else switch (event.getEventType())
@@ -92,6 +89,7 @@ public class WriteDispatcher<C extends IContext<C>>
             case IGNORE://没有任何时间需要跨 Barrier 投递向下一层 Pipeline
                 break;
             case BIZ_LOCAL://from biz local
+            case CLUSTER_LOCAL://from cluster local
             case WRITE://from LinkIo/Cluster
             case LOGIC://from read->logic
                 IPair writeContent = event.getContent();
@@ -105,6 +103,7 @@ public class WriteDispatcher<C extends IContext<C>>
                     for (ITriple triple : triples) {
                         ISession<C> targetSession = triple.getSecond();
                         IControl<C> content = triple.getFirst();
+                        _Logger.debug("write %s", content);
                         if (content.isShutdown()) {
                             if (targetSession.isValid()) {
                                 error(_Error,
