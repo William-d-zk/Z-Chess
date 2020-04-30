@@ -24,6 +24,8 @@
 
 package com.tgx.chess.king.base.schedule;
 
+import static java.lang.Thread.sleep;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -79,13 +81,13 @@ public class TimeWheel
                 expect = t + sleep;
                 if (sleep > correction) {
                     try {
-                        Thread.sleep(sleep - correction);
+                        sleep(sleep - correction);
                     }
                     catch (InterruptedException e) {
                         //ignore 没有地方执行interrupt操作
                     }
                 }
-                current_millisecond = System.currentTimeMillis();
+                vCurrentMillisecond = System.currentTimeMillis();
                 _Lock.lock();
                 try {
                     List<HandleTask<?>> readyList = filterReady();
@@ -94,12 +96,9 @@ public class TimeWheel
                             submit(ready);
                         }
                     }
-                    if (vCtxSlot == _HashMod) {
-                        vCtxSlot = 0;
+                    vCtxSlot++;
+                    if ((vCtxSlot &= _HashMod) == 0) {
                         vCtxLoop++;
-                    }
-                    else {
-                        vCtxSlot++;
                     }
                 }
                 finally {
@@ -119,7 +118,7 @@ public class TimeWheel
         return vCtxLoop;
     }
 
-    private int getCtxSlot()
+    private int getCurrentSlot()
     {
         return vCtxSlot;
     }
@@ -135,7 +134,7 @@ public class TimeWheel
         IWheelItem<A> item = task._Item;
         _Lock.lock();
         try {
-            int slot = task.acquire(getCurrentLoop(), getCtxSlot());
+            int slot = task.acquire(getCurrentLoop(), getCurrentSlot());
             TickSlot<A> tickSlot = (TickSlot<A>) _ModHashEntryArray[slot & _HashMod];
             int index = Collections.binarySearch(tickSlot, task);
             tickSlot.add(index < 0 ? -index - 1
@@ -152,7 +151,7 @@ public class TimeWheel
     private List<HandleTask<?>> filterReady()
     {
         List<HandleTask<?>> readyList = new LinkedList<>();
-        for (Iterator<? extends HandleTask<?>> it = _ModHashEntryArray[getCtxSlot()
+        for (Iterator<? extends HandleTask<?>> it = _ModHashEntryArray[getCurrentSlot()
                                                                        & _HashMod].iterator(); it.hasNext();)
         {
             HandleTask<?> handleTask = it.next();
@@ -226,11 +225,6 @@ public class TimeWheel
         {
             super(3);
             _Slot = slot;
-        }
-
-        public int getSlot()
-        {
-            return _Slot;
         }
     }
 
@@ -316,16 +310,16 @@ public class TimeWheel
         }
     }
 
-    private volatile long current_millisecond;
+    private volatile long vCurrentMillisecond;
 
     public long getCurrentMillisecond()
     {
-        return current_millisecond;
+        return vCurrentMillisecond;
     }
 
     public long getCurrentSecond()
     {
-        return TimeUnit.MILLISECONDS.toSeconds(current_millisecond);
+        return TimeUnit.MILLISECONDS.toSeconds(vCurrentMillisecond);
     }
 
     public <A> ICancelable acquire(A attach, IWheelItem<A> item)
