@@ -91,6 +91,9 @@ public class ZClusterMappingCustom<T extends IStorage>
                 X104_Ping x104 = (X104_Ping) content;
                 _Logger.info("recv ping");
                 return new Pair<>(new IControl[] { new X105_Pong(x104.getPayload()) }, null);
+            case X105_Pong.COMMAND:
+            case X11D_QttPingresp.COMMAND:
+                return null;
             case X11C_QttPingreq.COMMAND:
                 return new Pair<>(new IControl[] { new X11D_QttPingresp() }, null);
             default:
