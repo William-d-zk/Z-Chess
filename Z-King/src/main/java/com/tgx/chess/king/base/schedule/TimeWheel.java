@@ -156,8 +156,10 @@ public class TimeWheel
                                                                        & _HashMod].iterator(); it.hasNext();)
         {
             HandleTask<?> handleTask = it.next();
-            if (handleTask.getLoop() == getCurrentLoop() && handleTask.isValid()) {
-                readyList.add(handleTask);
+            if (handleTask.getLoop() == getCurrentLoop()) {
+                if (handleTask.isValid()) {
+                    readyList.add(handleTask);
+                }
                 it.remove();
             }
         }
