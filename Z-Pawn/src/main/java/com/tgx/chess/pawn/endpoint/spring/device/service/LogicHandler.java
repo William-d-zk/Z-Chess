@@ -172,7 +172,7 @@ public class LogicHandler
             case X11C_QttPingreq.COMMAND:
                 return new IControl[] { new X11D_QttPingresp() };
         }
-        return new IControl[0];
+        return null;
     }
 
     private void brokerTopic(ISessionManager<ZContext> manager,
