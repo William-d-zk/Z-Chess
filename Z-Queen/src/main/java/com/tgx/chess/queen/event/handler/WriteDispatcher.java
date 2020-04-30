@@ -76,14 +76,11 @@ public class WriteDispatcher<C extends IContext<C>>
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
     {
         if (event.hasError()) {
-            switch (event.getErrorType())
-            {
-                case HANDLE_DATA:// from logic handler 
-                    /* logic 处理错误，转换为shutdown目标投递给 _Error
-                     交由 IoDispatcher转发给对应的MappingHandler 执行close 
-                    */
-                    error(_Error, HANDLE_DATA, event.getContent(), event.getEventOp());
-                    break;
+            if (event.getErrorType() == HANDLE_DATA) {// from logic handler 
+                /* logic 处理错误，转换为shutdown目标投递给 _Error
+                 交由 IoDispatcher转发给对应的MappingHandler 执行close 
+                */
+                error(_Error, HANDLE_DATA, event.getContent(), event.getEventOp());
             }
         }
         else switch (event.getEventType())
