@@ -148,6 +148,12 @@ public class X7F_RaftResponse
     }
 
     @Override
+    public boolean isMapping()
+    {
+        return true;
+    }
+
+    @Override
     public String toString()
     {
         return "X7F_RaftResponse{"

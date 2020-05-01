@@ -158,6 +158,12 @@ public class X72_RaftVote
     }
 
     @Override
+    public boolean isMapping()
+    {
+        return true;
+    }
+
+    @Override
     public String toString()
     {
         return "X72_RaftVote{"

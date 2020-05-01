@@ -106,4 +106,10 @@ public class X76_RaftResult
     {
         mOrigin = origin;
     }
+
+    @Override
+    public boolean isMapping()
+    {
+        return true;
+    }
 }
