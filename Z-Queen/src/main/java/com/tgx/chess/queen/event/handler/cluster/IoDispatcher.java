@@ -75,6 +75,7 @@ public class IoDispatcher<C extends IContext<C>>
     @Override
     public void onEvent(QEvent event, long sequence, boolean batch) throws Exception
     {
+        _Logger.debug("* → %s", event);
         IError.Type errorType = event.getErrorType();
         switch (errorType)
         {
@@ -89,6 +90,7 @@ public class IoDispatcher<C extends IContext<C>>
                 switch (event.getEventType())
                 {
                     case CONNECTED:
+                        _Logger.trace("connected");
                         IPair connectContent = event.getContent();
                         IConnectActivity<C> context = connectContent.getFirst();
                         AsynchronousSocketChannel channel = connectContent.getSecond();
@@ -98,15 +100,18 @@ public class IoDispatcher<C extends IContext<C>>
                         publishConnected(context.getSort(), context, channel, connectOperator);
                         break;
                     case READ:
+                        _Logger.trace("read");
                         IPair readContent = event.getContent();
                         ISession<C> session = readContent.getSecond();
                         publish(dispatchWorker(session.getHashKey()), TRANSFER, readContent, event.getEventOp());
                         break;
                     case WROTE:
+                        _Logger.trace("wrote");
                         IPair wroteContent = event.getContent();
                         publish(_IoWrote, WROTE, wroteContent, event.getEventOp());
                         break;
-                    case CLOSE:// local close
+                    case CLOSE:
+                        _Logger.trace("local close");
                         IPair closeContent = event.getContent();
                         session = closeContent.getSecond();
                         if (!session.isClosed()) {
@@ -124,6 +129,7 @@ public class IoDispatcher<C extends IContext<C>>
                 }
                 break;
             default:
+                _Logger.trace("error close");
                 /*未指定类型的错误 来自Decoded/Encoded Dispatcher */
                 IOperator<Throwable,
                           ISession<C>,

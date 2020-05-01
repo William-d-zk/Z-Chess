@@ -92,7 +92,7 @@ public class MappingHandler<C extends IContext<C>,
     public void onEvent(QEvent event, long sequence, boolean endOfBatch)
     {
         if (event.hasError()) {
-            _Logger.debug(String.format("error type %s,ignore ", event.getErrorType()));
+            _Logger.warning("mapping error → %s ", event);
             switch (event.getErrorType())
             {
                 case ACCEPT_FAILED:
@@ -110,7 +110,6 @@ public class MappingHandler<C extends IContext<C>,
                     connectFailedOperator.handle(errorContent.getFirst(), errorContent.getSecond());
                     break;
                 case WAIT_CLOSE:
-                    _Logger.warning("server io error , do close session");
                     IOperator<Void,
                               ISession<C>,
                               Void> closeOperator = event.getEventOp();
@@ -124,13 +123,11 @@ public class MappingHandler<C extends IContext<C>,
                     }
                     break;
                 default:
-                    _Logger.warning("can't handle %s",
-                                    event.getErrorType()
-                                         .name());
                     break;
             }
         }
         else {
+            _Logger.trace("mapping:%s", event);
             switch (event.getEventType())
             {
                 case CONNECTED:

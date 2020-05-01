@@ -53,19 +53,39 @@ public class Logger
         return new Logger(name);
     }
 
+    public void trace(Object object)
+    {
+        _Logger.trace(object.toString());
+    }
+
+    public void trace(String msg)
+    {
+        _Logger.trace(msg);
+    }
+
+    public void trace(String formatter, Object... content)
+    {
+        _Logger.trace(String.format(formatter, content));
+    }
+
+    public void trace(String msg, Throwable throwable)
+    {
+        _Logger.trace(msg, throwable);
+    }
+
     public void info(String msg)
     {
-        _Logger.debug(msg);
+        _Logger.info(msg);
     }
 
     public void info(Object object)
     {
-        _Logger.debug(object.toString());
+        _Logger.info(object.toString());
     }
 
     public void info(String formatter, Object... content)
     {
-        _Logger.debug(String.format(formatter, content));
+        _Logger.info(String.format(formatter, content));
     }
 
     public void warning(String msg)
