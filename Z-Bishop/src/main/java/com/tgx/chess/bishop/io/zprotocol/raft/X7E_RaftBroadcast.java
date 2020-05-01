@@ -155,4 +155,10 @@ public class X7E_RaftBroadcast
     {
         return mFollower;
     }
+
+    @Override
+    public boolean isMapping()
+    {
+        return true;
+    }
 }
