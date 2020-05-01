@@ -108,4 +108,10 @@ public class X75_RaftRequest
     {
         mPeerId = peerId;
     }
+
+    @Override
+    public boolean isMapping()
+    {
+        return true;
+    }
 }

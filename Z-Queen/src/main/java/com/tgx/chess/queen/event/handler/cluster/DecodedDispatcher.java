@@ -26,6 +26,7 @@ package com.tgx.chess.queen.event.handler.cluster;
 
 import static com.tgx.chess.queen.event.inf.IOperator.Type.CLUSTER;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.DISPATCH;
+import static com.tgx.chess.queen.event.inf.IOperator.Type.LOGIC;
 
 import java.util.Objects;
 
@@ -34,7 +35,6 @@ import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
-import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.inf.ISort;
@@ -50,21 +50,37 @@ public class DecodedDispatcher<C extends IContext<C>>
         implements
         IPipeEventHandler<QEvent>
 {
-    private final Logger             _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
-    private final RingBuffer<QEvent> _Cluster;
-    private final RingBuffer<QEvent> _Error;
+    private final Logger               _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
+    private final RingBuffer<QEvent>   _Cluster;
+    private final RingBuffer<QEvent>   _Error;
+    private final RingBuffer<QEvent>[] _LogicWorkers;
+    private final int                  _WorkerMask;
 
+    @SafeVarargs
     public DecodedDispatcher(RingBuffer<QEvent> cluster,
-                             RingBuffer<QEvent> error)
+                             RingBuffer<QEvent> error,
+                             RingBuffer<QEvent>... workers)
     {
         _Cluster = cluster;
         _Error = error;
+        _LogicWorkers = workers;
+        _WorkerMask = _LogicWorkers.length - 1;
+        if (Integer.bitCount(_LogicWorkers.length) != 1) {
+            throw new IllegalArgumentException("workers' length must be a power of 2");
+        }
     }
 
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
     {
-        if (event.getErrorType() == IError.Type.NO_ERROR) {
+        if (event.hasError()) {//错误处理
+            IPair dispatchError = event.getContent();
+            ISession<C> session = dispatchError.getSecond();
+            if (!session.isClosed()) {
+                tryError(_Error, event.getErrorType(), dispatchError, event.getEventOp());
+            }
+        }
+        else {
             if (event.getEventType() == DISPATCH) {
                 IPair dispatchContent = event.getContent();
                 ISession<C> session = dispatchContent.getSecond();
@@ -86,13 +102,6 @@ public class DecodedDispatcher<C extends IContext<C>>
                                      .name());
             }
         }
-        else {//错误处理
-            IPair dispatchError = event.getContent();
-            ISession<C> session = dispatchError.getSecond();
-            if (!session.isClosed()) {
-                error(_Error, event.getErrorType(), dispatchError, event.getEventOp());
-            }
-        }
         event.reset();
     }
 
@@ -104,9 +113,21 @@ public class DecodedDispatcher<C extends IContext<C>>
                                     ITriple> op)
     {
         cmd.setSession(session);
-        if (sorter.getMode() == ISort.Mode.CLUSTER) {
-            publish(_Cluster, CLUSTER, new Pair<>(cmd, session), op);
-        }
+        IPair nextPipe = getNextPipe(sorter.getMode(), cmd);
+        publish(nextPipe.getFirst(), nextPipe.getSecond(), new Pair<>(cmd, session), op);
+    }
+
+    protected IPair getNextPipe(ISort.Mode mode, IControl<C> cmd)
+    {
+        return mode == ISort.Mode.CLUSTER && cmd.isMapping() ? new Pair<>(_Cluster, CLUSTER)
+                                                             : new Pair<>(dispatchWorker(cmd), LOGIC);
+    }
+
+    protected RingBuffer<QEvent> dispatchWorker(IControl<C> cmd)
+    {
+        return _LogicWorkers[(int) cmd.getSession()
+                                      .getHashKey()
+                             & _WorkerMask];
     }
 
     @Override

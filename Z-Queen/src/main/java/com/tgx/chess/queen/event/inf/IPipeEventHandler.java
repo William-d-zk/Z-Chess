@@ -69,6 +69,25 @@ public interface IPipeEventHandler<E extends IEvent>
         return false;
     }
 
+    default boolean tryPublish(RingBuffer<E> publisher, List<ITriple> contents)
+    {
+        if (publisher == null) { return true; }
+        try {
+            long sequence = publisher.tryNext();
+            try {
+                E event = publisher.get(sequence);
+                event.produce(IOperator.Type.DISPATCH, contents);
+            }
+            finally {
+                publisher.publish(sequence);
+            }
+        }
+        catch (InsufficientCapacityException e) {
+            getLogger().warning("%s.tryPublish=> insufficient capacity", getClass().getSimpleName(), e);
+        }
+        return false;
+    }
+
     default <V,
              A,
              R> void publish(RingBuffer<E> publisher,

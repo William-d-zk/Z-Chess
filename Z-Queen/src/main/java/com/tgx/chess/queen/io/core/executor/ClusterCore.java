@@ -52,6 +52,7 @@ import com.tgx.chess.queen.event.handler.cluster.INotifyCustom;
 import com.tgx.chess.queen.event.handler.cluster.IoDispatcher;
 import com.tgx.chess.queen.event.handler.cluster.MappingHandler;
 import com.tgx.chess.queen.event.handler.cluster.NotifyHandler;
+import com.tgx.chess.queen.event.handler.mix.ILogicHandler;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.async.socket.AioWorker;
@@ -81,6 +82,7 @@ public class ClusterCore<C extends IContext<C>>
     private final RingBuffer<QEvent>   _ClusterWriteEvent;
     private final RingBuffer<QEvent>   _ConsensusEvent;
     private final RingBuffer<QEvent>   _ConsensusApiEvent;
+    private final RingBuffer<QEvent>   _LogicEvent;
 
     private final ReentrantLock _ClusterLock      = new ReentrantLock();
     private final ReentrantLock _ConsensusLock    = new ReentrantLock();
@@ -138,27 +140,29 @@ public class ClusterCore<C extends IContext<C>>
         _ClusterWriteEvent = createPipelineYield(_ClusterPower);
         _ConsensusEvent = createPipelineYield(_ClusterPower);
         _ConsensusApiEvent = createPipelineLite(_ClusterPower);
+        _LogicEvent = createPipelineLite(config.getLogicPower());
     }
 
     /*  ║ barrier, ━> publish event, ━━ pipeline, | event handler
-     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-     ┃                                                                   Api   ━> _ConsensusApiEvent ━━━━━━━━━━━━━━━║                                                                                                                         ┃
-     ┃  ━> _AioProducerEvents ║                                          Timer ━> _ConsensusEvent  ━━━━━━━━━━━━━━━━━║                  ┏━> _ClusterNotifiers[0] | [CallBack]                                                                  ┃
-     ┃  ━> _ClusterLocalClose ║                  ┏> _ClusterIoEvent ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━║                  ┃   _ClusterNotifiers[.] | [CallBack]                                                                  ┃
-     ┗━━━> _ErrorEvent[0]     ║ _IoDispatcher ━━━┫  _ReadEvents[0]|━║                                               ║                  ┃   _ClusterNotifiers[N] | [CallBack]         ┏>_EncodedEvents[0]|║                                    ┃
-     ┏━━━> _ErrorEvent[1]     ║                  ┃  _ReadEvents[.]|━║ _DecodedDispatcher ━┳━━> _ClusterDecoded ━━━━━║_ClusterProcessor ╋━> _ClusterWriteEvent ━━━║ _WriteDispatcher ━┫ _EncodedEvents[.]|║ _EncodedProcessor┳━━> _ErrorEvent ━┛
-     ┃┏━━> _ErrorEvent[2]     ║                  ┃  _ReadEvents[N]|━║                     ┗━━> _ErrorEvent ━━━━━┓                      ┗━> _ErrorEvent ━━┓       ║                   ┃ _EncodedEvents[M]|║                  ┗━━║ [Event Done]
-     ┃┃┏━> _ErrorEvent[3]     ║                  ┗> _WroteBuffer  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━║                   ┗>_ErrorEvent ━┓
-     ┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛           ━> _ClusterLocalSendEvent ━━━╋━━━━━━━║                                  ┃
-     ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                          ┃
-     ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                                                                                                                                                                                          ┃
+     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+     ┃                                                                                      Api   ━> _ConsensusApiEvent ━━━━━━━━━━━━━━━║                  ┏━> _ClusterNotifiers[0] {CallBack}|                                                                                      ┃
+     ┃  ━> _AioProducerEvents ║                                                             Timer ━> _ConsensusEvent  ━━━━━━━━━━━━━━━━━║                  ┃   _ClusterNotifiers[.] {CallBack}|                                                                                      ┃
+     ┃  ━> _ClusterLocalClose ║                  ┏> _ClusterIoEvent ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━║                  ╋━> _ClusterNotifiers[N] {CallBack}|                                                                                      ┃
+     ┗━━━> _ErrorEvent[0]     ║ _IoDispatcher ━━━┫  _ReadEvents[0]{_DecodeProcessors}|━║                     ┏━━> _ClusterDecoded ━━━━━║_ClusterProcessor ┃   _ClusterWriteEvent ━━━║                   ┏>_EncodedEvents[0]{_EncodeProcessors}|║                                    ┃
+     ┏━━━> _ErrorEvent[1]     ║                  ┃  _ReadEvents[.]{_DecodeProcessors}|━║ _DecodedDispatcher ━╋━━> _LogicEvent     ━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━{_LogicProcessor}━|║ _WriteDispatcher ━┫ _EncodedEvents[.]{_EncodeProcessors}|║ _EncodedProcessor┳━━> _ErrorEvent ━┛
+     ┃┏━━> _ErrorEvent[2]     ║                  ┃  _ReadEvents[N]{_DecodeProcessors}|━║                     ┗━━> _ErrorEvent ━━━━━┓                      ┗━> _ErrorEvent ━━┓       ║                   ┃ _EncodedEvents[M]{_EncodeProcessors}|║                  ┗━━║ [Event Done]
+     ┃┃┏━> _ErrorEvent[3]     ║                  ┗> _WroteBuffer  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━║                   ┗>_ErrorEvent ━┓
+     ┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛           ━> _ClusterLocalSendEvent ━━━╋━━━━━━━║                                  ┃
+     ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                          ┃
+     ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                                                                                                                                                                                          ┃
     */
     @SuppressWarnings("unchecked")
     public <T extends IStorage> void build(ClusterManager<C> manager,
                                            IEncryptHandler encryptHandler,
                                            INotifyCustom notifyCustom,
                                            IClusterCustom<C,
-                                                          T> clusterCustom)
+                                                          T> clusterCustom,
+                                           ILogicHandler<C> logicHandler)
     {
         final RingBuffer<QEvent> _WroteEvent = createPipelineYield(_AioQueuePower + 1);
         final RingBuffer<QEvent> _ClusterIoEvent = createPipelineYield(_ClusterPower);
@@ -230,17 +234,25 @@ public class ClusterCore<C extends IContext<C>>
         final MultiBufferBatchEventProcessor<QEvent> _DecodedDispatcher = new MultiBufferBatchEventProcessor<>(_ReadEvents,
                                                                                                                _DecodedBarriers,
                                                                                                                new DecodedDispatcher<>(_ClusterDecoded,
-                                                                                                                                       _ErrorEvents[3]));
+                                                                                                                                       _ErrorEvents[3],
+                                                                                                                                       _LogicEvent));
         _DecodedDispatcher.setThreadName("DecodedDispatcher");
         for (int i = 0; i < _DecoderCount; i++) {
             _ReadEvents[i].addGatingSequences(_DecodedDispatcher.getSequences()[i]);
         }
+        final BatchEventProcessor<QEvent> _LogicProcessor = new BatchEventProcessor<>(_LogicEvent,
+                                                                                      _LogicEvent.newBarrier(),
+                                                                                      logicHandler);
+
         /* wait to send */
-        final RingBuffer<QEvent>[] _SendEvents = new RingBuffer[] { _ClusterWriteEvent,
+        final RingBuffer<QEvent>[] _SendEvents = new RingBuffer[] { _LogicEvent,
+                                                                    _ClusterWriteEvent,
                                                                     _ClusterLocalSendEvent,
                                                                     _WroteEvent };
         final SequenceBarrier[] _SendBarriers = new SequenceBarrier[_SendEvents.length];
-        Arrays.setAll(_SendBarriers, slot -> _SendEvents[slot].newBarrier());
+        Arrays.setAll(_SendBarriers,
+                      slot -> slot == 0 ? _SendEvents[slot].newBarrier(_LogicProcessor.getSequence())
+                                        : _SendEvents[slot].newBarrier());
         final RingBuffer<QEvent>[] _WriteEvents = new RingBuffer[_EncoderCount];
         Arrays.setAll(_WriteEvents, slot -> createPipelineLite(_AioQueuePower));
         final MultiBufferBatchEventProcessor<QEvent> _WriteDispatcher = new MultiBufferBatchEventProcessor<>(_SendEvents,

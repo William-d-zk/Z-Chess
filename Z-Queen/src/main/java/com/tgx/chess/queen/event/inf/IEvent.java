@@ -68,6 +68,6 @@ public interface IEvent
 
     default boolean hasError()
     {
-        return !getErrorType().equals(Type.NO_ERROR);
+        return getErrorType() != Type.NO_ERROR;
     }
 }
