@@ -167,7 +167,7 @@ public class AioSession<C extends IContext<C>>
     @Override
     public void reset()
     {
-        mIndex = -1;
+        mIndex = -1L;
     }
 
     @Override

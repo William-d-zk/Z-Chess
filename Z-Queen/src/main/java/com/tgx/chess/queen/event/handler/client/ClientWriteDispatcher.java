@@ -103,9 +103,7 @@ public class ClientWriteDispatcher<C extends IContext<C>>
                     IPair wroteContent = event.getContent();
                     session = wroteContent.getSecond();
                     if (session.isValid()) {
-                        if (!tryPublish(_Encoder, WROTE, wroteContent, event.getEventOp())) {
-                            _Logger.warning("publish wrote event to encoder failed");
-                        }
+                        publish(_Encoder, WROTE, wroteContent, event.getEventOp());
                     }
                     break;
                 default:

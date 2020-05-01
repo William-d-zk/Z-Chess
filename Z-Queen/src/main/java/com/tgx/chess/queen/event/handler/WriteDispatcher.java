@@ -50,10 +50,10 @@ public class WriteDispatcher<C extends IContext<C>>
         implements
         IPipeEventHandler<QEvent>
 {
+    private final Logger               _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
     private final RingBuffer<QEvent>[] _Encoders;
     private final RingBuffer<QEvent>   _Error;
     private final int                  _Mask;
-    private final Logger               _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
 
     @SafeVarargs
     public WriteDispatcher(RingBuffer<QEvent> error,
@@ -106,12 +106,12 @@ public class WriteDispatcher<C extends IContext<C>>
                         _Logger.debug("write %s", content);
                         if (content.isShutdown()) {
                             if (targetSession.isValid()) {
-                                error(_Error,
-                                      ILLEGAL_STATE,
-                                      new Pair<>(new IllegalStateException("session to shutdown"), targetSession),
-                                      targetSession.getContext()
-                                                   .getSort()
-                                                   .getError());
+                                tryError(_Error,
+                                         ILLEGAL_STATE,
+                                         new Pair<>(new IllegalStateException("session to shutdown"), targetSession),
+                                         targetSession.getContext()
+                                                      .getSort()
+                                                      .getError());
                             }
                         }
                         else tryPublish(dispatchEncoder(targetSession.getHashKey()),
@@ -127,10 +127,10 @@ public class WriteDispatcher<C extends IContext<C>>
                 int wroteCount = wroteContent.getFirst();
                 session = wroteContent.getSecond();
                 if (session.isValid()) {
-                    tryPublish(dispatchEncoder(session.getHashKey()),
-                               WROTE,
-                               new Pair<>(wroteCount, session),
-                               event.getEventOp());
+                    publish(dispatchEncoder(session.getHashKey()),
+                            WROTE,
+                            new Pair<>(wroteCount, session),
+                            event.getEventOp());
                 }
                 break;
             case DISPATCH:
@@ -140,12 +140,12 @@ public class WriteDispatcher<C extends IContext<C>>
                     session = content.getSecond();
                     if (command.isShutdown()) {
                         if (session != null && session.isValid()) {
-                            error(_Error,
-                                  ILLEGAL_STATE,
-                                  new Pair<>(new IllegalStateException("session to shutdown"), session),
-                                  session.getContext()
-                                         .getSort()
-                                         .getError());
+                            tryError(_Error,
+                                     ILLEGAL_STATE,
+                                     new Pair<>(new IllegalStateException("session to shutdown"), session),
+                                     session.getContext()
+                                            .getSort()
+                                            .getError());
                         }
                         /*
                         session == null 意味着 _SessionManager.find..失败

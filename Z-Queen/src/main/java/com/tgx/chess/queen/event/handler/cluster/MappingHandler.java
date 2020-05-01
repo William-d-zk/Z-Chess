@@ -178,17 +178,12 @@ public class MappingHandler<C extends IContext<C>,
                         }
                         IProtocol notify = handled.getSecond();
                         if (notify != null) {
-                            publishNotify(notify, notify.channel());
+                            publishNotify(notify, notify.channel(), null);
                         }
                     }
                     catch (Exception e) {
                         _Logger.warning("cluster mapping handler error", e);
-                        error(_Error,
-                              MAPPING_ERROR,
-                              new Pair<>(e, session),
-                              session.getContext()
-                                     .getSort()
-                                     .getError());
+                        session.doClose();
                     }
                     break;
                 case CONSENSUS:
@@ -200,15 +195,16 @@ public class MappingHandler<C extends IContext<C>,
                         try {
                             List<ITriple> broadcast = _ClusterCustom.consensus(_SessionManager, request, origin);
                             if (broadcast != null && !broadcast.isEmpty()) {
-                                publish(_Writer, broadcast);
+                                tryPublish(_Writer, broadcast);
                             }
                         }
                         catch (Exception e) {
-                            _Logger.warning("mapping consensus error, link session close", e);
+                            _Logger.warning("mapping consensus error", e);
+                            publishNotify(request, origin, e);
                         }
                     }
                     else {
-                        publishNotify(request, origin);
+                        publishNotify(request, origin, null);
                     }
                     break;
                 case CLUSTER_TIMER://ClusterConsumer Timeout->start_vote
@@ -217,7 +213,7 @@ public class MappingHandler<C extends IContext<C>,
                                      .getFirst();
                     List<ITriple> toSends = _ClusterCustom.onTimer(_SessionManager, content);
                     if (toSends != null && !toSends.isEmpty()) {
-                        publish(_Writer, toSends);
+                        tryPublish(_Writer, toSends);
                     }
                     break;
                 default:
@@ -230,12 +226,17 @@ public class MappingHandler<C extends IContext<C>,
         event.reset();
     }
 
-    private void publishNotify(IProtocol request, int channel)
+    private void publishNotify(IProtocol request, int channel, Throwable throwable)
     {
         Objects.requireNonNull(request);
         int slot = channel % _Notifiers.length;
         RingBuffer<QEvent> notifier = _Notifiers[slot];
-        publish(notifier, NOTIFY, new Pair<>(request, null), _NotifyCustom);
+        if (throwable == null) {
+            tryPublish(notifier, NOTIFY, new Pair<>(request, null), _NotifyCustom);
+        }
+        else {
+            tryError(notifier, MAPPING_ERROR, new Pair<>(request, throwable), _NotifyCustom);
+        }
     }
 
     @Override
