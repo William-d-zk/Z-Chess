@@ -30,13 +30,11 @@ import java.util.logging.Logger;
 
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.king.base.inf.IPair;
+import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IError.Type;
 import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.event.operator.AcceptFailedOperator;
-import com.tgx.chess.queen.event.operator.ConnectFailedOperator;
-import com.tgx.chess.queen.event.operator.ConnectedOperator;
 import com.tgx.chess.queen.event.operator.WroteOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.IAioConnector;
@@ -135,21 +133,27 @@ public class AioWorker
         publish(_Producer, op, eType, IOperator.Type.WROTE, new Pair<>(t, session));
     }
 
-    public <C extends IContext<C>> void publishConnected(final ConnectedOperator<C> op,
+    public <C extends IContext<C>> void publishConnected(final IOperator<IConnectActivity<C>,
+                                                                         AsynchronousSocketChannel,
+                                                                         ITriple> op,
                                                          final IConnectActivity<C> activity,
                                                          final AsynchronousSocketChannel channel)
     {
         publish(_Producer, op, IError.Type.NO_ERROR, IOperator.Type.CONNECTED, new Pair<>(activity, channel));
     }
 
-    public <C extends IContext<C>> void publishConnectingError(final ConnectFailedOperator<C> op,
+    public <C extends IContext<C>> void publishConnectingError(final IOperator<Throwable,
+                                                                               IAioConnector<C>,
+                                                                               Void> op,
                                                                final Throwable e,
                                                                final IAioConnector<C> cActive)
     {
         publish(_Producer, op, IError.Type.CONNECT_FAILED, IOperator.Type.NULL, new Pair<>(e, cActive));
     }
 
-    public <C extends IContext<C>> void publishAcceptError(final AcceptFailedOperator<C> op,
+    public <C extends IContext<C>> void publishAcceptError(final IOperator<Throwable,
+                                                                           IAioServer<C>,
+                                                                           Void> op,
                                                            final Throwable e,
                                                            final IAioServer<C> cActive)
     {
