@@ -68,6 +68,11 @@ public class Logger
         _Logger.trace(String.format(formatter, content));
     }
 
+    public void trace(String formatter, Throwable throwable, Object... msg)
+    {
+        _Logger.trace(String.format(formatter, msg), throwable);
+    }
+
     public void trace(String msg, Throwable throwable)
     {
         _Logger.trace(msg, throwable);

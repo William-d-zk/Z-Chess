@@ -61,8 +61,8 @@ public class EncodedHandler<C extends IContext<C>>
                 default:
                     IPair errorContent = event.getContent();
                     ISession<C> session = errorContent.getSecond();
-                    if (!session.isClosed()) {
-                        error(_Error, event.getErrorType(), errorContent, event.getEventOp());
+                    if (session.isValid()) {
+                        tryError(_Error, event.getErrorType(), errorContent, event.getEventOp());
                     }
                     break;
             }

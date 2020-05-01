@@ -80,7 +80,7 @@ public class WriteDispatcher<C extends IContext<C>>
                 /* logic 处理错误，转换为shutdown目标投递给 _Error
                  交由 IoDispatcher转发给对应的MappingHandler 执行close 
                 */
-                error(_Error, HANDLE_DATA, event.getContent(), event.getEventOp());
+                tryError(_Error, HANDLE_DATA, event.getContent(), event.getEventOp());
             }
         }
         else switch (event.getEventType())

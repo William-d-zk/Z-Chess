@@ -51,14 +51,14 @@ public class ClientWriteDispatcher<C extends IContext<C>>
 {
     private final Logger _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
 
-    final RingBuffer<QEvent> _ErrorPipe;
-    final RingBuffer<QEvent> _EncoderPipe;
+    final RingBuffer<QEvent> _Error;
+    final RingBuffer<QEvent> _Encoder;
 
     public ClientWriteDispatcher(RingBuffer<QEvent> error,
                                  RingBuffer<QEvent> encoder)
     {
-        _ErrorPipe = error;
-        _EncoderPipe = encoder;
+        _Error = error;
+        _Encoder = encoder;
     }
 
     @Override
@@ -71,6 +71,7 @@ public class ClientWriteDispatcher<C extends IContext<C>>
                 case ILLEGAL_STATE:
                 case ILLEGAL_BIZ_STATE:
                 default:
+                    tryError(_Error, event.getErrorType(), event.getContent(), event.getEventOp());
             }
         }
         else {
@@ -88,7 +89,7 @@ public class ClientWriteDispatcher<C extends IContext<C>>
                                   List<ITriple>> transferOperator = event.getEventOp();
                         List<ITriple> triples = transferOperator.handle(commands, session);
                         for (ITriple triple : triples) {
-                            if (!tryPublish(_EncoderPipe,
+                            if (!tryPublish(_Encoder,
                                             WRITE,
                                             new Pair<>(triple.getFirst(), session),
                                             triple.getThird()))
@@ -102,7 +103,7 @@ public class ClientWriteDispatcher<C extends IContext<C>>
                     IPair wroteContent = event.getContent();
                     session = wroteContent.getSecond();
                     if (session.isValid()) {
-                        if (!tryPublish(_EncoderPipe, WROTE, wroteContent, event.getEventOp())) {
+                        if (!tryPublish(_Encoder, WROTE, wroteContent, event.getEventOp())) {
                             _Logger.warning("publish wrote event to encoder failed");
                         }
                     }

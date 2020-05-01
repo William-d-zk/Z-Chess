@@ -34,7 +34,6 @@ import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
-import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.inf.ISort;
@@ -64,7 +63,14 @@ public class DecodedDispatcher<C extends IContext<C>>
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
     {
-        if (event.getErrorType() == IError.Type.NO_ERROR) {
+        if (event.hasError()) {//错误处理
+            IPair dispatchError = event.getContent();
+            ISession<C> session = dispatchError.getSecond();
+            if (!session.isClosed()) {
+                tryError(_Error, event.getErrorType(), dispatchError, event.getEventOp());
+            }
+        }
+        else {
             if (event.getEventType() == DISPATCH) {
                 IPair dispatchContent = event.getContent();
                 ISession<C> session = dispatchContent.getSecond();
@@ -86,13 +92,7 @@ public class DecodedDispatcher<C extends IContext<C>>
                                      .name());
             }
         }
-        else {//错误处理
-            IPair dispatchError = event.getContent();
-            ISession<C> session = dispatchError.getSecond();
-            if (!session.isClosed()) {
-                error(_Error, event.getErrorType(), dispatchError, event.getEventOp());
-            }
-        }
+
         event.reset();
     }
 

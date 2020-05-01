@@ -62,7 +62,7 @@ public class AioSession<C extends IContext<C>>
         implements
         ISession<C>
 {
-    private Logger _Logger = Logger.getLogger("io.queen.session." + getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("io.queen.session." + getClass().getSimpleName());
     /*--------------------------------------------------------------------------------------------------------------*/
     private final int                       _ReadTimeOutInSecond;
     private final int                       _WriteTimeOutInSecond;
@@ -95,13 +95,13 @@ public class AioSession<C extends IContext<C>>
     @Override
     public String toString()
     {
-        return String.format("@%#x %s->%s mode:%s Index:%#x close:%s\nwait to write %d,queue size %d",
+        return String.format("@%#x \n%s->%s \nmode:%s \nindex:%#x \nvalid:%s\nwait_to_write %d\nqueue_size %d",
                              _HashCode,
                              _LocalAddress,
                              _RemoteAddress,
                              _Ctx.getSort(),
                              mIndex,
-                             isClosed(),
+                             isValid(),
                              mSending.remaining(),
                              size());
     }
@@ -137,7 +137,7 @@ public class AioSession<C extends IContext<C>>
     @Override
     public boolean isValid()
     {
-        return !isClosed();
+        return !(_Ctx.isClosed() || _Ctx.isInErrorState() || _Ctx.isOutErrorState());
     }
 
     @Override
