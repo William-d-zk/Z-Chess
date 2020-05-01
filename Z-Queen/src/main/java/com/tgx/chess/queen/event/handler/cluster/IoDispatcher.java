@@ -36,6 +36,7 @@ import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
+import com.tgx.chess.queen.config.QueenCode;
 import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
@@ -84,7 +85,10 @@ public class IoDispatcher<C extends IContext<C>>
                 IPair connectFailedContent = event.getContent();
                 Throwable throwable = connectFailedContent.getFirst();
                 IConnectActivity<C> connectActive = connectFailedContent.getSecond();
-                publishError(connectActive.getSort(), errorType, throwable, connectActive, event.getEventOp());
+                error(getNextPipe(connectActive.getSort()),
+                      errorType,
+                      new Pair<>(throwable, connectActive),
+                      event.getEventOp());
                 break;
             case NO_ERROR:
                 switch (event.getEventType())
@@ -97,13 +101,16 @@ public class IoDispatcher<C extends IContext<C>>
                         IOperator<IConnectActivity<C>,
                                   AsynchronousSocketChannel,
                                   ITriple> connectOperator = event.getEventOp();
-                        publishConnected(context.getSort(), context, channel, connectOperator);
+                        tryPublish(getNextPipe(context.getSort()),
+                                   CONNECTED,
+                                   new Pair<>(context, channel),
+                                   connectOperator);
                         break;
                     case READ:
                         _Logger.trace("read");
                         IPair readContent = event.getContent();
                         ISession<C> session = readContent.getSecond();
-                        publish(dispatchWorker(session.getHashKey()), TRANSFER, readContent, event.getEventOp());
+                        tryPublish(dispatchWorker(session.getHashKey()), TRANSFER, readContent, event.getEventOp());
                         break;
                     case WROTE:
                         _Logger.trace("wrote");
@@ -115,12 +122,11 @@ public class IoDispatcher<C extends IContext<C>>
                         IPair closeContent = event.getContent();
                         session = closeContent.getSecond();
                         if (!session.isClosed()) {
-                            publishError(session.getContext()
-                                                .getSort(),
-                                         WAIT_CLOSE,
-                                         null,
-                                         session,
-                                         event.getEventOp());
+                            error(getNextPipe(session.getContext()
+                                                     .getSort()),
+                                  WAIT_CLOSE,
+                                  new Pair<>(QueenCode.LOCAL_CLOSE, session),
+                                  event.getEventOp());
                         }
                         break;
                     default:
@@ -133,18 +139,18 @@ public class IoDispatcher<C extends IContext<C>>
                 /*未指定类型的错误 来自Decoded/Encoded Dispatcher */
                 IOperator<Throwable,
                           ISession<C>,
-                          ITriple> errorOperator = event.getEventOp();
+                          IPair> errorOperator = event.getEventOp();
                 IPair errorContent = event.getContent();
+                throwable = errorContent.getFirst();
                 ISession<C> session = errorContent.getSecond();
+                _Logger.trace("session error %s, → mapping handler [close]\n", throwable, session);
                 if (!session.isClosed()) {
-                    throwable = errorContent.getFirst();
-                    ITriple result = errorOperator.handle(throwable, session);
-                    publishError(session.getContext()
-                                        .getSort(),
-                                 WAIT_CLOSE,
-                                 null,
-                                 session,
-                                 result.getThird());
+                    IPair result = errorOperator.handle(throwable, session);
+                    error(getNextPipe(session.getContext()
+                                             .getSort()),
+                          WAIT_CLOSE,
+                          new Pair<>(QueenCode.ERROR_CLOSE, session),
+                          result.getSecond());
                 }
                 break;
         }
@@ -156,33 +162,10 @@ public class IoDispatcher<C extends IContext<C>>
         return _Workers[(int) (seq & _WorkerMask)];
     }
 
-    private <V,
-             A,
-             R> void publishConnected(ISort<C> sorter,
-                                      V v,
-                                      A a,
-                                      IOperator<V,
-                                                A,
-                                                R> op)
+    protected RingBuffer<QEvent> getNextPipe(ISort<C> sort)
     {
-        if (sorter.getMode() == ISort.Mode.CLUSTER) {
-            publish(_Cluster, CONNECTED, new Pair<>(v, a), op);
-        }
-    }
-
-    private <V,
-             A,
-             R> void publishError(ISort<C> sorter,
-                                  IError.Type type,
-                                  V v,
-                                  A a,
-                                  IOperator<V,
-                                            A,
-                                            R> op)
-    {
-        if (sorter.getMode() == ISort.Mode.CLUSTER) {
-            error(_Cluster, type, new Pair<>(v, a), op);
-        }
+        if (sort.getMode() == ISort.Mode.CLUSTER) { return _Cluster; }
+        return null;
     }
 
     @Override

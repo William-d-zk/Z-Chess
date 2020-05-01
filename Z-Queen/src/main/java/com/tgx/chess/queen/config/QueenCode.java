@@ -68,6 +68,9 @@ public interface QueenCode
     int MQ_REGISTER_TOPIC_MODE_CONFLICT  = 602;
     int MQ_REGISTER_TOPIC_NULL           = 603;
 
+    String ERROR_CLOSE = "error close";
+    String LOCAL_CLOSE = "error close";
+
     static String parseRCode(int code)
     {
         switch (code)

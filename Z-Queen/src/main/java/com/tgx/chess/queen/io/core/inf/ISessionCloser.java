@@ -35,7 +35,7 @@ import com.tgx.chess.queen.event.inf.IOperator;
  */
 public interface ISessionCloser<C extends IContext<C>>
         extends
-        IOperator<Void,
+        IOperator<String,
                   ISession<C>,
                   Void>
 {
@@ -43,14 +43,14 @@ public interface ISessionCloser<C extends IContext<C>>
     Logger _Logger = Logger.getLogger("io.queen.operator." + ISessionCloser.class.getSimpleName());
 
     @Override
-    default Void handle(Void v, ISession<C> session)
+    default Void handle(String msg, ISession<C> session)
     {
         try {
+            _Logger.trace("msg %s → closed %s", msg, session);
             session.close();
-            _Logger.debug("closed %s", session.toString());
         }
         catch (IOException e) {
-            _Logger.warning("close exception: %s", e, session.toString());
+            _Logger.warning("close exception: %s", e, session);
         }
         return null;
     }

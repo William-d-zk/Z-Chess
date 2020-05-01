@@ -40,23 +40,28 @@ public class ConsistentCustom
     private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
 
     @Override
-    public Void handle(IProtocol protocol, Void aVoid)
+    public Void handle(IProtocol protocol, Throwable throwable)
     {
-        _Logger.debug("notify---consistent");
-        if (protocol.serial() == X76_RaftResult.COMMAND) {
-            X76_RaftResult x76 = (X76_RaftResult) protocol;
-            byte[] data = x76.getPayload();
-            switch (x76.getPayloadSerial())
-            {
-                case ConsistentProtocol._SERIAL:
-                    ConsistentProtocol consistentProtocol = JsonUtil.readValue(data, ConsistentProtocol.class);
-                    consistentProtocol.decode(data);
-                    break;
-                default:
-                    _Logger.fetal("consistent notify failed");
-                    break;
+        if (throwable == null) {
+            _Logger.debug("notify---consistent");
+            if (protocol.serial() == X76_RaftResult.COMMAND) {
+                X76_RaftResult x76 = (X76_RaftResult) protocol;
+                byte[] data = x76.getPayload();
+                switch (x76.getPayloadSerial())
+                {
+                    case ConsistentProtocol._SERIAL:
+                        ConsistentProtocol consistentProtocol = JsonUtil.readValue(data, ConsistentProtocol.class);
+                        consistentProtocol.decode(data);
+                        break;
+                    default:
+                        _Logger.fetal("consistent notify failed");
+                        break;
+                }
+                _Logger.debug("notify ok");
             }
-            _Logger.debug("notify ok");
+        }
+        else {
+            _Logger.warning("request:%s", throwable, protocol);
         }
         return null;
     }

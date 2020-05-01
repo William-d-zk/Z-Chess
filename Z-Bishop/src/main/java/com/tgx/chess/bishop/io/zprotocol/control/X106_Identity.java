@@ -67,6 +67,12 @@ public class X106_Identity
     }
 
     @Override
+    public boolean isMapping()
+    {
+        return true;
+    }
+
+    @Override
     public X106_Identity duplicate()
     {
         return new X106_Identity(getPayload());

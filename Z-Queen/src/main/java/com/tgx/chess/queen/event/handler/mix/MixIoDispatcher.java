@@ -22,19 +22,37 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.queen.event.handler.cluster;
+package com.tgx.chess.queen.event.handler.mix;
 
-import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.io.core.inf.IProtocol;
+import com.lmax.disruptor.RingBuffer;
+import com.tgx.chess.queen.event.handler.cluster.IoDispatcher;
+import com.tgx.chess.queen.event.inf.ISort;
+import com.tgx.chess.queen.event.processor.QEvent;
+import com.tgx.chess.queen.io.core.inf.IContext;
 
 /**
  * @author william.d.zk
  */
-public interface INotifyCustom
+public class MixIoDispatcher<C extends IContext<C>>
         extends
-        IOperator<IProtocol,
-                  Throwable,
-                  Void>
+        IoDispatcher<C>
 {
+    private final RingBuffer<QEvent> _Link;
 
+    @SafeVarargs
+    public MixIoDispatcher(RingBuffer<QEvent> link,
+                           RingBuffer<QEvent> cluster,
+                           RingBuffer<QEvent> wrote,
+                           RingBuffer<QEvent>... read)
+    {
+        super(cluster, wrote, read);
+        _Link = link;
+    }
+
+    @Override
+    protected RingBuffer<QEvent> getNextPipe(ISort<C> sort)
+    {
+        if (sort.getMode() == ISort.Mode.LINK) { return _Link; }
+        return super.getNextPipe(sort);
+    }
 }

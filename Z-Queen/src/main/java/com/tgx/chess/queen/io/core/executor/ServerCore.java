@@ -47,11 +47,11 @@ import com.tgx.chess.queen.event.handler.EncodeHandler;
 import com.tgx.chess.queen.event.handler.EncodedHandler;
 import com.tgx.chess.queen.event.handler.IClusterCustom;
 import com.tgx.chess.queen.event.handler.WriteDispatcher;
-import com.tgx.chess.queen.event.handler.mix.DecodedDispatcher;
+import com.tgx.chess.queen.event.handler.mix.MixDecodedDispatcher;
 import com.tgx.chess.queen.event.handler.mix.ILinkCustom;
 import com.tgx.chess.queen.event.handler.mix.ILogicHandler;
-import com.tgx.chess.queen.event.handler.mix.IoDispatcher;
 import com.tgx.chess.queen.event.handler.mix.MappingHandler;
+import com.tgx.chess.queen.event.handler.mix.MixIoDispatcher;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.async.socket.AioWorker;
@@ -103,7 +103,7 @@ public class ServerCore<C extends IContext<C>>
      * cluster -> biz 层投递
      */
     private final RingBuffer<QEvent>                        _ClusterEvent;
-    private final RingBuffer<QEvent>                        _LinkEvent;
+    private final RingBuffer<QEvent>                        _NotifyEvent;
     private final ConcurrentLinkedQueue<RingBuffer<QEvent>> _AioCacheConcurrentQueue;
     private final ConcurrentLinkedQueue<RingBuffer<QEvent>> _ClusterCacheConcurrentQueue;
 
@@ -189,27 +189,27 @@ public class ServerCore<C extends IContext<C>>
         _ConsensusEvent = createPipelineYield(_ClusterPower);
         _ConsensusApiEvent = createPipelineLite(_ClusterPower);
         _ClusterEvent = createPipelineYield(_ClusterPower);
-        _LinkEvent = createPipelineYield(_ClusterPower);
+        _NotifyEvent = createPipelineYield(_ClusterPower);
     }
     /*  ║ barrier, ━> publish event, ━━ pipeline, | event handler
-    ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-    ┃                                                                                                 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓ ┃
-    ┃                                                                                                 ┃       ║                 ┏━>_ClusterEvent    ━┛ ┃
-    ┃                                                                                                 ┃    ┏━>║_LinkProcessor━━━╋━>_ErrorEvent      ━━━┛
-    ┃                                                          Api   ━> _ConsensusApiEvent ━━━━━━━━━━━╋━━━━┫  ║                 ┗━>_LinkWriteEvent  ━━━>║                 ┏>_EncodedEvents[0]|║
-    ┃  ━> _AioProducerEvents║                                  Timer ━> _ConsensusEvent  ━━━━━━━━━━━━━┫    ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓  ║                 ┃ _EncodedEvents[1]|║
-    ┃  ━> _ClusterLocalClose║                 ┏>_LinkIoEvent    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━┫                 ━━> _BizLocalSendEvent ━╋━>║_WriteDispatcher━┫ _EncodedEvents[2]|║_EncodedProcessor┳━━>║[Event Done]
-    ┃  ━> _BizLocalClose    ║                 ┃ _ClusterIoEvent ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫    ┃  ║                 ┏━>_LinkEvent   ━━━━━┛  ║                 ┃ _EncodedEvents[3]|║                 ┗━━>_ErrorEvent━┓
-    ┗━━━> _ErrorEvent[0]    ║_IoDispatcher ━━━┫ _ReadEvents[0]|━║                  ┏>_ClusterDecoded ━┻━━━━╋━>║_ClusterProcessor┳━>_ClusterWriteEvent ━>║                 ┃ _EncodedEvents[M]|║                                 ┃
-    ┏━━━> _ErrorEvent[4]    ║                 ┃ _ReadEvents[1]|━║_DecodedDispatcher┫ _LinkDecoded    ━━━━━━┛  ║                 ┗━>_ErrorEvent━┓        ║                 ┗>_ErrorEvent━┓                                       ┃
-    ┃┏━━> _ErrorEvent[3]    ║                 ┃ _ReadEvents[2]|━║                  ┃ _Logic          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━>║                               ┃                                       ┃
-    ┃┃┏━> _ErrorEvent[1]    ║                 ┃ _ReadEvents[N]|━║                  ┗>_ErrorEvent     ━━━━━━┓      ━━> _ClusterLocalSendEvent ━━╋━━━━━━━>║                               ┃                                       ┃
-    ┃┃┃┏> _ErrorEvent[2]    ║                 ┗>_WroteBuffer  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━>║                               ┃                                       ┃
-    ┃┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                   ┃                                        ┃                                       ┃
-    ┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                        ┃                                       ┃
-    ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                       ┃
-    ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-    
+    ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+    ┃                                                                                                                       ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓ ┃
+    ┃                                                                                                                       ┃       ║                 ┏━>_ClusterEvent    ━┛ ┃
+    ┃                                                                                                                       ┃    ┏>━║_LinkProcessor━━━╋━>_ErrorEvent      ━━━┛
+    ┃                                                                               Api   ━━> _ConsensusApiEvent ━━━━━━━━━━━╋━━━━┫  ║                 ┗━>_LinkWriteEvent  ━━>━║                 ┏━>_EncodedEvents[0]{_EncoderProcessors[0]}|║
+    ┃  ━> _AioProducerEvents━║                                                      Timer ━━> _ConsensusEvent    ━━━━━━━━━━━┫    ┣━━<━━━━━<━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓  ║                 ┃  _EncodedEvents[1]{_EncoderProcessors[1]}|║
+    ┃  ━> _ClusterLocalClose━║                ┏>_LinkIoEvent    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━┫                ━━━> _BizLocalSendEvent ━╋>━║_WriteDispatcher━┫  _EncodedEvents[2]{_EncoderProcessors[2]}|║_EncodedProcessor┳━━>║[Event Done]
+    ┃  ━> _BizLocalClose    ━║                ┃ _ClusterIoEvent ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫    ┃  ║                 ┏━>_NotifyEvent ━━━━━┛  ║                 ┃  _EncodedEvents[.]{_EncoderProcessors[.]}|║                 ┗━━>_ErrorEvent━┓
+    ┗━━━> _ErrorEvent[0]    ━║_IoDispatcher ━━┫ _ReadEvents[0]{_DecodeProcessors[0]}|━║                   ┏>_ClusterDecoded━┻━━>━╋>━║_ClusterProcessor╋━>_ClusterWriteEvent━>━║                 ┃  _EncodedEvents[M]{_EncoderProcessors[M]}|║                                 ┃
+    ┏━━━> _ErrorEvent[4]    ━║                ┃ _ReadEvents[1]{_DecodeProcessors[1]}|━║_DecodedDispatcher━┫ _LinkDecoded   ━━━━━━┛  ║                 ┗━>_ErrorEvent ━┓       ║                 ┗━>_ErrorEvent━┓                                                              ┃
+    ┃┏━━> _ErrorEvent[3]    ━║                ┃ _ReadEvents[.]{_DecodeProcessors[.]}|━║                   ┃ _Logic         ━━━━━━━━━━━━━━━━━━━━━━{_LogicProcessor}|━━━╋━━━━━>━║                                ┃                                                              ┃
+    ┃┃┏━> _ErrorEvent[1]    ━║                ┃ _ReadEvents[N]{_DecodeProcessors[N]}|━║                   ┗>_ErrorEvent    ━━━━━━┓     ━━━> _ClusterLocalSendEvent ━━━╋━━━━━>━║                                ┃                                                              ┃
+    ┃┃┃┏> _ErrorEvent[2]    ━║                ┗>_WroteBuffer  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━>━║                                ┃                                                              ┃
+    ┃┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                    ┃                                        ┃                                                              ┃
+    ┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                        ┃                                                              ┃
+    ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                                              ┃
+    ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
      每一个 Dispatcher 都需要将之前发生的错误信息转换为 session close 事件传递回 IoBarrier，从而将 session close 事件归并到 _LinkIoEvent|_ClusterIoEvent  处理器上进行集中处理。
      (.*)IoEvent 只处理 Connected | Close 事件，所以平行需要一个_ErrorEvent 接受 IoDispatcher 获取的 READ_WRITE_DECODE_ENCODE_ENCRYPT_TIMEOUT_INTERRUPT_CANCEL等错误转换为
      Close operator
@@ -265,11 +265,11 @@ public class ServerCore<C extends IContext<C>>
         final RingBuffer<QEvent>[] _LinkEvents = new RingBuffer[] { _LinkIoEvent,
                                                                     _LinkDecoded,
                                                                     _ConsensusApiEvent,
-                                                                    _LinkEvent };
+                                                                    _NotifyEvent };
         final SequenceBarrier[] _LinkBarriers = new SequenceBarrier[] { _LinkIoEvent.newBarrier(),
                                                                         _LinkDecoded.newBarrier(),
                                                                         _ConsensusApiEvent.newBarrier(),
-                                                                        _LinkEvent.newBarrier() };
+                                                                        _NotifyEvent.newBarrier() };
         final MultiBufferBatchEventProcessor<QEvent> _LinkProcessor = new MultiBufferBatchEventProcessor<>(_LinkEvents,
                                                                                                            _LinkBarriers,
                                                                                                            new MappingHandler<>("LINK",
@@ -300,7 +300,7 @@ public class ServerCore<C extends IContext<C>>
                                                                                                                                    manager,
                                                                                                                                    _ErrorEvents[1],
                                                                                                                                    _ClusterWriteEvent,
-                                                                                                                                   _LinkEvent,
+                                                                                                                                   _NotifyEvent,
                                                                                                                                    linkCustom,
                                                                                                                                    clusterCustom));
         _ClusterProcessor.setThreadName("ClusterProcessor");
@@ -309,10 +309,10 @@ public class ServerCore<C extends IContext<C>>
         }
         final MultiBufferBatchEventProcessor<QEvent> _IoDispatcher = new MultiBufferBatchEventProcessor<>(_DispatchIo,
                                                                                                           _DispatchIoBarriers,
-                                                                                                          new IoDispatcher<>(_LinkIoEvent,
-                                                                                                                             _ClusterIoEvent,
-                                                                                                                             _WroteEvent,
-                                                                                                                             _ReadEvents));
+                                                                                                          new MixIoDispatcher<>(_LinkIoEvent,
+                                                                                                                                _ClusterIoEvent,
+                                                                                                                                _WroteEvent,
+                                                                                                                                _ReadEvents));
         _IoDispatcher.setThreadName("IoDispatcher");
         for (int i = 0, size = _DispatchIo.length; i < size; i++) {
             _DispatchIo[i].addGatingSequences(_IoDispatcher.getSequences()[i]);
@@ -329,7 +329,7 @@ public class ServerCore<C extends IContext<C>>
         /* Decoded dispatcher 将所有解码完成的结果派发到 _LinkDecoded,_ClusterDecoded,以及_LogicEvents进行逻辑处理*/
         final MultiBufferBatchEventProcessor<QEvent> _DecodedDispatcher = new MultiBufferBatchEventProcessor<>(_ReadEvents,
                                                                                                                _DecodedBarriers,
-                                                                                                               new DecodedDispatcher<>(_LinkDecoded,
+                                                                                                               new MixDecodedDispatcher<>(_LinkDecoded,
                                                                                                                                        _ClusterDecoded,
                                                                                                                                        _ErrorEvents[2],
                                                                                                                                        _LogicEvents));

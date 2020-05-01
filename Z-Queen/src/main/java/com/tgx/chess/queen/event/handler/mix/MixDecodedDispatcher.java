@@ -22,52 +22,52 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.queen.event.handler;
+package com.tgx.chess.queen.event.handler.mix;
+
+import static com.tgx.chess.queen.event.inf.IOperator.Type.LINK;
+import static com.tgx.chess.queen.event.inf.IOperator.Type.LOGIC;
 
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.queen.event.inf.IPipeEventHandler;
+import com.tgx.chess.king.base.util.Pair;
+import com.tgx.chess.queen.event.handler.cluster.DecodedDispatcher;
+import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.IContext;
-import com.tgx.chess.queen.io.core.inf.ISession;
+import com.tgx.chess.queen.io.core.inf.IControl;
 
 /**
  * @author william.d.zk
  */
-public class EncodedHandler<C extends IContext<C>>
-        implements
-        IPipeEventHandler<QEvent>
+public class MixDecodedDispatcher<C extends IContext<C>>
+        extends
+        DecodedDispatcher<C>
 {
-    private final Logger _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
+    private final Logger             _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
+    private final RingBuffer<QEvent> _Link;
 
-    private final RingBuffer<QEvent> _Error;
-
-    public EncodedHandler(RingBuffer<QEvent> error)
+    public MixDecodedDispatcher(RingBuffer<QEvent> link,
+                                RingBuffer<QEvent> cluster,
+                                RingBuffer<QEvent> error,
+                                RingBuffer<QEvent>[] workers)
     {
-        _Error = error;
+        super(cluster, error, workers);
+        _Link = link;
     }
 
     @Override
-    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
+    protected IPair getNextPipe(ISort.Mode mode, IControl<C> cmd)
     {
-        _Logger.debug("end event! ");
-        if (event.hasError()) {
-            switch (event.getErrorType())
-            {
-                case FILTER_ENCODE:
-                case ILLEGAL_STATE:
-                case ILLEGAL_BIZ_STATE:
-                default:
-                    IPair errorContent = event.getContent();
-                    ISession<C> session = errorContent.getSecond();
-                    if (session.isValid()) {
-                        tryError(_Error, event.getErrorType(), errorContent, event.getEventOp());
-                    }
-                    break;
+        if (mode == ISort.Mode.LINK) {
+            if (cmd.isMapping()) {
+                return new Pair<>(_Link, LINK);
+            }
+            else {
+                return new Pair<>(dispatchWorker(cmd), LOGIC);
             }
         }
-        event.reset();
+        return super.getNextPipe(mode, cmd);
     }
 
     @Override
