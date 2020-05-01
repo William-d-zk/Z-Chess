@@ -56,10 +56,10 @@ public class QEvent
     @Override
     public String toString()
     {
-        return String.format("\nERR: %s\nTP:%s\nOP:%s\nCTL:\n%s\nCT:\n%s",
-                             mErrType,
-                             mType,
-                             mOperator,
+        return String.format("\nerror: %s\ntype:%s\noperator:%s\ncontent_list:%s\ncontent:%s",
+                             mErrType.name(),
+                             mType.name(),
+                             mOperator.getName(),
                              mContentList,
                              mContent);
     }
