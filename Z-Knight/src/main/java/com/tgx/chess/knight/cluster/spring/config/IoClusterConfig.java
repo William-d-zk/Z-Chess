@@ -38,7 +38,7 @@ import com.tgx.chess.queen.config.ISocketConfig;
  * @author william.d.zk
  * @date 2020/2/1
  */
-@Configuration
+@Configuration("io_cluster_config")
 @ConfigurationProperties(prefix = "z.chess.cluster.io")
 @PropertySource("classpath:io.cluster.properties")
 public class IoClusterConfig

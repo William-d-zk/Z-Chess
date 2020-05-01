@@ -31,6 +31,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import com.lmax.disruptor.RingBuffer;
@@ -58,8 +59,8 @@ public class ConsistentService
     private final TimeWheel                  _TimeWheel;
 
     @Autowired
-    public ConsistentService(IAioConfig ioConfig,
-                             IClusterConfig clusterConfig,
+    public ConsistentService(@Qualifier("io_cluster_config") IAioConfig ioConfig,
+                             @Qualifier("core_cluster_config") IClusterConfig clusterConfig,
                              IRaftConfig raftConfig,
                              ConsistentCustom consistentCustom,
                              ClusterCustom<ClusterNode> clusterCustom,
@@ -76,7 +77,9 @@ public class ConsistentService
     @PostConstruct
     private void start() throws IOException
     {
-        _ClusterNode.start(_ConsistentCustom, new ZClusterMappingCustom<>(_ClusterCustom));
+        _ClusterNode.start(_ConsistentCustom,
+                           new ZClusterMappingCustom<>(_ClusterCustom),
+                           new ClusterLogic(_ClusterNode));
         _RaftNode.init();
     }
 
