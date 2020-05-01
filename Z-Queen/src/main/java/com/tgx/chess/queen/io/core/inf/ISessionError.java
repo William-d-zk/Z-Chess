@@ -24,9 +24,9 @@
 
 package com.tgx.chess.queen.io.core.inf;
 
-import com.tgx.chess.king.base.inf.ITriple;
+import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.king.base.util.Triple;
+import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.IOperator;
 
 /**
@@ -37,19 +37,18 @@ public interface ISessionError<C extends IContext<C>>
         extends
         IOperator<Throwable,
                   ISession<C>,
-                  ITriple>
+                  IPair>
 {
     Logger _Logger = Logger.getLogger("io.queen.operator." + ISessionError.class.getSimpleName());
 
     @Override
-    default ITriple handle(Throwable throwable, ISession<C> session)
+    default IPair handle(Throwable throwable, ISession<C> session)
     {
-        _Logger.warning("error session:%s", throwable, session);
-        return new Triple<>(null,
-                            session,
-                            session == null ? null
-                                            : session.getContext()
-                                                     .getSort()
-                                                     .getCloser());
+        _Logger.trace("error session:%s", throwable, session);
+        return session != null ? new Pair<>(session,
+                                            session.getContext()
+                                                   .getSort()
+                                                   .getCloser())
+                               : null;
     }
 }

@@ -22,36 +22,37 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.queen.io.core.inf;
+package com.tgx.chess.queen.event.handler.mix;
 
-import java.io.IOException;
-
-import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.queen.event.inf.IOperator;
+import com.lmax.disruptor.RingBuffer;
+import com.tgx.chess.queen.event.handler.cluster.IoDispatcher;
+import com.tgx.chess.queen.event.inf.ISort;
+import com.tgx.chess.queen.event.processor.QEvent;
+import com.tgx.chess.queen.io.core.inf.IContext;
 
 /**
  * @author william.d.zk
- * @date 2019-05-12
  */
-public interface ISessionCloser<C extends IContext<C>>
+public class MixIoDispatcher<C extends IContext<C>>
         extends
-        IOperator<String,
-                  ISession<C>,
-                  Void>
+        IoDispatcher<C>
 {
+    private final RingBuffer<QEvent> _Link;
 
-    Logger _Logger = Logger.getLogger("io.queen.operator." + ISessionCloser.class.getSimpleName());
+    @SafeVarargs
+    public MixIoDispatcher(RingBuffer<QEvent> link,
+                           RingBuffer<QEvent> cluster,
+                           RingBuffer<QEvent> wrote,
+                           RingBuffer<QEvent>... read)
+    {
+        super(cluster, wrote, read);
+        _Link = link;
+    }
 
     @Override
-    default Void handle(String msg, ISession<C> session)
+    protected RingBuffer<QEvent> getNextPipe(ISort<C> sort)
     {
-        try {
-            _Logger.trace("msg %s → closed %s", msg, session);
-            session.close();
-        }
-        catch (IOException e) {
-            _Logger.warning("close exception: %s", e, session);
-        }
-        return null;
+        if (sort.getMode() == ISort.Mode.LINK) { return _Link; }
+        return super.getNextPipe(sort);
     }
 }

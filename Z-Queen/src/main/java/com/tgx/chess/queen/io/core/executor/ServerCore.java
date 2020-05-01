@@ -50,7 +50,7 @@ import com.tgx.chess.queen.event.handler.WriteDispatcher;
 import com.tgx.chess.queen.event.handler.mix.DecodedDispatcher;
 import com.tgx.chess.queen.event.handler.mix.ILinkCustom;
 import com.tgx.chess.queen.event.handler.mix.ILogicHandler;
-import com.tgx.chess.queen.event.handler.mix.IoDispatcher;
+import com.tgx.chess.queen.event.handler.mix.MixIoDispatcher;
 import com.tgx.chess.queen.event.handler.mix.MappingHandler;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
@@ -309,7 +309,7 @@ public class ServerCore<C extends IContext<C>>
         }
         final MultiBufferBatchEventProcessor<QEvent> _IoDispatcher = new MultiBufferBatchEventProcessor<>(_DispatchIo,
                                                                                                           _DispatchIoBarriers,
-                                                                                                          new IoDispatcher<>(_LinkIoEvent,
+                                                                                                          new MixIoDispatcher<>(_LinkIoEvent,
                                                                                                                              _ClusterIoEvent,
                                                                                                                              _WroteEvent,
                                                                                                                              _ReadEvents));
