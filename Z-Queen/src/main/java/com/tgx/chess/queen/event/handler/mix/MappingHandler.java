@@ -24,7 +24,6 @@
 
 package com.tgx.chess.queen.event.handler.mix;
 
-import static com.tgx.chess.queen.event.inf.IError.Type.MAPPING_ERROR;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.CONSENSUS;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.NOTIFY;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
@@ -166,41 +165,36 @@ public class MappingHandler<C extends IContext<C>,
                         if (handled == null) return;
                         IControl<C>[] toSends = handled.getFirst();
                         if (toSends != null && toSends.length > 0) {
-                            publish(_Writer,
-                                    WRITE,
-                                    new Pair<>(toSends, session),
-                                    session.getContext()
-                                           .getSort()
-                                           .getTransfer());
+                            tryPublish(_Writer,
+                                       WRITE,
+                                       new Pair<>(toSends, session),
+                                       session.getContext()
+                                              .getSort()
+                                              .getTransfer());
                         }
                         IControl<C> transfer = handled.getSecond();
                         if (transfer != null) {
                             if (_ClusterCustom.waitForCommit()) {
-                                publish(_Transfer,
-                                        CONSENSUS,
-                                        new Pair<>(transfer, session),
-                                        session.getContext()
-                                               .getSort()
-                                               .getIgnore());
+                                tryPublish(_Transfer,
+                                           CONSENSUS,
+                                           new Pair<>(transfer, session),
+                                           session.getContext()
+                                                  .getSort()
+                                                  .getIgnore());
                             }
                             else {
                                 List<ITriple> result = _LinkCustom.notify(_SessionManager,
                                                                           transfer,
                                                                           session.getIndex());
                                 if (result != null && !result.isEmpty()) {
-                                    publish(_Writer, result);
+                                    tryPublish(_Writer, result);
                                 }
                             }
                         }
                     }
                     catch (Exception e) {
                         _Logger.warning("link mapping handler error", e);
-                        error(_Error,
-                              MAPPING_ERROR,
-                              new Pair<>(e, session),
-                              session.getContext()
-                                     .getSort()
-                                     .getError());
+                        session.doClose();
                     }
                     break;
                 case CLUSTER:
@@ -208,19 +202,18 @@ public class MappingHandler<C extends IContext<C>,
                                     .getFirst();
                     session = event.getContent()
                                    .getSecond();
-
                     if (received == null) { return; }
                     try {
                         IPair handled = _ClusterCustom.handle(_SessionManager, session, received);
                         if (handled == null) return;
                         IControl<C>[] toSends = handled.getFirst();
                         if (toSends != null && toSends.length > 0) {
-                            publish(_Writer,
-                                    WRITE,
-                                    new Pair<>(toSends, session),
-                                    session.getContext()
-                                           .getSort()
-                                           .getTransfer());
+                            tryPublish(_Writer,
+                                       WRITE,
+                                       new Pair<>(toSends, session),
+                                       session.getContext()
+                                              .getSort()
+                                              .getTransfer());
                         }
                         IControl<C> transfer = handled.getSecond();
                         if (transfer != null) {
@@ -234,12 +227,7 @@ public class MappingHandler<C extends IContext<C>,
                     }
                     catch (Exception e) {
                         _Logger.warning("cluster mapping handler error", e);
-                        error(_Error,
-                              MAPPING_ERROR,
-                              new Pair<>(e, session),
-                              session.getContext()
-                                     .getSort()
-                                     .getError());
+                        session.doClose();
                     }
                     break;
                 case CONSENSUS:
@@ -255,12 +243,7 @@ public class MappingHandler<C extends IContext<C>,
                     }
                     catch (Exception e) {
                         _Logger.warning("mapping consensus error, link session close", e);
-                        error(_Error,
-                              MAPPING_ERROR,
-                              new Pair<>(e, session),
-                              session.getContext()
-                                     .getSort()
-                                     .getError());
+                        session.doClose();
                     }
                     break;
                 case NOTIFY:

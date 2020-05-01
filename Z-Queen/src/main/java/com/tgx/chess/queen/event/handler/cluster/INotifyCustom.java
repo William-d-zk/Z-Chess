@@ -33,7 +33,7 @@ import com.tgx.chess.queen.io.core.inf.IProtocol;
 public interface INotifyCustom
         extends
         IOperator<IProtocol,
-                  Void,
+                  Throwable,
                   Void>
 {
 
