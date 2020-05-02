@@ -38,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
+import com.tgx.chess.king.base.inf.IValid;
 import com.tgx.chess.king.base.log.Logger;
 
 /**
@@ -123,13 +124,13 @@ public class TimeWheel
         return vCtxSlot;
     }
 
-    private <A> ICancelable acquire(IWheelItem<A> item)
+    private <A extends IValid> ICancelable acquire(IWheelItem<A> item)
     {
         return acquire(new HandleTask<>(item));
     }
 
     @SuppressWarnings("unchecked")
-    private <A> ICancelable acquire(HandleTask<A> task)
+    private <A extends IValid> ICancelable acquire(HandleTask<A> task)
     {
         IWheelItem<A> item = task._Item;
         _Lock.lock();
@@ -165,7 +166,7 @@ public class TimeWheel
         return readyList;
     }
 
-    public interface IWheelItem<V>
+    public interface IWheelItem<V extends IValid>
             extends
             Comparable<IWheelItem<V>>,
             ITimeoutHandler<V>
@@ -205,7 +206,7 @@ public class TimeWheel
         }
     }
 
-    interface ITimeoutHandler<A>
+    interface ITimeoutHandler<A extends IValid>
             extends
             Supplier<A>,
             ICycle
@@ -215,7 +216,7 @@ public class TimeWheel
         void onCall();
     }
 
-    private class TickSlot<V>
+    private class TickSlot<V extends IValid>
             extends
             ArrayList<HandleTask<V>>
     {
@@ -228,11 +229,12 @@ public class TimeWheel
         }
     }
 
-    private class HandleTask<V>
+    private class HandleTask<V extends IValid>
             implements
             Callable<IWheelItem<V>>,
             Comparable<HandleTask<V>>,
-            ICancelable
+            ICancelable,
+            IValid
     {
         private final IWheelItem<V> _Item;
         private final int           _Slot;
@@ -272,8 +274,9 @@ public class TimeWheel
         {
             _Item.lock();
             try {
+                V attach = _Item.get();
                 _Item.beforeCall();
-                if (isValid()) {
+                if (isValid() && (attach == null || attach.isValid())) {
                     _Item.onCall();
                     if (_Item.isCycle()) {
                         TimeWheel.this.acquire(HandleTask.this);
@@ -292,6 +295,7 @@ public class TimeWheel
             return _Item.compareTo(o._Item);
         }
 
+        @Override
         public boolean isValid()
         {
             return !vCancel;
@@ -322,7 +326,7 @@ public class TimeWheel
         return TimeUnit.MILLISECONDS.toSeconds(vCurrentMillisecond);
     }
 
-    public <A> ICancelable acquire(A attach, IWheelItem<A> item)
+    public <A extends IValid> ICancelable acquire(A attach, IWheelItem<A> item)
     {
         item.attach(attach);
         return acquire(item);

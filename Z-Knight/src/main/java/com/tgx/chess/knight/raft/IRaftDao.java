@@ -24,6 +24,7 @@
 
 package com.tgx.chess.knight.raft;
 
+import com.tgx.chess.king.base.inf.IValid;
 import com.tgx.chess.knight.raft.model.log.LogEntry;
 import com.tgx.chess.knight.raft.model.log.LogMeta;
 import com.tgx.chess.knight.raft.model.log.SnapshotMeta;
@@ -32,6 +33,8 @@ import com.tgx.chess.knight.raft.model.log.SnapshotMeta;
  * @author william.d.zk
  */
 public interface IRaftDao
+        extends
+        IValid
 {
     void updateAll();
 

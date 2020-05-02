@@ -24,6 +24,8 @@
 
 package com.tgx.chess.queen.io.core.inf;
 
+import static com.tgx.chess.queen.event.inf.IOperator.Type.CONNECTED;
+
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
 
@@ -50,7 +52,7 @@ public interface IAioConnector<C extends IContext<C>>
     default void completed(Void result, AsynchronousSocketChannel channel)
     {
         AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishConnected(getConnectedOperator(), this, channel);
+        worker.publishConnected(getConnectedOperator(), this, CONNECTED, channel);
     }
 
     @Override

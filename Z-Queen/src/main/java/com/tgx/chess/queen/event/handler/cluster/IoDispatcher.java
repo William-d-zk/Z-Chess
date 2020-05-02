@@ -25,7 +25,6 @@
 package com.tgx.chess.queen.event.handler.cluster;
 
 import static com.tgx.chess.queen.event.inf.IError.Type.WAIT_CLOSE;
-import static com.tgx.chess.queen.event.inf.IOperator.Type.CONNECTED;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.TRANSFER;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WROTE;
 
@@ -94,6 +93,7 @@ public class IoDispatcher<C extends IContext<C>>
                 switch (event.getEventType())
                 {
                     case CONNECTED:
+                    case ACCEPTED:
                         _Logger.trace("connected");
                         IPair connectContent = event.getContent();
                         IConnectActivity<C> context = connectContent.getFirst();
@@ -101,10 +101,10 @@ public class IoDispatcher<C extends IContext<C>>
                         IOperator<IConnectActivity<C>,
                                   AsynchronousSocketChannel,
                                   ITriple> connectOperator = event.getEventOp();
-                        tryPublish(getNextPipe(context.getSort()),
-                                   CONNECTED,
-                                   new Pair<>(context, channel),
-                                   connectOperator);
+                        publish(getNextPipe(context.getSort()),
+                                event.getEventType(),
+                                new Pair<>(context, channel),
+                                connectOperator);
                         break;
                     case READ:
                         _Logger.trace("read");

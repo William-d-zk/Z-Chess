@@ -30,6 +30,7 @@ import java.util.Queue;
 
 import com.tgx.chess.king.base.inf.IDisposable;
 import com.tgx.chess.king.base.inf.IReset;
+import com.tgx.chess.king.base.inf.IValid;
 
 /**
  * session index 以 H16Bit 为限 提供port-channel聚合能力,
@@ -99,10 +100,11 @@ public interface ISession<C extends IContext<C>>
     long PREFIX_MAX  = 0xFFFFL << 48;
     long SUFFIX_MASK = (1L << 48) - 1;
 
-    default void doClose()
+    default void innerClose()
     {
         ISessionCloser<C> closeOperator = getContext().getSort()
                                                       .getCloser();
         closeOperator.handle("inner-close", this);
+        getDismissCallback().onDismiss(this);
     }
 }
