@@ -33,7 +33,6 @@ import com.tgx.chess.bishop.io.zprotocol.ztls.X03_Cipher;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X04_EncryptConfirm;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X05_EncryptStart;
 import com.tgx.chess.bishop.io.zprotocol.ztls.X06_EncryptComp;
-import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.config.Code;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
@@ -54,15 +53,13 @@ public class ZCommandFilter
 
     private final ICommandFactory<ZContext,
                                   ZCommand,
-                                  WsFrame>                     _CommandFactory;
-    private final Logger                                       _Logger = Logger.getLogger("protocol.bishop."
-                                                                                          + getClass().getName());
+                                  WsFrame> _CommandFactory;
 
     public ZCommandFilter(ICommandFactory<ZContext,
                                           ZCommand,
                                           WsFrame> factory)
     {
-        super("queen-command-zfilter");
+        super("z_command");
         this._CommandFactory = factory;
     }
 

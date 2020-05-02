@@ -45,7 +45,7 @@ public class WsFrameFilter
 
     public WsFrameFilter()
     {
-        super("web-socket-frame-zfilter");
+        super("ws_frame");
     }
 
     @Override

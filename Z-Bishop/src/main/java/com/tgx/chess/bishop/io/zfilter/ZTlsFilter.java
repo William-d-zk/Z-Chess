@@ -23,7 +23,6 @@
  */
 package com.tgx.chess.bishop.io.zfilter;
 
-import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.inf.IPacket;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
@@ -40,10 +39,8 @@ public class ZTlsFilter
 
     public ZTlsFilter()
     {
-        super("queen-tls-zfilter");
+        super("z_tls");
     }
-
-    private final Logger _Logger = Logger.getLogger("protocol.bishop." + getClass().getName());
 
     @Override
     public ResultType preEncode(ZContext context, IProtocol output)

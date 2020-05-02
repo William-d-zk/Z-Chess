@@ -47,7 +47,7 @@ public class WsControlFilter
 {
     public WsControlFilter()
     {
-        super("network-control-zfilter");
+        super("ws_control");
     }
 
     @Override
