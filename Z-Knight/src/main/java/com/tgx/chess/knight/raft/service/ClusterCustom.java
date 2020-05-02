@@ -102,9 +102,9 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IClust
                 machine.setCandidate(x72.getPeerId());
                 machine.setCommit(x72.getCommit());
                 machine.setState(CANDIDATE);
-                X7F_RaftResponse x7f = mRaftNode.merge(machine);
-                return x7f != null ? new Pair<>(new X7F_RaftResponse[] { x7f }, null)
-                                   : null;
+                IControl<ZContext>[] response = mRaftNode.merge(machine);
+                return response != null ? new Pair<>(response, null)
+                                        : null;
             case X75_RaftRequest.COMMAND:
                 if (mRaftNode.getMachine()
                              .getState() != LEADER)
@@ -155,11 +155,11 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IClust
                 machine.setCommit(x7e.getCommit());
                 machine.setIndexTerm(x7e.getPreIndexTerm());
                 machine.setIndex(x7e.getPreIndex());
-                x7f = mRaftNode.merge(machine);
-                return x7f != null ? new Pair<>(new X7F_RaftResponse[] { x7f }, null)
-                                   : null;
+                response = mRaftNode.merge(machine);
+                return response != null ? new Pair<>(response, null)
+                                        : null;
             case X7F_RaftResponse.COMMAND:
-                x7f = (X7F_RaftResponse) content;
+                X7F_RaftResponse x7f = (X7F_RaftResponse) content;
                 return mRaftNode.onResponse(x7f.getPeerId(),
                                             x7f.getTerm(),
                                             x7f.getCatchUp(),
@@ -170,7 +170,7 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IClust
             case X106_Identity.COMMAND:
                 X106_Identity x106 = (X106_Identity) content;
                 long peerId = x106.getIdentity();
-                _Logger.debug("recv peerId:%#x", peerId);
+                _Logger.debug("=========> map peerId:%#x", peerId);
                 manager.mapSession(session.getIndex(), session, peerId);
                 break;
             default:
