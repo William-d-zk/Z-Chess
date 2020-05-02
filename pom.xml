@@ -1,4 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ MIT License
+  ~
+  ~ Copyright (c) 2016~2020. Z-Chess
+  ~
+  ~ Permission is hereby granted, free of charge, to any person obtaining a copy
+  ~ of this software and associated documentation files (the "Software"), to deal
+  ~ in the Software without restriction, including without limitation the rights
+  ~ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  ~ copies of the Software, and to permit persons to whom the Software is
+  ~ furnished to do so, subject to the following conditions:
+  ~
+  ~ The above copyright notice and this permission notice shall be included in all
+  ~ copies or substantial portions of the Software.
+  ~
+  ~ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  ~ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  ~ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  ~ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  ~ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  ~ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  ~ SOFTWARE.
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -6,16 +30,18 @@
     <groupId>com.tgx.service</groupId>
     <artifactId>framework.z-chess</artifactId>
     <name>Z-Chess</name>
+    <version>1.0.1 RELEASE</version>
     <packaging>pom</packaging>
-    <version>1.0.0-SNAPSHOT</version>
     <modules>
+        <module>Z-King</module>
         <module>Z-Queen</module>
         <module>Z-Bishop</module>
-        <module>Z-Pawn</module>
         <module>Z-Knight</module>
-        <module>Z-King</module>
-        <module>Z-Player</module>
         <module>Z-Rook</module>
+        <module>Z-Pawn</module>
+        <module>Z-Player</module>
+        <module>Z-Endpoint-Start</module>
+        <module>Z-Consensus-Start</module>
     </modules>
     <properties>
         <!--RT-->
@@ -32,12 +58,12 @@
         <!--Commons-IO-->
         <commons-io.version>2.6</commons-io.version>
         <!--DB-->
-        <postgresql.driver.version>42.2.10</postgresql.driver.version>
-        <hibernate-types.version>2.9.3</hibernate-types.version>
+        <postgresql.driver.version>42.2.12</postgresql.driver.version>
+        <hibernate-types.version>2.9.8</hibernate-types.version>
         <!--PIPELINE-->
         <disruptor.version>3.4.2</disruptor.version>
         <!--TOOLS-->
-        <httpcore.version>4.4.12</httpcore.version>
+        <httpcore.version>4.4.13</httpcore.version>
         <!--TEST TOOLS VERSION-->
         <junit.platform.version>1.6.0</junit.platform.version>
         <junit.vintage.version>5.6.0</junit.vintage.version>
@@ -263,6 +289,7 @@
                 </configuration>
             </plugin>
         </plugins>
+        <directory>${user.home}/Z-Chess/${project.name}/target</directory>
     </build>
     <distributionManagement>
         <repository>

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,7 @@ import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IError.Type;
 import com.tgx.chess.queen.event.inf.IOperator;
+import com.tgx.chess.queen.event.operator.WroteOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.IAioConnector;
 import com.tgx.chess.queen.io.core.inf.IAioServer;
@@ -42,7 +43,9 @@ import com.tgx.chess.queen.io.core.inf.IAvailable;
 import com.tgx.chess.queen.io.core.inf.IConnectActivity;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IPacket;
+import com.tgx.chess.queen.io.core.inf.IPipeDecoder;
 import com.tgx.chess.queen.io.core.inf.ISession;
+import com.tgx.chess.queen.io.core.inf.ISessionError;
 
 /**
  * @author William.d.zk
@@ -52,7 +55,8 @@ public class AioWorker
         Thread
 {
 
-    private final Logger                         _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final Logger                         _Logger = Logger.getLogger("io.queen.operator."
+                                                                            + getClass().getSimpleName());
     private final IAvailable<RingBuffer<QEvent>> _Available;
     private final RingBuffer<QEvent>             _Producer;
 
@@ -108,18 +112,12 @@ public class AioWorker
         }
     }
 
-    public <C extends IContext<C>> void publishRead(final IOperator<IPacket,
-                                                                    ISession<C>,
-                                                                    ITriple> op,
-                                                    IPacket pack,
-                                                    final ISession<C> session)
+    public <C extends IContext<C>> void publishRead(final IPipeDecoder<C> op, IPacket pack, final ISession<C> session)
     {
         publish(_Producer, op, IError.Type.NO_ERROR, IOperator.Type.READ, new Pair<>(pack, session));
     }
 
-    public <C extends IContext<C>> void publishWrote(final IOperator<Integer,
-                                                                     ISession<C>,
-                                                                     ITriple> op,
+    public <C extends IContext<C>> void publishWrote(final WroteOperator<C> op,
                                                      final int wroteCnt,
                                                      final ISession<C> session)
     {
@@ -127,14 +125,12 @@ public class AioWorker
     }
 
     public <T,
-            C extends IContext<C>> void publishWroteError(final IOperator<T,
-                                                                          ISession<C>,
-                                                                          ITriple> op,
+            C extends IContext<C>> void publishWroteError(final ISessionError<C> op,
                                                           final IError.Type eType,
                                                           final T t,
                                                           final ISession<C> session)
     {
-        publish(_Producer, op, eType, IOperator.Type.NULL, new Pair<>(t, session));
+        publish(_Producer, op, eType, IOperator.Type.WROTE, new Pair<>(t, session));
     }
 
     public <C extends IContext<C>> void publishConnected(final IOperator<IConnectActivity<C>,
@@ -165,13 +161,11 @@ public class AioWorker
     }
 
     public <T,
-            C extends IContext<C>> void publishReadError(final IOperator<T,
-                                                                         ISession<C>,
-                                                                         ?> op,
+            C extends IContext<C>> void publishReadError(final ISessionError<C> op,
                                                          final IError.Type eType,
                                                          final T t,
                                                          final ISession<C> session)
     {
-        publish(_Producer, op, eType, IOperator.Type.NULL, new Pair<>(t, session));
+        publish(_Producer, op, eType, IOperator.Type.READ, new Pair<>(t, session));
     }
 }

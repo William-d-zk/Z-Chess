@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,7 @@ public abstract class WsControl
         IControl<ZContext>
 {
 
-    private final byte[]       _Msg;
+    private final byte[]       _Payload;
     private final int          _Command;
     private final byte         _CtrlCode;
     private ISession<ZContext> mSession;
@@ -52,7 +52,7 @@ public abstract class WsControl
     {
         _CtrlCode = code;
         _Command = command;
-        _Msg = msg;
+        _Payload = msg;
     }
 
     public WsControl(byte code,
@@ -75,7 +75,7 @@ public abstract class WsControl
 
     public byte[] getPayload()
     {
-        return _Msg;
+        return _Payload;
     }
 
     public void setPayload(byte[] payload)
@@ -86,7 +86,7 @@ public abstract class WsControl
     @Override
     public int encodec(byte[] data, int pos)
     {
-        pos += IoUtil.write(_Msg, data, pos);
+        pos += IoUtil.write(_Payload, data, pos);
         return pos;
     }
 
@@ -130,15 +130,18 @@ public abstract class WsControl
     @Override
     public int dataLength()
     {
-        return Objects.nonNull(_Msg) ? _Msg.length
-                                     : 0;
+        return Objects.nonNull(_Payload) ? _Payload.length
+                                         : 0;
     }
 
     @Override
     public String toString()
     {
         int command = serial();
-        return String.format("cmd: 0X%X, %s", command, new String(_Msg, StandardCharsets.UTF_8));
+        return String.format("cmd: 0X%X, %s",
+                             command,
+                             _Payload == null ? "[NULL] payload"
+                                              : new String(_Payload, StandardCharsets.UTF_8));
     }
 
     @Override

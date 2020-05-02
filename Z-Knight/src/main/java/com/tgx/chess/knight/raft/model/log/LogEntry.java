@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,12 +53,12 @@ public class LogEntry
     private transient byte[] tData;
 
     @JsonIgnore
-    private int length;
+    private int mLength;
 
     @Override
     public int dataLength()
     {
-        return length;
+        return mLength;
     }
 
     @JsonCreator
@@ -108,7 +108,7 @@ public class LogEntry
     @Override
     public int decode(byte[] data)
     {
-        return length = data.length;
+        return mLength = data.length;
     }
 
     @Override
@@ -117,7 +117,7 @@ public class LogEntry
         if (tData != null) { return tData; }
         tData = JsonUtil.writeValueAsBytes(this);
         Objects.requireNonNull(tData);
-        length = tData.length;
+        mLength = tData.length;
         return tData;
     }
 

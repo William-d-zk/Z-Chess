@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,14 +31,16 @@ import java.util.Objects;
 public interface IProtocol
         extends
         IEncode,
-        IDecode
+        IDecode,
+        IChannel
 {
-    int PACKET_SERIAL   = 0;
-    int COMMAND_SERIAL  = 0x0FF;//1~0xFE(254)
-    int CONTROL_SERIAL  = 0x100;//0x101~0x1FE(257~510)
-    int FRAME_SERIAL    = 0x200;//0x201~0x2FE(513~766)
-    int INTERNAL_SERIAL = 0x400;//0x401~0x4FE(1025~1278)
-    int DB_SERIAL       = 0x800;//0x801~0x8FE(2049~2302)
+    int PACKET_SERIAL     = 0;
+    int COMMAND_SERIAL    = 0x0FF;//1~0xFE(254)
+    int CONTROL_SERIAL    = 0x100;//0x101~0x1FE(257~510)
+    int FRAME_SERIAL      = 0x200;//0x201~0x2FE(513~766)
+    int INTERNAL_SERIAL   = 0x400;//0x401~0x4FE(1025~1278)
+    int DB_SERIAL         = 0x800;//0x801~0x8FE(2049~2302)
+    int CONSISTENT_SERIAL = 0xF00;//0xF01~0xFFE(3841~4094)
 
     /**
      * @return max in encoding min in decoding

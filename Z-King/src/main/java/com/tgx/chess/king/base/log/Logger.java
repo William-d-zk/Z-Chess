@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,6 +51,31 @@ public class Logger
     public static Logger getLogger(String name)
     {
         return new Logger(name);
+    }
+
+    public void trace(Object object)
+    {
+        _Logger.trace(object.toString());
+    }
+
+    public void trace(String msg)
+    {
+        _Logger.trace(msg);
+    }
+
+    public void trace(String formatter, Object... content)
+    {
+        _Logger.trace(String.format(formatter, content));
+    }
+
+    public void trace(String formatter, Throwable throwable, Object... msg)
+    {
+        _Logger.trace(String.format(formatter, msg), throwable);
+    }
+
+    public void trace(String msg, Throwable throwable)
+    {
+        _Logger.trace(msg, throwable);
     }
 
     public void info(String msg)
@@ -127,14 +152,14 @@ public class Logger
     {
         switch (level)
         {
+            case ERROR:
+                return _Logger.isErrorEnabled();
+            case WARN:
+                return _Logger.isWarnEnabled();
             case INFO:
                 return _Logger.isInfoEnabled();
             case DEBUG:
                 return _Logger.isDebugEnabled();
-            case WARN:
-                return _Logger.isWarnEnabled();
-            case ERROR:
-                return _Logger.isErrorEnabled();
             case TRACE:
                 return _Logger.isTraceEnabled();
             default:

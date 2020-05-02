@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,7 +50,7 @@ public class ClientLinkHandler<C extends IContext<C>>
         implements
         EventHandler<QEvent>
 {
-    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("io.queen.processor." + getClass().getSimpleName());
 
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
@@ -93,7 +93,7 @@ public class ClientLinkHandler<C extends IContext<C>>
                                   ISession<C>,
                                   List<ITriple>> sendTransferOperator = connectedHandled.getThird();
                         event.produce(WRITE, new Pair<>(waitToSend, session), sendTransferOperator);
-                        _Logger.info(String.format("link mappingHandle %s,connected", session));
+                        _Logger.debug(String.format("link mappingHandle %s,connected", session));
                     }
                     catch (Exception e) {
                         _Logger.fetal("client session create failed", e);

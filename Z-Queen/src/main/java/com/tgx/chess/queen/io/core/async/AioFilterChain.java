@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,7 +60,7 @@ public abstract class AioFilterChain<C extends IContext<C>,
     protected AioFilterChain(String name)
     {
         _Name = name;
-        _Logger = Logger.getLogger(getName());
+        _Logger = Logger.getLogger("io.queen.filter-chain." + getName());
     }
 
     @Override

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,7 +46,7 @@ public class AioReader<C extends IContext<C>>
         CompletionHandler<Integer,
                           ISession<C>>
 {
-    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("io.queen.operator." + getClass().getSimpleName());
 
     @Override
     public void completed(Integer result, ISession<C> session)
@@ -77,7 +77,7 @@ public class AioReader<C extends IContext<C>>
                 }
                 break;
             default:
-                _Logger.info("read count: %d", result);
+                _Logger.debug("read count: %d", result);
                 try {
                     ByteBuffer recvBuf = session.read(result);
                     worker.publishRead(session.getContext()

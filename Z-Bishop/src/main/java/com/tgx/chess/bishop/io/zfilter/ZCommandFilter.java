@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,7 +55,8 @@ public class ZCommandFilter
     private final ICommandFactory<ZContext,
                                   ZCommand,
                                   WsFrame>                     _CommandFactory;
-    private final Logger                                       _Logger = Logger.getLogger(getClass().getName());
+    private final Logger                                       _Logger = Logger.getLogger("protocol.bishop."
+                                                                                          + getClass().getName());
 
     public ZCommandFilter(ICommandFactory<ZContext,
                                           ZCommand,
@@ -87,12 +88,12 @@ public class ZCommandFilter
     }
 
     @Override
-    public ICommand<ZContext> decode(ZContext context, WsFrame input)
+    public ZCommand decode(ZContext context, WsFrame input)
     {
         ZCommand _command = create(input);
         if (_command == null) return null;
         _command.decode(input.getPayload(), context);
-        switch (_command.getCommand())
+        switch (_command.serial())
         {
             case X01_EncryptRequest.COMMAND:
                 X01_EncryptRequest x01 = (X01_EncryptRequest) _command;

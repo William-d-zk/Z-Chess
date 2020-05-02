@@ -1,25 +1,25 @@
 /*
- * MIT License                                                                    
- *                                                                                
- * Copyright (c) 2016~2019 Z-Chess                                                
- *                                                                                
- * Permission is hereby granted, free of charge, to any person obtaining a copy   
- * of this software and associated documentation files (the "Software"), to deal  
- * in the Software without restriction, including without limitation the rights   
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell      
- * copies of the Software, and to permit persons to whom the Software is          
- * furnished to do so, subject to the following conditions:                       
- *                                                                                
- * The above copyright notice and this permission notice shall be included in all 
- * copies or substantial portions of the Software.                                
- *                                                                                
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR     
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,       
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE    
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER         
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,  
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  
- * SOFTWARE.                                                                      
+ * MIT License
+ *
+ * Copyright (c) 2016~2020. Z-Chess
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 package com.tgx.chess.bishop.io.mqtt.handler;
@@ -56,7 +56,8 @@ public class QttRouter
         implements
         IQttRouter
 {
-    private final Logger                                   _Logger            = Logger.getLogger(getClass().getName());
+    private final Logger                                   _Logger            = Logger.getLogger("protocol.bishop."
+                                                                                                 + getClass().getName());
     private final Map<Pattern,
                       Map<Long,
                           IQoS.Level>>                     _Topic2SessionsMap = new TreeMap<>(Comparator.comparing(Pattern::pattern));
@@ -69,7 +70,7 @@ public class QttRouter
     public Map<Long,
                IQoS.Level> broker(final String topic)
     {
-        _Logger.info("broker topic: %s", topic);
+        _Logger.debug("broker topic: %s", topic);
         return _Topic2SessionsMap.entrySet()
                                  .parallelStream()
                                  .map(entry ->
@@ -97,7 +98,7 @@ public class QttRouter
         IQoS.Level qosLevel = pair.getSecond();
         try {
             Pattern pattern = topicToRegex(topic);
-            _Logger.info("topic %s,pattern %s", topic, pattern);
+            _Logger.debug("topic %s,pattern %s", topic, pattern);
             Map<Long,
                 IQoS.Level> value = _Topic2SessionsMap.get(pattern);
             if (Objects.isNull(value)) {
@@ -184,7 +185,7 @@ public class QttRouter
         {
             IControl<ZContext> old = _LocalIdMessageMap.put(msgId, stateMessage);
             if (old == null) {
-                _Logger.info("retry recv: %s", stateMessage);
+                _Logger.debug("retry recv: %s", stateMessage);
             }
             return _LocalIdMessageMap;
         }) == null) {
@@ -192,7 +193,7 @@ public class QttRouter
                       IControl<ZContext>> _LocalIdMessageMap = new HashMap<>(7);
             _LocalIdMessageMap.put(msgId, stateMessage);
             _QttStatusMap.put(sessionIndex, _LocalIdMessageMap);
-            _Logger.info("first recv: %s", stateMessage);
+            _Logger.debug("first recv: %s", stateMessage);
         }
     }
 

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -242,4 +242,10 @@ public class LogMeta
         this.mIndex = index;
     }
 
+    @JsonIgnore
+    public void append(long endIndex, long endIndexTerm)
+    {
+        mIndex = endIndex;
+        mTerm = endIndexTerm;
+    }
 }

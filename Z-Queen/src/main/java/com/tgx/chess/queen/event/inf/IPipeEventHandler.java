@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,7 @@ import com.lmax.disruptor.InsufficientCapacityException;
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
+import com.tgx.chess.king.base.log.Logger;
 
 /**
  * @author William.d.zk
@@ -38,6 +39,8 @@ public interface IPipeEventHandler<E extends IEvent>
         extends
         EventHandler<E>
 {
+
+    Logger getLogger();
 
     default <V,
              A,
@@ -61,7 +64,26 @@ public interface IPipeEventHandler<E extends IEvent>
             }
         }
         catch (InsufficientCapacityException e) {
-            e.printStackTrace();
+            getLogger().warning("%s.tryPublish=> insufficient capacity", getClass().getSimpleName(), e);
+        }
+        return false;
+    }
+
+    default boolean tryPublish(RingBuffer<E> publisher, List<ITriple> contents)
+    {
+        if (publisher == null) { return true; }
+        try {
+            long sequence = publisher.tryNext();
+            try {
+                E event = publisher.get(sequence);
+                event.produce(IOperator.Type.DISPATCH, contents);
+            }
+            finally {
+                publisher.publish(sequence);
+            }
+        }
+        catch (InsufficientCapacityException e) {
+            getLogger().warning("%s.tryPublish=> insufficient capacity", getClass().getSimpleName(), e);
         }
         return false;
     }
@@ -121,7 +143,7 @@ public interface IPipeEventHandler<E extends IEvent>
             }
         }
         catch (InsufficientCapacityException e) {
-            e.printStackTrace();
+            getLogger().warning("%s.tryError=> insufficient capacity", getClass().getSimpleName(), e);
         }
         return false;
     }

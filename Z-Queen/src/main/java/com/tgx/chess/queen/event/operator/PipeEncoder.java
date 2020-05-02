@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,7 +44,7 @@ public class PipeEncoder<C extends IContext<C>>
         implements
         IPipeEncoder<C>
 {
-    private final Logger       _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final Logger       _Logger = Logger.getLogger("io.queen.operator." + getClass().getSimpleName());
     private final AioWriter<C> _AioWriter;
 
     public PipeEncoder(AioWriter<C> aioWriter)
@@ -58,11 +58,11 @@ public class PipeEncoder<C extends IContext<C>>
         try {
             IPacket send = filterWrite(command, session.getContext());
             Objects.requireNonNull(send);
-            _Logger.info("%s send:%s",
-                         command,
-                         IoUtil.bin2Hex(send.getBuffer()
-                                            .array(),
-                                        "."));
+            _Logger.debug("%s send:%s",
+                          command,
+                          IoUtil.bin2Hex(send.getBuffer()
+                                             .array(),
+                                         "."));
             session.write(send, _AioWriter);
         }
         catch (Exception e) {

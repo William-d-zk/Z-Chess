@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -62,7 +62,7 @@ public class AioSession<C extends IContext<C>>
         implements
         ISession<C>
 {
-    private static Logger _Logger = Logger.getLogger(AioSession.class.getSimpleName());
+    private final Logger _Logger = Logger.getLogger("io.queen.session." + getClass().getSimpleName());
     /*--------------------------------------------------------------------------------------------------------------*/
     private final int                       _ReadTimeOutInSecond;
     private final int                       _WriteTimeOutInSecond;
@@ -95,13 +95,13 @@ public class AioSession<C extends IContext<C>>
     @Override
     public String toString()
     {
-        return String.format("@%#x %s->%s mode:%s Index:%#x close:%s\nwait to write %d,queue size %d",
+        return String.format("@%#x \n%s->%s \nmode:%s \nindex:%#x \nvalid:%s\nwait_to_write %d\nqueue_size %d",
                              _HashCode,
                              _LocalAddress,
                              _RemoteAddress,
                              _Ctx.getSort(),
                              mIndex,
-                             isClosed(),
+                             isValid(),
                              mSending.remaining(),
                              size());
     }
@@ -137,7 +137,7 @@ public class AioSession<C extends IContext<C>>
     @Override
     public boolean isValid()
     {
-        return !isClosed();
+        return !(_Ctx.isClosed() || _Ctx.isInErrorState() || _Ctx.isOutErrorState());
     }
 
     @Override
@@ -167,7 +167,7 @@ public class AioSession<C extends IContext<C>>
     @Override
     public void reset()
     {
-        mIndex = -1;
+        mIndex = -1L;
     }
 
     @Override
@@ -219,7 +219,7 @@ public class AioSession<C extends IContext<C>>
     @Override
     public long prefixLoad(long prefix)
     {
-        _Logger.info("prefixLoad: %#x, %s", prefix, longArrayToHex(mPrefix));
+        _Logger.debug("prefixLoad: %#x, %s", prefix, longArrayToHex(mPrefix));
         int pos = ArrayUtil.binarySearch0(mPrefix, prefix, PREFIX_MAX);
         if (pos < 0) {
             throw new IllegalArgumentException(String.format("prefix %#x miss, %s", prefix, longArrayToHex(mPrefix)));
@@ -230,7 +230,7 @@ public class AioSession<C extends IContext<C>>
     @Override
     public void prefixHit(long prefix)
     {
-        _Logger.info("prefixHit: %#x, %s", prefix, longArrayToHex(mPrefix));
+        _Logger.debug("prefixHit: %#x, %s", prefix, longArrayToHex(mPrefix));
         int pos = ArrayUtil.binarySearch0(mPrefix, prefix, PREFIX_MAX);
         if (pos < 0) {
             throw new IllegalArgumentException(String.format("prefix %#x miss, %s", prefix, longArrayToHex(mPrefix)));
@@ -324,7 +324,7 @@ public class AioSession<C extends IContext<C>>
         }
         else {
             offer(ps);
-            _Logger.info("aio event delay, session buffed packets %d", size());
+            _Logger.debug("aio event delay, session buffed packets %d", size());
         }
         return isEmpty() ? WRITE_STATUS.UNFINISHED
                          : WRITE_STATUS.IN_SENDING;
@@ -361,7 +361,7 @@ public class AioSession<C extends IContext<C>>
            不会出现无限循环，writePacket 中执行 remove 操作，由于都是在相同的线程中
            不存在线程安全问题
         */
-        _Logger.info("session buffed packets %d", size());
+        _Logger.debug("session buffed packets %d", size());
         IPacket fps;
         Loop:
         do {
@@ -382,7 +382,7 @@ public class AioSession<C extends IContext<C>>
             }
         }
         while (Objects.nonNull(fps));
-        _Logger.info("session remain buffed %d", size());
+        _Logger.debug("session remain buffed %d", size());
     }
 
     private WRITE_STATUS writePacket(IPacket ps)
@@ -418,7 +418,7 @@ public class AioSession<C extends IContext<C>>
     {
         if (_Ctx.channelStateLessThan(SESSION_FLUSHED) && mSending.hasRemaining()) {
             _Ctx.advanceChannelState(SESSION_FLUSHED);
-            _Logger.info("session %#x %d,flush %d", getIndex(), getIndex(), mSending.remaining());
+            _Logger.debug("session %#x %d,flush %d", getIndex(), getIndex(), mSending.remaining());
             _Channel.write(mSending, _WriteTimeOutInSecond, TimeUnit.SECONDS, this, handler);
         }
     }

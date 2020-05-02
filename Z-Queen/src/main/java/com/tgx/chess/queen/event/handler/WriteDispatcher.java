@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,10 +50,10 @@ public class WriteDispatcher<C extends IContext<C>>
         implements
         IPipeEventHandler<QEvent>
 {
+    private final Logger               _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
     private final RingBuffer<QEvent>[] _Encoders;
     private final RingBuffer<QEvent>   _Error;
     private final int                  _Mask;
-    private final Logger               _Logger = Logger.getLogger(getClass().getSimpleName());
 
     @SafeVarargs
     public WriteDispatcher(RingBuffer<QEvent> error,
@@ -76,14 +76,11 @@ public class WriteDispatcher<C extends IContext<C>>
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
     {
         if (event.hasError()) {
-            switch (event.getErrorType())
-            {
-                case HANDLE_DATA:// from logic handler 
-                    /* logic 处理错误，转换为shutdown目标投递给 _Error
-                     交由 IoDispatcher转发给对应的MappingHandler 执行close 
-                    */
-                    error(_Error, HANDLE_DATA, event.getContent(), event.getEventOp());
-                    break;
+            if (event.getErrorType() == HANDLE_DATA) {// from logic handler 
+                /* logic 处理错误，转换为shutdown目标投递给 _Error
+                 交由 IoDispatcher转发给对应的MappingHandler 执行close 
+                */
+                tryError(_Error, HANDLE_DATA, event.getContent(), event.getEventOp());
             }
         }
         else switch (event.getEventType())
@@ -91,7 +88,8 @@ public class WriteDispatcher<C extends IContext<C>>
             case NULL://在前一个处理器event.reset().
             case IGNORE://没有任何时间需要跨 Barrier 投递向下一层 Pipeline
                 break;
-            case LOCAL://from biz local
+            case BIZ_LOCAL://from biz local
+            case CLUSTER_LOCAL://from cluster local
             case WRITE://from LinkIo/Cluster
             case LOGIC://from read->logic
                 IPair writeContent = event.getContent();
@@ -105,14 +103,15 @@ public class WriteDispatcher<C extends IContext<C>>
                     for (ITriple triple : triples) {
                         ISession<C> targetSession = triple.getSecond();
                         IControl<C> content = triple.getFirst();
+                        _Logger.debug("write %s", content);
                         if (content.isShutdown()) {
                             if (targetSession.isValid()) {
-                                error(_Error,
-                                      ILLEGAL_STATE,
-                                      new Pair<>(new IllegalStateException("session to shutdown"), targetSession),
-                                      targetSession.getContext()
-                                                   .getSort()
-                                                   .getError());
+                                tryError(_Error,
+                                         ILLEGAL_STATE,
+                                         new Pair<>(new IllegalStateException("session to shutdown"), targetSession),
+                                         targetSession.getContext()
+                                                      .getSort()
+                                                      .getError());
                             }
                         }
                         else tryPublish(dispatchEncoder(targetSession.getHashKey()),
@@ -120,7 +119,7 @@ public class WriteDispatcher<C extends IContext<C>>
                                         new Pair<>(content, targetSession),
                                         triple.getThird());
                     }
-                    _Logger.info("write_dispatcher, source %s, transfer:%d", event.getEventType(), commands.length);
+                    _Logger.debug("write_dispatcher, source %s, transfer:%d", event.getEventType(), commands.length);
                 }
                 break;
             case WROTE://from io-wrote
@@ -128,10 +127,10 @@ public class WriteDispatcher<C extends IContext<C>>
                 int wroteCount = wroteContent.getFirst();
                 session = wroteContent.getSecond();
                 if (session.isValid()) {
-                    tryPublish(dispatchEncoder(session.getHashKey()),
-                               WROTE,
-                               new Pair<>(wroteCount, session),
-                               event.getEventOp());
+                    publish(dispatchEncoder(session.getHashKey()),
+                            WROTE,
+                            new Pair<>(wroteCount, session),
+                            event.getEventOp());
                 }
                 break;
             case DISPATCH:
@@ -140,13 +139,21 @@ public class WriteDispatcher<C extends IContext<C>>
                     IControl<C> command = content.getFirst();
                     session = content.getSecond();
                     if (command.isShutdown()) {
-                        if (session.isValid()) {
-                            error(_Error,
-                                  ILLEGAL_STATE,
-                                  new Pair<>(new IllegalStateException("session to shutdown"), session),
-                                  session.getContext()
-                                         .getSort()
-                                         .getError());
+                        if (session != null && session.isValid()) {
+                            tryError(_Error,
+                                     ILLEGAL_STATE,
+                                     new Pair<>(new IllegalStateException("session to shutdown"), session),
+                                     session.getContext()
+                                            .getSort()
+                                            .getError());
+                        }
+                        /*
+                        session == null 意味着 _SessionManager.find..失败
+                        !session.isValid 意味着 session 已经被关闭
+                        这两种情形都忽略执行即可 
+                         */
+                        else {
+                            _Logger.warning("dispatch failed [ %s ]", session);
                         }
                     }
                     else tryPublish(dispatchEncoder(session.getHashKey()),
@@ -160,4 +167,9 @@ public class WriteDispatcher<C extends IContext<C>>
         event.reset();
     }
 
+    @Override
+    public Logger getLogger()
+    {
+        return _Logger;
+    }
 }

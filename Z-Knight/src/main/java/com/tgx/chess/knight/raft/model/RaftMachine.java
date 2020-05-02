@@ -1,29 +1,36 @@
 /*
- * MIT License                                                                    
- *                                                                                
- * Copyright (c) 2016~2020 Z-Chess                                                
- *                                                                                
- * Permission is hereby granted, free of charge, to any person obtaining a copy   
- * of this software and associated documentation files (the "Software"), to deal  
- * in the Software without restriction, including without limitation the rights   
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell      
- * copies of the Software, and to permit persons to whom the Software is          
- * furnished to do so, subject to the following conditions:                       
- *                                                                                
- * The above copyright notice and this permission notice shall be included in all 
- * copies or substantial portions of the Software.                                
- *                                                                                
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR     
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,       
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE    
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER         
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,  
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  
- * SOFTWARE.                                                                      
+ * MIT License
+ *
+ * Copyright (c) 2016~2020. Z-Chess
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 package com.tgx.chess.knight.raft.model;
 
+import static com.tgx.chess.king.topology.ZUID.INVALID_PEER_ID;
+import static com.tgx.chess.knight.raft.RaftState.CANDIDATE;
+import static com.tgx.chess.knight.raft.RaftState.ELECTOR;
+import static com.tgx.chess.knight.raft.RaftState.FOLLOWER;
+import static com.tgx.chess.knight.raft.RaftState.LEADER;
+import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_APPEND;
+import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_INSERT;
 import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_NULL;
 import static com.tgx.chess.queen.db.inf.IStorage.Strategy.RETAIN;
 
@@ -39,8 +46,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.tgx.chess.king.base.inf.ITriple;
+import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.knight.json.JsonUtil;
+import com.tgx.chess.knight.raft.IRaftDao;
 import com.tgx.chess.knight.raft.IRaftMachine;
 import com.tgx.chess.knight.raft.RaftState;
 import com.tgx.chess.queen.db.inf.IStorage;
@@ -55,6 +64,8 @@ public class RaftMachine
         IRaftMachine,
         IStorage
 {
+    private static final Logger _Logger = Logger.getLogger("cluster.knight." + RaftMachine.class.getSimpleName());
+
     private final static int                   RAFT_MACHINE_SERIAL = DB_SERIAL + 3;
     private final long                         _PeerId;
     private long                               mTerm;      //触发选举时 mTerm > mIndexTerm
@@ -312,7 +323,7 @@ public class RaftMachine
         if (mPeerSet == null) {
             mPeerSet = new TreeSet<>(Comparator.comparing(ITriple::getFirst));
         }
-        append(mPeerSet, peers);
+        appendGraph(mPeerSet, peers);
     }
 
     @SafeVarargs
@@ -323,16 +334,16 @@ public class RaftMachine
         if (mGateSet == null) {
             mGateSet = new TreeSet<>(Comparator.comparing(ITriple::getFirst));
         }
-        append(mGateSet, gates);
+        appendGraph(mGateSet, gates);
     }
 
     @SafeVarargs
-    private final void append(Set<Triple<Long,
-                                         String,
-                                         Integer>> set,
-                              Triple<Long,
-                                     String,
-                                     Integer>... a)
+    private final void appendGraph(Set<Triple<Long,
+                                              String,
+                                              Integer>> set,
+                                   Triple<Long,
+                                          String,
+                                          Integer>... a)
     {
         Objects.requireNonNull(set);
         if (a == null || a.length == 0) { return; }
@@ -340,25 +351,123 @@ public class RaftMachine
     }
 
     @Override
-    public void increaseTerm()
+    public void apply(IRaftDao dao)
     {
-        ++mTerm;
+        if (mIndex < mApplied) { throw new IllegalStateException(); }
+        mApplied = Long.min(mIndex, mCommit);
+        dao.updateLogApplied(mApplied);
+        _Logger.debug("apply => %d | [index %d commit %d]", mApplied, mIndex, mCommit);
     }
 
     @Override
-    public void increaseApplied()
+    public void commit(long index, IRaftDao dao)
     {
-        mApplied++;
+        /*
+         只有Leader 能执行此操作
+         */
+        mCommit = index;
+        dao.updateLogCommit(index);
+        mApplied = mCommit;
+        dao.updateLogApplied(mApplied);
     }
 
-    /**
-     * 此方法同时更新自身的matchIndex = index
-     */
     @Override
-    public void increaseIndex()
+    public void beLeader(IRaftDao dao)
     {
-        ++mIndex;
-        mMatchIndex = mIndex;
+        mState = LEADER.getCode();
+        mLeader = _PeerId;
+        mCandidate = _PeerId;
+        dao.updateCandidate(_PeerId);
+        mIndexTerm = mTerm;
+        dao.updateTerm(mTerm);
+    }
+
+    @Override
+    public void beCandidate(IRaftDao dao)
+    {
+        mState = CANDIDATE.getCode();
+        mLeader = INVALID_PEER_ID;
+        mCandidate = _PeerId;
+        dao.updateCandidate(_PeerId);
+        mTerm++;
+        dao.updateTerm(mTerm);
+    }
+
+    @Override
+    public void beElector(long candidate, long term, IRaftDao dao)
+    {
+        mState = ELECTOR.getCode();
+        mCandidate = candidate;
+        dao.updateCandidate(candidate);
+        mLeader = INVALID_PEER_ID;
+        mTerm = term;
+        dao.updateTerm(term);
+    }
+
+    @Override
+    public void follow(long leader, long term, long commit, IRaftDao dao)
+    {
+        mState = FOLLOWER.getCode();
+        mLeader = leader;
+        mCandidate = leader;
+        dao.updateCandidate(leader);
+        mTerm = term;
+        dao.updateTerm(term);
+        mCommit = commit;
+        dao.updateLogCommit(commit);
+    }
+
+    @Override
+    public void follow(long term, IRaftDao dao)
+    {
+        mState = FOLLOWER.getCode();
+        mLeader = INVALID_PEER_ID;
+        mCandidate = INVALID_PEER_ID;
+        dao.updateCandidate(INVALID_PEER_ID);
+        mTerm = term;
+        dao.updateTerm(term);
+    }
+
+    public void follow(IRaftDao dao)
+    {
+        follow(mTerm, dao);
+    }
+
+    @Override
+    public RaftMachine createCandidate()
+    {
+        RaftMachine candidate = new RaftMachine(_PeerId);
+        candidate.setTerm(mTerm + 1);
+        candidate.setIndex(mIndex);
+        candidate.setIndexTerm(mIndexTerm);
+        candidate.setState(CANDIDATE);
+        candidate.setOperation(OP_INSERT);
+        candidate.setCandidate(_PeerId);
+        candidate.setLeader(INVALID_PEER_ID);
+        candidate.setCommit(mCommit);
+        return candidate;
+    }
+
+    @Override
+    public RaftMachine createLeader()
+    {
+        RaftMachine leader = new RaftMachine(_PeerId);
+        leader.setOperation(OP_APPEND);
+        leader.setIndex(mIndex);
+        leader.setIndexTerm(mIndexTerm);
+        leader.setCommit(mCommit);
+        leader.setLeader(_PeerId);
+        leader.setCandidate(_PeerId);
+        return leader;
+    }
+
+    @Override
+    public void appendLog(long index, long indexTerm, IRaftDao dao)
+    {
+        mIndex = index;
+        mMatchIndex = index;
+        mIndexTerm = indexTerm;
+        dao.updateLogIndex(index);
     }
 
     @Override

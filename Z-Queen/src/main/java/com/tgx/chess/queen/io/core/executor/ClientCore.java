@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,8 @@
 
 package com.tgx.chess.queen.io.core.executor;
 
+import java.io.IOException;
+import java.nio.channels.AsynchronousChannelGroup;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -34,11 +36,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import com.lmax.disruptor.BatchEventProcessor;
 import com.lmax.disruptor.EventHandler;
-import com.lmax.disruptor.LiteBlockingWaitStrategy;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.SequenceBarrier;
-import com.lmax.disruptor.WaitStrategy;
-import com.lmax.disruptor.YieldingWaitStrategy;
 import com.tgx.chess.king.base.disruptor.MultiBufferBatchEventProcessor;
 import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.base.util.IoUtil;
@@ -53,7 +52,6 @@ import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.async.socket.AioWorker;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
-import com.tgx.chess.queen.io.core.inf.ISession;
 
 /**
  * @author william.d.zk
@@ -62,6 +60,7 @@ public class ClientCore<C extends IContext<C>>
         extends
         ThreadPoolExecutor
         implements
+        IBizCore,
         ILocalPublisher<C>
 
 {
@@ -186,19 +185,22 @@ public class ClientCore<C extends IContext<C>>
         submit(_EncodedProcessor);
     }
 
-    private RingBuffer<QEvent> createPipeline(int power, WaitStrategy waitStrategy)
+    @Override
+    public AsynchronousChannelGroup getClusterChannelGroup() throws IOException
     {
-        return RingBuffer.createSingleProducer(QEvent.EVENT_FACTORY, 1 << power, waitStrategy);
+        return null;
     }
 
-    private RingBuffer<QEvent> createPipelineYield(int power)
+    @Override
+    public RingBuffer<QEvent> getConsensusEvent()
     {
-        return createPipeline(power, new YieldingWaitStrategy());
+        return null;
     }
 
-    private RingBuffer<QEvent> createPipelineLite(int power)
+    @Override
+    public ReentrantLock getConsensusLock()
     {
-        return createPipeline(power, new LiteBlockingWaitStrategy());
+        return null;
     }
 
     private static int poolSize()
@@ -224,21 +226,26 @@ public class ClientCore<C extends IContext<C>>
     }
 
     @Override
-    public RingBuffer<QEvent> getPublisher(ISession<C> session, IOperator.Type type)
+    public RingBuffer<QEvent> getPublisher(IOperator.Type type)
     {
         return _BizLocalSendEvent;
     }
 
     @Override
-    public RingBuffer<QEvent> getCloser(ISession<C> session, IOperator.Type type)
+    public RingBuffer<QEvent> getCloser(IOperator.Type type)
     {
         return _BizLocalCloseEvent;
     }
 
     @Override
-    public ReentrantLock getLock(ISession<C> session, IOperator.Type type)
+    public ReentrantLock getLock(IOperator.Type type)
     {
         return _LocalLock;
     }
 
+    @Override
+    public AsynchronousChannelGroup getServiceChannelGroup() throws IOException
+    {
+        return null;
+    }
 }

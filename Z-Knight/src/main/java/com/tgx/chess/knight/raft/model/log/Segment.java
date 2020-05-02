@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -62,7 +62,7 @@ public class Segment
         }
     }
 
-    private final static Logger _Logger  = Logger.getLogger(Segment.class.getName());
+    private final static Logger _Logger  = Logger.getLogger("cluster.knight." + Segment.class.getSimpleName());
     private final long          _StartIndex;
     private final String        _FileDirectory;
     private RandomAccessFile    mRandomAccessFile;
@@ -175,9 +175,9 @@ public class Segment
             throw new IllegalStateException("first entry index isn't equal segment's start_index");
         }
         if (endIndex != mEndIndex) {
-            _Logger.info("input end_index isn't equal read end_index, update mEndIndex %d-> endIndex %d",
-                         mEndIndex,
-                         endIndex);
+            _Logger.debug("input end_index isn't equal read end_index, update mEndIndex %d-> endIndex %d",
+                          mEndIndex,
+                          endIndex);
             mEndIndex = endIndex;
         }
     }
