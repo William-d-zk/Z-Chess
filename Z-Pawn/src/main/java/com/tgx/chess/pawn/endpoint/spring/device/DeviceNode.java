@@ -245,6 +245,7 @@ public class DeviceNode
 
     private void heartbeat(ISession<ZContext> session)
     {
+        _Logger.debug("device_cluster heartbeat => %s ", session.getRemoteAddress());
         getCore().send(session, CLUSTER_LOCAL, _Ping);
     }
 }

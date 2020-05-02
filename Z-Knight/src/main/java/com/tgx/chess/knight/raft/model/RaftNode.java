@@ -53,6 +53,7 @@ import com.tgx.chess.bishop.io.zprotocol.raft.X7E_RaftBroadcast;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
+import com.tgx.chess.king.base.inf.IValid;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.schedule.ICancelable;
 import com.tgx.chess.king.base.schedule.ScheduleHandler;
@@ -79,6 +80,8 @@ import com.tgx.chess.queen.io.core.inf.ISessionManager;
  * @date 2020/1/4
  */
 public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTimer>
+        implements
+        IValid
 {
     private final Logger                       _Logger         = Logger.getLogger("cluster.knight."
                                                                                   + getClass().getSimpleName());
@@ -833,5 +836,11 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
     public boolean isClusterModel()
     {
         return _ClusterConfig.isClusterModel();
+    }
+
+    @Override
+    public boolean isValid()
+    {
+        return true;
     }
 }

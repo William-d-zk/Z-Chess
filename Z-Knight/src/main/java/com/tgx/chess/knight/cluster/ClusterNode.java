@@ -152,6 +152,7 @@ public class ClusterNode
             @Override
             public void onCreate(ISession<ZContext> session)
             {
+                super.onCreate(session);
                 Duration gap = Duration.ofSeconds(session.getReadTimeOutSeconds() / 2);
                 mHeartbeatTask = _TimeWheel.acquire(session,
                                                     new ScheduleHandler<>(gap,
@@ -219,7 +220,7 @@ public class ClusterNode
 
     private void heartbeat(ISession<ZContext> session)
     {
-        _Logger.debug("cluster heartbeat");
+        _Logger.debug("cluster heartbeat =>%s", session.getRemoteAddress());
         getCore().send(session, CLUSTER_LOCAL, _Ping);
     }
 }

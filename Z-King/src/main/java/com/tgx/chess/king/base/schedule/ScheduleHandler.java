@@ -28,10 +28,12 @@ import java.time.Duration;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
+import com.tgx.chess.king.base.inf.IValid;
+
 /**
  * @author William.d.zk
  */
-public class ScheduleHandler<A>
+public class ScheduleHandler<A extends IValid>
         implements
         TimeWheel.IWheelItem<A>
 {
@@ -98,7 +100,7 @@ public class ScheduleHandler<A>
     @Override
     public void onCall()
     {
-        if (_Callback != null && attach != null) {
+        if (_Callback != null && attach != null && attach.isValid()) {
             _Callback.accept(attach);
         }
     }

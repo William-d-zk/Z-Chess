@@ -68,7 +68,7 @@ public class RaftDao
     private LogMeta                      mLogMeta;
     private SnapshotMeta                 mSnapshotMeta;
     private volatile long                vTotalSize;
-
+    private volatile boolean             vValid;
     // 表示是否正在安装snapshot，leader向follower安装，leader和follower同时处于installSnapshot状态
     private final AtomicBoolean _InstallSnapshot = new AtomicBoolean(false);
     // 表示节点自己是否在对状态机做snapshot
@@ -123,6 +123,7 @@ public class RaftDao
             _Logger.warning("meta file not exist, name=%s", metaFileName);
         }
         installSnapshot();
+        vValid = true;
     }
 
     @PreDestroy
@@ -429,5 +430,11 @@ public class RaftDao
     private void installSnapshot()
     {
 
+    }
+
+    @Override
+    public boolean isValid()
+    {
+        return vValid;
     }
 }

@@ -51,9 +51,14 @@ public class ConnectedOperator<C extends IContext<C>>
     public ITriple handle(IConnectActivity<C> activity, AsynchronousSocketChannel channel) throws ZException
     {
 
-        ISession<C> session;
+        ISession<C> session = null;
         try {
             session = activity.createSession(channel, activity);
+            //session == null 已经throw IOException了
+            activity.onCreate(session);
+            session.readNext(_AioReader);
+            IControl<C>[] commands = activity.createCommands(session);
+            return new Triple<>(true, session, commands);
         }
         catch (IOException e) {
             try {
@@ -62,29 +67,12 @@ public class ConnectedOperator<C extends IContext<C>>
             catch (IOException ex) {
                 ex.printStackTrace();
             }
-            throw new ZException(e, "session create failed");
-        }
-        if (session != null) try {
-            activity.onCreate(session);
-            session.readNext(_AioReader);
-            IControl<C>[] commands = activity.createCommands(session);
-            return new Triple<>(commands,
-                                session,
-                                session.getContext()
-                                       .getSort()
-                                       .getTransfer());
+            return new Triple<>(false, channel, e);
         }
         catch (Exception e) {
-            try {
-                session.close();
-            }
-            catch (IOException oe) {
-                //ignore
-            }
-            throw new ZException(e, "session create success,but failed onCreate || session.readNext || createCommands");
-        }
-        else {
-            throw new ZException("session create failed %s", channel);
+            //此时session!=null
+            if (session != null) { return new Triple<>(false, session, e); }
+            return new Triple<>(false, channel, e);
         }
     }
 

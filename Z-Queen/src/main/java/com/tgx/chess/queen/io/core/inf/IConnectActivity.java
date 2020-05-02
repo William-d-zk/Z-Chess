@@ -23,6 +23,8 @@
  */
 package com.tgx.chess.queen.io.core.inf;
 
+import com.tgx.chess.king.base.inf.IValid;
+
 /**
  * @author William.d.zk
  */
@@ -32,7 +34,8 @@ public interface IConnectActivity<C extends IContext<C>>
         IConnectMode<C>,
         ISessionCreator<C>,
         ISessionCreated<C>,
-        ICommandCreator<C>
+        ICommandCreator<C>,
+        IValid
 {
     boolean isShutdown();
 
