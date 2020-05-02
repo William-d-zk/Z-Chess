@@ -46,7 +46,7 @@ public class QttFrameFilter
 
     public QttFrameFilter()
     {
-        super("mqtt-frame-filter");
+        super("mqtt_frame");
     }
 
     @Override
