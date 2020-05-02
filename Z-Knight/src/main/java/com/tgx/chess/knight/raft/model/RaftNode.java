@@ -108,10 +108,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
         _ZUID = clusterConfig.createZUID();
         _RaftDao = raftDao;
         _ElectSchedule = new ScheduleHandler<>(_ClusterConfig.getElectInSecond(), RaftNode::stepDown, this);
-        _HeartbeatSchedule = new ScheduleHandler<>(_ClusterConfig.getHeartbeatInSecond(),
-                                                   true,
-                                                   RaftNode::heartbeat,
-                                                   this);
+        _HeartbeatSchedule = new ScheduleHandler<>(_ClusterConfig.getHeartbeatInSecond(), RaftNode::heartbeat, this);
         _TickSchedule = new ScheduleHandler<>(_ClusterConfig.getHeartbeatInSecond()
                                                             .multipliedBy(2),
                                               RaftNode::startVote,
@@ -123,15 +120,8 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
 
     private void heartbeat()
     {
-        if (_RaftGraph.isMajorAccept(_SelfMachine.getPeerId(), _SelfMachine.getTerm(), _RaftDao.getStartIndex())) {
-            _ClusterPeer.timerEvent(_SelfMachine.createLeader());
-            _Logger.debug("leader heartbeat");
-        }
-        else {
-            _Logger.debug("no response enough");
-            heartbeatCancel();
-            stepDown();
-        }
+        _ClusterPeer.timerEvent(_SelfMachine.createLeader());
+        _Logger.debug("leader heartbeat");
     }
 
     public void init() throws IOException
@@ -209,7 +199,6 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
         }
         //初始化为FOLLOWER 状态，等待LEADER的HEARTBEAT
         mTickTask = _TimeWheel.acquire(this, _TickSchedule);
-
         _Logger.debug("raft node init -> %s", _SelfMachine);
     }
 
@@ -724,7 +713,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
             vote4me();
             return createVotes(update).collect(Collectors.toList());
         }
-        _Logger.warning("machine state checked failed { %s }", _SelfMachine);
+        _Logger.warning("check vote failed; now: %s", _SelfMachine);
         return null;
     }
 
@@ -737,8 +726,18 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
             && _SelfMachine.getIndexTerm() >= update.getIndexTerm()
             && _SelfMachine.getCommit() >= update.getCommit())
         {
-            return createBroadcasts().collect(Collectors.toList());
+            if (_RaftGraph.isMajorAccept(_SelfMachine.getPeerId(), _SelfMachine.getTerm(), _SelfMachine.getIndex())) {
+                mHeartbeatTask = _TimeWheel.acquire(this, _HeartbeatSchedule);
+                _Logger.debug("keep lead =>%s", _SelfMachine);
+                return createBroadcasts().collect(Collectors.toList());
+            }
+            else {
+                _Logger.debug("no response enough");
+                stepDown();
+            }
         }
+        //state change => ignore
+        _Logger.warning("check leader broadcast failed; now:%s", _SelfMachine);
         return null;
     }
 
@@ -795,7 +794,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                          .values()
                          .stream()
                          .filter(other -> other.getPeerId() != _SelfMachine.getPeerId())
-                         .peek(node -> node.setMatchIndex(0))
+                         .peek(node -> node.setMatchIndex(-1))
                          .map(this::createBroadcast);
     }
 
