@@ -44,7 +44,7 @@ public class QttCommandFilter
 {
     public QttCommandFilter()
     {
-        super("mqtt-command-filter");
+        super("mqtt_command");
     }
 
     @Override

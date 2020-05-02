@@ -54,7 +54,7 @@ public class WsHandShakeFilter
 
     public WsHandShakeFilter()
     {
-        super("web-socket-header-zfilter-");
+        super("ws_header");
     }
 
     @Override
