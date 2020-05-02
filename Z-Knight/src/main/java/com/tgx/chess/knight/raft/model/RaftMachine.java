@@ -474,17 +474,17 @@ public class RaftMachine
     public String toString()
     {
         return String.format("\n{\n"
-                             + "peerId:%#x\n"
-                             + "state:%s\n"
-                             + "term:%d\n"
-                             + "index:%d\n"
-                             + "index_term:%d\n"
-                             + "match_index:%d\n"
-                             + "commit:%d\n"
-                             + "applied:%d\n"
-                             + "leader:%#x\n"
-                             + "candidate:%#x\n"
-                             + "peers:%s\n}",
+                             + "\t\tpeerId:%#x\n"
+                             + "\t\tstate:%s\n"
+                             + "\t\tterm:%d\n"
+                             + "\t\tindex:%d\n"
+                             + "\t\tindex_term:%d\n"
+                             + "\t\tmatch_index:%d\n"
+                             + "\t\tcommit:%d\n"
+                             + "\t\tapplied:%d\n"
+                             + "\t\tleader:%#x\n"
+                             + "\t\tcandidate:%#x\n"
+                             + "\t\tpeers:%s\n}",
                              _PeerId,
                              getState(),
                              mTerm,
