@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -111,6 +111,14 @@ public class RaftGraph
                        .filter(machine -> machine.getTerm() == term
                                           && machine.getMatchIndex() >= index
                                           && machine.getCandidate() == selfPeerId)
+                       .count() > _NodeMap.size() / 2;
+    }
+
+    public boolean isMajorReject(long selfPeerId, long term)
+    {
+        return _NodeMap.values()
+                       .stream()
+                       .filter(machine -> machine.getTerm() >= term && machine.getCandidate() != selfPeerId)
                        .count() > _NodeMap.size() / 2;
     }
 

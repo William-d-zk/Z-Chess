@@ -2,7 +2,7 @@
 <!--
   ~ MIT License
   ~
-  ~ Copyright (c) 2016~2019 Z-Chess
+  ~ Copyright (c) 2016~2020. Z-Chess
   ~
   ~ Permission is hereby granted, free of charge, to any person obtaining a copy
   ~ of this software and associated documentation files (the "Software"), to deal
@@ -30,9 +30,9 @@
     <parent>
         <artifactId>framework.z-chess</artifactId>
         <groupId>com.tgx.service</groupId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.1 RELEASE</version>
     </parent>
-    <artifactId>endpoint.z-rook</artifactId>
+    <artifactId>client.z-rook</artifactId>
     <name>Z-Rook</name>
     <dependencies>
         <dependency>
@@ -49,7 +49,7 @@
         </dependency>
         <dependency>
             <groupId>com.tgx.service</groupId>
-            <artifactId>manage.z-bishop</artifactId>
+            <artifactId>protocol.z-bishop</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
@@ -62,9 +62,10 @@
                 <version>${spring-boot.version}</version>
                 <configuration>
                     <layout>JAR</layout>
-                    <mainClass>com.tgx.chess.rook.ApplicationRook</mainClass>
+                    <mainClass>com.tgx.com.tgx.chess.rook.ApplicationRook</mainClass>
                 </configuration>
             </plugin>
         </plugins>
+        <directory>${user.home}/Z-Chess/${project.name}/target</directory>
     </build>
 </project>

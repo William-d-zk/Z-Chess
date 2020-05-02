@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@ public class EncodedHandler<C extends IContext<C>>
         implements
         IPipeEventHandler<QEvent>
 {
-    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
 
     private final RingBuffer<QEvent> _Error;
 
@@ -51,6 +51,7 @@ public class EncodedHandler<C extends IContext<C>>
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
     {
+        _Logger.debug("end event! ");
         if (event.hasError()) {
             switch (event.getErrorType())
             {
@@ -60,12 +61,18 @@ public class EncodedHandler<C extends IContext<C>>
                 default:
                     IPair errorContent = event.getContent();
                     ISession<C> session = errorContent.getSecond();
-                    if (!session.isClosed()) {
-                        error(_Error, event.getErrorType(), errorContent, event.getEventOp());
+                    if (session.isValid()) {
+                        tryError(_Error, event.getErrorType(), errorContent, event.getEventOp());
                     }
                     break;
             }
         }
         event.reset();
+    }
+
+    @Override
+    public Logger getLogger()
+    {
+        return _Logger;
     }
 }

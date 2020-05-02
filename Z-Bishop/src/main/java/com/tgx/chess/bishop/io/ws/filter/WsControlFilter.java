@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,7 +66,7 @@ public class WsControlFilter
     public WsFrame encode(ZContext context, WsControl output)
     {
         WsFrame frame = new WsFrame();
-        _Logger.info("control %s", output);
+        _Logger.debug("control %s", output);
         frame.setPayload(output.getPayload());
         frame.setCtrl(output.getCtrl());
         return frame;

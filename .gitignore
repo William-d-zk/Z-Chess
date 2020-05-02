@@ -12,3 +12,4 @@ mvn_deploy.sh
 .project
 gradlew
 gradlew.bat
+.vscode

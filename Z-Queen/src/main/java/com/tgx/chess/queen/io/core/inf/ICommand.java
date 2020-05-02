@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,6 @@ package com.tgx.chess.queen.io.core.inf;
 public interface ICommand<C extends IContext<C>>
         extends
         IControl<C>,
-        IChannel,
         IStreamProtocol<C>
 {
     @Override

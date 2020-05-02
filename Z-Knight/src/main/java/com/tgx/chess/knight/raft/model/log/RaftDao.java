@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,7 @@ import org.springframework.stereotype.Component;
 import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.knight.raft.IRaftDao;
-import com.tgx.chess.knight.raft.config.ZRaftStorageConfig;
+import com.tgx.chess.knight.raft.config.ZRaftConfig;
 
 @Component
 public class RaftDao
@@ -57,7 +57,8 @@ public class RaftDao
 {
     private final static long            TERM_NAN          = -1;
     private final static long            INDEX_NAN         = -1;
-    private final Logger                 _Logger           = Logger.getLogger(getClass().getSimpleName());
+    private final Logger                 _Logger           = Logger.getLogger("cluster.knight."
+                                                                              + getClass().getSimpleName());
     private final String                 _LogDataDir;
     private final String                 _LogMetaDir;
     private final String                 _SnapshotDir;
@@ -75,7 +76,7 @@ public class RaftDao
     private final Lock          _SnapshotLock = new ReentrantLock();
 
     @Autowired
-    public RaftDao(ZRaftStorageConfig config)
+    public RaftDao(ZRaftConfig config)
     {
         String baseDir = config.getBaseDir();
         _LogMetaDir = String.format("%s%s.raft", baseDir, File.separator);
@@ -129,7 +130,7 @@ public class RaftDao
     {
         mLogMeta.close();
         mSnapshotMeta.close();
-        _Logger.info("raft dao dispose");
+        _Logger.debug("raft dao dispose");
     }
 
     @Override
@@ -164,8 +165,8 @@ public class RaftDao
     {
         long startIndex = getStartIndex();
         long endIndex = getEndIndex();
-        if (index == INDEX_NAN || index < startIndex || index > endIndex) {
-            _Logger.info("index out of range, index=%d, start_index=%d, end_index=%d", index, startIndex, endIndex);
+        if (index == INDEX_NAN || (index < startIndex && index > 0) || index > endIndex) {
+            _Logger.debug("index out of range, index=%d, start_index=%d, end_index=%d", index, startIndex, endIndex);
             return null;
         }
         if (_Index2SegmentMap.isEmpty()) { return null; }
@@ -189,15 +190,29 @@ public class RaftDao
     }
 
     @Override
-    public void updateLogCommit(long commit)
+    public void updateLogIndex(long index)
     {
-        mLogMeta.setCommit(commit);
+        mLogMeta.setIndex(index);
     }
 
     @Override
-    public void updateLogTerm(long term)
+    public void updateLogCommit(long commit)
+    {
+        mLogMeta.setCommit(commit);
+        mSnapshotMeta.setCommit(commit);
+    }
+
+    @Override
+    public void updateTerm(long term)
     {
         mLogMeta.setTerm(term);
+        mSnapshotMeta.setTerm(term);
+    }
+
+    @Override
+    public void updateCandidate(long candidate)
+    {
+        mLogMeta.setCandidate(candidate);
     }
 
     @Override
@@ -228,7 +243,7 @@ public class RaftDao
                          {
                              try {
                                  String fileName = sub.getName();
-                                 _Logger.info("sub:%s", fileName);
+                                 _Logger.debug("sub:%s", fileName);
                                  Matcher matcher = SEGMENT_NAME.matcher(fileName);
                                  if (matcher.matches()) {
                                      long start = Long.parseLong(matcher.group(1));
@@ -251,11 +266,12 @@ public class RaftDao
     }
 
     @Override
-    public boolean append(LogEntry entry)
+    public boolean appendLog(LogEntry entry)
     {
-        _Logger.info("append %s", entry);
+        _Logger.debug("wait to append %s", entry);
         Objects.requireNonNull(entry);
         long newEndIndex = getEndIndex() + 1;
+        long newEndTerm = entry.getTerm();
         if (entry.getIndex() == newEndIndex) {
             int entrySize = entry.dataLength() + 4;
             boolean isNeedNewSegmentFile = false;
@@ -277,7 +293,7 @@ public class RaftDao
             Segment targetSegment = null;
             if (isNeedNewSegmentFile) {
                 String newFileName = String.format("z_chess_raft_seg_%020d-%020d_w", newEndIndex, 0);
-                _Logger.info("new segment file :%s", newFileName);
+                _Logger.debug("new segment file :%s", newFileName);
                 File newFile = new File(_LogDataDir + File.separator + newFileName);
                 if (!newFile.exists()) {
                     try {
@@ -300,10 +316,10 @@ public class RaftDao
             Objects.requireNonNull(targetSegment);
             targetSegment.addRecord(entry);
             vTotalSize += entrySize;
-            mLogMeta.setIndex(newEndIndex);
-            _Logger.info("append ok: %d", newEndIndex);
+            _Logger.debug("append ok: %d", newEndIndex);
             return true;
         }
+        _Logger.warning("append failed: [new end %d|expect %d]", newEndIndex, entry.getIndex());
         return false;
     }
 
@@ -339,22 +355,27 @@ public class RaftDao
             newActualFirstIndex = _Index2SegmentMap.firstKey();
         }
         updateLogStart(newActualFirstIndex);
-        _Logger.info("Truncating log from old first index %d to new first index %d",
-                     oldFirstIndex,
-                     newActualFirstIndex);
+        _Logger.debug("Truncating log from old first index %d to new first index %d",
+                      oldFirstIndex,
+                      newActualFirstIndex);
     }
 
     @Override
     public LogEntry truncateSuffix(long newEndIndex)
     {
-        if (newEndIndex >= getEndIndex()) { return null; }
-        _Logger.info("Truncating log from old end index %d to new end index %d", getEndIndex(), newEndIndex);
+        long endIndex = getEndIndex();
+        if (newEndIndex >= endIndex) { return null; }
+        _Logger.debug("Truncating log from old end index %d to new end index %d", getEndIndex(), newEndIndex);
+
         while (!_Index2SegmentMap.isEmpty()) {
             Segment segment = _Index2SegmentMap.lastEntry()
                                                .getValue();
             try {
                 if (newEndIndex == segment.getEndIndex()) {
-                    return getEntry(newEndIndex);
+                    LogEntry newEndEntry = getEntry(newEndIndex);
+                    //此时entry 不会为null
+                    mLogMeta.append(newEndIndex, newEndEntry.getTerm());
+                    return newEndEntry;
                 }
                 else if (newEndIndex < segment.getStartIndex()) {
                     vTotalSize -= segment.drop();

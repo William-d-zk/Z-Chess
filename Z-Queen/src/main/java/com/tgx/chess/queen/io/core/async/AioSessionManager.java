@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,7 @@
  */
 package com.tgx.chess.queen.io.core.async;
 
-import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.queen.config.IBizIoConfig;
-import com.tgx.chess.queen.config.ISocketConfig;
-import com.tgx.chess.queen.config.QueenCode;
-import com.tgx.chess.queen.io.core.inf.IContext;
-import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.inf.ISessionManager;
+import static com.tgx.chess.queen.io.core.inf.ISession.PREFIX_MAX;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -41,7 +35,14 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
-import static com.tgx.chess.queen.io.core.inf.ISession.PREFIX_MAX;
+import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.king.topology.ZUID;
+import com.tgx.chess.queen.config.IAioConfig;
+import com.tgx.chess.queen.config.ISocketConfig;
+import com.tgx.chess.queen.io.core.executor.IPipeCore;
+import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.io.core.inf.ISession;
+import com.tgx.chess.queen.io.core.inf.ISessionManager;
 
 /**
  * 所有io 管理器的父类，存在一定的存储空间的浪费。
@@ -51,69 +52,83 @@ import static com.tgx.chess.queen.io.core.inf.ISession.PREFIX_MAX;
  *
  * @author William.d.zk
  */
-public abstract class AioSessionManager<C extends IContext<C>>
+public abstract class AioSessionManager<C extends IContext<C>,
+                                        K extends IPipeCore>
         implements
-        ISessionManager<C> {
-    protected final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
+        ISessionManager<C>
+{
+    protected final Logger                      _Logger = Logger.getLogger("io.queen.session."
+                                                                           + getClass().getSimpleName());
     private final Map<Long,
-            ISession<C>>[] _Index2SessionMaps = new Map[4];
+                      ISession<C>>[]            _Index2SessionMaps;
     private final Map<Long,
-            Set<ISession<C>>>[] _Prefix2SessionMaps = new Map[4];
-    private final Set<ISession<C>>[] _SessionsSets = new Set[4];
-    private final IBizIoConfig _BizIoConfig;
+                      Set<ISession<C>>>[]       _Prefix2SessionMaps;
+    private final Set<ISession<C>>[]            _SessionsSets;
+    private final IAioConfig                    _AioConfig;
 
-    public ISocketConfig getSocketConfig(int bizType) {
-        return _BizIoConfig.getBizSocketConfig(bizType);
+    public ISocketConfig getSocketConfig(int type)
+    {
+        return _AioConfig.getSocketConfig(type);
     }
 
-    public AioSessionManager(IBizIoConfig config) {
-        _BizIoConfig = config;
-        Arrays.setAll(_SessionsSets, slot -> new HashSet<>(1 << getConfigPower(slot)));
-        Arrays.setAll(_Index2SessionMaps, slot -> new HashMap<>(1 << getConfigPower(slot)));
-        Arrays.setAll(_Prefix2SessionMaps, slot -> new HashMap<>(23));
+    @SuppressWarnings("unchecked")
+    public AioSessionManager(IAioConfig config)
+    {
+        _AioConfig = config;
+        _Index2SessionMaps = new Map[4];
+        _Prefix2SessionMaps = new Map[4];
+        _SessionsSets = new Set[4];
+        Arrays.setAll(_SessionsSets,
+                      slot -> _AioConfig.isDomainActive(slot) ? new HashSet<>(1 << getConfigPower(slot))
+                                                              : null);
+        Arrays.setAll(_Index2SessionMaps,
+                      slot -> _AioConfig.isDomainActive(slot) ? new HashMap<>(1 << getConfigPower(slot))
+                                                              : null);
+        Arrays.setAll(_Prefix2SessionMaps,
+                      slot -> _AioConfig.isDomainActive(slot) ? new HashMap<>(23)
+                                                              : null);
     }
 
-    protected int getConfigPower(int slot) {
-        switch (slot) {
-            case CLIENT_SLOT:
-            case LOCAL_SLOT:
-            case SERVER_SLOT:
-            case CLUSTER_SLOT:
-                return _BizIoConfig.getSizePower(slot);
-            default:
-                throw new IllegalArgumentException("slot: " + slot);
-        }
+    protected int getConfigPower(int slot)
+    {
+        if (ZUID.MAX_TYPE < slot || slot < 0) { throw new IllegalArgumentException("slot: " + slot); }
+        return _AioConfig.getSizePower(slot);
     }
 
-    protected static <C extends IContext<C>> int getSlot(ISession<C> session) {
+    protected static <C extends IContext<C>> int getSlot(ISession<C> session)
+    {
         return getSlot(session.getIndex());
     }
 
-    protected static int getSlot(long index) {
-        return (int) ((index & QueenCode.XID_MK) >>> 62);
+    protected static int getSlot(long index)
+    {
+        return (int) ((index & ZUID.TYPE_MASK) >>> ZUID.TYPE_SHIFT);
     }
 
     @Override
-    public void addSession(ISession<C> session) {
+    public void addSession(ISession<C> session)
+    {
         int slot = getSlot(session);
-        _Logger.info(String.format("%s add session -> set slot:%s",
-                getClass().getSimpleName(),
-                slot == CLIENT_SLOT ? "CLIENT"
-                        : slot == LOCAL_SLOT ? "INTERNAL"
-                        : slot == SERVER_SLOT ? "SERVER"
-                        : "CLUSTER"));
+        _Logger.debug(String.format("%s add session -> set slot:%s",
+                                    getClass().getSimpleName(),
+                                    slot == ZUID.TYPE_CONSUMER_SLOT ? "CONSUMER"
+                                                                    : slot == ZUID.TYPE_INTERNAL_SLOT ? "INTERNAL"
+                                                                                                      : slot == ZUID.TYPE_PROVIDER_SLOT ? "PROVIDER"
+                                                                                                                                        : slot == ZUID.TYPE_CLUSTER_SLOT ? "CLUSTER"
+                                                                                                                                                                         : "Illegal"));
         _SessionsSets[slot].add(session);
     }
 
     @Override
-    public void rmSession(ISession<C> session) {
+    public void rmSession(ISession<C> session)
+    {
         int slot = getSlot(session);
         _SessionsSets[slot].remove(session);
         long[] prefixArray = session.getPrefixArray();
         if (prefixArray != null) {
             for (long prefix : prefixArray) {
                 _Prefix2SessionMaps[slot].get(prefix & PREFIX_MAX)
-                        .remove(session);
+                                         .remove(session);
             }
         }
         ISession<C> old = _Index2SessionMaps[slot].get(session.getIndex());
@@ -124,10 +139,11 @@ public abstract class AioSessionManager<C extends IContext<C>>
 
     /**
      * @return 正常情况下返回 _Index 返回 NULL_INDEX 说明 Map 失败。 或返回被覆盖的 OLD-INDEX 需要对其进行
-     * PortChannel 的清理操作。
+     *         PortChannel 的清理操作。
      */
-    private ISession<C> mapSession(long _Index, ISession<C> session) {
-        _Logger.info("session manager map-> %#x,%s", _Index, session);
+    private ISession<C> mapSession(long _Index, ISession<C> session)
+    {
+        _Logger.debug("session manager map-> %#x,%s", _Index, session);
         if (_Index == INVALID_INDEX || _Index == NULL_INDEX) {
             throw new IllegalArgumentException(String.format("index error %d", _Index));
         }
@@ -168,7 +184,8 @@ public abstract class AioSessionManager<C extends IContext<C>>
                  */
                 if (oldMappedSession == oldSession) {
                     _Logger.fetal("oldMappedSession == oldSession -> Ignore, 检查MapSession 是否存在线程安全问题");// Ignore
-                } else if (oldMappedSession == null) {
+                }
+                else if (oldMappedSession == null) {
                     _Logger.debug("oldMappedSession == null -> oldIndex invalid");// oldIndex 已失效
                 }
                 // else oldIndex 已完成其他的绑定过程无需做任何处理。
@@ -178,20 +195,21 @@ public abstract class AioSessionManager<C extends IContext<C>>
     }
 
     @Override
-    public ISession<C> mapSession(long index, ISession<C> session, long... prefixArray) {
+    public ISession<C> mapSession(long index, ISession<C> session, long... prefixArray)
+    {
         ISession<C> old = mapSession(index, session);
         if (prefixArray != null) {
             int slot = getSlot(session);
             Map<Long,
-                    Set<ISession<C>>> prefix2SessionMap = _Prefix2SessionMaps[slot];
+                Set<ISession<C>>> prefix2SessionMap = _Prefix2SessionMaps[slot];
             for (long prefix : prefixArray) {
                 if (getSlot(prefix) != slot) {
                     throw new IllegalArgumentException(String.format("index: %#x, prefix: %#x | slot error",
-                            index,
-                            prefix));
+                                                                     index,
+                                                                     prefix));
                 }
                 prefix2SessionMap.computeIfAbsent(prefix, k -> new TreeSet<>())
-                        .add(session);
+                                 .add(session);
                 session.bindPrefix(prefix);
             }
         }
@@ -199,9 +217,10 @@ public abstract class AioSessionManager<C extends IContext<C>>
     }
 
     @Override
-    public Collection<ISession<C>> clearAllSessionByPrefix(long prefix) {
+    public Collection<ISession<C>> clearAllSessionByPrefix(long prefix)
+    {
         Map<Long,
-                Set<ISession<C>>> prefix2SessionMap = _Prefix2SessionMaps[getSlot(prefix)];
+            Set<ISession<C>>> prefix2SessionMap = _Prefix2SessionMaps[getSlot(prefix)];
         Set<ISession<C>> sessions = prefix2SessionMap.get(prefix);
         sessions.forEach(this::clearSession);
         return sessions;
@@ -209,26 +228,30 @@ public abstract class AioSessionManager<C extends IContext<C>>
     }
 
     @Override
-    public ISession<C> clearSession(long index) {
+    public ISession<C> clearSession(long index)
+    {
         return _Index2SessionMaps[getSlot(index)].remove(index);
     }
 
     @Override
-    public ISession<C> findSessionByIndex(long index) {
+    public ISession<C> findSessionByIndex(long index)
+    {
         return _Index2SessionMaps[getSlot(index)].get(index);
     }
 
     @Override
-    public int getSessionCountByPrefix(long prefix) {
+    public int getSessionCountByPrefix(long prefix)
+    {
         return _Prefix2SessionMaps[getSlot(prefix)].size();
     }
 
     @Override
-    public ISession<C> findSessionByPrefix(long prefix) {
+    public ISession<C> findSessionByPrefix(long prefix)
+    {
         Set<ISession<C>> sessions = _Prefix2SessionMaps[getSlot(prefix)].get(prefix);
         if (sessions != null) {
             Optional<ISession<C>> optional = sessions.stream()
-                    .min(Comparator.comparing(session -> session.prefixLoad(prefix)));
+                                                     .min(Comparator.comparing(session -> session.prefixLoad(prefix)));
             if (optional.isPresent()) {
                 ISession<C> session = optional.get();
                 session.prefixHit(prefix);
@@ -238,7 +261,10 @@ public abstract class AioSessionManager<C extends IContext<C>>
         return null;
     }
 
-    public Collection<ISession<C>> findAllByPrefix(long prefix) {
+    public Collection<ISession<C>> findAllByPrefix(long prefix)
+    {
         return _Prefix2SessionMaps[getSlot(prefix)].get(prefix);
     }
+
+    protected abstract K getCore();
 }

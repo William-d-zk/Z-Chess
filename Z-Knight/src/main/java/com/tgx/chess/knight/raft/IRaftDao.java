@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,8 @@ import com.tgx.chess.knight.raft.model.log.SnapshotMeta;
 /**
  * @author william.d.zk
  */
-public interface IRaftDao {
+public interface IRaftDao
+{
     void updateAll();
 
     long getEndIndex();
@@ -44,13 +45,19 @@ public interface IRaftDao {
 
     void updateLogStart(long firstLogIndex);
 
+    void updateLogIndex(long index);
+
     void updateLogCommit(long commit);
 
-    void updateLogTerm(long term);
+    void updateTerm(long term);
+
+    void updateCandidate(long candidate);
+
+    void updateLogApplied(long applied);
 
     void updateSnapshotMeta(long lastIncludeIndex, long lastIncludeTerm);
 
-    boolean append(LogEntry entry);
+    boolean appendLog(LogEntry entry);
 
     void truncatePrefix(long newFirstIndex);
 
@@ -62,5 +69,4 @@ public interface IRaftDao {
 
     long getTotalSize();
 
-    void updateLogApplied(long applied);
 }

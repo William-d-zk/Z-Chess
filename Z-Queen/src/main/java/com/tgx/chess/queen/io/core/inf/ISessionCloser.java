@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,22 +35,22 @@ import com.tgx.chess.queen.event.inf.IOperator;
  */
 public interface ISessionCloser<C extends IContext<C>>
         extends
-        IOperator<Void,
+        IOperator<String,
                   ISession<C>,
                   Void>
 {
 
-    Logger _Logger = Logger.getLogger(ISessionCloser.class.getSimpleName());
+    Logger _Logger = Logger.getLogger("io.queen.operator." + ISessionCloser.class.getSimpleName());
 
     @Override
-    default Void handle(Void v, ISession<C> session)
+    default Void handle(String msg, ISession<C> session)
     {
         try {
+            _Logger.trace("msg %s → closed %s", msg, session);
             session.close();
-            _Logger.info("closed %s", session.toString());
         }
         catch (IOException e) {
-            _Logger.warning("close exception: %s", e, session.toString());
+            _Logger.warning("close exception: %s", e, session);
         }
         return null;
     }

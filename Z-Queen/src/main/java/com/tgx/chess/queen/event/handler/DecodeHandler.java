@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,7 +49,7 @@ public class DecodeHandler<C extends IContext<C>>
         implements
         EventHandler<QEvent>
 {
-    protected final Logger        _Logger = Logger.getLogger(getClass().getSimpleName());
+    protected final Logger        _Logger = Logger.getLogger("io.queen.processor." + getClass().getSimpleName());
     private final IEncryptHandler _EncryptHandler;
 
     public DecodeHandler(IEncryptHandler encryptHandler)
@@ -58,9 +58,8 @@ public class DecodeHandler<C extends IContext<C>>
     }
 
     /**
-     * 错误由接下去的 Handler 负责投递 Close 事件给 IoDispatcher
-     *
-     * @see IoDispatcher
+     * 错误由接下去的 Handler 负责投递
+     * 标记为Error后交由BarrierHandler进行分发
      */
     @Override
     public void onEvent(QEvent event, long sequence, boolean batch) throws Exception
@@ -80,7 +79,7 @@ public class DecodeHandler<C extends IContext<C>>
             try {
                 ITriple result = packetOperator.handle(packet, session);
                 IControl<C>[] commands = result.getFirst();
-                _Logger.info("decoded commands:%s", Arrays.toString(commands));
+                _Logger.debug("decoded commands:%s", Arrays.toString(commands));
                 transfer(event, commands, session, result.getThird());
             }
             catch (Exception e) {

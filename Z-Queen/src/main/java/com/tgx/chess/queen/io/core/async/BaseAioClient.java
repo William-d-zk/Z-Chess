@@ -1,25 +1,25 @@
 /*
- * MIT License                                                                    
- *                                                                                
- * Copyright (c) 2016~2020 Z-Chess                                                
- *                                                                                
- * Permission is hereby granted, free of charge, to any person obtaining a copy   
- * of this software and associated documentation files (the "Software"), to deal  
- * in the Software without restriction, including without limitation the rights   
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell      
- * copies of the Software, and to permit persons to whom the Software is          
- * furnished to do so, subject to the following conditions:                       
- *                                                                                
- * The above copyright notice and this permission notice shall be included in all 
- * copies or substantial portions of the Software.                                
- *                                                                                
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR     
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,       
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE    
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER         
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,  
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  
- * SOFTWARE.                                                                      
+ * MIT License
+ *
+ * Copyright (c) 2016~2020. Z-Chess
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 package com.tgx.chess.queen.io.core.async;
@@ -46,7 +46,8 @@ public class BaseAioClient<C extends IContext<C>>
         implements
         IAioClient<C>
 {
-    private final Logger                                                  _Logger          = Logger.getLogger("AioClient");
+    private final Logger _Logger = Logger.getLogger("io.queen.client." + getClass().getSimpleName());
+
     private final TimeWheel                                               _TimeWheel;
     private final AsynchronousChannelGroup                                _ChannelGroup;
     private final Map<InetSocketAddress,
@@ -79,7 +80,7 @@ public class BaseAioClient<C extends IContext<C>>
                 retryCount = pair.getFirst();
                 pair.setFirst(++retryCount);
             }
-            _Logger.info("%s,%d", remoteAddress, retryCount);
+            _Logger.info("client connect to %s,@ %d", remoteAddress, retryCount);
         }
         finally {
             _Lock.unlock();
@@ -89,8 +90,14 @@ public class BaseAioClient<C extends IContext<C>>
     @Override
     public void onFailed(IAioConnector<C> connector)
     {
-        _Logger.info("connect failed: retry");
+        _Logger.debug("connect failed: retry");
         delayConnect(connector);
+    }
+
+    @Override
+    public void onCreate(ISession<C> session)
+    {
+        _Logger.debug("connected :%s", session);
     }
 
     @Override
@@ -99,7 +106,7 @@ public class BaseAioClient<C extends IContext<C>>
         InetSocketAddress remoteAddress = session.getRemoteAddress();
         IAioConnector<C> connector = _TargetManageMap.get(remoteAddress)
                                                      .getSecond();
-        _Logger.info("on dismiss: [shutdown: %s ]", connector.isShutdown());
+        _Logger.debug("on dismiss: [shutdown: %s ]", connector.isShutdown());
         delayConnect(connector);
     }
 
@@ -112,9 +119,9 @@ public class BaseAioClient<C extends IContext<C>>
                                                  c ->
                                                  {
                                                      try {
-                                                         _Logger.info("%s connect",
-                                                                      Thread.currentThread()
-                                                                            .getName());
+                                                         _Logger.debug("%s connect",
+                                                                       Thread.currentThread()
+                                                                             .getName());
                                                          connect(c);
                                                      }
                                                      catch (IOException e) {

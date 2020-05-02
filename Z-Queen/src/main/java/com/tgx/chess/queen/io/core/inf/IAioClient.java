@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,10 +31,10 @@ import java.io.IOException;
 public interface IAioClient<C extends IContext<C>>
         extends
         IAioConnector.IConnectFailed<C>,
+        ISessionCreated<C>,
         ISessionDismiss<C>
 {
     void connect(IAioConnector<C> connector) throws IOException;
 
     void shutdown(ISession<C> session);
-
 }

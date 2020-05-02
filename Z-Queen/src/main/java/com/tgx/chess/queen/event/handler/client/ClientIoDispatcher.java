@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,7 @@ import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
+import com.tgx.chess.queen.config.QueenCode;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
@@ -50,11 +51,11 @@ public class ClientIoDispatcher<C extends IContext<C>>
         implements
         IPipeEventHandler<QEvent>
 {
-    private final RingBuffer<QEvent> _LinkIoPipe;
-    private final RingBuffer<QEvent> _DecoderPipe;
-    private final RingBuffer<QEvent> _WrotePipe;
-    private final RingBuffer<QEvent> _ErrorPipe;
-    private final Logger             _Logger = Logger.getLogger(getClass().getName());
+    private final Logger             _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getName());
+    private final RingBuffer<QEvent> _Link;
+    private final RingBuffer<QEvent> _Decoder;
+    private final RingBuffer<QEvent> _Wrote;
+    private final RingBuffer<QEvent> _Error;
 
     public ClientIoDispatcher(RingBuffer<QEvent> linkIoPipe,
                               RingBuffer<QEvent> decoderPipe,
@@ -62,10 +63,10 @@ public class ClientIoDispatcher<C extends IContext<C>>
                               RingBuffer<QEvent> errorPipe)
     {
 
-        _LinkIoPipe = linkIoPipe;
-        _DecoderPipe = decoderPipe;
-        _WrotePipe = wrotePipe;
-        _ErrorPipe = errorPipe;
+        _Link = linkIoPipe;
+        _Decoder = decoderPipe;
+        _Wrote = wrotePipe;
+        _Error = errorPipe;
     }
 
     @Override
@@ -80,7 +81,7 @@ public class ClientIoDispatcher<C extends IContext<C>>
                 IOperator<Throwable,
                           IConnectActivity<C>,
                           ITriple> connectFailedOperator = event.getEventOp();
-                error(_LinkIoPipe, event.getErrorType(), new Pair<>(throwable, connectActive), connectFailedOperator);
+                error(_Link, event.getErrorType(), new Pair<>(throwable, connectActive), connectFailedOperator);
                 break;
 
             case NO_ERROR:
@@ -94,15 +95,15 @@ public class ClientIoDispatcher<C extends IContext<C>>
                         IOperator<IConnectActivity<C>,
                                   AsynchronousSocketChannel,
                                   ITriple> connectOperator = event.getEventOp();
-                        publish(_LinkIoPipe, CONNECTED, new Pair<>(connectActivity, channel), connectOperator);
+                        publish(_Link, CONNECTED, new Pair<>(connectActivity, channel), connectOperator);
                         break;
                     case READ:
                         IPair readContent = event.getContent();
-                        publish(_DecoderPipe, TRANSFER, readContent, event.getEventOp());
+                        publish(_Decoder, TRANSFER, readContent, event.getEventOp());
                         break;
                     case WROTE:
                         IPair wroteContent = event.getContent();
-                        publish(_WrotePipe, WROTE, wroteContent, event.getEventOp());
+                        publish(_Wrote, WROTE, wroteContent, event.getEventOp());
                         break;
                     case CLOSE:
                         IOperator<Void,
@@ -111,7 +112,7 @@ public class ClientIoDispatcher<C extends IContext<C>>
                         IPair closeContent = event.getContent();
                         ISession<C> session = closeContent.getSecond();
                         if (!session.isClosed()) {
-                            error(_LinkIoPipe, WAIT_CLOSE, closeContent, closeOperator);
+                            error(_Link, WAIT_CLOSE, closeContent, closeOperator);
                         }
                         break;
                     default:
@@ -125,15 +126,21 @@ public class ClientIoDispatcher<C extends IContext<C>>
                 IPair errorContent = event.getContent();
                 IOperator<Throwable,
                           ISession<C>,
-                          ITriple> errorOperator = event.getEventOp();
+                          IPair> errorOperator = event.getEventOp();
                 ISession<C> session = errorContent.getSecond();
+                throwable = errorContent.getFirst();
                 if (!session.isClosed()) {
-                    throwable = errorContent.getFirst();
-                    ITriple transferResult = errorOperator.handle(throwable, session);
-                    error(_LinkIoPipe, WAIT_CLOSE, new Pair<>(null, session), transferResult.getThird());
+                    IPair transferResult = errorOperator.handle(throwable, session);
+                    error(_Link, WAIT_CLOSE, new Pair<>(QueenCode.ERROR_CLOSE, session), transferResult.getSecond());
                 }
                 break;
         }
         event.reset();
+    }
+
+    @Override
+    public Logger getLogger()
+    {
+        return _Logger;
     }
 }

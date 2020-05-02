@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,10 +56,10 @@ public class QEvent
     @Override
     public String toString()
     {
-        return String.format("\nERR: %s\nTP:%s\nOP:%s\nCTL:\n%s\nCT:\n%s",
-                             mErrType,
-                             mType,
-                             mOperator,
+        return String.format("\nerror: %s\ntype:%s\noperator:%s\ncontent_list:%s\ncontent:%s",
+                             mErrType.name(),
+                             mType.name(),
+                             mOperator.getName(),
                              mContentList,
                              mContent);
     }

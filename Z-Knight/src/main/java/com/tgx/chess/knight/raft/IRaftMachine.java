@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -92,12 +92,24 @@ public interface IRaftMachine
                String,
                Integer>> getGateSet();
 
-    void increaseTerm();
+    void appendLog(long index, long indexTerm, IRaftDao dao);
 
-    void increaseApplied();
+    void commit(long index, IRaftDao dao);
 
-    /**
-     * 成功完成WAL之后增加machine的index编号
-     */
-    void increaseIndex();
+    void apply(IRaftDao dao);
+
+    void beLeader(IRaftDao dao);
+
+    void beCandidate(IRaftDao dao);
+
+    void beElector(long candidate, long term, IRaftDao dao);
+
+    void follow(long leader, long term, long commit, IRaftDao dao);
+
+    void follow(long term, IRaftDao dao);
+
+    IRaftMachine createCandidate();
+
+    IRaftMachine createLeader();
+
 }

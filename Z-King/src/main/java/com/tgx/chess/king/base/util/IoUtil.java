@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2019 Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -684,18 +684,26 @@ public interface IoUtil
     @SafeVarargs
     static <T> void addArray(T[] src, T[] dst, T... add)
     {
-        arraycopy(src, 0, dst, 0, src.length);
-        if (add != null) arraycopy(add, 0, dst, src.length, add.length);
+        if (src != null && dst != null && dst.length >= src.length) {
+            arraycopy(src, 0, dst, 0, src.length);
+            if (add != null && add.length > 0 && dst.length >= src.length + add.length) {
+                arraycopy(add, 0, dst, src.length, add.length);
+            }
+        }
     }
 
     static void addArray(Object[] src, Object[] dst, int pos)
     {
-        if (src != null) arraycopy(src, 0, dst, pos, src.length);
+        if (src != null && dst != null && dst.length >= pos + src.length) {
+            arraycopy(src, 0, dst, pos, src.length);
+        }
     }
 
     static void addArray(Object[] dst, int pos, Object... add)
     {
-        if (add != null) arraycopy(add, 0, dst, pos, add.length);
+        if (add != null && dst != null && add.length > 0 && dst.length >= pos + add.length) {
+            arraycopy(add, 0, dst, pos, add.length);
+        }
     }
 
     static short readShort(byte[] src, int off)

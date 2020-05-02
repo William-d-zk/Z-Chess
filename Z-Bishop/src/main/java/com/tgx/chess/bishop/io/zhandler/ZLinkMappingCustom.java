@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2016~2020. Z-Chess
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.tgx.chess.bishop.io.zhandler;
 
 import java.util.List;
@@ -13,10 +37,10 @@ import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
-import com.tgx.chess.queen.event.inf.ILinkCustom;
+import com.tgx.chess.queen.event.handler.mix.ILinkCustom;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.manager.QueenManager;
+import com.tgx.chess.queen.io.core.inf.ISessionManager;
 
 /**
  * @author william.d.zk
@@ -27,7 +51,7 @@ public class ZLinkMappingCustom
         ILinkCustom<ZContext>
 {
 
-    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("protocol.bishop." + getClass().getSimpleName());
 
     private final ILinkCustom<ZContext> _Then;
 
@@ -37,11 +61,11 @@ public class ZLinkMappingCustom
     }
 
     @Override
-    public IPair handle(QueenManager<ZContext> manager,
+    public IPair handle(ISessionManager<ZContext> manager,
                         ISession<ZContext> session,
                         IControl<ZContext> content) throws Exception
     {
-        _Logger.info("link mapping receive %s", content);
+        _Logger.debug("link mapping receive %s", content);
         switch (content.serial())
         {
             case X01_EncryptRequest.COMMAND:
@@ -62,9 +86,9 @@ public class ZLinkMappingCustom
     }
 
     @Override
-    public List<ITriple> notify(QueenManager<ZContext> manager, IControl<ZContext> request, ISession<ZContext> session)
+    public List<ITriple> notify(ISessionManager<ZContext> manager, IControl<ZContext> request, long origin)
     {
-        return _Then != null ? _Then.notify(manager, request, session)
+        return _Then != null ? _Then.notify(manager, request, origin)
                              : null;
     }
 }
