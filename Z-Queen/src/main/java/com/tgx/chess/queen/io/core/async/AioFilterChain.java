@@ -60,7 +60,7 @@ public abstract class AioFilterChain<C extends IContext<C>,
     protected AioFilterChain(String name)
     {
         _Name = name;
-        _Logger = Logger.getLogger("io.queen.filter-chain." + getName());
+        _Logger = Logger.getLogger("io.queen.chain." + _Name);
     }
 
     @Override

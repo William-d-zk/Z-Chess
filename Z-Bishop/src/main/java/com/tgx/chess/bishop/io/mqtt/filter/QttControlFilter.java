@@ -45,7 +45,7 @@ public class QttControlFilter
 
     public QttControlFilter()
     {
-        super("mqtt-control-filter");
+        super("mqtt_control");
     }
 
     @Override
