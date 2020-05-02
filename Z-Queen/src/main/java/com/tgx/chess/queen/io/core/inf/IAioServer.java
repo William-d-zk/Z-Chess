@@ -23,6 +23,8 @@
  */
 package com.tgx.chess.queen.io.core.inf;
 
+import static com.tgx.chess.queen.event.inf.IOperator.Type.ACCEPTED;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousChannelGroup;
@@ -51,7 +53,7 @@ public interface IAioServer<C extends IContext<C>>
     default void completed(AsynchronousSocketChannel channel, IAioServer<C> server)
     {
         AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishConnected(server.getConnectedOperator(), server, channel);
+        worker.publishConnected(server.getConnectedOperator(), server, ACCEPTED, channel);
         server.pendingAccept();
     }
 

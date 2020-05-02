@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.queen.io.core.inf;
+package com.tgx.chess.king.base.inf;
 
 /**
  * @author William.d.zk
