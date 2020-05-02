@@ -166,19 +166,12 @@ public class X72_RaftVote
     @Override
     public String toString()
     {
-        return "X72_RaftVote{"
-               + "mPeerId="
-               + mPeerId
-               + ", mTerm="
-               + mTerm
-               + ", mLogIndex="
-               + mLogIndex
-               + ", mLogTerm="
-               + mLogTerm
-               + ", mElector="
-               + mElector
-               + ", mCommit="
-               + mCommit
-               + '}';
+        return String.format("X72_RaftVote{mPeerId=%#x, mTerm=%d, mLogIndex=%d, mLogTerm=%d, mElector=%#x, mCommit=%d}",
+                             mPeerId,
+                             mTerm,
+                             mLogIndex,
+                             mLogTerm,
+                             mElector,
+                             mCommit);
     }
 }
