@@ -156,19 +156,12 @@ public class X7F_RaftResponse
     @Override
     public String toString()
     {
-        return "X7F_RaftResponse{"
-               + "mPeerId="
-               + mPeerId
-               + ", mTerm="
-               + mTerm
-               + ", mCandidate="
-               + mCandidate
-               + ", mCatchUp="
-               + mCatchUp
-               + ", mCode="
-               + mCode
-               + ", mState="
-               + mState
-               + '}';
+        return String.format("X7F_RaftResponse{mPeerId=%#x, mTerm=%d, mCandidate=%d, mCatchUp=%d, mCode=%d, mState=%d}",
+                             mPeerId,
+                             mTerm,
+                             mCandidate,
+                             mCatchUp,
+                             mCode,
+                             mState);
     }
 }
