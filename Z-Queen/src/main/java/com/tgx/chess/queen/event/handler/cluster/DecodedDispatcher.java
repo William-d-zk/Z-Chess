@@ -119,8 +119,17 @@ public class DecodedDispatcher<C extends IContext<C>>
 
     protected IPair getNextPipe(ISort.Mode mode, IControl<C> cmd)
     {
-        return mode == ISort.Mode.CLUSTER && cmd.isMapping() ? new Pair<>(_Cluster, CLUSTER)
-                                                             : new Pair<>(dispatchWorker(cmd), LOGIC);
+        if (mode == ISort.Mode.CLUSTER && cmd.isMapping()) {
+            if (_Cluster.remainingCapacity() == 0) {
+                _Logger.warning("cluster block");
+            }
+            return new Pair<>(_Cluster, CLUSTER);
+        }
+        RingBuffer<QEvent> decoder = dispatchWorker(cmd);
+        if (decoder.remainingCapacity() == 0) {
+            _Logger.warning("decoder block");
+        }
+        return new Pair<>(decoder, LOGIC);
     }
 
     protected RingBuffer<QEvent> dispatchWorker(IControl<C> cmd)

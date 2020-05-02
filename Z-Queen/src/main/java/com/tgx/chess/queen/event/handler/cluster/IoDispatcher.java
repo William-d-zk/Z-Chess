@@ -164,7 +164,13 @@ public class IoDispatcher<C extends IContext<C>>
 
     protected RingBuffer<QEvent> getNextPipe(ISort<C> sort)
     {
-        if (sort.getMode() == ISort.Mode.CLUSTER) { return _Cluster; }
+
+        if (sort.getMode() == ISort.Mode.CLUSTER) {
+            if (_Cluster.remainingCapacity() == 0) {
+                _Logger.warning("cluster block");
+            }
+            return _Cluster;
+        }
         return null;
     }
 
