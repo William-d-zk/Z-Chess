@@ -25,7 +25,6 @@
 package com.tgx.chess.queen.event.handler.client;
 
 import static com.tgx.chess.queen.event.inf.IError.Type.WAIT_CLOSE;
-import static com.tgx.chess.queen.event.inf.IOperator.Type.CONNECTED;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.TRANSFER;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WROTE;
 
@@ -89,13 +88,14 @@ public class ClientIoDispatcher<C extends IContext<C>>
                 switch (event.getEventType())
                 {
                     case CONNECTED:
+                    case ACCEPTED:
                         IPair connectContent = event.getContent();
                         IConnectActivity<C> connectActivity = connectContent.getFirst();
                         AsynchronousSocketChannel channel = connectContent.getSecond();
                         IOperator<IConnectActivity<C>,
                                   AsynchronousSocketChannel,
                                   ITriple> connectOperator = event.getEventOp();
-                        publish(_Link, CONNECTED, new Pair<>(connectActivity, channel), connectOperator);
+                        publish(_Link, event.getEventType(), new Pair<>(connectActivity, channel), connectOperator);
                         break;
                     case READ:
                         IPair readContent = event.getContent();

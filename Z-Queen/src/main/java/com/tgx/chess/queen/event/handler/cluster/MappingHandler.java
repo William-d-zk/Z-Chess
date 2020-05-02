@@ -134,17 +134,17 @@ public class MappingHandler<C extends IContext<C>,
             switch (event.getEventType())
             {
                 case CONNECTED:
-                    try {
-                        IPair connectedContent = event.getContent();
-                        AsynchronousSocketChannel channel = connectedContent.getSecond();
-                        IConnectActivity<C> connectActivity = connectedContent.getFirst();
-                        IOperator<IConnectActivity<C>,
-                                  AsynchronousSocketChannel,
-                                  ITriple> connectedOperator = event.getEventOp();
-                        ITriple connectedHandled = connectedOperator.handle(connectActivity, channel);
-                        /*connectedHandled 不可能为 null*/
-                        ISession<C> session = connectedHandled.getSecond();
-                        IControl<C>[] toSends = connectedHandled.getFirst();
+                    IPair connected = event.getContent();
+                    AsynchronousSocketChannel channel = connected.getSecond();
+                    IAioConnector<C> connector = connected.getFirst();
+                    IOperator<IConnectActivity<C>,
+                              AsynchronousSocketChannel,
+                              ITriple> connectedOperator = event.getEventOp();
+                    ITriple handled = connectedOperator.handle(connector, channel);
+                    boolean success = handled.getFirst();
+                    if (success) {
+                        ISession<C> session = handled.getSecond();
+                        IControl<C>[] toSends = handled.getThird();
                         if (toSends != null) {
                             publish(_Writer,
                                     WRITE,
@@ -154,8 +154,44 @@ public class MappingHandler<C extends IContext<C>,
                                            .getTransfer());
                         }
                     }
-                    catch (Exception e) {
-                        _Logger.fetal("link create session failed", e);
+                    else {
+                        Throwable throwable = handled.getThird();
+                        _Logger.warning("session connect create failed ,channel error %", throwable, channel);
+                        if (handled.getSecond() instanceof AsynchronousSocketChannel) {
+                            connector.error();
+                        }
+                        else {
+                            ISession<C> session = handled.getSecond();
+                            session.innerClose();
+                        }
+                    }
+                    break;
+                case ACCEPTED:
+                    connected = event.getContent();
+                    channel = connected.getSecond();
+                    IAioServer<C> server = connected.getFirst();
+                    connectedOperator = event.getEventOp();
+                    handled = connectedOperator.handle(server, channel);
+                    success = handled.getFirst();
+                    if (success) {
+                        ISession<C> session = handled.getSecond();
+                        IControl<C>[] toSends = handled.getThird();
+                        if (toSends != null) {
+                            publish(_Writer,
+                                    WRITE,
+                                    new Pair<>(toSends, session),
+                                    session.getContext()
+                                           .getSort()
+                                           .getTransfer());
+                        }
+                    }
+                    else {
+                        Throwable throwable = handled.getThird();
+                        _Logger.warning("session accept create failed ,channel error %", throwable, channel);
+                        if (handled.getSecond() instanceof ISession) {
+                            ISession<C> session = handled.getSecond();
+                            session.innerClose();
+                        }
                     }
                     break;
                 case CLUSTER:
@@ -165,9 +201,9 @@ public class MappingHandler<C extends IContext<C>,
                                                .getSecond();
                     if (received == null) { return; }
                     try {
-                        IPair handled = _ClusterCustom.handle(_SessionManager, session, received);
-                        if (handled == null) return;
-                        IControl<C>[] toSends = handled.getFirst();
+                        IPair pair = _ClusterCustom.handle(_SessionManager, session, received);
+                        if (pair == null) return;
+                        IControl<C>[] toSends = pair.getFirst();
                         if (toSends != null && toSends.length > 0) {
                             publish(_Writer,
                                     WRITE,
@@ -176,14 +212,14 @@ public class MappingHandler<C extends IContext<C>,
                                            .getSort()
                                            .getTransfer());
                         }
-                        IProtocol notify = handled.getSecond();
+                        IProtocol notify = pair.getSecond();
                         if (notify != null) {
                             publishNotify(notify, notify.channel(), null);
                         }
                     }
                     catch (Exception e) {
                         _Logger.warning("cluster mapping handler error", e);
-                        session.doClose();
+                        session.innerClose();
                     }
                     break;
                 case CONSENSUS:

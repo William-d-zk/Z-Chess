@@ -51,6 +51,8 @@ public abstract class BaseAioServer<C extends IContext<C>>
 {
     private final AcceptFailedOperator<C> _AcceptFailedOperator = new AcceptFailedOperator<>();
     private final ConnectedOperator<C>    _ConnectedOperator    = new ConnectedOperator<>();
+    private final InetSocketAddress       _LocalBind;
+    private volatile boolean              vValid;
 
     protected BaseAioServer(String serverHost,
                             int serverPort,
@@ -75,10 +77,9 @@ public abstract class BaseAioServer<C extends IContext<C>>
     {
         if (mServerChannel.isOpen()) {
             mServerChannel.accept(this, this);
+            vValid = true;
         }
     }
-
-    private final InetSocketAddress _LocalBind;
 
     @Override
     public InetSocketAddress getRemoteAddress()
@@ -121,8 +122,15 @@ public abstract class BaseAioServer<C extends IContext<C>>
     }
 
     @Override
+    public boolean isValid()
+    {
+        return vValid;
+    }
+
+    @Override
     public void shutdown()
     {
         throw new UnsupportedOperationException();
     }
+
 }

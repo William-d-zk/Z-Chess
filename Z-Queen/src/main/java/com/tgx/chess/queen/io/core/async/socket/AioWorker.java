@@ -137,9 +137,10 @@ public class AioWorker
                                                                          AsynchronousSocketChannel,
                                                                          ITriple> op,
                                                          final IConnectActivity<C> activity,
+                                                         final IOperator.Type type,
                                                          final AsynchronousSocketChannel channel)
     {
-        publish(_Producer, op, IError.Type.NO_ERROR, IOperator.Type.CONNECTED, new Pair<>(activity, channel));
+        publish(_Producer, op, IError.Type.NO_ERROR, type, new Pair<>(activity, channel));
     }
 
     public <C extends IContext<C>> void publishConnectingError(final IOperator<Throwable,

@@ -188,4 +188,10 @@ public abstract class BaseAioConnector<C extends IContext<C>>
     {
         return runStateOf(_State.get()) < SHUTDOWN;
     }
+
+    @Override
+    public boolean isValid()
+    {
+        return !isShutdown();
+    }
 }

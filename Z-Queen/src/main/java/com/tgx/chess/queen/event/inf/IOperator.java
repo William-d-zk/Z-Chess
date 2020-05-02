@@ -50,6 +50,7 @@ public interface IOperator<T,
     {
         NULL,
         CONNECTED,
+        ACCEPTED,
         CLOSE,
         READ,
         WRITE,
