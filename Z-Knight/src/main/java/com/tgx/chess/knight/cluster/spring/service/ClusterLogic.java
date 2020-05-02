@@ -24,6 +24,10 @@
 
 package com.tgx.chess.knight.cluster.spring.service;
 
+import com.tgx.chess.bishop.io.mqtt.control.X11C_QttPingreq;
+import com.tgx.chess.bishop.io.mqtt.control.X11D_QttPingresp;
+import com.tgx.chess.bishop.io.ws.control.X104_Ping;
+import com.tgx.chess.bishop.io.ws.control.X105_Pong;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.event.handler.mix.ILogicHandler;
@@ -60,7 +64,16 @@ public class ClusterLogic
                                        ISession<ZContext> session,
                                        IControl<ZContext> content) throws Exception
     {
-        return new IControl[0];
+
+        switch (content.serial())
+        {
+            case X104_Ping.COMMAND:
+                X104_Ping x104 = (X104_Ping) content;
+                return new X105_Pong[] { new X105_Pong(x104.getPayload()) };
+            case X11C_QttPingreq.COMMAND:
+                return new X11D_QttPingresp[] { new X11D_QttPingresp() };
+        }
+        return null;
     }
 
     @Override
