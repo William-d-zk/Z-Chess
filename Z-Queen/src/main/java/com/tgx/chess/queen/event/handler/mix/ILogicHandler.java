@@ -28,9 +28,10 @@ import static com.tgx.chess.queen.event.inf.IOperator.Type.LOGIC;
 
 import java.util.Objects;
 
+import com.lmax.disruptor.EventHandler;
+import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.IError;
-import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
@@ -39,8 +40,9 @@ import com.tgx.chess.queen.io.core.inf.ISessionManager;
 
 public interface ILogicHandler<C extends IContext<C>>
         extends
-        IPipeEventHandler<QEvent>
+        EventHandler<QEvent>
 {
+    Logger getLogger();
 
     ISessionManager<C> getISessionManager();
 

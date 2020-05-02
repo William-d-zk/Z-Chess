@@ -61,10 +61,17 @@ public class MixDecodedDispatcher<C extends IContext<C>>
     {
         if (mode == ISort.Mode.LINK) {
             if (cmd.isMapping()) {
+                if (_Link.remainingCapacity() == 0) {
+                    _Logger.warning("link block");
+                }
                 return new Pair<>(_Link, LINK);
             }
             else {
-                return new Pair<>(dispatchWorker(cmd), LOGIC);
+                RingBuffer<QEvent> worker = dispatchWorker(cmd);
+                if (worker.remainingCapacity() == 0) {
+                    _Logger.warning("logic worker block");
+                }
+                return new Pair<>(worker, LOGIC);
             }
         }
         return super.getNextPipe(mode, cmd);

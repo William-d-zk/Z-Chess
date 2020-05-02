@@ -25,12 +25,11 @@ package com.tgx.chess.queen.io.core.async.socket;
 
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
+import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.inf.IError;
 import com.tgx.chess.queen.event.inf.IError.Type;
@@ -78,7 +77,7 @@ public class AioWorker
             super.run();
         }
         catch (Error e) {
-            _Logger.log(Level.FINER, "AioWorker Work UnCatchEx", e);
+            _Logger.fetal("AioWorker Work UnCatchEx", e);
             if (Objects.nonNull(_Available)) {
                 _Available.available(_Producer);
             }
@@ -86,16 +85,19 @@ public class AioWorker
         }
     }
 
-    public static <T,
-                   A,
-                   R> void publish(RingBuffer<QEvent> producer,
-                                   final IOperator<T,
-                                                   A,
-                                                   R> op,
-                                   final IError.Type eType,
-                                   final IOperator.Type type,
-                                   IPair content)
+    public <T,
+            A,
+            R> void publish(RingBuffer<QEvent> producer,
+                            final IOperator<T,
+                                            A,
+                                            R> op,
+                            final IError.Type eType,
+                            final IOperator.Type type,
+                            IPair content)
     {
+        if (producer.remainingCapacity() == 0) {
+            _Logger.warning("aio worker %s block", getName());
+        }
         long sequence = producer.next();
         try {
             QEvent event = producer.get(sequence);
@@ -105,7 +107,6 @@ public class AioWorker
             else {
                 event.error(eType, content, op);
             }
-
         }
         finally {
             producer.publish(sequence);
