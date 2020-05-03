@@ -41,33 +41,33 @@ public interface IMixConfig
      *
      * @return
      */
-    int getBizIoCount();
+    int getBizIoCountPower();
 
     /**
      * Local 相关处理队列的阶乘数
      *
      * @return
      */
-    int getLocalPower();
+    int getLocalQueueSizePower();
 
     /**
      * Link 相关处理队列的阶乘数
      *
      * @return
      */
-    int getLinkPower();
+    int getLinkQueueSizePower();
 
     default int getPoolSize()
     {
         return 1 // aioDispatch
-               + getDecoderCount() // read-decode
+               + (1 << getDecoderCountPower()) // read-decode
                + 1 // cluster-single
                + 1 // link-single
-               + getLogicCount()// logic-
+               + (1 << getLogicCountPower())// logic-processor
                + 1 // decoded-dispatch
                + 1 // write-dispatch
-               + getEncoderCount()// write-encode
-               + 1 // write-end
+               + (1 << getEncoderCountPower())// write-encode
+               + 1 // encoded-processor [write-end]
         ;
     }
 

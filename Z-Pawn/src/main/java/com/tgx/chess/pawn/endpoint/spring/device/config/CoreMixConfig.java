@@ -37,149 +37,149 @@ public class CoreMixConfig
         implements
         IMixConfig
 {
-    private int decoderCount;
-    private int encoderCount;
-    private int logicCount;
-    private int bizIoCount;
-    private int clusterIoCount;
-    private int aioQueuePower;
-    private int clusterPower;
-    private int localPower;
-    private int linkPower;
-    private int logicPower;
-    private int errorPower;
-    private int closerPower;
+    private int decoderCountPower;
+    private int encoderCountPower;
+    private int logicCountPower;
+    private int bizIoCountPower;
+    private int clusterIoCountPower;
+    private int aioQueueSizePower;
+    private int clusterQueueSizePower;
+    private int localQueueSizePower;
+    private int linkQueueSizePower;
+    private int logicQueueSizePower;
+    private int errorQueueSizePower;
+    private int closerQueueSizePower;
 
     @Override
-    public int getDecoderCount()
+    public int getDecoderCountPower()
     {
-        return decoderCount;
-    }
-
-    @Override
-    public int getEncoderCount()
-    {
-        return encoderCount;
+        return decoderCountPower;
     }
 
     @Override
-    public int getLogicCount()
+    public int getEncoderCountPower()
     {
-        return logicCount;
+        return encoderCountPower;
     }
 
     @Override
-    public int getBizIoCount()
+    public int getLogicCountPower()
     {
-        return bizIoCount;
+        return logicCountPower;
     }
 
     @Override
-    public int getClusterIoCount()
+    public int getBizIoCountPower()
     {
-        return clusterIoCount;
+        return bizIoCountPower;
     }
 
     @Override
-    public int getAioQueuePower()
+    public int getClusterIoCountPower()
     {
-        return aioQueuePower;
+        return clusterIoCountPower;
     }
 
     @Override
-    public int getClusterPower()
+    public int getAioQueueSizePower()
     {
-        return clusterPower;
+        return aioQueueSizePower;
     }
 
     @Override
-    public int getLocalPower()
+    public int getClusterQueueSizePower()
     {
-        return localPower;
+        return clusterQueueSizePower;
     }
 
     @Override
-    public int getLinkPower()
+    public int getLocalQueueSizePower()
     {
-        return linkPower;
+        return localQueueSizePower;
     }
 
     @Override
-    public int getLogicPower()
+    public int getLinkQueueSizePower()
     {
-        return logicPower;
+        return linkQueueSizePower;
     }
 
     @Override
-    public int getErrorPower()
+    public int getLogicQueueSizePower()
     {
-        return errorPower;
+        return logicQueueSizePower;
     }
 
     @Override
-    public int getCloserPower()
+    public int getErrorQueueSizePower()
     {
-        return closerPower;
+        return errorQueueSizePower;
     }
 
-    public void setDecoderCount(int decoderCount)
+    @Override
+    public int getCloserQueueSizePower()
     {
-        this.decoderCount = decoderCount;
+        return closerQueueSizePower;
     }
 
-    public void setEncoderCount(int encoderCount)
+    public void setDecoderCountPower(int decoderCountPower)
     {
-        this.encoderCount = encoderCount;
+        this.decoderCountPower = decoderCountPower;
     }
 
-    public void setLogicCount(int logicCount)
+    public void setEncoderCountPower(int encoderCountPower)
     {
-        this.logicCount = logicCount;
+        this.encoderCountPower = encoderCountPower;
     }
 
-    public void setBizIoCount(int bizIoCount)
+    public void setLogicCountPower(int logicCountPower)
     {
-        this.bizIoCount = bizIoCount;
+        this.logicCountPower = logicCountPower;
     }
 
-    public void setClusterIoCount(int clusterIoCount)
+    public void setBizIoCountPower(int bizIoCountPower)
     {
-        this.clusterIoCount = clusterIoCount;
+        this.bizIoCountPower = bizIoCountPower;
     }
 
-    public void setAioQueuePower(int aioQueuePower)
+    public void setClusterIoCountPower(int clusterIoCountPower)
     {
-        this.aioQueuePower = aioQueuePower;
+        this.clusterIoCountPower = clusterIoCountPower;
     }
 
-    public void setClusterPower(int clusterPower)
+    public void setAioQueueSizePower(int aioQueueSizePower)
     {
-        this.clusterPower = clusterPower;
+        this.aioQueueSizePower = aioQueueSizePower;
     }
 
-    public void setLocalPower(int localPower)
+    public void setClusterQueueSizePower(int clusterQueueSizePower)
     {
-        this.localPower = localPower;
+        this.clusterQueueSizePower = clusterQueueSizePower;
     }
 
-    public void setLinkPower(int linkPower)
+    public void setLocalQueueSizePower(int localQueueSizePower)
     {
-        this.linkPower = linkPower;
+        this.localQueueSizePower = localQueueSizePower;
     }
 
-    public void setLogicPower(int logicPower)
+    public void setLinkQueueSizePower(int linkQueueSizePower)
     {
-        this.logicPower = logicPower;
+        this.linkQueueSizePower = linkQueueSizePower;
     }
 
-    public void setErrorPower(int errorPower)
+    public void setLogicQueueSizePower(int logicQueueSizePower)
     {
-        this.errorPower = errorPower;
+        this.logicQueueSizePower = logicQueueSizePower;
     }
 
-    public void setCloserPower(int closerPower)
+    public void setErrorQueueSizePower(int errorQueueSizePower)
     {
-        this.closerPower = closerPower;
+        this.errorQueueSizePower = errorQueueSizePower;
+    }
+
+    public void setCloserQueueSizePower(int closerQueueSizePower)
+    {
+        this.closerQueueSizePower = closerQueueSizePower;
     }
 
 }
