@@ -42,19 +42,19 @@ public interface IPipeCore
 {
     AsynchronousChannelGroup getClusterChannelGroup() throws IOException;
 
-    default RingBuffer<QEvent> createPipeline(int power, WaitStrategy waitStrategy)
+    default RingBuffer<QEvent> createPipeline(int size, WaitStrategy waitStrategy)
     {
-        return RingBuffer.createSingleProducer(QEvent.EVENT_FACTORY, 1 << power, waitStrategy);
+        return RingBuffer.createSingleProducer(QEvent.EVENT_FACTORY, size, waitStrategy);
     }
 
-    default RingBuffer<QEvent> createPipelineYield(int power)
+    default RingBuffer<QEvent> createPipelineYield(int size)
     {
-        return createPipeline(power, new YieldingWaitStrategy());
+        return createPipeline(size, new YieldingWaitStrategy());
     }
 
-    default RingBuffer<QEvent> createPipelineLite(int power)
+    default RingBuffer<QEvent> createPipelineLite(int size)
     {
-        return createPipeline(power, new LiteBlockingWaitStrategy());
+        return createPipeline(size, new LiteBlockingWaitStrategy());
     }
 
     RingBuffer<QEvent> getConsensusEvent();
