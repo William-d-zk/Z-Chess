@@ -70,11 +70,7 @@ public class WriteDispatcher<C extends IContext<C>>
 
     private RingBuffer<QEvent> dispatchEncoder(long seq)
     {
-        RingBuffer<QEvent> encoder = _Encoders[(int) (seq & _Mask)];
-        if (encoder.remainingCapacity() == 0) {
-            _Logger.warning("encoder insufficient capacity");
-        }
-        return encoder;
+        return _Encoders[(int) (seq & _Mask)];
     }
 
     @Override
