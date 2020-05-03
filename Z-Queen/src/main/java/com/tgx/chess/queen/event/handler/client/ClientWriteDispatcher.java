@@ -71,7 +71,7 @@ public class ClientWriteDispatcher<C extends IContext<C>>
                 case ILLEGAL_STATE:
                 case ILLEGAL_BIZ_STATE:
                 default:
-                    tryError(_Error, event.getErrorType(), event.getContent(), event.getEventOp());
+                    error(_Error, event.getErrorType(), event.getContent(), event.getEventOp());
             }
         }
         else {
@@ -89,13 +89,7 @@ public class ClientWriteDispatcher<C extends IContext<C>>
                                   List<ITriple>> transferOperator = event.getEventOp();
                         List<ITriple> triples = transferOperator.handle(commands, session);
                         for (ITriple triple : triples) {
-                            if (!tryPublish(_Encoder,
-                                            WRITE,
-                                            new Pair<>(triple.getFirst(), session),
-                                            triple.getThird()))
-                            {
-                                _Logger.warning("publish write event to encoder failed");
-                            }
+                            publish(_Encoder, WRITE, new Pair<>(triple.getFirst(), session), triple.getThird());
                         }
                     }
                     break;

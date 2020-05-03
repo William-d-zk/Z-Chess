@@ -100,15 +100,15 @@ public class ClientCore<C extends IContext<C>>
 
     /*  ║ barrier, ━> publish event, ━━ pipeline, | handle event
     
-                                           ━━> _LocalSend    ║
-     ━━> _AioProducerEvents ║               ┏> _LinkIoEvent| ║
-         _BizLocalClose     ║_IoDispatcher━━┫  _ReadEvent  ||║_WriteDispatcher┏>_EncodedEvent|_EncodedProcessor┳━║[Event Done]
-    ┏━━> _ErrorEvent[2]     ║               ┃  _WroteBuffer  ║                ┗>_ErrorEvent━┓                  ┗━>_ErrorEvent━┓
-    ┃┏━> _ErrorEvent[1]     ║               ┗> _ErrorEvent━┓                                ┃                                 ┃
-    ┃┃┏> _ErrorEvent[0]     ║                              ┃                                ┃                                 ┃
-    ┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                ┃                                 ┃
-    ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                 ┃
-    ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+                                           ━━> _LocalSend   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━║
+     ━━> _AioProducerEvents ║               ┏> _LinkIoEvent ━━━━{_MappingProcessor}|━━━━━━━━━━━━━━━━━━━━━║
+         _BizLocalClose     ║_IoDispatcher━━┫  _ReadEvent   ━━━━{_DecodeProcessor}|━━{_LogicProcessor}|━━║_WriteDispatcher┏>_EncodedEvent━━{_EncodedProcessor}|━┳━║[Event Done]
+    ┏━━> _ErrorEvent[2]     ║               ┃  _WroteBuffer ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━║                ┗>_ErrorEvent━┓                       ┗━>_ErrorEvent━┓
+    ┃┏━> _ErrorEvent[1]     ║               ┗> _ErrorEvent━┓                                                                            ┃                                      ┃
+    ┃┃┏> _ErrorEvent[0]     ║                              ┃                                                                            ┃                                      ┃
+    ┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                                                            ┃                                      ┃
+    ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                      ┃
+    ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
     */
     @SuppressWarnings("unchecked")
     public void build(final EventHandler<QEvent> _LogicHandler, IEncryptHandler encryptHandler)

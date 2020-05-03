@@ -207,29 +207,29 @@ public class MappingHandler<C extends IContext<C>,
                         if (pair == null) return;
                         IControl<C>[] toSends = pair.getFirst();
                         if (toSends != null && toSends.length > 0) {
-                            tryPublish(_Writer,
-                                       WRITE,
-                                       new Pair<>(toSends, session),
-                                       session.getContext()
-                                              .getSort()
-                                              .getTransfer());
+                            publish(_Writer,
+                                    WRITE,
+                                    new Pair<>(toSends, session),
+                                    session.getContext()
+                                           .getSort()
+                                           .getTransfer());
                         }
                         IControl<C> transfer = pair.getSecond();
                         if (transfer != null) {
                             if (_ClusterCustom.waitForCommit()) {
-                                tryPublish(_Transfer,
-                                           CONSENSUS,
-                                           new Pair<>(transfer, session),
-                                           session.getContext()
-                                                  .getSort()
-                                                  .getIgnore());
+                                publish(_Transfer,
+                                        CONSENSUS,
+                                        new Pair<>(transfer, session),
+                                        session.getContext()
+                                               .getSort()
+                                               .getIgnore());
                             }
                             else {
                                 List<ITriple> result = _LinkCustom.notify(_SessionManager,
                                                                           transfer,
                                                                           session.getIndex());
                                 if (result != null && !result.isEmpty()) {
-                                    tryPublish(_Writer, result);
+                                    publish(_Writer, result);
                                 }
                             }
                         }
@@ -250,12 +250,12 @@ public class MappingHandler<C extends IContext<C>,
                         if (pair == null) return;
                         IControl<C>[] toSends = pair.getFirst();
                         if (toSends != null && toSends.length > 0) {
-                            tryPublish(_Writer,
-                                       WRITE,
-                                       new Pair<>(toSends, session),
-                                       session.getContext()
-                                              .getSort()
-                                              .getTransfer());
+                            publish(_Writer,
+                                    WRITE,
+                                    new Pair<>(toSends, session),
+                                    session.getContext()
+                                           .getSort()
+                                           .getTransfer());
                         }
                         IControl<C> transfer = pair.getSecond();
                         if (transfer != null) {
