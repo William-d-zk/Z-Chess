@@ -40,7 +40,6 @@ import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.king.base.schedule.ICancelable;
 import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.topology.ZUID;
@@ -137,6 +136,14 @@ public class ClusterNode
         };
         _GateClient = new BaseAioClient<ZContext>(_TimeWheel, getCore().getClusterChannelGroup())
         {
+            @Override
+            public void onCreate(ISession<ZContext> session)
+            {
+                super.onCreate(session);
+                Duration gap = Duration.ofSeconds(session.getReadTimeOutSeconds() / 2);
+                _TimeWheel.acquire(session,
+                                   new ScheduleHandler<>(gap, true, ClusterNode.this::heartbeat, PRIORITY_NORMAL));
+            }
 
             @Override
             public void onDismiss(ISession<ZContext> session)
@@ -147,24 +154,19 @@ public class ClusterNode
         };
         _PeerClient = new BaseAioClient<ZContext>(_TimeWheel, getCore().getClusterChannelGroup())
         {
-            private ICancelable mHeartbeatTask;
 
             @Override
             public void onCreate(ISession<ZContext> session)
             {
                 super.onCreate(session);
                 Duration gap = Duration.ofSeconds(session.getReadTimeOutSeconds() / 2);
-                mHeartbeatTask = _TimeWheel.acquire(session,
-                                                    new ScheduleHandler<>(gap,
-                                                                          true,
-                                                                          ClusterNode.this::heartbeat,
-                                                                          PRIORITY_NORMAL));
+                _TimeWheel.acquire(session,
+                                   new ScheduleHandler<>(gap, true, ClusterNode.this::heartbeat, PRIORITY_NORMAL));
             }
 
             @Override
             public void onDismiss(ISession<ZContext> session)
             {
-                mHeartbeatTask.cancel();
                 ClusterNode.this.onDismiss(session);
                 super.onDismiss(session);
             }
