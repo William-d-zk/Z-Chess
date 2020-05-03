@@ -39,6 +39,7 @@ public interface IRaftMachine
 {
     long INDEX_NAN = -1;
     long TERM_NAN  = -1;
+    long MIN_START = 1;
 
     /**
      * @return 当前任期 自然数

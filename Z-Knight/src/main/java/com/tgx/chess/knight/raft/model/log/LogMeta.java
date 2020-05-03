@@ -24,6 +24,8 @@
 
 package com.tgx.chess.knight.raft.model.log;
 
+import static com.tgx.chess.knight.raft.IRaftMachine.MIN_START;
+
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Objects;
@@ -93,7 +95,7 @@ public class LogMeta
 
     private LogMeta()
     {
-        mStart = 1;
+        mStart = MIN_START;
     }
 
     public static LogMeta loadFromFile(RandomAccessFile file)
