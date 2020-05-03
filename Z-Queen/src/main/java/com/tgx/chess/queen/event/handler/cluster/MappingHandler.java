@@ -69,6 +69,7 @@ public class MappingHandler<C extends IContext<C>,
     private final INotifyCustom        _NotifyCustom;
     private final IClusterCustom<C,
                                  T>    _ClusterCustom;
+    private final int                  _NotifyModMask;
 
     public MappingHandler(String mapper,
                           ISessionManager<C> manager,
@@ -86,6 +87,7 @@ public class MappingHandler<C extends IContext<C>,
         _Notifiers = notifiers;
         _NotifyCustom = notifyCustom;
         _ClusterCustom = clusterCustom;
+        _NotifyModMask = _Notifiers.length - 1;
     }
 
     @Override
@@ -268,8 +270,7 @@ public class MappingHandler<C extends IContext<C>,
     private void publishNotify(IProtocol request, int channel, Throwable throwable)
     {
         Objects.requireNonNull(request);
-        int slot = channel % _Notifiers.length;
-        RingBuffer<QEvent> notifier = _Notifiers[slot];
+        RingBuffer<QEvent> notifier = _Notifiers[channel & _NotifyModMask];
         if (throwable == null) {
             publish(notifier, NOTIFY, new Pair<>(request, null), _NotifyCustom);
         }
