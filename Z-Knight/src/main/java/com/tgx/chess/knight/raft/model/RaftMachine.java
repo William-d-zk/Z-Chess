@@ -381,6 +381,7 @@ public class RaftMachine
         mCandidate = _PeerId;
         dao.updateCandidate(_PeerId);
         mIndexTerm = mTerm;
+        mMatchIndex = mIndex;
         dao.updateTerm(mTerm);
     }
 
