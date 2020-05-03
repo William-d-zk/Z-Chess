@@ -25,7 +25,7 @@
 package com.tgx.chess.queen.event.handler.cluster;
 
 import static com.tgx.chess.queen.event.inf.IError.Type.WAIT_CLOSE;
-import static com.tgx.chess.queen.event.inf.IOperator.Type.TRANSFER;
+import static com.tgx.chess.queen.event.inf.IOperator.Type.DECODE;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WROTE;
 
 import java.nio.channels.AsynchronousSocketChannel;
@@ -110,7 +110,7 @@ public class IoDispatcher<C extends IContext<C>>
                         _Logger.trace("read");
                         IPair readContent = event.getContent();
                         ISession<C> session = readContent.getSecond();
-                        tryPublish(dispatchWorker(session.getHashKey()), TRANSFER, readContent, event.getEventOp());
+                        publish(dispatchWorker(session.getHashKey()), DECODE, readContent, event.getEventOp());
                         break;
                     case WROTE:
                         _Logger.trace("wrote");
