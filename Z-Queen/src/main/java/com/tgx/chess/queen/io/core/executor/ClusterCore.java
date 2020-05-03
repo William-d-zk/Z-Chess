@@ -114,12 +114,12 @@ public class ClusterCore<C extends IContext<C>>
     @SuppressWarnings("unchecked")
     public ClusterCore(IClusterConfig config)
     {
-        super(config.getPoolSize(), config.getPoolSize(), 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
+        super(config.getPoolSize(), config.getPoolSize(), 100, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
         _ClusterCacheConcurrentQueue = new ConcurrentLinkedQueue<>();
         _ClusterIoCount = 1 << config.getClusterIoCountPower();
         _DecoderCount = 1 << config.getDecoderCountPower();
         _EncoderCount = 1 << config.getEncoderCountPower();
-        _LogicCount = 1 << config.getLogicQueueSizePower();
+        _LogicCount = 1 << config.getLogicCountPower();
         _ClusterQueueSize = 1 << config.getClusterQueueSizePower();
         _AioQueueSize = 1 << config.getAioQueueSizePower();
         _ErrorQueueSize = 1 << config.getErrorQueueSizePower();
@@ -282,17 +282,17 @@ public class ClusterCore<C extends IContext<C>>
         /*-------------------------------------------------------------------------------------------------------------------------------------*/
         submit(_IoDispatcher);
         Arrays.stream(_DecodeProcessors)
-                .forEach(this::submit);
+              .forEach(this::submit);
         submit(_DecodedDispatcher);
         submit(_ClusterProcessor);
         Arrays.stream(_ClusterNotifyProcessors)
-                .forEach(this::submit);
+              .forEach(this::submit);
         submit(_LogicProcessor);
         submit(_WriteDispatcher);
         Arrays.stream(_EncodeProcessors)
               .forEach(this::submit);
         submit(_EncodedProcessor);
-        _Logger.debug("%s =>>>>>>>>>>start", getClass().getSimpleName());
+        _Logger.info("%s =>>>>>>>>>>start", getClass().getSimpleName());
     }
 
     @Override

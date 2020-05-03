@@ -63,9 +63,6 @@ public class WriteDispatcher<C extends IContext<C>>
         _Error = error;
         _Encoders = workers;
         _Mask = _Encoders.length - 1;
-        if (Integer.bitCount(_Encoders.length) != 1) {
-            throw new IllegalArgumentException("workers' length must be a power of 2");
-        }
     }
 
     private RingBuffer<QEvent> dispatchEncoder(long seq)
