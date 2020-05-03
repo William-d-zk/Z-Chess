@@ -109,8 +109,11 @@ public class MappingHandler<C extends IContext<C>,
                     errorContent = event.getContent();
                     connectFailedOperator.handle(errorContent.getFirst(), errorContent.getSecond());
                     break;
-                case WAIT_CLOSE:
-                    _Logger.warning("server io error , do close session");
+                case PASSIVE_CLOSE:
+                case INITIATIVE_CLOSE:
+                    _Logger.warning("mapping handle io error, %s",
+                                    event.getErrorType()
+                                         .getMsg());
                     IOperator<Void,
                               ISession<C>,
                               Void> closeOperator = event.getEventOp();

@@ -64,7 +64,7 @@ public class ClusterLogic
                                        ISession<ZContext> session,
                                        IControl<ZContext> content) throws Exception
     {
-
+        _Logger.debug("cluster handle heartbeat");
         switch (content.serial())
         {
             case X104_Ping.COMMAND:

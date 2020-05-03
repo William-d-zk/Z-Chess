@@ -24,7 +24,8 @@
 
 package com.tgx.chess.queen.event.handler.client;
 
-import static com.tgx.chess.queen.event.inf.IError.Type.WAIT_CLOSE;
+import static com.tgx.chess.queen.event.inf.IError.Type.INITIATIVE_CLOSE;
+import static com.tgx.chess.queen.event.inf.IError.Type.PASSIVE_CLOSE;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.DECODE;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WROTE;
 
@@ -105,14 +106,14 @@ public class ClientIoDispatcher<C extends IContext<C>>
                         IPair wroteContent = event.getContent();
                         publish(_Wrote, WROTE, wroteContent, event.getEventOp());
                         break;
-                    case CLOSE:
+                    case LOCAL_CLOSE:
                         IOperator<Void,
                                   ISession<C>,
                                   Void> closeOperator = event.getEventOp();
                         IPair closeContent = event.getContent();
                         ISession<C> session = closeContent.getSecond();
                         if (!session.isClosed()) {
-                            error(_Link, WAIT_CLOSE, closeContent, closeOperator);
+                            error(_Link, INITIATIVE_CLOSE, closeContent, closeOperator);
                         }
                         break;
                     default:
@@ -131,7 +132,7 @@ public class ClientIoDispatcher<C extends IContext<C>>
                 throwable = errorContent.getFirst();
                 if (!session.isClosed()) {
                     IPair transferResult = errorOperator.handle(throwable, session);
-                    error(_Link, WAIT_CLOSE, new Pair<>(QueenCode.ERROR_CLOSE, session), transferResult.getSecond());
+                    error(_Link, PASSIVE_CLOSE, new Pair<>(QueenCode.ERROR_CLOSE, session), transferResult.getSecond());
                 }
                 break;
         }
