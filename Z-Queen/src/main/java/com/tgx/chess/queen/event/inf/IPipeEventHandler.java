@@ -26,7 +26,6 @@ package com.tgx.chess.queen.event.inf;
 import java.util.List;
 
 import com.lmax.disruptor.EventHandler;
-import com.lmax.disruptor.InsufficientCapacityException;
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
@@ -42,6 +41,7 @@ public interface IPipeEventHandler<E extends IEvent>
 
     Logger getLogger();
 
+    /*
     default <V,
              A,
              R> boolean tryPublish(RingBuffer<E> publisher,
@@ -68,7 +68,7 @@ public interface IPipeEventHandler<E extends IEvent>
         }
         return false;
     }
-
+    
     default boolean tryPublish(RingBuffer<E> publisher, List<ITriple> contents)
     {
         if (publisher == null) { return true; }
@@ -87,40 +87,7 @@ public interface IPipeEventHandler<E extends IEvent>
         }
         return false;
     }
-
-    default <V,
-             A,
-             R> void publish(RingBuffer<E> publisher,
-                             IOperator.Type type,
-                             IPair content,
-                             IOperator<V,
-                                       A,
-                                       R> operator)
-    {
-        if (publisher == null) { return; }
-        long sequence = publisher.next();
-        try {
-            E event = publisher.get(sequence);
-            event.produce(type, content, operator);
-        }
-        finally {
-            publisher.publish(sequence);
-        }
-    }
-
-    default void publish(RingBuffer<E> publisher, List<ITriple> contents)
-    {
-        if (publisher == null) { return; }
-        long sequence = publisher.next();
-        try {
-            E event = publisher.get(sequence);
-            event.produce(IOperator.Type.DISPATCH, contents);
-        }
-        finally {
-            publisher.publish(sequence);
-        }
-    }
-
+    
     default <V,
              A,
              R> boolean tryError(RingBuffer<E> publisher,
@@ -147,6 +114,45 @@ public interface IPipeEventHandler<E extends IEvent>
         }
         return false;
     }
+    */
+    default <V,
+             A,
+             R> void publish(RingBuffer<E> publisher,
+                             IOperator.Type type,
+                             IPair content,
+                             IOperator<V,
+                                       A,
+                                       R> operator)
+    {
+        if (publisher == null) { return; }
+        if (publisher.remainingCapacity() == 0) {
+            getLogger().warning("publish block with %s", type.name());
+        }
+        long sequence = publisher.next();
+        try {
+            E event = publisher.get(sequence);
+            event.produce(type, content, operator);
+        }
+        finally {
+            publisher.publish(sequence);
+        }
+    }
+
+    default void publish(RingBuffer<E> publisher, List<ITriple> contents)
+    {
+        if (publisher == null) { return; }
+        if (publisher.remainingCapacity() == 0) {
+            getLogger().warning("publish block with writer");
+        }
+        long sequence = publisher.next();
+        try {
+            E event = publisher.get(sequence);
+            event.produce(IOperator.Type.DISPATCH, contents);
+        }
+        finally {
+            publisher.publish(sequence);
+        }
+    }
 
     default <V,
              A,
@@ -158,6 +164,9 @@ public interface IPipeEventHandler<E extends IEvent>
                                      R> operator)
     {
         if (publisher == null) { return; }
+        if (publisher.remainingCapacity() == 0) {
+            getLogger().warning("error block with %s", type.name());
+        }
         long sequence = publisher.next();
         try {
             E event = publisher.get(sequence);

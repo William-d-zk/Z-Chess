@@ -25,13 +25,14 @@
 package com.tgx.chess.queen.event.handler;
 
 import static com.tgx.chess.queen.event.inf.IError.Type.HANDLE_DATA;
-import static com.tgx.chess.queen.event.inf.IError.Type.ILLEGAL_STATE;
+import static com.tgx.chess.queen.event.inf.IError.Type.WAIT_CLOSE;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WROTE;
 
 import java.util.List;
 
 import com.lmax.disruptor.RingBuffer;
+import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
@@ -84,7 +85,7 @@ public class WriteDispatcher<C extends IContext<C>>
                 /* logic 处理错误，转换为shutdown目标投递给 _Error
                  交由 IoDispatcher转发给对应的MappingHandler 执行close 
                 */
-                tryError(_Error, HANDLE_DATA, event.getContent(), event.getEventOp());
+                error(_Error, HANDLE_DATA, event.getContent(), event.getEventOp());
             }
         }
         else switch (event.getEventType())
@@ -110,18 +111,18 @@ public class WriteDispatcher<C extends IContext<C>>
                         _Logger.debug("write %s", content);
                         if (content.isShutdown()) {
                             if (targetSession.isValid()) {
-                                tryError(_Error,
-                                         ILLEGAL_STATE,
-                                         new Pair<>(new IllegalStateException("session to shutdown"), targetSession),
-                                         targetSession.getContext()
-                                                      .getSort()
-                                                      .getError());
+                                error(_Error,
+                                      WAIT_CLOSE,
+                                      new Pair<>(new ZException("session to shutdown"), targetSession),
+                                      targetSession.getContext()
+                                                   .getSort()
+                                                   .getError());
                             }
                         }
-                        else tryPublish(dispatchEncoder(targetSession.getHashKey()),
-                                        WRITE,
-                                        new Pair<>(content, targetSession),
-                                        triple.getThird());
+                        else publish(dispatchEncoder(targetSession.getHashKey()),
+                                     WRITE,
+                                     new Pair<>(content, targetSession),
+                                     triple.getThird());
                     }
                     _Logger.debug("write_dispatcher, source %s, transfer:%d", event.getEventType(), commands.length);
                 }
@@ -144,12 +145,12 @@ public class WriteDispatcher<C extends IContext<C>>
                     session = content.getSecond();
                     if (command.isShutdown()) {
                         if (session != null && session.isValid()) {
-                            tryError(_Error,
-                                     ILLEGAL_STATE,
-                                     new Pair<>(new IllegalStateException("session to shutdown"), session),
-                                     session.getContext()
-                                            .getSort()
-                                            .getError());
+                            error(_Error,
+                                  WAIT_CLOSE,
+                                  new Pair<>(new ZException("session to shutdown"), session),
+                                  session.getContext()
+                                         .getSort()
+                                         .getError());
                         }
                         /*
                         session == null 意味着 _SessionManager.find..失败
@@ -160,10 +161,10 @@ public class WriteDispatcher<C extends IContext<C>>
                             _Logger.warning("dispatch failed [ %s ]", session);
                         }
                     }
-                    else tryPublish(dispatchEncoder(session.getHashKey()),
-                                    WRITE,
-                                    new Pair<>(command, session),
-                                    content.getThird());
+                    else publish(dispatchEncoder(session.getHashKey()),
+                                 WRITE,
+                                 new Pair<>(command, session),
+                                 content.getThird());
                 }
             default:
                 break;

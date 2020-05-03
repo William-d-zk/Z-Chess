@@ -77,7 +77,7 @@ public class DecodedDispatcher<C extends IContext<C>>
             IPair dispatchError = event.getContent();
             ISession<C> session = dispatchError.getSecond();
             if (!session.isClosed()) {
-                tryError(_Error, event.getErrorType(), dispatchError, event.getEventOp());
+                error(_Error, event.getErrorType(), dispatchError, event.getEventOp());
             }
         }
         else {
