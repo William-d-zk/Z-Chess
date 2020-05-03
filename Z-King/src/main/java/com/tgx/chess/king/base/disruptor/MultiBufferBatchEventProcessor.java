@@ -91,14 +91,15 @@ public class MultiBufferBatchEventProcessor<T>
                 barrier_total_count = 0;
                 try {
                     for (int i = 0; i < barrierLength; i++) {
-
                         long available = _Barriers[i].waitFor(-1);
                         Sequence sequence = _Sequences[i];
                         long nextSequence = sequence.get() + 1;
+                        if (nextSequence > available) {
+                            _Logger.warning("%s process failed %d", threadName, i);
+                        }
                         for (long l = nextSequence; l <= available; l++) {
                             _Handler.onEvent(_Providers[i].get(l), l, nextSequence == available);
                         }
-
                         sequence.set(available);
                         delta = available - nextSequence + 1;
                         barrier_total_count += delta;
@@ -113,6 +114,7 @@ public class MultiBufferBatchEventProcessor<T>
                 }
                 catch (AlertException e) {
                     if (!isRunning()) {
+                        _Logger.warning("%s =>shutdown", e, threadName);
                         break;
                     }
                 }

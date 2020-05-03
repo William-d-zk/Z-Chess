@@ -240,7 +240,7 @@ public class MappingHandler<C extends IContext<C>,
                         try {
                             List<ITriple> broadcast = _ClusterCustom.consensus(_SessionManager, request, origin);
                             if (broadcast != null && !broadcast.isEmpty()) {
-                                tryPublish(_Writer, broadcast);
+                                publish(_Writer, broadcast);
                             }
                         }
                         catch (Exception e) {
@@ -280,10 +280,10 @@ public class MappingHandler<C extends IContext<C>,
         int slot = channel % _Notifiers.length;
         RingBuffer<QEvent> notifier = _Notifiers[slot];
         if (throwable == null) {
-            tryPublish(notifier, NOTIFY, new Pair<>(request, null), _NotifyCustom);
+            publish(notifier, NOTIFY, new Pair<>(request, null), _NotifyCustom);
         }
         else {
-            tryError(notifier, MAPPING_ERROR, new Pair<>(request, throwable), _NotifyCustom);
+            error(notifier, MAPPING_ERROR, new Pair<>(request, throwable), _NotifyCustom);
         }
     }
 

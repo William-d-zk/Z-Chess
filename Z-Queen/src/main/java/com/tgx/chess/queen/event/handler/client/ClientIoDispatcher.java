@@ -25,7 +25,7 @@
 package com.tgx.chess.queen.event.handler.client;
 
 import static com.tgx.chess.queen.event.inf.IError.Type.WAIT_CLOSE;
-import static com.tgx.chess.queen.event.inf.IOperator.Type.TRANSFER;
+import static com.tgx.chess.queen.event.inf.IOperator.Type.DECODE;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WROTE;
 
 import java.nio.channels.AsynchronousSocketChannel;
@@ -99,7 +99,7 @@ public class ClientIoDispatcher<C extends IContext<C>>
                         break;
                     case READ:
                         IPair readContent = event.getContent();
-                        publish(_Decoder, TRANSFER, readContent, event.getEventOp());
+                        publish(_Decoder, DECODE, readContent, event.getEventOp());
                         break;
                     case WROTE:
                         IPair wroteContent = event.getContent();

@@ -51,7 +51,7 @@ public class EncodedHandler<C extends IContext<C>>
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
     {
-        _Logger.debug("end event! ");
+        _Logger.info("end event! ");
         if (event.hasError()) {
             switch (event.getErrorType())
             {
@@ -62,7 +62,7 @@ public class EncodedHandler<C extends IContext<C>>
                     IPair errorContent = event.getContent();
                     ISession<C> session = errorContent.getSecond();
                     if (session.isValid()) {
-                        tryError(_Error, event.getErrorType(), errorContent, event.getEventOp());
+                        error(_Error, event.getErrorType(), errorContent, event.getEventOp());
                     }
                     break;
             }
