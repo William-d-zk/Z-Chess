@@ -146,16 +146,16 @@ public class ServerCore<C extends IContext<C>>
     public ServerCore(IMixConfig config)
     {
         super(config.getPoolSize(), config.getPoolSize(), 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
-        _LogicCount = config.getLogicCount();
-        _DecoderCount = config.getDecoderCount();
-        _EncoderCount = config.getEncoderCount();
-        _BizIoCount = config.getBizIoCount();
-        _ClusterIoCount = config.getClusterIoCount();
-        _AioQueuePower = config.getAioQueuePower();
-        _ClusterPower = config.getClusterPower();
-        _LinkPower = config.getLinkPower();
-        _LogicPower = config.getLogicPower();
-        _ErrorPower = config.getErrorPower();
+        _LogicCount = config.getLogicQueueSizePower();
+        _DecoderCount = config.getDecoderCountPower();
+        _EncoderCount = config.getEncoderCountPower();
+        _BizIoCount = config.getBizIoCountPower();
+        _ClusterIoCount = config.getClusterIoCountPower();
+        _AioQueuePower = config.getAioQueueSizePower();
+        _ClusterPower = config.getClusterQueueSizePower();
+        _LinkPower = config.getLinkQueueSizePower();
+        _LogicPower = config.getLogicQueueSizePower();
+        _ErrorPower = config.getErrorQueueSizePower();
         /* Aio event producer  */
         _AioProducerEvents = new RingBuffer[_BizIoCount + _ClusterIoCount];
         _AioProducerBarriers = new SequenceBarrier[_AioProducerEvents.length];
@@ -178,12 +178,12 @@ public class ServerCore<C extends IContext<C>>
         });
         Arrays.setAll(_AioProducerBarriers, slot -> _AioProducerEvents[slot].newBarrier());
 
-        _ClusterLocalCloseEvent = createPipelineLite(config.getCloserPower());
+        _ClusterLocalCloseEvent = createPipelineLite(config.getCloserQueueSizePower());
         _ClusterLocalSendEvent = createPipelineLite(_ClusterPower);
         _ClusterWriteEvent = createPipelineYield(_ClusterPower);
 
-        _BizLocalCloseEvent = createPipelineLite(config.getCloserPower());
-        _BizLocalSendEvent = createPipelineLite(config.getLocalPower());
+        _BizLocalCloseEvent = createPipelineLite(config.getCloserQueueSizePower());
+        _BizLocalSendEvent = createPipelineLite(config.getLocalQueueSizePower());
         _LinkWriteEvent = createPipelineYield(_LinkPower);
 
         _ConsensusEvent = createPipelineYield(_ClusterPower);
@@ -202,7 +202,7 @@ public class ServerCore<C extends IContext<C>>
     ┃  ━> _BizLocalClose    ━║                ┃ _ClusterIoEvent ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫    ┃  ║                 ┏━>_NotifyEvent ━━━━━┛  ║                 ┃  _EncodedEvents[.]{_EncoderProcessors[.]}|║                 ┗━━>_ErrorEvent━┓
     ┗━━━> _ErrorEvent[0]    ━║_IoDispatcher ━━┫ _ReadEvents[0]{_DecodeProcessors[0]}|━║                   ┏>_ClusterDecoded━┻━━>━╋>━║_ClusterProcessor╋━>_ClusterWriteEvent━>━║                 ┃  _EncodedEvents[M]{_EncoderProcessors[M]}|║                                 ┃
     ┏━━━> _ErrorEvent[4]    ━║                ┃ _ReadEvents[1]{_DecodeProcessors[1]}|━║_DecodedDispatcher━┫ _LinkDecoded   ━━━━━━┛  ║                 ┗━>_ErrorEvent ━┓       ║                 ┗━>_ErrorEvent━┓                                                              ┃
-    ┃┏━━> _ErrorEvent[3]    ━║                ┃ _ReadEvents[.]{_DecodeProcessors[.]}|━║                   ┃ _Logic         ━━━━━━━━━━━━━━━━━━━━━━{_LogicProcessor}|━━━╋━━━━━>━║                                ┃                                                              ┃
+    ┃┏━━> _ErrorEvent[3]    ━║                ┃ _ReadEvents[.]{_DecodeProcessors[.]}|━║                   ┃ _Logic         ━━━━━━━━━━━━━━━━━━━━━{_LogicProcessors}|━━━╋━━━━━>━║                                ┃                                                              ┃
     ┃┃┏━> _ErrorEvent[1]    ━║                ┃ _ReadEvents[N]{_DecodeProcessors[N]}|━║                   ┗>_ErrorEvent    ━━━━━━┓     ━━━> _ClusterLocalSendEvent ━━━╋━━━━━>━║                                ┃                                                              ┃
     ┃┃┃┏> _ErrorEvent[2]    ━║                ┗>_WroteBuffer  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━>━║                                ┃                                                              ┃
     ┃┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                    ┃                                        ┃                                                              ┃

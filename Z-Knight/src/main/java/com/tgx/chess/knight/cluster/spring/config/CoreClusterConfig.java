@@ -37,113 +37,113 @@ public class CoreClusterConfig
         implements
         IClusterConfig
 {
-    private int decoderCount;
-    private int encoderCount;
-    private int logicCount;
-    private int clusterIoCount;
-    private int aioQueuePower;
-    private int clusterPower;
-    private int logicPower;
-    private int errorPower;
-    private int closerPower;
+    private int decoderCountPower;
+    private int encoderCountPower;
+    private int logicCountPower;
+    private int clusterIoCountPower;
+    private int aioQueueSizePower;
+    private int clusterQueueSizePower;
+    private int logicQueueSizePower;
+    private int errorQueueSizePower;
+    private int closerQueueSizePower;
 
     @Override
-    public int getDecoderCount()
+    public int getDecoderCountPower()
     {
-        return decoderCount;
-    }
-
-    @Override
-    public int getEncoderCount()
-    {
-        return encoderCount;
+        return decoderCountPower;
     }
 
     @Override
-    public int getLogicCount()
+    public int getEncoderCountPower()
     {
-        return logicCount;
+        return encoderCountPower;
     }
 
     @Override
-    public int getClusterIoCount()
+    public int getLogicCountPower()
     {
-        return clusterIoCount;
+        return logicCountPower;
     }
 
     @Override
-    public int getAioQueuePower()
+    public int getClusterIoCountPower()
     {
-        return aioQueuePower;
+        return clusterIoCountPower;
     }
 
     @Override
-    public int getClusterPower()
+    public int getAioQueueSizePower()
     {
-        return clusterPower;
+        return aioQueueSizePower;
     }
 
     @Override
-    public int getLogicPower()
+    public int getClusterQueueSizePower()
     {
-        return logicPower;
+        return clusterQueueSizePower;
     }
 
     @Override
-    public int getErrorPower()
+    public int getLogicQueueSizePower()
     {
-        return errorPower;
+        return logicQueueSizePower;
     }
 
     @Override
-    public int getCloserPower()
+    public int getErrorQueueSizePower()
     {
-        return closerPower;
+        return errorQueueSizePower;
     }
 
-    public void setDecoderCount(int decoderCount)
+    @Override
+    public int getCloserQueueSizePower()
     {
-        this.decoderCount = decoderCount;
+        return closerQueueSizePower;
     }
 
-    public void setEncoderCount(int encoderCount)
+    public void setDecoderCountPower(int decoderCountPower)
     {
-        this.encoderCount = encoderCount;
+        this.decoderCountPower = decoderCountPower;
     }
 
-    public void setLogicCount(int logicCount)
+    public void setEncoderCountPower(int encoderCountPower)
     {
-        this.logicCount = logicCount;
+        this.encoderCountPower = encoderCountPower;
     }
 
-    public void setClusterIoCount(int clusterIoCount)
+    public void setLogicCountPower(int logicCountPower)
     {
-        this.clusterIoCount = clusterIoCount;
+        this.logicCountPower = logicCountPower;
     }
 
-    public void setAioQueuePower(int aioQueuePower)
+    public void setClusterIoCountPower(int clusterIoCountPower)
     {
-        this.aioQueuePower = aioQueuePower;
+        this.clusterIoCountPower = clusterIoCountPower;
     }
 
-    public void setClusterPower(int clusterPower)
+    public void setAioQueueSizePower(int aioQueueSizePower)
     {
-        this.clusterPower = clusterPower;
+        this.aioQueueSizePower = aioQueueSizePower;
     }
 
-    public void setLogicPower(int logicPower)
+    public void setClusterQueueSizePower(int clusterQueueSizePower)
     {
-        this.logicPower = logicPower;
+        this.clusterQueueSizePower = clusterQueueSizePower;
     }
 
-    public void setErrorPower(int errorPower)
+    public void setLogicQueueSizePower(int logicQueueSizePower)
     {
-        this.errorPower = errorPower;
+        this.logicQueueSizePower = logicQueueSizePower;
     }
 
-    public void setCloserPower(int closerPower)
+    public void setErrorQueueSizePower(int errorQueueSizePower)
     {
-        this.closerPower = closerPower;
+        this.errorQueueSizePower = errorQueueSizePower;
+    }
+
+    public void setCloserQueueSizePower(int closerQueueSizePower)
+    {
+        this.closerQueueSizePower = closerQueueSizePower;
     }
 
 }

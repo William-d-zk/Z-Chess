@@ -116,13 +116,13 @@ public class ClusterCore<C extends IContext<C>>
     {
         super(config.getPoolSize(), config.getPoolSize(), 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
         _ClusterCacheConcurrentQueue = new ConcurrentLinkedQueue<>();
-        _ClusterIoCount = config.getClusterIoCount();
-        _DecoderCount = config.getDecoderCount();
-        _EncoderCount = config.getEncoderCount();
-        _LogicCount = config.getLogicCount();
-        _ClusterPower = config.getClusterPower();
-        _AioQueuePower = config.getAioQueuePower();
-        _ErrorPower = config.getErrorPower();
+        _ClusterIoCount = config.getClusterIoCountPower();
+        _DecoderCount = config.getDecoderCountPower();
+        _EncoderCount = config.getEncoderCountPower();
+        _LogicCount = config.getLogicQueueSizePower();
+        _ClusterPower = config.getClusterQueueSizePower();
+        _AioQueuePower = config.getAioQueueSizePower();
+        _ErrorPower = config.getErrorQueueSizePower();
         _AioProducerEvents = new RingBuffer[_ClusterIoCount];
         _AioProducerBarriers = new SequenceBarrier[_AioProducerEvents.length];
         Arrays.setAll(_AioProducerEvents, slot ->
@@ -135,12 +135,12 @@ public class ClusterCore<C extends IContext<C>>
         });
         Arrays.setAll(_AioProducerBarriers, slot -> _AioProducerEvents[slot].newBarrier());
 
-        _ClusterLocalCloseEvent = createPipelineLite(config.getCloserPower());
-        _ClusterLocalSendEvent = createPipelineLite(config.getCloserPower());
+        _ClusterLocalCloseEvent = createPipelineLite(config.getCloserQueueSizePower());
+        _ClusterLocalSendEvent = createPipelineLite(config.getCloserQueueSizePower());
         _ClusterWriteEvent = createPipelineYield(_ClusterPower);
         _ConsensusEvent = createPipelineYield(_ClusterPower);
         _ConsensusApiEvent = createPipelineLite(_ClusterPower);
-        _LogicEvent = createPipelineLite(config.getLogicPower());
+        _LogicEvent = createPipelineLite(config.getLogicQueueSizePower());
     }
 
     /*  ║ barrier, ━> publish event, ━━ pipeline, | event handler
@@ -185,7 +185,7 @@ public class ClusterCore<C extends IContext<C>>
                       slot -> new BatchEventProcessor<>(_ReadEvents[slot],
                                                         _ReadBarriers[slot],
                                                         new DecodeHandler<>(encryptHandler)));
-        final RingBuffer<QEvent>[] _ClusterNotifiers = new RingBuffer[_LogicCount + 1];
+        final RingBuffer<QEvent>[] _ClusterNotifiers = new RingBuffer[_LogicCount];
         final SequenceBarrier[] _ClusterNotifyBarriers = new SequenceBarrier[_ClusterNotifiers.length];
         final BatchEventProcessor<QEvent>[] _ClusterNotifyProcessors = new BatchEventProcessor[_ClusterNotifiers.length];
         Arrays.setAll(_ClusterNotifiers, slot -> createPipelineLite(_ClusterPower));
@@ -287,6 +287,7 @@ public class ClusterCore<C extends IContext<C>>
         Arrays.stream(_ClusterNotifyProcessors)
               .forEach(this::submit);
         submit(_DecodedDispatcher);
+        submit(_LogicProcessor);
         submit(_WriteDispatcher);
         Arrays.stream(_EncodeProcessors)
               .forEach(this::submit);
