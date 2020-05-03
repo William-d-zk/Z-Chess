@@ -178,6 +178,8 @@ public class RaftMachine
     public RaftMachine(@JsonProperty("peer_id") long peerId)
     {
         _PeerId = peerId;
+        mMatchIndex = -1;
+        mIndex = -1;
     }
 
     @Override
