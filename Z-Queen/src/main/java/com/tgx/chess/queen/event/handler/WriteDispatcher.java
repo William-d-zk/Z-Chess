@@ -25,7 +25,7 @@
 package com.tgx.chess.queen.event.handler;
 
 import static com.tgx.chess.queen.event.inf.IError.Type.HANDLE_DATA;
-import static com.tgx.chess.queen.event.inf.IError.Type.WAIT_CLOSE;
+import static com.tgx.chess.queen.event.inf.IError.Type.INITIATIVE_CLOSE;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WROTE;
 
@@ -112,7 +112,7 @@ public class WriteDispatcher<C extends IContext<C>>
                         if (content.isShutdown()) {
                             if (targetSession.isValid()) {
                                 error(_Error,
-                                      WAIT_CLOSE,
+                                      INITIATIVE_CLOSE,
                                       new Pair<>(new ZException("session to shutdown"), targetSession),
                                       targetSession.getContext()
                                                    .getSort()
@@ -146,7 +146,7 @@ public class WriteDispatcher<C extends IContext<C>>
                     if (command.isShutdown()) {
                         if (session != null && session.isValid()) {
                             error(_Error,
-                                  WAIT_CLOSE,
+                                  INITIATIVE_CLOSE,
                                   new Pair<>(new ZException("session to shutdown"), session),
                                   session.getContext()
                                          .getSort()

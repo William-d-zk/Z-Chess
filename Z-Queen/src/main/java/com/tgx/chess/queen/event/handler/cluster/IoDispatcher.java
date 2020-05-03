@@ -24,7 +24,8 @@
 
 package com.tgx.chess.queen.event.handler.cluster;
 
-import static com.tgx.chess.queen.event.inf.IError.Type.WAIT_CLOSE;
+import static com.tgx.chess.queen.event.inf.IError.Type.INITIATIVE_CLOSE;
+import static com.tgx.chess.queen.event.inf.IError.Type.PASSIVE_CLOSE;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.DECODE;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.WROTE;
 
@@ -117,14 +118,14 @@ public class IoDispatcher<C extends IContext<C>>
                         IPair wroteContent = event.getContent();
                         publish(_IoWrote, WROTE, wroteContent, event.getEventOp());
                         break;
-                    case CLOSE:
+                    case LOCAL_CLOSE:
                         _Logger.trace("local close");
                         IPair closeContent = event.getContent();
                         session = closeContent.getSecond();
                         if (!session.isClosed()) {
                             error(getNextPipe(session.getContext()
                                                      .getSort()),
-                                  WAIT_CLOSE,
+                                  INITIATIVE_CLOSE,
                                   new Pair<>(QueenCode.LOCAL_CLOSE, session),
                                   event.getEventOp());
                         }
@@ -148,7 +149,7 @@ public class IoDispatcher<C extends IContext<C>>
                     IPair result = errorOperator.handle(throwable, session);
                     error(getNextPipe(session.getContext()
                                              .getSort()),
-                          WAIT_CLOSE,
+                          PASSIVE_CLOSE,
                           new Pair<>(QueenCode.ERROR_CLOSE, session),
                           result.getSecond());
                 }
