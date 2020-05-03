@@ -140,17 +140,17 @@ public class ClusterCore<C extends IContext<C>>
         _ClusterWriteEvent = createPipelineYield(_ClusterPower);
         _ConsensusEvent = createPipelineYield(_ClusterPower);
         _ConsensusApiEvent = createPipelineLite(_ClusterPower);
-        _LogicEvent = createPipelineLite(config.getLogicPower());
+        _LogicEvent = createPipelineYield(config.getLogicPower());
     }
 
     /*  ║ barrier, ━> publish event, ━━ pipeline, | event handler
-     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-     ┃                                                                                      Api   ━> _ConsensusApiEvent ━━━━━━━━━━━━━━━║                  ┏━> _ClusterNotifiers[0] {CallBack}|                                                                                      ┃
-     ┃  ━> _AioProducerEvents ║                                                             Timer ━> _ConsensusEvent  ━━━━━━━━━━━━━━━━━║                  ┃   _ClusterNotifiers[.] {CallBack}|                                                                                      ┃
-     ┃  ━> _ClusterLocalClose ║                  ┏> _ClusterIoEvent ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━║                  ╋━> _ClusterNotifiers[N] {CallBack}|                                                                                      ┃
-     ┗━━━> _ErrorEvent[0]     ║ _IoDispatcher ━━━┫  _ReadEvents[0]{_DecodeProcessors}|━║                     ┏━━> _ClusterDecoded ━━━━━║_ClusterProcessor ┃   _ClusterWriteEvent ━━━║                   ┏>_EncodedEvents[0]{_EncodeProcessors}|║                                    ┃
-     ┏━━━> _ErrorEvent[1]     ║                  ┃  _ReadEvents[.]{_DecodeProcessors}|━║ _DecodedDispatcher ━╋━━> _LogicEvent     ━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━{_LogicProcessor}━|║ _WriteDispatcher ━┫ _EncodedEvents[.]{_EncodeProcessors}|║ _EncodedProcessor┳━━> _ErrorEvent ━┛
-     ┃┏━━> _ErrorEvent[2]     ║                  ┃  _ReadEvents[N]{_DecodeProcessors}|━║                     ┗━━> _ErrorEvent ━━━━━┓                      ┗━> _ErrorEvent ━━┓       ║                   ┃ _EncodedEvents[M]{_EncodeProcessors}|║                  ┗━━║ [Event Done]
+     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+     ┃                                                                                      Api   ━> _ConsensusApiEvent ━━━━━━━━━━━━━━━║                  ┏━> _ClusterNotifiers[0] {CallBack}|                                                                                        ┃
+     ┃  ━> _AioProducerEvents ║                                                             Timer ━> _ConsensusEvent  ━━━━━━━━━━━━━━━━━║                  ┃   _ClusterNotifiers[.] {CallBack}|                                                                                        ┃
+     ┃  ━> _ClusterLocalClose ║                  ┏> _ClusterIoEvent ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━║                  ╋━> _ClusterNotifiers[N] {CallBack}|                                                                                        ┃
+     ┗━━━> _ErrorEvent[0]     ║ _IoDispatcher ━━━┫  _ReadEvents[0]{_DecodeProcessors}|━║                     ┏━━> _ClusterDecoded ━━━━━║_ClusterProcessor ┃   _ClusterWriteEvent ━━━║                   ┏>_EncodedEvents[0]{_EncodeProcessors}|━║                                     ┃
+     ┏━━━> _ErrorEvent[1]     ║                  ┃  _ReadEvents[.]{_DecodeProcessors}|━║ _DecodedDispatcher ━╋━━> _LogicEvent     ━━━━━{_LogicProcessor}|━╋━━━━━━━━━━━━━━━━━━━━━━━━━║ _WriteDispatcher ━┫ _EncodedEvents[.]{_EncodeProcessors}|━║ _EncodedProcessor ┳━━> _ErrorEvent ━┛
+     ┃┏━━> _ErrorEvent[2]     ║                  ┃  _ReadEvents[N]{_DecodeProcessors}|━║                     ┗━━> _ErrorEvent ━━━━━┓                      ┗━> _ErrorEvent ━━┓       ║                   ┃ _EncodedEvents[M]{_EncodeProcessors}|━║                   ┗━━║ [Event Done]
      ┃┃┏━> _ErrorEvent[3]     ║                  ┗> _WroteBuffer  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━║                   ┗>_ErrorEvent ━┓
      ┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛           ━> _ClusterLocalSendEvent ━━━╋━━━━━━━║                                  ┃
      ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                          ┃
