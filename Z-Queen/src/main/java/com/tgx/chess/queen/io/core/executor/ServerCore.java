@@ -146,7 +146,7 @@ public class ServerCore<C extends IContext<C>>
     public ServerCore(IMixConfig config)
     {
         super(config.getPoolSize(), config.getPoolSize(), 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
-        _LogicCount = 1 << config.getLogicQueueSizePower();
+        _LogicCount = 1 << config.getLogicCountPower();
         _DecoderCount = 1 << config.getDecoderCountPower();
         _EncoderCount = 1 << config.getEncoderCountPower();
         _BizIoCount = 1 << config.getBizIoCountPower();
@@ -399,7 +399,7 @@ public class ServerCore<C extends IContext<C>>
         Arrays.stream(_EncodeProcessors)
               .forEach(this::submit);
         submit(_EncodedProcessor);
-        _Logger.debug("%s =>>>>>>>>>>> start", getClass().getSimpleName());
+        _Logger.info("%s =>>>>>>>>>>> start", getClass().getSimpleName());
     }
 
     @Override

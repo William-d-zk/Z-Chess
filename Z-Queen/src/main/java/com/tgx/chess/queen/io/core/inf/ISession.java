@@ -72,6 +72,11 @@ public interface ISession<C extends IContext<C>>
 
     void bindPrefix(long prefix);
 
+    default String summary()
+    {
+        return String.format("%s->%s,closed:%s", getLocalAddress(), getReadTimeOutSeconds(), isClosed());
+    }
+
     boolean isClosed();
 
     int getReadTimeOutSeconds();

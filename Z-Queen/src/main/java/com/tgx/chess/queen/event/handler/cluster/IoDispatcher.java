@@ -76,7 +76,6 @@ public class IoDispatcher<C extends IContext<C>>
     @Override
     public void onEvent(QEvent event, long sequence, boolean batch) throws Exception
     {
-        _Logger.debug("* → %s", event);
         IError.Type errorType = event.getErrorType();
         switch (errorType)
         {
@@ -136,7 +135,6 @@ public class IoDispatcher<C extends IContext<C>>
                 }
                 break;
             default:
-                _Logger.trace("error close");
                 /*未指定类型的错误 来自Decoded/Encoded Dispatcher */
                 IOperator<Throwable,
                           ISession<C>,
@@ -144,7 +142,10 @@ public class IoDispatcher<C extends IContext<C>>
                 IPair errorContent = event.getContent();
                 throwable = errorContent.getFirst();
                 ISession<C> session = errorContent.getSecond();
-                _Logger.trace("session error %s, → mapping handler [close]\n", throwable, session);
+                _Logger.warning("error %s @ %s, → mapping handler [close] \n",
+                                throwable,
+                                errorType.getMsg(),
+                                session.summary());
                 if (!session.isClosed()) {
                     IPair result = errorOperator.handle(throwable, session);
                     error(getNextPipe(session.getContext()
