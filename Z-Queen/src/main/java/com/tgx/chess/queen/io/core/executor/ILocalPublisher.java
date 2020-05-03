@@ -90,7 +90,7 @@ public interface ILocalPublisher<C extends IContext<C>>
             long sequence = _LocalCloseEvent.next();
             try {
                 QEvent event = _LocalCloseEvent.get(sequence);
-                event.produce(IOperator.Type.CLOSE,
+                event.produce(IOperator.Type.LOCAL_CLOSE,
                               new Pair<>(null, session),
                               session.getContext()
                                      .getSort()
