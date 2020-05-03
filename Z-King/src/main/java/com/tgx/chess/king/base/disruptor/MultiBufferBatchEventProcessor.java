@@ -86,41 +86,39 @@ public class MultiBufferBatchEventProcessor<T>
 
             final int barrierLength = _Barriers.length;
             int barrier_total_count;
-            long delta;
             while (true) {
                 barrier_total_count = 0;
-                try {
-                    for (int i = 0; i < barrierLength; i++) {
-                        long available = _Barriers[i].waitFor(-1);
-                        Sequence sequence = _Sequences[i];
-                        long nextSequence = sequence.get() + 1;
-                        if (nextSequence > available) {
-                            _Logger.warning("%s process failed %d", threadName, i);
-                        }
-                        for (long l = nextSequence; l <= available; l++) {
-                            _Handler.onEvent(_Providers[i].get(l), l, nextSequence == available);
+                for (int i = 0; i < barrierLength; i++) {
+                    SequenceBarrier barrier = _Barriers[i];
+                    Sequence sequence = _Sequences[i];
+                    DataProvider<T> provider = _Providers[i];
+                    long nextSequence = sequence.get() + 1;
+                    try {
+                        long available = barrier.waitFor(-1);
+                        if (nextSequence <= available) {
+                            barrier_total_count += available - nextSequence + 1;
+                            while (nextSequence <= available) {
+                                _Handler.onEvent(provider.get(nextSequence), nextSequence, nextSequence == available);
+                                nextSequence++;
+                            }
                         }
                         sequence.set(available);
-                        delta = available - nextSequence + 1;
-                        barrier_total_count += delta;
                     }
-                    //没有任何 前置生产者的存在事件的时候暂停 5ms 释放 CPU，不超过100个事件，将释放 CPU
-                    if (barrier_total_count == 0) {
-                        LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(5));
+                    catch (AlertException e) {
+                        /*
+                        这个设计是为了动态终止processor，多路归并的场景中，reduce 不能被终止
+                        */
                     }
-                    else if (barrier_total_count < 100) {
-                        Thread.yield();
-                    }
-                }
-                catch (AlertException e) {
-                    if (!isRunning()) {
-                        _Logger.warning("%s =>shutdown", e, threadName);
-                        break;
+                    catch (Throwable ex) {
+                        sequence.set(nextSequence);
                     }
                 }
-                catch (Exception e) {
-                    _Logger.warning(" %s → %d", threadName, e);
-                    //keep working
+                //没有任何 前置生产者的存在事件的时候暂停 5ms 释放 CPU，不超过100个事件，将释放 CPU
+                if (barrier_total_count == 0) {
+                    LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(5));
+                }
+                else if (barrier_total_count < 100) {
+                    Thread.yield();
                 }
             }
         }
@@ -153,4 +151,5 @@ public class MultiBufferBatchEventProcessor<T>
     {
         return _Running.get() != IDLE;
     }
+
 }
