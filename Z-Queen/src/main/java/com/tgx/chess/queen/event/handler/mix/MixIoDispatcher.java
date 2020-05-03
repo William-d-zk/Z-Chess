@@ -53,9 +53,6 @@ public class MixIoDispatcher<C extends IContext<C>>
     protected RingBuffer<QEvent> getNextPipe(ISort<C> sort)
     {
         if (sort.getMode() == ISort.Mode.LINK) {
-            if (_Link.remainingCapacity() == 0) {
-                getLogger().warning("link block");
-            }
             return _Link;
         }
         return super.getNextPipe(sort);
