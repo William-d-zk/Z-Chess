@@ -72,9 +72,9 @@ public class ClusterCore<C extends IContext<C>>
     private final int                  _EncoderCount;
     private final int                  _LogicCount;
     private final int                  _ClusterIoCount;
-    private final int                  _ClusterPower;
-    private final int                  _AioQueuePower;
-    private final int                  _ErrorPower;
+    private final int                  _ClusterQueueSize;
+    private final int                  _AioQueueSize;
+    private final int                  _ErrorQueueSize;
     private final RingBuffer<QEvent>[] _AioProducerEvents;
     private final SequenceBarrier[]    _AioProducerBarriers;
     private final RingBuffer<QEvent>   _ClusterLocalCloseEvent;
@@ -116,18 +116,20 @@ public class ClusterCore<C extends IContext<C>>
     {
         super(config.getPoolSize(), config.getPoolSize(), 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
         _ClusterCacheConcurrentQueue = new ConcurrentLinkedQueue<>();
-        _ClusterIoCount = config.getClusterIoCountPower();
-        _DecoderCount = config.getDecoderCountPower();
-        _EncoderCount = config.getEncoderCountPower();
-        _LogicCount = config.getLogicQueueSizePower();
-        _ClusterPower = config.getClusterQueueSizePower();
-        _AioQueuePower = config.getAioQueueSizePower();
-        _ErrorPower = config.getErrorQueueSizePower();
+        _ClusterIoCount = 1 << config.getClusterIoCountPower();
+        _DecoderCount = 1 << config.getDecoderCountPower();
+        _EncoderCount = 1 << config.getEncoderCountPower();
+        _LogicCount = 1 << config.getLogicQueueSizePower();
+        _ClusterQueueSize = 1 << config.getClusterQueueSizePower();
+        _AioQueueSize = 1 << config.getAioQueueSizePower();
+        _ErrorQueueSize = 1 << config.getErrorQueueSizePower();
+        final int _CloserQueueSize = 1 << config.getCloserQueueSizePower();
+        final int _LogicQueueSize = 1 << config.getLogicQueueSizePower();
         _AioProducerEvents = new RingBuffer[_ClusterIoCount];
         _AioProducerBarriers = new SequenceBarrier[_AioProducerEvents.length];
         Arrays.setAll(_AioProducerEvents, slot ->
         {
-            RingBuffer<QEvent> rb = createPipelineYield(_AioQueuePower);
+            RingBuffer<QEvent> rb = createPipelineYield(_AioQueueSize);
             if (!_ClusterCacheConcurrentQueue.offer(rb)) {
                 _Logger.warning(String.format("cluster io cache queue offer failed :%d", slot));
             }
@@ -135,12 +137,12 @@ public class ClusterCore<C extends IContext<C>>
         });
         Arrays.setAll(_AioProducerBarriers, slot -> _AioProducerEvents[slot].newBarrier());
 
-        _ClusterLocalCloseEvent = createPipelineLite(config.getCloserQueueSizePower());
-        _ClusterLocalSendEvent = createPipelineLite(config.getCloserQueueSizePower());
-        _ClusterWriteEvent = createPipelineYield(_ClusterPower);
-        _ConsensusEvent = createPipelineYield(_ClusterPower);
-        _ConsensusApiEvent = createPipelineLite(_ClusterPower);
-        _LogicEvent = createPipelineLite(config.getLogicQueueSizePower());
+        _ClusterLocalCloseEvent = createPipelineLite(_CloserQueueSize);
+        _ClusterLocalSendEvent = createPipelineLite(_CloserQueueSize);
+        _ClusterWriteEvent = createPipelineYield(_ClusterQueueSize);
+        _ConsensusEvent = createPipelineYield(_ClusterQueueSize);
+        _ConsensusApiEvent = createPipelineLite(_ClusterQueueSize);
+        _LogicEvent = createPipelineLite(_LogicQueueSize);
     }
 
     /*  ║ barrier, ━> publish event, ━━ pipeline, | event handler
@@ -164,22 +166,22 @@ public class ClusterCore<C extends IContext<C>>
                                                           T> clusterCustom,
                                            ILogicHandler<C> logicHandler)
     {
-        final RingBuffer<QEvent> _WroteEvent = createPipelineYield(_AioQueuePower + 1);
-        final RingBuffer<QEvent> _ClusterIoEvent = createPipelineYield(_ClusterPower);
+        final RingBuffer<QEvent> _WroteEvent = createPipelineYield(_AioQueueSize << 1);
+        final RingBuffer<QEvent> _ClusterIoEvent = createPipelineYield(_ClusterQueueSize);
         final RingBuffer<QEvent>[] _ErrorEvents = new RingBuffer[4];
         final RingBuffer<QEvent>[] _DispatchIo = new RingBuffer[_ClusterIoCount + _ErrorEvents.length + 1];
         final RingBuffer<QEvent>[] _ReadEvents = new RingBuffer[_DecoderCount];
         final SequenceBarrier[] _ReadBarriers = new SequenceBarrier[_ReadEvents.length];
         final SequenceBarrier[] _DispatchIoBarriers = new SequenceBarrier[_DispatchIo.length];
         final SequenceBarrier[] _ErrorBarriers = new SequenceBarrier[_ErrorEvents.length];
-        Arrays.setAll(_ErrorEvents, slot -> createPipelineYield(_ErrorPower));
+        Arrays.setAll(_ErrorEvents, slot -> createPipelineYield(_ErrorQueueSize));
         Arrays.setAll(_ErrorBarriers, slot -> _ErrorEvents[slot].newBarrier());
         IoUtil.addArray(_AioProducerEvents, _DispatchIo, _ClusterLocalCloseEvent);
         IoUtil.addArray(_ErrorEvents, _DispatchIo, _ClusterIoCount + 1);
         IoUtil.addArray(_AioProducerBarriers, _DispatchIoBarriers, _ClusterLocalCloseEvent.newBarrier());
         IoUtil.addArray(_ErrorBarriers, _DispatchIoBarriers, _ClusterIoCount + 1);
         final BatchEventProcessor<QEvent>[] _DecodeProcessors = new BatchEventProcessor[_DecoderCount];
-        Arrays.setAll(_ReadEvents, slot -> createPipelineLite(_AioQueuePower));
+        Arrays.setAll(_ReadEvents, slot -> createPipelineLite(_AioQueueSize));
         Arrays.setAll(_ReadBarriers, slot -> _ReadEvents[slot].newBarrier());
         Arrays.setAll(_DecodeProcessors,
                       slot -> new BatchEventProcessor<>(_ReadEvents[slot],
@@ -188,7 +190,7 @@ public class ClusterCore<C extends IContext<C>>
         final RingBuffer<QEvent>[] _ClusterNotifiers = new RingBuffer[_LogicCount];
         final SequenceBarrier[] _ClusterNotifyBarriers = new SequenceBarrier[_ClusterNotifiers.length];
         final BatchEventProcessor<QEvent>[] _ClusterNotifyProcessors = new BatchEventProcessor[_ClusterNotifiers.length];
-        Arrays.setAll(_ClusterNotifiers, slot -> createPipelineLite(_ClusterPower));
+        Arrays.setAll(_ClusterNotifiers, slot -> createPipelineLite(_ClusterQueueSize));
         Arrays.setAll(_ClusterNotifyBarriers, slot -> _ClusterNotifiers[slot].newBarrier());
         Arrays.setAll(_ClusterNotifyProcessors,
                       slot -> new BatchEventProcessor<>(_ClusterNotifiers[slot],
@@ -197,7 +199,7 @@ public class ClusterCore<C extends IContext<C>>
         for (int i = 0, size = _ClusterNotifiers.length; i < size; i++) {
             _ClusterNotifiers[i].addGatingSequences(_ClusterNotifyProcessors[i].getSequence());
         }
-        final RingBuffer<QEvent> _ClusterDecoded = createPipelineLite(_ClusterPower);
+        final RingBuffer<QEvent> _ClusterDecoded = createPipelineLite(_ClusterQueueSize);
         final RingBuffer<QEvent>[] _ClusterEvents = new RingBuffer[] { _ClusterIoEvent,
                                                                        _ClusterDecoded,
                                                                        _ConsensusApiEvent,
@@ -254,7 +256,7 @@ public class ClusterCore<C extends IContext<C>>
                       slot -> slot == 0 ? _SendEvents[slot].newBarrier(_LogicProcessor.getSequence())
                                         : _SendEvents[slot].newBarrier());
         final RingBuffer<QEvent>[] _WriteEvents = new RingBuffer[_EncoderCount];
-        Arrays.setAll(_WriteEvents, slot -> createPipelineLite(_AioQueuePower));
+        Arrays.setAll(_WriteEvents, slot -> createPipelineLite(_AioQueueSize));
         final MultiBufferBatchEventProcessor<QEvent> _WriteDispatcher = new MultiBufferBatchEventProcessor<>(_SendEvents,
                                                                                                              _SendBarriers,
                                                                                                              new WriteDispatcher<>(_ErrorEvents[1],

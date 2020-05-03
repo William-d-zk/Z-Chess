@@ -65,9 +65,6 @@ public class DecodedDispatcher<C extends IContext<C>>
         _Error = error;
         _LogicWorkers = workers;
         _WorkerMask = _LogicWorkers.length - 1;
-        if (Integer.bitCount(_LogicWorkers.length) != 1) {
-            throw new IllegalArgumentException("workers' length must be a power of 2");
-        }
     }
 
     @Override
