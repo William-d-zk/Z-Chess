@@ -51,7 +51,6 @@ public class EncodedHandler<C extends IContext<C>>
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
     {
-        _Logger.info("end event! ");
         if (event.hasError()) {
             switch (event.getErrorType())
             {

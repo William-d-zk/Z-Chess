@@ -59,12 +59,12 @@ public interface IMixConfig
 
     default int getPoolSize()
     {
-        return 1 // aioDispatch
+        return 1 // io-dispatch
                + (1 << getDecoderCountPower()) // read-decode
-               + 1 // cluster-single
-               + 1 // link-single
                + (1 << getLogicCountPower())// logic-processor
                + 1 // decoded-dispatch
+               + 1 // cluster-single
+               + 1 // link-single
                + 1 // write-dispatch
                + (1 << getEncoderCountPower())// write-encode
                + 1 // encoded-processor [write-end]
