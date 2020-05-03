@@ -24,7 +24,6 @@
 
 package com.tgx.chess.knight.raft.model.log;
 
-import static com.tgx.chess.knight.raft.IRaftMachine.INDEX_NAN;
 import static com.tgx.chess.knight.raft.IRaftMachine.TERM_NAN;
 
 import java.io.File;
@@ -167,7 +166,7 @@ public class RaftDao
     {
         long startIndex = getStartIndex();
         long endIndex = getEndIndex();
-        if (index == INDEX_NAN || (index < startIndex && index > 0) || index > endIndex) {
+        if (index < startIndex || index > endIndex) {
             _Logger.debug("index out of range, index=%d, start_index=%d, end_index=%d", index, startIndex, endIndex);
             return null;
         }
