@@ -26,9 +26,11 @@ package com.tgx.chess.queen.io.core.executor;
 
 import java.io.IOException;
 import java.nio.channels.AsynchronousChannelGroup;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.lmax.disruptor.LiteBlockingWaitStrategy;
+import com.lmax.disruptor.LiteTimeoutBlockingWaitStrategy;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.WaitStrategy;
 import com.lmax.disruptor.YieldingWaitStrategy;
@@ -55,6 +57,11 @@ public interface IPipeCore
     default RingBuffer<QEvent> createPipelineLite(int size)
     {
         return createPipeline(size, new LiteBlockingWaitStrategy());
+    }
+
+    default RingBuffer<QEvent> createPipelineTimeoutLite(int size)
+    {
+        return createPipeline(size, new LiteTimeoutBlockingWaitStrategy(5, TimeUnit.SECONDS));
     }
 
     RingBuffer<QEvent> getConsensusEvent();

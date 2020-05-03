@@ -139,7 +139,7 @@ public class ClusterCore<C extends IContext<C>>
 
         _ClusterLocalCloseEvent = createPipelineLite(_CloserQueueSize);
         _ClusterLocalSendEvent = createPipelineLite(_CloserQueueSize);
-        _ClusterWriteEvent = createPipelineYield(_ClusterQueueSize);
+        _ClusterWriteEvent = createPipelineYield(_ClusterQueueSize << 2);
         _ConsensusEvent = createPipelineYield(_ClusterQueueSize);
         _ConsensusApiEvent = createPipelineLite(_ClusterQueueSize);
         _LogicEvent = createPipelineLite(_LogicQueueSize);
@@ -149,10 +149,10 @@ public class ClusterCore<C extends IContext<C>>
      ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
      ┃                                                                                      Api   ━> _ConsensusApiEvent ━━━━━━━━━━━━━━━║                  ┏━> _ClusterNotifiers[0] {CallBack}|                                                                                        ┃
      ┃  ━> _AioProducerEvents ║                                                             Timer ━> _ConsensusEvent  ━━━━━━━━━━━━━━━━━║                  ┃   _ClusterNotifiers[.] {CallBack}|                                                                                        ┃
-     ┃  ━> _ClusterLocalClose ║                  ┏> _ClusterIoEvent ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━║                  ╋━> _ClusterNotifiers[N] {CallBack}|                                                                                        ┃
-     ┗━━━> _ErrorEvent[0]     ║ _IoDispatcher ━━━┫  _ReadEvents[0]{_DecodeProcessors}|━║                     ┏━━> _ClusterDecoded ━━━━━║_ClusterProcessor ┃   _ClusterWriteEvent ━━━║                   ┏>_EncodedEvents[0]{_EncodeProcessors}|━║                                     ┃
-     ┏━━━> _ErrorEvent[1]     ║                  ┃  _ReadEvents[.]{_DecodeProcessors}|━║ _DecodedDispatcher ━╋━━> _LogicEvent     ━━━━━{_LogicProcessor}|━╋━━━━━━━━━━━━━━━━━━━━━━━━━║ _WriteDispatcher ━┫ _EncodedEvents[.]{_EncodeProcessors}|━║ _EncodedProcessor ┳━━> _ErrorEvent ━┛
-     ┃┏━━> _ErrorEvent[2]     ║                  ┃  _ReadEvents[N]{_DecodeProcessors}|━║                     ┗━━> _ErrorEvent ━━━━━┓                      ┗━> _ErrorEvent ━━┓       ║                   ┃ _EncodedEvents[M]{_EncodeProcessors}|━║                   ┗━━║ [Event Done]
+     ┃  ━> _ClusterLocalClose ║                  ┏> _ClusterIoEvent ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━║                  ┃   _ClusterNotifiers[N] {CallBack}|                                                                                        ┃
+     ┗━━━> _ErrorEvent[0]     ║ _IoDispatcher ━━━┫  _ReadEvents[0]{_DecodeProcessors}|━║                     ┏━━> _ClusterDecoded ━━━━━║_ClusterProcessor ╋━> _ClusterWriteEvent ━━━║                   ┏>_EncodeEvents[0]━{_EncodeProcessors}|━║                                     ┃
+     ┏━━━> _ErrorEvent[1]     ║                  ┃  _ReadEvents[.]{_DecodeProcessors}|━║ _DecodedDispatcher ━╋━━> _LogicEvent     ━━━━━{_LogicProcessor}|━╋━━━━━━━━━━━━━━━━━━━━━━━━━║ _WriteDispatcher ━┫ _EncodeEvents[.]━{_EncodeProcessors}|━║ _EncodedProcessor ┳━━> _ErrorEvent ━┛
+     ┃┏━━> _ErrorEvent[2]     ║                  ┃  _ReadEvents[N]{_DecodeProcessors}|━║                     ┗━━> _ErrorEvent ━━━━━┓                      ┗━> _ErrorEvent ━━┓       ║                   ┃ _EncodeEvents[M]━{_EncodeProcessors}|━║                   ┗━━║ [Event Done]
      ┃┃┏━> _ErrorEvent[3]     ║                  ┗> _WroteBuffer  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━║                   ┗>_ErrorEvent ━┓
      ┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛           ━> _ClusterLocalSendEvent ━━━╋━━━━━━━║                                  ┃
      ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                          ┃
@@ -199,7 +199,7 @@ public class ClusterCore<C extends IContext<C>>
         for (int i = 0, size = _ClusterNotifiers.length; i < size; i++) {
             _ClusterNotifiers[i].addGatingSequences(_ClusterNotifyProcessors[i].getSequence());
         }
-        final RingBuffer<QEvent> _ClusterDecoded = createPipelineLite(_ClusterQueueSize);
+        final RingBuffer<QEvent> _ClusterDecoded = createPipelineLite(_ClusterQueueSize << 1);
         final RingBuffer<QEvent>[] _ClusterEvents = new RingBuffer[] { _ClusterIoEvent,
                                                                        _ClusterDecoded,
                                                                        _ConsensusApiEvent,
@@ -255,40 +255,38 @@ public class ClusterCore<C extends IContext<C>>
         Arrays.setAll(_SendBarriers,
                       slot -> slot == 0 ? _SendEvents[slot].newBarrier(_LogicProcessor.getSequence())
                                         : _SendEvents[slot].newBarrier());
-        final RingBuffer<QEvent>[] _WriteEvents = new RingBuffer[_EncoderCount];
-        Arrays.setAll(_WriteEvents, slot -> createPipelineLite(_AioQueueSize));
+        final RingBuffer<QEvent>[] _EncodeEvents = new RingBuffer[_EncoderCount];
+        Arrays.setAll(_EncodeEvents, slot -> createPipelineLite(_AioQueueSize));
         final MultiBufferBatchEventProcessor<QEvent> _WriteDispatcher = new MultiBufferBatchEventProcessor<>(_SendEvents,
                                                                                                              _SendBarriers,
                                                                                                              new WriteDispatcher<>(_ErrorEvents[1],
-                                                                                                                                   _WriteEvents));
+                                                                                                                                   _EncodeEvents));
         _WriteDispatcher.setThreadName("WriteDispatcher");
         for (int i = 0, size = _SendEvents.length; i < size; i++) {
             _SendEvents[i].addGatingSequences(_WriteDispatcher.getSequences()[i]);
         }
-        final BatchEventProcessor<QEvent>[] _EncodeProcessors = new BatchEventProcessor[_EncoderCount];
+        final BatchEventProcessor<QEvent>[] _EncodeProcessors = new BatchEventProcessor[_EncodeEvents.length];
         Arrays.setAll(_EncodeProcessors,
-                      slot -> new BatchEventProcessor<>(_WriteEvents[slot],
-                                                        _WriteEvents[slot].newBarrier(),
+                      slot -> new BatchEventProcessor<>(_EncodeEvents[slot],
+                                                        _EncodeEvents[slot].newBarrier(),
                                                         new EncodeHandler<>()));
-        final RingBuffer<QEvent>[] _EncodedEvents = new RingBuffer[_EncoderCount];
-        IoUtil.addArray(_WriteEvents, _EncodedEvents);
-        final SequenceBarrier[] _EncodedBarriers = new SequenceBarrier[_EncodedEvents.length];
-        Arrays.setAll(_EncodedBarriers, slot -> _EncodedEvents[slot].newBarrier(_EncodeProcessors[slot].getSequence()));
-        final MultiBufferBatchEventProcessor<QEvent> _EncodedProcessor = new MultiBufferBatchEventProcessor<>(_EncodedEvents,
+        final SequenceBarrier[] _EncodedBarriers = new SequenceBarrier[_EncodeEvents.length];
+        Arrays.setAll(_EncodedBarriers, slot -> _EncodeEvents[slot].newBarrier(_EncodeProcessors[slot].getSequence()));
+        final MultiBufferBatchEventProcessor<QEvent> _EncodedProcessor = new MultiBufferBatchEventProcessor<>(_EncodeEvents,
                                                                                                               _EncodedBarriers,
                                                                                                               new EncodedHandler<>(_ErrorEvents[0]));
         _EncodedProcessor.setThreadName("EncodedProcessor");
         for (int i = 0; i < _EncoderCount; i++) {
-            _EncodedEvents[i].addGatingSequences(_EncodedProcessor.getSequences()[i]);
+            _EncodeEvents[i].addGatingSequences(_EncodedProcessor.getSequences()[i]);
         }
         /*-------------------------------------------------------------------------------------------------------------------------------------*/
         submit(_IoDispatcher);
         Arrays.stream(_DecodeProcessors)
-              .forEach(this::submit);
+                .forEach(this::submit);
+        submit(_DecodedDispatcher);
         submit(_ClusterProcessor);
         Arrays.stream(_ClusterNotifyProcessors)
-              .forEach(this::submit);
-        submit(_DecodedDispatcher);
+                .forEach(this::submit);
         submit(_LogicProcessor);
         submit(_WriteDispatcher);
         Arrays.stream(_EncodeProcessors)
