@@ -140,7 +140,7 @@ public class ClusterCore<C extends IContext<C>>
         _ClusterWriteEvent = createPipelineYield(_ClusterPower);
         _ConsensusEvent = createPipelineYield(_ClusterPower);
         _ConsensusApiEvent = createPipelineLite(_ClusterPower);
-        _LogicEvent = createPipelineYield(config.getLogicPower());
+        _LogicEvent = createPipelineLite(config.getLogicPower());
     }
 
     /*  ║ barrier, ━> publish event, ━━ pipeline, | event handler
