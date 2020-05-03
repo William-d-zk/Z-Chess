@@ -24,6 +24,9 @@
 
 package com.tgx.chess.knight.raft.model.log;
 
+import static com.tgx.chess.knight.raft.IRaftMachine.INDEX_NAN;
+import static com.tgx.chess.knight.raft.IRaftMachine.TERM_NAN;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -55,8 +58,6 @@ public class RaftDao
         implements
         IRaftDao
 {
-    private final static long            TERM_NAN          = -1;
-    private final static long            INDEX_NAN         = -1;
     private final Logger                 _Logger           = Logger.getLogger("cluster.knight."
                                                                               + getClass().getSimpleName());
     private final String                 _LogDataDir;
