@@ -24,6 +24,7 @@
 
 package com.tgx.chess.knight.raft.model;
 
+import static com.tgx.chess.knight.raft.IRaftMachine.INDEX_NAN;
 import static com.tgx.chess.knight.raft.RaftState.CANDIDATE;
 import static com.tgx.chess.knight.raft.RaftState.FOLLOWER;
 import static com.tgx.chess.knight.raft.RaftState.LEADER;
@@ -313,12 +314,12 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
         _Logger.debug("[* → follower] %s", _SelfMachine);
     }
 
-    private X7F_RaftResponse follow(long peerId, long term, long commit)
+    private X7F_RaftResponse follow(long peerId, long term, long commit, long preIndex, long preIndexTerm)
     {
         _Logger.debug("follower %#x @%d => %d", peerId, term, commit);
         _SelfMachine.follow(peerId, term, commit, _RaftDao);
         mTickTask = _TimeWheel.acquire(this, _TickSchedule);
-        if (catchUp()) {
+        if (catchUp(preIndex, preIndexTerm)) {
             _Logger.debug("follower appended from %#x@%d-^%d=> %s", peerId, term, commit, _SelfMachine);
             return success();
         }
@@ -397,7 +398,11 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
             }//X7E_RaftBroadcast
             else if (update.getState() == LEADER) {
                 _Logger.debug("follow leader %#x leader_commit: %d", update.getPeerId(), update.getCommit());
-                return new X7F_RaftResponse[] { follow(update.getPeerId(), update.getTerm(), update.getCommit()) };
+                return new X7F_RaftResponse[] { follow(update.getPeerId(),
+                                                       update.getTerm(),
+                                                       update.getCommit(),
+                                                       update.getIndex(),
+                                                       update.getIndexTerm()) };
             }
             //else ignore { follower elector 都不会成为update.getState的结果，所以此处忽略}
             else {
@@ -427,7 +432,11 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                 }
                 else if (update.getState() == LEADER) {
                     tickCancel();
-                    return new X7F_RaftResponse[] { follow(update.getPeerId(), update.getTerm(), update.getCommit()) };
+                    return new X7F_RaftResponse[] { follow(update.getPeerId(),
+                                                           update.getTerm(),
+                                                           update.getCommit(),
+                                                           update.getIndex(),
+                                                           update.getIndexTerm()) };
                 }
                 else {
                     return new X7F_RaftResponse[] { reject(ILLEGAL_STATE) };
@@ -448,7 +457,11 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                 }
                 if (update.getState() == LEADER) {
                     electCancel();
-                    return new X7F_RaftResponse[] { follow(update.getPeerId(), update.getTerm(), update.getCommit()) };
+                    return new X7F_RaftResponse[] { follow(update.getPeerId(),
+                                                           update.getTerm(),
+                                                           update.getCommit(),
+                                                           update.getIndex(),
+                                                           update.getIndexTerm()) };
                 }
                 break;
             case CANDIDATE:
@@ -469,7 +482,11 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                 }
                 else if (update.getState() == LEADER) {
                     electCancel();
-                    return new X7F_RaftResponse[] { follow(update.getPeerId(), update.getTerm(), update.getCommit()) };
+                    return new X7F_RaftResponse[] { follow(update.getPeerId(),
+                                                           update.getTerm(),
+                                                           update.getCommit(),
+                                                           update.getIndex(),
+                                                           update.getIndexTerm()) };
                 }
                 break;
             case LEADER:
@@ -622,7 +639,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
         }
     }
 
-    private boolean catchUp()
+    private boolean catchUp(long preIndex, long preIndexTerm)
     {
         if (_SelfMachine.getState() == LEADER) {
             _Logger.warning("leader needn't catch up any log.");
@@ -631,57 +648,117 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
         }
         ITERATE_APPEND:
         {
-            for (Iterator<LogEntry> it = _AppendLogQueue.iterator(); it.hasNext();) {
-                LogEntry entry = it.next();
-                if (_RaftDao.appendLog(entry)) {
-                    _SelfMachine.appendLog(entry.getIndex(), entry.getTerm(), _RaftDao);
+            if (_AppendLogQueue.isEmpty()) {
+                /*
+                1:follower 未将自身的index 同步给leader，next_index = -1
+                2:follower index == leader.index 此时需要确认 双边的index_term是否一致
+                需要注意当 index 
+                 */
+                if (_SelfMachine.getIndex() == 0 && preIndex == 0) {
+                    //初始态，raft-machine 中不包含任何 log 记录
+                    _Logger.debug("no log append");
                 }
-                else {
-                    LogEntry old = _RaftDao.getEntry(entry.getIndex());
-                    if (old == null || old.getTerm() != entry.getTerm()) {
-                        if (old != null) {
-                            _Logger.warning("log conflict [old: %d@%d <=>new: %d@%d ]",
-                                            entry.getIndex(),
-                                            old.getTerm(),
-                                            entry.getIndex(),
-                                            entry.getTerm());
-                        }
-                        else {
-                            _Logger.warning("log %d miss,self %s", entry.getIndex(), _SelfMachine);
-                        }
+                else if (_SelfMachine.getIndex() < preIndex) {
+                    /*
+                    follower 未将自身index 同步给leader，所以leader 仅发送了一个当前heartbeat
+                    后续执行success() → response 会将index 同步给leader。
+                    no action => ignore
+                    */
+                    _Logger.debug("leader doesn't know my next");
+                }
+                else if (_SelfMachine.getIndex() == preIndex) {
+                    if (_SelfMachine.getIndexTerm() == preIndexTerm) {
+                        // follower 完成与Leader 的同步
+                        _SelfMachine.apply(_RaftDao);
+                        _Logger.debug("log synchronized ");
+                    }
+                    else {
                         /*
-                           此处存在一个可优化点，将此冲突对应的 term 下所有的index 都注销，向leader反馈
-                           上一个term.end_index,能有效减少以-1进行删除的数据量。此种优化的意义不是很大。
-                        */
-                        long newEndIndex = entry.getIndex() - 1;
+                         1.follower.index_term < pre_index_term 
+                         说明follower.index 在 index_term 写入后，未接收到commit就离线了，且leader也未能提交
+                         在任期内完成commit 便触发了新的选举。最终在follower 离线时重新写入了 log.index@pre_index_term
+                         2.follower.index_term > pre_index_term
+                         此时集群一定经历了一次不可逆的数据损失。
+                         */
+                        long newEndIndex = preIndex - 1;
                         LogEntry rollback = _RaftDao.truncateSuffix(newEndIndex);
                         if (rollback != null) {
                             _SelfMachine.appendLog(rollback.getIndex(), rollback.getTerm(), _RaftDao);
                             _SelfMachine.apply(_RaftDao);
-                            _Logger.warning("machine rollback %d@%d", rollback.getIndex(), rollback.getTerm());
+                            _Logger.debug("machine rollback %d@%d", rollback.getIndex(), rollback.getTerm());
                         }
-                        else {
-                            /*
-                            回滚异常，但是不会出现 newEndIndex < _RaftDao.start 的情况，否则说明
-                            集群中的大多数都是错误的数据，在此之前一定出现了大规模集群失败，且丢失正确的数据的情况
-                            */
-                            _Logger.fetal("cluster failed over flow,lost data.");
+                        else if (newEndIndex == 0) {
+                            _SelfMachine.reset();
+                            _Logger.debug("machine reset in heartbeat");
+                        }
+                        else if (newEndIndex >= _RaftDao.getStartIndex()) {
+                            _Logger.fetal("lost date,manual recover");
                         }
                         break ITERATE_APPEND;
                     }
+                }
+
+            }
+            else {
+                for (Iterator<LogEntry> it = _AppendLogQueue.iterator(); it.hasNext();) {
+                    LogEntry entry = it.next();
+                    if (_RaftDao.appendLog(entry)) {
+                        _SelfMachine.appendLog(entry.getIndex(), entry.getTerm(), _RaftDao);
+                    }
                     else {
-                        /*
+                        LogEntry old = _RaftDao.getEntry(entry.getIndex());
+                        if (old == null || old.getTerm() != entry.getTerm()) {
+                            if (old != null) {
+                                _Logger.debug("log conflict [old: %d@%d <=>new: %d@%d ]",
+                                              entry.getIndex(),
+                                              old.getTerm(),
+                                              entry.getIndex(),
+                                              entry.getTerm());
+                            }
+                            else {
+                                _Logger.debug("log %d miss,self %s", entry.getIndex(), _SelfMachine);
+                            }
+                            /*
+                               此处存在一个可优化点，将此冲突对应的 term 下所有的index 都注销，向leader反馈
+                               上一个term.end_index,能有效减少以-1进行删除的数据量。此种优化的意义不是很大。
+                            */
+                            long newEndIndex = entry.getIndex() - 1;
+                            LogEntry rollback = _RaftDao.truncateSuffix(newEndIndex);
+                            if (rollback != null) {
+                                _SelfMachine.appendLog(rollback.getIndex(), rollback.getTerm(), _RaftDao);
+                                _SelfMachine.apply(_RaftDao);
+                                _Logger.debug("machine rollback %d@%d", rollback.getIndex(), rollback.getTerm());
+                            }
+                            else if (newEndIndex == 0) {
+                                //回归起点
+                                _SelfMachine.reset();
+                                _Logger.debug("machine reset in append");
+                            }
+                            else if (newEndIndex >= _RaftDao.getStartIndex()) {
+                                /*
+                                回滚异常，但是不会出现 newEndIndex < _RaftDao.start 的情况
+                                否则集群中的大多数都是错误的数据，在此之前一定出现了大规模集群失败
+                                且丢失正确的数据的情况
+                                */
+                                _Logger.fetal("cluster failed over flow,lost data. manual recover ");
+                            }
+                            break ITERATE_APPEND;
+                        }
+                        else {
+                            /*
                             old != null && old.term == entry.term && old.index == entry.index
                             1.old ==  null entry.index 处于 未正常管控的位置
                             启动协商之后是不会出现此类情况的。
                             2.old.term==entry.term已经完成了日志存储，不再重复append 
-                         */
-                        _Logger.debug("already has the log -> %d@%d | ignore", entry.getIndex(), entry.getTerm());
+                             */
+                            _Logger.debug("already has the log -> %d@%d | ignore", entry.getIndex(), entry.getTerm());
+                        }
                     }
+                    it.remove();
                 }
-                it.remove();
+                //接收了Leader 追加的日志
+                _SelfMachine.apply(_RaftDao);
             }
-            _SelfMachine.apply(_RaftDao);
             _Logger.debug("catch up %d@%d", _SelfMachine.getIndex(), _SelfMachine.getIndexTerm());
             return true;
             //end of IT_APPEND
@@ -803,17 +880,17 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
         x7e.setPreIndex(_SelfMachine.getIndex());
         x7e.setPreIndexTerm(_SelfMachine.getIndexTerm());
         x7e.setFollower(follower.getPeerId());
-        if (follower.getIndex() == _SelfMachine.getIndex()) { return x7e; }
+        if (follower.getIndex() == _SelfMachine.getIndex() || follower.getIndex() == INDEX_NAN) {
+            //follower 已经同步 或 follower.next 未知
+            return x7e;
+        }
+        //follower.index < self.index
         List<LogEntry> entryList = new LinkedList<>();
-        LogEntry logEntry = _RaftDao.getEntry(follower.getIndex() + 1);
+        LogEntry logEntry = _RaftDao.getEntry(follower.getIndex());
         if (logEntry == null) {
-            if (follower.getIndex() < 0) {
-                _Logger.info("follower next index == -1");
-            }
-            else {
-                _Logger.warning("leader truncate prefix，wait for installing snapshot");
-            }
-            return x7e;//leader 也没有这么久远的数据需要等install snapshot之后才能恢复正常同步
+            //leader 也没有这么久远的数据需要等install snapshot之后才能恢复正常同步
+            _Logger.warning("leader truncate prefix，wait for installing snapshot");
+            return x7e;
         }
         x7e.setPreIndex(logEntry.getIndex());
         x7e.setPreIndexTerm(logEntry.getTerm());

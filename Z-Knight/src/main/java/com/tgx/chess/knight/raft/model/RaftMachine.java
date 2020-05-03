@@ -178,8 +178,8 @@ public class RaftMachine
     public RaftMachine(@JsonProperty("peer_id") long peerId)
     {
         _PeerId = peerId;
-        mMatchIndex = -1;
-        mIndex = -1;
+        mMatchIndex = INDEX_NAN;
+        mIndex = INDEX_NAN;
     }
 
     @Override
@@ -355,6 +355,7 @@ public class RaftMachine
     @Override
     public void apply(IRaftDao dao)
     {
+        //TODO 分摊集群读写压力，需要在follower apply的时候notify 那些在follower上订阅了延迟一致的consumer
         if (mIndex < mApplied) { throw new IllegalStateException(); }
         mApplied = Long.min(mIndex, mCommit);
         dao.updateLogApplied(mApplied);
@@ -380,8 +381,7 @@ public class RaftMachine
         mLeader = _PeerId;
         mCandidate = _PeerId;
         dao.updateCandidate(_PeerId);
-        mIndexTerm = mTerm;
-        mMatchIndex = mIndex;
+        mMatchIndex = mCommit;
         dao.updateTerm(mTerm);
     }
 
@@ -471,6 +471,16 @@ public class RaftMachine
         mMatchIndex = index;
         mIndexTerm = indexTerm;
         dao.updateLogIndex(index);
+    }
+
+    @Override
+    public void reset()
+    {
+        mIndex = 0;
+        mMatchIndex = INDEX_NAN;
+        mIndexTerm = 0;
+        mApplied = 0;
+        mCommit = 0;
     }
 
     @Override

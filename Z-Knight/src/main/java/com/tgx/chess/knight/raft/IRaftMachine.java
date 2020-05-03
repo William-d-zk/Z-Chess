@@ -26,6 +26,7 @@ package com.tgx.chess.knight.raft;
 
 import java.util.Set;
 
+import com.tgx.chess.king.base.inf.IReset;
 import com.tgx.chess.king.base.util.Triple;
 
 /**
@@ -33,7 +34,12 @@ import com.tgx.chess.king.base.util.Triple;
  * @date 2019/12/10
  */
 public interface IRaftMachine
+        extends
+        IReset
 {
+    long INDEX_NAN = -1;
+    long TERM_NAN  = -1;
+
     /**
      * @return 当前任期 自然数
      */
