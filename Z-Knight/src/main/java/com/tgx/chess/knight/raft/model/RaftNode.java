@@ -128,7 +128,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
     public void init() throws IOException
     {
         if (!_ClusterConfig.isClusterModel()) {
-            _Logger.debug("single model skip init raft node");
+            _Logger.info("single model skip init raft node");
             return;
         }
         /* _RaftDao 启动的时候已经装载了 snapshot */
@@ -142,12 +142,14 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                                         .getApplied());
         _SelfMachine.setIndex(_RaftDao.getLogMeta()
                                       .getIndex());
-        _SelfMachine.setIndexTerm(_RaftDao.getLogMeta()
-                                          .getTerm());
         _SelfMachine.setPeerSet(_RaftDao.getLogMeta()
                                         .getPeerSet());
         _SelfMachine.setGateSet(_RaftDao.getLogMeta()
                                         .getGateSet());
+        _SelfMachine.setMatchIndex(_SelfMachine.getIndex());
+        if (_SelfMachine.getIndex() >= _RaftDao.getStartIndex()) {
+            _SelfMachine.setIndexTerm(_RaftDao.getEntryTerm(_SelfMachine.getIndex()));
+        }
         if (_SelfMachine.getPeerSet() == null && _SelfMachine.getGateSet() == null) {
             /*首次启动或删除本地状态机重启,仅需要连接node_id < self.node_id的peer*/
             List<IPair> peers = _ClusterConfig.getPeers();
