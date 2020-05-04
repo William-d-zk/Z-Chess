@@ -25,6 +25,7 @@
 package com.tgx.chess.knight.raft.model;
 
 import static com.tgx.chess.knight.raft.IRaftMachine.INDEX_NAN;
+import static com.tgx.chess.knight.raft.IRaftMachine.MIN_START;
 import static com.tgx.chess.knight.raft.RaftState.CANDIDATE;
 import static com.tgx.chess.knight.raft.RaftState.FOLLOWER;
 import static com.tgx.chess.knight.raft.RaftState.LEADER;
@@ -514,6 +515,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
     public IPair onResponse(long peerId,
                             long term,
                             long index,
+                            long indexTerm,
                             long candidate,
                             RaftState state,
                             RaftCode code,
@@ -525,6 +527,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
             return null;
         }
         peerMachine.setIndex(index);
+        peerMachine.setIndexTerm(indexTerm);
         peerMachine.setTerm(term);
         peerMachine.setState(state);
         peerMachine.setCandidate(candidate);
@@ -862,7 +865,6 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                          .values()
                          .stream()
                          .filter(other -> other.getPeerId() != _SelfMachine.getPeerId())
-                         .peek(node -> node.setMatchIndex(-1))
                          .map(this::createBroadcast);
     }
 
@@ -880,16 +882,20 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
         x7e.setPreIndex(_SelfMachine.getIndex());
         x7e.setPreIndexTerm(_SelfMachine.getIndexTerm());
         x7e.setFollower(follower.getPeerId());
+        follower.setMatchIndex(INDEX_NAN);//match_index 重置
         if (follower.getIndex() == _SelfMachine.getIndex() || follower.getIndex() == INDEX_NAN) {
             //follower 已经同步 或 follower.next 未知
             return x7e;
         }
         //follower.index < self.index
         List<LogEntry> entryList = new LinkedList<>();
-        LogEntry logEntry = _RaftDao.getEntry(follower.getIndex());
+        final long _Index = follower.getIndex();
+        LogEntry logEntry = _RaftDao.getEntry(_Index);
         if (logEntry == null) {
-            //leader 也没有这么久远的数据需要等install snapshot之后才能恢复正常同步
-            _Logger.warning("leader truncate prefix，wait for installing snapshot");
+            if (_Index >= MIN_START) {
+                //leader 也没有这么久远的数据需要等install snapshot之后才能恢复正常同步
+                _Logger.warning("leader truncate prefix，wait for installing snapshot");
+            }
             return x7e;
         }
         x7e.setPreIndex(logEntry.getIndex());
