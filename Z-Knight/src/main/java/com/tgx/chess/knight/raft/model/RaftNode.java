@@ -274,6 +274,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
         response.setPeerId(_SelfMachine.getPeerId());
         response.setTerm(_SelfMachine.getTerm());
         response.setCatchUp(_SelfMachine.getIndex());
+        response.setCatchUpTerm(_SelfMachine.getIndexTerm());
         response.setCandidate(_SelfMachine.getCandidate());
         return response;
     }
