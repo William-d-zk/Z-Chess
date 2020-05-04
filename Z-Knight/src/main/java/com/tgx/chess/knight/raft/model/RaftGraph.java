@@ -95,7 +95,7 @@ public class RaftGraph
     }
 
     @JsonIgnore
-    public boolean isMajorAccept(long selfPeerId, long term)
+    public boolean isMajorAcceptCandidate(long selfPeerId, long term)
     {
         return _NodeMap.values()
                        .stream()
@@ -104,7 +104,7 @@ public class RaftGraph
     }
 
     @JsonIgnore
-    public boolean isMajorAccept(long selfPeerId, long term, long index)
+    public boolean isMajorAcceptLeader(long selfPeerId, long term, long index)
     {
         return _NodeMap.values()
                        .stream()
