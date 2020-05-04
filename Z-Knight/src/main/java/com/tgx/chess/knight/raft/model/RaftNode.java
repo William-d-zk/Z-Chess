@@ -341,7 +341,6 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
     private void beLeader()
     {
         _SelfMachine.beLeader(_RaftDao);
-        mHeartbeatTask = _TimeWheel.acquire(this, _HeartbeatSchedule);
         _Logger.debug("be leader=>%s", _SelfMachine);
     }
 
@@ -804,7 +803,6 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                                                _SelfMachine.getTerm(),
                                                _SelfMachine.getIndex()))
             {
-                mHeartbeatTask = _TimeWheel.acquire(this, _HeartbeatSchedule);
                 _Logger.debug("keep lead =>%s", _SelfMachine);
                 return createBroadcasts().collect(Collectors.toList());
             }
@@ -868,6 +866,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
 
     private Stream<X7E_RaftBroadcast> createBroadcasts()
     {
+        mHeartbeatTask = _TimeWheel.acquire(this, _HeartbeatSchedule);
         return _RaftGraph.getNodeMap()
                          .values()
                          .stream()
