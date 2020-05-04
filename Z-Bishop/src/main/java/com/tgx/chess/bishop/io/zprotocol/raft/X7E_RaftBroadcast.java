@@ -161,4 +161,17 @@ public class X7E_RaftBroadcast
     {
         return true;
     }
+
+    @Override
+    public String toString()
+    {
+        return String.format("X7E_RaftBroadcast{ leader:%#x;%d@%d term:%d,commit:%d %s",
+                             mPeerId,
+                             mPreIndex,
+                             mPreIndexTerm,
+                             mTerm,
+                             mCommit,
+                             getPayload() == null ? "no entry"
+                                                  : IoUtil.bin2Hex(getPayload()));
+    }
 }

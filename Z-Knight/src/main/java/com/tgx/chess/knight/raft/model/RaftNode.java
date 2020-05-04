@@ -537,7 +537,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
             case SUCCESS:
                 if (_SelfMachine.getState() == CANDIDATE) {
                     //granted
-                    if (_RaftGraph.isMajorAccept(_SelfMachine.getPeerId(), _SelfMachine.getTerm())) {
+                    if (_RaftGraph.isMajorAcceptCandidate(_SelfMachine.getPeerId(), _SelfMachine.getTerm())) {
                         electCancel();
                         beLeader();
                         return new Pair<>(createBroadcasts().toArray(X7E_RaftBroadcast[]::new), null);
@@ -554,7 +554,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                     LogEntry logEntry = _RaftDao.getEntry(index);
                     if (index > _SelfMachine.getCommit()
                         && logEntry.getTerm() == _SelfMachine.getTerm()
-                        && _RaftGraph.isMajorAccept(_SelfMachine.getPeerId(), _SelfMachine.getTerm(), index))
+                        && _RaftGraph.isMajorAcceptLeader(_SelfMachine.getPeerId(), _SelfMachine.getTerm(), index))
                     {
                         _SelfMachine.commit(index, _RaftDao);
                         X76_RaftResult x76 = new X76_RaftResult(_ZUID.getId());
@@ -664,11 +664,13 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                 }
                 else if (_SelfMachine.getIndex() < preIndex) {
                     /*
-                    follower 未将自身index 同步给leader，所以leader 仅发送了一个当前heartbeat
+                    1.follower 未将自身index 同步给leader，所以leader 仅发送了一个当前heartbeat
                     后续执行success() → response 会将index 同步给leader。
                     no action => ignore
+                    2.leader 已经获知follower的需求 但是 self.index < leader.start
+                    需要follower先完成snapshot的安装才能正常同步。
                     */
-                    _Logger.debug("leader doesn't know my next");
+                    _Logger.debug("leader doesn't know my next  || leader hasn't log,need to install snapshot");
                 }
                 else if (_SelfMachine.getIndex() == preIndex) {
                     if (_SelfMachine.getIndexTerm() == preIndexTerm) {
@@ -798,7 +800,10 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
             && _SelfMachine.getIndexTerm() >= update.getIndexTerm()
             && _SelfMachine.getCommit() >= update.getCommit())
         {
-            if (_RaftGraph.isMajorAccept(_SelfMachine.getPeerId(), _SelfMachine.getTerm(), _SelfMachine.getIndex())) {
+            if (_RaftGraph.isMajorAcceptLeader(_SelfMachine.getPeerId(),
+                                               _SelfMachine.getTerm(),
+                                               _SelfMachine.getIndex()))
+            {
                 mHeartbeatTask = _TimeWheel.acquire(this, _HeartbeatSchedule);
                 _Logger.debug("keep lead =>%s", _SelfMachine);
                 return createBroadcasts().collect(Collectors.toList());
@@ -833,6 +838,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                                          requestSerial,
                                          requestData);
         if (_RaftDao.appendLog(newEntry)) {
+            heartbeatCancel();
             _SelfMachine.appendLog(newEntry.getIndex(), newEntry.getTerm(), _RaftDao);
             _Logger.debug("leader appended log %d@%d", newEntry.getIndex(), newEntry.getTerm());
             return createBroadcasts();
@@ -880,6 +886,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
         x7e.setPeerId(_SelfMachine.getPeerId());
         x7e.setTerm(_SelfMachine.getTerm());
         x7e.setCommit(_SelfMachine.getCommit());
+        //先初始化为leader最新的的log数据
         x7e.setPreIndex(_SelfMachine.getIndex());
         x7e.setPreIndexTerm(_SelfMachine.getIndexTerm());
         x7e.setFollower(follower.getPeerId());
@@ -891,18 +898,19 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
         //follower.index < self.index
         List<LogEntry> entryList = new LinkedList<>();
         final long _Index = follower.getIndex();
-        LogEntry logEntry = _RaftDao.getEntry(_Index);
-        if (logEntry == null) {
-            if (_Index >= MIN_START) {
-                //leader 也没有这么久远的数据需要等install snapshot之后才能恢复正常同步
-                _Logger.warning("leader truncate prefix，wait for installing snapshot");
-            }
+        LogEntry nextLog;
+        nextLog = _RaftDao.getEntry(_Index >= MIN_START ? _Index
+                                                        : 1);
+        if (nextLog == null) {
+            _Logger.warning("leader truncate prefix，wait for installing snapshot");
             return x7e;
         }
-        x7e.setPreIndex(logEntry.getIndex());
-        x7e.setPreIndexTerm(logEntry.getTerm());
-        entryList.add(logEntry);
-        for (long i = logEntry.getIndex() + 1, l = _SelfMachine.getIndex(); i <= l; i++) {
+        else {
+            x7e.setPreIndex(nextLog.getIndex());
+            x7e.setPreIndexTerm(nextLog.getTerm());
+        }
+        entryList.add(nextLog);
+        for (long i = nextLog.getIndex() + 1, l = _SelfMachine.getIndex(); i <= l; i++) {
             if (limit > 0 && entryList.size() >= limit) {
                 break;
             }
