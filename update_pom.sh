@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-version="1.0.1 RELEASE"
+version="1.0.2.RELEASE"
 for file in $(find \./Z-* -name "pom.xml");do
      echo $file
      sed -e "33s/<version>\(.*\)<\/version>/<version>${version}<\/version>/g$h" \
