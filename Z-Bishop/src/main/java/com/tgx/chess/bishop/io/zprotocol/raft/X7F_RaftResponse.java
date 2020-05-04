@@ -50,13 +50,14 @@ public class X7F_RaftResponse
     private long mTerm;
     private long mCandidate;
     private long mCatchUp;
+    private long mCatchUpTerm;
     private int  mCode;
     private int  mState;
 
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 34;
+        return super.dataLength() + 42;
     }
 
     @Override
@@ -70,6 +71,8 @@ public class X7F_RaftResponse
         pos += 8;
         mCatchUp = IoUtil.readLong(data, pos);
         pos += 8;
+        mCatchUpTerm = IoUtil.readLong(data, pos);
+        pos += 8;
         mCode = data[pos++];
         mState = data[pos++];
         return pos;
@@ -82,6 +85,7 @@ public class X7F_RaftResponse
         pos += IoUtil.writeLong(mTerm, data, pos);
         pos += IoUtil.writeLong(mCandidate, data, pos);
         pos += IoUtil.writeLong(mCatchUp, data, pos);
+        pos += IoUtil.writeLong(mCatchUpTerm, data, pos);
         pos += IoUtil.writeByte(mCode, data, pos);
         pos += IoUtil.writeByte(mState, data, pos);
         return pos;
@@ -145,6 +149,16 @@ public class X7F_RaftResponse
     public long getCandidate()
     {
         return mCandidate;
+    }
+
+    public long getCatchUpTerm()
+    {
+        return mCatchUpTerm;
+    }
+
+    public void setCatchUpTerm(long indexTerm)
+    {
+        mCatchUpTerm = indexTerm;
     }
 
     @Override
