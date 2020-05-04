@@ -24,6 +24,7 @@
 
 package com.tgx.chess.knight.raft.model.log;
 
+import static com.tgx.chess.knight.raft.IRaftMachine.MIN_START;
 import static com.tgx.chess.knight.raft.IRaftMachine.TERM_NAN;
 
 import java.io.File;
@@ -167,7 +168,12 @@ public class RaftDao
         long startIndex = getStartIndex();
         long endIndex = getEndIndex();
         if (index < startIndex || index > endIndex) {
-            _Logger.debug("index out of range, index=%d, start_index=%d, end_index=%d", index, startIndex, endIndex);
+            if (startIndex > MIN_START) {
+                _Logger.debug("index out of range, index=%d, start_index=%d, end_index=%d",
+                              index,
+                              startIndex,
+                              endIndex);
+            }
             return null;
         }
         if (_Index2SegmentMap.isEmpty()) { return null; }
