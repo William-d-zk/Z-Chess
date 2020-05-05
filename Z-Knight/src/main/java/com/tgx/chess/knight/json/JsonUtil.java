@@ -42,8 +42,8 @@ import com.tgx.chess.king.base.log.Logger;
 @Configuration
 public class JsonUtil
 {
-    private final static Logger _Logger      = Logger.getLogger(JsonUtil.class.getSimpleName());
-    private static ObjectMapper objectMapper = new ObjectMapper();
+    private final static Logger _Logger       = Logger.getLogger(JsonUtil.class.getSimpleName());
+    private static ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     public void setPropertyNamingStrategy(String input)
     {
@@ -71,13 +71,29 @@ public class JsonUtil
             default:
                 return;
         }
-        objectMapper.setPropertyNamingStrategy(strategy);
+        OBJECT_MAPPER.setPropertyNamingStrategy(strategy);
     }
 
     public static <T> T readValue(byte[] input, Class<T> clazz)
     {
         try {
-            return objectMapper.readValue(input, clazz);
+            return OBJECT_MAPPER.readValue(input, clazz);
+        }
+        catch (JsonParseException |
+               JsonMappingException e)
+        {
+            e.printStackTrace();
+        }
+        catch (IOException e) {
+            _Logger.warning("read json error", e);
+        }
+        return null;
+    }
+
+    public static <T> T readValue(String input, Class<T> clazz)
+    {
+        try {
+            return OBJECT_MAPPER.readValue(input, clazz);
         }
         catch (JsonParseException |
                JsonMappingException e)
@@ -93,7 +109,7 @@ public class JsonUtil
     public static <T> T readValue(byte[] input, TypeReference<T> type)
     {
         try {
-            return objectMapper.readValue(input, type);
+            return OBJECT_MAPPER.readValue(input, type);
         }
         catch (JsonParseException |
                JsonMappingException e)
@@ -106,20 +122,41 @@ public class JsonUtil
         return null;
     }
 
-    public static JsonNode readTree(byte[] data) throws IOException
+    public static <T> T readValue(String input, TypeReference<T> type)
     {
-        return objectMapper.readTree(data);
+        try {
+            return OBJECT_MAPPER.readValue(input, type);
+        }
+        catch (JsonParseException |
+               JsonMappingException e)
+        {
+            e.printStackTrace();
+        }
+        catch (IOException e) {
+            _Logger.warning("read json error", e);
+        }
+        return null;
+    }
+
+    public static JsonNode readTree(byte[] input) throws IOException
+    {
+        return OBJECT_MAPPER.readTree(input);
+    }
+
+    public static JsonNode readTree(String input) throws IOException
+    {
+        return OBJECT_MAPPER.readTree(input);
     }
 
     public static <T> JsonNode valueToTree(T data)
     {
-        return objectMapper.valueToTree(data);
+        return OBJECT_MAPPER.valueToTree(data);
     }
 
     public static <T> byte[] writeValueAsBytes(T input)
     {
         try {
-            return objectMapper.writeValueAsBytes(input);
+            return OBJECT_MAPPER.writeValueAsBytes(input);
         }
         catch (JsonProcessingException e) {
             _Logger.warning("write json error", e);
@@ -130,7 +167,7 @@ public class JsonUtil
     public static <T> String writeValueAsString(T input)
     {
         try {
-            return objectMapper.writeValueAsString(input);
+            return OBJECT_MAPPER.writeValueAsString(input);
         }
         catch (JsonProcessingException e) {
             _Logger.warning("write json error", e);
