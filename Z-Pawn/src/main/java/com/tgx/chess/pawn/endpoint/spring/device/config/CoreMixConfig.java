@@ -30,7 +30,7 @@ import org.springframework.context.annotation.PropertySource;
 
 import com.tgx.chess.queen.config.IMixConfig;
 
-@Configuration
+@Configuration("core_mix_config")
 @ConfigurationProperties(prefix = "z.chess.mix")
 @PropertySource("classpath:core.mix.properties")
 public class CoreMixConfig
