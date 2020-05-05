@@ -78,4 +78,9 @@ public class X106_Identity
         return new X106_Identity(getPayload());
     }
 
+    @Override
+    public String toString()
+    {
+        return String.format("X106 %s", IoUtil.longArrayToHex(getIdentities()));
+    }
 }
