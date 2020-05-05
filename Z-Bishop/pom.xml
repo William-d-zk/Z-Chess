@@ -30,7 +30,7 @@
     <parent>
         <artifactId>framework.z-chess</artifactId>
         <groupId>com.tgx.service</groupId>
-        <version>1.0.2.RELEASE</version>
+        <version>1.0.3-SNAPSHOT</version>
     </parent>
     <artifactId>protocol.z-bishop</artifactId>
     <name>Z-Bishop</name>
