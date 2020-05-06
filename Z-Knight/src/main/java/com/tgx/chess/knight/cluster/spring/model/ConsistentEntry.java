@@ -33,7 +33,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class ConsistentEntry
 {
-    private long               session;
+    private long               origin;
     private long               zuid;
     private boolean            commit;
     private ConsistentProtocol protocol;
@@ -48,14 +48,14 @@ public class ConsistentEntry
         this.commit = commit;
     }
 
-    public long getSession()
+    public long getOrigin()
     {
-        return session;
+        return origin;
     }
 
-    public void setSession(long session)
+    public void setOrigin(long origin)
     {
-        this.session = session;
+        this.origin = origin;
     }
 
     public long getZuid()
