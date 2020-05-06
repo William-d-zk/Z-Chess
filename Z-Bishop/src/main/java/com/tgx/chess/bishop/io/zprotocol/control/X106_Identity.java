@@ -57,13 +57,13 @@ public class X106_Identity
 
     public long[] getIdentities()
     {
-        int size = (getPayload().length >>> 3) - 1;
+        int size = (getPayload().length >>> 3);
         if (size > 0) {
             long[] result = new long[size];
             IoUtil.readLongArray(getPayload(), 8, result);
             return result;
         }
-        return null;
+        return new long[] { -1L };
     }
 
     @Override
