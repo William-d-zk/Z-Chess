@@ -229,8 +229,8 @@ public class MappingHandler<C extends IContext<C>,
                 case CONSENSUS:
                     IConsistentProtocol request = event.getContent()
                                                        .getFirst();
-                    int origin = event.getContent()
-                                      .getSecond();
+                    long origin = event.getContent()
+                                       .getSecond();
                     if (_ClusterCustom.waitForCommit()) {
                         try {
                             List<ITriple> broadcast = _ClusterCustom.consensus(_SessionManager, request, origin);
@@ -266,10 +266,10 @@ public class MappingHandler<C extends IContext<C>,
         event.reset();
     }
 
-    private void publishNotify(IConsistentProtocol request, int channel, Throwable throwable)
+    private void publishNotify(IConsistentProtocol request, long channel, Throwable throwable)
     {
         Objects.requireNonNull(request);
-        RingBuffer<QEvent> notifier = _Notifiers[channel & _NotifyModMask];
+        RingBuffer<QEvent> notifier = _Notifiers[(int) (channel & _NotifyModMask)];
         if (throwable == null) {
             publish(notifier, NOTIFY, new Pair<>(request, null), _NotifyCustom);
         }
