@@ -22,67 +22,61 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.knight.cluster.spring.service;
+package com.tgx.chess.bishop.io.zhandler;
 
-import java.nio.charset.StandardCharsets;
-
-import com.tgx.chess.bishop.io.mqtt.control.X11C_QttPingreq;
-import com.tgx.chess.bishop.io.mqtt.control.X11D_QttPingresp;
-import com.tgx.chess.bishop.io.ws.control.X104_Ping;
-import com.tgx.chess.bishop.io.ws.control.X105_Pong;
-import com.tgx.chess.bishop.io.zfilter.ZContext;
+import com.tgx.chess.bishop.io.zprotocol.ztls.X01_EncryptRequest;
+import com.tgx.chess.bishop.io.zprotocol.ztls.X02_AsymmetricPub;
+import com.tgx.chess.bishop.io.zprotocol.ztls.X03_Cipher;
+import com.tgx.chess.bishop.io.zprotocol.ztls.X04_EncryptConfirm;
+import com.tgx.chess.bishop.io.zprotocol.ztls.X05_EncryptStart;
+import com.tgx.chess.bishop.io.zprotocol.ztls.X06_EncryptComp;
+import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.queen.event.handler.mix.ILogicHandler;
+import com.tgx.chess.king.base.util.Pair;
+import com.tgx.chess.queen.event.handler.IMappingCustom;
+import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
 
 /**
  * @author william.d.zk
- * @date 2020/5/2
+ * @date 2020/5/7
  */
-public class ClusterLogic
+abstract class ZBaseMappingCustom<C extends IContext<C>,
+                                  E extends IMappingCustom<C>>
         implements
-        ILogicHandler<ZContext>
+        IMappingCustom<C>
 {
 
-    private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("protocol.bishop." + getClass().getSimpleName());
+    protected final E    _Then;
 
-    private final ISessionManager<ZContext> _Manager;
-
-    public ClusterLogic(ISessionManager<ZContext> manager)
+    protected ZBaseMappingCustom(E then)
     {
-        _Manager = manager;
+        _Then = then;
     }
 
     @Override
-    public ISessionManager<ZContext> getISessionManager()
+    public IPair handle(ISessionManager<C> manager, ISession<C> session, IControl<C> content) throws Exception
     {
-        return _Manager;
-    }
-
-    @Override
-    public IControl<ZContext>[] handle(ISessionManager<ZContext> manager,
-                                       ISession<ZContext> session,
-                                       IControl<ZContext> content) throws Exception
-    {
-        _Logger.debug("cluster handle heartbeat");
+        _Logger.debug("mapping receive %s", content);
         switch (content.serial())
         {
-            case X104_Ping.COMMAND:
-                return new X105_Pong[] { new X105_Pong(String.format("pong:%#x %s",
-                                                                     session.getIndex(),
-                                                                     session.getLocalAddress())
-                                                             .getBytes(StandardCharsets.UTF_8)) };
-            case X11C_QttPingreq.COMMAND:
-                return new X11D_QttPingresp[] { new X11D_QttPingresp() };
+            case X01_EncryptRequest.COMMAND:
+            case X02_AsymmetricPub.COMMAND:
+            case X03_Cipher.COMMAND:
+            case X04_EncryptConfirm.COMMAND:
+            case X05_EncryptStart.COMMAND:
+            case X06_EncryptComp.COMMAND:
+                /*
+                 *  内嵌逻辑，在ZCommandFilter中已经处理结束
+                 *  此处仅执行转发逻辑
+                 */
+                return new Pair<>(new IControl[] { content }, null);
+            default:
+                if (_Then == null) return null;
+                return _Then.handle(manager, session, content);
         }
-        return null;
-    }
-
-    @Override
-    public Logger getLogger()
-    {
-        return _Logger;
     }
 }
