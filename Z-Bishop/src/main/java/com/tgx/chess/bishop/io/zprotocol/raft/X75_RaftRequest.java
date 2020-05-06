@@ -47,9 +47,10 @@ public class X75_RaftRequest
         super(COMMAND, msgId);
     }
 
-    private long mPeerId;
-    private int  mPayloadSerial;
-    private long mOrigin;
+    private long    mPeerId;
+    private int     mPayloadSerial;
+    private long    mOrigin;
+    private boolean mBroadcast;
 
     public int getPayloadSerial()
     {
@@ -113,5 +114,15 @@ public class X75_RaftRequest
     public boolean isMapping()
     {
         return true;
+    }
+
+    public boolean isBroadcast()
+    {
+        return mBroadcast;
+    }
+
+    public void setBroadcast(boolean broadcast)
+    {
+        mBroadcast = broadcast;
     }
 }

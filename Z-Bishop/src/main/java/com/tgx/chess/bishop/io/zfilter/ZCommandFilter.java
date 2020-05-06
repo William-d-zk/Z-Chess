@@ -51,12 +51,10 @@ public class ZCommandFilter
                        WsFrame>
 {
 
-    private final ICommandFactory<ZContext,
-                                  ZCommand,
+    private final ICommandFactory<ZCommand,
                                   WsFrame> _CommandFactory;
 
-    public ZCommandFilter(ICommandFactory<ZContext,
-                                          ZCommand,
+    public ZCommandFilter(ICommandFactory<ZCommand,
                                           WsFrame> factory)
     {
         super("z_command");

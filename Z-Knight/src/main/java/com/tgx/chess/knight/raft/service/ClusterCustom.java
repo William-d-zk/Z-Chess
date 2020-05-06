@@ -60,8 +60,8 @@ import com.tgx.chess.queen.event.handler.IClusterCustom;
 import com.tgx.chess.queen.io.core.inf.IActivity;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.IClusterTimer;
+import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
 import com.tgx.chess.queen.io.core.inf.IControl;
-import com.tgx.chess.queen.io.core.inf.IProtocol;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
 
@@ -119,7 +119,8 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IClust
                 return new Pair<>(mRaftNode.newLogEntry(x75.getPayloadSerial(),
                                                         x75.getPayload(),
                                                         x75.getPeerId(),
-                                                        x75.getOrigin())
+                                                        x75.getOrigin(),
+                                                        x75.isBroadcast())
                                            .map(x7e ->
                                            {
                                                long follower = x7e.getFollower();
@@ -239,7 +240,7 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IClust
     }
 
     @Override
-    public List<ITriple> consensus(ISessionManager<ZContext> manager, IProtocol request, long origin)
+    public List<ITriple> consensus(ISessionManager<ZContext> manager, IConsistentProtocol request, long origin)
     {
         if (mRaftNode.getMachine()
                      .getState() == LEADER)

@@ -95,30 +95,31 @@ public class RaftGraph
     }
 
     @JsonIgnore
-    public boolean isMajorAcceptCandidate(long selfPeerId, long term)
+    public boolean isMajorAcceptCandidate(long candidate, long term)
     {
         return _NodeMap.values()
                        .stream()
-                       .filter(machine -> machine.getTerm() == term && machine.getCandidate() == selfPeerId)
+                       .filter(machine -> machine.getTerm() == term && machine.getCandidate() == candidate)
                        .count() > _NodeMap.size() / 2;
     }
 
     @JsonIgnore
-    public boolean isMajorAcceptLeader(long selfPeerId, long term, long index)
+    public boolean isMajorAcceptLeader(long leader, long term, long index)
     {
         return _NodeMap.values()
                        .stream()
                        .filter(machine -> machine.getTerm() == term
                                           && machine.getMatchIndex() >= index
-                                          && machine.getCandidate() == selfPeerId)
+                                          && machine.getCandidate() == leader
+                                          && machine.getLeader() == leader)
                        .count() > _NodeMap.size() / 2;
     }
 
-    public boolean isMinorReject(long selfPeerId, long term)
+    public boolean isMinorReject(long candidate, long term)
     {
         return _NodeMap.values()
                        .stream()
-                       .filter(machine -> machine.getTerm() >= term && machine.getCandidate() != selfPeerId)
+                       .filter(machine -> machine.getTerm() >= term && machine.getCandidate() != candidate)
                        .count() <= _NodeMap.size() / 2;
     }
 

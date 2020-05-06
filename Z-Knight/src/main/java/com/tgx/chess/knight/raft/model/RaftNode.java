@@ -72,8 +72,8 @@ import com.tgx.chess.knight.raft.model.log.LogEntry;
 import com.tgx.chess.queen.io.core.inf.IActivity;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.IClusterTimer;
+import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
 import com.tgx.chess.queen.io.core.inf.IControl;
-import com.tgx.chess.queen.io.core.inf.IProtocol;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
 
 /**
@@ -553,29 +553,34 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                         x7e.setSession(manager.findSessionByPrefix(peerId));
                     }
                     LogEntry logEntry = _RaftDao.getEntry(index);
-                    if (index > _SelfMachine.getCommit()
-                        && logEntry.getTerm() == _SelfMachine.getTerm()
+                    if (peerMachine.getIndex() > _SelfMachine.getCommit()
                         && _RaftGraph.isMajorAcceptLeader(_SelfMachine.getPeerId(), _SelfMachine.getTerm(), index))
                     {
                         _SelfMachine.commit(index, _RaftDao);
                         X76_RaftResult x76 = new X76_RaftResult(_ZUID.getId());
                         x76.setPayloadSerial(logEntry.getPayloadSerial());
-                        x76.setCode(SUCCESS.getCode());
                         x76.setPayload(logEntry.getPayload());
+                        x76.setNotifyAll(logEntry.isNotifyAll());
                         x76.setOrigin(logEntry.getOrigin());
                         _Logger.debug("consensus done->");
-                        if (logEntry.getRaftClientId() != _SelfMachine.getPeerId()) {
-                            //leader -> follower -> client
-                            x76.setSession(manager.findSessionByPrefix(logEntry.getRaftClientId()));
-                            return x7e != null ? new Pair<>(new IControl[] { x7e,
-                                                                             x76 },
-                                                            null)
-                                               : new Pair<>(new IControl[] { x76 }, null);
+                        if (logEntry.isNotifyAll()) {
+
                         }
                         else {
-                            //leader -> client
-                            return x7e != null ? new Pair<>(new IControl[] { x7e }, x76)
-                                               : new Pair<>(null, x76);
+                            if (logEntry.getRaftClientId() != _SelfMachine.getPeerId()) {
+                                //leader -> follower -> client
+                                x76.setSession(manager.findSessionByPrefix(logEntry.getRaftClientId()));
+                                return x7e != null ? new Pair<>(new IControl[] { x7e,
+                                                                                 x76 },
+                                                                null)
+                                                   : new Pair<>(new IControl[] { x76 }, null);
+                            }
+                            else {
+                                //leader -> client
+                                return x7e != null ? new Pair<>(new IControl[] { x7e },
+                                                                new IConsistentProtocol[] { x76 })
+                                                   : new Pair<>(null, new IConsistentProtocol[] { x76 });
+                            }
                         }
                     }
                 }
@@ -824,19 +829,24 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
         _AppendLogQueue.addAll(entryList);
     }
 
-    public Stream<X7E_RaftBroadcast> newLogEntry(IProtocol request, long raftClientId, long origin)
+    public Stream<X7E_RaftBroadcast> newLogEntry(IConsistentProtocol request, long raftClientId, long origin)
     {
-        return newLogEntry(request.serial(), request.encode(), raftClientId, origin);
+        return newLogEntry(request.serial(), request.encode(), raftClientId, origin, request.isNotifyAll());
     }
 
-    public Stream<X7E_RaftBroadcast> newLogEntry(int requestSerial, byte[] requestData, long raftClientId, long origin)
+    public Stream<X7E_RaftBroadcast> newLogEntry(int requestSerial,
+                                                 byte[] requestData,
+                                                 long raftClientId,
+                                                 long origin,
+                                                 boolean broadcast)
     {
         LogEntry newEntry = new LogEntry(_SelfMachine.getTerm(),
                                          _SelfMachine.getIndex() + 1,
                                          raftClientId,
                                          origin,
                                          requestSerial,
-                                         requestData);
+                                         requestData,
+                                         broadcast);
         if (_RaftDao.appendLog(newEntry)) {
             heartbeatCancel();
             _SelfMachine.appendLog(newEntry.getIndex(), newEntry.getTerm(), _RaftDao);

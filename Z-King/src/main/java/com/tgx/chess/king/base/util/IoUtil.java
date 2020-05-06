@@ -330,10 +330,11 @@ public interface IoUtil
 
     static String bin2Hex(byte[] b, int pos, int length, String... split)
     {
+        if (b == null || length == 0) return null;
         if (length < 0 || length > b.length || pos + length > b.length) throw new ArrayIndexOutOfBoundsException();
         StringBuilder sb = new StringBuilder(length * 2);
-        String s = Objects.nonNull(split) && split.length > 0 ? split[0]
-                                                              : "";
+        String s = split != null && split.length > 0 ? split[0]
+                                                     : "";
         for (int i = pos, size = pos + length; i < size; i++) {
             sb.append(HEX_DIGITS[(b[i] & 0xf0) >>> 4]);
             sb.append(HEX_DIGITS[b[i] & 0x0f]);
