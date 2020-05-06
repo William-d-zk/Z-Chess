@@ -48,18 +48,20 @@ public class ConsistentProtocol
     public final static int     _SERIAL = CONSISTENT_SERIAL + 1;
     private final byte[]        _Content;
     private final LocalDateTime _TimeStamp;
-    private boolean             mNotifyAll;
+    private final boolean       _NotifyAll;
     private int                 mLength;
     @JsonIgnore
     private transient byte[]    tData;
 
     @JsonCreator
     public ConsistentProtocol(@JsonProperty("content") byte[] content,
+                              @JsonProperty("notify_all") boolean all,
                               @JsonProperty("instant") String input)
     {
         _Content = content;
         _TimeStamp = input != null ? LocalDateTime.parse(input, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
                                    : LocalDateTime.now();
+        _NotifyAll = all;
     }
 
     @Override
@@ -109,11 +111,6 @@ public class ConsistentProtocol
     @Override
     public boolean isNotifyAll()
     {
-        return mNotifyAll;
-    }
-
-    public void setNotifyAll(boolean all)
-    {
-        mNotifyAll = all;
+        return _NotifyAll;
     }
 }
