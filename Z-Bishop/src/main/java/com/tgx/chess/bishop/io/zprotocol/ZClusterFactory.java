@@ -25,7 +25,6 @@
 package com.tgx.chess.bishop.io.zprotocol;
 
 import com.tgx.chess.bishop.io.ws.WsFrame;
-import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.raft.X72_RaftVote;
 import com.tgx.chess.bishop.io.zprotocol.raft.X75_RaftRequest;
 import com.tgx.chess.bishop.io.zprotocol.raft.X76_RaftResult;
@@ -39,8 +38,7 @@ import com.tgx.chess.queen.io.core.inf.ICommandFactory;
  */
 public class ZClusterFactory
         implements
-        ICommandFactory<ZContext,
-                        ZCommand,
+        ICommandFactory<ZCommand,
                         WsFrame>
 {
     @Override

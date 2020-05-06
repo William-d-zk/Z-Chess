@@ -90,7 +90,6 @@ public interface ISort<C extends IContext<C>>
 
     C newContext(ISessionOption option);
 
-    ICommandFactory<C,
-                    ? extends IControl<C>,
+    ICommandFactory<? extends IControl<C>,
                     ? extends IFrame> getCommandFactory();
 }

@@ -28,6 +28,7 @@ import java.util.List;
 
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
+import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
@@ -64,6 +65,6 @@ public interface ILinkCustom<C extends IContext<C>>
      *            origin == request.session_index
      * @return response
      */
-    List<ITriple> notify(ISessionManager<C> manager, IControl<C> request, long origin);
+    List<ITriple> notify(ISessionManager<C> manager, IConsistentProtocol request, long origin);
 
 }

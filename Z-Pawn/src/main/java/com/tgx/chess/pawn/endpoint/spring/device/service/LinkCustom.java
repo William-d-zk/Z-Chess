@@ -54,7 +54,9 @@ import com.tgx.chess.pawn.endpoint.spring.device.model.DeviceEntry;
 import com.tgx.chess.queen.db.inf.IRepository;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.handler.mix.ILinkCustom;
+import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
 import com.tgx.chess.queen.io.core.inf.IControl;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 import com.tgx.chess.queen.io.core.inf.IQoS;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
@@ -141,14 +143,14 @@ public class LinkCustom
     }
 
     @Override
-    public List<ITriple> notify(ISessionManager<ZContext> manager, IControl<ZContext> response, long origin)
+    public List<ITriple> notify(ISessionManager<ZContext> manager, IConsistentProtocol response, long origin)
     {
         /*
         origin 
         在非集群情况下是 request.session_index
         在集群处理时 x76 携带了cluster 领域的session_index 作为入参，并在此处转换为 request.session_index
          */
-        IControl<ZContext> request;
+        IProtocol request;
         if (response.serial() == X76_RaftResult.COMMAND) {
             /*
             raft_client -> Link, session belong to cluster
@@ -196,9 +198,7 @@ public class LinkCustom
         return _DeviceRepository.find(entry);
     }
 
-    private Stream<IControl<ZContext>> mappingHandle(ISessionManager<ZContext> manager,
-                                                     IControl<ZContext> input,
-                                                     long origin)
+    private Stream<IControl<ZContext>> mappingHandle(ISessionManager<ZContext> manager, IProtocol input, long origin)
     {
         ISession<ZContext> session = manager.findSessionByIndex(origin);
         switch (input.serial())

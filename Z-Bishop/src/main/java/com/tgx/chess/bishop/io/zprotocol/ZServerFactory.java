@@ -25,7 +25,6 @@
 package com.tgx.chess.bishop.io.zprotocol;
 
 import com.tgx.chess.bishop.io.ws.WsFrame;
-import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.device.X20_SignUp;
 import com.tgx.chess.bishop.io.zprotocol.device.X22_SignIn;
 import com.tgx.chess.bishop.io.zprotocol.device.X24_UpdateToken;
@@ -40,8 +39,7 @@ import com.tgx.chess.queen.io.core.inf.ICommandFactory;
  */
 public class ZServerFactory
         implements
-        ICommandFactory<ZContext,
-                        ZCommand,
+        ICommandFactory<ZCommand,
                         WsFrame>
 {
 

@@ -34,7 +34,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.tgx.chess.knight.json.JsonUtil;
-import com.tgx.chess.queen.io.core.inf.IProtocol;
+import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
 
 /**
  * @author william.d.zk
@@ -43,11 +43,12 @@ import com.tgx.chess.queen.io.core.inf.IProtocol;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class ConsistentProtocol
         implements
-        IProtocol
+        IConsistentProtocol
 {
     public final static int     _SERIAL = CONSISTENT_SERIAL + 1;
     private final byte[]        _Content;
     private final LocalDateTime _TimeStamp;
+    private boolean             mNotifyAll;
     private int                 mLength;
     @JsonIgnore
     private transient byte[]    tData;
@@ -103,5 +104,16 @@ public class ConsistentProtocol
     public String getInstant()
     {
         return _TimeStamp.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+    }
+
+    @Override
+    public boolean isNotifyAll()
+    {
+        return mNotifyAll;
+    }
+
+    public void setNotifyAll(boolean all)
+    {
+        mNotifyAll = all;
     }
 }
