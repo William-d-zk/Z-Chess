@@ -29,6 +29,7 @@ import static com.tgx.chess.queen.event.inf.IOperator.Type.CLUSTER_LOCAL;
 
 import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -83,7 +84,7 @@ public class DeviceNode
     private final IAioClient<ZContext>       _GateClient;
     private final TimeWheel                  _TimeWheel;
     private final ZUID                       _ZUID;
-    private final X104_Ping                  _Ping = new X104_Ping();
+    private final X104_Ping                  _Ping;
 
     @Override
     public void onDismiss(ISession<ZContext> session)
@@ -103,7 +104,9 @@ public class DeviceNode
         _ZUID = raftConfig.createZUID();
         _Logger.debug(_ZUID);
         IPair bind = raftConfig.getBind();
-        hosts.add(new Triple<>(bind.getFirst(), bind.getSecond(), ZSort.WS_CLUSTER_SERVER));
+        final String _ClusterHost = bind.getFirst();
+        final int _ClusterPort = bind.getSecond();
+        hosts.add(new Triple<>(_ClusterHost, _ClusterPort, ZSort.WS_CLUSTER_SERVER));
         _AioServers = hosts.stream()
                            .map(triple ->
                            {
@@ -200,6 +203,8 @@ public class DeviceNode
                 super.onDismiss(session);
             }
         };
+        _Ping = new X104_Ping(String.format("%#x,%s:%d", _ZUID.getPeerId(), _ClusterHost, _ClusterPort)
+                                    .getBytes(StandardCharsets.UTF_8));
         _Logger.debug("Device Node Bean Load");
     }
 
