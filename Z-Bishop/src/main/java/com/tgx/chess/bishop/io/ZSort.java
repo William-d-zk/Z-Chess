@@ -56,6 +56,7 @@ import com.tgx.chess.queen.io.core.inf.IFrame;
 import com.tgx.chess.queen.io.core.inf.IPipeDecoder;
 import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
 import com.tgx.chess.queen.io.core.inf.IPipeTransfer;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 import com.tgx.chess.queen.io.core.inf.ISessionCloser;
 import com.tgx.chess.queen.io.core.inf.ISessionError;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
@@ -99,8 +100,7 @@ public enum ZSort
         }
 
         @Override
-        public ICommandFactory<ZContext,
-                               ZCommand,
+        public ICommandFactory<ZCommand,
                                WsFrame> getCommandFactory()
         {
             return _ClusterFactory;
@@ -136,8 +136,7 @@ public enum ZSort
         }
 
         @Override
-        public ICommandFactory<ZContext,
-                               ZCommand,
+        public ICommandFactory<ZCommand,
                                WsFrame> getCommandFactory()
         {
             return _ClusterFactory;
@@ -170,8 +169,7 @@ public enum ZSort
         }
 
         @Override
-        public ICommandFactory<ZContext,
-                               ZCommand,
+        public ICommandFactory<ZCommand,
                                WsFrame> getCommandFactory()
         {
             return _ClusterFactory;
@@ -208,8 +206,7 @@ public enum ZSort
         }
 
         @Override
-        public ICommandFactory<ZContext,
-                               ZCommand,
+        public ICommandFactory<ZCommand,
                                WsFrame> getCommandFactory()
         {
             return _ServerFactory;
@@ -251,8 +248,7 @@ public enum ZSort
         }
 
         @Override
-        public ICommandFactory<ZContext,
-                               ZCommand,
+        public ICommandFactory<ZCommand,
                                WsFrame> getCommandFactory()
         {
             return _ServerFactory;
@@ -285,8 +281,7 @@ public enum ZSort
         }
 
         @Override
-        public ICommandFactory<ZContext,
-                               IControl<ZContext>,
+        public ICommandFactory<IControl<ZContext>,
                                QttFrame> getCommandFactory()
         {
             return _QttCommandFactory;
@@ -319,8 +314,7 @@ public enum ZSort
         }
 
         @Override
-        public ICommandFactory<ZContext,
-                               IControl<ZContext>,
+        public ICommandFactory<IControl<ZContext>,
                                QttFrame> getCommandFactory()
         {
             return _QttCommandFactory;
@@ -397,8 +391,7 @@ public enum ZSort
         return _Ignore;
     }
 
-    public static ICommandFactory<ZContext,
-                                  ? extends IControl<ZContext>,
+    public static ICommandFactory<? extends IProtocol,
                                   ? extends IFrame> getCommandFactory(int serial)
     {
         if (serial > 0x110 && serial < 0x11F) { return _QttCommandFactory; }

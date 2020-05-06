@@ -29,6 +29,7 @@ import static com.tgx.chess.queen.event.inf.IOperator.Type.CLUSTER_LOCAL;
 
 import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 import javax.annotation.PostConstruct;
@@ -77,7 +78,7 @@ public class ClusterNode
     private final IAioServer<ZContext> _AioServer;
     private final IAioClient<ZContext> _GateClient, _PeerClient;
     private final ZUID                 _ZUID;
-    private final X104_Ping            _Ping   = new X104_Ping();
+    private final X104_Ping            _Ping;
 
     @Override
     public void onDismiss(ISession<ZContext> session)
@@ -171,6 +172,8 @@ public class ClusterNode
                 super.onDismiss(session);
             }
         };
+        _Ping = new X104_Ping(String.format("%#x,%s:%d", _ZUID.getPeerId(), _Host, _Port)
+                                    .getBytes(StandardCharsets.UTF_8));
     }
 
     @PostConstruct

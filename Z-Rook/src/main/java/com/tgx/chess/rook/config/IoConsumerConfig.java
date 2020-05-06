@@ -38,7 +38,7 @@ import com.tgx.chess.queen.config.ISocketConfig;
  * @author william.d.zk
  * @date 2020/2/1
  */
-@Configuration
+@Configuration("io_consumer_config")
 @ConfigurationProperties(prefix = "z.chess.consumer.io")
 @PropertySource("classpath:io.consumer.properties")
 public class IoConsumerConfig

@@ -26,6 +26,7 @@ package com.tgx.chess.bishop.io.zprotocol.raft;
 
 import com.tgx.chess.bishop.io.zprotocol.ZCommand;
 import com.tgx.chess.king.base.util.IoUtil;
+import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
 
 /**
  * @author william.d.zk
@@ -34,6 +35,8 @@ import com.tgx.chess.king.base.util.IoUtil;
 public class X75_RaftRequest
         extends
         ZCommand
+        implements
+        IConsistentProtocol
 {
     public final static int COMMAND = 0x75;
 
@@ -47,9 +50,10 @@ public class X75_RaftRequest
         super(COMMAND, msgId);
     }
 
-    private long mPeerId;
-    private int  mPayloadSerial;
-    private long mOrigin;
+    private long    mPeerId;
+    private int     mPayloadSerial;
+    private long    mOrigin;
+    private boolean mNotifyAll;
 
     public int getPayloadSerial()
     {
@@ -64,7 +68,6 @@ public class X75_RaftRequest
     public void setOrigin(long origin)
     {
         mOrigin = origin;
-
     }
 
     public long getOrigin()
@@ -78,6 +81,10 @@ public class X75_RaftRequest
         pos += IoUtil.writeShort(mPayloadSerial, data, pos);
         pos += IoUtil.writeLong(mOrigin, data, pos);
         pos += IoUtil.writeLong(mPeerId, data, pos);
+        pos += IoUtil.writeByte(mNotifyAll ? 1
+                                           : 0,
+                                data,
+                                pos);
         return pos;
     }
 
@@ -90,13 +97,14 @@ public class X75_RaftRequest
         pos += 8;
         mPeerId = IoUtil.readLong(data, pos);
         pos += 8;
+        mNotifyAll = data[pos++] > 0;
         return pos;
     }
 
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 18;
+        return super.dataLength() + 19;
     }
 
     public long getPeerId()
@@ -113,5 +121,16 @@ public class X75_RaftRequest
     public boolean isMapping()
     {
         return true;
+    }
+
+    @Override
+    public boolean isNotifyAll()
+    {
+        return mNotifyAll;
+    }
+
+    public void setNotify(boolean all)
+    {
+        mNotifyAll = all;
     }
 }

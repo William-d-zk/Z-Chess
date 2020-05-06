@@ -46,6 +46,7 @@ import com.tgx.chess.knight.raft.model.RaftNode;
 import com.tgx.chess.knight.raft.service.ClusterCustom;
 import com.tgx.chess.queen.config.IAioConfig;
 import com.tgx.chess.queen.config.IClusterConfig;
+import com.tgx.chess.queen.event.handler.cluster.INotifyCustom;
 import com.tgx.chess.queen.event.processor.QEvent;
 
 @Service
@@ -53,7 +54,7 @@ public class ConsistentService
 {
 
     private final ClusterNode                _ClusterNode;
-    private final ConsistentCustom           _ConsistentCustom;
+    private final INotifyCustom              _NotifyCustom;
     private final ClusterCustom<ClusterNode> _ClusterCustom;
     private final RaftNode<ClusterNode>      _RaftNode;
     private final TimeWheel                  _TimeWheel;
@@ -62,12 +63,12 @@ public class ConsistentService
     public ConsistentService(@Qualifier("io_cluster_config") IAioConfig ioConfig,
                              @Qualifier("core_cluster_config") IClusterConfig clusterConfig,
                              IRaftConfig raftConfig,
-                             ConsistentCustom consistentCustom,
+                             INotifyCustom notifyCustom,
                              ClusterCustom<ClusterNode> clusterCustom,
                              IRaftDao raftDao) throws IOException
     {
         _TimeWheel = new TimeWheel();
-        _ConsistentCustom = consistentCustom;
+        _NotifyCustom = notifyCustom;
         _ClusterCustom = clusterCustom;
         _ClusterNode = new ClusterNode(ioConfig, clusterConfig, raftConfig, _TimeWheel);
         _RaftNode = new RaftNode<>(_TimeWheel, raftConfig, raftDao, _ClusterNode);
@@ -77,9 +78,7 @@ public class ConsistentService
     @PostConstruct
     private void start() throws IOException
     {
-        _ClusterNode.start(_ConsistentCustom,
-                           new ZClusterMappingCustom<>(_ClusterCustom),
-                           new ClusterLogic(_ClusterNode));
+        _ClusterNode.start(_NotifyCustom, new ZClusterMappingCustom<>(_ClusterCustom), new ClusterLogic(_ClusterNode));
         _RaftNode.init();
     }
 
@@ -98,7 +97,7 @@ public class ConsistentService
                                   new Pair<>(entry.getProtocol(),
                                              Thread.currentThread()
                                                    .hashCode()),
-                                  _ConsistentCustom);
+                                  _NotifyCustom);
                 }
                 finally {
                     _Publish.publish(sequence);

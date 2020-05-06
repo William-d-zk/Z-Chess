@@ -24,6 +24,7 @@
 
 package com.tgx.chess.knight.raft.model.log;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -33,21 +34,22 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.knight.json.JsonUtil;
-import com.tgx.chess.queen.io.core.inf.IProtocol;
+import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
 
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class LogEntry
         implements
-        IProtocol
+        IConsistentProtocol
 {
     private final static int _LOG_SERIAL = INTERNAL_SERIAL + 2;
 
-    private final long   _Term;
-    private final long   _Index;
-    private final long   _RaftClientId;
-    private final long   _Origin;
-    private final int    _PayloadSerial;
-    private final byte[] _Payload;
+    private final long    _Term;
+    private final long    _Index;
+    private final long    _RaftClientId;
+    private final long    _Origin;
+    private final int     _PayloadSerial;
+    private final byte[]  _Payload;
+    private final boolean _All;
 
     @JsonIgnore
     private transient byte[] tData;
@@ -67,7 +69,8 @@ public class LogEntry
                     @JsonProperty("raft_client_id") long raftClientId,
                     @JsonProperty("origin") long origin,
                     @JsonProperty("payload_serial") int payloadSerial,
-                    @JsonProperty("payload") byte[] payload)
+                    @JsonProperty("payload") byte[] payload,
+                    @JsonProperty("all") boolean all)
     {
         _Term = term;
         _Index = index;
@@ -75,6 +78,7 @@ public class LogEntry
         _Origin = origin;
         _PayloadSerial = payloadSerial;
         _Payload = payload;
+        _All = all;
         encode();
     }
 
@@ -139,19 +143,27 @@ public class LogEntry
     @Override
     public String toString()
     {
-        return "LogEntry{"
-               + "_Term="
-               + _Term
-               + ", _Index="
-               + _Index
-               + ", _RaftClientId="
-               + _RaftClientId
-               + ", _Origin="
-               + _Origin
-               + ", _PayloadSerial="
-               + _PayloadSerial
-               + ", _Payload="
-               + IoUtil.bin2Hex(_Payload)
-               + '}';
+        return String.format("raft_log{%d@%d,from:%#x,notify:[%s],origin:%d-%#x,payload-serial:%#x,payload-size:%d,payload:%s[%s]}",
+                             _Index,
+                             _Term,
+                             _RaftClientId,
+                             _All ? "all"
+                                  : _RaftClientId,
+                             _Origin,
+                             _Origin,
+                             _PayloadSerial,
+                             _Payload == null ? 0
+                                              : _Payload.length,
+                             _Payload == null ? "NULL"
+                                              : new String(_Payload, StandardCharsets.UTF_8),
+                             IoUtil.bin2Hex(_Payload)
+
+        );
+    }
+
+    @Override
+    public boolean isNotifyAll()
+    {
+        return _All;
     }
 }
