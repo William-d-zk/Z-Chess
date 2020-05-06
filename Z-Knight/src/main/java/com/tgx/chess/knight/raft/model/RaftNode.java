@@ -561,36 +561,34 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                         //peerMachine.getIndex() > _SelfMachine.getCommit()时，raftLog 不可能为 null
                         _SelfMachine.commit(index, _RaftDao);
                         _Logger.debug("consensus done->");
+                        X76_RaftNotify x76 = createNotify(raftLog);
                         if (raftLog.isNotifyAll()) {
                             if (x7e != null) {
                                 return new Pair<>(Stream.concat(Stream.of(x7e), createNotifyStream(manager, raftLog))
                                                         .toArray(IControl[]::new),
-                                                  null);
+                                                  raftLog.getRaftClientId() == _SelfMachine.getPeerId() ? x76//leader -> client
+                                                                                                        : null);//leader -> follower -> client
                             }
                             else {
                                 return new Pair<>(createNotifyStream(manager, raftLog).toArray(X76_RaftNotify[]::new),
-                                                  null);
+                                                  raftLog.getRaftClientId() == _SelfMachine.getPeerId() ? x76 //leader -> client
+                                                                                                        : null);//leader -> follower -> client
                             }
-
+                        }
+                        else if (raftLog.getRaftClientId() != _SelfMachine.getPeerId()) {
+                            //leader -> follower -> client
+                            ISession<ZContext> followerSession = manager.findSessionByPrefix(raftLog.getRaftClientId());
+                            return x7e != null && followerSession != null ? new Pair<>(new IControl[] { x7e,
+                                                                                                        x76 },
+                                                                                       null)
+                                                                          : followerSession != null ? new Pair<>(new X76_RaftNotify[] { x76 },
+                                                                                                                 null)
+                                                                                                    : null;
                         }
                         else {
-                            X76_RaftNotify x76 = createNotify(raftLog);
-                            if (raftLog.getRaftClientId() != _SelfMachine.getPeerId()) {
-                                //leader -> follower -> client
-                                ISession<ZContext> followerSession = manager.findSessionByPrefix(raftLog.getRaftClientId());
-                                return x7e != null && followerSession != null ? new Pair<>(new IControl[] { x7e,
-                                                                                                            x76 },
-                                                                                           null)
-                                                                              : followerSession != null ? new Pair<>(new X76_RaftNotify[] { x76 },
-                                                                                                                     null)
-                                                                                                        : null;
-                            }
-                            else {
-                                //leader -> client
-                                return x7e != null ? new Pair<>(new X7E_RaftBroadcast[] { x7e },
-                                                                new X76_RaftNotify[] { x76 })
-                                                   : new Pair<>(null, new X76_RaftNotify[] { x76 });
-                            }
+                            //leader -> client
+                            return x7e != null ? new Pair<>(new X7E_RaftBroadcast[] { x7e }, x76)
+                                               : new Pair<>(null, x76);
 
                         }
                     }
