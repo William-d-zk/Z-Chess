@@ -60,7 +60,7 @@ public class X106_Identity
         int size = (getPayload().length >>> 3);
         if (size > 0) {
             long[] result = new long[size];
-            IoUtil.readLongArray(getPayload(), 8, result);
+            IoUtil.readLongArray(getPayload(), 0, result);
             return result;
         }
         return new long[] { -1L };
