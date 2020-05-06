@@ -26,12 +26,10 @@ package com.tgx.chess.queen.event.handler.mix;
 
 import java.util.List;
 
-import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
+import com.tgx.chess.queen.event.handler.IMappingCustom;
 import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
 import com.tgx.chess.queen.io.core.inf.IContext;
-import com.tgx.chess.queen.io.core.inf.IControl;
-import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
 
 /**
@@ -39,9 +37,11 @@ import com.tgx.chess.queen.io.core.inf.ISessionManager;
  * @date 2020/4/20
  */
 public interface ILinkCustom<C extends IContext<C>>
+        extends
+        IMappingCustom<C>
 {
 
-    /**
+    /*
      *
      * @param manager
      * @param session
@@ -52,8 +52,9 @@ public interface ILinkCustom<C extends IContext<C>>
      *         Link->Cluster, consensus
      * @throws Exception
      *             handle error
+     *             IPair handle(ISessionManager<C> manager, ISession<C> session,
+     *             IControl<C> content) throws Exception;
      */
-    IPair handle(ISessionManager<C> manager, ISession<C> session, IControl<C> content) throws Exception;
 
     /**
      * Cluster->Link.notify(Cluster.consensus_result)

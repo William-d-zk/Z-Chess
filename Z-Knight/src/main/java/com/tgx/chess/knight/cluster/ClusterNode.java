@@ -49,7 +49,7 @@ import com.tgx.chess.knight.raft.config.IRaftConfig;
 import com.tgx.chess.knight.raft.model.RaftMachine;
 import com.tgx.chess.queen.config.IAioConfig;
 import com.tgx.chess.queen.config.IClusterConfig;
-import com.tgx.chess.queen.event.handler.IClusterCustom;
+import com.tgx.chess.queen.event.handler.cluster.IClusterCustom;
 import com.tgx.chess.queen.event.handler.cluster.INotifyCustom;
 import com.tgx.chess.queen.event.handler.mix.ILogicHandler;
 import com.tgx.chess.queen.event.inf.ISort;

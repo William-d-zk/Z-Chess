@@ -22,67 +22,29 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.knight.cluster.spring.service;
+package com.tgx.chess.queen.event.handler;
 
-import java.nio.charset.StandardCharsets;
-
-import com.tgx.chess.bishop.io.mqtt.control.X11C_QttPingreq;
-import com.tgx.chess.bishop.io.mqtt.control.X11D_QttPingresp;
-import com.tgx.chess.bishop.io.ws.control.X104_Ping;
-import com.tgx.chess.bishop.io.ws.control.X105_Pong;
-import com.tgx.chess.bishop.io.zfilter.ZContext;
-import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.queen.event.handler.mix.ILogicHandler;
+import com.tgx.chess.king.base.inf.IPair;
+import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
 
 /**
  * @author william.d.zk
- * @date 2020/5/2
+ * @date 2020/5/7
  */
-public class ClusterLogic
-        implements
-        ILogicHandler<ZContext>
+public interface IMappingCustom<C extends IContext<C>>
 {
-
-    private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
-
-    private final ISessionManager<ZContext> _Manager;
-
-    public ClusterLogic(ISessionManager<ZContext> manager)
-    {
-        _Manager = manager;
-    }
-
-    @Override
-    public ISessionManager<ZContext> getISessionManager()
-    {
-        return _Manager;
-    }
-
-    @Override
-    public IControl<ZContext>[] handle(ISessionManager<ZContext> manager,
-                                       ISession<ZContext> session,
-                                       IControl<ZContext> content) throws Exception
-    {
-        _Logger.debug("cluster handle heartbeat");
-        switch (content.serial())
-        {
-            case X104_Ping.COMMAND:
-                return new X105_Pong[] { new X105_Pong(String.format("pong:%#x %s",
-                                                                     session.getIndex(),
-                                                                     session.getLocalAddress())
-                                                             .getBytes(StandardCharsets.UTF_8)) };
-            case X11C_QttPingreq.COMMAND:
-                return new X11D_QttPingresp[] { new X11D_QttPingresp() };
-        }
-        return null;
-    }
-
-    @Override
-    public Logger getLogger()
-    {
-        return _Logger;
-    }
+    /**
+     * 
+     * @param manager
+     * @param session
+     * @param content
+     * @return pair
+     *         first: response ->
+     *         second: to other domain
+     * @throws Exception
+     */
+    IPair handle(ISessionManager<C> manager, ISession<C> session, IControl<C> content) throws Exception;
 }
