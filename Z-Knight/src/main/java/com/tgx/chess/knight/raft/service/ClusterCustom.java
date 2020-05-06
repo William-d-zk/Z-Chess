@@ -40,7 +40,7 @@ import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
 import com.tgx.chess.bishop.io.zprotocol.raft.X72_RaftVote;
 import com.tgx.chess.bishop.io.zprotocol.raft.X75_RaftRequest;
-import com.tgx.chess.bishop.io.zprotocol.raft.X76_RaftResult;
+import com.tgx.chess.bishop.io.zprotocol.raft.X76_RaftNotify;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7E_RaftBroadcast;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
 import com.tgx.chess.king.base.inf.IPair;
@@ -120,7 +120,7 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IClust
                                                         x75.getPayload(),
                                                         x75.getPeerId(),
                                                         x75.getOrigin(),
-                                                        x75.isBroadcast())
+                                                        x75.isNotifyAll())
                                            .map(x7e ->
                                            {
                                                long follower = x7e.getFollower();
@@ -135,7 +135,7 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IClust
                                            .filter(Objects::nonNull)
                                            .toArray(X7E_RaftBroadcast[]::new),
                                   null);
-            case X76_RaftResult.COMMAND:
+            case X76_RaftNotify.COMMAND:
                 /*
                 leader -> follow, self::follow
                 由于x76.origin == request.session.sessionIndex

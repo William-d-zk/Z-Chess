@@ -44,7 +44,7 @@ import com.tgx.chess.bishop.io.mqtt.control.X11B_QttUnsuback;
 import com.tgx.chess.bishop.io.mqtt.handler.IQttRouter;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.control.X108_Shutdown;
-import com.tgx.chess.bishop.io.zprotocol.raft.X76_RaftResult;
+import com.tgx.chess.bishop.io.zprotocol.raft.X76_RaftNotify;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
@@ -151,12 +151,12 @@ public class LinkCustom
         在集群处理时 x76 携带了cluster 领域的session_index 作为入参，并在此处转换为 request.session_index
          */
         IProtocol request;
-        if (response.serial() == X76_RaftResult.COMMAND) {
+        if (response.serial() == X76_RaftNotify.COMMAND) {
             /*
             raft_client -> Link, session belong to cluster
             ignore session
             */
-            X76_RaftResult x76 = (X76_RaftResult) response;
+            X76_RaftNotify x76 = (X76_RaftNotify) response;
             int cmd = x76.getPayloadSerial();
             request = ZSort.getCommandFactory(cmd)
                            .create(cmd);
