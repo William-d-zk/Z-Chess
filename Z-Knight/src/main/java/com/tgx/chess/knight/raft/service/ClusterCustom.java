@@ -56,7 +56,7 @@ import com.tgx.chess.knight.raft.model.RaftMachine;
 import com.tgx.chess.knight.raft.model.RaftNode;
 import com.tgx.chess.knight.raft.model.log.LogEntry;
 import com.tgx.chess.queen.db.inf.IRepository;
-import com.tgx.chess.queen.event.handler.IClusterCustom;
+import com.tgx.chess.queen.event.handler.cluster.IClusterCustom;
 import com.tgx.chess.queen.io.core.inf.IActivity;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.IClusterTimer;
