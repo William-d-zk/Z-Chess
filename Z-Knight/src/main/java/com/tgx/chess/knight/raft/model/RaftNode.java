@@ -851,6 +851,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                                                  long origin,
                                                  boolean notifyAll)
     {
+        _Logger.debug("create new raft log");
         LogEntry newEntry = new LogEntry(_SelfMachine.getTerm(),
                                          _SelfMachine.getIndex() + 1,
                                          raftClientId,
@@ -858,6 +859,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                                          requestSerial,
                                          requestData,
                                          notifyAll);
+        _Logger.debug("%s", newEntry);
         if (_RaftDao.appendLog(newEntry)) {
             heartbeatCancel();
             _SelfMachine.appendLog(newEntry.getIndex(), newEntry.getTerm(), _RaftDao);
