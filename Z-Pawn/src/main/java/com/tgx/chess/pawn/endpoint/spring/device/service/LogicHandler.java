@@ -34,6 +34,7 @@ import static com.tgx.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
 import static com.tgx.chess.queen.io.core.inf.IQoS.Level.EXACTLY_ONCE;
 import static java.lang.Math.min;
 
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -98,7 +99,10 @@ public class LogicHandler
         {
             case X104_Ping.COMMAND:
                 X104_Ping x104 = (X104_Ping) content;
-                return new IControl[] { new X105_Pong(x104.getPayload()) };
+                return new IControl[] { new X105_Pong(String.format("pong:%#x %s",
+                                                                    session.getIndex(),
+                                                                    session.getLocalAddress())
+                                                            .getBytes(StandardCharsets.UTF_8)) };
             case X113_QttPublish.COMMAND:
                 X113_QttPublish x113 = (X113_QttPublish) content;
                 MessageEntry messageEntry = new MessageEntry();
