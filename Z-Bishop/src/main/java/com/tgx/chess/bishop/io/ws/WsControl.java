@@ -48,17 +48,11 @@ public abstract class WsControl
 
     public WsControl(byte code,
                      int command,
-                     byte[] msg)
+                     byte[] payload)
     {
         _CtrlCode = code;
         _Command = command;
-        _Payload = msg;
-    }
-
-    public WsControl(byte code,
-                     int command)
-    {
-        this(code, command, null);
+        _Payload = payload;
     }
 
     @Override
