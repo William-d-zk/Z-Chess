@@ -35,6 +35,7 @@ import com.tgx.chess.bishop.io.mqtt.QttCommand;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.base.util.Pair;
+import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
 
 /**
  * @author william.d.zk
@@ -42,7 +43,7 @@ import com.tgx.chess.king.base.util.Pair;
  */
 public class X118_QttSubscribe
         extends
-        QttCommand
+        QttCommand implements IConsistentProtocol
 {
 
     public final static int COMMAND = 0x118;
@@ -139,5 +140,10 @@ public class X118_QttSubscribe
                              getMsgId(),
                              mTopics != null ? mTopics.toString()
                                              : null);
+    }
+
+    @Override
+    public boolean isNotifyAll() {
+        return false;
     }
 }

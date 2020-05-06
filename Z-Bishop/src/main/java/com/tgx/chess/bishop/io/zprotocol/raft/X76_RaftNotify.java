@@ -32,7 +32,7 @@ import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
  * @author william.d.zk
  * @date 2020/4/11
  */
-public class X76_RaftResult
+public class X76_RaftNotify
         extends
         ZCommand
         implements
@@ -40,12 +40,12 @@ public class X76_RaftResult
 {
     public final static int COMMAND = 0x76;
 
-    public X76_RaftResult()
+    public X76_RaftNotify()
     {
         super(COMMAND, true);
     }
 
-    public X76_RaftResult(long msgId)
+    public X76_RaftNotify(long msgId)
     {
         super(COMMAND, msgId);
     }

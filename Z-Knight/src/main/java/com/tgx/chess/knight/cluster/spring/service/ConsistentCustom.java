@@ -25,7 +25,7 @@ package com.tgx.chess.knight.cluster.spring.service;
 
 import org.springframework.stereotype.Component;
 
-import com.tgx.chess.bishop.io.zprotocol.raft.X76_RaftResult;
+import com.tgx.chess.bishop.io.zprotocol.raft.X76_RaftNotify;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.knight.cluster.spring.model.ConsistentProtocol;
 import com.tgx.chess.knight.json.JsonUtil;
@@ -44,8 +44,8 @@ public class ConsistentCustom
     {
         if (throwable == null) {
             _Logger.debug("notify---consistent");
-            if (protocol.serial() == X76_RaftResult.COMMAND) {
-                X76_RaftResult x76 = (X76_RaftResult) protocol;
+            if (protocol.serial() == X76_RaftNotify.COMMAND) {
+                X76_RaftNotify x76 = (X76_RaftNotify) protocol;
                 byte[] data = x76.getPayload();
                 switch (x76.getPayloadSerial())
                 {

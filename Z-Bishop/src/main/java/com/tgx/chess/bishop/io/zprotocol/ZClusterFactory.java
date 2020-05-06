@@ -27,7 +27,7 @@ package com.tgx.chess.bishop.io.zprotocol;
 import com.tgx.chess.bishop.io.ws.WsFrame;
 import com.tgx.chess.bishop.io.zprotocol.raft.X72_RaftVote;
 import com.tgx.chess.bishop.io.zprotocol.raft.X75_RaftRequest;
-import com.tgx.chess.bishop.io.zprotocol.raft.X76_RaftResult;
+import com.tgx.chess.bishop.io.zprotocol.raft.X76_RaftNotify;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7E_RaftBroadcast;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
 import com.tgx.chess.queen.io.core.inf.ICommandFactory;
@@ -57,8 +57,8 @@ public class ZClusterFactory
                 return new X72_RaftVote();
             case X75_RaftRequest.COMMAND:
                 return new X75_RaftRequest();
-            case X76_RaftResult.COMMAND:
-                return new X76_RaftResult();
+            case X76_RaftNotify.COMMAND:
+                return new X76_RaftNotify();
             case X7E_RaftBroadcast.COMMAND:
                 return new X7E_RaftBroadcast();
             case X7F_RaftResponse.COMMAND:

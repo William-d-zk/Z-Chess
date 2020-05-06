@@ -33,6 +33,7 @@ import java.util.List;
 
 import com.tgx.chess.bishop.io.mqtt.QttCommand;
 import com.tgx.chess.king.base.util.IoUtil;
+import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
 
 /**
  * @author william.d.zk
@@ -41,6 +42,8 @@ import com.tgx.chess.king.base.util.IoUtil;
 public class X11A_QttUnsubscribe
         extends
         QttCommand
+        implements
+        IConsistentProtocol
 {
     public final static int COMMAND = 0x11A;
 
@@ -114,5 +117,11 @@ public class X11A_QttUnsubscribe
     public String toString()
     {
         return String.format("unsubscribe local-id:%d topics:%s", getMsgId(), _Topics);
+    }
+
+    @Override
+    public boolean isNotifyAll()
+    {
+        return false;
     }
 }
