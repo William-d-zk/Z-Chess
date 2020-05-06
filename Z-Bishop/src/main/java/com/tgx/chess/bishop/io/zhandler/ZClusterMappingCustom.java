@@ -24,6 +24,7 @@
 
 package com.tgx.chess.bishop.io.zhandler;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import com.tgx.chess.bishop.io.mqtt.control.X11C_QttPingreq;
@@ -90,7 +91,11 @@ public class ZClusterMappingCustom<T extends IStorage>
             case X104_Ping.COMMAND:
                 X104_Ping x104 = (X104_Ping) content;
                 _Logger.info("recv ping");
-                return new Pair<>(new IControl[] { new X105_Pong(x104.getPayload()) }, null);
+                return new Pair<>(new IControl[] { new X105_Pong(String.format("pong:%#x %s",
+                                                                               session.getIndex(),
+                                                                               session.getLocalAddress())
+                                                                       .getBytes(StandardCharsets.UTF_8)) },
+                                  null);
             case X105_Pong.COMMAND:
             case X11D_QttPingresp.COMMAND:
                 return null;
