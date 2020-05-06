@@ -70,7 +70,7 @@ public class LogEntry
                     @JsonProperty("origin") long origin,
                     @JsonProperty("payload_serial") int payloadSerial,
                     @JsonProperty("payload") byte[] payload,
-                    @JsonProperty("all") boolean all)
+                    @JsonProperty("notify_all") boolean all)
     {
         _Term = term;
         _Index = index;
