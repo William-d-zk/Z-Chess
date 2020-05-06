@@ -53,7 +53,6 @@ public class RawContentController
                                                   @RequestParam(name = "limit",
                                                                 defaultValue = "1",
                                                                 required = false) int limit)
-
     {
         return _MessageService.listByTopic(topic, limit);
     }

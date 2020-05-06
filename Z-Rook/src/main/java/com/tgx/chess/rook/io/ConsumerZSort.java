@@ -79,8 +79,7 @@ public enum ConsumerZSort
         }
 
         @Override
-        public ICommandFactory<ZContext,
-                               ZCommand,
+        public ICommandFactory<ZCommand,
                                WsFrame> getCommandFactory()
         {
             return _ZConsumerFactory;
@@ -114,8 +113,7 @@ public enum ConsumerZSort
         }
 
         @Override
-        public ICommandFactory<ZContext,
-                               ZCommand,
+        public ICommandFactory<ZCommand,
                                WsFrame> getCommandFactory()
         {
             return _ZConsumerFactory;
@@ -142,8 +140,7 @@ public enum ConsumerZSort
         }
 
         @Override
-        public ICommandFactory<ZContext,
-                               IControl<ZContext>,
+        public ICommandFactory<IControl<ZContext>,
                                QttFrame> getCommandFactory()
         {
             return _QttCommandFactory;

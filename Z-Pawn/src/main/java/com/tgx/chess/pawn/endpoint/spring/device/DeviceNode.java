@@ -40,7 +40,6 @@ import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
-import com.tgx.chess.king.base.schedule.ICancelable;
 import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.base.util.Triple;
@@ -168,6 +167,15 @@ public class DeviceNode
         _GateClient = new BaseAioClient<ZContext>(_TimeWheel, getCore().getClusterChannelGroup())
         {
             @Override
+            public void onCreate(ISession<ZContext> session)
+            {
+                super.onCreate(session);
+                Duration gap = Duration.ofSeconds(session.getReadTimeOutSeconds() / 2);
+                _TimeWheel.acquire(session,
+                                   new ScheduleHandler<>(gap, true, DeviceNode.this::heartbeat, PRIORITY_NORMAL));
+            }
+
+            @Override
             public void onDismiss(ISession<ZContext> session)
             {
                 DeviceNode.this.onDismiss(session);
@@ -176,23 +184,18 @@ public class DeviceNode
         };
         _PeerClient = new BaseAioClient<ZContext>(_TimeWheel, getCore().getClusterChannelGroup())
         {
-            private ICancelable mHeartbeatTask;
 
             @Override
             public void onCreate(ISession<ZContext> session)
             {
                 Duration gap = Duration.ofSeconds(session.getReadTimeOutSeconds() / 2);
-                mHeartbeatTask = _TimeWheel.acquire(session,
-                                                    new ScheduleHandler<>(gap,
-                                                                          true,
-                                                                          DeviceNode.this::heartbeat,
-                                                                          PRIORITY_NORMAL));
+                _TimeWheel.acquire(session,
+                                   new ScheduleHandler<>(gap, true, DeviceNode.this::heartbeat, PRIORITY_NORMAL));
             }
 
             @Override
             public void onDismiss(ISession<ZContext> session)
             {
-                mHeartbeatTask.cancel();
                 DeviceNode.this.onDismiss(session);
                 super.onDismiss(session);
             }

@@ -52,8 +52,7 @@ import com.tgx.chess.queen.io.core.inf.IControl;
  */
 public class QttCommandFactory
         implements
-        ICommandFactory<ZContext,
-                        IControl<ZContext>,
+        ICommandFactory<IControl<ZContext>,
                         QttFrame>
 {
 

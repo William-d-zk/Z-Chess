@@ -45,9 +45,9 @@ import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.IAioConnector;
 import com.tgx.chess.queen.io.core.inf.IAioServer;
 import com.tgx.chess.queen.io.core.inf.IConnectActivity;
+import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
-import com.tgx.chess.queen.io.core.inf.IProtocol;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
@@ -217,7 +217,7 @@ public class MappingHandler<C extends IContext<C>,
                                            .getSort()
                                            .getTransfer());
                         }
-                        IProtocol notify = pair.getSecond();
+                        IConsistentProtocol notify = pair.getSecond();
                         if (notify != null) {
                             publishNotify(notify, notify.channel(), null);
                         }
@@ -228,8 +228,8 @@ public class MappingHandler<C extends IContext<C>,
                     }
                     break;
                 case CONSENSUS:
-                    IProtocol request = event.getContent()
-                                             .getFirst();
+                    IConsistentProtocol request = event.getContent()
+                                                       .getFirst();
                     int origin = event.getContent()
                                       .getSecond();
                     if (_ClusterCustom.waitForCommit()) {
@@ -267,7 +267,7 @@ public class MappingHandler<C extends IContext<C>,
         event.reset();
     }
 
-    private void publishNotify(IProtocol request, int channel, Throwable throwable)
+    private void publishNotify(IConsistentProtocol request, int channel, Throwable throwable)
     {
         Objects.requireNonNull(request);
         RingBuffer<QEvent> notifier = _Notifiers[channel & _NotifyModMask];

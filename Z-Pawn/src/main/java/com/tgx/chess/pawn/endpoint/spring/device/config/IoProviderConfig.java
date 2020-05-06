@@ -39,7 +39,7 @@ import com.tgx.chess.queen.config.ISocketConfig;
  * @author william.d.zk
  * @date 2020/4/24
  */
-@Configuration
+@Configuration("io_provider_config")
 @ConfigurationProperties(prefix = "z.chess.provider.io")
 @PropertySource("classpath:io.provider.properties")
 public class IoProviderConfig

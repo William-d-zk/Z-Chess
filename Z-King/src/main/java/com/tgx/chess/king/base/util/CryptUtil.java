@@ -311,7 +311,7 @@ public class CryptUtil
     private byte[] digest(String digestName, byte[] input, int offset, int len)
     {
         if (input == null || digestName == null) throw new NullPointerException();
-        if (input.length < len || len <= 0 || offset < 0 || offset >= len) throw new ArrayIndexOutOfBoundsException();
+        if (input.length < len || offset < 0 || offset >= len) throw new ArrayIndexOutOfBoundsException();
         MessageDigest md;
         switch (digestName.toUpperCase())
         {
@@ -392,4 +392,15 @@ public class CryptUtil
         return new String(pwdBytes, StandardCharsets.UTF_8);
     }
 
+    private final static CryptUtil _Instance = new CryptUtil();
+
+    public static String SHA256(String input)
+    {
+        return _Instance.sha256(input);
+    }
+
+    public static String MD5(String input)
+    {
+        return _Instance.md5(input);
+    }
 }

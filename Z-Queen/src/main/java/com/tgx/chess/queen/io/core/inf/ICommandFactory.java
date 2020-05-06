@@ -33,8 +33,7 @@ package com.tgx.chess.queen.io.core.inf;
  * @author william.d.zk
  * @see ICommandCreator
  */
-public interface ICommandFactory<C extends IContext<C>,
-                                 T extends IControl<C>,
+public interface ICommandFactory<T extends IProtocol,
                                  I extends IFrame>
 {
     T create(I frame);

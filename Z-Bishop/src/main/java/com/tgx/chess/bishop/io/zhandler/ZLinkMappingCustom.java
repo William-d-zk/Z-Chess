@@ -38,6 +38,7 @@ import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.event.handler.mix.ILinkCustom;
+import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
@@ -86,7 +87,7 @@ public class ZLinkMappingCustom
     }
 
     @Override
-    public List<ITriple> notify(ISessionManager<ZContext> manager, IControl<ZContext> request, long origin)
+    public List<ITriple> notify(ISessionManager<ZContext> manager, IConsistentProtocol request, long origin)
     {
         return _Then != null ? _Then.notify(manager, request, origin)
                              : null;

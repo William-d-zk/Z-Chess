@@ -30,7 +30,7 @@
     <parent>
         <artifactId>framework.z-chess</artifactId>
         <groupId>com.tgx.service</groupId>
-        <version>1.0.2.RELEASE</version>
+        <version>1.0.3-SNAPSHOT</version>
     </parent>
     <artifactId>endpoint.z-pawn</artifactId>
     <name>Z-Pawn</name>

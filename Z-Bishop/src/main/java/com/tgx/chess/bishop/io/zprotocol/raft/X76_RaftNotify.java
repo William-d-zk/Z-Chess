@@ -26,30 +26,33 @@ package com.tgx.chess.bishop.io.zprotocol.raft;
 
 import com.tgx.chess.bishop.io.zprotocol.ZCommand;
 import com.tgx.chess.king.base.util.IoUtil;
+import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
 
 /**
  * @author william.d.zk
  * @date 2020/4/11
  */
-public class X76_RaftResult
+public class X76_RaftNotify
         extends
         ZCommand
+        implements
+        IConsistentProtocol
 {
     public final static int COMMAND = 0x76;
 
-    public X76_RaftResult()
+    public X76_RaftNotify()
     {
         super(COMMAND, true);
     }
 
-    public X76_RaftResult(long msgId)
+    public X76_RaftNotify(long msgId)
     {
         super(COMMAND, msgId);
     }
 
-    private int  mPayloadSerial;
-    private int  mCode;
-    private long mOrigin;
+    private int     mPayloadSerial;
+    private boolean mNotifyAll;
+    private long    mOrigin;
 
     public int getPayloadSerial()
     {
@@ -65,7 +68,10 @@ public class X76_RaftResult
     public int encodec(byte[] data, int pos)
     {
         pos += IoUtil.writeShort(mPayloadSerial, data, pos);
-        pos += IoUtil.writeByte(mCode, data, pos);
+        pos += IoUtil.writeByte(mNotifyAll ? 1
+                                           : 0,
+                                data,
+                                pos);
         pos += IoUtil.writeLong(mOrigin, data, pos);
         return pos;
     }
@@ -75,7 +81,7 @@ public class X76_RaftResult
     {
         mPayloadSerial = IoUtil.readUnsignedShort(data, pos);
         pos += 2;
-        mCode = data[pos++] & 0xFF;
+        mNotifyAll = (data[pos++] & 0xFF) > 0;
         mOrigin = IoUtil.readLong(data, pos);
         pos += 8;
         return pos;
@@ -87,14 +93,15 @@ public class X76_RaftResult
         return super.dataLength() + 11;
     }
 
-    public int getCode()
+    @Override
+    public boolean isNotifyAll()
     {
-        return mCode;
+        return mNotifyAll;
     }
 
-    public void setCode(int code)
+    public void setNotifyAll(boolean all)
     {
-        mCode = code;
+        mNotifyAll = all;
     }
 
     public long getOrigin()

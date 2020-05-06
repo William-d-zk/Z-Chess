@@ -40,7 +40,7 @@ import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
 import com.tgx.chess.bishop.io.zprotocol.raft.X72_RaftVote;
 import com.tgx.chess.bishop.io.zprotocol.raft.X75_RaftRequest;
-import com.tgx.chess.bishop.io.zprotocol.raft.X76_RaftResult;
+import com.tgx.chess.bishop.io.zprotocol.raft.X76_RaftNotify;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7E_RaftBroadcast;
 import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
 import com.tgx.chess.king.base.inf.IPair;
@@ -60,8 +60,8 @@ import com.tgx.chess.queen.event.handler.IClusterCustom;
 import com.tgx.chess.queen.io.core.inf.IActivity;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.IClusterTimer;
+import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
 import com.tgx.chess.queen.io.core.inf.IControl;
-import com.tgx.chess.queen.io.core.inf.IProtocol;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
 
@@ -119,7 +119,8 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IClust
                 return new Pair<>(mRaftNode.newLogEntry(x75.getPayloadSerial(),
                                                         x75.getPayload(),
                                                         x75.getPeerId(),
-                                                        x75.getOrigin())
+                                                        x75.getOrigin(),
+                                                        x75.isNotifyAll())
                                            .map(x7e ->
                                            {
                                                long follower = x7e.getFollower();
@@ -134,7 +135,7 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IClust
                                            .filter(Objects::nonNull)
                                            .toArray(X7E_RaftBroadcast[]::new),
                                   null);
-            case X76_RaftResult.COMMAND:
+            case X76_RaftNotify.COMMAND:
                 /*
                 leader -> follow, self::follow
                 由于x76.origin == request.session.sessionIndex
@@ -239,7 +240,7 @@ public class ClusterCustom<T extends IActivity<ZContext> & IClusterPeer & IClust
     }
 
     @Override
-    public List<ITriple> consensus(ISessionManager<ZContext> manager, IProtocol request, long origin)
+    public List<ITriple> consensus(ISessionManager<ZContext> manager, IConsistentProtocol request, long origin)
     {
         if (mRaftNode.getMachine()
                      .getState() == LEADER)
