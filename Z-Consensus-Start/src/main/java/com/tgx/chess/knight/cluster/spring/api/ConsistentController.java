@@ -35,6 +35,7 @@ import com.tgx.chess.knight.cluster.spring.service.ConsistentService;
 @RestController
 public class ConsistentController
 {
+
     private final ConsistentService _ConsistentService;
 
     @Autowired
