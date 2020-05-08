@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.tgx.chess.knight.cluster.spring.service;
+package com.tgx.chess.knight.cluster.spring.api;
 
 import org.springframework.stereotype.Component;
 
@@ -47,17 +47,14 @@ public class ConsistentCustom
             if (protocol.serial() == X76_RaftNotify.COMMAND) {
                 X76_RaftNotify x76 = (X76_RaftNotify) protocol;
                 byte[] data = x76.getPayload();
-                switch (x76.getPayloadSerial())
-                {
-                    case ConsistentProtocol._SERIAL:
-                        ConsistentProtocol consistentProtocol = JsonUtil.readValue(data, ConsistentProtocol.class);
-                        consistentProtocol.decode(data);
-                        break;
-                    default:
-                        _Logger.fetal("consistent notify failed");
-                        break;
+                if (x76.getPayloadSerial() == ConsistentProtocol._SERIAL) {
+                    ConsistentProtocol consistentProtocol = JsonUtil.readValue(data, ConsistentProtocol.class);
+                    consistentProtocol.decode(data);
+                    _Logger.debug("notify ok");
                 }
-                _Logger.debug("notify ok");
+                else {
+                    _Logger.fetal("consistent notify failed");
+                }
             }
         }
         else {
