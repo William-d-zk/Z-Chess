@@ -696,8 +696,8 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                     else {
                         /*
                          1.follower.index_term < pre_index_term 
-                         说明follower.index 在 index_term 写入后，未接收到commit就离线了，且leader也未能提交
-                         在任期内完成commit 便触发了新的选举。最终在follower 离线时重新写入了 log.index@pre_index_term
+                         说明follower.index 在 index_term 写入后，未接收到commit就离线了，且leader未能在任期内完成commit 
+                         便触发了新的选举。最终在follower 离线时重新写入了 log.index@pre_index_term
                          2.follower.index_term > pre_index_term
                          此时集群一定经历了一次不可逆的数据损失。
                          */
@@ -713,7 +713,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                             _Logger.debug("machine reset in heartbeat");
                         }
                         else if (newEndIndex >= _RaftDao.getStartIndex()) {
-                            _Logger.fetal("lost date,manual recover");
+                            _Logger.fetal("lost data, manual recover");
                         }
                         break ITERATE_APPEND;
                     }
@@ -721,61 +721,62 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
 
             }
             else {
-                for (Iterator<LogEntry> it = _AppendLogQueue.iterator(); it.hasNext();) {
-                    LogEntry entry = it.next();
-                    if (_RaftDao.appendLog(entry)) {
-                        _SelfMachine.appendLog(entry.getIndex(), entry.getTerm(), _RaftDao);
+                if (preIndex == _SelfMachine.getIndex() && preIndexTerm == _SelfMachine.getIndexTerm()) {
+                    for (Iterator<LogEntry> it = _AppendLogQueue.iterator(); it.hasNext();) {
+                        LogEntry entry = it.next();
+                        if (_RaftDao.appendLog(entry)) {
+                            _SelfMachine.appendLog(entry.getIndex(), entry.getTerm(), _RaftDao);
+                            _Logger.debug("follower catch up %d@%d", entry.getIndex(), entry.getTerm());
+                        }
+                        it.remove();
+                    }
+                }
+                else {
+                    _Logger.debug("conflict  self: %d@%d <==> leader: %d@%d",
+                                  _SelfMachine.getIndex(),
+                                  _SelfMachine.getIndexTerm(),
+                                  preIndex,
+                                  preIndexTerm);
+                    LogEntry old = _RaftDao.getEntry(preIndex);
+                    if (old == null || old.getTerm() != preIndexTerm) {
+                        if (old == null) {
+                            _Logger.debug("log %d miss,self %s", preIndex, _SelfMachine);
+                        }
+                        /*
+                           此处存在一个可优化点，将此冲突对应的 term 下所有的index 都注销，向leader反馈
+                           上一个term.end_index,能有效减少以-1进行删除的数据量。此种优化的意义不是很大。
+                        */
+                        long newEndIndex = preIndex - 1;
+                        LogEntry rollback = _RaftDao.truncateSuffix(newEndIndex);
+                        if (rollback != null) {
+                            _SelfMachine.appendLog(rollback.getIndex(), rollback.getTerm(), _RaftDao);
+                            _SelfMachine.apply(_RaftDao);
+                            _Logger.debug("machine rollback %d@%d", rollback.getIndex(), rollback.getTerm());
+                        }
+                        else if (newEndIndex == 0) {
+                            //回归起点
+                            _SelfMachine.reset();
+                            _Logger.debug("machine reset in append");
+                        }
+                        else if (newEndIndex >= _RaftDao.getStartIndex()) {
+                            /*
+                            回滚异常，但是不会出现 newEndIndex < _RaftDao.start 的情况
+                            否则集群中的大多数都是错误的数据，在此之前一定出现了大规模集群失败
+                            且丢失正确的数据的情况,从而导致了，follower本地需要回滚到snapshot之前，
+                            */
+                            _Logger.fetal("cluster failed over flow,lost data. manual recover ");
+                        }
+                        break ITERATE_APPEND;
                     }
                     else {
-                        LogEntry old = _RaftDao.getEntry(entry.getIndex());
-                        if (old == null || old.getTerm() != entry.getTerm()) {
-                            if (old != null) {
-                                _Logger.debug("log conflict [old: %d@%d <=>new: %d@%d ]",
-                                              entry.getIndex(),
-                                              old.getTerm(),
-                                              entry.getIndex(),
-                                              entry.getTerm());
-                            }
-                            else {
-                                _Logger.debug("log %d miss,self %s", entry.getIndex(), _SelfMachine);
-                            }
-                            /*
-                               此处存在一个可优化点，将此冲突对应的 term 下所有的index 都注销，向leader反馈
-                               上一个term.end_index,能有效减少以-1进行删除的数据量。此种优化的意义不是很大。
-                            */
-                            long newEndIndex = entry.getIndex() - 1;
-                            LogEntry rollback = _RaftDao.truncateSuffix(newEndIndex);
-                            if (rollback != null) {
-                                _SelfMachine.appendLog(rollback.getIndex(), rollback.getTerm(), _RaftDao);
-                                _SelfMachine.apply(_RaftDao);
-                                _Logger.debug("machine rollback %d@%d", rollback.getIndex(), rollback.getTerm());
-                            }
-                            else if (newEndIndex == 0) {
-                                //回归起点
-                                _SelfMachine.reset();
-                                _Logger.debug("machine reset in append");
-                            }
-                            else if (newEndIndex >= _RaftDao.getStartIndex()) {
-                                /*
-                                回滚异常，但是不会出现 newEndIndex < _RaftDao.start 的情况
-                                否则集群中的大多数都是错误的数据，在此之前一定出现了大规模集群失败
-                                且丢失正确的数据的情况
-                                */
-                                _Logger.fetal("cluster failed over flow,lost data. manual recover ");
-                            }
-                            break ITERATE_APPEND;
-                        }
-                        else {
-                            /*
-                            old != null && old.term == entry.term && old.index == entry.index
+                        /*
+                            old != null && old.term == pre_index_term && old.index == pre_index
                             1.old ==  null entry.index 处于 未正常管控的位置
                             启动协商之后是不会出现此类情况的。
                             2.old.term==entry.term已经完成了日志存储，不再重复append 
-                             */
-                            _Logger.debug("already has the log -> %d@%d | ignore", entry.getIndex(), entry.getTerm());
-                        }
+                        */
+                        _Logger.fetal(" pre_index & pre_index_term already check, impossible go in here ");
                     }
-                    it.remove();
                 }
                 //接收了Leader 追加的日志
                 _SelfMachine.apply(_RaftDao);
@@ -922,16 +923,17 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
         final long _Index = follower.getIndex();
         LogEntry nextLog;
         nextLog = _RaftDao.getEntry(_Index >= MIN_START ? _Index
-                                                        : 1);
+                                                        : 0);
         if (nextLog == null) {
-            _Logger.warning("leader truncate prefix，wait for installing snapshot");
+            if (_Index >= MIN_START) {
+                _Logger.warning("leader truncate prefix，%#x wait for installing snapshot", follower.getPeerId());
+            }
             return x7e;
         }
         else {
             x7e.setPreIndex(nextLog.getIndex());
             x7e.setPreIndexTerm(nextLog.getTerm());
         }
-        entryList.add(nextLog);
         for (long i = nextLog.getIndex() + 1, l = _SelfMachine.getIndex(); i <= l; i++) {
             if (limit > 0 && entryList.size() >= limit) {
                 break;
