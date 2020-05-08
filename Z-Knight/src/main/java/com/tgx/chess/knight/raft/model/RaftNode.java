@@ -858,7 +858,6 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                                          requestSerial,
                                          requestData,
                                          notifyAll);
-        _Logger.debug("%s", newEntry);
         if (_RaftDao.appendLog(newEntry)) {
             heartbeatCancel();
             _SelfMachine.appendLog(newEntry.getIndex(), newEntry.getTerm(), _RaftDao);
@@ -913,34 +912,45 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
         x7e.setPreIndex(_SelfMachine.getIndex());
         x7e.setPreIndexTerm(_SelfMachine.getIndexTerm());
         x7e.setFollower(follower.getPeerId());
-        follower.setMatchIndex(INDEX_NAN);//match_index 重置
-        if (follower.getIndex() == _SelfMachine.getIndex() || follower.getIndex() == INDEX_NAN) {
-            //follower 已经同步 或 follower.next 未知
-            return x7e;
-        }
-        //follower.index < self.index
-        List<LogEntry> entryList = new LinkedList<>();
-        final long _Index = follower.getIndex();
-        LogEntry nextLog;
-        nextLog = _RaftDao.getEntry(_Index >= MIN_START ? _Index
-                                                        : 0);
-        if (nextLog == null) {
+        CHECK:
+        {
+            if (follower.getIndex() == _SelfMachine.getIndex() || follower.getIndex() == INDEX_NAN) {
+                //follower 已经同步 或 follower.next 未知
+                break CHECK;
+            }
+            //follower.index < self.index
+            List<LogEntry> entryList = new LinkedList<>();
+            final long _Index = follower.getIndex();
             if (_Index >= MIN_START) {
-                _Logger.warning("leader truncate prefix，%#x wait for installing snapshot", follower.getPeerId());
+                //存有数据的状态
+                LogEntry nextLog;
+                nextLog = _RaftDao.getEntry(_Index);
+                if (nextLog == null) {
+                    _Logger.warning("leader truncate prefix，%#x wait for installing snapshot", follower.getPeerId());
+                    break CHECK;
+                }
+                else {
+                    x7e.setPreIndex(nextLog.getIndex());
+                    x7e.setPreIndexTerm(nextLog.getTerm());
+                }
             }
-            return x7e;
-        }
-        else {
-            x7e.setPreIndex(nextLog.getIndex());
-            x7e.setPreIndexTerm(nextLog.getTerm());
-        }
-        for (long i = nextLog.getIndex() + 1, l = _SelfMachine.getIndex(); i <= l; i++) {
-            if (limit > 0 && entryList.size() >= limit) {
-                break;
+            else {
+                /*
+                 follower.index == 0 
+                 follower是以空数据状态启动。
+                 */
+                x7e.setPreIndex(_Index);
+                x7e.setPreIndexTerm(0);
             }
-            entryList.add(_RaftDao.getEntry(i));
+            for (long i = _Index + 1, l = _SelfMachine.getIndex(); i <= l; i++) {
+                if (limit > 0 && entryList.size() >= limit) {
+                    break;
+                }
+                entryList.add(_RaftDao.getEntry(i));
+            }
+            x7e.setPayload(JsonUtil.writeValueAsBytes(entryList));
         }
-        x7e.setPayload(JsonUtil.writeValueAsBytes(entryList));
+        follower.setMatchIndex(INDEX_NAN);//match_index 重置
         return x7e;
     }
 
