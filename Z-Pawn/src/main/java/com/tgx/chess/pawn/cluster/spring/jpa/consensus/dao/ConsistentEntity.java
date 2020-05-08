@@ -40,7 +40,6 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.tgx.chess.knight.cluster.spring.model.ConsistentEntry;
 import com.tgx.chess.pawn.cluster.spring.jpa.model.AuditModel;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 

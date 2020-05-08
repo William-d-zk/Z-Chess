@@ -138,4 +138,6 @@ public interface IClusterNode<K extends IPipeCore>
             }
         }
     }
+
+    long getZid();
 }

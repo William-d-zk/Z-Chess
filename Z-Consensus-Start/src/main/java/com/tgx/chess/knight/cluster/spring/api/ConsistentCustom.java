@@ -45,6 +45,8 @@ public class ConsistentCustom
         if (throwable == null) {
             _Logger.debug("notify---consistent");
             if (protocol.serial() == X76_RaftNotify.COMMAND) {
+                _Logger.debug("cluster mode");
+
                 X76_RaftNotify x76 = (X76_RaftNotify) protocol;
                 byte[] data = x76.getPayload();
                 if (x76.getPayloadSerial() == ConsistentProtocol._SERIAL) {
@@ -55,6 +57,10 @@ public class ConsistentCustom
                 else {
                     _Logger.fetal("consistent notify failed");
                 }
+            }
+            else {
+                _Logger.debug("single mode");
+                _Logger.debug("notify ok");
             }
         }
         else {
