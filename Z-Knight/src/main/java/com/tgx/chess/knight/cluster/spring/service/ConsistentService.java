@@ -26,6 +26,7 @@ package com.tgx.chess.knight.cluster.spring.service;
 import static com.tgx.chess.queen.event.inf.IOperator.Type.CONSENSUS;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.PostConstruct;
@@ -39,7 +40,7 @@ import com.tgx.chess.bishop.io.zhandler.ZClusterMappingCustom;
 import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.knight.cluster.ClusterNode;
-import com.tgx.chess.knight.cluster.spring.model.ConsistentEntry;
+import com.tgx.chess.knight.cluster.spring.model.ConsistentProtocol;
 import com.tgx.chess.knight.raft.IRaftDao;
 import com.tgx.chess.knight.raft.config.IRaftConfig;
 import com.tgx.chess.knight.raft.model.RaftNode;
@@ -82,7 +83,7 @@ public class ConsistentService
         _RaftNode.init();
     }
 
-    public void consistentPut(ConsistentEntry entry)
+    public void consistentPut(String content, boolean isNotifyAll, long origin)
     {
         final ReentrantLock _Lock = _ClusterNode.getCore()
                                                 .getLock(CONSENSUS);
@@ -93,12 +94,17 @@ public class ConsistentService
                 long sequence = _Publish.next();
                 try {
                     QEvent event = _Publish.get(sequence);
-                    event.produce(CONSENSUS, new Pair<>(entry.getProtocol(), entry.getOrigin()), _NotifyCustom);
+                    event.produce(CONSENSUS,
+                                  new Pair<>(new ConsistentProtocol(content.getBytes(StandardCharsets.UTF_8),
+                                                                    isNotifyAll,
+                                                                    origin,
+                                                                    _ClusterNode.getZid()),
+                                             origin),
+                                  _NotifyCustom);
                 }
                 finally {
                     _Publish.publish(sequence);
                 }
-                entry.setCommit(true);
             }
             finally {
                 _Lock.unlock();

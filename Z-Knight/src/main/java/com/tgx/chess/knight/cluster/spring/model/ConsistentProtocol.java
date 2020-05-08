@@ -24,8 +24,6 @@
 
 package com.tgx.chess.knight.cluster.spring.model;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -45,23 +43,25 @@ public class ConsistentProtocol
         implements
         IConsistentProtocol
 {
-    public final static int     _SERIAL = CONSISTENT_SERIAL + 1;
-    private final byte[]        _Content;
-    private final LocalDateTime _TimeStamp;
-    private final boolean       _NotifyAll;
-    private int                 mLength;
+    public final static int  _SERIAL = CONSISTENT_SERIAL + 1;
+    private final byte[]     _Content;
+    private final boolean    _NotifyAll;
+    private final long       _Origin;
+    private final long       _Zuid;
+    private int              mLength;
     @JsonIgnore
-    private transient byte[]    tData;
+    private transient byte[] tData;
 
     @JsonCreator
     public ConsistentProtocol(@JsonProperty("content") byte[] content,
                               @JsonProperty("notify_all") boolean all,
-                              @JsonProperty("instant") String input)
+                              @JsonProperty("zuid") long zuid,
+                              @JsonProperty("origin") long origin)
     {
         _Content = content;
-        _TimeStamp = input != null ? LocalDateTime.parse(input, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
-                                   : LocalDateTime.now();
         _NotifyAll = all;
+        _Origin = origin;
+        _Zuid = zuid;
     }
 
     @Override
@@ -103,9 +103,14 @@ public class ConsistentProtocol
         return _Content;
     }
 
-    public String getInstant()
+    public long getZuid()
     {
-        return _TimeStamp.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        return _Zuid;
+    }
+
+    public long getOrigin()
+    {
+        return _Origin;
     }
 
     @Override
