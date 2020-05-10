@@ -70,7 +70,7 @@ import com.tgx.chess.knight.raft.IRaftMessage;
 import com.tgx.chess.knight.raft.RaftState;
 import com.tgx.chess.knight.raft.config.IRaftConfig;
 import com.tgx.chess.knight.raft.model.log.LogEntry;
-import com.tgx.chess.queen.io.core.inf.IActivity;
+import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.IClusterTimer;
 import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
@@ -82,7 +82,7 @@ import com.tgx.chess.queen.io.core.inf.ISessionManager;
  * @author william.d.zk
  * @date 2020/1/4
  */
-public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTimer>
+public class RaftNode<T extends IClusterPeer & IClusterTimer>
         implements
         IValid
 {
@@ -839,16 +839,20 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
         _AppendLogQueue.addAll(entryList);
     }
 
-    public Stream<X7E_RaftBroadcast> newLogEntry(IConsistentProtocol request, long raftClientId, long origin)
+    public Stream<X7E_RaftBroadcast> newLogEntry(IConsistentProtocol request,
+                                                 long raftClientId,
+                                                 long origin,
+                                                 IStorage.Operation operation)
     {
-        return newLogEntry(request.serial(), request.encode(), raftClientId, origin, request.isNotifyAll());
+        return newLogEntry(request.serial(), request.encode(), raftClientId, origin, request.isNotifyAll(), operation);
     }
 
     public Stream<X7E_RaftBroadcast> newLogEntry(int requestSerial,
                                                  byte[] requestData,
                                                  long raftClientId,
                                                  long origin,
-                                                 boolean notifyAll)
+                                                 boolean notifyAll,
+                                                 IStorage.Operation operation)
     {
         _Logger.debug("create new raft log");
         LogEntry newEntry = new LogEntry(_SelfMachine.getTerm(),
@@ -858,6 +862,7 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
                                          requestSerial,
                                          requestData,
                                          notifyAll);
+        newEntry.setOperation(operation);
         if (_RaftDao.appendLog(newEntry)) {
             heartbeatCancel();
             _SelfMachine.appendLog(newEntry.getIndex(), newEntry.getTerm(), _RaftDao);
@@ -963,6 +968,16 @@ public class RaftNode<T extends IActivity<ZContext> & IClusterPeer & IClusterTim
     public boolean isValid()
     {
         return true;
+    }
+
+    public long getRaftZid()
+    {
+        return _ZUID.getId();
+    }
+
+    public long getPeerId()
+    {
+        return _ZUID.getPeerId();
     }
 
     private X76_RaftNotify createNotify(LogEntry raftLog)

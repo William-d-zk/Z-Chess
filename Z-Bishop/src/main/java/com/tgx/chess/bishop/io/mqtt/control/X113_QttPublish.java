@@ -109,6 +109,7 @@ public class X113_QttPublish
                              getLevel(),
                              getMsgId(),
                              getTopic(),
-                             new String(getPayload(), StandardCharsets.UTF_8));
+                             getPayload() == null ? "NULL"
+                                                  : new String(getPayload(), StandardCharsets.UTF_8));
     }
 }

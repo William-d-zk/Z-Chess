@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.pawn.endpoint.spring.device.model;
+package com.tgx.chess.open.api.model;
 
 import java.time.Instant;
 

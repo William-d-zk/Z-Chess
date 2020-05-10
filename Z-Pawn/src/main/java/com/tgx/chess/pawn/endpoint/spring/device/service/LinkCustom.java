@@ -50,8 +50,8 @@ import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.base.util.Triple;
-import com.tgx.chess.pawn.endpoint.spring.device.model.DeviceEntry;
-import com.tgx.chess.queen.db.inf.IRepository;
+import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.DeviceEntity;
+import com.tgx.chess.pawn.endpoint.spring.device.jpa.repository.IDeviceJpaRepository;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.handler.mix.ILinkCustom;
 import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
@@ -66,14 +66,17 @@ public class LinkCustom
         implements
         ILinkCustom<ZContext>
 {
-    private final Logger                   _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
-    private final IRepository<DeviceEntry> _DeviceRepository;
-    private IQttRouter                     mQttRouter;
+    private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
+
+    private final IDeviceJpaRepository _DeviceRepository;
+    private final IQttRouter           _QttRouter;
 
     @Autowired
-    public LinkCustom(IRepository<DeviceEntry> deviceRepository)
+    public LinkCustom(IDeviceJpaRepository deviceRepository,
+                      IQttRouter qttRouter)
     {
         _DeviceRepository = deviceRepository;
+        _QttRouter = qttRouter;
     }
 
     @Override
@@ -85,12 +88,12 @@ public class LinkCustom
         {
             case X111_QttConnect.COMMAND:
                 X111_QttConnect x111 = (X111_QttConnect) input;
-                DeviceEntry device = new DeviceEntry();
+                DeviceEntity device = new DeviceEntity();
                 device.setToken(x111.getClientId());
-                device.setUsername(x111.getUserName());
                 device.setPassword(x111.getPassword());
+                device.setUsername(x111.getUserName());
                 device.setOperation(IStorage.Operation.OP_APPEND);
-                device = _DeviceRepository.find(device);
+                device = _DeviceRepository.findByToken(x111.getClientId());
                 X112_QttConnack x112 = new X112_QttConnack();
                 x112.responseOk();
                 /*--检查X112 是否正常--*/
@@ -122,21 +125,27 @@ public class LinkCustom
                     x112.rejectNotAuthorized();
                 }
                 if (x112.isOk() && device != null) {
-                    ISession<ZContext> old = manager.mapSession(device.getPrimaryKey(), session);
+                    ISession<ZContext> old = manager.mapSession(device.primaryKey(), session);
                     if (old != null) {
                         X108_Shutdown x108 = new X108_Shutdown();
                         x108.setSession(old);
+                        _Logger.info("re-login ok %s, wait for consistent notify", x111.getClientId());
                         return new Pair<>(new X108_Shutdown[] { x108 }, x111);
                     }
                     else {
+                        _Logger.info("login check ok:%s, wait for consistent notify", x111.getClientId());
                         return new Pair<>(null, x111);
                     }
                 }
                 else {
+                    _Logger.info("reject %s",
+                                 x112.getCode()
+                                     .name());
                     return new Pair<>(new X112_QttConnack[] { x112 }, null);
                 }
             case X118_QttSubscribe.COMMAND:
             case X11A_QttUnsubscribe.COMMAND:
+                _Logger.info("%s ,wait for consistent notify", input);
                 return new Pair<>(null, input);
         }
         return null;
@@ -183,21 +192,6 @@ public class LinkCustom
         return null;
     }
 
-    public void setQttRouter(IQttRouter qttRouter)
-    {
-        mQttRouter = qttRouter;
-    }
-
-    public DeviceEntry saveDevice(DeviceEntry entry)
-    {
-        return _DeviceRepository.save(entry);
-    }
-
-    public DeviceEntry findDevice(DeviceEntry entry)
-    {
-        return _DeviceRepository.find(entry);
-    }
-
     private Stream<IControl<ZContext>> mappingHandle(ISessionManager<ZContext> manager, IProtocol input, long origin)
     {
         ISession<ZContext> session = manager.findSessionByIndex(origin);
@@ -205,9 +199,11 @@ public class LinkCustom
         {
             case X111_QttConnect.COMMAND:
                 if (session != null) {
+                    X111_QttConnect x111 = (X111_QttConnect) input;
                     X112_QttConnack x112 = new X112_QttConnack();
                     x112.responseOk();
                     x112.setSession(session);
+                    _Logger.info("%s login ok", x111.getClientId());
                     return Stream.of(x112);
                 }
                 break;
@@ -218,10 +214,11 @@ public class LinkCustom
                 if (topics != null) {
                     X119_QttSuback x119 = new X119_QttSuback();
                     x119.setMsgId(x118.getMsgId());
-                    topics.forEach(topic -> x119.addResult(mQttRouter.addTopic(topic, origin) ? topic.getSecond()
+                    topics.forEach(topic -> x119.addResult(_QttRouter.addTopic(topic, origin) ? topic.getSecond()
                                                                                               : IQoS.Level.FAILURE));
                     if (session != null) {
                         x119.setSession(session);
+                        _Logger.info("subscribe topic:%s", x118.getTopics());
                         return Stream.of(x119);
                     }
                 }
@@ -229,11 +226,12 @@ public class LinkCustom
             case X11A_QttUnsubscribe.COMMAND:
                 X11A_QttUnsubscribe x11A = (X11A_QttUnsubscribe) input;
                 x11A.getTopics()
-                    .forEach(topic -> mQttRouter.removeTopic(topic, origin));
+                    .forEach(topic -> _QttRouter.removeTopic(topic, origin));
                 if (session != null) {
                     X11B_QttUnsuback x11B = new X11B_QttUnsuback();
                     x11B.setMsgId(x11A.getMsgId());
                     x11B.setSession(session);
+                    _Logger.info("unsubscribe topic:%s", x11A.getTopics());
                     return Stream.of(x11B);
                 }
                 break;

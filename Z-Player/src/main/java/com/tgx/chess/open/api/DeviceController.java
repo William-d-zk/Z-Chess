@@ -40,7 +40,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
-import com.tgx.chess.pawn.endpoint.spring.device.model.DeviceDo;
+import com.tgx.chess.open.api.model.DeviceDo;
 import com.tgx.chess.pawn.endpoint.spring.device.model.DeviceStatus;
 import com.tgx.chess.pawn.endpoint.spring.device.spi.IDeviceService;
 

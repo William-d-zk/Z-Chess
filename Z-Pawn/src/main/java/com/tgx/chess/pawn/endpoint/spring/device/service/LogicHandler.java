@@ -34,6 +34,7 @@ import static com.tgx.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
 import static com.tgx.chess.queen.io.core.inf.IQoS.Level.EXACTLY_ONCE;
 import static java.lang.Math.min;
 
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -52,33 +53,42 @@ import com.tgx.chess.bishop.io.ws.control.X105_Pong;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.pawn.endpoint.spring.device.model.MessageEntry;
-import com.tgx.chess.queen.db.inf.IRepository;
+import com.tgx.chess.knight.json.JsonUtil;
+import com.tgx.chess.knight.raft.model.RaftNode;
+import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.MessageBody;
+import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.MessageEntity;
+import com.tgx.chess.pawn.endpoint.spring.device.jpa.repository.IMessageJpaRepository;
 import com.tgx.chess.queen.event.handler.mix.ILogicHandler;
+import com.tgx.chess.queen.io.core.inf.IActivity;
+import com.tgx.chess.queen.io.core.inf.IClusterPeer;
+import com.tgx.chess.queen.io.core.inf.IClusterTimer;
 import com.tgx.chess.queen.io.core.inf.IControl;
+import com.tgx.chess.queen.io.core.inf.INode;
 import com.tgx.chess.queen.io.core.inf.IQoS;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
-import com.tgx.chess.queen.io.core.manager.MixManager;
 
 /**
  * @author william.d.zk
  */
-public class LogicHandler
+public class LogicHandler<T extends IActivity<ZContext> & IClusterPeer & IClusterTimer & INode & ISessionManager<ZContext>>
         implements
         ILogicHandler<ZContext>
 {
-    private final Logger                    _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
-    private final ISessionManager<ZContext> _Manager;
-    private final IQttRouter                _QttRouter;
-    private final IRepository<MessageEntry> _MessageRepository;
+    private final Logger                _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
+    private final T                     _Manager;
+    private final IQttRouter            _QttRouter;
+    private final RaftNode<T>           _RaftNode;
+    private final IMessageJpaRepository _MessageRepository;
 
-    public LogicHandler(MixManager<ZContext> manager,
+    public LogicHandler(T manager,
                         IQttRouter qttRouter,
-                        IRepository<MessageEntry> messageRepository)
+                        RaftNode<T> raftNode,
+                        IMessageJpaRepository messageRepository)
     {
         _Manager = manager;
         _QttRouter = qttRouter;
+        _RaftNode = raftNode;
         _MessageRepository = messageRepository;
     }
 
@@ -101,19 +111,18 @@ public class LogicHandler
                 return new IControl[] { new X105_Pong(x104.getPayload()) };
             case X113_QttPublish.COMMAND:
                 X113_QttPublish x113 = (X113_QttPublish) content;
-                MessageEntry messageEntry = new MessageEntry();
-                messageEntry.setCmd(X113_QttPublish.COMMAND);
-                messageEntry.setTopic(x113.getTopic());
-                messageEntry.setOrigin(session.getIndex());
-                messageEntry.setDestination(_MessageRepository.getPeerId());
-                messageEntry.setDirection(CLIENT_TO_SERVER.getShort());
-                messageEntry.setPayload(x113.getPayload());
-                messageEntry.setOwner(x113.getLevel()
-                                          .getValue() < EXACTLY_ONCE.getValue() ? OWNER_SERVER
-                                                                                : OWNER_CLIENT);
-                messageEntry.setMsgId(x113.getMsgId());
-                messageEntry.setOperation(OP_INSERT);
-                _MessageRepository.save(messageEntry);
+                MessageEntity messageEntity = new MessageEntity();
+                messageEntity.setOrigin(session.getIndex());
+                messageEntity.setDestination(_RaftNode.getPeerId());
+                messageEntity.setDirection(CLIENT_TO_SERVER.getShort());
+                messageEntity.setOwner(x113.getLevel()
+                                           .getValue() < EXACTLY_ONCE.getValue() ? OWNER_SERVER
+                                                                                 : OWNER_CLIENT);
+                messageEntity.setBody(new MessageBody(x113.getTopic(), JsonUtil.readTree(x113.getPayload())));
+                messageEntity.setMsgId(x113.getMsgId());
+                messageEntity.setCmd(X113_QttPublish.COMMAND);
+                messageEntity.setOperation(OP_INSERT);
+                _MessageRepository.save(messageEntity);
                 List<IControl<ZContext>> pushList = new LinkedList<>();
                 switch (x113.getLevel())
                 {
@@ -128,7 +137,7 @@ public class LogicHandler
                         x114.setMsgId(x113.getMsgId());
                         pushList.add(x114);
                     default:
-                        brokerTopic(manager, messageEntry, x113.getLevel(), pushList);
+                        brokerTopic(manager, messageEntity, x113.getLevel(), pushList);
                         return pushList.toArray(new IControl[0]);
                 }
             case X114_QttPuback.COMMAND:
@@ -138,10 +147,9 @@ public class LogicHandler
             case X115_QttPubrec.COMMAND:
                 X115_QttPubrec x115 = (X115_QttPubrec) content;
                 _QttRouter.ack(x115, session.getIndex());
-                MessageEntry update = new MessageEntry();
-                update.setOrigin(_MessageRepository.getPeerId());
-                update.setDestination(session.getIndex());
-                update.setMsgId(x115.getMsgId());
+                MessageEntity update = _MessageRepository.findByOriginAndDestinationAndMsgId(_RaftNode.getPeerId(),
+                                                                                             session.getIndex(),
+                                                                                             x115.getMsgId());
                 update.setOwner(OWNER_CLIENT);
                 update.setOperation(OP_MODIFY);
                 _MessageRepository.save(update);
@@ -156,10 +164,9 @@ public class LogicHandler
                 _QttRouter.ack(x116, session.getIndex());
                 pushList = new LinkedList<>();
                 pushList.add(x117);
-                update = new MessageEntry();
-                update.setOrigin(session.getIndex());
-                update.setDestination(_MessageRepository.getPeerId());
-                update.setMsgId(x116.getMsgId());
+                update = _MessageRepository.findByOriginAndDestinationAndMsgId(session.getIndex(),
+                                                                               _RaftNode.getPeerId(),
+                                                                               x116.getMsgId());
                 update.setOwner(OWNER_SERVER);
                 update.setOperation(OP_MODIFY);
                 update = _MessageRepository.save(update);
@@ -176,12 +183,13 @@ public class LogicHandler
     }
 
     private void brokerTopic(ISessionManager<ZContext> manager,
-                             MessageEntry message,
+                             MessageEntity message,
                              IQoS.Level level,
                              List<IControl<ZContext>> pushList)
     {
         Map<Long,
-            IQoS.Level> route = _QttRouter.broker(message.getTopic());
+            IQoS.Level> route = _QttRouter.broker(message.getBody()
+                                                         .getTopic());
         _Logger.debug("route %s", route);
         route.entrySet()
              .stream()
@@ -192,14 +200,24 @@ public class LogicHandler
                      IQoS.Level subscribeLevel = entry.getValue();
                      X113_QttPublish publish = new X113_QttPublish();
                      publish.setLevel(IQoS.Level.valueOf(min(subscribeLevel.getValue(), level.getValue())));
-                     publish.setTopic(message.getTopic());
-                     publish.setPayload(message.getPayload());
+                     publish.setTopic(message.getBody()
+                                             .getTopic());
+                     byte[] payload = null;
+                     try {
+                         payload = message.getBody()
+                                          .getContent()
+                                          .binaryValue();
+                     }
+                     catch (IOException e) {
+                         _Logger.warning("create %s json error", e, publish);
+                     }
+                     publish.setPayload(payload);
                      publish.setSession(targetSession);
                      if (publish.getLevel() == ALMOST_ONCE) { return publish; }
                      long packIdentity = _QttRouter.nextPackIdentity();
                      publish.setMsgId(packIdentity);
                      message.setMsgId(packIdentity);
-                     message.setOrigin(_MessageRepository.getPeerId());
+                     message.setOrigin(_RaftNode.getPeerId());
                      message.setDestination(targetSession.getIndex());
                      message.setOperation(OP_INSERT);
                      message.setOwner(OWNER_SERVER);

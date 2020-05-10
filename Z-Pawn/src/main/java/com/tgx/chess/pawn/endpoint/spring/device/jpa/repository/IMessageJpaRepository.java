@@ -26,12 +26,12 @@ package com.tgx.chess.pawn.endpoint.spring.device.jpa.repository;
 
 import java.util.List;
 
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.tgx.chess.pawn.endpoint.spring.device.jpa.dao.MessageEntity;
+import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.MessageEntity;
+import com.tgx.chess.pawn.spring.jpa.BaseRepository;
 
 /**
  * @author william.d.zk
@@ -40,8 +40,7 @@ import com.tgx.chess.pawn.endpoint.spring.device.jpa.dao.MessageEntity;
 @Repository
 public interface IMessageJpaRepository
         extends
-        JpaRepository<MessageEntity,
-                      Long>
+        BaseRepository<MessageEntity>
 {
     MessageEntity findByOriginAndDestinationAndMsgId(long origin, long destination, long msgId);
 
