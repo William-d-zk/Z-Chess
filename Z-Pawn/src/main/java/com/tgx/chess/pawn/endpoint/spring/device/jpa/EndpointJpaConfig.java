@@ -36,7 +36,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  */
 @EnableJpaAuditing
 @EnableJpaRepositories({ "com.tgx.chess.pawn.endpoint.spring.device.jpa.repository" })
-@EntityScan({ "com.tgx.chess.pawn.endpoint.spring.device.jpa.dao" })
+@EntityScan({ "com.tgx.chess.pawn.endpoint.spring.device.jpa.model" })
 @EnableTransactionManagement
 @Configuration
 @PropertySource({ "classpath:db.properties" })
