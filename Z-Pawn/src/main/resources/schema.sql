@@ -22,4 +22,4 @@
  * SOFTWARE.
  */
 
-CREATE SCHEMA IF NOT EXISTS "tgx-z-com.tgx.chess";
+CREATE SCHEMA IF NOT EXISTS "tgx-z-chess";
