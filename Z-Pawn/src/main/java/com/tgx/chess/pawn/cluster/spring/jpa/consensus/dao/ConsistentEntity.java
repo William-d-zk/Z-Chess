@@ -40,7 +40,7 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.tgx.chess.knight.cluster.spring.model.ConsistentEntry;
+import com.tgx.chess.knight.cluster.spring.model.ConsistentProtocol;
 import com.tgx.chess.pawn.cluster.spring.jpa.model.AuditModel;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 
@@ -64,12 +64,12 @@ public class ConsistentEntity
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "invalid_at", nullable = false)
     @JsonIgnore
-    private Date            invalidAt;
+    private Date               invalidAt;
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb")
-    private ConsistentEntry payload;
+    private ConsistentProtocol payload;
     @Column(updatable = false, nullable = false)
-    private long            consensusId;
+    private long               consensusId;
 
     public long getId()
     {
@@ -91,12 +91,12 @@ public class ConsistentEntity
         this.invalidAt = invalidAt;
     }
 
-    public ConsistentEntry getPayload()
+    public ConsistentProtocol getPayload()
     {
         return payload;
     }
 
-    public void setPayload(ConsistentEntry payload)
+    public void setPayload(ConsistentProtocol payload)
     {
         this.payload = payload;
     }

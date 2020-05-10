@@ -256,4 +256,10 @@ public class DeviceNode
         _Logger.debug("device_cluster heartbeat => %s ", session.getRemoteAddress());
         getCore().send(session, CLUSTER_LOCAL, _Ping);
     }
+
+    @Override
+    public long getZid()
+    {
+        return _ZUID.getId();
+    }
 }
