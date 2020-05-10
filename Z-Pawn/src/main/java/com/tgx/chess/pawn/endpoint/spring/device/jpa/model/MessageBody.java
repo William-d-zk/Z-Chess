@@ -22,19 +22,21 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.pawn.endpoint.spring.device.model;
+package com.tgx.chess.pawn.endpoint.spring.device.jpa.model;
 
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.knight.json.JsonUtil;
+import com.tgx.chess.pawn.endpoint.spring.device.model.RawContent;
 
 /**
  * @author william.d.zk
@@ -48,44 +50,42 @@ public class MessageBody
     private static Logger     _Logger          = Logger.getLogger("endpoint.pawn." + MessageBody.class.getSimpleName());
     private static final long serialVersionUID = -8904730289818144372L;
 
-    private String topic;
-    private byte[] content;
+    private final String _Topic;
+    private final byte[] _Content;
+
+    @JsonCreator
+    public MessageBody(@JsonProperty("topic") String topic,
+                       @JsonProperty("content") JsonNode content)
+    {
+        _Topic = topic;
+        _Content = content.toString()
+                          .getBytes(StandardCharsets.UTF_8);
+    }
 
     public String getTopic()
     {
-        return topic;
-    }
-
-    public void setTopic(String topic)
-    {
-        this.topic = topic;
-    }
-
-    @JsonIgnore
-    public byte[] getPayload()
-    {
-        return content;
+        return _Topic;
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public JsonNode getContent()
     {
-        if (content == null || content.length == 0) {
+        if (_Content == null || _Content.length == 0) {
             _Logger.warning("content null");
             return null;
         }
         try {
-            return JsonUtil.readTree(content);
+            return JsonUtil.readTree(_Content);
         }
         catch (Exception e) {
             try {
                 RawContent content = new RawContent();
-                content.setPayload(this.content);
+                content.setPayload(_Content);
                 try {
-                    content.setRaw(new String(this.content, StandardCharsets.UTF_8));
+                    content.setRaw(new String(_Content, StandardCharsets.UTF_8));
                 }
                 catch (Exception stre) {
-                    _Logger.debug(String.format("content:%s", IoUtil.bin2Hex(this.content, ":")));
+                    _Logger.debug(String.format("content:%s", IoUtil.bin2Hex(_Content, ":")));
                     //ignore
                 }
                 return JsonUtil.valueToTree(content);
@@ -95,17 +95,6 @@ public class MessageBody
             }
         }
         return null;
-    }
-
-    public void setContent(JsonNode content)
-    {
-        setPayload(content.toString()
-                          .getBytes(StandardCharsets.UTF_8));
-    }
-
-    public void setPayload(byte[] content)
-    {
-        this.content = content;
     }
 
 }

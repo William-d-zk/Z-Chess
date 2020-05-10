@@ -122,6 +122,6 @@ public class X11A_QttUnsubscribe
     @Override
     public boolean isNotifyAll()
     {
-        return false;
+        return true;
     }
 }

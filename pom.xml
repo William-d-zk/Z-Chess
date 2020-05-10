@@ -30,7 +30,7 @@
     <groupId>com.tgx.service</groupId>
     <artifactId>framework.z-chess</artifactId>
     <name>Z-Chess</name>
-    <version>1.0.3-SNAPSHOT</version>
+    <version>1.0.3.SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
         <module>Z-King</module>
@@ -291,6 +291,7 @@
         </plugins>
         <directory>${user.home}/Z-Chess/${project.name}/target</directory>
     </build>
+    <!--
     <distributionManagement>
         <repository>
             <id>releases</id>
@@ -299,6 +300,17 @@
         <snapshotRepository>
             <id>snapshots</id>
             <url>http://mvnrepo.tinygamex.com:8081/nexus/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+    -->
+    <distributionManagement>
+        <repository>
+            <id>releases</id>
+            <url>http://mvnrepo.alibaba-inc.com/mvn/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <url>http://mvnrepo.alibaba-inc.com/mvn/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
 </project>

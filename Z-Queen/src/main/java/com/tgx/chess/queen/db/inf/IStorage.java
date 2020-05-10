@@ -41,37 +41,11 @@ public interface IStorage
         return DB_SERIAL;
     }
 
-    default void override(IStorage src)
-    {
-    }
+    long primaryKey();
 
-    long getPrimaryKey();
+    Operation operation();
 
-    void setPrimaryKey(long key);
-
-    default byte[] getSecondaryByteArrayKey()
-    {
-        return null;
-    }
-
-    default long getSecondaryLongKey()
-    {
-        return -1;
-    }
-
-    default Operation getOperation()
-    {
-        return Operation.OP_NULL;
-    }
-
-    void setOperation(Operation op);
-
-    default Strategy getStrategy()
-    {
-        return Strategy.CLEAN;
-    }
-
-    void setStrategy(Strategy strategy);
+    Strategy strategy();
 
     enum Strategy
     {

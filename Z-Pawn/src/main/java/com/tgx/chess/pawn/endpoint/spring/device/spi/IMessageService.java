@@ -27,8 +27,8 @@ package com.tgx.chess.pawn.endpoint.spring.device.spi;
 import java.util.List;
 
 import com.tgx.chess.king.base.exception.ZException;
-import com.tgx.chess.pawn.endpoint.spring.device.model.MessageBody;
-import com.tgx.chess.pawn.endpoint.spring.device.model.MessageEntry;
+import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.MessageBody;
+import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.MessageEntity;
 
 /**
  * @author william.d.zk
@@ -38,5 +38,5 @@ public interface IMessageService
 {
     List<MessageBody> listByTopic(String topic, int limit) throws ZException;
 
-    List<MessageEntry> findAfterId(long id) throws ZException;
+    List<MessageEntity> findAfterId(long id) throws ZException;
 }
