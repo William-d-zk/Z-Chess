@@ -41,8 +41,9 @@ import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.open.api.model.DeviceDo;
+import com.tgx.chess.open.api.service.DeviceOpenService;
+import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.DeviceEntity;
 import com.tgx.chess.pawn.endpoint.spring.device.model.DeviceStatus;
-import com.tgx.chess.pawn.endpoint.spring.device.spi.IDeviceService;
 
 /**
  * @author william.d.zk
@@ -50,19 +51,23 @@ import com.tgx.chess.pawn.endpoint.spring.device.spi.IDeviceService;
 @RestController
 public class DeviceController
 {
-    private final Logger         _Logger = Logger.getLogger(getClass().getSimpleName());
-    private final IDeviceService _DeviceService;
+    private final Logger            _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final DeviceOpenService _DeviceService;
 
     @Autowired
-    public DeviceController(IDeviceService deviceService)
+    public DeviceController(DeviceOpenService deviceService)
     {
         _DeviceService = deviceService;
     }
 
     @PostMapping("/device/register")
-    public @ResponseBody DeviceDo registerDevice(@RequestBody DeviceDo deviceDo)
+    public @ResponseBody Object registerDevice(@RequestBody DeviceDo deviceDo)
     {
-        return _DeviceService.saveDevice(deviceDo);
+        DeviceEntity deviceEntity = new DeviceEntity();
+        deviceEntity.setSn(deviceDo.getSn());
+        deviceEntity.setUsername(deviceDo.getUsername());
+        deviceEntity.setPassword(deviceDo.getPassword());
+        return _DeviceService.save(deviceEntity);
     }
 
     @GetMapping("/device/query")
@@ -70,35 +75,29 @@ public class DeviceController
                                            @RequestParam(required = false) String sn,
                                            @RequestParam(required = false) Long id)
     {
+        DeviceEntity device = new DeviceEntity();
+        device.setSn(sn);
+        device.setToken(token);
+        device.setId(id);
         if (!isBlank(token) || !isBlank(sn)) {
-            DeviceDo deviceDo = new DeviceDo();
-            deviceDo.setToken(token);
-            deviceDo.setSn(sn);
-            deviceDo = _DeviceService.findDevice(deviceDo);
-            if (Objects.nonNull(deviceDo)) {
-                if (deviceDo.getInvalidAt()
-                            .isBefore(Instant.now()))
+            DeviceEntity exist = _DeviceService.find(device);
+            if (Objects.nonNull(exist)) {
+                if (device.getInvalidAt()
+                          .toInstant()
+                          .isBefore(Instant.now()))
                 {
-                    return new Pair<>(DeviceStatus.INVALID, deviceDo);
+                    return new Pair<>(DeviceStatus.INVALID, device);
                 }
                 else {
-                    return new Pair<>(DeviceStatus.AVAILABLE, deviceDo);
+                    return new Pair<>(DeviceStatus.AVAILABLE, device);
                 }
             }
         }
         else {
-            DeviceDo deviceDo = new DeviceDo();
-            deviceDo.setId(id == null ? 0
-                                      : id);
-            deviceDo = _DeviceService.findDevice(deviceDo);
-            if (deviceDo != null) { return new Pair<>(DeviceStatus.AVAILABLE, deviceDo); }
+            DeviceEntity exist = _DeviceService.find(device);
+            if (exist != null) { return new Pair<>(DeviceStatus.AVAILABLE, exist); }
         }
         return new Pair<>(DeviceStatus.MISS, null);
     }
 
-    @GetMapping("/message/query")
-    public @ResponseBody Object getMessage(@RequestParam(name = "id") long id)
-    {
-        return _DeviceService.getMessageById(id);
-    }
 }

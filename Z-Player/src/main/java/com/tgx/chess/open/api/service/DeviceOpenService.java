@@ -131,6 +131,15 @@ public class DeviceOpenService
         }
     }
 
+    public DeviceEntity find(DeviceEntity device) throws ZException
+    {
+        DeviceEntity exist = _JpaRepository.findBySnOrToken(device.getSn(), device.getToken());
+        if (exist == null) {
+            exist = _JpaRepository.getOne(device.getId());
+        }
+        return exist;
+    }
+
     public long generateId()
     {
         return _ZUID.getId(ZUID.TYPE_CONSUMER);
