@@ -37,6 +37,9 @@ import org.springframework.stereotype.Service;
 
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.bishop.io.zhandler.ZClusterMappingCustom;
+import com.tgx.chess.king.base.inf.IValid;
+import com.tgx.chess.king.base.schedule.ICancelable;
+import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.knight.cluster.ClusterNode;
@@ -110,5 +113,15 @@ public class ConsistentService
                 _Lock.unlock();
             }
         }
+    }
+
+    public long getZid()
+    {
+        return _ClusterNode.getZid();
+    }
+
+    public <A extends IValid> ICancelable acquire(A attach, ScheduleHandler<A> scheduleHandler)
+    {
+        return _TimeWheel.acquire(attach, scheduleHandler);
     }
 }
