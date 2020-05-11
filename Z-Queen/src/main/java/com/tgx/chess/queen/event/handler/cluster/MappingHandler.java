@@ -218,7 +218,7 @@ public class MappingHandler<C extends IContext<C>,
                         }
                         IConsistentProtocol notify = pair.getSecond();
                         if (notify != null) {
-                            publishNotify(notify, notify.channel(), null);
+                            publishNotify(notify, notify.getOrigin(), null);
                         }
                     }
                     catch (Exception e) {

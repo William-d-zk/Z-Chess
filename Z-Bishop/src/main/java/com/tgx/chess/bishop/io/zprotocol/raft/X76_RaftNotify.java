@@ -104,6 +104,7 @@ public class X76_RaftNotify
         mNotifyAll = all;
     }
 
+    @Override
     public long getOrigin()
     {
         return mOrigin;
