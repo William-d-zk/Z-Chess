@@ -42,8 +42,8 @@ import com.tgx.chess.king.base.log.Logger;
 @Configuration
 public class JsonUtil
 {
-    private final static Logger _Logger       = Logger.getLogger(JsonUtil.class.getSimpleName());
-    private static ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private final static Logger       _Logger       = Logger.getLogger(JsonUtil.class.getSimpleName());
+    private final static ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     public void setPropertyNamingStrategy(String input)
     {
@@ -138,14 +138,24 @@ public class JsonUtil
         return null;
     }
 
-    public static JsonNode readTree(byte[] input) throws IOException
+    public static JsonNode readTree(byte[] input)
     {
-        return OBJECT_MAPPER.readTree(input);
+        try {
+            return OBJECT_MAPPER.readTree(input);
+        }
+        catch (IOException e) {
+            return OBJECT_MAPPER.nullNode();
+        }
     }
 
-    public static JsonNode readTree(String input) throws IOException
+    public static JsonNode readTree(String input)
     {
-        return OBJECT_MAPPER.readTree(input);
+        try {
+            return OBJECT_MAPPER.readTree(input);
+        }
+        catch (IOException e) {
+            return OBJECT_MAPPER.nullNode();
+        }
     }
 
     public static <T> JsonNode valueToTree(T data)

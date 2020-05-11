@@ -25,19 +25,16 @@
 package com.tgx.chess.pawn.endpoint.spring.device.service;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 import com.tgx.chess.bishop.io.ZSort;
 import com.tgx.chess.bishop.io.mqtt.handler.IQttRouter;
-import com.tgx.chess.bishop.io.mqtt.handler.QttRouter;
 import com.tgx.chess.bishop.io.zhandler.ZClusterMappingCustom;
 import com.tgx.chess.bishop.io.zhandler.ZLinkMappingCustom;
 import com.tgx.chess.king.base.exception.ZException;
@@ -51,14 +48,13 @@ import com.tgx.chess.knight.raft.model.log.RaftDao;
 import com.tgx.chess.knight.raft.service.ClusterCustom;
 import com.tgx.chess.pawn.endpoint.spring.device.DeviceNode;
 import com.tgx.chess.pawn.endpoint.spring.device.config.DeviceConfig;
-import com.tgx.chess.pawn.endpoint.spring.device.model.DeviceDo;
-import com.tgx.chess.pawn.endpoint.spring.device.model.DeviceEntry;
-import com.tgx.chess.pawn.endpoint.spring.device.model.MessageBody;
-import com.tgx.chess.pawn.endpoint.spring.device.model.MessageEntry;
+import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.DeviceEntity;
+import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.MessageBody;
+import com.tgx.chess.pawn.endpoint.spring.device.jpa.repository.IDeviceJpaRepository;
+import com.tgx.chess.pawn.endpoint.spring.device.jpa.repository.IMessageJpaRepository;
 import com.tgx.chess.pawn.endpoint.spring.device.spi.IDeviceService;
 import com.tgx.chess.queen.config.IAioConfig;
 import com.tgx.chess.queen.config.IMixConfig;
-import com.tgx.chess.queen.db.inf.IRepository;
 
 /**
  * @author william.d.zk
@@ -70,12 +66,15 @@ public class DeviceService
         implements
         IDeviceService
 {
-    private final Logger                    _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
+
     private final DeviceNode                _DeviceNode;
     private final LinkCustom                _LinkCustom;
     private final ClusterCustom<DeviceNode> _ClusterCustom;
-    private final IRepository<MessageEntry> _MessageRepository;
+    private final IDeviceJpaRepository      _DeviceRepository;
+    private final IMessageJpaRepository     _MessageRepository;
     private final RaftNode<DeviceNode>      _RaftNode;
+    private final LogicHandler<DeviceNode>  _LogicHandler;
 
     @Autowired
     DeviceService(DeviceConfig deviceConfig,
@@ -83,9 +82,10 @@ public class DeviceService
                   IRaftConfig raftConfig,
                   IMixConfig mixConfig,
                   LinkCustom linkCustom,
-                  ClusterCustom<DeviceNode> clusterCustom,
-                  IRepository<MessageEntry> messageRepository,
-                  RaftDao raftDao) throws IOException
+                  IMessageJpaRepository messageRepository,
+                  IDeviceJpaRepository deviceRepository,
+                  RaftDao raftDao,
+                  IQttRouter qttRouter) throws IOException
     {
         final TimeWheel _TimeWheel = new TimeWheel();
         List<ITriple> hosts = new ArrayList<>(2);
@@ -100,83 +100,45 @@ public class DeviceService
         hosts.add(new Triple<>(wsServiceHost, wsServicePort, ZSort.WS_SERVER));
         hosts.add(new Triple<>(qttServiceHost, qttServicePort, ZSort.QTT_SERVER));
         _DeviceNode = new DeviceNode(hosts, ioConfig, raftConfig, mixConfig, _TimeWheel);
-        _MessageRepository = messageRepository;
+        _DeviceRepository = deviceRepository;
         _LinkCustom = linkCustom;
-        _ClusterCustom = clusterCustom;
         _RaftNode = new RaftNode<>(_TimeWheel, raftConfig, raftDao, _DeviceNode);
-        _ClusterCustom.setRaftNode(_RaftNode);
+        _ClusterCustom = new ClusterCustom<>(_RaftNode);
+        _LogicHandler = new LogicHandler<>(_DeviceNode, qttRouter, _RaftNode, _MessageRepository = messageRepository);
     }
 
     @PostConstruct
     private void start() throws IOException
     {
-        final IQttRouter _QttRouter = new QttRouter();
-        LogicHandler logicHandler = new LogicHandler(_DeviceNode, _QttRouter, _MessageRepository);
-        _LinkCustom.setQttRouter(_QttRouter);
-        _DeviceNode.start(logicHandler,
+        _DeviceNode.start(_LogicHandler,
                           new ZLinkMappingCustom(_LinkCustom),
                           new ZClusterMappingCustom<>(_ClusterCustom));
         _RaftNode.init();
     }
 
     @Override
-    public DeviceDo saveDevice(DeviceDo device) throws ZException
+    public DeviceEntity saveDevice(DeviceEntity device) throws ZException
     {
-        DeviceEntry entry = convertDo2Entry(device);
-        _LinkCustom.findDevice(entry);
-        return convertEntry2Do(_LinkCustom.saveDevice(entry), device);
-    }
-
-    @Bean
-    public RaftNode<DeviceNode> getRaftNode()
-    {
-        return _RaftNode;
-    }
-
-    private DeviceDo convertEntry2Do(DeviceEntry entry, DeviceDo deviceDo)
-    {
-        DeviceDo dd = deviceDo == null ? new DeviceDo()
-                                       : deviceDo;
-        dd.setToken(entry.getToken());
-        dd.setSn(entry.getSn());
-        dd.setPassword(entry.getPassword());
-        dd.setUsername(entry.getUsername());
-        dd.setInvalidAt(Instant.ofEpochMilli(entry.getInvalidTime()));
-        return dd;
-    }
-
-    private DeviceEntry convertDo2Entry(DeviceDo deviceDo)
-    {
-        DeviceEntry deviceEntry = new DeviceEntry();
-        deviceEntry.setToken(deviceDo.getToken());
-        deviceEntry.setSn(deviceDo.getSn());
-        deviceEntry.setPassword(deviceDo.getPassword());
-        deviceEntry.setUsername(deviceDo.getUsername());
-        if (deviceDo.getInvalidAt() != null) {
-            deviceEntry.setInvalidTime(deviceDo.getInvalidAt()
-                                               .toEpochMilli());
-        }
-        return deviceEntry;
+        return _DeviceRepository.save(device);
     }
 
     @Override
-    public DeviceDo findDevice(DeviceDo key) throws ZException
+    public DeviceEntity findDevice(DeviceEntity key) throws ZException
     {
-        DeviceEntry deviceEntry = convertDo2Entry(key);
-        _LinkCustom.findDevice(deviceEntry);
-        return convertEntry2Do(deviceEntry, key);
+        return _DeviceRepository.findBySnOrToken(key.getSn(), key.getToken());
     }
 
     @Override
-    public List<DeviceDo> findAllDevices() throws ZException
+    public List<DeviceEntity> findAllDevices() throws ZException
     {
-        return null;
+        return _DeviceRepository.findAll();
     }
 
     @Override
     public MessageBody getMessageById(long id) throws ZException
     {
-        return null;
+        return _MessageRepository.getOne(id)
+                                 .getBody();
     }
 
 }

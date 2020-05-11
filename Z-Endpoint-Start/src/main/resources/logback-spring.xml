@@ -28,21 +28,21 @@
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <property name="APP_NAME" value="Z-Chess"/>
     <property name="LOG_PATH" value="${user.home}/${APP_NAME}/logs"/>
-    <property name="LOG_FILE" value="${LOG_PATH}/application.log"/>
-    <appender name="APPLICATION"
+    <property name="Z_CHESS_LOG_FILE" value="${LOG_PATH}/z-chess.log"/>
+    <appender name="Z-CHESS"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_FILE}</file>
+        <file>${Z_CHESS_LOG_FILE}</file>
         <encoder>
             <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>utf8</charset>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_FILE}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <fileNamePattern>${Z_CHESS_LOG_FILE}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <maxHistory>7</maxHistory>
             <maxFileSize>50MB</maxFileSize>
-            <totalSizeCap>20GB</totalSizeCap>
+            <totalSizeCap>2GB</totalSizeCap>
         </rollingPolicy>
     </appender>
-
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>${CONSOLE_LOG_PATTERN}</pattern>
@@ -50,9 +50,24 @@
         </encoder>
     </appender>
 
-    <root level="INFO">
+    <root level="WARN">
         <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="APPLICATION"/>
+        <appender-ref ref="Z-CHESS"/>
     </root>
-    <logger name="com.tgx.com.tgx.chess.queen.io.core.executor.ServerCore" level="DEBUG"/>
+    <logger name="cluster.knight" level="DEBUG">
+        <appender-ref ref="Z-CHESS"/>
+    </logger>
+    <logger name="base.king" level="INFO">
+        <appender-ref ref="Z-CHESS"/>
+    </logger>
+    <logger name="io.queen" level="INFO">
+        <appender-ref ref="Z-CHESS"/>
+    </logger>
+    <logger name="protocol.bishop" level="INFO">
+        <appender-ref ref="Z-CHESS"/>
+    </logger>
+    <logger name="endpoint.pawn" level="INFO">
+        <appender-ref ref="Z-CHESS"/>
+    </logger>
+
 </configuration>

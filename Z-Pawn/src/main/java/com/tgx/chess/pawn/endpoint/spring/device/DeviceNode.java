@@ -102,11 +102,11 @@ public class DeviceNode
         super(bizIoConfig, new ServerCore<>(serverConfig));
         _TimeWheel = timeWheel;
         _ZUID = raftConfig.createZUID();
-        _Logger.debug(_ZUID);
         IPair bind = raftConfig.getBind();
         final String _ClusterHost = bind.getFirst();
         final int _ClusterPort = bind.getSecond();
         hosts.add(new Triple<>(_ClusterHost, _ClusterPort, ZSort.WS_CLUSTER_SERVER));
+
         _AioServers = hosts.stream()
                            .map(triple ->
                            {
@@ -258,7 +258,7 @@ public class DeviceNode
     }
 
     @Override
-    public long getZid()
+    public long getZuid()
     {
         return _ZUID.getId();
     }

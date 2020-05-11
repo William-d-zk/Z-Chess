@@ -68,15 +68,13 @@ public class ConsistentService
                              @Qualifier("core_cluster_config") IClusterConfig clusterConfig,
                              IRaftConfig raftConfig,
                              INotifyCustom notifyCustom,
-                             ClusterCustom<ClusterNode> clusterCustom,
                              IRaftDao raftDao) throws IOException
     {
         _TimeWheel = new TimeWheel();
         _NotifyCustom = notifyCustom;
-        _ClusterCustom = clusterCustom;
         _ClusterNode = new ClusterNode(ioConfig, clusterConfig, raftConfig, _TimeWheel);
         _RaftNode = new RaftNode<>(_TimeWheel, raftConfig, raftDao, _ClusterNode);
-        _ClusterCustom.setRaftNode(_RaftNode);
+        _ClusterCustom = new ClusterCustom<>(_RaftNode);
     }
 
     @PostConstruct
@@ -100,8 +98,8 @@ public class ConsistentService
                     event.produce(CONSENSUS,
                                   new Pair<>(new ConsistentProtocol(content.getBytes(StandardCharsets.UTF_8),
                                                                     isNotifyAll,
-                                                                    origin,
-                                                                    _ClusterNode.getZid()),
+                                                                    _ClusterNode.getZuid(),
+                                                                    origin),
                                              origin),
                                   _NotifyCustom);
                 }
@@ -113,11 +111,6 @@ public class ConsistentService
                 _Lock.unlock();
             }
         }
-    }
-
-    public long getZid()
-    {
-        return _ClusterNode.getZid();
     }
 
     public <A extends IValid> ICancelable acquire(A attach, ScheduleHandler<A> scheduleHandler)

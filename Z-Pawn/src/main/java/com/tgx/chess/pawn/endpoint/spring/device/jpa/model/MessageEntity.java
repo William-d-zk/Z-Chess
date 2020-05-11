@@ -22,7 +22,9 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.pawn.endpoint.spring.device.jpa.dao;
+package com.tgx.chess.pawn.endpoint.spring.device.jpa.model;
+
+import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -30,13 +32,15 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
-import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.AuditModel;
-import com.tgx.chess.pawn.endpoint.spring.device.model.MessageBody;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.tgx.chess.knight.json.JsonUtil;
+import com.tgx.chess.queen.db.inf.IStorage;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 
 /**
@@ -49,6 +53,8 @@ import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 public class MessageEntity
         extends
         AuditModel
+        implements
+        IStorage
 {
     private static final long serialVersionUID = -6502547239976531057L;
 
@@ -71,8 +77,14 @@ public class MessageEntity
     private long        msgId;
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb")
-    private MessageBody payload;
-    private boolean     retain = false;
+    private MessageBody body;
+
+    @JsonIgnore
+    @Transient
+    private int                mLength;
+    @JsonIgnore
+    @Transient
+    private IStorage.Operation mOperation = IStorage.Operation.OP_NULL;
 
     public long getId()
     {
@@ -84,14 +96,14 @@ public class MessageEntity
         this.id = id;
     }
 
-    public MessageBody getPayload()
+    public MessageBody getBody()
     {
-        return payload;
+        return body;
     }
 
-    public void setPayload(MessageBody payload)
+    public void setBody(MessageBody body)
     {
-        this.payload = payload;
+        this.body = body;
     }
 
     public String getDirection()
@@ -134,16 +146,6 @@ public class MessageEntity
         this.origin = origin;
     }
 
-    public boolean isRetain()
-    {
-        return retain;
-    }
-
-    public void setRetain(boolean retain)
-    {
-        this.retain = retain;
-    }
-
     public long getMsgId()
     {
         return msgId;
@@ -163,4 +165,57 @@ public class MessageEntity
     {
         this.destination = destination;
     }
+
+    @Override
+    public int dataLength()
+    {
+        return mLength;
+    }
+
+    @Override
+    public byte[] encode()
+    {
+        byte[] payload = JsonUtil.writeValueAsBytes(this);
+        Objects.requireNonNull(payload);
+        mLength = payload.length;
+        return payload;
+    }
+
+    @Override
+    public int decode(byte[] data)
+    {
+        return mLength = data.length;
+    }
+
+    @Override
+    public int serial()
+    {
+        return MESSAGE_ENTITY_SERIAL;
+    }
+
+    @Override
+    public long primaryKey()
+    {
+        return id;
+    }
+
+    @Override
+    public IStorage.Operation operation()
+    {
+        return mOperation;
+    }
+
+    @JsonIgnore
+    public void setOperation(IStorage.Operation operation)
+    {
+        mOperation = operation;
+    }
+
+    @Override
+    public IStorage.Strategy strategy()
+    {
+        return IStorage.Strategy.RETAIN;
+    }
+
+    private final static int MESSAGE_ENTITY_SERIAL = DB_SERIAL + 2;
 }

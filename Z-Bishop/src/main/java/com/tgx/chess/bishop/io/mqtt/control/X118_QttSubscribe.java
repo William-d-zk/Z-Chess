@@ -43,7 +43,9 @@ import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
  */
 public class X118_QttSubscribe
         extends
-        QttCommand implements IConsistentProtocol
+        QttCommand
+        implements
+        IConsistentProtocol
 {
 
     public final static int COMMAND = 0x118;
@@ -143,7 +145,8 @@ public class X118_QttSubscribe
     }
 
     @Override
-    public boolean isNotifyAll() {
-        return false;
+    public boolean isNotifyAll()
+    {
+        return true;
     }
 }

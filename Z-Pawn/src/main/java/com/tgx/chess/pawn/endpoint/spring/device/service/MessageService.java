@@ -30,9 +30,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.tgx.chess.king.base.exception.ZException;
+import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.MessageBody;
+import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.MessageEntity;
 import com.tgx.chess.pawn.endpoint.spring.device.jpa.repository.IMessageJpaRepository;
-import com.tgx.chess.pawn.endpoint.spring.device.model.MessageBody;
-import com.tgx.chess.pawn.endpoint.spring.device.model.MessageEntry;
 import com.tgx.chess.pawn.endpoint.spring.device.spi.IMessageService;
 
 /**
@@ -45,12 +45,12 @@ public class MessageService
         IMessageService
 {
 
-    private final IMessageJpaRepository _JpaRepository;
+    private final IMessageJpaRepository _MessageRepository;
 
     @Autowired
     public MessageService(IMessageJpaRepository jpaRepository)
     {
-        _JpaRepository = jpaRepository;
+        _MessageRepository = jpaRepository;
     }
 
     @Override
@@ -60,7 +60,7 @@ public class MessageService
     }
 
     @Override
-    public List<MessageEntry> findAfterId(long id)
+    public List<MessageEntity> findAfterId(long id)
     {
         return null;
     }

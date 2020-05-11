@@ -22,9 +22,10 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.pawn.endpoint.spring.device.jpa.dao;
+package com.tgx.chess.pawn.endpoint.spring.device.jpa.model;
 
 import java.util.Date;
+import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -34,13 +35,17 @@ import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotEmpty;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.validator.constraints.Length;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.AuditModel;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.tgx.chess.knight.json.JsonUtil;
+import com.tgx.chess.queen.db.inf.IStorage;
 
 /**
  * @author william.d.zk
@@ -50,9 +55,12 @@ import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.AuditModel;
                    @Index(name = "device_idx_token_pwd", columnList = "token,password"),
                    @Index(name = "device_idx_sn", columnList = "sn"),
                    @Index(name = "device_idx_token", columnList = "token") })
+@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class DeviceEntity
         extends
         AuditModel
+        implements
+        IStorage
 {
     private static final long serialVersionUID = -6645586986057373344L;
 
@@ -60,24 +68,29 @@ public class DeviceEntity
     @GeneratedValue(generator = "ZDeviceGenerator")
     @GenericGenerator(name = "ZDeviceGenerator",
                       strategy = "com.tgx.chess.pawn.endpoint.spring.device.jpa.generator.ZDeviceGenerator")
-    private long   id;
+    private long      id;
     @Column(length = 32, nullable = false, updatable = false)
-    private String sn;
+    private String    sn;
     @Column(length = 32, nullable = false)
     @Length(min = 5, max = 32, message = "*Your password must have at least 5 characters less than 32 characters")
     @NotEmpty(message = "*Please provide your password")
-    private String password;
+    private String    password;
     @Column(length = 32, nullable = false, updatable = false)
     @Length(min = 8, max = 32, message = "* Your Username must have at least 8 characters less than 32 characters")
     @NotEmpty(message = "*Please provide your username")
-    private String username = "tgx-z-com.tgx.chess-device";
-    private int    passwordId;
+    private String    username   = "tgx-z-com.tgx.chess-device";
+    private int       passwordId;
     @Column(length = 64, nullable = false, updatable = false)
-    private String token;
+    private String    token;
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "invalid_at", nullable = false)
     @JsonIgnore
-    private Date   invalidAt;
+    private Date      invalidAt;
+    @Transient
+    private Operation mOperation = Operation.OP_NULL;
+    @JsonIgnore
+    @Transient
+    private int       mLength;
 
     public long getId()
     {
@@ -168,4 +181,56 @@ public class DeviceEntity
     {
         this.username = username;
     }
+
+    @Override
+    public long primaryKey()
+    {
+        return id;
+    }
+
+    @Override
+    public Operation operation()
+    {
+        return mOperation;
+    }
+
+    public void setOperation(Operation operation)
+    {
+        mOperation = operation;
+    }
+
+    @Override
+    public Strategy strategy()
+    {
+        return Strategy.RETAIN;
+    }
+
+    @Override
+    public int dataLength()
+    {
+        return mLength;
+    }
+
+    @Override
+    public byte[] encode()
+    {
+        byte[] payload = JsonUtil.writeValueAsBytes(this);
+        Objects.requireNonNull(payload);
+        mLength = payload.length;
+        return payload;
+    }
+
+    @Override
+    public int decode(byte[] data)
+    {
+        return mLength;
+    }
+
+    @Override
+    public int serial()
+    {
+        return DEVICE_ENTITY_SERIAL;
+    }
+
+    private final static int DEVICE_ENTITY_SERIAL = DB_SERIAL + 1;
 }

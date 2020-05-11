@@ -24,10 +24,10 @@
 
 package com.tgx.chess.pawn.endpoint.spring.device.jpa.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.tgx.chess.pawn.endpoint.spring.device.jpa.dao.DeviceEntity;
+import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.DeviceEntity;
+import com.tgx.chess.pawn.spring.jpa.BaseRepository;
 
 /**
  * @author william.d.zk
@@ -36,15 +36,11 @@ import com.tgx.chess.pawn.endpoint.spring.device.jpa.dao.DeviceEntity;
 @Repository
 public interface IDeviceJpaRepository
         extends
-        JpaRepository<DeviceEntity,
-                      Long>
+        BaseRepository<DeviceEntity>
 {
-    DeviceEntity findByTokenAndPassword(String token, String password);
-
-    DeviceEntity findByTokenAndPasswordAndPasswordId(String token, String password, int passwordId);
-
     DeviceEntity findByToken(String token);
 
     DeviceEntity findBySn(String sn);
 
+    DeviceEntity findBySnOrToken(String sn, String token);
 }
