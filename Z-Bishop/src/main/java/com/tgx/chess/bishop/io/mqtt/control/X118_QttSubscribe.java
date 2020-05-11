@@ -149,4 +149,10 @@ public class X118_QttSubscribe
     {
         return true;
     }
+
+    @Override
+    public long getOrigin()
+    {
+        return getSession().getIndex();
+    }
 }

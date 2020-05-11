@@ -468,4 +468,9 @@ public class X111_QttConnect
     {
         return false;
     }
+
+    public long getOrigin()
+    {
+        return getSession().getIndex();
+    }
 }

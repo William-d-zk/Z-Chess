@@ -33,4 +33,6 @@ public interface IConsistentProtocol
         IProtocol
 {
     boolean isNotifyAll();
+
+    long getOrigin();
 }
