@@ -196,9 +196,9 @@ public class ServerCore<C extends IContext<C>>
     /*  ║ barrier, ━> publish event, ━━ pipeline, | event handler
     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
     ┃                                                                                                                       ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓ ┃
-    ┃                                                                                                                       ┃       ║                 ┏━>_ClusterEvent    ━┛ ┃
-    ┃                                                                                                                       ┃    ┏>━║_LinkProcessor━━━╋━>_ErrorEvent      ━━━┛
-    ┃                                                                               Api   ━━> _ConsensusApiEvent ━━━━━━━━━━━╋━━━━┫  ║                 ┗━>_LinkWriteEvent  ━━>━║                 ┏━>_EncodedEvents[0]{_EncoderProcessors[0]}|║
+    ┃                                                                                                                       ┃       ║                 ┏━>_ClusterEvent   ━>┛ ┃
+    ┃                                                                                                                       ┃    ┏>━║_LinkProcessor━━━╋━>_ErrorEvent     ━>━━┛
+    ┃                                                                               Api   ━━> _ConsensusApiEvent ━━━━━━━━━━━╋━━━━┫  ║                 ┗━>_LinkWriteEvent ━━━>━║                 ┏━>_EncodedEvents[0]{_EncoderProcessors[0]}|║
     ┃  ━> _AioProducerEvents━║                                                      Timer ━━> _ConsensusEvent    ━━━━━━━━━━━┫    ┣━━<━━━━━<━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓  ║                 ┃  _EncodedEvents[1]{_EncoderProcessors[1]}|║
     ┃  ━> _ClusterLocalClose━║                ┏>_LinkIoEvent    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━┫                ━━━> _BizLocalSendEvent ━╋>━║_WriteDispatcher━┫  _EncodedEvents[2]{_EncoderProcessors[2]}|║_EncodedProcessor┳━━>║[Event Done]
     ┃  ━> _BizLocalClose    ━║                ┃ _ClusterIoEvent ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫    ┃  ║                 ┏━>_NotifyEvent ━━━━━┛  ║                 ┃  _EncodedEvents[.]{_EncoderProcessors[.]}|║                 ┗━━>_ErrorEvent━┓
@@ -464,6 +464,8 @@ public class ServerCore<C extends IContext<C>>
                 return _ClusterLocalSendEvent;
             case CONSENSUS:
                 return _ConsensusApiEvent;
+            case CLUSTER_TIMER:
+                return _ConsensusEvent;
             default:
                 throw new IllegalArgumentException(String.format("get publisher type error:%s ", type.name()));
         }
