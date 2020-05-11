@@ -230,7 +230,7 @@ public class ClusterNode
     }
 
     @Override
-    public long getZid()
+    public long getZuid()
     {
         return _ZUID.getId();
     }

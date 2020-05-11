@@ -27,12 +27,16 @@ package com.tgx.chess.pawn.endpoint.spring.device.config;
 import java.time.Duration;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
+import com.tgx.chess.bishop.io.mqtt.handler.IQttRouter;
+import com.tgx.chess.bishop.io.mqtt.handler.QttRouter;
+
 @PropertySource("classpath:device.properties")
 @ConfigurationProperties(prefix = "z.chess.device")
-@Configuration
+@Configuration("device_config")
 public class DeviceConfig
 {
     private Duration passwordInvalidDays;
@@ -78,5 +82,11 @@ public class DeviceConfig
     public void setAddressQtt(String addressQtt)
     {
         this.addressQtt = addressQtt;
+    }
+
+    @Bean
+    public IQttRouter getQttRouter()
+    {
+        return new QttRouter();
     }
 }

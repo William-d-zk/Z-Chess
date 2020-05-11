@@ -32,7 +32,6 @@ import static com.tgx.chess.knight.raft.RaftState.LEADER;
 import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_APPEND;
 import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_INSERT;
 import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_NULL;
-import static com.tgx.chess.queen.db.inf.IStorage.Strategy.RETAIN;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -86,8 +85,6 @@ public class RaftMachine
     @JsonIgnore
     private Operation                          mOperation          = OP_NULL;
     @JsonIgnore
-    private Strategy                           mStrategy           = RETAIN;
-    @JsonIgnore
     private int                                mLength;
 
     @Override
@@ -134,19 +131,11 @@ public class RaftMachine
 
     @Override
     @JsonIgnore
-    public long getPrimaryKey()
+    public long primaryKey()
     {
         return _PeerId;
     }
 
-    @Override
-    @JsonIgnore
-    public void setPrimaryKey(long key)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     @JsonIgnore
     public void setOperation(Operation op)
     {
@@ -155,23 +144,16 @@ public class RaftMachine
 
     @Override
     @JsonIgnore
-    public Operation getOperation()
+    public Operation operation()
     {
         return mOperation;
     }
 
     @Override
     @JsonIgnore
-    public void setStrategy(Strategy strategy)
+    public Strategy strategy()
     {
-        mStrategy = strategy;
-    }
-
-    @Override
-    @JsonIgnore
-    public Strategy getStrategy()
-    {
-        return mStrategy;
+        return Strategy.RETAIN;
     }
 
     @JsonCreator

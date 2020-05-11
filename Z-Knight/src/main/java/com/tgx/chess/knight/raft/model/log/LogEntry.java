@@ -34,12 +34,14 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.knight.json.JsonUtil;
+import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
 
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class LogEntry
         implements
-        IConsistentProtocol
+        IConsistentProtocol,
+        IStorage
 {
     private final static int _LOG_SERIAL = INTERNAL_SERIAL + 2;
 
@@ -50,6 +52,9 @@ public class LogEntry
     private final int     _PayloadSerial;
     private final byte[]  _Payload;
     private final boolean _All;
+
+    @JsonIgnore
+    private Operation mOperation = Operation.OP_INSERT;
 
     @JsonIgnore
     private transient byte[] tData;
@@ -165,5 +170,31 @@ public class LogEntry
     public boolean isNotifyAll()
     {
         return _All;
+    }
+
+    @Override
+    @JsonIgnore
+    public long primaryKey()
+    {
+        return _Index;
+    }
+
+    @JsonIgnore
+    public void setOperation(Operation op)
+    {
+        mOperation = op;
+    }
+
+    @JsonIgnore
+    @Override
+    public Operation operation()
+    {
+        return mOperation;
+    }
+
+    @JsonIgnore
+    public Strategy strategy()
+    {
+        return Strategy.RETAIN;
     }
 }

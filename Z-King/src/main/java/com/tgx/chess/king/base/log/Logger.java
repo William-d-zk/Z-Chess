@@ -113,6 +113,11 @@ public class Logger
         _Logger.warn(String.format(formatter, msg));
     }
 
+    public void warning(Throwable e)
+    {
+        _Logger.warn("e:", e);
+    }
+
     public void debug(Object object)
     {
         _Logger.debug(object.toString());

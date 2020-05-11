@@ -50,6 +50,7 @@ import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.IClusterTimer;
 import com.tgx.chess.queen.io.core.inf.IConnectActivity;
 import com.tgx.chess.queen.io.core.inf.IControl;
+import com.tgx.chess.queen.io.core.inf.INode;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
@@ -61,7 +62,8 @@ import com.tgx.chess.queen.io.core.inf.ISessionOption;
 public interface IClusterNode<K extends IPipeCore>
         extends
         IClusterPeer,
-        IClusterTimer
+        IClusterTimer,
+        INode
 {
     default IAioConnector<ZContext> buildConnector(IPair address,
                                                    ISocketConfig socketConfig,
@@ -139,5 +141,4 @@ public interface IClusterNode<K extends IPipeCore>
         }
     }
 
-    long getZid();
 }

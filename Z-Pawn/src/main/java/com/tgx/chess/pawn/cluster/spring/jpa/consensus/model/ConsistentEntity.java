@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.pawn.cluster.spring.jpa.consensus.dao;
+package com.tgx.chess.pawn.cluster.spring.jpa.consensus.model;
 
 import java.util.Date;
 

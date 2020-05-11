@@ -30,7 +30,7 @@
     <parent>
         <artifactId>framework.z-chess</artifactId>
         <groupId>com.tgx.service</groupId>
-        <version>1.0.3-SNAPSHOT</version>
+        <version>1.0.3.SNAPSHOT</version>
     </parent>
     <artifactId>biz.z-player</artifactId>
     <name>Z-Player</name>

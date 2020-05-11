@@ -27,17 +27,17 @@ package com.tgx.chess.pawn.endpoint.spring.device.spi;
 import java.util.List;
 
 import com.tgx.chess.king.base.exception.ZException;
-import com.tgx.chess.pawn.endpoint.spring.device.model.DeviceDo;
-import com.tgx.chess.pawn.endpoint.spring.device.model.MessageBody;
+import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.DeviceEntity;
+import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.MessageBody;
 
 public interface IDeviceService
 {
-    DeviceDo saveDevice(DeviceDo deviceDo) throws ZException;
+    DeviceEntity saveDevice(DeviceEntity device) throws ZException;
 
-    DeviceDo findDevice(DeviceDo key) throws ZException;
+    DeviceEntity findDevice(DeviceEntity key) throws ZException;
 
     MessageBody getMessageById(long id) throws ZException;
 
-    List<DeviceDo> findAllDevices() throws ZException;
+    List<DeviceEntity> findAllDevices() throws ZException;
 
 }
