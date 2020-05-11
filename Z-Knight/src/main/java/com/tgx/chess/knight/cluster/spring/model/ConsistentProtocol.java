@@ -31,6 +31,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.tgx.chess.king.topology.ZUID;
 import com.tgx.chess.knight.json.JsonUtil;
 import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
 
@@ -117,5 +118,11 @@ public class ConsistentProtocol
     public boolean isNotifyAll()
     {
         return _NotifyAll;
+    }
+
+    @Override
+    public int channel()
+    {
+        return (int) (_Zuid >> ZUID.SEQUENCE_BITS);
     }
 }
