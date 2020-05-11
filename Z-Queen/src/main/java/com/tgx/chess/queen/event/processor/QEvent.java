@@ -57,9 +57,9 @@ public class QEvent
     public String toString()
     {
         return String.format("\nerror: %s\ntype:%s\noperator:%s\ncontent_list:%s\ncontent:%s",
-                             mErrType.name(),
-                             mType.name(),
-                             mOperator.getName(),
+                             mErrType,
+                             mType,
+                             mOperator,
                              mContentList,
                              mContent);
     }
