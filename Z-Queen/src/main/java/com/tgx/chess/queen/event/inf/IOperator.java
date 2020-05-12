@@ -33,7 +33,6 @@ public interface IOperator<T,
                            U,
                            R>
 {
-
     R handle(T t, U u);
 
     default <V> IOperator<T,

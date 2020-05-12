@@ -25,16 +25,16 @@
 package com.tgx.chess.queen.event.handler.cluster;
 
 import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
  * @author william.d.zk
  */
 public interface INotifyCustom
         extends
-        IOperator<IConsistentProtocol,
+        IOperator<IProtocol,
                   Throwable,
                   Void>
 {
-
+    void adjudge(IProtocol consensus);
 }

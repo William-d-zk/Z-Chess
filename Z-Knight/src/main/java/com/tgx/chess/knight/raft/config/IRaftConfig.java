@@ -81,7 +81,7 @@ public interface IRaftConfig
 
     Duration getHeartbeatInSecond();
 
-    boolean isClusterModel();
+    boolean isClusterMode();
 
     class Uid
     {

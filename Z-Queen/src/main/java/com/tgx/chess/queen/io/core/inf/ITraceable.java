@@ -24,9 +24,10 @@
 
 package com.tgx.chess.queen.io.core.inf;
 
-public interface IConsistentProtocol
-        extends
-        IConsistent,
-        IProtocol
+/**
+ * @author william.d.zk
+ */
+public interface ITraceable
 {
+    long getOrigin();
 }
