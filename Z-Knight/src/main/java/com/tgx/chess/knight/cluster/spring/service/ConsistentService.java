@@ -119,4 +119,9 @@ public class ConsistentService
     {
         return _TimeWheel.acquire(attach, scheduleHandler);
     }
+
+    public long getClusterZuid()
+    {
+        return _ClusterNode.getZuid();
+    }
 }
