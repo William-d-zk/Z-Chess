@@ -56,8 +56,9 @@ import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.handler.cluster.IClusterCustom;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.IClusterTimer;
-import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
+import com.tgx.chess.queen.io.core.inf.IConsistent;
 import com.tgx.chess.queen.io.core.inf.IControl;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
 
@@ -112,8 +113,8 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
                 return new Pair<>(_RaftNode.newLogEntry(x75.getPayloadSerial(),
                                                         x75.getPayload(),
                                                         x75.getPeerId(),
+                                                        x75.isPublic(),
                                                         x75.getOrigin(),
-                                                        x75.isNotifyAll(),
                                                         IStorage.Operation.OP_APPEND)
                                            .map(x7e ->
                                            {
@@ -135,7 +136,10 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
                 由于x76.origin == request.session.sessionIndex
                 LinkCustom中专门有对应findSession的操作，所以此处不再执行此操作，且在LinkCustom中执行更为安全
                 */
-                return new Pair<>(null, content);
+                X76_RaftNotify x76 = (X76_RaftNotify) content;
+                /*作为 client 收到 notify */
+                x76.setNotify();
+                return new Pair<>(null, x76);
             case X7E_RaftBroadcast.COMMAND:
                 X7E_RaftBroadcast x7e = (X7E_RaftBroadcast) content;
                 if (x7e.getPayload() != null) {
@@ -234,7 +238,7 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
     }
 
     @Override
-    public List<ITriple> consensus(ISessionManager<ZContext> manager, IConsistentProtocol request, long origin)
+    public <E extends IConsistent & IProtocol> List<ITriple> consensus(ISessionManager<ZContext> manager, E request)
     {
         if (_RaftNode.getMachine()
                      .getState() == LEADER)
@@ -245,7 +249,6 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
             return _RaftNode.newLogEntry(request,
                                          _RaftNode.getMachine()
                                                   .getPeerId(),
-                                         origin,
                                          IStorage.Operation.OP_INSERT)
                             .map(x7e ->
                             {
@@ -268,18 +271,19 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
         else if (_RaftNode.getMachine()
                           .getLeader() != ZUID.INVALID_PEER_ID)
         {
-            X75_RaftRequest x75 = new X75_RaftRequest(_RaftNode.getRaftZid());
+            X75_RaftRequest x75 = new X75_RaftRequest(_RaftNode.getRaftZuid());
             x75.setPayloadSerial(request.serial());
             x75.setPayload(request.encode());
-            x75.setOrigin(origin);
+            x75.setOrigin(request.getOrigin());
             x75.setPeerId(_RaftNode.getMachine()
                                    .getPeerId());
-            ISession<ZContext> targetSession = manager.findSessionByPrefix(_RaftNode.getMachine()
+            x75.setPublic(request.isPublic());
+            ISession<ZContext> leaderSession = manager.findSessionByPrefix(_RaftNode.getMachine()
                                                                                     .getLeader());
-            if (targetSession != null) {
+            if (leaderSession != null) {
                 return Collections.singletonList(new Triple<>(x75,
-                                                              targetSession,
-                                                              targetSession.getContext()
+                                                              leaderSession,
+                                                              leaderSession.getContext()
                                                                            .getSort()
                                                                            .getEncoder()));
             }
@@ -294,7 +298,7 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
     @Override
     public boolean waitForCommit()
     {
-        return _RaftNode.isClusterModel();
+        return _RaftNode.isClusterMode();
     }
 
 }

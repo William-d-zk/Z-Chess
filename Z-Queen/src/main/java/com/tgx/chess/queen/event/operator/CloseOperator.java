@@ -24,6 +24,7 @@
 
 package com.tgx.chess.queen.event.operator;
 
+import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.ISessionCloser;
 
@@ -39,5 +40,13 @@ public class CloseOperator<C extends IContext<C>>
     public String getName()
     {
         return "operator.close";
+    }
+
+    private final Logger _Logger = Logger.getLogger("io.queen.operator." + getClass().getSimpleName());
+
+    @Override
+    public Logger getLogger()
+    {
+        return _Logger;
     }
 }

@@ -35,9 +35,8 @@ public interface ISessionMessage<C extends IContext<C>>
         return null;
     }
 
-    default ISessionMessage setSession(ISession<C> session)
+    default ISessionMessage<C> setSession(ISession<C> session)
     {
         return this;
     }
-
 }

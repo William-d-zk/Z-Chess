@@ -24,9 +24,16 @@
 
 package com.tgx.chess.queen.io.core.inf;
 
-public interface IConsistentProtocol
+/**
+ * @author william.d.zk
+ * @date 2020/5/6
+ */
+public interface IConsistent
         extends
-        IConsistent,
-        IProtocol
+        ITraceable
 {
+    default boolean isPublic()
+    {
+        return false;
+    }
 }

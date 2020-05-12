@@ -54,9 +54,7 @@ import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.DeviceEntity;
 import com.tgx.chess.pawn.endpoint.spring.device.jpa.repository.IDeviceJpaRepository;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.handler.mix.ILinkCustom;
-import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
 import com.tgx.chess.queen.io.core.inf.IControl;
-import com.tgx.chess.queen.io.core.inf.IProtocol;
 import com.tgx.chess.queen.io.core.inf.IQoS;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
@@ -152,14 +150,15 @@ public class LinkCustom
     }
 
     @Override
-    public List<ITriple> notify(ISessionManager<ZContext> manager, IConsistentProtocol response, long origin)
+    public List<ITriple> notify(ISessionManager<ZContext> manager, IControl<ZContext> response, long origin)
     {
         /*
         origin 
         在非集群情况下是 request.session_index
         在集群处理时 x76 携带了cluster 领域的session_index 作为入参，并在此处转换为 request.session_index
          */
-        IProtocol request;
+        IControl<ZContext> request;
+        boolean byLeader;
         if (response.serial() == X76_RaftNotify.COMMAND) {
             /*
             raft_client -> Link, session belong to cluster
@@ -170,15 +169,16 @@ public class LinkCustom
             request = ZSort.getCommandFactory(cmd)
                            .create(cmd);
             request.decode(x76.getPayload());
-            origin = x76.getOrigin();
+            byLeader = x76.byLeader();
         }
         else {
-            request = response;
             /*
-            session belong to link
-            */
+             single mode
+             */
+            request = response;
+            byLeader = true;
         }
-        Stream<IControl<ZContext>> handled = mappingHandle(manager, request, origin);
+        Stream<IControl<ZContext>> handled = mappingHandle(manager, request, origin, byLeader);
         if (handled != null) {
             return handled.filter(Objects::nonNull)
                           .map(control -> new Triple<>(control,
@@ -192,30 +192,39 @@ public class LinkCustom
         return null;
     }
 
-    private Stream<IControl<ZContext>> mappingHandle(ISessionManager<ZContext> manager, IProtocol input, long origin)
+    private Stream<IControl<ZContext>> mappingHandle(ISessionManager<ZContext> manager,
+                                                     IControl<ZContext> consensus,
+                                                     long origin,
+                                                     boolean byLeader)
     {
         ISession<ZContext> session = manager.findSessionByIndex(origin);
-        switch (input.serial())
+        switch (consensus.serial())
         {
             case X111_QttConnect.COMMAND:
+                X111_QttConnect x111 = (X111_QttConnect) consensus;
+                _Logger.info("%s login ok -> %#x", x111.getClientId(), origin);
+                if (byLeader) {
+                    _Logger.info("adjudge %s,login state", x111.getClientId());
+                }
                 if (session != null) {
-                    X111_QttConnect x111 = (X111_QttConnect) input;
                     X112_QttConnack x112 = new X112_QttConnack();
                     x112.responseOk();
                     x112.setSession(session);
-                    _Logger.info("%s login ok", x111.getClientId());
                     return Stream.of(x112);
                 }
                 break;
             case X118_QttSubscribe.COMMAND:
-                X118_QttSubscribe x118 = (X118_QttSubscribe) input;
+                X118_QttSubscribe x118 = (X118_QttSubscribe) consensus;
                 List<Pair<String,
-                          IQoS.Level>> topics = x118.getTopics();
-                if (topics != null) {
+                          IQoS.Level>> topics_lv = x118.getTopics();
+                if (byLeader) {
+                    _Logger.info("adjudge subscribe for %s, state", topics_lv);
+                }
+                if (topics_lv != null) {
                     X119_QttSuback x119 = new X119_QttSuback();
                     x119.setMsgId(x118.getMsgId());
-                    topics.forEach(topic -> x119.addResult(_QttRouter.addTopic(topic, origin) ? topic.getSecond()
-                                                                                              : IQoS.Level.FAILURE));
+                    topics_lv.forEach(topic -> x119.addResult(_QttRouter.addTopic(topic, origin) ? topic.getSecond()
+                                                                                                 : IQoS.Level.FAILURE));
                     if (session != null) {
                         x119.setSession(session);
                         _Logger.info("subscribe topic:%s", x118.getTopics());
@@ -224,15 +233,21 @@ public class LinkCustom
                 }
                 break;
             case X11A_QttUnsubscribe.COMMAND:
-                X11A_QttUnsubscribe x11A = (X11A_QttUnsubscribe) input;
-                x11A.getTopics()
-                    .forEach(topic -> _QttRouter.removeTopic(topic, origin));
-                if (session != null) {
-                    X11B_QttUnsuback x11B = new X11B_QttUnsuback();
-                    x11B.setMsgId(x11A.getMsgId());
-                    x11B.setSession(session);
-                    _Logger.info("unsubscribe topic:%s", x11A.getTopics());
-                    return Stream.of(x11B);
+                X11A_QttUnsubscribe x11A = (X11A_QttUnsubscribe) consensus;
+                List<String> topics = x11A.getTopics();
+                if (byLeader) {
+                    _Logger.info("adjudge Unsubscribe for %s, state", topics);
+                }
+                if (topics != null) {
+                    x11A.getTopics()
+                        .forEach(topic -> _QttRouter.removeTopic(topic, origin));
+                    if (session != null) {
+                        X11B_QttUnsuback x11B = new X11B_QttUnsuback();
+                        x11B.setMsgId(x11A.getMsgId());
+                        x11B.setSession(session);
+                        _Logger.info("unsubscribe topic:%s", x11A.getTopics());
+                        return Stream.of(x11B);
+                    }
                 }
                 break;
         }

@@ -24,9 +24,15 @@
 
 package com.tgx.chess.queen.io.core.inf;
 
-public interface IConsistentProtocol
+/**
+ * @author william.d.zk
+ */
+public interface IConsistentNotify
         extends
-        IConsistent,
+        ITraceable,
         IProtocol
 {
+    boolean byLeader();
+
+    boolean doNotify();
 }

@@ -35,23 +35,23 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.knight.json.JsonUtil;
 import com.tgx.chess.queen.db.inf.IStorage;
-import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
+import com.tgx.chess.queen.io.core.inf.IConsistent;
 
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class LogEntry
         implements
-        IConsistentProtocol,
+        IConsistent,
         IStorage
 {
     private final static int _LOG_SERIAL = INTERNAL_SERIAL + 2;
 
     private final long    _Term;
     private final long    _Index;
-    private final long    _RaftClientId;
+    private final long    _ClientPeer;
     private final long    _Origin;
     private final int     _PayloadSerial;
     private final byte[]  _Payload;
-    private final boolean _All;
+    private final boolean _Public;
 
     @JsonIgnore
     private Operation mOperation = Operation.OP_INSERT;
@@ -71,19 +71,19 @@ public class LogEntry
     @JsonCreator
     public LogEntry(@JsonProperty("term") long term,
                     @JsonProperty("index") long index,
-                    @JsonProperty("raft_client_id") long raftClientId,
+                    @JsonProperty("client_peer") long clientPeer,
                     @JsonProperty("origin") long origin,
                     @JsonProperty("payload_serial") int payloadSerial,
                     @JsonProperty("payload") byte[] payload,
-                    @JsonProperty("notify_all") boolean all)
+                    @JsonProperty("public") boolean all)
     {
         _Term = term;
         _Index = index;
-        _RaftClientId = raftClientId;
+        _ClientPeer = clientPeer;
         _Origin = origin;
         _PayloadSerial = payloadSerial;
         _Payload = payload;
-        _All = all;
+        _Public = all;
         encode();
     }
 
@@ -135,11 +135,12 @@ public class LogEntry
         return _PayloadSerial;
     }
 
-    public long getRaftClientId()
+    public long getClientPeer()
     {
-        return _RaftClientId;
+        return _ClientPeer;
     }
 
+    @Override
     public long getOrigin()
     {
         return _Origin;
@@ -148,12 +149,12 @@ public class LogEntry
     @Override
     public String toString()
     {
-        return String.format("raft_log{%d@%d,from:%#x,notify:[%s],origin:%d-%#x,payload-serial:%#x,payload-size:%d,payload:%s[%s]}",
+        return String.format("raft_log{ %d@%d,from:%#x,notify:[%s],origin:%d-%#x,payload-serial:%#x,payload-size:%d,payload:%s[%s] }",
                              _Index,
                              _Term,
-                             _RaftClientId,
-                             _All ? "all"
-                                  : _RaftClientId,
+                             _ClientPeer,
+                             _Public ? "all"
+                                     : _ClientPeer,
                              _Origin,
                              _Origin,
                              _PayloadSerial,
@@ -167,9 +168,9 @@ public class LogEntry
     }
 
     @Override
-    public boolean isNotifyAll()
+    public boolean isPublic()
     {
-        return _All;
+        return _Public;
     }
 
     @Override

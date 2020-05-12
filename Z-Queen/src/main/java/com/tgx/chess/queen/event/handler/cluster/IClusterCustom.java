@@ -29,8 +29,9 @@ import java.util.List;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.handler.IMappingCustom;
-import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
+import com.tgx.chess.queen.io.core.inf.IConsistent;
 import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
 
 /**
@@ -74,12 +75,10 @@ public interface IClusterCustom<C extends IContext<C>,
      *            session 管理器
      * @param request
      *            需要进行强一致的指令
-     * @param origin
-     *            request 的源ID
      * @return triples
      *         [托管给集群IoSwitch.write(triples) 或 Transfer → Link.notify(triples)]
      */
-    List<ITriple> consensus(ISessionManager<C> manager, IConsistentProtocol request, long origin);
+    <T extends IConsistent & IProtocol> List<ITriple> consensus(ISessionManager<C> manager, T request);
 
     /**
      * 用于验证是否需要执行集群commit

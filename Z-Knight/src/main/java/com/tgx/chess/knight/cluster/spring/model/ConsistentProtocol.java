@@ -32,7 +32,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.tgx.chess.knight.json.JsonUtil;
-import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
+import com.tgx.chess.queen.io.core.inf.IConsistent;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
  * @author william.d.zk
@@ -41,11 +42,12 @@ import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class ConsistentProtocol
         implements
-        IConsistentProtocol
+        IConsistent,
+        IProtocol
 {
     public final static int  _SERIAL = CONSISTENT_SERIAL + 1;
     private final byte[]     _Content;
-    private final boolean    _NotifyAll;
+    private final boolean    _Public;
     private final long       _Origin;
     private final long       _Zuid;
     private int              mLength;
@@ -54,12 +56,12 @@ public class ConsistentProtocol
 
     @JsonCreator
     public ConsistentProtocol(@JsonProperty("content") byte[] content,
-                              @JsonProperty("notify_all") boolean all,
+                              @JsonProperty("public") boolean all,
                               @JsonProperty("zuid") long zuid,
                               @JsonProperty("origin") long origin)
     {
         _Content = content;
-        _NotifyAll = all;
+        _Public = all;
         _Origin = origin;
         _Zuid = zuid;
     }
@@ -108,14 +110,16 @@ public class ConsistentProtocol
         return _Zuid;
     }
 
+    @Override
     public long getOrigin()
     {
         return _Origin;
     }
 
     @Override
-    public boolean isNotifyAll()
+    public boolean isPublic()
     {
-        return _NotifyAll;
+        return _Public;
     }
+
 }

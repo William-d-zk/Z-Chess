@@ -28,8 +28,8 @@ import java.util.List;
 
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.queen.event.handler.IMappingCustom;
-import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
 import com.tgx.chess.queen.io.core.inf.IContext;
+import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
 
 /**
@@ -62,10 +62,8 @@ public interface ILinkCustom<C extends IContext<C>>
      * @param manager
      * @param request
      *            link发来 强一致的请求
-     * @param origin
-     *            origin == request.session_index
      * @return response
      */
-    List<ITriple> notify(ISessionManager<C> manager, IConsistentProtocol request, long origin);
+    List<ITriple> notify(ISessionManager<C> manager, IControl<C> request, long origin);
 
 }

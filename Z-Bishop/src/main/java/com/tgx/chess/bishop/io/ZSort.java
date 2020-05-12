@@ -56,7 +56,6 @@ import com.tgx.chess.queen.io.core.inf.IFrame;
 import com.tgx.chess.queen.io.core.inf.IPipeDecoder;
 import com.tgx.chess.queen.io.core.inf.IPipeEncoder;
 import com.tgx.chess.queen.io.core.inf.IPipeTransfer;
-import com.tgx.chess.queen.io.core.inf.IProtocol;
 import com.tgx.chess.queen.io.core.inf.ISessionCloser;
 import com.tgx.chess.queen.io.core.inf.ISessionError;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
@@ -391,7 +390,7 @@ public enum ZSort
         return _Ignore;
     }
 
-    public static ICommandFactory<? extends IProtocol,
+    public static ICommandFactory<? extends IControl<ZContext>,
                                   ? extends IFrame> getCommandFactory(int serial)
     {
         if (serial > 0x110 && serial < 0x11F) { return _QttCommandFactory; }
