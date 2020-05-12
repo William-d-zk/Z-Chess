@@ -30,7 +30,7 @@ import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.knight.cluster.spring.model.ConsistentProtocol;
 import com.tgx.chess.knight.json.JsonUtil;
 import com.tgx.chess.queen.event.handler.cluster.INotifyCustom;
-import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 @Component
 public class ConsistentCustom
@@ -40,7 +40,7 @@ public class ConsistentCustom
     private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
 
     @Override
-    public Void handle(IConsistentProtocol protocol, Throwable throwable)
+    public Void handle(IProtocol protocol, Throwable throwable)
     {
         if (throwable == null) {
             _Logger.debug("notify---consistent");
@@ -73,5 +73,11 @@ public class ConsistentCustom
     public String getName()
     {
         return "operator.consistent";
+    }
+
+    @Override
+    public void adjudge(IProtocol consensus)
+    {
+
     }
 }

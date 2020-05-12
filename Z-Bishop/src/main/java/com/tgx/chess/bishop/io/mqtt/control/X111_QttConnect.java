@@ -32,7 +32,7 @@ import java.util.Objects;
 import com.tgx.chess.bishop.io.mqtt.QttContext;
 import com.tgx.chess.bishop.io.mqtt.QttControl;
 import com.tgx.chess.king.base.util.IoUtil;
-import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
+import com.tgx.chess.queen.io.core.inf.IConsistent;
 
 /**
  * @author william.d.zk
@@ -42,7 +42,7 @@ public class X111_QttConnect
         extends
         QttControl
         implements
-        IConsistentProtocol
+        IConsistent
 {
     private final static int MAX_USER_NAME_LENGTH = 127;
     private final static int MAX_PASSWORD_LENGTH  = 127;
@@ -464,11 +464,6 @@ public class X111_QttConnect
     }
 
     @Override
-    public boolean isNotifyAll()
-    {
-        return false;
-    }
-
     public long getOrigin()
     {
         return getSession().getIndex();

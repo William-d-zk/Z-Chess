@@ -26,7 +26,7 @@ package com.tgx.chess.bishop.io.zprotocol.raft;
 
 import com.tgx.chess.bishop.io.zprotocol.ZCommand;
 import com.tgx.chess.king.base.util.IoUtil;
-import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
+import com.tgx.chess.queen.io.core.inf.IConsistent;
 
 /**
  * @author william.d.zk
@@ -36,7 +36,7 @@ public class X75_RaftRequest
         extends
         ZCommand
         implements
-        IConsistentProtocol
+        IConsistent
 {
     public final static int COMMAND = 0x75;
 
@@ -53,7 +53,7 @@ public class X75_RaftRequest
     private long    mPeerId;
     private int     mPayloadSerial;
     private long    mOrigin;
-    private boolean mNotifyAll;
+    private boolean mPublic;
 
     public int getPayloadSerial()
     {
@@ -82,8 +82,8 @@ public class X75_RaftRequest
         pos += IoUtil.writeShort(mPayloadSerial, data, pos);
         pos += IoUtil.writeLong(mOrigin, data, pos);
         pos += IoUtil.writeLong(mPeerId, data, pos);
-        pos += IoUtil.writeByte(mNotifyAll ? 1
-                                           : 0,
+        pos += IoUtil.writeByte(mPublic ? 1
+                                        : 0,
                                 data,
                                 pos);
         return pos;
@@ -98,7 +98,7 @@ public class X75_RaftRequest
         pos += 8;
         mPeerId = IoUtil.readLong(data, pos);
         pos += 8;
-        mNotifyAll = data[pos++] > 0;
+        mPublic = data[pos++] > 0;
         return pos;
     }
 
@@ -125,13 +125,13 @@ public class X75_RaftRequest
     }
 
     @Override
-    public boolean isNotifyAll()
+    public boolean isPublic()
     {
-        return mNotifyAll;
+        return mPublic;
     }
 
-    public void setNotify(boolean all)
+    public void setPublic(boolean pub)
     {
-        mNotifyAll = all;
+        mPublic = pub;
     }
 }

@@ -39,16 +39,17 @@ public interface ISessionError<C extends IContext<C>>
                   ISession<C>,
                   IPair>
 {
-    Logger _Logger = Logger.getLogger("io.queen.operator." + ISessionError.class.getSimpleName());
 
     @Override
     default IPair handle(Throwable throwable, ISession<C> session)
     {
-        _Logger.trace("error session:%s", throwable, session);
+        getLogger().trace("error session:%s", throwable, session);
         return session != null ? new Pair<>(session,
                                             session.getContext()
                                                    .getSort()
                                                    .getCloser())
                                : null;
     }
+
+    Logger getLogger();
 }

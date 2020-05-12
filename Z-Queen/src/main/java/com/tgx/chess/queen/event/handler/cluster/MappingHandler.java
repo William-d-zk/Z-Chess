@@ -37,6 +37,7 @@ import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
+import com.tgx.chess.king.topology.ZUID;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
@@ -44,12 +45,14 @@ import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.IAioConnector;
 import com.tgx.chess.queen.io.core.inf.IAioServer;
 import com.tgx.chess.queen.io.core.inf.IConnectActivity;
+import com.tgx.chess.queen.io.core.inf.IConsistentNotify;
 import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
+import com.tgx.chess.queen.io.core.inf.ITraceable;
 
 /**
  * @author william.d.zk
@@ -216,9 +219,10 @@ public class MappingHandler<C extends IContext<C>,
                                            .getSort()
                                            .getTransfer());
                         }
-                        IConsistentProtocol notify = pair.getSecond();
+                        IConsistentNotify notify = pair.getSecond();
                         if (notify != null) {
-                            publishNotify(notify, notify.getOrigin(), null);
+                            if (notify.byLeader()) _NotifyCustom.adjudge(notify);
+                            if (notify.doNotify()) publishNotify(notify, null);
                         }
                     }
                     catch (Exception e) {
@@ -229,22 +233,21 @@ public class MappingHandler<C extends IContext<C>,
                 case CONSENSUS:
                     IConsistentProtocol request = event.getContent()
                                                        .getFirst();
-                    long origin = event.getContent()
-                                       .getSecond();
                     if (_ClusterCustom.waitForCommit()) {
                         try {
-                            List<ITriple> broadcast = _ClusterCustom.consensus(_SessionManager, request, origin);
+                            List<ITriple> broadcast = _ClusterCustom.consensus(_SessionManager, request);
                             if (broadcast != null && !broadcast.isEmpty()) {
                                 publish(_Writer, broadcast);
                             }
                         }
                         catch (Exception e) {
                             _Logger.warning("mapping consensus error", e);
-                            publishNotify(request, origin, e);
+                            publishNotify(request, e);
                         }
                     }
                     else {
-                        publishNotify(request, origin, null);
+                        _NotifyCustom.adjudge(request);
+                        publishNotify(request, null);
                     }
                     break;
                 case CLUSTER_TIMER://ClusterConsumer Timeout->start_vote
@@ -266,10 +269,10 @@ public class MappingHandler<C extends IContext<C>,
         event.reset();
     }
 
-    private void publishNotify(IConsistentProtocol request, long channel, Throwable throwable)
+    private <E extends ITraceable> void publishNotify(E request, Throwable throwable)
     {
         Objects.requireNonNull(request);
-        RingBuffer<QEvent> notifier = _Notifiers[(int) (channel & _NotifyModMask)];
+        RingBuffer<QEvent> notifier = _Notifiers[(int) (request.getOrigin() >> ZUID.NODE_SHIFT) & _NotifyModMask];
         if (throwable == null) {
             publish(notifier, NOTIFY, new Pair<>(request, null), _NotifyCustom);
         }
