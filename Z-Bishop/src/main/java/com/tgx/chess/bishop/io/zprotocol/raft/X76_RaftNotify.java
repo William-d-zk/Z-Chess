@@ -26,7 +26,7 @@ package com.tgx.chess.bishop.io.zprotocol.raft;
 
 import com.tgx.chess.bishop.io.zprotocol.ZCommand;
 import com.tgx.chess.king.base.util.IoUtil;
-import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
+import com.tgx.chess.queen.io.core.inf.IConsistentNotify;
 
 /**
  * @author william.d.zk
@@ -36,7 +36,7 @@ public class X76_RaftNotify
         extends
         ZCommand
         implements
-        IConsistentProtocol
+        IConsistentNotify
 {
     public final static int COMMAND = 0x76;
 
@@ -50,9 +50,10 @@ public class X76_RaftNotify
         super(COMMAND, msgId);
     }
 
-    private int     mPayloadSerial;
-    private boolean mNotifyAll;
-    private long    mOrigin;
+    private int               mPayloadSerial;
+    private long              mOrigin;
+    private transient boolean tLeader;
+    private transient boolean tNotify;
 
     public int getPayloadSerial()
     {
@@ -68,10 +69,6 @@ public class X76_RaftNotify
     public int encodec(byte[] data, int pos)
     {
         pos += IoUtil.writeShort(mPayloadSerial, data, pos);
-        pos += IoUtil.writeByte(mNotifyAll ? 1
-                                           : 0,
-                                data,
-                                pos);
         pos += IoUtil.writeLong(mOrigin, data, pos);
         return pos;
     }
@@ -81,7 +78,6 @@ public class X76_RaftNotify
     {
         mPayloadSerial = IoUtil.readUnsignedShort(data, pos);
         pos += 2;
-        mNotifyAll = (data[pos++] & 0xFF) > 0;
         mOrigin = IoUtil.readLong(data, pos);
         pos += 8;
         return pos;
@@ -90,18 +86,7 @@ public class X76_RaftNotify
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 11;
-    }
-
-    @Override
-    public boolean isNotifyAll()
-    {
-        return mNotifyAll;
-    }
-
-    public void setNotifyAll(boolean all)
-    {
-        mNotifyAll = all;
+        return super.dataLength() + 10;
     }
 
     @Override
@@ -119,5 +104,27 @@ public class X76_RaftNotify
     public boolean isMapping()
     {
         return true;
+    }
+
+    @Override
+    public boolean byLeader()
+    {
+        return tLeader;
+    }
+
+    public void setLeader()
+    {
+        tLeader = true;
+    }
+
+    public void setNotify()
+    {
+        tNotify = true;
+    }
+
+    @Override
+    public boolean doNotify()
+    {
+        return tNotify;
     }
 }

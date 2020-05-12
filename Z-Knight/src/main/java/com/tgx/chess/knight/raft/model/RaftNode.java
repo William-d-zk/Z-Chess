@@ -73,8 +73,9 @@ import com.tgx.chess.knight.raft.model.log.LogEntry;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.IClusterTimer;
-import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
+import com.tgx.chess.queen.io.core.inf.IConsistent;
 import com.tgx.chess.queen.io.core.inf.IControl;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
 
@@ -89,7 +90,7 @@ public class RaftNode<T extends IClusterPeer & IClusterTimer>
     private final Logger                       _Logger         = Logger.getLogger("cluster.knight."
                                                                                   + getClass().getSimpleName());
     private final ZUID                         _ZUID;
-    private final IRaftConfig                  _ClusterConfig;
+    private final IRaftConfig                  _RaftConfig;
     private final T                            _ClusterPeer;
     private final IRaftDao                     _RaftDao;
     private final TimeWheel                    _TimeWheel;
@@ -106,14 +107,14 @@ public class RaftNode<T extends IClusterPeer & IClusterTimer>
                     T manager)
     {
         _TimeWheel = timeWheel;
-        _ClusterConfig = clusterConfig;
+        _RaftConfig = clusterConfig;
         _ClusterPeer = manager;
         _ZUID = clusterConfig.createZUID();
         _RaftDao = raftDao;
-        _ElectSchedule = new ScheduleHandler<>(_ClusterConfig.getElectInSecond(), RaftNode::stepDown, this);
-        _HeartbeatSchedule = new ScheduleHandler<>(_ClusterConfig.getHeartbeatInSecond(), RaftNode::heartbeat, this);
-        _TickSchedule = new ScheduleHandler<>(_ClusterConfig.getHeartbeatInSecond()
-                                                            .multipliedBy(2),
+        _ElectSchedule = new ScheduleHandler<>(_RaftConfig.getElectInSecond(), RaftNode::stepDown, this);
+        _HeartbeatSchedule = new ScheduleHandler<>(_RaftConfig.getHeartbeatInSecond(), RaftNode::heartbeat, this);
+        _TickSchedule = new ScheduleHandler<>(_RaftConfig.getHeartbeatInSecond()
+                                                         .multipliedBy(2),
                                               RaftNode::startVote,
                                               this);
         _RaftGraph = new RaftGraph();
@@ -129,7 +130,7 @@ public class RaftNode<T extends IClusterPeer & IClusterTimer>
 
     public void init() throws IOException
     {
-        if (!_ClusterConfig.isClusterModel()) {
+        if (!_RaftConfig.isClusterMode()) {
             _Logger.info("single model skip init raft node");
             return;
         }
@@ -154,7 +155,7 @@ public class RaftNode<T extends IClusterPeer & IClusterTimer>
         }
         if (_SelfMachine.getPeerSet() == null && _SelfMachine.getGateSet() == null) {
             /*首次启动或删除本地状态机重启,仅需要连接node_id < self.node_id的peer*/
-            List<IPair> peers = _ClusterConfig.getPeers();
+            List<IPair> peers = _RaftConfig.getPeers();
             if (peers != null) {
                 for (int i = 0, size = peers.size(); i < size; i++) {
                     IPair pair = peers.get(i);
@@ -163,7 +164,7 @@ public class RaftNode<T extends IClusterPeer & IClusterTimer>
                 _RaftDao.getLogMeta()
                         .setPeerSet(_SelfMachine.getPeerSet());
             }
-            List<IPair> gates = _ClusterConfig.getGates();
+            List<IPair> gates = _RaftConfig.getGates();
             if (gates != null) {
                 for (int i = 0, size = gates.size(); i < size; i++) {
                     IPair pair = gates.get(i);
@@ -175,7 +176,7 @@ public class RaftNode<T extends IClusterPeer & IClusterTimer>
         }
         //启动snapshot定时回写计时器
         _TimeWheel.acquire(_RaftDao,
-                           new ScheduleHandler<>(_ClusterConfig.getSnapshotInSecond(),
+                           new ScheduleHandler<>(_RaftConfig.getSnapshotInSecond(),
                                                  true,
                                                  this::takeSnapshot,
                                                  _RaftDao));
@@ -215,7 +216,7 @@ public class RaftNode<T extends IClusterPeer & IClusterTimer>
     public void takeSnapshot(IRaftDao snapshot)
     {
         long localTerm;
-        if (_RaftDao.getTotalSize() < _ClusterConfig.getSnapshotMinSize()) {
+        if (_RaftDao.getTotalSize() < _RaftConfig.getSnapshotMinSize()) {
             _Logger.debug("snapshot size less than threshold");
             return;
         }
@@ -562,31 +563,35 @@ public class RaftNode<T extends IClusterPeer & IClusterTimer>
                         _SelfMachine.commit(index, _RaftDao);
                         _Logger.debug("consensus done->");
                         X76_RaftNotify x76 = createNotify(raftLog);
-                        if (raftLog.isNotifyAll()) {
+                        x76.setLeader();
+                        if (raftLog.isPublic()) {
                             if (x7e != null) {
                                 return new Pair<>(Stream.concat(Stream.of(x7e), createNotifyStream(manager, raftLog))
                                                         .toArray(IControl[]::new),
-                                                  raftLog.getRaftClientId() == _SelfMachine.getPeerId() ? x76//leader -> client
-                                                                                                        : null);//leader -> follower -> client
+                                                  x76);
                             }
                             else {
                                 return new Pair<>(createNotifyStream(manager, raftLog).toArray(X76_RaftNotify[]::new),
-                                                  raftLog.getRaftClientId() == _SelfMachine.getPeerId() ? x76 //leader -> client
-                                                                                                        : null);//leader -> follower -> client
+                                                  x76);
                             }
                         }
-                        else if (raftLog.getRaftClientId() != _SelfMachine.getPeerId()) {
+                        else if (raftLog.getClientPeer() != _SelfMachine.getPeerId()) {
                             //leader -> follower -> client
-                            ISession<ZContext> followerSession = manager.findSessionByPrefix(raftLog.getRaftClientId());
+                            ISession<ZContext> followerSession = manager.findSessionByPrefix(raftLog.getClientPeer());
                             return x7e != null && followerSession != null ? new Pair<>(new IControl[] { x7e,
                                                                                                         x76 },
-                                                                                       null)
+                                                                                       x76)
                                                                           : followerSession != null ? new Pair<>(new X76_RaftNotify[] { x76 },
-                                                                                                                 null)
-                                                                                                    : null;
+                                                                                                                 x76)
+                                                                                                    : new Pair<>(null,
+                                                                                                                 x76);
                         }
                         else {
-                            //leader -> client
+                            /*
+                            leader -> client
+                            作为client 收到 notify
+                             */
+                            x76.setNotify();
                             return x7e != null ? new Pair<>(new X7E_RaftBroadcast[] { x7e }, x76)
                                                : new Pair<>(null, x76);
 
@@ -839,25 +844,29 @@ public class RaftNode<T extends IClusterPeer & IClusterTimer>
         _AppendLogQueue.addAll(entryList);
     }
 
-    public Stream<X7E_RaftBroadcast> newLogEntry(IConsistentProtocol request,
-                                                 long raftClientId,
-                                                 long origin,
-                                                 IStorage.Operation operation)
+    public <T extends IConsistent & IProtocol> Stream<X7E_RaftBroadcast> newLogEntry(T request,
+                                                                                     long clientPeer,
+                                                                                     IStorage.Operation operation)
     {
-        return newLogEntry(request.serial(), request.encode(), raftClientId, origin, request.isNotifyAll(), operation);
+        return newLogEntry(request.serial(),
+                           request.encode(),
+                           clientPeer,
+                           request.isPublic(),
+                           request.getOrigin(),
+                           operation);
     }
 
     public Stream<X7E_RaftBroadcast> newLogEntry(int requestSerial,
                                                  byte[] requestData,
-                                                 long raftClientId,
-                                                 long origin,
+                                                 long clientPeer,
                                                  boolean notifyAll,
+                                                 long origin,
                                                  IStorage.Operation operation)
     {
         _Logger.debug("create new raft log");
         LogEntry newEntry = new LogEntry(_SelfMachine.getTerm(),
                                          _SelfMachine.getIndex() + 1,
-                                         raftClientId,
+                                         clientPeer,
                                          origin,
                                          requestSerial,
                                          requestData,
@@ -959,9 +968,9 @@ public class RaftNode<T extends IClusterPeer & IClusterTimer>
         return x7e;
     }
 
-    public boolean isClusterModel()
+    public boolean isClusterMode()
     {
-        return _ClusterConfig.isClusterModel();
+        return _RaftConfig.isClusterMode();
     }
 
     @Override
@@ -970,7 +979,7 @@ public class RaftNode<T extends IClusterPeer & IClusterTimer>
         return true;
     }
 
-    public long getRaftZid()
+    public long getRaftZuid()
     {
         return _ZUID.getId();
     }
@@ -985,7 +994,6 @@ public class RaftNode<T extends IClusterPeer & IClusterTimer>
         X76_RaftNotify x76 = new X76_RaftNotify(_ZUID.getId());
         x76.setPayloadSerial(raftLog.getPayloadSerial());
         x76.setPayload(raftLog.getPayload());
-        x76.setNotifyAll(raftLog.isNotifyAll());
         x76.setOrigin(raftLog.getOrigin());
         return x76;
     }

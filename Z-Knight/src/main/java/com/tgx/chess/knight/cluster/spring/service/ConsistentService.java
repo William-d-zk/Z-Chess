@@ -41,6 +41,7 @@ import com.tgx.chess.king.base.inf.IValid;
 import com.tgx.chess.king.base.schedule.ICancelable;
 import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.schedule.TimeWheel;
+import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.knight.cluster.ClusterNode;
 import com.tgx.chess.knight.cluster.spring.model.ConsistentProtocol;
@@ -84,8 +85,9 @@ public class ConsistentService
         _RaftNode.init();
     }
 
-    public void consistentPut(String content, boolean isNotifyAll, long origin)
+    public void consistentPut(String content, boolean pub, long origin)
     {
+        if (IoUtil.isBlank(content)) return;
         final ReentrantLock _Lock = _ClusterNode.getCore()
                                                 .getLock(CONSENSUS);
         final RingBuffer<QEvent> _Publish = _ClusterNode.getCore()
@@ -97,7 +99,7 @@ public class ConsistentService
                     QEvent event = _Publish.get(sequence);
                     event.produce(CONSENSUS,
                                   new Pair<>(new ConsistentProtocol(content.getBytes(StandardCharsets.UTF_8),
-                                                                    isNotifyAll,
+                                                                    pub,
                                                                     _ClusterNode.getZuid(),
                                                                     origin),
                                              origin),

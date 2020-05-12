@@ -110,5 +110,4 @@ public abstract class QttControl
         mSession = null;
         mPayload = null;
     }
-
 }

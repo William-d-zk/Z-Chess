@@ -24,9 +24,9 @@
 
 package com.tgx.chess.queen.io.core.inf;
 
-public interface IConsistentProtocol
+public interface IConsistentControl<C extends IContext<C>>
         extends
         IConsistent,
-        IProtocol
+        IControl<C>
 {
 }
