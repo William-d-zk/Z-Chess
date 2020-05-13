@@ -46,7 +46,6 @@ import com.tgx.chess.queen.io.core.inf.IAioConnector;
 import com.tgx.chess.queen.io.core.inf.IAioServer;
 import com.tgx.chess.queen.io.core.inf.IConnectActivity;
 import com.tgx.chess.queen.io.core.inf.IConsistentNotify;
-import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISession;
@@ -231,23 +230,28 @@ public class MappingHandler<C extends IContext<C>,
                     }
                     break;
                 case CONSENSUS:
-                    IConsistentProtocol request = event.getContent()
-                                                       .getFirst();
                     if (_ClusterCustom.waitForCommit()) {
                         try {
-                            List<ITriple> broadcast = _ClusterCustom.consensus(_SessionManager, request);
+                            List<ITriple> broadcast = _ClusterCustom.consensus(_SessionManager,
+                                                                               event.getContent()
+                                                                                    .getFirst());
                             if (broadcast != null && !broadcast.isEmpty()) {
                                 publish(_Writer, broadcast);
                             }
                         }
                         catch (Exception e) {
                             _Logger.warning("mapping consensus error", e);
-                            publishNotify(request, e);
+                            publishNotify(event.getContent()
+                                               .getFirst(),
+                                          e);
                         }
                     }
                     else {
-                        _NotifyCustom.adjudge(request);
-                        publishNotify(request, null);
+                        _NotifyCustom.adjudge(event.getContent()
+                                                   .getFirst());
+                        publishNotify(event.getContent()
+                                           .getFirst(),
+                                      null);
                     }
                     break;
                 case CLUSTER_TIMER://ClusterConsumer Timeout->start_vote

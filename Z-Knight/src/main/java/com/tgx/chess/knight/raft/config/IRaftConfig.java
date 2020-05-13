@@ -77,9 +77,11 @@ public interface IRaftConfig
 
     Duration getSnapshotInSecond();
 
-    long getSnapshotMinSize();
-
     Duration getHeartbeatInSecond();
+
+    Duration getClientSubmitInSecond();
+
+    long getSnapshotMinSize();
 
     boolean isClusterMode();
 
