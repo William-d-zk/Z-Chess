@@ -38,6 +38,7 @@ import org.springframework.stereotype.Service;
 import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.bishop.io.zhandler.ZClusterMappingCustom;
 import com.tgx.chess.king.base.inf.IValid;
+import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.schedule.ICancelable;
 import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.schedule.TimeWheel;
@@ -58,6 +59,7 @@ import com.tgx.chess.queen.event.processor.QEvent;
 public class ConsistentService
 {
 
+    private final Logger                     _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
     private final ClusterNode                _ClusterNode;
     private final INotifyCustom              _NotifyCustom;
     private final ClusterCustom<ClusterNode> _ClusterCustom;
@@ -113,6 +115,7 @@ public class ConsistentService
                 _Lock.unlock();
             }
         }
+        _Logger.debug("consistent put %s", content);
     }
 
     public <A extends IValid> ICancelable acquire(A attach, ScheduleHandler<A> scheduleHandler)
