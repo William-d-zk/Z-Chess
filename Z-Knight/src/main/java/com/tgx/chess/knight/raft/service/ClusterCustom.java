@@ -240,6 +240,7 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
     @Override
     public <E extends IConsistent & IProtocol> List<ITriple> consensus(ISessionManager<ZContext> manager, E request)
     {
+        _Logger.debug("cluster consensus %s", request);
         if (_RaftNode.getMachine()
                      .getState() == LEADER)
         {

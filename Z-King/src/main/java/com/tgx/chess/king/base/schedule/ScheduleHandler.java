@@ -63,20 +63,16 @@ public class ScheduleHandler<A extends IValid>
     }
 
     public ScheduleHandler(Duration delay,
-                           Consumer<A> callback,
-                           A a)
+                           Consumer<A> callback)
     {
         this(delay, false, callback, PRIORITY_NORMAL);
-        attach(a);
     }
 
     public ScheduleHandler(Duration delay,
                            boolean cycle,
-                           Consumer<A> callback,
-                           A a)
+                           Consumer<A> callback)
     {
         this(delay, cycle, callback, PRIORITY_NORMAL);
-        attach(a);
     }
 
     @Override

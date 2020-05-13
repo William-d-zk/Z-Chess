@@ -399,8 +399,7 @@ public class DeviceConsumer
                                                      catch (IOException e) {
                                                          e.printStackTrace();
                                                      }
-                                                 },
-                                                 connector));
+                                                 }));
     }
 
     @Override
