@@ -45,9 +45,9 @@ import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.handler.DecodeHandler;
 import com.tgx.chess.queen.event.handler.EncodeHandler;
 import com.tgx.chess.queen.event.handler.EncodedHandler;
-import com.tgx.chess.queen.event.handler.cluster.IClusterCustom;
 import com.tgx.chess.queen.event.handler.WriteDispatcher;
 import com.tgx.chess.queen.event.handler.cluster.DecodedDispatcher;
+import com.tgx.chess.queen.event.handler.cluster.IClusterCustom;
 import com.tgx.chess.queen.event.handler.cluster.IConsistentCustom;
 import com.tgx.chess.queen.event.handler.cluster.IoDispatcher;
 import com.tgx.chess.queen.event.handler.cluster.MappingHandler;
@@ -161,9 +161,9 @@ public class ClusterCore<C extends IContext<C>>
     @SuppressWarnings("unchecked")
     public <T extends IStorage> void build(ClusterManager<C> manager,
                                            IEncryptHandler encryptHandler,
-                                           IConsistentCustom notifyCustom,
                                            IClusterCustom<C,
                                                           T> clusterCustom,
+                                           IConsistentCustom consistentCustom,
                                            ILogicHandler<C> logicHandler)
     {
         final RingBuffer<QEvent> _WroteEvent = createPipelineYield(_AioQueueSize << 1);
@@ -215,8 +215,8 @@ public class ClusterCore<C extends IContext<C>>
                                                                                                                                    _ErrorEvents[2],
                                                                                                                                    _ClusterWriteEvent,
                                                                                                                                    _ClusterNotifiers,
-                                                                                                                                   notifyCustom,
-                                                                                                                                   clusterCustom));
+                                                                                                                                   clusterCustom,
+                                                                                                                                   consistentCustom));
         _ClusterProcessor.setThreadName("ClusterProcessor");
         for (int i = 0, size = _ClusterEvents.length; i < size; i++) {
             _ClusterEvents[i].addGatingSequences(_ClusterProcessor.getSequences()[i]);

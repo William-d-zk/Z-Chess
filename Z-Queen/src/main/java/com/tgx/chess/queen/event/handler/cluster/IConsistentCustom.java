@@ -25,6 +25,7 @@
 package com.tgx.chess.queen.event.handler.cluster;
 
 import com.tgx.chess.queen.event.inf.IOperator;
+import com.tgx.chess.queen.io.core.inf.IConsistent;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
@@ -32,9 +33,11 @@ import com.tgx.chess.queen.io.core.inf.IProtocol;
  */
 public interface IConsistentCustom
         extends
-        IOperator<IProtocol,
-                  Throwable,
-                  Void>,
         IConsistentJudge
 {
+    <T extends IConsistent & IProtocol> IOperator<T,
+                                                  Throwable,
+                                                  Void> getOperator();
+
+    <T extends IConsistent & IProtocol> Void handle(T request, Throwable throwable);
 }

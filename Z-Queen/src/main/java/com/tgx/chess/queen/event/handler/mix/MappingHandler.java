@@ -38,7 +38,7 @@ import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.handler.cluster.IClusterCustom;
-import com.tgx.chess.queen.event.handler.cluster.IConsistentCustom;
+import com.tgx.chess.queen.event.handler.cluster.IConsistentJudge;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
@@ -69,7 +69,6 @@ public class MappingHandler<C extends IContext<C>,
     private final RingBuffer<QEvent>   _Transfer;
     private final ISessionManager<C>   _SessionManager;
     private final ILinkCustom<C>       _LinkCustom;
-    private final IConsistentCustom    _ConsistentCustom;
     private final IClusterCustom<C,
                                  T>    _ClusterCustom;
 
@@ -80,8 +79,7 @@ public class MappingHandler<C extends IContext<C>,
                           RingBuffer<QEvent> transfer,
                           ILinkCustom<C> linkCustom,
                           IClusterCustom<C,
-                                         T> clusterCustom,
-                          IConsistentCustom consistentCustom)
+                                         T> clusterCustom)
     {
         _Logger = Logger.getLogger("io.queen.dispatcher." + mapper);
         _SessionManager = manager;
@@ -90,7 +88,6 @@ public class MappingHandler<C extends IContext<C>,
         _Transfer = transfer;
         _LinkCustom = linkCustom;
         _ClusterCustom = clusterCustom;
-        _ConsistentCustom = consistentCustom;
     }
 
     @Override
@@ -218,20 +215,20 @@ public class MappingHandler<C extends IContext<C>,
                                            .getSort()
                                            .getTransfer());
                         }
-                        IConsistent transfer = pair.getSecond();
+                        IPair transfer = pair.getSecond();
                         if (transfer != null) {
+                            IConsistent consistent = transfer.getFirst();
                             if (_ClusterCustom.waitForCommit()) {
                                 publish(_Transfer,
                                         CONSENSUS,
                                         new Pair<>(pair.getSecond(), session),
-                                        session.getContext()
-                                               .getSort()
-                                               .getIgnore());
+                                        transfer.getSecond());
                             }
                             else {
+
                                 List<ITriple> result = _LinkCustom.notify(_SessionManager,
                                                                           pair.getSecond(),
-                                                                          transfer.getOrigin());
+                                                                          consistent.getOrigin());
                                 if (result != null && !result.isEmpty()) {
                                     publish(_Writer, result);
                                 }
@@ -296,7 +293,10 @@ public class MappingHandler<C extends IContext<C>,
                     IConsistentNotify notify = event.getContent()
                                                     .getFirst();
                     if (notify != null) try {
-                        if (notify.byLeader()) _ConsistentCustom.adjudge(notify);
+                        IConsistentJudge judge = _ClusterCustom.getJudge();
+                        if (notify.byLeader() && judge != null) {
+                            judge.adjudge(notify);
+                        }
                         if (notify.doNotify()) {
                             List<ITriple> result = _LinkCustom.notify(_SessionManager,
                                                                       event.getContent()

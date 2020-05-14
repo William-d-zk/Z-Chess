@@ -39,9 +39,9 @@ import com.lmax.disruptor.RingBuffer;
 import com.tgx.chess.bishop.io.zhandler.ZClusterMappingCustom;
 import com.tgx.chess.king.base.inf.IValid;
 import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.king.base.schedule.inf.ICancelable;
 import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.schedule.TimeWheel;
+import com.tgx.chess.king.base.schedule.inf.ICancelable;
 import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.knight.cluster.ClusterNode;
@@ -61,29 +61,30 @@ public class ConsistentService
 
     private final Logger                     _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
     private final ClusterNode                _ClusterNode;
-    private final IConsistentCustom _NotifyCustom;
     private final ClusterCustom<ClusterNode> _ClusterCustom;
+    private final IConsistentCustom          _ConsistentCustom;
     private final RaftNode<ClusterNode>      _RaftNode;
     private final TimeWheel                  _TimeWheel;
 
     @Autowired
     public ConsistentService(@Qualifier("io_cluster_config") IAioConfig ioConfig,
                              @Qualifier("core_cluster_config") IClusterConfig clusterConfig,
+                             IConsistentCustom consistentCustom,
                              IRaftConfig raftConfig,
-                             IConsistentCustom notifyCustom,
                              IRaftDao raftDao) throws IOException
     {
         _TimeWheel = new TimeWheel();
-        _NotifyCustom = notifyCustom;
         _ClusterNode = new ClusterNode(ioConfig, clusterConfig, raftConfig, _TimeWheel);
         _RaftNode = new RaftNode<>(_TimeWheel, raftConfig, raftDao, _ClusterNode);
-        _ClusterCustom = new ClusterCustom<>(_RaftNode);
+        _ClusterCustom = new ClusterCustom<>(_TimeWheel, _RaftNode, _ConsistentCustom = consistentCustom);
     }
 
     @PostConstruct
     private void start() throws IOException
     {
-        _ClusterNode.start(_NotifyCustom, new ZClusterMappingCustom<>(_ClusterCustom), new ClusterLogic(_ClusterNode));
+        _ClusterNode.start(new ZClusterMappingCustom<>(_ClusterCustom),
+                           _ConsistentCustom,
+                           new ClusterLogic(_ClusterNode));
         _RaftNode.init();
     }
 
@@ -105,7 +106,7 @@ public class ConsistentService
                                                                     _ClusterNode.getZuid(),
                                                                     origin),
                                              origin),
-                                  _NotifyCustom);
+                                  _ConsistentCustom.getOperator());
                 }
                 finally {
                     _Publish.publish(sequence);

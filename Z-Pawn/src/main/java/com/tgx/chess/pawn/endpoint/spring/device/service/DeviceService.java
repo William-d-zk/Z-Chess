@@ -35,6 +35,7 @@ import org.springframework.stereotype.Service;
 
 import com.tgx.chess.bishop.io.ZSort;
 import com.tgx.chess.bishop.io.mqtt.handler.IQttRouter;
+import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zhandler.ZClusterMappingCustom;
 import com.tgx.chess.bishop.io.zhandler.ZLinkMappingCustom;
 import com.tgx.chess.king.base.exception.ZException;
@@ -42,9 +43,9 @@ import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.base.util.Triple;
+import com.tgx.chess.knight.raft.IRaftDao;
 import com.tgx.chess.knight.raft.config.IRaftConfig;
 import com.tgx.chess.knight.raft.model.RaftNode;
-import com.tgx.chess.knight.raft.model.log.RaftDao;
 import com.tgx.chess.knight.raft.service.ClusterCustom;
 import com.tgx.chess.pawn.endpoint.spring.device.DeviceNode;
 import com.tgx.chess.pawn.endpoint.spring.device.config.DeviceConfig;
@@ -55,6 +56,7 @@ import com.tgx.chess.pawn.endpoint.spring.device.jpa.repository.IMessageJpaRepos
 import com.tgx.chess.pawn.endpoint.spring.device.spi.IDeviceService;
 import com.tgx.chess.queen.config.IAioConfig;
 import com.tgx.chess.queen.config.IMixConfig;
+import com.tgx.chess.queen.event.handler.mix.ILinkCustom;
 
 /**
  * @author william.d.zk
@@ -69,7 +71,7 @@ public class DeviceService
     private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
     private final DeviceNode                _DeviceNode;
-    private final LinkCustom                _LinkCustom;
+    private final ILinkCustom<ZContext>     _LinkCustom;
     private final ClusterCustom<DeviceNode> _ClusterCustom;
     private final IDeviceJpaRepository      _DeviceRepository;
     private final IMessageJpaRepository     _MessageRepository;
@@ -81,10 +83,10 @@ public class DeviceService
                   IAioConfig ioConfig,
                   IRaftConfig raftConfig,
                   IMixConfig mixConfig,
-                  LinkCustom linkCustom,
+                  ILinkCustom<ZContext> linkCustom,
                   IMessageJpaRepository messageRepository,
                   IDeviceJpaRepository deviceRepository,
-                  RaftDao raftDao,
+                  IRaftDao raftDao,
                   IQttRouter qttRouter) throws IOException
     {
         final TimeWheel _TimeWheel = new TimeWheel();
@@ -103,7 +105,7 @@ public class DeviceService
         _DeviceRepository = deviceRepository;
         _LinkCustom = linkCustom;
         _RaftNode = new RaftNode<>(_TimeWheel, raftConfig, raftDao, _DeviceNode);
-        _ClusterCustom = new ClusterCustom<>(_RaftNode);
+        _ClusterCustom = new ClusterCustom<>(_TimeWheel, _RaftNode, linkCustom);
         _LogicHandler = new LogicHandler<>(_DeviceNode, qttRouter, _RaftNode, _MessageRepository = messageRepository);
     }
 
