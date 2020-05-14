@@ -29,9 +29,7 @@ import static com.tgx.chess.knight.raft.RaftState.LEADER;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -45,7 +43,6 @@ import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.king.topology.ZUID;
@@ -57,7 +54,6 @@ import com.tgx.chess.knight.raft.model.RaftNode;
 import com.tgx.chess.knight.raft.model.log.LogEntry;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.handler.cluster.IClusterCustom;
-import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.IClusterTimer;
 import com.tgx.chess.queen.io.core.inf.IConsistent;
@@ -77,17 +73,10 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
                                                                              {
                                                                              };
 
-    private final RaftNode<T>                                      _RaftNode;
-    private final TimeWheel                                        _TimeWheel;
-    private final Map<Long,
-                      IOperator<IProtocol,
-                                Throwable,
-                                Void>>                             _OperatorMap = new ConcurrentHashMap<>(17);
+    private final RaftNode<T> _RaftNode;
 
-    public ClusterCustom(TimeWheel timeWheel,
-                         RaftNode<T> raftNode)
+    public ClusterCustom(RaftNode<T> raftNode)
     {
-        _TimeWheel = timeWheel;
         _RaftNode = raftNode;
     }
 
