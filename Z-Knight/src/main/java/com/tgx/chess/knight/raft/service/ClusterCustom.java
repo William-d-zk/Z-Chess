@@ -159,21 +159,14 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
                                         : null;
             case X7F_RaftResponse.COMMAND:
                 X7F_RaftResponse x7f = (X7F_RaftResponse) content;
-                IPair pair = _RaftNode.onResponse(x7f.getPeerId(),
-                                                  x7f.getTerm(),
-                                                  x7f.getCatchUp(),
-                                                  x7f.getCatchUpTerm(),
-                                                  x7f.getCandidate(),
-                                                  RaftState.valueOf(x7f.getState()),
-                                                  RaftCode.valueOf(x7f.getCode()),
-                                                  manager);
-                if (pair.getSecond() == null) {
-                    return new Pair<>(pair.getFirst(), null);
-                }
-                else {
-                    x76 = pair.getSecond();
-                    return new Pair<>(pair.getFirst(), x76);
-                }
+                return _RaftNode.onResponse(x7f.getPeerId(),
+                                            x7f.getTerm(),
+                                            x7f.getCatchUp(),
+                                            x7f.getCatchUpTerm(),
+                                            x7f.getCandidate(),
+                                            RaftState.valueOf(x7f.getState()),
+                                            RaftCode.valueOf(x7f.getCode()),
+                                            manager);
             case X106_Identity.COMMAND:
                 X106_Identity x106 = (X106_Identity) content;
                 long peerId = x106.getIdentity();
