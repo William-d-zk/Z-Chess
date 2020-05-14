@@ -22,22 +22,19 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.king.base.inf;
+package com.tgx.chess.queen.event.handler.cluster;
+
+import com.tgx.chess.queen.event.inf.IOperator;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
  * @author william.d.zk
  */
-public interface ILifeCycle
+public interface IConsistentCustom
         extends
-        IValid
+        IOperator<IProtocol,
+                  Throwable,
+                  Void>,
+        IConsistentJudge
 {
-    boolean retry();
-
-    void error();
-
-    boolean isShutdown();
-
-    void shutdown();
-
-    boolean isRunning();
 }

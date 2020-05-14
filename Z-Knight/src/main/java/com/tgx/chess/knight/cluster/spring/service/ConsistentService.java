@@ -52,7 +52,7 @@ import com.tgx.chess.knight.raft.model.RaftNode;
 import com.tgx.chess.knight.raft.service.ClusterCustom;
 import com.tgx.chess.queen.config.IAioConfig;
 import com.tgx.chess.queen.config.IClusterConfig;
-import com.tgx.chess.queen.event.handler.cluster.INotifyCustom;
+import com.tgx.chess.queen.event.handler.cluster.IConsistentCustom;
 import com.tgx.chess.queen.event.processor.QEvent;
 
 @Service
@@ -61,7 +61,7 @@ public class ConsistentService
 
     private final Logger                     _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
     private final ClusterNode                _ClusterNode;
-    private final INotifyCustom              _NotifyCustom;
+    private final IConsistentCustom _NotifyCustom;
     private final ClusterCustom<ClusterNode> _ClusterCustom;
     private final RaftNode<ClusterNode>      _RaftNode;
     private final TimeWheel                  _TimeWheel;
@@ -70,7 +70,7 @@ public class ConsistentService
     public ConsistentService(@Qualifier("io_cluster_config") IAioConfig ioConfig,
                              @Qualifier("core_cluster_config") IClusterConfig clusterConfig,
                              IRaftConfig raftConfig,
-                             INotifyCustom notifyCustom,
+                             IConsistentCustom notifyCustom,
                              IRaftDao raftDao) throws IOException
     {
         _TimeWheel = new TimeWheel();

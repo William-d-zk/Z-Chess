@@ -38,6 +38,7 @@ import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.handler.cluster.IClusterCustom;
+import com.tgx.chess.queen.event.handler.cluster.IConsistentCustom;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
@@ -68,6 +69,7 @@ public class MappingHandler<C extends IContext<C>,
     private final RingBuffer<QEvent>   _Transfer;
     private final ISessionManager<C>   _SessionManager;
     private final ILinkCustom<C>       _LinkCustom;
+    private final IConsistentCustom    _ConsistentCustom;
     private final IClusterCustom<C,
                                  T>    _ClusterCustom;
 
@@ -78,7 +80,8 @@ public class MappingHandler<C extends IContext<C>,
                           RingBuffer<QEvent> transfer,
                           ILinkCustom<C> linkCustom,
                           IClusterCustom<C,
-                                         T> clusterCustom)
+                                         T> clusterCustom,
+                          IConsistentCustom consistentCustom)
     {
         _Logger = Logger.getLogger("io.queen.dispatcher." + mapper);
         _SessionManager = manager;
@@ -87,6 +90,7 @@ public class MappingHandler<C extends IContext<C>,
         _Transfer = transfer;
         _LinkCustom = linkCustom;
         _ClusterCustom = clusterCustom;
+        _ConsistentCustom = consistentCustom;
     }
 
     @Override
@@ -261,7 +265,7 @@ public class MappingHandler<C extends IContext<C>,
                         if (transferNotify != null && transferNotify.doNotify()) {
                             publish(_Transfer,
                                     NOTIFY,
-                                    new Pair<>(transferNotify, transferNotify.byLeader()),
+                                    new Pair<>(transferNotify, null),
                                     session.getContext()
                                            .getSort()
                                            .getIgnore());
@@ -289,15 +293,18 @@ public class MappingHandler<C extends IContext<C>,
                     }
                     break;
                 case NOTIFY:
-                    IConsistent notify = event.getContent()
-                                              .getFirst();
-                    try {
-                        List<ITriple> result = _LinkCustom.notify(_SessionManager,
-                                                                  event.getContent()
-                                                                       .getFirst(),
-                                                                  notify.getOrigin());
-                        if (result != null && !result.isEmpty()) {
-                            publish(_Writer, result);
+                    IConsistentNotify notify = event.getContent()
+                                                    .getFirst();
+                    if (notify != null) try {
+                        if (notify.byLeader()) _ConsistentCustom.adjudge(notify);
+                        if (notify.doNotify()) {
+                            List<ITriple> result = _LinkCustom.notify(_SessionManager,
+                                                                      event.getContent()
+                                                                           .getFirst(),
+                                                                      notify.getOrigin());
+                            if (result != null && !result.isEmpty()) {
+                                publish(_Writer, result);
+                            }
                         }
                     }
                     catch (Exception e) {

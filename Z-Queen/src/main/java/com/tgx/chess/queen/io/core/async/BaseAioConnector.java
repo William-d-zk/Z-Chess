@@ -24,8 +24,8 @@
 
 package com.tgx.chess.queen.io.core.async;
 
-import static com.tgx.chess.king.base.schedule.Status.STOP;
 import static com.tgx.chess.king.base.schedule.Status.RUNNING;
+import static com.tgx.chess.king.base.schedule.Status.STOP;
 
 import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousSocketChannel;
@@ -81,17 +81,17 @@ public abstract class BaseAioConnector<C extends IContext<C>>
      * 在执行retry操作之前需要先切换到stop状态
      */
     @Override
-    public void retry()
+    public boolean retry()
     {
         retry:
         for (;;) {
             int c = _State.get();
             int rs = ITask.runStateOf(c);
-            if (rs >= STOP.getCode()) { return; }
+            if (rs >= STOP.getCode()) { return false; }
             for (;;) {
                 int rc = ITask.retryCountOf(c);
-                if (rc >= RETRY_LIMIT) { return; }
-                if (ITask.compareAndIncrementRetry(_State, rc)) { return; }
+                if (rc >= RETRY_LIMIT) { return false; }
+                if (ITask.compareAndIncrementRetry(_State, rc)) { return true; }
                 c = _State.get();// reload 
                 if (ITask.runStateOf(c) != rs) {
                     continue retry;

@@ -22,22 +22,14 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.king.base.inf;
+package com.tgx.chess.queen.event.handler.cluster;
+
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
  * @author william.d.zk
  */
-public interface ILifeCycle
-        extends
-        IValid
+public interface IConsistentJudge
 {
-    boolean retry();
-
-    void error();
-
-    boolean isShutdown();
-
-    void shutdown();
-
-    boolean isRunning();
+    void adjudge(IProtocol consensus);
 }

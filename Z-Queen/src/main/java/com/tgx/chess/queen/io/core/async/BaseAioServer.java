@@ -134,7 +134,7 @@ public abstract class BaseAioServer<C extends IContext<C>>
     }
 
     @Override
-    public void retry()
+    public boolean retry()
     {
         throw new UnsupportedOperationException();
     }
