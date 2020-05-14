@@ -40,6 +40,7 @@ import java.util.function.Supplier;
 
 import com.tgx.chess.king.base.inf.IValid;
 import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.king.base.schedule.inf.ICancelable;
 
 /**
  * @author William.d.zk

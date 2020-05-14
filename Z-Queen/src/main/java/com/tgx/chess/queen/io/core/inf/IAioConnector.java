@@ -29,6 +29,7 @@ import static com.tgx.chess.queen.event.inf.IOperator.Type.CONNECTED;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
 
+import com.tgx.chess.king.base.schedule.inf.ITask;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.io.core.async.socket.AioWorker;
 
@@ -41,7 +42,8 @@ public interface IAioConnector<C extends IContext<C>>
                           AsynchronousSocketChannel>,
         IConnectActivity<C>,
         IConnected<C>,
-        IConnectError<C>
+        IConnectError<C>,
+        ITask
 {
     @Override
     IOperator<Throwable,
@@ -62,14 +64,4 @@ public interface IAioConnector<C extends IContext<C>>
         worker.publishConnectingError(getErrorOperator(), exc, this);
     }
 
-    void attach(IConnectFailed<C> func);
-
-    void error();
-
-    void retry();
-
-    interface IConnectFailed<C extends IContext<C>>
-    {
-        void onFailed(IAioConnector<C> connector);
-    }
 }

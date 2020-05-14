@@ -45,6 +45,7 @@ public class AcceptFailedOperator<C extends IContext<C>>
     public Void handle(Throwable throwable, IAioServer<C> aioServer)
     {
         _Logger.warning("accept failed,ignore!", throwable);
+        aioServer.error();
         return null;
     }
 

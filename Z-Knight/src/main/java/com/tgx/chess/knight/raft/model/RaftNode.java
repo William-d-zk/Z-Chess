@@ -57,7 +57,7 @@ import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.inf.IValid;
 import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.king.base.schedule.ICancelable;
+import com.tgx.chess.king.base.schedule.inf.ICancelable;
 import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.base.util.Pair;
