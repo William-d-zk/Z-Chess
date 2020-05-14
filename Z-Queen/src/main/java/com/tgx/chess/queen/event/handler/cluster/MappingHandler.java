@@ -221,9 +221,8 @@ public class MappingHandler<C extends IContext<C>,
                         }
                         IConsistentNotify notify = pair.getSecond();
                         if (notify != null) {
-                            IConsistentJudge judge = _ClusterCustom.getJudge();
-                            if (notify.byLeader() && judge != null) {
-                                judge.adjudge(notify);
+                            if (notify.byLeader()) {
+                                _ConsistentCustom.adjudge(notify);
                             }
                             if (notify.doNotify()) {
                                 publishNotify(pair.getSecond(), null, _ConsistentCustom.getOperator());
@@ -254,15 +253,12 @@ public class MappingHandler<C extends IContext<C>,
                         }
                     }
                     else {
-                        IConsistentJudge judge = _ClusterCustom.getJudge();
-                        if (judge != null) {
-                            judge.adjudge(event.getContent()
-                                               .getFirst());
-                        }
+                        _ConsistentCustom.adjudge(event.getContent()
+                                                       .getFirst());
                         publishNotify(event.getContent()
                                            .getFirst(),
                                       null,
-                                      event.getEventOp());
+                                      _ConsistentCustom.getOperator());
                     }
                     break;
                 case CLUSTER_TIMER://ClusterConsumer Timeout->start_vote
