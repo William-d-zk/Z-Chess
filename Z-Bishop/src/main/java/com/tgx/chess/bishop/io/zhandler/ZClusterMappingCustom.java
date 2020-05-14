@@ -30,7 +30,6 @@ import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.handler.cluster.IClusterCustom;
-import com.tgx.chess.queen.event.handler.cluster.IConsistentJudge;
 import com.tgx.chess.queen.io.core.inf.IConsistent;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
@@ -72,12 +71,5 @@ public class ZClusterMappingCustom<T extends IStorage>
     public boolean waitForCommit()
     {
         return _Then != null && _Then.waitForCommit();
-    }
-
-    @Override
-    public IConsistentJudge getJudge()
-    {
-        return _Then != null ? _Then.getJudge()
-                             : null;
     }
 }
