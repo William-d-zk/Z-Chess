@@ -105,7 +105,7 @@ public class DeviceService
         _DeviceRepository = deviceRepository;
         _LinkCustom = linkCustom;
         _RaftNode = new RaftNode<>(_TimeWheel, raftConfig, raftDao, _DeviceNode);
-        _ClusterCustom = new ClusterCustom<>(_TimeWheel, _RaftNode, linkCustom);
+        _ClusterCustom = new ClusterCustom<>(_TimeWheel, _RaftNode);
         _LogicHandler = new LogicHandler<>(_DeviceNode, qttRouter, _RaftNode, _MessageRepository = messageRepository);
     }
 
