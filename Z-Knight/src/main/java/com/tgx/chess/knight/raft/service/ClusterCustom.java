@@ -57,7 +57,6 @@ import com.tgx.chess.knight.raft.model.RaftNode;
 import com.tgx.chess.knight.raft.model.log.LogEntry;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.handler.cluster.IClusterCustom;
-import com.tgx.chess.queen.event.handler.cluster.IConsistentJudge;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.IClusterTimer;
@@ -79,7 +78,6 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
                                                                              };
 
     private final RaftNode<T>                                      _RaftNode;
-    private final IConsistentJudge                                 _Judge;
     private final TimeWheel                                        _TimeWheel;
     private final Map<Long,
                       IOperator<IProtocol,
@@ -87,12 +85,10 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
                                 Void>>                             _OperatorMap = new ConcurrentHashMap<>(17);
 
     public ClusterCustom(TimeWheel timeWheel,
-                         RaftNode<T> raftNode,
-                         IConsistentJudge judge)
+                         RaftNode<T> raftNode)
     {
         _TimeWheel = timeWheel;
         _RaftNode = raftNode;
-        _Judge = judge;
     }
 
     @Override
@@ -324,11 +320,4 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
     {
         return _RaftNode.isClusterMode();
     }
-
-    @Override
-    public IConsistentJudge getJudge()
-    {
-        return _Judge;
-    }
-
 }

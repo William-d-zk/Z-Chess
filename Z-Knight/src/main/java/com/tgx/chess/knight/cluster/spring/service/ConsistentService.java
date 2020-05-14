@@ -76,7 +76,8 @@ public class ConsistentService
         _TimeWheel = new TimeWheel();
         _ClusterNode = new ClusterNode(ioConfig, clusterConfig, raftConfig, _TimeWheel);
         _RaftNode = new RaftNode<>(_TimeWheel, raftConfig, raftDao, _ClusterNode);
-        _ClusterCustom = new ClusterCustom<>(_TimeWheel, _RaftNode, _ConsistentCustom = consistentCustom);
+        _ConsistentCustom = consistentCustom;
+        _ClusterCustom = new ClusterCustom<>(_TimeWheel, _RaftNode);
     }
 
     @PostConstruct
