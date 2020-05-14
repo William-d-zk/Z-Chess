@@ -29,13 +29,13 @@ import com.tgx.chess.bishop.io.zprotocol.raft.X76_RaftNotify;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.knight.cluster.spring.model.ConsistentProtocol;
 import com.tgx.chess.knight.json.JsonUtil;
-import com.tgx.chess.queen.event.handler.cluster.INotifyCustom;
+import com.tgx.chess.queen.event.handler.cluster.IConsistentCustom;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 @Component
 public class ConsistentCustom
         implements
-        INotifyCustom
+        IConsistentCustom
 {
     private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
 

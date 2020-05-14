@@ -48,7 +48,7 @@ import com.tgx.chess.queen.event.handler.EncodedHandler;
 import com.tgx.chess.queen.event.handler.cluster.IClusterCustom;
 import com.tgx.chess.queen.event.handler.WriteDispatcher;
 import com.tgx.chess.queen.event.handler.cluster.DecodedDispatcher;
-import com.tgx.chess.queen.event.handler.cluster.INotifyCustom;
+import com.tgx.chess.queen.event.handler.cluster.IConsistentCustom;
 import com.tgx.chess.queen.event.handler.cluster.IoDispatcher;
 import com.tgx.chess.queen.event.handler.cluster.MappingHandler;
 import com.tgx.chess.queen.event.handler.cluster.NotifyHandler;
@@ -161,7 +161,7 @@ public class ClusterCore<C extends IContext<C>>
     @SuppressWarnings("unchecked")
     public <T extends IStorage> void build(ClusterManager<C> manager,
                                            IEncryptHandler encryptHandler,
-                                           INotifyCustom notifyCustom,
+                                           IConsistentCustom notifyCustom,
                                            IClusterCustom<C,
                                                           T> clusterCustom,
                                            ILogicHandler<C> logicHandler)

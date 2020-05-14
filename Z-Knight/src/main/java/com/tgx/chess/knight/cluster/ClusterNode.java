@@ -50,7 +50,7 @@ import com.tgx.chess.knight.raft.model.RaftMachine;
 import com.tgx.chess.queen.config.IAioConfig;
 import com.tgx.chess.queen.config.IClusterConfig;
 import com.tgx.chess.queen.event.handler.cluster.IClusterCustom;
-import com.tgx.chess.queen.event.handler.cluster.INotifyCustom;
+import com.tgx.chess.queen.event.handler.cluster.IConsistentCustom;
 import com.tgx.chess.queen.event.handler.mix.ILogicHandler;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.io.core.async.AioSession;
@@ -182,7 +182,7 @@ public class ClusterNode
         _Logger.debug("load cluster node");
     }
 
-    public void start(INotifyCustom notifyCustom,
+    public void start(IConsistentCustom notifyCustom,
                       IClusterCustom<ZContext,
                                      RaftMachine> clusterCustom,
                       ILogicHandler<ZContext> logicHandler) throws IOException

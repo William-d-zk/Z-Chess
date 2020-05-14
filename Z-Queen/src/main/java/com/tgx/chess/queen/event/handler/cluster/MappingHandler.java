@@ -67,7 +67,7 @@ public class MappingHandler<C extends IContext<C>,
     private final RingBuffer<QEvent>   _Writer;
     private final RingBuffer<QEvent>[] _Notifiers;
     private final ISessionManager<C>   _SessionManager;
-    private final INotifyCustom        _NotifyCustom;
+    private final IConsistentCustom    _ConsistentCustom;
     private final IClusterCustom<C,
                                  T>    _ClusterCustom;
     private final int                  _NotifyModMask;
@@ -77,7 +77,7 @@ public class MappingHandler<C extends IContext<C>,
                           RingBuffer<QEvent> error,
                           RingBuffer<QEvent> writer,
                           RingBuffer<QEvent>[] notifiers,
-                          INotifyCustom notifyCustom,
+                          IConsistentCustom consistentCustom,
                           IClusterCustom<C,
                                          T> clusterCustom)
     {
@@ -86,7 +86,7 @@ public class MappingHandler<C extends IContext<C>,
         _Writer = writer;
         _Error = error;
         _Notifiers = notifiers;
-        _NotifyCustom = notifyCustom;
+        _ConsistentCustom = consistentCustom;
         _ClusterCustom = clusterCustom;
         _NotifyModMask = _Notifiers.length - 1;
     }
@@ -220,7 +220,7 @@ public class MappingHandler<C extends IContext<C>,
                         }
                         IConsistentNotify notify = pair.getSecond();
                         if (notify != null) {
-                            if (notify.byLeader()) _NotifyCustom.adjudge(notify);
+                            if (notify.byLeader()) _ConsistentCustom.adjudge(notify);
                             if (notify.doNotify()) publishNotify(notify, null);
                         }
                     }
@@ -247,8 +247,8 @@ public class MappingHandler<C extends IContext<C>,
                         }
                     }
                     else {
-                        _NotifyCustom.adjudge(event.getContent()
-                                                   .getFirst());
+                        _ConsistentCustom.adjudge(event.getContent()
+                                                       .getFirst());
                         publishNotify(event.getContent()
                                            .getFirst(),
                                       null);
@@ -278,10 +278,10 @@ public class MappingHandler<C extends IContext<C>,
         Objects.requireNonNull(request);
         RingBuffer<QEvent> notifier = _Notifiers[(int) (request.getOrigin() >> ZUID.NODE_SHIFT) & _NotifyModMask];
         if (throwable == null) {
-            publish(notifier, NOTIFY, new Pair<>(request, null), _NotifyCustom);
+            publish(notifier, NOTIFY, new Pair<>(request, null), _ConsistentCustom);
         }
         else {
-            error(notifier, MAPPING_ERROR, new Pair<>(request, throwable), _NotifyCustom);
+            error(notifier, MAPPING_ERROR, new Pair<>(request, throwable), _ConsistentCustom);
         }
     }
 
