@@ -54,7 +54,10 @@ import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.DeviceEntity;
 import com.tgx.chess.pawn.endpoint.spring.device.jpa.repository.IDeviceJpaRepository;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.handler.mix.ILinkCustom;
+import com.tgx.chess.queen.event.inf.IOperator;
+import com.tgx.chess.queen.io.core.inf.IConsistent;
 import com.tgx.chess.queen.io.core.inf.IControl;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 import com.tgx.chess.queen.io.core.inf.IQoS;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
@@ -77,6 +80,14 @@ public class LinkCustom
         _QttRouter = qttRouter;
     }
 
+    /**
+     *
+     * @param manager
+     * @param session
+     * @param input
+     * @return first | 需要直接转换成
+     * @throws Exception
+     */
     @Override
     public IPair handle(ISessionManager<ZContext> manager,
                         ISession<ZContext> session,
@@ -189,6 +200,26 @@ public class LinkCustom
                                                               .getEncoder()))
                           .collect(Collectors.toList());
         }
+        return null;
+    }
+
+    @Override
+    public void adjudge(IProtocol consensus)
+    {
+
+    }
+
+    @Override
+    public <T extends IConsistent & IProtocol> IOperator<T,
+                                                         Throwable,
+                                                         Void> getOperator()
+    {
+        return this::handle;
+    }
+
+    @Override
+    public <T extends IConsistent & IProtocol> Void handle(T request, Throwable throwable)
+    {
         return null;
     }
 

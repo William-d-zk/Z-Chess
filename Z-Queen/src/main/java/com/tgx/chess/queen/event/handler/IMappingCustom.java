@@ -43,7 +43,8 @@ public interface IMappingCustom<C extends IContext<C>>
      * @param content
      * @return pair
      *         first: response ->
-     *         second: to other domain
+     *         second: protocol to other domain
+     *         third: operator
      * @throws Exception
      */
     IPair handle(ISessionManager<C> manager, ISession<C> session, IControl<C> content) throws Exception;

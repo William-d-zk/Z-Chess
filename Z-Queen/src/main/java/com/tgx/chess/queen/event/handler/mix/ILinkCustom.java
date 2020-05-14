@@ -28,6 +28,7 @@ import java.util.List;
 
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.queen.event.handler.IMappingCustom;
+import com.tgx.chess.queen.event.handler.cluster.IConsistentCustom;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
@@ -38,7 +39,8 @@ import com.tgx.chess.queen.io.core.inf.ISessionManager;
  */
 public interface ILinkCustom<C extends IContext<C>>
         extends
-        IMappingCustom<C>
+        IMappingCustom<C>,
+        IConsistentCustom
 {
 
     /*

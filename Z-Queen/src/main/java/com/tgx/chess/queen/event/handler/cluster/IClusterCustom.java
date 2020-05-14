@@ -78,7 +78,7 @@ public interface IClusterCustom<C extends IContext<C>,
      * @return triples
      *         [托管给集群IoSwitch.write(triples) 或 Transfer → Link.notify(triples)]
      */
-    <T extends IConsistent & IProtocol> List<ITriple> consensus(ISessionManager<C> manager, T request);
+    <E extends IConsistent & IProtocol> List<ITriple> consensus(ISessionManager<C> manager, E request);
 
     /**
      * 用于验证是否需要执行集群commit
@@ -86,4 +86,12 @@ public interface IClusterCustom<C extends IContext<C>,
      * @return true 等待集群确认，false 接续执行
      */
     boolean waitForCommit();
+
+    /**
+     * 获取一致性处理器
+     * 
+     * @return
+     */
+    IConsistentJudge getJudge();
+
 }
