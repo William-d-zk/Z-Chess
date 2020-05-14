@@ -24,11 +24,16 @@
 
 package com.tgx.chess.queen.io.core.async;
 
+import static com.tgx.chess.king.base.schedule.Status.STOP;
+import static com.tgx.chess.king.base.schedule.Status.RUNNING;
+
 import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.tgx.chess.king.base.inf.IFailed;
 import com.tgx.chess.king.base.inf.ITriple;
+import com.tgx.chess.king.base.schedule.inf.ITask;
 import com.tgx.chess.queen.config.ISocketConfig;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.operator.ConnectFailedOperator;
@@ -50,62 +55,26 @@ public abstract class BaseAioConnector<C extends IContext<C>>
     protected BaseAioConnector(String host,
                                int port,
                                ISocketConfig socketConfig,
-                               IConnectFailed<C> connectFailed)
+                               IFailed<IAioConnector<C>> failed)
     {
         super(socketConfig);
         _RemoteAddress = new InetSocketAddress(host, port);
-        attach(connectFailed);
+        _FailedHandler = failed;
     }
 
-    private static final int COUNT_BITS = Integer.SIZE - 7;
-    private static final int CAPACITY   = (1 << COUNT_BITS) - 1;
-    private static final int RUNNING    = -1 << COUNT_BITS;
-    private static final int SHUTDOWN   = 0 << COUNT_BITS;
-    private static final int STOP       = 1 << COUNT_BITS;
-    private static final int TIDYING    = 2 << COUNT_BITS;
-    private static final int TERMINATED = 3 << COUNT_BITS;
-
-    private final ConnectFailedOperator<C> _ConnectFailedOperator = new ConnectFailedOperator<>();
-    private final ConnectedOperator<C>     _ConnectedOperator     = new ConnectedOperator<>();
-    private final InetSocketAddress        _RemoteAddress;
-    private final AtomicInteger            _State                 = new AtomicInteger(ctlOf(RUNNING, 0));
+    private final ConnectFailedOperator<C>  _ConnectFailedOperator = new ConnectFailedOperator<>();
+    private final ConnectedOperator<C>      _ConnectedOperator     = new ConnectedOperator<>();
+    private final InetSocketAddress         _RemoteAddress;
+    private final AtomicInteger             _State                 = new AtomicInteger(ITask.ctlOf(RUNNING.getCode(),
+                                                                                                   0));
+    private final IFailed<IAioConnector<C>> _FailedHandler;
 
     private InetSocketAddress mLocalBind;
-    private IConnectFailed<C> mFailedConsumer;
-
-    private void advanceRunState(int targetState)
-    {
-        for (;;) {
-            int c = _State.get();
-            if (c >= targetState || _State.compareAndSet(c, ctlOf(targetState, retryCountOf(c)))) break;
-        }
-    }
-
-    /*对state进行拆装箱*/
-    private static int runStateOf(int state)
-    {
-        return state & ~CAPACITY;
-    }
-
-    private static int retryCountOf(int c)
-    {
-        return c & CAPACITY;
-    }
-
-    private static int ctlOf(int rs, int rc)
-    {
-        return rs | rc;
-    }
-
-    private boolean compareAndIncrementCount(int expect)
-    {
-        return _State.compareAndSet(expect, expect + 1);
-    }
 
     @Override
     public void error()
     {
-        mFailedConsumer.onFailed(this);
+        _FailedHandler.onFailed(this);
     }
 
     /**
@@ -117,14 +86,14 @@ public abstract class BaseAioConnector<C extends IContext<C>>
         retry:
         for (;;) {
             int c = _State.get();
-            int rs = runStateOf(c);
-            if (rs >= SHUTDOWN) { return; }
+            int rs = ITask.runStateOf(c);
+            if (rs >= STOP.getCode()) { return; }
             for (;;) {
-                int rc = retryCountOf(c);
-                if (rc >= CAPACITY) { return; }
-                if (compareAndIncrementCount(rc)) { return; }
+                int rc = ITask.retryCountOf(c);
+                if (rc >= RETRY_LIMIT) { return; }
+                if (ITask.compareAndIncrementRetry(_State, rc)) { return; }
                 c = _State.get();// reload 
-                if (runStateOf(c) != rs) {
+                if (ITask.runStateOf(c) != rs) {
                     continue retry;
                 }
             }
@@ -166,27 +135,21 @@ public abstract class BaseAioConnector<C extends IContext<C>>
     }
 
     @Override
-    public void attach(IConnectFailed<C> func)
-    {
-        mFailedConsumer = func;
-    }
-
-    @Override
     public void shutdown()
     {
-        advanceRunState(SHUTDOWN);
+        ITask.advanceRunState(_State, STOP.getCode());
     }
 
     @Override
     public boolean isShutdown()
     {
-        return runStateOf(_State.get()) >= SHUTDOWN;
+        return ITask.runStateOf(_State.get()) >= STOP.getCode();
     }
 
     @Override
     public boolean isRunning()
     {
-        return runStateOf(_State.get()) < SHUTDOWN;
+        return ITask.runStateOf(_State.get()) < STOP.getCode();
     }
 
     @Override

@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.king.base.schedule;
+package com.tgx.chess.king.base.schedule.inf;
 
 /**
  * @author william.d.zk
