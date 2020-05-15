@@ -45,7 +45,6 @@ import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.IAioConnector;
 import com.tgx.chess.queen.io.core.inf.IAioServer;
 import com.tgx.chess.queen.io.core.inf.IConnectActivity;
-import com.tgx.chess.queen.io.core.inf.IConsistent;
 import com.tgx.chess.queen.io.core.inf.IConsistentNotify;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
@@ -53,6 +52,7 @@ import com.tgx.chess.queen.io.core.inf.IProtocol;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
+import com.tgx.chess.queen.io.core.inf.ITraceable;
 
 /**
  * @author william.d.zk
@@ -280,11 +280,11 @@ public class MappingHandler<C extends IContext<C>,
         event.reset();
     }
 
-    private <E extends IConsistent & IProtocol> void publishNotify(E request,
-                                                                   Throwable throwable,
-                                                                   IOperator<E,
-                                                                             Throwable,
-                                                                             Void> operator)
+    private <E extends ITraceable & IProtocol> void publishNotify(E request,
+                                                                  Throwable throwable,
+                                                                  IOperator<E,
+                                                                            Throwable,
+                                                                            Void> operator)
     {
         Objects.requireNonNull(request);
         RingBuffer<QEvent> notifier = _Notifiers[(int) (request.getOrigin() >> ZUID.NODE_SHIFT) & _NotifyModMask];

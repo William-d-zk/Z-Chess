@@ -91,6 +91,9 @@ public class AioSession<C extends IContext<C>>
     private long   mHashKey;
     private int    mWroteExpect;
     private int    mSendingBlank;
+    /* reader */
+    private CompletionHandler<Integer,
+                              ISession<C>> mReader;
 
     @Override
     public String toString()
@@ -268,8 +271,15 @@ public class AioSession<C extends IContext<C>>
                                                                            ShutdownChannelGroupException
     {
         if (isClosed()) { return; }
+        mReader = readHandler;
         _RecvBuf.clear();
         _Channel.read(_RecvBuf, _ReadTimeOutInSecond, TimeUnit.SECONDS, this, readHandler);
+    }
+
+    @Override
+    public final void readNext() throws IllegalStateException
+    {
+        readNext(mReader);
     }
 
     @Override
