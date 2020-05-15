@@ -98,7 +98,7 @@ public class AioSession<C extends IContext<C>>
     @Override
     public String toString()
     {
-        return String.format("@%#x \n%s->%s \nmode:%s \nindex:%#x \nvalid:%s\nwait_to_write %d\nqueue_size %d",
+        return String.format("@%#x %s->%s mode:%s index:%#x valid:%s wait_to_write %d queue_size %d",
                              _HashCode,
                              _LocalAddress,
                              _RemoteAddress,
