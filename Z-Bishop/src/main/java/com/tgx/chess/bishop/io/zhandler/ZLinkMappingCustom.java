@@ -30,10 +30,10 @@ import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.queen.event.handler.mix.ILinkCustom;
 import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.io.core.inf.IConsistent;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
+import com.tgx.chess.queen.io.core.inf.ITraceable;
 
 /**
  * @author william.d.zk
@@ -68,15 +68,15 @@ public class ZLinkMappingCustom
     }
 
     @Override
-    public <T extends IConsistent & IProtocol> IOperator<T,
-                                                         Throwable,
-                                                         Void> getOperator()
+    public <T extends ITraceable & IProtocol> IOperator<T,
+                                                        Throwable,
+                                                        Void> getOperator()
     {
         return this::handle;
     }
 
     @Override
-    public <T extends IConsistent & IProtocol> Void handle(T request, Throwable throwable)
+    public <T extends ITraceable & IProtocol> Void handle(T request, Throwable throwable)
     {
         if (_Then != null) {
             _Then.handle(request, throwable);

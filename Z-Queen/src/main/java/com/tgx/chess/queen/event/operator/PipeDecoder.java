@@ -43,11 +43,13 @@ public class PipeDecoder<C extends IContext<C>>
     @Override
     public ITriple handle(IPacket input, ISession<C> session)
     {
-        return new Triple<>(filterRead(input, session),
-                            session,
-                            session.getContext()
-                                   .getSort()
-                                   .getTransfer());
+        ITriple result = new Triple<>(filterRead(input, session),
+                                      session,
+                                      session.getContext()
+                                             .getSort()
+                                             .getTransfer());
+        session.readNext();
+        return result;
     }
 
     @Override

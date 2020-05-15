@@ -29,7 +29,6 @@ import static com.tgx.chess.queen.event.inf.IError.Type.READ_FAILED;
 import static com.tgx.chess.queen.event.inf.IError.Type.READ_ZERO;
 
 import java.io.EOFException;
-import java.nio.ByteBuffer;
 import java.nio.channels.CompletionHandler;
 
 import com.tgx.chess.king.base.log.Logger;
@@ -79,13 +78,11 @@ public class AioReader<C extends IContext<C>>
             default:
                 _Logger.debug("read count: %d", result);
                 try {
-                    ByteBuffer recvBuf = session.read(result);
                     worker.publishRead(session.getContext()
                                               .getSort()
                                               .getDecoder(),
-                                       new AioPacket(recvBuf),
+                                       new AioPacket(session.read(result)),
                                        session);
-                    session.readNext(this);
                 }
                 catch (Exception e) {
                     worker.publishReadError(session.getContext()
