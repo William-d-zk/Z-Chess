@@ -428,7 +428,7 @@ public class AioSession<C extends IContext<C>>
     {
         if (_Ctx.channelStateLessThan(SESSION_FLUSHED) && mSending.hasRemaining()) {
             _Ctx.advanceChannelState(SESSION_FLUSHED);
-            _Logger.debug("session %#x, flush %d", getIndex(), mSending.remaining());
+            _Logger.debug("flush %d | %s", mSending.remaining(), this);
             _Channel.write(mSending, _WriteTimeOutInSecond, TimeUnit.SECONDS, this, handler);
         }
     }
