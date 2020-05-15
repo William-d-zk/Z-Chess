@@ -25,10 +25,6 @@
 package com.tgx.chess.knight.json;
 
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -40,10 +36,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
 import com.tgx.chess.king.base.log.Logger;
 
 @ConfigurationProperties(prefix = "spring.jackson")
@@ -173,6 +165,7 @@ public class JsonUtil
 
     public static <T> byte[] writeValueAsBytes(T input)
     {
+        if (input == null) return null;
         try {
             return OBJECT_MAPPER.writeValueAsBytes(input);
         }
@@ -184,6 +177,7 @@ public class JsonUtil
 
     public static <T> String writeValueAsString(T input)
     {
+        if (input == null) return null;
         try {
             return OBJECT_MAPPER.writeValueAsString(input);
         }
