@@ -76,7 +76,7 @@ public class AioReader<C extends IContext<C>>
                 }
                 break;
             default:
-                _Logger.debug("read count: %d", result);
+                _Logger.debug("read count: %d | %s", result, session);
                 try {
                     worker.publishRead(session.getContext()
                                               .getSort()
