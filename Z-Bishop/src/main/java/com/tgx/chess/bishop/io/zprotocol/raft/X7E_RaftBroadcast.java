@@ -165,13 +165,13 @@ public class X7E_RaftBroadcast
     @Override
     public String toString()
     {
-        return String.format("X7E_RaftBroadcast{ leader:%#x;%d@%d term:%d,commit:%d %s",
+        return String.format("X7E_RaftBroadcast{ leader:%#x; %d@%d term:%d, commit:%d payload[%d]",
                              mPeerId,
                              mPreIndex,
                              mPreIndexTerm,
                              mTerm,
                              mCommit,
-                             getPayload() == null ? "no entry"
-                                                  : IoUtil.bin2Hex(getPayload()));
+                             getPayload() == null ? 0
+                                                  : getPayload().length);
     }
 }

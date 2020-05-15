@@ -134,4 +134,15 @@ public class X75_RaftRequest
     {
         mPublic = pub;
     }
+
+    @Override
+    public String toString()
+    {
+        return String.format(" X75_RaftRequest { peer_id:%#x, origin:%#x, payload_serial:%#x, public:%s ",
+                             mPeerId,
+                             mPayloadSerial,
+                             mOrigin,
+                             mPublic ? "all"
+                                     : "one");
+    }
 }

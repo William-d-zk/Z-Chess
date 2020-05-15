@@ -24,7 +24,6 @@
 
 package com.tgx.chess.knight.raft.model.log;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -32,7 +31,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.knight.json.JsonUtil;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.io.core.inf.IConsistent;
@@ -149,22 +147,16 @@ public class LogEntry
     @Override
     public String toString()
     {
-        return String.format("raft_log{ %d@%d,from:%#x,notify:[%s],origin:%d-%#x,payload-serial:%#x,payload-size:%d,payload:%s[%s] }",
+        return String.format("raft_log{ %d@%d, from:%#x, notify:[%s], origin:%#x, payload-serial:%#x, payload-size:%d }",
                              _Index,
                              _Term,
                              _ClientPeer,
                              _Public ? "all"
                                      : _ClientPeer,
                              _Origin,
-                             _Origin,
                              _PayloadSerial,
                              _Payload == null ? 0
-                                              : _Payload.length,
-                             _Payload == null ? "NULL"
-                                              : new String(_Payload, StandardCharsets.UTF_8),
-                             IoUtil.bin2Hex(_Payload)
-
-        );
+                                              : _Payload.length);
     }
 
     @Override
