@@ -68,10 +68,6 @@ public class EncodeHandler<C extends IContext<C>>
             }
         }
         else {
-            _Logger.debug("%s→  %s ",
-                          event.getEventType(),
-                          event.getContent()
-                               .getFirst());
             switch (event.getEventType())
             {
                 case WRITE:
