@@ -24,19 +24,19 @@
 
 package com.tgx.chess.knight.raft.model.log;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.tgx.chess.knight.json.JsonUtil;
+import com.tgx.chess.knight.json.JsonProtocol;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.io.core.inf.IConsistent;
 
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class LogEntry
+        extends
+        JsonProtocol
         implements
         IConsistent,
         IStorage
@@ -56,15 +56,6 @@ public class LogEntry
 
     @JsonIgnore
     private transient byte[] tData;
-
-    @JsonIgnore
-    private int mLength;
-
-    @Override
-    public int dataLength()
-    {
-        return mLength;
-    }
 
     @JsonCreator
     public LogEntry(@JsonProperty("term") long term,
@@ -113,18 +104,10 @@ public class LogEntry
     }
 
     @Override
-    public int decode(byte[] data)
-    {
-        return mLength = data.length;
-    }
-
-    @Override
     public byte[] encode()
     {
         if (tData != null) { return tData; }
-        tData = JsonUtil.writeValueAsBytes(this);
-        Objects.requireNonNull(tData);
-        mLength = tData.length;
+        tData = super.encode();
         return tData;
     }
 

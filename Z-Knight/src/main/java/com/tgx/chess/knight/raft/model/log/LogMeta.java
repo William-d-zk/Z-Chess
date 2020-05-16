@@ -28,7 +28,6 @@ import static com.tgx.chess.knight.raft.IRaftMachine.MIN_START;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.Objects;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -66,8 +65,6 @@ public class LogMeta
     private Set<Triple<Long,
                        String,
                        Integer>>               mGateSet;
-    @JsonIgnore
-    private transient byte[]                   tData;
 
     @JsonCreator
     public LogMeta(@JsonProperty("term") long term,
@@ -127,21 +124,6 @@ public class LogMeta
     {
         mFile = source;
         return this;
-    }
-
-    @Override
-    public int decode(byte[] data)
-    {
-        return mLength = data.length;
-    }
-
-    @Override
-    public byte[] encode()
-    {
-        tData = JsonUtil.writeValueAsBytes(this);
-        Objects.requireNonNull(tData);
-        mLength = tData.length;
-        return tData;
     }
 
     @Override
