@@ -25,7 +25,6 @@
 package com.tgx.chess.pawn.endpoint.spring.device.jpa.model;
 
 import java.util.Date;
-import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -44,7 +43,6 @@ import org.hibernate.validator.constraints.Length;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.tgx.chess.knight.json.JsonUtil;
 import com.tgx.chess.queen.db.inf.IStorage;
 
 /**
@@ -88,9 +86,6 @@ public class DeviceEntity
     private Date      invalidAt;
     @Transient
     private Operation mOperation = Operation.OP_NULL;
-    @JsonIgnore
-    @Transient
-    private int       mLength;
 
     public long getId()
     {
@@ -203,27 +198,6 @@ public class DeviceEntity
     public Strategy strategy()
     {
         return Strategy.RETAIN;
-    }
-
-    @Override
-    public int dataLength()
-    {
-        return mLength;
-    }
-
-    @Override
-    public byte[] encode()
-    {
-        byte[] payload = JsonUtil.writeValueAsBytes(this);
-        Objects.requireNonNull(payload);
-        mLength = payload.length;
-        return payload;
-    }
-
-    @Override
-    public int decode(byte[] data)
-    {
-        return mLength;
     }
 
     @Override

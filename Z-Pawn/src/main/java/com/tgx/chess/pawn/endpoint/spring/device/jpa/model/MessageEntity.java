@@ -24,8 +24,6 @@
 
 package com.tgx.chess.pawn.endpoint.spring.device.jpa.model;
 
-import java.util.Objects;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -39,7 +37,6 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.tgx.chess.knight.json.JsonUtil;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 
@@ -79,9 +76,6 @@ public class MessageEntity
     @Column(columnDefinition = "jsonb")
     private MessageBody body;
 
-    @JsonIgnore
-    @Transient
-    private int                mLength;
     @JsonIgnore
     @Transient
     private IStorage.Operation mOperation = IStorage.Operation.OP_NULL;
@@ -164,27 +158,6 @@ public class MessageEntity
     public void setDestination(long destination)
     {
         this.destination = destination;
-    }
-
-    @Override
-    public int dataLength()
-    {
-        return mLength;
-    }
-
-    @Override
-    public byte[] encode()
-    {
-        byte[] payload = JsonUtil.writeValueAsBytes(this);
-        Objects.requireNonNull(payload);
-        mLength = payload.length;
-        return payload;
-    }
-
-    @Override
-    public int decode(byte[] data)
-    {
-        return mLength = data.length;
     }
 
     @Override

@@ -28,17 +28,15 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.tgx.chess.queen.io.core.inf.IProtocol;
+import com.tgx.chess.knight.json.JsonProtocol;
 
 public abstract class BaseMeta
-        implements
-        IProtocol
+        extends
+        JsonProtocol
 {
 
     @JsonIgnore
     protected RandomAccessFile mFile;
-    @JsonIgnore
-    protected int              mLength;
 
     void update()
     {
@@ -63,11 +61,4 @@ public abstract class BaseMeta
             e.printStackTrace();
         }
     }
-
-    @Override
-    public int dataLength()
-    {
-        return mLength;
-    }
-
 }

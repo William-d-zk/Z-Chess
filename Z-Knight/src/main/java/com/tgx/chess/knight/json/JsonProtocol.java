@@ -21,36 +21,40 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
  * SOFTWARE.                                                                      
  */
-package com.tgx.chess.knight.cluster.spring.api;
 
-import java.time.Instant;
+package com.tgx.chess.knight.json;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import java.util.Objects;
 
-import com.tgx.chess.knight.cluster.spring.service.ConsistentService;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 
-@RestController
-public class ConsistentController
+/**
+ * @author william.d.zk
+ */
+public abstract class JsonProtocol
+        implements
+        IProtocol
 {
+    private int mLength;
 
-    private final ConsistentService _ConsistentService;
-
-    @Autowired
-    public ConsistentController(ConsistentService consistentService)
+    @Override
+    public byte[] encode()
     {
-        _ConsistentService = consistentService;
+        byte[] b = JsonUtil.writeValueAsBytes(this);
+        Objects.requireNonNull(b);
+        mLength = b.length;
+        return b;
     }
 
-    @PostMapping("/consistent")
-    public @ResponseBody Object consistent(String input)
+    @Override
+    public int decode(byte[] data)
     {
-        _ConsistentService.consistentSubmit(input,
-                                            true,
-                                            Instant.now()
-                                                   .toEpochMilli());
-        return input;
+        return mLength = data.length;
+    }
+
+    @Override
+    public int dataLength()
+    {
+        return mLength;
     }
 }
