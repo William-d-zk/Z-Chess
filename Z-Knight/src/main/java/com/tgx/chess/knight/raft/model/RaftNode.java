@@ -561,6 +561,7 @@ public class RaftNode<T extends IClusterPeer & IClusterTimer>
                         X76_RaftNotify x76 = createNotify(raftLog);
                         x76.setLeader();
                         if (raftLog.isPublic()) {
+                            x76.doNotify();
                             if (x7e != null) {
                                 return new Pair<>(Stream.concat(Stream.of(x7e), createNotifyStream(manager, raftLog))
                                                         .toArray(IControl[]::new),
