@@ -96,7 +96,7 @@ public class ConsistentService
         if (IoUtil.isBlank(content)) return;
         consistentSubmit(new ConsistentProtocol(content.getBytes(StandardCharsets.UTF_8),
                                                 pub,
-                                                getClusterZuid(),
+                                                _ClusterNode.getZuid(),
                                                 origin));
     }
 
@@ -130,10 +130,5 @@ public class ConsistentService
     public <A extends IValid> ICancelable acquire(A attach, ScheduleHandler<A> scheduleHandler)
     {
         return _TimeWheel.acquire(attach, scheduleHandler);
-    }
-
-    public long getClusterZuid()
-    {
-        return _ClusterNode.getZuid();
     }
 }
