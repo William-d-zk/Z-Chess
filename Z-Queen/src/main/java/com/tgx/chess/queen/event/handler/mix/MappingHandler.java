@@ -286,7 +286,12 @@ public class MappingHandler<C extends IContext<C>,
                                                     .getFirst();
                     if (notify != null) try {
                         if (notify.byLeader()) {
-                            _LinkCustom.adjudge(notify);
+                            try {
+                                _LinkCustom.adjudge(notify);
+                            }
+                            catch (Throwable e) {
+                                _Logger.warning("leader adjudge", e);
+                            }
                         }
                         if (notify.doNotify()) {
                             List<ITriple> result = _LinkCustom.notify(_SessionManager,

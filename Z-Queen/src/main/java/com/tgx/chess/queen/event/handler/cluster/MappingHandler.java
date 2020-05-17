@@ -222,7 +222,12 @@ public class MappingHandler<C extends IContext<C>,
                         IConsistentNotify notify = pair.getSecond();
                         if (notify != null) {
                             if (notify.byLeader()) {
-                                _ConsistentCustom.adjudge(notify);
+                                try {
+                                    _ConsistentCustom.adjudge(notify);
+                                }
+                                catch (Throwable e) {
+                                    _Logger.warning("leader - adjudge ", e);
+                                }
                             }
                             if (notify.doNotify()) {
                                 publishNotify(pair.getSecond(), null, _ConsistentCustom.getOperator());
