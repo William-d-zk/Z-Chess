@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
@@ -186,51 +187,49 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
         switch (machine.operation())
         {
             case OP_APPEND://heartbeat
-                List<X7E_RaftBroadcast> x7EList = _RaftNode.checkLogAppend(machine);
-                if (x7EList != null) {
-                    return x7EList.stream()
-                                  .map(x7E ->
-                                  {
-                                      ISession<ZContext> session = manager.findSessionByPrefix(x7E.getFollower());
-                                      if (session == null) {
-                                          _Logger.warning("not found peerId:%#x session", x7E.getFollower());
-                                          return null;
-                                      }
-                                      else {
-                                          x7E.setSession(session);
-                                          return new Triple<>(x7E,
-                                                              session,
-                                                              session.getContext()
-                                                                     .getSort()
-                                                                     .getEncoder());
-                                      }
-                                  })
-                                  .filter(Objects::nonNull)
-                                  .collect(Collectors.toList());
+                Stream<X7E_RaftBroadcast> x7eStream = _RaftNode.checkLogAppend(machine);
+                if (x7eStream != null) {
+                    return x7eStream.map(x7E ->
+                    {
+                        ISession<ZContext> session = manager.findSessionByPrefix(x7E.getFollower());
+                        if (session == null) {
+                            _Logger.warning("not found peerId:%#x session", x7E.getFollower());
+                            return null;
+                        }
+                        else {
+                            x7E.setSession(session);
+                            return new Triple<>(x7E,
+                                                session,
+                                                session.getContext()
+                                                       .getSort()
+                                                       .getEncoder());
+                        }
+                    })
+                                    .filter(Objects::nonNull)
+                                    .collect(Collectors.toList());
                 }
                 break;
             case OP_INSERT://vote
-                List<X72_RaftVote> x72List = _RaftNode.checkVoteState(machine);
-                if (x72List != null) {
-                    return x72List.stream()
-                                  .map(x72 ->
-                                  {
-                                      ISession<ZContext> session = manager.findSessionByPrefix(x72.getElector());
-                                      if (session == null) {
-                                          _Logger.warning("not found peerId:%#x session", x72.getElector());
-                                          return null;
-                                      }
-                                      else {
-                                          x72.setSession(session);
-                                          return new Triple<>(x72,
-                                                              session,
-                                                              session.getContext()
-                                                                     .getSort()
-                                                                     .getEncoder());
-                                      }
-                                  })
-                                  .filter(Objects::nonNull)
-                                  .collect(Collectors.toList());
+                Stream<X72_RaftVote> x72Stream = _RaftNode.checkVoteState(machine);
+                if (x72Stream != null) {
+                    return x72Stream.map(x72 ->
+                    {
+                        ISession<ZContext> session = manager.findSessionByPrefix(x72.getElector());
+                        if (session == null) {
+                            _Logger.warning("not found peerId:%#x session", x72.getElector());
+                            return null;
+                        }
+                        else {
+                            x72.setSession(session);
+                            return new Triple<>(x72,
+                                                session,
+                                                session.getContext()
+                                                       .getSort()
+                                                       .getEncoder());
+                        }
+                    })
+                                    .filter(Objects::nonNull)
+                                    .collect(Collectors.toList());
                 }
                 break;
         }

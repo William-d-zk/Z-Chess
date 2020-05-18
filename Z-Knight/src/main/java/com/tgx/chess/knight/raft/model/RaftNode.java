@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.Random;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.tgx.chess.bishop.io.zfilter.ZContext;
@@ -342,7 +341,7 @@ public class RaftNode<T extends IClusterPeer & IClusterTimer>
     private void beLeader()
     {
         _SelfMachine.beLeader(_RaftDao);
-        _Logger.debug("be leader=>%s", _SelfMachine);
+        _Logger.info("be leader=>%s", _SelfMachine);
     }
 
     private void tickCancel()
@@ -561,7 +560,7 @@ public class RaftNode<T extends IClusterPeer & IClusterTimer>
                         X76_RaftNotify x76 = createNotify(raftLog);
                         x76.setLeader();
                         if (raftLog.isPublic()) {
-                            x76.doNotify();
+                            x76.setNotify();
                             if (x7e != null) {
                                 return new Pair<>(Stream.concat(Stream.of(x7e), createNotifyStream(manager, raftLog))
                                                         .toArray(IControl[]::new),
@@ -734,15 +733,15 @@ public class RaftNode<T extends IClusterPeer & IClusterTimer>
                     }
                 }
                 else {
-                    _Logger.debug("conflict  self: %d@%d <==> leader: %d@%d",
-                                  _SelfMachine.getIndex(),
-                                  _SelfMachine.getIndexTerm(),
-                                  preIndex,
-                                  preIndexTerm);
+                    _Logger.warning("conflict  self: %d@%d <==> leader: %d@%d",
+                                    _SelfMachine.getIndex(),
+                                    _SelfMachine.getIndexTerm(),
+                                    preIndex,
+                                    preIndexTerm);
                     LogEntry old = _RaftDao.getEntry(preIndex);
                     if (old == null || old.getTerm() != preIndexTerm) {
                         if (old == null) {
-                            _Logger.debug("log %d miss,self %s", preIndex, _SelfMachine);
+                            _Logger.warning("log %d miss,self %s", preIndex, _SelfMachine);
                         }
                         /*
                            此处存在一个可优化点，将此冲突对应的 term 下所有的index 都注销，向leader反馈
@@ -791,7 +790,7 @@ public class RaftNode<T extends IClusterPeer & IClusterTimer>
         return false;
     }
 
-    public List<X72_RaftVote> checkVoteState(RaftMachine update)
+    public Stream<X72_RaftVote> checkVoteState(RaftMachine update)
     {
         if (update.getPeerId() == _SelfMachine.getPeerId()
             && update.getTerm() == _SelfMachine.getTerm() + 1
@@ -799,17 +798,17 @@ public class RaftNode<T extends IClusterPeer & IClusterTimer>
             && update.getIndexTerm() == _SelfMachine.getIndexTerm()
             && update.getCandidate() == _SelfMachine.getPeerId()
             && update.getCommit() == _SelfMachine.getCommit()
-            && _SelfMachine.getState() == FOLLOWER
-            && update.getState() == CANDIDATE)
+            && update.getState() == CANDIDATE
+            && _SelfMachine.getState() == FOLLOWER)
         {
             vote4me();
-            return createVotes(update).collect(Collectors.toList());
+            return createVotes(update);
         }
         _Logger.warning("check vote failed; now: %s", _SelfMachine);
         return null;
     }
 
-    public List<X7E_RaftBroadcast> checkLogAppend(RaftMachine update)
+    public Stream<X7E_RaftBroadcast> checkLogAppend(RaftMachine update)
     {
         if (_SelfMachine.getState() == LEADER
             && _SelfMachine.getPeerId() == update.getPeerId()
@@ -823,7 +822,7 @@ public class RaftNode<T extends IClusterPeer & IClusterTimer>
                                                _SelfMachine.getIndex()))
             {
                 _Logger.debug("keep lead =>%s", _SelfMachine);
-                return createBroadcasts().collect(Collectors.toList());
+                return createBroadcasts();
             }
             else {
                 _Logger.debug("no response enough");
