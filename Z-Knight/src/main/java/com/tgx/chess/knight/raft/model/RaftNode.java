@@ -952,7 +952,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
     private X70_RaftAppend createBroadcast(RaftMachine follower, int limit)
     {
         X70_RaftAppend x7e = new X70_RaftAppend(_ZUID.getId());
-        x7e.setPeerId(_SelfMachine.getPeerId());
+        x7e.setLeaderId(_SelfMachine.getPeerId());
         x7e.setTerm(_SelfMachine.getTerm());
         x7e.setCommit(_SelfMachine.getCommit());
         //先初始化为leader最新的的log数据

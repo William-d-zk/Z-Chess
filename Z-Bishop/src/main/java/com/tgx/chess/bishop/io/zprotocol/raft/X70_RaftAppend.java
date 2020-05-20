@@ -47,7 +47,7 @@ public class X70_RaftAppend
     }
 
     //leaderId
-    private long mPeerId;
+    private long mLeaderId;
     private long mTerm;
     private long mCommit;
     private long mPreIndex;
@@ -69,7 +69,7 @@ public class X70_RaftAppend
     @Override
     public int decodec(byte[] data, int pos)
     {
-        mPeerId = IoUtil.readLong(data, pos);
+        mLeaderId = IoUtil.readLong(data, pos);
         pos += 8;
         mTerm = IoUtil.readLong(data, pos);
         pos += 8;
@@ -87,7 +87,7 @@ public class X70_RaftAppend
     @Override
     public int encodec(byte[] data, int pos)
     {
-        pos += IoUtil.writeLong(mPeerId, data, pos);
+        pos += IoUtil.writeLong(mLeaderId, data, pos);
         pos += IoUtil.writeLong(mTerm, data, pos);
         pos += IoUtil.writeLong(mCommit, data, pos);
         pos += IoUtil.writeLong(mPreIndex, data, pos);
@@ -96,14 +96,14 @@ public class X70_RaftAppend
         return pos;
     }
 
-    public long getPeerId()
+    public long getLeaderId()
     {
-        return mPeerId;
+        return mLeaderId;
     }
 
-    public void setPeerId(long peerId)
+    public void setLeaderId(long peerId)
     {
-        this.mPeerId = peerId;
+        this.mLeaderId = peerId;
     }
 
     public long getTerm()
@@ -165,8 +165,8 @@ public class X70_RaftAppend
     @Override
     public String toString()
     {
-        return String.format("X7E_RaftBroadcast{ leader:%#x; %d@%d term:%d, commit:%d payload[%d]",
-                             mPeerId,
+        return String.format("X70_RaftAppend{ leader:%#x; %d@%d term:%d, commit:%d payload[%d]",
+                             mLeaderId,
                              mPreIndex,
                              mPreIndexTerm,
                              mTerm,
