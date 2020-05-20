@@ -149,7 +149,7 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
                         _RaftNode.appendLogs(entryList);
                     }
                 }
-                machine = new RaftMachine(x7e.getPeerId());
+                machine = new RaftMachine(x7e.getLeaderId());
                 machine.setState(LEADER);
                 machine.setTerm(x7e.getTerm());
                 machine.setCommit(x7e.getCommit());
