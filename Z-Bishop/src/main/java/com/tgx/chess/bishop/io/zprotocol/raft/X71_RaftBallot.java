@@ -29,28 +29,36 @@ import com.tgx.chess.king.base.util.IoUtil;
 
 /**
  * @author william.d.zk
+ * @date 2019/12/10
  */
-public class X7F_RaftResponse
+public class X71_RaftBallot
         extends
         ZCommand
 {
-    public final static int COMMAND = 0x7F;
 
-    public X7F_RaftResponse()
+    public final static int COMMAND = 0x71;
+
+    public X71_RaftBallot(long msgId)
+    {
+        super(COMMAND, msgId);
+    }
+
+    public X71_RaftBallot()
     {
         super(COMMAND, true);
     }
 
-    public X7F_RaftResponse(long msgId)
+    @Override
+    public int getPriority()
     {
-        super(COMMAND, msgId);
+        return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
     }
 
     private long mPeerId;
     private long mTerm;
     private long mCandidate;
-    private long mCatchUp;
-    private long mCatchUpTerm;
+    private long mIndex;
+    private long mIndexTerm;
     private int  mCode;
     private int  mState;
 
@@ -69,9 +77,9 @@ public class X7F_RaftResponse
         pos += 8;
         mCandidate = IoUtil.readLong(data, pos);
         pos += 8;
-        mCatchUp = IoUtil.readLong(data, pos);
+        mIndex = IoUtil.readLong(data, pos);
         pos += 8;
-        mCatchUpTerm = IoUtil.readLong(data, pos);
+        mIndexTerm = IoUtil.readLong(data, pos);
         pos += 8;
         mCode = data[pos++];
         mState = data[pos++];
@@ -84,41 +92,11 @@ public class X7F_RaftResponse
         pos += IoUtil.writeLong(mPeerId, data, pos);
         pos += IoUtil.writeLong(mTerm, data, pos);
         pos += IoUtil.writeLong(mCandidate, data, pos);
-        pos += IoUtil.writeLong(mCatchUp, data, pos);
-        pos += IoUtil.writeLong(mCatchUpTerm, data, pos);
+        pos += IoUtil.writeLong(mIndex, data, pos);
+        pos += IoUtil.writeLong(mIndexTerm, data, pos);
         pos += IoUtil.writeByte(mCode, data, pos);
         pos += IoUtil.writeByte(mState, data, pos);
         return pos;
-    }
-
-    public long getTerm()
-    {
-        return mTerm;
-    }
-
-    public void setTerm(long term)
-    {
-        mTerm = term;
-    }
-
-    public int getCode()
-    {
-        return mCode;
-    }
-
-    public void setCode(int code)
-    {
-        mCode = code;
-    }
-
-    public long getCatchUp()
-    {
-        return mCatchUp;
-    }
-
-    public void setCatchUp(long catchUp)
-    {
-        mCatchUp = catchUp;
     }
 
     public long getPeerId()
@@ -128,7 +106,57 @@ public class X7F_RaftResponse
 
     public void setPeerId(long peerId)
     {
-        mPeerId = peerId;
+        this.mPeerId = peerId;
+    }
+
+    public long getTerm()
+    {
+        return mTerm;
+    }
+
+    public void setTerm(long term)
+    {
+        this.mTerm = term;
+    }
+
+    public long getCandidate()
+    {
+        return mCandidate;
+    }
+
+    public void setCandidate(long candidate)
+    {
+        this.mCandidate = candidate;
+    }
+
+    public long getIndex()
+    {
+        return mIndex;
+    }
+
+    public void setIndex(long index)
+    {
+        this.mIndex = index;
+    }
+
+    public long getIndexTerm()
+    {
+        return mIndexTerm;
+    }
+
+    public void setIndexTerm(long indexTerm)
+    {
+        this.mIndexTerm = indexTerm;
+    }
+
+    public int getCode()
+    {
+        return mCode;
+    }
+
+    public void setCode(int code)
+    {
+        this.mCode = code;
     }
 
     public int getState()
@@ -138,45 +166,6 @@ public class X7F_RaftResponse
 
     public void setState(int state)
     {
-        mState = state;
-    }
-
-    public void setCandidate(long candidate)
-    {
-        mCandidate = candidate;
-    }
-
-    public long getCandidate()
-    {
-        return mCandidate;
-    }
-
-    public long getCatchUpTerm()
-    {
-        return mCatchUpTerm;
-    }
-
-    public void setCatchUpTerm(long indexTerm)
-    {
-        mCatchUpTerm = indexTerm;
-    }
-
-    @Override
-    public boolean isMapping()
-    {
-        return true;
-    }
-
-    @Override
-    public String toString()
-    {
-        return String.format("X7F_RaftResponse{mPeerId=%#x, mTerm=%d, mCandidate=%#x, mCatchUp=%d@%d, mCode=%d, mState=%d}",
-                             mPeerId,
-                             mTerm,
-                             mCandidate,
-                             mCatchUp,
-                             mCatchUpTerm,
-                             mCode,
-                             mState);
+        this.mState = state;
     }
 }

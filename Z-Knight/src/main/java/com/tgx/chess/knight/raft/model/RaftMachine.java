@@ -351,7 +351,7 @@ public class RaftMachine
          只有Leader 能执行此操作
          */
         mCommit = index;
-        dao.updateLogCommit(index);
+        dao.updateLogCommit(mCommit);
         mApplied = mCommit;
         dao.updateLogApplied(mApplied);
     }
@@ -362,9 +362,9 @@ public class RaftMachine
         mState = LEADER.getCode();
         mLeader = _PeerId;
         mCandidate = _PeerId;
-        dao.updateCandidate(_PeerId);
         mMatchIndex = mCommit;
         dao.updateTerm(mTerm);
+        dao.updateCandidate(_PeerId);
     }
 
     @Override
@@ -373,44 +373,43 @@ public class RaftMachine
         mState = CANDIDATE.getCode();
         mLeader = INVALID_PEER_ID;
         mCandidate = _PeerId;
+        dao.updateTerm(++mTerm);
         dao.updateCandidate(_PeerId);
-        mTerm++;
-        dao.updateTerm(mTerm);
     }
 
     @Override
     public void beElector(long candidate, long term, IRaftDao dao)
     {
         mState = ELECTOR.getCode();
-        mCandidate = candidate;
-        dao.updateCandidate(candidate);
         mLeader = INVALID_PEER_ID;
+        mCandidate = candidate;
         mTerm = term;
-        dao.updateTerm(term);
+        dao.updateTerm(mTerm);
+        dao.updateCandidate(mCandidate);
     }
 
     @Override
     public void follow(long leader, long term, long commit, IRaftDao dao)
     {
         mState = FOLLOWER.getCode();
+        mTerm = term;
         mLeader = leader;
         mCandidate = leader;
-        dao.updateCandidate(leader);
-        mTerm = term;
-        dao.updateTerm(term);
         mCommit = commit;
-        dao.updateLogCommit(commit);
+        dao.updateTerm(mTerm);
+        dao.updateCandidate(mLeader);
+        dao.updateLogCommit(mCommit);
     }
 
     @Override
     public void follow(long term, IRaftDao dao)
     {
         mState = FOLLOWER.getCode();
+        mTerm = term;
         mLeader = INVALID_PEER_ID;
         mCandidate = INVALID_PEER_ID;
-        dao.updateCandidate(INVALID_PEER_ID);
-        mTerm = term;
-        dao.updateTerm(term);
+        dao.updateTerm(mTerm);
+        dao.updateCandidate(mCandidate);
     }
 
     public void follow(IRaftDao dao)
@@ -426,10 +425,10 @@ public class RaftMachine
         candidate.setIndex(mIndex);
         candidate.setIndexTerm(mIndexTerm);
         candidate.setState(CANDIDATE);
-        candidate.setOperation(OP_INSERT);
         candidate.setCandidate(_PeerId);
         candidate.setLeader(INVALID_PEER_ID);
         candidate.setCommit(mCommit);
+        candidate.setOperation(OP_INSERT);
         return candidate;
     }
 
@@ -437,12 +436,14 @@ public class RaftMachine
     public RaftMachine createLeader()
     {
         RaftMachine leader = new RaftMachine(_PeerId);
-        leader.setOperation(OP_APPEND);
+        leader.setTerm(mTerm);
         leader.setIndex(mIndex);
         leader.setIndexTerm(mIndexTerm);
         leader.setCommit(mCommit);
         leader.setLeader(_PeerId);
         leader.setCandidate(_PeerId);
+        leader.setState(LEADER);
+        leader.setOperation(OP_APPEND);
         return leader;
     }
 
@@ -452,7 +453,7 @@ public class RaftMachine
         mIndex = index;
         mMatchIndex = index;
         mIndexTerm = indexTerm;
-        dao.updateLogIndex(index);
+        dao.updateLogIndexAndTerm(mIndex, mIndexTerm);
     }
 
     @Override

@@ -36,11 +36,11 @@ import java.util.stream.Stream;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
-import com.tgx.chess.bishop.io.zprotocol.raft.X72_RaftVote;
+import com.tgx.chess.bishop.io.zprotocol.raft.X70_RaftVote;
 import com.tgx.chess.bishop.io.zprotocol.raft.X75_RaftRequest;
 import com.tgx.chess.bishop.io.zprotocol.raft.X76_RaftNotify;
-import com.tgx.chess.bishop.io.zprotocol.raft.X7E_RaftBroadcast;
-import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
+import com.tgx.chess.bishop.io.zprotocol.raft.X70_RaftAppend;
+import com.tgx.chess.bishop.io.zprotocol.raft.X71_RaftAccept;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
@@ -88,11 +88,11 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
     {
         switch (content.serial())
         {
-            case X72_RaftVote.COMMAND:
-                X72_RaftVote x72 = (X72_RaftVote) content;
+            case X70_RaftVote.COMMAND:
+                X70_RaftVote x72 = (X70_RaftVote) content;
                 RaftMachine machine = new RaftMachine(x72.getPeerId());
-                machine.setIndex(x72.getLogIndex());
-                machine.setIndexTerm(x72.getLogTerm());
+                machine.setIndex(x72.getIndex());
+                machine.setIndexTerm(x72.getIndexTerm());
                 machine.setTerm(x72.getTerm());
                 machine.setCandidate(x72.getPeerId());
                 machine.setCommit(x72.getCommit());
@@ -129,7 +129,7 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
                                                else return null;
                                            })
                                            .filter(Objects::nonNull)
-                                           .toArray(X7E_RaftBroadcast[]::new),
+                                           .toArray(X70_RaftAppend[]::new),
                                   null);
             case X76_RaftNotify.COMMAND:
                 /*
@@ -141,8 +141,8 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
                 /*作为 client 收到 notify */
                 x76.setNotify();
                 return new Pair<>(null, x76);
-            case X7E_RaftBroadcast.COMMAND:
-                X7E_RaftBroadcast x7e = (X7E_RaftBroadcast) content;
+            case X70_RaftAppend.COMMAND:
+                X70_RaftAppend x7e = (X70_RaftAppend) content;
                 if (x7e.getPayload() != null) {
                     List<LogEntry> entryList = JsonUtil.readValue(x7e.getPayload(), _TypeReferenceOfLogEntryList);
                     if (entryList != null && !entryList.isEmpty()) {
@@ -158,8 +158,8 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
                 response = _RaftNode.merge(machine);
                 return response != null ? new Pair<>(response, null)
                                         : null;
-            case X7F_RaftResponse.COMMAND:
-                X7F_RaftResponse x7f = (X7F_RaftResponse) content;
+            case X71_RaftAccept.COMMAND:
+                X71_RaftAccept x7f = (X71_RaftAccept) content;
                 return _RaftNode.onResponse(x7f.getPeerId(),
                                             x7f.getTerm(),
                                             x7f.getCatchUp(),
@@ -187,7 +187,7 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
         switch (machine.operation())
         {
             case OP_APPEND://heartbeat
-                Stream<X7E_RaftBroadcast> x7eStream = _RaftNode.checkLogAppend(machine);
+                Stream<X70_RaftAppend> x7eStream = _RaftNode.checkLogAppend(machine);
                 if (x7eStream != null) {
                     return x7eStream.map(x7E ->
                     {
@@ -210,7 +210,7 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
                 }
                 break;
             case OP_INSERT://vote
-                Stream<X72_RaftVote> x72Stream = _RaftNode.checkVoteState(machine);
+                Stream<X70_RaftVote> x72Stream = _RaftNode.checkVoteState(machine);
                 if (x72Stream != null) {
                     return x72Stream.map(x72 ->
                     {

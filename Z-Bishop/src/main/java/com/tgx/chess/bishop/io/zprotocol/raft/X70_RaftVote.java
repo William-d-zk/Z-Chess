@@ -31,18 +31,18 @@ import com.tgx.chess.king.base.util.IoUtil;
  * @author william.d.zk
  * @date 2019/12/10
  */
-public class X72_RaftVote
+public class X70_RaftVote
         extends
         ZCommand
 {
-    public final static int COMMAND = 0x72;
+    public final static int COMMAND = 0x70;
 
-    public X72_RaftVote(long msgId)
+    public X70_RaftVote(long msgId)
     {
         super(COMMAND, msgId);
     }
 
-    public X72_RaftVote()
+    public X70_RaftVote()
     {
         super(COMMAND, true);
     }
@@ -56,8 +56,8 @@ public class X72_RaftVote
     //candidateId
     private long mPeerId;
     private long mTerm;
-    private long mLogIndex;
-    private long mLogTerm;
+    private long mIndex;
+    private long mIndexTerm;
     private long mElector;
     private long mCommit;
 
@@ -74,9 +74,9 @@ public class X72_RaftVote
         pos += 8;
         mTerm = IoUtil.readLong(data, pos);
         pos += 8;
-        mLogIndex = IoUtil.readLong(data, pos);
+        mIndex = IoUtil.readLong(data, pos);
         pos += 8;
-        mLogTerm = IoUtil.readLong(data, pos);
+        mIndexTerm = IoUtil.readLong(data, pos);
         pos += 8;
         mElector = IoUtil.readLong(data, pos);
         pos += 8;
@@ -90,8 +90,8 @@ public class X72_RaftVote
     {
         pos += IoUtil.writeLong(mPeerId, data, pos);
         pos += IoUtil.writeLong(mTerm, data, pos);
-        pos += IoUtil.writeLong(mLogIndex, data, pos);
-        pos += IoUtil.writeLong(mLogTerm, data, pos);
+        pos += IoUtil.writeLong(mIndex, data, pos);
+        pos += IoUtil.writeLong(mIndexTerm, data, pos);
         pos += IoUtil.writeLong(mElector, data, pos);
         pos += IoUtil.writeLong(mCommit, data, pos);
         return pos;
@@ -117,24 +117,24 @@ public class X72_RaftVote
         mTerm = term;
     }
 
-    public long getLogIndex()
+    public long getIndex()
     {
-        return mLogIndex;
+        return mIndex;
     }
 
-    public void setLogIndex(long logIndex)
+    public void setIndex(long logIndex)
     {
-        mLogIndex = logIndex;
+        mIndex = logIndex;
     }
 
-    public long getLogTerm()
+    public long getIndexTerm()
     {
-        return mLogTerm;
+        return mIndexTerm;
     }
 
-    public void setLogTerm(long logTerm)
+    public void setIndexTerm(long logTerm)
     {
-        mLogTerm = logTerm;
+        mIndexTerm = logTerm;
     }
 
     public long getElector()
@@ -169,8 +169,8 @@ public class X72_RaftVote
         return String.format("X72_RaftVote{mPeerId=%#x, mTerm=%d, mLogIndex=%d, mLogTerm=%d, mElector=%#x, mCommit=%d}",
                              mPeerId,
                              mTerm,
-                             mLogIndex,
-                             mLogTerm,
+                             mIndex,
+                             mIndexTerm,
                              mElector,
                              mCommit);
     }
