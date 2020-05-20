@@ -197,9 +197,10 @@ public class RaftDao
     }
 
     @Override
-    public void updateLogIndex(long index)
+    public void updateLogIndexAndTerm(long index, long term)
     {
         mLogMeta.setIndex(index);
+        mLogMeta.setIndexTerm(term);
     }
 
     @Override

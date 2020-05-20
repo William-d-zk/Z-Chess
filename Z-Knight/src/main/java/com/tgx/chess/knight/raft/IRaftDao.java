@@ -48,7 +48,7 @@ public interface IRaftDao
 
     void updateLogStart(long firstLogIndex);
 
-    void updateLogIndex(long index);
+    void updateLogIndexAndTerm(long index, long indexTerm);
 
     void updateLogCommit(long commit);
 

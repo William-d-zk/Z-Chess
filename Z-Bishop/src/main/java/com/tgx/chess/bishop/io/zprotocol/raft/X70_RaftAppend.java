@@ -30,18 +30,18 @@ import com.tgx.chess.king.base.util.IoUtil;
 /**
  * @author william.d.zk
  */
-public class X7E_RaftBroadcast
+public class X70_RaftAppend
         extends
         ZCommand
 {
-    public final static int COMMAND = 0x7E;
+    public final static int COMMAND = 0x70;
 
-    public X7E_RaftBroadcast(long msgId)
+    public X70_RaftAppend(long msgId)
     {
         super(COMMAND, msgId);
     }
 
-    public X7E_RaftBroadcast()
+    public X70_RaftAppend()
     {
         super(COMMAND, true);
     }
