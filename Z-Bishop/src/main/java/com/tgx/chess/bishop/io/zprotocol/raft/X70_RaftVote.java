@@ -54,23 +54,23 @@ public class X70_RaftVote
     }
 
     //candidateId
-    private long mPeerId;
+    private long mCandidateId;
     private long mTerm;
     private long mIndex;
     private long mIndexTerm;
-    private long mElector;
     private long mCommit;
+    private long mElectorId;
 
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 8 * 6;
+        return super.dataLength() + 48;
     }
 
     @Override
     public int decodec(byte[] data, int pos)
     {
-        mPeerId = IoUtil.readLong(data, pos);
+        mCandidateId = IoUtil.readLong(data, pos);
         pos += 8;
         mTerm = IoUtil.readLong(data, pos);
         pos += 8;
@@ -78,7 +78,7 @@ public class X70_RaftVote
         pos += 8;
         mIndexTerm = IoUtil.readLong(data, pos);
         pos += 8;
-        mElector = IoUtil.readLong(data, pos);
+        mElectorId = IoUtil.readLong(data, pos);
         pos += 8;
         mCommit = IoUtil.readLong(data, pos);
         pos += 8;
@@ -88,23 +88,23 @@ public class X70_RaftVote
     @Override
     public int encodec(byte[] data, int pos)
     {
-        pos += IoUtil.writeLong(mPeerId, data, pos);
+        pos += IoUtil.writeLong(mCandidateId, data, pos);
         pos += IoUtil.writeLong(mTerm, data, pos);
         pos += IoUtil.writeLong(mIndex, data, pos);
         pos += IoUtil.writeLong(mIndexTerm, data, pos);
-        pos += IoUtil.writeLong(mElector, data, pos);
+        pos += IoUtil.writeLong(mElectorId, data, pos);
         pos += IoUtil.writeLong(mCommit, data, pos);
         return pos;
     }
 
-    public long getPeerId()
+    public long getCandidateId()
     {
-        return mPeerId;
+        return mCandidateId;
     }
 
-    public void setPeerId(long peerId)
+    public void setCandidateId(long peerId)
     {
-        this.mPeerId = peerId;
+        mCandidateId = peerId;
     }
 
     public long getTerm()
@@ -122,9 +122,9 @@ public class X70_RaftVote
         return mIndex;
     }
 
-    public void setIndex(long logIndex)
+    public void setIndex(long index)
     {
-        mIndex = logIndex;
+        mIndex = index;
     }
 
     public long getIndexTerm()
@@ -132,19 +132,19 @@ public class X70_RaftVote
         return mIndexTerm;
     }
 
-    public void setIndexTerm(long logTerm)
+    public void setIndexTerm(long term)
     {
-        mIndexTerm = logTerm;
+        mIndexTerm = term;
     }
 
     public long getElector()
     {
-        return mElector;
+        return mElectorId;
     }
 
     public void setElector(long elector)
     {
-        mElector = elector;
+        mElectorId = elector;
     }
 
     public void setCommit(long commit)
@@ -166,12 +166,12 @@ public class X70_RaftVote
     @Override
     public String toString()
     {
-        return String.format("X72_RaftVote{mPeerId=%#x, mTerm=%d, mLogIndex=%d, mLogTerm=%d, mElector=%#x, mCommit=%d}",
-                             mPeerId,
+        return String.format("X70_RaftVote{candidate=%#x  term: %d,last: %d@%d, commit=%d, elector=%#x}",
+                             mCandidateId,
                              mTerm,
                              mIndex,
                              mIndexTerm,
-                             mElector,
-                             mCommit);
+                             mCommit,
+                             mElectorId);
     }
 }

@@ -30,18 +30,18 @@ import com.tgx.chess.king.base.util.IoUtil;
 /**
  * @author william.d.zk
  */
-public class X71_RaftAccept
+public class X73_RaftAccept
         extends
         ZCommand
 {
-    public final static int COMMAND = 0x71;
+    public final static int COMMAND = 0x73;
 
-    public X71_RaftAccept()
+    public X73_RaftAccept()
     {
         super(COMMAND, true);
     }
 
-    public X71_RaftAccept(long msgId)
+    public X73_RaftAccept(long msgId)
     {
         super(COMMAND, msgId);
     }
@@ -119,12 +119,12 @@ public class X71_RaftAccept
         mCatchUp = catchUp;
     }
 
-    public long getPeerId()
+    public long getFollowerId()
     {
         return mFollowerId;
     }
 
-    public void setPeerId(long peerId)
+    public void setFollowerId(long peerId)
     {
         mFollowerId = peerId;
     }
@@ -158,12 +158,12 @@ public class X71_RaftAccept
     @Override
     public String toString()
     {
-        return String.format("X71_RaftAccept{mFollowerId=%#x, mTerm=%d, mLeaderId=%#x, mCatchUp=%d@%d, mCommit=%d}",
+        return String.format("X71_RaftAccept{follower:%#x, term:%d, catch_up:%d@%d, commit:%d,leader:%#x}",
                              mFollowerId,
                              mTerm,
-                             mLeaderId,
                              mCatchUp,
                              mCatchUpTerm,
-                             mCommit);
+                             mCommit,
+                             mLeaderId);
     }
 }

@@ -176,7 +176,7 @@ public class LinkCustom
             ignore session
             */
             X76_RaftNotify x76 = (X76_RaftNotify) response;
-            int cmd = x76.getPayloadSerial();
+            int cmd = x76.getSerial();
             request = ZSort.getCommandFactory(cmd)
                            .create(cmd);
             request.decode(x76.getPayload());

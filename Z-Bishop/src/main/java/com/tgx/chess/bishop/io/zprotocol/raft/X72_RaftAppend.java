@@ -30,18 +30,18 @@ import com.tgx.chess.king.base.util.IoUtil;
 /**
  * @author william.d.zk
  */
-public class X70_RaftAppend
+public class X72_RaftAppend
         extends
         ZCommand
 {
-    public final static int COMMAND = 0x70;
+    public final static int COMMAND = 0x72;
 
-    public X70_RaftAppend(long msgId)
+    public X72_RaftAppend(long msgId)
     {
         super(COMMAND, msgId);
     }
 
-    public X70_RaftAppend()
+    public X72_RaftAppend()
     {
         super(COMMAND, true);
     }
@@ -49,10 +49,10 @@ public class X70_RaftAppend
     //leaderId
     private long mLeaderId;
     private long mTerm;
-    private long mCommit;
     private long mPreIndex;
     private long mPreIndexTerm;
-    private long mFollower;
+    private long mCommit;
+    private long mFollowerId;
 
     @Override
     public int getPriority()
@@ -73,13 +73,13 @@ public class X70_RaftAppend
         pos += 8;
         mTerm = IoUtil.readLong(data, pos);
         pos += 8;
-        mCommit = IoUtil.readLong(data, pos);
-        pos += 8;
         mPreIndex = IoUtil.readLong(data, pos);
         pos += 8;
         mPreIndexTerm = IoUtil.readLong(data, pos);
         pos += 8;
-        mFollower = IoUtil.readLong(data, pos);
+        mCommit = IoUtil.readLong(data, pos);
+        pos += 8;
+        mFollowerId = IoUtil.readLong(data, pos);
         pos += 8;
         return pos;
     }
@@ -89,10 +89,10 @@ public class X70_RaftAppend
     {
         pos += IoUtil.writeLong(mLeaderId, data, pos);
         pos += IoUtil.writeLong(mTerm, data, pos);
-        pos += IoUtil.writeLong(mCommit, data, pos);
         pos += IoUtil.writeLong(mPreIndex, data, pos);
         pos += IoUtil.writeLong(mPreIndexTerm, data, pos);
-        pos += IoUtil.writeLong(mFollower, data, pos);
+        pos += IoUtil.writeLong(mCommit, data, pos);
+        pos += IoUtil.writeLong(mFollowerId, data, pos);
         return pos;
     }
 
@@ -148,12 +148,12 @@ public class X70_RaftAppend
 
     public void setFollower(long follower)
     {
-        mFollower = follower;
+        mFollowerId = follower;
     }
 
     public long getFollower()
     {
-        return mFollower;
+        return mFollowerId;
     }
 
     @Override
@@ -165,11 +165,11 @@ public class X70_RaftAppend
     @Override
     public String toString()
     {
-        return String.format("X70_RaftAppend{ leader:%#x; %d@%d term:%d, commit:%d payload[%d]",
+        return String.format("X72_RaftAppend{ leader:%#x; term:%d, pre:%d@%d  commit:%d payload[%d]",
                              mLeaderId,
+                             mTerm,
                              mPreIndex,
                              mPreIndexTerm,
-                             mTerm,
                              mCommit,
                              getPayload() == null ? 0
                                                   : getPayload().length);
