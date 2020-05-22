@@ -50,19 +50,19 @@ public class X75_RaftRequest
         super(COMMAND, msgId);
     }
 
-    private long    mPeerId;
-    private int     mPayloadSerial;
+    private long    mClientId;
+    private int     mSerial;
     private long    mOrigin;
     private boolean mPublic;
 
-    public int getPayloadSerial()
+    public int getSerial()
     {
-        return mPayloadSerial;
+        return mSerial;
     }
 
-    public void setPayloadSerial(int serial)
+    public void setSerial(int serial)
     {
-        mPayloadSerial = serial;
+        mSerial = serial;
     }
 
     public void setOrigin(long origin)
@@ -79,26 +79,26 @@ public class X75_RaftRequest
     @Override
     public int encodec(byte[] data, int pos)
     {
-        pos += IoUtil.writeShort(mPayloadSerial, data, pos);
+        pos += IoUtil.writeLong(mClientId, data, pos);
         pos += IoUtil.writeLong(mOrigin, data, pos);
-        pos += IoUtil.writeLong(mPeerId, data, pos);
         pos += IoUtil.writeByte(mPublic ? 1
                                         : 0,
                                 data,
                                 pos);
+        pos += IoUtil.writeShort(mSerial, data, pos);
         return pos;
     }
 
     @Override
     public int decodec(byte[] data, int pos)
     {
-        mPayloadSerial = IoUtil.readUnsignedShort(data, pos);
-        pos += 2;
+        mClientId = IoUtil.readLong(data, pos);
+        pos += 8;
         mOrigin = IoUtil.readLong(data, pos);
         pos += 8;
-        mPeerId = IoUtil.readLong(data, pos);
-        pos += 8;
         mPublic = data[pos++] > 0;
+        mSerial = IoUtil.readUnsignedShort(data, pos);
+        pos += 2;
         return pos;
     }
 
@@ -108,14 +108,14 @@ public class X75_RaftRequest
         return super.dataLength() + 19;
     }
 
-    public long getPeerId()
+    public long getClientId()
     {
-        return mPeerId;
+        return mClientId;
     }
 
-    public void setPeerId(long peerId)
+    public void setClientId(long clientId)
     {
-        mPeerId = peerId;
+        mClientId = clientId;
     }
 
     @Override
@@ -138,10 +138,12 @@ public class X75_RaftRequest
     @Override
     public String toString()
     {
-        return String.format(" X75_RaftRequest { peer_id:%#x, origin:%#x, payload_serial:%#x, public:%s ",
-                             mPeerId,
-                             mPayloadSerial,
+        return String.format(" X75_RaftRequest { client:%#x, origin:%#x, serial:%#x,payload[%d] public:%s ",
+                             mClientId,
                              mOrigin,
+                             mSerial,
+                             getPayload() == null ? 0
+                                                  : getPayload().length,
                              mPublic ? "all"
                                      : "one");
     }

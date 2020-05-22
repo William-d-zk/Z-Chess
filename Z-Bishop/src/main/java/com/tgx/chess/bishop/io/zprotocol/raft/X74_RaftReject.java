@@ -31,19 +31,18 @@ import com.tgx.chess.king.base.util.IoUtil;
  * @author william.d.zk
  * @date 2019/12/10
  */
-public class X71_RaftBallot
+public class X74_RaftReject
         extends
         ZCommand
 {
+    public final static int COMMAND = 0x74;
 
-    public final static int COMMAND = 0x71;
-
-    public X71_RaftBallot(long msgId)
+    public X74_RaftReject(long msgId)
     {
         super(COMMAND, msgId);
     }
 
-    public X71_RaftBallot()
+    public X74_RaftReject()
     {
         super(COMMAND, true);
     }
@@ -54,22 +53,24 @@ public class X71_RaftBallot
         return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
     }
 
-    private long mElectorId;
-    private long mTerm;
-    private long mIndex;
-    private long mIndexTerm;
-    private long mCandidateId;
-
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 40;
+        return super.dataLength() + 42;
     }
+
+    private long mPeerId;
+    private long mTerm;
+    private long mIndex;
+    private long mIndexTerm;
+    private long mReject;
+    private int  mCode;
+    private int  mState;
 
     @Override
     public int decodec(byte[] data, int pos)
     {
-        mElectorId = IoUtil.readLong(data, pos);
+        mPeerId = IoUtil.readLong(data, pos);
         pos += 8;
         mTerm = IoUtil.readLong(data, pos);
         pos += 8;
@@ -77,30 +78,34 @@ public class X71_RaftBallot
         pos += 8;
         mIndexTerm = IoUtil.readLong(data, pos);
         pos += 8;
-        mCandidateId = IoUtil.readLong(data, pos);
+        mReject = IoUtil.readLong(data, pos);
         pos += 8;
+        mCode = data[pos++];
+        mState = data[pos++];
         return pos;
     }
 
     @Override
     public int encodec(byte[] data, int pos)
     {
-        pos += IoUtil.writeLong(mElectorId, data, pos);
+        pos += IoUtil.writeLong(mPeerId, data, pos);
         pos += IoUtil.writeLong(mTerm, data, pos);
         pos += IoUtil.writeLong(mIndex, data, pos);
         pos += IoUtil.writeLong(mIndexTerm, data, pos);
-        pos += IoUtil.writeLong(mCandidateId, data, pos);
+        pos += IoUtil.writeLong(mReject, data, pos);
+        pos += IoUtil.writeByte(mCode, data, pos);
+        pos += IoUtil.writeByte(mState, data, pos);
         return pos;
     }
 
-    public long getElectorId()
+    public long getPeerId()
     {
-        return mElectorId;
+        return mPeerId;
     }
 
-    public void setElectorId(long electorId)
+    public void setPeerId(long peerId)
     {
-        mElectorId = electorId;
+        mPeerId = peerId;
     }
 
     public long getTerm()
@@ -111,16 +116,6 @@ public class X71_RaftBallot
     public void setTerm(long term)
     {
         mTerm = term;
-    }
-
-    public long getCandidate()
-    {
-        return mCandidateId;
-    }
-
-    public void setCandidate(long candidate)
-    {
-        mCandidateId = candidate;
     }
 
     public long getIndex()
@@ -143,14 +138,46 @@ public class X71_RaftBallot
         mIndexTerm = indexTerm;
     }
 
+    public long getReject()
+    {
+        return mReject;
+    }
+
+    public void setReject(long peerId)
+    {
+        mReject = peerId;
+    }
+
+    public int getCode()
+    {
+        return mCode;
+    }
+
+    public void setCode(int code)
+    {
+        mCode = code;
+    }
+
+    public int getState()
+    {
+        return mState;
+    }
+
+    public void setState(int state)
+    {
+        mState = state;
+    }
+
     @Override
     public String toString()
     {
-        return String.format("X71_RaftBallot{ elector:%#x,term:%d,last:%d@%d,candidate:%#x}",
-                             mElectorId,
+        return String.format("X74_RaftReject{peerId:%#x,term:%d,current:%d@%d,reject:%#x,code:%d,state:%d}",
+                             mPeerId,
                              mTerm,
                              mIndex,
                              mIndexTerm,
-                             mCandidateId);
+                             mReject,
+                             mCode,
+                             mState);
     }
 }

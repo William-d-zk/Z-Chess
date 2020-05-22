@@ -39,8 +39,8 @@ import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
 import com.tgx.chess.bishop.io.zprotocol.raft.X70_RaftVote;
 import com.tgx.chess.bishop.io.zprotocol.raft.X75_RaftRequest;
 import com.tgx.chess.bishop.io.zprotocol.raft.X76_RaftNotify;
-import com.tgx.chess.bishop.io.zprotocol.raft.X70_RaftAppend;
-import com.tgx.chess.bishop.io.zprotocol.raft.X71_RaftAccept;
+import com.tgx.chess.bishop.io.zprotocol.raft.X72_RaftAppend;
+import com.tgx.chess.bishop.io.zprotocol.raft.X73_RaftAccept;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
@@ -90,11 +90,11 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
         {
             case X70_RaftVote.COMMAND:
                 X70_RaftVote x72 = (X70_RaftVote) content;
-                RaftMachine machine = new RaftMachine(x72.getPeerId());
+                RaftMachine machine = new RaftMachine(x72.getCandidateId());
                 machine.setIndex(x72.getIndex());
                 machine.setIndexTerm(x72.getIndexTerm());
                 machine.setTerm(x72.getTerm());
-                machine.setCandidate(x72.getPeerId());
+                machine.setCandidate(x72.getCandidateId());
                 machine.setCommit(x72.getCommit());
                 machine.setState(CANDIDATE);
                 IControl<ZContext>[] response = _RaftNode.merge(machine);
@@ -111,9 +111,9 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
                     break;
                 }
                 X75_RaftRequest x75 = (X75_RaftRequest) content;
-                return new Pair<>(_RaftNode.newLogEntry(x75.getPayloadSerial(),
+                return new Pair<>(_RaftNode.newLogEntry(x75.getSerial(),
                                                         x75.getPayload(),
-                                                        x75.getPeerId(),
+                                                        x75.getClientId(),
                                                         x75.isPublic(),
                                                         x75.getOrigin(),
                                                         IStorage.Operation.OP_APPEND)
@@ -129,7 +129,7 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
                                                else return null;
                                            })
                                            .filter(Objects::nonNull)
-                                           .toArray(X70_RaftAppend[]::new),
+                                           .toArray(X72_RaftAppend[]::new),
                                   null);
             case X76_RaftNotify.COMMAND:
                 /*
@@ -141,8 +141,8 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
                 /*作为 client 收到 notify */
                 x76.setNotify();
                 return new Pair<>(null, x76);
-            case X70_RaftAppend.COMMAND:
-                X70_RaftAppend x7e = (X70_RaftAppend) content;
+            case X72_RaftAppend.COMMAND:
+                X72_RaftAppend x7e = (X72_RaftAppend) content;
                 if (x7e.getPayload() != null) {
                     List<LogEntry> entryList = JsonUtil.readValue(x7e.getPayload(), _TypeReferenceOfLogEntryList);
                     if (entryList != null && !entryList.isEmpty()) {
@@ -158,9 +158,9 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
                 response = _RaftNode.merge(machine);
                 return response != null ? new Pair<>(response, null)
                                         : null;
-            case X71_RaftAccept.COMMAND:
-                X71_RaftAccept x7f = (X71_RaftAccept) content;
-                return _RaftNode.onResponse(x7f.getPeerId(),
+            case X73_RaftAccept.COMMAND:
+                X73_RaftAccept x7f = (X73_RaftAccept) content;
+                return _RaftNode.onResponse(x7f.getFollowerId(),
                                             x7f.getTerm(),
                                             x7f.getCatchUp(),
                                             x7f.getCatchUpTerm(),
@@ -187,7 +187,7 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
         switch (machine.operation())
         {
             case OP_APPEND://heartbeat
-                Stream<X70_RaftAppend> x7eStream = _RaftNode.checkLogAppend(machine);
+                Stream<X72_RaftAppend> x7eStream = _RaftNode.checkLogAppend(machine);
                 if (x7eStream != null) {
                     return x7eStream.map(x7E ->
                     {
@@ -272,10 +272,10 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
                           .getLeader() != ZUID.INVALID_PEER_ID)
         {
             X75_RaftRequest x75 = new X75_RaftRequest(_RaftNode.getRaftZuid());
-            x75.setPayloadSerial(request.serial());
+            x75.setSerial(request.serial());
             x75.setPayload(request.encode());
             x75.setOrigin(request.getOrigin());
-            x75.setPeerId(_RaftNode.getMachine()
+            x75.setClientId(_RaftNode.getMachine()
                                    .getPeerId());
             x75.setPublic(request.isPublic());
             ISession<ZContext> leaderSession = manager.findSessionByPrefix(_RaftNode.getMachine()
