@@ -108,9 +108,9 @@ public class RaftGraph
     {
         return _NodeMap.values()
                        .stream()
-                       .filter(machine -> machine.getTerm() == term
+                       .filter(machine -> machine.getTerm() <= term
                                           && machine.getMatchIndex() >= index
-                                          && machine.getCandidate() == leader)
+                                          && machine.getLeader() == leader)
                        .count() > _NodeMap.size() / 2;
     }
 
