@@ -57,13 +57,12 @@ public class X71_RaftBallot
     private long mElectorId;
     private long mTerm;
     private long mIndex;
-    private long mIndexTerm;
     private long mCandidateId;
 
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 40;
+        return super.dataLength() + 32;
     }
 
     @Override
@@ -74,8 +73,6 @@ public class X71_RaftBallot
         mTerm = IoUtil.readLong(data, pos);
         pos += 8;
         mIndex = IoUtil.readLong(data, pos);
-        pos += 8;
-        mIndexTerm = IoUtil.readLong(data, pos);
         pos += 8;
         mCandidateId = IoUtil.readLong(data, pos);
         pos += 8;
@@ -88,7 +85,6 @@ public class X71_RaftBallot
         pos += IoUtil.writeLong(mElectorId, data, pos);
         pos += IoUtil.writeLong(mTerm, data, pos);
         pos += IoUtil.writeLong(mIndex, data, pos);
-        pos += IoUtil.writeLong(mIndexTerm, data, pos);
         pos += IoUtil.writeLong(mCandidateId, data, pos);
         return pos;
     }
@@ -133,24 +129,13 @@ public class X71_RaftBallot
         mIndex = index;
     }
 
-    public long getIndexTerm()
-    {
-        return mIndexTerm;
-    }
-
-    public void setIndexTerm(long indexTerm)
-    {
-        mIndexTerm = indexTerm;
-    }
-
     @Override
     public String toString()
     {
-        return String.format("X71_RaftBallot{ elector:%#x,term:%d,last:%d@%d,candidate:%#x}",
+        return String.format("X71_RaftBallot{ elector:%#x,term:%d,last:%d,candidate:%#x}",
                              mElectorId,
                              mTerm,
                              mIndex,
-                             mIndexTerm,
                              mCandidateId);
     }
 }

@@ -268,7 +268,6 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         vote.setElectorId(_SelfMachine.getPeerId());
         vote.setTerm(_SelfMachine.getTerm());
         vote.setIndex(_SelfMachine.getIndex());
-        vote.setIndexTerm(_SelfMachine.getIndexTerm());
         vote.setCandidate(_SelfMachine.getCandidate());
         return vote;
     }
@@ -318,10 +317,15 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
 
     private void stepDown()
     {
-        tickCancel();
-        _SelfMachine.follow(_RaftDao);
-        mTickTask = _TimeWheel.acquire(this, _TickSchedule);
-        _Logger.debug("[%s → follower] %s", _SelfMachine.getState(), _SelfMachine);
+        if (_SelfMachine.getState()
+                        .getCode() > FOLLOWER.getCode())
+        {
+            tickCancel();
+            _SelfMachine.follow(_RaftDao);
+            mTickTask = _TimeWheel.acquire(this, _TickSchedule);
+            _Logger.debug("[%s → follower] %s", _SelfMachine.getState(), _SelfMachine);
+        }
+        else _Logger.warning("step down [ignore],state has already changed to FOLLOWER");
     }
 
     private IControl<ZContext> follow(long peerId, long term, long commit, long preIndex, long preIndexTerm)
@@ -351,6 +355,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
 
     private void beLeader()
     {
+        electCancel();
         _SelfMachine.beLeader(_RaftDao);
         _Logger.info("be leader=>%s", _SelfMachine);
     }
@@ -379,38 +384,37 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         }
     }
 
-    private IControl<ZContext>[] lowTerm(IRaftMachine update)
+    private IControl<ZContext>[] lowTerm(long term, long peerId)
     {
-        if (_SelfMachine.getTerm() > update.getTerm()) {
-            return new X74_RaftReject[] { reject(LOWER_TERM, update.getPeerId()) };
-        }
+        if (_SelfMachine.getTerm() > term) { return new X74_RaftReject[] { reject(LOWER_TERM, peerId) }; }
         return null;
     }
 
-    private boolean highTerm(IRaftMachine update)
+    private boolean highTerm(long term)
     {
-        if (update.getTerm() > _SelfMachine.getTerm()) {
+        if (term > _SelfMachine.getTerm()) {
             heartbeatCancel();
             electCancel();
-            _SelfMachine.follow(update.getTerm(), _RaftDao);
+            _SelfMachine.follow(term, _RaftDao);
             return true;
         }
         return false;
     }
 
-    public IPair elect(IRaftMachine candidate)
+    public IPair elect(long term, long index, long indexTerm, long candidate, long commit)
     {
-        IControl<ZContext>[] response = lowTerm(candidate);
+        IControl<ZContext>[] response = lowTerm(term, candidate);
         if (response != null) return new Pair<>(response, null);
-        if (highTerm(candidate) || _SelfMachine.getState() == FOLLOWER) {
-            if (_SelfMachine.getIndex() <= candidate.getIndex()
-                && _SelfMachine.getIndexTerm() <= candidate.getIndexTerm())
+        if (highTerm(term) || _SelfMachine.getState() == FOLLOWER) {
+            if (_SelfMachine.getIndex() <= index
+                && _SelfMachine.getIndexTerm() <= indexTerm
+                && _SelfMachine.getCommit() <= commit)
             {
                 _Logger.debug("new term [follower %d → elector %d ] | candidate: %#x",
                               _SelfMachine.getTerm(),
-                              candidate.getTerm(),
-                              candidate.getPeerId());
-                X71_RaftBallot vote = stepUp(candidate.getPeerId(), candidate.getTerm());
+                              term,
+                              candidate);
+                X71_RaftBallot vote = stepUp(candidate, term);
                 return new Pair<>(new X71_RaftBallot[] { vote }, null);
             }
             else {
@@ -418,56 +422,49 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                               _SelfMachine.getState(),
                               _SelfMachine.getIndex(),
                               _SelfMachine.getIndexTerm(),
-                              candidate.getIndex(),
-                              candidate.getIndexTerm());
-                return new Pair<>(rejectAndVote(candidate.getPeerId()), null);
+                              index,
+                              indexTerm);
+                return new Pair<>(rejectAndVote(candidate), null);
             }
         }
         //elector|leader|candidate,one of these states ，candidate != INDEX_NAN 不需要重复判断
-        else if (_SelfMachine.getCandidate() != candidate.getPeerId()) {
-            _Logger.debug("already vote [elector ×] | vote for:%#x not ♂ %#x",
-                          _SelfMachine.getCandidate(),
-                          candidate.getCandidate());
-            return new Pair<>(new X74_RaftReject[] { reject(ALREADY_VOTE, candidate.getPeerId()) }, null);
+        else if (_SelfMachine.getCandidate() != candidate) {
+            _Logger.debug("already vote [elector ×] | vote for:%#x not ♂ %#x", _SelfMachine.getCandidate(), candidate);
+            return new Pair<>(new X74_RaftReject[] { reject(ALREADY_VOTE, candidate) }, null);
         }
         return null;
     }
 
-    public IPair ballot(IRaftMachine elector)
+    public IPair ballot(long term, long index, long elector, long candidate)
     {
-        IControl<ZContext>[] response = lowTerm(elector);
+        IControl<ZContext>[] response = lowTerm(term, elector);
         if (response != null) return new Pair<>(response, null);
-        if (highTerm(elector)) {
+        if (highTerm(term)) {
             _Logger.warning("high term of ballot; %d->%d");
+            return null;
         }
-
-        RaftMachine peerMachine = getMachine(elector.getPeerId(), elector.getTerm(), elector.getIndex());
+        RaftMachine peerMachine = getMachine(elector, term, index);
         if (peerMachine == null) return null;
-        peerMachine.setTerm();
+        peerMachine.setCandidate(candidate);
+        peerMachine.setState(FOLLOWER);
         if (_RaftGraph.isMajorAcceptCandidate(_SelfMachine.getPeerId(), _SelfMachine.getTerm())) {
-            electCancel();
             beLeader();
             return new Pair<>(createBroadcasts().toArray(X72_RaftAppend[]::new), null);
         }
         return null;
     }
 
-    public IPair append(IRaftMachine leader)
+    public IPair append(long term, long preIndex, long preIndexTerm, long leader, long leaderCommit)
     {
-        IControl<ZContext>[] response = lowTerm(leader);
+        IControl<ZContext>[] response = lowTerm(term, leader);
         if (response != null) return new Pair<>(response, null);
-        if (highTerm(leader) || _SelfMachine.getState() != LEADER) {
-            _Logger.debug("follow leader %#x leader_commit: %d", leader.getPeerId(), leader.getCommit());
-            return new Pair<>(new IControl[] { follow(leader.getPeerId(),
-                                                      leader.getTerm(),
-                                                      leader.getCommit(),
-                                                      leader.getIndex(),
-                                                      leader.getIndexTerm()) },
-                              null);
+        if (highTerm(term) || _SelfMachine.getState() != LEADER) {
+            _Logger.debug("follow leader %#x leader_commit: %d", leader, leaderCommit);
+            return new Pair<>(new IControl[] { follow(leader, term, leaderCommit, preIndex, preIndexTerm) }, null);
         }
         // leader 
-        else if (_SelfMachine.getCandidate() != leader.getPeerId()) {
-            return new Pair<>(new IControl[] { reject(ILLEGAL_STATE, leader.getPeerId()) }, null);
+        else if (_SelfMachine.getCandidate() != leader) {
+            return new Pair<>(new IControl[] { reject(ILLEGAL_STATE, leader) }, null);
         }
         return null;
     }
@@ -562,12 +559,6 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         peerMachine.setLeader(0);
         switch (code)
         {
-            case SUCCESS:
-                if (_SelfMachine.getState() == CANDIDATE) {
-                    //granted
-
-                }
-                else if (_SelfMachine.getState() == LEADER) break;
             case LOWER_TERM:
                 tickCancel();
                 heartbeatCancel();
@@ -789,17 +780,8 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
             && _SelfMachine.getIndexTerm() >= update.getIndexTerm()
             && _SelfMachine.getCommit() >= update.getCommit())
         {
-            if (_RaftGraph.isMajorAcceptLeader(_SelfMachine.getPeerId(),
-                                               _SelfMachine.getTerm(),
-                                               _SelfMachine.getIndex()))
-            {
-                _Logger.debug("keep lead =>%s", _SelfMachine);
-                return createBroadcasts();
-            }
-            else {
-                _Logger.debug("no response enough");
-                stepDown();
-            }
+            _Logger.debug("keep lead =>%s", _SelfMachine);
+            return createBroadcasts();
         }
         //state change => ignore
         _Logger.warning("check leader broadcast failed; now:%s", _SelfMachine);
@@ -808,6 +790,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
 
     public void appendLogs(List<LogEntry> entryList)
     {
+        if (entryList == null || entryList.isEmpty()) return;
         //offer all
         _AppendLogQueue.addAll(entryList);
     }
@@ -824,12 +807,39 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                            operation);
     }
 
-    public Stream<X72_RaftAppend> newLogEntry(int serial,
-                                              byte[] payload,
-                                              long client,
-                                              long origin,
-                                              boolean pub,
-                                              IStorage.Operation operation)
+    public IPair newLogEntry(int serial,
+                             byte[] payload,
+                             long client,
+                             long origin,
+                             boolean pub,
+                             ISessionManager<ZContext> manager)
+    {
+        Stream<X72_RaftAppend> s = newLogEntry(serial, payload, client, origin, pub, IStorage.Operation.OP_INSERT);
+        if (s != null) {
+            X72_RaftAppend[] x72s = s.map(x72 ->
+            {
+                long follower = x72.getFollower();
+                ISession<ZContext> targetSession = manager.findSessionByPrefix(follower);
+                if (targetSession != null) {
+                    //此处不用判断是否管理，执行线程与 onDismiss在同一线程，只要存在此时的状态一定为valid
+                    x72.setSession(targetSession);
+                    return x72;
+                }
+                else return null;
+            })
+                                     .filter(Objects::nonNull)
+                                     .toArray(X72_RaftAppend[]::new);
+            if (x72s.length > 0) return new Pair<>(x72s, null);
+        }
+        return null;
+    }
+
+    private Stream<X72_RaftAppend> newLogEntry(int serial,
+                                               byte[] payload,
+                                               long client,
+                                               long origin,
+                                               boolean pub,
+                                               IStorage.Operation operation)
     {
         _Logger.debug("create new raft log");
         LogEntry newEntry = new LogEntry(_SelfMachine.getTerm(),
