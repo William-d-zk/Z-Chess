@@ -24,7 +24,6 @@
 
 package com.tgx.chess.knight.raft.service;
 
-import static com.tgx.chess.knight.raft.RaftState.CANDIDATE;
 import static com.tgx.chess.knight.raft.RaftState.LEADER;
 
 import java.util.Collections;
@@ -89,37 +88,24 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
         {
             case X70_RaftVote.COMMAND:
                 X70_RaftVote x70 = (X70_RaftVote) content;
-                RaftMachine machine = new RaftMachine(x70.getCandidateId());
-                machine.setIndex(x70.getIndex());
-                machine.setIndexTerm(x70.getIndexTerm());
-                machine.setTerm(x70.getTerm());
-                machine.setCandidate(x70.getCandidateId());
-                machine.setCommit(x70.getCommit());
-                machine.setState(CANDIDATE);
-                return _RaftNode.elect(machine);
+                return _RaftNode.elect(x70.getTerm(),
+                                       x70.getIndex(),
+                                       x70.getIndexTerm(),
+                                       x70.getCandidateId(),
+                                       x70.getCommit());
             case X71_RaftBallot.COMMAND:
                 X71_RaftBallot x71 = (X71_RaftBallot) content;
-                machine = new RaftMachine(x71.getElectorId());
-                machine.setIndex(x71.getIndex());
-                machine.setIndexTerm(x71.getIndexTerm());
-                machine.setCandidate(x71.getCandidate());
-                machine.setTerm(x71.getTerm());
-                return _RaftNode.ballot(machine);
+                return _RaftNode.ballot(x71.getTerm(), x71.getIndex(), x71.getElectorId(), x71.getCandidate());
             case X72_RaftAppend.COMMAND:
                 X72_RaftAppend x72 = (X72_RaftAppend) content;
                 if (x72.getPayload() != null) {
-                    List<LogEntry> entryList = JsonUtil.readValue(x72.getPayload(), _TypeReferenceOfLogEntryList);
-                    if (entryList != null && !entryList.isEmpty()) {
-                        _RaftNode.appendLogs(entryList);
-                    }
+                    _RaftNode.appendLogs(JsonUtil.readValue(x72.getPayload(), _TypeReferenceOfLogEntryList));
                 }
-                machine = new RaftMachine(x72.getLeaderId());
-                machine.setState(LEADER);
-                machine.setTerm(x72.getTerm());
-                machine.setCommit(x72.getCommit());
-                machine.setIndexTerm(x72.getPreIndexTerm());
-                machine.setIndex(x72.getPreIndex());
-                return _RaftNode.append(machine);
+                return _RaftNode.append(x72.getTerm(),
+                                        x72.getPreIndex(),
+                                        x72.getPreIndexTerm(),
+                                        x72.getLeaderId(),
+                                        x72.getCommit());
             case X73_RaftAccept.COMMAND:
                 X73_RaftAccept x73 = (X73_RaftAccept) content;
                 return _RaftNode.onAccept(x73.getFollowerId(),
@@ -134,32 +120,16 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
                 {
                     _Logger.warning("state error,expect:'LEADER',real:%s",
                                     _RaftNode.getMachine()
-                                             .getState()
-                                             .name());
+                                             .getState());
                     break;
                 }
                 X75_RaftRequest x75 = (X75_RaftRequest) content;
-                X72_RaftAppend[] newEntryArray = _RaftNode.newLogEntry(x75.getSerial(),
-                                                                       x75.getPayload(),
-                                                                       x75.getClientId(),
-                                                                       x75.getOrigin(),
-                                                                       x75.isPublic(),
-                                                                       IStorage.Operation.OP_INSERT)
-                                                          .map(x72 ->
-                                                          {
-                                                              long follower = x72.getFollower();
-                                                              ISession<ZContext> targetSession = manager.findSessionByPrefix(follower);
-                                                              if (targetSession != null) {
-                                                                  //此处不用判断是否管理，执行线程与 onDismiss在同一线程，只要存在此时的状态一定为valid
-                                                                  x72.setSession(targetSession);
-                                                                  return x72;
-                                                              }
-                                                              else return null;
-                                                          })
-                                                          .filter(Objects::nonNull)
-                                                          .toArray(X72_RaftAppend[]::new);
-                return newEntryArray.length == 0 ? null
-                                                 : new Pair<>(newEntryArray, null);
+                return _RaftNode.newLogEntry(x75.getSerial(),
+                                             x75.getPayload(),
+                                             x75.getClientId(),
+                                             x75.getOrigin(),
+                                             x75.isPublic(),
+                                             manager);
             case X76_RaftNotify.COMMAND:
                 /*
                 leader -> follow, self::follow
@@ -252,14 +222,14 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
                                          _RaftNode.getMachine()
                                                   .getPeerId(),
                                          IStorage.Operation.OP_INSERT)
-                            .map(x7e ->
+                            .map(x72 ->
                             {
-                                long follower = x7e.getFollower();
+                                long follower = x72.getFollower();
                                 ISession<ZContext> targetSession = manager.findSessionByPrefix(follower);
                                 if (targetSession != null) {
                                     //此处不用判断是否管理，执行线程与 onDismiss在同一线程，只要存在此时的状态一定为valid
-                                    x7e.setSession(targetSession);
-                                    return new Triple<>(x7e,
+                                    x72.setSession(targetSession);
+                                    return new Triple<>(x72,
                                                         targetSession,
                                                         targetSession.getContext()
                                                                      .getSort()
