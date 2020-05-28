@@ -887,7 +887,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                              ISession<ZContext> session = manager.findSessionByPrefix(peerId);
                              if (session != null) {
                                  X70_RaftVote x70 = new X70_RaftVote(_ZUID.getId());
-                                 x70.setElector(peerId);
+                                 x70.setElectorId(peerId);
                                  x70.setCandidateId(update.getPeerId());
                                  x70.setTerm(update.getTerm());
                                  x70.setIndex(update.getIndex());
@@ -896,6 +896,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                                  x70.setSession(session);
                                  return x70;
                              }
+                             _Logger.debug("elector :%#x session has not found", peerId);
                              return null;
                          })
                          .filter(Objects::nonNull);

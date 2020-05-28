@@ -137,12 +137,12 @@ public class X70_RaftVote
         mIndexTerm = term;
     }
 
-    public long getElector()
+    public long getElectorId()
     {
         return mElectorId;
     }
 
-    public void setElector(long elector)
+    public void setElectorId(long elector)
     {
         mElectorId = elector;
     }
