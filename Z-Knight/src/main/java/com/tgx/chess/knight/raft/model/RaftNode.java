@@ -28,6 +28,7 @@ import static com.tgx.chess.king.topology.ZUID.INVALID_PEER_ID;
 import static com.tgx.chess.knight.raft.IRaftMachine.INDEX_NAN;
 import static com.tgx.chess.knight.raft.IRaftMachine.MIN_START;
 import static com.tgx.chess.knight.raft.RaftState.CANDIDATE;
+import static com.tgx.chess.knight.raft.RaftState.ELECTOR;
 import static com.tgx.chess.knight.raft.RaftState.FOLLOWER;
 import static com.tgx.chess.knight.raft.RaftState.LEADER;
 import static com.tgx.chess.knight.raft.model.RaftCode.ALREADY_VOTE;
@@ -330,7 +331,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
 
     private void stepDown()
     {
-        stepDown(_SelfMachine.getTerm());
+        _ClusterPeer.timerEvent(_SelfMachine.createFollower());
     }
 
     private IControl<ZContext> follow(long peerId, long term, long commit, long preIndex, long preIndexTerm)
@@ -448,7 +449,9 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         if (peerMachine == null) return null;
         peerMachine.setCandidate(candidate);
         peerMachine.setState(FOLLOWER);
-        if (_RaftGraph.isMajorAcceptCandidate(_SelfMachine.getPeerId(), _SelfMachine.getTerm())) {
+        if (_SelfMachine.getState() == CANDIDATE
+            && _RaftGraph.isMajorAcceptCandidate(_SelfMachine.getPeerId(), _SelfMachine.getTerm()))
+        {
             beLeader();
             return new Pair<>(createBroadcasts().toArray(X72_RaftAppend[]::new), null);
         }
@@ -596,7 +599,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                                 .getCode() > FOLLOWER.getCode())
                 {
                     electCancel();
-                    stepDown();
+                    stepDown(_SelfMachine.getTerm());
                 }
                 break;
         }
@@ -752,6 +755,19 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         }
         _AppendLogQueue.clear();
         return false;
+    }
+
+    public void turnToFollower(RaftMachine update)
+    {
+        if ((_SelfMachine.getState() == ELECTOR || _SelfMachine.getState() == CANDIDATE)
+            && update.getState() == FOLLOWER
+            && update.getTerm() >= _SelfMachine.getTerm())
+        {
+            _Logger.debug("elect time out");
+            stepDown(update.getTerm());
+            return;
+        }
+        _Logger.warning("elect time out event [ignore]");
     }
 
     public Stream<X70_RaftVote> checkVoteState(RaftMachine update)
