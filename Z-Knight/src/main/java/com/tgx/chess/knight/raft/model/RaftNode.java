@@ -335,7 +335,6 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
 
     private IControl<ZContext> follow(long peerId, long term, long commit, long preIndex, long preIndexTerm)
     {
-
         tickCancel();
         _SelfMachine.follow(peerId, term, commit, _RaftDao);
         mTickTask = _TimeWheel.acquire(this, _TickSchedule);
@@ -400,7 +399,6 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         if (term > _SelfMachine.getTerm()) {
             leadCancel();
             electCancel();
-            stepDown(term);
             return true;
         }
         return false;
@@ -446,6 +444,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         if (response != null) return new Pair<>(response, null);
         if (highTerm(term)) {
             _Logger.warning("high term of ballot; %d->%d");
+            stepDown(term);
             return null;
         }
         RaftMachine peerMachine = getMachine(elector, term, index);
@@ -559,24 +558,17 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
 
     public IPair onReject(long peerId, long term, long index, long indexTerm, int code, int state)
     {
-        if (highTerm(term)) { return null; }
+        if (highTerm(term)) {
+            stepDown(term);
+            return null;
+        }
         RaftMachine peerMachine = getMachine(peerId, term, index);
         if (peerMachine == null) { return null; }
         peerMachine.setIndexTerm(indexTerm);
         peerMachine.setCandidate(INVALID_PEER_ID);
         peerMachine.setLeader(INVALID_PEER_ID);
-
-        switch (code)
+        switch (RaftCode.valueOf(code))
         {
-            case LOWER_TERM:
-                tickCancel();
-                leadCancel();
-                electCancel();
-                _Logger.debug("self.term %d < response.term %d => step_down",
-                              _SelfMachine.getTerm(),
-                              peerMachine.getTerm());
-                stepDown();
-                break;
             case CONFLICT:
                 if (_SelfMachine.getState() == LEADER) {
                     _Logger.debug("follower %#x,match failed,rollback %d",
@@ -603,7 +595,9 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                     break;
                 }
             case OBSOLETE:
-                if (_SelfMachine.getState() == CANDIDATE) {
+                if (_SelfMachine.getState()
+                                .getCode() > FOLLOWER.getCode())
+                {
                     electCancel();
                     stepDown();
                 }
