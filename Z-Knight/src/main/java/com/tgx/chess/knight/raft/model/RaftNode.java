@@ -321,9 +321,9 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         if (_SelfMachine.getState()
                         .getCode() > FOLLOWER.getCode())
         {
+            _Logger.debug("step down [%s → follower] %s", _SelfMachine.getState(), _SelfMachine);
             _SelfMachine.follow(term, _RaftDao);
             mTickTask = _TimeWheel.acquire(this, _TickSchedule);
-            _Logger.debug("[%s → follower] %s", _SelfMachine.getState(), _SelfMachine);
         }
         else _Logger.warning("step down [ignore],state has already changed to FOLLOWER");
     }
@@ -397,6 +397,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
     private boolean highTerm(long term)
     {
         if (term > _SelfMachine.getTerm()) {
+            _Logger.debug("new term > self [%d > %d]", term, _SelfMachine.getTerm());
             leadCancel();
             electCancel();
             return true;
