@@ -109,12 +109,12 @@ public class X71_RaftBallot
         mTerm = term;
     }
 
-    public long getCandidate()
+    public long getCandidateId()
     {
         return mCandidateId;
     }
 
-    public void setCandidate(long candidate)
+    public void setCandidateId(long candidate)
     {
         mCandidateId = candidate;
     }

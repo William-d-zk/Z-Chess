@@ -270,7 +270,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         vote.setElectorId(_SelfMachine.getPeerId());
         vote.setTerm(_SelfMachine.getTerm());
         vote.setIndex(_SelfMachine.getIndex());
-        vote.setCandidate(_SelfMachine.getCandidate());
+        vote.setCandidateId(_SelfMachine.getCandidate());
         return vote;
     }
 
