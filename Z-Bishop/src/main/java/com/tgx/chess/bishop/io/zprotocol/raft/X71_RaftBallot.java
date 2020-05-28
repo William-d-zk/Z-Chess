@@ -130,6 +130,12 @@ public class X71_RaftBallot
     }
 
     @Override
+    public boolean isMapping()
+    {
+        return true;
+    }
+
+    @Override
     public String toString()
     {
         return String.format("X71_RaftBallot{ elector:%#x,term:%d,last:%d,candidate:%#x}",

@@ -169,6 +169,12 @@ public class X74_RaftReject
     }
 
     @Override
+    public boolean isMapping()
+    {
+        return true;
+    }
+
+    @Override
     public String toString()
     {
         return String.format("X74_RaftReject{peerId:%#x,term:%d,current:%d@%d,reject:%#x,code:%d,state:%d}",
