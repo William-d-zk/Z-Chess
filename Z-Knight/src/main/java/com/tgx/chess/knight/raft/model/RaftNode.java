@@ -321,9 +321,9 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         if (_SelfMachine.getState()
                         .getCode() > FOLLOWER.getCode())
         {
+            _Logger.debug("step down [%s → follower] %s", _SelfMachine.getState(), _SelfMachine);
             _SelfMachine.follow(term, _RaftDao);
             mTickTask = _TimeWheel.acquire(this, _TickSchedule);
-            _Logger.debug("[%s → follower] %s", _SelfMachine.getState(), _SelfMachine);
         }
         else _Logger.warning("step down [ignore],state has already changed to FOLLOWER");
     }
@@ -397,6 +397,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
     private boolean highTerm(long term)
     {
         if (term > _SelfMachine.getTerm()) {
+            _Logger.debug("new term > self [%d > %d]", term, _SelfMachine.getTerm());
             leadCancel();
             electCancel();
             return true;
@@ -413,16 +414,12 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                 && _SelfMachine.getIndexTerm() <= indexTerm
                 && _SelfMachine.getCommit() <= commit)
             {
-                _Logger.debug("new term [follower %d → elector %d ] | candidate: %#x",
-                              _SelfMachine.getTerm(),
-                              term,
-                              candidate);
+                _Logger.debug("new term [follower → elector %d ] | candidate: %#x", term, candidate);
                 X71_RaftBallot vote = stepUp(candidate, term);
                 return new Pair<>(new X71_RaftBallot[] { vote }, null);
             }
             else {
-                _Logger.debug("less than me; reject and [%s → candidate] | mine:%d@%d > in:%d@%d",
-                              _SelfMachine.getState(),
+                _Logger.debug("less than me; reject and [ follower → candidate] | mine:%d@%d > in:%d@%d",
                               _SelfMachine.getIndex(),
                               _SelfMachine.getIndexTerm(),
                               index,
