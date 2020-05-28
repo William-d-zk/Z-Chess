@@ -127,8 +127,7 @@ public class BaseAioClient<C extends IContext<C>>
                                                      catch (IOException e) {
                                                          e.printStackTrace();
                                                      }
-                                                 },
-                                                 connector));
+                                                 }));
     }
 
     @Override

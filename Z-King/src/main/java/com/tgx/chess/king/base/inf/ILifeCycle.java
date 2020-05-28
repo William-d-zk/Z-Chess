@@ -22,30 +22,22 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.queen.event.handler;
-
-import com.tgx.chess.king.base.inf.IPair;
-import com.tgx.chess.queen.io.core.inf.IContext;
-import com.tgx.chess.queen.io.core.inf.IControl;
-import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.inf.ISessionManager;
+package com.tgx.chess.king.base.inf;
 
 /**
  * @author william.d.zk
- * @date 2020/5/7
  */
-public interface IMappingCustom<C extends IContext<C>>
+public interface ILifeCycle
+        extends
+        IValid
 {
-    /**
-     * 
-     * @param manager
-     * @param session
-     * @param content
-     * @return pair
-     *         first: response ->
-     *         second: protocol to other domain
-     *         third: operator
-     * @throws Exception
-     */
-    IPair handle(ISessionManager<C> manager, ISession<C> session, IControl<C> content) throws Exception;
+    boolean retry();
+
+    void error();
+
+    boolean isShutdown();
+
+    void shutdown();
+
+    boolean isRunning();
 }

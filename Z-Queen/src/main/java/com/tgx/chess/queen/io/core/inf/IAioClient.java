@@ -25,12 +25,14 @@ package com.tgx.chess.queen.io.core.inf;
 
 import java.io.IOException;
 
+import com.tgx.chess.king.base.inf.IFailed;
+
 /**
  * @author William.d.zk
  */
 public interface IAioClient<C extends IContext<C>>
         extends
-        IAioConnector.IConnectFailed<C>,
+        IFailed<IAioConnector<C>>,
         ISessionCreated<C>,
         ISessionDismiss<C>
 {

@@ -30,7 +30,7 @@
     <parent>
         <artifactId>framework.z-chess</artifactId>
         <groupId>com.tgx.service</groupId>
-        <version>1.0.3.SNAPSHOT</version>
+        <version>1.0.9.SNAPSHOT</version>
     </parent>
     <artifactId>cluster.z-knight</artifactId>
     <name>Z-Knight</name>
@@ -52,6 +52,10 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
         <!--Commons-Io-->
         <dependency>

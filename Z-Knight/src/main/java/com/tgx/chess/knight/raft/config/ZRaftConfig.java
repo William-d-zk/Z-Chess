@@ -110,6 +110,7 @@ public class ZRaftConfig
     private Duration              electInSecond;
     private Duration              snapshotInSecond;
     private Duration              heartbeatInSecond;
+    private Duration              clientSubmitInSecond;
     private DataSize              snapshotMinSize;
     private IPair                 peerTest;
     private IPair                 gateTest;
@@ -237,6 +238,17 @@ public class ZRaftConfig
     public void setHeartbeatInSecond(Duration heartbeatInSecond)
     {
         this.heartbeatInSecond = heartbeatInSecond;
+    }
+
+    @Override
+    public Duration getClientSubmitInSecond()
+    {
+        return clientSubmitInSecond;
+    }
+
+    public void setClientSubmitInSecond(Duration clientSubmitInSecond)
+    {
+        this.clientSubmitInSecond = clientSubmitInSecond;
     }
 
     @JsonIgnore

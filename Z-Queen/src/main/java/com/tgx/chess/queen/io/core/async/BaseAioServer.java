@@ -133,4 +133,15 @@ public abstract class BaseAioServer<C extends IContext<C>>
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public boolean retry()
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void error()
+    {
+        //ignore
+    }
 }

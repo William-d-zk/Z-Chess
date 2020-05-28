@@ -29,7 +29,9 @@ import static com.tgx.chess.knight.raft.RaftState.LEADER;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -43,6 +45,7 @@ import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.king.topology.ZUID;
@@ -54,6 +57,8 @@ import com.tgx.chess.knight.raft.model.RaftNode;
 import com.tgx.chess.knight.raft.model.log.LogEntry;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.handler.cluster.IClusterCustom;
+import com.tgx.chess.queen.event.handler.cluster.IConsistentJudge;
+import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.io.core.inf.IClusterPeer;
 import com.tgx.chess.queen.io.core.inf.IClusterTimer;
 import com.tgx.chess.queen.io.core.inf.IConsistent;
@@ -73,11 +78,21 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
                                                                              {
                                                                              };
 
-    private final RaftNode<T> _RaftNode;
+    private final RaftNode<T>                                      _RaftNode;
+    private final IConsistentJudge                                 _Judge;
+    private final TimeWheel                                        _TimeWheel;
+    private final Map<Long,
+                      IOperator<IProtocol,
+                                Throwable,
+                                Void>>                             _OperatorMap = new ConcurrentHashMap<>(17);
 
-    public ClusterCustom(RaftNode<T> raftNode)
+    public ClusterCustom(TimeWheel timeWheel,
+                         RaftNode<T> raftNode,
+                         IConsistentJudge judge)
     {
+        _TimeWheel = timeWheel;
         _RaftNode = raftNode;
+        _Judge = judge;
     }
 
     @Override
@@ -159,14 +174,21 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
                                         : null;
             case X7F_RaftResponse.COMMAND:
                 X7F_RaftResponse x7f = (X7F_RaftResponse) content;
-                return _RaftNode.onResponse(x7f.getPeerId(),
-                                            x7f.getTerm(),
-                                            x7f.getCatchUp(),
-                                            x7f.getCatchUpTerm(),
-                                            x7f.getCandidate(),
-                                            RaftState.valueOf(x7f.getState()),
-                                            RaftCode.valueOf(x7f.getCode()),
-                                            manager);
+                IPair pair = _RaftNode.onResponse(x7f.getPeerId(),
+                                                  x7f.getTerm(),
+                                                  x7f.getCatchUp(),
+                                                  x7f.getCatchUpTerm(),
+                                                  x7f.getCandidate(),
+                                                  RaftState.valueOf(x7f.getState()),
+                                                  RaftCode.valueOf(x7f.getCode()),
+                                                  manager);
+                if (pair.getSecond() == null) {
+                    return new Pair<>(pair.getFirst(), null);
+                }
+                else {
+                    x76 = pair.getSecond();
+                    return new Pair<>(pair.getFirst(), x76);
+                }
             case X106_Identity.COMMAND:
                 X106_Identity x106 = (X106_Identity) content;
                 long peerId = x106.getIdentity();
@@ -240,6 +262,7 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
     @Override
     public <E extends IConsistent & IProtocol> List<ITriple> consensus(ISessionManager<ZContext> manager, E request)
     {
+        _Logger.debug("cluster consensus %s", request);
         if (_RaftNode.getMachine()
                      .getState() == LEADER)
         {
@@ -286,6 +309,7 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
                                                               leaderSession.getContext()
                                                                            .getSort()
                                                                            .getEncoder()));
+
             }
             else {
                 _Logger.fetal("Leader connection miss");
@@ -299,6 +323,12 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
     public boolean waitForCommit()
     {
         return _RaftNode.isClusterMode();
+    }
+
+    @Override
+    public IConsistentJudge getJudge()
+    {
+        return _Judge;
     }
 
 }

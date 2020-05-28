@@ -40,6 +40,7 @@ import java.util.function.Supplier;
 
 import com.tgx.chess.king.base.inf.IValid;
 import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.king.base.schedule.inf.ICancelable;
 
 /**
  * @author William.d.zk
@@ -49,7 +50,6 @@ public class TimeWheel
         ForkJoinPool
 {
     private final Logger        _Logger = Logger.getLogger(getClass().getSimpleName());
-    private final Thread        _Timer;
     private final int           _SlotBitLeft;//must <= 10
     private final int           _HashMod;
     private final long          _Tick;
@@ -73,7 +73,10 @@ public class TimeWheel
         _ModHashEntryArray = new TickSlot[1 << _SlotBitLeft];
         Arrays.setAll(_ModHashEntryArray, TickSlot::new);
         _HashMod = _ModHashEntryArray.length - 1;
-        _Timer = new Thread(() ->
+        // 5~20
+        //ignore 没有地方执行interrupt操作
+        //此处-sleep 计算当期这次过程的偏差值
+        final Thread _Timer = new Thread(() ->
         {
             int correction = 13;// 5~20
             for (long align = 0, t, sleep, expect; !isShutdown();) {
