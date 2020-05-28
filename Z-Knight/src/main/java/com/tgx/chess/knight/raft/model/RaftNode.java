@@ -363,6 +363,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         electCancel();
         _SelfMachine.beLeader(_RaftDao);
         _Logger.info("be leader=>%s", _SelfMachine);
+        mHeartbeatTask = _TimeWheel.acquire(this, _HeartbeatSchedule);
     }
 
     private void tickCancel()
@@ -802,6 +803,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
             && _SelfMachine.getCommit() >= update.getCommit())
         {
             _Logger.debug("keep lead =>%s", _SelfMachine);
+            mHeartbeatTask = _TimeWheel.acquire(this, _HeartbeatSchedule);
             return createBroadcasts(manager);
         }
         //state change => ignore
@@ -904,7 +906,6 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
 
     private Stream<X72_RaftAppend> createBroadcasts(ISessionManager<ZContext> manager)
     {
-        mHeartbeatTask = _TimeWheel.acquire(this, _HeartbeatSchedule);
         return _RaftGraph.getNodeMap()
                          .values()
                          .stream()
