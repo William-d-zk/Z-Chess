@@ -22,30 +22,64 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.queen.event.handler;
+package com.tgx.chess.king.base.schedule.inf;
 
-import com.tgx.chess.king.base.inf.IPair;
-import com.tgx.chess.queen.io.core.inf.IContext;
-import com.tgx.chess.queen.io.core.inf.IControl;
-import com.tgx.chess.queen.io.core.inf.ISession;
-import com.tgx.chess.queen.io.core.inf.ISessionManager;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import com.tgx.chess.king.base.inf.ILifeCycle;
+import com.tgx.chess.king.base.schedule.Status;
 
 /**
  * @author william.d.zk
- * @date 2020/5/7
  */
-public interface IMappingCustom<C extends IContext<C>>
+public interface ITask
+        extends
+        ILifeCycle
 {
-    /**
-     * 
-     * @param manager
-     * @param session
-     * @param content
-     * @return pair
-     *         first: response ->
-     *         second: protocol to other domain
-     *         third: operator
-     * @throws Exception
-     */
-    IPair handle(ISessionManager<C> manager, ISession<C> session, IControl<C> content) throws Exception;
+    int RETRY_COUNT_BITS = 2;
+    int RETRY_LIMIT      = (1 << RETRY_COUNT_BITS) - 1;
+
+    static int runStateOf(int state)
+    {
+        return state & ~RETRY_LIMIT;
+    }
+
+    static int retryCountOf(int c)
+    {
+        return c & RETRY_LIMIT;
+    }
+
+    static int ctlOf(int rs, int rc)
+    {
+        return rs | rc;
+    }
+
+    static boolean compareAndIncrementRetry(AtomicInteger _Ctl, int expect)
+    {
+        return _Ctl.compareAndSet(expect, expect + 1);
+    }
+
+    static void advanceRunState(AtomicInteger _Ctl, int targetState)
+    {
+        for (;;) {
+            int c = _Ctl.get();
+            if (c >= targetState || _Ctl.compareAndSet(c, ctlOf(targetState, retryCountOf(c)))) break;
+        }
+    }
+
+    static boolean runStateLessThan(int c, int s)
+    {
+        return c < s;
+    }
+
+    static boolean runStateAtLeast(int c, int s)
+    {
+        return c >= s;
+    }
+
+    static boolean isRunning(int c)
+    {
+        return c < Status.STOP.getCode() && c > Status.PENDING.getCode();
+    }
+
 }

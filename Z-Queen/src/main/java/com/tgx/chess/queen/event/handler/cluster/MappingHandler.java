@@ -45,14 +45,14 @@ import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.IAioConnector;
 import com.tgx.chess.queen.io.core.inf.IAioServer;
 import com.tgx.chess.queen.io.core.inf.IConnectActivity;
+import com.tgx.chess.queen.io.core.inf.IConsistent;
 import com.tgx.chess.queen.io.core.inf.IConsistentNotify;
-import com.tgx.chess.queen.io.core.inf.IConsistentProtocol;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionDismiss;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
-import com.tgx.chess.queen.io.core.inf.ITraceable;
 
 /**
  * @author william.d.zk
@@ -68,9 +68,9 @@ public class MappingHandler<C extends IContext<C>,
     private final RingBuffer<QEvent>   _Writer;
     private final RingBuffer<QEvent>[] _Notifiers;
     private final ISessionManager<C>   _SessionManager;
-    private final INotifyCustom        _NotifyCustom;
     private final IClusterCustom<C,
                                  T>    _ClusterCustom;
+    private final IConsistentCustom    _ConsistentCustom;
     private final int                  _NotifyModMask;
 
     public MappingHandler(String mapper,
@@ -78,17 +78,17 @@ public class MappingHandler<C extends IContext<C>,
                           RingBuffer<QEvent> error,
                           RingBuffer<QEvent> writer,
                           RingBuffer<QEvent>[] notifiers,
-                          INotifyCustom notifyCustom,
                           IClusterCustom<C,
-                                         T> clusterCustom)
+                                         T> clusterCustom,
+                          IConsistentCustom consistentCustom)
     {
         _Logger = Logger.getLogger("io.queen.dispatcher." + mapper);
         _SessionManager = manager;
         _Writer = writer;
         _Error = error;
         _Notifiers = notifiers;
-        _NotifyCustom = notifyCustom;
         _ClusterCustom = clusterCustom;
+        _ConsistentCustom = consistentCustom;
         _NotifyModMask = _Notifiers.length - 1;
     }
 
@@ -221,8 +221,13 @@ public class MappingHandler<C extends IContext<C>,
                         }
                         IConsistentNotify notify = pair.getSecond();
                         if (notify != null) {
-                            if (notify.byLeader()) _NotifyCustom.adjudge(notify);
-                            if (notify.doNotify()) publishNotify(notify, null);
+                            IConsistentJudge judge = _ClusterCustom.getJudge();
+                            if (notify.byLeader() && judge != null) {
+                                judge.adjudge(notify);
+                            }
+                            if (notify.doNotify()) {
+                                publishNotify(pair.getSecond(), null, _ConsistentCustom.getOperator());
+                            }
                         }
                     }
                     catch (Exception e) {
@@ -231,23 +236,33 @@ public class MappingHandler<C extends IContext<C>,
                     }
                     break;
                 case CONSENSUS:
-                    IConsistentProtocol request = event.getContent()
-                                                       .getFirst();
                     if (_ClusterCustom.waitForCommit()) {
                         try {
-                            List<ITriple> broadcast = _ClusterCustom.consensus(_SessionManager, request);
+                            List<ITriple> broadcast = _ClusterCustom.consensus(_SessionManager,
+                                                                               event.getContent()
+                                                                                    .getFirst());
                             if (broadcast != null && !broadcast.isEmpty()) {
                                 publish(_Writer, broadcast);
                             }
                         }
                         catch (Exception e) {
                             _Logger.warning("mapping consensus error", e);
-                            publishNotify(request, e);
+                            publishNotify(event.getContent()
+                                               .getFirst(),
+                                          e,
+                                          _ConsistentCustom.getOperator());
                         }
                     }
                     else {
-                        _NotifyCustom.adjudge(request);
-                        publishNotify(request, null);
+                        IConsistentJudge judge = _ClusterCustom.getJudge();
+                        if (judge != null) {
+                            judge.adjudge(event.getContent()
+                                               .getFirst());
+                        }
+                        publishNotify(event.getContent()
+                                           .getFirst(),
+                                      null,
+                                      event.getEventOp());
                     }
                     break;
                 case CLUSTER_TIMER://ClusterConsumer Timeout->start_vote
@@ -269,15 +284,19 @@ public class MappingHandler<C extends IContext<C>,
         event.reset();
     }
 
-    private <E extends ITraceable> void publishNotify(E request, Throwable throwable)
+    private <E extends IConsistent & IProtocol> void publishNotify(E request,
+                                                                   Throwable throwable,
+                                                                   IOperator<E,
+                                                                             Throwable,
+                                                                             Void> operator)
     {
         Objects.requireNonNull(request);
         RingBuffer<QEvent> notifier = _Notifiers[(int) (request.getOrigin() >> ZUID.NODE_SHIFT) & _NotifyModMask];
         if (throwable == null) {
-            publish(notifier, NOTIFY, new Pair<>(request, null), _NotifyCustom);
+            publish(notifier, NOTIFY, new Pair<>(request, null), operator);
         }
         else {
-            error(notifier, MAPPING_ERROR, new Pair<>(request, throwable), _NotifyCustom);
+            error(notifier, MAPPING_ERROR, new Pair<>(request, throwable), operator);
         }
     }
 

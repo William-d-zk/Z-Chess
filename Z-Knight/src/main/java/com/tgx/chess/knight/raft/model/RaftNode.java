@@ -57,9 +57,9 @@ import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.inf.IValid;
 import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.king.base.schedule.ICancelable;
 import com.tgx.chess.king.base.schedule.ScheduleHandler;
 import com.tgx.chess.king.base.schedule.TimeWheel;
+import com.tgx.chess.king.base.schedule.inf.ICancelable;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.king.topology.ZUID;
@@ -111,12 +111,11 @@ public class RaftNode<T extends IClusterPeer & IClusterTimer>
         _ClusterPeer = manager;
         _ZUID = clusterConfig.createZUID();
         _RaftDao = raftDao;
-        _ElectSchedule = new ScheduleHandler<>(_RaftConfig.getElectInSecond(), RaftNode::stepDown, this);
-        _HeartbeatSchedule = new ScheduleHandler<>(_RaftConfig.getHeartbeatInSecond(), RaftNode::heartbeat, this);
+        _ElectSchedule = new ScheduleHandler<>(_RaftConfig.getElectInSecond(), RaftNode::stepDown);
+        _HeartbeatSchedule = new ScheduleHandler<>(_RaftConfig.getHeartbeatInSecond(), RaftNode::heartbeat);
         _TickSchedule = new ScheduleHandler<>(_RaftConfig.getHeartbeatInSecond()
                                                          .multipliedBy(2),
-                                              RaftNode::startVote,
-                                              this);
+                                              RaftNode::startVote);
         _RaftGraph = new RaftGraph();
         _SelfMachine = new RaftMachine(_ZUID.getPeerId());
         _RaftGraph.append(_SelfMachine);
@@ -176,10 +175,7 @@ public class RaftNode<T extends IClusterPeer & IClusterTimer>
         }
         //启动snapshot定时回写计时器
         _TimeWheel.acquire(_RaftDao,
-                           new ScheduleHandler<>(_RaftConfig.getSnapshotInSecond(),
-                                                 true,
-                                                 this::takeSnapshot,
-                                                 _RaftDao));
+                           new ScheduleHandler<>(_RaftConfig.getSnapshotInSecond(), true, this::takeSnapshot));
         _RaftDao.updateAll();
         //启动集群连接
         if (_SelfMachine.getPeerSet() != null) {

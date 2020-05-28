@@ -22,11 +22,12 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.queen.io.core.inf;
+package com.tgx.chess.king.base.inf;
 
-public interface IConsistentProtocol
-        extends
-        IConsistent,
-        IProtocol
+/**
+ * @author william.d.zk
+ */
+public interface IFailed<T>
 {
+    void onFailed(T t);
 }

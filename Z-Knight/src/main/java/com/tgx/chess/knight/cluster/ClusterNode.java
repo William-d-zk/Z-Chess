@@ -50,7 +50,7 @@ import com.tgx.chess.knight.raft.model.RaftMachine;
 import com.tgx.chess.queen.config.IAioConfig;
 import com.tgx.chess.queen.config.IClusterConfig;
 import com.tgx.chess.queen.event.handler.cluster.IClusterCustom;
-import com.tgx.chess.queen.event.handler.cluster.INotifyCustom;
+import com.tgx.chess.queen.event.handler.cluster.IConsistentCustom;
 import com.tgx.chess.queen.event.handler.mix.ILogicHandler;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.io.core.async.AioSession;
@@ -182,12 +182,12 @@ public class ClusterNode
         _Logger.debug("load cluster node");
     }
 
-    public void start(INotifyCustom notifyCustom,
-                      IClusterCustom<ZContext,
+    public void start(IClusterCustom<ZContext,
                                      RaftMachine> clusterCustom,
+                      IConsistentCustom consistentCustom,
                       ILogicHandler<ZContext> logicHandler) throws IOException
     {
-        getCore().build(this, new EncryptHandler(), notifyCustom, clusterCustom, logicHandler);
+        getCore().build(this, new EncryptHandler(), clusterCustom, consistentCustom, logicHandler);
         _AioServer.bindAddress(_AioServer.getLocalAddress(), getCore().getClusterChannelGroup());
         _AioServer.pendingAccept();
         _Logger.debug(String.format("cluster start: %s", _AioServer.getLocalAddress()));

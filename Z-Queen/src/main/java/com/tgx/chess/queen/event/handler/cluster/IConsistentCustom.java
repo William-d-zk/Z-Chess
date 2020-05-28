@@ -22,11 +22,22 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.queen.io.core.inf;
+package com.tgx.chess.queen.event.handler.cluster;
 
-public interface IConsistentControl<C extends IContext<C>>
+import com.tgx.chess.queen.event.inf.IOperator;
+import com.tgx.chess.queen.io.core.inf.IConsistent;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
+
+/**
+ * @author william.d.zk
+ */
+public interface IConsistentCustom
         extends
-        IConsistent,
-        IControl<C>
+        IConsistentJudge
 {
+    <T extends IConsistent & IProtocol> IOperator<T,
+                                                  Throwable,
+                                                  Void> getOperator();
+
+    <T extends IConsistent & IProtocol> Void handle(T request, Throwable throwable);
 }

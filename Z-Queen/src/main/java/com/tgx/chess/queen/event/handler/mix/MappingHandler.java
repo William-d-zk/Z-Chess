@@ -38,13 +38,14 @@ import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.handler.cluster.IClusterCustom;
+import com.tgx.chess.queen.event.handler.cluster.IConsistentJudge;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.inf.IPipeEventHandler;
 import com.tgx.chess.queen.event.processor.QEvent;
 import com.tgx.chess.queen.io.core.inf.IAioConnector;
 import com.tgx.chess.queen.io.core.inf.IAioServer;
 import com.tgx.chess.queen.io.core.inf.IConnectActivity;
-import com.tgx.chess.queen.io.core.inf.IConsistentControl;
+import com.tgx.chess.queen.io.core.inf.IConsistent;
 import com.tgx.chess.queen.io.core.inf.IConsistentNotify;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
@@ -214,20 +215,20 @@ public class MappingHandler<C extends IContext<C>,
                                            .getSort()
                                            .getTransfer());
                         }
-                        IConsistentControl<C> transfer = pair.getSecond();
+                        IPair transfer = pair.getSecond();
                         if (transfer != null) {
+                            IConsistent consistent = transfer.getFirst();
                             if (_ClusterCustom.waitForCommit()) {
                                 publish(_Transfer,
                                         CONSENSUS,
-                                        new Pair<>(transfer, session),
-                                        session.getContext()
-                                               .getSort()
-                                               .getIgnore());
+                                        new Pair<>(pair.getSecond(), session),
+                                        transfer.getSecond());
                             }
                             else {
+
                                 List<ITriple> result = _LinkCustom.notify(_SessionManager,
-                                                                          transfer,
-                                                                          transfer.getOrigin());
+                                                                          pair.getSecond(),
+                                                                          consistent.getOrigin());
                                 if (result != null && !result.isEmpty()) {
                                     publish(_Writer, result);
                                 }
@@ -261,7 +262,7 @@ public class MappingHandler<C extends IContext<C>,
                         if (transferNotify != null && transferNotify.doNotify()) {
                             publish(_Transfer,
                                     NOTIFY,
-                                    new Pair<>(transferNotify, transferNotify.byLeader()),
+                                    new Pair<>(transferNotify, null),
                                     session.getContext()
                                            .getSort()
                                            .getIgnore());
@@ -273,12 +274,12 @@ public class MappingHandler<C extends IContext<C>,
                     }
                     break;
                 case CONSENSUS:
-                    IConsistentControl<C> consistent = event.getContent()
-                                                            .getFirst();
                     session = event.getContent()
                                    .getSecond();
                     try {
-                        List<ITriple> result = _ClusterCustom.consensus(_SessionManager, consistent);
+                        List<ITriple> result = _ClusterCustom.consensus(_SessionManager,
+                                                                        event.getContent()
+                                                                             .getFirst());
                         if (result != null && !result.isEmpty()) {
                             publish(_Writer, result);
                         }
@@ -289,12 +290,21 @@ public class MappingHandler<C extends IContext<C>,
                     }
                     break;
                 case NOTIFY:
-                    IConsistentControl<C> notify = event.getContent()
-                                                        .getFirst();
-                    try {
-                        List<ITriple> result = _LinkCustom.notify(_SessionManager, notify, notify.getOrigin());
-                        if (result != null && !result.isEmpty()) {
-                            publish(_Writer, result);
+                    IConsistentNotify notify = event.getContent()
+                                                    .getFirst();
+                    if (notify != null) try {
+                        IConsistentJudge judge = _ClusterCustom.getJudge();
+                        if (notify.byLeader() && judge != null) {
+                            judge.adjudge(notify);
+                        }
+                        if (notify.doNotify()) {
+                            List<ITriple> result = _LinkCustom.notify(_SessionManager,
+                                                                      event.getContent()
+                                                                           .getFirst(),
+                                                                      notify.getOrigin());
+                            if (result != null && !result.isEmpty()) {
+                                publish(_Writer, result);
+                            }
                         }
                     }
                     catch (Exception e) {
