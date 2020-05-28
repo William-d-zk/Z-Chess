@@ -28,6 +28,7 @@ import java.util.Set;
 
 import com.tgx.chess.king.base.inf.IReset;
 import com.tgx.chess.king.base.util.Triple;
+import com.tgx.chess.knight.raft.model.RaftMachine;
 
 /**
  * @author william.d.zk
@@ -98,6 +99,8 @@ public interface IRaftMachine
     Set<Triple<Long,
                String,
                Integer>> getGateSet();
+
+    RaftMachine createFollower();
 
     void appendLog(long index, long indexTerm, IRaftDao dao);
 
