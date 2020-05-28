@@ -63,9 +63,10 @@ public class RaftMachine
         IRaftMachine,
         IStorage
 {
-    private static final Logger _Logger = Logger.getLogger("cluster.knight." + RaftMachine.class.getSimpleName());
+    private final static int RAFT_MACHINE_SERIAL = DB_SERIAL + 3;
 
-    private final static int                   RAFT_MACHINE_SERIAL = DB_SERIAL + 3;
+    private final Logger                       _Logger    = Logger.getLogger("cluster.knight."
+                                                                             + RaftMachine.class.getSimpleName());
     private final long                         _PeerId;
     private long                               mTerm;      //触发选举时 mTerm > mIndexTerm
     private long                               mIndex;     //本地日志Index，Leader：mIndex >= mCommit 其他状态：mIndex <= mCommit
@@ -83,7 +84,7 @@ public class RaftMachine
                        String,
                        Integer>>               mGateSet;
     @JsonIgnore
-    private Operation                          mOperation          = OP_NULL;
+    private Operation                          mOperation = OP_NULL;
     @JsonIgnore
     private int                                mLength;
 
@@ -410,11 +411,6 @@ public class RaftMachine
         mCandidate = INVALID_PEER_ID;
         dao.updateTerm(mTerm);
         dao.updateCandidate(mCandidate);
-    }
-
-    public void follow(IRaftDao dao)
-    {
-        follow(mTerm, dao);
     }
 
     @Override

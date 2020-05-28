@@ -24,6 +24,7 @@
 
 package com.tgx.chess.knight.raft.model;
 
+import static com.tgx.chess.king.topology.ZUID.INVALID_PEER_ID;
 import static com.tgx.chess.knight.raft.IRaftMachine.INDEX_NAN;
 import static com.tgx.chess.knight.raft.IRaftMachine.MIN_START;
 import static com.tgx.chess.knight.raft.RaftState.CANDIDATE;
@@ -315,23 +316,27 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         return ballot();
     }
 
-    private void stepDown()
+    private void stepDown(long term)
     {
         if (_SelfMachine.getState()
                         .getCode() > FOLLOWER.getCode())
         {
-            tickCancel();
-            _SelfMachine.follow(_RaftDao);
+            _SelfMachine.follow(term, _RaftDao);
             mTickTask = _TimeWheel.acquire(this, _TickSchedule);
             _Logger.debug("[%s → follower] %s", _SelfMachine.getState(), _SelfMachine);
         }
         else _Logger.warning("step down [ignore],state has already changed to FOLLOWER");
     }
 
+    private void stepDown()
+    {
+        stepDown(_SelfMachine.getTerm());
+    }
+
     private IControl<ZContext> follow(long peerId, long term, long commit, long preIndex, long preIndexTerm)
     {
+
         tickCancel();
-        electCancel();
         _SelfMachine.follow(peerId, term, commit, _RaftDao);
         mTickTask = _TimeWheel.acquire(this, _TickSchedule);
         _Logger.debug("follower %#x @%d => %d", peerId, term, commit);
@@ -368,7 +373,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         }
     }
 
-    private void heartbeatCancel()
+    private void leadCancel()
     {
         if (mHeartbeatTask != null) {
             _Logger.debug("cancel heartbeat");
@@ -386,16 +391,16 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
 
     private IControl<ZContext>[] lowTerm(long term, long peerId)
     {
-        if (_SelfMachine.getTerm() > term) { return new X74_RaftReject[] { reject(LOWER_TERM, peerId) }; }
-        return null;
+        return _SelfMachine.getTerm() > term ? new X74_RaftReject[] { reject(LOWER_TERM, peerId) }
+                                             : null;
     }
 
     private boolean highTerm(long term)
     {
         if (term > _SelfMachine.getTerm()) {
-            heartbeatCancel();
+            leadCancel();
             electCancel();
-            _SelfMachine.follow(term, _RaftDao);
+            stepDown(term);
             return true;
         }
         return false;
@@ -490,9 +495,9 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
     {
         RaftMachine peerMachine = getMachine(peerId, term, index);
         if (peerMachine == null) { return null; }
-        peerMachine.setIndexTerm(indexTerm);
         peerMachine.setState(FOLLOWER);
         peerMachine.setLeader(leader);
+        peerMachine.setIndexTerm(indexTerm);
         peerMachine.setMatchIndex(index);
         X72_RaftAppend x72 = null;
         if (peerMachine.getIndex() < _SelfMachine.getIndex()) {
@@ -506,13 +511,15 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
          follower.index < leader(self).index,leader 在投递了 follower.index之后又收到了新的request，从而增加了self.index
          follower.match_index > leader.commit
          */
+        long nextCommit = _SelfMachine.getCommit() + 1;
         if (peerMachine.getMatchIndex() > _SelfMachine.getCommit()
-            && _RaftGraph.isMajorAcceptLeader(_SelfMachine.getPeerId(), indexTerm, index))
+            && _RaftGraph.isMajorAcceptLeader(_SelfMachine.getPeerId(), _SelfMachine.getTerm(), nextCommit))
         {
+
             //peerMachine.getIndex() > _SelfMachine.getCommit()时，raftLog 不可能为 null
-            _SelfMachine.commit(index, _RaftDao);
-            _Logger.debug("leader commit:%d@%d", index, indexTerm);
-            LogEntry raftLog = _RaftDao.getEntry(index);
+            _SelfMachine.commit(nextCommit, _RaftDao);
+            _Logger.debug("leader commit:%d@%d", nextCommit, _SelfMachine.getTerm());
+            LogEntry raftLog = _RaftDao.getEntry(nextCommit);
             X76_RaftNotify x76 = createNotify(raftLog);
             x76.setLeader();
             if (raftLog.isPublic()) {
@@ -550,18 +557,20 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         }
     }
 
-    public IPair onReject(long peerId, long term, long index, long indexTerm, long candidate, int code, int state)
+    public IPair onReject(long peerId, long term, long index, long indexTerm, int code, int state)
     {
+        if (highTerm(term)) { return null; }
         RaftMachine peerMachine = getMachine(peerId, term, index);
         if (peerMachine == null) { return null; }
         peerMachine.setIndexTerm(indexTerm);
-        peerMachine.setCandidate(candidate);
-        peerMachine.setLeader(0);
+        peerMachine.setCandidate(INVALID_PEER_ID);
+        peerMachine.setLeader(INVALID_PEER_ID);
+
         switch (code)
         {
             case LOWER_TERM:
                 tickCancel();
-                heartbeatCancel();
+                leadCancel();
                 electCancel();
                 _Logger.debug("self.term %d < response.term %d => step_down",
                               _SelfMachine.getTerm(),

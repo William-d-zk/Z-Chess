@@ -39,6 +39,7 @@ import com.tgx.chess.bishop.io.zprotocol.raft.X70_RaftVote;
 import com.tgx.chess.bishop.io.zprotocol.raft.X71_RaftBallot;
 import com.tgx.chess.bishop.io.zprotocol.raft.X72_RaftAppend;
 import com.tgx.chess.bishop.io.zprotocol.raft.X73_RaftAccept;
+import com.tgx.chess.bishop.io.zprotocol.raft.X74_RaftReject;
 import com.tgx.chess.bishop.io.zprotocol.raft.X75_RaftRequest;
 import com.tgx.chess.bishop.io.zprotocol.raft.X76_RaftNotify;
 import com.tgx.chess.king.base.inf.IPair;
@@ -114,6 +115,14 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
                                           x73.getCatchUpTerm(),
                                           x73.getLeaderId(),
                                           manager);
+            case X74_RaftReject.COMMAND:
+                X74_RaftReject x74 = (X74_RaftReject) content;
+                return _RaftNode.onReject(x74.getPeerId(),
+                                          x74.getTerm(),
+                                          x74.getIndex(),
+                                          x74.getIndexTerm(),
+                                          x74.getCode(),
+                                          x74.getState());
             case X75_RaftRequest.COMMAND:
                 if (_RaftNode.getMachine()
                              .getState() != LEADER)
