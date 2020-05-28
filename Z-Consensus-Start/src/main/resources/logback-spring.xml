@@ -57,16 +57,16 @@
     <logger name="cluster.knight" level="DEBUG">
         <appender-ref ref="Z-CHESS"/>
     </logger>
-    <logger name="base.king" level="DEBUG">
+    <logger name="base.king" level="INFO">
         <appender-ref ref="Z-CHESS"/>
     </logger>
-    <logger name="io.queen" level="DEBUG">
+    <logger name="io.queen" level="INFO">
         <appender-ref ref="Z-CHESS"/>
     </logger>
-    <logger name="protocol.bishop" level="DEBUG">
+    <logger name="protocol.bishop" level="INFO">
         <appender-ref ref="Z-CHESS"/>
     </logger>
-    <logger name="endpoint.pawn" level="DEBUG">
+    <logger name="endpoint.pawn" level="INFO">
         <appender-ref ref="Z-CHESS"/>
     </logger>
 
