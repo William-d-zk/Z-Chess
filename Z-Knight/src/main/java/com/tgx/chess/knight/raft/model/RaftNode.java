@@ -301,17 +301,17 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
     }
 
     @SuppressWarnings("unchecked")
-    private IControl<ZContext>[] rejectAndVote(long rejectTo)
+    private IControl<ZContext>[] rejectAndVote(long rejectTo, ISessionManager<ZContext> manager)
     {
         vote4me();
-        return Stream.concat(Stream.of(reject(RaftCode.OBSOLETE, rejectTo)), createVotes(_SelfMachine))
+        return Stream.concat(Stream.of(reject(RaftCode.OBSOLETE, rejectTo)), createVotes(_SelfMachine, manager))
                      .toArray(IControl[]::new);
     }
 
-    private X71_RaftBallot stepUp(long peerId, long term)
+    private X71_RaftBallot stepUp(long candidate, long term)
     {
         tickCancel();
-        _SelfMachine.beElector(peerId, term, _RaftDao);
+        _SelfMachine.beElector(candidate, term, _RaftDao);
         mElectTask = _TimeWheel.acquire(this, _ElectSchedule);
         _Logger.debug("[follower → elector] %s", _SelfMachine);
         return ballot();
@@ -406,7 +406,12 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         return false;
     }
 
-    public IPair elect(long term, long index, long indexTerm, long candidate, long commit)
+    public IPair elect(long term,
+                       long index,
+                       long indexTerm,
+                       long candidate,
+                       long commit,
+                       ISessionManager<ZContext> manager)
     {
         IControl<ZContext>[] response = lowTerm(term, candidate);
         if (response != null) return new Pair<>(response, null);
@@ -425,7 +430,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                               _SelfMachine.getIndexTerm(),
                               index,
                               indexTerm);
-                return new Pair<>(rejectAndVote(candidate), null);
+                return new Pair<>(rejectAndVote(candidate, manager), null);
             }
         }
         //elector|leader|candidate,one of these states ，candidate != INDEX_NAN 不需要重复判断
@@ -436,7 +441,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         return null;
     }
 
-    public IPair ballot(long term, long index, long elector, long candidate)
+    public IPair ballot(long term, long index, long elector, long candidate, ISessionManager<ZContext> manager)
     {
         IControl<ZContext>[] response = lowTerm(term, elector);
         if (response != null) return new Pair<>(response, null);
@@ -453,7 +458,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
             && _RaftGraph.isMajorAcceptCandidate(_SelfMachine.getPeerId(), _SelfMachine.getTerm()))
         {
             beLeader();
-            return new Pair<>(createBroadcasts().toArray(X72_RaftAppend[]::new), null);
+            return new Pair<>(createBroadcasts(manager).toArray(X72_RaftAppend[]::new), null);
         }
         return null;
     }
@@ -770,7 +775,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         _Logger.warning("elect time out event [ignore]");
     }
 
-    public Stream<X70_RaftVote> checkVoteState(RaftMachine update)
+    public Stream<X70_RaftVote> checkVoteState(RaftMachine update, ISessionManager<ZContext> manager)
     {
         if (update.getTerm() == _SelfMachine.getTerm() + 1
             && update.getIndex() == _SelfMachine.getIndex()
@@ -781,13 +786,13 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
             && _SelfMachine.getState() == FOLLOWER)
         {
             vote4me();
-            return createVotes(update);
+            return createVotes(update, manager);
         }
         _Logger.warning("check vote failed; now: %s", _SelfMachine);
         return null;
     }
 
-    public Stream<X72_RaftAppend> checkLogAppend(RaftMachine update)
+    public Stream<X72_RaftAppend> checkLogAppend(RaftMachine update, ISessionManager<ZContext> manager)
     {
         if (_SelfMachine.getState() == LEADER
             && _SelfMachine.getPeerId() == update.getPeerId()
@@ -797,7 +802,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
             && _SelfMachine.getCommit() >= update.getCommit())
         {
             _Logger.debug("keep lead =>%s", _SelfMachine);
-            return createBroadcasts();
+            return createBroadcasts(manager);
         }
         //state change => ignore
         _Logger.warning("check leader broadcast failed; now:%s", _SelfMachine);
@@ -813,14 +818,15 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
 
     public <T extends IConsistent & IProtocol> Stream<X72_RaftAppend> newLogEntry(T request,
                                                                                   long client,
-                                                                                  IStorage.Operation operation)
+                                                                                  ISessionManager<ZContext> manager)
     {
         return newLogEntry(request.serial(),
                            request.encode(),
                            client,
                            request.getOrigin(),
                            request.isPublic(),
-                           operation);
+                           IStorage.Operation.OP_INSERT,
+                           manager);
     }
 
     public IPair newLogEntry(int serial,
@@ -830,21 +836,15 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                              boolean pub,
                              ISessionManager<ZContext> manager)
     {
-        Stream<X72_RaftAppend> s = newLogEntry(serial, payload, client, origin, pub, IStorage.Operation.OP_INSERT);
+        Stream<X72_RaftAppend> s = newLogEntry(serial,
+                                               payload,
+                                               client,
+                                               origin,
+                                               pub,
+                                               IStorage.Operation.OP_APPEND,
+                                               manager);
         if (s != null) {
-            X72_RaftAppend[] x72s = s.map(x72 ->
-            {
-                long follower = x72.getFollower();
-                ISession<ZContext> targetSession = manager.findSessionByPrefix(follower);
-                if (targetSession != null) {
-                    //此处不用判断是否管理，执行线程与 onDismiss在同一线程，只要存在此时的状态一定为valid
-                    x72.setSession(targetSession);
-                    return x72;
-                }
-                else return null;
-            })
-                                     .filter(Objects::nonNull)
-                                     .toArray(X72_RaftAppend[]::new);
+            X72_RaftAppend[] x72s = s.toArray(X72_RaftAppend[]::new);
             if (x72s.length > 0) return new Pair<>(x72s, null);
         }
         return null;
@@ -855,7 +855,8 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                                                long client,
                                                long origin,
                                                boolean pub,
-                                               IStorage.Operation operation)
+                                               IStorage.Operation operation,
+                                               ISessionManager<ZContext> manager)
     {
         _Logger.debug("create new raft log");
         LogEntry newEntry = new LogEntry(_SelfMachine.getTerm(),
@@ -869,13 +870,13 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         if (_RaftDao.appendLog(newEntry)) {
             _SelfMachine.appendLog(newEntry.getIndex(), newEntry.getTerm(), _RaftDao);
             _Logger.debug("leader appended log %d@%d", newEntry.getIndex(), newEntry.getTerm());
-            return createBroadcasts();
+            return createBroadcasts(manager);
         }
         _Logger.fetal("RAFT WAL failed!");
         return null;
     }
 
-    private Stream<X70_RaftVote> createVotes(IRaftMachine update)
+    private Stream<X70_RaftVote> createVotes(IRaftMachine update, ISessionManager<ZContext> manager)
     {
         return _RaftGraph.getNodeMap()
                          .keySet()
@@ -883,25 +884,44 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                          .filter(peerId -> peerId != _SelfMachine.getPeerId())
                          .map(peerId ->
                          {
-                             X70_RaftVote x72 = new X70_RaftVote(_ZUID.getId());
-                             x72.setElector(peerId);
-                             x72.setCandidateId(update.getPeerId());
-                             x72.setTerm(update.getTerm());
-                             x72.setIndex(update.getIndex());
-                             x72.setIndexTerm(update.getIndexTerm());
-                             x72.setCommit(update.getCommit());
-                             return x72;
-                         });
+                             ISession<ZContext> session = manager.findSessionByPrefix(peerId);
+                             if (session != null) {
+                                 X70_RaftVote x70 = new X70_RaftVote(_ZUID.getId());
+                                 x70.setElector(peerId);
+                                 x70.setCandidateId(update.getPeerId());
+                                 x70.setTerm(update.getTerm());
+                                 x70.setIndex(update.getIndex());
+                                 x70.setIndexTerm(update.getIndexTerm());
+                                 x70.setCommit(update.getCommit());
+                                 x70.setSession(session);
+                                 return x70;
+                             }
+                             return null;
+                         })
+                         .filter(Objects::nonNull);
     }
 
-    private Stream<X72_RaftAppend> createBroadcasts()
+    private Stream<X72_RaftAppend> createBroadcasts(ISessionManager<ZContext> manager)
     {
         mHeartbeatTask = _TimeWheel.acquire(this, _HeartbeatSchedule);
         return _RaftGraph.getNodeMap()
                          .values()
                          .stream()
                          .filter(other -> other.getPeerId() != _SelfMachine.getPeerId())
-                         .map(this::createAppend);
+                         .map(follower ->
+                         {
+                             X72_RaftAppend x72 = createAppend(follower);
+                             ISession<ZContext> session = manager.findSessionByPrefix(x72.getFollower());
+                             if (session == null) {
+                                 _Logger.warning("not found peerId:%#x session", x72.getFollower());
+                                 return null;
+                             }
+                             else {
+                                 x72.setSession(session);
+                                 return x72;
+                             }
+                         })
+                         .filter(Objects::nonNull);
     }
 
     private X72_RaftAppend createAppend(RaftMachine follower)
