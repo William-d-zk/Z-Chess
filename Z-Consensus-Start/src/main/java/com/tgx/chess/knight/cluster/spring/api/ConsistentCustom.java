@@ -31,8 +31,8 @@ import com.tgx.chess.knight.cluster.spring.model.ConsistentProtocol;
 import com.tgx.chess.knight.json.JsonUtil;
 import com.tgx.chess.queen.event.handler.cluster.IConsistentCustom;
 import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.io.core.inf.IConsistent;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
+import com.tgx.chess.queen.io.core.inf.ITraceable;
 
 @Component
 public class ConsistentCustom
@@ -42,7 +42,7 @@ public class ConsistentCustom
     private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
 
     @Override
-    public <T extends IConsistent & IProtocol> Void handle(T protocol, Throwable throwable)
+    public <T extends ITraceable & IProtocol> Void handle(T protocol, Throwable throwable)
     {
         if (throwable == null) {
             _Logger.debug("notify---consistent");
@@ -51,7 +51,7 @@ public class ConsistentCustom
 
                 X76_RaftNotify x76 = (X76_RaftNotify) protocol;
                 byte[] data = x76.getPayload();
-                if (x76.getPayloadSerial() == ConsistentProtocol._SERIAL) {
+                if (x76.getSerial() == ConsistentProtocol._SERIAL) {
                     ConsistentProtocol consistentProtocol = JsonUtil.readValue(data, ConsistentProtocol.class);
                     consistentProtocol.decode(data);
                     _Logger.debug("notify ok");
@@ -78,9 +78,9 @@ public class ConsistentCustom
     }
 
     @Override
-    public <T extends IConsistent & IProtocol> IOperator<T,
-                                                         Throwable,
-                                                         Void> getOperator()
+    public <T extends ITraceable & IProtocol> IOperator<T,
+                                                        Throwable,
+                                                        Void> getOperator()
     {
         return this::handle;
     }

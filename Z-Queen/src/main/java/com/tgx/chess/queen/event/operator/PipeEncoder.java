@@ -28,7 +28,6 @@ import java.util.Objects;
 
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
-import com.tgx.chess.king.base.util.IoUtil;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IControl;
@@ -58,11 +57,7 @@ public class PipeEncoder<C extends IContext<C>>
         try {
             IPacket send = filterWrite(command, session.getContext());
             Objects.requireNonNull(send);
-            _Logger.debug("%s send:%s",
-                          command,
-                          IoUtil.bin2Hex(send.getBuffer()
-                                             .array(),
-                                         "."));
+            _Logger.debug("%s ", command);
             session.write(send, _AioWriter);
         }
         catch (Exception e) {

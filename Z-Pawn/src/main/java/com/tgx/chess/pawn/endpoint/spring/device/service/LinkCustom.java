@@ -55,12 +55,12 @@ import com.tgx.chess.pawn.endpoint.spring.device.jpa.repository.IDeviceJpaReposi
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.handler.mix.ILinkCustom;
 import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.io.core.inf.IConsistent;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
 import com.tgx.chess.queen.io.core.inf.IQoS;
 import com.tgx.chess.queen.io.core.inf.ISession;
 import com.tgx.chess.queen.io.core.inf.ISessionManager;
+import com.tgx.chess.queen.io.core.inf.ITraceable;
 
 @Component
 public class LinkCustom
@@ -176,7 +176,7 @@ public class LinkCustom
             ignore session
             */
             X76_RaftNotify x76 = (X76_RaftNotify) response;
-            int cmd = x76.getPayloadSerial();
+            int cmd = x76.getSerial();
             request = ZSort.getCommandFactory(cmd)
                            .create(cmd);
             request.decode(x76.getPayload());
@@ -210,15 +210,15 @@ public class LinkCustom
     }
 
     @Override
-    public <T extends IConsistent & IProtocol> IOperator<T,
-                                                         Throwable,
-                                                         Void> getOperator()
+    public <T extends ITraceable & IProtocol> IOperator<T,
+                                                        Throwable,
+                                                        Void> getOperator()
     {
         return this::handle;
     }
 
     @Override
-    public <T extends IConsistent & IProtocol> Void handle(T request, Throwable throwable)
+    public <T extends ITraceable & IProtocol> Void handle(T request, Throwable throwable)
     {
         return null;
     }

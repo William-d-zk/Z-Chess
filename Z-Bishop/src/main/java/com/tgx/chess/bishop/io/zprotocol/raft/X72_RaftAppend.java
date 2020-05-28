@@ -29,37 +29,36 @@ import com.tgx.chess.king.base.util.IoUtil;
 
 /**
  * @author william.d.zk
- * @date 2019/12/10
  */
-public class X72_RaftVote
+public class X72_RaftAppend
         extends
         ZCommand
 {
     public final static int COMMAND = 0x72;
 
-    public X72_RaftVote(long msgId)
+    public X72_RaftAppend(long msgId)
     {
         super(COMMAND, msgId);
     }
 
-    public X72_RaftVote()
+    public X72_RaftAppend()
     {
         super(COMMAND, true);
     }
+
+    //leaderId
+    private long mLeaderId;
+    private long mTerm;
+    private long mPreIndex;
+    private long mPreIndexTerm;
+    private long mCommit;
+    private long mFollowerId;
 
     @Override
     public int getPriority()
     {
         return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
     }
-
-    //candidateId
-    private long mPeerId;
-    private long mTerm;
-    private long mLogIndex;
-    private long mLogTerm;
-    private long mElector;
-    private long mCommit;
 
     @Override
     public int dataLength()
@@ -70,17 +69,17 @@ public class X72_RaftVote
     @Override
     public int decodec(byte[] data, int pos)
     {
-        mPeerId = IoUtil.readLong(data, pos);
+        mLeaderId = IoUtil.readLong(data, pos);
         pos += 8;
         mTerm = IoUtil.readLong(data, pos);
         pos += 8;
-        mLogIndex = IoUtil.readLong(data, pos);
+        mPreIndex = IoUtil.readLong(data, pos);
         pos += 8;
-        mLogTerm = IoUtil.readLong(data, pos);
-        pos += 8;
-        mElector = IoUtil.readLong(data, pos);
+        mPreIndexTerm = IoUtil.readLong(data, pos);
         pos += 8;
         mCommit = IoUtil.readLong(data, pos);
+        pos += 8;
+        mFollowerId = IoUtil.readLong(data, pos);
         pos += 8;
         return pos;
     }
@@ -88,23 +87,23 @@ public class X72_RaftVote
     @Override
     public int encodec(byte[] data, int pos)
     {
-        pos += IoUtil.writeLong(mPeerId, data, pos);
+        pos += IoUtil.writeLong(mLeaderId, data, pos);
         pos += IoUtil.writeLong(mTerm, data, pos);
-        pos += IoUtil.writeLong(mLogIndex, data, pos);
-        pos += IoUtil.writeLong(mLogTerm, data, pos);
-        pos += IoUtil.writeLong(mElector, data, pos);
+        pos += IoUtil.writeLong(mPreIndex, data, pos);
+        pos += IoUtil.writeLong(mPreIndexTerm, data, pos);
         pos += IoUtil.writeLong(mCommit, data, pos);
+        pos += IoUtil.writeLong(mFollowerId, data, pos);
         return pos;
     }
 
-    public long getPeerId()
+    public long getLeaderId()
     {
-        return mPeerId;
+        return mLeaderId;
     }
 
-    public void setPeerId(long peerId)
+    public void setLeaderId(long peerId)
     {
-        this.mPeerId = peerId;
+        this.mLeaderId = peerId;
     }
 
     public long getTerm()
@@ -114,47 +113,47 @@ public class X72_RaftVote
 
     public void setTerm(long term)
     {
-        mTerm = term;
-    }
-
-    public long getLogIndex()
-    {
-        return mLogIndex;
-    }
-
-    public void setLogIndex(long logIndex)
-    {
-        mLogIndex = logIndex;
-    }
-
-    public long getLogTerm()
-    {
-        return mLogTerm;
-    }
-
-    public void setLogTerm(long logTerm)
-    {
-        mLogTerm = logTerm;
-    }
-
-    public long getElector()
-    {
-        return mElector;
-    }
-
-    public void setElector(long elector)
-    {
-        mElector = elector;
-    }
-
-    public void setCommit(long commit)
-    {
-        mCommit = commit;
+        this.mTerm = term;
     }
 
     public long getCommit()
     {
         return mCommit;
+    }
+
+    public void setCommit(long commit)
+    {
+        this.mCommit = commit;
+    }
+
+    public long getPreIndex()
+    {
+        return mPreIndex;
+    }
+
+    public void setPreIndex(long preIndex)
+    {
+        mPreIndex = preIndex;
+    }
+
+    public long getPreIndexTerm()
+    {
+        return mPreIndexTerm;
+    }
+
+    public void setPreIndexTerm(long preIndexTerm)
+    {
+        mPreIndexTerm = preIndexTerm;
+    }
+
+    public void setFollower(long follower)
+    {
+        mFollowerId = follower;
+    }
+
+    public long getFollower()
+    {
+        return mFollowerId;
     }
 
     @Override
@@ -166,12 +165,13 @@ public class X72_RaftVote
     @Override
     public String toString()
     {
-        return String.format("X72_RaftVote{mPeerId=%#x, mTerm=%d, mLogIndex=%d, mLogTerm=%d, mElector=%#x, mCommit=%d}",
-                             mPeerId,
+        return String.format("X72_RaftAppend{ leader:%#x; term:%d, pre:%d@%d  commit:%d payload[%d]",
+                             mLeaderId,
                              mTerm,
-                             mLogIndex,
-                             mLogTerm,
-                             mElector,
-                             mCommit);
+                             mPreIndex,
+                             mPreIndexTerm,
+                             mCommit,
+                             getPayload() == null ? 0
+                                                  : getPayload().length);
     }
 }

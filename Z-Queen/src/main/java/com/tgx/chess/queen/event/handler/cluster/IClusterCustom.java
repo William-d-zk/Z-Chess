@@ -86,12 +86,4 @@ public interface IClusterCustom<C extends IContext<C>,
      * @return true 等待集群确认，false 接续执行
      */
     boolean waitForCommit();
-
-    /**
-     * 获取一致性处理器
-     * 
-     * @return
-     */
-    IConsistentJudge getJudge();
-
 }

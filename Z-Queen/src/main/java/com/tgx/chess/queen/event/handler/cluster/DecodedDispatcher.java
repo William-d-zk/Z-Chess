@@ -116,7 +116,7 @@ public class DecodedDispatcher<C extends IContext<C>>
 
     protected IPair getNextPipe(ISort.Mode mode, IControl<C> cmd)
     {
-        _Logger.info("decoded: %s | %s", cmd, mode);
+        _Logger.debug("decoded: %s | %s", cmd, mode);
         if (mode == ISort.Mode.CLUSTER && cmd.isMapping()) { return new Pair<>(_Cluster, CLUSTER); }
         return new Pair<>(dispatchWorker(cmd), LOGIC);
     }

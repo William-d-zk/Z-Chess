@@ -26,18 +26,22 @@ package com.tgx.chess.pawn.endpoint.spring.device.jpa.model;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.EntityListeners;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.tgx.chess.knight.json.JsonUtil;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
  * @author william.d.zk
@@ -49,6 +53,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
                       allowGetters = true)
 public abstract class AuditModel
         implements
+        IProtocol,
         Serializable
 {
     @Temporal(TemporalType.TIMESTAMP)
@@ -85,5 +90,29 @@ public abstract class AuditModel
     public String toString()
     {
         return String.format("create@ %s update@ %s", getCreatedAt(), getUpdatedAt());
+    }
+
+    @Transient
+    private int mLength;
+
+    @Override
+    public byte[] encode()
+    {
+        byte[] b = JsonUtil.writeValueAsBytes(this);
+        Objects.requireNonNull(b);
+        mLength = b.length;
+        return b;
+    }
+
+    @Override
+    public int decode(byte[] data)
+    {
+        return mLength = data.length;
+    }
+
+    @Override
+    public int dataLength()
+    {
+        return mLength;
     }
 }

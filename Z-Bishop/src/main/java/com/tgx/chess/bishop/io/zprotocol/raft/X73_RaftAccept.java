@@ -30,64 +30,62 @@ import com.tgx.chess.king.base.util.IoUtil;
 /**
  * @author william.d.zk
  */
-public class X7F_RaftResponse
+public class X73_RaftAccept
         extends
         ZCommand
 {
-    public final static int COMMAND = 0x7F;
+    public final static int COMMAND = 0x73;
 
-    public X7F_RaftResponse()
+    public X73_RaftAccept()
     {
         super(COMMAND, true);
     }
 
-    public X7F_RaftResponse(long msgId)
+    public X73_RaftAccept(long msgId)
     {
         super(COMMAND, msgId);
     }
 
-    private long mPeerId;
+    private long mFollowerId;
     private long mTerm;
-    private long mCandidate;
     private long mCatchUp;
     private long mCatchUpTerm;
-    private int  mCode;
-    private int  mState;
+    private long mCommit;
+    private long mLeaderId;
 
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 42;
+        return super.dataLength() + 48;
     }
 
     @Override
     public int decodec(byte[] data, int pos)
     {
-        mPeerId = IoUtil.readLong(data, pos);
+        mFollowerId = IoUtil.readLong(data, pos);
         pos += 8;
         mTerm = IoUtil.readLong(data, pos);
-        pos += 8;
-        mCandidate = IoUtil.readLong(data, pos);
         pos += 8;
         mCatchUp = IoUtil.readLong(data, pos);
         pos += 8;
         mCatchUpTerm = IoUtil.readLong(data, pos);
         pos += 8;
-        mCode = data[pos++];
-        mState = data[pos++];
+        mCommit = IoUtil.readLong(data, pos);
+        pos += 8;
+        mLeaderId = IoUtil.readLong(data, pos);
+        pos += 8;
         return pos;
     }
 
     @Override
     public int encodec(byte[] data, int pos)
     {
-        pos += IoUtil.writeLong(mPeerId, data, pos);
+        pos += IoUtil.writeLong(mFollowerId, data, pos);
         pos += IoUtil.writeLong(mTerm, data, pos);
-        pos += IoUtil.writeLong(mCandidate, data, pos);
         pos += IoUtil.writeLong(mCatchUp, data, pos);
         pos += IoUtil.writeLong(mCatchUpTerm, data, pos);
-        pos += IoUtil.writeByte(mCode, data, pos);
-        pos += IoUtil.writeByte(mState, data, pos);
+        pos += IoUtil.writeLong(mCommit, data, pos);
+        pos += IoUtil.writeLong(mLeaderId, data, pos);
         return pos;
     }
 
@@ -101,14 +99,14 @@ public class X7F_RaftResponse
         mTerm = term;
     }
 
-    public int getCode()
+    public long getCommit()
     {
-        return mCode;
+        return mCommit;
     }
 
-    public void setCode(int code)
+    public void setCommit(long commit)
     {
-        mCode = code;
+        mCommit = commit;
     }
 
     public long getCatchUp()
@@ -121,34 +119,24 @@ public class X7F_RaftResponse
         mCatchUp = catchUp;
     }
 
-    public long getPeerId()
+    public long getFollowerId()
     {
-        return mPeerId;
+        return mFollowerId;
     }
 
-    public void setPeerId(long peerId)
+    public void setFollowerId(long peerId)
     {
-        mPeerId = peerId;
+        mFollowerId = peerId;
     }
 
-    public int getState()
+    public void setLeaderId(long leaderId)
     {
-        return mState;
+        mLeaderId = leaderId;
     }
 
-    public void setState(int state)
+    public long getLeaderId()
     {
-        mState = state;
-    }
-
-    public void setCandidate(long candidate)
-    {
-        mCandidate = candidate;
-    }
-
-    public long getCandidate()
-    {
-        return mCandidate;
+        return mLeaderId;
     }
 
     public long getCatchUpTerm()
@@ -170,13 +158,12 @@ public class X7F_RaftResponse
     @Override
     public String toString()
     {
-        return String.format("X7F_RaftResponse{mPeerId=%#x, mTerm=%d, mCandidate=%#x, mCatchUp=%d@%d, mCode=%d, mState=%d}",
-                             mPeerId,
+        return String.format("X71_RaftAccept{follower:%#x, term:%d, catch_up:%d@%d, commit:%d,leader:%#x}",
+                             mFollowerId,
                              mTerm,
-                             mCandidate,
                              mCatchUp,
                              mCatchUpTerm,
-                             mCode,
-                             mState);
+                             mCommit,
+                             mLeaderId);
     }
 }

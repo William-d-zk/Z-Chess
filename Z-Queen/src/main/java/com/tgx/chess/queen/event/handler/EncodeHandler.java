@@ -24,6 +24,8 @@
 
 package com.tgx.chess.queen.event.handler;
 
+import static com.tgx.chess.queen.event.inf.IOperator.Type.WRITE;
+import static com.tgx.chess.queen.event.inf.IOperator.Type.WROTE;
 import static com.tgx.chess.queen.io.core.inf.IContext.ENCODE_ERROR;
 
 import java.util.Objects;
@@ -66,10 +68,6 @@ public class EncodeHandler<C extends IContext<C>>
             }
         }
         else {
-            _Logger.debug("%s→%s",
-                          event.getEventType(),
-                          event.getContent()
-                               .getFirst());
             switch (event.getEventType())
             {
                 case WRITE:
@@ -79,6 +77,7 @@ public class EncodeHandler<C extends IContext<C>>
                     IOperator<IControl<C>,
                               ISession<C>,
                               ITriple> writeOperator = event.getEventOp();
+                    _Logger.debug("%s→  %s | %s", WRITE, cmd, session);
                     encodeHandler(event, cmd, session, writeOperator);
                     cmd.dispose();
                     break;
@@ -89,6 +88,7 @@ public class EncodeHandler<C extends IContext<C>>
                     IOperator<Integer,
                               ISession<C>,
                               ITriple> wroteOperator = event.getEventOp();
+                    _Logger.debug("%s→  %s | %s", WROTE, wroteCnt, session);
                     encodeHandler(event, wroteCnt, session, wroteOperator);
                     break;
                 default:

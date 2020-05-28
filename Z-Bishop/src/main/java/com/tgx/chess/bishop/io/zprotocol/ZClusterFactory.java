@@ -25,11 +25,13 @@
 package com.tgx.chess.bishop.io.zprotocol;
 
 import com.tgx.chess.bishop.io.ws.WsFrame;
-import com.tgx.chess.bishop.io.zprotocol.raft.X72_RaftVote;
+import com.tgx.chess.bishop.io.zprotocol.raft.X70_RaftVote;
+import com.tgx.chess.bishop.io.zprotocol.raft.X71_RaftBallot;
+import com.tgx.chess.bishop.io.zprotocol.raft.X72_RaftAppend;
+import com.tgx.chess.bishop.io.zprotocol.raft.X73_RaftAccept;
+import com.tgx.chess.bishop.io.zprotocol.raft.X74_RaftReject;
 import com.tgx.chess.bishop.io.zprotocol.raft.X75_RaftRequest;
 import com.tgx.chess.bishop.io.zprotocol.raft.X76_RaftNotify;
-import com.tgx.chess.bishop.io.zprotocol.raft.X7E_RaftBroadcast;
-import com.tgx.chess.bishop.io.zprotocol.raft.X7F_RaftResponse;
 import com.tgx.chess.queen.io.core.inf.ICommandFactory;
 
 /**
@@ -53,16 +55,20 @@ public class ZClusterFactory
 
         switch (serial)
         {
-            case X72_RaftVote.COMMAND:
-                return new X72_RaftVote();
+            case X70_RaftVote.COMMAND:
+                return new X70_RaftVote();
+            case X71_RaftBallot.COMMAND:
+                return new X71_RaftBallot();
+            case X72_RaftAppend.COMMAND:
+                return new X72_RaftAppend();
+            case X73_RaftAccept.COMMAND:
+                return new X73_RaftAccept();
+            case X74_RaftReject.COMMAND:
+                return new X74_RaftReject();
             case X75_RaftRequest.COMMAND:
                 return new X75_RaftRequest();
             case X76_RaftNotify.COMMAND:
                 return new X76_RaftNotify();
-            case X7E_RaftBroadcast.COMMAND:
-                return new X7E_RaftBroadcast();
-            case X7F_RaftResponse.COMMAND:
-                return new X7F_RaftResponse();
             default:
                 return null;
         }

@@ -30,7 +30,7 @@
     <parent>
         <artifactId>framework.z-chess</artifactId>
         <groupId>com.tgx.service</groupId>
-        <version>1.0.9.SNAPSHOT</version>
+        <version>1.0.9-SNAPSHOT</version>
     </parent>
     <artifactId>io.z-queen</artifactId>
     <name>Z-Queen</name>
