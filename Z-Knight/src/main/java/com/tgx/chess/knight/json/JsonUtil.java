@@ -37,6 +37,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.king.base.util.IoUtil;
 
 @ConfigurationProperties(prefix = "spring.jackson")
 @Configuration
@@ -76,6 +77,7 @@ public class JsonUtil
 
     public static <T> T readValue(byte[] input, Class<T> clazz)
     {
+        if (input == null) return null;
         try {
             return OBJECT_MAPPER.readValue(input, clazz);
         }
@@ -92,6 +94,7 @@ public class JsonUtil
 
     public static <T> T readValue(String input, Class<T> clazz)
     {
+        if (IoUtil.isBlank(input)) return null;
         try {
             return OBJECT_MAPPER.readValue(input, clazz);
         }
@@ -108,6 +111,7 @@ public class JsonUtil
 
     public static <T> T readValue(byte[] input, TypeReference<T> type)
     {
+        if (input == null) return null;
         try {
             return OBJECT_MAPPER.readValue(input, type);
         }
@@ -124,6 +128,7 @@ public class JsonUtil
 
     public static <T> T readValue(String input, TypeReference<T> type)
     {
+        if (IoUtil.isBlank(input)) return null;
         try {
             return OBJECT_MAPPER.readValue(input, type);
         }
@@ -140,6 +145,7 @@ public class JsonUtil
 
     public static JsonNode readTree(byte[] input)
     {
+        if (input == null) return OBJECT_MAPPER.nullNode();
         try {
             return OBJECT_MAPPER.readTree(input);
         }
@@ -150,6 +156,7 @@ public class JsonUtil
 
     public static JsonNode readTree(String input)
     {
+        if (IoUtil.isBlank(input)) return OBJECT_MAPPER.nullNode();
         try {
             return OBJECT_MAPPER.readTree(input);
         }
