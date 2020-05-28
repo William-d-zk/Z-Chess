@@ -54,6 +54,8 @@ import com.tgx.chess.queen.config.IAioConfig;
 import com.tgx.chess.queen.config.IClusterConfig;
 import com.tgx.chess.queen.event.handler.cluster.IConsistentCustom;
 import com.tgx.chess.queen.event.processor.QEvent;
+import com.tgx.chess.queen.io.core.inf.IConsistent;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 @Service
 public class ConsistentService
@@ -76,7 +78,8 @@ public class ConsistentService
         _TimeWheel = new TimeWheel();
         _ClusterNode = new ClusterNode(ioConfig, clusterConfig, raftConfig, _TimeWheel);
         _RaftNode = new RaftNode<>(_TimeWheel, raftConfig, raftDao, _ClusterNode);
-        _ClusterCustom = new ClusterCustom<>(_TimeWheel, _RaftNode, _ConsistentCustom = consistentCustom);
+        _ConsistentCustom = consistentCustom;
+        _ClusterCustom = new ClusterCustom<>(_RaftNode);
     }
 
     @PostConstruct
@@ -88,9 +91,18 @@ public class ConsistentService
         _RaftNode.init();
     }
 
-    public void consistentPut(String content, boolean pub, long origin)
+    public void consistentSubmit(String content, boolean pub, long origin)
     {
         if (IoUtil.isBlank(content)) return;
+        consistentSubmit(new ConsistentProtocol(content.getBytes(StandardCharsets.UTF_8),
+                                                pub,
+                                                _ClusterNode.getZuid(),
+                                                origin));
+    }
+
+    public <T extends IConsistent & IProtocol> void consistentSubmit(T consensus)
+    {
+        if (consensus == null) return;
         final ReentrantLock _Lock = _ClusterNode.getCore()
                                                 .getLock(CONSENSUS);
         final RingBuffer<QEvent> _Publish = _ClusterNode.getCore()
@@ -101,11 +113,7 @@ public class ConsistentService
                 try {
                     QEvent event = _Publish.get(sequence);
                     event.produce(CONSENSUS,
-                                  new Pair<>(new ConsistentProtocol(content.getBytes(StandardCharsets.UTF_8),
-                                                                    pub,
-                                                                    _ClusterNode.getZuid(),
-                                                                    origin),
-                                             origin),
+                                  new Pair<>(consensus, consensus.getOrigin()),
                                   _ConsistentCustom.getOperator());
                 }
                 finally {
@@ -116,16 +124,11 @@ public class ConsistentService
                 _Lock.unlock();
             }
         }
-        _Logger.debug("consistent put %s", content);
+        _Logger.debug("consistent submit %s", consensus);
     }
 
     public <A extends IValid> ICancelable acquire(A attach, ScheduleHandler<A> scheduleHandler)
     {
         return _TimeWheel.acquire(attach, scheduleHandler);
-    }
-
-    public long getClusterZuid()
-    {
-        return _ClusterNode.getZuid();
     }
 }

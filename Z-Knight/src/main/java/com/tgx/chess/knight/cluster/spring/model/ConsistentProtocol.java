@@ -24,16 +24,13 @@
 
 package com.tgx.chess.knight.cluster.spring.model;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.tgx.chess.knight.json.JsonUtil;
+import com.tgx.chess.knight.json.JsonProtocol;
 import com.tgx.chess.queen.io.core.inf.IConsistent;
-import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
  * @author william.d.zk
@@ -41,16 +38,16 @@ import com.tgx.chess.queen.io.core.inf.IProtocol;
  */
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class ConsistentProtocol
+        extends
+        JsonProtocol
         implements
-        IConsistent,
-        IProtocol
+        IConsistent
 {
     public final static int  _SERIAL = CONSISTENT_SERIAL + 1;
     private final byte[]     _Content;
     private final boolean    _Public;
     private final long       _Origin;
     private final long       _Zuid;
-    private int              mLength;
     @JsonIgnore
     private transient byte[] tData;
 
@@ -67,12 +64,6 @@ public class ConsistentProtocol
     }
 
     @Override
-    public int dataLength()
-    {
-        return mLength;
-    }
-
-    @Override
     public int serial()
     {
         return _SERIAL;
@@ -85,18 +76,10 @@ public class ConsistentProtocol
     }
 
     @Override
-    public int decode(byte[] data)
-    {
-        return mLength = data.length;
-    }
-
-    @Override
     public byte[] encode()
     {
         if (tData != null) { return tData; }
-        tData = JsonUtil.writeValueAsBytes(this);
-        Objects.requireNonNull(tData);
-        mLength = tData.length;
+        tData = super.encode();
         return tData;
     }
 

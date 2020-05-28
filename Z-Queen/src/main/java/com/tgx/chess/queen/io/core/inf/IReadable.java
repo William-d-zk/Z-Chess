@@ -41,6 +41,13 @@ public interface IReadable<A>
                                     A> completionHandler) throws IllegalStateException;
 
     /**
+     * read next
+     * 
+     * @throws IllegalStateException
+     */
+    void readNext() throws IllegalStateException;
+
+    /**
      * read bytes from received buffer
      * 
      * @param length

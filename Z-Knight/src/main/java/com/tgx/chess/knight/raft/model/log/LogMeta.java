@@ -28,11 +28,11 @@ import static com.tgx.chess.knight.raft.IRaftMachine.MIN_START;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.Objects;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -40,17 +40,24 @@ import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.knight.json.JsonUtil;
 
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class LogMeta
         extends
         BaseMeta
 {
     private final static int _SERIAL = INTERNAL_SERIAL + 1;
 
-    /** 已存储日志的start index */
+    /**
+     * 存储日志的 start index，由于有 snapshot的存在 start之前的日志将被抛弃，
+     * 
+     * ``` 1 ``` 为首条日志index
+     */
     private long                               mStart;
     /** 本机存储日志的 index */
     private long                               mIndex;
-    /** 已存储日志的最大任期号 */
+    /** 本机存储日志的 index-term */
+    private long                               mIndexTerm;
+    /** 已存储的最大任期号 */
     private long                               mTerm;
     /** 当前状态机候选人 */
     private long                               mCandidate;
@@ -66,13 +73,12 @@ public class LogMeta
     private Set<Triple<Long,
                        String,
                        Integer>>               mGateSet;
-    @JsonIgnore
-    private transient byte[]                   tData;
 
     @JsonCreator
-    public LogMeta(@JsonProperty("term") long term,
+    public LogMeta(@JsonProperty("start") long start,
+                   @JsonProperty("term") long term,
                    @JsonProperty("index") long index,
-                   @JsonProperty("start") long start,
+                   @JsonProperty("index_term") long indexTerm,
                    @JsonProperty("candidate") long candidate,
                    @JsonProperty("commit") long commit,
                    @JsonProperty("applied") long applied,
@@ -83,9 +89,10 @@ public class LogMeta
                                                         String,
                                                         Integer>> gateSet)
     {
+        mStart = start;
         mTerm = term;
         mIndex = index;
-        mStart = start;
+        mIndexTerm = indexTerm;
         mCandidate = candidate;
         mCommit = commit;
         mApplied = applied;
@@ -127,21 +134,6 @@ public class LogMeta
     {
         mFile = source;
         return this;
-    }
-
-    @Override
-    public int decode(byte[] data)
-    {
-        return mLength = data.length;
-    }
-
-    @Override
-    public byte[] encode()
-    {
-        tData = JsonUtil.writeValueAsBytes(this);
-        Objects.requireNonNull(tData);
-        mLength = tData.length;
-        return tData;
     }
 
     @Override
@@ -248,6 +240,17 @@ public class LogMeta
     public void append(long endIndex, long endIndexTerm)
     {
         mIndex = endIndex;
-        mTerm = endIndexTerm;
+        mIndexTerm = endIndexTerm;
     }
+
+    public void setIndexTerm(long term)
+    {
+        mIndexTerm = term;
+    }
+
+    public long getIndexTerm()
+    {
+        return mIndexTerm;
+    }
+
 }

@@ -26,7 +26,6 @@ package com.tgx.chess.knight.raft.model.log;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -43,8 +42,6 @@ public class SnapshotMeta
     private final static int _SERIAL = INTERNAL_SERIAL + 3;
     private long             mCommit;
     private long             mTerm;
-    @JsonIgnore
-    private transient byte[] tData;
 
     @JsonCreator
     public SnapshotMeta(@JsonProperty("term") long term,
@@ -121,18 +118,4 @@ public class SnapshotMeta
         return mTerm;
     }
 
-    @Override
-    public int decode(byte[] data)
-    {
-        return mLength = data.length;
-    }
-
-    @Override
-    public byte[] encode()
-    {
-        tData = JsonUtil.writeValueAsBytes(this);
-        Objects.requireNonNull(tData);
-        mLength = tData.length;
-        return tData;
-    }
 }

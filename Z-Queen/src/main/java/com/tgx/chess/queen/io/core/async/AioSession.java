@@ -91,11 +91,14 @@ public class AioSession<C extends IContext<C>>
     private long   mHashKey;
     private int    mWroteExpect;
     private int    mSendingBlank;
+    /* reader */
+    private CompletionHandler<Integer,
+                              ISession<C>> mReader;
 
     @Override
     public String toString()
     {
-        return String.format("@%#x \n%s->%s \nmode:%s \nindex:%#x \nvalid:%s\nwait_to_write %d\nqueue_size %d",
+        return String.format("@%#x %s->%s mode:%s index:%#x valid:%s wait_to_write %d queue_size %d",
                              _HashCode,
                              _LocalAddress,
                              _RemoteAddress,
@@ -268,8 +271,15 @@ public class AioSession<C extends IContext<C>>
                                                                            ShutdownChannelGroupException
     {
         if (isClosed()) { return; }
+        mReader = readHandler;
         _RecvBuf.clear();
         _Channel.read(_RecvBuf, _ReadTimeOutInSecond, TimeUnit.SECONDS, this, readHandler);
+    }
+
+    @Override
+    public final void readNext() throws IllegalStateException
+    {
+        readNext(mReader);
     }
 
     @Override
@@ -418,7 +428,7 @@ public class AioSession<C extends IContext<C>>
     {
         if (_Ctx.channelStateLessThan(SESSION_FLUSHED) && mSending.hasRemaining()) {
             _Ctx.advanceChannelState(SESSION_FLUSHED);
-            _Logger.debug("session %#x %d,flush %d", getIndex(), getIndex(), mSending.remaining());
+            _Logger.debug("flush %d | %s", mSending.remaining(), this);
             _Channel.write(mSending, _WriteTimeOutInSecond, TimeUnit.SECONDS, this, handler);
         }
     }

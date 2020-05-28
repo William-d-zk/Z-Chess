@@ -25,10 +25,6 @@
 package com.tgx.chess.knight.json;
 
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -40,11 +36,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
 import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.king.base.util.IoUtil;
 
 @ConfigurationProperties(prefix = "spring.jackson")
 @Configuration
@@ -84,6 +77,7 @@ public class JsonUtil
 
     public static <T> T readValue(byte[] input, Class<T> clazz)
     {
+        if (input == null) return null;
         try {
             return OBJECT_MAPPER.readValue(input, clazz);
         }
@@ -100,6 +94,7 @@ public class JsonUtil
 
     public static <T> T readValue(String input, Class<T> clazz)
     {
+        if (IoUtil.isBlank(input)) return null;
         try {
             return OBJECT_MAPPER.readValue(input, clazz);
         }
@@ -116,6 +111,7 @@ public class JsonUtil
 
     public static <T> T readValue(byte[] input, TypeReference<T> type)
     {
+        if (input == null) return null;
         try {
             return OBJECT_MAPPER.readValue(input, type);
         }
@@ -132,6 +128,7 @@ public class JsonUtil
 
     public static <T> T readValue(String input, TypeReference<T> type)
     {
+        if (IoUtil.isBlank(input)) return null;
         try {
             return OBJECT_MAPPER.readValue(input, type);
         }
@@ -148,6 +145,7 @@ public class JsonUtil
 
     public static JsonNode readTree(byte[] input)
     {
+        if (input == null) return OBJECT_MAPPER.nullNode();
         try {
             return OBJECT_MAPPER.readTree(input);
         }
@@ -158,6 +156,7 @@ public class JsonUtil
 
     public static JsonNode readTree(String input)
     {
+        if (IoUtil.isBlank(input)) return OBJECT_MAPPER.nullNode();
         try {
             return OBJECT_MAPPER.readTree(input);
         }
@@ -173,6 +172,7 @@ public class JsonUtil
 
     public static <T> byte[] writeValueAsBytes(T input)
     {
+        if (input == null) return null;
         try {
             return OBJECT_MAPPER.writeValueAsBytes(input);
         }
@@ -184,6 +184,7 @@ public class JsonUtil
 
     public static <T> String writeValueAsString(T input)
     {
+        if (input == null) return null;
         try {
             return OBJECT_MAPPER.writeValueAsString(input);
         }

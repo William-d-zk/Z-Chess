@@ -29,30 +29,24 @@ import com.tgx.chess.king.base.util.IoUtil;
 
 /**
  * @author william.d.zk
+ * @date 2019/12/10
  */
-public class X7E_RaftBroadcast
+public class X71_RaftBallot
         extends
         ZCommand
 {
-    public final static int COMMAND = 0x7E;
 
-    public X7E_RaftBroadcast(long msgId)
+    public final static int COMMAND = 0x71;
+
+    public X71_RaftBallot(long msgId)
     {
         super(COMMAND, msgId);
     }
 
-    public X7E_RaftBroadcast()
+    public X71_RaftBallot()
     {
         super(COMMAND, true);
     }
-
-    //leaderId
-    private long mPeerId;
-    private long mTerm;
-    private long mCommit;
-    private long mPreIndex;
-    private long mPreIndexTerm;
-    private long mFollower;
 
     @Override
     public int getPriority()
@@ -60,26 +54,27 @@ public class X7E_RaftBroadcast
         return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
     }
 
+    private long mElectorId;
+    private long mTerm;
+    private long mIndex;
+    private long mCandidateId;
+
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 8 * 6;
+        return super.dataLength() + 32;
     }
 
     @Override
     public int decodec(byte[] data, int pos)
     {
-        mPeerId = IoUtil.readLong(data, pos);
+        mElectorId = IoUtil.readLong(data, pos);
         pos += 8;
         mTerm = IoUtil.readLong(data, pos);
         pos += 8;
-        mCommit = IoUtil.readLong(data, pos);
+        mIndex = IoUtil.readLong(data, pos);
         pos += 8;
-        mPreIndex = IoUtil.readLong(data, pos);
-        pos += 8;
-        mPreIndexTerm = IoUtil.readLong(data, pos);
-        pos += 8;
-        mFollower = IoUtil.readLong(data, pos);
+        mCandidateId = IoUtil.readLong(data, pos);
         pos += 8;
         return pos;
     }
@@ -87,23 +82,21 @@ public class X7E_RaftBroadcast
     @Override
     public int encodec(byte[] data, int pos)
     {
-        pos += IoUtil.writeLong(mPeerId, data, pos);
+        pos += IoUtil.writeLong(mElectorId, data, pos);
         pos += IoUtil.writeLong(mTerm, data, pos);
-        pos += IoUtil.writeLong(mCommit, data, pos);
-        pos += IoUtil.writeLong(mPreIndex, data, pos);
-        pos += IoUtil.writeLong(mPreIndexTerm, data, pos);
-        pos += IoUtil.writeLong(mFollower, data, pos);
+        pos += IoUtil.writeLong(mIndex, data, pos);
+        pos += IoUtil.writeLong(mCandidateId, data, pos);
         return pos;
     }
 
-    public long getPeerId()
+    public long getElectorId()
     {
-        return mPeerId;
+        return mElectorId;
     }
 
-    public void setPeerId(long peerId)
+    public void setElectorId(long electorId)
     {
-        this.mPeerId = peerId;
+        mElectorId = electorId;
     }
 
     public long getTerm()
@@ -113,65 +106,36 @@ public class X7E_RaftBroadcast
 
     public void setTerm(long term)
     {
-        this.mTerm = term;
+        mTerm = term;
     }
 
-    public long getCommit()
+    public long getCandidate()
     {
-        return mCommit;
+        return mCandidateId;
     }
 
-    public void setCommit(long commit)
+    public void setCandidate(long candidate)
     {
-        this.mCommit = commit;
+        mCandidateId = candidate;
     }
 
-    public long getPreIndex()
+    public long getIndex()
     {
-        return mPreIndex;
+        return mIndex;
     }
 
-    public void setPreIndex(long preIndex)
+    public void setIndex(long index)
     {
-        mPreIndex = preIndex;
-    }
-
-    public long getPreIndexTerm()
-    {
-        return mPreIndexTerm;
-    }
-
-    public void setPreIndexTerm(long preIndexTerm)
-    {
-        mPreIndexTerm = preIndexTerm;
-    }
-
-    public void setFollower(long follower)
-    {
-        mFollower = follower;
-    }
-
-    public long getFollower()
-    {
-        return mFollower;
-    }
-
-    @Override
-    public boolean isMapping()
-    {
-        return true;
+        mIndex = index;
     }
 
     @Override
     public String toString()
     {
-        return String.format("X7E_RaftBroadcast{ leader:%#x;%d@%d term:%d,commit:%d %s",
-                             mPeerId,
-                             mPreIndex,
-                             mPreIndexTerm,
+        return String.format("X71_RaftBallot{ elector:%#x,term:%d,last:%d,candidate:%#x}",
+                             mElectorId,
                              mTerm,
-                             mCommit,
-                             getPayload() == null ? "no entry"
-                                                  : IoUtil.bin2Hex(getPayload()));
+                             mIndex,
+                             mCandidateId);
     }
 }
