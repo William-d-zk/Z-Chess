@@ -167,6 +167,9 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
         if (machine == null) { return null; }
         switch (machine.operation())
         {
+            case OP_MODIFY://step down → follower
+                _RaftNode.turnToFollower(machine);
+                break;
             case OP_APPEND://heartbeat
                 Stream<X72_RaftAppend> x72Stream = _RaftNode.checkLogAppend(machine);
                 if (x72Stream != null) {
@@ -213,6 +216,7 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
                                     .collect(Collectors.toList());
                 }
                 break;
+
         }
         return null;
     }
