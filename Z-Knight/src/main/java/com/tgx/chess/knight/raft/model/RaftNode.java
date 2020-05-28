@@ -414,16 +414,12 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                 && _SelfMachine.getIndexTerm() <= indexTerm
                 && _SelfMachine.getCommit() <= commit)
             {
-                _Logger.debug("new term [follower %d → elector %d ] | candidate: %#x",
-                              _SelfMachine.getTerm(),
-                              term,
-                              candidate);
+                _Logger.debug("new term [follower → elector %d ] | candidate: %#x", term, candidate);
                 X71_RaftBallot vote = stepUp(candidate, term);
                 return new Pair<>(new X71_RaftBallot[] { vote }, null);
             }
             else {
-                _Logger.debug("less than me; reject and [%s → candidate] | mine:%d@%d > in:%d@%d",
-                              _SelfMachine.getState(),
+                _Logger.debug("less than me; reject and [ follower → candidate] | mine:%d@%d > in:%d@%d",
                               _SelfMachine.getIndex(),
                               _SelfMachine.getIndexTerm(),
                               index,
