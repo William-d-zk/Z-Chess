@@ -24,6 +24,8 @@
 
 package com.tgx.chess.knight.cluster.spring.model;
 
+import java.nio.charset.StandardCharsets;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -105,4 +107,14 @@ public class ConsistentProtocol
         return _Public;
     }
 
+    @Override
+    public String toString()
+    {
+        return String.format("ConsistentProtocol{content:%s,public:%s,origin:%#x,zuid:%#x||%d}",
+                             new String(_Content, StandardCharsets.UTF_8),
+                             _Public,
+                             _Origin,
+                             _Zuid,
+                             _Zuid);
+    }
 }
