@@ -168,9 +168,9 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
         switch (machine.operation())
         {
             case OP_APPEND://heartbeat
-                Stream<X72_RaftAppend> x7eStream = _RaftNode.checkLogAppend(machine);
-                if (x7eStream != null) {
-                    return x7eStream.map(x7E ->
+                Stream<X72_RaftAppend> x72Stream = _RaftNode.checkLogAppend(machine);
+                if (x72Stream != null) {
+                    return x72Stream.map(x7E ->
                     {
                         ISession<ZContext> session = manager.findSessionByPrefix(x7E.getFollower());
                         if (session == null) {
@@ -191,9 +191,9 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
                 }
                 break;
             case OP_INSERT://vote
-                Stream<X70_RaftVote> x72Stream = _RaftNode.checkVoteState(machine);
-                if (x72Stream != null) {
-                    return x72Stream.map(x72 ->
+                Stream<X70_RaftVote> x70Stream = _RaftNode.checkVoteState(machine);
+                if (x70Stream != null) {
+                    return x70Stream.map(x72 ->
                     {
                         ISession<ZContext> session = manager.findSessionByPrefix(x72.getElector());
                         if (session == null) {
