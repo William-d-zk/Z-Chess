@@ -68,6 +68,7 @@ import com.tgx.chess.knight.json.JsonUtil;
 import com.tgx.chess.knight.raft.IRaftDao;
 import com.tgx.chess.knight.raft.IRaftMachine;
 import com.tgx.chess.knight.raft.IRaftMessage;
+import com.tgx.chess.knight.raft.RaftState;
 import com.tgx.chess.knight.raft.config.IRaftConfig;
 import com.tgx.chess.knight.raft.model.log.LogEntry;
 import com.tgx.chess.queen.db.inf.IStorage;
@@ -451,8 +452,9 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
             stepDown(term);
             return null;
         }
-        RaftMachine peerMachine = getMachine(elector, term, index);
+        RaftMachine peerMachine = getMachine(elector, term);
         if (peerMachine == null) return null;
+        peerMachine.setIndex(index);
         peerMachine.setCandidate(candidate);
         peerMachine.setState(FOLLOWER);
         if (_SelfMachine.getState() == CANDIDATE
@@ -479,7 +481,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         return null;
     }
 
-    private RaftMachine getMachine(long peerId, long term, long index)
+    private RaftMachine getMachine(long peerId, long term)
     {
         RaftMachine peerMachine = _RaftGraph.getMachine(peerId);
         if (peerMachine == null) {
@@ -487,7 +489,6 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
             return null;
         }
         peerMachine.setTerm(term);
-        peerMachine.setIndex(index);
         return peerMachine;
     }
 
@@ -498,23 +499,13 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                           long leader,
                           ISessionManager<ZContext> manager)
     {
-        RaftMachine peerMachine = getMachine(peerId, term, index);
+        RaftMachine peerMachine = getMachine(peerId, term);
         if (peerMachine == null) { return null; }
         peerMachine.setState(FOLLOWER);
         peerMachine.setLeader(leader);
-        peerMachine.setIndexTerm(indexTerm);
         peerMachine.setMatchIndex(index);
-        X72_RaftAppend x72 = null;
-        if (peerMachine.getIndex() < _SelfMachine.getIndex()) {
-            //append log -> follower
-            x72 = createAppend(peerMachine);
-            x72.setSession(manager.findSessionByPrefix(peerId));
-        }
         /*
          follower.match_index > leader.commit 完成半数 match 之后只触发一次 leader commit
-         x72 != null 时，
-         follower.index < leader(self).index,leader 在投递了 follower.index之后又收到了新的request，从而增加了self.index
-         follower.match_index > leader.commit
          */
         long nextCommit = _SelfMachine.getCommit() + 1;
         if (peerMachine.getMatchIndex() > _SelfMachine.getCommit()
@@ -529,37 +520,25 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
             x76.setLeader();
             if (raftLog.isPublic()) {
                 x76.setNotify();
-                Stream<X76_RaftNotify> notifyAll = createNotifyStream(manager, raftLog);
-                Stream<? extends IControl<ZContext>> pushAll = x72 != null ? Stream.concat(Stream.of(x72), notifyAll)
-                                                                           : notifyAll;
-                return new Pair<>(pushAll.toArray(IControl[]::new), x76);
+                return new Pair<>(createNotifyStream(manager, raftLog).toArray(IControl[]::new), x76);
             }
             else if (raftLog.getClientPeer() != _SelfMachine.getPeerId()) {
                 //leader -> follower -> client
                 ISession<ZContext> followerSession = manager.findSessionByPrefix(raftLog.getClientPeer());
-                return x72 != null && followerSession != null ? new Pair<>(new IControl[] { x72,
-                                                                                            x76 },
-                                                                           x76)
-                                                              : followerSession != null ? new Pair<>(new X76_RaftNotify[] { x76 },
-                                                                                                     x76)
-                                                                                        : new Pair<>(null, x76);
+                return followerSession != null ? new Pair<>(new IControl[] { x76 }, x76)
+                                               : new Pair<>(null, x76);
             }
             else {
                 /*
                 leader -> client
                 作为client 收到 notify
-                x72 需要投递给落后的follower ，x76 投递给notify-custom
+                x76 投递给notify-custom
                  */
                 x76.setNotify();
-                return x72 != null ? new Pair<>(new X72_RaftAppend[] { x72 }, x76)
-                                   : new Pair<>(null, x76);
-
+                return new Pair<>(null, x76);
             }
         }
-        else {
-            return x72 != null ? new Pair<>(new X72_RaftAppend[] { x72 }, null)
-                               : null;
-        }
+        return null;
     }
 
     public IPair onReject(long peerId, long term, long index, long indexTerm, int code, int state)
@@ -568,11 +547,13 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
             stepDown(term);
             return null;
         }
-        RaftMachine peerMachine = getMachine(peerId, term, index);
+        RaftMachine peerMachine = getMachine(peerId, term);
         if (peerMachine == null) { return null; }
+        peerMachine.setIndex(index);
         peerMachine.setIndexTerm(indexTerm);
         peerMachine.setCandidate(INVALID_PEER_ID);
         peerMachine.setLeader(INVALID_PEER_ID);
+        peerMachine.setState(RaftState.valueOf(state));
         switch (RaftCode.valueOf(code))
         {
             case CONFLICT:
@@ -977,7 +958,10 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                 if (limit > 0 && entryList.size() >= limit) {
                     break;
                 }
-                entryList.add(_RaftDao.getEntry(next));
+                LogEntry nextLog = _RaftDao.getEntry(next);
+                follower.setIndex(nextLog.getIndex());
+                follower.setIndexTerm(nextLog.getTerm());
+                entryList.add(nextLog);
             }
             x72.setPayload(JsonUtil.writeValueAsBytes(entryList));
         }
