@@ -49,14 +49,13 @@ public class X73_RaftAccept
     private long mFollowerId;
     private long mTerm;
     private long mCatchUp;
-    private long mCatchUpTerm;
     private long mCommit;
     private long mLeaderId;
 
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 48;
+        return super.dataLength() + 40;
     }
 
     @Override
@@ -67,8 +66,6 @@ public class X73_RaftAccept
         mTerm = IoUtil.readLong(data, pos);
         pos += 8;
         mCatchUp = IoUtil.readLong(data, pos);
-        pos += 8;
-        mCatchUpTerm = IoUtil.readLong(data, pos);
         pos += 8;
         mCommit = IoUtil.readLong(data, pos);
         pos += 8;
@@ -83,7 +80,6 @@ public class X73_RaftAccept
         pos += IoUtil.writeLong(mFollowerId, data, pos);
         pos += IoUtil.writeLong(mTerm, data, pos);
         pos += IoUtil.writeLong(mCatchUp, data, pos);
-        pos += IoUtil.writeLong(mCatchUpTerm, data, pos);
         pos += IoUtil.writeLong(mCommit, data, pos);
         pos += IoUtil.writeLong(mLeaderId, data, pos);
         return pos;
@@ -139,16 +135,6 @@ public class X73_RaftAccept
         return mLeaderId;
     }
 
-    public long getCatchUpTerm()
-    {
-        return mCatchUpTerm;
-    }
-
-    public void setCatchUpTerm(long indexTerm)
-    {
-        mCatchUpTerm = indexTerm;
-    }
-
     @Override
     public boolean isMapping()
     {
@@ -158,11 +144,10 @@ public class X73_RaftAccept
     @Override
     public String toString()
     {
-        return String.format("X71_RaftAccept{follower:%#x, term:%d, catch_up:%d@%d, commit:%d,leader:%#x}",
+        return String.format("X71_RaftAccept{follower:%#x, term:%d, catch_up:%d, commit:%d,leader:%#x}",
                              mFollowerId,
                              mTerm,
                              mCatchUp,
-                             mCatchUpTerm,
                              mCommit,
                              mLeaderId);
     }
