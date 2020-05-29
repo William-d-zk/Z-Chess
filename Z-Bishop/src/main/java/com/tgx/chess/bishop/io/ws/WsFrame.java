@@ -57,7 +57,7 @@ public class WsFrame
     public final static byte frame_rsv_1_mask                         = 0x40;
     public final static byte frame_rsv_2_mask                         = 0x20;
     public final static byte frame_rsv_3_mask                         = 0x10;
-    public final static byte frame_op_code_no_ctrl_cont               = 0x00;
+    public final static byte frame_op_code_no_ctrl_count              = 0x00;
     public final static byte frame_op_code_no_ctrl_txt                = 0x01;
     public final static byte frame_op_code_no_ctrl_bin                = 0x02;
     public final static byte frame_op_code_no_ctrl_json               = 0x03;

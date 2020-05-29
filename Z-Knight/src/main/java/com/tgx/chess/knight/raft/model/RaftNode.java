@@ -100,6 +100,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
     private final RaftMachine                  _SelfMachine;
     private final Queue<LogEntry>              _AppendLogQueue = new LinkedList<>();
     private final Random                       _Random         = new Random();
+    private final long                         _SnapshotFragmentMaxSize;
     private ICancelable                        mElectTask, mHeartbeatTask, mTickTask;
 
     public RaftNode(TimeWheel timeWheel,
@@ -120,6 +121,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         _RaftGraph = new RaftGraph();
         _SelfMachine = new RaftMachine(_ZUID.getPeerId());
         _RaftGraph.append(_SelfMachine);
+        _SnapshotFragmentMaxSize = _RaftConfig.getSnapshotFragmentMaxSize();
     }
 
     private void heartbeat()
@@ -948,7 +950,9 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                 x72.setPreIndex(0);
                 x72.setPreIndexTerm(0);
             }
-            for (long l = _SelfMachine.getIndex(); next <= l; next++) {
+            for (long l = _SelfMachine.getIndex(), payload_size = 0; next <= l
+                                                                     && payload_size < _SnapshotFragmentMaxSize; next++)
+            {
                 if (limit > 0 && entryList.size() >= limit) {
                     break;
                 }
@@ -956,6 +960,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                 follower.setIndex(nextLog.getIndex());
                 follower.setIndexTerm(nextLog.getTerm());
                 entryList.add(nextLog);
+                payload_size += nextLog.dataLength();
             }
             x72.setPayload(JsonUtil.writeValueAsBytes(entryList));
         }
