@@ -140,7 +140,7 @@ public class WsFrameFilter
                             target = context.position() + (int) carrier.getPayloadLength();
                             lack = context.lackLength(0, target);
                             cRvBuf.clear();
-                            if (carrier.getPayloadLength() > ((WsContext) context).getMaxPayloadSize() - target) {
+                            if (target > ((WsContext) context).getMaxPayloadSize()) {
                                 _Logger.warning("payload is too large");
                                 return ResultType.ERROR;
                             }
