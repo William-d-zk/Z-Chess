@@ -281,7 +281,6 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         accept.setFollowerId(_SelfMachine.getPeerId());
         accept.setTerm(_SelfMachine.getTerm());
         accept.setCatchUp(_SelfMachine.getIndex());
-        accept.setCatchUpTerm(_SelfMachine.getIndexTerm());
         accept.setLeaderId(_SelfMachine.getLeader());
         accept.setCommit(_SelfMachine.getCommit());
         return accept;
@@ -492,12 +491,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         return peerMachine;
     }
 
-    public IPair onAccept(long peerId,
-                          long term,
-                          long index,
-                          long indexTerm,
-                          long leader,
-                          ISessionManager<ZContext> manager)
+    public IPair onAccept(long peerId, long term, long index, long leader, ISessionManager<ZContext> manager)
     {
         RaftMachine peerMachine = getMachine(peerId, term);
         if (peerMachine == null) { return null; }

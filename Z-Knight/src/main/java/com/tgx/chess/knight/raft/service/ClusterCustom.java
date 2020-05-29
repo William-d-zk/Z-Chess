@@ -111,7 +111,6 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
                 return _RaftNode.onAccept(x73.getFollowerId(),
                                           x73.getTerm(),
                                           x73.getCatchUp(),
-                                          x73.getCatchUpTerm(),
                                           x73.getLeaderId(),
                                           manager);
             case X74_RaftReject.COMMAND:// * → candidate
