@@ -112,6 +112,7 @@ public class ZRaftConfig
     private Duration              heartbeatInSecond;
     private Duration              clientSubmitInSecond;
     private DataSize              snapshotMinSize;
+    private DataSize              snapshotFragmentMaxSize;
     private IPair                 peerTest;
     private IPair                 gateTest;
     private boolean               inCongress;
@@ -227,6 +228,17 @@ public class ZRaftConfig
     public void setSnapshotMinSize(DataSize snapshotMinSize)
     {
         this.snapshotMinSize = snapshotMinSize;
+    }
+
+    @Override
+    public long getSnapshotFragmentMaxSize()
+    {
+        return snapshotFragmentMaxSize.toBytes();
+    }
+
+    public void setSnapshotFragmentMaxSize(DataSize snapshotFragmentMaxSize)
+    {
+        this.snapshotFragmentMaxSize = snapshotFragmentMaxSize;
     }
 
     @Override
