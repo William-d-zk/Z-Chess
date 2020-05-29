@@ -635,6 +635,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                     需要follower先完成snapshot的安装才能正常同步。
                     */
                     _Logger.debug("leader doesn't know my next  || leader hasn't log,need to install snapshot");
+                    break ITERATE_APPEND;
                 }
                 else if (_SelfMachine.getIndex() == preIndex) {
                     if (_SelfMachine.getIndexTerm() == preIndexTerm) {
@@ -667,7 +668,6 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                         break ITERATE_APPEND;
                     }
                 }
-
             }
             else {
                 if (preIndex == _SelfMachine.getIndex() && preIndexTerm == _SelfMachine.getIndexTerm()) {
