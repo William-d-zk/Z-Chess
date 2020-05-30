@@ -34,7 +34,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication(scanBasePackages = { "com.tgx.chess.knight.json",
                                             "com.tgx.chess.knight.raft",
                                             "com.tgx.chess.pawn.endpoint",
-"com.tgx.chess.open.api"})
+                                            "com.tgx.chess.open.api" })
 public class ApplicationPawn
 {
     public static void main(String[] args)
