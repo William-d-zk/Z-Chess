@@ -41,11 +41,12 @@ import com.tgx.chess.knight.raft.config.IRaftConfig;
 import com.tgx.chess.open.api.model.MessageDo;
 import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.MessageEntity;
 import com.tgx.chess.pawn.endpoint.spring.device.jpa.repository.IMessageJpaRepository;
+import org.springframework.stereotype.Service;
 
 /**
  * @author william.d.zk
  */
-@Component
+@Service
 public class MessageOpenService
 {
     private final Logger                _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());

@@ -66,7 +66,7 @@
     <logger name="protocol.bishop" level="INFO">
         <appender-ref ref="Z-CHESS"/>
     </logger>
-    <logger name="endpoint.pawn" level="INFO">
+    <logger name="endpoint.pawn" level="DEBUG">
         <appender-ref ref="Z-CHESS"/>
     </logger>
 
