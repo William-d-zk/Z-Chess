@@ -34,7 +34,7 @@ import java.time.Instant;
 import javax.persistence.EntityNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.king.base.log.Logger;
@@ -49,7 +49,7 @@ import com.tgx.chess.pawn.endpoint.spring.device.jpa.repository.IDeviceJpaReposi
 /**
  * @author william.d.zk
  */
-@Component
+@Service
 public class DeviceOpenService
 {
     private final IDeviceJpaRepository _JpaRepository;
