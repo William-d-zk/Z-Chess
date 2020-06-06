@@ -41,5 +41,5 @@ public interface IDeviceService
 
     List<DeviceEntity> findAllDevices() throws ZException;
 
-    Stream<DeviceEntity> getOnlineDevices();
+    Stream<DeviceEntity> getOnlineDevices(String username) throws ZException;
 }

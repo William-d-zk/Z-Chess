@@ -74,10 +74,11 @@ public abstract class AioSessionManager<C extends IContext<C>,
     @SuppressWarnings("unchecked")
     public AioSessionManager(IAioConfig config)
     {
+        final int _TYPE_COUNT = ZUID.MAX_TYPE + 1;
         _AioConfig = config;
-        _Index2SessionMaps = new Map[4];
-        _Prefix2SessionMaps = new Map[4];
-        _SessionsSets = new Set[4];
+        _Index2SessionMaps = new Map[_TYPE_COUNT];
+        _Prefix2SessionMaps = new Map[_TYPE_COUNT];
+        _SessionsSets = new Set[_TYPE_COUNT];
         Arrays.setAll(_SessionsSets,
                       slot -> _AioConfig.isDomainActive(slot) ? new HashSet<>(1 << getConfigPower(slot))
                                                               : null);
@@ -267,4 +268,16 @@ public abstract class AioSessionManager<C extends IContext<C>,
     }
 
     protected abstract K getCore();
+
+    public Set<ISession<C>> getSessionSetWithType(int typeSlot)
+    {
+        if (typeSlot <= ZUID.MAX_TYPE) { return _SessionsSets[typeSlot]; }
+        return null;
+    }
+
+    public Collection<ISession<C>> getMappedSessionsWithType(int typeSlot)
+    {
+        if (typeSlot <= ZUID.MAX_TYPE) { return _Index2SessionMaps[typeSlot].values(); }
+        return null;
+    }
 }

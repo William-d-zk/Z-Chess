@@ -27,7 +27,9 @@ package com.tgx.chess.open.api;
 import static com.tgx.chess.king.base.util.IoUtil.isBlank;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -98,6 +100,15 @@ public class DeviceController
             if (exist != null) { return new Pair<>(DeviceStatus.AVAILABLE, exist); }
         }
         return new Pair<>(DeviceStatus.MISS, null);
+    }
+
+    @GetMapping("/device/online")
+    public @ResponseBody List<DeviceEntity> filterOnlineWith(@RequestParam(name = "username") String username)
+    {
+        if (isBlank(username)) return null;
+        return _DeviceService.filterOnlineDevices(entity -> entity.getUsername()
+                                                                  .equals(username))
+                             .collect(Collectors.toList());
     }
 
 }
