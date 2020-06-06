@@ -22,24 +22,32 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.pawn.endpoint.spring.device.spi;
+package com.tgx.chess.open.api.ehcache;
 
-import java.util.List;
-import java.util.stream.Stream;
+import org.ehcache.event.CacheEvent;
+import org.ehcache.event.CacheEventListener;
 
-import com.tgx.chess.king.base.exception.ZException;
-import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.DeviceEntity;
-import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.MessageBody;
+import com.tgx.chess.king.base.log.Logger;
 
-public interface IDeviceService
+/**
+ * @author william.d.zk
+ * @date 2020/6/6
+ */
+public class CacheLogger
+        implements
+        CacheEventListener<Object,
+                           Object>
 {
-    DeviceEntity saveDevice(DeviceEntity device) throws ZException;
+    private final Logger _Logger = Logger.getLogger("player.ehcache." + getClass().getSimpleName());
 
-    DeviceEntity findDevice(DeviceEntity key) throws ZException;
-
-    MessageBody getMessageById(long id) throws ZException;
-
-    List<DeviceEntity> findAllDevices() throws ZException;
-
-    Stream<DeviceEntity> getOnlineDevices();
+    @Override
+    public void onEvent(CacheEvent<?,
+                                   ?> cacheEvent)
+    {
+        _Logger.info("Key: {} | EventType: {} | Old value: {} | New value: {}",
+                     cacheEvent.getKey(),
+                     cacheEvent.getType(),
+                     cacheEvent.getOldValue(),
+                     cacheEvent.getNewValue());
+    }
 }

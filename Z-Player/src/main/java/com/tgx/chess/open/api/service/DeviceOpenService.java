@@ -30,21 +30,23 @@ import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_INSERT;
 import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.time.Instant;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import javax.persistence.EntityNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.king.base.util.IoUtil;
-import com.tgx.chess.king.topology.ZUID;
-import com.tgx.chess.knight.raft.config.IRaftConfig;
 import com.tgx.chess.pawn.endpoint.spring.device.config.DeviceConfig;
 import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.DeviceEntity;
 import com.tgx.chess.pawn.endpoint.spring.device.jpa.repository.IDeviceJpaRepository;
+import com.tgx.chess.pawn.endpoint.spring.device.spi.IDeviceService;
 
 /**
  * @author william.d.zk
@@ -53,19 +55,19 @@ import com.tgx.chess.pawn.endpoint.spring.device.jpa.repository.IDeviceJpaReposi
 public class DeviceOpenService
 {
     private final IDeviceJpaRepository _JpaRepository;
-    private final ZUID                 _ZUID;
     private final DeviceConfig         _DeviceConfig;
     private final CryptUtil            _CryptUtil = new CryptUtil();
     private final Logger               _Logger    = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
+    private final IDeviceService       _DeviceService;
 
     @Autowired
     public DeviceOpenService(IDeviceJpaRepository jpaRepository,
                              DeviceConfig deviceConfig,
-                             IRaftConfig clusterConfig)
+                             IDeviceService deviceService)
     {
         _JpaRepository = jpaRepository;
         _DeviceConfig = deviceConfig;
-        _ZUID = clusterConfig.createZUID();
+        _DeviceService = deviceService;
     }
 
     public DeviceEntity save(DeviceEntity device) throws ZException
@@ -140,8 +142,14 @@ public class DeviceOpenService
         return exist;
     }
 
-    public long generateId()
+    public Stream<DeviceEntity> filterOnlineDevices(Predicate<DeviceEntity> predicate)
     {
-        return _ZUID.getId(ZUID.TYPE_CONSUMER);
+        return null;
+    }
+
+    @Cacheable(value = "onlineOfUser", key = "#username")
+    public int count(String username)
+    {
+        return 0;
     }
 }

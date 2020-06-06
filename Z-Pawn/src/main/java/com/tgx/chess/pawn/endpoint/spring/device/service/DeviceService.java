@@ -27,6 +27,7 @@ package com.tgx.chess.pawn.endpoint.spring.device.service;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 
@@ -143,4 +144,10 @@ public class DeviceService
                                  .getBody();
     }
 
+    @Override
+    public Stream<DeviceEntity> getOnlineDevices()
+    {
+
+        return null;
+    }
 }
