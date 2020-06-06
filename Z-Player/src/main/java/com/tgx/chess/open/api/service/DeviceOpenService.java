@@ -30,7 +30,6 @@ import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_INSERT;
 import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.time.Instant;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.persistence.EntityNotFoundException;
@@ -142,9 +141,10 @@ public class DeviceOpenService
         return exist;
     }
 
-    public Stream<DeviceEntity> filterOnlineDevices(Predicate<DeviceEntity> predicate)
+    public Stream<DeviceEntity> filterOnlineDevices(String username)
     {
-        return null;
+        if (isBlank(username)) return null;
+        return _DeviceService.getOnlineDevices(username);
     }
 
     @Cacheable(value = "onlineOfUser", key = "#username")

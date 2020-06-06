@@ -43,4 +43,6 @@ public interface IDeviceJpaRepository
     DeviceEntity findBySn(String sn);
 
     DeviceEntity findBySnOrToken(String sn, String token);
+
+    DeviceEntity findByIdAndUsername(long id, String username);
 }

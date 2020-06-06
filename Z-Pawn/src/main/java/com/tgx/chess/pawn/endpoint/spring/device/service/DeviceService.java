@@ -26,7 +26,9 @@ package com.tgx.chess.pawn.endpoint.spring.device.service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
@@ -44,6 +46,7 @@ import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.schedule.TimeWheel;
 import com.tgx.chess.king.base.util.Triple;
+import com.tgx.chess.king.topology.ZUID;
 import com.tgx.chess.knight.raft.IRaftDao;
 import com.tgx.chess.knight.raft.config.IRaftConfig;
 import com.tgx.chess.knight.raft.model.RaftNode;
@@ -58,6 +61,7 @@ import com.tgx.chess.pawn.endpoint.spring.device.spi.IDeviceService;
 import com.tgx.chess.queen.config.IAioConfig;
 import com.tgx.chess.queen.config.IMixConfig;
 import com.tgx.chess.queen.event.handler.mix.ILinkCustom;
+import com.tgx.chess.queen.io.core.inf.ISession;
 
 /**
  * @author william.d.zk
@@ -145,9 +149,13 @@ public class DeviceService
     }
 
     @Override
-    public Stream<DeviceEntity> getOnlineDevices()
+    public Stream<DeviceEntity> getOnlineDevices(String username) throws ZException
     {
-
-        return null;
+        Collection<ISession<ZContext>> sessions = _DeviceNode.getMappedSessionsWithType(ZUID.TYPE_CONSUMER_SLOT);
+        if (sessions == null || sessions.isEmpty()) return null;
+        return sessions.stream()
+                       .map(session -> _DeviceRepository.findByIdAndUsername(session.getIndex(), username))
+                       .filter(Objects::nonNull);
     }
+
 }

@@ -24,7 +24,9 @@
 
 package com.tgx.chess.king.topology;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.Month;
+import java.time.ZoneOffset;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -51,11 +53,11 @@ import java.util.regex.Pattern;
  */
 public class ZUID
 {
-    private static final long    TWEPOCH            = Instant.parse("2018-06-01T00:00:00.00Z")
-                                                             .toEpochMilli();
-    private static final int     MAX_IDC_ID         = 15;
-    private static final int     MAX_CLUSTER_SET_ID = 7;
-    private static final int     MAX_NODE_ID        = 127;
+    public static final long     EPOCH_MILLI        = LocalDateTime.of(2018, Month.JUNE, 1, 0, 0)
+                                                                   .toEpochSecond(ZoneOffset.UTC);
+    public static final int      MAX_IDC_ID         = 15;
+    public static final int      MAX_CLUSTER_SET_ID = 7;
+    public static final int      MAX_NODE_ID        = 127;
     public static final int      MAX_TYPE           = 3;
     public static final int      SEQUENCE_BITS      = 10;
     public static final long     SEQUENCE_MASK      = ~(-1L << SEQUENCE_BITS);
@@ -188,7 +190,7 @@ public class ZUID
         return (_IdcId << IDC_SHIFT)
                | (_ClusterId << CLUSTER_SHIFT)
                | (_NodeId << NODE_SHIFT)
-               | ((timestamp - TWEPOCH) << TIMESTAMP_SHIFT)
+               | ((timestamp - EPOCH_MILLI) << TIMESTAMP_SHIFT)
                | type
                | sequence;
     }
