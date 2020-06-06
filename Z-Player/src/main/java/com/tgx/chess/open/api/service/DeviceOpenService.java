@@ -148,8 +148,11 @@ public class DeviceOpenService
     }
 
     @Cacheable(value = "onlineOfUser", key = "#username")
-    public int count(String username)
+    public long countOnlineDevices(String username)
     {
-        return 0;
+
+        if (isBlank(username)) return 0;
+        return _DeviceService.getOnlineDevices(username)
+                             .count();
     }
 }
