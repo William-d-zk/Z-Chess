@@ -155,12 +155,11 @@ public class DeviceNode
                                    }
 
                                    @Override
-                                   @SuppressWarnings("unchecked")
                                    public IControl<ZContext>[] createCommands(ISession<ZContext> session)
                                    {
                                        if (_SessionType != ZUID.TYPE_CONSUMER) {
                                            X106_Identity x106 = new X106_Identity(_ZUID.getPeerId());
-                                           return new IControl[] { x106 };
+                                           return new X106_Identity[] { x106 };
                                        }
                                        return null;
                                    }
