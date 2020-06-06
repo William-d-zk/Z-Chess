@@ -106,8 +106,7 @@ public class DeviceController
     public @ResponseBody List<DeviceEntity> filterOnlineWith(@RequestParam(name = "username") String username)
     {
         if (isBlank(username)) return null;
-        return _DeviceService.filterOnlineDevices(entity -> entity.getUsername()
-                                                                  .equals(username))
+        return _DeviceService.filterOnlineDevices(username)
                              .collect(Collectors.toList());
     }
 
