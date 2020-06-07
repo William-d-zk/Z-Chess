@@ -77,7 +77,7 @@ public class DeviceEntity
     @Column(length = 32, nullable = false)
     @Length(min = 8, max = 32, message = "* Your Username must have at least 8 characters less than 32 characters")
     @NotEmpty(message = "*Please provide your username")
-    private String    username   = "tgx-z-com.tgx.chess-device";
+    private String    username;
     private int       passwordId;
     @Column(length = 64, nullable = false)
     private String    token;

@@ -30,6 +30,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tgx.chess.king.base.util.Result;
+import com.tgx.chess.king.base.util.ResultUtils;
 import com.tgx.chess.pawn.endpoint.spring.device.spi.IMessageService;
 
 /**
@@ -49,12 +51,11 @@ public class RawContentController
     }
 
     @GetMapping("/message/topic")
-    public @ResponseBody Object getMessageByTopic(@RequestParam(name = "topic") String topic,
+    public Result getMessageByTopic(@RequestParam(name = "topic") String topic,
                                                   @RequestParam(name = "limit",
                                                                 defaultValue = "1",
-                                                                required = false) int limit)
-    {
-        return _MessageService.listByTopic(topic, limit);
+                                            required = false) int limit) {
+        return ResultUtils.success(_MessageService.listByTopic(topic, limit));
     }
 
 }

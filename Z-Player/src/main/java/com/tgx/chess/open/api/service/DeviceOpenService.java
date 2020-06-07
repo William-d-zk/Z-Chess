@@ -30,13 +30,23 @@ import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_INSERT;
 import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Stream;
 
 import javax.persistence.EntityNotFoundException;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.king.base.log.Logger;
@@ -153,5 +163,24 @@ public class DeviceOpenService
         if (isBlank(username)) return 0;
         return _DeviceService.getOnlineDevices(username)
                              .count();
+    }
+
+    public Page<DeviceEntity> findAll(String sn, Pageable pageable)
+    {
+        return _JpaRepository.findAll(new Specification<DeviceEntity>()
+        {
+            @Override
+            public Predicate toPredicate(Root<DeviceEntity> root,
+                                         CriteriaQuery<?> criteriaQuery,
+                                         CriteriaBuilder criteriaBuilder)
+            {
+                List<Predicate> predicates = new ArrayList<>();
+                if (!StringUtils.isEmpty(sn)) {
+                    predicates.add(criteriaBuilder.like(root.get("sn"), "%" + sn + "%"));
+                }
+                return criteriaQuery.where(predicates.toArray(new Predicate[predicates.size()]))
+                                    .getRestriction();
+            }
+        }, pageable);
     }
 }

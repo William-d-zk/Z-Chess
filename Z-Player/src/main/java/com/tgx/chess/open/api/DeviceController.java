@@ -32,9 +32,11 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -42,8 +44,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
+import com.tgx.chess.king.base.util.Result;
+import com.tgx.chess.king.base.util.ResultUtils;
 import com.tgx.chess.open.api.model.DeviceDo;
 import com.tgx.chess.open.api.service.DeviceOpenService;
+import com.tgx.chess.open.api.utils.PageRequestUtil;
 import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.DeviceEntity;
 import com.tgx.chess.pawn.endpoint.spring.device.model.DeviceStatus;
 
@@ -51,6 +56,7 @@ import com.tgx.chess.pawn.endpoint.spring.device.model.DeviceStatus;
  * @author william.d.zk
  */
 @RestController
+@RequestMapping("device")
 public class DeviceController
 {
     private final Logger            _Logger = Logger.getLogger(getClass().getSimpleName());
@@ -62,21 +68,22 @@ public class DeviceController
         _DeviceService = deviceService;
     }
 
-    @PostMapping("/device/register")
-    public @ResponseBody Object registerDevice(@RequestBody DeviceDo deviceDo)
+    @PostMapping("register")
+    public Result<DeviceEntity> registerDevice(@RequestBody DeviceDo deviceDo)
     {
         DeviceEntity deviceEntity = new DeviceEntity();
         deviceEntity.setSn(deviceDo.getSn());
         deviceEntity.setUsername(deviceDo.getUsername());
         deviceEntity.setPassword(deviceDo.getPassword());
-        return _DeviceService.save(deviceEntity);
+        return ResultUtils.success(_DeviceService.save(deviceEntity));
     }
 
-    @GetMapping("/device/query")
-    public @ResponseBody IPair queryDevice(@RequestParam(required = false) String token,
+    @GetMapping("query")
+    public Result<IPair> queryDevice(@RequestParam(required = false) String token,
                                            @RequestParam(required = false) String sn,
                                            @RequestParam(required = false) Long id)
     {
+        IPair result = null;
         DeviceEntity device = new DeviceEntity();
         device.setSn(sn);
         device.setToken(token);
@@ -88,26 +95,39 @@ public class DeviceController
                           .toInstant()
                           .isBefore(Instant.now()))
                 {
-                    return new Pair<>(DeviceStatus.INVALID, device);
+                    result = new Pair<>(DeviceStatus.INVALID, device);
                 }
                 else {
-                    return new Pair<>(DeviceStatus.AVAILABLE, device);
+                    result = new Pair<>(DeviceStatus.AVAILABLE, device);
                 }
             }
         }
         else {
             DeviceEntity exist = _DeviceService.find(device);
-            if (exist != null) { return new Pair<>(DeviceStatus.AVAILABLE, exist); }
+            if (exist != null) {
+                result = new Pair<>(DeviceStatus.AVAILABLE, exist);
         }
-        return new Pair<>(DeviceStatus.MISS, null);
+        }
+        if (result == null) {
+            result = new Pair<>(DeviceStatus.MISS, null);
+        }
+        return ResultUtils.success(result);
     }
 
-    @GetMapping("/device/online")
-    public @ResponseBody List<DeviceEntity> filterOnlineWithUsername(@RequestParam(name = "username") String username)
+    @PostMapping("findAllDevices")
+    public Result<Page<DeviceEntity>> findAllDevices(@RequestParam("sn") String sn,
+                                                     @RequestParam("page") Integer page,
+                                                     @RequestParam("size") Integer size)
+    {
+        return ResultUtils.success(_DeviceService.findAll(sn, PageRequestUtil.getPageRequest(page, size)));
+    }
+
+    @GetMapping("online")
+    public @ResponseBody Result<List<DeviceEntity>> filterOnlineWithUsername(@RequestParam(name = "username") String username)
     {
         if (isBlank(username)) return null;
-        return _DeviceService.filterOnlineDevices(username)
-                             .collect(Collectors.toList());
+        return ResultUtils.success(_DeviceService.filterOnlineDevices(username)
+                                                 .collect(Collectors.toList()));
     }
 
 }
