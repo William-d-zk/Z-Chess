@@ -25,11 +25,14 @@
 package com.tgx.chess.pawn.endpoint.spring.device.spi;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import com.tgx.chess.king.base.exception.ZException;
+import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.DeviceEntity;
 import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.MessageBody;
+import com.tgx.chess.queen.io.core.inf.IQoS;
 
 public interface IDeviceService
 {
@@ -42,4 +45,8 @@ public interface IDeviceService
     List<DeviceEntity> findAllDevices() throws ZException;
 
     Stream<DeviceEntity> getOnlineDevices(String username) throws ZException;
+
+    Stream<Pair<DeviceEntity,
+                Map<String,
+                    IQoS.Level>>> getOnlineDevicesWithTopic(String username) throws ZException;
 }

@@ -214,9 +214,8 @@ public class LogicHandler<T extends IActivity<ZContext> & IClusterPeer & ICluste
                      publish.setPayload(payload);
                      publish.setSession(targetSession);
                      if (publish.getLevel() == ALMOST_ONCE) { return publish; }
-                     long packIdentity = _QttRouter.nextPackIdentity();
-                     publish.setMsgId(packIdentity);
-                     message.setMsgId(packIdentity);
+                     publish.setMsgId(_RaftNode.getRaftZuid());
+                     message.setMsgId(_QttRouter.nextId());
                      message.setOrigin(_RaftNode.getPeerId());
                      message.setDestination(targetSession.getIndex());
                      message.setOperation(OP_INSERT);

@@ -33,7 +33,7 @@ import com.tgx.chess.queen.io.core.inf.IContext;
  */
 public interface IRouter<C extends IContext<C>>
 {
-    long nextPackIdentity();
+    long nextId();
 
     void register(ICommand<C> stateMessage, long sessionIndex);
 

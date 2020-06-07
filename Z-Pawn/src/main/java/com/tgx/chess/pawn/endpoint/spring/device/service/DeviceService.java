@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -45,6 +46,7 @@ import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.king.base.inf.ITriple;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.schedule.TimeWheel;
+import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.king.topology.ZUID;
 import com.tgx.chess.knight.raft.IRaftDao;
@@ -61,6 +63,7 @@ import com.tgx.chess.pawn.endpoint.spring.device.spi.IDeviceService;
 import com.tgx.chess.queen.config.IAioConfig;
 import com.tgx.chess.queen.config.IMixConfig;
 import com.tgx.chess.queen.event.handler.mix.ILinkCustom;
+import com.tgx.chess.queen.io.core.inf.IQoS;
 import com.tgx.chess.queen.io.core.inf.ISession;
 
 /**
@@ -82,6 +85,7 @@ public class DeviceService
     private final IMessageJpaRepository     _MessageRepository;
     private final RaftNode<DeviceNode>      _RaftNode;
     private final LogicHandler<DeviceNode>  _LogicHandler;
+    private final IQttRouter                _QttRouter;
 
     @Autowired
     DeviceService(DeviceConfig deviceConfig,
@@ -111,7 +115,10 @@ public class DeviceService
         _LinkCustom = linkCustom;
         _RaftNode = new RaftNode<>(_TimeWheel, raftConfig, raftDao, _DeviceNode);
         _ClusterCustom = new ClusterCustom<>(_RaftNode);
-        _LogicHandler = new LogicHandler<>(_DeviceNode, qttRouter, _RaftNode, _MessageRepository = messageRepository);
+        _LogicHandler = new LogicHandler<>(_DeviceNode,
+                                           _QttRouter = qttRouter,
+                                           _RaftNode,
+                                           _MessageRepository = messageRepository);
     }
 
     @PostConstruct
@@ -156,6 +163,18 @@ public class DeviceService
         return sessions.stream()
                        .map(session -> _DeviceRepository.findByIdAndUsername(session.getIndex(), username))
                        .filter(Objects::nonNull);
+    }
+
+    @Override
+    public Stream<Pair<DeviceEntity,
+                       Map<String,
+                           IQoS.Level>>> getOnlineDevicesWithTopic(String username) throws ZException
+    {
+        Stream<DeviceEntity> onlineDevices = getOnlineDevices(username);
+        if (onlineDevices != null) {
+            return onlineDevices.map(device -> new Pair<>(device, _QttRouter.groupBy(device.getId())));
+        }
+        return null;
     }
 
 }
