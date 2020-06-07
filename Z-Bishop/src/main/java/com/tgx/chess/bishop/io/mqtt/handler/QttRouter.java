@@ -36,6 +36,7 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -44,6 +45,7 @@ import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.Pair;
+import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.IControl;
 import com.tgx.chess.queen.io.core.inf.IQoS;
@@ -67,6 +69,7 @@ public class QttRouter
                           IControl<ZContext>>>             _QttStatusMap      = new ConcurrentSkipListMap<>();
     private final Queue<IPair>                             _SessionIdleQueue  = new ConcurrentLinkedQueue<>();
 
+    @Override
     public Map<Long,
                IQoS.Level> broker(final String topic)
     {
@@ -90,9 +93,34 @@ public class QttRouter
                                                            ConcurrentSkipListMap::new));
     }
 
+    @Override
+    public Map<String,
+               IQoS.Level> groupBy(long session)
+    {
+        _Logger.debug("group by :%#x", session);
+        return _Topic2SessionsMap.entrySet()
+                                 .parallelStream()
+                                 .map(entry ->
+                                 {
+                                     Pattern pattern = entry.getKey();
+                                     Map<Long,
+                                         IQoS.Level> sessionsLv = entry.getValue();
+
+                                     return sessionsLv.entrySet()
+                                                      .stream()
+                                                      .map(e -> new Triple<>(e.getKey(),
+                                                                             pattern.pattern(),
+                                                                             e.getValue()))
+                                                      .filter(t -> t.getFirst() == session);
+                                 })
+                                 .flatMap(Function.identity())
+                                 .collect(Collectors.toMap(Triple::getSecond, Triple::getThird));
+    }
+
+    @Override
     public boolean addTopic(Pair<String,
                                  IQoS.Level> pair,
-                            long sessionIndex)
+                            long session)
     {
         String topic = pair.getFirst();
         IQoS.Level qosLevel = pair.getSecond();
@@ -105,11 +133,11 @@ public class QttRouter
                 value = new ConcurrentSkipListMap<>();
                 _Topic2SessionsMap.put(pattern, value);
             }
-            if (value.computeIfPresent(sessionIndex,
+            if (value.computeIfPresent(session,
                                        (key, old) -> old.getValue() > qosLevel.getValue() ? old
                                                                                           : qosLevel) == null)
             {
-                value.put(sessionIndex, qosLevel);
+                value.put(session, qosLevel);
             }
             return true;
         }
@@ -148,7 +176,7 @@ public class QttRouter
     }
 
     @Override
-    public void removeTopic(String topic, long sessionIndex)
+    public void removeTopic(String topic, long session)
     {
         for (Iterator<Map.Entry<Pattern,
                                 Map<Long,
@@ -163,7 +191,7 @@ public class QttRouter
             if (matcher.matches()) {
                 Map<Long,
                     IQoS.Level> value = entry.getValue();
-                value.remove(sessionIndex);
+                value.remove(session);
                 if (value.isEmpty()) {
                     iterator.remove();
                 }
@@ -172,7 +200,7 @@ public class QttRouter
     }
 
     @Override
-    public long nextPackIdentity()
+    public long nextId()
     {
         return 0xFFFF & _AtomicIdentity.getAndIncrement();
     }

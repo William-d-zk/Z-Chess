@@ -45,8 +45,10 @@ public interface IQttRouter
 
     boolean addTopic(Pair<String,
                           IQoS.Level> topic,
-                     long sessionIndex);
+                     long session);
 
-    void removeTopic(String topic, long sessionIndex);
+    void removeTopic(String topic, long session);
 
+    Map<String,
+        IQoS.Level> groupBy(long session);
 }
