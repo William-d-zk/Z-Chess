@@ -59,6 +59,6 @@
 
     <cache alias="onlineOfUser" uses-template="default">
         <key-type>java.lang.String</key-type>
-        <value-type>java.lang.Integer</value-type>
+        <value-type>java.lang.Long</value-type>
     </cache>
 </config>
