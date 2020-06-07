@@ -103,7 +103,7 @@ public class DeviceController
     }
 
     @GetMapping("/device/online")
-    public @ResponseBody List<DeviceEntity> filterOnlineWith(@RequestParam(name = "username") String username)
+    public @ResponseBody List<DeviceEntity> filterOnlineWithUsername(@RequestParam(name = "username") String username)
     {
         if (isBlank(username)) return null;
         return _DeviceService.filterOnlineDevices(username)
