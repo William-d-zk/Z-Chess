@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -48,7 +49,6 @@ import com.tgx.chess.king.base.util.Result;
 import com.tgx.chess.king.base.util.ResultUtils;
 import com.tgx.chess.open.api.model.DeviceDo;
 import com.tgx.chess.open.api.service.DeviceOpenService;
-import com.tgx.chess.open.api.utils.PageRequestUtil;
 import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.DeviceEntity;
 import com.tgx.chess.pawn.endpoint.spring.device.model.DeviceStatus;
 
@@ -80,8 +80,8 @@ public class DeviceController
 
     @GetMapping("query")
     public Result<IPair> queryDevice(@RequestParam(required = false) String token,
-                                           @RequestParam(required = false) String sn,
-                                           @RequestParam(required = false) Long id)
+                                     @RequestParam(required = false) String sn,
+                                     @RequestParam(required = false) Long id)
     {
         IPair result = null;
         DeviceEntity device = new DeviceEntity();
@@ -106,7 +106,7 @@ public class DeviceController
             DeviceEntity exist = _DeviceService.find(device);
             if (exist != null) {
                 result = new Pair<>(DeviceStatus.AVAILABLE, exist);
-        }
+            }
         }
         if (result == null) {
             result = new Pair<>(DeviceStatus.MISS, null);
@@ -119,7 +119,7 @@ public class DeviceController
                                                      @RequestParam("page") Integer page,
                                                      @RequestParam("size") Integer size)
     {
-        return ResultUtils.success(_DeviceService.findAll(sn, PageRequestUtil.getPageRequest(page, size)));
+        return ResultUtils.success(_DeviceService.findAll(sn, PageRequest.of(page, size)));
     }
 
     @GetMapping("online")
