@@ -41,7 +41,6 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class DeviceDo
 {
-
     private long    id;
     private String  sn;
     private String  username;
