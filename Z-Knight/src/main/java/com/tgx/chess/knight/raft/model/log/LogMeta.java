@@ -236,13 +236,6 @@ public class LogMeta
         this.mIndex = index;
     }
 
-    @JsonIgnore
-    public void append(long endIndex, long endIndexTerm)
-    {
-        mIndex = endIndex;
-        mIndexTerm = endIndexTerm;
-    }
-
     public void setIndexTerm(long term)
     {
         mIndexTerm = term;

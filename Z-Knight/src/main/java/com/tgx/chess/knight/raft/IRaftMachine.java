@@ -104,6 +104,8 @@ public interface IRaftMachine
 
     void appendLog(long index, long indexTerm, IRaftDao dao);
 
+    void rollBack(long index, long indexTerm, IRaftDao dao);
+
     void commit(long index, IRaftDao dao);
 
     void apply(IRaftDao dao);

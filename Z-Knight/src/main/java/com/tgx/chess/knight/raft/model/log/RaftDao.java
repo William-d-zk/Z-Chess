@@ -381,8 +381,8 @@ public class RaftDao
             try {
                 if (newEndIndex == segment.getEndIndex()) {
                     LogEntry newEndEntry = getEntry(newEndIndex);
-                    //此时entry 不会为null
-                    mLogMeta.append(newEndIndex, newEndEntry.getTerm());
+                    //此时entry 不会为null, 无需此处直接操作log meta.由上层逻辑负责更新
+                    _Logger.debug("truncate suffix,new entry: %d@%d", newEndEntry.getIndex(), newEndEntry.getTerm());
                     return newEndEntry;
                 }
                 else if (newEndIndex < segment.getStartIndex()) {
