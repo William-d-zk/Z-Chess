@@ -33,6 +33,7 @@ import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_APPEND;
 import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_INSERT;
 import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_MODIFY;
 import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_NULL;
+import static java.lang.Long.min;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -340,8 +341,10 @@ public class RaftMachine
     public void apply(IRaftDao dao)
     {
         //TODO 分摊集群读写压力，需要在follower apply的时候notify 那些在follower上订阅了延迟一致的consumer
-        if (mIndex < mApplied) { throw new IllegalStateException(); }
-        mApplied = Long.min(mIndex, mCommit);
+        if (mIndex < mApplied) {
+            _Logger.warning(String.format("index %d < apply %d, roll back ", mIndex, mApplied));
+        }
+        mApplied = min(mIndex, mCommit);
         dao.updateLogApplied(mApplied);
         _Logger.debug("apply => %d | [index %d commit %d]", mApplied, mIndex, mCommit);
     }
@@ -466,6 +469,14 @@ public class RaftMachine
         mMatchIndex = index;
         mIndexTerm = indexTerm;
         dao.updateLogIndexAndTerm(mIndex, mIndexTerm);
+    }
+
+    @Override
+    public void rollBack(long index, long indexTerm, IRaftDao dao)
+    {
+        appendLog(index, indexTerm, dao);
+        mApplied = min(index, mCommit);
+        dao.updateLogApplied(mApplied);
     }
 
     @Override

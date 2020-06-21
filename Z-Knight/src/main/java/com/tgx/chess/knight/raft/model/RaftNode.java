@@ -656,7 +656,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                         long newEndIndex = preIndex - 1;
                         LogEntry rollback = _RaftDao.truncateSuffix(newEndIndex);
                         if (rollback != null) {
-                            _SelfMachine.appendLog(rollback.getIndex(), rollback.getTerm(), _RaftDao);
+                            _SelfMachine.rollBack(rollback.getIndex(), rollback.getTerm(), _RaftDao);
                             _SelfMachine.apply(_RaftDao);
                             _Logger.debug("machine rollback %d@%d", rollback.getIndex(), rollback.getTerm());
                         }
@@ -700,7 +700,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                         long newEndIndex = preIndex - 1;
                         LogEntry rollback = _RaftDao.truncateSuffix(newEndIndex);
                         if (rollback != null) {
-                            _SelfMachine.appendLog(rollback.getIndex(), rollback.getTerm(), _RaftDao);
+                            _SelfMachine.rollBack(rollback.getIndex(), rollback.getTerm(), _RaftDao);
                             _SelfMachine.apply(_RaftDao);
                             _Logger.debug("machine rollback %d@%d", rollback.getIndex(), rollback.getTerm());
                         }
