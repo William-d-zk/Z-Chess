@@ -178,7 +178,7 @@ public class DeviceOpenService
                 if (!StringUtils.isEmpty(sn)) {
                     predicates.add(criteriaBuilder.like(root.get("sn"), "%" + sn + "%"));
                 }
-                return criteriaQuery.where(predicates.toArray(new Predicate[predicates.size()]))
+                return criteriaQuery.where(predicates.toArray(new Predicate[0]))
                                     .getRestriction();
             }
         }, pageable);
