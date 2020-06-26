@@ -25,6 +25,7 @@
 package com.tgx.chess.knight.json;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -157,6 +158,17 @@ public class JsonUtil
     public static JsonNode readTree(String input)
     {
         if (IoUtil.isBlank(input)) return OBJECT_MAPPER.nullNode();
+        try {
+            return OBJECT_MAPPER.readTree(input);
+        }
+        catch (IOException e) {
+            return OBJECT_MAPPER.nullNode();
+        }
+    }
+
+    public static JsonNode readTree(InputStream input)
+    {
+        if (input == null) return OBJECT_MAPPER.nullNode();
         try {
             return OBJECT_MAPPER.readTree(input);
         }

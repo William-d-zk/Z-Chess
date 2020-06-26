@@ -65,19 +65,19 @@ public class Segment
     private final static Logger _Logger  = Logger.getLogger("cluster.knight." + Segment.class.getSimpleName());
     private final long          _StartIndex;
     private final String        _FileDirectory;
+    private final List<Record>  _Records = new ArrayList<>();
     private RandomAccessFile    mRandomAccessFile;
     private String              mFileName;
     private long                mEndIndex;
     private long                mFileSize;
     private boolean             mCanWrite;
-    private List<Record>        mRecords = new ArrayList<>();
 
     public LogEntry getEntry(long index)
     {
         if (_StartIndex == 0 || mEndIndex == 0) { return null; }
         if (index < _StartIndex || index > mEndIndex) { return null; }
         int indexInList = (int) (index - _StartIndex);
-        return mRecords.get(indexInList)
+        return _Records.get(indexInList)
                        .getEntry();
     }
 
@@ -135,7 +135,7 @@ public class Segment
 
     public List<Record> getRecords()
     {
-        return mRecords;
+        return _Records;
     }
 
     public void setFileSize(long newFileSize)
@@ -167,12 +167,14 @@ public class Segment
                 if (startIndex < 0) {
                     startIndex = endIndex;
                 }
-                mRecords.add(new Record(entryStart, entry));
+                _Records.add(new Record(entryStart, entry));
             }
             offset = mRandomAccessFile.getFilePointer();
         }
         if (startIndex != _StartIndex) {
-            throw new IllegalStateException("first entry index isn't equal segment's start_index");
+            throw new IllegalArgumentException(String.format("first entry index %d isn't equal segment's start_index %d",
+                                                             startIndex,
+                                                             _StartIndex));
         }
         if (endIndex != mEndIndex) {
             _Logger.debug("input end_index isn't equal read end_index, update mEndIndex %d-> endIndex %d",
@@ -205,7 +207,7 @@ public class Segment
             int length = entry.dataLength();
             mRandomAccessFile.writeInt(length);
             long offset = mRandomAccessFile.getFilePointer();
-            mRecords.add(new Record(offset, entry));
+            _Records.add(new Record(offset, entry));
             mRandomAccessFile.write(entry.encode());
             mEndIndex = entry.getIndex();
         }
@@ -232,8 +234,8 @@ public class Segment
                            - 4;
         long size = getFileSize() - newFileSize;
         setFileSize(newFileSize);
-        for (int j = mRecords.size(); j > i; j--) {
-            mRecords.remove(j - 1);
+        for (int j = _Records.size(); j > i; j--) {
+            _Records.remove(j - 1);
         }
         mRandomAccessFile.close();
         //缩减后一定处于可write状态
