@@ -261,7 +261,7 @@ public class RaftDao
                                      return new Segment(sub, start, end, !readOnly);
                                  }
                              }
-                             catch (IOException e) {
+                             catch (IOException | IllegalArgumentException e) {
                                  e.printStackTrace();
                              }
                              return null;
