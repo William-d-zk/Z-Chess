@@ -144,6 +144,23 @@ public class JsonUtil
         return null;
     }
 
+    public static <T> T readValue(InputStream input, TypeReference<T> type)
+    {
+        if (input == null) return null;
+        try {
+            return OBJECT_MAPPER.readValue(input, type);
+        }
+        catch (JsonParseException |
+               JsonMappingException e)
+        {
+            e.printStackTrace();
+        }
+        catch (IOException e) {
+            _Logger.warning("read json error", e);
+        }
+        return null;
+    }
+
     public static JsonNode readTree(byte[] input)
     {
         if (input == null) return OBJECT_MAPPER.nullNode();
