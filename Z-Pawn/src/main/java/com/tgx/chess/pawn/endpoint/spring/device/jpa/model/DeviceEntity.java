@@ -207,5 +207,5 @@ public class DeviceEntity
         return DEVICE_ENTITY_SERIAL;
     }
 
-    private final static int DEVICE_ENTITY_SERIAL = DB_SERIAL + 1;
+    private final static int DEVICE_ENTITY_SERIAL = AUDIT_MODEL_SERIAL + 1;
 }

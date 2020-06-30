@@ -190,5 +190,5 @@ public class MessageEntity
         return IStorage.Strategy.RETAIN;
     }
 
-    private final static int MESSAGE_ENTITY_SERIAL = DB_SERIAL + 2;
+    private final static int MESSAGE_ENTITY_SERIAL = AUDIT_MODEL_SERIAL + 2;
 }

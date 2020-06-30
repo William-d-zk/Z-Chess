@@ -41,6 +41,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.tgx.chess.knight.json.JsonUtil;
+import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
@@ -115,4 +116,12 @@ public abstract class AuditModel
     {
         return mLength;
     }
+
+    @Override
+    public int superSerial()
+    {
+        return AUDIT_MODEL_SERIAL;
+    }
+
+    public final static int AUDIT_MODEL_SERIAL = IStorage.DB_SERIAL + 100;
 }
