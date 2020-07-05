@@ -35,7 +35,7 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.validator.constraints.Length;
@@ -72,11 +72,11 @@ public class DeviceEntity
     private String    sn;
     @Column(length = 32, nullable = false)
     @Length(min = 5, max = 32, message = "*Your password must have at least 5 characters less than 32 characters")
-    @NotEmpty(message = "*Please provide your password")
+    @NotBlank(message = "*Please provide your password")
     private String    password;
     @Column(length = 32, nullable = false)
     @Length(min = 8, max = 32, message = "* Your Username must have at least 8 characters less than 32 characters")
-    @NotEmpty(message = "*Please provide your username")
+    @NotBlank(message = "*Please provide your username")
     private String    username;
     private int       passwordId;
     @Column(length = 64, nullable = false)
