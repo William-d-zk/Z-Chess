@@ -132,7 +132,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
 
     public void init() throws IOException
     {
-        if (!_RaftConfig.isClusterMode()) {
+        if (!_RaftConfig.isClusterModel()) {
             _Logger.info("single model skip init raft node");
             return;
         }
@@ -969,7 +969,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
 
     public boolean isClusterMode()
     {
-        return _RaftConfig.isClusterMode();
+        return _RaftConfig.isClusterModel();
     }
 
     @Override
