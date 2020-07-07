@@ -44,9 +44,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.king.base.response.ZResponse;
 import com.tgx.chess.king.base.util.Pair;
-import com.tgx.chess.king.base.util.Result;
-import com.tgx.chess.king.base.util.ResultUtils;
 import com.tgx.chess.open.api.model.DeviceDo;
 import com.tgx.chess.open.api.service.DeviceOpenService;
 import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.DeviceEntity;
@@ -69,19 +68,19 @@ public class DeviceController
     }
 
     @PostMapping("register")
-    public Result<DeviceEntity> registerDevice(@RequestBody DeviceDo deviceDo)
+    public ZResponse<DeviceEntity> registerDevice(@RequestBody DeviceDo deviceDo)
     {
         DeviceEntity deviceEntity = new DeviceEntity();
         deviceEntity.setSn(deviceDo.getSn());
         deviceEntity.setUsername(deviceDo.getUsername());
         deviceEntity.setPassword(deviceDo.getPassword());
-        return ResultUtils.success(_DeviceService.save(deviceEntity));
+        return ZResponse.success(_DeviceService.save(deviceEntity));
     }
 
     @GetMapping("query")
-    public Result<IPair> queryDevice(@RequestParam(required = false) String token,
-                                     @RequestParam(required = false) String sn,
-                                     @RequestParam(required = false) Long id)
+    public ZResponse<IPair> queryDevice(@RequestParam(required = false) String token,
+                                        @RequestParam(required = false) String sn,
+                                        @RequestParam(required = false) Long id)
     {
         IPair result = null;
         DeviceEntity device = new DeviceEntity();
@@ -111,22 +110,23 @@ public class DeviceController
         if (result == null) {
             result = new Pair<>(DeviceStatus.MISS, null);
         }
-        return ResultUtils.success(result);
+        return ZResponse.success(result);
     }
 
     @PostMapping("findAllDevices")
-    public Result<Page<DeviceEntity>> findAllDevices(@RequestParam("sn") String sn,
-                                                     @RequestParam("page") Integer page,
-                                                     @RequestParam("size") Integer size)
+    public ZResponse<Page<DeviceEntity>> findAllDevices(@RequestParam("sn") String sn,
+                                                        @RequestParam("page") Integer page,
+                                                        @RequestParam("size") Integer size)
     {
-        return ResultUtils.success(_DeviceService.findAll(sn, PageRequest.of(page, size)));
+        return ZResponse.success(_DeviceService.findAll(sn, PageRequest.of(page, size)));
     }
 
     @GetMapping("online")
-    public @ResponseBody Result<List<DeviceEntity>> filterOnlineWithUsername(@RequestParam(name = "username") String username)
+    public @ResponseBody
+    ZResponse<List<DeviceEntity>> filterOnlineWithUsername(@RequestParam(name = "username") String username)
     {
         if (isBlank(username)) return null;
-        return ResultUtils.success(_DeviceService.filterOnlineDevices(username)
+        return ZResponse.success(_DeviceService.filterOnlineDevices(username)
                                                  .collect(Collectors.toList()));
     }
 

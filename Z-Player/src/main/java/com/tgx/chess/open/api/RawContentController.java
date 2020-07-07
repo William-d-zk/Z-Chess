@@ -24,14 +24,15 @@
 
 package com.tgx.chess.open.api;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tgx.chess.king.base.util.Result;
-import com.tgx.chess.king.base.util.ResultUtils;
+import com.tgx.chess.king.base.response.ZResponse;
+import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.MessageBody;
 import com.tgx.chess.pawn.endpoint.spring.device.spi.IMessageService;
 
 /**
@@ -51,11 +52,12 @@ public class RawContentController
     }
 
     @GetMapping("/message/topic")
-    public Result getMessageByTopic(@RequestParam(name = "topic") String topic,
-                                                  @RequestParam(name = "limit",
-                                                                defaultValue = "1",
-                                            required = false) int limit) {
-        return ResultUtils.success(_MessageService.listByTopic(topic, limit));
+    public ZResponse<List<MessageBody>> getMessageByTopic(@RequestParam(name = "topic") String topic,
+                                                          @RequestParam(name = "limit",
+                                                                   defaultValue = "1",
+                                                                   required = false) int limit)
+    {
+        return ZResponse.success(_MessageService.listByTopic(topic, limit));
     }
 
 }

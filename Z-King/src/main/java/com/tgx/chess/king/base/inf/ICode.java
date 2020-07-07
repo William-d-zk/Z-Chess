@@ -33,7 +33,7 @@ public interface ICode
 {
     int getCode();
 
-    String getMsg(Object... args);
+    String format(Object... args);
 
     static ICode parse(int code, ICode... codes)
     {
