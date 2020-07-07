@@ -885,7 +885,7 @@ public enum Units
                      .map(units -> units.parse(input))
                      .filter(Triple::getFirst)
                      .findAny()
-                     .orElseThrow(() -> new ZException(errorCode.getMsg(catalog, input)))
+                     .orElseThrow(() -> new ZException(errorCode.format(catalog, input)))
                      .getSecond();
     }
 
@@ -895,7 +895,7 @@ public enum Units
                      .map(units -> units.parse(input))
                      .filter(Triple::getFirst)
                      .findAny()
-                     .orElseThrow(() -> new ZException(Code.ILLEGAL_PARAM.getMsg(input)))
+                     .orElseThrow(() -> new ZException(Code.ILLEGAL_PARAM.format(input)))
                      .getSecond();
     }
 }

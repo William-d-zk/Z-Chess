@@ -38,7 +38,10 @@ public enum Code
 
     PLAIN_UNSUPPORTED(0xFF00, "不支持明文"),
     SYMMETRIC_KEY_OK(0xFF01, "对称秘钥成功"),
-    ILLEGAL_PARAM(0x0010, "非法参数 %s");
+    ILLEGAL_PARAM(0x0010, "非法参数 %s"),
+    SUCCESS(0x00FF, "成功"),
+    FORBIDDEN(0x0101, "禁止访问 %s"),
+    UNAUTHORIZED(0x0102, "无权访问 %s");
 
     private final int    _Code;
     private final String _Formatter;
@@ -50,10 +53,15 @@ public enum Code
     }
 
     @Override
-    public String getMsg(Object... args)
+    public String format(Object... args)
     {
         return Objects.isNull(args) || args.length == 0 ? _Formatter
                                                         : String.format(_Formatter, args);
+    }
+
+    public String getFormatter()
+    {
+        return _Formatter;
     }
 
     Code(int code,
