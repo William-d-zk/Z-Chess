@@ -61,7 +61,7 @@ public class ZRaftConfig
     @PostConstruct
     void initUid() throws IOException
     {
-        if (peerTest != null && isClusterMode()) {
+        if (peerTest != null && isClusterModel()) {
             String peerTestHost = peerTest.getFirst();
             InetSocketAddress peerTestAddr = new InetSocketAddress(peerTestHost, peerTest.getSecond());
             try (Socket socket = new Socket()) {
@@ -116,7 +116,7 @@ public class ZRaftConfig
     private IPair                 peerTest;
     private IPair                 gateTest;
     private boolean               inCongress;
-    private boolean               clusterMode;
+    private boolean clusterModel;
     private int                   maxSegmentSize;
     private String                baseDir;
 
@@ -294,13 +294,13 @@ public class ZRaftConfig
     }
 
     @Override
-    public boolean isClusterMode()
+    public boolean isClusterModel()
     {
-        return clusterMode;
+        return clusterModel;
     }
 
-    public void setClusterMode(boolean model)
+    public void setClusterModel(boolean model)
     {
-        clusterMode = model;
+        clusterModel = model;
     }
 }

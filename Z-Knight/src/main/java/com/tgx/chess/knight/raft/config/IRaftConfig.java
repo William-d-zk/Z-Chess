@@ -85,7 +85,7 @@ public interface IRaftConfig
 
     long getSnapshotFragmentMaxSize();
 
-    boolean isClusterMode();
+    boolean isClusterModel();
 
     class Uid
     {
