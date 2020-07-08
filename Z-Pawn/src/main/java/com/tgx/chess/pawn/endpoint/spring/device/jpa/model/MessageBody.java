@@ -97,4 +97,13 @@ public class MessageBody
         return null;
     }
 
+    public byte[] contentBinary()
+    {
+        if (_Content == null || _Content.length == 0) {
+            _Logger.warning("content null");
+            return null;
+        }
+        return _Content;
+    }
+
 }

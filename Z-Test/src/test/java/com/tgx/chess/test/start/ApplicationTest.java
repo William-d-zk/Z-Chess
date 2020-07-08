@@ -32,6 +32,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.response.ZProgress;
+import com.tgx.chess.king.base.response.ZResponse;
 import com.tgx.chess.knight.json.JsonUtil;
 
 @ExtendWith(SpringExtension.class)
@@ -44,13 +45,19 @@ public class ApplicationTest
     private JsonUtil _JsonUtil;
 
     @Test
-    public void test()
+    public void testZProgress()
     {
-
         ZProgress progress = new ZProgress(100);
         String json = JsonUtil.writeValueAsString(progress);
         _Logger.info(json);
         ZProgress read = JsonUtil.readValue(json, ZProgress.class);
         _Logger.info("test end");
+    }
+
+    @Test
+    public void testZResponse()
+    {
+        ZResponse<Void> noDetail = ZResponse.success(null);
+        System.out.println(JsonUtil.writeValueAsString(noDetail));
     }
 }

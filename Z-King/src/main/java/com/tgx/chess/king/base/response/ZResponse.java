@@ -28,6 +28,7 @@ import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -39,6 +40,7 @@ import com.tgx.chess.king.base.inf.ICode;
 import com.tgx.chess.king.config.Code;
 
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ZResponse<T>
         implements
         ICode
@@ -117,5 +119,10 @@ public class ZResponse<T>
                                e,
                                Code.UNAUTHORIZED.getFormatter(),
                                LocalDateTime.now());
+    }
+
+    public static ZResponse<Void> error(int code, String message)
+    {
+        return new ZResponse<>(code, message, null, null, LocalDateTime.now());
     }
 }
