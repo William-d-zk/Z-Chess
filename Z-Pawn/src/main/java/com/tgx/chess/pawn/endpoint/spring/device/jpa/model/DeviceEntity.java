@@ -149,7 +149,6 @@ public class DeviceEntity
     }
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     public LocalDateTime getInvalidAt()
     {
@@ -158,7 +157,6 @@ public class DeviceEntity
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonSerialize(using = LocalDateTimeSerializer.class)
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     public void setInvalidAt(LocalDateTime invalidAt)
     {
         this.invalidAt = invalidAt;
