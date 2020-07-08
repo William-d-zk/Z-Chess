@@ -102,7 +102,7 @@ public class JsonUtil
             e.printStackTrace();
         }
         catch (IOException e) {
-            _Logger.warning("read json error", e);
+            _Logger.warning("read json[%s] error with %s", IoUtil.bin2Hex(input, ":"), clazz, e);
         }
         return null;
     }
@@ -119,7 +119,7 @@ public class JsonUtil
             e.printStackTrace();
         }
         catch (IOException e) {
-            _Logger.warning("read json error", e);
+            _Logger.warning("read json[%s] error with %s", input, clazz, e);
         }
         return null;
     }
@@ -136,7 +136,7 @@ public class JsonUtil
             e.printStackTrace();
         }
         catch (IOException e) {
-            _Logger.warning("read json error", e);
+            _Logger.warning("read json[%s] error with %s", IoUtil.bin2Hex(input, ":"), type, e);
         }
         return null;
     }
@@ -153,7 +153,7 @@ public class JsonUtil
             e.printStackTrace();
         }
         catch (IOException e) {
-            _Logger.warning("read json error", e);
+            _Logger.warning("read json[%s] error with %s", input, type, e);
         }
         return null;
     }
@@ -170,7 +170,7 @@ public class JsonUtil
             e.printStackTrace();
         }
         catch (IOException e) {
-            _Logger.warning("read json error", e);
+            _Logger.warning("read json error with %s", type, e);
         }
         return null;
     }
@@ -182,6 +182,7 @@ public class JsonUtil
             return OBJECT_MAPPER.readTree(input);
         }
         catch (IOException e) {
+            _Logger.warning("read tree input[%s] error", IoUtil.bin2Hex(input, ":"), e);
             return OBJECT_MAPPER.nullNode();
         }
     }
@@ -193,6 +194,7 @@ public class JsonUtil
             return OBJECT_MAPPER.readTree(input);
         }
         catch (IOException e) {
+            _Logger.warning("read tree input[%s] error", input, e);
             return OBJECT_MAPPER.nullNode();
         }
     }
@@ -204,6 +206,7 @@ public class JsonUtil
             return OBJECT_MAPPER.readTree(input);
         }
         catch (IOException e) {
+            _Logger.warning("read tree input stream error", e);
             return OBJECT_MAPPER.nullNode();
         }
     }

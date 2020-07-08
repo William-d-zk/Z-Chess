@@ -34,7 +34,6 @@ import static com.tgx.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
 import static com.tgx.chess.queen.io.core.inf.IQoS.Level.EXACTLY_ONCE;
 import static java.lang.Math.min;
 
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -202,15 +201,8 @@ public class LogicHandler<T extends IActivity<ZContext> & IClusterPeer & ICluste
                      publish.setLevel(IQoS.Level.valueOf(min(subscribeLevel.getValue(), level.getValue())));
                      publish.setTopic(message.getBody()
                                              .getTopic());
-                     byte[] payload = null;
-                     try {
-                         payload = message.getBody()
-                                          .getContent()
-                                          .binaryValue();
-                     }
-                     catch (IOException e) {
-                         _Logger.warning("create %s json error", e, publish);
-                     }
+                     byte[] payload = message.getBody()
+                                             .contentBinary();
                      publish.setPayload(payload);
                      publish.setSession(targetSession);
                      if (publish.getLevel() == ALMOST_ONCE) { return publish; }
