@@ -22,76 +22,35 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.king.base.response;
+package com.tgx.chess.test.start;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.tgx.chess.king.base.schedule.Status;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-/**
- * @author william.d.zk
- * @date 2020/7/7
- */
-@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
-public class ZProgress
+import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.king.base.response.ZProgress;
+import com.tgx.chess.knight.json.JsonUtil;
+
+@ExtendWith(SpringExtension.class)
+@SpringBootTest
+public class ApplicationTest
 {
-    private final long _Size;
+    private final Logger _Logger = Logger.getLogger("z-chess.test." + getClass().getSimpleName());
 
-    private Progress progress = Progress.NA;
-    private Status   status   = Status.CREATED;
-    private long     count;
-    private boolean  exist;
+    @Autowired
+    private JsonUtil _JsonUtil;
 
-    @JsonCreator
-    public ZProgress(@JsonProperty("size") long size)
+    @Test
+    public void test()
     {
-        _Size = size;
-    }
 
-    public Status getStatus()
-    {
-        return status;
-    }
-
-    public void setStatus(Status status)
-    {
-        this.status = status;
-    }
-
-    public long getCount()
-    {
-        return count;
-    }
-
-    public void setCount(long count)
-    {
-        this.count = count;
-    }
-
-    public long getSize()
-    {
-        return _Size;
-    }
-
-    public boolean isExist()
-    {
-        return exist;
-    }
-
-    public void setExist(boolean exist)
-    {
-        this.exist = exist;
-    }
-
-    public Progress getProgress()
-    {
-        return progress;
-    }
-
-    public void setProgress(Progress progress)
-    {
-        this.progress = progress;
+        ZProgress progress = new ZProgress(100);
+        String json = JsonUtil.writeValueAsString(progress);
+        _Logger.info(json);
+        ZProgress read = JsonUtil.readValue(json, ZProgress.class);
+        _Logger.info("test end");
     }
 }

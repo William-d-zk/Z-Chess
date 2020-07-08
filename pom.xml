@@ -42,6 +42,7 @@
         <module>Z-Player</module>
         <module>Z-Endpoint-Start</module>
         <module>Z-Consensus-Start</module>
+        <module>Z-Test</module>
     </modules>
     <properties>
         <!--RT-->
@@ -72,6 +73,7 @@
         <mockito.version>3.3.3</mockito.version>
         <!--CACHE-->
         <ehcache.version>3.8.1</ehcache.version>
+        <jackson.version>2.11.0</jackson.version>
     </properties>
     <dependencies>
         <!--Log-->
@@ -286,10 +288,42 @@
                 <artifactId>httpcore-nio</artifactId>
                 <version>${httpcore.version}</version>
             </dependency>
+            <!--disruptor-->
             <dependency>
                 <groupId>com.lmax</groupId>
                 <artifactId>disruptor</artifactId>
                 <version>${disruptor.version}</version>
+            </dependency>
+            <!--jackson-->
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.module</groupId>
+                <artifactId>jackson-module-parameter-names</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-jdk8</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.module</groupId>
+                <artifactId>jackson-module-jsonSchema</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-jsr310</artifactId>
+                <version>${jackson.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

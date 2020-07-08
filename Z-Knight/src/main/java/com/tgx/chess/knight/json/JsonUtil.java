@@ -30,6 +30,7 @@ import java.io.InputStream;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -37,6 +38,9 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.util.IoUtil;
 
@@ -46,6 +50,11 @@ public class JsonUtil
 {
     private final static Logger       _Logger       = Logger.getLogger(JsonUtil.class.getSimpleName());
     private final static ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    static {
+        OBJECT_MAPPER.registerModules(new ParameterNamesModule(JsonCreator.Mode.PROPERTIES),
+                                      new Jdk8Module(),
+                                      new JavaTimeModule());
+    }
 
     public void setPropertyNamingStrategy(String input)
     {
@@ -74,6 +83,11 @@ public class JsonUtil
                 return;
         }
         OBJECT_MAPPER.setPropertyNamingStrategy(strategy);
+    }
+
+    public ObjectMapper getObjectMapper()
+    {
+        return OBJECT_MAPPER;
     }
 
     public static <T> T readValue(byte[] input, Class<T> clazz)
@@ -222,4 +236,5 @@ public class JsonUtil
         }
         return null;
     }
+
 }

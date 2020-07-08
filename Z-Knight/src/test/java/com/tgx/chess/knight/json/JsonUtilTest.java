@@ -22,76 +22,26 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.king.base.response;
+package com.tgx.chess.knight.json;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.tgx.chess.king.base.schedule.Status;
+import org.junit.jupiter.api.Test;
 
-/**
- * @author william.d.zk
- * @date 2020/7/7
- */
-@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
-public class ZProgress
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.tgx.chess.king.base.response.ZResponse;
+import com.tgx.chess.king.base.util.Pair;
+
+class JsonUtilTest
 {
-    private final long _Size;
-
-    private Progress progress = Progress.NA;
-    private Status   status   = Status.CREATED;
-    private long     count;
-    private boolean  exist;
-
-    @JsonCreator
-    public ZProgress(@JsonProperty("size") long size)
+    @Test
+    void testZResponse()
     {
-        _Size = size;
-    }
-
-    public Status getStatus()
-    {
-        return status;
-    }
-
-    public void setStatus(Status status)
-    {
-        this.status = status;
-    }
-
-    public long getCount()
-    {
-        return count;
-    }
-
-    public void setCount(long count)
-    {
-        this.count = count;
-    }
-
-    public long getSize()
-    {
-        return _Size;
-    }
-
-    public boolean isExist()
-    {
-        return exist;
-    }
-
-    public void setExist(boolean exist)
-    {
-        this.exist = exist;
-    }
-
-    public Progress getProgress()
-    {
-        return progress;
-    }
-
-    public void setProgress(Progress progress)
-    {
-        this.progress = progress;
+        TypeReference<ZResponse<Pair<Integer,
+                                     String>>> _type = new TypeReference<ZResponse<Pair<Integer,
+                                                                                        String>>>()
+                                     {
+                                     };
+        String json = JsonUtil.writeValueAsString(ZResponse.success(new Pair<>(1, "2")));
+        ZResponse<?> read = JsonUtil.readValue(json, _type);
+        System.out.println(read);
     }
 }
