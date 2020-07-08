@@ -53,7 +53,9 @@ public interface IPipeDecoder<C extends IContext<C>>
             Chain:
             while (next != null) {
                 resultType = next.getFilter()
-                                 .preDecode(_Context, protocol);
+                                 .checkType(protocol) ? next.getFilter()
+                                                            .preDecode(_Context, protocol)
+                                                      : IFilter.ResultType.IGNORE;
                 switch (resultType)
                 {
                     case ERROR:

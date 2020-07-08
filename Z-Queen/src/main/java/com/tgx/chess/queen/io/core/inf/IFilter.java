@@ -26,7 +26,7 @@ package com.tgx.chess.queen.io.core.inf;
 /**
  * @author William.d.zk
  */
-public interface IFilter<C extends IContext,
+public interface IFilter<C extends IContext<C>,
                          O extends IProtocol,
                          I extends IProtocol>
 {
@@ -37,6 +37,8 @@ public interface IFilter<C extends IContext,
     I encode(C context, O output);
 
     O decode(C context, I input);
+
+    boolean checkType(IProtocol protocol);
 
     enum ResultType
     {

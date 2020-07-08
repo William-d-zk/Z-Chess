@@ -30,6 +30,7 @@ import com.tgx.chess.bishop.io.mqtt.QttControl;
 import com.tgx.chess.bishop.io.mqtt.QttFrame;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
+import com.tgx.chess.queen.io.core.inf.IPacket;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
@@ -46,6 +47,12 @@ public class QttControlFilter
     public QttControlFilter()
     {
         super("mqtt_control");
+    }
+
+    @Override
+    public boolean checkType(IProtocol protocol)
+    {
+        return checkType(protocol, IPacket.FRAME_SERIAL);
     }
 
     @Override

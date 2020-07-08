@@ -43,6 +43,12 @@ public class ZTlsFilter
     }
 
     @Override
+    public boolean checkType(IProtocol protocol)
+    {
+        return checkType(protocol, IPacket.PACKET_SERIAL);
+    }
+
+    @Override
     public ResultType preEncode(ZContext context, IProtocol output)
     {
         return prePacketEncode(context, output);

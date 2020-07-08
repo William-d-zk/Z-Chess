@@ -76,6 +76,9 @@ public class DecodeHandler<C extends IContext<C>>
         context.setEncryptHandler(_EncryptHandler);
         IPacket packet = packetContent.getFirst();
         if (!context.isInErrorState()) {
+            _Logger.info("%s",
+                         new String(packet.getBuffer()
+                                          .array()));
             try {
                 ITriple result = packetOperator.handle(packet, session);
                 IControl<C>[] commands = result.getFirst();

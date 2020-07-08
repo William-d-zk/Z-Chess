@@ -72,6 +72,12 @@ public class WsHandShakeFilter
     }
 
     @Override
+    public boolean checkType(IProtocol protocol)
+    {
+        return checkType(protocol, IPacket.PACKET_SERIAL);
+    }
+
+    @Override
     public ResultType preDecode(ZContext context, IPacket input)
     {
         ResultType result = preHandShakeDecode(context, input);
@@ -126,7 +132,10 @@ public class WsHandShakeFilter
                                                     .append(CRLF);
                                             break;
                                         case "SEC-WEBSOCKET-PROTOCOL:":
-                                            if (!rowSplit[1].contains("z-push") && !rowSplit[1].contains("z-chat")) {
+                                            if (!rowSplit[1].contains("z-push")
+                                                && !rowSplit[1].contains("z-chat")
+                                                && !rowSplit[1].contains("mqtt"))
+                                            {
                                                 _Logger.warning("sec-websokcet-protocol failed");
                                                 return ResultType.ERROR;
                                             }
@@ -165,9 +174,9 @@ public class WsHandShakeFilter
                                                                           wsContext.getSecAccept(rowSplit[1])));
                                             break;
                                         default:
-                                            _Logger.debug("unchecked httpKey and content: [%s %s]",
-                                                          httpKey,
-                                                          rowSplit[1]);
+                                            _Logger.warning("unchecked httpKey and content: [%s %s]",
+                                                            httpKey,
+                                                            rowSplit[1]);
                                             break;
                                     }
                                     break;

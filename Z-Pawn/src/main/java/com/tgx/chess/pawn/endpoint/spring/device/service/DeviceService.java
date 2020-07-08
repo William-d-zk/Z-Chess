@@ -109,7 +109,7 @@ public class DeviceService
         int wsServicePort = Integer.parseInt(wsSplit[1]);
         int qttServicePort = Integer.parseInt(qttSplit[1]);
         hosts.add(new Triple<>(wsServiceHost, wsServicePort, ZSort.WS_SERVER));
-        hosts.add(new Triple<>(qttServiceHost, qttServicePort, ZSort.QTT_SERVER));
+        hosts.add(new Triple<>(qttServiceHost, qttServicePort, ZSort.WS_QTT_SERVER));
         _DeviceNode = new DeviceNode(hosts, ioConfig, raftConfig, mixConfig, _TimeWheel);
         _DeviceRepository = deviceRepository;
         _LinkCustom = linkCustom;

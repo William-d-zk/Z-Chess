@@ -156,65 +156,66 @@ public abstract class AioFilterChain<C extends IContext<C>,
         }
     }
 
+    protected boolean checkType(IProtocol protocol, int type_serial)
+    {
+        return protocol.superSerial() == type_serial;
+    }
+
     protected ResultType preCommandEncode(C context, IProtocol output)
     {
         if (Objects.isNull(output) || Objects.isNull(context)) { return ResultType.ERROR; }
-        return context.isOutConvert() && output.superSerial() == IProtocol.COMMAND_SERIAL ? ResultType.NEXT_STEP
-                                                                                          : ResultType.IGNORE;
+        return context.isOutConvert() && checkType(output, IProtocol.COMMAND_SERIAL) ? ResultType.NEXT_STEP
+                                                                                     : ResultType.IGNORE;
 
     }
 
     protected ResultType preCommandDecode(C context, IFrame input)
     {
         if (Objects.isNull(context) || Objects.isNull(input)) { return ResultType.ERROR; }
-        return context.isInConvert()
-               && input.superSerial() == IProtocol.FRAME_SERIAL
-               && !input.isCtrl() ? ResultType.HANDLED
-                                  : ResultType.IGNORE;
+        return context.isInConvert() && checkType(input, IProtocol.FRAME_SERIAL) && !input.isCtrl() ? ResultType.HANDLED
+                                                                                                    : ResultType.IGNORE;
     }
 
     protected ResultType preFrameEncode(C context, IProtocol output)
     {
         if (Objects.isNull(context) || Objects.isNull(output)) { return ResultType.ERROR; }
-        return context.isOutConvert() && output.superSerial() == IProtocol.FRAME_SERIAL ? ResultType.NEXT_STEP
-                                                                                        : ResultType.IGNORE;
+        return context.isOutConvert() && checkType(output, IProtocol.FRAME_SERIAL) ? ResultType.NEXT_STEP
+                                                                                   : ResultType.IGNORE;
     }
 
     protected ResultType preFrameDecode(C context, IPacket input)
     {
         if (Objects.isNull(context) || Objects.isNull(input)) { return ResultType.ERROR; }
-        return context.isInConvert() && input.superSerial() == IProtocol.FRAME_SERIAL ? ResultType.NEXT_STEP
-                                                                                      : ResultType.IGNORE;
+        return context.isInConvert() && checkType(input, IProtocol.PACKET_SERIAL) ? ResultType.NEXT_STEP
+                                                                                 : ResultType.IGNORE;
     }
 
     protected ResultType prePacketEncode(C context, IProtocol output)
     {
         if (Objects.isNull(context) || Objects.isNull(output)) { return ResultType.ERROR; }
-        return context.isOutConvert() && output.superSerial() == IProtocol.PACKET_SERIAL ? ResultType.NEXT_STEP
-                                                                                         : ResultType.IGNORE;
+        return context.isOutConvert() && checkType(output, IProtocol.PACKET_SERIAL) ? ResultType.NEXT_STEP
+                                                                                    : ResultType.IGNORE;
     }
 
     protected ResultType prePacketDecode(C context, IPacket input)
     {
         if (Objects.isNull(context) || Objects.isNull(input)) { return ResultType.ERROR; }
-        return context.isInConvert() && input.superSerial() == IProtocol.PACKET_SERIAL ? ResultType.NEXT_STEP
-                                                                                       : ResultType.IGNORE;
+        return context.isInConvert() && checkType(input, IProtocol.PACKET_SERIAL) ? ResultType.NEXT_STEP
+                                                                                  : ResultType.IGNORE;
     }
 
     protected ResultType preControlEncode(C context, IProtocol output)
     {
         if (Objects.isNull(context) || Objects.isNull(output)) { return ResultType.ERROR; }
-        return context.isOutConvert() && output.superSerial() == IProtocol.CONTROL_SERIAL ? ResultType.NEXT_STEP
-                                                                                          : ResultType.IGNORE;
+        return context.isOutConvert() && checkType(output, IProtocol.CONTROL_SERIAL) ? ResultType.NEXT_STEP
+                                                                                     : ResultType.IGNORE;
     }
 
     protected ResultType preControlDecode(C context, IFrame input)
     {
         if (Objects.isNull(context) || Objects.isNull(input)) { return ResultType.ERROR; }
-        return context.isInConvert()
-               && input.superSerial() == IProtocol.FRAME_SERIAL
-               && input.isCtrl() ? ResultType.HANDLED
-                                 : ResultType.IGNORE;
+        return context.isInConvert() && checkType(input, IProtocol.FRAME_SERIAL) && input.isCtrl() ? ResultType.HANDLED
+                                                                                                   : ResultType.IGNORE;
 
     }
 
@@ -223,8 +224,8 @@ public abstract class AioFilterChain<C extends IContext<C>,
         if (Objects.isNull(context) || Objects.isNull(output)) { return ResultType.ERROR; }
         return context.needHandshake()
                && context.outState() == ENCODE_HANDSHAKE
-               && output.superSerial() == IProtocol.CONTROL_SERIAL ? ResultType.NEXT_STEP
-                                                                   : ResultType.IGNORE;
+               && checkType(output, IProtocol.CONTROL_SERIAL) ? ResultType.NEXT_STEP
+                                                              : ResultType.IGNORE;
     }
 
     protected ResultType preHandShakeDecode(C context, IPacket input)
@@ -232,9 +233,8 @@ public abstract class AioFilterChain<C extends IContext<C>,
         if (Objects.isNull(context) || Objects.isNull(input)) { return ResultType.ERROR; }
         return context.needHandshake()
                && context.inState() == DECODE_HANDSHAKE
-               && input.superSerial() == IProtocol.PACKET_SERIAL ? ResultType.HANDLED
-                                                                 : ResultType.IGNORE;
-
+               && checkType(input, IProtocol.PACKET_SERIAL) ? ResultType.HANDLED
+                                                            : ResultType.IGNORE;
     }
 
     @Override
