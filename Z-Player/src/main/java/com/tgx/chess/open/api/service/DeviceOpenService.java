@@ -28,8 +28,8 @@ import static com.tgx.chess.king.base.util.IoUtil.isBlank;
 import static com.tgx.chess.queen.db.inf.IStorage.Operation.OP_INSERT;
 
 import java.nio.charset.StandardCharsets;
-import java.sql.Date;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -95,14 +95,13 @@ public class DeviceOpenService
                                            .name());
             }
             if (exist.getInvalidAt()
-                     .toInstant()
-                     .isBefore(Instant.now())
+                     .isBefore(LocalDateTime.now())
                 || device.getPasswordId() > exist.getPasswordId())
             {
                 exist.setPassword(_CryptUtil.randomPassword(5, 32));
                 exist.increasePasswordId();
-                exist.setInvalidAt(Date.from(Instant.now()
-                                                    .plus(_DeviceConfig.getPasswordInvalidDays())));
+                exist.setInvalidAt(LocalDateTime.now()
+                                                .plus(_DeviceConfig.getPasswordInvalidDays()));
             }
             return _JpaRepository.save(exist);
         }
@@ -130,13 +129,12 @@ public class DeviceOpenService
             }
             if (exist == null
                 || exist.getInvalidAt()
-                        .toInstant()
-                        .isBefore(Instant.now()))
+                        .isBefore(LocalDateTime.now()))
             {
                 entity.setPassword(_CryptUtil.randomPassword(5, 32));
                 entity.increasePasswordId();
-                entity.setInvalidAt(Date.from(Instant.now()
-                                                     .plus(_DeviceConfig.getPasswordInvalidDays())));
+                entity.setInvalidAt(LocalDateTime.now()
+                                                 .plus(_DeviceConfig.getPasswordInvalidDays()));
             }
             return _JpaRepository.save(entity);
         }

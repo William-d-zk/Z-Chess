@@ -128,6 +128,7 @@ public class DeviceService
                           new ZLinkMappingCustom(_LinkCustom),
                           new ZClusterMappingCustom<>(_ClusterCustom));
         _RaftNode.init();
+        _Logger.info("device service start");
     }
 
     @Override

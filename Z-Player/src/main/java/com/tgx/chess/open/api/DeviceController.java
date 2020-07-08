@@ -26,7 +26,7 @@ package com.tgx.chess.open.api;
 
 import static com.tgx.chess.king.base.util.IoUtil.isBlank;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -91,8 +91,7 @@ public class DeviceController
             DeviceEntity exist = _DeviceService.find(device);
             if (Objects.nonNull(exist)) {
                 if (device.getInvalidAt()
-                          .toInstant()
-                          .isBefore(Instant.now()))
+                          .isBefore(LocalDateTime.now()))
                 {
                     result = new Pair<>(DeviceStatus.INVALID, device);
                 }
@@ -122,12 +121,11 @@ public class DeviceController
     }
 
     @GetMapping("online")
-    public @ResponseBody
-    ZResponse<List<DeviceEntity>> filterOnlineWithUsername(@RequestParam(name = "username") String username)
+    public @ResponseBody ZResponse<List<DeviceEntity>> filterOnlineWithUsername(@RequestParam(name = "username") String username)
     {
         if (isBlank(username)) return null;
         return ZResponse.success(_DeviceService.filterOnlineDevices(username)
-                                                 .collect(Collectors.toList()));
+                                               .collect(Collectors.toList()));
     }
 
 }
