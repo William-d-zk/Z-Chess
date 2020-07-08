@@ -24,7 +24,7 @@
 
 package com.tgx.chess.pawn.endpoint.spring.device.jpa.model;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -32,17 +32,19 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotBlank;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.validator.constraints.Length;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.tgx.chess.queen.db.inf.IStorage;
 
 /**
@@ -67,26 +69,24 @@ public class DeviceEntity
     @GeneratedValue(generator = "ZDeviceGenerator")
     @GenericGenerator(name = "ZDeviceGenerator",
                       strategy = "com.tgx.chess.pawn.endpoint.spring.device.jpa.generator.ZDeviceGenerator")
-    private long      id;
+    private long          id;
     @Column(length = 32, nullable = false, updatable = false)
-    private String    sn;
+    private String        sn;
     @Column(length = 32, nullable = false)
     @Length(min = 5, max = 32, message = "*Your password must have at least 5 characters less than 32 characters")
     @NotBlank(message = "*Please provide your password")
-    private String    password;
+    private String        password;
     @Column(length = 32, nullable = false)
     @Length(min = 8, max = 32, message = "* Your Username must have at least 8 characters less than 32 characters")
     @NotBlank(message = "*Please provide your username")
-    private String    username;
-    private int       passwordId;
+    private String        username;
+    private int           passwordId;
     @Column(length = 64, nullable = false)
-    private String    token;
-    @Temporal(TemporalType.TIMESTAMP)
+    private String        token;
     @Column(name = "invalid_at", nullable = false)
-    @JsonIgnore
-    private Date      invalidAt;
+    private LocalDateTime invalidAt;
     @Transient
-    private Operation mOperation = Operation.OP_NULL;
+    private Operation     mOperation = Operation.OP_NULL;
 
     public long getId()
     {
@@ -148,12 +148,18 @@ public class DeviceEntity
         this.passwordId = passwordId;
     }
 
-    public Date getInvalidAt()
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    public LocalDateTime getInvalidAt()
     {
         return invalidAt;
     }
 
-    public void setInvalidAt(Date invalidAt)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    public void setInvalidAt(LocalDateTime invalidAt)
     {
         this.invalidAt = invalidAt;
     }
