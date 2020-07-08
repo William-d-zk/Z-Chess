@@ -58,8 +58,7 @@ public class WsContext
                                                    | HS_State_UPGRADE
                                                    | HS_State_CONNECTION
                                                    | HS_State_SEC_KEY
-                                                   | HS_State_SEC_VERSION
-                                                   | HS_State_ORIGIN;
+                                                   | HS_State_SEC_VERSION;
     private final String    _SecKey, _SecAcceptExpect;
     private final int       _MaxPayloadSize;
     private int             mHandshakeState;

@@ -49,6 +49,12 @@ public class WsFrameFilter
     }
 
     @Override
+    public boolean checkType(IProtocol protocol)
+    {
+        return checkType(protocol, IPacket.PACKET_SERIAL);
+    }
+
+    @Override
     public ResultType preEncode(ZContext context, IProtocol output)
     {
         return preFrameEncode(context, output);

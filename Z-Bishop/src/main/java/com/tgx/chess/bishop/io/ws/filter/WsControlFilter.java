@@ -34,6 +34,7 @@ import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zprotocol.control.X106_Identity;
 import com.tgx.chess.bishop.io.zprotocol.control.X107_Redirect;
 import com.tgx.chess.queen.io.core.async.AioFilterChain;
+import com.tgx.chess.queen.io.core.inf.IPacket;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
@@ -48,6 +49,12 @@ public class WsControlFilter
     public WsControlFilter()
     {
         super("ws_control");
+    }
+
+    @Override
+    public boolean checkType(IProtocol protocol)
+    {
+        return checkType(protocol, IPacket.FRAME_SERIAL);
     }
 
     @Override

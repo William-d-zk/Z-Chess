@@ -39,6 +39,7 @@ import com.tgx.chess.queen.io.core.async.AioFilterChain;
 import com.tgx.chess.queen.io.core.inf.ICommand;
 import com.tgx.chess.queen.io.core.inf.ICommandFactory;
 import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
+import com.tgx.chess.queen.io.core.inf.IPacket;
 import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
@@ -53,6 +54,12 @@ public class ZCommandFilter
 
     private final ICommandFactory<ZCommand,
                                   WsFrame> _CommandFactory;
+
+    @Override
+    public boolean checkType(IProtocol protocol)
+    {
+        return checkType(protocol, IPacket.FRAME_SERIAL);
+    }
 
     public ZCommandFilter(ICommandFactory<ZCommand,
                                           WsFrame> factory)

@@ -318,7 +318,42 @@ public enum ZSort
         {
             return _QttCommandFactory;
         }
-    };
+    },
+    WS_QTT_SERVER
+    {
+        @Override
+        public IFilterChain<ZContext> getFilterChain()
+        {
+            return _QttWsHandshakeFilter;
+        }
+
+        @Override
+        public Mode getMode()
+        {
+            return Mode.LINK;
+        }
+
+        @Override
+        public Type getType()
+        {
+            return Type.SERVER;
+        }
+
+        @Override
+        public ZContext newContext(ISessionOption option)
+        {
+            return new WsContext(option, this);
+        }
+
+        @Override
+        public ICommandFactory<IControl<ZContext>,
+                               QttFrame> getCommandFactory()
+        {
+            return _QttCommandFactory;
+        }
+    }
+
+    ;
 
     final static ZServerFactory    _ServerFactory     = new ZServerFactory();
     final static ZClusterFactory   _ClusterFactory    = new ZClusterFactory();
@@ -344,6 +379,14 @@ public enum ZSort
         _ClusterFrameFilter.linkAfter(new ZTlsFilter());
         _ClusterFrameFilter.linkFront(new WsControlFilter())
                            .linkFront(new ZCommandFilter(new ZClusterFactory()));
+    }
+
+    final WsHandShakeFilter _QttWsHandshakeFilter = new WsHandShakeFilter();
+    {
+        _QttWsHandshakeFilter.linkFront(new WsFrameFilter())
+                             .linkFront(new WsControlFilter())
+                             .linkFront(new QttControlFilter())
+                             .linkFront(new QttCommandFilter());
     }
 
     private final AioWriter<ZContext>      _AioWriter     = new AioWriter<>();
