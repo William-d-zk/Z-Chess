@@ -22,76 +22,20 @@
  * SOFTWARE.                                                                      
  */
 
-package com.tgx.chess.king.base.response;
+package com.tgx.chess.test.start;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.tgx.chess.king.base.schedule.Status;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-/**
- * @author william.d.zk
- * @date 2020/7/7
- */
-@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
-public class ZProgress
+@SpringBootApplication(scanBasePackages = { "com.tgx.chess.test",
+                                            "com.tgx.chess.knight.json",
+                                            "com.tgx.chess.knight.raft",
+                                            "com.tgx.chess.pawn.endpoint",
+                                            "com.tgx.chess.open.api" })
+public class Application
 {
-    private final long _Size;
-
-    private Progress progress = Progress.NA;
-    private Status   status   = Status.CREATED;
-    private long     count;
-    private boolean  exist;
-
-    @JsonCreator
-    public ZProgress(@JsonProperty("size") long size)
+    public static void main(String[] args)
     {
-        _Size = size;
-    }
-
-    public Status getStatus()
-    {
-        return status;
-    }
-
-    public void setStatus(Status status)
-    {
-        this.status = status;
-    }
-
-    public long getCount()
-    {
-        return count;
-    }
-
-    public void setCount(long count)
-    {
-        this.count = count;
-    }
-
-    public long getSize()
-    {
-        return _Size;
-    }
-
-    public boolean isExist()
-    {
-        return exist;
-    }
-
-    public void setExist(boolean exist)
-    {
-        this.exist = exist;
-    }
-
-    public Progress getProgress()
-    {
-        return progress;
-    }
-
-    public void setProgress(Progress progress)
-    {
-        this.progress = progress;
+        SpringApplication.run(Application.class, args);
     }
 }

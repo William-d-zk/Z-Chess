@@ -32,64 +32,46 @@
         <groupId>com.tgx.service</groupId>
         <version>1.0.9-SNAPSHOT</version>
     </parent>
-    <artifactId>core.z-king</artifactId>
-    <name>Z-King</name>
+    <artifactId>test.z-player</artifactId>
+    <name>Z-Test</name>
     <dependencies>
         <dependency>
-            <groupId>com.lmax</groupId>
-            <artifactId>disruptor</artifactId>
+            <groupId>com.tgx.service</groupId>
+            <artifactId>biz.z-player</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.module</groupId>
-            <artifactId>jackson-module-parameter-names</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jdk8</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.module</groupId>
-            <artifactId>jackson-module-jsonSchema</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.junit.vintage</groupId>
+                    <artifactId>junit-vintage-engine</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
     <build>
         <plugins>
+            <!-- Spring Boot Maven 插件 -->
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.0.0</version>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot.version}</version>
+                <configuration>
+                    <layout>JAR</layout>
+                    <mainClass>com.tgx.chess.knight.start.ApplicationKnight</mainClass>
+                </configuration>
                 <executions>
                     <execution>
-                        <id>add-source</id>
-                        <phase>generate-sources</phase>
                         <goals>
-                            <goal>add-source</goal>
+                            <goal>repackage</goal>
                         </goals>
-                        <configuration>
-                            <sources>
-                                <source>${basedir}/src/main/java</source>
-                                <source>${basedir}/src/main/ntru</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>add-test-source</id>
-                        <phase>generate-test-sources</phase>
-                        <goals>
-                            <goal>add-test-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>${basedir}/src/test/java</source>
-                            </sources>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
         </plugins>
+        <directory>${user.home}/Z-Chess/${project.name}/target</directory>
     </build>
 </project>
