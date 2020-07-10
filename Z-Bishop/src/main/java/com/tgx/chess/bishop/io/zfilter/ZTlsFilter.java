@@ -36,10 +36,11 @@ public class ZTlsFilter
                        IPacket,
                        IPacket>
 {
+    public final static String NAME = "z_tls";
 
     public ZTlsFilter()
     {
-        super("z_tls");
+        super(NAME);
     }
 
     @Override

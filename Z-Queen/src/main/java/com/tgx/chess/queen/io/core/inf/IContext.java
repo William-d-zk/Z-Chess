@@ -55,19 +55,7 @@ public interface IContext<C extends IContext<C>>
 
     void finish();
 
-    @Override
-    default int outState()
-    {
-        return ENCODE_FRAME;
-    }
-
     void setOutState(int state);
-
-    @Override
-    default int inState()
-    {
-        return DECODE_FRAME;
-    }
 
     void setInState(int state);
 

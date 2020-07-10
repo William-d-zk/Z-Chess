@@ -43,10 +43,11 @@ public class QttFrameFilter
                        QttFrame,
                        IPacket>
 {
+    public final static String NAME = "mqtt_frame";
 
     public QttFrameFilter()
     {
-        super("mqtt_frame");
+        super(NAME);
     }
 
     @Override

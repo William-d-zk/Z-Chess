@@ -34,8 +34,8 @@ public interface IProtocol
         IDecode,
         IChannel
 {
-    int PACKET_SERIAL     = 0;
-    int COMMAND_SERIAL    = 0x0FF;//1~0xFE(254)
+    int PACKET_SERIAL     = 0x008;//0x08~0x0F(8~15)
+    int COMMAND_SERIAL    = 0x0FF;//0x10~0xFE(16~254)
     int CONTROL_SERIAL    = 0x100;//0x101~0x1FE(257~510)
     int FRAME_SERIAL      = 0x200;//0x201~0x2FE(513~766)
     int INTERNAL_SERIAL   = 0x400;//0x401~0x4FE(1025~1278)

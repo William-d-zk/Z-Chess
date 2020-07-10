@@ -45,7 +45,7 @@ public interface IPipeDecoder<C extends IContext<C>>
                                                .getSort()
                                                .getFilterChain()
                                                .getChainHead();
-        final C _Context = session.getContext();
+        C context = session.getContext();
         IControl<C>[] commands = null;
         IFilter.ResultType resultType;
         IProtocol protocol = input;
@@ -54,7 +54,7 @@ public interface IPipeDecoder<C extends IContext<C>>
             while (next != null) {
                 resultType = next.getFilter()
                                  .checkType(protocol) ? next.getFilter()
-                                                            .preDecode(_Context, protocol)
+                                                            .preDecode(context, protocol)
                                                       : IFilter.ResultType.IGNORE;
                 switch (resultType)
                 {
@@ -64,12 +64,12 @@ public interface IPipeDecoder<C extends IContext<C>>
                         return commands;
                     case NEXT_STEP:
                         protocol = next.getFilter()
-                                       .decode(_Context, protocol);
+                                       .decode(context, protocol);
                         break;
                     case HANDLED:
                         IControl<C> cmd = (IControl<C>) next.getFilter()
-                                                            .decode(_Context, protocol);
-                        if (cmd != null) {
+                                                            .decode(context, protocol);
+                        if (cmd != null && !cmd.isProxy()) {
                             cmd.setSession(session);
                             if (commands == null) {
                                 commands = new IControl[] { cmd };
@@ -78,6 +78,23 @@ public interface IPipeDecoder<C extends IContext<C>>
                                 IControl<C>[] nCmd = new IControl[commands.length + 1];
                                 IoUtil.addArray(commands, nCmd, cmd);
                                 commands = nCmd;
+                            }
+                        }
+                        else if (cmd != null && cmd.isProxy()) {
+                            IControl<C>[] bodies = cmd.getProxyBodies();
+                            if (bodies != null) {
+                                for (IControl<C> body : bodies) {
+                                    if (body != null) {
+                                        if (commands == null) {
+                                            commands = new IControl[] { body };
+                                        }
+                                        else {
+                                            IControl<C>[] nCmd = new IControl[commands.length + 1];
+                                            IoUtil.addArray(commands, nCmd, cmd);
+                                            commands = nCmd;
+                                        }
+                                    }
+                                }
                             }
                         }
                         break Chain;
