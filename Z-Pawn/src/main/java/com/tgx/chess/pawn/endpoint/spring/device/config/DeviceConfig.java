@@ -43,6 +43,7 @@ public class DeviceConfig
     private String   passwordRandomSeed;
     private String   addressWs;
     private String   addressQtt;
+    private boolean  qttOverWs;
 
     public Duration getPasswordInvalidDays()
     {
@@ -88,5 +89,15 @@ public class DeviceConfig
     public IQttRouter getQttRouter()
     {
         return new QttRouter();
+    }
+
+    public boolean isQttOverWs()
+    {
+        return qttOverWs;
+    }
+
+    public void setQttOverWs(boolean qttOverWs)
+    {
+        this.qttOverWs = qttOverWs;
     }
 }
