@@ -47,6 +47,7 @@ import com.tgx.chess.bishop.io.mqtt.control.X117_QttPubcomp;
 import com.tgx.chess.bishop.io.mqtt.control.X11C_QttPingreq;
 import com.tgx.chess.bishop.io.mqtt.control.X11D_QttPingresp;
 import com.tgx.chess.bishop.io.mqtt.handler.IQttRouter;
+import com.tgx.chess.bishop.io.ws.control.X101_HandShake;
 import com.tgx.chess.bishop.io.ws.control.X104_Ping;
 import com.tgx.chess.bishop.io.ws.control.X105_Pong;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
@@ -105,6 +106,8 @@ public class LogicHandler<T extends IActivity<ZContext> & IClusterPeer & ICluste
     {
         switch (content.serial())
         {
+            case X101_HandShake.COMMAND:
+                return new IControl[] { content };
             case X104_Ping.COMMAND:
                 X104_Ping x104 = (X104_Ping) content;
                 return new IControl[] { new X105_Pong(x104.getPayload()) };

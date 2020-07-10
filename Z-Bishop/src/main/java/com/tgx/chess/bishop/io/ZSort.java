@@ -32,9 +32,11 @@ import com.tgx.chess.bishop.io.mqtt.filter.QttControlFilter;
 import com.tgx.chess.bishop.io.mqtt.filter.QttFrameFilter;
 import com.tgx.chess.bishop.io.ws.WsContext;
 import com.tgx.chess.bishop.io.ws.WsFrame;
+import com.tgx.chess.bishop.io.ws.WsProxyContext;
 import com.tgx.chess.bishop.io.ws.filter.WsControlFilter;
 import com.tgx.chess.bishop.io.ws.filter.WsFrameFilter;
 import com.tgx.chess.bishop.io.ws.filter.WsHandShakeFilter;
+import com.tgx.chess.bishop.io.ws.filter.WsProxyFilter;
 import com.tgx.chess.bishop.io.zfilter.ZCommandFilter;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.bishop.io.zfilter.ZTlsFilter;
@@ -342,7 +344,7 @@ public enum ZSort
         @Override
         public ZContext newContext(ISessionOption option)
         {
-            return new WsContext(option, this);
+            return new WsProxyContext(option, this, new QttContext(option, this));
         }
 
         @Override
@@ -383,10 +385,12 @@ public enum ZSort
 
     final WsHandShakeFilter _QttWsHandshakeFilter = new WsHandShakeFilter();
     {
+        QttFrameFilter mQttFrameFilter = new QttFrameFilter();
+        mQttFrameFilter.linkFront(new QttControlFilter())
+                       .linkFront(new QttCommandFilter());
         _QttWsHandshakeFilter.linkFront(new WsFrameFilter())
                              .linkFront(new WsControlFilter())
-                             .linkFront(new QttControlFilter())
-                             .linkFront(new QttCommandFilter());
+                             .linkFront(new WsProxyFilter(mQttFrameFilter));
     }
 
     private final AioWriter<ZContext>      _AioWriter     = new AioWriter<>();

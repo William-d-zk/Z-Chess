@@ -187,7 +187,7 @@ public abstract class AioFilterChain<C extends IContext<C>,
     {
         if (Objects.isNull(context) || Objects.isNull(input)) { return ResultType.ERROR; }
         return context.isInConvert() && checkType(input, IProtocol.PACKET_SERIAL) ? ResultType.NEXT_STEP
-                                                                                 : ResultType.IGNORE;
+                                                                                  : ResultType.IGNORE;
     }
 
     protected ResultType prePacketEncode(C context, IProtocol output)
@@ -235,6 +235,24 @@ public abstract class AioFilterChain<C extends IContext<C>,
                && context.inState() == DECODE_HANDSHAKE
                && checkType(input, IProtocol.PACKET_SERIAL) ? ResultType.HANDLED
                                                             : ResultType.IGNORE;
+    }
+
+    protected ResultType preProxyEncode(C context, IProtocol output)
+    {
+        if (Objects.isNull(context) || Objects.isNull(output)) { return ResultType.ERROR; }
+        return context.isOutConvert()
+               && (checkType(output, IProtocol.COMMAND_SERIAL)
+                   || checkType(output, IProtocol.CONTROL_SERIAL)
+                   || checkType(output, IProtocol.FRAME_SERIAL)
+                   || checkType(output, IProtocol.PACKET_SERIAL)) ? ResultType.NEXT_STEP
+                                                                  : ResultType.IGNORE;
+    }
+
+    protected ResultType preProxyDecode(C context, IFrame input)
+    {
+        if (Objects.isNull(context) || Objects.isNull(input)) { return ResultType.ERROR; }
+        return context.isInConvert() && checkType(input, IProtocol.FRAME_SERIAL) && !input.isCtrl() ? ResultType.HANDLED
+                                                                                                    : ResultType.IGNORE;
     }
 
     @Override

@@ -76,4 +76,13 @@ public interface IControl<C extends IContext<C>>
         return null;
     }
 
+    default boolean isProxy()
+    {
+        return false;
+    }
+
+    default <T extends IContext<T>> IControl<T>[] getProxyBodies()
+    {
+        return null;
+    }
 }

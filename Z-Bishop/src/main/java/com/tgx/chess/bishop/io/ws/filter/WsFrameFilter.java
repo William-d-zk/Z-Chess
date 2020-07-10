@@ -42,10 +42,11 @@ public class WsFrameFilter
                        WsFrame,
                        IPacket>
 {
+    public final static String NAME = "ws_frame";
 
     public WsFrameFilter()
     {
-        super("ws_frame");
+        super(NAME);
     }
 
     @Override
@@ -173,6 +174,13 @@ public class WsFrameFilter
     public WsFrame decode(ZContext context, IPacket input)
     {
         WsFrame frame = context.getCarrier();
+        if (frame.getMaskLength() > 0) {
+            byte[] mask = frame.getMask();
+            for (int i = 0, size = (int) frame.getPayloadLength(); i < size; i++) {
+                int maskIndex = i & 3;
+                frame.getPayload()[i] ^= mask[maskIndex];
+            }
+        }
         context.finish();
         return frame;
     }
