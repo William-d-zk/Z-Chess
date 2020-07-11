@@ -119,6 +119,7 @@ public class WsProxyFilter
     {
         WsProxyContext proxyContext = (WsProxyContext) context;
         ZContext actualContext = proxyContext.getProxyContext();
+        if (input == null || input.getPayload() == null) { return null; }
         ByteBuffer buf = ByteBuffer.wrap(input.getPayload());
         IPacket packet = new AioPacket(buf);
         IFilter.ResultType resultType;
@@ -157,7 +158,5 @@ public class WsProxyFilter
                 next = next.getNext();
             }
         }
-
     }
-
 }

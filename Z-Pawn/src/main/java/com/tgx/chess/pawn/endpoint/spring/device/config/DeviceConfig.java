@@ -25,6 +25,7 @@
 package com.tgx.chess.pawn.endpoint.spring.device.config;
 
 import java.time.Duration;
+import java.util.List;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -39,11 +40,57 @@ import com.tgx.chess.bishop.io.mqtt.handler.QttRouter;
 @Configuration("device_config")
 public class DeviceConfig
 {
+    public List<Server> getListeners()
+    {
+        return listeners;
+    }
+
+    public void setListeners(List<Server> listeners)
+    {
+        this.listeners = listeners;
+    }
+
+    public static class Server
+    {
+        String host;
+        int    port;
+        String scheme;
+
+        public String getHost()
+        {
+            return host;
+        }
+
+        public void setHost(String host)
+        {
+            this.host = host;
+        }
+
+        public int getPort()
+        {
+            return port;
+        }
+
+        public void setPort(int port)
+        {
+            this.port = port;
+        }
+
+        public String getScheme()
+        {
+            return scheme;
+        }
+
+        public void setScheme(String scheme)
+        {
+            this.scheme = scheme;
+        }
+    }
+
+    private List<Server> listeners;
+
     private Duration passwordInvalidDays;
     private String   passwordRandomSeed;
-    private String   addressWs;
-    private String   addressQtt;
-    private boolean  qttOverWs;
 
     public Duration getPasswordInvalidDays()
     {
@@ -65,39 +112,9 @@ public class DeviceConfig
         this.passwordRandomSeed = passwordRandomSeed;
     }
 
-    public String getAddressWs()
-    {
-        return addressWs;
-    }
-
-    public void setAddressWs(String addressWs)
-    {
-        this.addressWs = addressWs;
-    }
-
-    public String getAddressQtt()
-    {
-        return addressQtt;
-    }
-
-    public void setAddressQtt(String addressQtt)
-    {
-        this.addressQtt = addressQtt;
-    }
-
     @Bean
     public IQttRouter getQttRouter()
     {
         return new QttRouter();
-    }
-
-    public boolean isQttOverWs()
-    {
-        return qttOverWs;
-    }
-
-    public void setQttOverWs(boolean qttOverWs)
-    {
-        this.qttOverWs = qttOverWs;
     }
 }
