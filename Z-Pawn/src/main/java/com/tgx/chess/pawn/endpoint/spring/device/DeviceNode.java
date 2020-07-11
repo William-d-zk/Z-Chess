@@ -216,7 +216,7 @@ public class DeviceNode
         for (IAioServer<ZContext> server : _AioServers) {
             server.bindAddress(server.getLocalAddress(), getCore().getServiceChannelGroup());
             server.pendingAccept();
-            _Logger.debug(String.format("device node start %s", server.getLocalAddress()));
+            _Logger.info(String.format("device node start %s-%s", server.getLocalAddress(), server.getSort()));
         }
     }
 

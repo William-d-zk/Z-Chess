@@ -25,11 +25,11 @@
 package com.tgx.chess.pawn.endpoint.spring.device.service;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
@@ -99,20 +99,28 @@ public class DeviceService
                   IQttRouter qttRouter) throws IOException
     {
         final TimeWheel _TimeWheel = new TimeWheel();
-        List<ITriple> hosts = new ArrayList<>(2);
-        String[] wsSplit = deviceConfig.getAddressWs()
-                                       .split(":", 2);
-        String[] qttSplit = deviceConfig.getAddressQtt()
-                                        .split(":", 2);
-        String wsServiceHost = wsSplit[0];
-        String qttServiceHost = qttSplit[0];
-        int wsServicePort = Integer.parseInt(wsSplit[1]);
-        int qttServicePort = Integer.parseInt(qttSplit[1]);
-        hosts.add(new Triple<>(wsServiceHost, wsServicePort, ZSort.WS_SERVER));
-        hosts.add(new Triple<>(qttServiceHost,
-                               qttServicePort,
-                               deviceConfig.isQttOverWs() ? ZSort.WS_QTT_SERVER
-                                                          : ZSort.QTT_SERVER));
+        List<ITriple> hosts = deviceConfig.getListeners()
+                                          .stream()
+                                          .map(listener ->
+                                          {
+                                              ZSort sort;
+                                              switch (listener.getScheme())
+                                              {
+                                                  case "ws":
+                                                      sort = ZSort.WS_SERVER;
+                                                      break;
+                                                  case "mqtt":
+                                                      sort = ZSort.QTT_SERVER;
+                                                      break;
+                                                  case "ws_mqtt":
+                                                      sort = ZSort.WS_QTT_SERVER;
+                                                      break;
+                                                  default:
+                                                      throw new UnsupportedOperationException(listener.getScheme());
+                                              }
+                                              return new Triple<>(listener.getHost(), listener.getPort(), sort);
+                                          })
+                                          .collect(Collectors.toList());
         _DeviceNode = new DeviceNode(hosts, ioConfig, raftConfig, mixConfig, _TimeWheel);
         _DeviceRepository = deviceRepository;
         _LinkCustom = linkCustom;
