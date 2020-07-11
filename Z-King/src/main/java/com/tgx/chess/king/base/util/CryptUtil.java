@@ -39,9 +39,9 @@ public class CryptUtil
 
     private final static String chars          = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     private final static char   pad            = '=';
-    private MessageDigest       MD5            = create("MD5");
-    private MessageDigest       SHA_1          = create("SHA-1");
-    private MessageDigest       SHA_256        = create("SHA-256");
+    private final MessageDigest _MD5           = create("MD5");
+    private final MessageDigest _SHA_1         = create("SHA-1");
+    private final MessageDigest _SHA_256       = create("SHA-256");
     private final Random        _Random        = new Random((long) Math.E);
     private final byte[]        _PasswordChars = "qwertyuiopasdfghjklzxcvbnmQAZWSXEDCRFVTGBYHNUJMIKOLP1234567890,-=+_!~`%&*#@;|/".getBytes(StandardCharsets.US_ASCII);
 
@@ -188,10 +188,9 @@ public class CryptUtil
     private static String base64Encoder(byte[] src, int start, int length, int wrapAt)
     {
         if (src == null || src.length == 0) return null;
-        StringBuffer encodeDst = new StringBuffer();
+        StringBuilder encodeDst = new StringBuilder();
         int lineCounter = 0;
-        length = start + length > src.length ? src.length
-                                             : start + length;
+        length = Math.min(start + length, src.length);
         while (start < length) {
             int buffer = 0, byteCounter;
             for (byteCounter = 0; byteCounter < 3 && start < length; byteCounter++, start++)
@@ -316,13 +315,13 @@ public class CryptUtil
         switch (digestName.toUpperCase())
         {
             case "MD5":
-                md = MD5;
+                md = _MD5;
                 break;
             case "SHA-1":
-                md = SHA_1;
+                md = _SHA_1;
                 break;
             case "SHA-256":
-                md = SHA_256;
+                md = _SHA_256;
                 break;
             default:
                 throw new IllegalArgumentException();
