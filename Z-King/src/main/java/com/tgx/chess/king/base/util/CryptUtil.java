@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.Random;
 
@@ -42,7 +43,9 @@ public class CryptUtil
     private final MessageDigest _MD5           = create("MD5");
     private final MessageDigest _SHA_1         = create("SHA-1");
     private final MessageDigest _SHA_256       = create("SHA-256");
-    private final Random        _Random        = new Random((long) Math.E);
+    private final Random        _Random        = new Random(((long) Math.E)
+                                                            ^ Instant.now()
+                                                                     .toEpochMilli());
     private final byte[]        _PasswordChars = "qwertyuiopasdfghjklzxcvbnmQAZWSXEDCRFVTGBYHNUJMIKOLP1234567890,-=+_!~`%&*#@;|/".getBytes(StandardCharsets.US_ASCII);
 
     /**

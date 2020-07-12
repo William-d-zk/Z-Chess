@@ -98,7 +98,7 @@ public class DeviceOpenService
                      .isBefore(LocalDateTime.now())
                 || device.getPasswordId() > exist.getPasswordId())
             {
-                exist.setPassword(_CryptUtil.randomPassword(5, 32));
+                exist.setPassword(_CryptUtil.randomPassword(17, 31));
                 exist.increasePasswordId();
                 exist.setInvalidAt(LocalDateTime.now()
                                                 .plus(_DeviceConfig.getPasswordInvalidDays()));
