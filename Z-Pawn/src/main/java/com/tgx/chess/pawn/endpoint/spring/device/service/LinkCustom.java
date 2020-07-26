@@ -128,7 +128,7 @@ public class LinkCustom
                     /*
                      * @see DeviceEntity
                      *      username >=8 && <=32
-                     *      password >=5 && <=32
+                     *      password >=17 && <=32
                      *      no_empty
                      */
                     x112.rejectNotAuthorized();

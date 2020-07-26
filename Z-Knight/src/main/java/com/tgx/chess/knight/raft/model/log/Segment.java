@@ -227,15 +227,16 @@ public class Segment
 
     public long truncate(long newEndIndex) throws IOException
     {
-        int i = (int) (newEndIndex + 1 - getStartIndex());
+        int recordIndex = (int) (newEndIndex + 1 - getStartIndex());
         setEndIndex(newEndIndex);
-        long newFileSize = getRecords().get(i)
+        long newFileSize = getRecords().get(recordIndex)
                                        .getOffset()
                            - 4;
         long size = getFileSize() - newFileSize;
         setFileSize(newFileSize);
-        for (int j = _Records.size(); j > i; j--) {
-            _Records.remove(j - 1);
+        if (_Records.size() > recordIndex + 1) {
+            _Records.subList(recordIndex + 1, _Records.size())
+                    .clear();
         }
         mRandomAccessFile.close();
         //缩减后一定处于可write状态

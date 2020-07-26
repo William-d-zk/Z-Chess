@@ -73,11 +73,11 @@ public class DeviceEntity
     @Column(length = 32, nullable = false, updatable = false)
     private String        sn;
     @Column(length = 32, nullable = false)
-    @Length(min = 5, max = 32, message = "*Your password must have at least 5 characters less than 32 characters")
+    @Length(min = 17, max = 32, message = "*Your password must have at least 17 characters less than 33 characters")
     @NotBlank(message = "*Please provide your password")
     private String        password;
     @Column(length = 32, nullable = false)
-    @Length(min = 8, max = 32, message = "* Your Username must have at least 8 characters less than 32 characters")
+    @Length(min = 8, max = 32, message = "* Your Username must have at least 8 characters less than 33 characters")
     @NotBlank(message = "*Please provide your username")
     private String        username;
     private int           passwordId;
@@ -212,4 +212,6 @@ public class DeviceEntity
     }
 
     private final static int DEVICE_ENTITY_SERIAL = AUDIT_MODEL_SERIAL + 1;
+
+
 }
