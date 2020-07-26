@@ -91,7 +91,7 @@ public interface IStorage
                                    : null;
         }
 
-        public static Operation parse(final byte value)
+        public static Operation convertOperationValue(final byte value)
         {
             return Stream.of(Operation.values())
                          .map(op -> op.predicate(value))
