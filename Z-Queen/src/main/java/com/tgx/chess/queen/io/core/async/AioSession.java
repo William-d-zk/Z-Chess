@@ -399,10 +399,10 @@ public class AioSession<C extends IContext<C>>
     {
         ByteBuffer buf = ps.getBuffer();
         if (Objects.nonNull(buf) && buf.hasRemaining()) {
-            mWroteExpect += buf.remaining();
             int pos = mSending.limit();
             mSendingBlank = mSending.capacity() - pos;
             int size = Math.min(mSendingBlank, buf.remaining());
+            mWroteExpect += size;
             mSending.limit(pos + size);
             for (int i = 0; i < size; i++, mSendingBlank--, pos++) {
                 mSending.put(pos, buf.get());
@@ -427,9 +427,9 @@ public class AioSession<C extends IContext<C>>
                                                                ShutdownChannelGroupException
     {
         if (_Ctx.channelStateLessThan(SESSION_FLUSHED) && mSending.hasRemaining()) {
-            _Ctx.advanceChannelState(SESSION_FLUSHED);
             _Logger.debug("flush %d | %s", mSending.remaining(), this);
             _Channel.write(mSending, _WriteTimeOutInSecond, TimeUnit.SECONDS, this, handler);
+            _Ctx.advanceChannelState(SESSION_FLUSHED);
         }
     }
 
