@@ -24,12 +24,15 @@
 
 package com.tgx.chess.bishop.io.ssl;
 
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
+import javax.net.ssl.SSLException;
 
 import com.tgx.chess.bishop.io.zfilter.ZContext;
+import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.event.inf.ISort;
 import com.tgx.chess.queen.io.core.inf.ISessionOption;
 
@@ -40,6 +43,8 @@ public class ZSSLContext
         extends
         ZContext
 {
+    private final static Logger LOGGER = Logger.getLogger(ZSSLContext.class.getSimpleName());
+
     public ZSSLContext(ISessionOption option,
                        ISort<ZContext> sort) throws NoSuchAlgorithmException
     {
@@ -60,5 +65,18 @@ public class ZSSLContext
     public SSLContext getSSLContext()
     {
         return _SslContext;
+    }
+
+    @Override
+    public void close() throws IOException
+    {
+        super.close();
+        try {
+            _SslEngine.closeInbound();
+        }
+        catch (SSLException e) {
+            LOGGER.info("ssl in bound exception %s", e.getMessage());
+        }
+        _SslEngine.closeOutbound();
     }
 }
