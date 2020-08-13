@@ -49,7 +49,7 @@ import com.tgx.chess.queen.event.handler.client.ClientLinkHandler;
 import com.tgx.chess.queen.event.handler.client.ClientWriteDispatcher;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.async.socket.AioWorker;
+import com.tgx.chess.queen.io.core.async.AioWorker;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
 

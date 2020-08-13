@@ -37,7 +37,7 @@ import com.tgx.chess.bishop.io.ws.filter.WsFrameFilter;
 import com.tgx.chess.bishop.io.ws.filter.WsHandShakeFilter;
 import com.tgx.chess.bishop.io.zfilter.ZCommandFilter;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
-import com.tgx.chess.bishop.io.zfilter.ZTlsFilter;
+import com.tgx.chess.bishop.io.zfilter.ZTLSFilter;
 import com.tgx.chess.bishop.io.zprotocol.ZCommand;
 import com.tgx.chess.bishop.io.zprotocol.ZConsumerFactory;
 import com.tgx.chess.queen.event.inf.ISort;
@@ -172,7 +172,7 @@ public enum ConsumerZSort
 
     final WsHandShakeFilter _HandshakeFilter = new WsHandShakeFilter();
     {
-        IFilterChain<ZContext> header = new ZTlsFilter();
+        IFilterChain<ZContext> header = new ZTLSFilter();
         _HandshakeFilter.linkAfter(header)
                         .linkFront(new WsFrameFilter())
                         .linkFront(new WsControlFilter())
@@ -181,7 +181,7 @@ public enum ConsumerZSort
 
     final QttFrameFilter _QttFrameFilter = new QttFrameFilter();
     {
-        _QttFrameFilter.linkAfter(new ZTlsFilter());
+        _QttFrameFilter.linkAfter(new ZTLSFilter());
         _QttFrameFilter.linkFront(new QttControlFilter())
                        .linkFront(new QttCommandFilter());
     }

@@ -33,7 +33,7 @@ import java.nio.channels.CompletionHandler;
 
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.queen.io.core.async.AioPacket;
-import com.tgx.chess.queen.io.core.async.socket.AioWorker;
+import com.tgx.chess.queen.io.core.async.AioWorker;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.ISession;
 

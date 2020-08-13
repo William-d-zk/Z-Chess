@@ -22,46 +22,56 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.queen.io.core.inf;
+package com.tgx.chess.bishop.io.ssl;
 
-import static com.tgx.chess.queen.event.inf.IOperator.Type.CONNECTED;
-
-import java.nio.channels.AsynchronousSocketChannel;
-import java.nio.channels.CompletionHandler;
-
-import com.tgx.chess.king.base.schedule.inf.ITask;
-import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.io.core.async.AioWorker;
+import com.tgx.chess.bishop.io.zfilter.ZContext;
+import com.tgx.chess.queen.io.core.async.AioFilterChain;
+import com.tgx.chess.queen.io.core.inf.IPacket;
+import com.tgx.chess.queen.io.core.inf.IProtocol;
 
 /**
  * @author william.d.zk
  */
-public interface IAioConnector<C extends IContext<C>>
+public class SSLFilter
         extends
-        CompletionHandler<Void,
-                          AsynchronousSocketChannel>,
-        IConnectActivity<C>,
-        IConnected<C>,
-        IConnectError<C>,
-        ITask
+        AioFilterChain<ZContext,
+                       IPacket,
+                       IPacket>
 {
-    @Override
-    IOperator<Throwable,
-              IAioConnector<C>,
-              Void> getErrorOperator();
+    public final static String NAME = "z-ssl";
 
-    @Override
-    default void completed(Void result, AsynchronousSocketChannel channel)
+    protected SSLFilter()
     {
-        AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishConnected(getConnectedOperator(), this, CONNECTED, channel);
+        super(NAME);
     }
 
     @Override
-    default void failed(Throwable exc, AsynchronousSocketChannel channel)
+    public ResultType preEncode(ZContext context, IProtocol output)
     {
-        AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishConnectingError(getErrorOperator(), exc, this);
+        return null;
     }
 
+    @Override
+    public ResultType preDecode(ZContext context, IPacket input)
+    {
+        return null;
+    }
+
+    @Override
+    public IPacket encode(ZContext context, IPacket output)
+    {
+        return null;
+    }
+
+    @Override
+    public IPacket decode(ZContext context, IPacket input)
+    {
+        return null;
+    }
+
+    @Override
+    public boolean checkType(IProtocol protocol)
+    {
+        return checkType(protocol, IPacket.PACKET_SERIAL);
+    }
 }

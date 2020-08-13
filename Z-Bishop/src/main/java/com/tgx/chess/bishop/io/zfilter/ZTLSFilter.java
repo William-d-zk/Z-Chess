@@ -30,15 +30,15 @@ import com.tgx.chess.queen.io.core.inf.IProtocol;
 /**
  * @author William.d.zk
  */
-public class ZTlsFilter
+public class ZTLSFilter
         extends
         AioFilterChain<ZContext,
                        IPacket,
                        IPacket>
 {
-    public final static String NAME = "z_tls";
+    public final static String NAME = "z-tls";
 
-    public ZTlsFilter()
+    public ZTLSFilter()
     {
         super(NAME);
     }

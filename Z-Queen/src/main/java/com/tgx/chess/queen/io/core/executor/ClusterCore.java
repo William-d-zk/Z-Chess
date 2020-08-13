@@ -55,7 +55,7 @@ import com.tgx.chess.queen.event.handler.cluster.NotifyHandler;
 import com.tgx.chess.queen.event.handler.mix.ILogicHandler;
 import com.tgx.chess.queen.event.inf.IOperator;
 import com.tgx.chess.queen.event.processor.QEvent;
-import com.tgx.chess.queen.io.core.async.socket.AioWorker;
+import com.tgx.chess.queen.io.core.async.AioWorker;
 import com.tgx.chess.queen.io.core.inf.IContext;
 import com.tgx.chess.queen.io.core.inf.IEncryptHandler;
 import com.tgx.chess.queen.io.core.manager.ClusterManager;
