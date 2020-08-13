@@ -39,7 +39,7 @@ import com.tgx.chess.bishop.io.ws.filter.WsHandShakeFilter;
 import com.tgx.chess.bishop.io.ws.filter.WsProxyFilter;
 import com.tgx.chess.bishop.io.zfilter.ZCommandFilter;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
-import com.tgx.chess.bishop.io.zfilter.ZTlsFilter;
+import com.tgx.chess.bishop.io.zfilter.ZTLSFilter;
 import com.tgx.chess.bishop.io.zprotocol.ZClusterFactory;
 import com.tgx.chess.bishop.io.zprotocol.ZCommand;
 import com.tgx.chess.bishop.io.zprotocol.ZServerFactory;
@@ -363,13 +363,13 @@ public enum ZSort
 
     final QttFrameFilter _QttFrameFilter = new QttFrameFilter();
     {
-        _QttFrameFilter.linkAfter(new ZTlsFilter());
+        _QttFrameFilter.linkAfter(new ZTLSFilter());
         _QttFrameFilter.linkFront(new QttControlFilter())
                        .linkFront(new QttCommandFilter());
     }
     final WsHandShakeFilter _WsHandshakeFilter = new WsHandShakeFilter();
     {
-        IFilterChain<ZContext> header = new ZTlsFilter();
+        IFilterChain<ZContext> header = new ZTLSFilter();
         _WsHandshakeFilter.linkAfter(header);
         _WsHandshakeFilter.linkFront(new WsFrameFilter())
                           .linkFront(new WsControlFilter())
@@ -378,7 +378,7 @@ public enum ZSort
 
     final WsFrameFilter _ClusterFrameFilter = new WsFrameFilter();
     {
-        _ClusterFrameFilter.linkAfter(new ZTlsFilter());
+        _ClusterFrameFilter.linkAfter(new ZTLSFilter());
         _ClusterFrameFilter.linkFront(new WsControlFilter())
                            .linkFront(new ZCommandFilter(new ZClusterFactory()));
     }

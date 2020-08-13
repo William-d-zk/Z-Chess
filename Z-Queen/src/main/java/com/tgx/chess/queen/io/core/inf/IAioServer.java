@@ -32,7 +32,7 @@ import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
 
 import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.io.core.async.socket.AioWorker;
+import com.tgx.chess.queen.io.core.async.AioWorker;
 
 /**
  * @author William.d.zk

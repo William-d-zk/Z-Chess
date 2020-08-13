@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.tgx.chess.queen.io.core.async.socket;
+package com.tgx.chess.queen.io.core.async;
 
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.Objects;

@@ -22,46 +22,43 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.queen.io.core.inf;
+package com.tgx.chess.bishop.io.ssl;
 
-import static com.tgx.chess.queen.event.inf.IOperator.Type.CONNECTED;
+import java.security.NoSuchAlgorithmException;
 
-import java.nio.channels.AsynchronousSocketChannel;
-import java.nio.channels.CompletionHandler;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 
-import com.tgx.chess.king.base.schedule.inf.ITask;
-import com.tgx.chess.queen.event.inf.IOperator;
-import com.tgx.chess.queen.io.core.async.AioWorker;
+import com.tgx.chess.bishop.io.zfilter.ZContext;
+import com.tgx.chess.queen.event.inf.ISort;
+import com.tgx.chess.queen.io.core.inf.ISessionOption;
 
 /**
  * @author william.d.zk
  */
-public interface IAioConnector<C extends IContext<C>>
+public class ZSSLContext
         extends
-        CompletionHandler<Void,
-                          AsynchronousSocketChannel>,
-        IConnectActivity<C>,
-        IConnected<C>,
-        IConnectError<C>,
-        ITask
+        ZContext
 {
-    @Override
-    IOperator<Throwable,
-              IAioConnector<C>,
-              Void> getErrorOperator();
-
-    @Override
-    default void completed(Void result, AsynchronousSocketChannel channel)
+    public ZSSLContext(ISessionOption option,
+                       ISort<ZContext> sort) throws NoSuchAlgorithmException
     {
-        AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishConnected(getConnectedOperator(), this, CONNECTED, channel);
+        super(option, sort);
+        _SslContext = SSLContext.getInstance("TLSv1.3");
+        _SslEngine = _SslContext.createSSLEngine();
+
     }
 
-    @Override
-    default void failed(Throwable exc, AsynchronousSocketChannel channel)
+    private final SSLEngine  _SslEngine;
+    private final SSLContext _SslContext;
+
+    public SSLEngine getSSLEngine()
     {
-        AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishConnectingError(getErrorOperator(), exc, this);
+        return _SslEngine;
     }
 
+    public SSLContext getSSLContext()
+    {
+        return _SslContext;
+    }
 }
