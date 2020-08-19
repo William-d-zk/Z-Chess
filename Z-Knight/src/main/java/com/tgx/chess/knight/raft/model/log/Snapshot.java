@@ -43,4 +43,28 @@ public class Snapshot
         IStorage
 {
 
+    @Override
+    public long primaryKey() {
+        return 0;
+    }
+
+    @Override
+    public Operation operation() {
+        return null;
+    }
+
+    @Override
+    public Strategy strategy() {
+        return null;
+    }
+
+    @Override
+    public int serial() {
+        return 0;
+    }
+
+    @Override
+    public long getOrigin() {
+        return 0;
+    }
 }

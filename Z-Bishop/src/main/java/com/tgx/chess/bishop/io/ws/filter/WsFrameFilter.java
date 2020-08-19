@@ -127,6 +127,7 @@ public class WsFrameFilter
                                     break;
                                 case WsFrame.frame_payload_length_16_mask_position:
                                     carrier.setPayloadLength(cRvBuf.getShort(1) & 0xFFFF);
+                                    cRvBuf.position(3);
                                     mask = new byte[4];
                                     cRvBuf.get(mask);
                                     carrier.setMask(mask);
@@ -137,6 +138,7 @@ public class WsFrameFilter
                                     break;
                                 case WsFrame.frame_payload_length_63_mask_position:
                                     carrier.setPayloadLength(cRvBuf.getLong(1));
+                                    cRvBuf.position(9);
                                     mask = new byte[4];
                                     cRvBuf.get(mask);
                                     carrier.setMask(mask);
@@ -181,6 +183,7 @@ public class WsFrameFilter
                 frame.getPayload()[i] ^= mask[maskIndex];
             }
         }
+        _Logger.info(new String(frame.getPayload()));
         context.finish();
         return frame;
     }
