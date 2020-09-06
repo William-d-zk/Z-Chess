@@ -126,6 +126,7 @@ public class DeviceOpenService
                 entity.setToken(IoUtil.bin2Hex(_CryptUtil.sha256(source.getBytes(StandardCharsets.UTF_8))));
                 entity.setSn(device.getSn());
                 entity.setUsername(device.getUsername());
+                entity.setSensorMac(device.getSensorMac());
             }
             if (exist == null
                 || exist.getInvalidAt()

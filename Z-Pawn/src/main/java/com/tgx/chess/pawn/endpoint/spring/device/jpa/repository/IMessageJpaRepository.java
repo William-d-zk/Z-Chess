@@ -24,6 +24,7 @@
 
 package com.tgx.chess.pawn.endpoint.spring.device.jpa.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.Query;
@@ -42,7 +43,13 @@ public interface IMessageJpaRepository
         extends
         BaseRepository<MessageEntity>
 {
+
     MessageEntity findByOriginAndDestinationAndMsgId(long origin, long destination, long msgId);
+
+    MessageEntity findByOriginAndDestinationAndMsgIdAndCreatedAtAfter(long origin,
+                                                                      long destination,
+                                                                      long msgId,
+                                                                      LocalDateTime time);
 
     List<MessageEntity> findAllByOriginAndDestinationAndMsgId(long origin, long destination, long msgId);
 

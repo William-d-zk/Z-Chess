@@ -183,7 +183,6 @@ public class WsFrameFilter
                 frame.getPayload()[i] ^= mask[maskIndex];
             }
         }
-        _Logger.info(new String(frame.getPayload()));
         context.finish();
         return frame;
     }
