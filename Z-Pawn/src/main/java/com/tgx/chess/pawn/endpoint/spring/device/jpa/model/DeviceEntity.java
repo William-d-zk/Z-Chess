@@ -85,6 +85,12 @@ public class DeviceEntity
     private String        token;
     @Column(name = "invalid_at", nullable = false)
     private LocalDateTime invalidAt;
+
+    @Column(name = "wifi_mac", length = 32)
+    private String wifiMac;
+    @Column(name = "sensor_mac", length = 32)
+    private String sensorMac;
+
     @Transient
     private Operation     mOperation = Operation.OP_NULL;
 
@@ -135,7 +141,9 @@ public class DeviceEntity
                              getSn(),
                              getCreatedAt(),
                              getUpdatedAt(),
-                             getInvalidAt());
+                             getInvalidAt(),
+                             getSensorMac(),
+                             getWifiMac());
     }
 
     public int getPasswordId()
@@ -182,6 +190,19 @@ public class DeviceEntity
         this.username = username;
     }
 
+    public String getWifiMac() {
+	return wifiMac;
+    }
+    public void setWifiMac(String wifiMac) {
+	this.wifiMac = wifiMac;
+    }
+    public String getSensorMac() {
+	return sensorMac;
+    }
+    public void setSensorMac(String sensorMac) {
+	this.sensorMac = sensorMac;
+    }
+
     @Override
     public long primaryKey()
     {
@@ -212,6 +233,4 @@ public class DeviceEntity
     }
 
     private final static int DEVICE_ENTITY_SERIAL = AUDIT_MODEL_SERIAL + 1;
-
-
 }

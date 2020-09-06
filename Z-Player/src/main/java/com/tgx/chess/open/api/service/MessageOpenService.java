@@ -82,7 +82,7 @@ public class MessageOpenService
                 }
             }
             // 当数据库中存在多条记录而被查询出来时，程序会报错。
-
+            //TODO 需要改造
             try {
                 entity = _JpaRepository.findByOriginAndDestinationAndMsgId(message.getOrigin(),
                                                                            message.getDestination(),

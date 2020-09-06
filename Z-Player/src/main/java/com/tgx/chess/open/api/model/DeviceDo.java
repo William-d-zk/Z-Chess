@@ -46,6 +46,8 @@ public class DeviceDo
     private String  username;
     private String  password;
     private String  token;
+    private String  wifiMac;
+    private String  sensorMac;
     private Instant invalidAt;
 
     public String getSn()
