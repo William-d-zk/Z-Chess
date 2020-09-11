@@ -24,6 +24,8 @@
 
 package com.tgx.chess.pawn.endpoint.spring.device.service;
 
+import java.util.Map;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +36,7 @@ import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.DeviceEntity;
 import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.MessageEntity;
 import com.tgx.chess.pawn.endpoint.spring.device.jpa.repository.IDeviceJpaRepository;
 import com.tgx.chess.pawn.endpoint.spring.device.jpa.repository.IMessageJpaRepository;
+import com.tgx.chess.queen.io.core.inf.IQoS;
 
 /**
  * @author william.d.zk
@@ -63,6 +66,11 @@ public class DurableService
     public void upsertState(long msgId, Status status, long session)
     {
 
+    }
+
+    @Override
+    public Map<String, IQoS.Level> loadSubscribe(long session) {
+        return null;
     }
 
     @Override

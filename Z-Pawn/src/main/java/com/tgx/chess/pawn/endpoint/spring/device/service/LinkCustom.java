@@ -140,12 +140,10 @@ public class LinkCustom
                 }
                 if (x112.isOk() && device != null) {
                     if (x111.isClean()) {
-                        //MQTT clean session state | message stack
                         _QttRouter.clean(device.primaryKey());
-
                     }
                     else {
-                        //TODO load session state, subscribe
+
 
                     }
                     ISession<ZContext> old = manager.mapSession(device.primaryKey(), session);
