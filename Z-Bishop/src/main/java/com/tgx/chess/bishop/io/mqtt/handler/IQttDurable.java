@@ -30,14 +30,15 @@ import com.tgx.chess.king.base.schedule.Status;
  * @author william.d.zk
  * @date 2020-09-09
  */
-public interface IQttDurable {
+public interface IQttDurable
+{
     /**
-     * dura
+     * durable
      *
      * @param msgId
      * @param session
      */
-    void saveMessageState(long msgId, Status status, long session);
+    void upsertState(long msgId, Status status, long session);
 
-    void cleanState(long sessionIndex);
+    void cleanState(long session);
 }
