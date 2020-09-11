@@ -60,18 +60,19 @@ public class DurableService
     }
 
     @Override
-    public void saveMessageState(long msgId, Status status, long session)
+    public void upsertState(long msgId, Status status, long session)
     {
 
     }
 
     @Override
-    public void cleanState(long sessionIndex)
+    public void cleanState(long session)
     {
-        DeviceEntity device = _DeviceJpaRepository.findById(sessionIndex)
+        DeviceEntity device = _DeviceJpaRepository.findById(session)
                                                   .orElse(null);
         if (device != null) {
-            device.setSubscribe(null);
+            device.getSubscribe()
+                  .clean();
             _DeviceJpaRepository.save(device);
         }
     }
