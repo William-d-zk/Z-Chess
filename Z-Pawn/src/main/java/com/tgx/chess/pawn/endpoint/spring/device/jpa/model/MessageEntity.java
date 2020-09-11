@@ -37,6 +37,7 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.tgx.chess.king.base.schedule.Status;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 
@@ -64,7 +65,7 @@ public class MessageEntity
     private long        origin;
     @Column(updatable = false, nullable = false)
     private long        destination;
-    @Column(updatable = false, nullable = false)
+    @Column(nullable = false)
     private int         cmd;
     @Column(length = 4, updatable = false, nullable = false)
     private String      direction;
@@ -75,6 +76,7 @@ public class MessageEntity
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb")
     private MessageBody body;
+    private Status      status;
 
     @JsonIgnore
     @Transient
@@ -188,6 +190,16 @@ public class MessageEntity
     public IStorage.Strategy strategy()
     {
         return IStorage.Strategy.RETAIN;
+    }
+
+    public Status getStatus()
+    {
+        return status;
+    }
+
+    public void setStatus(Status status)
+    {
+        this.status = status;
     }
 
     private final static int MESSAGE_ENTITY_SERIAL = AUDIT_MODEL_SERIAL + 2;

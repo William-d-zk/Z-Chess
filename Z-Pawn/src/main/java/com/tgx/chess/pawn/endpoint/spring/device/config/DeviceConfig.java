@@ -28,12 +28,8 @@ import java.time.Duration;
 import java.util.List;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-
-import com.tgx.chess.bishop.io.mqtt.handler.IQttRouter;
-import com.tgx.chess.bishop.io.mqtt.handler.QttRouter;
 
 @PropertySource("classpath:device.properties")
 @ConfigurationProperties(prefix = "z.chess.device")
@@ -112,9 +108,4 @@ public class DeviceConfig
         this.passwordRandomSeed = passwordRandomSeed;
     }
 
-    @Bean
-    public IQttRouter getQttRouter()
-    {
-        return new QttRouter();
-    }
 }

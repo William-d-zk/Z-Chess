@@ -54,6 +54,7 @@ public class ZCommand
 
     private ISession<ZContext> mSession;
     private byte[]             mPayload;
+    private int                mLocalId;
 
     @Override
     public ICommand<ZContext> setSession(ISession<ZContext> session)
@@ -116,5 +117,17 @@ public class ZCommand
     public int serial()
     {
         return getCommand();
+    }
+
+    @Override
+    public int getLocalId()
+    {
+        return mLocalId;
+    }
+
+    @Override
+    public void setLocalId(int localId)
+    {
+        mLocalId = localId;
     }
 }

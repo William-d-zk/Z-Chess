@@ -43,11 +43,4 @@ public class X11B_QttUnsuback
         super(COMMAND);
         setCtrl(generateCtrl(false, false, ALMOST_ONCE, QTT_TYPE.UNSUBACK));
     }
-
-    @Override
-    public int dataLength()
-    {
-        return super.dataLength();
-    }
-
 }

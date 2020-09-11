@@ -22,28 +22,46 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.queen.io.core.inf;
+package com.tgx.chess.pawn.endpoint.spring.device.jpa.model;
 
-/**
- * @author william.d.zk
- * @date 2019-05-17
- */
-public interface ICommand<C extends IContext<C>>
-        extends
-        IControl<C>,
-        IStreamProtocol<C>
+import java.io.Serializable;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
+@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
+public class DeviceSubscribe
+        implements
+        Serializable
 {
-    @Override
-    default int superSerial()
+    private static final long     serialVersionUID = -3075846478370159363L;
+    private final List<Subscribe> _Subscribes;
+
+    @JsonCreator
+    public DeviceSubscribe(@JsonProperty("subscribes") List<Subscribe> subscribes)
     {
-        return COMMAND_SERIAL;
+        _Subscribes = subscribes;
     }
 
-    long getMsgId();
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public List<Subscribe> getSubscribes()
+    {
+        return _Subscribes;
+    }
 
-    void setMsgId(long msgId);
+    public void addSubscribes(Subscribe subscribe)
+    {
 
-    int getLocalId();
+        _Subscribes.add(subscribe);
 
-    void setLocalId(int localId);
+    }
+
+    public void clean()
+    {
+        _Subscribes.clear();
+    }
 }

@@ -22,28 +22,22 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.queen.io.core.inf;
+package com.tgx.chess.bishop.io.mqtt.handler;
+
+import com.tgx.chess.king.base.schedule.Status;
 
 /**
  * @author william.d.zk
- * @date 2019-05-17
+ * @date 2020-09-09
  */
-public interface ICommand<C extends IContext<C>>
-        extends
-        IControl<C>,
-        IStreamProtocol<C>
-{
-    @Override
-    default int superSerial()
-    {
-        return COMMAND_SERIAL;
-    }
+public interface IQttDurable {
+    /**
+     * dura
+     *
+     * @param msgId
+     * @param session
+     */
+    void saveMessageState(long msgId, Status status, long session);
 
-    long getMsgId();
-
-    void setMsgId(long msgId);
-
-    int getLocalId();
-
-    void setLocalId(int localId);
+    void cleanState(long sessionIndex);
 }

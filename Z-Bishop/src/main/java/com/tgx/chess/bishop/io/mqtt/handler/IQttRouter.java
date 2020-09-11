@@ -28,7 +28,6 @@ import java.util.Map;
 
 import com.tgx.chess.bishop.io.IRouter;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
-import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.io.core.inf.IQoS;
 
 /**
@@ -43,11 +42,9 @@ public interface IQttRouter
     Map<Long,
         IQoS.Level> broker(final String topic);
 
-    boolean addTopic(Pair<String,
-                          IQoS.Level> topic,
-                     long session);
+    boolean subscribe(String topic, IQoS.Level level, long session);
 
-    void removeTopic(String topic, long session);
+    void unsubscribe(String topic, long session);
 
     Map<String,
         IQoS.Level> groupBy(long session);

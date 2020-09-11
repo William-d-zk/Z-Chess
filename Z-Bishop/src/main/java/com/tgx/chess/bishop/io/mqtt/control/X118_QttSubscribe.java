@@ -27,14 +27,11 @@ package com.tgx.chess.bishop.io.mqtt.control;
 import static com.tgx.chess.queen.io.core.inf.IQoS.Level.AT_LEAST_ONCE;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import com.tgx.chess.bishop.io.mqtt.QttCommand;
-import com.tgx.chess.king.base.inf.IPair;
 import com.tgx.chess.king.base.util.IoUtil;
-import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.queen.io.core.inf.IConsistent;
 
 /**
@@ -56,8 +53,8 @@ public class X118_QttSubscribe
         setCtrl(generateCtrl(false, false, AT_LEAST_ONCE, QTT_TYPE.SUBSCRIBE));
     }
 
-    private List<Pair<String,
-                      Level>> mTopics;
+    private Map<String,
+                Level> mSubscribes;
 
     @Override
     public boolean isMapping()
@@ -75,9 +72,11 @@ public class X118_QttSubscribe
     public int dataLength()
     {
         int length = super.dataLength();
-        if (mTopics != null) {
-            for (IPair pair : mTopics) {
-                String topic = pair.getFirst();
+        if (mSubscribes != null) {
+            for (Map.Entry<String,
+                           Level> entry : mSubscribes.entrySet())
+            {
+                String topic = entry.getKey();
                 //2byte UTF-8 length 1byte Qos-lv
                 length += 3 + topic.getBytes(StandardCharsets.UTF_8).length;
             }
@@ -85,35 +84,32 @@ public class X118_QttSubscribe
         return length;
     }
 
-    public List<Pair<String,
-                     Level>> getTopics()
+    public Map<String,
+               Level> getSubscribes()
     {
-        return mTopics;
+        return mSubscribes;
     }
 
-    public void setTopics(Pair<String,
-                               Level>... topics)
+    public void addSubscribe(String topic, Level level)
     {
-        if (this.mTopics == null) {
-            this.mTopics = new LinkedList<>();
+        if (mSubscribes == null) {
+            mSubscribes = new TreeMap<>();
         }
-        Collections.addAll(this.mTopics, topics);
+        mSubscribes.put(topic, level);
     }
 
     @Override
     public int decodec(byte[] data, int pos)
     {
         pos = super.decodec(data, pos);
-        if (pos < data.length) {
-            mTopics = new LinkedList<>();
-        }
-        for (int size = data.length; pos < size;) {
+
+        while (pos < data.length) {
             int utfSize = IoUtil.readUnsignedShort(data, pos);
             pos += 2;
             String topic = IoUtil.readString(data, pos, utfSize, StandardCharsets.UTF_8);
             pos += utfSize;
-            Level qosLevel = Level.valueOf(data[pos++]);
-            mTopics.add(new Pair<>(topic, qosLevel));
+            Level level = Level.valueOf(data[pos++]);
+            addSubscribe(topic, level);
         }
         return pos;
     }
@@ -122,14 +118,16 @@ public class X118_QttSubscribe
     public int encodec(byte[] data, int pos)
     {
         pos = super.encodec(data, pos);
-        if (mTopics != null) {
-            for (IPair pair : mTopics) {
-                String topic = pair.getFirst();
-                byte[] topicData = topic.getBytes(StandardCharsets.UTF_8);
-                Level qosLevel = pair.getSecond();
-                pos += IoUtil.writeShort(topicData.length, data, pos);
-                pos += IoUtil.write(topicData, data, pos);
-                pos += IoUtil.writeByte(qosLevel.ordinal(), data, pos);
+        if (mSubscribes != null) {
+            for (Map.Entry<String,
+                           Level> entry : mSubscribes.entrySet())
+            {
+                byte[] topic = entry.getKey()
+                                    .getBytes(StandardCharsets.UTF_8);
+                Level level = entry.getValue();
+                pos += IoUtil.writeShort(topic.length, data, pos);
+                pos += IoUtil.write(topic, data, pos);
+                pos += IoUtil.writeByte(level.ordinal(), data, pos);
             }
         }
         return pos;
@@ -139,9 +137,9 @@ public class X118_QttSubscribe
     public String toString()
     {
         return String.format("subscribe local-id:%d topics:%s",
-                             getMsgId(),
-                             mTopics != null ? mTopics.toString()
-                                             : null);
+                             getLocalId(),
+                             mSubscribes != null ? mSubscribes.toString()
+                                                 : null);
     }
 
     @Override

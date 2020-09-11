@@ -33,7 +33,7 @@ import javax.persistence.EntityNotFoundException;
 import org.hibernate.LazyInitializationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.jpa.JpaObjectRetrievalFailureException;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.topology.ZUID;
@@ -41,7 +41,6 @@ import com.tgx.chess.knight.raft.config.IRaftConfig;
 import com.tgx.chess.open.api.model.MessageDo;
 import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.MessageEntity;
 import com.tgx.chess.pawn.endpoint.spring.device.jpa.repository.IMessageJpaRepository;
-import org.springframework.stereotype.Service;
 
 /**
  * @author william.d.zk

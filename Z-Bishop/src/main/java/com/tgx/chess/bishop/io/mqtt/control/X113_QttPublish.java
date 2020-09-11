@@ -107,7 +107,7 @@ public class X113_QttPublish
                              isDuplicate(),
                              isRetain(),
                              getLevel(),
-                             getMsgId(),
+                             getLocalId(),
                              getTopic(),
                              getPayload() == null ? "NULL"
                                                   : new String(getPayload(), StandardCharsets.UTF_8));

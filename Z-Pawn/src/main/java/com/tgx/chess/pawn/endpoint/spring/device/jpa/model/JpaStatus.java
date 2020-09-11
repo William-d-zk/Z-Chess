@@ -28,6 +28,6 @@ package com.tgx.chess.pawn.endpoint.spring.device.jpa.model;
  * @author william.d.zk
  * @date 2019-06-15
  */
-public class JpaStatus
+public enum JpaStatus
 {
 }

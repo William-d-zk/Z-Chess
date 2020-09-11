@@ -26,6 +26,7 @@ package com.tgx.chess.pawn.endpoint.spring.device.service;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -52,6 +53,7 @@ import com.tgx.chess.king.base.util.Pair;
 import com.tgx.chess.king.base.util.Triple;
 import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.DeviceEntity;
 import com.tgx.chess.pawn.endpoint.spring.device.jpa.repository.IDeviceJpaRepository;
+import com.tgx.chess.pawn.endpoint.spring.device.jpa.repository.IMessageJpaRepository;
 import com.tgx.chess.queen.db.inf.IStorage;
 import com.tgx.chess.queen.event.handler.mix.ILinkCustom;
 import com.tgx.chess.queen.event.inf.IOperator;
@@ -69,14 +71,17 @@ public class LinkCustom
 {
     private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
-    private final IDeviceJpaRepository _DeviceRepository;
-    private final IQttRouter           _QttRouter;
+    private final IDeviceJpaRepository  _DeviceRepository;
+    private final IMessageJpaRepository _MessageJpaRepository;
+    private final IQttRouter            _QttRouter;
 
     @Autowired
     public LinkCustom(IDeviceJpaRepository deviceRepository,
+                      IMessageJpaRepository messageJpaRepository,
                       IQttRouter qttRouter)
     {
         _DeviceRepository = deviceRepository;
+        _MessageJpaRepository = messageJpaRepository;
         _QttRouter = qttRouter;
     }
 
@@ -134,6 +139,15 @@ public class LinkCustom
                     x112.rejectNotAuthorized();
                 }
                 if (x112.isOk() && device != null) {
+                    if (x111.isClean()) {
+                        //MQTT clean session state | message stack
+                        _QttRouter.clean(device.primaryKey());
+
+                    }
+                    else {
+                        //TODO load session state, subscribe
+
+                    }
                     ISession<ZContext> old = manager.mapSession(device.primaryKey(), session);
                     if (old != null) {
                         X108_Shutdown x108 = new X108_Shutdown();
@@ -246,19 +260,21 @@ public class LinkCustom
                 break;
             case X118_QttSubscribe.COMMAND:
                 X118_QttSubscribe x118 = (X118_QttSubscribe) consensus;
-                List<Pair<String,
-                          IQoS.Level>> topics_lv = x118.getTopics();
+                Map<String,
+                    IQoS.Level> subscribes = x118.getSubscribes();
                 if (byLeader) {
-                    _Logger.info("adjudge subscribe for %s, state", topics_lv);
+                    _Logger.info("adjudge subscribe for %s, state", subscribes);
                 }
-                if (topics_lv != null) {
+                if (subscribes != null) {
                     X119_QttSuback x119 = new X119_QttSuback();
                     x119.setMsgId(x118.getMsgId());
-                    topics_lv.forEach(topic -> x119.addResult(_QttRouter.addTopic(topic, origin) ? topic.getSecond()
-                                                                                                 : IQoS.Level.FAILURE));
+                    subscribes.forEach((topic, level) -> x119.addResult(_QttRouter.subscribe(topic,
+                                                                                                level,
+                                                                                                origin) ? level
+                                                                                                        : IQoS.Level.FAILURE));
                     if (session != null) {
                         x119.setSession(session);
-                        _Logger.info("subscribe topic:%s", x118.getTopics());
+                        _Logger.info("subscribes :%s", x118.getSubscribes());
                         return Stream.of(x119);
                     }
                 }
@@ -271,7 +287,7 @@ public class LinkCustom
                 }
                 if (topics != null) {
                     x11A.getTopics()
-                        .forEach(topic -> _QttRouter.removeTopic(topic, origin));
+                        .forEach(topic -> _QttRouter.unsubscribe(topic, origin));
                     if (session != null) {
                         X11B_QttUnsuback x11B = new X11B_QttUnsuback();
                         x11B.setMsgId(x11A.getMsgId());
@@ -283,5 +299,10 @@ public class LinkCustom
                 break;
         }
         return null;
+    }
+
+    private void cleanMessage(long sessionIndex)
+    {
+
     }
 }
