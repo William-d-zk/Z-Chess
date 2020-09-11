@@ -33,11 +33,38 @@ import com.tgx.chess.queen.io.core.inf.IContext;
  */
 public interface IRouter<C extends IContext<C>>
 {
+    /**
+     * generate message id
+     * 
+     * @return id
+     */
     long nextId();
 
+    /**
+     * register message with state for session by id
+     * 
+     * @param stateMessage
+     *            message with state
+     * @param sessionIndex
+     *            session index
+     */
     void register(ICommand<C> stateMessage, long sessionIndex);
 
+    /**
+     * feed back message state
+     * 
+     * @param stateMessage
+     *            message with state
+     * @param sessionIndex
+     *            session index
+     */
     void ack(ICommand<C> stateMessage, long sessionIndex);
 
+    /**
+     * clean session state machine for message stack
+     * 
+     * @param sessionIndex
+     *            session index
+     */
     void clean(long sessionIndex);
 }

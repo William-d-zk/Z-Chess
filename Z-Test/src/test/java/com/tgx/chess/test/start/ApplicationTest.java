@@ -24,6 +24,9 @@
 
 package com.tgx.chess.test.start;
 
+import java.time.LocalDateTime;
+import java.util.LinkedList;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +36,11 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.response.ZProgress;
 import com.tgx.chess.king.base.response.ZResponse;
+import com.tgx.chess.king.base.util.CryptUtil;
 import com.tgx.chess.knight.json.JsonUtil;
+import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.DeviceEntity;
+import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.DeviceSubscribe;
+import com.tgx.chess.pawn.endpoint.spring.device.jpa.repository.IDeviceJpaRepository;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -42,7 +49,9 @@ public class ApplicationTest
     private final Logger _Logger = Logger.getLogger("z-chess.test." + getClass().getSimpleName());
 
     @Autowired
-    private JsonUtil _JsonUtil;
+    private JsonUtil             _JsonUtil;
+    @Autowired
+    private IDeviceJpaRepository _DeviceJpaRepository;
 
     @Test
     public void testZProgress()
@@ -59,5 +68,24 @@ public class ApplicationTest
     {
         ZResponse<Void> noDetail = ZResponse.success(null);
         System.out.println(JsonUtil.writeValueAsString(noDetail));
+    }
+
+    @Test
+    public void testDeviceRepository()
+    {
+        DeviceEntity deviceEntity = new DeviceEntity();
+        deviceEntity.setSn("test000-10001-001202123");
+        deviceEntity.setUsername("test1234-A");
+        deviceEntity.setPassword("88712390087654dfrtyiu0-123");
+        deviceEntity.setPasswordId(0);
+        deviceEntity.setInvalidAt(LocalDateTime.now()
+                                               .plusDays(41));
+        deviceEntity.setToken(CryptUtil.SHA256("test"));
+        DeviceSubscribe subscribe = new DeviceSubscribe(new LinkedList<>());
+//        subscribe.addSubscribes(new Subscribe(IQoS.Level.EXACTLY_ONCE, "test#"));
+        deviceEntity.setSubscribe(subscribe);
+        DeviceEntity exist = _DeviceJpaRepository.findByToken(deviceEntity.getToken());
+        if (exist != null) deviceEntity.setId(exist.getId());
+        _DeviceJpaRepository.save(deviceEntity);
     }
 }

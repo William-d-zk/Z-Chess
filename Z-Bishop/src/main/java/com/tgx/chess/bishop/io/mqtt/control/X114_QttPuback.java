@@ -47,6 +47,6 @@ public class X114_QttPuback
     @Override
     public String toString()
     {
-        return String.format("x114 puback:{local-id:%d}", getMsgId());
+        return String.format("x114 puback:{local-id:%d}", getLocalId());
     }
 }

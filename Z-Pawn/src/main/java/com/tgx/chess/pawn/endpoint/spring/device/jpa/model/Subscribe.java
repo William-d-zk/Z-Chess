@@ -22,28 +22,42 @@
  * SOFTWARE.
  */
 
-package com.tgx.chess.queen.io.core.inf;
+package com.tgx.chess.pawn.endpoint.spring.device.jpa.model;
 
-/**
- * @author william.d.zk
- * @date 2019-05-17
- */
-public interface ICommand<C extends IContext<C>>
-        extends
-        IControl<C>,
-        IStreamProtocol<C>
+import java.io.Serializable;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.tgx.chess.queen.io.core.inf.IQoS;
+
+@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
+public class Subscribe
+        implements
+        Serializable
 {
-    @Override
-    default int superSerial()
+
+    private static final long serialVersionUID = 2015588893664180796L;
+
+    private final IQoS.Level _Level;
+    private final String     _Topic;
+
+    @JsonCreator
+    public Subscribe(@JsonProperty("level") IQoS.Level level,
+                     @JsonProperty("topic") String topic)
     {
-        return COMMAND_SERIAL;
+        _Level = level;
+        _Topic = topic;
     }
 
-    long getMsgId();
+    public IQoS.Level getLevel()
+    {
+        return _Level;
+    }
 
-    void setMsgId(long msgId);
-
-    int getLocalId();
-
-    void setLocalId(int localId);
+    public String getTopic()
+    {
+        return _Topic;
+    }
 }

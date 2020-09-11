@@ -47,6 +47,6 @@ public class X116_QttPubrel
     @Override
     public String toString()
     {
-        return String.format("x116 pubrel:{local-id:%d}", getMsgId());
+        return String.format("x116 pubrel:{local-id:%d}", getLocalId());
     }
 }

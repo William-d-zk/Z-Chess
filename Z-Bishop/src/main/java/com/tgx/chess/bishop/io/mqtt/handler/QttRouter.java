@@ -36,7 +36,6 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -68,6 +67,12 @@ public class QttRouter
                       Map<Long,
                           IControl<ZContext>>>             _QttStatusMap      = new ConcurrentSkipListMap<>();
     private final Queue<IPair>                             _SessionIdleQueue  = new ConcurrentLinkedQueue<>();
+    private final IQttDurable                              _QttDurable;
+
+    public QttRouter(IQttDurable durable)
+    {
+        _QttDurable = durable;
+    }
 
     @Override
     public Map<Long,
@@ -79,9 +84,13 @@ public class QttRouter
                                  .map(entry ->
                                  {
                                      Pattern pattern = entry.getKey();
+                                     Map<Long,
+                                         IQoS.Level> entryValue = entry.getValue();
                                      return pattern.matcher(topic)
-                                                   .matches() ? entry.getValue()
-                                                              : null;
+                                                   .matches()
+                                            && !entryValue.isEmpty() ? entryValue
+                                                                     : null;
+
                                  })
                                  .filter(Objects::nonNull)
                                  .map(Map::entrySet)
@@ -100,7 +109,7 @@ public class QttRouter
         _Logger.debug("group by :%#x", session);
         return _Topic2SessionsMap.entrySet()
                                  .parallelStream()
-                                 .map(entry ->
+                                 .flatMap(entry ->
                                  {
                                      Pattern pattern = entry.getKey();
                                      Map<Long,
@@ -113,17 +122,12 @@ public class QttRouter
                                                                              e.getValue()))
                                                       .filter(t -> t.getFirst() == session);
                                  })
-                                 .flatMap(Function.identity())
                                  .collect(Collectors.toMap(Triple::getSecond, Triple::getThird));
     }
 
     @Override
-    public boolean addTopic(Pair<String,
-                                 IQoS.Level> pair,
-                            long session)
+    public boolean subscribe(String topic, IQoS.Level level, long session)
     {
-        String topic = pair.getFirst();
-        IQoS.Level qosLevel = pair.getSecond();
         try {
             Pattern pattern = topicToRegex(topic);
             _Logger.debug("topic %s,pattern %s", topic, pattern);
@@ -134,10 +138,10 @@ public class QttRouter
                 _Topic2SessionsMap.put(pattern, value);
             }
             if (value.computeIfPresent(session,
-                                       (key, old) -> old.getValue() > qosLevel.getValue() ? old
-                                                                                          : qosLevel) == null)
+                                       (key, old) -> old.getValue() > level.getValue() ? old
+                                                                                       : level) == null)
             {
-                value.put(session, qosLevel);
+                value.put(session, level);
             }
             return true;
         }
@@ -176,7 +180,7 @@ public class QttRouter
     }
 
     @Override
-    public void removeTopic(String topic, long session)
+    public void unsubscribe(String topic, long session)
     {
         for (Iterator<Map.Entry<Pattern,
                                 Map<Long,
@@ -260,5 +264,11 @@ public class QttRouter
         if (_LocalIdMessageMap != null) {
             _LocalIdMessageMap.clear();
         }
+        for (Map<Long,
+                 IQoS.Level> entryValue : _Topic2SessionsMap.values())
+        {
+            entryValue.remove(sessionIndex);
+        }
+        _QttDurable.cleanState(sessionIndex);
     }
 }

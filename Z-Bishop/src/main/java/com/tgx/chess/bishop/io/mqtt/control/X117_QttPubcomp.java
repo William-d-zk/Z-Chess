@@ -47,6 +47,6 @@ public class X117_QttPubcomp
     @Override
     public String toString()
     {
-        return String.format("x117 pubcomp:{local-id:%d}", getMsgId());
+        return String.format("x117 pubcomp:{local-id:%d}", getLocalId());
     }
 }

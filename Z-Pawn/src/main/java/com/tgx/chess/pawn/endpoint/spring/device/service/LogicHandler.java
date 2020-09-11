@@ -54,6 +54,7 @@ import com.tgx.chess.bishop.io.ws.control.X105_Pong;
 import com.tgx.chess.bishop.io.zfilter.ZContext;
 import com.tgx.chess.king.base.exception.ZException;
 import com.tgx.chess.king.base.log.Logger;
+import com.tgx.chess.king.base.schedule.Status;
 import com.tgx.chess.knight.json.JsonUtil;
 import com.tgx.chess.knight.raft.model.RaftNode;
 import com.tgx.chess.pawn.endpoint.spring.device.jpa.model.MessageBody;
@@ -125,6 +126,7 @@ public class LogicHandler<T extends IActivity<ZContext> & IClusterPeer & ICluste
                 messageEntity.setMsgId(x113.getMsgId());
                 messageEntity.setCmd(X113_QttPublish.COMMAND);
                 messageEntity.setOperation(OP_INSERT);
+                messageEntity.setStatus(Status.CREATED);
                 _MessageRepository.save(messageEntity);
                 List<IControl<ZContext>> pushList = new LinkedList<>();
                 switch (x113.getLevel())
@@ -202,7 +204,8 @@ public class LogicHandler<T extends IActivity<ZContext> & IClusterPeer & ICluste
              .stream()
              .map(entry ->
              {
-                 ISession<ZContext> targetSession = manager.findSessionByIndex(entry.getKey());
+                 long sessionIndex = entry.getKey();
+                 ISession<ZContext> targetSession = manager.findSessionByIndex(sessionIndex);
                  if (targetSession != null) {
                      IQoS.Level subscribeLevel = entry.getValue();
                      X113_QttPublish publish = new X113_QttPublish();
@@ -217,7 +220,7 @@ public class LogicHandler<T extends IActivity<ZContext> & IClusterPeer & ICluste
                      MessageEntity brokerMsg = new MessageEntity();
                      brokerMsg.setMsgId(_QttRouter.nextId());
                      brokerMsg.setOrigin(_RaftNode.getPeerId());
-                     brokerMsg.setDestination(targetSession.getIndex());
+                     brokerMsg.setDestination(sessionIndex);
                      brokerMsg.setOperation(OP_INSERT);
                      brokerMsg.setOwner(OWNER_SERVER);
                      brokerMsg.setDirection(SERVER_TO_CLIENT.getShort());
@@ -225,7 +228,7 @@ public class LogicHandler<T extends IActivity<ZContext> & IClusterPeer & ICluste
                      brokerMsg.setCmd(X113_QttPublish.COMMAND);
                      _MessageRepository.save(brokerMsg);
                      publish.setMsgId(brokerMsg.getMsgId());
-                     _QttRouter.register(publish, entry.getKey());
+                     _QttRouter.register(publish, sessionIndex);
                      return publish;
                  }
                  return null;

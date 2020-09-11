@@ -36,6 +36,8 @@ import javax.persistence.Transient;
 import javax.validation.constraints.NotBlank;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 import org.hibernate.validator.constraints.Length;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -46,11 +48,13 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.tgx.chess.queen.db.inf.IStorage;
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 
 /**
  * @author william.d.zk
  */
 @Entity(name = "Device")
+@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 @Table(indexes = { @Index(name = "device_idx_token_pwd_id", columnList = "token,password,passwordId"),
                    @Index(name = "device_idx_token_pwd", columnList = "token,password"),
                    @Index(name = "device_idx_sn", columnList = "sn"),
@@ -69,30 +73,32 @@ public class DeviceEntity
     @GeneratedValue(generator = "ZDeviceGenerator")
     @GenericGenerator(name = "ZDeviceGenerator",
                       strategy = "com.tgx.chess.pawn.endpoint.spring.device.jpa.generator.ZDeviceGenerator")
-    private long          id;
+    private long            id;
     @Column(length = 32, nullable = false, updatable = false)
-    private String        sn;
+    private String          sn;
     @Column(length = 32, nullable = false)
     @Length(min = 17, max = 32, message = "*Your password must have at least 17 characters less than 33 characters")
     @NotBlank(message = "*Please provide your password")
-    private String        password;
+    private String          password;
     @Column(length = 32, nullable = false)
     @Length(min = 8, max = 32, message = "* Your Username must have at least 8 characters less than 33 characters")
     @NotBlank(message = "*Please provide your username")
-    private String        username;
-    private int           passwordId;
-    @Column(length = 64, nullable = false)
-    private String        token;
+    private String          username;
+    private int             passwordId;
+    @Column(length = 64, nullable = false, unique = true)
+    private String          token;
     @Column(name = "invalid_at", nullable = false)
-    private LocalDateTime invalidAt;
-
+    private LocalDateTime   invalidAt;
     @Column(name = "wifi_mac", length = 32)
-    private String wifiMac;
+    private String          wifiMac;
     @Column(name = "sensor_mac", length = 32)
-    private String sensorMac;
+    private String          sensorMac;
+    @Type(type = "jsonb")
+    @Column(columnDefinition = "jsonb")
+    private DeviceSubscribe subscribe;
 
     @Transient
-    private Operation     mOperation = Operation.OP_NULL;
+    private Operation mOperation = Operation.OP_NULL;
 
     public long getId()
     {
@@ -190,17 +196,34 @@ public class DeviceEntity
         this.username = username;
     }
 
-    public String getWifiMac() {
-	return wifiMac;
+    public String getWifiMac()
+    {
+        return wifiMac;
     }
-    public void setWifiMac(String wifiMac) {
-	this.wifiMac = wifiMac;
+
+    public void setWifiMac(String wifiMac)
+    {
+        this.wifiMac = wifiMac;
     }
-    public String getSensorMac() {
-	return sensorMac;
+
+    public String getSensorMac()
+    {
+        return sensorMac;
     }
-    public void setSensorMac(String sensorMac) {
-	this.sensorMac = sensorMac;
+
+    public void setSensorMac(String sensorMac)
+    {
+        this.sensorMac = sensorMac;
+    }
+
+    public DeviceSubscribe getSubscribe()
+    {
+        return subscribe;
+    }
+
+    public void setSubscribe(DeviceSubscribe subscribe)
+    {
+        this.subscribe = subscribe;
     }
 
     @Override
