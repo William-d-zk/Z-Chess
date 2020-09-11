@@ -48,4 +48,6 @@ public interface IQttRouter
 
     Map<String,
         IQoS.Level> groupBy(long session);
+
+    void loadSubscribe(long session);
 }

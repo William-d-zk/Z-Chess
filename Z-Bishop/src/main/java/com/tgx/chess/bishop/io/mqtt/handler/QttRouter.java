@@ -126,6 +126,16 @@ public class QttRouter
     }
 
     @Override
+    public void loadSubscribe(long session)
+    {
+        Map<String,
+            IQoS.Level> registered = _QttDurable.loadSubscribe(session);
+        if (registered != null && !registered.isEmpty()) {
+            registered.forEach((topic, level) -> subscribe(topic, level, session));
+        }
+    }
+
+    @Override
     public boolean subscribe(String topic, IQoS.Level level, long session)
     {
         try {
@@ -271,4 +281,5 @@ public class QttRouter
         }
         _QttDurable.cleanState(sessionIndex);
     }
+
 }
