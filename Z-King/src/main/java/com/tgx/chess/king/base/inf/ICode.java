@@ -15,7 +15,7 @@
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 
 /**
  * @author william.d.zk
+ * @date 2016-06-01
  */
 public interface ICode
 {
@@ -38,7 +39,7 @@ public interface ICode
     static ICode parse(int code, ICode... codes)
     {
         return Stream.of(codes)
-                     .filter(_Code -> _Code.getCode() == code)
+                     .filter(c -> c.getCode() == code)
                      .findAny()
                      .orElse(null);
     }
