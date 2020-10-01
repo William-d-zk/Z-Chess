@@ -52,9 +52,7 @@ public class MixIoDispatcher<C extends IContext<C>>
     @Override
     protected RingBuffer<QEvent> getNextPipe(ISort<C> sort)
     {
-        if (sort.getMode() == ISort.Mode.LINK) {
-            return _Link;
-        }
+        if (sort.getMode() == ISort.Mode.LINK) { return _Link; }
         return super.getNextPipe(sort);
     }
 }

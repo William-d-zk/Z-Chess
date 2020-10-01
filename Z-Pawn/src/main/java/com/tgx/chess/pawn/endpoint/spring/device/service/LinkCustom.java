@@ -15,7 +15,7 @@
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
@@ -144,7 +144,6 @@ public class LinkCustom
                     }
                     else {
 
-
                     }
                     ISession<ZContext> old = manager.mapSession(device.primaryKey(), session);
                     if (old != null) {
@@ -267,9 +266,9 @@ public class LinkCustom
                     X119_QttSuback x119 = new X119_QttSuback();
                     x119.setMsgId(x118.getMsgId());
                     subscribes.forEach((topic, level) -> x119.addResult(_QttRouter.subscribe(topic,
-                                                                                                level,
-                                                                                                origin) ? level
-                                                                                                        : IQoS.Level.FAILURE));
+                                                                                             level,
+                                                                                             origin) ? level
+                                                                                                     : IQoS.Level.FAILURE));
                     if (session != null) {
                         x119.setSession(session);
                         _Logger.info("subscribes :%s", x118.getSubscribes());

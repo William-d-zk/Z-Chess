@@ -15,7 +15,7 @@
  *                                                                               
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR    
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,      
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE   
+ * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER        
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
@@ -25,6 +25,7 @@
 package com.tgx.chess.test.start;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.LinkedList;
 
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.tgx.chess.king.base.log.Logger;
 import com.tgx.chess.king.base.response.ZProgress;
 import com.tgx.chess.king.base.response.ZResponse;
@@ -82,10 +84,31 @@ public class ApplicationTest
                                                .plusDays(41));
         deviceEntity.setToken(CryptUtil.SHA256("test"));
         DeviceSubscribe subscribe = new DeviceSubscribe(new LinkedList<>());
-//        subscribe.addSubscribes(new Subscribe(IQoS.Level.EXACTLY_ONCE, "test#"));
+        //        subscribe.addSubscribes(new Subscribe(IQoS.Level.EXACTLY_ONCE, "test#"));
         deviceEntity.setSubscribe(subscribe);
         DeviceEntity exist = _DeviceJpaRepository.findByToken(deviceEntity.getToken());
         if (exist != null) deviceEntity.setId(exist.getId());
         _DeviceJpaRepository.save(deviceEntity);
+    }
+
+    @Test
+    public void output()
+    {
+        JsonNode jsonOutput = JsonUtil.readTree(getClass().getResourceAsStream("/output.json"));
+        System.out.println(jsonOutput);
+        JsonNode vehicleTypeWithRouteList = jsonOutput.get("vehicleTypeWithRouteList");
+        for (JsonNode e : vehicleTypeWithRouteList) {
+            JsonNode jobList = e.get("jobList");
+            for (JsonNode job : jobList) {
+                JsonNode attrs = job.get("attrs");
+                JsonNode st = attrs.get("service_time");
+                JsonNode readyTime = attrs.get("ready_time");
+                JsonNode dueTime = attrs.get("due_time");
+                JsonNode width = attrs.get("width");
+                JsonNode height = attrs.get("height");
+                System.out.println("ready_time:" + LocalTime.ofSecondOfDay(readyTime.asLong() / 1000));
+                System.out.println("due_time:" + LocalTime.ofSecondOfDay(dueTime.asLong() / 1000));
+            }
+        }
     }
 }

@@ -95,7 +95,11 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
                                        manager);
             case X71_RaftBallot.COMMAND://elector → candidate
                 X71_RaftBallot x71 = (X71_RaftBallot) content;
-                return _RaftNode.ballot(x71.getTerm(), x71.getIndex(), x71.getElectorId(), x71.getCandidateId(), manager);
+                return _RaftNode.ballot(x71.getTerm(),
+                                        x71.getIndex(),
+                                        x71.getElectorId(),
+                                        x71.getCandidateId(),
+                                        manager);
             case X72_RaftAppend.COMMAND://leader → follower 
                 X72_RaftAppend x72 = (X72_RaftAppend) content;
                 if (x72.getPayload() != null) {
