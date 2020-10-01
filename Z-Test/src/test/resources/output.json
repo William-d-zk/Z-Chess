@@ -1,0 +1,4483 @@
+{
+    "attrs": {},
+    "feasible": true,
+    "objectiveValueList": [
+        5,
+        30,
+        1829393.0464172363
+    ],
+    "outputs": {},
+    "unassignedPickupDeliveryOrderList": [
+        {
+            "delivery": {
+                "attrs": {
+                    "service_time": 40,
+                    "due_time": 2.66622E7,
+                    "latitude": -6.1324,
+                    "length": 0.6699999570846558,
+                    "ready_time": 2.666214E7,
+                    "put_type": 0,
+                    "type": "delivery",
+                    "item_num": 55,
+                    "vehicle_requirement": -1,
+                    "list_index": 62,
+                    "geo": "106.8783,-6.1324",
+                    "weight_demand": 0,
+                    "width": 0.5600000023841858,
+                    "volume_demand": 525280.0,
+                    "_id": 125,
+                    "order_id": "80162073",
+                    "height": 1.399999976158142,
+                    "longitude": 106.8783
+                }
+            },
+            "pickup": {
+                "attrs": {
+                    "service_time": 40,
+                    "due_time": 2.666166E7,
+                    "latitude": -6.2322,
+                    "length": 0.6699999570846558,
+                    "ready_time": 2.66616E7,
+                    "put_type": 0,
+                    "type": "pickup",
+                    "item_num": 55,
+                    "vehicle_requirement": -1,
+                    "list_index": 62,
+                    "geo": "106.8202,-6.2322",
+                    "weight_demand": 0,
+                    "width": 0.5600000023841858,
+                    "volume_demand": 525280.0,
+                    "_id": 124,
+                    "order_id": "80162073",
+                    "height": 1.399999976158142,
+                    "longitude": 106.8202
+                }
+            }
+        },
+        {
+            "delivery": {
+                "attrs": {
+                    "service_time": 40,
+                    "due_time": 2.66622E7,
+                    "latitude": -6.5521,
+                    "length": 0.4599999785423279,
+                    "ready_time": 2.666214E7,
+                    "put_type": 0,
+                    "type": "delivery",
+                    "item_num": 100,
+                    "vehicle_requirement": -1,
+                    "list_index": 85,
+                    "geo": "106.8075,-6.5521",
+                    "weight_demand": 0,
+                    "width": 0.7899999618530273,
+                    "volume_demand": 341596.0,
+                    "_id": 171,
+                    "order_id": "80162186",
+                    "height": 0.9399999976158142,
+                    "longitude": 106.8075
+                }
+            },
+            "pickup": {
+                "attrs": {
+                    "service_time": 40,
+                    "due_time": 2.666166E7,
+                    "latitude": -6.2322,
+                    "length": 0.4599999785423279,
+                    "ready_time": 2.66616E7,
+                    "put_type": 0,
+                    "type": "pickup",
+                    "item_num": 100,
+                    "vehicle_requirement": -1,
+                    "list_index": 85,
+                    "geo": "106.8202,-6.2322",
+                    "weight_demand": 0,
+                    "width": 0.7899999618530273,
+                    "volume_demand": 341596.0,
+                    "_id": 170,
+                    "order_id": "80162186",
+                    "height": 0.9399999976158142,
+                    "longitude": 106.8202
+                }
+            }
+        },
+        {
+            "delivery": {
+                "attrs": {
+                    "service_time": 40,
+                    "due_time": 2.66622E7,
+                    "latitude": -6.165,
+                    "length": 0.4599999785423279,
+                    "ready_time": 2.666214E7,
+                    "put_type": 0,
+                    "type": "delivery",
+                    "item_num": 50,
+                    "vehicle_requirement": -1,
+                    "list_index": 29,
+                    "geo": "106.6790,-6.1650",
+                    "weight_demand": 0,
+                    "width": 0.7899999618530273,
+                    "volume_demand": 341596.0,
+                    "_id": 59,
+                    "order_id": "80161918",
+                    "height": 0.9399999976158142,
+                    "longitude": 106.679
+                }
+            },
+            "pickup": {
+                "attrs": {
+                    "service_time": 40,
+                    "due_time": 2.666166E7,
+                    "latitude": -6.2322,
+                    "length": 0.4599999785423279,
+                    "ready_time": 2.66616E7,
+                    "put_type": 0,
+                    "type": "pickup",
+                    "item_num": 50,
+                    "vehicle_requirement": -1,
+                    "list_index": 29,
+                    "geo": "106.8202,-6.2322",
+                    "weight_demand": 0,
+                    "width": 0.7899999618530273,
+                    "volume_demand": 341596.0,
+                    "_id": 58,
+                    "order_id": "80161918",
+                    "height": 0.9399999976158142,
+                    "longitude": 106.8202
+                }
+            }
+        },
+        {
+            "delivery": {
+                "attrs": {
+                    "service_time": 40,
+                    "due_time": 2.66622E7,
+                    "latitude": -6.3152,
+                    "length": 0.35999998450279236,
+                    "ready_time": 2.666214E7,
+                    "put_type": 0,
+                    "type": "delivery",
+                    "item_num": 80,
+                    "vehicle_requirement": -1,
+                    "list_index": 81,
+                    "geo": "106.6850,-6.3152",
+                    "weight_demand": 0,
+                    "width": 0.8399999737739563,
+                    "volume_demand": 154224.0,
+                    "_id": 163,
+                    "order_id": "80162185",
+                    "height": 0.5099999904632568,
+                    "longitude": 106.685
+                }
+            },
+            "pickup": {
+                "attrs": {
+                    "service_time": 40,
+                    "due_time": 2.666166E7,
+                    "latitude": -6.2322,
+                    "length": 0.35999998450279236,
+                    "ready_time": 2.66616E7,
+                    "put_type": 0,
+                    "type": "pickup",
+                    "item_num": 80,
+                    "vehicle_requirement": -1,
+                    "list_index": 81,
+                    "geo": "106.8202,-6.2322",
+                    "weight_demand": 0,
+                    "width": 0.8399999737739563,
+                    "volume_demand": 154224.0,
+                    "_id": 162,
+                    "order_id": "80162185",
+                    "height": 0.5099999904632568,
+                    "longitude": 106.8202
+                }
+            }
+        },
+        {
+            "delivery": {
+                "attrs": {
+                    "service_time": 36,
+                    "due_time": 2.66622E7,
+                    "latitude": -6.2658,
+                    "length": 0.6699999570846558,
+                    "ready_time": 2.666214E7,
+                    "put_type": 0,
+                    "type": "delivery",
+                    "item_num": 12,
+                    "vehicle_requirement": -1,
+                    "list_index": 15,
+                    "geo": "106.6674,-6.2658",
+                    "weight_demand": 0,
+                    "width": 0.5600000023841858,
+                    "volume_demand": 525280.0,
+                    "_id": 31,
+                    "order_id": "80162201",
+                    "height": 1.399999976158142,
+                    "longitude": 106.6674
+                }
+            },
+            "pickup": {
+                "attrs": {
+                    "service_time": 36,
+                    "due_time": 2.666166E7,
+                    "latitude": -6.2322,
+                    "length": 0.6699999570846558,
+                    "ready_time": 2.66616E7,
+                    "put_type": 0,
+                    "type": "pickup",
+                    "item_num": 12,
+                    "vehicle_requirement": -1,
+                    "list_index": 15,
+                    "geo": "106.8202,-6.2322",
+                    "weight_demand": 0,
+                    "width": 0.5600000023841858,
+                    "volume_demand": 525280.0,
+                    "_id": 30,
+                    "order_id": "80162201",
+                    "height": 1.399999976158142,
+                    "longitude": 106.8202
+                }
+            }
+        }
+    ],
+    "unassignedPickupDeliveryOrderReasonMsgMap": {},
+    "vehicleTypeWithRouteList": [
+        {
+            "jobList": [
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.7199999690055847,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 2,
+                        "vehicle_requirement": -1,
+                        "list_index": 2,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.9799999594688416,
+                        "volume_demand": 1340640.0,
+                        "_id": 4,
+                        "order_id": "80161833",
+                        "height": 1.899999976158142,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.5799999833106995,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 2,
+                        "vehicle_requirement": -1,
+                        "list_index": 63,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.6800000071525574,
+                        "volume_demand": 362848.0,
+                        "_id": 126,
+                        "order_id": "80162128",
+                        "height": 0.9199999570846558,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.5799999833106995,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 3,
+                        "vehicle_requirement": -1,
+                        "list_index": 5,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.6800000071525574,
+                        "volume_demand": 362848.0,
+                        "_id": 10,
+                        "order_id": "80161836",
+                        "height": 0.9199999570846558,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.75,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 1,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.8999999761581421,
+                        "volume_demand": 1296000.0,
+                        "_id": 2,
+                        "order_id": "80161833",
+                        "height": 1.9199999570846558,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.75,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 2,
+                        "vehicle_requirement": -1,
+                        "list_index": 0,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.8999999761581421,
+                        "volume_demand": 1296000.0,
+                        "_id": 0,
+                        "order_id": "80161833",
+                        "height": 1.9199999570846558,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 15,
+                        "vehicle_requirement": -1,
+                        "list_index": 7,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.7899999618530273,
+                        "volume_demand": 341596.0,
+                        "_id": 14,
+                        "order_id": "80161837",
+                        "height": 0.9399999976158142,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.2491,
+                        "length": 0.7199999690055847,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 2,
+                        "vehicle_requirement": -1,
+                        "list_index": 2,
+                        "geo": "107.0231,-6.2491",
+                        "weight_demand": 0,
+                        "width": 0.9799999594688416,
+                        "volume_demand": 1340640.0,
+                        "_id": 5,
+                        "order_id": "80161833",
+                        "height": 1.899999976158142,
+                        "longitude": 107.0231
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.2491,
+                        "length": 0.5799999833106995,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 2,
+                        "vehicle_requirement": -1,
+                        "list_index": 63,
+                        "geo": "107.0231,-6.2491",
+                        "weight_demand": 0,
+                        "width": 0.6800000071525574,
+                        "volume_demand": 362848.0,
+                        "_id": 127,
+                        "order_id": "80162128",
+                        "height": 0.9199999570846558,
+                        "longitude": 107.0231
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.2491,
+                        "length": 0.5799999833106995,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 3,
+                        "vehicle_requirement": -1,
+                        "list_index": 5,
+                        "geo": "107.0231,-6.2491",
+                        "weight_demand": 0,
+                        "width": 0.6800000071525574,
+                        "volume_demand": 362848.0,
+                        "_id": 11,
+                        "order_id": "80161836",
+                        "height": 0.9199999570846558,
+                        "longitude": 107.0231
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.2491,
+                        "length": 0.75,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 1,
+                        "geo": "107.0231,-6.2491",
+                        "weight_demand": 0,
+                        "width": 0.8999999761581421,
+                        "volume_demand": 1296000.0,
+                        "_id": 3,
+                        "order_id": "80161833",
+                        "height": 1.9199999570846558,
+                        "longitude": 107.0231
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.2491,
+                        "length": 0.75,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 2,
+                        "vehicle_requirement": -1,
+                        "list_index": 0,
+                        "geo": "107.0231,-6.2491",
+                        "weight_demand": 0,
+                        "width": 0.8999999761581421,
+                        "volume_demand": 1296000.0,
+                        "_id": 1,
+                        "order_id": "80161833",
+                        "height": 1.9199999570846558,
+                        "longitude": 107.0231
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.2491,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 15,
+                        "vehicle_requirement": -1,
+                        "list_index": 7,
+                        "geo": "107.0231,-6.2491",
+                        "weight_demand": 0,
+                        "width": 0.7899999618530273,
+                        "volume_demand": 341596.0,
+                        "_id": 15,
+                        "order_id": "80161837",
+                        "height": 0.9399999976158142,
+                        "longitude": 107.0231
+                    }
+                }
+            ],
+            "vehicle": {
+                "attrs": {
+                    "length": 5.699999809265137,
+                    "dist": 63274.38708496094,
+                    "plate": "FUSO1",
+                    "type": 0,
+                    "start_geo": "106.8195,-6.2213",
+                    "list_index": 10,
+                    "start_time": 0.0,
+                    "end_geo": "106.8195,-6.2213",
+                    "width": 2.2300000190734863,
+                    "speed_km_hr": 20,
+                    "_id": 10,
+                    "time": 2.6662327787832033E7,
+                    "height": 2.130000114440918
+                }
+            }
+        },
+        {
+            "jobList": [
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.26999998092651367,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 20,
+                        "vehicle_requirement": -1,
+                        "list_index": 4,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.9099999666213989,
+                        "volume_demand": 85995.0,
+                        "_id": 8,
+                        "order_id": "80161835",
+                        "height": 0.3499999940395355,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.35999998450279236,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 20,
+                        "vehicle_requirement": -1,
+                        "list_index": 3,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.8399999737739563,
+                        "volume_demand": 154224.0,
+                        "_id": 6,
+                        "order_id": "80161835",
+                        "height": 0.5099999904632568,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.1297,
+                        "length": 0.26999998092651367,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 20,
+                        "vehicle_requirement": -1,
+                        "list_index": 4,
+                        "geo": "106.9057,-6.1297",
+                        "weight_demand": 0,
+                        "width": 0.9099999666213989,
+                        "volume_demand": 85995.0,
+                        "_id": 9,
+                        "order_id": "80161835",
+                        "height": 0.3499999940395355,
+                        "longitude": 106.9057
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.1297,
+                        "length": 0.35999998450279236,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 20,
+                        "vehicle_requirement": -1,
+                        "list_index": 3,
+                        "geo": "106.9057,-6.1297",
+                        "weight_demand": 0,
+                        "width": 0.8399999737739563,
+                        "volume_demand": 154224.0,
+                        "_id": 7,
+                        "order_id": "80161835",
+                        "height": 0.5099999904632568,
+                        "longitude": 106.9057
+                    }
+                }
+            ],
+            "vehicle": {
+                "attrs": {
+                    "length": 3.0299999713897705,
+                    "dist": 40852.79724121094,
+                    "plate": "CDE1",
+                    "type": 0,
+                    "start_geo": "106.8195,-6.2213",
+                    "list_index": 0,
+                    "start_time": 0.0,
+                    "end_geo": "106.8195,-6.2213",
+                    "width": 1.5499999523162842,
+                    "speed_km_hr": 20,
+                    "_id": 0,
+                    "time": 2.6662276972449217E7,
+                    "height": 1.5099999904632568
+                }
+            }
+        },
+        {
+            "jobList": [
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.26999998092651367,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 50,
+                        "vehicle_requirement": -1,
+                        "list_index": 17,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.9099999666213989,
+                        "volume_demand": 85995.0,
+                        "_id": 34,
+                        "order_id": "80161908",
+                        "height": 0.3499999940395355,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.0,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 3,
+                        "vehicle_requirement": -1,
+                        "list_index": 78,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.0,
+                        "volume_demand": 0.0,
+                        "_id": 156,
+                        "order_id": "80162135",
+                        "height": 0.0,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.7199999690055847,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 1,
+                        "vehicle_requirement": -1,
+                        "list_index": 54,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.5999999642372131,
+                        "volume_demand": 574560.0,
+                        "_id": 108,
+                        "order_id": "ZH200708",
+                        "height": 1.3299999237060547,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.5699999928474426,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 1,
+                        "vehicle_requirement": -1,
+                        "list_index": 53,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.5399999618530273,
+                        "volume_demand": 332424.0,
+                        "_id": 106,
+                        "order_id": "ZH200708",
+                        "height": 1.0799999237060547,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.1429,
+                        "length": 0.0,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 3,
+                        "vehicle_requirement": -1,
+                        "list_index": 78,
+                        "geo": "106.8144,-6.1429",
+                        "weight_demand": 0,
+                        "width": 0.0,
+                        "volume_demand": 0.0,
+                        "_id": 157,
+                        "order_id": "80162135",
+                        "height": 0.0,
+                        "longitude": 106.8144
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.1429,
+                        "length": 0.7199999690055847,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 1,
+                        "vehicle_requirement": -1,
+                        "list_index": 54,
+                        "geo": "106.8144,-6.1429",
+                        "weight_demand": 0,
+                        "width": 0.5999999642372131,
+                        "volume_demand": 574560.0,
+                        "_id": 109,
+                        "order_id": "ZH200708",
+                        "height": 1.3299999237060547,
+                        "longitude": 106.8144
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.1429,
+                        "length": 0.5699999928474426,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 1,
+                        "vehicle_requirement": -1,
+                        "list_index": 53,
+                        "geo": "106.8144,-6.1429",
+                        "weight_demand": 0,
+                        "width": 0.5399999618530273,
+                        "volume_demand": 332424.0,
+                        "_id": 107,
+                        "order_id": "ZH200708",
+                        "height": 1.0799999237060547,
+                        "longitude": 106.8144
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.1784,
+                        "length": 0.26999998092651367,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 50,
+                        "vehicle_requirement": -1,
+                        "list_index": 17,
+                        "geo": "106.8590,-6.1784",
+                        "weight_demand": 0,
+                        "width": 0.9099999666213989,
+                        "volume_demand": 85995.0,
+                        "_id": 35,
+                        "order_id": "80161908",
+                        "height": 0.3499999940395355,
+                        "longitude": 106.859
+                    }
+                }
+            ],
+            "vehicle": {
+                "attrs": {
+                    "length": 3.0299999713897705,
+                    "dist": 32654.378295898438,
+                    "plate": "CDE2",
+                    "type": 0,
+                    "start_geo": "106.8195,-6.2213",
+                    "list_index": 1,
+                    "start_time": 0.0,
+                    "end_geo": "106.8195,-6.2213",
+                    "width": 1.5499999523162842,
+                    "speed_km_hr": 20,
+                    "_id": 1,
+                    "time": 2.66622622135E7,
+                    "height": 1.5099999904632568
+                }
+            }
+        },
+        {
+            "jobList": [
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.7199999690055847,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 1,
+                        "vehicle_requirement": -1,
+                        "list_index": 58,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.5999999642372131,
+                        "volume_demand": 574560.0,
+                        "_id": 116,
+                        "order_id": "ZH200708000023",
+                        "height": 1.3299999237060547,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.0,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 61,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.0,
+                        "volume_demand": 0.0,
+                        "_id": 122,
+                        "order_id": "80162073",
+                        "height": 0.0,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.5799999833106995,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 22,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.6699999570846558,
+                        "volume_demand": 357512.0,
+                        "_id": 44,
+                        "order_id": "80161911",
+                        "height": 0.9199999570846558,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.1324,
+                        "length": 0.0,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 61,
+                        "geo": "106.8783,-6.1324",
+                        "weight_demand": 0,
+                        "width": 0.0,
+                        "volume_demand": 0.0,
+                        "_id": 123,
+                        "order_id": "80162073",
+                        "height": 0.0,
+                        "longitude": 106.8783
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.1324,
+                        "length": 0.5799999833106995,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 22,
+                        "geo": "106.8783,-6.1324",
+                        "weight_demand": 0,
+                        "width": 0.6699999570846558,
+                        "volume_demand": 357512.0,
+                        "_id": 45,
+                        "order_id": "80161911",
+                        "height": 0.9199999570846558,
+                        "longitude": 106.8783
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.1429,
+                        "length": 0.7199999690055847,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 1,
+                        "vehicle_requirement": -1,
+                        "list_index": 58,
+                        "geo": "106.8144,-6.1429",
+                        "weight_demand": 0,
+                        "width": 0.5999999642372131,
+                        "volume_demand": 574560.0,
+                        "_id": 117,
+                        "order_id": "ZH200708000023",
+                        "height": 1.3299999237060547,
+                        "longitude": 106.8144
+                    }
+                }
+            ],
+            "vehicle": {
+                "attrs": {
+                    "length": 3.0299999713897705,
+                    "dist": 40802.81774902344,
+                    "plate": "CDE4",
+                    "type": 0,
+                    "start_geo": "106.8195,-6.2213",
+                    "list_index": 3,
+                    "start_time": 0.0,
+                    "end_geo": "106.8195,-6.2213",
+                    "width": 1.5499999523162842,
+                    "speed_km_hr": 20,
+                    "_id": 3,
+                    "time": 2.666224492976465E7,
+                    "height": 1.5099999904632568
+                }
+            }
+        },
+        {
+            "jobList": [
+                {
+                    "attrs": {
+                        "service_time": 12,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.7199999690055847,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 4,
+                        "vehicle_requirement": -1,
+                        "list_index": 68,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.9799999594688416,
+                        "volume_demand": 1340640.0,
+                        "_id": 136,
+                        "order_id": "80162130",
+                        "height": 1.899999976158142,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 12,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.75,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 4,
+                        "vehicle_requirement": -1,
+                        "list_index": 67,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.8999999761581421,
+                        "volume_demand": 1296000.0,
+                        "_id": 134,
+                        "order_id": "80162130",
+                        "height": 1.9199999570846558,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.5899999737739563,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 66,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.9799999594688416,
+                        "volume_demand": 508816.0,
+                        "_id": 132,
+                        "order_id": "80162129",
+                        "height": 0.8799999952316284,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.5799999833106995,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 3,
+                        "vehicle_requirement": -1,
+                        "list_index": 64,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.6699999570846558,
+                        "volume_demand": 357512.0,
+                        "_id": 128,
+                        "order_id": "80162128",
+                        "height": 0.9199999570846558,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 30,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 10,
+                        "vehicle_requirement": -1,
+                        "list_index": 8,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.7899999618530273,
+                        "volume_demand": 341596.0,
+                        "_id": 16,
+                        "order_id": "80161837",
+                        "height": 0.9399999976158142,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 12,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.2491,
+                        "length": 0.7199999690055847,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 4,
+                        "vehicle_requirement": -1,
+                        "list_index": 68,
+                        "geo": "107.0231,-6.2491",
+                        "weight_demand": 0,
+                        "width": 0.9799999594688416,
+                        "volume_demand": 1340640.0,
+                        "_id": 137,
+                        "order_id": "80162130",
+                        "height": 1.899999976158142,
+                        "longitude": 107.0231
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 12,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.2491,
+                        "length": 0.75,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 4,
+                        "vehicle_requirement": -1,
+                        "list_index": 67,
+                        "geo": "107.0231,-6.2491",
+                        "weight_demand": 0,
+                        "width": 0.8999999761581421,
+                        "volume_demand": 1296000.0,
+                        "_id": 135,
+                        "order_id": "80162130",
+                        "height": 1.9199999570846558,
+                        "longitude": 107.0231
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.2491,
+                        "length": 0.5899999737739563,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 66,
+                        "geo": "107.0231,-6.2491",
+                        "weight_demand": 0,
+                        "width": 0.9799999594688416,
+                        "volume_demand": 508816.0,
+                        "_id": 133,
+                        "order_id": "80162129",
+                        "height": 0.8799999952316284,
+                        "longitude": 107.0231
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.2491,
+                        "length": 0.5799999833106995,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 3,
+                        "vehicle_requirement": -1,
+                        "list_index": 64,
+                        "geo": "107.0231,-6.2491",
+                        "weight_demand": 0,
+                        "width": 0.6699999570846558,
+                        "volume_demand": 357512.0,
+                        "_id": 129,
+                        "order_id": "80162128",
+                        "height": 0.9199999570846558,
+                        "longitude": 107.0231
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 30,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.2491,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 10,
+                        "vehicle_requirement": -1,
+                        "list_index": 8,
+                        "geo": "107.0231,-6.2491",
+                        "weight_demand": 0,
+                        "width": 0.7899999618530273,
+                        "volume_demand": 341596.0,
+                        "_id": 17,
+                        "order_id": "80161837",
+                        "height": 0.9399999976158142,
+                        "longitude": 107.0231
+                    }
+                }
+            ],
+            "vehicle": {
+                "attrs": {
+                    "length": 5.699999809265137,
+                    "dist": 63274.38708496094,
+                    "plate": "FUSO2",
+                    "type": 0,
+                    "start_geo": "106.8195,-6.2213",
+                    "list_index": 11,
+                    "start_time": 0.0,
+                    "end_geo": "106.8195,-6.2213",
+                    "width": 2.2300000190734863,
+                    "speed_km_hr": 20,
+                    "_id": 11,
+                    "time": 2.6662311787832033E7,
+                    "height": 2.130000114440918
+                }
+            }
+        },
+        {
+            "jobList": [
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.75,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 3,
+                        "vehicle_requirement": -1,
+                        "list_index": 77,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.6399999856948853,
+                        "volume_demand": 835200.0,
+                        "_id": 154,
+                        "order_id": "80162134",
+                        "height": 1.7400000095367432,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.75,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 3,
+                        "vehicle_requirement": -1,
+                        "list_index": 75,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.5999999642372131,
+                        "volume_demand": 697500.0,
+                        "_id": 150,
+                        "order_id": "80162134",
+                        "height": 1.5499999523162842,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.75,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 3,
+                        "vehicle_requirement": -1,
+                        "list_index": 76,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.5999999642372131,
+                        "volume_demand": 769500.0,
+                        "_id": 152,
+                        "order_id": "80162134",
+                        "height": 1.709999918937683,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.75,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 2,
+                        "vehicle_requirement": -1,
+                        "list_index": 74,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.8999999761581421,
+                        "volume_demand": 1296000.0,
+                        "_id": 148,
+                        "order_id": "80162134",
+                        "height": 1.9199999570846558,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.3106,
+                        "length": 0.75,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 3,
+                        "vehicle_requirement": -1,
+                        "list_index": 77,
+                        "geo": "106.9403,-6.3106",
+                        "weight_demand": 0,
+                        "width": 0.6399999856948853,
+                        "volume_demand": 835200.0,
+                        "_id": 155,
+                        "order_id": "80162134",
+                        "height": 1.7400000095367432,
+                        "longitude": 106.9403
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.3106,
+                        "length": 0.75,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 3,
+                        "vehicle_requirement": -1,
+                        "list_index": 75,
+                        "geo": "106.9403,-6.3106",
+                        "weight_demand": 0,
+                        "width": 0.5999999642372131,
+                        "volume_demand": 697500.0,
+                        "_id": 151,
+                        "order_id": "80162134",
+                        "height": 1.5499999523162842,
+                        "longitude": 106.9403
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.3106,
+                        "length": 0.75,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 3,
+                        "vehicle_requirement": -1,
+                        "list_index": 76,
+                        "geo": "106.9403,-6.3106",
+                        "weight_demand": 0,
+                        "width": 0.5999999642372131,
+                        "volume_demand": 769500.0,
+                        "_id": 153,
+                        "order_id": "80162134",
+                        "height": 1.709999918937683,
+                        "longitude": 106.9403
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.3106,
+                        "length": 0.75,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 2,
+                        "vehicle_requirement": -1,
+                        "list_index": 74,
+                        "geo": "106.9403,-6.3106",
+                        "weight_demand": 0,
+                        "width": 0.8999999761581421,
+                        "volume_demand": 1296000.0,
+                        "_id": 149,
+                        "order_id": "80162134",
+                        "height": 1.9199999570846558,
+                        "longitude": 106.9403
+                    }
+                }
+            ],
+            "vehicle": {
+                "attrs": {
+                    "length": 5.699999809265137,
+                    "dist": 45980.09411621094,
+                    "plate": "FUSO3",
+                    "type": 0,
+                    "start_geo": "106.8195,-6.2213",
+                    "list_index": 12,
+                    "start_time": 0.0,
+                    "end_geo": "106.8195,-6.2213",
+                    "width": 2.2300000190734863,
+                    "speed_km_hr": 20,
+                    "_id": 12,
+                    "time": 2.6662247965791017E7,
+                    "height": 2.130000114440918
+                }
+            }
+        },
+        {
+            "jobList": [
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 15,
+                        "vehicle_requirement": -1,
+                        "list_index": 9,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.7899999618530273,
+                        "volume_demand": 341596.0,
+                        "_id": 18,
+                        "order_id": "80161837",
+                        "height": 0.9399999976158142,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.5799999833106995,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 65,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.7599999904632568,
+                        "volume_demand": 392312.0,
+                        "_id": 130,
+                        "order_id": "80162129",
+                        "height": 0.8899999856948853,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.5,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 15,
+                        "vehicle_requirement": -1,
+                        "list_index": 13,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.8199999928474426,
+                        "volume_demand": 385400.0,
+                        "_id": 26,
+                        "order_id": "80161837",
+                        "height": 0.9399999976158142,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.2491,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 15,
+                        "vehicle_requirement": -1,
+                        "list_index": 9,
+                        "geo": "107.0231,-6.2491",
+                        "weight_demand": 0,
+                        "width": 0.7899999618530273,
+                        "volume_demand": 341596.0,
+                        "_id": 19,
+                        "order_id": "80161837",
+                        "height": 0.9399999976158142,
+                        "longitude": 107.0231
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.2491,
+                        "length": 0.5799999833106995,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 65,
+                        "geo": "107.0231,-6.2491",
+                        "weight_demand": 0,
+                        "width": 0.7599999904632568,
+                        "volume_demand": 392312.0,
+                        "_id": 131,
+                        "order_id": "80162129",
+                        "height": 0.8899999856948853,
+                        "longitude": 107.0231
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.2491,
+                        "length": 0.5,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 15,
+                        "vehicle_requirement": -1,
+                        "list_index": 13,
+                        "geo": "107.0231,-6.2491",
+                        "weight_demand": 0,
+                        "width": 0.8199999928474426,
+                        "volume_demand": 385400.0,
+                        "_id": 27,
+                        "order_id": "80161837",
+                        "height": 0.9399999976158142,
+                        "longitude": 107.0231
+                    }
+                }
+            ],
+            "vehicle": {
+                "attrs": {
+                    "length": 5.699999809265137,
+                    "dist": 63274.38708496094,
+                    "plate": "FUSO4",
+                    "type": 0,
+                    "start_geo": "106.8195,-6.2213",
+                    "list_index": 13,
+                    "start_time": 0.0,
+                    "end_geo": "106.8195,-6.2213",
+                    "width": 2.2300000190734863,
+                    "speed_km_hr": 20,
+                    "_id": 13,
+                    "time": 2.6662327787832033E7,
+                    "height": 2.130000114440918
+                }
+            }
+        },
+        {
+            "jobList": [
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.2800000011920929,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 50,
+                        "vehicle_requirement": -1,
+                        "list_index": 19,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.949999988079071,
+                        "volume_demand": 95760.0,
+                        "_id": 38,
+                        "order_id": "80161908",
+                        "height": 0.35999998450279236,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.6599999666213989,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 1,
+                        "vehicle_requirement": -1,
+                        "list_index": 56,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.5899999737739563,
+                        "volume_demand": 615252.0,
+                        "_id": 112,
+                        "order_id": "ZH200708000023",
+                        "height": 1.5799999237060547,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.6599999666213989,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 1,
+                        "vehicle_requirement": -1,
+                        "list_index": 52,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.5899999737739563,
+                        "volume_demand": 615252.0,
+                        "_id": 104,
+                        "order_id": "ZH200708",
+                        "height": 1.5799999237060547,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.6599999666213989,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 1,
+                        "vehicle_requirement": -1,
+                        "list_index": 51,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.5899999737739563,
+                        "volume_demand": 615252.0,
+                        "_id": 102,
+                        "order_id": "ZH200708000027",
+                        "height": 1.5799999237060547,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.1429,
+                        "length": 0.6599999666213989,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 1,
+                        "vehicle_requirement": -1,
+                        "list_index": 56,
+                        "geo": "106.8144,-6.1429",
+                        "weight_demand": 0,
+                        "width": 0.5899999737739563,
+                        "volume_demand": 615252.0,
+                        "_id": 113,
+                        "order_id": "ZH200708000023",
+                        "height": 1.5799999237060547,
+                        "longitude": 106.8144
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.1429,
+                        "length": 0.6599999666213989,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 1,
+                        "vehicle_requirement": -1,
+                        "list_index": 52,
+                        "geo": "106.8144,-6.1429",
+                        "weight_demand": 0,
+                        "width": 0.5899999737739563,
+                        "volume_demand": 615252.0,
+                        "_id": 105,
+                        "order_id": "ZH200708",
+                        "height": 1.5799999237060547,
+                        "longitude": 106.8144
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.1429,
+                        "length": 0.6599999666213989,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 1,
+                        "vehicle_requirement": -1,
+                        "list_index": 51,
+                        "geo": "106.8144,-6.1429",
+                        "weight_demand": 0,
+                        "width": 0.5899999737739563,
+                        "volume_demand": 615252.0,
+                        "_id": 103,
+                        "order_id": "ZH200708000027",
+                        "height": 1.5799999237060547,
+                        "longitude": 106.8144
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.1784,
+                        "length": 0.2800000011920929,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 50,
+                        "vehicle_requirement": -1,
+                        "list_index": 19,
+                        "geo": "106.8590,-6.1784",
+                        "weight_demand": 0,
+                        "width": 0.949999988079071,
+                        "volume_demand": 95760.0,
+                        "_id": 39,
+                        "order_id": "80161908",
+                        "height": 0.35999998450279236,
+                        "longitude": 106.859
+                    }
+                }
+            ],
+            "vehicle": {
+                "attrs": {
+                    "length": 4.099999904632568,
+                    "dist": 32654.378295898438,
+                    "plate": "CDD1",
+                    "type": 0,
+                    "start_geo": "106.8195,-6.2213",
+                    "list_index": 5,
+                    "start_time": 0.0,
+                    "end_geo": "106.8195,-6.2213",
+                    "width": 1.850000023841858,
+                    "speed_km_hr": 20,
+                    "_id": 5,
+                    "time": 2.66622622135E7,
+                    "height": 1.600000023841858
+                }
+            }
+        },
+        {
+            "jobList": [
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.6699999570846558,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 26,
+                        "vehicle_requirement": -1,
+                        "list_index": 20,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.5600000023841858,
+                        "volume_demand": 525280.0,
+                        "_id": 40,
+                        "order_id": "80161909",
+                        "height": 1.399999976158142,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.5699999928474426,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 1,
+                        "vehicle_requirement": -1,
+                        "list_index": 57,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.5399999618530273,
+                        "volume_demand": 332424.0,
+                        "_id": 114,
+                        "order_id": "ZH200708000023",
+                        "height": 1.0799999237060547,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.6699999570846558,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 28,
+                        "vehicle_requirement": -1,
+                        "list_index": 41,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.5600000023841858,
+                        "volume_demand": 525280.0,
+                        "_id": 82,
+                        "order_id": "80162063",
+                        "height": 1.399999976158142,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.1429,
+                        "length": 0.5699999928474426,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 1,
+                        "vehicle_requirement": -1,
+                        "list_index": 57,
+                        "geo": "106.8144,-6.1429",
+                        "weight_demand": 0,
+                        "width": 0.5399999618530273,
+                        "volume_demand": 332424.0,
+                        "_id": 115,
+                        "order_id": "ZH200708000023",
+                        "height": 1.0799999237060547,
+                        "longitude": 106.8144
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.1416,
+                        "length": 0.6699999570846558,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 26,
+                        "vehicle_requirement": -1,
+                        "list_index": 20,
+                        "geo": "106.8167,-6.1416",
+                        "weight_demand": 0,
+                        "width": 0.5600000023841858,
+                        "volume_demand": 525280.0,
+                        "_id": 41,
+                        "order_id": "80161909",
+                        "height": 1.399999976158142,
+                        "longitude": 106.8167
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.1416,
+                        "length": 0.6699999570846558,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 28,
+                        "vehicle_requirement": -1,
+                        "list_index": 41,
+                        "geo": "106.8167,-6.1416",
+                        "weight_demand": 0,
+                        "width": 0.5600000023841858,
+                        "volume_demand": 525280.0,
+                        "_id": 83,
+                        "order_id": "80162063",
+                        "height": 1.399999976158142,
+                        "longitude": 106.8167
+                    }
+                }
+            ],
+            "vehicle": {
+                "attrs": {
+                    "length": 9.199999809265137,
+                    "dist": 27803.609588623047,
+                    "plate": "TR/B1",
+                    "type": 0,
+                    "start_geo": "106.8195,-6.2213",
+                    "list_index": 20,
+                    "start_time": 0.0,
+                    "end_geo": "106.8195,-6.2213",
+                    "width": 2.299999952316284,
+                    "speed_km_hr": 20,
+                    "_id": 20,
+                    "time": 2.6662267661193877E7,
+                    "height": 2.299999952316284
+                }
+            }
+        },
+        {
+            "jobList": [
+                {
+                    "attrs": {
+                        "service_time": 36,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.6699999570846558,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 12,
+                        "vehicle_requirement": -1,
+                        "list_index": 21,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.5600000023841858,
+                        "volume_demand": 525280.0,
+                        "_id": 42,
+                        "order_id": "80161910",
+                        "height": 1.399999976158142,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.5699999928474426,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 17,
+                        "vehicle_requirement": -1,
+                        "list_index": 79,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.5399999618530273,
+                        "volume_demand": 332424.0,
+                        "_id": 158,
+                        "order_id": "80162136",
+                        "height": 1.0799999237060547,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 36,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.16,
+                        "length": 0.6699999570846558,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 12,
+                        "vehicle_requirement": -1,
+                        "list_index": 21,
+                        "geo": "106.7567,-6.1600",
+                        "weight_demand": 0,
+                        "width": 0.5600000023841858,
+                        "volume_demand": 525280.0,
+                        "_id": 43,
+                        "order_id": "80161910",
+                        "height": 1.399999976158142,
+                        "longitude": 106.7567
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.1593,
+                        "length": 0.5699999928474426,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 17,
+                        "vehicle_requirement": -1,
+                        "list_index": 79,
+                        "geo": "106.7569,-6.1593",
+                        "weight_demand": 0,
+                        "width": 0.5399999618530273,
+                        "volume_demand": 332424.0,
+                        "_id": 159,
+                        "order_id": "80162136",
+                        "height": 1.0799999237060547,
+                        "longitude": 106.7569
+                    }
+                }
+            ],
+            "vehicle": {
+                "attrs": {
+                    "length": 6.099999904632568,
+                    "dist": 29690.090759277344,
+                    "plate": "TR/A3",
+                    "type": 0,
+                    "start_geo": "106.8195,-6.2213",
+                    "list_index": 17,
+                    "start_time": 0.0,
+                    "end_geo": "106.8195,-6.2213",
+                    "width": 2.299999952316284,
+                    "speed_km_hr": 20,
+                    "_id": 17,
+                    "time": 2.6662256404397156E7,
+                    "height": 2.0999999046325684
+                }
+            }
+        },
+        {
+            "jobList": [
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 36,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.7899999618530273,
+                        "volume_demand": 341596.0,
+                        "_id": 72,
+                        "order_id": "80161925",
+                        "height": 0.9399999976158142,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.5799999833106995,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 3,
+                        "vehicle_requirement": -1,
+                        "list_index": 28,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.7599999904632568,
+                        "volume_demand": 392312.0,
+                        "_id": 56,
+                        "order_id": "80161916",
+                        "height": 0.8899999856948853,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.5799999833106995,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 3,
+                        "vehicle_requirement": -1,
+                        "list_index": 26,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.7599999904632568,
+                        "volume_demand": 392312.0,
+                        "_id": 52,
+                        "order_id": "80161914",
+                        "height": 0.8899999856948853,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.6017,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 36,
+                        "geo": "106.8077,-6.6017",
+                        "weight_demand": 0,
+                        "width": 0.7899999618530273,
+                        "volume_demand": 341596.0,
+                        "_id": 73,
+                        "order_id": "80161925",
+                        "height": 0.9399999976158142,
+                        "longitude": 106.8077
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.5563,
+                        "length": 0.5799999833106995,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 3,
+                        "vehicle_requirement": -1,
+                        "list_index": 28,
+                        "geo": "106.7786,-6.5563",
+                        "weight_demand": 0,
+                        "width": 0.7599999904632568,
+                        "volume_demand": 392312.0,
+                        "_id": 57,
+                        "order_id": "80161916",
+                        "height": 0.8899999856948853,
+                        "longitude": 106.7786
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.5563,
+                        "length": 0.5799999833106995,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 3,
+                        "vehicle_requirement": -1,
+                        "list_index": 26,
+                        "geo": "106.7786,-6.5563",
+                        "weight_demand": 0,
+                        "width": 0.7599999904632568,
+                        "volume_demand": 392312.0,
+                        "_id": 53,
+                        "order_id": "80161914",
+                        "height": 0.8899999856948853,
+                        "longitude": 106.7786
+                    }
+                }
+            ],
+            "vehicle": {
+                "attrs": {
+                    "length": 4.099999904632568,
+                    "dist": 116911.59069824219,
+                    "plate": "CDD2",
+                    "type": 0,
+                    "start_geo": "106.8195,-6.2213",
+                    "list_index": 6,
+                    "start_time": 0.0,
+                    "end_geo": "106.8195,-6.2213",
+                    "width": 1.850000023841858,
+                    "speed_km_hr": 20,
+                    "_id": 6,
+                    "time": 2.6662352712577634E7,
+                    "height": 1.600000023841858
+                }
+            }
+        },
+        {
+            "jobList": [
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 50,
+                        "vehicle_requirement": -1,
+                        "list_index": 30,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.7899999618530273,
+                        "volume_demand": 341596.0,
+                        "_id": 60,
+                        "order_id": "80161919",
+                        "height": 0.9399999976158142,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 50,
+                        "vehicle_requirement": -1,
+                        "list_index": 31,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.7899999618530273,
+                        "volume_demand": 341596.0,
+                        "_id": 62,
+                        "order_id": "80161920",
+                        "height": 0.9399999976158142,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.165,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 50,
+                        "vehicle_requirement": -1,
+                        "list_index": 30,
+                        "geo": "106.6790,-6.1650",
+                        "weight_demand": 0,
+                        "width": 0.7899999618530273,
+                        "volume_demand": 341596.0,
+                        "_id": 61,
+                        "order_id": "80161919",
+                        "height": 0.9399999976158142,
+                        "longitude": 106.679
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.165,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 50,
+                        "vehicle_requirement": -1,
+                        "list_index": 31,
+                        "geo": "106.6790,-6.1650",
+                        "weight_demand": 0,
+                        "width": 0.7899999618530273,
+                        "volume_demand": 341596.0,
+                        "_id": 63,
+                        "order_id": "80161920",
+                        "height": 0.9399999976158142,
+                        "longitude": 106.679
+                    }
+                }
+            ],
+            "vehicle": {
+                "attrs": {
+                    "length": 9.199999809265137,
+                    "dist": 48063.71911621094,
+                    "plate": "TR/B2",
+                    "type": 0,
+                    "start_geo": "106.8195,-6.2213",
+                    "list_index": 21,
+                    "start_time": 0.0,
+                    "end_geo": "106.8195,-6.2213",
+                    "width": 2.299999952316284,
+                    "speed_km_hr": 20,
+                    "_id": 21,
+                    "time": 2.666228839979492E7,
+                    "height": 2.299999952316284
+                }
+            }
+        },
+        {
+            "jobList": [
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 50,
+                        "vehicle_requirement": -1,
+                        "list_index": 32,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.7899999618530273,
+                        "volume_demand": 341596.0,
+                        "_id": 64,
+                        "order_id": "80161921",
+                        "height": 0.9399999976158142,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.5899999737739563,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 72,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.6200000047683716,
+                        "volume_demand": 329220.0,
+                        "_id": 144,
+                        "order_id": "80162133",
+                        "height": 0.8999999761581421,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.7699999809265137,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 3,
+                        "vehicle_requirement": -1,
+                        "list_index": 71,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 1.71999990940094,
+                        "volume_demand": 1165472.0,
+                        "_id": 142,
+                        "order_id": "80162133",
+                        "height": 0.8799999952316284,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.1767,
+                        "length": 0.5899999737739563,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 72,
+                        "geo": "106.6320,-6.1767",
+                        "weight_demand": 0,
+                        "width": 0.6200000047683716,
+                        "volume_demand": 329220.0,
+                        "_id": 145,
+                        "order_id": "80162133",
+                        "height": 0.8999999761581421,
+                        "longitude": 106.632
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.1767,
+                        "length": 0.7699999809265137,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 3,
+                        "vehicle_requirement": -1,
+                        "list_index": 71,
+                        "geo": "106.6320,-6.1767",
+                        "weight_demand": 0,
+                        "width": 1.71999990940094,
+                        "volume_demand": 1165472.0,
+                        "_id": 143,
+                        "order_id": "80162133",
+                        "height": 0.8799999952316284,
+                        "longitude": 106.632
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.165,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 50,
+                        "vehicle_requirement": -1,
+                        "list_index": 32,
+                        "geo": "106.6790,-6.1650",
+                        "weight_demand": 0,
+                        "width": 0.7899999618530273,
+                        "volume_demand": 341596.0,
+                        "_id": 65,
+                        "order_id": "80161921",
+                        "height": 0.9399999976158142,
+                        "longitude": 106.679
+                    }
+                }
+            ],
+            "vehicle": {
+                "attrs": {
+                    "length": 9.199999809265137,
+                    "dist": 61340.33435058594,
+                    "plate": "TR/B3",
+                    "type": 0,
+                    "start_geo": "106.8195,-6.2213",
+                    "list_index": 22,
+                    "start_time": 0.0,
+                    "end_geo": "106.8195,-6.2213",
+                    "width": 2.299999952316284,
+                    "speed_km_hr": 20,
+                    "_id": 22,
+                    "time": 2.666229527789258E7,
+                    "height": 2.299999952316284
+                }
+            }
+        },
+        {
+            "jobList": [
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.14000000059604645,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 2,
+                        "vehicle_requirement": -1,
+                        "list_index": 47,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.9599999785423279,
+                        "volume_demand": 80640.0,
+                        "_id": 94,
+                        "order_id": "ZH200709000009",
+                        "height": 0.5999999642372131,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.6599999666213989,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 1,
+                        "vehicle_requirement": -1,
+                        "list_index": 46,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.5899999737739563,
+                        "volume_demand": 615252.0,
+                        "_id": 92,
+                        "order_id": "ZH20070900006",
+                        "height": 1.5799999237060547,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.14000000059604645,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 1,
+                        "vehicle_requirement": -1,
+                        "list_index": 45,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.7999999523162842,
+                        "volume_demand": 57120.0,
+                        "_id": 90,
+                        "order_id": "ZH20070900006",
+                        "height": 0.5099999904632568,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 1,
+                        "vehicle_requirement": -1,
+                        "list_index": 44,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.7599999904632568,
+                        "volume_demand": 321632.0,
+                        "_id": 88,
+                        "order_id": "ZH20070900006",
+                        "height": 0.9199999570846558,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.0255,
+                        "length": 0.14000000059604645,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 2,
+                        "vehicle_requirement": -1,
+                        "list_index": 47,
+                        "geo": "106.0957,-6.0255",
+                        "weight_demand": 0,
+                        "width": 0.9599999785423279,
+                        "volume_demand": 80640.0,
+                        "_id": 95,
+                        "order_id": "ZH200709000009",
+                        "height": 0.5999999642372131,
+                        "longitude": 106.0957
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.0255,
+                        "length": 0.6599999666213989,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 1,
+                        "vehicle_requirement": -1,
+                        "list_index": 46,
+                        "geo": "106.0957,-6.0255",
+                        "weight_demand": 0,
+                        "width": 0.5899999737739563,
+                        "volume_demand": 615252.0,
+                        "_id": 93,
+                        "order_id": "ZH20070900006",
+                        "height": 1.5799999237060547,
+                        "longitude": 106.0957
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.0255,
+                        "length": 0.14000000059604645,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 1,
+                        "vehicle_requirement": -1,
+                        "list_index": 45,
+                        "geo": "106.0957,-6.0255",
+                        "weight_demand": 0,
+                        "width": 0.7999999523162842,
+                        "volume_demand": 57120.0,
+                        "_id": 91,
+                        "order_id": "ZH20070900006",
+                        "height": 0.5099999904632568,
+                        "longitude": 106.0957
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.0255,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 1,
+                        "vehicle_requirement": -1,
+                        "list_index": 44,
+                        "geo": "106.0957,-6.0255",
+                        "weight_demand": 0,
+                        "width": 0.7599999904632568,
+                        "volume_demand": 321632.0,
+                        "_id": 89,
+                        "order_id": "ZH20070900006",
+                        "height": 0.9199999570846558,
+                        "longitude": 106.0957
+                    }
+                }
+            ],
+            "vehicle": {
+                "attrs": {
+                    "length": 4.099999904632568,
+                    "dist": 228075.94372558594,
+                    "plate": "CDD4",
+                    "type": 0,
+                    "start_geo": "106.8195,-6.2213",
+                    "list_index": 8,
+                    "start_time": 0.0,
+                    "end_geo": "106.8195,-6.2213",
+                    "width": 1.850000023841858,
+                    "speed_km_hr": 20,
+                    "_id": 8,
+                    "time": 2.666251874371094E7,
+                    "height": 1.600000023841858
+                }
+            }
+        },
+        {
+            "jobList": [
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.5699999928474426,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 50,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.5399999618530273,
+                        "volume_demand": 332424.0,
+                        "_id": 100,
+                        "order_id": "80162066",
+                        "height": 1.0799999237060547,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 33,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.7899999618530273,
+                        "volume_demand": 341596.0,
+                        "_id": 66,
+                        "order_id": "80161922",
+                        "height": 0.9399999976158142,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.6699999570846558,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 49,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.5600000023841858,
+                        "volume_demand": 525280.0,
+                        "_id": 98,
+                        "order_id": "80162066",
+                        "height": 1.399999976158142,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.2699,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 33,
+                        "geo": "106.6557,-6.2699",
+                        "weight_demand": 0,
+                        "width": 0.7899999618530273,
+                        "volume_demand": 341596.0,
+                        "_id": 67,
+                        "order_id": "80161922",
+                        "height": 0.9399999976158142,
+                        "longitude": 106.6557
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.2689,
+                        "length": 0.5699999928474426,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 50,
+                        "geo": "106.5963,-6.2689",
+                        "weight_demand": 0,
+                        "width": 0.5399999618530273,
+                        "volume_demand": 332424.0,
+                        "_id": 101,
+                        "order_id": "80162066",
+                        "height": 1.0799999237060547,
+                        "longitude": 106.5963
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.2689,
+                        "length": 0.6699999570846558,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 49,
+                        "geo": "106.5963,-6.2689",
+                        "weight_demand": 0,
+                        "width": 0.5600000023841858,
+                        "volume_demand": 525280.0,
+                        "_id": 99,
+                        "order_id": "80162066",
+                        "height": 1.399999976158142,
+                        "longitude": 106.5963
+                    }
+                }
+            ],
+            "vehicle": {
+                "attrs": {
+                    "length": 4.099999904632568,
+                    "dist": 70403.31188964844,
+                    "plate": "CDD5",
+                    "type": 0,
+                    "start_geo": "106.8195,-6.2213",
+                    "list_index": 9,
+                    "start_time": 0.0,
+                    "end_geo": "106.8195,-6.2213",
+                    "width": 1.850000023841858,
+                    "speed_km_hr": 20,
+                    "_id": 9,
+                    "time": 2.666231488611621E7,
+                    "height": 1.600000023841858
+                }
+            }
+        },
+        {
+            "jobList": [
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 50,
+                        "vehicle_requirement": -1,
+                        "list_index": 39,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.7599999904632568,
+                        "volume_demand": 325128.0,
+                        "_id": 78,
+                        "order_id": "80161928",
+                        "height": 0.9300000071525574,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 50,
+                        "vehicle_requirement": -1,
+                        "list_index": 38,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.7599999904632568,
+                        "volume_demand": 325128.0,
+                        "_id": 76,
+                        "order_id": "80161927",
+                        "height": 0.9300000071525574,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.1867,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 50,
+                        "vehicle_requirement": -1,
+                        "list_index": 39,
+                        "geo": "106.5747,-6.1867",
+                        "weight_demand": 0,
+                        "width": 0.7599999904632568,
+                        "volume_demand": 325128.0,
+                        "_id": 79,
+                        "order_id": "80161928",
+                        "height": 0.9300000071525574,
+                        "longitude": 106.5747
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.1867,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 50,
+                        "vehicle_requirement": -1,
+                        "list_index": 38,
+                        "geo": "106.5747,-6.1867",
+                        "weight_demand": 0,
+                        "width": 0.7599999904632568,
+                        "volume_demand": 325128.0,
+                        "_id": 77,
+                        "order_id": "80161927",
+                        "height": 0.9300000071525574,
+                        "longitude": 106.5747
+                    }
+                }
+            ],
+            "vehicle": {
+                "attrs": {
+                    "length": 9.199999809265137,
+                    "dist": 76502.93981933594,
+                    "plate": "TR/B4",
+                    "type": 0,
+                    "start_geo": "106.8195,-6.2213",
+                    "list_index": 23,
+                    "start_time": 0.0,
+                    "end_geo": "106.8195,-6.2213",
+                    "width": 2.299999952316284,
+                    "speed_km_hr": 20,
+                    "_id": 23,
+                    "time": 2.6662331644484375E7,
+                    "height": 2.299999952316284
+                }
+            }
+        },
+        {
+            "jobList": [
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.26999998092651367,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 80,
+                        "vehicle_requirement": -1,
+                        "list_index": 82,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.9099999666213989,
+                        "volume_demand": 85995.0,
+                        "_id": 164,
+                        "order_id": "80162185",
+                        "height": 0.3499999940395355,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.7699999809265137,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 1,
+                        "vehicle_requirement": -1,
+                        "list_index": 80,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 1.71999990940094,
+                        "volume_demand": 1165472.0,
+                        "_id": 160,
+                        "order_id": "80162184",
+                        "height": 0.8799999952316284,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.75,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 1,
+                        "vehicle_requirement": -1,
+                        "list_index": 69,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.8999999761581421,
+                        "volume_demand": 1296000.0,
+                        "_id": 138,
+                        "order_id": "80162131",
+                        "height": 1.9199999570846558,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.6699999570846558,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 20,
+                        "vehicle_requirement": -1,
+                        "list_index": 43,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.5600000023841858,
+                        "volume_demand": 525280.0,
+                        "_id": 86,
+                        "order_id": "80162065",
+                        "height": 1.399999976158142,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.3152,
+                        "length": 0.26999998092651367,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 80,
+                        "vehicle_requirement": -1,
+                        "list_index": 82,
+                        "geo": "106.6850,-6.3152",
+                        "weight_demand": 0,
+                        "width": 0.9099999666213989,
+                        "volume_demand": 85995.0,
+                        "_id": 165,
+                        "order_id": "80162185",
+                        "height": 0.3499999940395355,
+                        "longitude": 106.685
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.3152,
+                        "length": 0.7699999809265137,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 1,
+                        "vehicle_requirement": -1,
+                        "list_index": 80,
+                        "geo": "106.6850,-6.3152",
+                        "weight_demand": 0,
+                        "width": 1.71999990940094,
+                        "volume_demand": 1165472.0,
+                        "_id": 161,
+                        "order_id": "80162184",
+                        "height": 0.8799999952316284,
+                        "longitude": 106.685
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.3152,
+                        "length": 0.75,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 1,
+                        "vehicle_requirement": -1,
+                        "list_index": 69,
+                        "geo": "106.6850,-6.3152",
+                        "weight_demand": 0,
+                        "width": 0.8999999761581421,
+                        "volume_demand": 1296000.0,
+                        "_id": 139,
+                        "order_id": "80162131",
+                        "height": 1.9199999570846558,
+                        "longitude": 106.685
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.3152,
+                        "length": 0.6699999570846558,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 20,
+                        "vehicle_requirement": -1,
+                        "list_index": 43,
+                        "geo": "106.6850,-6.3152",
+                        "weight_demand": 0,
+                        "width": 0.5600000023841858,
+                        "volume_demand": 525280.0,
+                        "_id": 87,
+                        "order_id": "80162065",
+                        "height": 1.399999976158142,
+                        "longitude": 106.685
+                    }
+                }
+            ],
+            "vehicle": {
+                "attrs": {
+                    "length": 9.199999809265137,
+                    "dist": 50349.96716308594,
+                    "plate": "TR/B5",
+                    "type": 0,
+                    "start_geo": "106.8195,-6.2213",
+                    "list_index": 24,
+                    "start_time": 0.0,
+                    "end_geo": "106.8195,-6.2213",
+                    "width": 2.299999952316284,
+                    "speed_km_hr": 20,
+                    "_id": 24,
+                    "time": 2.6662314202802733E7,
+                    "height": 2.299999952316284
+                }
+            }
+        },
+        {
+            "jobList": [
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.7599999904632568,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 2,
+                        "vehicle_requirement": -1,
+                        "list_index": 70,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 1.459999918937683,
+                        "volume_demand": 987544.0,
+                        "_id": 140,
+                        "order_id": "80162133",
+                        "height": 0.8899999856948853,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.7599999904632568,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 2,
+                        "vehicle_requirement": -1,
+                        "list_index": 73,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 1.1100000143051147,
+                        "volume_demand": 750804.0,
+                        "_id": 146,
+                        "order_id": "80162133",
+                        "height": 0.8899999856948853,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.1767,
+                        "length": 0.7599999904632568,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 2,
+                        "vehicle_requirement": -1,
+                        "list_index": 70,
+                        "geo": "106.6320,-6.1767",
+                        "weight_demand": 0,
+                        "width": 1.459999918937683,
+                        "volume_demand": 987544.0,
+                        "_id": 141,
+                        "order_id": "80162133",
+                        "height": 0.8899999856948853,
+                        "longitude": 106.632
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.1767,
+                        "length": 0.7599999904632568,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 2,
+                        "vehicle_requirement": -1,
+                        "list_index": 73,
+                        "geo": "106.6320,-6.1767",
+                        "weight_demand": 0,
+                        "width": 1.1100000143051147,
+                        "volume_demand": 750804.0,
+                        "_id": 147,
+                        "order_id": "80162133",
+                        "height": 0.8899999856948853,
+                        "longitude": 106.632
+                    }
+                }
+            ],
+            "vehicle": {
+                "attrs": {
+                    "length": 3.0299999713897705,
+                    "dist": 60264.73474121094,
+                    "plate": "CDE3",
+                    "type": 0,
+                    "start_geo": "106.8195,-6.2213",
+                    "list_index": 2,
+                    "start_time": 0.0,
+                    "end_geo": "106.8195,-6.2213",
+                    "width": 1.5499999523162842,
+                    "speed_km_hr": 20,
+                    "_id": 2,
+                    "time": 2.666224705109375E7,
+                    "height": 1.5099999904632568
+                }
+            }
+        },
+        {
+            "jobList": [
+                {
+                    "attrs": {
+                        "service_time": 30,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.6699999570846558,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 10,
+                        "vehicle_requirement": -1,
+                        "list_index": 42,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.5600000023841858,
+                        "volume_demand": 525280.0,
+                        "_id": 84,
+                        "order_id": "80162064",
+                        "height": 1.399999976158142,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.35999998450279236,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 20,
+                        "vehicle_requirement": -1,
+                        "list_index": 83,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.8399999737739563,
+                        "volume_demand": 154224.0,
+                        "_id": 166,
+                        "order_id": "80162185",
+                        "height": 0.5099999904632568,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 30,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.2658,
+                        "length": 0.6699999570846558,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 10,
+                        "vehicle_requirement": -1,
+                        "list_index": 42,
+                        "geo": "106.6674,-6.2658",
+                        "weight_demand": 0,
+                        "width": 0.5600000023841858,
+                        "volume_demand": 525280.0,
+                        "_id": 85,
+                        "order_id": "80162064",
+                        "height": 1.399999976158142,
+                        "longitude": 106.6674
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.3152,
+                        "length": 0.35999998450279236,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 20,
+                        "vehicle_requirement": -1,
+                        "list_index": 83,
+                        "geo": "106.6850,-6.3152",
+                        "weight_demand": 0,
+                        "width": 0.8399999737739563,
+                        "volume_demand": 154224.0,
+                        "_id": 167,
+                        "order_id": "80162185",
+                        "height": 0.5099999904632568,
+                        "longitude": 106.685
+                    }
+                }
+            ],
+            "vehicle": {
+                "attrs": {
+                    "length": 4.099999904632568,
+                    "dist": 57922.00085449219,
+                    "plate": "CDD3",
+                    "type": 0,
+                    "start_geo": "106.8195,-6.2213",
+                    "list_index": 7,
+                    "start_time": 0.0,
+                    "end_geo": "106.8195,-6.2213",
+                    "width": 1.850000023841858,
+                    "speed_km_hr": 20,
+                    "_id": 7,
+                    "time": 2.6662308004798338E7,
+                    "height": 1.600000023841858
+                }
+            }
+        },
+        {
+            "jobList": [
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 2,
+                        "vehicle_requirement": -1,
+                        "list_index": 48,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.7599999904632568,
+                        "volume_demand": 325128.0,
+                        "_id": 96,
+                        "order_id": "ZH200709000011",
+                        "height": 0.9300000071525574,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 37,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.7899999618530273,
+                        "volume_demand": 341596.0,
+                        "_id": 74,
+                        "order_id": "80161926",
+                        "height": 0.9399999976158142,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.371,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 37,
+                        "geo": "106.8605,-6.3710",
+                        "weight_demand": 0,
+                        "width": 0.7899999618530273,
+                        "volume_demand": 341596.0,
+                        "_id": 75,
+                        "order_id": "80161926",
+                        "height": 0.9399999976158142,
+                        "longitude": 106.8605
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.3522,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 2,
+                        "vehicle_requirement": -1,
+                        "list_index": 48,
+                        "geo": "106.8828,-6.3522",
+                        "weight_demand": 0,
+                        "width": 0.7599999904632568,
+                        "volume_demand": 325128.0,
+                        "_id": 97,
+                        "order_id": "ZH200709000011",
+                        "height": 0.9300000071525574,
+                        "longitude": 106.8828
+                    }
+                }
+            ],
+            "vehicle": {
+                "attrs": {
+                    "length": 2.4000000953674316,
+                    "dist": 49961.21618652344,
+                    "plate": "PICKUP2",
+                    "type": 0,
+                    "start_geo": "106.8195,-6.2213",
+                    "list_index": 26,
+                    "start_time": 0.0,
+                    "end_geo": "106.8195,-6.2213",
+                    "width": 1.6299999952316284,
+                    "speed_km_hr": 20,
+                    "_id": 26,
+                    "time": 2.666224416371582E7,
+                    "height": 1.0800000429153442
+                }
+            }
+        },
+        {
+            "jobList": [
+                {
+                    "attrs": {
+                        "service_time": 30,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.5099999904632568,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 10,
+                        "vehicle_requirement": -1,
+                        "list_index": 12,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.8899999856948853,
+                        "volume_demand": 472056.0,
+                        "_id": 24,
+                        "order_id": "80161837",
+                        "height": 1.0399999618530273,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 30,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 10,
+                        "vehicle_requirement": -1,
+                        "list_index": 10,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.7899999618530273,
+                        "volume_demand": 341596.0,
+                        "_id": 20,
+                        "order_id": "80161837",
+                        "height": 0.9399999976158142,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.5799999833106995,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 15,
+                        "vehicle_requirement": -1,
+                        "list_index": 11,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.5799999833106995,
+                        "volume_demand": 326308.0,
+                        "_id": 22,
+                        "order_id": "80161837",
+                        "height": 0.9699999690055847,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 30,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.2491,
+                        "length": 0.5099999904632568,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 10,
+                        "vehicle_requirement": -1,
+                        "list_index": 12,
+                        "geo": "107.0231,-6.2491",
+                        "weight_demand": 0,
+                        "width": 0.8899999856948853,
+                        "volume_demand": 472056.0,
+                        "_id": 25,
+                        "order_id": "80161837",
+                        "height": 1.0399999618530273,
+                        "longitude": 107.0231
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 30,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.2491,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 10,
+                        "vehicle_requirement": -1,
+                        "list_index": 10,
+                        "geo": "107.0231,-6.2491",
+                        "weight_demand": 0,
+                        "width": 0.7899999618530273,
+                        "volume_demand": 341596.0,
+                        "_id": 21,
+                        "order_id": "80161837",
+                        "height": 0.9399999976158142,
+                        "longitude": 107.0231
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.2491,
+                        "length": 0.5799999833106995,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 15,
+                        "vehicle_requirement": -1,
+                        "list_index": 11,
+                        "geo": "107.0231,-6.2491",
+                        "weight_demand": 0,
+                        "width": 0.5799999833106995,
+                        "volume_demand": 326308.0,
+                        "_id": 23,
+                        "order_id": "80161837",
+                        "height": 0.9699999690055847,
+                        "longitude": 107.0231
+                    }
+                }
+            ],
+            "vehicle": {
+                "attrs": {
+                    "length": 6.139999866485596,
+                    "dist": 63274.38708496094,
+                    "plate": "TR/A1",
+                    "type": 0,
+                    "start_geo": "106.8195,-6.2213",
+                    "list_index": 15,
+                    "start_time": 0.0,
+                    "end_geo": "106.8195,-6.2213",
+                    "width": 2.2799999713897705,
+                    "speed_km_hr": 20,
+                    "_id": 15,
+                    "time": 2.6662332787832033E7,
+                    "height": 2.0999999046325684
+                }
+            }
+        },
+        {
+            "jobList": [
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.5899999737739563,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 59,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.6200000047683716,
+                        "volume_demand": 329220.0,
+                        "_id": 118,
+                        "order_id": "80162068",
+                        "height": 0.8999999761581421,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.1784,
+                        "length": 0.5899999737739563,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 59,
+                        "geo": "106.8590,-6.1784",
+                        "weight_demand": 0,
+                        "width": 0.6200000047683716,
+                        "volume_demand": 329220.0,
+                        "_id": 119,
+                        "order_id": "80162068",
+                        "height": 0.8999999761581421,
+                        "longitude": 106.859
+                    }
+                }
+            ],
+            "vehicle": {
+                "attrs": {
+                    "length": 2.4000000953674316,
+                    "dist": 20529.283569335938,
+                    "plate": "PICKUP3",
+                    "type": 0,
+                    "start_geo": "106.8195,-6.2213",
+                    "list_index": 27,
+                    "start_time": 0.0,
+                    "end_geo": "106.8195,-6.2213",
+                    "width": 1.6299999952316284,
+                    "speed_km_hr": 20,
+                    "_id": 27,
+                    "time": 2.666218141483301E7,
+                    "height": 1.0800000429153442
+                }
+            }
+        },
+        {
+            "jobList": [
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.699999988079071,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 1,
+                        "vehicle_requirement": -1,
+                        "list_index": 6,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.6499999761581421,
+                        "volume_demand": 809900.0,
+                        "_id": 12,
+                        "order_id": "ZH200706000042",
+                        "height": 1.7799999713897705,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 18,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.8799999952316284,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 6,
+                        "vehicle_requirement": -1,
+                        "list_index": 14,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 1.9199999570846558,
+                        "volume_demand": 1503744.0,
+                        "_id": 28,
+                        "order_id": "80161907",
+                        "height": 0.8899999856948853,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.2199,
+                        "length": 0.699999988079071,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 1,
+                        "vehicle_requirement": -1,
+                        "list_index": 6,
+                        "geo": "106.6148,-6.2199",
+                        "weight_demand": 0,
+                        "width": 0.6499999761581421,
+                        "volume_demand": 809900.0,
+                        "_id": 13,
+                        "order_id": "ZH200706000042",
+                        "height": 1.7799999713897705,
+                        "longitude": 106.6148
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 18,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.22,
+                        "length": 0.8799999952316284,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 6,
+                        "vehicle_requirement": -1,
+                        "list_index": 14,
+                        "geo": "106.6865,-6.2200",
+                        "weight_demand": 0,
+                        "width": 1.9199999570846558,
+                        "volume_demand": 1503744.0,
+                        "_id": 29,
+                        "order_id": "80161907",
+                        "height": 0.8899999856948853,
+                        "longitude": 106.6865
+                    }
+                }
+            ],
+            "vehicle": {
+                "attrs": {
+                    "length": 6.099999904632568,
+                    "dist": 63480.22204589844,
+                    "plate": "TR/A5",
+                    "type": 0,
+                    "start_geo": "106.8195,-6.2213",
+                    "list_index": 19,
+                    "start_time": 0.0,
+                    "end_geo": "106.8195,-6.2213",
+                    "width": 2.299999952316284,
+                    "speed_km_hr": 20,
+                    "_id": 19,
+                    "time": 2.666226042692676E7,
+                    "height": 2.0999999046325684
+                }
+            }
+        },
+        {
+            "jobList": [
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 35,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.7899999618530273,
+                        "volume_demand": 341596.0,
+                        "_id": 70,
+                        "order_id": "80161924",
+                        "height": 0.9399999976158142,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.6200000047683716,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 2,
+                        "vehicle_requirement": -1,
+                        "list_index": 40,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.699999988079071,
+                        "volume_demand": 377580.0,
+                        "_id": 80,
+                        "order_id": "80162062",
+                        "height": 0.8700000047683716,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.1903,
+                        "length": 0.6200000047683716,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 2,
+                        "vehicle_requirement": -1,
+                        "list_index": 40,
+                        "geo": "106.9772,-6.1903",
+                        "weight_demand": 0,
+                        "width": 0.699999988079071,
+                        "volume_demand": 377580.0,
+                        "_id": 81,
+                        "order_id": "80162062",
+                        "height": 0.8700000047683716,
+                        "longitude": 106.9772
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.1859,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 35,
+                        "geo": "106.9750,-6.1859",
+                        "weight_demand": 0,
+                        "width": 0.7899999618530273,
+                        "volume_demand": 341596.0,
+                        "_id": 71,
+                        "order_id": "80161924",
+                        "height": 0.9399999976158142,
+                        "longitude": 106.975
+                    }
+                }
+            ],
+            "vehicle": {
+                "attrs": {
+                    "length": 2.4000000953674316,
+                    "dist": 50987.566162109375,
+                    "plate": "PICKUP1",
+                    "type": 0,
+                    "start_geo": "106.8195,-6.2213",
+                    "list_index": 25,
+                    "start_time": 0.0,
+                    "end_geo": "106.8195,-6.2213",
+                    "width": 1.6299999952316284,
+                    "speed_km_hr": 20,
+                    "_id": 25,
+                    "time": 2.666223945794153E7,
+                    "height": 1.0800000429153442
+                }
+            }
+        },
+        {
+            "jobList": [
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.2800000011920929,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 20,
+                        "vehicle_requirement": -1,
+                        "list_index": 84,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.949999988079071,
+                        "volume_demand": 95760.0,
+                        "_id": 168,
+                        "order_id": "80162185",
+                        "height": 0.35999998450279236,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.3152,
+                        "length": 0.2800000011920929,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 20,
+                        "vehicle_requirement": -1,
+                        "list_index": 84,
+                        "geo": "106.6850,-6.3152",
+                        "weight_demand": 0,
+                        "width": 0.949999988079071,
+                        "volume_demand": 95760.0,
+                        "_id": 169,
+                        "order_id": "80162185",
+                        "height": 0.35999998450279236,
+                        "longitude": 106.685
+                    }
+                }
+            ],
+            "vehicle": {
+                "attrs": {
+                    "length": 2.4000000953674316,
+                    "dist": 50349.96716308594,
+                    "plate": "PICKUP4",
+                    "type": 0,
+                    "start_geo": "106.8195,-6.2213",
+                    "list_index": 28,
+                    "start_time": 0.0,
+                    "end_geo": "106.8195,-6.2213",
+                    "width": 1.6299999952316284,
+                    "speed_km_hr": 20,
+                    "_id": 28,
+                    "time": 2.6662254202802733E7,
+                    "height": 1.0800000429153442
+                }
+            }
+        },
+        {
+            "jobList": [
+                {
+                    "attrs": {
+                        "service_time": 30,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.6599999666213989,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 10,
+                        "vehicle_requirement": -1,
+                        "list_index": 23,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.5899999737739563,
+                        "volume_demand": 615252.0,
+                        "_id": 46,
+                        "order_id": "80161912",
+                        "height": 1.5799999237060547,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.7199999690055847,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 3,
+                        "vehicle_requirement": -1,
+                        "list_index": 24,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.9799999594688416,
+                        "volume_demand": 1340640.0,
+                        "_id": 48,
+                        "order_id": "80161912",
+                        "height": 1.899999976158142,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 30,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.5322,
+                        "length": 0.6599999666213989,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 10,
+                        "vehicle_requirement": -1,
+                        "list_index": 23,
+                        "geo": "106.9004,-6.5322",
+                        "weight_demand": 0,
+                        "width": 0.5899999737739563,
+                        "volume_demand": 615252.0,
+                        "_id": 47,
+                        "order_id": "80161912",
+                        "height": 1.5799999237060547,
+                        "longitude": 106.9004
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.5322,
+                        "length": 0.7199999690055847,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 3,
+                        "vehicle_requirement": -1,
+                        "list_index": 24,
+                        "geo": "106.9004,-6.5322",
+                        "weight_demand": 0,
+                        "width": 0.9799999594688416,
+                        "volume_demand": 1340640.0,
+                        "_id": 49,
+                        "order_id": "80161912",
+                        "height": 1.899999976158142,
+                        "longitude": 106.9004
+                    }
+                }
+            ],
+            "vehicle": {
+                "attrs": {
+                    "length": 6.099999904632568,
+                    "dist": 97313.05700683594,
+                    "plate": "TR/A4",
+                    "type": 0,
+                    "start_geo": "106.8195,-6.2213",
+                    "list_index": 18,
+                    "start_time": 0.0,
+                    "end_geo": "106.8195,-6.2213",
+                    "width": 2.299999952316284,
+                    "speed_km_hr": 20,
+                    "_id": 18,
+                    "time": 2.66623258508125E7,
+                    "height": 2.0999999046325684
+                }
+            }
+        },
+        {
+            "jobList": [
+                {
+                    "attrs": {
+                        "service_time": 30,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.5799999833106995,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 10,
+                        "vehicle_requirement": -1,
+                        "list_index": 27,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.7599999904632568,
+                        "volume_demand": 392312.0,
+                        "_id": 54,
+                        "order_id": "80161915",
+                        "height": 0.8899999856948853,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 30,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.2563,
+                        "length": 0.5799999833106995,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 10,
+                        "vehicle_requirement": -1,
+                        "list_index": 27,
+                        "geo": "106.9930,-6.2563",
+                        "weight_demand": 0,
+                        "width": 0.7599999904632568,
+                        "volume_demand": 392312.0,
+                        "_id": 55,
+                        "order_id": "80161915",
+                        "height": 0.8899999856948853,
+                        "longitude": 106.993
+                    }
+                }
+            ],
+            "vehicle": {
+                "attrs": {
+                    "length": 3.0299999713897705,
+                    "dist": 54606.26599121094,
+                    "plate": "CDE5",
+                    "type": 0,
+                    "start_geo": "106.8195,-6.2213",
+                    "list_index": 4,
+                    "start_time": 0.0,
+                    "end_geo": "106.8195,-6.2213",
+                    "width": 1.5499999523162842,
+                    "speed_km_hr": 20,
+                    "_id": 4,
+                    "time": 2.6662249930816405E7,
+                    "height": 1.5099999904632568
+                }
+            }
+        },
+        {
+            "jobList": [
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 34,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.7899999618530273,
+                        "volume_demand": 341596.0,
+                        "_id": 68,
+                        "order_id": "80161923",
+                        "height": 0.9399999976158142,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.14000000059604645,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 25,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.7999999523162842,
+                        "volume_demand": 57120.0,
+                        "_id": 50,
+                        "order_id": "80161913",
+                        "height": 0.5099999904632568,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.291,
+                        "length": 0.4599999785423279,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 34,
+                        "geo": "107.1715,-6.2910",
+                        "weight_demand": 0,
+                        "width": 0.7899999618530273,
+                        "volume_demand": 341596.0,
+                        "_id": 69,
+                        "order_id": "80161923",
+                        "height": 0.9399999976158142,
+                        "longitude": 107.1715
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.2592,
+                        "length": 0.14000000059604645,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 25,
+                        "geo": "107.1576,-6.2592",
+                        "weight_demand": 0,
+                        "width": 0.7999999523162842,
+                        "volume_demand": 57120.0,
+                        "_id": 51,
+                        "order_id": "80161913",
+                        "height": 0.5099999904632568,
+                        "longitude": 107.1576
+                    }
+                }
+            ],
+            "vehicle": {
+                "attrs": {
+                    "length": 2.4000000953674316,
+                    "dist": 111768.85485839844,
+                    "plate": "PICKUP5",
+                    "type": 0,
+                    "start_geo": "106.8195,-6.2213",
+                    "list_index": 29,
+                    "start_time": 0.0,
+                    "end_geo": "106.8195,-6.2213",
+                    "width": 1.6299999952316284,
+                    "speed_km_hr": 20,
+                    "_id": 29,
+                    "time": 2.666233936447559E7,
+                    "height": 1.0800000429153442
+                }
+            }
+        },
+        {
+            "jobList": [
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.75,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 2,
+                        "vehicle_requirement": -1,
+                        "list_index": 86,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.8999999761581421,
+                        "volume_demand": 1296000.0,
+                        "_id": 172,
+                        "order_id": "80162187",
+                        "height": 1.9199999570846558,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.6699999570846558,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 25,
+                        "vehicle_requirement": -1,
+                        "list_index": 55,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.5600000023841858,
+                        "volume_demand": 525280.0,
+                        "_id": 110,
+                        "order_id": "80162067",
+                        "height": 1.399999976158142,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 10,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.1429,
+                        "length": 0.75,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 2,
+                        "vehicle_requirement": -1,
+                        "list_index": 86,
+                        "geo": "106.8144,-6.1429",
+                        "weight_demand": 0,
+                        "width": 0.8999999761581421,
+                        "volume_demand": 1296000.0,
+                        "_id": 173,
+                        "order_id": "80162187",
+                        "height": 1.9199999570846558,
+                        "longitude": 106.8144
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.2384,
+                        "length": 0.6699999570846558,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 25,
+                        "vehicle_requirement": -1,
+                        "list_index": 55,
+                        "geo": "106.7832,-6.2384",
+                        "weight_demand": 0,
+                        "width": 0.5600000023841858,
+                        "volume_demand": 525280.0,
+                        "_id": 111,
+                        "order_id": "80162067",
+                        "height": 1.399999976158142,
+                        "longitude": 106.7832
+                    }
+                }
+            ],
+            "vehicle": {
+                "attrs": {
+                    "length": 6.099999904632568,
+                    "dist": 36497.07312011719,
+                    "plate": "TR/A2",
+                    "type": 0,
+                    "start_geo": "106.8195,-6.2213",
+                    "list_index": 16,
+                    "start_time": 0.0,
+                    "end_geo": "106.8195,-6.2213",
+                    "width": 2.299999952316284,
+                    "speed_km_hr": 20,
+                    "_id": 16,
+                    "time": 2.6662253741584472E7,
+                    "height": 2.0999999046325684
+                }
+            }
+        },
+        {
+            "jobList": [
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.35999998450279236,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 50,
+                        "vehicle_requirement": -1,
+                        "list_index": 18,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.8399999737739563,
+                        "volume_demand": 154224.0,
+                        "_id": 36,
+                        "order_id": "80161908",
+                        "height": 0.5099999904632568,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.7699999809265137,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 60,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 1.46999990940094,
+                        "volume_demand": 1007391.0,
+                        "_id": 120,
+                        "order_id": "80162068",
+                        "height": 0.8899999856948853,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.666166E7,
+                        "latitude": -6.2322,
+                        "length": 0.35999998450279236,
+                        "ready_time": 2.66616E7,
+                        "put_type": 0,
+                        "type": "pickup",
+                        "item_num": 50,
+                        "vehicle_requirement": -1,
+                        "list_index": 16,
+                        "geo": "106.8202,-6.2322",
+                        "weight_demand": 0,
+                        "width": 0.8399999737739563,
+                        "volume_demand": 154224.0,
+                        "_id": 32,
+                        "order_id": "80161908",
+                        "height": 0.5099999904632568,
+                        "longitude": 106.8202
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.1784,
+                        "length": 0.35999998450279236,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 50,
+                        "vehicle_requirement": -1,
+                        "list_index": 18,
+                        "geo": "106.8590,-6.1784",
+                        "weight_demand": 0,
+                        "width": 0.8399999737739563,
+                        "volume_demand": 154224.0,
+                        "_id": 37,
+                        "order_id": "80161908",
+                        "height": 0.5099999904632568,
+                        "longitude": 106.859
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 15,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.1784,
+                        "length": 0.7699999809265137,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 5,
+                        "vehicle_requirement": -1,
+                        "list_index": 60,
+                        "geo": "106.8590,-6.1784",
+                        "weight_demand": 0,
+                        "width": 1.46999990940094,
+                        "volume_demand": 1007391.0,
+                        "_id": 121,
+                        "order_id": "80162068",
+                        "height": 0.8899999856948853,
+                        "longitude": 106.859
+                    }
+                },
+                {
+                    "attrs": {
+                        "service_time": 40,
+                        "due_time": 2.66622E7,
+                        "latitude": -6.1784,
+                        "length": 0.35999998450279236,
+                        "ready_time": 2.666214E7,
+                        "put_type": 0,
+                        "type": "delivery",
+                        "item_num": 50,
+                        "vehicle_requirement": -1,
+                        "list_index": 16,
+                        "geo": "106.8590,-6.1784",
+                        "weight_demand": 0,
+                        "width": 0.8399999737739563,
+                        "volume_demand": 154224.0,
+                        "_id": 33,
+                        "order_id": "80161908",
+                        "height": 0.5099999904632568,
+                        "longitude": 106.859
+                    }
+                }
+            ],
+            "vehicle": {
+                "attrs": {
+                    "length": 5.699999809265137,
+                    "dist": 20529.283569335938,
+                    "plate": "FUSO5",
+                    "type": 0,
+                    "start_geo": "106.8195,-6.2213",
+                    "list_index": 14,
+                    "start_time": 0.0,
+                    "end_geo": "106.8195,-6.2213",
+                    "width": 2.2300000190734863,
+                    "speed_km_hr": 20,
+                    "_id": 14,
+                    "time": 2.666226141483301E7,
+                    "height": 2.130000114440918
+                }
+            }
+        }
+    ]
+}
