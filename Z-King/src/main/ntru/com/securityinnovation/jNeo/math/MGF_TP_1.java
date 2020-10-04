@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.securityinnovation.jNeo.math;
@@ -44,16 +43,19 @@ public class MGF_TP_1
      *            the degree of the new polynomial.
      * @param gen
      *            the byte sequence to be converted.
+     * 
      * @return the derived trinomial.
      */
     public static FullPolynomial genTrinomial(int N, InputStream gen)
     {
-        try {
-            FullPolynomial p = new FullPolynomial(N);
+        try
+        {
+            FullPolynomial p     = new FullPolynomial(N);
 
-            int limit = 5 * (N / 5);
-            int i = 0;
-            while (i < limit) {
+            int            limit = 5 * (N / 5);
+            int            i     = 0;
+            while (i < limit)
+            {
                 int o = gen.read();
                 if (o >= 243) continue;
 
@@ -75,7 +77,8 @@ public class MGF_TP_1
                 o = (o - b) / 3;
             }
 
-            while (i < N) {
+            while (i < N)
+            {
                 int o = gen.read();
                 if (o >= 243) continue;
 
@@ -108,7 +111,8 @@ public class MGF_TP_1
 
             return p;
         }
-        catch (IOException e) {
+        catch (IOException e)
+        {
             throw new InternalError("MGF-TP-1 byte source was unable to generate input");
         }
     }
@@ -130,17 +134,19 @@ public class MGF_TP_1
      * trinomial.
      *
      * @param poly
-     *            the trinomial. All coefficients must be in the range [0..2].
+     *             the trinomial. All coefficients must be in the range [0..2].
      * @param out
-     *            the output stream that will collect the input.
+     *             the output stream that will collect the input.
      */
     public static void encodeTrinomial(FullPolynomial poly, OutputStream out)
     {
-        try {
+        try
+        {
             int N = poly.p.length;
             int end, accum;
             // Encode 5 trits per byte, as long as we have >= 5 trits.
-            for (end = 5; end <= N; end += 5) {
+            for (end = 5; end <= N; end += 5)
+            {
                 accum = recenterTritTo0(poly.p[end - 1]);
                 accum = 3 * accum + recenterTritTo0(poly.p[end - 2]);
                 accum = 3 * accum + recenterTritTo0(poly.p[end - 3]);
@@ -151,14 +157,16 @@ public class MGF_TP_1
 
             // Encode the remaining trits.
             end = N - (N % 5);
-            if (end < N) {
+            if (end < N)
+            {
                 accum = recenterTritTo0(poly.p[--N]);
                 while (end < N)
                     accum = 3 * accum + recenterTritTo0(poly.p[--N]);
                 out.write(accum);
             }
         }
-        catch (IOException e) {
+        catch (IOException e)
+        {
             throw new InternalError("MGF-TP-1 byte sink was unable to process output");
         }
     }

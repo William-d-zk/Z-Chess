@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.securityinnovation.jNeo.math;
@@ -42,7 +41,7 @@ public class PolynomialInverterModPrime
     /**
      * The modulus.
      */
-    protected int prime;
+    protected int     prime;
 
     /**
      * A table of inverses mod <code>prime</code>. The table should be
@@ -57,17 +56,16 @@ public class PolynomialInverterModPrime
      * modulo a particular prime.
      *
      * @param _prime
-     *            the modulus.
+     *                     the modulus.
      * @param _invModPrime
-     *            a precomputed table of integer inverses modulo
-     *            _prime. The table should be initialized so that
-     *            invModPrime[i] * i = 1 (mod prime) if the inverse of i exists,
-     *            invModPrime[i] = 0 if the inverse of i does not exist. This
-     *            table should not be modified after it has been passed to the
-     *            constructor.
+     *                     a precomputed table of integer inverses modulo
+     *                     _prime. The table should be initialized so that
+     *                     invModPrime[i] * i = 1 (mod prime) if the inverse of i exists,
+     *                     invModPrime[i] = 0 if the inverse of i does not exist. This
+     *                     table should not be modified after it has been passed to the
+     *                     constructor.
      */
-    public PolynomialInverterModPrime(int _prime,
-                                      short[] _invModPrime)
+    public PolynomialInverterModPrime(int _prime, short[] _invModPrime)
     {
         prime = _prime;
         invModPrime = _invModPrime;
@@ -80,11 +78,11 @@ public class PolynomialInverterModPrime
      */
     public FullPolynomial invert(FullPolynomial a)
     {
-        int N = a.p.length;
+        int            N = a.p.length;
 
         // Initialization:
         // k=0, b(X) = 1, c(X) = 0, f(X)=a(X), g(X)=X^N-1
-        int k = 0;
+        int            k = 0;
         FullPolynomial b = new FullPolynomial(N + 1);
         FullPolynomial c = new FullPolynomial(N + 1);
         FullPolynomial f = new FullPolynomial(N + 1);
@@ -101,16 +99,19 @@ public class PolynomialInverterModPrime
         // Find the degree of g(X). This is a constant based on initialization
         int dg = N;
 
-        while (true) {
+        while (true)
+        {
             // while f[0] = 0 {f/=X, c*=X, k++}
-            while ((f.p[0] == 0) && (df > 0)) {
+            while ((f.p[0] == 0) && (df > 0))
+            {
                 df--;
                 divideByX(f);
                 multiplyByX(c);
                 k++;
             }
 
-            if (df == 0) {
+            if (df == 0)
+            {
                 // Make sure there is a solution.
                 // Return null if a is not invertible
                 int f0Inv = invModPrime[f.p[0]];
@@ -127,10 +128,11 @@ public class PolynomialInverterModPrime
                 return ret;
             }
 
-            if (df < dg) {
+            if (df < dg)
+            {
                 // swap(f,g), swap(b,c);
                 FullPolynomial tmpP;
-                int tmpD;
+                int            tmpD;
                 tmpP = f;
                 f = g;
                 g = tmpP;

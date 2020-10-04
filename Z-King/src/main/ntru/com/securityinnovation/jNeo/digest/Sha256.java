@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.securityinnovation.jNeo.digest;
@@ -82,11 +81,11 @@ class Sha256
      * Updates the message digest with new data.
      *
      * @param data
-     *            the data to be added.
+     *               the data to be added.
      * @param offset
-     *            the start of the data in the array.
+     *               the start of the data in the array.
      * @param length
-     *            the number of bytes of data to add.
+     *               the number of bytes of data to add.
      */
     public void update(byte[] data, int offset, int length)
     {
@@ -106,7 +105,8 @@ class Sha256
 
         // Process any full blocks we get by combining cached input
         // with the new input
-        while (bufOff + length >= buf.length) {
+        while (bufOff + length >= buf.length)
+        {
             int todo = buf.length - bufOff;
             System.arraycopy(data, offset, buf, bufOff, todo);
             transform(buf);
@@ -130,13 +130,15 @@ class Sha256
     {
         // Sanity check inputs
         if (out == null) throw new NullPointerException("output array is null");
-        if (outOffset + getDigestLen() > out.length) throw new IllegalArgumentException("writing "
-                                                                                        + getDigestLen()
-                                                                                        + " bytes of input starting at offset "
-                                                                                        + outOffset
-                                                                                        + " will overrun end of output buffer ("
-                                                                                        + out.length
-                                                                                        + " bytes long)");
+        if (outOffset
+            + getDigestLen() > out.length)
+                                           throw new IllegalArgumentException("writing "
+                                                                              + getDigestLen()
+                                                                              + " bytes of input starting at offset "
+                                                                              + outOffset
+                                                                              + " will overrun end of output buffer ("
+                                                                              + out.length
+                                                                              + " bytes long)");
         if (outOffset < 0) throw new IllegalArgumentException("output offset is negative (" + outOffset + ")");
 
         // Add the "end of input" marker
@@ -145,7 +147,8 @@ class Sha256
         // If the current block is not large enough to hold the
         // 8-byte long bitcount, pad the current block with 0s,
         // process it, and start a new block.
-        if (bufOff + 8 > buf.length) {
+        if (bufOff + 8 > buf.length)
+        {
             java.util.Arrays.fill(buf, bufOff, getBlockLen(), (byte) 0);
             transform(buf);
             bufOff = 0;
@@ -154,7 +157,8 @@ class Sha256
         // Pad the final block with 0's, then the bitcount of all of the input
         java.util.Arrays.fill(buf, bufOff, buf.length - 8, (byte) 0);
         long bitCount = byteCount * 8;
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 8; i++)
+        {
             buf[buf.length - i - 1] = (byte) bitCount;
             bitCount >>>= 8;
         }
@@ -173,29 +177,29 @@ class Sha256
     // ......................................................................
 
     /** Size (in bytes) of this hash */
-    private static final int HASH_LEN = 32;
+    private static final int HASH_LEN  = 32;
 
     /** Size (in bytes) of one process block */
     private static final int BLOCK_LEN = 64;
 
     /** 64 byte input buffer */
-    private final byte[] buf = new byte[64];
+    private final byte[]     buf       = new byte[64];
 
     /** index of first empty element in buf */
-    private int bufOff;
+    private int              bufOff;
 
     /** Total number of bytes hashed so far. */
-    private long byteCount;
+    private long             byteCount;
 
     /** 8 32-bit words (interim result) */
-    private final int[] state = new int[8];
+    private final int[]      state     = new int[8];
 
     /**
      * A temporary buffer used by the transform() routine
      * It is allocated once per object to reduce the cost of allocation.
      */
-    private final int[] bufInts = new int[BLOCK_LEN / 4];
-    private final int[] w       = new int[64];
+    private final int[]      bufInts   = new int[BLOCK_LEN / 4];
+    private final int[]      w         = new int[64];
 
     /**
      * Convert an array of bytes into an array of 32-bit integers.
@@ -204,7 +208,8 @@ class Sha256
      */
     private static void byte2int(byte[] src, int srcOffset, int[] dst, int dstOffset, int numInts)
     {
-        while (numInts-- > 0) {
+        while (numInts-- > 0)
+        {
             // Big endian
             dst[dstOffset++] = (src[srcOffset++] << 24)
                                | ((src[srcOffset++] & 0xFF) << 16)
@@ -220,7 +225,8 @@ class Sha256
     protected void int2byte(int[] src, int srcOffset, byte[] dst, int dstOffset, int numInts)
     {
         int end = numInts + srcOffset;
-        for (int i = srcOffset, j = dstOffset; i < end; i++) {
+        for (int i = srcOffset, j = dstOffset; i < end; i++)
+        {
             int d = src[srcOffset + i];
             dst[j++] = (byte) (d >>> 24);
             dst[j++] = (byte) (d >>> 16);

@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.securityinnovation.jNeo.math;
@@ -42,7 +41,7 @@ public class FullPolynomial
      * The degree of the polynomial will be defined by the size of coeffs.
      *
      * @param coeffs
-     *            the list of coefficients.
+     *               the list of coefficients.
      */
     public FullPolynomial(short[] coeffs)
     {
@@ -53,7 +52,7 @@ public class FullPolynomial
      * Initialize a polynomial of degree n whose coefficients are all 0.
      *
      * @param n
-     *            the degree of the polynomial.
+     *          the degree of the polynomial.
      */
     public FullPolynomial(int n)
     {
@@ -67,16 +66,17 @@ public class FullPolynomial
      * the new coefficients equal the old coefficients mod q.
      *
      * @param a
-     *            the polynomial to be recentered.
+     *                      the polynomial to be recentered.
      * @param q
-     *            the coefficient modulus.
+     *                      the coefficient modulus.
      * @param newLowerLimit
-     *            the new smallest coefficient value.
+     *                      the new smallest coefficient value.
      */
     public static final void recenterModQ(FullPolynomial a, int q, int newLowerLimit)
     {
         int newUpperLimit = newLowerLimit + q;
-        for (int i = 0; i < a.p.length; i++) {
+        for (int i = 0; i < a.p.length; i++)
+        {
             a.p[i] = (short) (a.p[i] % q);
             if (a.p[i] >= newUpperLimit) a.p[i] -= q;
             if (a.p[i] < newLowerLimit) a.p[i] += q;
@@ -88,9 +88,10 @@ public class FullPolynomial
      * the ring of polynomials of degree N.
      *
      * @param a
-     *            the first polynomial.
+     *          the first polynomial.
      * @param b
-     *            the second polynomial. It must be of the same degree as a.
+     *          the second polynomial. It must be of the same degree as a.
+     * 
      * @return a*b modulo X^N.
      */
     public static FullPolynomial convolution(FullPolynomial a, FullPolynomial b)
@@ -110,12 +111,13 @@ public class FullPolynomial
      * in the ring of integers mod coefficientModulus.
      *
      * @param a
-     *            the first polynomial.
+     *                           the first polynomial.
      * @param b
-     *            the second polynomial. It must be of the same degree as a.
+     *                           the second polynomial. It must be of the same degree as a.
      * @param coefficientModulus
-     *            the modulus for the coefficients of the
-     *            resulting polynomial.
+     *                           the modulus for the coefficients of the
+     *                           resulting polynomial.
+     * 
      * @return a*b modulo X^N.
      */
     public static FullPolynomial convolution(FullPolynomial a, FullPolynomial b, int coefficientModulus)
@@ -131,11 +133,12 @@ public class FullPolynomial
      * in the range [0..coefficientModulus-1].
      *
      * @param a
-     *            the first addend.
+     *                           the first addend.
      * @param b
-     *            the second addend.
+     *                           the second addend.
      * @param coefficientModulus
-     *            the modulus for the polynomial coefficients
+     *                           the modulus for the polynomial coefficients
+     * 
      * @return the resulting polynomial.
      */
     public static final FullPolynomial add(FullPolynomial a, FullPolynomial b, int coefficientModulus)
@@ -153,19 +156,18 @@ public class FullPolynomial
      * in the range [newLowerLimit..newLowerLimit+coefficientModulus-1].
      *
      * @param a
-     *            the first addend.
+     *                           the first addend.
      * @param b
-     *            the second addend.
+     *                           the second addend.
      * @param coefficientModulus
-     *            the modulus for the polynomial coefficients.
+     *                           the modulus for the polynomial coefficients.
      * @param newLowerLimit
-     *            the smallest coefficient value of the result.
+     *                           the smallest coefficient value of the result.
+     * 
      * @return the resulting polynomial.
      */
-    public static final FullPolynomial addAndRecenter(FullPolynomial a,
-                                                      FullPolynomial b,
-                                                      int coefficientModulus,
-                                                      int newLowerLimit)
+    public static final FullPolynomial
+           addAndRecenter(FullPolynomial a, FullPolynomial b, int coefficientModulus, int newLowerLimit)
     {
         FullPolynomial c = new FullPolynomial(a.p.length);
         for (int i = 0; i < c.p.length; i++)
@@ -180,11 +182,12 @@ public class FullPolynomial
      * in the range [0..coefficientModulus-1].
      *
      * @param a
-     *            the minuend.
+     *                           the minuend.
      * @param b
-     *            the subtrahend.
+     *                           the subtrahend.
      * @param coefficientModulus
-     *            the modulus for the polynomial coefficients.
+     *                           the modulus for the polynomial coefficients.
+     * 
      * @return the difference.
      */
     public static final FullPolynomial subtract(FullPolynomial a, FullPolynomial b, int coefficientModulus)
@@ -202,19 +205,18 @@ public class FullPolynomial
      * in the range [0..coefficientModulus-1].
      *
      * @param a
-     *            the minuend.
+     *                           the minuend.
      * @param b
-     *            the subtrahend.
+     *                           the subtrahend.
      * @param coefficientModulus
-     *            the modulus for the polynomial coefficients.
+     *                           the modulus for the polynomial coefficients.
      * @param newLowerLimit
-     *            the smallest coefficient value of the result.
+     *                           the smallest coefficient value of the result.
+     * 
      * @return the difference.
      */
-    public static final FullPolynomial subtractAndRecenter(FullPolynomial a,
-                                                           FullPolynomial b,
-                                                           int coefficientModulus,
-                                                           int newLowerLimit)
+    public static final FullPolynomial
+           subtractAndRecenter(FullPolynomial a, FullPolynomial b, int coefficientModulus, int newLowerLimit)
     {
         FullPolynomial c = new FullPolynomial(a.p.length);
         for (int i = 0; i < c.p.length; i++)
@@ -227,18 +229,21 @@ public class FullPolynomial
      * Define polynomial equality based on the coefficient list.
      *
      * @param o
-     *            the object to compare to.
+     *          the object to compare to.
+     * 
      * @return true iff o is a FullPolynomial with the same degree as
      *         this object and the respective coefficient lists contain the
      *         same values.
      */
     public boolean equals(Object o)
     {
-        try {
+        try
+        {
             FullPolynomial other = (FullPolynomial) o;
             return java.util.Arrays.equals(p, other.p);
         }
-        catch (Exception e) {}
+        catch (Exception e)
+        {}
         return false;
     }
 

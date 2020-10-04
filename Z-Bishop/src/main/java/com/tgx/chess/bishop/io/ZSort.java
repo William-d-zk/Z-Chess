@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.tgx.chess.bishop.io;
@@ -64,11 +63,11 @@ import com.tgx.chess.queen.io.core.inf.ISessionOption;
 
 /**
  * @author william.d.zk
+ * 
  * @date 2019-06-30
  */
-public enum ZSort
-        implements
-        ISort<ZContext>
+public enum ZSort implements
+                  ISort<ZContext>
 {
 
     /**
@@ -101,8 +100,7 @@ public enum ZSort
         }
 
         @Override
-        public ICommandFactory<ZCommand,
-                               WsFrame> getCommandFactory()
+        public ICommandFactory<ZCommand, WsFrame> getCommandFactory()
         {
             return _ClusterFactory;
         }
@@ -137,8 +135,7 @@ public enum ZSort
         }
 
         @Override
-        public ICommandFactory<ZCommand,
-                               WsFrame> getCommandFactory()
+        public ICommandFactory<ZCommand, WsFrame> getCommandFactory()
         {
             return _ClusterFactory;
         }
@@ -170,8 +167,7 @@ public enum ZSort
         }
 
         @Override
-        public ICommandFactory<ZCommand,
-                               WsFrame> getCommandFactory()
+        public ICommandFactory<ZCommand, WsFrame> getCommandFactory()
         {
             return _ClusterFactory;
         }
@@ -207,8 +203,7 @@ public enum ZSort
         }
 
         @Override
-        public ICommandFactory<ZCommand,
-                               WsFrame> getCommandFactory()
+        public ICommandFactory<ZCommand, WsFrame> getCommandFactory()
         {
             return _ServerFactory;
         }
@@ -249,8 +244,7 @@ public enum ZSort
         }
 
         @Override
-        public ICommandFactory<ZCommand,
-                               WsFrame> getCommandFactory()
+        public ICommandFactory<ZCommand, WsFrame> getCommandFactory()
         {
             return _ServerFactory;
         }
@@ -282,8 +276,7 @@ public enum ZSort
         }
 
         @Override
-        public ICommandFactory<IControl<ZContext>,
-                               QttFrame> getCommandFactory()
+        public ICommandFactory<IControl<ZContext>, QttFrame> getCommandFactory()
         {
             return _QttCommandFactory;
         }
@@ -315,8 +308,7 @@ public enum ZSort
         }
 
         @Override
-        public ICommandFactory<IControl<ZContext>,
-                               QttFrame> getCommandFactory()
+        public ICommandFactory<IControl<ZContext>, QttFrame> getCommandFactory()
         {
             return _QttCommandFactory;
         }
@@ -348,8 +340,7 @@ public enum ZSort
         }
 
         @Override
-        public ICommandFactory<IControl<ZContext>,
-                               QttFrame> getCommandFactory()
+        public ICommandFactory<IControl<ZContext>, QttFrame> getCommandFactory()
         {
             return _QttCommandFactory;
         }
@@ -361,11 +352,10 @@ public enum ZSort
     final static ZClusterFactory   _ClusterFactory    = new ZClusterFactory();
     final static QttCommandFactory _QttCommandFactory = new QttCommandFactory();
 
-    final QttFrameFilter _QttFrameFilter = new QttFrameFilter();
+    final QttFrameFilter           _QttFrameFilter    = new QttFrameFilter();
     {
         _QttFrameFilter.linkAfter(new ZTLSFilter());
-        _QttFrameFilter.linkFront(new QttControlFilter())
-                       .linkFront(new QttCommandFilter());
+        _QttFrameFilter.linkFront(new QttControlFilter()).linkFront(new QttCommandFilter());
     }
     final WsHandShakeFilter _WsHandshakeFilter = new WsHandShakeFilter();
     {
@@ -379,15 +369,13 @@ public enum ZSort
     final WsFrameFilter _ClusterFrameFilter = new WsFrameFilter();
     {
         _ClusterFrameFilter.linkAfter(new ZTLSFilter());
-        _ClusterFrameFilter.linkFront(new WsControlFilter())
-                           .linkFront(new ZCommandFilter(new ZClusterFactory()));
+        _ClusterFrameFilter.linkFront(new WsControlFilter()).linkFront(new ZCommandFilter(new ZClusterFactory()));
     }
 
     final WsHandShakeFilter _QttWsHandshakeFilter = new WsHandShakeFilter();
     {
         QttFrameFilter mQttFrameFilter = new QttFrameFilter();
-        mQttFrameFilter.linkFront(new QttControlFilter())
-                       .linkFront(new QttCommandFilter());
+        mQttFrameFilter.linkFront(new QttControlFilter()).linkFront(new QttCommandFilter());
         _QttWsHandshakeFilter.linkFront(new WsFrameFilter())
                              .linkFront(new WsControlFilter())
                              .linkFront(new WsProxyFilter(mQttFrameFilter));
@@ -437,12 +425,14 @@ public enum ZSort
         return _Ignore;
     }
 
-    public static ICommandFactory<? extends IControl<ZContext>,
-                                  ? extends IFrame> getCommandFactory(int serial)
+    public static ICommandFactory<? extends IControl<ZContext>, ? extends IFrame> getCommandFactory(int serial)
     {
-        if (serial > 0x110 && serial < 0x11F) { return _QttCommandFactory; }
-        if (serial > 0x1F && serial < 0x6F) { return _ServerFactory; }
-        if (serial >= 0x70 && serial <= 0x7F) { return _ClusterFactory; }
+        if (serial > 0x110 && serial < 0x11F)
+        { return _QttCommandFactory; }
+        if (serial > 0x1F && serial < 0x6F)
+        { return _ServerFactory; }
+        if (serial >= 0x70 && serial <= 0x7F)
+        { return _ClusterFactory; }
         throw new IllegalArgumentException();
     }
 }

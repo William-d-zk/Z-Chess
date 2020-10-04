@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.securityinnovation.jNeo.inputstream;
@@ -82,9 +81,7 @@ public class IGF2
     /**
      * Create an IGF driven by an externally-supplied InputStream.
      */
-    public IGF2(int _maxValue,
-                int _bitsPerIndex,
-                InputStream _source)
+    public IGF2(int _maxValue, int _bitsPerIndex, InputStream _source)
     {
         init(_maxValue, _bitsPerIndex, _source);
     }
@@ -108,10 +105,12 @@ public class IGF2
      */
     public void close()
     {
-        try {
+        try
+        {
             source.close();
         }
-        catch (IOException e) {
+        catch (IOException e)
+        {
             throw new InternalError("IGF bit source was unable to close");
         }
     }
@@ -121,11 +120,14 @@ public class IGF2
      */
     public int nextIndex()
     {
-        try {
+        try
+        {
             int ret = 0;
-            while (true) {
+            while (true)
+            {
                 // Make sure leftoverBits has at least bitsPerIndex in it.
-                while (numLeftoverBits < bitsPerIndex) {
+                while (numLeftoverBits < bitsPerIndex)
+                {
                     leftoverBits <<= 8;
                     leftoverBits |= (0xff & source.read());
                     numLeftoverBits += 8;
@@ -141,7 +143,8 @@ public class IGF2
                 if (ret < cutoff) return ret % maxValue;
             }
         }
-        catch (IOException e) {
+        catch (IOException e)
+        {
             throw new InternalError("IGF bit source was unable to generate input");
         }
     }

@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.tgx.chess.pawn.endpoint.spring.device.jpa.model;
@@ -59,7 +58,8 @@ import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
                    @Index(name = "device_idx_token_pwd", columnList = "token,password"),
                    @Index(name = "device_idx_sn", columnList = "sn"),
                    @Index(name = "device_idx_token", columnList = "token"),
-                   @Index(name = "device_idx_username", columnList = "username") })
+                   @Index(name = "device_idx_username", columnList = "username")
+})
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class DeviceEntity
         extends
@@ -73,32 +73,32 @@ public class DeviceEntity
     @GeneratedValue(generator = "ZDeviceGenerator")
     @GenericGenerator(name = "ZDeviceGenerator",
                       strategy = "com.tgx.chess.pawn.endpoint.spring.device.jpa.generator.ZDeviceGenerator")
-    private long            id;
+    private long              id;
     @Column(length = 32, nullable = false, updatable = false)
-    private String          sn;
+    private String            sn;
     @Column(length = 32, nullable = false)
     @Length(min = 17, max = 32, message = "*Your password must have at least 17 characters less than 33 characters")
     @NotBlank(message = "*Please provide your password")
-    private String          password;
+    private String            password;
     @Column(length = 32, nullable = false)
     @Length(min = 8, max = 32, message = "* Your Username must have at least 8 characters less than 33 characters")
     @NotBlank(message = "*Please provide your username")
-    private String          username;
-    private int             passwordId;
+    private String            username;
+    private int               passwordId;
     @Column(length = 64, nullable = false, unique = true)
-    private String          token;
+    private String            token;
     @Column(name = "invalid_at", nullable = false)
-    private LocalDateTime   invalidAt;
+    private LocalDateTime     invalidAt;
     @Column(name = "wifi_mac", length = 32)
-    private String          wifiMac;
+    private String            wifiMac;
     @Column(name = "sensor_mac", length = 32)
-    private String          sensorMac;
+    private String            sensorMac;
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb")
-    private DeviceSubscribe subscribe;
+    private DeviceSubscribe   subscribe;
 
     @Transient
-    private Operation mOperation = Operation.OP_NULL;
+    private Operation         mOperation       = Operation.OP_NULL;
 
     public long getId()
     {

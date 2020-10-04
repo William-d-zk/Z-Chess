@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.tgx.chess.king.base.util.crc;
@@ -30,14 +29,7 @@ package com.tgx.chess.king.base.util.crc;
 class AlgoParams
 {
 
-    AlgoParams(String name,
-               int hashSize,
-               long poly,
-               long init,
-               boolean refIn,
-               boolean refOut,
-               long xorOut,
-               long check)
+    AlgoParams(String name, int hashSize, long poly, long init, boolean refIn, boolean refOut, long xorOut, long check)
     {
         Name = name;
         Check = check;
@@ -58,12 +50,12 @@ class AlgoParams
     /// ASCII string "123456789" is fed through the specified algorithm
     /// (i.e. 313233... (hexadecimal)).
     /// </summary>
-    private long Check;
+    private long   Check;
 
     /// <summary>
     /// This is hash size.
     /// </summary>
-    int HashSize;
+    int            HashSize;
 
     /// <summary>
     /// This parameter specifies the initial value of the register
@@ -74,7 +66,7 @@ class AlgoParams
     /// N'th bit iteration. This parameter should be specified as a
     /// hexadecimal number.
     /// </summary>
-    long Init;
+    long           Init;
 
     /// <summary>
     /// This is a name given to the algorithm. A string value.
@@ -90,7 +82,7 @@ class AlgoParams
     /// is always the LSB of the divisor during the division regardless of
     /// whether the algorithm being modelled is reflected.
     /// </summary>
-    long Poly;
+    long           Poly;
 
     /// <summary>
     /// This is a boolean parameter. If it is FALSE, input bytes are
@@ -98,7 +90,7 @@ class AlgoParams
     /// (MSB) and bit 0 being treated as the least significant bit.If this
     /// parameter is FALSE, each byte is reflected before being processed.
     /// </summary>
-    boolean RefIn;
+    boolean        RefIn;
 
     /// <summary>
     /// This is a boolean parameter. If it is set to FALSE, the
@@ -106,7 +98,7 @@ class AlgoParams
     /// otherwise, if this parameter is TRUE, the final register value is
     /// reflected first.
     /// </summary>
-    boolean RefOut;
+    boolean        RefOut;
 
     /// <summary>
     /// This is an W-bit value that should be specified as a
@@ -114,5 +106,5 @@ class AlgoParams
     /// the REFOUT) stage before the value is returned as the official
     /// checksum.
     /// </summary>
-    long XorOut;
+    long           XorOut;
 }

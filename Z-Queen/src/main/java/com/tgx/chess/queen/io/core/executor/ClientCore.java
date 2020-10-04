@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.tgx.chess.queen.io.core.executor;
@@ -95,33 +94,39 @@ public class ClientCore<C extends IContext<C>>
         _AioCacheConcurrentQueue = new ConcurrentLinkedQueue<>(Arrays.asList(_AioProducerEvents));
         _BizLocalCloseEvent = createPipelineLite(5);
         _BizLocalSendEvent = createPipelineLite(5);
-        //        _TimeWheel.acquire("client event", new ScheduleHandler<>(45, true));
+        // _TimeWheel.acquire("client event", new ScheduleHandler<>(45, true));
     }
 
-    /*  ║ barrier, ━> publish event, ━━ pipeline, | handle event
-    
-                                           ━━> _LocalSend   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━║
-     ━━> _AioProducerEvents ║               ┏> _LinkIoEvent ━━━━{_MappingProcessor}|━━━━━━━━━━━━━━━━━━━━━║
-         _BizLocalClose     ║_IoDispatcher━━┫  _ReadEvent   ━━━━{_DecodeProcessor}|━━{_LogicProcessor}|━━║_WriteDispatcher┏>_EncodedEvent━━{_EncodedProcessor}|━┳━║[Event Done]
-    ┏━━> _ErrorEvent[2]     ║               ┃  _WroteBuffer ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━║                ┗>_ErrorEvent━┓                       ┗━>_ErrorEvent━┓
-    ┃┏━> _ErrorEvent[1]     ║               ┗> _ErrorEvent━┓                                                                            ┃                                      ┃
-    ┃┃┏> _ErrorEvent[0]     ║                              ┃                                                                            ┃                                      ┃
-    ┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                                                            ┃                                      ┃
-    ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                                      ┃
-    ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-    */
+    /*
+     * ║ barrier, ━> publish event, ━━ pipeline, | handle event
+     * 
+     * ━━> _LocalSend ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━║
+     * ━━> _AioProducerEvents ║ ┏> _LinkIoEvent ━━━━{_MappingProcessor}|━━━━━━━━━━━━━━━━━━━━━║
+     * _BizLocalClose ║_IoDispatcher━━┫ _ReadEvent
+     * ━━━━{_DecodeProcessor}|━━{_LogicProcessor}|━━║_WriteDispatcher┏>_EncodedEvent━━{_EncodedProcessor
+     * }|━┳━║[Event Done]
+     * ┏━━> _ErrorEvent[2] ║ ┃ _WroteBuffer ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━║
+     * ┗>_ErrorEvent━┓ ┗━>_ErrorEvent━┓
+     * ┃┏━> _ErrorEvent[1] ║ ┗> _ErrorEvent━┓ ┃ ┃
+     * ┃┃┏> _ErrorEvent[0] ║ ┃ ┃ ┃
+     * ┃┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ ┃ ┃
+     * ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ ┃
+     * ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+     */
     @SuppressWarnings("unchecked")
     public void build(final EventHandler<QEvent> _LogicHandler, IEncryptHandler encryptHandler)
     {
-        final RingBuffer<QEvent> _WroteEvent = createPipelineYield(7);
-        final RingBuffer<QEvent> _LinkIoEvent = createPipelineLite(2);
-        final RingBuffer<QEvent>[] _ErrorEvents = new RingBuffer[3];
-        final RingBuffer<QEvent>[] _DispatchIo = new RingBuffer[4 + _IoCount];
-        final RingBuffer<QEvent> _ReadAndLogicEvent = createPipelineLite(6);
-        final RingBuffer<QEvent> _EncodeEvent = createPipelineLite(7);
-        final SequenceBarrier[] _DispatchIoBarriers = new SequenceBarrier[_DispatchIo.length];
-        final SequenceBarrier[] _ErrorBarriers = new SequenceBarrier[_ErrorEvents.length];
-        final SequenceBarrier[] _AioProducerBarriers = new SequenceBarrier[_IoCount];
+        final RingBuffer<QEvent>   _WroteEvent          = createPipelineYield(7);
+        final RingBuffer<QEvent>   _LinkIoEvent         = createPipelineLite(2);
+        final RingBuffer<QEvent>[] _ErrorEvents         = new RingBuffer[3];
+        final RingBuffer<QEvent>[] _DispatchIo          = new RingBuffer[4 + _IoCount];
+        final RingBuffer<QEvent>   _ReadAndLogicEvent   = createPipelineLite(6);
+        final RingBuffer<QEvent>   _EncodeEvent         = createPipelineLite(7);
+        final SequenceBarrier[]    _DispatchIoBarriers  = new SequenceBarrier[_DispatchIo.length];
+        final SequenceBarrier[]    _ErrorBarriers       = new SequenceBarrier[_ErrorEvents.length];
+        final SequenceBarrier[]    _AioProducerBarriers = new SequenceBarrier[_IoCount];
         Arrays.setAll(_ErrorEvents, slot -> createPipelineLite(5));
         Arrays.setAll(_ErrorBarriers, slot -> _ErrorEvents[slot].newBarrier());
         Arrays.setAll(_AioProducerBarriers, slot -> _AioProducerEvents[slot].newBarrier());
@@ -136,46 +141,54 @@ public class ClientCore<C extends IContext<C>>
                                                                                                                                    _WroteEvent,
                                                                                                                                    _ErrorEvents[0]));
         _IoDispatcher.setThreadName("IoDispatcher");
-        for (int i = 0, size = _DispatchIo.length; i < size; i++) {
+        for (int i = 0, size = _DispatchIo.length; i < size; i++)
+        {
             _DispatchIo[i].addGatingSequences(_IoDispatcher.getSequences()[i]);
         }
-        final BatchEventProcessor<QEvent> _DecodeProcessor = new BatchEventProcessor<>(_ReadAndLogicEvent,
-                                                                                       _ReadAndLogicEvent.newBarrier(),
-                                                                                       new ClientDecodeHandler<>(encryptHandler));
-        /* 相对 server core 做了精简，decode 错误将在 logic processor 中按照 Ignore 进行处理
-           最终被
-        */
-        final BatchEventProcessor<QEvent> _LogicProcessor = new BatchEventProcessor<>(_ReadAndLogicEvent,
-                                                                                      _ReadAndLogicEvent.newBarrier(_DecodeProcessor.getSequence()),
-                                                                                      _LogicHandler);
-        final BatchEventProcessor<QEvent> _LinkProcessor = new BatchEventProcessor<>(_LinkIoEvent,
-                                                                                     _LinkIoEvent.newBarrier(),
-                                                                                     new ClientLinkHandler<>());
-        final RingBuffer<QEvent>[] _SendEvents = new RingBuffer[] { _BizLocalSendEvent,
-                                                                    _LinkIoEvent,
-                                                                    _ReadAndLogicEvent,
-                                                                    _WroteEvent };
-        final SequenceBarrier[] _SendBarriers = new SequenceBarrier[] { _BizLocalSendEvent.newBarrier(),
-                                                                        _LinkIoEvent.newBarrier(_LinkProcessor.getSequence()),
-                                                                        _ReadAndLogicEvent.newBarrier(_LogicProcessor.getSequence()),
-                                                                        _WroteEvent.newBarrier() };
+        final BatchEventProcessor<QEvent>            _DecodeProcessor = new BatchEventProcessor<>(_ReadAndLogicEvent,
+                                                                                                  _ReadAndLogicEvent.newBarrier(),
+                                                                                                  new ClientDecodeHandler<>(encryptHandler));
+        /*
+         * 相对 server core 做了精简，decode 错误将在 logic processor 中按照 Ignore 进行处理
+         * 最终被
+         */
+        final BatchEventProcessor<QEvent>            _LogicProcessor  = new BatchEventProcessor<>(_ReadAndLogicEvent,
+                                                                                                  _ReadAndLogicEvent.newBarrier(_DecodeProcessor.getSequence()),
+                                                                                                  _LogicHandler);
+        final BatchEventProcessor<QEvent>            _LinkProcessor   = new BatchEventProcessor<>(_LinkIoEvent,
+                                                                                                  _LinkIoEvent.newBarrier(),
+                                                                                                  new ClientLinkHandler<>());
+        final RingBuffer<QEvent>[]                   _SendEvents      = new RingBuffer[] { _BizLocalSendEvent,
+                                                                                           _LinkIoEvent,
+                                                                                           _ReadAndLogicEvent,
+                                                                                           _WroteEvent
+        };
+        final SequenceBarrier[]                      _SendBarriers    = new SequenceBarrier[] { _BizLocalSendEvent.newBarrier(),
+                                                                                                _LinkIoEvent.newBarrier(_LinkProcessor.getSequence()),
+                                                                                                _ReadAndLogicEvent.newBarrier(_LogicProcessor.getSequence()),
+                                                                                                _WroteEvent.newBarrier()
+        };
         final MultiBufferBatchEventProcessor<QEvent> _WriteDispatcher = new MultiBufferBatchEventProcessor<>(_SendEvents,
                                                                                                              _SendBarriers,
                                                                                                              new ClientWriteDispatcher(_ErrorEvents[1],
                                                                                                                                        _EncodeEvent));
         _WriteDispatcher.setThreadName("WriteDispatcher");
-        for (int i = 0, size = _SendEvents.length; i < size; i++) {
+        for (int i = 0, size = _SendEvents.length; i < size; i++)
+        {
             _SendEvents[i].addGatingSequences(_WriteDispatcher.getSequences()[i]);
         }
-        final BatchEventProcessor<QEvent> _EncodeProcessor = new BatchEventProcessor<>(_EncodeEvent,
-                                                                                       _EncodeEvent.newBarrier(),
-                                                                                       new EncodeHandler());
+        final BatchEventProcessor<QEvent> _EncodeProcessor  = new BatchEventProcessor<>(_EncodeEvent,
+                                                                                        _EncodeEvent.newBarrier(),
+                                                                                        new EncodeHandler());
         final BatchEventProcessor<QEvent> _EncodedProcessor = new BatchEventProcessor<>(_EncodeEvent,
                                                                                         _EncodeEvent.newBarrier(_EncodeProcessor.getSequence()),
                                                                                         new EncodedHandler(_ErrorEvents[2]));
 
         _EncodeEvent.addGatingSequences(_EncodedProcessor.getSequence());
-        /* ---------------------------------------------------------------------------------------------------------------- */
+        /*
+         * -------------------------------------------------------------------------------------------------
+         * ---------------
+         */
         submit(_IoDispatcher);
         submit(_DecodeProcessor);
         submit(_LinkProcessor);

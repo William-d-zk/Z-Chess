@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.securityinnovation.jNeo.math;
@@ -48,6 +47,7 @@ public class BitPack
      *
      * @param val
      *            the value being measured
+     * 
      * @return the smallest number of bits needed to represent the input value.
      */
     public static final int countBits(int val)
@@ -62,7 +62,8 @@ public class BitPack
      * of a value.
      * 
      * @param numBits
-     *            the number of bits to be masked off
+     *                the number of bits to be masked off
+     * 
      * @return a integer containing a bitmask where the least
      *         significant 'numbits' bits are set (1) and the remaining
      *         bits are clear (0).
@@ -77,11 +78,12 @@ public class BitPack
      * output.
      *
      * @param numElts
-     *            the number of elements that will be packed.
+     *                    the number of elements that will be packed.
      * @param maxEltValue
-     *            a maximal element value, larger than any
-     *            input value (typically one larger than the max
-     *            input value).
+     *                    a maximal element value, larger than any
+     *                    input value (typically one larger than the max
+     *                    input value).
+     * 
      * @return the number of elements required for the output array,
      *         or 0 on error.
      */
@@ -94,21 +96,22 @@ public class BitPack
      * Bit-pack an array of shorts into a byte array.
      *
      * @param numElts
-     *            the number of elements
+     *                    the number of elements
      * @param maxEltValue
-     *            a maximal element value, larger than any
-     *            input value (typically one larger than the max
-     *            input value).
+     *                    a maximal element value, larger than any
+     *                    input value (typically one larger than the max
+     *                    input value).
      * @param tgt
-     *            the destination array.
+     *                    the destination array.
      * @param tgtOffset
-     *            the offset into the destination array where the
-     *            first element should go.
+     *                    the offset into the destination array where the
+     *                    first element should go.
      * @param src
-     *            the source array.
+     *                    the source array.
      * @param srcOffset
-     *            the offset into the source array where the
-     *            first value should be read from.
+     *                    the offset into the source array where the
+     *                    first value should be read from.
+     * 
      * @return the number of elements used in the output array,
      *         or 0 on error.
      */
@@ -118,7 +121,7 @@ public class BitPack
         int bitsPerElement = countBits(maxEltValue - 1);
 
         // Get the max output size
-        int maxOutLen = (numElts * bitsPerElement + 7) / 8;
+        int maxOutLen      = (numElts * bitsPerElement + 7) / 8;
 
         return pack(numElts, maxEltValue, maxOutLen, src, srcOffset, tgt, tgtOffset);
     }
@@ -128,47 +131,45 @@ public class BitPack
      * a predefined number of bytes have been generated.
      *
      * @param numElts
-     *            the number of elements
+     *                    the number of elements
      * @param maxEltValue
-     *            a maximal element value, larger than any
-     *            input value (typically one larger than the max
-     *            input value).
+     *                    a maximal element value, larger than any
+     *                    input value (typically one larger than the max
+     *                    input value).
      * @param maxOutLen
-     *            the maximum number of elements to put into the
-     *            destination array.
+     *                    the maximum number of elements to put into the
+     *                    destination array.
      * @param tgt
-     *            the destination array.
+     *                    the destination array.
      * @param tgtOffset
-     *            the offset into the destination array where the
-     *            first element should go.
+     *                    the offset into the destination array where the
+     *                    first element should go.
      * @param src
-     *            the source array.
+     *                    the source array.
      * @param srcOffset
-     *            the offset into the source array where the
-     *            first value should be read from.
+     *                    the offset into the source array where the
+     *                    first value should be read from.
+     * 
      * @return the number of elements used in the output array,
      *         or 0 on error.
      */
-    public final static int pack(int numElts,
-                                 int maxEltValue,
-                                 int maxOutLen,
-                                 short[] src,
-                                 int srcOffset,
-                                 byte[] tgt,
-                                 int tgtOffset)
+    public final static int
+           pack(int numElts, int maxEltValue, int maxOutLen, short[] src, int srcOffset, byte[] tgt, int tgtOffset)
     {
         if (tgt == null) return maxOutLen;
 
         // Get the number of bits in each element
-        int bitsPerElement = countBits(maxEltValue - 1);
+        int  bitsPerElement = countBits(maxEltValue - 1);
 
-        int i = srcOffset, iMax = srcOffset + numElts;
-        int j = tgtOffset, jMax = tgtOffset + maxOutLen;
-        byte cur = 0;
-        int next = src[i++];
-        int cb = 0, nb = bitsPerElement;
-        while ((j < jMax) && ((i < iMax) || (cb + nb > 8))) {
-            if (cb + nb < 8) {
+        int  i              = srcOffset, iMax = srcOffset + numElts;
+        int  j              = tgtOffset, jMax = tgtOffset + maxOutLen;
+        byte cur            = 0;
+        int  next           = src[i++];
+        int  cb             = 0, nb = bitsPerElement;
+        while ((j < jMax) && ((i < iMax) || (cb + nb > 8)))
+        {
+            if (cb + nb < 8)
+            {
                 // Accumulate next into cur. The result will still
                 // be less than 8 bits. Then update next will the next
                 // input value.
@@ -177,7 +178,8 @@ public class BitPack
                 next = (0x0ffff & src[i++]); // avoid sign extension
                 nb = bitsPerElement;
             }
-            else {
+            else
+            {
                 // Pull the most significant bits off of next into
                 // cur to make cur 8 bits and save it in the output
                 // stream. Then clear cur, and mask the used bits out
@@ -201,11 +203,12 @@ public class BitPack
      * a bit-packed array.
      *
      * @param numElts
-     *            the number of elements to decode
+     *                    the number of elements to decode
      * @param maxEltValue
-     *            the maximum value that can appear in the array.
-     *            This value is used to derive the number of bits per element
-     *            in the packed representation.
+     *                    the maximum value that can appear in the array.
+     *                    This value is used to derive the number of bits per element
+     *                    in the packed representation.
+     * 
      * @return the number of input bytes that would be consumed,
      *         or 0 on error.
      */
@@ -219,21 +222,22 @@ public class BitPack
      * per element is implied by maxEltValue.
      *
      * @param numElts
-     *            the number of elements to decode
+     *                    the number of elements to decode
      * @param maxEltValue
-     *            the maximum value that can appear in the array.
-     *            This value is used to derive the number of bits per element
-     *            in the packed representation.
+     *                    the maximum value that can appear in the array.
+     *                    This value is used to derive the number of bits per element
+     *                    in the packed representation.
      * @param src
-     *            the bit-packed input.
+     *                    the bit-packed input.
      * @param srcOffset
-     *            the offset into the source array of the first
-     *            element to be unpacked.
+     *                    the offset into the source array of the first
+     *                    element to be unpacked.
      * @param tgt
-     *            the destination array
+     *                    the destination array
      * @param tgtOffset
-     *            the offset into the destination array in which
-     *            to start storing data.
+     *                    the offset into the destination array in which
+     *                    to start storing data.
+     * 
      * @return the number of input bytes that were consumed,
      *         or 0 on error.
      */
@@ -243,12 +247,12 @@ public class BitPack
         int bitsPerElement = countBits(maxEltValue - 1);
 
         // Get the max output size
-        int maxUsed = (numElts * bitsPerElement + 7) / 8;
+        int maxUsed        = (numElts * bitsPerElement + 7) / 8;
         if (tgt == null) return maxUsed;
 
         // i and j are the indices into the source and destination.
-        int i = srcOffset, iMax = srcOffset + maxUsed;
-        int j = tgtOffset, jMax = tgtOffset + numElts;
+        int i   = srcOffset, iMax = srcOffset + maxUsed;
+        int j   = tgtOffset, jMax = tgtOffset + numElts;
 
         // tmp holds up to 16 bits from the source stream.
         // Stored as an int to make it easier to shift bits.
@@ -256,16 +260,18 @@ public class BitPack
         // tb holds the number of bits in tmp that are valid,
         // that is, that still need to be placed in the tgt array.
         // These will always be the least significant bits of tmp.
-        int tb = 8;
+        int tb  = 8;
         // ob holds the number of bits in the last output byte
         // (tgt[j]) that are valid. This counts from the most-
         // significant relevant bit in tgt. So if bitsPerElement
         // is 10, and ob is 7, then bits 9-3 are filled and bits
         // 0-2 remain to be filled.
-        int ob = 0;
+        int ob  = 0;
         tgt[j] = 0;
-        while ((i < iMax) || (ob + tb >= bitsPerElement)) {
-            if (ob + tb < bitsPerElement) {
+        while ((i < iMax) || (ob + tb >= bitsPerElement))
+        {
+            if (ob + tb < bitsPerElement)
+            {
                 // Adding tb bits from tmp to the ob bits in tgt[j]
                 // will not overflow the output element tgt[j].
                 // Move all tb bits from tmp into tgt[j].
@@ -275,7 +281,8 @@ public class BitPack
                 tmp = (0xff & src[i++]);
                 tb = 8;
             }
-            else {
+            else
+            {
                 // tmp has more bits than we need to finish output
                 // element tgt[j]. Move some of the bits from tmp to
                 // tgt[j] to finish it off, and save the leftovers in

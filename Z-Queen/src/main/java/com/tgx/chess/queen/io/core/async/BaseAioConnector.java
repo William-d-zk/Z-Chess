@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.tgx.chess.queen.io.core.async;
@@ -52,10 +51,7 @@ public abstract class BaseAioConnector<C extends IContext<C>>
         IAioConnector<C>
 {
 
-    protected BaseAioConnector(String host,
-                               int port,
-                               ISocketConfig socketConfig,
-                               IFailed<IAioConnector<C>> failed)
+    protected BaseAioConnector(String host, int port, ISocketConfig socketConfig, IFailed<IAioConnector<C>> failed)
     {
         super(socketConfig);
         _RemoteAddress = new InetSocketAddress(host, port);
@@ -69,7 +65,7 @@ public abstract class BaseAioConnector<C extends IContext<C>>
                                                                                                    0));
     private final IFailed<IAioConnector<C>> _FailedHandler;
 
-    private InetSocketAddress mLocalBind;
+    private InetSocketAddress               mLocalBind;
 
     @Override
     public void error()
@@ -84,16 +80,22 @@ public abstract class BaseAioConnector<C extends IContext<C>>
     public boolean retry()
     {
         retry:
-        for (;;) {
-            int c = _State.get();
+        for (;;)
+        {
+            int c  = _State.get();
             int rs = ITask.runStateOf(c);
-            if (rs >= STOP.getCode()) { return false; }
-            for (;;) {
+            if (rs >= STOP.getCode())
+            { return false; }
+            for (;;)
+            {
                 int rc = ITask.retryCountOf(c);
-                if (rc >= RETRY_LIMIT) { return false; }
-                if (ITask.compareAndIncrementRetry(_State, rc)) { return true; }
-                c = _State.get();// reload 
-                if (ITask.runStateOf(c) != rs) {
+                if (rc >= RETRY_LIMIT)
+                { return false; }
+                if (ITask.compareAndIncrementRetry(_State, rc))
+                { return true; }
+                c = _State.get();// reload
+                if (ITask.runStateOf(c) != rs)
+                {
                     continue retry;
                 }
             }
@@ -119,17 +121,13 @@ public abstract class BaseAioConnector<C extends IContext<C>>
     }
 
     @Override
-    public IOperator<IConnectActivity<C>,
-                     AsynchronousSocketChannel,
-                     ITriple> getConnectedOperator()
+    public IOperator<IConnectActivity<C>, AsynchronousSocketChannel, ITriple> getConnectedOperator()
     {
         return _ConnectedOperator;
     }
 
     @Override
-    public IOperator<Throwable,
-                     IAioConnector<C>,
-                     Void> getErrorOperator()
+    public IOperator<Throwable, IAioConnector<C>, Void> getErrorOperator()
     {
         return _ConnectFailedOperator;
     }

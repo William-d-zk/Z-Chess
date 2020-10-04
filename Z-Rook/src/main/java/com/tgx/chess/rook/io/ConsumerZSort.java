@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.tgx.chess.rook.io;
@@ -62,9 +61,8 @@ import com.tgx.chess.queen.io.core.inf.ISessionOption;
  * @author william.d.zk
  */
 @SuppressWarnings("unchecked")
-public enum ConsumerZSort
-        implements
-        ISort<ZContext>
+public enum ConsumerZSort implements
+                          ISort<ZContext>
 {
     /**
      *
@@ -79,8 +77,7 @@ public enum ConsumerZSort
         }
 
         @Override
-        public ICommandFactory<ZCommand,
-                               WsFrame> getCommandFactory()
+        public ICommandFactory<ZCommand, WsFrame> getCommandFactory()
         {
             return _ZConsumerFactory;
         }
@@ -113,8 +110,7 @@ public enum ConsumerZSort
         }
 
         @Override
-        public ICommandFactory<ZCommand,
-                               WsFrame> getCommandFactory()
+        public ICommandFactory<ZCommand, WsFrame> getCommandFactory()
         {
             return _ZConsumerFactory;
         }
@@ -140,8 +136,7 @@ public enum ConsumerZSort
         }
 
         @Override
-        public ICommandFactory<IControl<ZContext>,
-                               QttFrame> getCommandFactory()
+        public ICommandFactory<IControl<ZContext>, QttFrame> getCommandFactory()
         {
             return _QttCommandFactory;
         }
@@ -159,18 +154,18 @@ public enum ConsumerZSort
         return Type.CONSUMER;
     }
 
-    private final AioWriter<ZContext>      _AioWriter        = new AioWriter<>();
-    private final ISessionCloser<ZContext> _CloseOperator    = new CloseOperator<>();
-    private final ISessionError<ZContext>  _ErrorOperator    = new ErrorOperator<>();
-    private final IPipeEncoder<ZContext>   _ConsumerEncoder  = new PipeEncoder<>(_AioWriter);
-    private final IPipeTransfer<ZContext>  _ConsumerTransfer = new TransferOperator<>();
-    private final IPipeDecoder<ZContext>   _ConsumerDecoder  = new PipeDecoder<>();
-    private final IgnoreOperator<ZContext> _Ignore           = new IgnoreOperator<>();
+    private final AioWriter<ZContext>      _AioWriter         = new AioWriter<>();
+    private final ISessionCloser<ZContext> _CloseOperator     = new CloseOperator<>();
+    private final ISessionError<ZContext>  _ErrorOperator     = new ErrorOperator<>();
+    private final IPipeEncoder<ZContext>   _ConsumerEncoder   = new PipeEncoder<>(_AioWriter);
+    private final IPipeTransfer<ZContext>  _ConsumerTransfer  = new TransferOperator<>();
+    private final IPipeDecoder<ZContext>   _ConsumerDecoder   = new PipeDecoder<>();
+    private final IgnoreOperator<ZContext> _Ignore            = new IgnoreOperator<>();
 
-    final static ZConsumerFactory  _ZConsumerFactory  = new ZConsumerFactory();
-    final static QttCommandFactory _QttCommandFactory = new QttCommandFactory();
+    final static ZConsumerFactory          _ZConsumerFactory  = new ZConsumerFactory();
+    final static QttCommandFactory         _QttCommandFactory = new QttCommandFactory();
 
-    final WsHandShakeFilter _HandshakeFilter = new WsHandShakeFilter();
+    final WsHandShakeFilter                _HandshakeFilter   = new WsHandShakeFilter();
     {
         IFilterChain<ZContext> header = new ZTLSFilter();
         _HandshakeFilter.linkAfter(header)
@@ -182,8 +177,7 @@ public enum ConsumerZSort
     final QttFrameFilter _QttFrameFilter = new QttFrameFilter();
     {
         _QttFrameFilter.linkAfter(new ZTLSFilter());
-        _QttFrameFilter.linkFront(new QttControlFilter())
-                       .linkFront(new QttCommandFilter());
+        _QttFrameFilter.linkFront(new QttControlFilter()).linkFront(new QttCommandFilter());
     }
 
     @Override

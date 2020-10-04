@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.tgx.chess.bishop.io.mqtt;
@@ -36,6 +35,7 @@ import com.tgx.chess.queen.io.core.inf.IQoS;
 
 /**
  * @author william.d.zk
+ * 
  * @date 2019-05-25
  */
 public abstract class MqttProtocol
@@ -70,9 +70,7 @@ public abstract class MqttProtocol
         final String      _Description;
         final Direction[] _Directions;
 
-        QTT_TYPE(int code,
-                 String description,
-                 Direction... directions)
+        QTT_TYPE(int code, String description, Direction... directions)
         {
             _Value = code << 4;
             _Directions = directions;
@@ -140,18 +138,19 @@ public abstract class MqttProtocol
 
     private void checkOpCode()
     {
-        if (getLevel() == Level.ALMOST_ONCE && duplicate) {
-            throw new IllegalStateException("level == 0 && duplicate");
-        }
+        if (getLevel() == Level.ALMOST_ONCE && duplicate)
+        { throw new IllegalStateException("level == 0 && duplicate"); }
     }
 
     public static byte generateCtrl(boolean dup, boolean retain, Level qosLevel, QTT_TYPE qttType)
     {
         byte ctrl = 0;
-        ctrl |= dup ? DUPLICATE_FLAG
-                    : 0;
-        ctrl |= retain ? RETAIN_FLAG
-                       : 0;
+        ctrl |= dup ?
+                DUPLICATE_FLAG:
+                0;
+        ctrl |= retain ?
+                RETAIN_FLAG:
+                0;
         ctrl |= qosLevel.ordinal() << 1;
         ctrl |= qttType.getValue();
         return ctrl;
@@ -160,10 +159,12 @@ public abstract class MqttProtocol
     public void setDuplicate(boolean duplicate)
     {
         this.duplicate = duplicate;
-        if (duplicate) {
+        if (duplicate)
+        {
             frame_op_code |= DUPLICATE_FLAG;
         }
-        else {
+        else
+        {
             frame_op_code &= ~DUPLICATE_FLAG;
         }
     }
@@ -177,10 +178,12 @@ public abstract class MqttProtocol
     public void setRetain(boolean retain)
     {
         this.retain = retain;
-        if (retain) {
+        if (retain)
+        {
             frame_op_code |= RETAIN_FLAG;
         }
-        else {
+        else
+        {
             frame_op_code &= ~RETAIN_FLAG;
         }
     }
@@ -212,7 +215,8 @@ public abstract class MqttProtocol
     {
         frame_op_code = opCode;
         type = QTT_TYPE.valueOf(getOpCode());
-        if (Objects.isNull(type)) { throw new IllegalArgumentException(); }
+        if (Objects.isNull(type))
+        { throw new IllegalArgumentException(); }
         duplicate = (frame_op_code & DUPLICATE_FLAG) == DUPLICATE_FLAG;
         retain = (frame_op_code & RETAIN_FLAG) == RETAIN_FLAG;
         qos_level = (byte) ((frame_op_code & QOS_MASK) >> 1);

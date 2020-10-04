@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.tgx.chess.king.base.crypt.util;
@@ -61,7 +60,8 @@ public class Rc4
         for (int i = 0; i < S.length; i++)
             S[i] = i;
         int j = 0;
-        for (int i = 0; i < S.length; i++) {
+        for (int i = 0; i < S.length; i++)
+        {
             j = (j + S[i] + (key[i % key.length] & 0xFF)) & 0xFF;
             ArrayUtil.swap(S, i, j);
         }
@@ -72,7 +72,8 @@ public class Rc4
 
         byte[] encodeData = new byte[data.length];
 
-        for (int x = 0; x < encodeData.length; x++) {
+        for (int x = 0; x < encodeData.length; x++)
+        {
             i = (i + 1) & 0xFF;
             j = (j + S[i]) & 0xFF;
             ArrayUtil.swap(S, i, j);
@@ -86,11 +87,14 @@ public class Rc4
     public static boolean isKeyValid(byte[] key)
     {
         byte[] bKey = key;
-        int len = bKey.length;
-        int num = 0;// 0x0E计数
-        if (len > 0 && len <= 256) {
-            for (int i = 0; i < len; i++) {
-                if ((bKey[i] & 0xFF) == 0x0E) {
+        int    len  = bKey.length;
+        int    num  = 0;// 0x0E计数
+        if (len > 0 && len <= 256)
+        {
+            for (int i = 0; i < len; i++)
+            {
+                if ((bKey[i] & 0xFF) == 0x0E)
+                {
                     num++;
                     if (num > 3) return false;
                 }
@@ -103,16 +107,18 @@ public class Rc4
     @Override
     public byte[] createKey(String seed)
     {
-        long curTime = System.currentTimeMillis();
-        long code = hashCode();
-        long tick = curTime ^ (code << 31);
-        Random rd = new Random(tick);
+        long   curTime = System.currentTimeMillis();
+        long   code    = hashCode();
+        long   tick    = curTime ^ (code << 31);
+        Random rd      = new Random(tick);
         byte[] xc;
         if (seed == null || "".equals(seed.trim())) seed = "Tgx.Tina.Rc4" + System.nanoTime();
         xc = seed.getBytes();
         byte[] key = new byte[20];
-        for (int i = 0, j = 1; i < key.length; i++) {
-            for (byte b : xc) {
+        for (int i = 0, j = 1; i < key.length; i++)
+        {
+            for (byte b : xc)
+            {
                 long dx = System.nanoTime() ^ tick ^ rd.nextLong() ^ b;
                 key[i] ^= dx >> j++;
                 if (j > 40) j = 1;
@@ -126,7 +132,8 @@ public class Rc4
         if (initialized || key == null) return;
         for (int i = 0; i < S.length; i++)
             S[i] = (byte) i;
-        for (int i = 0, j = 0; i < S.length; i++) {
+        for (int i = 0, j = 0; i < S.length; i++)
+        {
             j = (j + (S[i] & 0xFF) + (key[i % key.length] & 0xFF)) & 0xFF;
             ArrayUtil.swap(S, i, j);
         }
@@ -139,7 +146,8 @@ public class Rc4
         if (!buffer.hasRemaining() || key == null) return;
         ksa(key);
         int limit = buffer.limit();
-        for (int x = buffer.position(); x < limit; x++) {
+        for (int x = buffer.position(); x < limit; x++)
+        {
             i = ((i + 1) & Integer.MAX_VALUE) & 0xFF;
             j = ((j + (S[i] & 0xFF)) & Integer.MAX_VALUE) & 0xFF;
             ArrayUtil.swap(S, i, j);
@@ -154,7 +162,8 @@ public class Rc4
         if (dst == null || key == null) return;
         ksa(key);
         int limit = dst.length;
-        for (int x = 0; x < limit; x++) {
+        for (int x = 0; x < limit; x++)
+        {
             i = ((i + 1) & Integer.MAX_VALUE) & 0xFF;
             j = ((j + (S[i] & 0xFF)) & Integer.MAX_VALUE) & 0xFF;
             ArrayUtil.swap(S, i, j);

@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.tgx.chess.king.topology;
@@ -73,17 +72,23 @@ public class ZUID
     public static final int      TYPE_SHIFT         = IDC_SHIFT + IDC_BITS;
     private static final String  UNAME_FORMMATER    = "%d_%d_%d_%d@%d";
     private static final Pattern UNAME_PATTERN      = Pattern.compile("(\\d+)_(\\d+)_(\\d+)_(\\d+)@(\\d+)");
-    /*==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==*/
-    public static final long TYPE_MASK          = ((1L << TYPE_BITS) - 1) << TYPE_SHIFT;
-    public static final long TYPE_CONSUMER      = 0;
-    public static final long TYPE_INTERNAL      = 1L << TYPE_SHIFT;
-    public static final long TYPE_PROVIDER      = 2L << TYPE_SHIFT;
-    public static final long TYPE_CLUSTER       = 3L << TYPE_SHIFT;
-    public static final int  TYPE_CONSUMER_SLOT = 0;
-    public static final int  TYPE_INTERNAL_SLOT = 1;
-    public static final int  TYPE_PROVIDER_SLOT = 2;
-    public static final int  TYPE_CLUSTER_SLOT  = 3;
-    /*==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==*/
+    /*
+     * ==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--=
+     * =--==
+     */
+    public static final long     TYPE_MASK          = ((1L << TYPE_BITS) - 1) << TYPE_SHIFT;
+    public static final long     TYPE_CONSUMER      = 0;
+    public static final long     TYPE_INTERNAL      = 1L << TYPE_SHIFT;
+    public static final long     TYPE_PROVIDER      = 2L << TYPE_SHIFT;
+    public static final long     TYPE_CLUSTER       = 3L << TYPE_SHIFT;
+    public static final int      TYPE_CONSUMER_SLOT = 0;
+    public static final int      TYPE_INTERNAL_SLOT = 1;
+    public static final int      TYPE_PROVIDER_SLOT = 2;
+    public static final int      TYPE_CLUSTER_SLOT  = 3;
+    /*
+     * ==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--=
+     * =--==
+     */
     private final long           _IdcId;
     private final long           _ClusterId;
     private final long           _NodeId;
@@ -92,26 +97,25 @@ public class ZUID
     private long                 sequence;
     private long                 lastTimestamp;
 
-    public ZUID(long idc_id,
-                long cluster_id,
-                long node_id,
-                long type)
+    public ZUID(long idc_id, long cluster_id, long node_id, long type)
     {
-        if (idc_id > MAX_IDC_ID || idc_id < 0) {
+        if (idc_id > MAX_IDC_ID || idc_id < 0)
+        {
             throw new IllegalArgumentException(String.format("idc region Id can't be greater than %d or less than 0",
                                                              MAX_IDC_ID));
         }
-        if (cluster_id > MAX_CLUSTER_SET_ID || cluster_id < 0) {
+        if (cluster_id > MAX_CLUSTER_SET_ID || cluster_id < 0)
+        {
             throw new IllegalArgumentException(String.format("cluster Id can't be greater than %d or less than 0",
                                                              MAX_CLUSTER_SET_ID));
         }
-        if (node_id > MAX_NODE_ID || node_id < 0) {
+        if (node_id > MAX_NODE_ID || node_id < 0)
+        {
             throw new IllegalArgumentException(String.format("node Id can't be greater than %d or less than 0",
                                                              MAX_NODE_ID));
         }
-        if (type > MAX_TYPE || type < 0) {
-            throw new IllegalArgumentException(String.format("type can't be greater than %d or less than 0", MAX_TYPE));
-        }
+        if (type > MAX_TYPE || type < 0)
+        { throw new IllegalArgumentException(String.format("type can't be greater than %d or less than 0", MAX_TYPE)); }
         _IdcId = idc_id;
         _ClusterId = cluster_id;
         _NodeId = node_id;
@@ -127,24 +131,29 @@ public class ZUID
     public ZUID(String uname)
     {
         Matcher matcher = UNAME_PATTERN.matcher(uname);
-        if (matcher.matches()) {
-            long idc_id = Long.parseLong(matcher.group(1));
+        if (matcher.matches())
+        {
+            long idc_id     = Long.parseLong(matcher.group(1));
             long cluster_id = Long.parseLong(matcher.group(2));
-            long node_id = Long.parseLong(matcher.group(3));
-            long type = Long.parseLong(matcher.group(4));
-            if (idc_id > MAX_IDC_ID || idc_id < 0) {
+            long node_id    = Long.parseLong(matcher.group(3));
+            long type       = Long.parseLong(matcher.group(4));
+            if (idc_id > MAX_IDC_ID || idc_id < 0)
+            {
                 throw new IllegalArgumentException(String.format("idc region Id can't be greater than %d or less than 0",
                                                                  MAX_IDC_ID));
             }
-            if (cluster_id > MAX_CLUSTER_SET_ID || cluster_id < 0) {
+            if (cluster_id > MAX_CLUSTER_SET_ID || cluster_id < 0)
+            {
                 throw new IllegalArgumentException(String.format("cluster Id can't be greater than %d or less than 0",
                                                                  MAX_CLUSTER_SET_ID));
             }
-            if (node_id > MAX_NODE_ID || node_id < 0) {
+            if (node_id > MAX_NODE_ID || node_id < 0)
+            {
                 throw new IllegalArgumentException(String.format("node Id can't be greater than %d or less than 0",
                                                                  MAX_NODE_ID));
             }
-            if (type > MAX_TYPE || type < 0) {
+            if (type > MAX_TYPE || type < 0)
+            {
                 throw new IllegalArgumentException(String.format("type can't be greater than %d or less than 0",
                                                                  MAX_TYPE));
             }
@@ -153,7 +162,8 @@ public class ZUID
             _NodeId = node_id;
             _Type = type;
         }
-        else {
+        else
+        {
             _IdcId = 0;
             _ClusterId = 0;
             _NodeId = 0;
@@ -176,14 +186,17 @@ public class ZUID
     {
         type &= TYPE_MASK;
         long timestamp = _TimestampSupplier.get();
-        if (lastTimestamp == timestamp) {
+        if (lastTimestamp == timestamp)
+        {
             sequence = (sequence + 1) & SEQUENCE_MASK;
-            if (sequence == 0) {
+            if (sequence == 0)
+            {
                 LockSupport.parkUntil(timestamp + 1);
                 timestamp = timestamp + 1;
             }
         }
-        else {
+        else
+        {
             sequence = 0L;
         }
         lastTimestamp = timestamp;

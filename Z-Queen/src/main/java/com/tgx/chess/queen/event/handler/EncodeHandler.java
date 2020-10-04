@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.tgx.chess.queen.event.handler;
@@ -54,7 +53,8 @@ public class EncodeHandler<C extends IContext<C>>
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
     {
-        if (event.hasError()) {
+        if (event.hasError())
+        {
             switch (event.getErrorType())
             {
                 case FILTER_ENCODE:
@@ -62,21 +62,20 @@ public class EncodeHandler<C extends IContext<C>>
                 case ILLEGAL_BIZ_STATE:
                 default:
                     /*
-                     透传到 EncodedHandler 去投递 _Error
+                     * 透传到 EncodedHandler 去投递 _Error
                      */
                     break;
             }
         }
-        else {
+        else
+        {
             switch (event.getEventType())
             {
                 case WRITE:
                     IPair pairWriteContent = event.getContent();
                     IControl<C> cmd = pairWriteContent.getFirst();
                     ISession<C> session = pairWriteContent.getSecond();
-                    IOperator<IControl<C>,
-                              ISession<C>,
-                              ITriple> writeOperator = event.getEventOp();
+                    IOperator<IControl<C>, ISession<C>, ITriple> writeOperator = event.getEventOp();
                     _Logger.debug("%s→  %s | %s", WRITE, cmd, session);
                     encodeHandler(event, cmd, session, writeOperator);
                     cmd.dispose();
@@ -85,9 +84,7 @@ public class EncodeHandler<C extends IContext<C>>
                     IPair pairWroteContent = event.getContent();
                     int wroteCnt = pairWroteContent.getFirst();
                     session = pairWroteContent.getSecond();
-                    IOperator<Integer,
-                              ISession<C>,
-                              ITriple> wroteOperator = event.getEventOp();
+                    IOperator<Integer, ISession<C>, ITriple> wroteOperator = event.getEventOp();
                     _Logger.debug("%s→  %s | %s", WROTE, wroteCnt, session);
                     encodeHandler(event, wroteCnt, session, wroteOperator);
                     break;
@@ -97,22 +94,20 @@ public class EncodeHandler<C extends IContext<C>>
         }
     }
 
-    private <A> void encodeHandler(QEvent event,
-                                   A a,
-                                   ISession<C> session,
-                                   IOperator<A,
-                                             ISession<C>,
-                                             ITriple> operator)
+    private <A> void encodeHandler(QEvent event, A a, ISession<C> session, IOperator<A, ISession<C>, ITriple> operator)
     {
         C context = session.getContext();
-        if (!context.isOutErrorState()) {
+        if (!context.isOutErrorState())
+        {
             ITriple result = operator.handle(a, session);
-            if (Objects.nonNull(result)) {
+            if (Objects.nonNull(result))
+            {
                 Throwable throwable = result.getFirst();
                 event.error(IError.Type.FILTER_ENCODE, new Pair<>(throwable, session), result.getThird());
                 context.setOutState(ENCODE_ERROR);
             }
-            else {
+            else
+            {
                 event.reset();
             }
         }
