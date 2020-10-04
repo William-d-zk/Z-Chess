@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package com.tgx.chess.bishop.io.ws;
 
@@ -76,8 +75,8 @@ public class WsFrame
     private byte[]           mPayload;
     private long             mPayloadLength                           = -1;
     // mask | first payload_length
-    private byte mPayload_Mask;
-    private int  mMaskLength = -1;
+    private byte             mPayload_Mask;
+    private int              mMaskLength                              = -1;
 
     public WsFrame()
     {
@@ -116,7 +115,8 @@ public class WsFrame
 
     public void doMask()
     {
-        if (mMaskLength > 0 && mPayloadLength > 0) {
+        if (mMaskLength > 0 && mPayloadLength > 0)
+        {
             for (int i = 0; i < mPayloadLength; i++)
                 mPayload[i] ^= mMask[i & 3];
         }
@@ -130,8 +130,9 @@ public class WsFrame
     public void setPayload(byte[] payload)
     {
         mPayload = payload;
-        mPayloadLength = payload == null ? 0
-                                         : payload.length;
+        mPayloadLength = payload == null ?
+                0:
+                payload.length;
 
     }
 
@@ -143,8 +144,9 @@ public class WsFrame
     public void setMask(byte[] mask)
     {
         mMask = mask;
-        mMaskLength = mask == null ? 0
-                                   : mask.length;
+        mMaskLength = mask == null ?
+                0:
+                mask.length;
     }
 
     public long getPayloadLength()
@@ -164,17 +166,23 @@ public class WsFrame
 
     public byte[] getPayloadLengthArray()
     {
-        if (mPayloadLength <= 0) return new byte[] { (byte) (mMask == null ? 0
-                                                                           : 0x80) };
-        int t_size = mPayloadLength > 0xFFFF ? 9
-                                             : mPayloadLength > 0x7D ? 3
-                                                                     : 1;
-        byte[] x = new byte[t_size];
-        if (mPayloadLength > 0xFFFF) {
+        if (mPayloadLength <= 0) return new byte[] { (byte) (mMask == null ?
+                0:
+                0x80)
+        };
+        int    t_size = mPayloadLength > 0xFFFF ?
+                9:
+                mPayloadLength > 0x7D ?
+                        3:
+                1;
+        byte[] x      = new byte[t_size];
+        if (mPayloadLength > 0xFFFF)
+        {
             x[0] = 0x7F;
             IoUtil.writeLong(mPayloadLength, x, 1);
         }
-        else if (mPayloadLength > 0x7D) {
+        else if (mPayloadLength > 0x7D)
+        {
             x[0] = 0x7E;
             IoUtil.writeShort((int) mPayloadLength, x, 1);
         }
@@ -210,20 +218,22 @@ public class WsFrame
     @Override
     public int dataLength()
     {
-        return 1
-               + mMaskLength
+        return 1 + mMaskLength
                + (int) mPayloadLength
-               + (mPayloadLength > 0xFFFF ? 9
-                                          : mPayloadLength > 0x7D ? 3
-                                                                  : 1);
+               + (mPayloadLength > 0xFFFF ?
+                       9:
+                       mPayloadLength > 0x7D ?
+                               3:
+                       1);
 
     }
 
     @Override
     public int payloadLengthLack(int position)
     {
-        int result = (mPayload_Mask & 0x80) != 0 ? 4
-                                                 : 0;
+        int result = (mPayload_Mask & 0x80) != 0 ?
+                4:
+                0;
         switch (mPayload_Mask & 0x7F)
         {
             case 0x7F:
@@ -247,8 +257,9 @@ public class WsFrame
 
     public byte getFrameFin()
     {
-        if (frame_fragment) return frame_fin ? getFragmentEndFrame()
-                                             : getFragmentFrame();
+        if (frame_fragment) return frame_fin ?
+                getFragmentEndFrame():
+                getFragmentFrame();
         else return getFrame(frame_op_code);
     }
 
@@ -342,7 +353,8 @@ public class WsFrame
         pos += IoUtil.writeByte(getFrameFin(), data, pos);
         pos += IoUtil.write(getPayloadLengthArray(), data, pos);
         if (getMaskLength() > 0) pos += IoUtil.write(getMask(), data, pos);
-        if (getPayloadLength() > 0) {
+        if (getPayloadLength() > 0)
+        {
             doMask();
             pos += IoUtil.write(getPayload(), data, pos);
         }

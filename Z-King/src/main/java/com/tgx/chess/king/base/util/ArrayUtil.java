@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package com.tgx.chess.king.base.util;
 
@@ -36,18 +35,21 @@ public interface ArrayUtil
     {
         if (a == null) throw new NullPointerException();
         int i = 0, size = a.length;
-        for (; i < size; i++) {
+        for (; i < size; i++)
+        {
             if (a[i] == _l) return a;
             else if (a[i] == 0 || i == size - 1) break;
         }
         long o = a[i];
-        if (o > 0) {
+        if (o > 0)
+        {
             long[] t = new long[size + 1];
             arraycopy(a, 0, t, 1, size);
             t[0] = _l;
             return t;
         }
-        else {
+        else
+        {
             a[0] = _l;
             return a;
         }
@@ -58,7 +60,8 @@ public interface ArrayUtil
         if (a == null) throw new NullPointerException();
         int pos = Arrays.binarySearch(a, _l);
         if (pos >= 0) return a;
-        else {
+        else
+        {
             return setAdd(_l, a, pos);
         }
     }
@@ -68,7 +71,8 @@ public interface ArrayUtil
         if (a == null) throw new NullPointerException();
         int pos = binarySearch0(a, _l, prefix);
         if (pos >= 0) return a;
-        else {
+        else
+        {
             return setAdd(_l, a, pos);
         }
     }
@@ -78,7 +82,8 @@ public interface ArrayUtil
         pos = -1 - pos;
         long[] t = new long[a.length + 1];
         t[pos] = _l;
-        if (pos > 0 && pos < a.length) {
+        if (pos > 0 && pos < a.length)
+        {
             arraycopy(a, 0, t, 0, pos);
             arraycopy(a, pos, t, pos + 1, a.length - pos);
         }
@@ -89,11 +94,12 @@ public interface ArrayUtil
 
     static int binarySearch0(long[] a, long key, long prefix)
     {
-        int low = 0;
+        int low  = 0;
         int high = a.length - 1;
 
-        while (low <= high) {
-            int mid = (low + high) >>> 1;
+        while (low <= high)
+        {
+            int  mid    = (low + high) >>> 1;
             long midVal = a[mid] & prefix;
 
             if (midVal < key) low = mid + 1;
@@ -106,10 +112,13 @@ public interface ArrayUtil
     static long[] setNoZeroFiFoRm(long _l, final long[] a)
     {
         if (a == null) throw new NullPointerException();
-        if (_l != 0) {
+        if (_l != 0)
+        {
             int k = -1;
-            for (int i = 0; i < a.length; i++) {
-                if (a[i] == _l) {
+            for (int i = 0; i < a.length; i++)
+            {
+                if (a[i] == _l)
+                {
                     k = i;
                     break;
                 }
@@ -117,7 +126,8 @@ public interface ArrayUtil
             if (k < 0) return a;
 
             long[] t = new long[a.length - 1];
-            if (k > 0 && k < a.length - 1) {
+            if (k > 0 && k < a.length - 1)
+            {
                 arraycopy(a, 0, t, 0, k);
                 arraycopy(a, k + 1, t, k, a.length - k - 1);
             }
@@ -131,11 +141,13 @@ public interface ArrayUtil
     static long[] setNoZeroSortRm(long _l, final long[] a)
     {
         if (a == null) throw new NullPointerException();
-        if (_l != 0) {
+        if (_l != 0)
+        {
             int k = Arrays.binarySearch(a, _l);
             if (k < 0) return a;
             long[] t = new long[a.length - 1];
-            if (k > 0 && k < a.length - 1) {
+            if (k > 0 && k < a.length - 1)
+            {
                 arraycopy(a, 0, t, 0, k);
                 arraycopy(a, k + 1, t, k, a.length - k - 1);
             }
@@ -170,24 +182,28 @@ public interface ArrayUtil
 
     static String toHexString(long[] var0)
     {
-        if (var0 == null) {
+        if (var0 == null)
+        {
             return "null";
         }
-        else {
+        else
+        {
             int var1 = var0.length - 1;
-            if (var1 == -1) {
+            if (var1 == -1)
+            {
                 return "[]";
             }
-            else {
+            else
+            {
                 StringBuilder var2 = new StringBuilder();
                 var2.append('[');
                 int var3 = 0;
 
-                while (true) {
-                    var2.append(Long.toHexString(var0[var3])
-                                    .toUpperCase());
-                    if (var3 == var1) { return var2.append(']')
-                                                   .toString(); }
+                while (true)
+                {
+                    var2.append(Long.toHexString(var0[var3]).toUpperCase());
+                    if (var3 == var1)
+                    { return var2.append(']').toString(); }
 
                     var2.append(", ");
                     ++var3;
@@ -198,24 +214,28 @@ public interface ArrayUtil
 
     static String toHexString(int[] var0)
     {
-        if (var0 == null) {
+        if (var0 == null)
+        {
             return "null";
         }
-        else {
+        else
+        {
             int var1 = var0.length - 1;
-            if (var1 == -1) {
+            if (var1 == -1)
+            {
                 return "[]";
             }
-            else {
+            else
+            {
                 StringBuilder var2 = new StringBuilder();
                 var2.append('[');
                 int var3 = 0;
 
-                while (true) {
-                    var2.append(Integer.toHexString(var0[var3])
-                                       .toUpperCase());
-                    if (var3 == var1) { return var2.append(']')
-                                                   .toString(); }
+                while (true)
+                {
+                    var2.append(Integer.toHexString(var0[var3]).toUpperCase());
+                    if (var3 == var1)
+                    { return var2.append(']').toString(); }
 
                     var2.append(", ");
                     ++var3;
@@ -226,24 +246,28 @@ public interface ArrayUtil
 
     static String toHexString(byte[] var0)
     {
-        if (var0 == null) {
+        if (var0 == null)
+        {
             return "null";
         }
-        else {
+        else
+        {
             int var1 = var0.length - 1;
-            if (var1 == -1) {
+            if (var1 == -1)
+            {
                 return "[]";
             }
-            else {
+            else
+            {
                 StringBuilder var2 = new StringBuilder();
                 var2.append('[');
                 int var3 = 0;
 
-                while (true) {
-                    var2.append(Integer.toHexString(var0[var3] & 0xFF)
-                                       .toUpperCase());
-                    if (var3 == var1) { return var2.append(']')
-                                                   .toString(); }
+                while (true)
+                {
+                    var2.append(Integer.toHexString(var0[var3] & 0xFF).toUpperCase());
+                    if (var3 == var1)
+                    { return var2.append(']').toString(); }
 
                     var2.append(", ");
                     ++var3;

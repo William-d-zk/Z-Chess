@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.securityinnovation.jNeo.digest;
@@ -67,17 +66,17 @@ public abstract class Digest
      * (see <code>reset()</code>).
      *
      * @param input
-     *            the array holding the input
+     *                     the array holding the input
      * @param inputOffset
-     *            the index of the start of the input data
+     *                     the index of the start of the input data
      * @param inputLength
-     *            the number of bytes of input
+     *                     the number of bytes of input
      * @param output
-     *            the array to write the digest into
+     *                     the array to write the digest into
      * @param outputOffset
-     *            the index where the first byte of output
-     *            should go. This will use getDigestLen() bytes
-     *            following this index.
+     *                     the index where the first byte of output
+     *                     should go. This will use getDigestLen() bytes
+     *                     following this index.
      */
     public void digest(byte[] input, int inputOffset, int inputLength, byte[] output, int outputOffset)
     {
@@ -95,11 +94,11 @@ public abstract class Digest
      * Updates the message digest with new data.
      *
      * @param data
-     *            the data to be added.
+     *               the data to be added.
      * @param offset
-     *            the start of the data in the array.
+     *               the start of the data in the array.
      * @param length
-     *            the number of bytes of data to add.
+     *               the number of bytes of data to add.
      */
     public abstract void update(byte[] data, int offset, int length);
 
@@ -126,6 +125,5 @@ public abstract class Digest
      * Default constructor. Hidden from the public API.
      */
     protected Digest()
-    {
-    }
+    {}
 }

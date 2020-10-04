@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.securityinnovation.jNeo.ntruencrypt;
@@ -46,31 +45,31 @@ import com.securityinnovation.jNeo.math.PolynomialInverterModPowerOfPrime;
  */
 public class KeyParams
 {
-    public final OID    OIDEnum;
-    public final byte[] OIDBytes;
-    public final short  N;
-    public final short  p;
-    public final short  q;
-    public final short  df;
-    public final short  dg;
-    public final short  lLen;
-    public final short  db;
-    public final short  maxMsgLenBytes;
-    public final short  bufferLenBits;
-    public final short  bufferLenTrits;
-    public final short  dm0;
+    public final OID                OIDEnum;
+    public final byte[]             OIDBytes;
+    public final short              N;
+    public final short              p;
+    public final short              q;
+    public final short              df;
+    public final short              dg;
+    public final short              lLen;
+    public final short              db;
+    public final short              maxMsgLenBytes;
+    public final short              bufferLenBits;
+    public final short              bufferLenTrits;
+    public final short              dm0;
 
     // Mask generation params, used in the generation of mask from R mod 4.
-    public final DigestAlgorithm mgfHash;
+    public final DigestAlgorithm    mgfHash;
 
     // BPGM3 params
-    public final DigestAlgorithm igfHash;
-    public final short           dr;
-    public final short           c;
-    public final short           minCallsR;
-    public final short           minCallsMask;
+    public final DigestAlgorithm    igfHash;
+    public final short              dr;
+    public final short              c;
+    public final short              minCallsR;
+    public final short              minCallsMask;
 
-    public final int pkLen;
+    public final int                pkLen;
 
     // The code to use to find the inverse of a polynomial.
     public final PolynomialInverter polyInverter;
@@ -80,9 +79,10 @@ public class KeyParams
      * represented by a byte array.
      *
      * @param paramSet
-     *            a byte array holding the OID.
+     *                 a byte array holding the OID.
+     * 
      * @throws ParamsetNotSupportedException
-     *             if the OID is not known.
+     *                                       if the OID is not known.
      */
     public static KeyParams getKeyParams(byte[] paramSet) throws ParamSetNotSupportedException
     {
@@ -97,9 +97,10 @@ public class KeyParams
      * represented by a byte array.
      *
      * @param paramSet
-     *            the OID identifying the parameter set.
+     *                 the OID identifying the parameter set.
+     * 
      * @throws ParamsetNotSupportedException
-     *             if the OID is not known.
+     *                                       if the OID is not known.
      */
     public static KeyParams getKeyParams(OID paramSet) throws ParamSetNotSupportedException
     {
@@ -161,12 +162,13 @@ public class KeyParams
     // An object to find the inverse of a polynomial mod 2048
     // and a table of inverses mod 2 needed to construct the inverter.
     private static short[]            invMod2         = { 0,
-                                                          1 };
+                                                          1
+    };
     private static PolynomialInverter inverterMod2048 = new PolynomialInverterModPowerOfPrime(2048, 2, invMod2);
 
     // The master list of parameter sets.
-    private static KeyParams[] paramSets;
-    private static byte        numParamSets = 0;
+    private static KeyParams[]        paramSets;
+    private static byte               numParamSets    = 0;
 
     private static void initParamSets()
     {
@@ -190,7 +192,7 @@ public class KeyParams
                                                   11,
                                                   32,
                                                   9, // dr, c, minCallsR,
-                                                  // minCallsMask
+                                                     // minCallsMask
                                                   112); // pkLen
         paramSets[numParamSets++] = new KeyParams(OID.ees449ep1,
                                                   449,
@@ -211,7 +213,7 @@ public class KeyParams
                                                   9,
                                                   31,
                                                   9, // dr, c, minCallsR,
-                                                  // minCallsMask
+                                                     // minCallsMask
                                                   128); // pkLen
         paramSets[numParamSets++] = new KeyParams(OID.ees677ep1,
                                                   677,
@@ -232,7 +234,7 @@ public class KeyParams
                                                   11,
                                                   27,
                                                   9, // dr, c, minCallsR,
-                                                  // minCallsMask
+                                                     // minCallsMask
                                                   192); // pkLen
         paramSets[numParamSets++] = new KeyParams(OID.ees1087ep2,
                                                   1087,

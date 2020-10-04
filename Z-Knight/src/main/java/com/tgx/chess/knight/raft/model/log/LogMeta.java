@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.tgx.chess.knight.raft.model.log;
@@ -45,7 +44,7 @@ public class LogMeta
         extends
         BaseMeta
 {
-    private final static int _SERIAL = INTERNAL_SERIAL + 1;
+    private final static int                   _SERIAL = INTERNAL_SERIAL + 1;
 
     /**
      * 存储日志的 start index，由于有 snapshot的存在 start之前的日志将被抛弃，
@@ -66,13 +65,9 @@ public class LogMeta
     /** 已被应用到状态机日志index */
     private long                               mApplied;
     /** 集群节点信息 */
-    private Set<Triple<Long,
-                       String,
-                       Integer>>               mPeerSet;
+    private Set<Triple<Long, String, Integer>> mPeerSet;
     /** 集群跨分区网关 */
-    private Set<Triple<Long,
-                       String,
-                       Integer>>               mGateSet;
+    private Set<Triple<Long, String, Integer>> mGateSet;
 
     @JsonCreator
     public LogMeta(@JsonProperty("start") long start,
@@ -82,12 +77,8 @@ public class LogMeta
                    @JsonProperty("candidate") long candidate,
                    @JsonProperty("commit") long commit,
                    @JsonProperty("applied") long applied,
-                   @JsonProperty("peer_set") Set<Triple<Long,
-                                                        String,
-                                                        Integer>> peerSet,
-                   @JsonProperty("gate_set") Set<Triple<Long,
-                                                        String,
-                                                        Integer>> gateSet)
+                   @JsonProperty("peer_set") Set<Triple<Long, String, Integer>> peerSet,
+                   @JsonProperty("gate_set") Set<Triple<Long, String, Integer>> gateSet)
     {
         mStart = start;
         mTerm = term;
@@ -107,15 +98,19 @@ public class LogMeta
 
     public static LogMeta loadFromFile(RandomAccessFile file)
     {
-        try {
-            if (file.length() > 0) {
+        try
+        {
+            if (file.length() > 0)
+            {
                 file.seek(0);
                 int mLength = file.readInt();
-                if (mLength > 0) {
+                if (mLength > 0)
+                {
                     byte[] data = new byte[mLength];
                     file.read(data);
                     LogMeta logMeta = JsonUtil.readValue(data, LogMeta.class);
-                    if (logMeta != null) {
+                    if (logMeta != null)
+                    {
                         logMeta.setFile(file);
                         logMeta.decode(data);
                         return logMeta;
@@ -123,7 +118,8 @@ public class LogMeta
                 }
             }
         }
-        catch (IOException e) {
+        catch (IOException e)
+        {
             e.printStackTrace();
         }
         return new LogMeta().setFile(file);
@@ -198,30 +194,22 @@ public class LogMeta
         mApplied = applied;
     }
 
-    public Set<Triple<Long,
-                      String,
-                      Integer>> getPeerSet()
+    public Set<Triple<Long, String, Integer>> getPeerSet()
     {
         return mPeerSet;
     }
 
-    public void setPeerSet(Set<Triple<Long,
-                                      String,
-                                      Integer>> peerSet)
+    public void setPeerSet(Set<Triple<Long, String, Integer>> peerSet)
     {
         mPeerSet = peerSet;
     }
 
-    public Set<Triple<Long,
-                      String,
-                      Integer>> getGateSet()
+    public Set<Triple<Long, String, Integer>> getGateSet()
     {
         return mGateSet;
     }
 
-    public void setGateSet(Set<Triple<Long,
-                                      String,
-                                      Integer>> gateSet)
+    public void setGateSet(Set<Triple<Long, String, Integer>> gateSet)
     {
         mGateSet = gateSet;
     }

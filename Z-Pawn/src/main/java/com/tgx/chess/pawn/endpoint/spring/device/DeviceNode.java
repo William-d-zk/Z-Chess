@@ -1,25 +1,24 @@
 /*
- * MIT License                                                                   
- *                                                                               
+ * MIT License
+ * 
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.tgx.chess.pawn.endpoint.spring.device;
@@ -69,6 +68,7 @@ import com.tgx.chess.queen.io.core.manager.MixManager;
 
 /**
  * @author william.d.zk
+ * 
  * @date 2019-05-12
  */
 public class DeviceNode
@@ -102,70 +102,74 @@ public class DeviceNode
         super(bizIoConfig, new ServerCore<>(serverConfig));
         _TimeWheel = timeWheel;
         _ZUID = raftConfig.createZUID();
-        IPair bind = raftConfig.getBind();
+        IPair        bind         = raftConfig.getBind();
         final String _ClusterHost = bind.getFirst();
-        final int _ClusterPort = bind.getSecond();
+        final int    _ClusterPort = bind.getSecond();
         hosts.add(new Triple<>(_ClusterHost, _ClusterPort, ZSort.WS_CLUSTER_SERVER));
 
-        _AioServers = hosts.stream()
-                           .map(triple ->
-                           {
-                               final String _Host = triple.getFirst();
-                               final int _Port = triple.getSecond();
-                               final ISort<ZContext> _Sort = triple.getThird();
-                               ISort.Mode mode = _Sort.getMode();
-                               ISort.Type type = _Sort.getType();
-                               final long _SessionType;
-                               if (mode == ISort.Mode.CLUSTER && type == ISort.Type.SYMMETRY) {
-                                   _SessionType = _Sort == ZSort.MQ_QTT_SYMMETRY ? ZUID.TYPE_INTERNAL
-                                                                                 : ZUID.TYPE_CLUSTER;
-                               }
-                               else if (mode == ISort.Mode.CLUSTER) {
-                                   _SessionType = ZUID.TYPE_PROVIDER;
-                               }
-                               else {
-                                   _SessionType = ZUID.TYPE_CONSUMER;
-                               }
-                               return new BaseAioServer<ZContext>(_Host, _Port, getSocketConfig(getSlot(_SessionType)))
-                               {
-                                   @Override
-                                   public ISession<ZContext> createSession(AsynchronousSocketChannel socketChannel,
-                                                                           IConnectActivity<ZContext> activity) throws IOException
-                                   {
-                                       return new AioSession<>(socketChannel, this, this, activity, DeviceNode.this);
-                                   }
+        _AioServers = hosts.stream().map(triple ->
+        {
+            final String          _Host = triple.getFirst();
+            final int             _Port = triple.getSecond();
+            final ISort<ZContext> _Sort = triple.getThird();
+            ISort.Mode            mode  = _Sort.getMode();
+            ISort.Type            type  = _Sort.getType();
+            final long            _SessionType;
+            if (mode == ISort.Mode.CLUSTER && type == ISort.Type.SYMMETRY)
+            {
+                _SessionType = _Sort == ZSort.MQ_QTT_SYMMETRY ?
+                        ZUID.TYPE_INTERNAL:
+                        ZUID.TYPE_CLUSTER;
+            }
+            else if (mode == ISort.Mode.CLUSTER)
+            {
+                _SessionType = ZUID.TYPE_PROVIDER;
+            }
+            else
+            {
+                _SessionType = ZUID.TYPE_CONSUMER;
+            }
+            return new BaseAioServer<ZContext>(_Host, _Port, getSocketConfig(getSlot(_SessionType)))
+            {
+                @Override
+                public ISession<ZContext> createSession(AsynchronousSocketChannel socketChannel,
+                                                        IConnectActivity<ZContext> activity) throws IOException
+                {
+                    return new AioSession<>(socketChannel, this, this, activity, DeviceNode.this);
+                }
 
-                                   @Override
-                                   public void onCreate(ISession<ZContext> session)
-                                   {
-                                       session.setIndex(_ZUID.getId(_SessionType));
-                                       DeviceNode.this.addSession(session);
-                                   }
+                @Override
+                public void onCreate(ISession<ZContext> session)
+                {
+                    session.setIndex(_ZUID.getId(_SessionType));
+                    DeviceNode.this.addSession(session);
+                }
 
-                                   @Override
-                                   public ISort<ZContext> getSort()
-                                   {
-                                       return _Sort;
-                                   }
+                @Override
+                public ISort<ZContext> getSort()
+                {
+                    return _Sort;
+                }
 
-                                   @Override
-                                   public ZContext createContext(ISessionOption option, ISort<ZContext> sort)
-                                   {
-                                       return sort.newContext(option);
-                                   }
+                @Override
+                public ZContext createContext(ISessionOption option, ISort<ZContext> sort)
+                {
+                    return sort.newContext(option);
+                }
 
-                                   @Override
-                                   public IControl<ZContext>[] createCommands(ISession<ZContext> session)
-                                   {
-                                       if (_SessionType != ZUID.TYPE_CONSUMER) {
-                                           X106_Identity x106 = new X106_Identity(_ZUID.getPeerId());
-                                           return new X106_Identity[] { x106 };
-                                       }
-                                       return null;
-                                   }
-                               };
-                           })
-                           .collect(Collectors.toList());
+                @Override
+                public IControl<ZContext>[] createCommands(ISession<ZContext> session)
+                {
+                    if (_SessionType != ZUID.TYPE_CONSUMER)
+                    {
+                        X106_Identity x106 = new X106_Identity(_ZUID.getPeerId());
+                        return new X106_Identity[] { x106
+                        };
+                    }
+                    return null;
+                }
+            };
+        }).collect(Collectors.toList());
         _GateClient = new BaseAioClient<ZContext>(_TimeWheel, getCore().getClusterChannelGroup())
         {
             @Override
@@ -209,11 +213,11 @@ public class DeviceNode
 
     public void start(ILogicHandler<ZContext> logicHandler,
                       ILinkCustom<ZContext> linkCustom,
-                      IClusterCustom<ZContext,
-                                     RaftMachine> clusterCustom) throws IOException
+                      IClusterCustom<ZContext, RaftMachine> clusterCustom) throws IOException
     {
         getCore().build(this, new EncryptHandler(), logicHandler, linkCustom, clusterCustom);
-        for (IAioServer<ZContext> server : _AioServers) {
+        for (IAioServer<ZContext> server : _AioServers)
+        {
             server.bindAddress(server.getLocalAddress(), getCore().getServiceChannelGroup());
             server.pendingAccept();
             _Logger.info(String.format("device node start %s-%s", server.getLocalAddress(), server.getSort()));

@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package com.tgx.chess.bishop.io.zfilter;
 
@@ -47,13 +46,10 @@ import com.tgx.chess.queen.io.core.inf.IProtocol;
  */
 public class ZCommandFilter
         extends
-        AioFilterChain<ZContext,
-                       ICommand<ZContext>,
-                       WsFrame>
+        AioFilterChain<ZContext, ICommand<ZContext>, WsFrame>
 {
 
-    private final ICommandFactory<ZCommand,
-                                  WsFrame> _CommandFactory;
+    private final ICommandFactory<ZCommand, WsFrame> _CommandFactory;
 
     @Override
     public boolean checkType(IProtocol protocol)
@@ -61,8 +57,7 @@ public class ZCommandFilter
         return checkType(protocol, IPacket.FRAME_SERIAL);
     }
 
-    public ZCommandFilter(ICommandFactory<ZCommand,
-                                          WsFrame> factory)
+    public ZCommandFilter(ICommandFactory<ZCommand, WsFrame> factory)
     {
         super("z_command");
         this._CommandFactory = factory;
@@ -101,9 +96,9 @@ public class ZCommandFilter
                 X01_EncryptRequest x01 = (X01_EncryptRequest) _command;
                 IEncryptHandler encryptHandler = context.getEncryptHandler();
                 if (encryptHandler == null) return new X06_EncryptComp(Code.PLAIN_UNSUPPORTED.getCode());
-                Pair<Integer,
-                     byte[]> keyPair = encryptHandler.getAsymmetricPubKey(x01.pubKeyId);
-                if (keyPair != null) {
+                Pair<Integer, byte[]> keyPair = encryptHandler.getAsymmetricPubKey(x01.pubKeyId);
+                if (keyPair != null)
+                {
                     X02_AsymmetricPub x02 = new X02_AsymmetricPub();
                     context.setPubKeyId(keyPair.getFirst());
                     x02.setPubKey(keyPair.getFirst(), keyPair.getSecond());
@@ -114,11 +109,11 @@ public class ZCommandFilter
                 X02_AsymmetricPub x02 = (X02_AsymmetricPub) _command;
                 encryptHandler = context.getEncryptHandler();
                 if (encryptHandler == null) return new X06_EncryptComp(Code.PLAIN_UNSUPPORTED.getCode());
-                byte[] symmetricKey = context.getSymmetricEncrypt()
-                                             .createKey("z-tls-rc4");
+                byte[] symmetricKey = context.getSymmetricEncrypt().createKey("z-tls-rc4");
                 if (symmetricKey == null) throw new NullPointerException("create symmetric-key failed!");
                 keyPair = encryptHandler.getCipher(x02.pubKey, symmetricKey);
-                if (keyPair != null) {
+                if (keyPair != null)
+                {
                     context.setPubKeyId(x02.pubKeyId);
                     context.setSymmetricKeyId(keyPair.getFirst());
                     context.reRollKey(symmetricKey);
@@ -132,7 +127,8 @@ public class ZCommandFilter
             case X03_Cipher.COMMAND:
                 X03_Cipher x03 = (X03_Cipher) _command;
                 encryptHandler = context.getEncryptHandler();
-                if (context.getPubKeyId() == x03.pubKeyId) {
+                if (context.getPubKeyId() == x03.pubKeyId)
+                {
                     symmetricKey = encryptHandler.getSymmetricKey(x03.pubKeyId, x03.cipher);
                     if (symmetricKey == null) throw new NullPointerException("decrypt symmetric-key failed!");
                     context.setSymmetricKeyId(x03.symmetricKeyId);
@@ -143,9 +139,11 @@ public class ZCommandFilter
                     x04.setSign(encryptHandler.getSymmetricKeySign(symmetricKey));
                     return x04;
                 }
-                else {
+                else
+                {
                     keyPair = encryptHandler.getAsymmetricPubKey(x03.pubKeyId);
-                    if (keyPair != null) {
+                    if (keyPair != null)
+                    {
                         x02 = new X02_AsymmetricPub();
                         context.setPubKeyId(keyPair.getFirst());
                         x02.setPubKey(keyPair.getFirst(), keyPair.getSecond());
@@ -164,13 +162,15 @@ public class ZCommandFilter
                     x05.salt = encryptHandler.nextRandomInt();
                     return x05;
                 }
-                else {
+                else
+                {
                     context.reset();
                     return new X01_EncryptRequest();
                 }
             case X05_EncryptStart.COMMAND:
                 X05_EncryptStart x05 = (X05_EncryptStart) _command;
-                if (context.getSymmetricKeyId() != x05.symmetricKeyId) throw new IllegalStateException("symmetric key id is not equals");
+                if (context.getSymmetricKeyId()
+                    != x05.symmetricKeyId) throw new IllegalStateException("symmetric key id is not equals");
                 _Logger.debug("encrypt start, no response");
             case X06_EncryptComp.COMMAND:
                 return null;
@@ -198,8 +198,9 @@ public class ZCommandFilter
             case 0xFF:
                 throw new UnsupportedOperationException();
             default:
-                return _CommandFactory != null ? _CommandFactory.create(frame)
-                                               : null;
+                return _CommandFactory != null ?
+                        _CommandFactory.create(frame):
+                        null;
         }
     }
 

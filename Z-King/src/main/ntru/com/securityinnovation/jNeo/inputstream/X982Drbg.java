@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.securityinnovation.jNeo.inputstream;
@@ -44,8 +43,7 @@ public class X982Drbg
     /**
      * Constructor that takes a seed to start the RNG
      */
-    public X982Drbg(DigestAlgorithm hashAlgorithm,
-                    byte[] _seed)
+    public X982Drbg(DigestAlgorithm hashAlgorithm, byte[] _seed)
     {
         mHash = hashAlgorithm.newInstance();
         seed(_seed);
@@ -118,7 +116,8 @@ public class X982Drbg
                                       (byte) 0xf9,
                                       (byte) 0x27,
                                       (byte) 0xda,
-                                      (byte) 0x3e };
+                                      (byte) 0x3e
+    };
 
     /**
      * Implement the Initialize_Hash_DRBG algorithm from the X9.82 spec.
@@ -180,15 +179,17 @@ public class X982Drbg
         // Allocate a buffer to hold the new V.
         // Do as many full blocks as we can directly into newV
         // then do a final update into tmp and extract a partial block.
-        int hashLen = mHash.getDigestLen();
-        byte[] newV = new byte[_seed.length];
-        int newVOffset = 0;
-        while (newVOffset + hashLen <= newV.length) {
+        int    hashLen    = mHash.getDigestLen();
+        byte[] newV       = new byte[_seed.length];
+        int    newVOffset = 0;
+        while (newVOffset + hashLen <= newV.length)
+        {
             mHash.digest(tmp, 0, tmp.length, newV, newVOffset);
             plusEquals(tmp, 1);
             newVOffset += hashLen;
         }
-        if (newVOffset < newV.length) {
+        if (newVOffset < newV.length)
+        {
             mHash.digest(tmp, 0, tmp.length, tmp, 0);
             System.arraycopy(tmp, 0, newV, newVOffset, newV.length - newVOffset);
         }
@@ -270,7 +271,8 @@ public class X982Drbg
         // where we need only a portion of the output bytes so it must
         // be at least hashLen bytes long
         System.arraycopy(V, 0, Vtmp, 0, V.length);
-        while (len > hashLen) {
+        while (len > hashLen)
+        {
             mHash.digest(Vtmp, 0, V.length, out, offset);
             offset += hashLen;
             len -= hashLen;
@@ -290,8 +292,9 @@ public class X982Drbg
     void plusEquals(byte[] accum, byte[] in, int offset, int len)
     {
         int carry = 0;
-        int i = len - 1, j = accum.length - 1;
-        while ((i >= 0) && (j >= 0)) {
+        int i     = len - 1, j = accum.length - 1;
+        while ((i >= 0) && (j >= 0))
+        {
             carry = (0xff & accum[j]) + (0xff & in[i]) + carry;
             accum[j] = (byte) carry;
             carry >>= 8;
@@ -307,8 +310,9 @@ public class X982Drbg
     void plusEquals(byte[] accum, int x)
     {
         int carry = 0;
-        int i = 0, j = accum.length - 1;
-        while ((i < 4) && (j >= 0)) {
+        int i     = 0, j = accum.length - 1;
+        while ((i < 4) && (j >= 0))
+        {
             carry = (0xff & accum[j]) + (0xff & x) + carry;
             accum[j] = (byte) carry;
             carry >>= 8;
@@ -345,5 +349,5 @@ public class X982Drbg
     /**
      * A 4-byte counter that is updated with each call to the PRNG.
      */
-    private int ctr;
+    private int    ctr;
 }

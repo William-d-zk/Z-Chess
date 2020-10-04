@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.tgx.chess.queen.io.core.async;
@@ -46,16 +45,14 @@ public class BaseAioClient<C extends IContext<C>>
         implements
         IAioClient<C>
 {
-    private final Logger _Logger = Logger.getLogger("io.queen.client." + getClass().getSimpleName());
+    private final Logger                                                  _Logger          = Logger.getLogger("io.queen.client."
+                                                                                                              + getClass().getSimpleName());
 
     private final TimeWheel                                               _TimeWheel;
     private final AsynchronousChannelGroup                                _ChannelGroup;
-    private final Map<InetSocketAddress,
-                      Pair<Integer,
-                           IAioConnector<C>>>                             _TargetManageMap = new HashMap<>();
+    private final Map<InetSocketAddress, Pair<Integer, IAioConnector<C>>> _TargetManageMap = new HashMap<>();
 
-    public BaseAioClient(TimeWheel timeWheel,
-                         AsynchronousChannelGroup channelGroup)
+    public BaseAioClient(TimeWheel timeWheel, AsynchronousChannelGroup channelGroup)
     {
         Objects.requireNonNull(timeWheel);
         Objects.requireNonNull(channelGroup);
@@ -69,20 +66,23 @@ public class BaseAioClient<C extends IContext<C>>
     public void connect(IAioConnector<C> connector) throws IOException
     {
         _Lock.lock();
-        try {
-            AsynchronousSocketChannel socketChannel = AsynchronousSocketChannel.open(_ChannelGroup);
-            InetSocketAddress remoteAddress = connector.getRemoteAddress();
-            Pair<Integer,
-                 IAioConnector<C>> pair = _TargetManageMap.putIfAbsent(remoteAddress, new Pair<>(0, connector));
+        try
+        {
+            AsynchronousSocketChannel       socketChannel = AsynchronousSocketChannel.open(_ChannelGroup);
+            InetSocketAddress               remoteAddress = connector.getRemoteAddress();
+            Pair<Integer, IAioConnector<C>> pair          = _TargetManageMap.putIfAbsent(remoteAddress,
+                                                                                         new Pair<>(0, connector));
             socketChannel.connect(remoteAddress, socketChannel, connector);
             int retryCount = 0;
-            if (pair != null) {
+            if (pair != null)
+            {
                 retryCount = pair.getFirst();
                 pair.setFirst(++retryCount);
             }
             _Logger.info("client connect to %s,@ %d", remoteAddress, retryCount);
         }
-        finally {
+        finally
+        {
             _Lock.unlock();
         }
     }
@@ -104,39 +104,36 @@ public class BaseAioClient<C extends IContext<C>>
     public void onDismiss(ISession<C> session)
     {
         InetSocketAddress remoteAddress = session.getRemoteAddress();
-        IAioConnector<C> connector = _TargetManageMap.get(remoteAddress)
-                                                     .getSecond();
+        IAioConnector<C>  connector     = _TargetManageMap.get(remoteAddress).getSecond();
         _Logger.debug("on dismiss: [shutdown: %s ]", connector.isShutdown());
         delayConnect(connector);
     }
 
     private void delayConnect(IAioConnector<C> connector)
     {
-        if (connector.isShutdown()) { return; }
-        _TimeWheel.acquire(connector,
-                           new ScheduleHandler<>(connector.getConnectTimeout()
-                                                          .multipliedBy(3),
-                                                 c ->
-                                                 {
-                                                     try {
-                                                         _Logger.debug("%s connect",
-                                                                       Thread.currentThread()
-                                                                             .getName());
-                                                         connect(c);
-                                                     }
-                                                     catch (IOException e) {
-                                                         e.printStackTrace();
-                                                     }
-                                                 }));
+        if (connector.isShutdown())
+        { return; }
+        _TimeWheel.acquire(connector, new ScheduleHandler<>(connector.getConnectTimeout().multipliedBy(3), c ->
+        {
+            try
+            {
+                _Logger.debug("%s connect", Thread.currentThread().getName());
+                connect(c);
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }));
     }
 
     @Override
     public void shutdown(ISession<C> session)
     {
         InetSocketAddress remoteAddress = session.getRemoteAddress();
-        if (_TargetManageMap.containsKey(remoteAddress)) {
-            IAioConnector<C> connector = _TargetManageMap.get(remoteAddress)
-                                                         .getSecond();
+        if (_TargetManageMap.containsKey(remoteAddress))
+        {
+            IAioConnector<C> connector = _TargetManageMap.get(remoteAddress).getSecond();
             connector.shutdown();
         }
     }

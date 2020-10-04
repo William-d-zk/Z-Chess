@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.securityinnovation.jNeo.ntruencrypt;
@@ -56,18 +55,18 @@ public class NtruEncryptKey
     /**
      * The parameter set for this key.
      */
-    protected KeyParams keyParams = null;
+    protected KeyParams      keyParams = null;
 
     /**
      * The public key.
      */
-    protected FullPolynomial h = null;
+    protected FullPolynomial h         = null;
 
     /**
      * The private key f (= 1+p*F). For public-key-only objects this
      * will be null.
      */
-    protected FullPolynomial f = null;
+    protected FullPolynomial f         = null;
 
     /**
      * Generate a new keypair for the specified parameter set.
@@ -87,23 +86,25 @@ public class NtruEncryptKey
      */
     static NtruEncryptKey genKey(OID oid, InputStream prng) throws ParamSetNotSupportedException
     {
-        KeyParams keyParams = KeyParams.getKeyParams(oid);
+        KeyParams      keyParams     = KeyParams.getKeyParams(oid);
 
-        IGF2 igf = new IGF2(keyParams.N, keyParams.c, prng);
+        IGF2           igf           = new IGF2(keyParams.N, keyParams.c, prng);
 
         // Generate trinomial g that is invertible
-        FullPolynomial g = null;
-        boolean gIsInvertible = false;
-        while (!gIsInvertible) {
+        FullPolynomial g             = null;
+        boolean        gIsInvertible = false;
+        while (!gIsInvertible)
+        {
             g = BPGM3.genTrinomial(keyParams.N, keyParams.dg + 1, keyParams.dg, igf);
             FullPolynomial gInv = keyParams.polyInverter.invert(g);
             gIsInvertible = (gInv != null);
         }
 
         // Create F, f=1+p*F, and f^-1 mod q
-        FullPolynomial F = null, f = null, fInv = null;
-        boolean fIsInvertible = false;
-        while (!fIsInvertible) {
+        FullPolynomial F             = null, f = null, fInv = null;
+        boolean        fIsInvertible = false;
+        while (!fIsInvertible)
+        {
             // Generate random F
             F = BPGM3.genTrinomial(keyParams.N, keyParams.df, keyParams.df, igf);
 
@@ -120,7 +121,8 @@ public class NtruEncryptKey
 
         // Calculate h = f^-1 * g * p mod q
         FullPolynomial h = FullPolynomial.convolution(fInv, g);
-        for (int i = 0; i < h.p.length; i++) {
+        for (int i = 0; i < h.p.length; i++)
+        {
             h.p[i] = (short) ((h.p[i] * keyParams.p) % keyParams.q);
             if (h.p[i] < 0) h.p[i] += keyParams.q;
         }
@@ -131,9 +133,7 @@ public class NtruEncryptKey
     /**
      * Initialize the NtruEncryptKey with the key parameters.
      */
-    NtruEncryptKey(KeyParams _keyParams,
-                   FullPolynomial _h,
-                   FullPolynomial _f)
+    NtruEncryptKey(KeyParams _keyParams, FullPolynomial _h, FullPolynomial _f)
     {
         keyParams = _keyParams;
         h = _h;
@@ -149,7 +149,7 @@ public class NtruEncryptKey
                                           ParamSetNotSupportedException
     {
         NtruEncryptKeyNativeEncoder encoder = new NtruEncryptKeyNativeEncoder();
-        RawKeyData rawKey = encoder.decodeKeyBlob(keyBlob);
+        RawKeyData                  rawKey  = encoder.decodeKeyBlob(keyBlob);
         keyParams = rawKey.keyParams;
         h = rawKey.h;
         f = rawKey.f;
@@ -204,9 +204,9 @@ public class NtruEncryptKey
      * Encrypt message and return the ciphertext.
      *
      * @param message
-     *            the plaintext
+     *                the plaintext
      * @param prng
-     *            the PRNG to use as a source of randomness during cipher.
+     *                the PRNG to use as a source of randomness during cipher.
      */
     public byte[] encrypt(byte[] message, Random prng) throws ObjectClosedException, PlaintextBadLengthException
     {
@@ -226,29 +226,30 @@ public class NtruEncryptKey
         if (message == null) throw new NullPointerException("NtruEncrypt input plaintext is NULL");
 
         // Check input length
-        if (keyParams.maxMsgLenBytes < message.length) throw new PlaintextBadLengthException(message.length,
-                                                                                             keyParams.maxMsgLenBytes);
+        if (keyParams.maxMsgLenBytes
+            < message.length) throw new PlaintextBadLengthException(message.length, keyParams.maxMsgLenBytes);
 
         FullPolynomial mPrime, R;
-        do {
+        do
+        {
             // Form M = b | len | message | p0
-            byte[] M = generateM(message, rng);
+            byte[]         M     = generateM(message, rng);
 
             // Form Mtrin = trinary poly derived from M
             FullPolynomial Mtrin = new FullPolynomial(convPolyBinaryToTrinary(keyParams.N, M));
 
             // Form sData = OID | m | b | hTrunc
-            byte[] sData = form_sData(message, 0, message.length, M, 0);
+            byte[]         sData = form_sData(message, 0, message.length, M, 0);
 
             // Form r from sData.
-            IGF2 igf = new IGF2(keyParams.N,
-                                keyParams.c,
-                                keyParams.igfHash,
-                                keyParams.minCallsR,
-                                sData,
-                                0,
-                                sData.length);
-            FullPolynomial r = BPGM3.genTrinomial(keyParams.N, keyParams.dr, keyParams.dr, igf);
+            IGF2           igf   = new IGF2(keyParams.N,
+                                            keyParams.c,
+                                            keyParams.igfHash,
+                                            keyParams.minCallsR,
+                                            sData,
+                                            0,
+                                            sData.length);
+            FullPolynomial r     = BPGM3.genTrinomial(keyParams.N, keyParams.dr, keyParams.dr, igf);
             igf.close();
 
             // Calculate R = r * h mod q
@@ -266,11 +267,11 @@ public class NtruEncryptKey
         while (!check_dm0(mPrime, keyParams.dm0));
 
         // e = R + m' mod q
-        FullPolynomial e = FullPolynomial.add(R, mPrime, keyParams.q);
+        FullPolynomial e          = FullPolynomial.add(R, mPrime, keyParams.q);
 
         // Bit-pack e into the ciphertext and return.
-        int cLen = BitPack.pack(e.p.length, keyParams.q);
-        byte[] ciphertext = new byte[cLen];
+        int            cLen       = BitPack.pack(e.p.length, keyParams.q);
+        byte[]         ciphertext = new byte[cLen];
         BitPack.pack(e.p.length, keyParams.q, e.p, 0, ciphertext, 0);
         return ciphertext;
     }
@@ -280,7 +281,8 @@ public class NtruEncryptKey
      * exception is thrown.
      *
      * @param ciphertext
-     *            the input ciphertext.
+     *                   the input ciphertext.
+     * 
      * @return the decrypted plaintext.
      */
     public byte[] decrypt(byte[] ciphertext) throws NoPrivateKeyException,
@@ -292,14 +294,14 @@ public class NtruEncryptKey
         if (h == null) throw new ObjectClosedException();
         if (f == null) throw new NoPrivateKeyException();
         int expectedCTLength = BitPack.pack(keyParams.N, keyParams.q);
-        if (ciphertext.length != expectedCTLength) throw new CiphertextBadLengthException(ciphertext.length,
-                                                                                          expectedCTLength);
+        if (ciphertext.length
+            != expectedCTLength) throw new CiphertextBadLengthException(ciphertext.length, expectedCTLength);
 
-        boolean fail = false;
+        boolean        fail        = false;
 
         // Unpack ciphertext into the polynomial e.
-        FullPolynomial e = new FullPolynomial(keyParams.N);
-        int numUnpacked = BitPack.unpack(keyParams.N, keyParams.q, ciphertext, 0, e.p, 0);
+        FullPolynomial e           = new FullPolynomial(keyParams.N);
+        int            numUnpacked = BitPack.unpack(keyParams.N, keyParams.q, ciphertext, 0, e.p, 0);
         if (numUnpacked != ciphertext.length) throw new CiphertextBadLengthException(ciphertext.length,
                                                                                      BitPack.pack(keyParams.N,
                                                                                                   keyParams.q));
@@ -311,7 +313,8 @@ public class NtruEncryptKey
             if (ci.p[i] >= keyParams.q / 2) ci.p[i] -= keyParams.q;
 
         // Calculate ci = message candidate = a mod p in [-1,0,1]
-        for (int i = 0; i < keyParams.N; i++) {
+        for (int i = 0; i < keyParams.N; i++)
+        {
             ci.p[i] = (byte) (ci.p[i] % keyParams.p);
             if (ci.p[i] == 2) ci.p[i] = -1;
             else if (ci.p[i] == -2) ci.p[i] = 1;
@@ -322,24 +325,25 @@ public class NtruEncryptKey
         if (!check_dm0(ci, keyParams.dm0)) fail = true;
 
         // Calculate the candidate for r*h: cR = e - ci;
-        FullPolynomial cR = FullPolynomial.subtract(e, ci, keyParams.q);
+        FullPolynomial cR      = FullPolynomial.subtract(e, ci, keyParams.q);
 
         // Calculate cR4 = cR mod 4
         // Generate masking polynomial mask by calling the given MGF with
         // inputs (cR4, N, minCallsMask
-        FullPolynomial mask = calcEncryptionMask(cR);
+        FullPolynomial mask    = calcEncryptionMask(cR);
 
         // Form cMtrin by polynomial subtraction of cm' and mask mod p
         // Note: cm' is actually called ci everywhere else in the spec.
-        FullPolynomial cMtrin = FullPolynomial.subtractAndRecenter(ci, mask, keyParams.p, -1);
+        FullPolynomial cMtrin  = FullPolynomial.subtractAndRecenter(ci, mask, keyParams.p, -1);
 
         // Convert cMtrin to cMbin. Discard trailing bits
-        byte[] cM = convPolyTrinaryToBinary(cMtrin);
+        byte[]         cM      = convPolyTrinaryToBinary(cMtrin);
 
         // Parse cMbin as b || l || m || p0. Fail if does not match.
-        int mOffset = (keyParams.db) / 8 + keyParams.lLen;
-        int mLen = verifyMFormat(cM);
-        if (mLen < 0) {
+        int            mOffset = (keyParams.db) / 8 + keyParams.lLen;
+        int            mLen    = verifyMFormat(cM);
+        if (mLen < 0)
+        {
             // Set mLen to 1 so that later steps won't have to deal
             // with an invalid value.
             mLen = 1;
@@ -348,11 +352,17 @@ public class NtruEncryptKey
 
         // Form sData from OID, m, b, hTrunc
         // Note: b is the leading bytes of cM.
-        byte[] sData = form_sData(cM, mOffset, mLen, cM, 0);
+        byte[]         sData = form_sData(cM, mOffset, mLen, cM, 0);
 
         // Calc cr from sData
-        IGF2 igf = new IGF2(keyParams.N, keyParams.c, keyParams.igfHash, keyParams.minCallsR, sData, 0, sData.length);
-        FullPolynomial cr = BPGM3.genTrinomial(keyParams.N, keyParams.dr, keyParams.dr, igf);
+        IGF2           igf   = new IGF2(keyParams.N,
+                                        keyParams.c,
+                                        keyParams.igfHash,
+                                        keyParams.minCallsR,
+                                        sData,
+                                        0,
+                                        sData.length);
+        FullPolynomial cr    = BPGM3.genTrinomial(keyParams.N, keyParams.dr, keyParams.dr, igf);
         igf.close();
 
         // Calculate cR' = h * cr mod q
@@ -376,13 +386,15 @@ public class NtruEncryptKey
     {
         // For now assume keyParams.lLen == 1
         // For now leave out RNG.
-        int db = keyParams.db >> 3; // convert numBits to numBytes.
-        int MLen = db + keyParams.lLen + keyParams.maxMsgLenBytes + 1;
-        byte[] M = new byte[MLen];
-        try {
+        int    db   = keyParams.db >> 3; // convert numBits to numBytes.
+        int    MLen = db + keyParams.lLen + keyParams.maxMsgLenBytes + 1;
+        byte[] M    = new byte[MLen];
+        try
+        {
             rng.read(M, 0, db);
         }
-        catch (IOException e) {
+        catch (IOException e)
+        {
             throw new InternalError("PRNG was unable to generate data");
         }
 
@@ -450,7 +462,8 @@ public class NtruEncryptKey
      */
     void convPolyBinaryToTrinaryHelper2(int maxOffset, int offset, short[] poly, int bits24)
     {
-        for (int i = 0; ((i < 24) && (offset < maxOffset)); i += 3) {
+        for (int i = 0; ((i < 24) && (offset < maxOffset)); i += 3)
+        {
             int shift = 24 - (i + 3);
             convPolyBinaryToTrinaryHelper(maxOffset, offset, poly, (bits24 >> shift));
             offset += 2;
@@ -465,13 +478,14 @@ public class NtruEncryptKey
      */
     short[] convPolyBinaryToTrinary(int outputDegree, byte[] bin)
     {
-        short[] tri = new short[outputDegree];
+        short[] tri       = new short[outputDegree];
 
         // Perform the bulk of the conversion in 3-byte blocks.
         // 3 bytes == 24 bits --> 16 trits.
-        int blocks = bin.length / 3;
-        int remainder = bin.length % 3;
-        for (int i = 0; i < blocks; i++) {
+        int     blocks    = bin.length / 3;
+        int     remainder = bin.length % 3;
+        for (int i = 0; i < blocks; i++)
+        {
             int val = (((0xff & bin[i * 3]) << 16) | ((0xff & bin[i * 3 + 1]) << 8) | (0xff & bin[i * 3 + 2]));
             convPolyBinaryToTrinaryHelper2(outputDegree, 16 * i, tri, val);
         }
@@ -577,10 +591,11 @@ public class NtruEncryptKey
         // The output of this operation is supposed to have
         // the form (b | mLen | m | p0) so we can
         // calculate how many bytes that is supposed to be.
-        int numBytes = (keyParams.db / 8 + keyParams.lLen + keyParams.maxMsgLenBytes + 1);
-        byte[] b = new byte[numBytes];
-        int i = 0, j = 0;
-        while (j < numBytes) {
+        int    numBytes = (keyParams.db / 8 + keyParams.lLen + keyParams.maxMsgLenBytes + 1);
+        byte[] b        = new byte[numBytes];
+        int    i        = 0, j = 0;
+        while (j < numBytes)
+        {
             convPolyTrinaryToBinaryBlockHelper(i, trin.p, j, b);
             i += 16;
             j += 3;
@@ -596,11 +611,11 @@ public class NtruEncryptKey
      */
     byte[] form_sData(byte[] m, int mOffset, int mLen, byte[] b, int bOffset)
     {
-        int bLen = keyParams.db >> 3; // convert numBits to numBytes
-        int hLen = keyParams.pkLen >> 3; // convert numBits to numBytes
+        int    bLen   = keyParams.db >> 3; // convert numBits to numBytes
+        int    hLen   = keyParams.pkLen >> 3; // convert numBits to numBytes
 
-        byte[] sData = new byte[keyParams.OIDBytes.length + mLen + bLen + hLen];
-        int offset = 0;
+        byte[] sData  = new byte[keyParams.OIDBytes.length + mLen + bLen + hLen];
+        int    offset = 0;
 
         System.arraycopy(keyParams.OIDBytes, 0, sData, offset, keyParams.OIDBytes.length);
         offset += keyParams.OIDBytes.length;
@@ -625,7 +640,7 @@ public class NtruEncryptKey
         // Calc R4 = R mod 4, 2 bits per element, 4 elements per byte
         byte[] R4 = new byte[(R.p.length + 3) / 4];
 
-        int i, j;
+        int    i, j;
         for (i = 0, j = 0; i < R4.length - 1; i++, j += 4)
             R4[i] = (byte) (((R.p[j] & 0x03) << 6)
                             | ((R.p[j + 1] & 0x03) << 4)
@@ -648,9 +663,9 @@ public class NtruEncryptKey
      */
     FullPolynomial calcEncryptionMask(FullPolynomial R)
     {
-        byte[] R4 = calcPolyMod4Packed(R);
-        MGF1 mgf = new MGF1(keyParams.mgfHash, keyParams.minCallsMask, true, R4, 0, R4.length);
-        FullPolynomial p = MGF_TP_1.genTrinomial(keyParams.N, mgf);
+        byte[]         R4  = calcPolyMod4Packed(R);
+        MGF1           mgf = new MGF1(keyParams.mgfHash, keyParams.minCallsMask, true, R4, 0, R4.length);
+        FullPolynomial p   = MGF_TP_1.genTrinomial(keyParams.N, mgf);
         mgf.close();
         return p;
     }
@@ -663,7 +678,8 @@ public class NtruEncryptKey
     boolean check_dm0(FullPolynomial p, int dm0)
     {
         int numOnes = 0, numNegOnes = 0;
-        for (int i = 0; i < p.p.length; i++) {
+        for (int i = 0; i < p.p.length; i++)
+        {
             short s = p.p[i];
             if (s == -1) numNegOnes++;
             else if (s == 1) numOnes += 1;
@@ -683,11 +699,11 @@ public class NtruEncryptKey
 
     int verifyMFormat(byte[] M)
     {
-        boolean ok = true;
-        int db = keyParams.db >> 3;
+        boolean ok       = true;
+        int     db       = keyParams.db >> 3;
 
         // This is the number of bytes in the formatted message:
-        int numBytes = (db + keyParams.lLen + keyParams.maxMsgLenBytes + 1);
+        int     numBytes = (db + keyParams.lLen + keyParams.maxMsgLenBytes + 1);
         if (M.length != numBytes) ok = false;
 
         // 1) First db bytes are random data. Nothing to check there.
@@ -696,7 +712,8 @@ public class NtruEncryptKey
         // verify it is valid.
         int mLen = 0;
         if (M.length >= db + keyParams.lLen) mLen = parseMsgLengthFromM(M);
-        if ((mLen < 0) || (mLen > keyParams.maxMsgLenBytes)) {
+        if ((mLen < 0) || (mLen > keyParams.maxMsgLenBytes))
+        {
             // Set mLen to 1 so that later steps won't have to worry
             // about invalid values.
             mLen = 1;

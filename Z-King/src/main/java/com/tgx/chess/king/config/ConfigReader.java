@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.tgx.chess.king.config;
@@ -44,9 +43,10 @@ public class ConfigReader
      * 读取配置文件信息
      * 
      * @param name
-     *            读取节点名
+     *                 读取节点名
      * @param fileName
-     *            文件名
+     *                 文件名
+     * 
      * @return 读取的节点值
      */
     public static String readConfigString(String name, String fileName) throws MissingResourceException,
@@ -120,10 +120,12 @@ public class ConfigReader
     public static int[] readConfigIntegerArray(String name, String fileName) throws MissingResourceException,
                                                                              ClassCastException
     {
-        String[] result = readConfigArray(name, fileName, RegExUtil.INTEGER_ARRAY_PATTERN, RegExUtil.INTEGER_PATTERN);
-        int[] intArray = new int[result.length];
-        if (result.length > 0) {
-            for (int i = 0, size = result.length; i < size; i++) {
+        String[] result   = readConfigArray(name, fileName, RegExUtil.INTEGER_ARRAY_PATTERN, RegExUtil.INTEGER_PATTERN);
+        int[]    intArray = new int[result.length];
+        if (result.length > 0)
+        {
+            for (int i = 0, size = result.length; i < size; i++)
+            {
                 intArray[i] = Integer.parseInt(result[i]);
             }
         }
@@ -133,10 +135,15 @@ public class ConfigReader
     public static long[] readConfigLongArray(String name, String fileName) throws MissingResourceException,
                                                                            ClassCastException
     {
-        String[] result = readConfigArray(name, fileName, RegExUtil.INTEGER_ARRAY_PATTERN, RegExUtil.INTEGER_PATTERN);
-        long[] longArray = new long[result.length];
-        if (result.length > 0) {
-            for (int i = 0, size = result.length; i < size; i++) {
+        String[] result    = readConfigArray(name,
+                                             fileName,
+                                             RegExUtil.INTEGER_ARRAY_PATTERN,
+                                             RegExUtil.INTEGER_PATTERN);
+        long[]   longArray = new long[result.length];
+        if (result.length > 0)
+        {
+            for (int i = 0, size = result.length; i < size; i++)
+            {
                 longArray[i] = Long.parseLong(result[i]);
             }
         }
@@ -146,10 +153,15 @@ public class ConfigReader
     public static double[] readConfigDoubleArray(String name, String fileName) throws MissingResourceException,
                                                                                ClassCastException
     {
-        String[] result = readConfigArray(name, fileName, RegExUtil.DOUBLE_ARRAY_PATTERN, RegExUtil.DOUBLE_PATTERN);
+        String[] result      = readConfigArray(name,
+                                               fileName,
+                                               RegExUtil.DOUBLE_ARRAY_PATTERN,
+                                               RegExUtil.DOUBLE_PATTERN);
         double[] doubleArray = new double[result.length];
-        if (result.length > 0) {
-            for (int i = 0, size = result.length; i < size; i++) {
+        if (result.length > 0)
+        {
+            for (int i = 0, size = result.length; i < size; i++)
+            {
                 doubleArray[i] = Double.parseDouble(result[i]);
             }
         }
@@ -159,10 +171,12 @@ public class ConfigReader
     public static float[] readConfigFloatArray(String name, String fileName) throws MissingResourceException,
                                                                              ClassCastException
     {
-        String[] result = readConfigArray(name, fileName, RegExUtil.DOUBLE_ARRAY_PATTERN, RegExUtil.DOUBLE_PATTERN);
-        float[] floatArray = new float[result.length];
-        if (result.length > 0) {
-            for (int i = 0, size = result.length; i < size; i++) {
+        String[] result     = readConfigArray(name, fileName, RegExUtil.DOUBLE_ARRAY_PATTERN, RegExUtil.DOUBLE_PATTERN);
+        float[]  floatArray = new float[result.length];
+        if (result.length > 0)
+        {
+            for (int i = 0, size = result.length; i < size; i++)
+            {
                 floatArray[i] = Float.parseFloat(result[i]);
             }
         }
@@ -174,20 +188,17 @@ public class ConfigReader
                                             Pattern pattern,
                                             Pattern innerPattern) throws MissingResourceException, ClassCastException
     {
-        ResourceBundle rb = ResourceBundle.getBundle(fileName);
-        String line = rb.getString(name);
-        Matcher matcher = pattern.matcher(line);
-        if (matcher.matches()) {
-            String matched = matcher.group()
-                                    .replace("{", "")
-                                    .replace("}", "");
-            String[] splits = matched.split(",");
-            for (String x : splits) {
-                if (!innerPattern.matcher(x)
-                                 .matches())
-                {
-                    throw new IllegalArgumentException("Check " + name + " @ " + x);
-                }
+        ResourceBundle rb      = ResourceBundle.getBundle(fileName);
+        String         line    = rb.getString(name);
+        Matcher        matcher = pattern.matcher(line);
+        if (matcher.matches())
+        {
+            String   matched = matcher.group().replace("{", "").replace("}", "");
+            String[] splits  = matched.split(",");
+            for (String x : splits)
+            {
+                if (!innerPattern.matcher(x).matches())
+                { throw new IllegalArgumentException("Check " + name + " @ " + x); }
             }
             return splits;
         }
@@ -197,14 +208,18 @@ public class ConfigReader
     public static Object readObject(ResourceBundle resourceBundle, String name)
     {
         String value = resourceBundle.getString(name);
-        if (value.matches(RegExUtil.BOOLEAN_PATTERN_STRING)) {
-            return value.matches(RegExUtil.BOOLEAN_TRUE_PATTERN_STRING) ? Boolean.TRUE
-                                                                        : Boolean.FALSE;
+        if (value.matches(RegExUtil.BOOLEAN_PATTERN_STRING))
+        {
+            return value.matches(RegExUtil.BOOLEAN_TRUE_PATTERN_STRING) ?
+                    Boolean.TRUE:
+                    Boolean.FALSE;
         }
-        else if (value.matches(RegExUtil.INTEGER_PATTERN_STRING)) {
+        else if (value.matches(RegExUtil.INTEGER_PATTERN_STRING))
+        {
             return Integer.parseInt(value);
         }
-        else if (value.matches(RegExUtil.DOUBLE_PATTERN_STRING)) { return Double.parseDouble(value); }
+        else if (value.matches(RegExUtil.DOUBLE_PATTERN_STRING))
+        { return Double.parseDouble(value); }
         return value;
     }
 

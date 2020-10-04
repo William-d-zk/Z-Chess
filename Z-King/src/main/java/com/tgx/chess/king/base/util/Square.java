@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package com.tgx.chess.king.base.util;
 
@@ -30,10 +29,7 @@ import com.tgx.chess.king.base.inf.ISquare;
 /**
  * @author William.d.zk
  */
-public class Square<FIRST,
-                    SECOND,
-                    THIRD,
-                    FOURTH>
+public class Square<FIRST, SECOND, THIRD, FOURTH>
         implements
         ISquare
 {
@@ -42,10 +38,7 @@ public class Square<FIRST,
     private THIRD  third;
     private FOURTH fourth;
 
-    public Square(FIRST first,
-                  SECOND second,
-                  THIRD third,
-                  FOURTH fourth)
+    public Square(FIRST first, SECOND second, THIRD third, FOURTH fourth)
     {
         this.first = first;
         this.second = second;
@@ -100,18 +93,13 @@ public class Square<FIRST,
     @Override
     public boolean equals(Object obj)
     {
-        if (!(obj instanceof Square)) { return false; }
-        if (this != obj) {
+        if (!(obj instanceof Square))
+        { return false; }
+        if (this != obj)
+        {
             @SuppressWarnings("unchecked")
-            Square<FIRST,
-                   SECOND,
-                   THIRD,
-                   FOURTH> other = (Square<FIRST,
-                                           SECOND,
-                                           THIRD,
-                                           FOURTH>) obj;
-            return first.equals(other.first)
-                   && second.equals(other.second)
+            Square<FIRST, SECOND, THIRD, FOURTH> other = (Square<FIRST, SECOND, THIRD, FOURTH>) obj;
+            return first.equals(other.first) && second.equals(other.second)
                    && third.equals(other.third)
                    && fourth.equals(other.fourth);
         }
@@ -131,10 +119,7 @@ public class Square<FIRST,
     }
 
     @Override
-    public Square<FIRST,
-                  SECOND,
-                  THIRD,
-                  FOURTH> clone()
+    public Square<FIRST, SECOND, THIRD, FOURTH> clone()
     {
         return new Square<>(first, second, third, fourth);
     }

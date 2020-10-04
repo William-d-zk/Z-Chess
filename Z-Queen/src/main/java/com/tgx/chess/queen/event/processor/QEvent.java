@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package com.tgx.chess.queen.event.processor;
 
@@ -48,9 +47,7 @@ public class QEvent
     private IError.Type                      mErrType      = NO_ERROR;
     private IOperator.Type                   mType         = IOperator.Type.NULL;
     private IPair                            mContent;
-    private IOperator<?,
-                      ?,
-                      ?>                     mOperator;
+    private IOperator<?, ?, ?>               mOperator;
     private List<ITriple>                    mContentList;
 
     @Override
@@ -105,13 +102,7 @@ public class QEvent
     }
 
     @Override
-    public <V,
-            A,
-            R> void produce(IOperator.Type t,
-                            IPair content,
-                            IOperator<V,
-                                      A,
-                                      R> operator)
+    public <V, A, R> void produce(IOperator.Type t, IPair content, IOperator<V, A, R> operator)
     {
         mErrType = NO_ERROR;
         mType = t;
@@ -131,13 +122,7 @@ public class QEvent
     }
 
     @Override
-    public <E,
-            H,
-            R> void error(IError.Type t,
-                          IPair content,
-                          IOperator<E,
-                                    H,
-                                    R> operator)
+    public <E, H, R> void error(IError.Type t, IPair content, IOperator<E, H, R> operator)
     {
         mType = IOperator.Type.NULL;
         mErrType = t;
@@ -148,15 +133,9 @@ public class QEvent
 
     @SuppressWarnings("unchecked")
     @Override
-    public <V,
-            A,
-            R> IOperator<V,
-                         A,
-                         R> getEventOp()
+    public <V, A, R> IOperator<V, A, R> getEventOp()
     {
-        return (IOperator<V,
-                          A,
-                          R>) mOperator;
+        return (IOperator<V, A, R>) mOperator;
     }
 
     @Override

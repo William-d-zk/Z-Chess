@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.tgx.chess.pawn.endpoint.spring.device.jpa.model;
@@ -40,6 +39,7 @@ import com.tgx.chess.pawn.endpoint.spring.device.model.RawContent;
 
 /**
  * @author william.d.zk
+ * 
  * @date 2019-07-31
  */
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
@@ -51,16 +51,14 @@ public class MessageBody
                                                                     + MessageBody.class.getSimpleName());
     private static final long   serialVersionUID = -8904730289818144372L;
 
-    private final String _Topic;
-    private final byte[] _Content;
+    private final String        _Topic;
+    private final byte[]        _Content;
 
     @JsonCreator
-    public MessageBody(@JsonProperty("topic") String topic,
-                       @JsonProperty("content") JsonNode content)
+    public MessageBody(@JsonProperty("topic") String topic, @JsonProperty("content") JsonNode content)
     {
         _Topic = topic;
-        _Content = content.toString()
-                          .getBytes(StandardCharsets.UTF_8);
+        _Content = content.toString().getBytes(StandardCharsets.UTF_8);
     }
 
     public String getTopic()
@@ -71,27 +69,34 @@ public class MessageBody
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public JsonNode getContent()
     {
-        if (_Content == null || _Content.length == 0) {
+        if (_Content == null || _Content.length == 0)
+        {
             _Logger.warning("content null");
             return null;
         }
-        try {
+        try
+        {
             return JsonUtil.readTree(_Content);
         }
-        catch (Exception e) {
-            try {
+        catch (Exception e)
+        {
+            try
+            {
                 RawContent content = new RawContent();
                 content.setPayload(_Content);
-                try {
+                try
+                {
                     content.setRaw(new String(_Content, StandardCharsets.UTF_8));
                 }
-                catch (Exception stre) {
+                catch (Exception stre)
+                {
                     _Logger.debug(String.format("content:%s", IoUtil.bin2Hex(_Content, ":")));
-                    //ignore
+                    // ignore
                 }
                 return JsonUtil.valueToTree(content);
             }
-            catch (Exception e1) {
+            catch (Exception e1)
+            {
                 e1.printStackTrace();
             }
         }
@@ -100,7 +105,8 @@ public class MessageBody
 
     public byte[] contentBinary()
     {
-        if (_Content == null || _Content.length == 0) {
+        if (_Content == null || _Content.length == 0)
+        {
             _Logger.warning("content null");
             return null;
         }

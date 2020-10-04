@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.tgx.chess.king.base.util.crc;
@@ -43,7 +42,8 @@ public class CrcCalculator
         _Parameters = params;
 
         hashSize = (byte) params.HashSize;
-        if (hashSize < 64) {
+        if (hashSize < 64)
+        {
             mask = (1L << hashSize) - 1;
         }
 
@@ -52,8 +52,9 @@ public class CrcCalculator
 
     public long Calc(byte[] data, int offset, int length)
     {
-        long init = _Parameters.RefOut ? CrcHelper.ReverseBits(_Parameters.Init, hashSize)
-                                       : _Parameters.Init;
+        long init = _Parameters.RefOut ?
+                CrcHelper.ReverseBits(_Parameters.Init, hashSize):
+                _Parameters.Init;
         long hash = ComputeCrc(init, data, offset, length);
         return (hash ^ _Parameters.XorOut) & mask;
     }
@@ -62,16 +63,20 @@ public class CrcCalculator
     {
         long crc = init;
 
-        if (_Parameters.RefOut) {
-            for (int i = offset; i < offset + length; i++) {
+        if (_Parameters.RefOut)
+        {
+            for (int i = offset; i < offset + length; i++)
+            {
                 crc = (_table[(int) ((crc ^ data[i]) & 0xFF)] ^ (crc >>> 8));
                 crc &= mask;
             }
         }
-        else {
+        else
+        {
             int toRight = (hashSize - 8);
             toRight = Math.max(toRight, 0);
-            for (int i = offset; i < offset + length; i++) {
+            for (int i = offset; i < offset + length; i++)
+            {
                 crc = (_table[(int) (((crc >> toRight) ^ data[i]) & 0xFF)] ^ (crc << 8));
                 crc &= mask;
             }
@@ -95,7 +100,8 @@ public class CrcCalculator
 
         long lastBit = (1L << (hashSize - 1));
 
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 8; i++)
+        {
             if ((r & lastBit) != 0) r = ((r << 1) ^ _Parameters.Poly);
             else r <<= 1;
         }
@@ -105,8 +111,7 @@ public class CrcCalculator
         return r & mask;
     }
 
-    private static Map<AlgoParams,
-                       CrcCalculator> _CalcMap = new HashMap<>();
+    private static Map<AlgoParams, CrcCalculator> _CalcMap = new HashMap<>();
 
     public static long calc(AlgoParams algo, byte[] data)
     {
@@ -136,11 +141,13 @@ public class CrcCalculator
     //@formatter:on
     public static long calc4itu(byte[] data)
     {
-        if (data == null) { return 0; }
-        int pos = 0;
+        if (data == null)
+        { return 0; }
+        int  pos = 0;
         byte crc = 0;
-        int len = data.length;
-        while (len > 0) {
+        int  len = data.length;
+        while (len > 0)
+        {
             crc = table_byte[(crc ^ data[pos++]) & 0xFF];
             len--;
         }

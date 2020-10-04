@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package com.tgx.chess.bishop.io.zprotocol;
 
@@ -58,9 +57,7 @@ public abstract class ZProtocol
     private transient long   tTransactionKey         = -1;
     private byte             mCtrlCode;
 
-    protected ZProtocol(int command,
-                        boolean hasMsgId,
-                        long msgId)
+    protected ZProtocol(int command, boolean hasMsgId, long msgId)
     {
         _Command = command;
         initGUid(msgId, _HasMsgId = hasMsgId);
@@ -68,8 +65,7 @@ public abstract class ZProtocol
         mTypeByte = I18nUtil.getCharsetSerial(I18nUtil.CHARSET_UTF_8, I18nUtil.SERIAL_BINARY);
     }
 
-    public ZProtocol(int command,
-                     long msgId)
+    public ZProtocol(int command, long msgId)
     {
         this(command, true, msgId);
     }
@@ -143,14 +139,17 @@ public abstract class ZProtocol
 
     private void initGUid(long _uid, boolean flag)
     {
-        if (flag) {
+        if (flag)
+        {
             mHAttr &= ~0x40;
         }
-        else {
+        else
+        {
             mHAttr |= 0x40;
         }
-        mMsgId = flag ? _uid
-                      : 0;
+        mMsgId = flag ?
+                _uid:
+                0;
     }
 
     public final void setCharset(Charset charset)
@@ -174,8 +173,9 @@ public abstract class ZProtocol
     private int checkCrc(byte[] data, int lastPos)
     {
         int l_crc = CryptUtil.crc32(data, 0, lastPos);
-        int crc = IoUtil.readInt(data, lastPos);
-        if (l_crc != crc) { throw new SecurityException("crc check failed!  =" + data[1]); }
+        int crc   = IoUtil.readInt(data, lastPos);
+        if (l_crc != crc)
+        { throw new SecurityException("crc check failed!  =" + data[1]); }
         return lastPos + 4;
     }
 
@@ -183,7 +183,8 @@ public abstract class ZProtocol
     public final byte[] encode()
     {
         int length = dataLength();
-        if (length == 0) { throw new ArrayIndexOutOfBoundsException("data_length == 0"); }
+        if (length == 0)
+        { throw new ArrayIndexOutOfBoundsException("data_length == 0"); }
         byte[] output = new byte[length];
         prefix(output, 0);
         return output;
@@ -193,12 +194,14 @@ public abstract class ZProtocol
     {
         pos += IoUtil.writeByte(mHAttr, output, pos);
         pos += IoUtil.writeByte(_Command, output, pos);
-        if (isGlobalMsg()) {
+        if (isGlobalMsg())
+        {
             pos += IoUtil.writeLong(mMsgId, output, pos);
         }
         pos += IoUtil.writeByte(mTypeByte, output, pos);
         pos = encodec(output, pos);
-        if (pos < output.length - 5) {
+        if (pos < output.length - 5)
+        {
             pos += IoUtil.write(getPayload(), output, pos);
         }
         return addCrc(output, pos);
@@ -208,9 +211,8 @@ public abstract class ZProtocol
     public final int encode(byte[] output, int pos, int length)
     {
         Objects.requireNonNull(output);
-        if (output.length < length || pos + length > output.length) {
-            throw new ArrayIndexOutOfBoundsException("data length is too long for input buf");
-        }
+        if (output.length < length || pos + length > output.length)
+        { throw new ArrayIndexOutOfBoundsException("data length is too long for input buf"); }
         return prefix(output, pos);
     }
 
@@ -218,20 +220,21 @@ public abstract class ZProtocol
     public final int decode(byte[] input, int pos, int length)
     {
         Objects.requireNonNull(input);
-        //dataLength 此处表达了最短长度值
+        // dataLength 此处表达了最短长度值
         int len = dataLength();
-        if (len > length || (input.length < len || pos + length > input.length)) {
-            throw new ArrayIndexOutOfBoundsException();
-        }
+        if (len > length || (input.length < len || pos + length > input.length))
+        { throw new ArrayIndexOutOfBoundsException(); }
         mHAttr = input[pos++];
-        pos += 1;//skip [_Command] position 
-        if (isGlobalMsg()) {
+        pos += 1;// skip [_Command] position
+        if (isGlobalMsg())
+        {
             mMsgId = IoUtil.readLong(input, pos);
             pos += 8;
         }
         mTypeByte = input[pos++];
         pos = decodec(input, pos);
-        if (pos < input.length - 5) {
+        if (pos < input.length - 5)
+        {
             byte[] payload = new byte[input.length - 4 - pos];
             pos = IoUtil.read(input, pos, payload);
             setPayload(payload);
@@ -246,8 +249,9 @@ public abstract class ZProtocol
 
     protected int minLength()
     {
-        return isGlobalMsg() ? min_msg_uid_size
-                             : min_no_msg_uid_size;
+        return isGlobalMsg() ?
+                min_msg_uid_size:
+                min_no_msg_uid_size;
     }
 
     @Override
@@ -259,8 +263,9 @@ public abstract class ZProtocol
     @Override
     public void setSequence(long sequence)
     {
-        mSequence = mSequence < 0 ? sequence
-                                  : mSequence;
+        mSequence = mSequence < 0 ?
+                sequence:
+                mSequence;
     }
 
     public long getTransactionKey()
@@ -270,8 +275,9 @@ public abstract class ZProtocol
 
     public void setTransactionKey(long _key)
     {
-        tTransactionKey = tTransactionKey < 0 ? _key
-                                              : tTransactionKey;
+        tTransactionKey = tTransactionKey < 0 ?
+                _key:
+                tTransactionKey;
     }
 
     public byte getTypeCode()
@@ -281,13 +287,16 @@ public abstract class ZProtocol
 
     public ZProtocol setMsgId(String hexGUid, long longGUid)
     {
-        if (longGUid != -1) {
+        if (longGUid != -1)
+        {
             setMsgId(longGUid);
         }
-        else if (Objects.nonNull(hexGUid)) {
+        else if (Objects.nonNull(hexGUid))
+        {
             setMsgId(Long.parseLong(hexGUid, 16));
         }
-        else {
+        else
+        {
             throw new NullPointerException();
         }
         return this;
@@ -302,7 +311,8 @@ public abstract class ZProtocol
     @Override
     public void setMsgId(long uid)
     {
-        if (!_HasMsgId) { throw new UnsupportedOperationException(); }
+        if (!_HasMsgId)
+        { throw new UnsupportedOperationException(); }
         mMsgId = uid;
     }
 

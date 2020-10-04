@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.securityinnovation.jNeo.inputstream;
@@ -55,61 +54,58 @@ public class MGF1
     /**
      * The index of the first unreturned byte in outputStream.
      */
-    private int outputUsed;
+    private int    outputUsed;
 
     /**
      * The minimum number of times the underlying hash algorithm should
      * be run.
      */
-    private int minNumRuns;
+    private int    minNumRuns;
 
     /**
      * The number of times the underlying hash algorithm has been run
      * so far.
      */
-    private int numRuns;
+    private int    numRuns;
 
     /**
      * Initialize the MGF with a seed.
      * 
      * @param hashAlg
-     *            identifies the hash algorithm underlying the MGF
+     *                    identifies the hash algorithm underlying the MGF
      * @param _minNumRuns
-     *            the minimum number of times the hash algorithm
-     *            should be run. If the hash algorithm has not been run
-     *            this many times before the MGF is close()ed, then
-     *            during the close() the hash will be calculated enough
-     *            times to bring the total count up to minNumRuns.
+     *                    the minimum number of times the hash algorithm
+     *                    should be run. If the hash algorithm has not been run
+     *                    this many times before the MGF is close()ed, then
+     *                    during the close() the hash will be calculated enough
+     *                    times to bring the total count up to minNumRuns.
      * @param hashSeed
-     *            a flag indicating whether the seed needs to be
-     *            hashed before use. Typically this will be true if the
-     *            seed length is greater than the block size of the
-     *            underlying hash algorithm.
+     *                    a flag indicating whether the seed needs to be
+     *                    hashed before use. Typically this will be true if the
+     *                    seed length is greater than the block size of the
+     *                    underlying hash algorithm.
      * @param seed
-     *            the array containing the MGF seed.
+     *                    the array containing the MGF seed.
      * @param seedOffset
-     *            the index of the start of the seed within the
-     *            seed array.
+     *                    the index of the start of the seed within the
+     *                    seed array.
      * @param seedLength
-     *            the length of the seed.
+     *                    the length of the seed.
      */
-    public MGF1(DigestAlgorithm hashAlg,
-                int _minNumRuns,
-                boolean hashSeed,
-                byte[] seed,
-                int seedOffset,
-                int seedLength)
+    public MGF1(DigestAlgorithm hashAlg, int _minNumRuns, boolean hashSeed, byte[] seed, int seedOffset, int seedLength)
     {
         hash = hashAlg.newInstance();
 
         minNumRuns = _minNumRuns;
 
-        if (hashSeed) {
+        if (hashSeed)
+        {
             seedAndCounter = new byte[hash.getDigestLen() + 4];
             hash.digest(seed, 0, seedLength, seedAndCounter, 0);
             seedLength = hash.getDigestLen();
         }
-        else {
+        else
+        {
             seedAndCounter = new byte[seedLength + 4];
             System.arraycopy(seed, seedOffset, seedAndCounter, 0, seedLength);
         }
@@ -152,7 +148,8 @@ public class MGF1
     public int read(byte[] out, int offset, int len)
     {
         int toread = len;
-        while (toread > 0) {
+        while (toread > 0)
+        {
             if (outputUsed >= outputStream.length) fillBuffer();
 
             int n = Math.min(outputStream.length - outputUsed, toread);
@@ -176,7 +173,8 @@ public class MGF1
 
         // Increment the counter
         int carry = 1;
-        for (int i = seedAndCounter.length - 1; i > seedAndCounter.length - 5; i--) {
+        for (int i = seedAndCounter.length - 1; i > seedAndCounter.length - 5; i--)
+        {
             int x = (seedAndCounter[i] & 0xff) + carry;
             seedAndCounter[i] = (byte) (x & 0xff);
             carry = (x >> 8);

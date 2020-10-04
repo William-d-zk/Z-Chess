@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.tgx.chess.queen.event.handler;
@@ -57,8 +56,7 @@ public class WriteDispatcher<C extends IContext<C>>
     private final int                  _Mask;
 
     @SafeVarargs
-    public WriteDispatcher(RingBuffer<QEvent> error,
-                           RingBuffer<QEvent>... workers)
+    public WriteDispatcher(RingBuffer<QEvent> error, RingBuffer<QEvent>... workers)
     {
         _Error = error;
         _Encoders = workers;
@@ -73,43 +71,46 @@ public class WriteDispatcher<C extends IContext<C>>
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
     {
-        if (event.hasError()) {
-            if (event.getErrorType() == HANDLE_DATA) {// from logic handler 
-                /* logic 处理错误，转换为shutdown目标投递给 _Error
-                 交由 IoDispatcher转发给对应的MappingHandler 执行close 
-                */
+        if (event.hasError())
+        {
+            if (event.getErrorType() == HANDLE_DATA)
+            {// from logic handler
+                /*
+                 * logic 处理错误，转换为shutdown目标投递给 _Error
+                 * 交由 IoDispatcher转发给对应的MappingHandler 执行close
+                 */
                 error(_Error, HANDLE_DATA, event.getContent(), event.getEventOp());
             }
         }
         else switch (event.getEventType())
         {
-            case NULL://在前一个处理器event.reset().
-            case IGNORE://没有任何时间需要跨 Barrier 投递向下一层 Pipeline
+            case NULL:// 在前一个处理器event.reset().
+            case IGNORE:// 没有任何时间需要跨 Barrier 投递向下一层 Pipeline
                 break;
-            case BIZ_LOCAL://from biz local
-            case CLUSTER_LOCAL://from cluster local
-            case WRITE://from LinkIo/Cluster
-            case LOGIC://from read->logic
+            case BIZ_LOCAL:// from biz local
+            case CLUSTER_LOCAL:// from cluster local
+            case WRITE:// from LinkIo/Cluster
+            case LOGIC:// from read->logic
                 IPair writeContent = event.getContent();
                 IControl<C>[] commands = writeContent.getFirst();
                 ISession<C> session = writeContent.getSecond();
-                IOperator<IControl<C>[],
-                          ISession<C>,
-                          List<ITriple>> transferOperator = event.getEventOp();
-                if (commands != null && commands.length > 0) {
+                IOperator<IControl<C>[], ISession<C>, List<ITriple>> transferOperator = event.getEventOp();
+                if (commands != null && commands.length > 0)
+                {
                     List<ITriple> triples = transferOperator.handle(commands, session);
-                    for (ITriple triple : triples) {
+                    for (ITriple triple : triples)
+                    {
                         ISession<C> targetSession = triple.getSecond();
-                        IControl<C> content = triple.getFirst();
+                        IControl<C> content       = triple.getFirst();
                         _Logger.debug("write %s", content);
-                        if (content.isShutdown()) {
-                            if (targetSession.isValid()) {
+                        if (content.isShutdown())
+                        {
+                            if (targetSession.isValid())
+                            {
                                 error(_Error,
                                       INITIATIVE_CLOSE,
                                       new Pair<>(new ZException("session to shutdown"), targetSession),
-                                      targetSession.getContext()
-                                                   .getSort()
-                                                   .getError());
+                                      targetSession.getContext().getSort().getError());
                             }
                         }
                         else publish(dispatchEncoder(targetSession.getHashKey()),
@@ -120,11 +121,12 @@ public class WriteDispatcher<C extends IContext<C>>
                     _Logger.debug("write_dispatcher, source %s, transfer:%d", event.getEventType(), commands.length);
                 }
                 break;
-            case WROTE://from io-wrote
+            case WROTE:// from io-wrote
                 IPair wroteContent = event.getContent();
                 int wroteCount = wroteContent.getFirst();
                 session = wroteContent.getSecond();
-                if (session.isValid()) {
+                if (session.isValid())
+                {
                     publish(dispatchEncoder(session.getHashKey()),
                             WROTE,
                             new Pair<>(wroteCount, session),
@@ -133,24 +135,26 @@ public class WriteDispatcher<C extends IContext<C>>
                 break;
             case DISPATCH:
                 List<ITriple> writeContents = event.getContentList();
-                for (ITriple content : writeContents) {
+                for (ITriple content : writeContents)
+                {
                     IControl<C> command = content.getFirst();
                     session = content.getSecond();
-                    if (command.isShutdown()) {
-                        if (session != null && session.isValid()) {
+                    if (command.isShutdown())
+                    {
+                        if (session != null && session.isValid())
+                        {
                             error(_Error,
                                   INITIATIVE_CLOSE,
                                   new Pair<>(new ZException("session to shutdown"), session),
-                                  session.getContext()
-                                         .getSort()
-                                         .getError());
+                                  session.getContext().getSort().getError());
                         }
                         /*
-                        session == null 意味着 _SessionManager.find..失败
-                        !session.isValid 意味着 session 已经被关闭
-                        这两种情形都忽略执行即可 
+                         * session == null 意味着 _SessionManager.find..失败
+                         * !session.isValid 意味着 session 已经被关闭
+                         * 这两种情形都忽略执行即可
                          */
-                        else {
+                        else
+                        {
                             _Logger.warning("dispatch failed [ %s ]", session);
                         }
                     }

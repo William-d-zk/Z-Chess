@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package com.tgx.chess.queen.io.core.async;
 
@@ -39,23 +38,19 @@ import com.tgx.chess.queen.io.core.inf.IProtocol;
 /**
  * @author William.d.zk
  */
-public abstract class AioFilterChain<C extends IContext<C>,
-                                     O extends IProtocol,
-                                     I extends IProtocol>
+public abstract class AioFilterChain<C extends IContext<C>, O extends IProtocol, I extends IProtocol>
         implements
         IFilterChain<C>,
-        IFilter<C,
-                O,
-                I>
+        IFilter<C, O, I>
 {
 
-    protected final Logger _Logger;
+    protected final Logger  _Logger;
 
     private final String    _Name;
     private IFilterChain<C> next;
     private IFilterChain<C> previous;
 
-    private int mIdempotent = 0x80000000;
+    private int             mIdempotent = 0x80000000;
 
     protected AioFilterChain(String name)
     {
@@ -72,10 +67,13 @@ public abstract class AioFilterChain<C extends IContext<C>,
     @Override
     public void idempotentRightShift(int previous)
     {
-        if (previous == 1) { throw new IllegalArgumentException(); }
-        mIdempotent = previous == 0 && mIdempotent == 0x80000000 ? 1
-                                                                 : previous != 0 ? previous >>> 1
-                                                                                 : mIdempotent;
+        if (previous == 1)
+        { throw new IllegalArgumentException(); }
+        mIdempotent = previous == 0 && mIdempotent == 0x80000000 ?
+                1:
+                previous != 0 ?
+                        previous >>> 1:
+                mIdempotent;
     }
 
     @Override
@@ -106,28 +104,33 @@ public abstract class AioFilterChain<C extends IContext<C>,
     public IFilterChain<C> getChainHead()
     {
         IFilterChain<C> node = previous;
-        while (node != null && node.getPrevious() != null) {
+        while (node != null && node.getPrevious() != null)
+        {
             node = node.getPrevious();
         }
-        return node == null ? this
-                            : node;
+        return node == null ?
+                this:
+                node;
     }
 
     @Override
     public IFilterChain<C> getChainTail()
     {
         IFilterChain<C> node = next;
-        while (node != null && node.getNext() != null) {
+        while (node != null && node.getNext() != null)
+        {
             node = node.getNext();
         }
-        return node == null ? this
-                            : node;
+        return node == null ?
+                this:
+                node;
     }
 
     @Override
     public IFilterChain<C> linkAfter(IFilterChain<C> current)
     {
-        if (current == null) { return this; }
+        if (current == null)
+        { return this; }
         current.setNext(this);
         setPrevious(current);
         idempotentRightShift(current.getIdempotentBit());
@@ -137,7 +140,8 @@ public abstract class AioFilterChain<C extends IContext<C>,
     @Override
     public IFilterChain<C> linkFront(IFilterChain<C> current)
     {
-        if (current == null) { return this; }
+        if (current == null)
+        { return this; }
         current.setPrevious(this);
         setNext(current);
         current.idempotentRightShift(getIdempotentBit());
@@ -149,7 +153,8 @@ public abstract class AioFilterChain<C extends IContext<C>,
     {
         IFilterChain<C> nextNext;
         IFilterChain<C> next = this.next;
-        while (next != null) {
+        while (next != null)
+        {
             nextNext = next.getNext();
             next.setNext(null);
             next = nextNext;
@@ -163,103 +168,122 @@ public abstract class AioFilterChain<C extends IContext<C>,
 
     protected ResultType preCommandEncode(C context, IProtocol output)
     {
-        if (Objects.isNull(output) || Objects.isNull(context)) { return ResultType.ERROR; }
-        return context.isOutConvert() && checkType(output, IProtocol.COMMAND_SERIAL) ? ResultType.NEXT_STEP
-                                                                                     : ResultType.IGNORE;
+        if (Objects.isNull(output) || Objects.isNull(context))
+        { return ResultType.ERROR; }
+        return context.isOutConvert() && checkType(output, IProtocol.COMMAND_SERIAL) ?
+                ResultType.NEXT_STEP:
+                ResultType.IGNORE;
 
     }
 
     protected ResultType preCommandDecode(C context, IFrame input)
     {
-        if (Objects.isNull(context) || Objects.isNull(input)) { return ResultType.ERROR; }
-        return context.isInConvert() && checkType(input, IProtocol.FRAME_SERIAL) && !input.isCtrl() ? ResultType.HANDLED
-                                                                                                    : ResultType.IGNORE;
+        if (Objects.isNull(context) || Objects.isNull(input))
+        { return ResultType.ERROR; }
+        return context.isInConvert() && checkType(input, IProtocol.FRAME_SERIAL) && !input.isCtrl() ?
+                ResultType.HANDLED:
+                ResultType.IGNORE;
     }
 
     protected ResultType preFrameEncode(C context, IProtocol output)
     {
-        if (Objects.isNull(context) || Objects.isNull(output)) { return ResultType.ERROR; }
-        return context.isOutConvert() && checkType(output, IProtocol.FRAME_SERIAL) ? ResultType.NEXT_STEP
-                                                                                   : ResultType.IGNORE;
+        if (Objects.isNull(context) || Objects.isNull(output))
+        { return ResultType.ERROR; }
+        return context.isOutConvert() && checkType(output, IProtocol.FRAME_SERIAL) ?
+                ResultType.NEXT_STEP:
+                ResultType.IGNORE;
     }
 
     protected ResultType preFrameDecode(C context, IPacket input)
     {
-        if (Objects.isNull(context) || Objects.isNull(input)) { return ResultType.ERROR; }
-        return context.isInConvert() && checkType(input, IProtocol.PACKET_SERIAL) ? ResultType.NEXT_STEP
-                                                                                  : ResultType.IGNORE;
+        if (Objects.isNull(context) || Objects.isNull(input))
+        { return ResultType.ERROR; }
+        return context.isInConvert() && checkType(input, IProtocol.PACKET_SERIAL) ?
+                ResultType.NEXT_STEP:
+                ResultType.IGNORE;
     }
 
     protected ResultType prePacketEncode(C context, IProtocol output)
     {
-        if (Objects.isNull(context) || Objects.isNull(output)) { return ResultType.ERROR; }
-        return context.isOutConvert() && checkType(output, IProtocol.PACKET_SERIAL) ? ResultType.NEXT_STEP
-                                                                                    : ResultType.IGNORE;
+        if (Objects.isNull(context) || Objects.isNull(output))
+        { return ResultType.ERROR; }
+        return context.isOutConvert() && checkType(output, IProtocol.PACKET_SERIAL) ?
+                ResultType.NEXT_STEP:
+                ResultType.IGNORE;
     }
 
     protected ResultType prePacketDecode(C context, IPacket input)
     {
-        if (Objects.isNull(context) || Objects.isNull(input)) { return ResultType.ERROR; }
-        return context.isInConvert() && checkType(input, IProtocol.PACKET_SERIAL) ? ResultType.NEXT_STEP
-                                                                                  : ResultType.IGNORE;
+        if (Objects.isNull(context) || Objects.isNull(input))
+        { return ResultType.ERROR; }
+        return context.isInConvert() && checkType(input, IProtocol.PACKET_SERIAL) ?
+                ResultType.NEXT_STEP:
+                ResultType.IGNORE;
     }
 
     protected ResultType preControlEncode(C context, IProtocol output)
     {
-        if (Objects.isNull(context) || Objects.isNull(output)) { return ResultType.ERROR; }
-        return context.isOutConvert() && checkType(output, IProtocol.CONTROL_SERIAL) ? ResultType.NEXT_STEP
-                                                                                     : ResultType.IGNORE;
+        if (Objects.isNull(context) || Objects.isNull(output))
+        { return ResultType.ERROR; }
+        return context.isOutConvert() && checkType(output, IProtocol.CONTROL_SERIAL) ?
+                ResultType.NEXT_STEP:
+                ResultType.IGNORE;
     }
 
     protected ResultType preControlDecode(C context, IFrame input)
     {
-        if (Objects.isNull(context) || Objects.isNull(input)) { return ResultType.ERROR; }
-        return context.isInConvert() && checkType(input, IProtocol.FRAME_SERIAL) && input.isCtrl() ? ResultType.HANDLED
-                                                                                                   : ResultType.IGNORE;
+        if (Objects.isNull(context) || Objects.isNull(input))
+        { return ResultType.ERROR; }
+        return context.isInConvert() && checkType(input, IProtocol.FRAME_SERIAL) && input.isCtrl() ?
+                ResultType.HANDLED:
+                ResultType.IGNORE;
 
     }
 
     protected ResultType preHandShakeEncode(C context, IProtocol output)
     {
-        if (Objects.isNull(context) || Objects.isNull(output)) { return ResultType.ERROR; }
-        return context.needHandshake()
-               && context.outState() == ENCODE_HANDSHAKE
-               && checkType(output, IProtocol.CONTROL_SERIAL) ? ResultType.NEXT_STEP
-                                                              : ResultType.IGNORE;
+        if (Objects.isNull(context) || Objects.isNull(output))
+        { return ResultType.ERROR; }
+        return context.needHandshake() && context.outState() == ENCODE_HANDSHAKE
+               && checkType(output, IProtocol.CONTROL_SERIAL) ?
+                       ResultType.NEXT_STEP:
+                       ResultType.IGNORE;
     }
 
     protected ResultType preHandShakeDecode(C context, IPacket input)
     {
-        if (Objects.isNull(context) || Objects.isNull(input)) { return ResultType.ERROR; }
-        return context.needHandshake()
-               && context.inState() == DECODE_HANDSHAKE
-               && checkType(input, IProtocol.PACKET_SERIAL) ? ResultType.HANDLED
-                                                            : ResultType.IGNORE;
+        if (Objects.isNull(context) || Objects.isNull(input))
+        { return ResultType.ERROR; }
+        return context.needHandshake() && context.inState() == DECODE_HANDSHAKE
+               && checkType(input, IProtocol.PACKET_SERIAL) ?
+                       ResultType.HANDLED:
+                       ResultType.IGNORE;
     }
 
     protected ResultType preProxyEncode(C context, IProtocol output)
     {
-        if (Objects.isNull(context) || Objects.isNull(output)) { return ResultType.ERROR; }
+        if (Objects.isNull(context) || Objects.isNull(output))
+        { return ResultType.ERROR; }
         return context.isOutConvert()
-               && (checkType(output, IProtocol.COMMAND_SERIAL)
-                   || checkType(output, IProtocol.CONTROL_SERIAL)
+               && (checkType(output, IProtocol.COMMAND_SERIAL) || checkType(output, IProtocol.CONTROL_SERIAL)
                    || checkType(output, IProtocol.FRAME_SERIAL)
-                   || checkType(output, IProtocol.PACKET_SERIAL)) ? ResultType.NEXT_STEP
-                                                                  : ResultType.IGNORE;
+                   || checkType(output, IProtocol.PACKET_SERIAL)) ?
+                           ResultType.NEXT_STEP:
+                           ResultType.IGNORE;
     }
 
     protected ResultType preProxyDecode(C context, IFrame input)
     {
-        if (Objects.isNull(context) || Objects.isNull(input)) { return ResultType.ERROR; }
-        return context.isInConvert() && checkType(input, IProtocol.FRAME_SERIAL) && !input.isCtrl() ? ResultType.HANDLED
-                                                                                                    : ResultType.IGNORE;
+        if (Objects.isNull(context) || Objects.isNull(input))
+        { return ResultType.ERROR; }
+        return context.isInConvert() && checkType(input, IProtocol.FRAME_SERIAL) && !input.isCtrl() ?
+                ResultType.HANDLED:
+                ResultType.IGNORE;
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public IFilter<C,
-                   O,
-                   I> getFilter()
+    public IFilter<C, O, I> getFilter()
     {
         return this;
     }

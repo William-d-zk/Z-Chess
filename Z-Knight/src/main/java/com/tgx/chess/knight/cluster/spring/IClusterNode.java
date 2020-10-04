@@ -1,25 +1,24 @@
 /*
- * MIT License                                                                   
- *                                                                               
- * Copyright (c) 2016~2020. Z-Chess                                              
- *                                                                               
- * Permission is hereby granted, free of charge, to any person obtaining a copy  
- * of this software and associated documentation files (the "Software"), to deal 
- * in the Software without restriction, including without limitation the rights  
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell     
- * copies of the Software, and to permit persons to whom the Software is         
- * furnished to do so, subject to the following conditions:                      
- *                                                                               
+ * MIT License
+ * 
+ * Copyright (c) 2016~2020. Z-Chess
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
  * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.                               
- *                                                                               
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR    
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,      
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.tgx.chess.knight.cluster.spring;
@@ -57,6 +56,7 @@ import com.tgx.chess.queen.io.core.inf.ISessionOption;
 
 /**
  * @author william.d.zk
+ * 
  * @date 2020/4/23
  */
 public interface IClusterNode<K extends IPipeCore>
@@ -74,10 +74,9 @@ public interface IClusterNode<K extends IPipeCore>
                                                    final ZUID _ZUID)
     {
         final String _Host = address.getFirst();
-        final int _Port = address.getSecond();
-        if (_Sort.getMode() != ISort.Mode.CLUSTER) {
-            throw new IllegalArgumentException("sort mode is wrong in cluster define");
-        }
+        final int    _Port = address.getSecond();
+        if (_Sort.getMode() != ISort.Mode.CLUSTER)
+        { throw new IllegalArgumentException("sort mode is wrong in cluster define"); }
         return new BaseAioConnector<ZContext>(_Host, _Port, socketConfig, client)
         {
             @Override
@@ -106,7 +105,8 @@ public interface IClusterNode<K extends IPipeCore>
             public IControl<ZContext>[] createCommands(ISession<ZContext> session)
             {
                 X106_Identity x106 = new X106_Identity(_ZUID.getPeerId());
-                return new IControl[] { x106 };
+                return new IControl[] { x106
+                };
             }
 
             @Override
@@ -123,19 +123,24 @@ public interface IClusterNode<K extends IPipeCore>
     default <T extends IStorage> void timerEvent(T content)
     {
         final RingBuffer<QEvent> _ConsensusEvent = getCore().getConsensusEvent();
-        final ReentrantLock _ConsensusLock = getCore().getConsensusLock();
-        if (_ConsensusLock.tryLock()) {
-            try {
+        final ReentrantLock      _ConsensusLock  = getCore().getConsensusLock();
+        if (_ConsensusLock.tryLock())
+        {
+            try
+            {
                 long sequence = _ConsensusEvent.next();
-                try {
+                try
+                {
                     QEvent event = _ConsensusEvent.get(sequence);
                     event.produce(CLUSTER_TIMER, new Pair<>(content, null), null);
                 }
-                finally {
+                finally
+                {
                     _ConsensusEvent.publish(sequence);
                 }
             }
-            finally {
+            finally
+            {
                 _ConsensusLock.unlock();
             }
         }

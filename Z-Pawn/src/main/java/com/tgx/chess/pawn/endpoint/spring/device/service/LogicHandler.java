@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.tgx.chess.pawn.endpoint.spring.device.service;
@@ -83,10 +82,7 @@ public class LogicHandler<T extends IActivity<ZContext> & IClusterPeer & ICluste
     private final RaftNode<T>           _RaftNode;
     private final IMessageJpaRepository _MessageRepository;
 
-    public LogicHandler(T manager,
-                        IQttRouter qttRouter,
-                        RaftNode<T> raftNode,
-                        IMessageJpaRepository messageRepository)
+    public LogicHandler(T manager, IQttRouter qttRouter, RaftNode<T> raftNode, IMessageJpaRepository messageRepository)
     {
         _Manager = manager;
         _QttRouter = qttRouter;
@@ -109,19 +105,21 @@ public class LogicHandler<T extends IActivity<ZContext> & IClusterPeer & ICluste
         switch (content.serial())
         {
             case X101_HandShake.COMMAND:
-                return new IControl[] { content };
+                return new IControl[] { content
+                };
             case X104_Ping.COMMAND:
                 X104_Ping x104 = (X104_Ping) content;
-                return new IControl[] { new X105_Pong(x104.getPayload()) };
+                return new IControl[] { new X105_Pong(x104.getPayload())
+                };
             case X113_QttPublish.COMMAND:
                 X113_QttPublish x113 = (X113_QttPublish) content;
                 MessageEntity messageEntity = new MessageEntity();
                 messageEntity.setOrigin(session.getIndex());
                 messageEntity.setDestination(_RaftNode.getPeerId());
                 messageEntity.setDirection(CLIENT_TO_SERVER.getShort());
-                messageEntity.setOwner(x113.getLevel()
-                                           .getValue() < EXACTLY_ONCE.getValue() ? OWNER_SERVER
-                                                                                 : OWNER_CLIENT);
+                messageEntity.setOwner(x113.getLevel().getValue() < EXACTLY_ONCE.getValue() ?
+                        OWNER_SERVER:
+                        OWNER_CLIENT);
                 messageEntity.setBody(new MessageBody(x113.getTopic(), JsonUtil.readTree(x113.getPayload())));
                 messageEntity.setMsgId(x113.getMsgId());
                 messageEntity.setCmd(X113_QttPublish.COMMAND);
@@ -135,8 +133,9 @@ public class LogicHandler<T extends IActivity<ZContext> & IClusterPeer & ICluste
                         X115_QttPubrec x115 = new X115_QttPubrec();
                         x115.setMsgId(x113.getMsgId());
                         _QttRouter.register(x115, session.getIndex());
-                        //此时尚未完成 message owner 的转换，所以只返回x115
-                        return new IControl[] { x115 };
+                        // 此时尚未完成 message owner 的转换，所以只返回x115
+                        return new IControl[] { x115
+                        };
                     case AT_LEAST_ONCE:
                         X114_QttPuback x114 = new X114_QttPuback();
                         x114.setMsgId(x113.getMsgId());
@@ -163,7 +162,8 @@ public class LogicHandler<T extends IActivity<ZContext> & IClusterPeer & ICluste
                 X116_QttPubrel x116 = new X116_QttPubrel();
                 x116.setMsgId(x115.getMsgId());
                 _QttRouter.register(x116, session.getIndex());
-                return new IControl[] { x116 };
+                return new IControl[] { x116
+                };
             case X116_QttPubrel.COMMAND:
                 x116 = (X116_QttPubrel) content;
                 X117_QttPubcomp x117 = new X117_QttPubcomp();
@@ -186,7 +186,8 @@ public class LogicHandler<T extends IActivity<ZContext> & IClusterPeer & ICluste
                 _QttRouter.ack(x117, session.getIndex());
                 break;
             case X11C_QttPingreq.COMMAND:
-                return new IControl[] { new X11D_QttPingresp() };
+                return new IControl[] { new X11D_QttPingresp()
+                };
         }
         return null;
     }
@@ -196,45 +197,39 @@ public class LogicHandler<T extends IActivity<ZContext> & IClusterPeer & ICluste
                              IQoS.Level level,
                              List<IControl<ZContext>> pushList)
     {
-        Map<Long,
-            IQoS.Level> route = _QttRouter.broker(message.getBody()
-                                                         .getTopic());
+        Map<Long, IQoS.Level> route = _QttRouter.broker(message.getBody().getTopic());
         _Logger.debug("route %s", route);
-        route.entrySet()
-             .stream()
-             .map(entry ->
-             {
-                 long sessionIndex = entry.getKey();
-                 ISession<ZContext> targetSession = manager.findSessionByIndex(sessionIndex);
-                 if (targetSession != null) {
-                     IQoS.Level subscribeLevel = entry.getValue();
-                     X113_QttPublish publish = new X113_QttPublish();
-                     publish.setLevel(IQoS.Level.valueOf(min(subscribeLevel.getValue(), level.getValue())));
-                     publish.setTopic(message.getBody()
-                                             .getTopic());
-                     byte[] payload = message.getBody()
-                                             .contentBinary();
-                     publish.setPayload(payload);
-                     publish.setSession(targetSession);
-                     if (publish.getLevel() == ALMOST_ONCE) { return publish; }
-                     MessageEntity brokerMsg = new MessageEntity();
-                     brokerMsg.setMsgId(_QttRouter.nextId());
-                     brokerMsg.setOrigin(_RaftNode.getPeerId());
-                     brokerMsg.setDestination(sessionIndex);
-                     brokerMsg.setOperation(OP_INSERT);
-                     brokerMsg.setOwner(OWNER_SERVER);
-                     brokerMsg.setDirection(SERVER_TO_CLIENT.getShort());
-                     brokerMsg.setBody(message.getBody());
-                     brokerMsg.setCmd(X113_QttPublish.COMMAND);
-                     _MessageRepository.save(brokerMsg);
-                     publish.setMsgId(brokerMsg.getMsgId());
-                     _QttRouter.register(publish, sessionIndex);
-                     return publish;
-                 }
-                 return null;
-             })
-             .filter(Objects::nonNull)
-             .forEach(pushList::add);
+        route.entrySet().stream().map(entry ->
+        {
+            long               sessionIndex  = entry.getKey();
+            ISession<ZContext> targetSession = manager.findSessionByIndex(sessionIndex);
+            if (targetSession != null)
+            {
+                IQoS.Level      subscribeLevel = entry.getValue();
+                X113_QttPublish publish        = new X113_QttPublish();
+                publish.setLevel(IQoS.Level.valueOf(min(subscribeLevel.getValue(), level.getValue())));
+                publish.setTopic(message.getBody().getTopic());
+                byte[] payload = message.getBody().contentBinary();
+                publish.setPayload(payload);
+                publish.setSession(targetSession);
+                if (publish.getLevel() == ALMOST_ONCE)
+                { return publish; }
+                MessageEntity brokerMsg = new MessageEntity();
+                brokerMsg.setMsgId(_QttRouter.nextId());
+                brokerMsg.setOrigin(_RaftNode.getPeerId());
+                brokerMsg.setDestination(sessionIndex);
+                brokerMsg.setOperation(OP_INSERT);
+                brokerMsg.setOwner(OWNER_SERVER);
+                brokerMsg.setDirection(SERVER_TO_CLIENT.getShort());
+                brokerMsg.setBody(message.getBody());
+                brokerMsg.setCmd(X113_QttPublish.COMMAND);
+                _MessageRepository.save(brokerMsg);
+                publish.setMsgId(brokerMsg.getMsgId());
+                _QttRouter.register(publish, sessionIndex);
+                return publish;
+            }
+            return null;
+        }).filter(Objects::nonNull).forEach(pushList::add);
         _Logger.debug("push %s", pushList);
     }
 

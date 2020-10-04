@@ -3,23 +3,22 @@
  *
  * Copyright (c) 2016~2020. Z-Chess
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.tgx.chess.king.base.util;
@@ -291,15 +290,18 @@ public interface IoUtil
                           0xb,
                           0xc,
                           0x5,
-                          0x2 };
+                          0x2
+    };
 
     static byte crc4itu(byte[] data)
     {
-        if (data == null) { return 0; }
-        int pos = 0;
+        if (data == null)
+        { return 0; }
+        int  pos = 0;
         byte crc = 0;
-        int len = data.length;
-        while (len > 0) {
+        int  len = data.length;
+        while (len > 0)
+        {
             crc = table_byte[(crc ^ data[pos++]) & 0xFF];
             len--;
         }
@@ -321,7 +323,8 @@ public interface IoUtil
                           'C',
                           'D',
                           'E',
-                          'F' };
+                          'F'
+    };
 
     static String bin2Hex(byte[] b, String... split)
     {
@@ -333,12 +336,15 @@ public interface IoUtil
         if (b == null || length == 0) return null;
         if (length < 0 || length > b.length || pos + length > b.length) throw new ArrayIndexOutOfBoundsException();
         StringBuilder sb = new StringBuilder(length * 2);
-        String s = split != null && split.length > 0 ? split[0]
-                                                     : "";
-        for (int i = pos, size = pos + length; i < size; i++) {
+        String        s  = split != null && split.length > 0 ?
+                split[0]:
+                "";
+        for (int i = pos, size = pos + length; i < size; i++)
+        {
             sb.append(HEX_DIGITS[(b[i] & 0xf0) >>> 4]);
             sb.append(HEX_DIGITS[b[i] & 0x0f]);
-            if (i < size - 1) {
+            if (i < size - 1)
+            {
                 sb.append(s);
             }
         }
@@ -348,13 +354,16 @@ public interface IoUtil
     static String long2Hex(long l, String... split)
     {
         StringBuilder sb = new StringBuilder(16);
-        String s = Objects.nonNull(split) && split.length > 0 ? split[0]
-                                                              : "";
-        for (int i = 7; i >= 0; i--) {
+        String        s  = Objects.nonNull(split) && split.length > 0 ?
+                split[0]:
+                "";
+        for (int i = 7; i >= 0; i--)
+        {
             int x = (int) (l >> i * 8);
             sb.append(HEX_DIGITS[(x & 0xF0) >>> 4]);
             sb.append(HEX_DIGITS[(x & 0x0F)]);
-            if (i > 0) {
+            if (i > 0)
+            {
                 sb.append(s);
             }
         }
@@ -374,13 +383,16 @@ public interface IoUtil
     static byte[] hex2bin(String hex, byte[] b, int pos)
     {
         int len = hex.length() >> 1;
-        if (len > 0) {
-            if (b == null) {
+        if (len > 0)
+        {
+            if (b == null)
+            {
                 b = new byte[len];
                 pos = 0;
             }
             else if (b.length - pos < len) return null;
-            for (int i = 0, j = pos, hPos = 0; i < len; i++, hPos = i << 1, j++) {
+            for (int i = 0, j = pos, hPos = 0; i < len; i++, hPos = i << 1, j++)
+            {
                 b[j] = (byte) Integer.parseInt(hex.substring(hPos, hPos + 2), 16);
             }
             return b;
@@ -408,10 +420,10 @@ public interface IoUtil
     {
         if (ipAddr == null) return 0;
         String[] ipx = ipAddr.split("\\p{Punct}");
-        int a = Integer.parseInt(ipx[0]);
-        int b = Integer.parseInt(ipx[1]);
-        int c = Integer.parseInt(ipx[2]);
-        int d = Integer.parseInt(ipx[3]);
+        int      a   = Integer.parseInt(ipx[0]);
+        int      b   = Integer.parseInt(ipx[1]);
+        int      c   = Integer.parseInt(ipx[2]);
+        int      d   = Integer.parseInt(ipx[3]);
         return a << 24 | b << 16 | c << 8 | d;
     }
 
@@ -419,11 +431,11 @@ public interface IoUtil
     {
         if (ipAddr == null) return 0;
         String[] ipx = ipAddr.split("\\p{Punct}");
-        int a = Integer.parseInt(ipx[0]);
-        int b = Integer.parseInt(ipx[1]);
-        int c = Integer.parseInt(ipx[2]);
-        int d = Integer.parseInt(ipx[3]);
-        long ip = a << 24 | b << 16 | c << 8 | d | 0xFFFFFFFFL;
+        int      a   = Integer.parseInt(ipx[0]);
+        int      b   = Integer.parseInt(ipx[1]);
+        int      c   = Integer.parseInt(ipx[2]);
+        int      d   = Integer.parseInt(ipx[3]);
+        long     ip  = a << 24 | b << 16 | c << 8 | d | 0xFFFFFFFFL;
         return ip << 16 | port;
     }
 
@@ -475,45 +487,58 @@ public interface IoUtil
 
     static byte[] variableLength(int length)
     {
-        if (length == 0) return new byte[] { 0 };
-        if (length < 128) {
-            return new byte[] { (byte) length };
+        if (length == 0) return new byte[] { 0
+        };
+        if (length < 128)
+        {
+            return new byte[] { (byte) length
+            };
         }
-        else if (length < 16384) {
+        else if (length < 16384)
+        {
             return new byte[] { (byte) (0x80 | (length & 0x7F)),
-                                (byte) (length >>> 7) };
+                                (byte) (length >>> 7)
+            };
         }
-        else if (length < 2097152) {
+        else if (length < 2097152)
+        {
             return new byte[] { (byte) (0x80 | (length & 0x7F)),
                                 (byte) (0x80 | (length & 0x7F80) >>> 7),
-                                (byte) (length >>> 14) };
+                                (byte) (length >>> 14)
+            };
         }
-        else if (length < 268435456) {
+        else if (length < 268435456)
+        {
             return new byte[] { (byte) (0x80 | (length & 0x7F)),
                                 (byte) (0x80 | (length & 0x7F80) >>> 7),
                                 (byte) (0x80 | (length & 0x3FC000) >>> 14),
-                                (byte) (length >>> 21) };
+                                (byte) (length >>> 21)
+            };
         }
         throw new ArrayIndexOutOfBoundsException("malformed length");
     }
 
     static byte[] variableLength(long length)
     {
-        if (length == 0) return new byte[] { 0 };
-        int resLength = 0;
-        long result = 0;
-        do {
+        if (length == 0) return new byte[] { 0
+        };
+        int  resLength = 0;
+        long result    = 0;
+        do
+        {
             result |= (length & 0x7F) << 56;
             length >>>= 7;
             resLength++;
-            if (length > 0) {
+            if (length > 0)
+            {
                 result >>>= 8;
                 result |= 0x80000000;
             }
         }
         while (length > 0);
         byte[] res = new byte[resLength];
-        for (int i = 0, move = 56; i < resLength; i++) {
+        for (int i = 0, move = 56; i < resLength; i++)
+        {
             res[i] = (byte) (result >>> move);
             move -= 8;
         }
@@ -523,9 +548,11 @@ public interface IoUtil
     static long readVariableLongLength(InputStream is)
     {
         long length = 0;
-        int cur;
-        try {
-            do {
+        int  cur;
+        try
+        {
+            do
+            {
                 cur = is.read();
                 if (cur < 0) break;
                 length |= (cur & 0x7F);
@@ -534,7 +561,8 @@ public interface IoUtil
             while ((cur & 0x80) != 0);
             return length;
         }
-        catch (Exception e) {
+        catch (Exception e)
+        {
             return 0;
         }
     }
@@ -542,8 +570,9 @@ public interface IoUtil
     static long readVariableLongLength(ByteBuffer buf)
     {
         long length = 0;
-        int cur;
-        if (buf.hasRemaining()) do {
+        int  cur;
+        if (buf.hasRemaining()) do
+        {
             cur = buf.get();
             length |= (cur & 0x7F);
             if ((cur & 0x80) != 0) length <<= 7;
@@ -556,7 +585,8 @@ public interface IoUtil
     {
         int length = 0;
         int cur, pos = 0;
-        if (buf.hasRemaining()) do {
+        if (buf.hasRemaining()) do
+        {
             cur = buf.get();
             length += (cur & 0x7F) << (pos * 7);
             pos++;
@@ -604,7 +634,8 @@ public interface IoUtil
                             (byte) (0xFF & (v >>> 24)),
                             (byte) (0xFF & (v >>> 16)),
                             (byte) (0xFF & (v >>> 8)),
-                            (byte) (0xFF & v) };
+                            (byte) (0xFF & v)
+        };
     }
 
     static byte[] writeLongArray(long... v)
@@ -685,9 +716,11 @@ public interface IoUtil
     @SafeVarargs
     static <T> void addArray(T[] src, T[] dst, T... add)
     {
-        if (src != null && dst != null && dst.length >= src.length) {
+        if (src != null && dst != null && dst.length >= src.length)
+        {
             arraycopy(src, 0, dst, 0, src.length);
-            if (add != null && add.length > 0 && dst.length >= src.length + add.length) {
+            if (add != null && add.length > 0 && dst.length >= src.length + add.length)
+            {
                 arraycopy(add, 0, dst, src.length, add.length);
             }
         }
@@ -695,14 +728,16 @@ public interface IoUtil
 
     static void addArray(Object[] src, Object[] dst, int pos)
     {
-        if (src != null && dst != null && dst.length >= pos + src.length) {
+        if (src != null && dst != null && dst.length >= pos + src.length)
+        {
             arraycopy(src, 0, dst, pos, src.length);
         }
     }
 
     static void addArray(Object[] dst, int pos, Object... add)
     {
-        if (add != null && dst != null && add.length > 0 && dst.length >= pos + add.length) {
+        if (add != null && dst != null && add.length > 0 && dst.length >= pos + add.length)
+        {
             arraycopy(add, 0, dst, pos, add.length);
         }
     }
@@ -793,7 +828,8 @@ public interface IoUtil
     static String readIpAdr(byte[] src, int off)
     {
         StringBuilder buf = new StringBuilder();
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; i++)
+        {
             buf.append(src[off++] & 0xFF);
             if (i < 3) buf.append('.');
         }
@@ -834,9 +870,12 @@ public interface IoUtil
     static boolean isBlank(final CharSequence cs)
     {
         int strLen;
-        if (cs == null || (strLen = cs.length()) == 0) { return true; }
-        for (int i = 0; i < strLen; i++) {
-            if (!Character.isWhitespace(cs.charAt(i))) { return false; }
+        if (cs == null || (strLen = cs.length()) == 0)
+        { return true; }
+        for (int i = 0; i < strLen; i++)
+        {
+            if (!Character.isWhitespace(cs.charAt(i)))
+            { return false; }
         }
         return true;
     }
@@ -844,7 +883,8 @@ public interface IoUtil
     static String longArrayToHex(long[] l)
     {
         StringBuilder sb = new StringBuilder("[");
-        if (l != null) for (long value : l) {
+        if (l != null) for (long value : l)
+        {
             sb.append(String.format("%#x", value));
         }
         sb.append("]");
