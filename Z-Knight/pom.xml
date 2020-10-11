@@ -28,14 +28,14 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>framework.z-chess</artifactId>
-        <groupId>com.tgx.service</groupId>
-        <version>1.0.10-SNAPSHOT</version>
+        <groupId>com.isahl.chess</groupId>
+        <version>1.0.11-SNAPSHOT</version>
     </parent>
     <artifactId>cluster.z-knight</artifactId>
     <name>Z-Knight</name>
     <dependencies>
         <dependency>
-            <groupId>com.tgx.service</groupId>
+            <groupId>com.isahl.chess</groupId>
             <artifactId>protocol.z-bishop</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -98,6 +98,6 @@
                 </executions>
             </plugin>
         </plugins>
-        <directory>${user.home}/Z-Chess/${project.name}/target</directory>
+<!--        <directory>${user.home}/Z-Chess/${project.name}/target</directory>-->
     </build>
 </project>

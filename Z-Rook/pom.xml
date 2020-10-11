@@ -28,8 +28,8 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>framework.z-chess</artifactId>
-        <groupId>com.tgx.service</groupId>
-        <version>1.0.10-SNAPSHOT</version>
+        <groupId>com.isahl.chess</groupId>
+        <version>1.0.11-SNAPSHOT</version>
     </parent>
     <artifactId>client.z-rook</artifactId>
     <name>Z-Rook</name>
@@ -47,7 +47,7 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.tgx.service</groupId>
+            <groupId>com.isahl.chess</groupId>
             <artifactId>protocol.z-bishop</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -61,10 +61,10 @@
                 <version>${spring-boot.version}</version>
                 <configuration>
                     <layout>JAR</layout>
-                    <mainClass>com.tgx.com.tgx.chess.rook.ApplicationRook</mainClass>
+                    <mainClass>com.isahl.chess.rook.ApplicationRook</mainClass>
                 </configuration>
             </plugin>
         </plugins>
-        <directory>${user.home}/Z-Chess/${project.name}/target</directory>
+<!--        <directory>${user.home}/Z-Chess/${project.name}/target</directory>-->
     </build>
 </project>

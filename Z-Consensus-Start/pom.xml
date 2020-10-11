@@ -28,16 +28,16 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>framework.z-chess</artifactId>
-        <groupId>com.tgx.service</groupId>
-        <version>1.0.10-SNAPSHOT</version>
+        <groupId>com.isahl.chess</groupId>
+        <version>1.0.11-SNAPSHOT</version>
     </parent>
     <artifactId>consensus.z-start</artifactId>
     <name>Z-Consensus-Start</name>
     <dependencies>
         <dependency>
-            <groupId>com.tgx.service</groupId>
+            <groupId>com.isahl.chess</groupId>
             <artifactId>cluster.z-knight</artifactId>
-            <version>${project.version}</version>
+            <version>1.0.11-SNAPSHOT</version>
         </dependency>
     </dependencies>
     <build>
@@ -49,7 +49,7 @@
                 <version>${spring-boot.version}</version>
                 <configuration>
                     <layout>JAR</layout>
-                    <mainClass>com.tgx.chess.knight.start.ApplicationKnight</mainClass>
+                    <mainClass>com.isahl.chess.knight.start.ApplicationKnight</mainClass>
                 </configuration>
                 <executions>
                     <execution>
@@ -60,6 +60,6 @@
                 </executions>
             </plugin>
         </plugins>
-        <directory>${user.home}/Z-Chess/${project.name}/target</directory>
+<!--        <directory>${user.home}/Z-Chess/${project.name}/target</directory>-->
     </build>
 </project>

@@ -25,7 +25,7 @@
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.tgx.chess.king.base.util.CryptUtil;
+import com.isahl.chess.king.base.util.CryptUtil;
 
 /**
  * @author william.d.zk

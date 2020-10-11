@@ -28,16 +28,16 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>framework.z-chess</artifactId>
-        <groupId>com.tgx.service</groupId>
-        <version>1.0.10-SNAPSHOT</version>
+        <groupId>com.isahl.chess</groupId>
+        <version>1.0.11-SNAPSHOT</version>
     </parent>
     <artifactId>biz.z-player</artifactId>
     <name>Z-Player</name>
     <dependencies>
         <dependency>
-            <groupId>com.tgx.service</groupId>
+            <groupId>com.isahl.chess</groupId>
             <artifactId>endpoint.z-pawn</artifactId>
-            <version>${project.version}</version>
+            <version>1.0.11-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.ehcache</groupId>

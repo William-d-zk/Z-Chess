@@ -28,14 +28,14 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>framework.z-chess</artifactId>
-        <groupId>com.tgx.service</groupId>
-        <version>1.0.10-SNAPSHOT</version>
+        <groupId>com.isahl.chess</groupId>
+        <version>1.0.11-SNAPSHOT</version>
     </parent>
     <artifactId>protocol.z-bishop</artifactId>
     <name>Z-Bishop</name>
     <dependencies>
         <dependency>
-            <groupId>com.tgx.service</groupId>
+            <groupId>com.isahl.chess</groupId>
             <artifactId>io.z-queen</artifactId>
             <version>${project.version}</version>
         </dependency>
