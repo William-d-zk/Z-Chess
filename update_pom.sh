@@ -22,7 +22,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-version="1.0.10-SNAPSHOT"
+version="1.0.11-SNAPSHOT"
 # shellcheck disable=SC2044
 for file in $(find \./Z-* -name "pom.xml"); do
   echo $file
@@ -30,5 +30,5 @@ for file in $(find \./Z-* -name "pom.xml"); do
     $file >$file.new
   mv -f $file.new $file
 done
-sed -e "33s/<version>\(.*\)<\/version>/<version>${version}<\/version>/g$h" ./pom.xml >./pom.xml.new
+sed -e "32s/<version>\(.*\)<\/version>/<version>${version}<\/version>/g$h" ./pom.xml >./pom.xml.new
 mv -f ./pom.xml.new ./pom.xml

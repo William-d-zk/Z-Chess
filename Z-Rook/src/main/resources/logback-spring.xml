@@ -23,7 +23,6 @@
   -->
 
 <configuration>
-    <!-- https://github.com/spring-projects/spring-boot/blob/v1.4.2.RELEASE/spring-boot/src/main/resources/org/springframework/boot/logging/logback/defaults.xml -->
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <property name="APP_NAME" value="Z-Chess"/>
     <property name="LOG_PATH" value="${user.home}/${APP_NAME}/logs"/>
@@ -53,5 +52,5 @@
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="APPLICATION"/>
     </root>
-    <logger name="com.tgx.com.tgx.chess.queen.io.core.executor.ServerCore" level="DEBUG"/>
+    <logger name="com.isahl.chess.queen.io.core.executor.ServerCore" level="DEBUG"/>
 </configuration>

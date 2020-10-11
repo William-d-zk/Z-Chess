@@ -22,8 +22,7 @@
   ~ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   -->
 
-<config
-        xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+<config xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
         xmlns='http://www.ehcache.org/v3'
         xsi:schemaLocation="
             http://www.ehcache.org/v3
@@ -40,7 +39,7 @@
 
         <listeners>
             <listener>
-                <class>com.tgx.chess.open.api.ehcache.CacheLogger</class>
+                <class>com.isahl.chess.open.api.ehcache.CacheLogger</class>
                 <event-firing-mode>ASYNCHRONOUS</event-firing-mode>
                 <event-ordering-mode>UNORDERED</event-ordering-mode>
                 <events-to-fire-on>CREATED</events-to-fire-on>

@@ -28,17 +28,17 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>framework.z-chess</artifactId>
-        <groupId>com.tgx.service</groupId>
-        <version>1.0.10-SNAPSHOT</version>
+        <groupId>com.isahl.chess</groupId>
+        <version>1.0.11-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>endpoint.z-start</artifactId>
     <name>Z-Endpoint-Start</name>
     <dependencies>
         <dependency>
-            <groupId>com.tgx.service</groupId>
+            <groupId>com.isahl.chess</groupId>
             <artifactId>biz.z-player</artifactId>
-            <version>${project.version}</version>
+            <version>1.0.11-SNAPSHOT</version>
         </dependency>
     </dependencies>
     <build>
@@ -50,7 +50,7 @@
                 <version>${spring-boot.version}</version>
                 <configuration>
                     <layout>JAR</layout>
-                    <mainClass>com.tgx.chess.pawn.start.ApplicationPawn</mainClass>
+                    <mainClass>com.isahl.chess.pawn.start.ApplicationPawn</mainClass>
                 </configuration>
                 <executions>
                     <execution>
@@ -61,6 +61,6 @@
                 </executions>
             </plugin>
         </plugins>
-        <directory>${user.home}/Z-Chess/${project.name}/target</directory>
+<!--        <directory>${user.home}/Z-Chess/${project.name}/target</directory>-->
     </build>
 </project>
