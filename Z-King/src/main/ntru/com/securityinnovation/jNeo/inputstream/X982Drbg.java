@@ -254,6 +254,7 @@ public class X982Drbg extends InputStream
     
 
 
+
     /**
      * Add two multi-byte big-endian integers: accum += in[offset..len-1].
      * Overflow is discarded.
@@ -276,6 +277,7 @@ public class X982Drbg extends InputStream
             i--;
         }
     }
+    
 
 
     /**
