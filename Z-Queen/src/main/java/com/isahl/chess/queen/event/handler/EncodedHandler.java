@@ -23,13 +23,13 @@
 
 package com.isahl.chess.queen.event.handler;
 
+import com.isahl.chess.king.base.inf.IPair;
+import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.queen.event.inf.IPipeEventHandler;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.inf.IContext;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.lmax.disruptor.RingBuffer;
-import com.isahl.chess.king.base.inf.IPair;
-import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.queen.event.inf.IPipeEventHandler;
 
 /**
  * @author william.d.zk
@@ -38,7 +38,7 @@ public class EncodedHandler<C extends IContext<C>>
         implements
         IPipeEventHandler<QEvent>
 {
-    private final Logger             _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
 
     private final RingBuffer<QEvent> _Error;
 
@@ -50,21 +50,11 @@ public class EncodedHandler<C extends IContext<C>>
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
     {
-        if (event.hasError())
-        {
-            switch (event.getErrorType())
-            {
-                case FILTER_ENCODE:
-                case ILLEGAL_STATE:
-                case ILLEGAL_BIZ_STATE:
-                default:
-                    IPair errorContent = event.getContent();
-                    ISession<C> session = errorContent.getSecond();
-                    if (session.isValid())
-                    {
-                        error(_Error, event.getErrorType(), errorContent, event.getEventOp());
-                    }
-                    break;
+        if (event.hasError()) {
+            IPair errorContent = event.getContent();
+            ISession<C> session = errorContent.getSecond();
+            if (session.isValid()) {
+                error(_Error, event.getErrorType(), errorContent, event.getEventOp());
             }
         }
         event.reset();

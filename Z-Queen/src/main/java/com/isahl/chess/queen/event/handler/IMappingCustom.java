@@ -39,15 +39,20 @@ public interface IMappingCustom<C extends IContext<C>>
     /**
      * 
      * @param manager
+     *            session manager
      * @param session
+     *            event session
      * @param content
+     *            event content
      * 
      * @return pair
-     *         first: response ->
-     *         second: protocol to other domain
-     *         third: operator
-     * 
+     *         {
+     *         first: response
+     *         second: protocol to other domain [cluster]
+     *         }
+     *
      * @throws Exception
+     *             error
      */
     IPair handle(ISessionManager<C> manager, ISession<C> session, IControl<C> content) throws Exception;
 }

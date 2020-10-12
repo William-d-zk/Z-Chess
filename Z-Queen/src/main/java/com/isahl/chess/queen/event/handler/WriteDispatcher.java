@@ -30,11 +30,6 @@ import static com.isahl.chess.queen.event.inf.IOperator.Type.WROTE;
 
 import java.util.List;
 
-import com.isahl.chess.queen.event.processor.QEvent;
-import com.isahl.chess.queen.io.core.inf.IContext;
-import com.isahl.chess.queen.io.core.inf.IControl;
-import com.isahl.chess.queen.io.core.inf.ISession;
-import com.lmax.disruptor.RingBuffer;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
@@ -42,6 +37,11 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.event.inf.IPipeEventHandler;
+import com.isahl.chess.queen.event.processor.QEvent;
+import com.isahl.chess.queen.io.core.inf.IContext;
+import com.isahl.chess.queen.io.core.inf.IControl;
+import com.isahl.chess.queen.io.core.inf.ISession;
+import com.lmax.disruptor.RingBuffer;
 
 /**
  * @author william.d.zk
@@ -56,7 +56,8 @@ public class WriteDispatcher<C extends IContext<C>>
     private final int                  _Mask;
 
     @SafeVarargs
-    public WriteDispatcher(RingBuffer<QEvent> error, RingBuffer<QEvent>... workers)
+    public WriteDispatcher(RingBuffer<QEvent> error,
+                           RingBuffer<QEvent>... workers)
     {
         _Error = error;
         _Encoders = workers;
@@ -71,10 +72,8 @@ public class WriteDispatcher<C extends IContext<C>>
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
     {
-        if (event.hasError())
-        {
-            if (event.getErrorType() == HANDLE_DATA)
-            {// from logic handler
+        if (event.hasError()) {
+            if (event.getErrorType() == HANDLE_DATA) {// from logic handler
                 /*
                  * logic 处理错误，转换为shutdown目标投递给 _Error
                  * 交由 IoDispatcher转发给对应的MappingHandler 执行close
@@ -94,23 +93,23 @@ public class WriteDispatcher<C extends IContext<C>>
                 IPair writeContent = event.getContent();
                 IControl<C>[] commands = writeContent.getFirst();
                 ISession<C> session = writeContent.getSecond();
-                IOperator<IControl<C>[], ISession<C>, List<ITriple>> transferOperator = event.getEventOp();
-                if (commands != null && commands.length > 0)
-                {
+                IOperator<IControl<C>[],
+                          ISession<C>,
+                          List<ITriple>> transferOperator = event.getEventOp();
+                if (commands != null && commands.length > 0) {
                     List<ITriple> triples = transferOperator.handle(commands, session);
-                    for (ITriple triple : triples)
-                    {
+                    for (ITriple triple : triples) {
                         ISession<C> targetSession = triple.getSecond();
-                        IControl<C> content       = triple.getFirst();
+                        IControl<C> content = triple.getFirst();
                         _Logger.debug("write %s", content);
-                        if (content.isShutdown())
-                        {
-                            if (targetSession.isValid())
-                            {
+                        if (content.isShutdown()) {
+                            if (targetSession.isValid()) {
                                 error(_Error,
                                       INITIATIVE_CLOSE,
                                       new Pair<>(new ZException("session to shutdown"), targetSession),
-                                      targetSession.getContext().getSort().getError());
+                                      targetSession.getContext()
+                                                   .getSort()
+                                                   .getError());
                             }
                         }
                         else publish(dispatchEncoder(targetSession.getHashKey()),
@@ -125,8 +124,7 @@ public class WriteDispatcher<C extends IContext<C>>
                 IPair wroteContent = event.getContent();
                 int wroteCount = wroteContent.getFirst();
                 session = wroteContent.getSecond();
-                if (session.isValid())
-                {
+                if (session.isValid()) {
                     publish(dispatchEncoder(session.getHashKey()),
                             WROTE,
                             new Pair<>(wroteCount, session),
@@ -135,26 +133,24 @@ public class WriteDispatcher<C extends IContext<C>>
                 break;
             case DISPATCH:
                 List<ITriple> writeContents = event.getContentList();
-                for (ITriple content : writeContents)
-                {
+                for (ITriple content : writeContents) {
                     IControl<C> command = content.getFirst();
                     session = content.getSecond();
-                    if (command.isShutdown())
-                    {
-                        if (session != null && session.isValid())
-                        {
+                    if (command.isShutdown()) {
+                        if (session != null && session.isValid()) {
                             error(_Error,
                                   INITIATIVE_CLOSE,
                                   new Pair<>(new ZException("session to shutdown"), session),
-                                  session.getContext().getSort().getError());
+                                  session.getContext()
+                                         .getSort()
+                                         .getError());
                         }
                         /*
                          * session == null 意味着 _SessionManager.find..失败
                          * !session.isValid 意味着 session 已经被关闭
                          * 这两种情形都忽略执行即可
                          */
-                        else
-                        {
+                        else {
                             _Logger.warning("dispatch failed [ %s ]", session);
                         }
                     }
