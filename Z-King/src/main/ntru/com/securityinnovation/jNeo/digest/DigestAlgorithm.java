@@ -21,7 +21,6 @@
 
 package com.securityinnovation.jNeo.digest;
 
-
 /**
  * This class provides an enumeration of hash algorithms that can
  * be used throughout the code. Each enumeration has a utility
@@ -40,13 +39,10 @@ public enum DigestAlgorithm
      */
     sha256(Sha256.class);
 
-
-
     /**
      * Constructor.
      */
-    private DigestAlgorithm(
-        Class _clss)
+    private DigestAlgorithm(Class<? extends Digest> _clss)
     {
         clss = _clss;
     }
@@ -54,16 +50,21 @@ public enum DigestAlgorithm
     /**
      * The class used to generate objects
      */
-    private Class clss;
+    private Class<? extends Digest> clss;
 
     /**
      * Return the byte array identifying the OID.
      */
     public Digest newInstance()
     {
-        try {return (Digest) clss.newInstance();}
+        try {
+            return clss.getDeclaredConstructor()
+                       .newInstance();
+        }
         // By construction this shouldn't happen,
         // except perhaps an out-of-memory error.
-        catch (Exception e) {return null;}
+        catch (Exception e) {
+            return null;
+        }
     }
 };

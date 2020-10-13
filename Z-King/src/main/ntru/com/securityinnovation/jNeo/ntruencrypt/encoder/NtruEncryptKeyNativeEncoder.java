@@ -39,7 +39,6 @@ public class NtruEncryptKeyNativeEncoder implements NtruEncryptKeyEncoder
     public final static byte PUBLIC_KEY_v1 = 1;
 
 
-
     /**
      * The format for the private key blob where the private
      * key is represented by the trinomial F, packed 5 trits per
@@ -54,7 +53,6 @@ public class NtruEncryptKeyNativeEncoder implements NtruEncryptKeyEncoder
      *              F[5*i+3]*3 + F[5*i+4]
      */
     public final static byte PRIVATE_KEY_DEFAULT_v1 = 2;
-
 
 
     /**

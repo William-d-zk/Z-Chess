@@ -33,70 +33,64 @@ public interface IClusterConfig
     /**
      * pipeline decoder 分配的固定配额
      *
-     * @return decoder count power
+     * @return
      */
     int getDecoderCountPower();
 
     /**
      * pipeline encoder 分配的固定配额
-     * 
-     * @return encoder count power
      */
     int getEncoderCountPower();
 
     /**
      * pipeline 逻辑处理单元数量
      *
-     * @return logic count power
+     * @return
      */
     int getLogicCountPower();
 
     /**
      * 用于处理集群通讯的处理器单元数
      *
-     * @return cluster io-count power
+     * @return
      */
     int getClusterIoCountPower();
 
     /**
      * AIO 处理队列的阶乘数
      *
-     * @return aio queue size power
+     * @return
      */
     int getAioQueueSizePower();
 
     /**
      * Cluster相关处理队列的阶乘数
      *
-     * @return cluster queue size power
+     * @return
      */
     int getClusterQueueSizePower();
 
     /**
      * 逻辑处理单元的处理队列阶乘数
      *
-     * @return logic queue size power
+     * @return
      */
     int getLogicQueueSizePower();
 
     /**
      * 异常处理单元的处理队列阶乘数
      *
-     * @return error queue size power
+     * @return
      */
     int getErrorQueueSizePower();
 
     /**
      * 处理主动关闭时间的队列阶乘数
      *
-     * @return closer queue size power
+     * @return
      */
     int getCloserQueueSizePower();
 
-    /**
-     * 
-     * @return thread pool size
-     */
     default int getPoolSize()
     {
         return 1 // io-dispatch

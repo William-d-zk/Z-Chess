@@ -32,7 +32,7 @@ public class FullPolynomial
     /**
      * The list of coefficients of the polynomial.
      */
-    public short p[];
+    public short[] p;
 
 
     /**
@@ -42,7 +42,7 @@ public class FullPolynomial
      * @param coeffs the list of coefficients.
      */
     public FullPolynomial(
-        short coeffs[])
+            short[] coeffs)
     {
         p = coeffs;
     }
@@ -70,7 +70,7 @@ public class FullPolynomial
      * @param q the coefficient modulus.
      * @param newLowerLimit the new smallest coefficient value.
      */
-    public static final void recenterModQ(
+    public static void recenterModQ(
         FullPolynomial a,
         int            q,
         int            newLowerLimit)
@@ -146,7 +146,7 @@ public class FullPolynomial
      *
      * @return the resulting polynomial.
      */
-    public static final FullPolynomial add(
+    public static FullPolynomial add(
         FullPolynomial a,
         FullPolynomial b,
         int            coefficientModulus)
@@ -171,7 +171,7 @@ public class FullPolynomial
      *
      * @return the resulting polynomial.
      */
-    public static final FullPolynomial addAndRecenter(
+    public static FullPolynomial addAndRecenter(
         FullPolynomial a,
         FullPolynomial b,
         int            coefficientModulus,
@@ -196,7 +196,7 @@ public class FullPolynomial
      *
      * @return the difference.
      */
-    public static final FullPolynomial subtract(
+    public static FullPolynomial subtract(
         FullPolynomial a,
         FullPolynomial b,
         int            coefficientModulus)
@@ -221,7 +221,7 @@ public class FullPolynomial
      *
      * @return the difference.
      */
-    public static final FullPolynomial subtractAndRecenter(
+    public static FullPolynomial subtractAndRecenter(
         FullPolynomial a,
         FullPolynomial b,
         int            coefficientModulus,
@@ -250,7 +250,7 @@ public class FullPolynomial
         try {
             FullPolynomial other = (FullPolynomial) o;
             return java.util.Arrays.equals(p, other.p);
-        } catch (Exception e) {}
+        } catch (Exception ignored) {}
         return false;
     }
 
@@ -262,5 +262,4 @@ public class FullPolynomial
         return java.util.Arrays.hashCode(p);
     }
 }
-
 

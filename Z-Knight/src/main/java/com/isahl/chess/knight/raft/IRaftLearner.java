@@ -21,33 +21,11 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.queen.event.handler;
-
-import com.isahl.chess.king.base.inf.IPair;
-import com.isahl.chess.queen.io.core.inf.IContext;
-import com.isahl.chess.queen.io.core.inf.IControl;
-import com.isahl.chess.queen.io.core.inf.ISession;
-import com.isahl.chess.queen.io.core.inf.ISessionManager;
+package com.isahl.chess.knight.raft;
 
 /**
  * @author william.d.zk
- * 
- * @date 2020/5/7
  */
-public interface IMappingCustom<C extends IContext<C>>
-{
-    /**
-     * 
-     * @param manager
-     * @param session
-     * @param content
-     * 
-     * @return pair
-     *         first: response ->
-     *         second: protocol to other domain
-     *         third: operator
-     * 
-     * @throws Exception
-     */
-    IPair handle(ISessionManager<C> manager, ISession<C> session, IControl<C> content) throws Exception;
+public interface IRaftLearner {
+
 }

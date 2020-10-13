@@ -57,11 +57,11 @@ public class TestAccountAuth
         src = src.replaceAll("/#", "(/?.*)");
         System.out.println(src);
         Pattern pattern = Pattern.compile(src);
-        System.out.printf("pattern:%s%n", pattern);
+        System.out.println(String.format("pattern:%s", pattern));
         Matcher matcher = pattern.matcher("a/b/c");
-        System.out.printf("match:%s%n",
+        System.out.println(String.format("match:%s",
                                          matcher.matches() ?
                                                  matcher.group():
-                                                 "no matcher");
+                                                 "no matcher"));
     }
 }

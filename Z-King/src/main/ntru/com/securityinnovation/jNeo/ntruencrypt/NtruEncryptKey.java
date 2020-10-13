@@ -64,13 +64,11 @@ public class NtruEncryptKey
     protected FullPolynomial h = null;
 
 
-
     /**
      * The private key f (= 1+p*F). For public-key-only objects this
      * will be null.
      */
     protected FullPolynomial f = null;
-
 
 
     /**

@@ -76,7 +76,7 @@ public class KeyParams
      *
      * @param paramSet a byte array holding the OID.
      *
-     * @throws ParamsetNotSupportedException if the OID is not known.
+     * @throws ParamSetNotSupportedException if the OID is not known.
      */
     public static KeyParams getKeyParams(
         byte[] paramSet)
@@ -97,7 +97,7 @@ public class KeyParams
      *
      * @param paramSet the OID identifying the parameter set.
      *
-     * @throws ParamsetNotSupportedException if the OID is not known.
+     * @throws ParamSetNotSupportedException if the OID is not known.
      */
     public static KeyParams getKeyParams(
         OID paramSet)

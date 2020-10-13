@@ -98,7 +98,7 @@ public class MGF_TP_1
      * Given a trit in the range [0..2], return a trit in
      * the range [-1..1] that is equal to the input mod 3.
      */
-    private final static byte recenterTritTo0(
+    private static byte recenterTritTo0(
         short in)
     {
         if (in == -1)

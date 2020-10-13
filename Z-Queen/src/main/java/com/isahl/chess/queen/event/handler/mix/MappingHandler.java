@@ -30,8 +30,14 @@ import static com.isahl.chess.queen.event.inf.IOperator.Type.WRITE;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.List;
 
+import com.isahl.chess.king.base.inf.IPair;
+import com.isahl.chess.king.base.inf.ITriple;
+import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.db.inf.IStorage;
 import com.isahl.chess.queen.event.handler.cluster.IClusterCustom;
+import com.isahl.chess.queen.event.inf.IOperator;
+import com.isahl.chess.queen.event.inf.IPipeEventHandler;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.inf.IAioConnector;
 import com.isahl.chess.queen.io.core.inf.IAioServer;
@@ -45,19 +51,14 @@ import com.isahl.chess.queen.io.core.inf.ISessionDismiss;
 import com.isahl.chess.queen.io.core.inf.ISessionManager;
 import com.isahl.chess.queen.io.core.manager.MixManager;
 import com.lmax.disruptor.RingBuffer;
-import com.isahl.chess.king.base.inf.IPair;
-import com.isahl.chess.king.base.inf.ITriple;
-import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.event.inf.IOperator;
-import com.isahl.chess.queen.event.inf.IPipeEventHandler;
 
 /**
  * @author william.d.zk
  * 
  * @date 2020/2/15
  */
-public class MappingHandler<C extends IContext<C>, T extends IStorage>
+public class MappingHandler<C extends IContext<C>,
+                            T extends IStorage>
         implements
         IPipeEventHandler<QEvent>
 {
@@ -65,9 +66,10 @@ public class MappingHandler<C extends IContext<C>, T extends IStorage>
     private final RingBuffer<QEvent>   _Error;
     private final RingBuffer<QEvent>   _Writer;
     private final RingBuffer<QEvent>   _Transfer;
-    private final ISessionManager<C> _SessionManager;
+    private final ISessionManager<C>   _SessionManager;
     private final ILinkCustom<C>       _LinkCustom;
-    private final IClusterCustom<C, T> _ClusterCustom;
+    private final IClusterCustom<C,
+                                 T>    _ClusterCustom;
 
     public MappingHandler(String mapper,
                           MixManager<C> manager,
@@ -75,7 +77,8 @@ public class MappingHandler<C extends IContext<C>, T extends IStorage>
                           RingBuffer<QEvent> writer,
                           RingBuffer<QEvent> transfer,
                           ILinkCustom<C> linkCustom,
-                          IClusterCustom<C, T> clusterCustom)
+                          IClusterCustom<C,
+                                         T> clusterCustom)
     {
         _Logger = Logger.getLogger("io.queen.dispatcher." + mapper);
         _SessionManager = manager;
@@ -89,32 +92,38 @@ public class MappingHandler<C extends IContext<C>, T extends IStorage>
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch)
     {
-        if (event.hasError())
-        {
+        if (event.hasError()) {
             _Logger.warning("mapping error → %s ", event);
             switch (event.getErrorType())
             {
                 case ACCEPT_FAILED:
-                    IOperator<Throwable, IAioServer<C>, Void> acceptFailedOperator = event.getEventOp();
+                    IOperator<Throwable,
+                              IAioServer<C>,
+                              Void> acceptFailedOperator = event.getEventOp();
                     IPair errorContent = event.getContent();
                     acceptFailedOperator.handle(errorContent.getFirst(), errorContent.getSecond());
                     break;
                 case CONNECT_FAILED:
-                    IOperator<Throwable, IAioConnector<C>, Void> connectFailedOperator = event.getEventOp();
+                    IOperator<Throwable,
+                              IAioConnector<C>,
+                              Void> connectFailedOperator = event.getEventOp();
                     errorContent = event.getContent();
                     connectFailedOperator.handle(errorContent.getFirst(), errorContent.getSecond());
                     break;
                 case PASSIVE_CLOSE:
                 case INITIATIVE_CLOSE:
-                    _Logger.warning("mapping handle io error,%s", event.getErrorType().getMsg());
-                    IOperator<Void, ISession<C>, Void> closeOperator = event.getEventOp();
+                    _Logger.warning("mapping handle io error,%s",
+                                    event.getErrorType()
+                                         .getMsg());
+                    IOperator<Void,
+                              ISession<C>,
+                              Void> closeOperator = event.getEventOp();
                     errorContent = event.getContent();
                     ISession<C> session = errorContent.getSecond();
                     ISessionDismiss<C> dismiss = session.getDismissCallback();
                     boolean closed = session.isClosed();
                     closeOperator.handle(null, session);
-                    if (!closed)
-                    {
+                    if (!closed) {
                         dismiss.onDismiss(session);
                     }
                     break;
@@ -122,8 +131,7 @@ public class MappingHandler<C extends IContext<C>, T extends IStorage>
                     break;
             }
         }
-        else
-        {
+        else {
             _Logger.trace("mapping:%s", event);
             switch (event.getEventType())
             {
@@ -136,28 +144,25 @@ public class MappingHandler<C extends IContext<C>, T extends IStorage>
                               ITriple> connectedOperator = event.getEventOp();
                     ITriple handled = connectedOperator.handle(connector, channel);
                     boolean success = handled.getFirst();
-                    if (success)
-                    {
-                        ISession<C>   session = handled.getSecond();
+                    if (success) {
+                        ISession<C> session = handled.getSecond();
                         IControl<C>[] toSends = handled.getThird();
-                        if (toSends != null)
-                        {
+                        if (toSends != null) {
                             publish(_Writer,
                                     WRITE,
                                     new Pair<>(toSends, session),
-                                    session.getContext().getSort().getTransfer());
+                                    session.getContext()
+                                           .getSort()
+                                           .getTransfer());
                         }
                     }
-                    else
-                    {
+                    else {
                         Throwable throwable = handled.getThird();
                         _Logger.warning("session connect create failed ,channel error %", throwable, channel);
-                        if (handled.getSecond() instanceof AsynchronousSocketChannel)
-                        {
+                        if (handled.getSecond() instanceof AsynchronousSocketChannel) {
                             connector.error();
                         }
-                        else
-                        {
+                        else {
                             ISession<C> session = handled.getSecond();
                             session.innerClose();
                         }
@@ -170,161 +175,152 @@ public class MappingHandler<C extends IContext<C>, T extends IStorage>
                     connectedOperator = event.getEventOp();
                     handled = connectedOperator.handle(server, channel);
                     success = handled.getFirst();
-                    if (success)
-                    {
-                        ISession<C>   session = handled.getSecond();
+                    if (success) {
+                        ISession<C> session = handled.getSecond();
                         IControl<C>[] toSends = handled.getThird();
-                        if (toSends != null)
-                        {
+                        if (toSends != null) {
                             publish(_Writer,
                                     WRITE,
                                     new Pair<>(toSends, session),
-                                    session.getContext().getSort().getTransfer());
+                                    session.getContext()
+                                           .getSort()
+                                           .getTransfer());
                         }
                     }
-                    else
-                    {
+                    else {
                         Throwable throwable = handled.getThird();
                         _Logger.warning("session accept create failed ,channel error %", throwable, channel);
-                        if (handled.getSecond() instanceof ISession)
-                        {
+                        if (handled.getSecond() instanceof ISession) {
                             ISession<C> session = handled.getSecond();
                             session.innerClose();
                         }
                     }
                     break;
                 case LINK:
-                    IControl<C> received = event.getContent().getFirst();
-                    ISession<C> session = event.getContent().getSecond();
-                    if (received == null)
-                    { return; }
-                    try
-                    {
+                    IControl<C> received = event.getContent()
+                                                .getFirst();
+                    ISession<C> session = event.getContent()
+                                               .getSecond();
+                    if (received == null) { return; }
+                    try {
                         IPair pair = _LinkCustom.handle(_SessionManager, session, received);
                         if (pair == null) return;
                         IControl<C>[] toSends = pair.getFirst();
-                        if (toSends != null && toSends.length > 0)
-                        {
+                        if (toSends != null && toSends.length > 0) {
                             publish(_Writer,
                                     WRITE,
                                     new Pair<>(toSends, session),
-                                    session.getContext().getSort().getTransfer());
+                                    session.getContext()
+                                           .getSort()
+                                           .getTransfer());
                         }
                         IConsistent transfer = pair.getSecond();
-                        if (transfer != null)
-                        {
-                            if (_ClusterCustom.waitForCommit())
-                            {
+                        if (transfer != null) {
+                            if (_ClusterCustom.waitForCommit()) {
                                 publish(_Transfer,
                                         CONSENSUS,
                                         new Pair<>(pair.getSecond(), session),
                                         _LinkCustom.getOperator());
                             }
-                            else
-                            {
+                            else {
                                 List<ITriple> result = _LinkCustom.notify(_SessionManager,
                                                                           pair.getSecond(),
                                                                           transfer.getOrigin());
-                                if (result != null && !result.isEmpty())
-                                {
+                                if (result != null && !result.isEmpty()) {
                                     publish(_Writer, result);
                                 }
                             }
                         }
                     }
-                    catch (Exception e)
-                    {
+                    catch (Exception e) {
                         _Logger.warning("link mapping handler error", e);
                         session.innerClose();
                     }
                     break;
                 case CLUSTER:
-                    received = event.getContent().getFirst();
-                    session = event.getContent().getSecond();
-                    if (received == null)
-                    { return; }
-                    try
-                    {
+                    received = event.getContent()
+                                    .getFirst();
+                    session = event.getContent()
+                                   .getSecond();
+                    if (received == null) { return; }
+                    try {
                         IPair pair = _ClusterCustom.handle(_SessionManager, session, received);
                         if (pair == null) return;
                         IControl<C>[] toSends = pair.getFirst();
-                        if (toSends != null && toSends.length > 0)
-                        {
+                        if (toSends != null && toSends.length > 0) {
                             publish(_Writer,
                                     WRITE,
                                     new Pair<>(toSends, session),
-                                    session.getContext().getSort().getTransfer());
+                                    session.getContext()
+                                           .getSort()
+                                           .getTransfer());
                         }
                         IConsistentNotify transferNotify = pair.getSecond();
-                        if (transferNotify != null && transferNotify.doNotify())
-                        {
+                        if (transferNotify != null && transferNotify.doNotify()) {
                             publish(_Transfer, NOTIFY, new Pair<>(transferNotify, null), _LinkCustom.getOperator());
                         }
                     }
-                    catch (Exception e)
-                    {
+                    catch (Exception e) {
                         _Logger.warning("cluster mapping handler error", e);
                         session.innerClose();
                     }
                     break;
                 case CONSENSUS:
-                    session = event.getContent().getSecond();
-                    try
-                    {
-                        List<ITriple> result = _ClusterCustom.consensus(_SessionManager, event.getContent().getFirst());
-                        if (result != null && !result.isEmpty())
-                        {
+                    session = event.getContent()
+                                   .getSecond();
+                    try {
+                        List<ITriple> result = _ClusterCustom.consensus(_SessionManager,
+                                                                        event.getContent()
+                                                                             .getFirst());
+                        if (result != null && !result.isEmpty()) {
                             publish(_Writer, result);
                         }
                     }
-                    catch (Exception e)
-                    {
+                    catch (Exception e) {
                         _Logger.warning("mapping consensus error, link session close", e);
                         session.innerClose();
                     }
                     break;
                 case NOTIFY:
-                    IConsistentNotify notify = event.getContent().getFirst();
-                    if (notify != null) try
-                    {
-                        if (notify.byLeader())
-                        {
-                            try
-                            {
+                    IConsistentNotify notify = event.getContent()
+                                                    .getFirst();
+                    if (notify != null) try {
+                        if (notify.byLeader()) {
+                            try {
                                 _LinkCustom.adjudge(notify);
                             }
-                            catch (Throwable e)
-                            {
+                            catch (Throwable e) {
                                 _Logger.warning("leader adjudge", e);
                             }
                         }
-                        if (notify.doNotify())
-                        {
+                        if (notify.doNotify()) {
                             List<ITriple> result = _LinkCustom.notify(_SessionManager,
-                                                                      event.getContent().getFirst(),
+                                                                      event.getContent()
+                                                                           .getFirst(),
                                                                       notify.getOrigin());
-                            if (result != null && !result.isEmpty())
-                            {
+                            if (result != null && !result.isEmpty()) {
                                 publish(_Writer, result);
                             }
                         }
                     }
-                    catch (Exception e)
-                    {
+                    catch (Exception e) {
                         _Logger.warning("mapping notify error, cluster's session keep alive", e);
                     }
                     break;
-                case CLUSTER_TIMER:// ClusterConsumer Timeout->start_vote
-                    /* TIMER 必然是单个IControl,通过前项RingBuffer 向MappingHandler 投递 */
-                    T content = event.getContent().getFirst();
-                    List<ITriple> toSends = _ClusterCustom.onTimer(_SessionManager, content);
-                    if (toSends != null && !toSends.isEmpty())
-                    {
-                        publish(_Writer, toSends);
+                case CLUSTER_TIMER:// ClusterConsumer Timeout->start_vote,heartbeat-cycle,step down->follower
+                    T content = event.getContent()
+                                     .getFirst();
+                    if (content != null) {
+                        List<ITriple> toSends = _ClusterCustom.onTimer(_SessionManager, content);
+                        if (toSends != null && !toSends.isEmpty()) {
+                            publish(_Writer, toSends);
+                        }
                     }
                     break;
                 default:
-                    _Logger.warning("mapping handler error %s", event.getEventType().name());
+                    _Logger.warning("mapping handler error %s",
+                                    event.getEventType()
+                                         .name());
                     break;
             }
         }

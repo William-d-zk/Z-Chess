@@ -43,7 +43,10 @@ public class ScheduleHandler<A extends IValid>
     private final long          _Tick;
     private final ReentrantLock _Lock;
 
-    public ScheduleHandler(Duration delay, boolean cycle, Consumer<A> callback, int priority)
+    public ScheduleHandler(Duration delay,
+                           boolean cycle,
+                           Consumer<A> callback,
+                           int priority)
     {
         _Cycle = cycle;
         _Tick = delay.toMillis();
@@ -52,17 +55,21 @@ public class ScheduleHandler<A extends IValid>
         _Lock = new ReentrantLock();
     }
 
-    public ScheduleHandler(Duration delay, boolean cycle)
+    public ScheduleHandler(Duration delay,
+                           boolean cycle)
     {
         this(delay, cycle, null, PRIORITY_NORMAL);
     }
 
-    public ScheduleHandler(Duration delay, Consumer<A> callback)
+    public ScheduleHandler(Duration delay,
+                           Consumer<A> callback)
     {
         this(delay, false, callback, PRIORITY_NORMAL);
     }
 
-    public ScheduleHandler(Duration delay, boolean cycle, Consumer<A> callback)
+    public ScheduleHandler(Duration delay,
+                           boolean cycle,
+                           Consumer<A> callback)
     {
         this(delay, cycle, callback, PRIORITY_NORMAL);
     }
@@ -88,13 +95,17 @@ public class ScheduleHandler<A extends IValid>
     @Override
     public void onCall()
     {
-        if (_Callback != null && attach != null && attach.isValid())
-        {
+        if (_Callback != null && attach != null && attach.isValid()) {
             _Callback.accept(attach);
         }
     }
 
     private long expect;
+
+    public long getExpect()
+    {
+        return expect;
+    }
 
     @Override
     public void setup()
