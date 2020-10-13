@@ -65,8 +65,6 @@ public class MGF1 extends InputStream
 
 
 
-
-
     /**
      * Initialize the MGF with a seed.
      * @param hashAlg  identifies the hash algorithm underlying the MGF

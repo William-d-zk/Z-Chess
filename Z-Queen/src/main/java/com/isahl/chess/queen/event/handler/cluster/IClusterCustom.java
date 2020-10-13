@@ -26,20 +26,19 @@ package com.isahl.chess.queen.event.handler.cluster;
 import java.util.List;
 
 import com.isahl.chess.king.base.inf.ITriple;
-import com.isahl.chess.queen.db.inf.IStorage;
-import com.isahl.chess.queen.event.handler.IMappingCustom;
 import com.isahl.chess.queen.io.core.inf.IConsistent;
 import com.isahl.chess.queen.io.core.inf.IContext;
-import com.isahl.chess.queen.io.core.inf.IProtocol;
 import com.isahl.chess.queen.io.core.inf.ISessionManager;
+import com.isahl.chess.queen.db.inf.IStorage;
+import com.isahl.chess.queen.event.handler.IMappingCustom;
+import com.isahl.chess.queen.io.core.inf.IProtocol;
 
 /**
  * @author william.d.zk
  * 
  * @date 2020/4/20
  */
-public interface IClusterCustom<C extends IContext<C>,
-                                T extends IStorage>
+public interface IClusterCustom<C extends IContext<C>, T extends IStorage>
         extends
         IMappingCustom<C>
 {
@@ -78,9 +77,9 @@ public interface IClusterCustom<C extends IContext<C>,
      * Link -> Cluster.consensus(Link.consensus_data,consensus_data.origin)
      *
      * @param manager
-     *            session 管理器
+     *                session 管理器
      * @param request
-     *            需要进行强一致的指令
+     *                需要进行强一致的指令
      * 
      * @return triples
      *         [托管给集群IoSwitch.write(triples) 或 Transfer → Link.notify(triples)]

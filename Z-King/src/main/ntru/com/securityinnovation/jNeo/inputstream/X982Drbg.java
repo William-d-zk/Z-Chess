@@ -51,7 +51,7 @@ public class X982Drbg extends InputStream
     // on digital signtures. The recommended value of t for each
     // hash algorithm is the leading <n> bytes of this string,
     // where n = the digest length of the hash algorithm.
-    private final static byte t[] = {
+    private final static byte[] t = {
         (byte)0xcf, (byte)0x83, (byte)0xe1, (byte)0x35, (byte)0x7e,
         (byte)0xef, (byte)0xb8, (byte)0xbd, (byte)0xf1, (byte)0x54,
         (byte)0x28, (byte)0x50, (byte)0xd6, (byte)0x6d, (byte)0x80,
@@ -124,7 +124,7 @@ public class X982Drbg extends InputStream
         // so that new V.length = _seed.length.
 
         // tmp = V | newSeed | 0x01
-        byte tmp[] = new byte[V.length + _seed.length + 1];
+        byte[] tmp = new byte[V.length + _seed.length + 1];
         System.arraycopy(V, 0, tmp, 0, V.length);
         System.arraycopy(_seed, 0, tmp, V.length, _seed.length);
         tmp[tmp.length-1] = 1;
@@ -174,7 +174,7 @@ public class X982Drbg extends InputStream
      */
     public int read()
     {
-        byte b[] = new byte[1];
+        byte[] b = new byte[1];
         read(b, 0, 1);
         return b[0] & 0xff;
     }
@@ -254,16 +254,15 @@ public class X982Drbg extends InputStream
     
 
 
-
     /**
      * Add two multi-byte big-endian integers: accum += in[offset..len-1].
      * Overflow is discarded.
      */ 
     void plusEquals(
-        byte accum[],
-        byte in[],
-        int  offset,
-        int  len)
+            byte[] accum,
+            byte[] in,
+            int  offset,
+            int  len)
     {
         int carry = 0;
         int i=len-1, j=accum.length-1;
@@ -277,7 +276,6 @@ public class X982Drbg extends InputStream
             i--;
         }
     }
-    
 
 
     /**
@@ -285,8 +283,8 @@ public class X982Drbg extends InputStream
      * Overflow is discarded.
      */ 
     void plusEquals(
-        byte accum[],
-        int  x)
+            byte[] accum,
+            int  x)
     {
         int carry = 0;
         int i=0, j=accum.length-1;
@@ -305,7 +303,7 @@ public class X982Drbg extends InputStream
     /**
      * The underlying hash function driving the PRNG.
      */
-    private Digest mHash;
+    private final Digest mHash;
 
     /**
      * The seed vector, called V in the X9.82 spec. Updated in

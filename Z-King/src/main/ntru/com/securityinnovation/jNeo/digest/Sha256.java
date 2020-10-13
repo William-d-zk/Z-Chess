@@ -25,7 +25,7 @@ package com.securityinnovation.jNeo.digest;
 /**
  * This class implements the SHA-256 message digest algorithm.
  */
-class Sha256 extends Digest {
+public class Sha256 extends Digest {
 
     /**
      * Constructor.
@@ -245,23 +245,23 @@ class Sha256 extends Digest {
     }
 
 
-    private final static int RR(int a, int n)
+    private static int RR(int a, int n)
     {
         return ( (a >>> n) | (a << (32 - n)));
     }
-    private final static int S0(int a)
+    private static int S0(int a)
     {
         return (RR(a,  2) ^ RR(a, 13) ^ RR(a, 22));
     }
-    private final static int S1(int a)
+    private static int S1(int a)
     {
         return (RR(a,  6) ^ RR(a, 11) ^ RR(a, 25));
     }
-    private final static int s0(int a)
+    private static int s0(int a)
     {
         return (RR(a,  7) ^ RR(a, 18) ^ (a >>>  3));
     }
-    private final static int s1(int a)
+    private static int s1(int a)
     {
         return (RR(a, 17) ^ RR(a, 19) ^ (a >>> 10));
     }

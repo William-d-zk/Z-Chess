@@ -48,7 +48,7 @@ public class BPGM3
         int          numNegOnes,
         IGF2         igf)
     {
-        boolean isSet[] = new boolean[N];
+        boolean[] isSet = new boolean[N];
         for (int i=0; i<N; i++)
           isSet[i] = false;
 

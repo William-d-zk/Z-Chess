@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.lmax.disruptor.RingBuffer;
 import com.isahl.chess.bishop.io.ZSort;
 import com.isahl.chess.bishop.io.zfilter.ZContext;
 import com.isahl.chess.bishop.io.zprotocol.control.X106_Identity;
@@ -53,6 +52,7 @@ import com.isahl.chess.queen.io.core.inf.INode;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionManager;
 import com.isahl.chess.queen.io.core.inf.ISessionOption;
+import com.lmax.disruptor.RingBuffer;
 
 /**
  * @author william.d.zk
@@ -74,9 +74,10 @@ public interface IClusterNode<K extends IPipeCore>
                                                    final ZUID _ZUID)
     {
         final String _Host = address.getFirst();
-        final int    _Port = address.getSecond();
-        if (_Sort.getMode() != ISort.Mode.CLUSTER)
-        { throw new IllegalArgumentException("sort mode is wrong in cluster define"); }
+        final int _Port = address.getSecond();
+        if (_Sort.getMode() != ISort.Mode.CLUSTER) {
+            throw new IllegalArgumentException("sort mode is wrong in cluster define");
+        }
         return new BaseAioConnector<ZContext>(_Host, _Port, socketConfig, client)
         {
             @Override
@@ -123,26 +124,23 @@ public interface IClusterNode<K extends IPipeCore>
     default <T extends IStorage> void timerEvent(T content)
     {
         final RingBuffer<QEvent> _ConsensusEvent = getCore().getConsensusEvent();
-        final ReentrantLock      _ConsensusLock  = getCore().getConsensusLock();
-        if (_ConsensusLock.tryLock())
-        {
-            try
-            {
-                long sequence = _ConsensusEvent.next();
-                try
-                {
-                    QEvent event = _ConsensusEvent.get(sequence);
-                    event.produce(CLUSTER_TIMER, new Pair<>(content, null), null);
-                }
-                finally
-                {
-                    _ConsensusEvent.publish(sequence);
-                }
+        final ReentrantLock _ConsensusLock = getCore().getConsensusLock();
+        /*
+        通过 Schedule thread-pool 进行 timer 执行, 排队执行。
+         */
+        _ConsensusLock.lock();
+        try {
+            long sequence = _ConsensusEvent.next();
+            try {
+                QEvent event = _ConsensusEvent.get(sequence);
+                event.produce(CLUSTER_TIMER, new Pair<>(content, null), null);
             }
-            finally
-            {
-                _ConsensusLock.unlock();
+            finally {
+                _ConsensusEvent.publish(sequence);
             }
+        }
+        finally {
+            _ConsensusLock.unlock();
         }
     }
 
