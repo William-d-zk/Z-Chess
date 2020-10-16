@@ -67,19 +67,11 @@ public class ClusterLogic
                                        IControl<ZContext> content) throws Exception
     {
         _Logger.debug("cluster handle heartbeat");
-        switch (content.serial())
-        {
-            case X104_Ping.COMMAND:
-                return new X105_Pong[] { new X105_Pong(String.format("pong:%#x %s",
-                                                                     session.getIndex(),
-                                                                     session.getLocalAddress())
-                                                             .getBytes(StandardCharsets.UTF_8))
-                };
-            case X11C_QttPingreq.COMMAND:
-                return new X11D_QttPingresp[] { new X11D_QttPingresp()
-                };
-        }
-        return null;
+        return switch (content.serial()) {
+            case X104_Ping.COMMAND -> new X105_Pong[]{new X105_Pong(String.format("pong:%#x %s", session.getIndex(), session.getLocalAddress()).getBytes(StandardCharsets.UTF_8))};
+            case X11C_QttPingreq.COMMAND -> new X11D_QttPingresp[]{new X11D_QttPingresp()};
+            default -> null;
+        };
     }
 
     @Override

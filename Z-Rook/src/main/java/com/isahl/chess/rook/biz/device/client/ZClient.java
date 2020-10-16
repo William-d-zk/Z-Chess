@@ -60,11 +60,6 @@ public class ZClient
 
     public IControl<ZContext> packet(IControl<ZContext> content)
     {
-        switch (content.serial())
-        {
-            default:
-                break;
-        }
         content.setSequence(sequence++);
         IQoS.Level level = content.getLevel();
         if (level.getValue() > IQoS.Level.ALMOST_ONCE.getValue())

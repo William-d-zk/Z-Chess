@@ -181,27 +181,16 @@ public class ZCommandFilter
 
     private ZCommand create(WsFrame frame)
     {
-        switch (frame.getPayload()[1] & 0xFF)
-        {
-            case X01_EncryptRequest.COMMAND:
-                return new X01_EncryptRequest();
-            case X02_AsymmetricPub.COMMAND:
-                return new X02_AsymmetricPub();
-            case X03_Cipher.COMMAND:
-                return new X03_Cipher();
-            case X04_EncryptConfirm.COMMAND:
-                return new X04_EncryptConfirm();
-            case X05_EncryptStart.COMMAND:
-                return new X05_EncryptStart();
-            case X06_EncryptComp.COMMAND:
-                return new X06_EncryptComp();
-            case 0xFF:
-                throw new UnsupportedOperationException();
-            default:
-                return _CommandFactory != null ?
-                        _CommandFactory.create(frame):
-                        null;
-        }
+        return switch (frame.getPayload()[1] & 0xFF) {
+            case X01_EncryptRequest.COMMAND -> new X01_EncryptRequest();
+            case X02_AsymmetricPub.COMMAND -> new X02_AsymmetricPub();
+            case X03_Cipher.COMMAND -> new X03_Cipher();
+            case X04_EncryptConfirm.COMMAND -> new X04_EncryptConfirm();
+            case X05_EncryptStart.COMMAND -> new X05_EncryptStart();
+            case X06_EncryptComp.COMMAND -> new X06_EncryptComp();
+            case 0xFF -> throw new UnsupportedOperationException();
+            default -> _CommandFactory != null ? _CommandFactory.create(frame) : null;
+        };
     }
 
 }

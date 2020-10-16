@@ -154,21 +154,13 @@ public class Logger
 
     public boolean isEnable(Level level)
     {
-        switch (level)
-        {
-            case ERROR:
-                return _Logger.isErrorEnabled();
-            case WARN:
-                return _Logger.isWarnEnabled();
-            case INFO:
-                return _Logger.isInfoEnabled();
-            case DEBUG:
-                return _Logger.isDebugEnabled();
-            case TRACE:
-                return _Logger.isTraceEnabled();
-            default:
-                return false;
-        }
+        return switch (level) {
+            case ERROR -> _Logger.isErrorEnabled();
+            case WARN -> _Logger.isWarnEnabled();
+            case INFO -> _Logger.isInfoEnabled();
+            case DEBUG -> _Logger.isDebugEnabled();
+            case TRACE -> _Logger.isTraceEnabled();
+        };
     }
 
     public static String arrayToString(Object[] a)

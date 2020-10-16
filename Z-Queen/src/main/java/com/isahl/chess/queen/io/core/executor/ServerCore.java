@@ -465,51 +465,35 @@ public class ServerCore<C extends IContext<C>>
     @Override
     public RingBuffer<QEvent> getCloser(IOperator.Type type)
     {
-        switch (type)
-        {
-            case BIZ_LOCAL:
-                return _BizLocalCloseEvent;
-            case CLUSTER_LOCAL:
-                return _ClusterLocalCloseEvent;
-            default:
-                throw new IllegalArgumentException(String.format("get closer type error:%s ", type.name()));
-        }
+        return switch (type) {
+            case BIZ_LOCAL -> _BizLocalCloseEvent;
+            case CLUSTER_LOCAL -> _ClusterLocalCloseEvent;
+            default -> throw new IllegalArgumentException(String.format("get closer type error:%s ", type.name()));
+        };
     }
 
     @Override
     public ReentrantLock getLock(IOperator.Type type)
     {
-        switch (type)
-        {
-            case BIZ_LOCAL:
-                return _LocalLock;
-            case CLUSTER_LOCAL:
-                return _ClusterLock;
-            case CONSENSUS:
-                return _ConsensusApiLock;
-            case CLUSTER_TIMER:
-                return _ConsensusLock;
-            default:
-                throw new IllegalArgumentException(String.format("error type:%s", type));
-        }
+        return switch (type) {
+            case BIZ_LOCAL -> _LocalLock;
+            case CLUSTER_LOCAL -> _ClusterLock;
+            case CONSENSUS -> _ConsensusApiLock;
+            case CLUSTER_TIMER -> _ConsensusLock;
+            default -> throw new IllegalArgumentException(String.format("error type:%s", type));
+        };
     }
 
     @Override
     public RingBuffer<QEvent> getPublisher(IOperator.Type type)
     {
-        switch (type)
-        {
-            case BIZ_LOCAL:
-                return _BizLocalSendEvent;
-            case CLUSTER_LOCAL:
-                return _ClusterLocalSendEvent;
-            case CONSENSUS:
-                return _ConsensusApiEvent;
-            case CLUSTER_TIMER:
-                return _ConsensusEvent;
-            default:
-                throw new IllegalArgumentException(String.format("get publisher type error:%s ", type.name()));
-        }
+        return switch (type) {
+            case BIZ_LOCAL -> _BizLocalSendEvent;
+            case CLUSTER_LOCAL -> _ClusterLocalSendEvent;
+            case CONSENSUS -> _ConsensusApiEvent;
+            case CLUSTER_TIMER -> _ConsensusEvent;
+            default -> throw new IllegalArgumentException(String.format("get publisher type error:%s ", type.name()));
+        };
     }
 
     @Override

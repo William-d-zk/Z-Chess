@@ -110,19 +110,13 @@ public interface IQoS
 
         public static Level valueOf(int level)
         {
-            switch (level)
-            {
-                case 0:
-                    return ALMOST_ONCE;
-                case 1:
-                    return AT_LEAST_ONCE;
-                case 2:
-                    return EXACTLY_ONCE;
-                case 0x80:
-                    return FAILURE;
-                default:
-                    throw new UnsupportedOperationException();
-            }
+            return switch (level) {
+                case 0 -> ALMOST_ONCE;
+                case 1 -> AT_LEAST_ONCE;
+                case 2 -> EXACTLY_ONCE;
+                case 0x80 -> FAILURE;
+                default -> throw new UnsupportedOperationException();
+            };
         }
 
     }

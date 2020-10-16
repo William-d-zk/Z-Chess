@@ -54,24 +54,15 @@ public enum RaftCode
 
     public static RaftCode valueOf(int code)
     {
-        switch (code)
-        {
-            case 0:
-                return SUCCESS;
-            case 1:
-                return LOWER_TERM;
-            case 2:
-                return CONFLICT;
-            case 3:
-                return ILLEGAL_STATE;
-            case 4:
-                return SPLIT_CLUSTER;
-            case 5:
-                return ALREADY_VOTE;
-            case 6:
-                return OBSOLETE;
-            default:
-                throw new UnsupportedOperationException();
-        }
+        return switch (code) {
+            case 0 -> SUCCESS;
+            case 1 -> LOWER_TERM;
+            case 2 -> CONFLICT;
+            case 3 -> ILLEGAL_STATE;
+            case 4 -> SPLIT_CLUSTER;
+            case 5 -> ALREADY_VOTE;
+            case 6 -> OBSOLETE;
+            default -> throw new UnsupportedOperationException();
+        };
     }
 }

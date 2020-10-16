@@ -82,30 +82,18 @@ public enum Status
 
     public static Status valueOf(int code)
     {
-        switch (code & ~ITask.RETRY_LIMIT)
-        {
-            case -1 << ITask.RETRY_COUNT_BITS:
-                return MISS;
-            case 0:
-                return CREATED;
-            case 1 << ITask.RETRY_COUNT_BITS:
-                return PENDING;
-            case 2 << ITask.RETRY_COUNT_BITS:
-                return RUNNING;
-            case 3 << ITask.RETRY_COUNT_BITS:
-                return STOP;
-            case (4 | 1) << ITask.RETRY_COUNT_BITS:
-                return CANCEL;
-            case (4 | 2) << ITask.RETRY_COUNT_BITS:
-                return COMPLETED;
-            case 8 << ITask.RETRY_COUNT_BITS:
-                return ERROR;
-            case (16 | 8) << ITask.RETRY_COUNT_BITS:
-                return TIME_OUT;
-            case (32 | 8) << ITask.RETRY_COUNT_BITS:
-                return FAILED;
-            default:
-                throw new IllegalStateException("Unexpected value: " + (code & ~ITask.RETRY_LIMIT));
-        }
+        return switch (code & ~ITask.RETRY_LIMIT) {
+            case -1 << ITask.RETRY_COUNT_BITS -> MISS;
+            case 0 -> CREATED;
+            case 1 << ITask.RETRY_COUNT_BITS -> PENDING;
+            case 2 << ITask.RETRY_COUNT_BITS -> RUNNING;
+            case 3 << ITask.RETRY_COUNT_BITS -> STOP;
+            case (4 | 1) << ITask.RETRY_COUNT_BITS -> CANCEL;
+            case (4 | 2) << ITask.RETRY_COUNT_BITS -> COMPLETED;
+            case 8 << ITask.RETRY_COUNT_BITS -> ERROR;
+            case (16 | 8) << ITask.RETRY_COUNT_BITS -> TIME_OUT;
+            case (32 | 8) << ITask.RETRY_COUNT_BITS -> FAILED;
+            default -> throw new IllegalStateException("Unexpected value: " + (code & ~ITask.RETRY_LIMIT));
+        };
     }
 }

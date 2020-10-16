@@ -52,23 +52,15 @@ public enum Direction
 
     public static Direction parseShort(String value)
     {
-        switch (value)
-        {
-            case "S->C":
-                return SERVER_TO_CLIENT;
-            case "C->S":
-                return CLIENT_TO_SERVER;
-            case "L->F":
-                return LEADER_BR_FOLLOWER;
-            case "F->L":
-                return FOLLOWER_RP_LEADER;
-            case "P->A":
-                return PROPOSER_BR_ACCEPTOR;
-            case "E->C":
-                return ELECTOR_RP_CANDIDATE;
-            default:
-                throw new IllegalArgumentException();
-        }
+        return switch (value) {
+            case "S->C" -> SERVER_TO_CLIENT;
+            case "C->S" -> CLIENT_TO_SERVER;
+            case "L->F" -> LEADER_BR_FOLLOWER;
+            case "F->L" -> FOLLOWER_RP_LEADER;
+            case "P->A" -> PROPOSER_BR_ACCEPTOR;
+            case "E->C" -> ELECTOR_RP_CANDIDATE;
+            default -> throw new IllegalArgumentException();
+        };
     }
 
     public final static String OWNER_CLIENT = "CLIENT";

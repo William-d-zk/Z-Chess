@@ -108,23 +108,18 @@ public class NtruEncryptKeyNativeEncoder implements NtruEncryptKeyEncoder
      * Parse a public or private key blob.
      */
     public RawKeyData decodeKeyBlob(
-        byte keyBlob[])
+            byte[] keyBlob)
         throws FormatNotSupportedException, ParamSetNotSupportedException
     {
-        switch (keyBlob[0])
-        {
-          case (PUBLIC_KEY_v1):
-          {
-              PubKeyFormatter_PUBLIC_KEY_v1 formatter =
-                new PubKeyFormatter_PUBLIC_KEY_v1();
-              return formatter.decode(keyBlob);
-          }
-          case (PRIVATE_KEY_DEFAULT_v1) :
-          {
-              PrivKeyFormatter formatter = pickDefaultPrivKeyFormatter(
-                  KeyFormatterUtil.parseOID(keyBlob, 1, 3));
-              return formatter.decode(keyBlob);
-          }
+        switch (keyBlob[0]) {
+            case (PUBLIC_KEY_v1) -> {
+                PubKeyFormatter_PUBLIC_KEY_v1 formatter = new PubKeyFormatter_PUBLIC_KEY_v1();
+                return formatter.decode(keyBlob);
+            }
+            case (PRIVATE_KEY_DEFAULT_v1) -> {
+                PrivKeyFormatter formatter = pickDefaultPrivKeyFormatter(KeyFormatterUtil.parseOID(keyBlob, 1, 3));
+                return formatter.decode(keyBlob);
+            }
         }
         throw new FormatNotSupportedException(keyBlob[0]);
     }

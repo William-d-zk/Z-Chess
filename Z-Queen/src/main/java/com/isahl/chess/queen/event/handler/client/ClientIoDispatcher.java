@@ -71,66 +71,53 @@ public class ClientIoDispatcher<C extends IContext<C>>
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
     {
-        switch (event.getErrorType())
-        {
-            case CONNECT_FAILED:
+        // convert & transfer
+        switch (event.getErrorType()) {
+            case CONNECT_FAILED -> {
                 IPair connectFailedContent = event.getContent();
                 Throwable throwable = connectFailedContent.getFirst();
                 IConnectActivity<C> connectActive = connectFailedContent.getSecond();
                 IOperator<Throwable, IConnectActivity<C>, ITriple> connectFailedOperator = event.getEventOp();
                 error(_Link, event.getErrorType(), new Pair<>(throwable, connectActive), connectFailedOperator);
-                break;
-
-            case NO_ERROR:
-                {
-                    switch (event.getEventType())
-                    {
-                        case CONNECTED:
-                        case ACCEPTED:
-                            IPair connectContent = event.getContent();
-                            IConnectActivity<C> connectActivity = connectContent.getFirst();
-                            AsynchronousSocketChannel channel = connectContent.getSecond();
-                            IOperator<IConnectActivity<C>,
-                                      AsynchronousSocketChannel,
-                                      ITriple> connectOperator = event.getEventOp();
-                            publish(_Link, event.getEventType(), new Pair<>(connectActivity, channel), connectOperator);
-                            break;
-                        case READ:
-                            IPair readContent = event.getContent();
-                            publish(_Decoder, DECODE, readContent, event.getEventOp());
-                            break;
-                        case WROTE:
-                            IPair wroteContent = event.getContent();
-                            publish(_Wrote, WROTE, wroteContent, event.getEventOp());
-                            break;
-                        case LOCAL_CLOSE:
-                            IOperator<Void, ISession<C>, Void> closeOperator = event.getEventOp();
-                            IPair closeContent = event.getContent();
-                            ISession<C> session = closeContent.getSecond();
-                            if (!session.isClosed())
-                            {
-                                error(_Link, INITIATIVE_CLOSE, closeContent, closeOperator);
-                            }
-                            break;
-                        default:
-                            _Logger.warning(String.format(" wrong type %s in ClientIoDispatcher",
-                                                          event.getEventType()));
-                            break;
+            }
+            case NO_ERROR -> {
+                switch (event.getEventType()) {
+                    case CONNECTED, ACCEPTED -> {
+                        IPair connectContent = event.getContent();
+                        IConnectActivity<C> connectActivity = connectContent.getFirst();
+                        AsynchronousSocketChannel channel = connectContent.getSecond();
+                        IOperator<IConnectActivity<C>, AsynchronousSocketChannel, ITriple> connectOperator = event.getEventOp();
+                        publish(_Link, event.getEventType(), new Pair<>(connectActivity, channel), connectOperator);
                     }
+                    case READ -> {
+                        IPair readContent = event.getContent();
+                        publish(_Decoder, DECODE, readContent, event.getEventOp());
+                    }
+                    case WROTE -> {
+                        IPair wroteContent = event.getContent();
+                        publish(_Wrote, WROTE, wroteContent, event.getEventOp());
+                    }
+                    case LOCAL_CLOSE -> {
+                        IOperator<Void, ISession<C>, Void> closeOperator = event.getEventOp();
+                        IPair closeContent = event.getContent();
+                        ISession<C> session = closeContent.getSecond();
+                        if (!session.isClosed()) {
+                            error(_Link, INITIATIVE_CLOSE, closeContent, closeOperator);
+                        }
+                    }
+                    default -> _Logger.warning(String.format(" wrong type %s in ClientIoDispatcher", event.getEventType()));
                 }
-                break;
-            default:
-                // convert & transfer
+            }
+            default -> {
                 IPair errorContent = event.getContent();
                 IOperator<Throwable, ISession<C>, IPair> errorOperator = event.getEventOp();
                 ISession<C> session = errorContent.getSecond();
-                throwable = errorContent.getFirst();
-                if (!session.isClosed())
-                {
+                Throwable throwable = errorContent.getFirst();
+                if (!session.isClosed()) {
                     IPair transferResult = errorOperator.handle(throwable, session);
                     error(_Link, PASSIVE_CLOSE, new Pair<>(QueenCode.ERROR_CLOSE, session), transferResult.getSecond());
                 }
-                break;
+            }
         }
         event.reset();
     }

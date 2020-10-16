@@ -48,27 +48,17 @@ public interface I18nUtil
 
     static Charset getCharset(byte data)
     {
-        switch (data & 0xF0)
-        {
-            case CHARSET_ASCII:
-                return StandardCharsets.US_ASCII;
-            case CHARSET_UTF_8_NB:
-                return StandardCharsets.UTF_16;
-            case CHARSET_UTC_BE:
-                return StandardCharsets.UTF_16BE;
-            case CHARSET_UTC_LE:
-                return StandardCharsets.UTF_16LE;
-            case CHARSET_GBK:
-                return Charset.forName("GBK");
-            case CHARSET_GB2312:
-                return Charset.forName("GB2312");
-            case CHARSET_GB18030:
-                return Charset.forName("GB18030");
-            case CHARSET_ISO_8859_1:
-                return StandardCharsets.ISO_8859_1;
-            default:
-                return StandardCharsets.UTF_8;
-        }
+        return switch (data & 0xF0) {
+            case CHARSET_ASCII -> StandardCharsets.US_ASCII;
+            case CHARSET_UTF_8_NB -> StandardCharsets.UTF_16;
+            case CHARSET_UTC_BE -> StandardCharsets.UTF_16BE;
+            case CHARSET_UTC_LE -> StandardCharsets.UTF_16LE;
+            case CHARSET_GBK -> Charset.forName("GBK");
+            case CHARSET_GB2312 -> Charset.forName("GB2312");
+            case CHARSET_GB18030 -> Charset.forName("GB18030");
+            case CHARSET_ISO_8859_1 -> StandardCharsets.ISO_8859_1;
+            default -> StandardCharsets.UTF_8;
+        };
     }
 
     static int getCharsetCode(String charset)
@@ -94,38 +84,25 @@ public interface I18nUtil
         if (StandardCharsets.UTF_16BE.equals(charset)) return CHARSET_UTC_BE;
         if (StandardCharsets.UTF_16LE.equals(charset)) return CHARSET_UTC_LE;
         if (StandardCharsets.ISO_8859_1.equals(charset)) return CHARSET_ISO_8859_1;
-        switch (charset.name().toUpperCase())
-        {
-            case "GBK":
-                return CHARSET_GBK;
-            case "GB2312":
-                return CHARSET_GB2312;
-            case "GB18030":
-                return CHARSET_GB18030;
-            case "ISO-8859-15":
-                return CHARSET_ISO_8859_15;
-            default:
-                return CHARSET_UTF_8;
-        }
+        return switch (charset.name().toUpperCase()) {
+            case "GBK" -> CHARSET_GBK;
+            case "GB2312" -> CHARSET_GB2312;
+            case "GB18030" -> CHARSET_GB18030;
+            case "ISO-8859-15" -> CHARSET_ISO_8859_15;
+            default -> CHARSET_UTF_8;
+        };
     }
 
     static String getSerialType(int type)
     {
-        switch (type & 0xF)
-        {
-            case SERIAL_TEXT:
-                return "text";
-            case SERIAL_BINARY:
-                return "binary";
-            case SERIAL_JSON:
-                return "json";
-            case SERIAL_XML:
-                return "xml";
-            case SERIAL_PROXY:
-                return "proxy";
-            default:
-                return "unknown";
-        }
+        return switch (type & 0xF) {
+            case SERIAL_TEXT -> "text";
+            case SERIAL_BINARY -> "binary";
+            case SERIAL_JSON -> "json";
+            case SERIAL_XML -> "xml";
+            case SERIAL_PROXY -> "proxy";
+            default -> "unknown";
+        };
     }
 
     static byte getCharsetSerial(int charset_, int serial_)

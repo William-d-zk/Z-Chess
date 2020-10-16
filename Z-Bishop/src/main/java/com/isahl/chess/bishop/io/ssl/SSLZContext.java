@@ -38,13 +38,13 @@ import com.isahl.chess.queen.io.core.inf.ISessionOption;
 /**
  * @author william.d.zk
  */
-public class ZSSLContext
+public class SSLZContext
         extends
         ZContext
 {
-    private final static Logger LOGGER = Logger.getLogger(ZSSLContext.class.getSimpleName());
+    private final static Logger LOGGER = Logger.getLogger(SSLZContext.class.getSimpleName());
 
-    public ZSSLContext(ISessionOption option, ISort<ZContext> sort) throws NoSuchAlgorithmException
+    public SSLZContext(ISessionOption option, ISort<ZContext> sort) throws NoSuchAlgorithmException
     {
         super(option, sort);
         _SslContext = SSLContext.getInstance("TLSv1.3");

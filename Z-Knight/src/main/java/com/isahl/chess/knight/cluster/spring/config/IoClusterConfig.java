@@ -59,30 +59,22 @@ public class IoClusterConfig
     @Override
     public int getSizePower(int type)
     {
-        switch (type)
-        {
-            case ZUID.TYPE_INTERNAL_SLOT:
-                return sizePowers.getOrDefault("internal.1", 7);
-            case ZUID.TYPE_CLUSTER_SLOT:
-                return sizePowers.getOrDefault("cluster.3", 7);
-            default:
-                throw new IllegalArgumentException();
-        }
+        return switch (type) {
+            case ZUID.TYPE_INTERNAL_SLOT -> sizePowers.getOrDefault("internal.1", 7);
+            case ZUID.TYPE_CLUSTER_SLOT -> sizePowers.getOrDefault("cluster.3", 7);
+            default -> throw new IllegalArgumentException();
+        };
 
     }
 
     @Override
     public ISocketConfig getSocketConfig(int type)
     {
-        switch (type)
-        {
-            case ZUID.TYPE_INTERNAL_SLOT:
-                return internal;
-            case ZUID.TYPE_CLUSTER_SLOT:
-                return cluster;
-            default:
-                throw new IllegalArgumentException();
-        }
+        return switch (type) {
+            case ZUID.TYPE_INTERNAL_SLOT -> internal;
+            case ZUID.TYPE_CLUSTER_SLOT -> cluster;
+            default -> throw new IllegalArgumentException();
+        };
     }
 
     public void setSizePowers(Map<String, Integer> sizePowers)

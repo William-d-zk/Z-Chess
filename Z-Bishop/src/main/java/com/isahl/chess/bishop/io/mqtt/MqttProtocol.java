@@ -94,39 +94,23 @@ public abstract class MqttProtocol
 
         public static QTT_TYPE valueOf(int head)
         {
-            switch (head & 240)
-            {
-                case 1 << 4:
-                    return CONNECT;
-                case 2 << 4:
-                    return CONNACK;
-                case 3 << 4:
-                    return PUBLISH;
-                case 4 << 4:
-                    return PUBACK;
-                case 5 << 4:
-                    return PUBREC;
-                case 6 << 4:
-                    return PUBREL;
-                case 7 << 4:
-                    return PUBCOMP;
-                case 8 << 4:
-                    return SUBSCRIBE;
-                case 9 << 4:
-                    return SUBACK;
-                case 10 << 4:
-                    return UNSUBSCRIBE;
-                case 11 << 4:
-                    return UNSUBACK;
-                case 12 << 4:
-                    return PINGREQ;
-                case 13 << 4:
-                    return PINGRESP;
-                case 14 << 4:
-                    return DISCONNECT;
-                default:
-                    throw new IllegalArgumentException();
-            }
+            return switch (head & 240) {
+                case 1 << 4 -> CONNECT;
+                case 2 << 4 -> CONNACK;
+                case 3 << 4 -> PUBLISH;
+                case 4 << 4 -> PUBACK;
+                case 5 << 4 -> PUBREC;
+                case 6 << 4 -> PUBREL;
+                case 7 << 4 -> PUBCOMP;
+                case 8 << 4 -> SUBSCRIBE;
+                case 9 << 4 -> SUBACK;
+                case 10 << 4 -> UNSUBSCRIBE;
+                case 11 << 4 -> UNSUBACK;
+                case 12 << 4 -> PINGREQ;
+                case 13 << 4 -> PINGRESP;
+                case 14 << 4 -> DISCONNECT;
+                default -> throw new IllegalArgumentException();
+            };
         }
     }
 

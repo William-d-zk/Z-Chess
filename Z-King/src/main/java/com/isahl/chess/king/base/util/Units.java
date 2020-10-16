@@ -47,17 +47,12 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            switch (to)
-            {
-                case CURRENCY_EUR:
-                    return data / CURRENCY_EUR.getSI();
-                case CURRENCY_USD:
-                    return data / CURRENCY_USD.getSI();
-                case CURRENCY_RMB:
-                    return data;
-                default:
-                    throw new IllegalArgumentException();
-            }
+            return switch (to) {
+                case CURRENCY_EUR -> data / CURRENCY_EUR.getSI();
+                case CURRENCY_USD -> data / CURRENCY_USD.getSI();
+                case CURRENCY_RMB -> data;
+                default -> throw new IllegalArgumentException();
+            };
         }
 
     },
@@ -66,17 +61,12 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            switch (to)
-            {
-                case CURRENCY_EUR:
-                    return data;
-                case CURRENCY_USD:
-                    return data * getSI() / CURRENCY_USD.getSI();
-                case CURRENCY_RMB:
-                    return data * getSI();
-                default:
-                    throw new IllegalArgumentException();
-            }
+            return switch (to) {
+                case CURRENCY_EUR -> data;
+                case CURRENCY_USD -> data * getSI() / CURRENCY_USD.getSI();
+                case CURRENCY_RMB -> data * getSI();
+                default -> throw new IllegalArgumentException();
+            };
         }
 
     },
@@ -85,17 +75,12 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            switch (to)
-            {
-                case CURRENCY_EUR:
-                    return data * getSI() / CURRENCY_EUR.getSI();
-                case CURRENCY_USD:
-                    return data;
-                case CURRENCY_RMB:
-                    return data * getSI();
-                default:
-                    throw new IllegalArgumentException();
-            }
+            return switch (to) {
+                case CURRENCY_EUR -> data * getSI() / CURRENCY_EUR.getSI();
+                case CURRENCY_USD -> data;
+                case CURRENCY_RMB -> data * getSI();
+                default -> throw new IllegalArgumentException();
+            };
         }
 
     },
@@ -107,17 +92,12 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            switch (to)
-            {
-                case WEIGHT_KG:
-                    return data * getSI();
-                case WEIGHT_G:
-                    return data * getSI() / WEIGHT_G.getSI();
-                case WEIGHT_TON:
-                    return data;
-                default:
-                    throw new IllegalArgumentException();
-            }
+            return switch (to) {
+                case WEIGHT_KG -> data * getSI();
+                case WEIGHT_G -> data * getSI() / WEIGHT_G.getSI();
+                case WEIGHT_TON -> data;
+                default -> throw new IllegalArgumentException();
+            };
         }
     },
     /**
@@ -128,17 +108,12 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            switch (to)
-            {
-                case WEIGHT_TON:
-                    return data / WEIGHT_TON.getSI();
-                case WEIGHT_G:
-                    return data / WEIGHT_G.getSI();
-                case WEIGHT_KG:
-                    return data;
-                default:
-                    throw new IllegalArgumentException();
-            }
+            return switch (to) {
+                case WEIGHT_TON -> data / WEIGHT_TON.getSI();
+                case WEIGHT_G -> data / WEIGHT_G.getSI();
+                case WEIGHT_KG -> data;
+                default -> throw new IllegalArgumentException();
+            };
         }
     },
     /**
@@ -149,17 +124,12 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            switch (to)
-            {
-                case WEIGHT_TON:
-                    return data * getSI() / WEIGHT_TON.getSI();
-                case WEIGHT_KG:
-                    return data * getSI();
-                case WEIGHT_G:
-                    return data;
-                default:
-                    throw new IllegalArgumentException();
-            }
+            return switch (to) {
+                case WEIGHT_TON -> data * getSI() / WEIGHT_TON.getSI();
+                case WEIGHT_KG -> data * getSI();
+                case WEIGHT_G -> data;
+                default -> throw new IllegalArgumentException();
+            };
         }
     },
     /**
@@ -170,17 +140,12 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            switch (to)
-            {
-                case VOLUME_ML:
-                    return data / VOLUME_ML.getSI();
-                case VOLUME_CubicM:
-                    return data / VOLUME_CubicM.getSI();
-                case VOLUME_L:
-                    return data;
-                default:
-                    throw new IllegalArgumentException();
-            }
+            return switch (to) {
+                case VOLUME_ML -> data / VOLUME_ML.getSI();
+                case VOLUME_CubicM -> data / VOLUME_CubicM.getSI();
+                case VOLUME_L -> data;
+                default -> throw new IllegalArgumentException();
+            };
         }
     },
     /**
@@ -191,17 +156,12 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            switch (to)
-            {
-                case VOLUME_L:
-                    return data * getSI();
-                case VOLUME_CubicM:
-                    return data * getSI() / VOLUME_CubicM.getSI();
-                case VOLUME_ML:
-                    return data;
-                default:
-                    throw new IllegalArgumentException();
-            }
+            return switch (to) {
+                case VOLUME_L -> data * getSI();
+                case VOLUME_CubicM -> data * getSI() / VOLUME_CubicM.getSI();
+                case VOLUME_ML -> data;
+                default -> throw new IllegalArgumentException();
+            };
         }
     },
     /**
@@ -212,17 +172,12 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            switch (to)
-            {
-                case VOLUME_L:
-                    return data * getSI();
-                case VOLUME_ML:
-                    return data * getSI() / VOLUME_ML.getSI();
-                case VOLUME_CubicM:
-                    return data;
-                default:
-                    throw new IllegalArgumentException();
-            }
+            return switch (to) {
+                case VOLUME_L -> data * getSI();
+                case VOLUME_ML -> data * getSI() / VOLUME_ML.getSI();
+                case VOLUME_CubicM -> data;
+                default -> throw new IllegalArgumentException();
+            };
         }
     },
     /**
@@ -233,20 +188,13 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            switch (to)
-            {
-                case LENGTH_M:
-                    return data;
-                case LENGTH_CM:
-                    return data / LENGTH_CM.getSI();
-                case LENGTH_MM:
-                    return data / LENGTH_MM.getSI();
-                case LENGTH_KM:
-                    return data / LENGTH_KM.getSI();
-
-                default:
-                    throw new IllegalArgumentException();
-            }
+            return switch (to) {
+                case LENGTH_M -> data;
+                case LENGTH_CM -> data / LENGTH_CM.getSI();
+                case LENGTH_MM -> data / LENGTH_MM.getSI();
+                case LENGTH_KM -> data / LENGTH_KM.getSI();
+                default -> throw new IllegalArgumentException();
+            };
         }
     },
     /**
@@ -257,19 +205,13 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            switch (to)
-            {
-                case LENGTH_M:
-                    return data * getSI();
-                case LENGTH_CM:
-                    return data;
-                case LENGTH_MM:
-                    return data * getSI() / LENGTH_MM.getSI();
-                case LENGTH_KM:
-                    return data * getSI() / LENGTH_KM.getSI();
-                default:
-                    throw new IllegalArgumentException();
-            }
+            return switch (to) {
+                case LENGTH_M -> data * getSI();
+                case LENGTH_CM -> data;
+                case LENGTH_MM -> data * getSI() / LENGTH_MM.getSI();
+                case LENGTH_KM -> data * getSI() / LENGTH_KM.getSI();
+                default -> throw new IllegalArgumentException();
+            };
         }
     },
     /**
@@ -280,19 +222,13 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            switch (to)
-            {
-                case LENGTH_M:
-                    return data * getSI();
-                case LENGTH_CM:
-                    return data * getSI() / LENGTH_CM.getSI();
-                case LENGTH_MM:
-                    return data;
-                case LENGTH_KM:
-                    return data * getSI() / LENGTH_KM.getSI();
-                default:
-                    throw new IllegalArgumentException();
-            }
+            return switch (to) {
+                case LENGTH_M -> data * getSI();
+                case LENGTH_CM -> data * getSI() / LENGTH_CM.getSI();
+                case LENGTH_MM -> data;
+                case LENGTH_KM -> data * getSI() / LENGTH_KM.getSI();
+                default -> throw new IllegalArgumentException();
+            };
         }
     },
     /**
@@ -303,19 +239,13 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            switch (to)
-            {
-                case LENGTH_M:
-                    return data * getSI();
-                case LENGTH_CM:
-                    return data * getSI() / LENGTH_CM.getSI();
-                case LENGTH_MM:
-                    return data * getSI() / LENGTH_MM.getSI();
-                case LENGTH_KM:
-                    return data;
-                default:
-                    throw new IllegalArgumentException();
-            }
+            return switch (to) {
+                case LENGTH_M -> data * getSI();
+                case LENGTH_CM -> data * getSI() / LENGTH_CM.getSI();
+                case LENGTH_MM -> data * getSI() / LENGTH_MM.getSI();
+                case LENGTH_KM -> data;
+                default -> throw new IllegalArgumentException();
+            };
         }
     },
     /**
@@ -326,17 +256,12 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            switch (to)
-            {
-                case TIME_M:
-                    return data * getSI();
-                case TIME_S:
-                    return data * getSI() / TIME_S.getSI();
-                case TIME_H:
-                    return data;
-                default:
-                    throw new IllegalArgumentException();
-            }
+            return switch (to) {
+                case TIME_M -> data * getSI();
+                case TIME_S -> data * getSI() / TIME_S.getSI();
+                case TIME_H -> data;
+                default -> throw new IllegalArgumentException();
+            };
         }
     },
     /**
@@ -347,17 +272,12 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            switch (to)
-            {
-                case TIME_H:
-                    return data / TIME_H.getSI();
-                case TIME_S:
-                    return data / TIME_S.getSI();
-                case TIME_M:
-                    return data;
-                default:
-                    throw new IllegalArgumentException();
-            }
+            return switch (to) {
+                case TIME_H -> data / TIME_H.getSI();
+                case TIME_S -> data / TIME_S.getSI();
+                case TIME_M -> data;
+                default -> throw new IllegalArgumentException();
+            };
         }
     },
     /**
@@ -368,17 +288,12 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            switch (to)
-            {
-                case TIME_H:
-                    return data * getSI() / TIME_H.getSI();
-                case TIME_M:
-                    return data * getSI();
-                case TIME_S:
-                    return data;
-                default:
-                    throw new IllegalArgumentException();
-            }
+            return switch (to) {
+                case TIME_H -> data * getSI() / TIME_H.getSI();
+                case TIME_M -> data * getSI();
+                case TIME_S -> data;
+                default -> throw new IllegalArgumentException();
+            };
         }
     },
     /**
@@ -390,17 +305,12 @@ public enum Units
         public float translate(Units to, float data)
         {
 
-            switch (to)
-            {
-                case SPEED_M_S:
-                    return data * getSI() / SPEED_M_S.getSI();
-                case SPEED_M_M:
-                    return data * getSI() / SPEED_M_M.getSI();
-                case SPEED_KM_H:
-                    return data;
-                default:
-                    throw new IllegalArgumentException();
-            }
+            return switch (to) {
+                case SPEED_M_S -> data * getSI() / SPEED_M_S.getSI();
+                case SPEED_M_M -> data * getSI() / SPEED_M_M.getSI();
+                case SPEED_KM_H -> data;
+                default -> throw new IllegalArgumentException();
+            };
 
         }
     },
@@ -412,17 +322,12 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            switch (to)
-            {
-                case SPEED_M_S:
-                    return data;
-                case SPEED_M_M:
-                    return data * getSI() / SPEED_M_M.getSI();
-                case SPEED_KM_H:
-                    return data * getSI() / SPEED_KM_H.getSI();
-                default:
-                    throw new IllegalArgumentException();
-            }
+            return switch (to) {
+                case SPEED_M_S -> data;
+                case SPEED_M_M -> data * getSI() / SPEED_M_M.getSI();
+                case SPEED_KM_H -> data * getSI() / SPEED_KM_H.getSI();
+                default -> throw new IllegalArgumentException();
+            };
         }
     },
     /**
@@ -433,17 +338,12 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            switch (to)
-            {
-                case SPEED_M_S:
-                    return data * getSI() / SPEED_M_S.getSI();
-                case SPEED_M_M:
-                    return data;
-                case SPEED_KM_H:
-                    return data * getSI() / SPEED_KM_H.getSI();
-                default:
-                    throw new IllegalArgumentException();
-            }
+            return switch (to) {
+                case SPEED_M_S -> data * getSI() / SPEED_M_S.getSI();
+                case SPEED_M_M -> data;
+                case SPEED_KM_H -> data * getSI() / SPEED_KM_H.getSI();
+                default -> throw new IllegalArgumentException();
+            };
         }
     },
     /**
@@ -454,19 +354,13 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            switch (to)
-            {
-                case PRICE_DIS_USD_KM:
-                    return data / PRICE_DIS_USD_KM.getSI();
-                case PRICE_DIS_USD_M:
-                    return data / PRICE_DIS_USD_M.getSI();
-                case PRICE_DIS_CNY_KM:
-                    return data / PRICE_DIS_CNY_KM.getSI();
-                case PRICE_DIS_CNY_M:
-                    return data * getSI();
-                default:
-                    throw new IllegalArgumentException();
-            }
+            return switch (to) {
+                case PRICE_DIS_USD_KM -> data / PRICE_DIS_USD_KM.getSI();
+                case PRICE_DIS_USD_M -> data / PRICE_DIS_USD_M.getSI();
+                case PRICE_DIS_CNY_KM -> data / PRICE_DIS_CNY_KM.getSI();
+                case PRICE_DIS_CNY_M -> data * getSI();
+                default -> throw new IllegalArgumentException();
+            };
         }
     },
     /**
@@ -477,19 +371,13 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            switch (to)
-            {
-                case PRICE_DIS_USD_KM:
-                    return data * getSI() / PRICE_DIS_USD_KM.getSI();
-                case PRICE_DIS_USD_M:
-                    return data * getSI() / PRICE_DIS_USD_M.getSI();
-                case PRICE_DIS_CNY_KM:
-                    return data * getSI();
-                case PRICE_DIS_CNY_M:
-                    return data * getSI() / PRICE_DIS_CNY_M.getSI();
-                default:
-                    throw new IllegalArgumentException();
-            }
+            return switch (to) {
+                case PRICE_DIS_USD_KM -> data * getSI() / PRICE_DIS_USD_KM.getSI();
+                case PRICE_DIS_USD_M -> data * getSI() / PRICE_DIS_USD_M.getSI();
+                case PRICE_DIS_CNY_KM -> data * getSI();
+                case PRICE_DIS_CNY_M -> data * getSI() / PRICE_DIS_CNY_M.getSI();
+                default -> throw new IllegalArgumentException();
+            };
         }
     },
     /**
@@ -500,19 +388,13 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            switch (to)
-            {
-                case PRICE_DIS_CNY_KM:
-                    return data * getSI() / PRICE_DIS_CNY_KM.getSI();
-                case PRICE_DIS_USD_KM:
-                    return data * getSI();
-                case PRICE_DIS_USD_M:
-                    return data * getSI() / PRICE_DIS_USD_M.getSI();
-                case PRICE_DIS_CNY_M:
-                    return data * getSI() / PRICE_DIS_CNY_M.getSI();
-                default:
-                    throw new IllegalArgumentException();
-            }
+            return switch (to) {
+                case PRICE_DIS_CNY_KM -> data * getSI() / PRICE_DIS_CNY_KM.getSI();
+                case PRICE_DIS_USD_KM -> data * getSI();
+                case PRICE_DIS_USD_M -> data * getSI() / PRICE_DIS_USD_M.getSI();
+                case PRICE_DIS_CNY_M -> data * getSI() / PRICE_DIS_CNY_M.getSI();
+                default -> throw new IllegalArgumentException();
+            };
         }
     },
     /**
@@ -523,19 +405,13 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            switch (to)
-            {
-                case PRICE_DIS_CNY_KM:
-                    return data * getSI() / PRICE_DIS_CNY_KM.getSI();
-                case PRICE_DIS_USD_KM:
-                    return data * getSI() / PRICE_DIS_USD_KM.getSI();
-                case PRICE_DIS_USD_M:
-                    return data * getSI();
-                case PRICE_DIS_CNY_M:
-                    return data * getSI() / PRICE_DIS_CNY_M.getSI();
-                default:
-                    throw new IllegalArgumentException();
-            }
+            return switch (to) {
+                case PRICE_DIS_CNY_KM -> data * getSI() / PRICE_DIS_CNY_KM.getSI();
+                case PRICE_DIS_USD_KM -> data * getSI() / PRICE_DIS_USD_KM.getSI();
+                case PRICE_DIS_USD_M -> data * getSI();
+                case PRICE_DIS_CNY_M -> data * getSI() / PRICE_DIS_CNY_M.getSI();
+                default -> throw new IllegalArgumentException();
+            };
         }
     },
     /**
@@ -547,15 +423,11 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            switch (to)
-            {
-                case TIME_VOLUME_M_CubicM:
-                    return data * getSI();
-                case TIME_VOLUME_M_L:
-                    return data * getSI() / TIME_VOLUME_M_L.getSI();
-                default:
-                    throw new IllegalArgumentException();
-            }
+            return switch (to) {
+                case TIME_VOLUME_M_CubicM -> data * getSI();
+                case TIME_VOLUME_M_L -> data * getSI() / TIME_VOLUME_M_L.getSI();
+                default -> throw new IllegalArgumentException();
+            };
         }
     },
     TIME_VOLUME_M_L("M/L", 1f, 3, SignModel.BEHIND)
@@ -563,15 +435,11 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            switch (to)
-            {
-                case TIME_VOLUME_M_CubicM:
-                    return data / TIME_VOLUME_M_CubicM.getSI();
-                case TIME_VOLUME_M_L:
-                    return data;
-                default:
-                    throw new IllegalArgumentException();
-            }
+            return switch (to) {
+                case TIME_VOLUME_M_CubicM -> data / TIME_VOLUME_M_CubicM.getSI();
+                case TIME_VOLUME_M_L -> data;
+                default -> throw new IllegalArgumentException();
+            };
         }
     },
     PROGRAM_STORAGE_B("B", 1f / 1024, 0, SignModel.BEHIND)
@@ -579,19 +447,13 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            switch (to)
-            {
-                case PROGRAM_STORAGE_B:
-                    return data;
-                case PROGRAM_STORAGE_KB:
-                    return data * getSI();
-                case PROGRAM_STORAGE_MB:
-                    return data * getSI() / PROGRAM_STORAGE_MB.getSI();
-                case PROGRAM_STORAGE_GB:
-                    return data * getSI() / PROGRAM_STORAGE_GB.getSI();
-                default:
-                    throw new IllegalArgumentException();
-            }
+            return switch (to) {
+                case PROGRAM_STORAGE_B -> data;
+                case PROGRAM_STORAGE_KB -> data * getSI();
+                case PROGRAM_STORAGE_MB -> data * getSI() / PROGRAM_STORAGE_MB.getSI();
+                case PROGRAM_STORAGE_GB -> data * getSI() / PROGRAM_STORAGE_GB.getSI();
+                default -> throw new IllegalArgumentException();
+            };
         }
     },
     PROGRAM_STORAGE_KB("KB", 1f, 4, SignModel.BEHIND)
@@ -599,17 +461,12 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            switch (to)
-            {
-                case PROGRAM_STORAGE_B:
-                    return data * 1024;
-                case PROGRAM_STORAGE_MB:
-                    return data / PROGRAM_STORAGE_MB.getSI();
-                case PROGRAM_STORAGE_GB:
-                    return data / PROGRAM_STORAGE_GB.getSI();
-                default:
-                    throw new IllegalArgumentException();
-            }
+            return switch (to) {
+                case PROGRAM_STORAGE_B -> data * 1024;
+                case PROGRAM_STORAGE_MB -> data / PROGRAM_STORAGE_MB.getSI();
+                case PROGRAM_STORAGE_GB -> data / PROGRAM_STORAGE_GB.getSI();
+                default -> throw new IllegalArgumentException();
+            };
         }
     },
     PROGRAM_STORAGE_MB("MB", 1024f, 3, SignModel.BEHIND)
@@ -617,17 +474,12 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            switch (to)
-            {
-                case PROGRAM_STORAGE_B:
-                    return data * 1024 * 1024;
-                case PROGRAM_STORAGE_KB:
-                    return data * getSI();
-                case PROGRAM_STORAGE_GB:
-                    return data * getSI() / PROGRAM_STORAGE_GB.getSI();
-                default:
-                    throw new IllegalArgumentException();
-            }
+            return switch (to) {
+                case PROGRAM_STORAGE_B -> data * 1024 * 1024;
+                case PROGRAM_STORAGE_KB -> data * getSI();
+                case PROGRAM_STORAGE_GB -> data * getSI() / PROGRAM_STORAGE_GB.getSI();
+                default -> throw new IllegalArgumentException();
+            };
         }
     },
     PROGRAM_STORAGE_GB("GB", 1024 * 1024f, 3, SignModel.BEHIND)
@@ -635,17 +487,12 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            switch (to)
-            {
-                case PROGRAM_STORAGE_B:
-                    return data * 1024 * 1024 * 1024;
-                case PROGRAM_STORAGE_KB:
-                    return data * getSI();
-                case PROGRAM_STORAGE_MB:
-                    return data * getSI() / PROGRAM_STORAGE_MB.getSI();
-                default:
-                    throw new IllegalArgumentException();
-            }
+            return switch (to) {
+                case PROGRAM_STORAGE_B -> data * 1024 * 1024 * 1024;
+                case PROGRAM_STORAGE_KB -> data * getSI();
+                case PROGRAM_STORAGE_MB -> data * getSI() / PROGRAM_STORAGE_MB.getSI();
+                default -> throw new IllegalArgumentException();
+            };
         }
     };
 

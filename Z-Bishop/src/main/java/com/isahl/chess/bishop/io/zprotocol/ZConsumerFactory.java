@@ -51,22 +51,14 @@ public class ZConsumerFactory
     @Override
     public ZCommand create(int serial)
     {
-        switch (serial)
-        {
-            case X21_SignUpResult.COMMAND:
-                return new X21_SignUpResult();
-            case X23_SignInResult.COMMAND:
-                return new X23_SignInResult();
-            case X25_AuthorisedToken.COMMAND:
-                return new X25_AuthorisedToken();
-            case X30_EventMsg.COMMAND:
-                return new X30_EventMsg();
-            case X32_MsgStatus.COMMAND:
-                return new X32_MsgStatus();
-            case X51_DeviceMsgAck.COMMAND:
-                return new X51_DeviceMsgAck();
-            default:
-                return null;
-        }
+        return switch (serial) {
+            case X21_SignUpResult.COMMAND -> new X21_SignUpResult();
+            case X23_SignInResult.COMMAND -> new X23_SignInResult();
+            case X25_AuthorisedToken.COMMAND -> new X25_AuthorisedToken();
+            case X30_EventMsg.COMMAND -> new X30_EventMsg();
+            case X32_MsgStatus.COMMAND -> new X32_MsgStatus();
+            case X51_DeviceMsgAck.COMMAND -> new X51_DeviceMsgAck();
+            default -> null;
+        };
     }
 }

@@ -72,60 +72,33 @@ public interface QueenCode
 
     static String parseRCode(int code)
     {
-        switch (code)
-        {
-            case PLAIN_UNSUPPORTED:
-                return "PLAIN_UNSUPPORTED";
-            case PLAIN_VERSION_LOWER:
-                return "PLAIN_VERSION_LOWER";
-            case SYMMETRIC_KEY_OK:
-                return "SYMMETRIC_KEY_OK";
-            case SYMMETRIC_KEY_REROLL:
-                return "SYMMETRIC_KEY_REROLL";
-            case DEVICE_OK:
-                return "DEVICE_OK";
-            case USR_OK:
-                return "USR_OK";
-            case DEVICE_AUTHORING_KEY_ERROR:
-                return "DEVICE_AUTHORING_KEY_ERROR";
-            case DEVICE_AUTHORING_KEY_OUT_OF_DATE:
-                return "DEVICE_AUTHORING_KEY_OUT_OF_DATE";
-            case DEVICE_DUPLICATE:
-                return "DEVICE_DUPLICATE";
-            case DEVICE_FORBIDDEN:
-                return "DEVICE_FORBIDDEN";
-            case DEVICE_NOT_FOUND:
-                return "DEVICE_NOT_FOUND";
-            case USR_FORBIDDEN:
-                return "USR_FORBIDDEN";
-            case USR_NOT_FOUND:
-                return "USR_NOT_FOUND";
-            case USR_AUTHORING_KEY_ERROR:
-                return "USR_AUTHORING_KEY_ERROR";
-            case USR_AUTHORING_KEY_OUT_OF_DATE:
-                return "USR_AUTHORING_KEY_OUT_OF_DATE";
-            case USR_DUPLICATE:
-                return "USR_DUPLICATE";
-            case USR_FAILED:
-                return "USR_FAILED";
-            case USR_DELETE:
-                return "USR_DELETE";
-            case SERVICE_ERROR:
-                return "SERVICE_ERROR";
-            case DEVICE_CLUSTER_ERROR:
-                return "DEVICE_CLUSTER_ERROR";
-            case ROUTER_CLUSTER_ERROR:
-                return "ROUTER_CLUSTER_ERROR";
-            case MQ_REGISTER_TOPIC_OK:
-                return "MQ_REGISTER_TOPIC_OK";
-            case MQ_REGISTER_TOPIC_DUPLICATE:
-                return "MQ_REGISTER_TOPIC_DUPLICATE";
-            case MQ_REGISTER_TOPIC_MODE_CONFLICT:
-                return "MQ_REGISTER_TOPIC_MODE_CONFLICT";
-            case MQ_REGISTER_TOPIC_NULL:
-                return "MQ_REGISTER_TOPIC_NULL";
-            default:
-                return "UNKNOWN";
-        }
+        return switch (code) {
+            case PLAIN_UNSUPPORTED -> "PLAIN_UNSUPPORTED";
+            case PLAIN_VERSION_LOWER -> "PLAIN_VERSION_LOWER";
+            case SYMMETRIC_KEY_OK -> "SYMMETRIC_KEY_OK";
+            case SYMMETRIC_KEY_REROLL -> "SYMMETRIC_KEY_REROLL";
+            case DEVICE_OK -> "DEVICE_OK";
+            case USR_OK -> "USR_OK";
+            case DEVICE_AUTHORING_KEY_ERROR -> "DEVICE_AUTHORING_KEY_ERROR";
+            case DEVICE_AUTHORING_KEY_OUT_OF_DATE -> "DEVICE_AUTHORING_KEY_OUT_OF_DATE";
+            case DEVICE_DUPLICATE -> "DEVICE_DUPLICATE";
+            case DEVICE_FORBIDDEN -> "DEVICE_FORBIDDEN";
+            case DEVICE_NOT_FOUND -> "DEVICE_NOT_FOUND";
+            case USR_FORBIDDEN -> "USR_FORBIDDEN";
+            case USR_NOT_FOUND -> "USR_NOT_FOUND";
+            case USR_AUTHORING_KEY_ERROR -> "USR_AUTHORING_KEY_ERROR";
+            case USR_AUTHORING_KEY_OUT_OF_DATE -> "USR_AUTHORING_KEY_OUT_OF_DATE";
+            case USR_DUPLICATE -> "USR_DUPLICATE";
+            case USR_FAILED -> "USR_FAILED";
+            case USR_DELETE -> "USR_DELETE";
+            case SERVICE_ERROR -> "SERVICE_ERROR";
+            case DEVICE_CLUSTER_ERROR -> "DEVICE_CLUSTER_ERROR";
+            case ROUTER_CLUSTER_ERROR -> "ROUTER_CLUSTER_ERROR";
+            case MQ_REGISTER_TOPIC_OK -> "MQ_REGISTER_TOPIC_OK";
+            case MQ_REGISTER_TOPIC_DUPLICATE -> "MQ_REGISTER_TOPIC_DUPLICATE";
+            case MQ_REGISTER_TOPIC_MODE_CONFLICT -> "MQ_REGISTER_TOPIC_MODE_CONFLICT";
+            case MQ_REGISTER_TOPIC_NULL -> "MQ_REGISTER_TOPIC_NULL";
+            default -> "UNKNOWN";
+        };
     }
 }
