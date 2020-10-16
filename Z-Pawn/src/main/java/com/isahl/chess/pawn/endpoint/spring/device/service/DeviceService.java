@@ -101,21 +101,12 @@ public class DeviceService
         final TimeWheel _TimeWheel = new TimeWheel();
         List<ITriple>   hosts      = deviceConfig.getListeners().stream().map(listener ->
                                    {
-                                       ZSort sort;
-                                       switch (listener.getScheme())
-                                       {
-                                           case "ws":
-                                               sort = ZSort.WS_SERVER;
-                                               break;
-                                           case "mqtt":
-                                               sort = ZSort.QTT_SERVER;
-                                               break;
-                                           case "ws_mqtt":
-                                               sort = ZSort.WS_QTT_SERVER;
-                                               break;
-                                           default:
-                                               throw new UnsupportedOperationException(listener.getScheme());
-                                       }
+                                       ZSort sort = switch (listener.getScheme()) {
+                                           case "ws" -> ZSort.WS_SERVER;
+                                           case "mqtt" -> ZSort.QTT_SERVER;
+                                           case "ws_mqtt" -> ZSort.WS_QTT_SERVER;
+                                           default -> throw new UnsupportedOperationException(listener.getScheme());
+                                       };
                                        return new Triple<>(listener.getHost(), listener.getPort(), sort);
                                    }).collect(Collectors.toList());
         _DeviceNode = new DeviceNode(hosts, ioConfig, raftConfig, mixConfig, _TimeWheel);

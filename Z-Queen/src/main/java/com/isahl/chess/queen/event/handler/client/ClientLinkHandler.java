@@ -77,37 +77,24 @@ public class ClientLinkHandler<C extends IContext<C>>
         }
         else
         {
-            switch (event.getEventType())
-            {
-                case CONNECTED:
-                    try
-                    {
-                        IPair                                                              connectedContent     = event.getContent();
-                        IConnectActivity<C> connectActivity      = connectedContent.getFirst();
-                        AsynchronousSocketChannel                                          channel              = connectedContent.getSecond();
-                        IOperator<IConnectActivity<C>,
-                                  AsynchronousSocketChannel,
-                                  ITriple>                                                 connectedOperator    = event.getEventOp();
-                        ITriple                                                            connectedHandled     = connectedOperator.handle(connectActivity,
-                                                                                                                                           channel);
-                        // connectedHandled 不可能为 null
-                        IControl<C>[]                                                      waitToSend           = connectedHandled.getFirst();
-                        ISession<C>                                                        session              = connectedHandled.getSecond();
-                        IOperator<IControl<C>[],
-                                  ISession<C>,
-                                  List<ITriple>>                                           sendTransferOperator = connectedHandled.getThird();
-                        event.produce(WRITE, new Pair<>(waitToSend, session), sendTransferOperator);
-                        _Logger.debug(String.format("link mappingHandle %s,connected", session));
-                    }
-                    catch (Exception e)
-                    {
-                        _Logger.fetal("client session create failed", e);
-                    }
-                    break;
-                default:
-                    _Logger.warning(String.format("client link mappingHandle can't mappingHandle %s",
-                                                  event.getEventType()));
-                    break;
+            if (event.getEventType() == IOperator.Type.CONNECTED) {
+                try {
+                    IPair connectedContent = event.getContent();
+                    IConnectActivity<C> connectActivity = connectedContent.getFirst();
+                    AsynchronousSocketChannel channel = connectedContent.getSecond();
+                    IOperator<IConnectActivity<C>, AsynchronousSocketChannel, ITriple> connectedOperator = event.getEventOp();
+                    ITriple connectedHandled = connectedOperator.handle(connectActivity, channel);
+                    // connectedHandled 不可能为 null
+                    IControl<C>[] waitToSend = connectedHandled.getFirst();
+                    ISession<C> session = connectedHandled.getSecond();
+                    IOperator<IControl<C>[], ISession<C>, List<ITriple>> sendTransferOperator = connectedHandled.getThird();
+                    event.produce(WRITE, new Pair<>(waitToSend, session), sendTransferOperator);
+                    _Logger.debug(String.format("link mappingHandle %s,connected", session));
+                } catch (Exception e) {
+                    _Logger.fetal("client session create failed", e);
+                }
+            } else {
+                _Logger.warning(String.format("client link mappingHandle can't mappingHandle %s", event.getEventType()));
             }
         }
     }

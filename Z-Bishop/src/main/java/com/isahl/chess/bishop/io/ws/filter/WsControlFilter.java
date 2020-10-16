@@ -86,21 +86,13 @@ public class WsControlFilter
     @Override
     public WsControl decode(ZContext context, WsFrame input)
     {
-        switch (input.frame_op_code & 0x0F)
-        {
-            case WsFrame.frame_op_code_ctrl_close:
-                return new X103_Close(input.getPayload());
-            case WsFrame.frame_op_code_ctrl_ping:
-                return new X104_Ping(input.getPayload());
-            case WsFrame.frame_op_code_ctrl_pong:
-                return new X105_Pong(input.getPayload());
-            case WsFrame.frame_op_code_ctrl_cluster:
-                return new X106_Identity(input.getPayload());
-            case WsFrame.frame_op_code_ctrl_redirect:
-                return new X107_Redirect(input.getPayload());
-            default:
-                throw new UnsupportedOperationException(String.format("web socket frame with control code %d.",
-                                                                      input.frame_op_code & 0x0F));
-        }
+        return switch (input.frame_op_code & 0x0F) {
+            case WsFrame.frame_op_code_ctrl_close -> new X103_Close(input.getPayload());
+            case WsFrame.frame_op_code_ctrl_ping -> new X104_Ping(input.getPayload());
+            case WsFrame.frame_op_code_ctrl_pong -> new X105_Pong(input.getPayload());
+            case WsFrame.frame_op_code_ctrl_cluster -> new X106_Identity(input.getPayload());
+            case WsFrame.frame_op_code_ctrl_redirect -> new X107_Redirect(input.getPayload());
+            default -> throw new UnsupportedOperationException(String.format("web socket frame with control code %d.", input.frame_op_code & 0x0F));
+        };
     }
 }

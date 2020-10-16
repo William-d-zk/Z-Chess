@@ -50,20 +50,13 @@ public enum RaftState
 
     public static RaftState valueOf(int code)
     {
-        switch (code)
-        {
-            case 0:
-                return FOLLOWER;
-            case 1:
-                return ELECTOR;
-            case 2:
-                return CANDIDATE;
-            case 3:
-                return LEADER;
-            case 4:
-                return LEARNER;
-            default:
-                throw new IllegalArgumentException();
-        }
+        return switch (code) {
+            case 0 -> FOLLOWER;
+            case 1 -> ELECTOR;
+            case 2 -> CANDIDATE;
+            case 3 -> LEADER;
+            case 4 -> LEARNER;
+            default -> throw new IllegalArgumentException();
+        };
     }
 }

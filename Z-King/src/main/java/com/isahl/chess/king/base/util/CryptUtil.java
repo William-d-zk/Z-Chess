@@ -343,22 +343,13 @@ public class CryptUtil
     {
         if (input == null || digestName == null) throw new NullPointerException();
         if (input.length < len || offset < 0 || offset >= len) throw new ArrayIndexOutOfBoundsException();
-        MessageDigest md;
-        switch (digestName.toUpperCase())
-        {
-            case "MD5":
-                md = _MD5;
-                break;
-            case "SHA-1":
-                md = _SHA_1;
-                break;
-            case "SHA-256":
-                md = _SHA_256;
-                break;
-            default:
-                throw new IllegalArgumentException();
-        }
-        md.reset();
+        MessageDigest md = switch (digestName.toUpperCase()) {
+            case "MD5" -> _MD5;
+            case "SHA-1" -> _SHA_1;
+            case "SHA-256" -> _SHA_256;
+            default -> throw new IllegalArgumentException();
+        };
+        Objects.requireNonNull(md).reset();
         md.update(input, offset, len);
         return md.digest();
     }

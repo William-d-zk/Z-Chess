@@ -105,125 +105,98 @@ public class WsHandShakeFilter
                             switch (sort.getType())
                             {
                                 case SERVER:
-                                    switch (httpKey)
-                                    {
-                                        case "GET":
+                                    switch (httpKey) {
+                                        case "GET" -> {
                                             rowSplit = row.split("\\s+");
-                                            if (!"HTTP/1.1".equalsIgnoreCase(rowSplit[2]))
-                                            {
+                                            if (!"HTTP/1.1".equalsIgnoreCase(rowSplit[2])) {
                                                 _Logger.warning("http protocol version is low than 1.1");
                                                 return ResultType.ERROR;
                                             }
                                             wsContext.updateHandshakeState(WsContext.HS_State_GET);
-                                            break;
-                                        case "UPGRADE:":
-                                            if (!"websocket".equalsIgnoreCase(rowSplit[1]))
-                                            {
+                                        }
+                                        case "UPGRADE:" -> {
+                                            if (!"websocket".equalsIgnoreCase(rowSplit[1])) {
                                                 _Logger.warning("upgrade no web-socket");
                                                 return ResultType.ERROR;
                                             }
                                             wsContext.updateHandshakeState(WsContext.HS_State_UPGRADE);
                                             response.append(row).append(CRLF);
-                                            break;
-                                        case "CONNECTION:":
-                                            if (!"Upgrade".equalsIgnoreCase(rowSplit[1]))
-                                            {
+                                        }
+                                        case "CONNECTION:" -> {
+                                            if (!"Upgrade".equalsIgnoreCase(rowSplit[1])) {
                                                 _Logger.warning("connection no upgrade");
                                                 return ResultType.ERROR;
                                             }
                                             wsContext.updateHandshakeState(WsContext.HS_State_CONNECTION);
                                             response.append(row).append(CRLF);
-                                            break;
-                                        case "SEC-WEBSOCKET-PROTOCOL:":
-                                            if (!rowSplit[1].contains("z-push") && !rowSplit[1].contains("z-chat")
-                                                && !rowSplit[1].contains("mqtt"))
-                                            {
+                                        }
+                                        case "SEC-WEBSOCKET-PROTOCOL:" -> {
+                                            if (!rowSplit[1].contains("z-push") && !rowSplit[1].contains("z-chat") && !rowSplit[1].contains("mqtt")) {
                                                 _Logger.warning("sec-websokcet-protocol failed");
                                                 return ResultType.ERROR;
                                             }
                                             wsContext.updateHandshakeState(WsContext.HS_State_SEC_PROTOCOL);
                                             response.append(row).append(CRLF);
-                                            break;
-                                        case "SEC-WEBSOCKET-VERSION:":
-                                            if (rowSplit[1].contains("7") || rowSplit[1].contains("8"))
-                                            {
+                                        }
+                                        case "SEC-WEBSOCKET-VERSION:" -> {
+                                            if (rowSplit[1].contains("7") || rowSplit[1].contains("8")) {
                                                 _Logger.debug("sec-websokcet-version : %s, ignore", rowSplit[1]);
                                             }
-                                            if (!rowSplit[1].contains("13"))
-                                            {
+                                            if (!rowSplit[1].contains("13")) {
                                                 _Logger.warning("sec-websokcet-version to low");
                                                 return ResultType.ERROR;
-                                            }
-                                            else
-                                            {
+                                            } else {
                                                 // just support version 13
                                                 wsContext.updateHandshakeState(WsContext.HS_State_SEC_VERSION);
                                                 response.append(row).append(CRLF);
                                             }
-                                            break;
-                                        case "HOST:":
+                                        }
+                                        case "HOST:" -> {
                                             wsContext.updateHandshakeState(WsContext.HS_State_HOST);
                                             response.append(row).append(CRLF);
-                                            break;
-                                        case "ORIGIN:":
+                                        }
+                                        case "ORIGIN:" -> {
                                             wsContext.updateHandshakeState(WsContext.HS_State_ORIGIN);
                                             response.append(row).append(CRLF);
-                                            break;
-                                        case "SEC-WEBSOCKET-KEY:":
+                                        }
+                                        case "SEC-WEBSOCKET-KEY:" -> {
                                             wsContext.updateHandshakeState(WsContext.HS_State_SEC_KEY);
-                                            response.append(String.format("Sec-WebSocket-Accept: %s\r\n",
-                                                                          wsContext.getSecAccept(rowSplit[1])));
-                                            break;
-                                        default:
-                                            _Logger.warning("unchecked httpKey and content: [%s %s]",
-                                                            httpKey,
-                                                            rowSplit[1]);
-                                            break;
+                                            response.append(String.format("Sec-WebSocket-Accept: %s\r\n", wsContext.getSecAccept(rowSplit[1])));
+                                        }
+                                        default -> _Logger.warning("unchecked httpKey and content: [%s %s]", httpKey, rowSplit[1]);
                                     }
                                     break;
                                 case CONSUMER:
-                                    switch (httpKey)
-                                    {
-                                        case "HTTP/1.1":
-                                            if (!rowSplit[1].contains("101 Switching Protocols"))
-                                            {
+                                    switch (httpKey) {
+                                        case "HTTP/1.1" -> {
+                                            if (!rowSplit[1].contains("101 Switching Protocols")) {
                                                 _Logger.warning("handshake error !:");
                                                 return ResultType.ERROR;
                                             }
                                             wsContext.updateHandshakeState(WsContext.HS_State_HTTP_101);
-                                            break;
-                                        case "UPGRADE:":
-                                            if (!"websocket".equalsIgnoreCase(rowSplit[1]))
-                                            {
+                                        }
+                                        case "UPGRADE:" -> {
+                                            if (!"websocket".equalsIgnoreCase(rowSplit[1])) {
                                                 _Logger.warning("upgrade no web-socket");
                                                 return ResultType.ERROR;
                                             }
                                             wsContext.updateHandshakeState(WsContext.HS_State_UPGRADE);
-                                            break;
-                                        case "CONNECTION:":
-                                            if (!"Upgrade".equalsIgnoreCase(rowSplit[1]))
-                                            {
+                                        }
+                                        case "CONNECTION:" -> {
+                                            if (!"Upgrade".equalsIgnoreCase(rowSplit[1])) {
                                                 _Logger.warning("connection no upgrade");
                                                 return ResultType.ERROR;
                                             }
                                             wsContext.updateHandshakeState(WsContext.HS_State_CONNECTION);
-                                            break;
-                                        case "SEC-WEBSOCKET-ACCEPT:":
-                                            if (!rowSplit[1].startsWith(wsContext.getSecAcceptExpect()))
-                                            {
-                                                _Logger.warning("key error: expect-> "
-                                                                + wsContext.getSecAcceptExpect()
-                                                                + " | result-> "
-                                                                + rowSplit[1]);
+                                        }
+                                        case "SEC-WEBSOCKET-ACCEPT:" -> {
+                                            if (!rowSplit[1].startsWith(wsContext.getSecAcceptExpect())) {
+                                                _Logger.warning("key error: expect-> " + wsContext.getSecAcceptExpect() + " | result-> " + rowSplit[1]);
                                                 return ResultType.ERROR;
                                             }
                                             wsContext.updateHandshakeState(WsContext.HS_State_SEC_ACCEPT);
-                                            break;
-                                        default:
-                                            _Logger.debug("unchecked httpKey and content: [%s %s]",
-                                                          httpKey,
-                                                          rowSplit[1]);
-                                            break;
+                                        }
+                                        default -> _Logger.debug("unchecked httpKey and content: [%s %s]", httpKey, rowSplit[1]);
                                     }
                                     break;
                                 default:

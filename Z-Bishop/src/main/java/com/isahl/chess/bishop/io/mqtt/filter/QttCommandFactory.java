@@ -75,39 +75,23 @@ public class QttCommandFactory
     public IControl<ZContext> create(int serial)
     {
         MqttProtocol.QTT_TYPE qttType = MqttProtocol.QTT_TYPE.valueOf(serial);
-        switch (qttType)
-        {
-            case CONNECT:
-                return new X111_QttConnect();
-            case CONNACK:
-                return new X112_QttConnack();
-            case PINGREQ:
-                return new X11C_QttPingreq();
-            case PINGRESP:
-                return new X11D_QttPingresp();
-            case DISCONNECT:
-                return new X11E_QttDisconnect();
-            case PUBLISH:
-                return new X113_QttPublish();
-            case PUBACK:
-                return new X114_QttPuback();
-            case PUBREC:
-                return new X115_QttPubrec();
-            case PUBREL:
-                return new X116_QttPubrel();
-            case PUBCOMP:
-                return new X117_QttPubcomp();
-            case SUBSCRIBE:
-                return new X118_QttSubscribe();
-            case SUBACK:
-                return new X119_QttSuback();
-            case UNSUBSCRIBE:
-                return new X11A_QttUnsubscribe();
-            case UNSUBACK:
-                return new X11B_QttUnsuback();
-            default:
-                throw new IllegalArgumentException("MQTT type error");
-        }
+        return switch (qttType) {
+            case CONNECT -> new X111_QttConnect();
+            case CONNACK -> new X112_QttConnack();
+            case PINGREQ -> new X11C_QttPingreq();
+            case PINGRESP -> new X11D_QttPingresp();
+            case DISCONNECT -> new X11E_QttDisconnect();
+            case PUBLISH -> new X113_QttPublish();
+            case PUBACK -> new X114_QttPuback();
+            case PUBREC -> new X115_QttPubrec();
+            case PUBREL -> new X116_QttPubrel();
+            case PUBCOMP -> new X117_QttPubcomp();
+            case SUBSCRIBE -> new X118_QttSubscribe();
+            case SUBACK -> new X119_QttSuback();
+            case UNSUBSCRIBE -> new X11A_QttUnsubscribe();
+            case UNSUBACK -> new X11B_QttUnsuback();
+            default -> throw new IllegalArgumentException("MQTT type error");
+        };
     }
 
     public static QttControl createQttControl(QttFrame frame)

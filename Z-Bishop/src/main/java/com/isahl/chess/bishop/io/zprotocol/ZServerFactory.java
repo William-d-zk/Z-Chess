@@ -51,23 +51,15 @@ public class ZServerFactory
     @Override
     public ZCommand create(int serial)
     {
-        switch (serial)
-        {
-            case X20_SignUp.COMMAND:
-                return new X20_SignUp();
-            case X22_SignIn.COMMAND:
-                return new X22_SignIn();
-            case X24_UpdateToken.COMMAND:
-                return new X24_UpdateToken();
-            case X31_ConfirmMsg.COMMAND:
-                return new X31_ConfirmMsg();
-            case X32_MsgStatus.COMMAND:
-                return new X32_MsgStatus();
-            case X50_DeviceMsg.COMMAND:
-                return new X50_DeviceMsg();
-            default:
-                return null;
-        }
+        return switch (serial) {
+            case X20_SignUp.COMMAND -> new X20_SignUp();
+            case X22_SignIn.COMMAND -> new X22_SignIn();
+            case X24_UpdateToken.COMMAND -> new X24_UpdateToken();
+            case X31_ConfirmMsg.COMMAND -> new X31_ConfirmMsg();
+            case X32_MsgStatus.COMMAND -> new X32_MsgStatus();
+            case X50_DeviceMsg.COMMAND -> new X50_DeviceMsg();
+            default -> null;
+        };
     }
 
 }

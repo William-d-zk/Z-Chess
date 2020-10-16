@@ -49,24 +49,13 @@ public class AioWriter<C extends IContext<C>>
     public void completed(Integer result, ISession<C> session)
     {
         AioWorker worker = (AioWorker) Thread.currentThread();
-        switch (result)
-        {
-            case -1:
-                worker.publishWroteError(session.getContext().getSort().getError(),
-                                         WRITE_EOF,
-                                         new EOFException("wrote -1!"),
-                                         session);
-                break;
-            case 0:
-                worker.publishWroteError(session.getContext().getSort().getError(),
-                                         WRITE_ZERO,
-                                         new IllegalArgumentException("wrote zero!"),
-                                         session);
-                break;
-            default:
+        switch (result) {
+            case -1 -> worker.publishWroteError(session.getContext().getSort().getError(), WRITE_EOF, new EOFException("wrote -1!"), session);
+            case 0 -> worker.publishWroteError(session.getContext().getSort().getError(), WRITE_ZERO, new IllegalArgumentException("wrote zero!"), session);
+            default -> {
                 _Logger.debug("aio wrote %d | %s", result, session);
                 worker.publishWrote(_WroteOperator, result, session);
-                break;
+            }
         }
     }
 

@@ -108,25 +108,16 @@ public interface IContext<C extends IContext<C>>
 
     default String getSessionState(int c)
     {
-        switch (c)
-        {
-            case SESSION_CONNECTED:
-                return "SESSION_CONNECTED";
-            case SESSION_IDLE:
-                return "SESSION_IDLE";
-            case SESSION_PENDING:
-                return "SESSION_PENDING";
-            case SESSION_SENDING:
-                return "SESSION_SENDING";
-            case SESSION_FLUSHED:
-                return "SESSION_FLUSHED";
-            case SESSION_CLOSE:
-                return "SESSION_CLOSE";
-            case SESSION_TERMINATED:
-                return "SESSION_TERMINATED";
-            default:
-                return "UNKNOWN";
-        }
+        return switch (c) {
+            case SESSION_CONNECTED -> "SESSION_CONNECTED";
+            case SESSION_IDLE -> "SESSION_IDLE";
+            case SESSION_PENDING -> "SESSION_PENDING";
+            case SESSION_SENDING -> "SESSION_SENDING";
+            case SESSION_FLUSHED -> "SESSION_FLUSHED";
+            case SESSION_CLOSE -> "SESSION_CLOSE";
+            case SESSION_TERMINATED -> "SESSION_TERMINATED";
+            default -> "UNKNOWN";
+        };
     }
 
     default int stateOf(int c)

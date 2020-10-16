@@ -42,6 +42,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 
+import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.rook.config.ConsumerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -124,84 +125,67 @@ public class DeviceConsumer
         {
             IControl<ZContext>[]     commands;
             final ISession<ZContext> session;
-            switch (event.getEventType())
-            {
-                case LOGIC:
-                    // 与 Server Node 处理过程存在较大的差异，中间去掉一个decoded dispatcher 所以此处入参为 IControl[]
-                    IPair logicContent = event.getContent();
-                    commands = logicContent.getFirst();
-                    session = logicContent.getSecond();
-                    if (Objects.nonNull(commands))
-                    {
-                        commands = Stream.of(commands).map(cmd ->
-                        {
-                            _Logger.debug("recv:{ %s }", cmd);
-                            switch (cmd.serial())
-                            {
-                                case X03_Cipher.COMMAND:
-                                case X05_EncryptStart.COMMAND:
-                                    return cmd;
-                                case X21_SignUpResult.COMMAND:
-                                    X21_SignUpResult x21 = (X21_SignUpResult) cmd;
-                                    X22_SignIn x22 = new X22_SignIn();
-                                    byte[] token = x22.getToken();
-                                    ZClient zClient = _ZClientMap.get(session.getIndex());
-                                    if (zClient == null)
-                                    {
-                                        _Logger.warning("z-client not found");
-                                    }
-                                    else
-                                    {
-                                        zClient.setToken(IoUtil.bin2Hex(token));
-                                    }
-                                    x22.setToken(token);
-                                    x22.setPassword("password");
-                                    return x22;
-                                case X23_SignInResult.COMMAND:
-                                    X23_SignInResult x23 = (X23_SignInResult) cmd;
-                                    if (x23.isSuccess())
-                                    {
-                                        _Logger.debug("sign in success token invalid @ %s",
-                                                      Instant.ofEpochMilli(x23.getInvalidTime())
-                                                             .atZone(ZoneId.of("GMT+8")));
-                                    }
-                                    else
-                                    {
-                                        return new X103_Close("sign in failed! ws_close".getBytes());
-                                    }
-                                    break;
-                                case X30_EventMsg.COMMAND:
-                                    X30_EventMsg x30 = (X30_EventMsg) cmd;
-                                    _Logger.debug("x30 payload: %s",
-                                                  new String(x30.getPayload(), StandardCharsets.UTF_8));
-                                    X31_ConfirmMsg x31 = new X31_ConfirmMsg(x30.getMsgId());
-                                    x31.setStatus(X31_ConfirmMsg.STATUS_RECEIVED);
-                                    x31.setToken(x30.getToken());
-                                    return x31;
-                                case X101_HandShake.COMMAND:
-                                    _Logger.debug("ws_handshake ok");
-                                    break;
-                                case X105_Pong.COMMAND:
-                                    _Logger.debug("ws_heartbeat ok");
-                                    break;
-                                case X103_Close.COMMAND:
-                                    close(session.getIndex());
-                                    break;
-                                case X112_QttConnack.COMMAND:
-                                    _Logger.debug("qtt connack %s", cmd);
-                                    break;
-                                default:
-                                    break;
-                            }
-                            return null;
-                        }).filter(Objects::nonNull).toArray(IControl[]::new);
-                    }
-                    break;
-                default:
-                    _Logger.warning("event type no mappingHandle %s", event.getEventType());
-                    commands = null;
-                    session = null;
-                    break;
+            if (event.getEventType() == IOperator.Type.LOGIC) {// 与 Server Node 处理过程存在较大的差异，中间去掉一个decoded dispatcher 所以此处入参为 IControl[]
+                IPair logicContent = event.getContent();
+                commands = logicContent.getFirst();
+                session = logicContent.getSecond();
+                if (Objects.nonNull(commands)) {
+                    commands = Stream.of(commands).map(cmd -> {
+                        _Logger.debug("recv:{ %s }", cmd);
+                        switch (cmd.serial()) {
+                            case X03_Cipher.COMMAND:
+                            case X05_EncryptStart.COMMAND:
+                                return cmd;
+                            case X21_SignUpResult.COMMAND:
+                                X21_SignUpResult x21 = (X21_SignUpResult) cmd;
+                                X22_SignIn x22 = new X22_SignIn();
+                                byte[] token = x22.getToken();
+                                ZClient zClient = _ZClientMap.get(session.getIndex());
+                                if (zClient == null) {
+                                    _Logger.warning("z-client not found");
+                                } else {
+                                    zClient.setToken(IoUtil.bin2Hex(token));
+                                }
+                                x22.setToken(token);
+                                x22.setPassword("password");
+                                return x22;
+                            case X23_SignInResult.COMMAND:
+                                X23_SignInResult x23 = (X23_SignInResult) cmd;
+                                if (x23.isSuccess()) {
+                                    _Logger.debug("sign in success token invalid @ %s", Instant.ofEpochMilli(x23.getInvalidTime()).atZone(ZoneId.of("GMT+8")));
+                                } else {
+                                    return new X103_Close("sign in failed! ws_close".getBytes());
+                                }
+                                break;
+                            case X30_EventMsg.COMMAND:
+                                X30_EventMsg x30 = (X30_EventMsg) cmd;
+                                _Logger.debug("x30 payload: %s", new String(x30.getPayload(), StandardCharsets.UTF_8));
+                                X31_ConfirmMsg x31 = new X31_ConfirmMsg(x30.getMsgId());
+                                x31.setStatus(X31_ConfirmMsg.STATUS_RECEIVED);
+                                x31.setToken(x30.getToken());
+                                return x31;
+                            case X101_HandShake.COMMAND:
+                                _Logger.debug("ws_handshake ok");
+                                break;
+                            case X105_Pong.COMMAND:
+                                _Logger.debug("ws_heartbeat ok");
+                                break;
+                            case X103_Close.COMMAND:
+                                close(session.getIndex());
+                                break;
+                            case X112_QttConnack.COMMAND:
+                                _Logger.debug("qtt connack %s", cmd);
+                                break;
+                            default:
+                                break;
+                        }
+                        return null;
+                    }).filter(Objects::nonNull).toArray(IControl[]::new);
+                }
+            } else {
+                _Logger.warning("event type no mappingHandle %s", event.getEventType());
+                commands = null;
+                session = null;
             }
             if (Objects.nonNull(commands) && commands.length > 0 && Objects.nonNull(session))
             {
@@ -240,19 +224,16 @@ public class DeviceConsumer
     {
         final String host;
         final int    port;
-        switch (sort)
-        {
-            case WS_CONSUMER:
+        switch (sort) {
+            case WS_CONSUMER -> {
                 host = _ConsumerConfig.getWs().getHost();
                 port = _ConsumerConfig.getWs().getPort();
-                break;
-            case QTT_SYMMETRY:
+            }
+            case QTT_SYMMETRY -> {
                 host = _ConsumerConfig.getQtt().getHost();
                 port = _ConsumerConfig.getQtt().getPort();
-                break;
-            default:
-                throw new UnsupportedOperationException();
-
+            }
+            default -> throw new UnsupportedOperationException();
         }
         BaseAioConnector<ZContext> connector = new BaseAioConnector<ZContext>(host,
                                                                               port,

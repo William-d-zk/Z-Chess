@@ -52,25 +52,16 @@ public class ZClusterFactory
     public ZCommand create(int serial)
     {
 
-        switch (serial)
-        {
-            case X70_RaftVote.COMMAND:
-                return new X70_RaftVote();
-            case X71_RaftBallot.COMMAND:
-                return new X71_RaftBallot();
-            case X72_RaftAppend.COMMAND:
-                return new X72_RaftAppend();
-            case X73_RaftAccept.COMMAND:
-                return new X73_RaftAccept();
-            case X74_RaftReject.COMMAND:
-                return new X74_RaftReject();
-            case X75_RaftRequest.COMMAND:
-                return new X75_RaftRequest();
-            case X76_RaftNotify.COMMAND:
-                return new X76_RaftNotify();
-            default:
-                return null;
-        }
+        return switch (serial) {
+            case X70_RaftVote.COMMAND -> new X70_RaftVote();
+            case X71_RaftBallot.COMMAND -> new X71_RaftBallot();
+            case X72_RaftAppend.COMMAND -> new X72_RaftAppend();
+            case X73_RaftAccept.COMMAND -> new X73_RaftAccept();
+            case X74_RaftReject.COMMAND -> new X74_RaftReject();
+            case X75_RaftRequest.COMMAND -> new X75_RaftRequest();
+            case X76_RaftNotify.COMMAND -> new X76_RaftNotify();
+            default -> null;
+        };
     }
 
 }

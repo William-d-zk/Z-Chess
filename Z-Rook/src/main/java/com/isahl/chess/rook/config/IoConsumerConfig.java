@@ -59,29 +59,21 @@ public class IoConsumerConfig
     @Override
     public int getSizePower(int type)
     {
-        switch (type)
-        {
-            case ZUID.TYPE_INTERNAL_SLOT:
-                return sizePowers.getOrDefault("internal.1", 9);
-            case ZUID.TYPE_CONSUMER_SLOT:
-                return sizePowers.getOrDefault("consumer.0", 3);
-            default:
-                throw new IllegalArgumentException();
-        }
+        return switch (type) {
+            case ZUID.TYPE_INTERNAL_SLOT -> sizePowers.getOrDefault("internal.1", 9);
+            case ZUID.TYPE_CONSUMER_SLOT -> sizePowers.getOrDefault("consumer.0", 3);
+            default -> throw new IllegalArgumentException();
+        };
     }
 
     @Override
     public ISocketConfig getSocketConfig(int type)
     {
-        switch (type)
-        {
-            case ZUID.TYPE_INTERNAL_SLOT:
-                return internal;
-            case ZUID.TYPE_CONSUMER_SLOT:
-                return consumer;
-            default:
-                return null;
-        }
+        return switch (type) {
+            case ZUID.TYPE_INTERNAL_SLOT -> internal;
+            case ZUID.TYPE_CONSUMER_SLOT -> consumer;
+            default -> null;
+        };
     }
 
     public void setSizePowers(Map<String, Integer> sizePowers)

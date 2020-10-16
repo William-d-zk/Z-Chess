@@ -45,10 +45,8 @@ public class NtruUtil
     private static int     PLAIN_TEXT_MAX;
     private static OID     oid        = OID.ees401ep1;
 
-    static
-    {
-        try
-        {
+    static {
+        try {
             LOADED_LIB = true;
             switch (oid)
             {
@@ -56,16 +54,23 @@ public class NtruUtil
                     CIPHER_BUFF_LEN = 552;
                     PLAIN_TEXT_MAX = 60;
                     break;
+                case ees449ep1:
+                    CIPHER_BUFF_LEN = 618;
+                    PLAIN_TEXT_MAX = 67;
                 default:
                     break;
             }
             KeyParams.getKeyParams(oid);
         }
-        catch (Throwable e)
-        {
+        catch (Throwable e) {
             // Ignore
         }
 
+    }
+
+    public static void setOID(OID _oid)
+    {
+        oid = _oid;
     }
 
     public byte[] getCipherBuf()
@@ -75,8 +80,8 @@ public class NtruUtil
 
     public byte[][] getKeys(byte[] seed) throws NtruException
     {
-        Random         prng = new Random(seed);
-        NtruEncryptKey key  = NtruEncryptKey.genKey(oid, prng);
+        Random prng = new Random(seed);
+        NtruEncryptKey key = NtruEncryptKey.genKey(oid, prng);
         return new byte[][] { key.getPubKey(),
                               key.getPrivKey()
 
@@ -85,13 +90,12 @@ public class NtruUtil
 
     public byte[] encrypt(byte[] message, byte[] pubKey)
     {// 客户端用的
-        byte[]           seed = new byte[32];
-        java.util.Random rs   = new java.util.Random();
+        byte[] seed = new byte[32];
+        java.util.Random rs = new java.util.Random();
         rs.nextBytes(seed);
         Random prng = new Random(seed);
 
-        try
-        {
+        try {
             NtruEncryptKey ntruKey = new NtruEncryptKey(pubKey);
             return ntruKey.encrypt(message, prng);
         }
@@ -107,8 +111,7 @@ public class NtruUtil
 
     public byte[] decrypt(byte[] cipher, byte[] priKey)
     {
-        try
-        {
+        try {
             NtruEncryptKey ntruKey = new NtruEncryptKey(priKey);
             return ntruKey.decrypt(cipher);
         }

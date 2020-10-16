@@ -234,15 +234,11 @@ public class WsFrame
         int result = (mPayload_Mask & 0x80) != 0 ?
                 4:
                 0;
-        switch (mPayload_Mask & 0x7F)
-        {
-            case 0x7F:
-                return 9 + result;
-            case 0x7E:
-                return 3 + result;
-            default:
-                return 1 + result;
-        }
+        return switch (mPayload_Mask & 0x7F) {
+            case 0x7F -> 9 + result;
+            case 0x7E -> 3 + result;
+            default -> 1 + result;
+        };
     }
 
     public void setMaskCode(byte b)

@@ -179,23 +179,15 @@ public class X112_QttConnack
 
         static Code valueOf(byte code)
         {
-            switch (code)
-            {
-                case 0:
-                    return ACCEPT;
-                case 1:
-                    return REJECT_UNACCEPTABLE_PROTOCOL;
-                case 2:
-                    return REJECT_IDENTIFIER;
-                case 3:
-                    return REJECT_SERVER_UNAVAILABLE;
-                case 4:
-                    return REJECT_BAD_USER_OR_PASSWORD;
-                case 5:
-                    return REJECT_NOT_AUTHORIZED;
-                default:
-                    throw new IllegalArgumentException("6-255 Reserved");
-            }
+            return switch (code) {
+                case 0 -> ACCEPT;
+                case 1 -> REJECT_UNACCEPTABLE_PROTOCOL;
+                case 2 -> REJECT_IDENTIFIER;
+                case 3 -> REJECT_SERVER_UNAVAILABLE;
+                case 4 -> REJECT_BAD_USER_OR_PASSWORD;
+                case 5 -> REJECT_NOT_AUTHORIZED;
+                default -> throw new IllegalArgumentException("6-255 Reserved");
+            };
         }
     }
 
