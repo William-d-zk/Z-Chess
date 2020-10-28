@@ -38,27 +38,35 @@ import com.isahl.chess.queen.event.inf.IOperator;
  * 
  * @date 2019-05-12
  */
-public interface IPipeTransfer<C extends IContext<C>>
+public interface IPipeTransfer
         extends
-        IOperator<IControl<C>[], ISession<C>, List<ITriple>>
+        IOperator<IControl[],
+                  ISession,
+                  List<ITriple>>
 {
     @Override
-    default List<ITriple> handle(IControl<C>[] commands, ISession<C> session)
+    default List<ITriple> handle(IControl[] commands, ISession session)
     {
-        if (Objects.isNull(commands) || commands.length == 0)
-        { throw new MissingParameterException(getName(), "commands"); }
-        return Stream.of(commands).filter(Objects::nonNull).map(command ->
-        {
-            ISession<C> targetSession = command.getSession();
-            if (targetSession == null)
-            {
-                command.setSession(session);
-                targetSession = session;
-                if (session == null)
-                { return null; }
-            }
-            return new Triple<>(command, targetSession, targetSession.getContext().getSort().getEncoder());
-        }).collect(Collectors.toList());
+        if (Objects.isNull(commands) || commands.length == 0) {
+            throw new MissingParameterException(getName(), "commands");
+        }
+        return Stream.of(commands)
+                     .filter(Objects::nonNull)
+                     .map(command ->
+                     {
+                         ISession targetSession = command.getSession();
+                         if (targetSession == null) {
+                             command.setSession(session);
+                             targetSession = session;
+                             if (session == null) { return null; }
+                         }
+                         return new Triple<>(command,
+                                             targetSession,
+                                             targetSession.getContext()
+                                                          .getSort()
+                                                          .getEncoder());
+                     })
+                     .collect(Collectors.toList());
     }
 
 }

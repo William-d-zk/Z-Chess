@@ -26,21 +26,21 @@ package com.isahl.chess.queen.event.handler.mix;
 import static com.isahl.chess.queen.event.inf.IOperator.Type.LINK;
 import static com.isahl.chess.queen.event.inf.IOperator.Type.LOGIC;
 
-import com.isahl.chess.queen.event.handler.cluster.DecodedDispatcher;
-import com.isahl.chess.queen.event.processor.QEvent;
-import com.isahl.chess.queen.io.core.inf.IContext;
-import com.isahl.chess.queen.io.core.inf.IControl;
-import com.lmax.disruptor.RingBuffer;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
+import com.isahl.chess.queen.event.handler.cluster.DecodedDispatcher;
 import com.isahl.chess.queen.event.inf.ISort;
+import com.isahl.chess.queen.event.processor.QEvent;
+import com.isahl.chess.queen.io.core.inf.IControl;
+import com.lmax.disruptor.RingBuffer;
 
 /**
  * @author william.d.zk
  */
-public class MixDecodedDispatcher<C extends IContext<C>>
-        extends DecodedDispatcher<C>
+public class MixDecodedDispatcher
+        extends
+        DecodedDispatcher
 {
     private final Logger             _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
     private final RingBuffer<QEvent> _Link;
@@ -55,23 +55,19 @@ public class MixDecodedDispatcher<C extends IContext<C>>
     }
 
     @Override
-    protected IPair getNextPipe(ISort.Mode mode, IControl<C> cmd)
+    protected IPair getNextPipe(ISort.Mode mode, IControl cmd)
     {
-        if (mode == ISort.Mode.LINK)
-        {
-            if (cmd.isMapping())
-            {
+        if (mode == ISort.Mode.LINK) {
+            if (cmd.isMapping()) {
                 return new Pair<>(_Link, LINK);
             }
-            else
-            {
+            else {
                 return new Pair<>(dispatchWorker(cmd), LOGIC);
             }
         }
         return super.getNextPipe(mode, cmd);
     }
 
-    @Override
     public Logger getLogger()
     {
         return _Logger;

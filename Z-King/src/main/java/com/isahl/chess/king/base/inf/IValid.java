@@ -30,5 +30,8 @@ package com.isahl.chess.king.base.inf;
  */
 public interface IValid
 {
-    boolean isValid();
+    default boolean isValid()
+    {
+        return true;
+    }
 }

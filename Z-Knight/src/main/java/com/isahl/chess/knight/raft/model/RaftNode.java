@@ -49,7 +49,7 @@ import java.util.stream.Stream;
 import com.isahl.chess.knight.json.JsonUtil;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.model.log.LogEntry;
-import com.isahl.chess.bishop.io.zfilter.ZContext;
+import com.isahl.chess.bishop.io.ZContext;
 import com.isahl.chess.bishop.io.zprotocol.raft.X70_RaftVote;
 import com.isahl.chess.bishop.io.zprotocol.raft.X71_RaftBallot;
 import com.isahl.chess.bishop.io.zprotocol.raft.X72_RaftAppend;
@@ -305,8 +305,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         return reject;
     }
 
-    @SuppressWarnings("unchecked")
-    private IControl<ZContext>[] rejectAndVote(long rejectTo, ISessionManager<ZContext> manager)
+    private IControl[] rejectAndVote(long rejectTo, ISessionManager manager)
     {
         vote4me();
         return Stream.concat(Stream.of(reject(RaftCode.OBSOLETE, rejectTo)), createVotes(_SelfMachine, manager))
@@ -338,7 +337,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         _ClusterPeer.timerEvent(_SelfMachine.createFollower());
     }
 
-    private IControl<ZContext> follow(long peerId, long term, long commit, long preIndex, long preIndexTerm)
+    private IControl follow(long peerId, long term, long commit, long preIndex, long preIndexTerm)
     {
         tickCancel();
         _SelfMachine.follow(peerId, term, commit, _RaftDao);
@@ -399,7 +398,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         }
     }
 
-    private IControl<ZContext>[] lowTerm(long term, long peerId)
+    private IControl[] lowTerm(long term, long peerId)
     {
         return _SelfMachine.getTerm() > term ?
                 new X74_RaftReject[] { reject(LOWER_TERM, peerId)
@@ -420,9 +419,9 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
     }
 
     public IPair
-           elect(long term, long index, long indexTerm, long candidate, long commit, ISessionManager<ZContext> manager)
+           elect(long term, long index, long indexTerm, long candidate, long commit, ISessionManager manager)
     {
-        IControl<ZContext>[] response = lowTerm(term, candidate);
+        IControl[] response = lowTerm(term, candidate);
         if (response != null) return new Pair<>(response, null);
         if (highTerm(term) || _SelfMachine.getState() == FOLLOWER)
         {
@@ -454,9 +453,9 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         return null;
     }
 
-    public IPair ballot(long term, long index, long elector, long candidate, ISessionManager<ZContext> manager)
+    public IPair ballot(long term, long index, long elector, long candidate, ISessionManager manager)
     {
-        IControl<ZContext>[] response = lowTerm(term, elector);
+        IControl[] response = lowTerm(term, elector);
         if (response != null) return new Pair<>(response, null);
         if (highTerm(term))
         {
@@ -480,7 +479,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
 
     public IPair append(long term, long preIndex, long preIndexTerm, long leader, long leaderCommit)
     {
-        IControl<ZContext>[] response = lowTerm(term, leader);
+        IControl[] response = lowTerm(term, leader);
         if (response != null) return new Pair<>(response, null);
         if (highTerm(term) || _SelfMachine.getState() != LEADER)
         {
@@ -509,7 +508,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         return peerMachine;
     }
 
-    public IPair onAccept(long peerId, long term, long index, long leader, ISessionManager<ZContext> manager)
+    public IPair onAccept(long peerId, long term, long index, long leader, ISessionManager manager)
     {
         RaftMachine peerMachine = getMachine(peerId, term);
         if (peerMachine == null)
@@ -539,7 +538,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
             else if (raftLog.getClientPeer() != _SelfMachine.getPeerId())
             {
                 // leader -> follower -> client
-                ISession<ZContext> followerSession = manager.findSessionByPrefix(raftLog.getClientPeer());
+                ISession followerSession = manager.findSessionByPrefix(raftLog.getClientPeer());
                 return followerSession != null ?
                         new Pair<>(new IControl[] { x76
                 }, x76):
@@ -805,7 +804,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         _Logger.warning("elect time out event [ignore]");
     }
 
-    public Stream<X70_RaftVote> checkVoteState(RaftMachine update, ISessionManager<ZContext> manager)
+    public Stream<X70_RaftVote> checkVoteState(RaftMachine update, ISessionManager manager)
     {
         if (update.getTerm() == _SelfMachine.getTerm() + 1 && update.getIndex() == _SelfMachine.getIndex()
             && update.getIndexTerm() == _SelfMachine.getIndexTerm()
@@ -821,7 +820,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         return null;
     }
 
-    public Stream<X72_RaftAppend> checkLogAppend(RaftMachine update, ISessionManager<ZContext> manager)
+    public Stream<X72_RaftAppend> checkLogAppend(RaftMachine update, ISessionManager manager)
     {
         if (_SelfMachine.getState() == LEADER && _SelfMachine.getPeerId() == update.getPeerId()
             && _SelfMachine.getTerm() >= update.getTerm()
@@ -847,7 +846,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
 
     public <T extends IConsistent & IProtocol> Stream<X72_RaftAppend> newLogEntry(T request,
                                                                                   long client,
-                                                                                  ISessionManager<ZContext> manager)
+                                                                                  ISessionManager manager)
     {
         return newLogEntry(request.serial(),
                            request.encode(),
@@ -863,7 +862,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                              long client,
                              long origin,
                              boolean pub,
-                             ISessionManager<ZContext> manager)
+                             ISessionManager manager)
     {
         Stream<X72_RaftAppend> s = newLogEntry(serial,
                                                payload,
@@ -886,7 +885,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                                                long origin,
                                                boolean pub,
                                                IStorage.Operation operation,
-                                               ISessionManager<ZContext> manager)
+                                               ISessionManager manager)
     {
         _Logger.debug("create new raft log");
         LogEntry newEntry = new LogEntry(_SelfMachine.getTerm(),
@@ -907,7 +906,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         return null;
     }
 
-    private Stream<X70_RaftVote> createVotes(IRaftMachine update, ISessionManager<ZContext> manager)
+    private Stream<X70_RaftVote> createVotes(IRaftMachine update, ISessionManager manager)
     {
         return _RaftGraph.getNodeMap()
                          .keySet()
@@ -915,7 +914,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                          .filter(peerId -> peerId != _SelfMachine.getPeerId())
                          .map(peerId ->
                          {
-                             ISession<ZContext> session = manager.findSessionByPrefix(peerId);
+                             ISession session = manager.findSessionByPrefix(peerId);
                              if (session != null)
                              {
                                  X70_RaftVote x70 = new X70_RaftVote(_ZUID.getId());
@@ -934,7 +933,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                          .filter(Objects::nonNull);
     }
 
-    private Stream<X72_RaftAppend> createBroadcasts(ISessionManager<ZContext> manager)
+    private Stream<X72_RaftAppend> createBroadcasts(ISessionManager manager)
     {
         return _RaftGraph.getNodeMap()
                          .values()
@@ -943,7 +942,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                          .map(follower ->
                          {
                              X72_RaftAppend x72 = createAppend(follower);
-                             ISession<ZContext> session = manager.findSessionByPrefix(x72.getFollower());
+                             ISession session = manager.findSessionByPrefix(x72.getFollower());
                              if (session == null)
                              {
                                  _Logger.warning("not found peerId:%#x session", x72.getFollower());
@@ -1058,7 +1057,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         return x76;
     }
 
-    private Stream<X76_RaftNotify> createNotifyStream(ISessionManager<ZContext> manager, LogEntry raftLog)
+    private Stream<X76_RaftNotify> createNotifyStream(ISessionManager manager, LogEntry raftLog)
     {
         return _RaftGraph.getNodeMap()
                          .values()
@@ -1066,7 +1065,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                          .filter(node -> node.getPeerId() != _SelfMachine.getPeerId())
                          .map(machine ->
                          {
-                             ISession<ZContext> followerSession = manager.findSessionByPrefix(machine.getPeerId());
+                             ISession followerSession = manager.findSessionByPrefix(machine.getPeerId());
                              if (followerSession != null)
                              {
                                  X76_RaftNotify x76 = createNotify(raftLog);

@@ -23,44 +23,43 @@
 
 package com.isahl.chess.queen.io.core.manager;
 
-import com.isahl.chess.queen.io.core.executor.ClusterCore;
-import com.isahl.chess.queen.io.core.inf.IContext;
 import com.isahl.chess.queen.config.IAioConfig;
 import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.io.core.async.AioSessionManager;
+import com.isahl.chess.queen.io.core.executor.ClusterCore;
 import com.isahl.chess.queen.io.core.inf.IActivity;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISession;
 
-public class ClusterManager<C extends IContext<C>>
+public class ClusterManager
         extends
-        AioSessionManager<C, ClusterCore<C>>
+        AioSessionManager<ClusterCore>
         implements
-        IActivity<C>
+        IActivity
 {
-    private final ClusterCore<C> _ClusterCore;
+    private final ClusterCore _ClusterCore;
 
-    public ClusterManager(IAioConfig config, ClusterCore<C> clusterCore)
+    public ClusterManager(IAioConfig config,
+                          ClusterCore clusterCore)
     {
         super(config);
         _ClusterCore = clusterCore;
     }
 
     @Override
-    public void close(ISession<C> session, IOperator.Type type)
+    public void close(ISession session, IOperator.Type type)
     {
         _ClusterCore.close(session, type);
     }
 
     @Override
-    @SafeVarargs
-    public final boolean send(ISession<C> session, IOperator.Type type, IControl<C>... commands)
+    public final boolean send(ISession session, IOperator.Type type, IControl... commands)
     {
         return _ClusterCore.send(session, type, commands);
     }
 
     @Override
-    protected ClusterCore<C> getCore()
+    protected ClusterCore getCore()
     {
         return _ClusterCore;
     }

@@ -33,7 +33,8 @@ package com.isahl.chess.queen.io.core.inf;
  * 
  * @see ICommandCreator
  */
-public interface ICommandFactory<T extends IProtocol, I extends IFrame>
+public interface ICommandFactory<T extends IProtocol,
+                                 I extends IFrame>
 {
     T create(I frame);
 

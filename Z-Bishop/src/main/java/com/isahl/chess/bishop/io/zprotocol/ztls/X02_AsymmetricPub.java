@@ -56,8 +56,7 @@ public class X02_AsymmetricPub
         pos += 4;
         mKeyLength = IoUtil.readUnsignedShort(data, pos);
         pos += 2;
-        if (mKeyLength > 0)
-        {
+        if (mKeyLength > 0) {
             pubKey = new byte[mKeyLength];
             pos = IoUtil.read(data, pos, pubKey);
         }
@@ -90,9 +89,8 @@ public class X02_AsymmetricPub
     {
         pubKey = key;
         pubKeyId = _id;
-        mKeyLength = key == null ?
-                0:
-                key.length;
+        mKeyLength = key == null ? 0
+                                 : key.length;
         return this;
     }
 

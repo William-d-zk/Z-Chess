@@ -23,8 +23,10 @@
 
 package com.isahl.chess.queen.event.operator;
 
+import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.queen.io.core.inf.IContext;
+import com.isahl.chess.king.base.util.Pair;
+import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionError;
 
 /**
@@ -32,9 +34,9 @@ import com.isahl.chess.queen.io.core.inf.ISessionError;
  * 
  * @date 2019-04-25
  */
-public class ErrorOperator<C extends IContext<C>>
+public class ErrorOperator
         implements
-        ISessionError<C>
+        ISessionError
 
 {
     @Override
@@ -46,8 +48,12 @@ public class ErrorOperator<C extends IContext<C>>
     private final Logger _Logger = Logger.getLogger("io.queen.operator." + ISessionError.class.getSimpleName());
 
     @Override
-    public Logger getLogger()
+    public IPair handle(Throwable throwable, ISession session)
     {
-        return _Logger;
+        _Logger.trace("error session:%s", throwable, session);
+        return session != null ? new Pair<>(session,
+                                            session.getContext()
+                                                   .getCloser())
+                               : null;
     }
 }

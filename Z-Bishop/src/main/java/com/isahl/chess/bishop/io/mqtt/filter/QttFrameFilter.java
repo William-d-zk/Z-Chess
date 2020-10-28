@@ -25,10 +25,11 @@ package com.isahl.chess.bishop.io.mqtt.filter;
 
 import java.nio.ByteBuffer;
 
+import com.isahl.chess.bishop.io.mqtt.QttContext;
 import com.isahl.chess.bishop.io.mqtt.QttFrame;
-import com.isahl.chess.bishop.io.zfilter.ZContext;
 import com.isahl.chess.queen.io.core.async.AioFilterChain;
 import com.isahl.chess.queen.io.core.async.AioPacket;
+import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.IPacket;
 import com.isahl.chess.queen.io.core.inf.IProtocol;
 
@@ -39,7 +40,9 @@ import com.isahl.chess.queen.io.core.inf.IProtocol;
  */
 public class QttFrameFilter
         extends
-        AioFilterChain<ZContext, QttFrame, IPacket>
+        AioFilterChain<QttContext,
+                       QttFrame,
+                       IPacket>
 {
     public final static String NAME = "mqtt_frame";
 
@@ -49,77 +52,61 @@ public class QttFrameFilter
     }
 
     @Override
-    public boolean checkType(IProtocol protocol)
+    public ResultType seek(QttContext context, QttFrame output)
     {
-        return checkType(protocol, IPacket.PACKET_SERIAL);
+        return preFrameEncodec(context, output);
     }
 
     @Override
-    public ResultType preEncode(ZContext context, IProtocol output)
-    {
-        return preFrameEncode(context, output);
-    }
-
-    @Override
-    public IPacket encode(ZContext context, QttFrame output)
+    public IPacket encode(QttContext context, QttFrame output)
     {
         ByteBuffer toWrite = ByteBuffer.allocate(output.dataLength());
-        toWrite.position(output.encodec(toWrite.array(), toWrite.position())).flip();
+        toWrite.position(output.encodec(toWrite.array(), toWrite.position()))
+               .flip();
         return new AioPacket(toWrite);
     }
 
     @Override
-    public ResultType preDecode(ZContext context, IPacket input)
+    public ResultType peek(QttContext context, IPacket input)
     {
-        ResultType result = preFrameDecode(context, input);
-        if (ResultType.NEXT_STEP.equals(result))
-        {
+        ResultType result = preFrameDecodec(context, input);
+        if (ResultType.NEXT_STEP.equals(result)) {
             ByteBuffer recvBuf = input.getBuffer();
-            ByteBuffer cRvBuf  = context.getRvBuffer();
-            QttFrame   carrier = context.getCarrier();
-            int        lack    = context.lack();
+            ByteBuffer cRvBuf = context.getRvBuffer();
+            QttFrame carrier = context.getCarrier();
+            int lack = context.lack();
             switch (context.position())
             {
                 case -1:
-                    if (lack > 0 && !recvBuf.hasRemaining())
-                    { return ResultType.NEED_DATA; }
+                    if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
                     context.setCarrier(carrier = new QttFrame());
                     byte value = recvBuf.get();
                     carrier.setCtrl(value);
                     lack = context.lackLength(1, 1);
                 case 0:
-                    if (lack > 0 && !recvBuf.hasRemaining())
-                    { return ResultType.NEED_DATA; }
+                    if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
                     carrier.setLengthCode(recvBuf.get());
-                    lack = context.lackLength(1,
-                                              carrier.payloadLengthLack(context.position()) + context.position() + 1);
+                    lack = context.lackLength(1, carrier.lackLength(context.position()) + context.position() + 1);
                 case 1:
                 default:
-                    if (lack > 0 && !recvBuf.hasRemaining())
-                    { return ResultType.NEED_DATA; }
+                    if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
                     int target = context.position() + lack;
-                    do
-                    {
-                        if (carrier.isLengthCodeLack())
-                        {
+                    do {
+                        if (carrier.isLengthCodeLack()) {
                             carrier.setLengthCode(recvBuf.get());
                             lack = context.lackLength(1,
-                                                      target = carrier.payloadLengthLack(context.position())
+                                                      target = carrier.lackLength(context.position())
                                                                + context.position()
                                                                + 1);
                         }
-                        else
-                        {
+                        else {
                             int length = Math.min(recvBuf.remaining(), lack);
-                            for (int i = 0; i < length; i++)
-                            {
+                            for (int i = 0; i < length; i++) {
                                 cRvBuf.put(recvBuf.get());
                             }
                             lack = context.lackLength(length, target);
-                            if (lack > 0 && !recvBuf.hasRemaining())
-                            { return ResultType.NEED_DATA; }
-                            if (carrier.getPayloadLength() > 0)
-                            {
+                            if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
+                            if (carrier.getPayloadLength() > 0) {
                                 byte[] payload = new byte[carrier.getPayloadLength()];
                                 cRvBuf.flip();
                                 cRvBuf.get(payload);
@@ -137,10 +124,35 @@ public class QttFrameFilter
     }
 
     @Override
-    public QttFrame decode(ZContext context, IPacket input)
+    public QttFrame decode(QttContext context, IPacket input)
     {
         QttFrame frame = context.getCarrier();
         context.finish();
         return frame;
     }
+
+    @Override    @SuppressWarnings("unchecked")
+    public <C extends IPContext<C>,
+            O extends IProtocol> ResultType pipeSeek(C context, O output)
+    {
+        return null;
+    }
+
+    @Override    @SuppressWarnings("unchecked")
+    public <C extends IPContext<C>,
+            I extends IProtocol> ResultType pipePeek(C context, I input)
+    {
+        return null;
+    }
+
+    @Override    @SuppressWarnings("unchecked")
+    public <C extends IPContext<C>, O extends IProtocol, I extends IProtocol> I pipeEncode(C context, O output) {
+        return null;
+    }
+
+    @Override    @SuppressWarnings("unchecked")
+    public <C extends IPContext<C>, O extends IProtocol, I extends IProtocol> O pipeDecode(C context, I input) {
+        return null;
+    }
+
 }

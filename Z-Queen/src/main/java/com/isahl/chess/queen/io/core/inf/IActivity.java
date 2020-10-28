@@ -25,9 +25,9 @@ package com.isahl.chess.queen.io.core.inf;
 
 import com.isahl.chess.queen.event.inf.IOperator;
 
-public interface IActivity<C extends IContext<C>>
+public interface IActivity
 {
-    boolean send(ISession<C> session, IOperator.Type eventType, IControl<C>... toSends);
+    boolean send(ISession session, IOperator.Type eventType, IControl... toSends);
 
-    void close(ISession<C> session, IOperator.Type eventType);
+    void close(ISession session, IOperator.Type eventType);
 }

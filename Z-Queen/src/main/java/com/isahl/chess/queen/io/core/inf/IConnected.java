@@ -31,7 +31,7 @@ import com.isahl.chess.queen.event.inf.IOperator;
 /**
  * @author William.d.zk
  */
-public interface IConnected<C extends IContext<C>>
+public interface IConnected
 {
-    IOperator<IConnectActivity<C>, AsynchronousSocketChannel, ITriple> getConnectedOperator();
+    IOperator<IConnectActivity, AsynchronousSocketChannel, ITriple> getConnectedOperator();
 }

@@ -29,31 +29,31 @@ import static com.isahl.chess.queen.event.inf.IOperator.Type.WROTE;
 import java.util.List;
 import java.util.Objects;
 
-import com.isahl.chess.queen.event.processor.QEvent;
-import com.isahl.chess.queen.io.core.inf.IContext;
-import com.isahl.chess.queen.io.core.inf.IControl;
-import com.isahl.chess.queen.io.core.inf.ISession;
-import com.lmax.disruptor.RingBuffer;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.event.inf.IPipeEventHandler;
+import com.isahl.chess.queen.event.processor.QEvent;
+import com.isahl.chess.queen.io.core.inf.IControl;
+import com.isahl.chess.queen.io.core.inf.ISession;
+import com.lmax.disruptor.RingBuffer;
 
 /**
  * @author william.d.zk
  */
-public class ClientWriteDispatcher<C extends IContext<C>>
+public class ClientWriteDispatcher
         implements
         IPipeEventHandler<QEvent>
 {
-    private final Logger     _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
 
     final RingBuffer<QEvent> _Error;
     final RingBuffer<QEvent> _Encoder;
 
-    public ClientWriteDispatcher(RingBuffer<QEvent> error, RingBuffer<QEvent> encoder)
+    public ClientWriteDispatcher(RingBuffer<QEvent> error,
+                                 RingBuffer<QEvent> encoder)
     {
         _Error = error;
         _Encoder = encoder;
@@ -62,8 +62,7 @@ public class ClientWriteDispatcher<C extends IContext<C>>
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
     {
-        if (event.hasError())
-        {
+        if (event.hasError()) {
             switch (event.getErrorType())
             {
                 case FILTER_DECODE:
@@ -73,23 +72,21 @@ public class ClientWriteDispatcher<C extends IContext<C>>
                     error(_Error, event.getErrorType(), event.getContent(), event.getEventOp());
             }
         }
-        else
-        {
+        else {
             switch (event.getEventType())
             {
                 case BIZ_LOCAL:// from biz local
                 case WRITE:// from LinkIo
                 case LOGIC:// from read->logic
                     IPair writeContent = event.getContent();
-                    IControl<C>[] commands = writeContent.getFirst();
-                    ISession<C> session = writeContent.getSecond();
-                    if (session.isValid() && Objects.nonNull(commands))
-                    {
-                        IOperator<IControl<C>[], ISession<C>, List<ITriple>> transferOperator = event.getEventOp();
-                        List<ITriple>                                        triples          = transferOperator.handle(commands,
-                                                                                                                        session);
-                        for (ITriple triple : triples)
-                        {
+                    IControl[] commands = writeContent.getFirst();
+                    ISession session = writeContent.getSecond();
+                    if (session.isValid() && Objects.nonNull(commands)) {
+                        IOperator<IControl[],
+                                  ISession,
+                                  List<ITriple>> transferOperator = event.getEventOp();
+                        List<ITriple> triples = transferOperator.handle(commands, session);
+                        for (ITriple triple : triples) {
                             publish(_Encoder, WRITE, new Pair<>(triple.getFirst(), session), triple.getThird());
                         }
                     }
@@ -97,8 +94,7 @@ public class ClientWriteDispatcher<C extends IContext<C>>
                 case WROTE:// from io-wrote
                     IPair wroteContent = event.getContent();
                     session = wroteContent.getSecond();
-                    if (session.isValid())
-                    {
+                    if (session.isValid()) {
                         publish(_Encoder, WROTE, wroteContent, event.getEventOp());
                     }
                     break;

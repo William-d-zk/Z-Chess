@@ -28,35 +28,52 @@ import com.isahl.chess.king.base.inf.IDisposable;
 /**
  * @author William.d.zk
  */
-public interface IFilterChain<C extends IContext<C>>
+public interface IFilterChain
         extends
         IDisposable
 {
-    IFilterChain<C> getPrevious();
+    void idempotentLeftShift(int previous);
 
-    void setPrevious(IFilterChain<C> filter);
+    IFilterChain getPrevious();
 
-    IFilterChain<C> getNext();
+    void setPrevious(IFilterChain filter);
 
-    void setNext(IFilterChain<C> filter);
+    IFilterChain getNext();
 
-    IFilterChain<C> getChainHead();
+    void setNext(IFilterChain filter);
 
-    IFilterChain<C> getChainTail();
+    IFilterChain getChainHead();
 
-    IFilterChain<C> linkAfter(IFilterChain<C> curFilter);
+    IFilterChain getChainTail();
 
-    IFilterChain<C> linkFront(IFilterChain<C> curFilter);
+    IFilterChain linkAfter(IFilterChain curFilter);
 
-    default int getIdempotentBit()
-    {
-        return -1;
-    }
+    IFilterChain linkFront(IFilterChain curFilter);
 
-    default void idempotentRightShift(int previous)
-    {}
+    /**
+     * 取得当前filter所占有的右向幂等位
+     * 
+     * @return idempotent bit
+     */
+    int getRightIdempotentBit();
 
-    <P extends IProtocol, T extends IProtocol> IFilter<C, P, T> getFilter();
+    /**
+     * 取得当前filter所占有的左向幂等位
+     *
+     * @return idempotent bit
+     */
+    int getLeftIdempotentBit();
+
+    /**
+     * 32bit 确保每个Protocol 从chain上只流经一次
+     * filter chain 不得成环
+     * 
+     * @param previous
+     *            previous idempotent bit
+     */
+    void idempotentRightShift(int previous);
+
+    IPipeFilter getPipeFilter();
 
     String getName();
 }

@@ -31,6 +31,7 @@ import java.util.List;
 
 import com.isahl.chess.bishop.io.mqtt.QttCommand;
 import com.isahl.chess.king.base.util.IoUtil;
+import com.isahl.chess.queen.io.core.inf.IPContext;
 
 /**
  * @author william.d.zk
@@ -38,7 +39,8 @@ import com.isahl.chess.king.base.util.IoUtil;
  * @date 2019-05-30
  */
 public class X119_QttSuback
-        extends QttCommand
+        extends
+        QttCommand
 {
 
     public final static int COMMAND = 0x119;
@@ -53,8 +55,7 @@ public class X119_QttSuback
 
     public void addResult(Level qosLevel)
     {
-        if (mResultList == null)
-        {
+        if (mResultList == null) {
             mResultList = new LinkedList<>();
         }
         mResultList.add(qosLevel);
@@ -68,9 +69,9 @@ public class X119_QttSuback
     @Override
     public int dataLength()
     {
-        return super.dataLength() + (mResultList == null ?
-                0:
-                mResultList.size());
+        return super.dataLength()
+               + (mResultList == null ? 0
+                                      : mResultList.size());
     }
 
     @Override
@@ -78,8 +79,7 @@ public class X119_QttSuback
     {
         pos = super.decodec(data, pos);
         mResultList = new ArrayList<>(data.length - pos);
-        for (int i = 0, size = data.length - pos; i < size; i++)
-        {
+        for (int i = 0, size = data.length - pos; i < size; i++) {
             mResultList.add(Level.valueOf(data[pos++]));
         }
         return pos;
@@ -89,10 +89,8 @@ public class X119_QttSuback
     public int encodec(byte[] data, int pos)
     {
         pos = super.encodec(data, pos);
-        if (mResultList != null)
-        {
-            for (Level qosLevel : mResultList)
-            {
+        if (mResultList != null) {
+            for (Level qosLevel : mResultList) {
                 pos += IoUtil.writeByte(qosLevel.getValue(), data, pos);
             }
         }

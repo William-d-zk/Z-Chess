@@ -31,15 +31,15 @@ import com.isahl.chess.king.base.inf.IDisposable;
  * 
  * @see ISession
  */
-public interface IControl<C extends IContext<C>>
+public interface IControl
         extends
         IFrame,
         IQoS,
-        IMappingMessage<C>,
+        IMappingMessage,
         IDisposable
 {
     @Override
-    default IControl<C> setSession(ISession<C> session)
+    default IControl setSession(ISession session)
     {
         return this;
     }
@@ -71,18 +71,9 @@ public interface IControl<C extends IContext<C>>
         return false;
     }
 
-    default IControl<C> failed(int code)
+    default IControl failed(int code)
     {
         return null;
     }
 
-    default boolean isProxy()
-    {
-        return false;
-    }
-
-    default <T extends IContext<T>> IControl<T>[] getProxyBodies()
-    {
-        return null;
-    }
 }

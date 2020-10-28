@@ -25,7 +25,6 @@ package com.isahl.chess.bishop.io.mqtt;
 
 import java.util.Objects;
 
-import com.isahl.chess.bishop.io.zfilter.ZContext;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISession;
 
@@ -38,11 +37,11 @@ public abstract class QttControl
         extends
         MqttProtocol
         implements
-        IControl<ZContext>
+        IControl
 {
-    private final int          _Command;
-    private byte[]             mPayload;
-    private ISession<ZContext> mSession;
+    private final int _Command;
+    private byte[]    mPayload;
+    private ISession  mSession;
 
     public QttControl(int command)
     {
@@ -52,9 +51,8 @@ public abstract class QttControl
     @Override
     public int dataLength()
     {
-        return Objects.nonNull(mPayload) ?
-                mPayload.length:
-                0;
+        return Objects.nonNull(mPayload) ? mPayload.length
+                                         : 0;
     }
 
     @Override
@@ -76,7 +74,7 @@ public abstract class QttControl
     }
 
     @Override
-    public IControl<ZContext> setSession(ISession<ZContext> session)
+    public IControl setSession(ISession session)
     {
         mSession = session;
         return this;
@@ -89,7 +87,7 @@ public abstract class QttControl
     }
 
     @Override
-    public ISession<ZContext> getSession()
+    public ISession getSession()
     {
         return mSession;
     }

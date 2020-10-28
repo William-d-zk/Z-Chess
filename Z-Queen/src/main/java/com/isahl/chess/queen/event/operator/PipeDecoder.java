@@ -25,29 +25,43 @@ package com.isahl.chess.queen.event.operator;
 
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.queen.io.core.inf.IContext;
+import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.IPacket;
-import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.IPipeDecoder;
+import com.isahl.chess.queen.io.core.inf.ISession;
 
 /**
  * @author william.d.zk
  * 
  * @date 2019-05-08
  */
-public class PipeDecoder<C extends IContext<C>>
+public class PipeDecoder
         implements
-        IPipeDecoder<C>
+        IPipeDecoder
 {
 
     @Override
-    public ITriple handle(IPacket input, ISession<C> session)
+    public ITriple handle(IPacket input, ISession session)
     {
-        ITriple result = new Triple<>(filterRead(input, session),
-                                      session,
-                                      session.getContext().getSort().getTransfer());
-        session.readNext();
-        return result;
+        try {
+            IControl[] received = filterRead(input, session);
+            session.readNext();
+            if (received != null) {
+                return new Triple<>(received,
+                                    session,
+                                    session.getContext()
+                                           .getSort()
+                                           .getTransfer());
+            }
+        }
+        catch (Exception e) {
+            return new Triple<>(e,
+                                session,
+                                session.getContext()
+                                       .getSort()
+                                       .getError());
+        }
+        return null;
     }
 
     @Override

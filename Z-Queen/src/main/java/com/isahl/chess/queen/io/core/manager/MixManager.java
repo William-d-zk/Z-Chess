@@ -23,7 +23,6 @@
 
 package com.isahl.chess.queen.io.core.manager;
 
-import com.isahl.chess.queen.io.core.inf.IContext;
 import com.isahl.chess.queen.config.IAioConfig;
 import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.io.core.async.AioSessionManager;
@@ -35,35 +34,35 @@ import com.isahl.chess.queen.io.core.inf.ISession;
 /**
  * @author william.d.zk
  */
-public abstract class MixManager<C extends IContext<C>>
+public abstract class MixManager
         extends
-        AioSessionManager<C, ServerCore<C>>
+        AioSessionManager<ServerCore>
         implements
-        IActivity<C>
+        IActivity
 {
-    private final ServerCore<C> _ServerCore;
+    private final ServerCore _ServerCore;
 
-    public MixManager(IAioConfig config, ServerCore<C> serverCore)
+    public MixManager(IAioConfig config,
+                      ServerCore serverCore)
     {
         super(config);
         _ServerCore = serverCore;
     }
 
     @Override
-    public void close(ISession<C> session, IOperator.Type type)
+    public void close(ISession session, IOperator.Type type)
     {
         _ServerCore.close(session, type);
     }
 
     @Override
-    @SafeVarargs
-    public final boolean send(ISession<C> session, IOperator.Type type, IControl<C>... commands)
+    public final boolean send(ISession session, IOperator.Type type, IControl... commands)
     {
         return _ServerCore.send(session, type, commands);
     }
 
     @Override
-    protected ServerCore<C> getCore()
+    protected ServerCore getCore()
     {
         return _ServerCore;
     }

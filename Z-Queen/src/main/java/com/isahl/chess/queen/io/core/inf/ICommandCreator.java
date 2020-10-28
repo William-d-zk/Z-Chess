@@ -31,9 +31,9 @@ package com.isahl.chess.queen.io.core.inf;
  * 
  * @see ICommandFactory
  */
-public interface ICommandCreator<C extends IContext<C>>
+public interface ICommandCreator
 {
-    default IControl<C>[] createCommands(ISession<C> session)
+    default IControl[] createCommands(ISession session)
     {
         return null;
     }

@@ -21,14 +21,6 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.queen.io.core.inf;
+package com.isahl.chess.bishop.io.sort.mqtt.ssl;
 
-import com.isahl.chess.queen.event.inf.ISort;
-
-/**
- * @author William.d.zk
- */
-public interface IContextCreator<C extends IContext<C>>
-{
-    C createContext(ISessionOption option, ISort<C> sort);
-}
+public class MqttSslZSort {}

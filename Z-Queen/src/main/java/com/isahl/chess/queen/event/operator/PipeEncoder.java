@@ -23,47 +23,47 @@
 
 package com.isahl.chess.queen.event.operator;
 
-import java.util.Objects;
-
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.queen.io.core.inf.IContext;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.IPacket;
-import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.IPipeEncoder;
+import com.isahl.chess.queen.io.core.inf.ISession;
 
 /**
  * @author william.d.zk
  * 
  * @date 2019-05-08
  */
-public class PipeEncoder<C extends IContext<C>>
+public class PipeEncoder
         implements
-        IPipeEncoder<C>
+        IPipeEncoder
 {
-    private final Logger       _Logger = Logger.getLogger("io.queen.operator." + getClass().getSimpleName());
-    private final AioWriter<C> _AioWriter;
+    private final Logger    _Logger = Logger.getLogger("io.queen.operator." + getClass().getSimpleName());
+    private final AioWriter _AioWriter;
 
-    public PipeEncoder(AioWriter<C> aioWriter)
+    public PipeEncoder(AioWriter aioWriter)
     {
         _AioWriter = aioWriter;
     }
 
     @Override
-    public ITriple handle(IControl<C> command, ISession<C> session)
+    public ITriple handle(IControl command, ISession session)
     {
-        try
-        {
-            IPacket send = filterWrite(command, session.getContext());
-            Objects.requireNonNull(send);
-            _Logger.debug("%s ", command);
-            session.write(send, _AioWriter);
+        try {
+            IPacket send = protocolWrite(command, session);
+            if (send != null) {
+                _Logger.debug("%s ", command);
+                session.write(send, _AioWriter);
+            }
         }
-        catch (Exception e)
-        {
-            return new Triple<>(e, session, session.getContext().getSort().getError());
+        catch (Exception e) {
+            return new Triple<>(e,
+                                session,
+                                session.getContext()
+                                       .getSort()
+                                       .getError());
         }
         return null;
     }

@@ -23,15 +23,14 @@
 
 package com.isahl.chess.queen.event.operator;
 
-import com.isahl.chess.queen.io.core.inf.IContext;
 import com.isahl.chess.queen.io.core.inf.IPipeTransfer;
 
 /**
  * @author william.d.zk
  */
-public class TransferOperator<C extends IContext<C>>
+public class TransferOperator
         implements
-        IPipeTransfer<C>
+        IPipeTransfer
 {
     @Override
     public String getName()

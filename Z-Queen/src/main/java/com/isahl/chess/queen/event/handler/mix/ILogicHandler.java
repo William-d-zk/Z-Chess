@@ -27,62 +27,65 @@ import static com.isahl.chess.queen.event.inf.IOperator.Type.LOGIC;
 
 import java.util.Objects;
 
+import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.base.util.Pair;
+import com.isahl.chess.queen.event.inf.IError;
 import com.isahl.chess.queen.event.processor.QEvent;
-import com.isahl.chess.queen.io.core.inf.IContext;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionManager;
 import com.lmax.disruptor.EventHandler;
-import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.event.inf.IError;
 
-public interface ILogicHandler<C extends IContext<C>>
+public interface ILogicHandler
         extends
         EventHandler<QEvent>
 {
     Logger getLogger();
 
-    ISessionManager<C> getISessionManager();
+    ISessionManager getISessionManager();
 
     @Override
     default void onEvent(QEvent event, long sequence, boolean endOfBatch)
     {
-        if (event.getEventType() == LOGIC)
-        {
-            IControl<C> content = event.getContent().getFirst();
-            ISession<C> session = event.getContent().getSecond();
-            if (content != null)
-            {
-                try
-                {
-                    IControl<C>[] response = handle(getISessionManager(), session, content);
-                    if (Objects.nonNull(response) && response.length > 0)
-                    {
+        doEvent(event, sequence, endOfBatch);
+    }
+
+    default void doEvent(QEvent event, long sequence, boolean endOfBatch)
+    {
+        if (event.getEventType() == LOGIC) {
+            IControl content = event.getContent()
+                                    .getFirst();
+            ISession session = event.getContent()
+                                    .getSecond();
+            if (content != null) {
+                try {
+                    IControl[] response = handle(getISessionManager(), session, content);
+                    if (Objects.nonNull(response) && response.length > 0) {
                         event.produce(LOGIC,
                                       new Pair<>(response, session),
-                                      session.getContext().getSort().getTransfer());
+                                      session.getContext()
+                                             .getSort()
+                                             .getTransfer());
                     }
-                    else
-                    {
+                    else {
                         event.ignore();
                     }
                 }
-                catch (Exception e)
-                {
+                catch (Exception e) {
                     getLogger().warning("logic handler interface", e);
                     event.error(IError.Type.HANDLE_DATA,
                                 new Pair<>(e, session),
-                                session.getContext().getSort().getError());
+                                session.getContext()
+                                       .getSort()
+                                       .getError());
                 }
             }
-            else
-            {
+            else {
                 event.ignore();
             }
         }
     }
 
-    IControl<C>[] handle(ISessionManager<C> manager, ISession<C> session, IControl<C> content) throws Exception;
+    IControl[] handle(ISessionManager manager, ISession session, IControl content) throws Exception;
 
 }

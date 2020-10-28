@@ -25,10 +25,7 @@ package com.isahl.chess.queen.io.core.inf;
 
 import com.isahl.chess.queen.event.inf.ISort;
 
-/**
- * @author william.d.zk
- */
-public interface IConnectMode<C extends IContext<C>>
+public interface IConnectMode
 {
-    ISort<C> getSort();
+    ISort.Mode getMode();
 }

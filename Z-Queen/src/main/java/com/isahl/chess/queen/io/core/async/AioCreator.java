@@ -24,16 +24,15 @@ package com.isahl.chess.queen.io.core.async;
 
 import java.time.Duration;
 
-import com.isahl.chess.queen.io.core.inf.IContext;
 import com.isahl.chess.queen.config.ISocketConfig;
 import com.isahl.chess.queen.io.core.inf.ISessionCreator;
 
 /**
  * @author William.d.zk
  */
-public abstract class AioCreator<C extends IContext<C>>
+public abstract class AioCreator
         implements
-        ISessionCreator<C>
+        ISessionCreator
 {
     private final ISocketConfig _Config;
 
@@ -63,13 +62,15 @@ public abstract class AioCreator<C extends IContext<C>>
     @Override
     public int getReadTimeOutInSecond()
     {
-        return (int) _Config.getReadTimeoutInMinute().getSeconds();
+        return (int) _Config.getReadTimeoutInMinute()
+                            .getSeconds();
     }
 
     @Override
     public int getWriteTimeOutInSecond()
     {
-        return (int) _Config.getWriteTimeoutInSecond().getSeconds();
+        return (int) _Config.getWriteTimeoutInSecond()
+                            .getSeconds();
     }
 
     @Override

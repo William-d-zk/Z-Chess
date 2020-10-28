@@ -27,7 +27,6 @@ import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
-import com.isahl.chess.bishop.io.zfilter.ZContext;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISession;
@@ -37,15 +36,17 @@ import com.isahl.chess.queen.io.core.inf.ISession;
  */
 public abstract class WsControl
         implements
-        IControl<ZContext>
+        IControl
 {
 
-    private final byte[]       _Payload;
-    private final int          _Command;
-    private final byte         _CtrlCode;
-    private ISession<ZContext> mSession;
+    private final byte[] _Payload;
+    private final int    _Command;
+    private final byte   _CtrlCode;
+    private ISession     mSession;
 
-    public WsControl(byte code, int command, byte[] payload)
+    public WsControl(byte code,
+                     int command,
+                     byte[] payload)
     {
         _CtrlCode = code;
         _Command = command;
@@ -106,13 +107,13 @@ public abstract class WsControl
     }
 
     @Override
-    public ISession<ZContext> getSession()
+    public ISession getSession()
     {
         return mSession;
     }
 
     @Override
-    public WsControl setSession(ISession<ZContext> session)
+    public WsControl setSession(ISession session)
     {
         mSession = session;
         return this;
@@ -121,9 +122,8 @@ public abstract class WsControl
     @Override
     public int dataLength()
     {
-        return Objects.nonNull(_Payload) ?
-                _Payload.length:
-                0;
+        return Objects.nonNull(_Payload) ? _Payload.length
+                                         : 0;
     }
 
     @Override
@@ -132,9 +132,8 @@ public abstract class WsControl
         int command = serial();
         return String.format("cmd: %#x, %s",
                              command,
-                             _Payload == null ?
-                                     "[NULL] payload":
-                                     new String(_Payload, StandardCharsets.UTF_8));
+                             _Payload == null ? "[NULL] payload"
+                                              : new String(_Payload, StandardCharsets.UTF_8));
     }
 
     @Override

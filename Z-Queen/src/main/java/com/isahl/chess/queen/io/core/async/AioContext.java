@@ -27,61 +27,47 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.isahl.chess.queen.io.core.inf.IContext;
-import com.isahl.chess.queen.event.inf.ISort;
 import com.isahl.chess.queen.io.core.inf.ISessionOption;
 
 /**
  * @author William.d.zk
  */
-public abstract class AioContext<C extends IContext<C>>
+public abstract class AioContext
         implements
-        IContext<C>
+        IContext
 {
-    private int                 mDecodingPosition = -1, mLackData = 1;
-    private final AtomicInteger _EncodeState      = new AtomicInteger(ENCODE_NULL);
-    private final AtomicInteger _DecodeState      = new AtomicInteger(DECODE_NULL);
-    private final AtomicInteger _ChannelState     = new AtomicInteger(SESSION_CONNECTED);
+
+    protected final AtomicInteger _SessionState = new AtomicInteger(SESSION_CONNECTED);
 
     /*
-     * 用于写出的 ByteBuffer 属于4096及其倍数的对齐块，应与 SocketOption 中系统写出 Buffer 的大小进行调整，存在 一次性投递多个 IControl
-     * 对象的可能性也是存在的 AioPacket 中的 ByteBuffer 仅用于串行化
+     * 用于写出的 ByteBuffer 属于4096及其倍数的对齐块，应与 SocketOption 中系统写出 Buffer 的大小进行调整，
+     * 存在 一次性投递多个 IControl 的可能性 AioPacket 中的 ByteBuffer 仅用于串行化
      * IControl 对象
      */
-    private final ByteBuffer    _WrBuf;
+    private final ByteBuffer _WrBuf;
 
     /*
      * 用于缓存 IPoS 分块带入的 RecvBuffer 内容 由于 AioWorker 中 channel 的 read_buffer - protocol_buffer - 都以
      * SocketOption 设定为准，所以不存在 IPoS 带入一个包含多个分页的协议
      * 内容的情况
      */
-    private final ByteBuffer    _RvBuf;
-    private final ISort<C>      _Sort;
-    private boolean             mInitFromHandshake;
+    private final ByteBuffer _RvBuf;
 
-    private long                mClientStartTime;
-    private long                mServerArrivedTime;
-    private long                mServerResponseTime;
-    private long                mClientArrivedTime;
+    private long mClientStartTime;
+    private long mServerArrivedTime;
+    private long mServerResponseTime;
+    private long mClientArrivedTime;
 
-    protected AioContext(ISessionOption option, ISort<C> sort)
+    protected AioContext(ISessionOption option)
     {
         _RvBuf = ByteBuffer.allocate(option.getRcvInByte());
         _WrBuf = ByteBuffer.allocate(option.getSnfInByte());
-        _Sort = sort;
     }
 
     @Override
     public void reset()
     {
-        if (mInitFromHandshake) handshake();
-        else
-        {
-            _EncodeState.set(ctlOf(ENCODE_FRAME, 0));
-            _DecodeState.set(ctlOf(DECODE_FRAME, 0));
-        }
-        _ChannelState.set(ctlOf(SESSION_IDLE, 0));
-        mDecodingPosition = -1;
-        mLackData = 1;
+        _SessionState.set(ctlOf(SESSION_IDLE, 0));
         _RvBuf.clear();
         _WrBuf.clear();
     }
@@ -89,146 +75,31 @@ public abstract class AioContext<C extends IContext<C>>
     @Override
     public void close() throws IOException
     {
-        advanceState(_ChannelState, SESSION_CLOSE);
+        advanceState(_SessionState, SESSION_CLOSE);
     }
 
     @Override
-    public void handshake()
+    public void setSessionState(int state)
     {
-        if (stateOf(_EncodeState.get()) == ENCODE_NULL)
-        {
-            advanceState(_EncodeState, ENCODE_HANDSHAKE);
-        }
-        if (stateOf(_DecodeState.get()) == DECODE_NULL)
-        {
-            advanceState(_DecodeState, DECODE_HANDSHAKE);
-        }
-        mInitFromHandshake = true;
+        advanceState(_SessionState, state);
     }
 
     @Override
-    public final boolean needHandshake()
+    public int getSessionState()
     {
-        return mInitFromHandshake;
+        return stateOf(_SessionState.get());
     }
 
     @Override
-    public void transfer()
+    public boolean sessionStateLessThan(int targetState)
     {
-        advanceState(_EncodeState, ENCODE_FRAME);
-        advanceState(_DecodeState, DECODE_FRAME);
-    }
-
-    @Override
-    public int lackLength(int length, int target)
-    {
-        mDecodingPosition += length;
-        mLackData = target - mDecodingPosition;
-        return mLackData;
-    }
-
-    @Override
-    public int position()
-    {
-        return mDecodingPosition;
-    }
-
-    @Override
-    public int lack()
-    {
-        return mLackData;
-    }
-
-    @Override
-    public void finish()
-    {
-        mDecodingPosition = -1;
-        mLackData = 1;
-        _RvBuf.clear();
-    }
-
-    @Override
-    public int outState()
-    {
-        return stateOf(_EncodeState.get());
-    }
-
-    @Override
-    public void cryptOut()
-    {
-        advanceState(_EncodeState, ENCODE_TLS);
-    }
-
-    @Override
-    public void setOutState(int state)
-    {
-        advanceState(_EncodeState, state);
-    }
-
-    @Override
-    public int inState()
-    {
-        return stateOf(_DecodeState.get());
-    }
-
-    @Override
-    public void cryptIn()
-    {
-        advanceState(_DecodeState, DECODE_TLS);
-    }
-
-    @Override
-    public void setInState(int state)
-    {
-        advanceState(_DecodeState, state);
-    }
-
-    @Override
-    public void setChannelState(int state)
-    {
-        advanceState(_ChannelState, state);
-    }
-
-    @Override
-    public int getChannelState()
-    {
-        return stateOf(_ChannelState.get());
-    }
-
-    @Override
-    public boolean isInConvert()
-    {
-        return isInConvert(_DecodeState.get());
-    }
-
-    @Override
-    public boolean isOutConvert()
-    {
-        return isOutConvert(_EncodeState.get());
-    }
-
-    @Override
-    public boolean isInErrorState()
-    {
-        return isInErrorState(_DecodeState.get());
-    }
-
-    @Override
-    public boolean isOutErrorState()
-    {
-        return isOutErrorState(_EncodeState.get());
-    }
-
-    @Override
-    public boolean channelStateLessThan(int targetState)
-    {
-        return stateLessThan(_ChannelState.get(), targetState);
+        return stateLessThan(_SessionState.get(), targetState);
     }
 
     @Override
     public void advanceChannelState(int state)
     {
-        advanceState(_ChannelState, state);
+        advanceState(_SessionState, state);
     }
 
     @Override
@@ -277,27 +148,9 @@ public abstract class AioContext<C extends IContext<C>>
     }
 
     @Override
-    public boolean isInCrypt()
-    {
-        return stateAtLeast(_DecodeState.get(), DECODE_TLS);
-    }
-
-    @Override
-    public boolean isOutCrypt()
-    {
-        return stateAtLeast(_EncodeState.get(), ENCODE_TLS);
-    }
-
-    @Override
     public boolean isClosed()
     {
-        return isClosed(_ChannelState.get());
-    }
-
-    @Override
-    public ISort<C> getSort()
-    {
-        return _Sort;
+        return isClosed(_SessionState.get());
     }
 
 }

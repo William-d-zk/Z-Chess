@@ -25,16 +25,16 @@ package com.isahl.chess.queen.io.core.inf;
 /**
  * @author William.d.zk
  */
-public interface ISessionMessage<C extends IContext<C>>
+public interface ISessionMessage
         extends
         IDuplicate
 {
-    default ISession<C> getSession()
+    default ISession getSession()
     {
         return null;
     }
 
-    default ISessionMessage<C> setSession(ISession<C> session)
+    default ISessionMessage setSession(ISession session)
     {
         return this;
     }

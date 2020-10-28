@@ -23,12 +23,12 @@
 
 package com.isahl.chess.queen.event.handler.cluster;
 
-import com.isahl.chess.queen.event.processor.QEvent;
-import com.lmax.disruptor.EventHandler;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.event.inf.IOperator;
+import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.inf.IProtocol;
+import com.lmax.disruptor.EventHandler;
 
 public class NotifyHandler
         implements
@@ -40,11 +40,12 @@ public class NotifyHandler
     public void onEvent(QEvent event, long seq, boolean batch) throws Exception
     {
         _Logger.debug("notify handler: -> %s", event);
-        IPair                            content  = event.getContent();
-        IProtocol                        protocol = content.getFirst();
-        IOperator<IProtocol, Void, Void> notifier = event.getEventOp();
-        if (notifier != null)
-        {
+        IPair content = event.getContent();
+        IProtocol protocol = content.getFirst();
+        IOperator<IProtocol,
+                  Void,
+                  Void> notifier = event.getEventOp();
+        if (notifier != null) {
             notifier.handle(protocol, null);
         }
         event.reset();

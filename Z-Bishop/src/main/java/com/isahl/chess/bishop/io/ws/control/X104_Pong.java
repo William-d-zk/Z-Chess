@@ -28,25 +28,25 @@ import com.isahl.chess.bishop.io.ws.WsFrame;
 /**
  * @author William.d.zk
  */
-public class X105_Pong
+public class X104_Pong
         extends
         WsControl
 {
     public final static int COMMAND = 0x105;
 
-    public X105_Pong()
+    public X104_Pong()
     {
         this(null);
     }
 
-    public X105_Pong(byte[] payload)
+    public X104_Pong(byte[] payload)
     {
         super(WsFrame.frame_op_code_ctrl_pong, COMMAND, payload);
     }
 
     @Override
-    public X105_Pong duplicate()
+    public X104_Pong duplicate()
     {
-        return new X105_Pong(getPayload());
+        return new X104_Pong(getPayload());
     }
 }

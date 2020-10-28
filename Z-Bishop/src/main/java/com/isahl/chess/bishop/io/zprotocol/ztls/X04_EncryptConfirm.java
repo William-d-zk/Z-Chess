@@ -22,9 +22,9 @@
  */
 package com.isahl.chess.bishop.io.zprotocol.ztls;
 
-import com.isahl.chess.bishop.io.zfilter.ZContext;
 import com.isahl.chess.bishop.io.zprotocol.ZCommand;
 import com.isahl.chess.king.base.util.IoUtil;
+import com.isahl.chess.queen.io.core.inf.IPContext;
 
 /**
  * @author William.d.zk
@@ -38,7 +38,7 @@ public class X04_EncryptConfirm
     public int              symmetricKeyId;
 
     /* SHA256 */
-    private byte[]          mSign;
+    private byte[] mSign;
 
     public X04_EncryptConfirm()
     {
@@ -89,15 +89,15 @@ public class X04_EncryptConfirm
     }
 
     @Override
-    public void afterEncode(ZContext ctx)
+    public <C extends IPContext<C>> void afterEncode(C ctx)
     {
-        ctx.updateKeyOut();
+        ctx.updateOut();
     }
 
     @Override
-    public void afterDecode(ZContext ctx)
+    public <C extends IPContext<C>> void afterDecode(C ctx)
     {
-        ctx.updateKeyIn();
+        ctx.updateIn();
     }
 
     @Override

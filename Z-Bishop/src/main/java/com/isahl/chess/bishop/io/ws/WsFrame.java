@@ -229,7 +229,7 @@ public class WsFrame
     }
 
     @Override
-    public int payloadLengthLack(int position)
+    public int lackLength(int position)
     {
         int result = (mPayload_Mask & 0x80) != 0 ?
                 4:
@@ -302,7 +302,7 @@ public class WsFrame
         frame_op_code = getOpCode(attr);
         frame_fin = isFrameFin(attr);
         mPayload_Mask = data[pos++];
-        int p = payloadLengthLack(pos);
+        int p = lackLength(pos);
         switch (p)
         {
             case WsFrame.frame_payload_length_7_no_mask_position:

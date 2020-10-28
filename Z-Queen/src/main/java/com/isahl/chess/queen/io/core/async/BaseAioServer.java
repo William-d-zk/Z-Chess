@@ -31,7 +31,6 @@ import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 
 import com.isahl.chess.king.base.inf.ITriple;
-import com.isahl.chess.queen.io.core.inf.IContext;
 import com.isahl.chess.queen.config.ISocketConfig;
 import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.event.operator.AcceptFailedOperator;
@@ -42,18 +41,20 @@ import com.isahl.chess.queen.io.core.inf.IConnectActivity;
 /**
  * @author william.d.zk
  */
-public abstract class BaseAioServer<C extends IContext<C>>
+public abstract class BaseAioServer
         extends
-        AioCreator<C>
+        AioCreator
         implements
-        IAioServer<C>
+        IAioServer
 {
-    private final AcceptFailedOperator<C> _AcceptFailedOperator = new AcceptFailedOperator<>();
-    private final ConnectedOperator<C>    _ConnectedOperator    = new ConnectedOperator<>();
-    private final InetSocketAddress       _LocalBind;
-    private volatile boolean              vValid;
+    private final AcceptFailedOperator _AcceptFailedOperator = new AcceptFailedOperator();
+    private final ConnectedOperator    _ConnectedOperator    = new ConnectedOperator();
+    private final InetSocketAddress    _LocalBind;
+    private volatile boolean           vValid;
 
-    protected BaseAioServer(String serverHost, int serverPort, ISocketConfig socketConfig)
+    protected BaseAioServer(String serverHost,
+                            int serverPort,
+                            ISocketConfig socketConfig)
     {
         super(socketConfig);
         _LocalBind = new InetSocketAddress(serverHost, serverPort);
@@ -72,8 +73,7 @@ public abstract class BaseAioServer<C extends IContext<C>>
     @Override
     public void pendingAccept()
     {
-        if (mServerChannel.isOpen())
-        {
+        if (mServerChannel.isOpen()) {
             mServerChannel.accept(this, this);
             vValid = true;
         }
@@ -92,13 +92,17 @@ public abstract class BaseAioServer<C extends IContext<C>>
     }
 
     @Override
-    public IOperator<Throwable, IAioServer<C>, Void> getErrorOperator()
+    public IOperator<Throwable,
+                     IAioServer,
+                     Void> getErrorOperator()
     {
         return _AcceptFailedOperator;
     }
 
     @Override
-    public IOperator<IConnectActivity<C>, AsynchronousSocketChannel, ITriple> getConnectedOperator()
+    public IOperator<IConnectActivity,
+                     AsynchronousSocketChannel,
+                     ITriple> getConnectedOperator()
     {
         return _ConnectedOperator;
     }

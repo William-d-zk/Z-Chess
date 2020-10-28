@@ -30,5 +30,5 @@ package com.isahl.chess.queen.io.core.inf;
  */
 public interface IVariableLength
 {
-    int payloadLengthLack(int position);
+    int lackLength(int position);
 }

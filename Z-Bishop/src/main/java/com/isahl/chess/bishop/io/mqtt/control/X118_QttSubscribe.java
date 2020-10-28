@@ -32,6 +32,7 @@ import java.util.TreeMap;
 import com.isahl.chess.bishop.io.mqtt.QttCommand;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.inf.IConsistent;
+import com.isahl.chess.queen.io.core.inf.IPContext;
 
 /**
  * @author william.d.zk
@@ -39,7 +40,8 @@ import com.isahl.chess.queen.io.core.inf.IConsistent;
  * @date 2019-05-30
  */
 public class X118_QttSubscribe
-        extends QttCommand
+        extends
+        QttCommand
         implements
         IConsistent
 {
@@ -52,7 +54,8 @@ public class X118_QttSubscribe
         setCtrl(generateCtrl(false, false, AT_LEAST_ONCE, QTT_TYPE.SUBSCRIBE));
     }
 
-    private Map<String, Level> mSubscribes;
+    private Map<String,
+                Level> mSubscribes;
 
     @Override
     public boolean isMapping()
@@ -70,9 +73,9 @@ public class X118_QttSubscribe
     public int dataLength()
     {
         int length = super.dataLength();
-        if (mSubscribes != null)
-        {
-            for (Map.Entry<String, Level> entry : mSubscribes.entrySet())
+        if (mSubscribes != null) {
+            for (Map.Entry<String,
+                           Level> entry : mSubscribes.entrySet())
             {
                 String topic = entry.getKey();
                 // 2byte UTF-8 length 1byte Qos-lv
@@ -82,15 +85,15 @@ public class X118_QttSubscribe
         return length;
     }
 
-    public Map<String, Level> getSubscribes()
+    public Map<String,
+               Level> getSubscribes()
     {
         return mSubscribes;
     }
 
     public void addSubscribe(String topic, Level level)
     {
-        if (mSubscribes == null)
-        {
+        if (mSubscribes == null) {
             mSubscribes = new TreeMap<>();
         }
         mSubscribes.put(topic, level);
@@ -101,8 +104,7 @@ public class X118_QttSubscribe
     {
         pos = super.decodec(data, pos);
 
-        while (pos < data.length)
-        {
+        while (pos < data.length) {
             int utfSize = IoUtil.readUnsignedShort(data, pos);
             pos += 2;
             String topic = IoUtil.readString(data, pos, utfSize, StandardCharsets.UTF_8);
@@ -117,12 +119,13 @@ public class X118_QttSubscribe
     public int encodec(byte[] data, int pos)
     {
         pos = super.encodec(data, pos);
-        if (mSubscribes != null)
-        {
-            for (Map.Entry<String, Level> entry : mSubscribes.entrySet())
+        if (mSubscribes != null) {
+            for (Map.Entry<String,
+                           Level> entry : mSubscribes.entrySet())
             {
-                byte[] topic = entry.getKey().getBytes(StandardCharsets.UTF_8);
-                Level  level = entry.getValue();
+                byte[] topic = entry.getKey()
+                                    .getBytes(StandardCharsets.UTF_8);
+                Level level = entry.getValue();
                 pos += IoUtil.writeShort(topic.length, data, pos);
                 pos += IoUtil.write(topic, data, pos);
                 pos += IoUtil.writeByte(level.ordinal(), data, pos);
@@ -136,9 +139,8 @@ public class X118_QttSubscribe
     {
         return String.format("subscribe local-id:%d topics:%s",
                              getLocalId(),
-                             mSubscribes != null ?
-                                     mSubscribes.toString():
-                                     null);
+                             mSubscribes != null ? mSubscribes.toString()
+                                                 : null);
     }
 
     @Override

@@ -28,10 +28,10 @@ package com.isahl.chess.queen.io.core.inf;
  * 
  * @date 2019-05-17
  */
-public interface ICommand<C extends IContext<C>>
+public interface ICommand
         extends
-        IControl<C>,
-        IStreamProtocol<C>
+        IControl,
+        IStreamProtocol
 {
     @Override
     default int superSerial()

@@ -29,37 +29,33 @@ import java.nio.channels.AsynchronousSocketChannel;
 /**
  * @author William.d.zk
  */
-public interface ISessionCreator<C extends IContext<C>>
+public interface ISessionCreator
         extends
-        ISessionOption,
-        IContextCreator<C>
+        ISessionOption
 {
     /**
      * 由于继承了 ISessionOption 和 IContextCreator 所以在 create_session 入参中不再显示声明这两个参数
      * 
      * @param socketChannel
-     *                      已完成连接的 socket
+     *            已完成连接的 socket
      * @param activity
-     *                      连接执行器实际执行单元
+     *            连接执行器实际执行单元
      * 
      * @return session
      */
-    ISession<C> createSession(AsynchronousSocketChannel socketChannel, IConnectActivity<C> activity) throws IOException;
+    ISession createSession(AsynchronousSocketChannel socketChannel, IConnectActivity activity) throws IOException;
 
     @Override
     default void setOptions(AsynchronousSocketChannel channel)
     {
-        if (channel != null)
-        {
-            try
-            {
+        if (channel != null) {
+            try {
                 channel.setOption(StandardSocketOptions.TCP_NODELAY, isTcpNoDelay());
                 channel.setOption(StandardSocketOptions.SO_RCVBUF, getRcvInByte());
                 channel.setOption(StandardSocketOptions.SO_SNDBUF, getSnfInByte());
                 channel.setOption(StandardSocketOptions.SO_KEEPALIVE, isKeepAlive());
             }
-            catch (IOException e)
-            {
+            catch (IOException e) {
                 e.printStackTrace();
             }
         }

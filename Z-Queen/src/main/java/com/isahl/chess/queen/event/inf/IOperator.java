@@ -28,11 +28,17 @@ import java.util.Objects;
  * @author William.d.zk
  */
 @FunctionalInterface
-public interface IOperator<T, U, R>
+public interface IOperator<T,
+                           U,
+                           R>
 {
     R handle(T t, U u);
 
-    default <V> IOperator<T, U, V> andThen(IOperator<? super T, ? super R, ? extends V> after)
+    default <V> IOperator<T,
+                          U,
+                          V> andThen(IOperator<? super T,
+                                               ? super R,
+                                               ? extends V> after)
     {
         Objects.requireNonNull(after);
         return (t, u) -> after.handle(t, handle(t, u));

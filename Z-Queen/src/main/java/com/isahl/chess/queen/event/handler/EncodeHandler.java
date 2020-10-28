@@ -28,22 +28,22 @@ import static com.isahl.chess.queen.event.inf.IOperator.Type.WROTE;
 
 import java.util.Objects;
 
-import com.isahl.chess.queen.event.processor.QEvent;
-import com.isahl.chess.queen.io.core.inf.IContext;
-import com.isahl.chess.queen.io.core.inf.IControl;
-import com.isahl.chess.queen.io.core.inf.ISession;
-import com.lmax.disruptor.EventHandler;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.event.inf.IError;
 import com.isahl.chess.queen.event.inf.IOperator;
+import com.isahl.chess.queen.event.processor.QEvent;
+import com.isahl.chess.queen.io.core.inf.IControl;
+import com.isahl.chess.queen.io.core.inf.IPContext;
+import com.isahl.chess.queen.io.core.inf.ISession;
+import com.lmax.disruptor.EventHandler;
 
 /**
  * @author william.d.zk
  */
-public class EncodeHandler<C extends IContext<C>>
+public class EncodeHandler
         implements
         EventHandler<QEvent>
 {
@@ -52,8 +52,7 @@ public class EncodeHandler<C extends IContext<C>>
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
     {
-        if (event.hasError())
-        {
+        if (event.hasError()) {
             switch (event.getErrorType())
             {
                 case FILTER_ENCODE:
@@ -66,15 +65,16 @@ public class EncodeHandler<C extends IContext<C>>
                     break;
             }
         }
-        else
-        {
+        else {
             switch (event.getEventType())
             {
                 case WRITE:
                     IPair pairWriteContent = event.getContent();
-                    IControl<C> cmd = pairWriteContent.getFirst();
-                    ISession<C> session = pairWriteContent.getSecond();
-                    IOperator<IControl<C>, ISession<C>, ITriple> writeOperator = event.getEventOp();
+                    IControl cmd = pairWriteContent.getFirst();
+                    ISession session = pairWriteContent.getSecond();
+                    IOperator<IControl,
+                              ISession,
+                              ITriple> writeOperator = event.getEventOp();
                     _Logger.debug("%s→  %s | %s", WRITE, cmd, session);
                     encodeHandler(event, cmd, session, writeOperator);
                     cmd.dispose();
@@ -83,7 +83,9 @@ public class EncodeHandler<C extends IContext<C>>
                     IPair pairWroteContent = event.getContent();
                     int wroteCnt = pairWroteContent.getFirst();
                     session = pairWroteContent.getSecond();
-                    IOperator<Integer, ISession<C>, ITriple> wroteOperator = event.getEventOp();
+                    IOperator<Integer,
+                              ISession,
+                              ITriple> wroteOperator = event.getEventOp();
                     _Logger.debug("%s→  %s | %s", WROTE, wroteCnt, session);
                     encodeHandler(event, wroteCnt, session, wroteOperator);
                     break;
@@ -93,20 +95,22 @@ public class EncodeHandler<C extends IContext<C>>
         }
     }
 
-    private <A> void encodeHandler(QEvent event, A a, ISession<C> session, IOperator<A, ISession<C>, ITriple> operator)
+    private <A> void encodeHandler(QEvent event,
+                                   A a,
+                                   ISession session,
+                                   IOperator<A,
+                                             ISession,
+                                             ITriple> operator)
     {
-        C context = session.getContext();
-        if (!context.isOutErrorState())
-        {
+        IPContext<?> context = session.getContext();
+        if (!context.isOutErrorState()) {
             ITriple result = operator.handle(a, session);
-            if (Objects.nonNull(result))
-            {
+            if (Objects.nonNull(result)) {
                 Throwable throwable = result.getFirst();
                 event.error(IError.Type.FILTER_ENCODE, new Pair<>(throwable, session), result.getThird());
-                context.setOutState(IContext.ENCODE_ERROR);
+                context.setOutState(IPContext.ENCODE_ERROR);
             }
-            else
-            {
+            else {
                 event.reset();
             }
         }

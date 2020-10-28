@@ -33,10 +33,9 @@ import java.time.Duration;
 
 import javax.annotation.PostConstruct;
 
-import com.isahl.chess.bishop.io.ZSort;
-import com.isahl.chess.bishop.io.ws.control.X104_Ping;
-import com.isahl.chess.bishop.io.zcrypt.EncryptHandler;
-import com.isahl.chess.bishop.io.zfilter.ZContext;
+import com.isahl.chess.bishop.io.ZSortHolder;
+import com.isahl.chess.bishop.io.ws.WsContext;
+import com.isahl.chess.bishop.io.ws.control.X103_Ping;
 import com.isahl.chess.bishop.io.zprotocol.control.X106_Identity;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.log.Logger;
@@ -62,25 +61,24 @@ import com.isahl.chess.queen.io.core.inf.IConnectActivity;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionDismiss;
-import com.isahl.chess.queen.io.core.inf.ISessionOption;
 import com.isahl.chess.queen.io.core.manager.ClusterManager;
 
 public class ClusterNode
         extends
-        ClusterManager<ZContext>
+        ClusterManager
         implements
-        ISessionDismiss<ZContext>,
-        IClusterNode<ClusterCore<ZContext>>
+        ISessionDismiss,
+        IClusterNode<ClusterCore>
 {
     private final Logger               _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
     private final TimeWheel            _TimeWheel;
-    private final IAioServer<ZContext> _AioServer;
-    private final IAioClient<ZContext> _GateClient, _PeerClient;
+    private final IAioServer           _AioServer;
+    private final IAioClient           _GateClient, _PeerClient;
     private final ZUID                 _ZUID;
-    private final X104_Ping            _Ping;
+    private final X103_Ping _Ping;
 
     @Override
-    public void onDismiss(ISession<ZContext> session)
+    public void onDismiss(ISession session)
     {
         _Logger.debug("dismiss %s", session);
         rmSession(session);
@@ -91,54 +89,49 @@ public class ClusterNode
                        IRaftConfig raftConfig,
                        TimeWheel timeWheel) throws IOException
     {
-        super(config, new ClusterCore<>(clusterConfig));
+        super(config, new ClusterCore(clusterConfig));
         _TimeWheel = timeWheel;
         _ZUID = raftConfig.createZUID();
         _Logger.debug(_ZUID);
         IPair bind = raftConfig.getBind();
         final String _Host = bind.getFirst();
         final int _Port = bind.getSecond();
-        _AioServer = new BaseAioServer<ZContext>(_Host, _Port, getSocketConfig(getSlot(ZUID.TYPE_CLUSTER)))
+        _AioServer = new BaseAioServer(_Host, _Port, getSocketConfig(getSlot(ZUID.TYPE_CLUSTER)))
         {
             @Override
-            public ISort<ZContext> getSort()
+            public ISort.Mode getMode()
             {
-                return ZSort.WS_CLUSTER_SERVER;
+                return ZSortHolder.WS_CLUSTER_SERVER.getSort()
+                                                    .getMode();
             }
 
             @Override
-            public void onCreate(ISession<ZContext> session)
+            public void onCreate(ISession session)
             {
                 session.setIndex(_ZUID.getId());
                 ClusterNode.this.addSession(session);
             }
 
             @Override
-            public ISession<ZContext> createSession(AsynchronousSocketChannel socketChannel,
-                                                    IConnectActivity<ZContext> activity) throws IOException
+            public ISession createSession(AsynchronousSocketChannel socketChannel,
+                                          IConnectActivity activity) throws IOException
             {
-                return new AioSession<>(socketChannel, this, this, activity, ClusterNode.this);
+                ISort<WsContext> sort = ZSortHolder.WS_CLUSTER_SERVER.getSort();
+                return new AioSession<>(socketChannel, this, sort.newContext(this), activity, ClusterNode.this);
             }
 
             @Override
-            public ZContext createContext(ISessionOption option, ISort<ZContext> sort)
-            {
-                return sort.newContext(option);
-            }
-
-            @Override
-            @SuppressWarnings("unchecked")
-            public IControl<ZContext>[] createCommands(ISession<ZContext> session)
+            public IControl[] createCommands(ISession session)
             {
                 X106_Identity x106 = new X106_Identity(_ZUID.getPeerId());
                 return new IControl[] { x106
                 };
             }
         };
-        _GateClient = new BaseAioClient<ZContext>(_TimeWheel, getCore().getClusterChannelGroup())
+        _GateClient = new BaseAioClient(_TimeWheel, getCore().getClusterChannelGroup())
         {
             @Override
-            public void onCreate(ISession<ZContext> session)
+            public void onCreate(ISession session)
             {
                 super.onCreate(session);
                 Duration gap = Duration.ofSeconds(session.getReadTimeOutSeconds() / 2);
@@ -147,17 +140,17 @@ public class ClusterNode
             }
 
             @Override
-            public void onDismiss(ISession<ZContext> session)
+            public void onDismiss(ISession session)
             {
                 ClusterNode.this.onDismiss(session);
                 super.onDismiss(session);
             }
         };
-        _PeerClient = new BaseAioClient<ZContext>(_TimeWheel, getCore().getClusterChannelGroup())
+        _PeerClient = new BaseAioClient(_TimeWheel, getCore().getClusterChannelGroup())
         {
 
             @Override
-            public void onCreate(ISession<ZContext> session)
+            public void onCreate(ISession session)
             {
                 super.onCreate(session);
                 Duration gap = Duration.ofSeconds(session.getReadTimeOutSeconds() / 2);
@@ -166,13 +159,13 @@ public class ClusterNode
             }
 
             @Override
-            public void onDismiss(ISession<ZContext> session)
+            public void onDismiss(ISession session)
             {
                 ClusterNode.this.onDismiss(session);
                 super.onDismiss(session);
             }
         };
-        _Ping = new X104_Ping(String.format("%#x,%s:%d", _ZUID.getPeerId(), _Host, _Port)
+        _Ping = new X103_Ping(String.format("%#x,%s:%d", _ZUID.getPeerId(), _Host, _Port)
                                     .getBytes(StandardCharsets.UTF_8));
     }
 
@@ -182,12 +175,11 @@ public class ClusterNode
         _Logger.debug("load cluster node");
     }
 
-    public void start(IClusterCustom<ZContext,
-                                     RaftMachine> clusterCustom,
+    public void start(IClusterCustom<RaftMachine> clusterCustom,
                       IConsistentCustom consistentCustom,
-                      ILogicHandler<ZContext> logicHandler) throws IOException
+                      ILogicHandler logicHandler) throws IOException
     {
-        getCore().build(this, new EncryptHandler(), clusterCustom, consistentCustom, logicHandler);
+        getCore().build(this, clusterCustom, consistentCustom, logicHandler);
         _AioServer.bindAddress(_AioServer.getLocalAddress(), getCore().getClusterChannelGroup());
         _AioServer.pendingAccept();
         _Logger.debug(String.format("cluster start: %s", _AioServer.getLocalAddress()));
@@ -201,7 +193,7 @@ public class ClusterNode
                                            _PeerClient,
                                            ZUID.TYPE_CLUSTER,
                                            this,
-                                           ZSort.WS_CLUSTER_CONSUMER,
+                                           ZSortHolder.WS_CLUSTER_CONSUMER,
                                            _ZUID));
     }
 
@@ -213,17 +205,11 @@ public class ClusterNode
                                            _GateClient,
                                            ZUID.TYPE_INTERNAL,
                                            this,
-                                           ZSort.WS_CLUSTER_SYMMETRY,
+                                           ZSortHolder.WS_CLUSTER_SYMMETRY,
                                            _ZUID));
     }
 
-    @Override
-    public ClusterCore<ZContext> getCore()
-    {
-        return super.getCore();
-    }
-
-    private void heartbeat(ISession<ZContext> session)
+    private void heartbeat(ISession session)
     {
         _Logger.debug("cluster heartbeat =>%s", session.getRemoteAddress());
         getCore().send(session, CLUSTER_LOCAL, _Ping);
@@ -233,5 +219,11 @@ public class ClusterNode
     public long getZuid()
     {
         return _ZUID.getId();
+    }
+
+    @Override
+    public ClusterCore getCore()
+    {
+        return super.getCore();
     }
 }

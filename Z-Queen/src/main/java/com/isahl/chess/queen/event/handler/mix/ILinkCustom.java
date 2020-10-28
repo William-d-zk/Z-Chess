@@ -26,20 +26,20 @@ package com.isahl.chess.queen.event.handler.mix;
 import java.util.List;
 
 import com.isahl.chess.king.base.inf.ITriple;
+import com.isahl.chess.queen.event.handler.IMappingCustom;
 import com.isahl.chess.queen.event.handler.cluster.IConsistentCustom;
-import com.isahl.chess.queen.io.core.inf.IContext;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISessionManager;
-import com.isahl.chess.queen.event.handler.IMappingCustom;
 
 /**
  * @author william.d.zk
  * 
  * @date 2020/4/20
  */
-public interface ILinkCustom<C extends IContext<C>>
+public interface ILinkCustom
         extends
-        IMappingCustom<C>, IConsistentCustom
+        IMappingCustom,
+        IConsistentCustom
 {
 
     /*
@@ -66,10 +66,10 @@ public interface ILinkCustom<C extends IContext<C>>
      *
      * @param manager
      * @param request
-     *                link发来 强一致的请求
+     *            link发来 强一致的请求
      * 
      * @return response
      */
-    List<ITriple> notify(ISessionManager<C> manager, IControl<C> request, long origin);
+    List<ITriple> notify(ISessionManager manager, IControl request, long origin);
 
 }

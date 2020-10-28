@@ -25,9 +25,6 @@ package com.isahl.chess.queen.io.core.async;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.Objects;
 
-import com.isahl.chess.queen.event.processor.QEvent;
-import com.isahl.chess.queen.io.core.inf.IContext;
-import com.lmax.disruptor.RingBuffer;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
@@ -36,14 +33,15 @@ import com.isahl.chess.queen.event.inf.IError;
 import com.isahl.chess.queen.event.inf.IError.Type;
 import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.event.operator.WroteOperator;
+import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.inf.IAioConnector;
 import com.isahl.chess.queen.io.core.inf.IAioServer;
 import com.isahl.chess.queen.io.core.inf.IAvailable;
 import com.isahl.chess.queen.io.core.inf.IConnectActivity;
 import com.isahl.chess.queen.io.core.inf.IPacket;
-import com.isahl.chess.queen.io.core.inf.IPipeDecoder;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionError;
+import com.lmax.disruptor.RingBuffer;
 
 /**
  * @author William.d.zk
@@ -58,7 +56,10 @@ public class AioWorker
     private final IAvailable<RingBuffer<QEvent>> _Available;
     private final RingBuffer<QEvent>             _Producer;
 
-    public AioWorker(Runnable r, String name, IAvailable<RingBuffer<QEvent>> available, RingBuffer<QEvent> producer)
+    public AioWorker(Runnable r,
+                     String name,
+                     IAvailable<RingBuffer<QEvent>> available,
+                     RingBuffer<QEvent> producer)
     {
         super(r, name);
         _Available = available;
@@ -69,96 +70,97 @@ public class AioWorker
     @Override
     public void run()
     {
-        try
-        {
+        try {
             super.run();
         }
-        catch (Error e)
-        {
+        catch (Error e) {
             _Logger.fetal("AioWorker Work UnCatchEx", e);
-            if (Objects.nonNull(_Available))
-            {
+            if (Objects.nonNull(_Available)) {
                 _Available.available(_Producer);
             }
             throw e;
         }
     }
 
-    public <T, A, R> void publish(RingBuffer<QEvent> producer,
-                                  final IOperator<T, A, R> op,
-                                  final IError.Type eType,
-                                  final IOperator.Type type,
-                                  IPair content)
+    public <T,
+            A,
+            R> void publish(RingBuffer<QEvent> producer,
+                            final IOperator<T,
+                                            A,
+                                            R> op,
+                            final IError.Type eType,
+                            final IOperator.Type type,
+                            IPair content)
     {
-        if (producer.remainingCapacity() == 0)
-        {
+        if (producer.remainingCapacity() == 0) {
             _Logger.warning("aio worker %s block", getName());
         }
         long sequence = producer.next();
-        try
-        {
+        try {
             QEvent event = producer.get(sequence);
-            if (eType.equals(IError.Type.NO_ERROR))
-            {
+            if (eType.equals(IError.Type.NO_ERROR)) {
                 event.produce(type, content, op);
             }
-            else
-            {
+            else {
                 event.error(eType, content, op);
             }
         }
-        finally
-        {
+        finally {
             producer.publish(sequence);
         }
     }
 
-    public <C extends IContext<C>> void publishRead(final IPipeDecoder<C> op, IPacket pack, final ISession<C> session)
+    public void publishRead(final IOperator<IPacket,
+                                            ISession,
+                                            ITriple> op,
+                            IPacket pack,
+                            final ISession session)
     {
         publish(_Producer, op, IError.Type.NO_ERROR, IOperator.Type.READ, new Pair<>(pack, session));
     }
 
-    public <C extends IContext<C>> void publishWrote(final WroteOperator<C> op,
-                                                     final int wroteCnt,
-                                                     final ISession<C> session)
+    public void publishWrote(final WroteOperator op, final int wroteCnt, final ISession session)
     {
         publish(_Producer, op, IError.Type.NO_ERROR, IOperator.Type.WROTE, new Pair<>(wroteCnt, session));
     }
 
-    public <T, C extends IContext<C>>
-           void
-           publishWroteError(final ISessionError<C> op, final IError.Type eType, final T t, final ISession<C> session)
+    public <T> void publishWroteError(final ISessionError op,
+                                      final IError.Type eType,
+                                      final T t,
+                                      final ISession session)
     {
         publish(_Producer, op, eType, IOperator.Type.WROTE, new Pair<>(t, session));
     }
 
-    public <C extends IContext<C>>
-           void
-           publishConnected(final IOperator<IConnectActivity<C>, AsynchronousSocketChannel, ITriple> op,
-                            final IConnectActivity<C> activity,
-                            final IOperator.Type type,
-                            final AsynchronousSocketChannel channel)
+    public void publishConnected(final IOperator<IConnectActivity,
+                                                 AsynchronousSocketChannel,
+                                                 ITriple> op,
+                                 final IConnectActivity activity,
+                                 final IOperator.Type type,
+                                 final AsynchronousSocketChannel channel)
     {
         publish(_Producer, op, IError.Type.NO_ERROR, type, new Pair<>(activity, channel));
     }
 
-    public <C extends IContext<C>> void publishConnectingError(final IOperator<Throwable, IAioConnector<C>, Void> op,
-                                                               final Throwable e,
-                                                               final IAioConnector<C> cActive)
+    public void publishConnectingError(final IOperator<Throwable,
+                                                       IAioConnector,
+                                                       Void> op,
+                                       final Throwable e,
+                                       final IAioConnector cActive)
     {
         publish(_Producer, op, IError.Type.CONNECT_FAILED, IOperator.Type.NULL, new Pair<>(e, cActive));
     }
 
-    public <C extends IContext<C>> void publishAcceptError(final IOperator<Throwable, IAioServer<C>, Void> op,
-                                                           final Throwable e,
-                                                           final IAioServer<C> cActive)
+    public void publishAcceptError(final IOperator<Throwable,
+                                                   IAioServer,
+                                                   Void> op,
+                                   final Throwable e,
+                                   final IAioServer cActive)
     {
         publish(_Producer, op, Type.ACCEPT_FAILED, IOperator.Type.NULL, new Pair<>(e, cActive));
     }
 
-    public <T, C extends IContext<C>>
-           void
-           publishReadError(final ISessionError<C> op, final IError.Type eType, final T t, final ISession<C> session)
+    public <T> void publishReadError(final ISessionError op, final IError.Type eType, final T t, final ISession session)
     {
         publish(_Producer, op, eType, IOperator.Type.READ, new Pair<>(t, session));
     }

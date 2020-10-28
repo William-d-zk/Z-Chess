@@ -24,20 +24,24 @@ package com.isahl.chess.bishop.io.ws.filter;
 
 import java.nio.ByteBuffer;
 
+import com.isahl.chess.bishop.io.ZContext;
+import com.isahl.chess.bishop.io.ws.IWsContext;
 import com.isahl.chess.bishop.io.ws.WsFrame;
-import com.isahl.chess.bishop.io.zfilter.ZContext;
-import com.isahl.chess.bishop.io.ws.WsContext;
 import com.isahl.chess.queen.io.core.async.AioFilterChain;
 import com.isahl.chess.queen.io.core.async.AioPacket;
+import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.IPacket;
 import com.isahl.chess.queen.io.core.inf.IProtocol;
+import com.isahl.chess.queen.io.core.inf.IProxyContext;
 
 /**
  * @author William.d.zk
  */
-public class WsFrameFilter
+public class WsFrameFilter<T extends ZContext<T> & IWsContext>
         extends
-        AioFilterChain<ZContext, WsFrame, IPacket>
+        AioFilterChain<T,
+                       WsFrame,
+                       IPacket>
 {
     public final static String NAME = "ws_frame";
 
@@ -47,72 +51,59 @@ public class WsFrameFilter
     }
 
     @Override
-    public boolean checkType(IProtocol protocol)
+    public IPacket encode(T context, WsFrame output)
     {
-        return checkType(protocol, IPacket.PACKET_SERIAL);
-    }
-
-    @Override
-    public ResultType preEncode(ZContext context, IProtocol output)
-    {
-        return preFrameEncode(context, output);
-    }
-
-    @Override
-    public IPacket encode(ZContext context, WsFrame output)
-    {
-        output.setMask(null);
+        output.setMask(context.getMask());
         ByteBuffer toWrite = ByteBuffer.allocate(output.dataLength());
-        toWrite.position(output.encodec(toWrite.array(), toWrite.position())).flip();
+        toWrite.position(output.encodec(toWrite.array(), toWrite.position()))
+               .flip();
         return new AioPacket(toWrite);
     }
 
     @Override
-    public ResultType preDecode(ZContext context, IPacket input)
+    public ResultType seek(T context, WsFrame output)
     {
-        ResultType result = preFrameDecode(context, input);
-        if (ResultType.NEXT_STEP.equals(result))
-        {
+        return context.isOutConvert() ? ResultType.NEXT_STEP
+                                      : ResultType.IGNORE;
+    }
+
+    @Override
+    public ResultType peek(T context, IPacket input)
+    {
+        if (context.isInConvert()) {
             ByteBuffer recvBuf = input.getBuffer();
-            ByteBuffer cRvBuf  = context.getRvBuffer();
-            WsFrame    carrier = context.getCarrier();
-            int        lack    = context.lack();
+            ByteBuffer cRvBuf = context.getRvBuffer();
+            WsFrame carrier = context.getCarrier();
+            int lack = context.lack();
             switch (context.position())
             {
                 case -1:
-                    if (lack > 0 && !recvBuf.hasRemaining())
-                    { return ResultType.NEED_DATA; }
+                    if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
                     context.setCarrier(carrier = new WsFrame());
                     byte value = recvBuf.get();
                     carrier.setCtrl(WsFrame.getOpCode(value));
                     carrier.frame_fin = WsFrame.isFrameFin(value);
                     lack = context.lackLength(1, 1);
                 case 0:
-                    if (lack > 0 && !recvBuf.hasRemaining())
-                    { return ResultType.NEED_DATA; }
+                    if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
                     carrier.setMaskCode(recvBuf.get());
                     cRvBuf.put(carrier.getLengthCode());
-                    lack = context.lackLength(1, carrier.payloadLengthLack(context.position()) + context.position());
+                    lack = context.lackLength(1, carrier.lackLength(context.position()) + context.position());
                 case 1:
                 default:
-                    if (lack > 0 && !recvBuf.hasRemaining())
-                    { return ResultType.NEED_DATA; }
+                    if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
                     int target = context.position() + lack;
-                    do
-                    {
+                    do {
                         int remain = recvBuf.remaining();
                         int length = Math.min(remain, lack);
-                        for (int i = 0; i < length; i++)
-                        {
+                        for (int i = 0; i < length; i++) {
                             cRvBuf.put(recvBuf.get());
                         }
                         lack = context.lackLength(length, target);
-                        if (lack > 0 && !recvBuf.hasRemaining())
-                        { return ResultType.NEED_DATA; }
+                        if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
                         cRvBuf.flip();
                         // decoding
-                        if (carrier.getPayloadLength() < 0)
-                        {
+                        if (carrier.getPayloadLength() < 0) {
                             switch (target)
                             {
                                 case WsFrame.frame_payload_length_7_no_mask_position:
@@ -153,18 +144,14 @@ public class WsFrameFilter
                             target = context.position() + (int) carrier.getPayloadLength();
                             lack = context.lackLength(0, target);
                             cRvBuf.clear();
-                            if (carrier.getPayloadLength() > ((WsContext) context).getMaxPayloadSize())
-                            {
+                            if (carrier.getPayloadLength() > context.getMaxPayloadSize()) {
                                 _Logger.warning("payload is too large");
                                 return ResultType.ERROR;
                             }
-                            else if (carrier.getPayloadLength() == 0)
-                            { return ResultType.NEXT_STEP; }
+                            else if (carrier.getPayloadLength() == 0) { return ResultType.NEXT_STEP; }
                         }
-                        else
-                        {
-                            if (carrier.getPayloadLength() > 0)
-                            {
+                        else {
+                            if (carrier.getPayloadLength() > 0) {
                                 byte[] payload = new byte[(int) carrier.getPayloadLength()];
                                 cRvBuf.get(payload);
                                 carrier.setPayload(payload);
@@ -177,18 +164,16 @@ public class WsFrameFilter
                     return ResultType.NEED_DATA;
             }
         }
-        return result;
+        return ResultType.IGNORE;
     }
 
     @Override
-    public WsFrame decode(ZContext context, IPacket input)
+    public WsFrame decode(T context, IPacket input)
     {
         WsFrame frame = context.getCarrier();
-        if (frame.getMaskLength() > 0)
-        {
+        if (frame.getMaskLength() > 0) {
             byte[] mask = frame.getMask();
-            for (int i = 0, size = (int) frame.getPayloadLength(); i < size; i++)
-            {
+            for (int i = 0, size = (int) frame.getPayloadLength(); i < size; i++) {
                 int maskIndex = i & 3;
                 frame.getPayload()[i] ^= mask[maskIndex];
             }
@@ -197,4 +182,68 @@ public class WsFrameFilter
         return frame;
     }
 
+    @Override
+    @SuppressWarnings("unchecked")
+    public <C extends IPContext<C>,
+            O extends IProtocol> ResultType pipeSeek(C context, O output)
+    {
+        if (checkType(output, IProtocol.FRAME_SERIAL)) {
+            if (context instanceof IWsContext) {
+                return seek((T) context, (WsFrame) output);
+            }
+            else if (context.isProxy()) {
+                //SSL|ZLS C指代的为SSLZContext 和 EZContext 需要脱壳 O 为IPacket
+                T acting = ((IProxyContext<T>) context).getActingContext();
+                return seek(acting, (WsFrame) output);
+            }
+        }
+        return ResultType.IGNORE;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <C extends IPContext<C>,
+            I extends IProtocol> ResultType pipePeek(C context, I input)
+    {
+        if (checkType(input, IProtocol.PACKET_SERIAL)) {
+            if (context instanceof IWsContext) {
+                return peek((T) context, (IPacket) input);
+            }
+            else if (context.isProxy()) {
+                T acting = ((IProxyContext<T>) context).getActingContext();
+                if (acting instanceof IWsContext) { return peek(acting, (IPacket) input); }
+            }
+        }
+        return ResultType.IGNORE;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <C extends IPContext<C>,
+            O extends IProtocol,
+            I extends IProtocol> I pipeEncode(C context, O output)
+    {
+        if (context instanceof IWsContext) {
+            return (I) encode((T) context, (WsFrame) output);
+        }
+        else if (context.isProxy()) {
+            return (I) encode(((IProxyContext<T>) context).getActingContext(), (WsFrame) output);
+        }
+        return null;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <C extends IPContext<C>,
+            O extends IProtocol,
+            I extends IProtocol> O pipeDecode(C context, I input)
+    {
+        if (context instanceof IWsContext) {
+            return (O) decode((T) context, (IPacket) input);
+        }
+        else if (context.isProxy()) {
+            return (O) decode(((IProxyContext<T>) context).getActingContext(), (IPacket) input);
+        }
+        return null;
+    }
 }

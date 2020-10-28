@@ -30,25 +30,26 @@ import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
 
-import com.isahl.chess.queen.io.core.async.AioWorker;
 import com.isahl.chess.queen.event.inf.IOperator;
+import com.isahl.chess.queen.io.core.async.AioWorker;
 
 /**
  * @author William.d.zk
  */
-public interface IAioServer<C extends IContext<C>>
+public interface IAioServer
         extends
-        IConnected<C>,
-        IConnectActivity<C>,
-        IConnectError<C>,
-        CompletionHandler<AsynchronousSocketChannel, IAioServer<C>>
+        IConnected,
+        IConnectActivity,
+        IConnectError,
+        CompletionHandler<AsynchronousSocketChannel,
+                          IAioServer>
 {
     void bindAddress(InetSocketAddress address, AsynchronousChannelGroup channelGroup) throws IOException;
 
     void pendingAccept();
 
     @Override
-    default void completed(AsynchronousSocketChannel channel, IAioServer<C> server)
+    default void completed(AsynchronousSocketChannel channel, IAioServer server)
     {
         AioWorker worker = (AioWorker) Thread.currentThread();
         worker.publishConnected(server.getConnectedOperator(), server, ACCEPTED, channel);
@@ -56,7 +57,7 @@ public interface IAioServer<C extends IContext<C>>
     }
 
     @Override
-    default void failed(Throwable exc, IAioServer<C> server)
+    default void failed(Throwable exc, IAioServer server)
     {
         AioWorker worker = (AioWorker) Thread.currentThread();
         worker.publishAcceptError(server.getErrorOperator(), exc, server);
@@ -64,5 +65,7 @@ public interface IAioServer<C extends IContext<C>>
     }
 
     @Override
-    IOperator<Throwable, IAioServer<C>, Void> getErrorOperator();
+    IOperator<Throwable,
+              IAioServer,
+              Void> getErrorOperator();
 }

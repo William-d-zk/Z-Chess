@@ -23,11 +23,11 @@
 
 package com.isahl.chess.bishop.io.mqtt.filter;
 
+import com.isahl.chess.bishop.io.mqtt.QttContext;
 import com.isahl.chess.bishop.io.mqtt.QttControl;
 import com.isahl.chess.bishop.io.mqtt.QttFrame;
-import com.isahl.chess.bishop.io.zfilter.ZContext;
 import com.isahl.chess.queen.io.core.async.AioFilterChain;
-import com.isahl.chess.queen.io.core.inf.IPacket;
+import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.IProtocol;
 
 /**
@@ -37,7 +37,9 @@ import com.isahl.chess.queen.io.core.inf.IProtocol;
  */
 public class QttControlFilter
         extends
-        AioFilterChain<ZContext, QttControl, QttFrame>
+        AioFilterChain<QttContext,
+                       QttControl,
+                       QttFrame>
 {
 
     public QttControlFilter()
@@ -46,25 +48,17 @@ public class QttControlFilter
     }
 
     @Override
-    public boolean checkType(IProtocol protocol)
-    {
-        return checkType(protocol, IPacket.FRAME_SERIAL);
+    public ResultType seek(QttContext context, QttControl output) {
+        return null;
     }
 
     @Override
-    public ResultType preEncode(ZContext context, IProtocol output)
-    {
-        return preControlEncode(context, output);
+    public ResultType peek(QttContext context, QttFrame input) {
+        return null;
     }
 
     @Override
-    public ResultType preDecode(ZContext context, QttFrame input)
-    {
-        return preControlDecode(context, input);
-    }
-
-    @Override
-    public QttFrame encode(ZContext context, QttControl output)
+    public QttFrame encode(QttContext context, QttControl output)
     {
         QttFrame frame = new QttFrame();
         frame.setCtrl(output.getCtrl());
@@ -73,10 +67,35 @@ public class QttControlFilter
     }
 
     @Override
-    public QttControl decode(ZContext context, QttFrame input)
+    public QttControl decode(QttContext context, QttFrame input)
     {
         QttControl qttControl = QttCommandFactory.createQttControl(input);
         if (qttControl == null) throw new IllegalArgumentException("MQTT type error");
         else return qttControl;
     }
+
+    @Override    @SuppressWarnings("unchecked")
+    public <C extends IPContext<C>,
+            O extends IProtocol> ResultType pipeSeek(C context, O output)
+    {
+        return null;
+    }
+
+    @Override    @SuppressWarnings("unchecked")
+    public <C extends IPContext<C>,
+            I extends IProtocol> ResultType pipePeek(C context, I input)
+    {
+        return null;
+    }
+
+    @Override    @SuppressWarnings("unchecked")
+    public <C extends IPContext<C>, O extends IProtocol, I extends IProtocol> I pipeEncode(C context, O output) {
+        return null;
+    }
+
+    @Override    @SuppressWarnings("unchecked")
+    public <C extends IPContext<C>, O extends IProtocol, I extends IProtocol> O pipeDecode(C context, I input) {
+        return null;
+    }
+
 }

@@ -22,40 +22,32 @@
  */
 package com.isahl.chess.bishop.io.ws.control;
 
-import static com.isahl.chess.queen.io.core.inf.IQoS.Level.AT_LEAST_ONCE;
-
 import com.isahl.chess.bishop.io.ws.WsControl;
 import com.isahl.chess.bishop.io.ws.WsFrame;
 
 /**
  * @author William.d.zk
  */
-public class X104_Ping
+public class X102_Close
         extends
         WsControl
 {
+    public final static int COMMAND = 0x102;
 
-    public final static int COMMAND = 0x104;
-
-    public X104_Ping()
+    public X102_Close()
     {
         this(null);
     }
 
-    public X104_Ping(byte[] payload)
+    public X102_Close(byte[] payload)
     {
-        super(WsFrame.frame_op_code_ctrl_ping, COMMAND, payload);
+        super(WsFrame.frame_op_code_ctrl_close, COMMAND, payload);
     }
 
     @Override
-    public X104_Ping duplicate()
+    public X102_Close duplicate()
     {
-        return new X104_Ping(getPayload());
+        return new X102_Close(getPayload());
     }
 
-    @Override
-    public Level getLevel()
-    {
-        return AT_LEAST_ONCE;
-    }
 }

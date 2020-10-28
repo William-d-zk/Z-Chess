@@ -23,8 +23,10 @@
 
 package com.isahl.chess.queen.event.operator;
 
+import java.io.IOException;
+
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.queen.io.core.inf.IContext;
+import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionCloser;
 
 /**
@@ -32,9 +34,9 @@ import com.isahl.chess.queen.io.core.inf.ISessionCloser;
  * 
  * @date 2019-05-12
  */
-public class CloseOperator<C extends IContext<C>>
+public class CloseOperator
         implements
-        ISessionCloser<C>
+        ISessionCloser
 {
     @Override
     public String getName()
@@ -45,8 +47,15 @@ public class CloseOperator<C extends IContext<C>>
     private final Logger _Logger = Logger.getLogger("io.queen.operator." + getClass().getSimpleName());
 
     @Override
-    public Logger getLogger()
+    public Void handle(String msg, ISession session)
     {
-        return _Logger;
+        try {
+            _Logger.trace("msg %s → closed %s", msg, session);
+            session.close();
+        }
+        catch (IOException e) {
+            _Logger.warning("close exception: %s", e, session);
+        }
+        return null;
     }
 }

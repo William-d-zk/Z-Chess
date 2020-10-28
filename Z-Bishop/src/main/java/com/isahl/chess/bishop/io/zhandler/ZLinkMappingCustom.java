@@ -25,7 +25,6 @@ package com.isahl.chess.bishop.io.zhandler;
 
 import java.util.List;
 
-import com.isahl.chess.bishop.io.zfilter.ZContext;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.queen.event.handler.mix.ILinkCustom;
 import com.isahl.chess.queen.event.inf.IOperator;
@@ -41,35 +40,35 @@ import com.isahl.chess.queen.io.core.inf.ITraceable;
  */
 public class ZLinkMappingCustom
         extends
-        ZBaseMappingCustom<ZContext, ILinkCustom<ZContext>>
+        ZBaseMappingCustom<ILinkCustom>
         implements
-        ILinkCustom<ZContext>
+        ILinkCustom
 {
 
-    public ZLinkMappingCustom(ILinkCustom<ZContext> then)
+    public ZLinkMappingCustom(ILinkCustom then)
     {
         super(then);
     }
 
     @Override
-    public List<ITriple> notify(ISessionManager<ZContext> manager, IControl<ZContext> request, long origin)
+    public List<ITriple> notify(ISessionManager manager, IControl request, long origin)
     {
-        return _Then != null ?
-                _Then.notify(manager, request, origin):
-                null;
+        return _Then != null ? _Then.notify(manager, request, origin)
+                             : null;
     }
 
     @Override
     public void adjudge(IProtocol consensus)
     {
-        if (_Then != null)
-        {
+        if (_Then != null) {
             _Then.adjudge(consensus);
         }
     }
 
     @Override
-    public <T extends ITraceable & IProtocol> IOperator<T, Throwable, Void> getOperator()
+    public <T extends ITraceable & IProtocol> IOperator<T,
+                                                        Throwable,
+                                                        Void> getOperator()
     {
         return this::handle;
     }
@@ -77,8 +76,7 @@ public class ZLinkMappingCustom
     @Override
     public <T extends ITraceable & IProtocol> Void handle(T request, Throwable throwable)
     {
-        if (_Then != null)
-        {
+        if (_Then != null) {
             _Then.handle(request, throwable);
         }
         return null;

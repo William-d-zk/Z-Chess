@@ -29,7 +29,7 @@ import java.util.Collection;
  * 
  * @date 2018/4/8
  */
-public interface ISessionManager<C extends IContext<C>>
+public interface ISessionManager
 {
     long INVALID_INDEX = -1;
     long NULL_INDEX    = 0;
@@ -40,16 +40,16 @@ public interface ISessionManager<C extends IContext<C>>
      * prefix 近似 PortChannel 的结构
      * 
      * @param index
-     *                    session.index
+     *            session.index
      * @param session
-     *                    mapping session
+     *            mapping session
      * @param prefixArray
-     *                    session prefix array
-     *                    prefix 必须满足从H→L的匹配原则
+     *            session prefix array
+     *            prefix 必须满足从H→L的匹配原则
      * 
      * @return old mapping session
      */
-    ISession<C> mapSession(long index, ISession<C> session, long... prefixArray);
+    ISession mapSession(long index, ISession session, long... prefixArray);
 
     /**
      * 
@@ -57,7 +57,7 @@ public interface ISessionManager<C extends IContext<C>>
      * 
      * @return
      */
-    ISession<C> findSessionByPrefix(long prefix);
+    ISession findSessionByPrefix(long prefix);
 
     /**
      * 
@@ -65,7 +65,7 @@ public interface ISessionManager<C extends IContext<C>>
      * 
      * @return
      */
-    Collection<ISession<C>> findAllByPrefix(long prefix);
+    Collection<ISession> findAllByPrefix(long prefix);
 
     /**
      * 
@@ -73,7 +73,7 @@ public interface ISessionManager<C extends IContext<C>>
      * 
      * @return
      */
-    ISession<C> findSessionByIndex(long index);
+    ISession findSessionByIndex(long index);
 
     /**
      * 获取当前前缀归属下所有session的数量
@@ -89,7 +89,7 @@ public interface ISessionManager<C extends IContext<C>>
      * 
      * @param index
      */
-    ISession<C> clearSession(long index);
+    ISession clearSession(long index);
 
     /**
      * 删除所有 prefix→sessions的关系
@@ -98,14 +98,14 @@ public interface ISessionManager<C extends IContext<C>>
      * 
      * @return
      */
-    Collection<ISession<C>> clearAllSessionByPrefix(long prefix);
+    Collection<ISession> clearAllSessionByPrefix(long prefix);
 
-    default void clearSession(ISession<C> session)
+    default void clearSession(ISession session)
     {
         clearSession(session.getIndex());
     }
 
-    void addSession(ISession<C> session);
+    void addSession(ISession session);
 
-    void rmSession(ISession<C> session);
+    void rmSession(ISession session);
 }

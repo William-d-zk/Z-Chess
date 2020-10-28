@@ -31,80 +31,59 @@ import com.isahl.chess.queen.event.inf.IOperator;
 /**
  * @author William.d.zk
  */
-public interface IPipeDecoder<C extends IContext<C>>
-        extends IOperator<IPacket, ISession<C>, ITriple>
+public interface IPipeDecoder
+        extends
+        IOperator<IPacket,
+                  ISession,
+                  ITriple>
 {
-    @SuppressWarnings("unchecked")
-    default IControl<C>[] filterRead(IPacket input, ISession<C> session)
+    default <C extends IPContext<C>> IControl[] filterRead(IPacket input, ISession session)
     {
-        final IFilterChain<C> _Header  = session.getContext().getSort().getFilterChain().getChainHead();
-        C                     context  = session.getContext();
-        IControl<C>[]         commands = null;
-        IFilter.ResultType    resultType;
-        IProtocol             protocol = input;
-        for (IFilterChain<C> next = _Header;; next = _Header, protocol = input)
-        {
+        C context = session.getContext();
+        if (context == null || input == null) { return null; }
+        final IFilterChain _Header = context.getSort()
+                                            .getFilterChain()
+                                            .getChainHead();
+        IControl[] commands = null;
+        IProtocol protocol = input;
+        for (IFilterChain next = _Header;; next = _Header, protocol = input, context = session.getContext()) {
             Chain:
-            while (next != null)
             {
-                resultType = next.getFilter().checkType(protocol) ?
-                        next.getFilter().preDecode(context, protocol):
-                        IFilter.ResultType.IGNORE;
-                switch (resultType)
-                {
-                    case ERROR:
-                        throw new ZException(String.format("filter:%s error", next.getName()));
-                    case NEED_DATA:
-                        return commands;
-                    case NEXT_STEP:
-                        protocol = next.getFilter().decode(context, protocol);
-                        break;
-                    case HANDLED:
-                        IControl<C> cmd = (IControl<C>) next.getFilter().decode(context, protocol);
-                        if (cmd != null && !cmd.isProxy())
-                        {
-                            cmd.setSession(session);
-                            if (commands == null)
-                            {
-                                commands = new IControl[] { cmd
-                                };
-                            }
-                            else
-                            {
-                                IControl<C>[] nCmd = new IControl[commands.length + 1];
-                                IoUtil.addArray(commands, nCmd, cmd);
-                                commands = nCmd;
-                            }
-                        }
-                        else if (cmd != null && cmd.isProxy())
-                        {
-                            IControl<C>[] bodies = cmd.getProxyBodies();
-                            if (bodies != null)
-                            {
-                                for (IControl<C> body : bodies)
-                                {
-                                    if (body != null)
-                                    {
-                                        if (commands == null)
-                                        {
-                                            commands = new IControl[] { body
-                                            };
-                                        }
-                                        else
-                                        {
-                                            IControl<C>[] nCmd = new IControl[commands.length + 1];
-                                            IoUtil.addArray(commands, nCmd, cmd);
-                                            commands = nCmd;
-                                        }
-                                    }
+                IFilter.ResultType resultType = IFilter.ResultType.IGNORE;
+                while (next != null) {
+                    IPipeFilter pipeFilter = next.getPipeFilter();
+                    switch (resultType = pipeFilter.pipePeek(context, protocol))
+                    {
+                        case ERROR:
+                            throw new ZException("error input: %s ;filter: %s ", protocol, next.getName());
+                        case NEED_DATA:
+                            return commands;
+                        case NEXT_STEP:
+                            protocol = pipeFilter.pipeDecode(context, protocol);
+                            break;
+                        case HANDLED:
+                            IControl cmd = pipeFilter.pipeDecode(context, protocol);
+                            if (cmd != null) {
+                                cmd.setSession(session);
+                                if (commands == null) {
+                                    commands = new IControl[] { cmd
+                                    };
+                                }
+                                else {
+                                    IControl[] nCmd = new IControl[commands.length + 1];
+                                    IoUtil.addArray(commands, nCmd, cmd);
+                                    commands = nCmd;
                                 }
                             }
-                        }
-                        break Chain;
-                    default:
-                        break;
+                            break Chain;
+                        default:
+                            break;
+                    }
+                    next = next.getNext();
                 }
-                next = next.getNext();
+                if (resultType == IFilter.ResultType.IGNORE) {
+                    throw new ZException("no filter handle input: %s ", protocol);
+                }
             }
         }
     }

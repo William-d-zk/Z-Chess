@@ -30,30 +30,44 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLException;
 
-import com.isahl.chess.bishop.io.zfilter.ZContext;
+import com.isahl.chess.bishop.io.ZContext;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.event.inf.ISort;
+import com.isahl.chess.queen.io.core.inf.IPContext;
+import com.isahl.chess.queen.io.core.inf.IProxyContext;
 import com.isahl.chess.queen.io.core.inf.ISessionOption;
+import com.isahl.chess.queen.io.core.inf.ISslContext;
 
 /**
  * @author william.d.zk
  */
-public class SSLZContext
+public class SSLZContext<A extends IPContext<A>>
         extends
-        ZContext
+        ZContext<SSLZContext<A>>
+        implements
+        ISslContext,
+        IProxyContext<A>
 {
     private final static Logger LOGGER = Logger.getLogger(SSLZContext.class.getSimpleName());
+    private final SSLEngine     _SslEngine;
+    private final SSLContext    _SslContext;
+    private final A             _ActingContext;
 
-    public SSLZContext(ISessionOption option, ISort<ZContext> sort) throws NoSuchAlgorithmException
+    public SSLZContext(ISessionOption option,
+                       ISort<SSLZContext<A>> sort,
+                       A acting) throws NoSuchAlgorithmException
     {
         super(option, sort);
         _SslContext = SSLContext.getInstance("TLSv1.3");
         _SslEngine = _SslContext.createSSLEngine();
-
+        _ActingContext = acting;
     }
 
-    private final SSLEngine  _SslEngine;
-    private final SSLContext _SslContext;
+    @Override
+    public A getActingContext()
+    {
+        return _ActingContext;
+    }
 
     public SSLEngine getSSLEngine()
     {
@@ -69,14 +83,18 @@ public class SSLZContext
     public void close() throws IOException
     {
         super.close();
-        try
-        {
+        try {
             _SslEngine.closeInbound();
         }
-        catch (SSLException e)
-        {
+        catch (SSLException e) {
             LOGGER.info("ssl in bound exception %s", e.getMessage());
         }
         _SslEngine.closeOutbound();
+    }
+
+    @Override
+    public boolean isProxy()
+    {
+        return true;
     }
 }

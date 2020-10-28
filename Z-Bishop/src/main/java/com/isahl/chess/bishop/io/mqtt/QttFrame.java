@@ -88,7 +88,7 @@ public class QttFrame
     }
 
     @Override
-    public int payloadLengthLack(int position)
+    public int lackLength(int position)
     {
         mPayloadLength += (mLengthCode & 0x7F) << (position * 7);
         if (isLengthCodeLack())

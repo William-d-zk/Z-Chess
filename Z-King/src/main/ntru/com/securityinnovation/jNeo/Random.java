@@ -51,7 +51,7 @@ public class Random
      * @param _seed the new seed for the PRNG.
      */
     public Random(
-        byte _seed[])
+            byte[] _seed)
     {
         if (_seed == null)
           throw new NullPointerException("seed is null");
@@ -98,9 +98,9 @@ public class Random
      * @param length the number of bytes to output.
      */
     public void read(
-        byte outbuf[],
-        int  offset,
-        int  length)
+            byte[] outbuf,
+            int  offset,
+            int  length)
     {
         rng.read(outbuf, offset, length);
     }
@@ -113,7 +113,7 @@ public class Random
      * @param outbuf the buffer to store the output into.
      */
     public void read(
-        byte outbuf[])
+            byte[] outbuf)
     {
         rng.read(outbuf, 0, outbuf.length);
     }

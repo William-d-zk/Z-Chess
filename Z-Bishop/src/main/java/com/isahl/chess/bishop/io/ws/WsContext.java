@@ -22,11 +22,12 @@
  */
 package com.isahl.chess.bishop.io.ws;
 
-import java.io.IOException;
 import java.util.Base64;
 import java.util.Random;
 
-import com.isahl.chess.bishop.io.zfilter.ZContext;
+import com.isahl.chess.bishop.io.ZContext;
+import com.isahl.chess.king.base.util.CryptUtil;
+import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.event.inf.ISort;
 import com.isahl.chess.queen.io.core.inf.ISessionOption;
 
@@ -34,90 +35,73 @@ import com.isahl.chess.queen.io.core.inf.ISessionOption;
  * @author William.d.zk
  */
 public class WsContext
-        extends ZContext
+        extends
+        ZContext<WsContext>
+        implements
+        IWsContext
 {
-    public final static int HS_State_GET          = 1;
-    public final static int HS_State_HOST         = 1 << 1;
-    public final static int HS_State_UPGRADE      = 1 << 2;
-    public final static int HS_State_CONNECTION   = 1 << 3;
-    public final static int HS_State_SEC_KEY      = 1 << 4;
-    public final static int HS_State_ORIGIN       = 1 << 5;
-    public final static int HS_State_SEC_PROTOCOL = 1 << 6;
-    // public final String mSecProtocol, mSubProtocol; //not support right now
-    public final static int HS_State_SEC_VERSION  = 1 << 7;
-    public final static int HS_State_HTTP_101     = 1 << 8;
-    public final static int HS_State_SEC_ACCEPT   = 1 << 9;
-    public final static int HS_State_ACCEPT_OK    = HS_State_HTTP_101
-                                                    | HS_State_SEC_ACCEPT
-                                                    | HS_State_UPGRADE
-                                                    | HS_State_CONNECTION;
-    public final static int HS_State_CLIENT_OK    = HS_State_GET
-                                                    | HS_State_HOST
-                                                    | HS_State_UPGRADE
-                                                    | HS_State_CONNECTION
-                                                    | HS_State_SEC_KEY
-                                                    | HS_State_SEC_VERSION;
-    private final String    _SecKey, _SecAcceptExpect;
-    private final int       _MaxPayloadSize;
-    private int             mHandshakeState;
-    private WsHandshake     mHandshake;
 
-    public WsContext(ISessionOption option, ISort<ZContext> sort)
+    private final String _SecKey, _SecAcceptExpect;
+    private final int    _MaxPayloadSize;
+    private final byte[] _Mask = new byte[4];
+    private int          mHandshakeState;
+    private WsHandshake  mHandshake;
+
+    public WsContext(ISessionOption option,
+                     ISort<WsContext> sort)
     {
         super(option, sort);
         _MaxPayloadSize = option.getSnfInByte() - 2;
-        if (sort.getType().equals(ISort.Type.CONSUMER))
+        if (sort.getType()
+                .equals(ISort.Type.CONSUMER))
         {
-            Random r    = new Random(System.nanoTime());
+            Random r = new Random(System.nanoTime());
             byte[] seed = new byte[17];
             r.nextBytes(seed);
-            _SecKey = Base64.getEncoder().encodeToString(getCryptUtil().sha1(seed));
+            _SecKey = Base64.getEncoder()
+                            .encodeToString(CryptUtil.SHA1(seed));
             _SecAcceptExpect = getSecAccept(_SecKey);
+            int pos = Math.abs(r.nextInt() % 13);
+            IoUtil.read(seed, pos, _Mask);
         }
-        else
-        {
+        else {
             _SecKey = _SecAcceptExpect = null;
         }
 
         switch (sort.getMode())
         {
             case CLUSTER:
-                transfer();
+                advanceState(_DecodeState, DECODE_FRAME);
+                advanceState(_EncodeState, DECODE_FRAME);
                 break;
             case LINK:
-                handshake();
-                break;
             default:
                 break;
         }
     }
 
+    @Override
     public WsHandshake getHandshake()
     {
         return mHandshake;
     }
 
+    @Override
     public void setHandshake(WsHandshake handshake)
     {
         mHandshake = handshake;
     }
 
+    @Override
     public final int getMaxPayloadSize()
     {
         return _MaxPayloadSize;
     }
 
     @Override
-    public void close() throws IOException
-    {
-        super.close();
-    }
-
-    @Override
     public void reset()
     {
-        if (mHandshake != null)
-        {
+        if (mHandshake != null) {
             mHandshake.dispose();
         }
         mHandshake = null;
@@ -138,32 +122,31 @@ public class WsContext
         mHandshake = null;
     }
 
-    public String getSecAccept(String secKey)
-    {
-        return Base64.getEncoder()
-                     .encodeToString(getCryptUtil().sha1((secKey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11").getBytes()));
-    }
-
+    @Override
     public String getSeKey()
     {
         return _SecKey;
     }
 
+    @Override
+    public byte[] getMask()
+    {
+        return _Mask;
+    }
+
+    @Override
     public final void updateHandshakeState(int state)
     {
         mHandshakeState |= state;
     }
 
+    @Override
     public final boolean checkState(int state)
     {
         return mHandshakeState == state || (mHandshakeState & state) == state;
     }
 
-    public final int getWsVersion()
-    {
-        return 13;
-    }
-
+    @Override
     public String getSecAcceptExpect()
     {
         return _SecAcceptExpect;

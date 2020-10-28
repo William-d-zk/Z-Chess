@@ -32,14 +32,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.isahl.chess.bishop.io.ws.control.X103_Close;
+import com.isahl.chess.bishop.io.ZSortHolder;
+import com.isahl.chess.bishop.io.ws.control.X102_Close;
 import com.isahl.chess.bishop.io.zprotocol.device.X20_SignUp;
 import com.isahl.chess.bishop.io.zprotocol.device.X22_SignIn;
 import com.isahl.chess.bishop.io.zprotocol.device.X50_DeviceMsg;
 import com.isahl.chess.bishop.io.zprotocol.ztls.X01_EncryptRequest;
 import com.isahl.chess.rook.biz.device.client.DeviceConsumer;
 import com.isahl.chess.rook.biz.device.client.ZClient;
-import com.isahl.chess.rook.io.ConsumerZSort;
 
 /**
  * @author william.d.zk
@@ -58,14 +58,14 @@ public class ConsumerController
     @PostMapping("/consumer/ws/start")
     public String wsStart(@RequestBody ZClient zClient) throws IOException
     {
-        _DeviceClient.connect(ConsumerZSort.WS_CONSUMER, zClient);
+        _DeviceClient.connect(ZSortHolder.WS_CONSUMER, zClient);
         return "async commit ws_start consumer request";
     }
 
     @PostMapping("/consumer/qtt/start")
     public String qttStart(@RequestBody ZClient zClient) throws IOException
     {
-        _DeviceClient.connect(ConsumerZSort.QTT_SYMMETRY, zClient);
+        _DeviceClient.connect(ZSortHolder.QTT_SYMMETRY, zClient);
         return "async commit qtt_start consumer request";
     }
 
@@ -79,14 +79,15 @@ public class ConsumerController
     @GetMapping("/consumer/ws/close")
     public String wsClose(@RequestParam(name = "client_id") long clientId)
     {
-        _DeviceClient.sendLocal(clientId, new X103_Close("client ws_close".getBytes()));
+        _DeviceClient.sendLocal(clientId, new X102_Close("client ws_close".getBytes()));
         return "consumer ws_close";
     }
 
     @GetMapping("/consumer/ws/heartbeat")
-    public String
-           wsHeartbeat(@RequestParam(name = "msg", defaultValue = "client ws_heartbeat", required = false) String msg,
-                       @RequestParam(name = "client_id") long clientId)
+    public String wsHeartbeat(@RequestParam(name = "msg",
+                                            defaultValue = "client ws_heartbeat",
+                                            required = false) String msg,
+                              @RequestParam(name = "client_id") long clientId)
     {
         _DeviceClient.wsHeartbeat(clientId, msg);
         return "ws_heartbeat";

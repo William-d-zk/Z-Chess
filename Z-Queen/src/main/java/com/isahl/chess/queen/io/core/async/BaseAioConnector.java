@@ -33,7 +33,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.isahl.chess.king.base.inf.IFailed;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.schedule.inf.ITask;
-import com.isahl.chess.queen.io.core.inf.IContext;
 import com.isahl.chess.queen.config.ISocketConfig;
 import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.event.operator.ConnectFailedOperator;
@@ -44,28 +43,30 @@ import com.isahl.chess.queen.io.core.inf.IConnectActivity;
 /**
  * @author william.d.zk
  */
-public abstract class BaseAioConnector<C extends IContext<C>>
+public abstract class BaseAioConnector
         extends
-        AioCreator<C>
+        AioCreator
         implements
-        IAioConnector<C>
+        IAioConnector
 {
 
-    protected BaseAioConnector(String host, int port, ISocketConfig socketConfig, IFailed<IAioConnector<C>> failed)
+    protected BaseAioConnector(String host,
+                               int port,
+                               ISocketConfig socketConfig,
+                               IFailed<IAioConnector> failed)
     {
         super(socketConfig);
         _RemoteAddress = new InetSocketAddress(host, port);
         _FailedHandler = failed;
     }
 
-    private final ConnectFailedOperator<C>  _ConnectFailedOperator = new ConnectFailedOperator<>();
-    private final ConnectedOperator<C>      _ConnectedOperator     = new ConnectedOperator<>();
-    private final InetSocketAddress         _RemoteAddress;
-    private final AtomicInteger             _State                 = new AtomicInteger(ITask.ctlOf(RUNNING.getCode(),
-                                                                                                   0));
-    private final IFailed<IAioConnector<C>> _FailedHandler;
+    private final ConnectFailedOperator  _ConnectFailedOperator = new ConnectFailedOperator();
+    private final ConnectedOperator      _ConnectedOperator     = new ConnectedOperator();
+    private final InetSocketAddress      _RemoteAddress;
+    private final AtomicInteger          _State                 = new AtomicInteger(ITask.ctlOf(RUNNING.getCode(), 0));
+    private final IFailed<IAioConnector> _FailedHandler;
 
-    private InetSocketAddress               mLocalBind;
+    private InetSocketAddress mLocalBind;
 
     @Override
     public void error()
@@ -80,22 +81,16 @@ public abstract class BaseAioConnector<C extends IContext<C>>
     public boolean retry()
     {
         retry:
-        for (;;)
-        {
-            int c  = _State.get();
+        for (;;) {
+            int c = _State.get();
             int rs = ITask.runStateOf(c);
-            if (rs >= STOP.getCode())
-            { return false; }
-            for (;;)
-            {
+            if (rs >= STOP.getCode()) { return false; }
+            for (;;) {
                 int rc = ITask.retryCountOf(c);
-                if (rc >= RETRY_LIMIT)
-                { return false; }
-                if (ITask.compareAndIncrementRetry(_State, rc))
-                { return true; }
+                if (rc >= RETRY_LIMIT) { return false; }
+                if (ITask.compareAndIncrementRetry(_State, rc)) { return true; }
                 c = _State.get();// reload
-                if (ITask.runStateOf(c) != rs)
-                {
+                if (ITask.runStateOf(c) != rs) {
                     continue retry;
                 }
             }
@@ -121,13 +116,17 @@ public abstract class BaseAioConnector<C extends IContext<C>>
     }
 
     @Override
-    public IOperator<IConnectActivity<C>, AsynchronousSocketChannel, ITriple> getConnectedOperator()
+    public IOperator<IConnectActivity,
+                     AsynchronousSocketChannel,
+                     ITriple> getConnectedOperator()
     {
         return _ConnectedOperator;
     }
 
     @Override
-    public IOperator<Throwable, IAioConnector<C>, Void> getErrorOperator()
+    public IOperator<Throwable,
+                     IAioConnector,
+                     Void> getErrorOperator()
     {
         return _ConnectFailedOperator;
     }

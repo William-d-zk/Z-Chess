@@ -24,7 +24,6 @@
 package com.isahl.chess.queen.event.handler;
 
 import com.isahl.chess.king.base.inf.IPair;
-import com.isahl.chess.queen.io.core.inf.IContext;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionManager;
@@ -34,7 +33,7 @@ import com.isahl.chess.queen.io.core.inf.ISessionManager;
  * 
  * @date 2020/5/7
  */
-public interface IMappingCustom<C extends IContext<C>>
+public interface IMappingCustom
 {
     /**
      * 
@@ -44,10 +43,9 @@ public interface IMappingCustom<C extends IContext<C>>
      * 
      * @return pair
      *         first: response ->
-     *         second: protocol to other domain
-     *         third: operator
+     *         second: protocol to other domain,LINK->CLUSTER;CLUSTER->LINK
      * 
      * @throws Exception
      */
-    IPair handle(ISessionManager<C> manager, ISession<C> session, IControl<C> content) throws Exception;
+    IPair handle(ISessionManager manager, ISession session, IControl content) throws Exception;
 }

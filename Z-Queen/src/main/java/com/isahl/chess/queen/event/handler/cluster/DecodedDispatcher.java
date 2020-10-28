@@ -29,11 +29,6 @@ import static com.isahl.chess.queen.event.inf.IOperator.Type.LOGIC;
 
 import java.util.Objects;
 
-import com.isahl.chess.queen.event.processor.QEvent;
-import com.isahl.chess.queen.io.core.inf.IContext;
-import com.isahl.chess.queen.io.core.inf.IControl;
-import com.isahl.chess.queen.io.core.inf.ISession;
-import com.lmax.disruptor.RingBuffer;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
@@ -41,11 +36,16 @@ import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.event.inf.IPipeEventHandler;
 import com.isahl.chess.queen.event.inf.ISort;
+import com.isahl.chess.queen.event.processor.QEvent;
+import com.isahl.chess.queen.io.core.inf.IControl;
+import com.isahl.chess.queen.io.core.inf.IPContext;
+import com.isahl.chess.queen.io.core.inf.ISession;
+import com.lmax.disruptor.RingBuffer;
 
 /**
  * @author william.d.zk
  */
-public class DecodedDispatcher<C extends IContext<C>>
+public class DecodedDispatcher
         implements
         IPipeEventHandler<QEvent>
 {
@@ -56,7 +56,9 @@ public class DecodedDispatcher<C extends IContext<C>>
     private final int                  _WorkerMask;
 
     @SafeVarargs
-    public DecodedDispatcher(RingBuffer<QEvent> cluster, RingBuffer<QEvent> error, RingBuffer<QEvent>... workers)
+    public DecodedDispatcher(RingBuffer<QEvent> cluster,
+                             RingBuffer<QEvent> error,
+                             RingBuffer<QEvent>... workers)
     {
         _Cluster = cluster;
         _Error = error;
@@ -67,60 +69,62 @@ public class DecodedDispatcher<C extends IContext<C>>
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
     {
-        if (event.hasError())
-        {// 错误处理
-            IPair       dispatchError = event.getContent();
-            ISession<C> session       = dispatchError.getSecond();
-            if (!session.isClosed())
-            {
+        if (event.hasError()) {// 错误处理
+            IPair dispatchError = event.getContent();
+            ISession session = dispatchError.getSecond();
+            if (!session.isClosed()) {
                 error(_Error, event.getErrorType(), dispatchError, event.getEventOp());
             }
         }
-        else
-        {
-            if (event.getEventType() == DISPATCH)
-            {
-                IPair         dispatchContent = event.getContent();
-                ISession<C>   session         = dispatchContent.getSecond();
-                IControl<C>[] commands        = dispatchContent.getFirst();
-                if (Objects.nonNull(commands))
-                {
-                    for (IControl<C> cmd : commands)
-                    {
+        else {
+            if (event.getEventType() == DISPATCH) {
+                IPair dispatchContent = event.getContent();
+                ISession session = dispatchContent.getSecond();
+                IControl[] commands = dispatchContent.getFirst();
+                if (Objects.nonNull(commands)) {
+                    for (IControl cmd : commands) {
                         // dispatch 到对应的 处理器里
-                        dispatch(session.getContext().getSort(), cmd, session, event.getEventOp());
+                        dispatch(session.getContext()
+                                        .getSort(),
+                                 cmd,
+                                 session,
+                                 event.getEventOp());
                     }
                 }
             }
-            else
-            {
-                _Logger.warning("decoded dispatcher event type error: %s", event.getEventType().name());
+            else {
+                _Logger.warning("decoded dispatcher event type error: %s",
+                                event.getEventType()
+                                     .name());
             }
         }
         event.reset();
     }
 
-    private void dispatch(ISort<C> sorter,
-                          IControl<C> cmd,
-                          ISession<C> session,
-                          IOperator<IControl<C>, ISession<C>, ITriple> op)
+    private <C extends IPContext<C>> void dispatch(ISort<C> sorter,
+                                                   IControl cmd,
+                                                   ISession session,
+                                                   IOperator<IControl,
+                                                             ISession,
+                                                             ITriple> op)
     {
         cmd.setSession(session);
         IPair nextPipe = getNextPipe(sorter.getMode(), cmd);
         publish(nextPipe.getFirst(), nextPipe.getSecond(), new Pair<>(cmd, session), op);
     }
 
-    protected IPair getNextPipe(ISort.Mode mode, IControl<C> cmd)
+    protected IPair getNextPipe(ISort.Mode mode, IControl cmd)
     {
         _Logger.debug("decoded: %s | %s", cmd, mode);
-        if (mode == ISort.Mode.CLUSTER && cmd.isMapping())
-        { return new Pair<>(_Cluster, CLUSTER); }
-        return new Pair<>(dispatchWorker(cmd), LOGIC);
+        return mode == ISort.Mode.CLUSTER && cmd.isMapping() ? new Pair<>(_Cluster, CLUSTER)
+                                                             : new Pair<>(dispatchWorker(cmd), LOGIC);
     }
 
-    protected RingBuffer<QEvent> dispatchWorker(IControl<C> cmd)
+    protected RingBuffer<QEvent> dispatchWorker(IControl cmd)
     {
-        return _LogicWorkers[(int) cmd.getSession().getHashKey() & _WorkerMask];
+        return _LogicWorkers[(int) cmd.getSession()
+                                      .getHashKey()
+                             & _WorkerMask];
     }
 
     @Override

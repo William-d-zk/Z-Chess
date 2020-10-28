@@ -26,6 +26,7 @@ package com.isahl.chess.bishop.io.mqtt.control;
 import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
 
 import com.isahl.chess.bishop.io.mqtt.QttControl;
+import com.isahl.chess.queen.io.core.inf.IPContext;
 
 /**
  * @author william.d.zk
@@ -33,7 +34,8 @@ import com.isahl.chess.bishop.io.mqtt.QttControl;
  * @date 2019-05-30
  */
 public class X11E_QttDisconnect
-        extends QttControl
+        extends
+        QttControl
 {
     public final static int COMMAND = 0x11E;
 
