@@ -35,16 +35,16 @@ import com.isahl.chess.queen.event.inf.IOperator;
 /**
  * @author william.d.zk
  */
-public interface IAioConnector<C extends IContext<C>>
+public interface IAioConnector
         extends
         CompletionHandler<Void, AsynchronousSocketChannel>,
-        IConnectActivity<C>,
-        IConnected<C>,
-        IConnectError<C>,
+        IConnectActivity,
+        IConnected,
+        IConnectError,
         ITask
 {
     @Override
-    IOperator<Throwable, IAioConnector<C>, Void> getErrorOperator();
+    IOperator<Throwable, IAioConnector, Void> getErrorOperator();
 
     @Override
     default void completed(Void result, AsynchronousSocketChannel channel)

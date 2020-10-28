@@ -23,38 +23,54 @@
 
 package com.isahl.chess.queen.io.core.inf;
 
+import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.queen.event.inf.IOperator;
 
 /**
  * @author William.d.zk
  */
-public interface IPipeEncoder<C extends IContext<C>>
-        extends IOperator<IControl<C>, ISession<C>, ITriple>
+public interface IPipeEncoder
+        extends
+        IOperator<IControl,
+                  ISession,
+                  ITriple>
 {
-    @SuppressWarnings("unchecked")
-    default <O extends IProtocol> O filterWrite(IControl<C> output, C context)
+    default <C extends IPContext<C>,
+             A extends IPContext<A>> IPacket protocolWrite(IControl output, ISession session)
     {
-        IFilter.ResultType resultType;
-        IFilterChain<C>    previous = context.getSort().getFilterChain().getChainTail();
-        IProtocol          toWrite  = output;
-        while (previous != null)
+
+        C context = session.getContext();
+        if (context == null || output == null) { return null; }
+        IFilterChain previous = context.getSort()
+                                       .getFilterChain()
+                                       .getChainTail();
+        IProtocol protocol = output;
+        CHAIN:
         {
-            resultType = previous.getFilter().preEncode(context, toWrite);
-            switch (resultType)
-            {
-                case ERROR:
-                case NEED_DATA:
-                    return null;
-                case NEXT_STEP:
-                    toWrite = previous.getFilter().encode(context, toWrite);
-                    break;
-                default:
-                    break;
+            IFilter.ResultType resultType = IFilter.ResultType.IGNORE;
+            while (previous != null) {
+                IPipeFilter pipeFilter = previous.getPipeFilter();
+                switch (resultType = pipeFilter.pipePeek(context, protocol))
+                {
+                    case ERROR:
+                        throw new ZException("error output: %s ; filter: %s", protocol, previous.getName());
+                    case NEED_DATA:
+                        return null;
+                    case NEXT_STEP:
+                        protocol = pipeFilter.pipeEncode(context, protocol);
+                        break;
+                    case HANDLED:
+                        protocol = pipeFilter.pipeEncode(context, protocol);
+                        break CHAIN;
+                    case IGNORE:
+                        break;
+                }
+                previous = previous.getPrevious();
             }
-            previous = previous.getPrevious();
+            if (resultType == IFilter.ResultType.IGNORE) { throw new ZException("no filter handle output: %s ", protocol); }
         }
-        return (O) toWrite;
+        return (IPacket) protocol;
     }
 
 }

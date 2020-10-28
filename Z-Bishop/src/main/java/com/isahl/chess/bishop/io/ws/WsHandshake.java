@@ -32,7 +32,8 @@ public abstract class WsHandshake
         WsControl
 {
 
-    public WsHandshake(int command, String msg)
+    public WsHandshake(int command,
+                       String msg)
     {
         super(WsFrame.frame_op_code_ctrl_handshake, command, msg.getBytes(StandardCharsets.UTF_8));
     }

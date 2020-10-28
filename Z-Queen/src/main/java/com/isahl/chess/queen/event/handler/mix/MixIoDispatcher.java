@@ -24,16 +24,16 @@
 package com.isahl.chess.queen.event.handler.mix;
 
 import com.isahl.chess.queen.event.handler.cluster.IoDispatcher;
-import com.isahl.chess.queen.event.processor.QEvent;
-import com.isahl.chess.queen.io.core.inf.IContext;
-import com.lmax.disruptor.RingBuffer;
 import com.isahl.chess.queen.event.inf.ISort;
+import com.isahl.chess.queen.event.processor.QEvent;
+import com.lmax.disruptor.RingBuffer;
 
 /**
  * @author william.d.zk
  */
-public class MixIoDispatcher<C extends IContext<C>>
-        extends IoDispatcher<C>
+public class MixIoDispatcher
+        extends
+        IoDispatcher
 {
     private final RingBuffer<QEvent> _Link;
 
@@ -48,10 +48,9 @@ public class MixIoDispatcher<C extends IContext<C>>
     }
 
     @Override
-    protected RingBuffer<QEvent> getNextPipe(ISort<C> sort)
+    protected RingBuffer<QEvent> getNextPipe(ISort.Mode mode)
     {
-        if (sort.getMode() == ISort.Mode.LINK)
-        { return _Link; }
-        return super.getNextPipe(sort);
+        return mode == ISort.Mode.LINK ? _Link
+                                       : super.getNextPipe(mode);
     }
 }

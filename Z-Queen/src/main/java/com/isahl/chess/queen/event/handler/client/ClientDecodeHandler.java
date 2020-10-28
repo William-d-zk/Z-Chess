@@ -27,32 +27,27 @@ import static com.isahl.chess.queen.event.inf.IOperator.Type.LOGIC;
 
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.event.processor.QEvent;
-import com.isahl.chess.queen.io.core.inf.IContext;
-import com.isahl.chess.queen.io.core.inf.IControl;
-import com.isahl.chess.queen.io.core.inf.IEncryptHandler;
-import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.event.handler.DecodeHandler;
 import com.isahl.chess.queen.event.inf.IOperator;
+import com.isahl.chess.queen.event.processor.QEvent;
+import com.isahl.chess.queen.io.core.inf.IControl;
+import com.isahl.chess.queen.io.core.inf.ISession;
 
 /**
  * @author william.d.zk
  */
-public class ClientDecodeHandler<C extends IContext<C>>
+public class ClientDecodeHandler
         extends
-        DecodeHandler<C>
+        DecodeHandler
 {
-
-    public ClientDecodeHandler(IEncryptHandler encryptHandler)
-    {
-        super(encryptHandler);
-    }
 
     @Override
     protected void transfer(QEvent event,
-                            IControl<C>[] commands,
-                            ISession<C> session,
-                            IOperator<IControl<C>[], ISession<C>, ITriple> operator)
+                            IControl[] commands,
+                            ISession session,
+                            IOperator<IControl[],
+                                      ISession,
+                                      ITriple> operator)
     {
         event.produce(LOGIC, new Pair<>(commands, session), operator);
     }

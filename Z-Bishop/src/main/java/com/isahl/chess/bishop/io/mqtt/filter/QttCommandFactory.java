@@ -23,9 +23,6 @@
 
 package com.isahl.chess.bishop.io.mqtt.filter;
 
-import com.isahl.chess.bishop.io.mqtt.control.X114_QttPuback;
-import com.isahl.chess.bishop.io.mqtt.control.X11A_QttUnsubscribe;
-import com.isahl.chess.bishop.io.mqtt.control.X11D_QttPingresp;
 import com.isahl.chess.bishop.io.mqtt.MqttProtocol;
 import com.isahl.chess.bishop.io.mqtt.QttCommand;
 import com.isahl.chess.bishop.io.mqtt.QttControl;
@@ -33,15 +30,17 @@ import com.isahl.chess.bishop.io.mqtt.QttFrame;
 import com.isahl.chess.bishop.io.mqtt.control.X111_QttConnect;
 import com.isahl.chess.bishop.io.mqtt.control.X112_QttConnack;
 import com.isahl.chess.bishop.io.mqtt.control.X113_QttPublish;
+import com.isahl.chess.bishop.io.mqtt.control.X114_QttPuback;
 import com.isahl.chess.bishop.io.mqtt.control.X115_QttPubrec;
 import com.isahl.chess.bishop.io.mqtt.control.X116_QttPubrel;
 import com.isahl.chess.bishop.io.mqtt.control.X117_QttPubcomp;
 import com.isahl.chess.bishop.io.mqtt.control.X118_QttSubscribe;
 import com.isahl.chess.bishop.io.mqtt.control.X119_QttSuback;
+import com.isahl.chess.bishop.io.mqtt.control.X11A_QttUnsubscribe;
 import com.isahl.chess.bishop.io.mqtt.control.X11B_QttUnsuback;
 import com.isahl.chess.bishop.io.mqtt.control.X11C_QttPingreq;
+import com.isahl.chess.bishop.io.mqtt.control.X11D_QttPingresp;
 import com.isahl.chess.bishop.io.mqtt.control.X11E_QttDisconnect;
-import com.isahl.chess.bishop.io.zfilter.ZContext;
 import com.isahl.chess.queen.io.core.inf.ICommandFactory;
 import com.isahl.chess.queen.io.core.inf.IControl;
 
@@ -52,18 +51,17 @@ import com.isahl.chess.queen.io.core.inf.IControl;
  */
 public class QttCommandFactory
         implements
-        ICommandFactory<IControl<ZContext>, QttFrame>
+        ICommandFactory<IControl,
+                        QttFrame>
 {
 
     @Override
-    public IControl<ZContext> create(QttFrame frame)
+    public IControl create(QttFrame frame)
     {
         QttCommand qttCommand = createQttCommand(frame);
-        if (qttCommand == null)
-        {
+        if (qttCommand == null) {
             QttControl qttControl = createQttControl(frame);
-            if (qttControl != null)
-            {
+            if (qttControl != null) {
                 return qttControl;
             }
             else throw new IllegalArgumentException("MQTT type error");
@@ -72,10 +70,11 @@ public class QttCommandFactory
     }
 
     @Override
-    public IControl<ZContext> create(int serial)
+    public IControl create(int serial)
     {
         MqttProtocol.QTT_TYPE qttType = MqttProtocol.QTT_TYPE.valueOf(serial);
-        return switch (qttType) {
+        return switch (qttType)
+        {
             case CONNECT -> new X111_QttConnect();
             case CONNACK -> new X112_QttConnack();
             case PINGREQ -> new X11C_QttPingreq();
@@ -90,7 +89,6 @@ public class QttCommandFactory
             case SUBACK -> new X119_QttSuback();
             case UNSUBSCRIBE -> new X11A_QttUnsubscribe();
             case UNSUBACK -> new X11B_QttUnsuback();
-            default -> throw new IllegalArgumentException("MQTT type error");
         };
     }
 
@@ -119,8 +117,7 @@ public class QttCommandFactory
                     return null;
             }
             byte[] payload = frame.getPayload();
-            if (payload != null)
-            {
+            if (payload != null) {
                 qttControl.decode(payload);
             }
             return qttControl;
@@ -164,8 +161,7 @@ public class QttCommandFactory
         }
         qttCommand.setCtrl(frame.getCtrl());
         byte[] payload = frame.getPayload();
-        if (payload != null)
-        {
+        if (payload != null) {
             qttCommand.decode(payload);
         }
         return qttCommand;

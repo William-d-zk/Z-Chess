@@ -33,7 +33,6 @@ import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.event.handler.IMappingCustom;
-import com.isahl.chess.queen.io.core.inf.IContext;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionManager;
@@ -43,9 +42,9 @@ import com.isahl.chess.queen.io.core.inf.ISessionManager;
  * 
  * @date 2020/5/7
  */
-abstract class ZBaseMappingCustom<C extends IContext<C>, E extends IMappingCustom<C>>
+abstract class ZBaseMappingCustom<E extends IMappingCustom>
         implements
-        IMappingCustom<C>
+        IMappingCustom
 {
 
     private final Logger _Logger = Logger.getLogger("protocol.bishop." + getClass().getSimpleName());
@@ -57,7 +56,7 @@ abstract class ZBaseMappingCustom<C extends IContext<C>, E extends IMappingCusto
     }
 
     @Override
-    public IPair handle(ISessionManager<C> manager, ISession<C> session, IControl<C> content) throws Exception
+    public IPair handle(ISessionManager manager, ISession session, IControl content) throws Exception
     {
         _Logger.debug("mapping receive %s", content);
         switch (content.serial())

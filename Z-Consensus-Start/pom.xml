@@ -37,7 +37,7 @@
         <dependency>
             <groupId>com.isahl.chess</groupId>
             <artifactId>cluster.z-knight</artifactId>
-            <version>1.0.11-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
     <build>
@@ -60,6 +60,5 @@
                 </executions>
             </plugin>
         </plugins>
-<!--        <directory>${user.home}/Z-Chess/${project.name}/target</directory>-->
     </build>
 </project>

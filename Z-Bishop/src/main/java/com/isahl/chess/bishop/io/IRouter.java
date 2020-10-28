@@ -24,14 +24,13 @@
 package com.isahl.chess.bishop.io;
 
 import com.isahl.chess.queen.io.core.inf.ICommand;
-import com.isahl.chess.queen.io.core.inf.IContext;
 
 /**
  * @author william.d.zk
  * 
  * @date 2019-08-04
  */
-public interface IRouter<C extends IContext<C>>
+public interface IRouter
 {
     /**
      * generate message id
@@ -44,27 +43,27 @@ public interface IRouter<C extends IContext<C>>
      * register message with state for session by id
      * 
      * @param stateMessage
-     *                     message with state
+     *            message with state
      * @param sessionIndex
-     *                     session index
+     *            session index
      */
-    void register(ICommand<C> stateMessage, long sessionIndex);
+    void register(ICommand stateMessage, long sessionIndex);
 
     /**
      * feed back message state
      * 
      * @param stateMessage
-     *                     message with state
+     *            message with state
      * @param sessionIndex
-     *                     session index
+     *            session index
      */
-    void ack(ICommand<C> stateMessage, long sessionIndex);
+    void ack(ICommand stateMessage, long sessionIndex);
 
     /**
      * clean session state machine for message stack
      * 
      * @param sessionIndex
-     *                     session index
+     *            session index
      */
     void clean(long sessionIndex);
 }

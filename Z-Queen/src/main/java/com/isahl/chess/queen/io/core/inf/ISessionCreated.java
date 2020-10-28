@@ -25,7 +25,7 @@ package com.isahl.chess.queen.io.core.inf;
 /**
  * @author William.d.zk
  */
-public interface ISessionCreated<C extends IContext<C>>
+public interface ISessionCreated
 {
-    void onCreate(ISession<C> session);
+    void onCreate(ISession session);
 }

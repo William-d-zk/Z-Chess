@@ -25,7 +25,7 @@ package com.isahl.chess.bishop.io.mqtt.handler;
 
 import java.util.Map;
 
-import com.isahl.chess.bishop.io.zfilter.ZContext;
+import com.isahl.chess.bishop.io.ZContext;
 import com.isahl.chess.bishop.io.IRouter;
 import com.isahl.chess.queen.io.core.inf.IQoS;
 
@@ -36,7 +36,7 @@ import com.isahl.chess.queen.io.core.inf.IQoS;
  */
 public interface IQttRouter
         extends
-        IRouter<ZContext>
+        IRouter
 {
 
     Map<Long, IQoS.Level> broker(final String topic);

@@ -20,95 +20,87 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+
 package com.isahl.chess.bishop.io.zfilter;
 
+import com.isahl.chess.bishop.io.ZContext;
 import com.isahl.chess.king.base.crypt.util.Rc4;
 import com.isahl.chess.king.base.util.CryptUtil;
 import com.isahl.chess.queen.event.inf.ISort;
-import com.isahl.chess.queen.io.core.async.AioContext;
+import com.isahl.chess.queen.io.core.inf.IEContext;
 import com.isahl.chess.queen.io.core.inf.IEncryptHandler;
-import com.isahl.chess.queen.io.core.inf.IFrame;
+import com.isahl.chess.queen.io.core.inf.IPContext;
+import com.isahl.chess.queen.io.core.inf.IProxyContext;
 import com.isahl.chess.queen.io.core.inf.ISessionOption;
 
-/**
- * @author William.d.zk
- * 
- * @date 2017-02-10
- */
-public class ZContext
+public class EZContext<A extends IPContext<A>>
         extends
-        AioContext<ZContext>
+        ZContext<EZContext<A>>
+        implements
+        IEContext,
+        IProxyContext<A>
 {
-
     private final CryptUtil _CryptUtil = new CryptUtil();
+    private final A         _ActingContext;
 
-    private int             mPubKeyId  = -2;
+    private int             mPubKeyId = -2;
     private boolean         mUpdateKeyIn, mUpdateKeyOut;
     private int             mSymmetricKeyId;
     private byte[]          mSymmetricKeyIn, mSymmetricKeyOut, mSymmetricKeyReroll;
     private Rc4             mEncryptRc4, mDecryptRc4;
     private IEncryptHandler mEncryptHandler;
-    private IFrame          mCarrier;
 
-    public ZContext(ISessionOption option, ISort<ZContext> sort)
+    public EZContext(ISessionOption option,
+                     ISort<EZContext<A>> sort,
+                     A acting)
     {
         super(option, sort);
+        _ActingContext = acting;
+    }
+
+    @Override
+    public A getActingContext()
+    {
+        return _ActingContext;
     }
 
     @Override
     public void reset()
     {
-        super.reset();
         mUpdateKeyIn = false;
         mUpdateKeyOut = false;
         mPubKeyId = -2;
         mSymmetricKeyId = 0;
-        if (mCarrier != null)
-        {
-            mCarrier.reset();
-        }
-        mCarrier = null;
+        super.reset();
     }
 
     @Override
     public void dispose()
     {
-        super.dispose();
         mEncryptHandler = null;
         mSymmetricKeyIn = mSymmetricKeyOut = mSymmetricKeyReroll = null;
-        if (mEncryptRc4 != null)
-        {
+        if (mEncryptRc4 != null) {
             mEncryptRc4.reset();
         }
-        if (mDecryptRc4 != null)
-        {
+        if (mDecryptRc4 != null) {
             mDecryptRc4.reset();
         }
         mEncryptRc4 = mDecryptRc4 = null;
-        mCarrier = null;
-    }
-
-    @Override
-    public void finish()
-    {
-        super.finish();
-        mCarrier = null;
+        super.dispose();
     }
 
     @Override
     public Rc4 getSymmetricDecrypt()
     {
-        return mDecryptRc4 == null ?
-                mDecryptRc4 = new Rc4():
-                mDecryptRc4;
+        return mDecryptRc4 == null ? mDecryptRc4 = new Rc4()
+                                   : mDecryptRc4;
     }
 
     @Override
     public Rc4 getSymmetricEncrypt()
     {
-        return mEncryptRc4 == null ?
-                mEncryptRc4 = new Rc4():
-                mEncryptRc4;
+        return mEncryptRc4 == null ? mEncryptRc4 = new Rc4()
+                                   : mEncryptRc4;
     }
 
     @Override
@@ -144,8 +136,7 @@ public class ZContext
     @Override
     public boolean needUpdateKeyIn()
     {
-        if (mUpdateKeyIn)
-        {
+        if (mUpdateKeyIn) {
             mUpdateKeyIn = false;
             return true;
         }
@@ -155,8 +146,7 @@ public class ZContext
     @Override
     public boolean needUpdateKeyOut()
     {
-        if (mUpdateKeyOut)
-        {
+        if (mUpdateKeyOut) {
             mUpdateKeyOut = false;
             return true;
         }
@@ -164,9 +154,21 @@ public class ZContext
     }
 
     @Override
+    public void updateIn()
+    {
+        updateKeyIn();
+    }
+
+    @Override
     public void updateKeyIn()
     {
         mUpdateKeyIn = true;
+    }
+
+    @Override
+    public void updateOut()
+    {
+        updateKeyOut();
     }
 
     @Override
@@ -222,14 +224,33 @@ public class ZContext
         return _CryptUtil;
     }
 
-    @SuppressWarnings("unchecked")
-    public <F extends IFrame> F getCarrier()
+    @Override
+    public void cryptIn()
     {
-        return (F) mCarrier;
+        advanceState(_DecodeState, DECODE_PAYLOAD);
     }
 
-    public void setCarrier(IFrame frame)
+    @Override
+    public void cryptOut()
     {
-        mCarrier = frame;
+        advanceState(_EncodeState, ENCODE_PAYLOAD);
+    }
+
+    @Override
+    public boolean isInCrypt()
+    {
+        return stateAtLeast(_DecodeState.get(), DECODE_PAYLOAD);
+    }
+
+    @Override
+    public boolean isOutCrypt()
+    {
+        return stateAtLeast(_EncodeState.get(), ENCODE_PAYLOAD);
+    }
+
+    @Override
+    public boolean isProxy()
+    {
+        return true;
     }
 }

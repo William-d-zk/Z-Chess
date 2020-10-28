@@ -24,23 +24,20 @@
 package com.isahl.chess.queen.event.inf;
 
 import com.isahl.chess.queen.event.operator.IgnoreOperator;
-import com.isahl.chess.queen.io.core.inf.ICommandFactory;
-import com.isahl.chess.queen.io.core.inf.IContext;
-import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.IFilterChain;
-import com.isahl.chess.queen.io.core.inf.IFrame;
+import com.isahl.chess.queen.io.core.inf.IPContext;
+import com.isahl.chess.queen.io.core.inf.IPipeDecoder;
+import com.isahl.chess.queen.io.core.inf.IPipeEncoder;
 import com.isahl.chess.queen.io.core.inf.IPipeTransfer;
 import com.isahl.chess.queen.io.core.inf.ISessionCloser;
 import com.isahl.chess.queen.io.core.inf.ISessionError;
 import com.isahl.chess.queen.io.core.inf.ISessionOption;
-import com.isahl.chess.queen.io.core.inf.IPipeDecoder;
-import com.isahl.chess.queen.io.core.inf.IPipeEncoder;
 
 /**
  * @author william.d.zk
  *         基于通讯协议的Pipeline 固有模式分类
  */
-public interface ISort<C extends IContext<C>>
+public interface ISort<C extends IPContext<C>>
 {
 
     enum Mode
@@ -53,12 +50,8 @@ public interface ISort<C extends IContext<C>>
     {
         SERVER,
         CONSUMER,
-        SYMMETRY
-    }
-
-    default boolean isSSL()
-    {
-        return false;
+        SYMMETRY,
+        INNER
     }
 
     /**
@@ -73,21 +66,19 @@ public interface ISort<C extends IContext<C>>
      */
     Type getType();
 
-    IPipeEncoder<C> getEncoder();
+    IPipeEncoder getEncoder();
 
-    IPipeDecoder<C> getDecoder();
+    IPipeDecoder getDecoder();
 
-    IPipeTransfer<C> getTransfer();
+    IPipeTransfer getTransfer();
 
-    IFilterChain<C> getFilterChain();
+    IFilterChain getFilterChain();
 
-    ISessionCloser<C> getCloser();
+    ISessionCloser getCloser();
 
-    ISessionError<C> getError();
+    ISessionError getError();
 
-    IgnoreOperator<C> getIgnore();
+    IgnoreOperator getIgnore();
 
     C newContext(ISessionOption option);
-
-    ICommandFactory<? extends IControl<C>, ? extends IFrame> getCommandFactory();
 }

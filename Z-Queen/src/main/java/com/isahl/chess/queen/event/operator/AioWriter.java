@@ -32,37 +32,51 @@ import java.nio.channels.CompletionHandler;
 
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.io.core.async.AioWorker;
-import com.isahl.chess.queen.io.core.inf.IContext;
 import com.isahl.chess.queen.io.core.inf.ISession;
 
 /**
  * @author william.d.zk
  */
-public class AioWriter<C extends IContext<C>>
+public class AioWriter
         implements
-        CompletionHandler<Integer, ISession<C>>
+        CompletionHandler<Integer,
+                          ISession>
 {
-    private final Logger           _Logger        = Logger.getLogger("io.queen.operator." + getClass().getSimpleName());
-    private final WroteOperator<C> _WroteOperator = new WroteOperator<>(this);
+    private final Logger        _Logger        = Logger.getLogger("io.queen.operator." + getClass().getSimpleName());
+    private final WroteOperator _WroteOperator = new WroteOperator(this);
 
     @Override
-    public void completed(Integer result, ISession<C> session)
+    public void completed(Integer result, ISession session)
     {
         AioWorker worker = (AioWorker) Thread.currentThread();
-        switch (result) {
-            case -1 -> worker.publishWroteError(session.getContext().getSort().getError(), WRITE_EOF, new EOFException("wrote -1!"), session);
-            case 0 -> worker.publishWroteError(session.getContext().getSort().getError(), WRITE_ZERO, new IllegalArgumentException("wrote zero!"), session);
-            default -> {
-                _Logger.debug("aio wrote %d | %s", result, session);
-                worker.publishWrote(_WroteOperator, result, session);
-            }
+        switch (result)
+        {
+            case -1 -> worker.publishWroteError(session.getContext()
+                                                       .getError(),
+                                                WRITE_EOF,
+                                                new EOFException("wrote -1!"),
+                                                session);
+            case 0 -> worker.publishWroteError(session.getContext()
+                                                      .getError(),
+                                               WRITE_ZERO,
+                                               new IllegalArgumentException("wrote zero!"),
+                                               session);
+            default ->
+                {
+                    _Logger.debug("aio wrote %d | %s", result, session);
+                    worker.publishWrote(_WroteOperator, result, session);
+                }
         }
     }
 
     @Override
-    public void failed(Throwable exc, ISession<C> session)
+    public void failed(Throwable exc, ISession session)
     {
         AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishWroteError(session.getContext().getSort().getError(), WRITE_FAILED, exc, session);
+        worker.publishWroteError(session.getContext()
+                                        .getError(),
+                                 WRITE_FAILED,
+                                 exc,
+                                 session);
     }
 }

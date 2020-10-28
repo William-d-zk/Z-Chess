@@ -30,11 +30,6 @@ import static com.isahl.chess.queen.event.inf.IOperator.Type.WROTE;
 
 import java.nio.channels.AsynchronousSocketChannel;
 
-import com.isahl.chess.queen.event.processor.QEvent;
-import com.isahl.chess.queen.io.core.inf.IConnectActivity;
-import com.isahl.chess.queen.io.core.inf.IContext;
-import com.isahl.chess.queen.io.core.inf.ISession;
-import com.lmax.disruptor.RingBuffer;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
@@ -44,11 +39,16 @@ import com.isahl.chess.queen.event.inf.IError;
 import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.event.inf.IPipeEventHandler;
 import com.isahl.chess.queen.event.inf.ISort;
+import com.isahl.chess.queen.event.processor.QEvent;
+import com.isahl.chess.queen.io.core.inf.IConnectActivity;
+import com.isahl.chess.queen.io.core.inf.IContext;
+import com.isahl.chess.queen.io.core.inf.ISession;
+import com.lmax.disruptor.RingBuffer;
 
 /**
  * @author william.d.zk
  */
-public class IoDispatcher<C extends IContext<C>>
+public class IoDispatcher
         implements
         IPipeEventHandler<QEvent>
 {
@@ -59,14 +59,17 @@ public class IoDispatcher<C extends IContext<C>>
     private final int                  _WorkerMask;
 
     @SafeVarargs
-    public IoDispatcher(RingBuffer<QEvent> cluster, RingBuffer<QEvent> wrote, RingBuffer<QEvent>... read)
+    public IoDispatcher(RingBuffer<QEvent> cluster,
+                        RingBuffer<QEvent> wrote,
+                        RingBuffer<QEvent>... read)
     {
         _Cluster = cluster;
         _IoWrote = wrote;
         _Workers = read;
         _WorkerMask = _Workers.length - 1;
-        if (Integer.bitCount(_Workers.length) != 1)
-        { throw new IllegalArgumentException("workers' length must be a power of 2"); }
+        if (Integer.bitCount(_Workers.length) != 1) {
+            throw new IllegalArgumentException("workers' length must be a power of 2");
+        }
     }
 
     @Override
@@ -79,8 +82,8 @@ public class IoDispatcher<C extends IContext<C>>
             case CONNECT_FAILED:
                 IPair connectFailedContent = event.getContent();
                 Throwable throwable = connectFailedContent.getFirst();
-                IConnectActivity<C> connectActive = connectFailedContent.getSecond();
-                error(getNextPipe(connectActive.getSort()),
+                IConnectActivity connectActive = connectFailedContent.getSecond();
+                error(getNextPipe(connectActive.getMode()),
                       errorType,
                       new Pair<>(throwable, connectActive),
                       event.getEventOp());
@@ -92,20 +95,20 @@ public class IoDispatcher<C extends IContext<C>>
                     case ACCEPTED:
                         _Logger.trace("connected");
                         IPair connectContent = event.getContent();
-                        IConnectActivity<C> context = connectContent.getFirst();
+                        connectActive = connectContent.getFirst();
                         AsynchronousSocketChannel channel = connectContent.getSecond();
-                        IOperator<IConnectActivity<C>,
+                        IOperator<IConnectActivity,
                                   AsynchronousSocketChannel,
                                   ITriple> connectOperator = event.getEventOp();
-                        publish(getNextPipe(context.getSort()),
+                        publish(getNextPipe(connectActive.getMode()),
                                 event.getEventType(),
-                                new Pair<>(context, channel),
+                                new Pair<>(connectActive, channel),
                                 connectOperator);
                         break;
                     case READ:
                         _Logger.trace("read");
                         IPair readContent = event.getContent();
-                        ISession<C> session = readContent.getSecond();
+                        ISession session = readContent.getSecond();
                         publish(dispatchWorker(session.getHashKey()), DECODE, readContent, event.getEventOp());
                         break;
                     case WROTE:
@@ -117,9 +120,9 @@ public class IoDispatcher<C extends IContext<C>>
                         _Logger.trace("local close");
                         IPair closeContent = event.getContent();
                         session = closeContent.getSecond();
-                        if (!session.isClosed())
-                        {
-                            error(getNextPipe(session.getContext().getSort()),
+                        if (!session.isClosed()) {
+                            error(getNextPipe(session.getContext()
+                                                     .getMode()),
                                   INITIATIVE_CLOSE,
                                   new Pair<>(QueenCode.LOCAL_CLOSE, session),
                                   event.getEventOp());
@@ -132,18 +135,20 @@ public class IoDispatcher<C extends IContext<C>>
                 break;
             default:
                 /* 未指定类型的错误 来自Decoded/Encoded Dispatcher */
-                IOperator<Throwable, ISession<C>, IPair> errorOperator = event.getEventOp();
+                IOperator<Throwable,
+                          ISession,
+                          IPair> errorOperator = event.getEventOp();
                 IPair errorContent = event.getContent();
                 throwable = errorContent.getFirst();
-                ISession<C> session = errorContent.getSecond();
+                ISession session = errorContent.getSecond();
                 _Logger.warning("error %s @ %s, → mapping handler [close] \n",
                                 throwable,
                                 errorType.getMsg(),
                                 session.summary());
-                if (!session.isClosed())
-                {
+                if (!session.isClosed()) {
                     IPair result = errorOperator.handle(throwable, session);
-                    error(getNextPipe(session.getContext().getSort()),
+                    error(getNextPipe(session.getContext()
+                                             .getMode()),
                           PASSIVE_CLOSE,
                           new Pair<>(QueenCode.ERROR_CLOSE, session),
                           result.getSecond());
@@ -158,11 +163,10 @@ public class IoDispatcher<C extends IContext<C>>
         return _Workers[(int) (seq & _WorkerMask)];
     }
 
-    protected RingBuffer<QEvent> getNextPipe(ISort<C> sort)
+    protected RingBuffer<QEvent> getNextPipe(ISort.Mode mode)
     {
-        if (sort.getMode() == ISort.Mode.CLUSTER)
-        { return _Cluster; }
-        return null;
+        return mode == ISort.Mode.CLUSTER ? _Cluster
+                                          : null;
     }
 
     @Override

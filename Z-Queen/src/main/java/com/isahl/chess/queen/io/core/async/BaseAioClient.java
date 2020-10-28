@@ -36,23 +36,24 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.schedule.ScheduleHandler;
 import com.isahl.chess.king.base.schedule.TimeWheel;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.io.core.inf.IContext;
 import com.isahl.chess.queen.io.core.inf.IAioClient;
 import com.isahl.chess.queen.io.core.inf.IAioConnector;
 import com.isahl.chess.queen.io.core.inf.ISession;
 
-public class BaseAioClient<C extends IContext<C>>
+public class BaseAioClient
         implements
-        IAioClient<C>
+        IAioClient
 {
-    private final Logger                                                  _Logger          = Logger.getLogger("io.queen.client."
-                                                                                                              + getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("io.queen.client." + getClass().getSimpleName());
 
-    private final TimeWheel                                               _TimeWheel;
-    private final AsynchronousChannelGroup                                _ChannelGroup;
-    private final Map<InetSocketAddress, Pair<Integer, IAioConnector<C>>> _TargetManageMap = new HashMap<>();
+    private final TimeWheel                                            _TimeWheel;
+    private final AsynchronousChannelGroup                             _ChannelGroup;
+    private final Map<InetSocketAddress,
+                      Pair<Integer,
+                           IAioConnector>>                             _TargetManageMap = new HashMap<>();
 
-    public BaseAioClient(TimeWheel timeWheel, AsynchronousChannelGroup channelGroup)
+    public BaseAioClient(TimeWheel timeWheel,
+                         AsynchronousChannelGroup channelGroup)
     {
         Objects.requireNonNull(timeWheel);
         Objects.requireNonNull(channelGroup);
@@ -63,77 +64,77 @@ public class BaseAioClient<C extends IContext<C>>
     private final ReentrantLock _Lock = new ReentrantLock();
 
     @Override
-    public void connect(IAioConnector<C> connector) throws IOException
+    public void connect(IAioConnector connector) throws IOException
     {
         _Lock.lock();
-        try
-        {
-            AsynchronousSocketChannel       socketChannel = AsynchronousSocketChannel.open(_ChannelGroup);
-            InetSocketAddress               remoteAddress = connector.getRemoteAddress();
-            Pair<Integer, IAioConnector<C>> pair          = _TargetManageMap.putIfAbsent(remoteAddress,
-                                                                                         new Pair<>(0, connector));
+        try {
+            AsynchronousSocketChannel socketChannel = AsynchronousSocketChannel.open(_ChannelGroup);
+            InetSocketAddress remoteAddress = connector.getRemoteAddress();
+            Pair<Integer,
+                 IAioConnector> pair = _TargetManageMap.putIfAbsent(remoteAddress, new Pair<>(0, connector));
             socketChannel.connect(remoteAddress, socketChannel, connector);
             int retryCount = 0;
-            if (pair != null)
-            {
+            if (pair != null) {
                 retryCount = pair.getFirst();
                 pair.setFirst(++retryCount);
             }
             _Logger.info("client connect to %s,@ %d", remoteAddress, retryCount);
         }
-        finally
-        {
+        finally {
             _Lock.unlock();
         }
     }
 
     @Override
-    public void onFailed(IAioConnector<C> connector)
+    public void onFailed(IAioConnector connector)
     {
         _Logger.debug("connect failed: retry");
         delayConnect(connector);
     }
 
     @Override
-    public void onCreate(ISession<C> session)
+    public void onCreate(ISession session)
     {
         _Logger.debug("connected :%s", session);
     }
 
     @Override
-    public void onDismiss(ISession<C> session)
+    public void onDismiss(ISession session)
     {
         InetSocketAddress remoteAddress = session.getRemoteAddress();
-        IAioConnector<C>  connector     = _TargetManageMap.get(remoteAddress).getSecond();
+        IAioConnector connector = _TargetManageMap.get(remoteAddress)
+                                                  .getSecond();
         _Logger.debug("on dismiss: [shutdown: %s ]", connector.isShutdown());
         delayConnect(connector);
     }
 
-    private void delayConnect(IAioConnector<C> connector)
+    private void delayConnect(IAioConnector connector)
     {
-        if (connector.isShutdown())
-        { return; }
-        _TimeWheel.acquire(connector, new ScheduleHandler<>(connector.getConnectTimeout().multipliedBy(3), c ->
-        {
-            try
-            {
-                _Logger.debug("%s connect", Thread.currentThread().getName());
-                connect(c);
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
-        }));
+        if (connector.isShutdown()) { return; }
+        _TimeWheel.acquire(connector,
+                           new ScheduleHandler<>(connector.getConnectTimeout()
+                                                          .multipliedBy(3),
+                                                 c ->
+                                                 {
+                                                     try {
+                                                         _Logger.debug("%s connect",
+                                                                       Thread.currentThread()
+                                                                             .getName());
+                                                         connect(c);
+                                                     }
+                                                     catch (IOException e) {
+                                                         e.printStackTrace();
+                                                     }
+                                                 }));
     }
 
     @Override
-    public void shutdown(ISession<C> session)
+    public void shutdown(ISession session)
     {
         InetSocketAddress remoteAddress = session.getRemoteAddress();
-        if (_TargetManageMap.containsKey(remoteAddress))
-        {
-            IAioConnector<C> connector = _TargetManageMap.get(remoteAddress).getSecond();
+        if (_TargetManageMap.containsKey(remoteAddress)) {
+            IAioConnector connector = _TargetManageMap.get(remoteAddress)
+                                                      .getSecond();
             connector.shutdown();
         }
     }

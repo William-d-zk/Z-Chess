@@ -26,38 +26,40 @@ package com.isahl.chess.queen.event.operator;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.queen.io.core.inf.IContext;
-import com.isahl.chess.queen.io.core.inf.IWritable;
 import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.io.core.inf.ISession;
+import com.isahl.chess.queen.io.core.inf.IWritable;
 
-public class WroteOperator<C extends IContext<C>>
+public class WroteOperator
         implements
-        IOperator<Integer, ISession<C>, ITriple>
+        IOperator<Integer,
+                  ISession,
+                  ITriple>
 {
-    private final Logger       _Logger = Logger.getLogger(getName() + getClass().getSimpleName());
-    private final AioWriter<C> _AioWrite;
+    private final Logger    _Logger = Logger.getLogger(getName() + getClass().getSimpleName());
+    private final AioWriter _AioWrite;
 
-    WroteOperator(AioWriter<C> aioWriter)
+    WroteOperator(AioWriter aioWriter)
     {
         _AioWrite = aioWriter;
     }
 
     @Override
-    public ITriple handle(Integer wroteCnt, ISession<C> session)
+    public ITriple handle(Integer wroteCnt, ISession session)
     {
-        try
-        {
+        try {
             IWritable.WRITE_STATUS write_status = session.writeNext(wroteCnt, _AioWrite);
             _Logger.trace("session %s->%s wrote :%s ",
                           session.getLocalAddress(),
                           session.getRemoteAddress(),
                           write_status);
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             e.printStackTrace();
-            return new Triple<>(e, session, session.getContext().getSort().getError());
+            return new Triple<>(e,
+                                session,
+                                session.getContext()
+                                       .getError());
         }
         return null;
     }

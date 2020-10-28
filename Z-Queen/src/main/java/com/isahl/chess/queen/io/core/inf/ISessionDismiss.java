@@ -25,7 +25,7 @@ package com.isahl.chess.queen.io.core.inf;
 /**
  * @author William.d.zk
  */
-public interface ISessionDismiss<C extends IContext<C>>
+public interface ISessionDismiss
 {
-    void onDismiss(ISession<C> session);
+    void onDismiss(ISession session);
 }

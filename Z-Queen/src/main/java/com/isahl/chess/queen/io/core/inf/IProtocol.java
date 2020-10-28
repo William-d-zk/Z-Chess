@@ -53,8 +53,7 @@ public interface IProtocol
     default byte[] encode()
     {
         int len = dataLength();
-        if (len > 0)
-        {
+        if (len > 0) {
             byte[] a = new byte[len];
             encodec(a, 0);
             return a;
@@ -65,8 +64,12 @@ public interface IProtocol
     default int encode(byte[] buf, int pos, int length)
     {
         int len = dataLength();
-        if (len > length || len > 0 && buf == null || (buf != null && (buf.length < len || pos + length > buf.length)))
-        { throw new ArrayIndexOutOfBoundsException("data length is too long for input buf"); }
+        if (len > length
+            || len > 0 && buf == null
+            || (buf != null && (buf.length < len || pos + length > buf.length)))
+        {
+            throw new ArrayIndexOutOfBoundsException("data length is too long for input buf");
+        }
         pos = encodec(buf, pos);
         return pos;
     }
@@ -76,8 +79,9 @@ public interface IProtocol
         Objects.requireNonNull(input);
         // dataLength 此处表达了最短长度值
         int len = dataLength();
-        if (len > length || (input.length < len || pos + length > input.length))
-        { throw new ArrayIndexOutOfBoundsException(); }
+        if (len > length || (input.length < len || pos + length > input.length)) {
+            throw new ArrayIndexOutOfBoundsException();
+        }
         return decodec(input, pos);
     }
 
@@ -86,8 +90,13 @@ public interface IProtocol
         return decode(data, 0, data.length);
     }
 
-    default boolean idempotent(int bitIdempotent)
+    default boolean inIdempotent(int bitIdempotent)
     {
-        return false;
+        return true;
+    }
+
+    default boolean outIdempotent(int bitIdempotent)
+    {
+        return true;
     }
 }

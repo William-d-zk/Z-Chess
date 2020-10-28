@@ -20,34 +20,9 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.isahl.chess.bishop.io.ws.control;
 
-import com.isahl.chess.bishop.io.ws.WsControl;
-import com.isahl.chess.bishop.io.ws.WsFrame;
+package com.isahl.chess.queen.io.core.inf;
 
-/**
- * @author William.d.zk
- */
-public class X103_Close
-        extends
-        WsControl
-{
-    public final static int COMMAND = 0x103;
-
-    public X103_Close()
-    {
-        this(null);
-    }
-
-    public X103_Close(byte[] payload)
-    {
-        super(WsFrame.frame_op_code_ctrl_close, COMMAND, payload);
-    }
-
-    @Override
-    public X103_Close duplicate()
-    {
-        return new X103_Close(getPayload());
-    }
+public interface ISslContext {
 
 }

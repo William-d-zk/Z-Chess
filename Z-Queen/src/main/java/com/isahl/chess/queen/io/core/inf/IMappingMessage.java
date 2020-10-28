@@ -28,9 +28,9 @@ package com.isahl.chess.queen.io.core.inf;
  * 
  * @date 2019-05-21
  */
-public interface IMappingMessage<C extends IContext<C>>
+public interface IMappingMessage
         extends
-        ISessionMessage<C>
+        ISessionMessage
 {
     boolean isMapping();
 }

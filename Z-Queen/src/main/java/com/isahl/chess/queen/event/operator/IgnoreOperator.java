@@ -23,7 +23,6 @@
 
 package com.isahl.chess.queen.event.operator;
 
-import com.isahl.chess.queen.io.core.inf.IContext;
 import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISession;
@@ -31,13 +30,15 @@ import com.isahl.chess.queen.io.core.inf.ISession;
 /**
  * @author william.d.zk
  */
-public class IgnoreOperator<C extends IContext<C>>
+public class IgnoreOperator
         implements
-        IOperator<IControl<C>, ISession<C>, IControl<C>>
+        IOperator<IControl,
+                  ISession,
+                  IControl>
 {
 
     @Override
-    public IControl<C> handle(IControl<C> input, ISession<C> session)
+    public IControl handle(IControl input, ISession iPackets)
     {
         return input;
     }

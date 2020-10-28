@@ -27,7 +27,7 @@ import com.isahl.chess.king.base.crypt.inf.ISymmetric;
 /**
  * @author William.d.zk
  */
-public interface ITlsContext
+public interface IEContext
 {
 
     default boolean needUpdateKeyIn()
@@ -41,10 +41,12 @@ public interface ITlsContext
     }
 
     default void updateKeyIn()
-    {}
+    {
+    }
 
     default void updateKeyOut()
-    {}
+    {
+    }
 
     default int getSymmetricKeyId()
     {
@@ -52,7 +54,8 @@ public interface ITlsContext
     }
 
     default void setSymmetricKeyId(int rc4KeyId)
-    {}
+    {
+    }
 
     default byte[] getSymmetricKeyIn()
     {
@@ -70,13 +73,16 @@ public interface ITlsContext
     }
 
     default void reRollKey(byte[] key)
-    {}
+    {
+    }
 
     default void swapKeyIn(byte[] key)
-    {}
+    {
+    }
 
     default void swapKeyOut(byte[] key)
-    {}
+    {
+    }
 
     default ISymmetric getSymmetricEncrypt()
     {
@@ -94,7 +100,8 @@ public interface ITlsContext
     }
 
     default void setPubKeyId(int pubKeyId)
-    {}
+    {
+    }
 
     int inState();
 
@@ -114,6 +121,7 @@ public interface ITlsContext
     }
 
     default void setEncryptHandler(IEncryptHandler handler)
-    {}
+    {
+    }
 
 }

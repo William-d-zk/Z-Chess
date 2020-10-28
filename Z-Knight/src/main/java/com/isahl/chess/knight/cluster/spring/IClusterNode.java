@@ -29,8 +29,7 @@ import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.isahl.chess.bishop.io.ZSort;
-import com.isahl.chess.bishop.io.zfilter.ZContext;
+import com.isahl.chess.bishop.io.ZSortHolder;
 import com.isahl.chess.bishop.io.zprotocol.control.X106_Identity;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.util.Pair;
@@ -51,7 +50,6 @@ import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.INode;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionManager;
-import com.isahl.chess.queen.io.core.inf.ISessionOption;
 import com.lmax.disruptor.RingBuffer;
 
 /**
@@ -65,36 +63,44 @@ public interface IClusterNode<K extends IPipeCore>
         IClusterTimer,
         INode
 {
-    default IAioConnector<ZContext> buildConnector(IPair address,
-                                                   ISocketConfig socketConfig,
-                                                   IAioClient<ZContext> client,
-                                                   final long _Type,
-                                                   final ISessionManager<ZContext> _Manager,
-                                                   final ZSort _Sort,
-                                                   final ZUID _ZUID)
+    default IAioConnector buildConnector(IPair address,
+                                         ISocketConfig socketConfig,
+                                         IAioClient client,
+                                         final long _Type,
+                                         final ISessionManager _Manager,
+                                         final ZSortHolder _SortHolder,
+                                         final ZUID _ZUID)
     {
         final String _Host = address.getFirst();
         final int _Port = address.getSecond();
-        if (_Sort.getMode() != ISort.Mode.CLUSTER) {
+        if (_SortHolder.getSort()
+                       .getMode() != ISort.Mode.CLUSTER)
+        {
             throw new IllegalArgumentException("sort mode is wrong in cluster define");
         }
-        return new BaseAioConnector<ZContext>(_Host, _Port, socketConfig, client)
+        return new BaseAioConnector(_Host, _Port, socketConfig, client)
         {
             @Override
-            public ZContext createContext(ISessionOption option, ISort<ZContext> sort)
+            public ISort.Mode getMode()
             {
-                return sort.newContext(option);
+                return _SortHolder.getSort()
+                                  .getMode();
             }
 
             @Override
-            public ISession<ZContext> createSession(AsynchronousSocketChannel socketChannel,
-                                                    IConnectActivity<ZContext> activity) throws IOException
+            public ISession createSession(AsynchronousSocketChannel socketChannel,
+                                          IConnectActivity activity) throws IOException
             {
-                return new AioSession<>(socketChannel, this, this, activity, client);
+                return new AioSession<>(socketChannel,
+                                        this,
+                                        _SortHolder.getSort()
+                                                   .newContext(this),
+                                        activity,
+                                        client);
             }
 
             @Override
-            public void onCreate(ISession<ZContext> session)
+            public void onCreate(ISession session)
             {
                 session.setIndex(_ZUID.getId(_Type));
                 _Manager.addSession(session);
@@ -103,18 +109,13 @@ public interface IClusterNode<K extends IPipeCore>
 
             @Override
             @SuppressWarnings("unchecked")
-            public IControl<ZContext>[] createCommands(ISession<ZContext> session)
+            public IControl<?>[] createCommands(ISession session)
             {
                 X106_Identity x106 = new X106_Identity(_ZUID.getPeerId());
                 return new IControl[] { x106
                 };
             }
 
-            @Override
-            public ISort<ZContext> getSort()
-            {
-                return _Sort;
-            }
         };
     }
 

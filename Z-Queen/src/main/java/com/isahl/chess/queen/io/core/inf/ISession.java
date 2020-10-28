@@ -41,7 +41,7 @@ import com.isahl.chess.king.base.inf.IValid;
  * 
  * @author William.d.zk
  */
-public interface ISession<C extends IContext<C>>
+public interface ISession
         extends
         Queue<IPacket>,
         IReset,
@@ -49,9 +49,9 @@ public interface ISession<C extends IContext<C>>
         IDisposable,
         IAddress,
         IValid,
-        IReadable<ISession<C>>,
-        IWritable<ISession<C>>,
-        Comparable<ISession<C>>
+        IReadable<ISession>,
+        IWritable<ISession>,
+        Comparable<ISession>
 {
     long DEFAULT_INDEX = -1;
 
@@ -63,9 +63,9 @@ public interface ISession<C extends IContext<C>>
 
     AsynchronousSocketChannel getChannel();
 
-    C getContext();
+    <T extends IPContext<T>> T getContext();
 
-    ISessionDismiss<C> getDismissCallback();
+    ISessionDismiss getDismissCallback();
 
     long[] getPrefixArray();
 
@@ -97,7 +97,7 @@ public interface ISession<C extends IContext<C>>
     void prefixHit(long prefix);
 
     @Override
-    default int compareTo(ISession<C> o)
+    default int compareTo(ISession o)
     {
         return Long.compare(getIndex(), o.getIndex());
     }
@@ -107,7 +107,7 @@ public interface ISession<C extends IContext<C>>
 
     default void innerClose()
     {
-        ISessionCloser<C> closeOperator = getContext().getSort().getCloser();
+        ISessionCloser closeOperator = getContext().getCloser();
         closeOperator.handle("inner-close", this);
         getDismissCallback().onDismiss(this);
     }

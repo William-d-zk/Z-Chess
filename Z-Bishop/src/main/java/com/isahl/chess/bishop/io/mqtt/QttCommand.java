@@ -22,7 +22,6 @@
  */
 package com.isahl.chess.bishop.io.mqtt;
 
-import com.isahl.chess.bishop.io.zfilter.ZContext;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.inf.ICommand;
 import com.isahl.chess.queen.io.core.inf.ISession;
@@ -36,7 +35,7 @@ public abstract class QttCommand
         extends
         MqttProtocol
         implements
-        ICommand<ZContext>
+        ICommand
 {
 
     private final int _Command;
@@ -46,10 +45,10 @@ public abstract class QttCommand
         _Command = command;
     }
 
-    private long               mMsgId = -1;
-    private int                mLocalId;
-    private ISession<ZContext> mSession;
-    private byte[]             mPayload;
+    private long     mMsgId = -1;
+    private int      mLocalId;
+    private ISession mSession;
+    private byte[]   mPayload;
 
     @Override
     public void setCtrl(byte ctrl)
@@ -118,14 +117,14 @@ public abstract class QttCommand
     }
 
     @Override
-    public ICommand<ZContext> setSession(ISession<ZContext> session)
+    public ICommand setSession(ISession session)
     {
         mSession = session;
         return this;
     }
 
     @Override
-    public ISession<ZContext> getSession()
+    public ISession getSession()
     {
         return mSession;
     }
@@ -154,8 +153,8 @@ public abstract class QttCommand
     @Override
     public int dataLength()
     {
-        return 2 + (mPayload == null ?
-                0:
-                mPayload.length);
+        return 2
+               + (mPayload == null ? 0
+                                   : mPayload.length);
     }
 }

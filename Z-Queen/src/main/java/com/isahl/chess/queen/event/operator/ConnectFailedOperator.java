@@ -24,22 +24,23 @@
 package com.isahl.chess.queen.event.operator;
 
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.queen.io.core.inf.IContext;
 import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.io.core.inf.IAioConnector;
 
 /**
  * @author william.d.zk
  */
-public class ConnectFailedOperator<C extends IContext<C>>
+public class ConnectFailedOperator
         implements
-        IOperator<Throwable, IAioConnector<C>, Void>
+        IOperator<Throwable,
+                  IAioConnector,
+                  Void>
 {
 
     private final Logger _Logger = Logger.getLogger("io.queen.operator." + getClass().getSimpleName());
 
     @Override
-    public Void handle(Throwable throwable, IAioConnector<C> aioConnector)
+    public Void handle(Throwable throwable, IAioConnector aioConnector)
     {
         _Logger.warning("handler connect failed!", throwable);
         aioConnector.error();

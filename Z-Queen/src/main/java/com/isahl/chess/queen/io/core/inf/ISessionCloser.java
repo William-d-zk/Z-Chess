@@ -23,9 +23,6 @@
 
 package com.isahl.chess.queen.io.core.inf;
 
-import java.io.IOException;
-
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.event.inf.IOperator;
 
 /**
@@ -33,24 +30,11 @@ import com.isahl.chess.queen.event.inf.IOperator;
  * 
  * @date 2019-05-12
  */
-public interface ISessionCloser<C extends IContext<C>>
+public interface ISessionCloser
         extends
-        IOperator<String, ISession<C>, Void>
+        IOperator<String,
+                  ISession,
+                  Void>
 {
-    @Override
-    default Void handle(String msg, ISession<C> session)
-    {
-        try
-        {
-            getLogger().trace("msg %s → closed %s", msg, session);
-            session.close();
-        }
-        catch (IOException e)
-        {
-            getLogger().warning("close exception: %s", e, session);
-        }
-        return null;
-    }
-
-    Logger getLogger();
+    Void handle(String msg, ISession session);
 }

@@ -23,52 +23,79 @@
 
 package com.isahl.chess.bishop.io.ssl;
 
-import com.isahl.chess.bishop.io.zfilter.ZContext;
 import com.isahl.chess.queen.io.core.async.AioFilterChain;
+import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.IPacket;
 import com.isahl.chess.queen.io.core.inf.IProtocol;
 
 /**
  * @author william.d.zk
  */
-public class SSLFilter
+public class SSLFilter<A extends IPContext<A>>
         extends
-        AioFilterChain<ZContext, IPacket, IPacket>
+        AioFilterChain<SSLZContext<A>,
+                       IPacket,
+                       IPacket>
 {
     public final static String NAME = "z-ssl";
 
-    protected SSLFilter()
+    public SSLFilter()
     {
         super(NAME);
     }
 
     @Override
-    public ResultType preEncode(ZContext context, IProtocol output)
+    public ResultType seek(SSLZContext<A> context, IPacket output)
     {
         return null;
     }
 
     @Override
-    public ResultType preDecode(ZContext context, IPacket input)
+    public ResultType peek(SSLZContext<A> context, IPacket input)
     {
         return null;
     }
 
     @Override
-    public IPacket encode(ZContext context, IPacket output)
+    public IPacket encode(SSLZContext<A> context, IPacket output)
     {
         return null;
     }
 
     @Override
-    public IPacket decode(ZContext context, IPacket input)
+    public IPacket decode(SSLZContext<A> context, IPacket input)
     {
         return null;
     }
 
     @Override
-    public boolean checkType(IProtocol protocol)
+    public <C extends IPContext<C>,
+            O extends IProtocol> ResultType pipeSeek(C context, O output)
     {
-        return checkType(protocol, IPacket.PACKET_SERIAL);
+        return null;
     }
+
+    @Override
+    public <C extends IPContext<C>,
+            I extends IProtocol> ResultType pipePeek(C context, I input)
+    {
+        return null;
+    }
+
+    @Override
+    public <C extends IPContext<C>,
+            O extends IProtocol,
+            I extends IProtocol> I pipeEncode(C context, O output)
+    {
+        return null;
+    }
+
+    @Override
+    public <C extends IPContext<C>,
+            O extends IProtocol,
+            I extends IProtocol> O pipeDecode(C context, I input)
+    {
+        return null;
+    }
+
 }

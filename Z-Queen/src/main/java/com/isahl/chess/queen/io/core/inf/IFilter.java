@@ -25,17 +25,17 @@ package com.isahl.chess.queen.io.core.inf;
 /**
  * @author William.d.zk
  */
-public interface IFilter<C extends IContext<C>, O extends IProtocol, I extends IProtocol>
+public interface IFilter<C extends IPContext<C>,
+                         O extends IProtocol,
+                         I extends IProtocol>
 {
-    ResultType preEncode(C context, IProtocol output);
+    ResultType seek(C context, O output);
 
-    ResultType preDecode(C context, I input);
+    ResultType peek(C context, I input);
 
     I encode(C context, O output);
 
     O decode(C context, I input);
-
-    boolean checkType(IProtocol protocol);
 
     enum ResultType
     {

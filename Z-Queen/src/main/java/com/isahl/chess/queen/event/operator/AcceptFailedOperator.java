@@ -24,22 +24,23 @@
 package com.isahl.chess.queen.event.operator;
 
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.queen.io.core.inf.IAioServer;
-import com.isahl.chess.queen.io.core.inf.IContext;
 import com.isahl.chess.queen.event.inf.IOperator;
+import com.isahl.chess.queen.io.core.inf.IAioServer;
 
 /**
  * @author william.d.zk
  */
-public class AcceptFailedOperator<C extends IContext<C>>
+public class AcceptFailedOperator
         implements
-        IOperator<Throwable, IAioServer<C>, Void>
+        IOperator<Throwable,
+                  IAioServer,
+                  Void>
 {
 
     private final Logger _Logger = Logger.getLogger("io.queen.operator." + getClass().getName());
 
     @Override
-    public Void handle(Throwable throwable, IAioServer<C> aioServer)
+    public Void handle(Throwable throwable, IAioServer aioServer)
     {
         _Logger.warning("accept failed,ignore!", throwable);
         aioServer.error();

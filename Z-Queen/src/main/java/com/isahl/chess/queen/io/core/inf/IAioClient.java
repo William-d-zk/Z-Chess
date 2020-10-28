@@ -29,13 +29,13 @@ import com.isahl.chess.king.base.inf.IFailed;
 /**
  * @author William.d.zk
  */
-public interface IAioClient<C extends IContext<C>>
+public interface IAioClient
         extends
-        IFailed<IAioConnector<C>>,
-        ISessionCreated<C>,
-        ISessionDismiss<C>
+        IFailed<IAioConnector>,
+        ISessionCreated,
+        ISessionDismiss
 {
-    void connect(IAioConnector<C> connector) throws IOException;
+    void connect(IAioConnector connector) throws IOException;
 
-    void shutdown(ISession<C> session);
+    void shutdown(ISession session);
 }

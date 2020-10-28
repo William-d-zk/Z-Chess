@@ -20,32 +20,22 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.isahl.chess.bishop.io.ws.control;
 
-import com.isahl.chess.bishop.io.ws.WsHandshake;
+package com.isahl.chess.queen.io.core.inf;
 
-/**
- * @author William.d.zk
- */
-public class X102_SslHandShake
-        extends
-        WsHandshake
+public interface IPipeFilter
 {
-    public final static int COMMAND = 0x102;
+    <C extends IPContext<C>,
+     O extends IProtocol> IFilter.ResultType pipeSeek(C context, O output);
 
-    public X102_SslHandShake(String host, String secKey, int version)
-    {
-        this(String.format("GET /ws_service HTTP/1.1\r\nHost: %s\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: %s\r\nOrigin: http://%s\r\nSec-WebSocket-Protocol: z-push, z-chat\r\nSec-WebSocket-Version: %s\r\n\r\n",
-                           host,
-                           secKey,
-                           host,
-                           version));
+    <C extends IPContext<C>,
+     I extends IProtocol> IFilter.ResultType pipePeek(C context, I input);
 
-    }
+    <C extends IPContext<C>,
+     O extends IProtocol,
+     I extends IProtocol> I pipeEncode(C context, O output);
 
-    public X102_SslHandShake(String handshake)
-    {
-        super(COMMAND, handshake);
-    }
-
+    <C extends IPContext<C>,
+     O extends IProtocol,
+     I extends IProtocol> O pipeDecode(C context, I input);
 }

@@ -29,7 +29,6 @@ import java.nio.channels.AsynchronousSocketChannel;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.queen.io.core.inf.IContext;
 import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.io.core.inf.IConnectActivity;
 import com.isahl.chess.queen.io.core.inf.IControl;
@@ -38,43 +37,39 @@ import com.isahl.chess.queen.io.core.inf.ISession;
 /**
  * @author william.d.zk
  */
-public class ConnectedOperator<C extends IContext<C>>
+public class ConnectedOperator
         implements
-        IOperator<IConnectActivity<C>, AsynchronousSocketChannel, ITriple>
+        IOperator<IConnectActivity,
+                  AsynchronousSocketChannel,
+                  ITriple>
 {
-    private final AioReader<C> _AioReader = new AioReader<>();
+    private final AioReader _AioReader = new AioReader();
 
     @Override
-    public ITriple handle(IConnectActivity<C> activity, AsynchronousSocketChannel channel) throws ZException
+    public ITriple handle(IConnectActivity activity, AsynchronousSocketChannel channel) throws ZException
     {
 
-        ISession<C> session = null;
-        try
-        {
+        ISession session = null;
+        try {
             session = activity.createSession(channel, activity);
             // session == null 已经throw IOException了
             activity.onCreate(session);
             session.readNext(_AioReader);
-            IControl<C>[] commands = activity.createCommands(session);
+            IControl[] commands = activity.createCommands(session);
             return new Triple<>(true, session, commands);
         }
-        catch (IOException e)
-        {
-            try
-            {
+        catch (IOException e) {
+            try {
                 channel.close();
             }
-            catch (IOException ex)
-            {
+            catch (IOException ex) {
                 ex.printStackTrace();
             }
             return new Triple<>(false, channel, e);
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             // 此时session!=null
-            if (session != null)
-            { return new Triple<>(false, session, e); }
+            if (session != null) { return new Triple<>(false, session, e); }
             return new Triple<>(false, channel, e);
         }
     }

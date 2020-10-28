@@ -34,20 +34,20 @@ public class AioPacket
         IPacket
 
 {
-    public final static int  SERIAL  = PACKET_SERIAL + 1;
+    public final static int SERIAL = PACKET_SERIAL + 1;
 
     private final ByteBuffer _Buf;
     private Status           mStatus = Status.No_Send;
-    private boolean          isNoAbandon;
-    private int              mIdempotentBit;
+    private int              mRightIdempotentBit;
+    private int              mLeftIdempotentBit;
 
-    public AioPacket(int size, boolean direct)
+    public AioPacket(int size,
+                     boolean direct)
     {
-        _Buf = size > 0 ?
-                (direct ?
-                        ByteBuffer.allocateDirect(size):
-                        ByteBuffer.allocate(size)):
-                null;
+        _Buf = size > 0 ? (direct ? ByteBuffer.allocateDirect(size)
+                                  : ByteBuffer.allocate(size))
+                        : null;
+
     }
 
     public AioPacket(ByteBuffer buf)
@@ -114,15 +114,9 @@ public class AioPacket
     }
 
     @Override
-    public boolean isNoAbandon()
+    public void setAbandon()
     {
-        return isNoAbandon;
-    }
-
-    @Override
-    public void setNoAbandon()
-    {
-        isNoAbandon = true;
+        mStatus = Status.Abandon;
     }
 
     @Override
@@ -144,16 +138,18 @@ public class AioPacket
     }
 
     @Override
-    public void frameReady()
+    public boolean inIdempotent(int bit)
     {
-
+        boolean todo = (bit & mRightIdempotentBit) == 0;
+        mRightIdempotentBit |= bit;
+        return todo;
     }
 
     @Override
-    public boolean idempotent(int bitIdempotent)
+    public boolean outIdempotent(int bit)
     {
-        boolean done = (bitIdempotent & mIdempotentBit) != 0;
-        mIdempotentBit |= bitIdempotent;
-        return done;
+        boolean todo = (bit & mLeftIdempotentBit) == 0;
+        mLeftIdempotentBit |= bit;
+        return todo;
     }
 }

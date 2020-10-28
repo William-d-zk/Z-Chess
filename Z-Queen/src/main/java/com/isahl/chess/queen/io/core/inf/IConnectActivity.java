@@ -27,14 +27,13 @@ import com.isahl.chess.king.base.inf.ILifeCycle;
 /**
  * @author William.d.zk
  */
-public interface IConnectActivity<C extends IContext<C>>
+public interface IConnectActivity
         extends
         IAddress,
-        IConnectMode<C>,
-        ISessionCreator<C>,
-        ISessionCreated<C>,
-        ICommandCreator<C>,
+        IConnectMode,
+        ISessionCreator,
+        ISessionCreated,
+        ICommandCreator,
         ILifeCycle
 {
-
 }

@@ -65,10 +65,10 @@ public class X03_Cipher
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 6
-               + (Objects.isNull(cipher) ?
-                       0:
-                       cipher.length);
+        return super.dataLength()
+               + 6
+               + (Objects.isNull(cipher) ? 0
+                                         : cipher.length);
     }
 
     @Override

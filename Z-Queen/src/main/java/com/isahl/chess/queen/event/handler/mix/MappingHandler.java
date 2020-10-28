@@ -44,7 +44,6 @@ import com.isahl.chess.queen.io.core.inf.IAioServer;
 import com.isahl.chess.queen.io.core.inf.IConnectActivity;
 import com.isahl.chess.queen.io.core.inf.IConsistent;
 import com.isahl.chess.queen.io.core.inf.IConsistentNotify;
-import com.isahl.chess.queen.io.core.inf.IContext;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionDismiss;
@@ -57,28 +56,25 @@ import com.lmax.disruptor.RingBuffer;
  * 
  * @date 2020/2/15
  */
-public class MappingHandler<C extends IContext<C>,
-                            T extends IStorage>
+public class MappingHandler<T extends IStorage>
         implements
         IPipeEventHandler<QEvent>
 {
-    private final Logger               _Logger;
-    private final RingBuffer<QEvent>   _Error;
-    private final RingBuffer<QEvent>   _Writer;
-    private final RingBuffer<QEvent>   _Transfer;
-    private final ISessionManager<C>   _SessionManager;
-    private final ILinkCustom<C>       _LinkCustom;
-    private final IClusterCustom<C,
-                                 T>    _ClusterCustom;
+    private final Logger             _Logger;
+    private final RingBuffer<QEvent> _Error;
+    private final RingBuffer<QEvent> _Writer;
+    private final RingBuffer<QEvent> _Transfer;
+    private final ISessionManager    _SessionManager;
+    private final ILinkCustom        _LinkCustom;
+    private final IClusterCustom<T>  _ClusterCustom;
 
     public MappingHandler(String mapper,
-                          MixManager<C> manager,
+                          MixManager manager,
                           RingBuffer<QEvent> error,
                           RingBuffer<QEvent> writer,
                           RingBuffer<QEvent> transfer,
-                          ILinkCustom<C> linkCustom,
-                          IClusterCustom<C,
-                                         T> clusterCustom)
+                          ILinkCustom linkCustom,
+                          IClusterCustom<T> clusterCustom)
     {
         _Logger = Logger.getLogger("io.queen.dispatcher." + mapper);
         _SessionManager = manager;
@@ -98,14 +94,14 @@ public class MappingHandler<C extends IContext<C>,
             {
                 case ACCEPT_FAILED:
                     IOperator<Throwable,
-                              IAioServer<C>,
+                              IAioServer,
                               Void> acceptFailedOperator = event.getEventOp();
                     IPair errorContent = event.getContent();
                     acceptFailedOperator.handle(errorContent.getFirst(), errorContent.getSecond());
                     break;
                 case CONNECT_FAILED:
                     IOperator<Throwable,
-                              IAioConnector<C>,
+                              IAioConnector,
                               Void> connectFailedOperator = event.getEventOp();
                     errorContent = event.getContent();
                     connectFailedOperator.handle(errorContent.getFirst(), errorContent.getSecond());
@@ -116,11 +112,11 @@ public class MappingHandler<C extends IContext<C>,
                                     event.getErrorType()
                                          .getMsg());
                     IOperator<Void,
-                              ISession<C>,
+                              ISession,
                               Void> closeOperator = event.getEventOp();
                     errorContent = event.getContent();
-                    ISession<C> session = errorContent.getSecond();
-                    ISessionDismiss<C> dismiss = session.getDismissCallback();
+                    ISession session = errorContent.getSecond();
+                    ISessionDismiss dismiss = session.getDismissCallback();
                     boolean closed = session.isClosed();
                     closeOperator.handle(null, session);
                     if (!closed) {
@@ -138,15 +134,15 @@ public class MappingHandler<C extends IContext<C>,
                 case CONNECTED:
                     IPair connected = event.getContent();
                     AsynchronousSocketChannel channel = connected.getSecond();
-                    IAioConnector<C> connector = connected.getFirst();
-                    IOperator<IConnectActivity<C>,
+                    IAioConnector connector = connected.getFirst();
+                    IOperator<IConnectActivity,
                               AsynchronousSocketChannel,
                               ITriple> connectedOperator = event.getEventOp();
                     ITriple handled = connectedOperator.handle(connector, channel);
                     boolean success = handled.getFirst();
                     if (success) {
-                        ISession<C> session = handled.getSecond();
-                        IControl<C>[] toSends = handled.getThird();
+                        ISession session = handled.getSecond();
+                        IControl[] toSends = handled.getThird();
                         if (toSends != null) {
                             publish(_Writer,
                                     WRITE,
@@ -163,7 +159,7 @@ public class MappingHandler<C extends IContext<C>,
                             connector.error();
                         }
                         else {
-                            ISession<C> session = handled.getSecond();
+                            ISession session = handled.getSecond();
                             session.innerClose();
                         }
                     }
@@ -171,13 +167,13 @@ public class MappingHandler<C extends IContext<C>,
                 case ACCEPTED:
                     connected = event.getContent();
                     channel = connected.getSecond();
-                    IAioServer<C> server = connected.getFirst();
+                    IAioServer server = connected.getFirst();
                     connectedOperator = event.getEventOp();
                     handled = connectedOperator.handle(server, channel);
                     success = handled.getFirst();
                     if (success) {
-                        ISession<C> session = handled.getSecond();
-                        IControl<C>[] toSends = handled.getThird();
+                        ISession session = handled.getSecond();
+                        IControl[] toSends = handled.getThird();
                         if (toSends != null) {
                             publish(_Writer,
                                     WRITE,
@@ -191,21 +187,21 @@ public class MappingHandler<C extends IContext<C>,
                         Throwable throwable = handled.getThird();
                         _Logger.warning("session accept create failed ,channel error %", throwable, channel);
                         if (handled.getSecond() instanceof ISession) {
-                            ISession<C> session = handled.getSecond();
+                            ISession session = handled.getSecond();
                             session.innerClose();
                         }
                     }
                     break;
                 case LINK:
-                    IControl<C> received = event.getContent()
+                    IControl received = event.getContent()
                                                 .getFirst();
-                    ISession<C> session = event.getContent()
-                                               .getSecond();
+                    ISession session = event.getContent()
+                                            .getSecond();
                     if (received == null) { return; }
                     try {
                         IPair pair = _LinkCustom.handle(_SessionManager, session, received);
                         if (pair == null) return;
-                        IControl<C>[] toSends = pair.getFirst();
+                        IControl[] toSends = pair.getFirst();
                         if (toSends != null && toSends.length > 0) {
                             publish(_Writer,
                                     WRITE,
@@ -246,7 +242,7 @@ public class MappingHandler<C extends IContext<C>,
                     try {
                         IPair pair = _ClusterCustom.handle(_SessionManager, session, received);
                         if (pair == null) return;
-                        IControl<C>[] toSends = pair.getFirst();
+                        IControl[] toSends = pair.getFirst();
                         if (toSends != null && toSends.length > 0) {
                             publish(_Writer,
                                     WRITE,

@@ -25,132 +25,133 @@ package com.isahl.chess.bishop.io.ws.filter;
 
 import java.nio.ByteBuffer;
 
-import com.isahl.chess.bishop.io.ws.WsProxyContext;
-import com.isahl.chess.bishop.io.zfilter.ZContext;
+import com.isahl.chess.bishop.io.ws.IWsContext;
 import com.isahl.chess.bishop.io.ws.WsFrame;
-import com.isahl.chess.bishop.io.ws.WsProxy;
-import com.isahl.chess.king.base.exception.ZException;
+import com.isahl.chess.bishop.io.ws.WsProxyContext;
 import com.isahl.chess.queen.io.core.async.AioFilterChain;
 import com.isahl.chess.queen.io.core.async.AioPacket;
-import com.isahl.chess.queen.io.core.inf.IControl;
-import com.isahl.chess.queen.io.core.inf.IFilter;
-import com.isahl.chess.queen.io.core.inf.IFilterChain;
+import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.IPacket;
 import com.isahl.chess.queen.io.core.inf.IProtocol;
+import com.isahl.chess.queen.io.core.inf.IProxyContext;
 
 /**
  * @author william.d.zk
  * 
  * @date 2019-05-07
  */
-public class WsProxyFilter
+public class WsProxyFilter<A extends IPContext<A>>
         extends
-        AioFilterChain<ZContext, IProtocol, WsFrame>
+        AioFilterChain<WsProxyContext<A>,
+                       IPacket,
+                       WsFrame>
 {
 
-    public <T extends IProtocol> WsProxyFilter(AioFilterChain<ZContext, T, IPacket> filterChain)
+    public WsProxyFilter()
     {
         super("ws_proxy");
-        _ActualFilterChain = filterChain;
-    }
 
-    private final AioFilterChain<ZContext, ? extends IProtocol, IPacket> _ActualFilterChain;
-
-    @Override
-    public boolean checkType(IProtocol protocol)
-    {
-        return checkType(protocol, IPacket.FRAME_SERIAL);
     }
 
     @Override
-    public ResultType preEncode(ZContext context, IProtocol output)
+    public ResultType seek(WsProxyContext<A> context, IPacket protocol)
     {
-        return preProxyEncode(context, output);
+        return context.isOutConvert() ? ResultType.NEXT_STEP
+                                      : ResultType.IGNORE;
     }
 
     @Override
-    public WsFrame encode(ZContext context, IProtocol output)
+    public ResultType peek(WsProxyContext<A> context, WsFrame input)
     {
-        WsProxyContext proxyContext  = (WsProxyContext) context;
-        ZContext               actualContext = proxyContext.getProxyContext();
-        IFilter.ResultType     resultType;
-        IFilterChain<ZContext> previous      = _ActualFilterChain.getChainTail();
-        IProtocol              toWrite       = output;
-        while (previous != null)
-        {
-            resultType = previous.getFilter().preEncode(actualContext, toWrite);
-            switch (resultType)
-            {
-                case ERROR:
-                case NEED_DATA:
-                    return null;
-                case NEXT_STEP:
-                    toWrite = previous.getFilter().encode(actualContext, toWrite);
-                    break;
-                default:
-                    break;
-            }
-            previous = previous.getPrevious();
-        }
-        IPacket packet = (IPacket) toWrite;
-        WsFrame frame  = new WsFrame();
-        frame.setPayload(packet.getBuffer().array());
+        return context.isInConvert() && !input.isCtrl() ? ResultType.NEXT_STEP
+                                                        : ResultType.IGNORE;
+    }
+
+    @Override
+    public WsFrame encode(WsProxyContext<A> context, IPacket output)
+    {
+        WsFrame frame = new WsFrame();
+        frame.setPayload(output.getBuffer()
+                               .array());
         frame.setCtrl(WsFrame.frame_op_code_no_ctrl_bin);
         return frame;
     }
 
     @Override
-    public ResultType preDecode(ZContext context, WsFrame input)
+    public IPacket decode(WsProxyContext<A> context, WsFrame input)
     {
-        return preProxyDecode(context, input);
+        return new AioPacket(ByteBuffer.wrap(input.getPayload()));
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public IProtocol decode(ZContext context, WsFrame input)
+    public <C extends IPContext<C>,
+            O extends IProtocol> ResultType pipeSeek(C context, O output)
     {
-        WsProxyContext proxyContext  = (WsProxyContext) context;
-        ZContext       actualContext = proxyContext.getProxyContext();
-        if (input == null || input.getPayload() == null)
-        { return null; }
-        ByteBuffer         buf      = ByteBuffer.wrap(input.getPayload());
-        IPacket            packet   = new AioPacket(buf);
-        IFilter.ResultType resultType;
-        IProtocol          protocol = packet;
-        WsProxy<ZContext>  proxy    = null;
-        for (IFilterChain<ZContext> next = _ActualFilterChain;; next = _ActualFilterChain, protocol = packet)
-        {
-            Chain:
-            while (next != null)
-            {
-                resultType = next.getFilter().checkType(protocol) ?
-                        next.getFilter().preDecode(actualContext, protocol):
-                        IFilter.ResultType.IGNORE;
-                switch (resultType)
-                {
-                    case ERROR:
-                        throw new ZException(String.format("filter:%s error", next.getName()));
-                    case NEED_DATA:
-                        return proxy;
-                    case NEXT_STEP:
-                        protocol = next.getFilter().decode(actualContext, protocol);
-                        break;
-                    case HANDLED:
-                        IControl<ZContext> cmd = (IControl<ZContext>) next.getFilter().decode(actualContext, protocol);
-                        if (cmd != null)
-                        {
-                            if (proxy == null)
-                            {
-                                proxy = new WsProxy<>();
-                            }
-                            proxy.add(cmd);
-                        }
-                        break Chain;
-                    default:
-                        break;
+        if (checkType(output, IProtocol.PACKET_SERIAL)) {
+            if (context.isProxy() && context instanceof IWsContext) {
+                return seek((WsProxyContext<A>) context, (IPacket) output);
+            }
+            else if (context.isProxy()) {//SSL|ZLS
+                IPContext<?> acting = ((IProxyContext<?>) context).getActingContext();
+                if (acting.isProxy() && acting instanceof IWsContext) {
+                    return seek((WsProxyContext<A>) acting, (IPacket) output);
                 }
-                next = next.getNext();
             }
         }
+        return ResultType.IGNORE;
     }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <C extends IPContext<C>,
+            I extends IProtocol> ResultType pipePeek(C context, I input)
+    {
+        if (checkType(input, IProtocol.FRAME_SERIAL)) {
+            if (context.isProxy() && context instanceof IWsContext) {
+                return peek((WsProxyContext<A>) context, (WsFrame) input);
+            }
+            else if (context.isProxy()) {
+                IPContext<?> acting = ((IProxyContext<?>) context).getActingContext();
+                if (acting.isProxy() && acting instanceof IWsContext) {
+                    return peek((WsProxyContext<A>) acting, (WsFrame) input);
+                }
+            }
+        }
+        return ResultType.IGNORE;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <C extends IPContext<C>,
+            O extends IProtocol,
+            I extends IProtocol> I pipeEncode(C context, O output)
+    {
+
+        if (context.isProxy() && context instanceof IWsContext) {
+            return (I) encode((WsProxyContext<A>) context, (IPacket) output);
+        }
+        else if (context.isProxy()) {
+            IPContext<?> acting = ((IProxyContext<?>) context).getActingContext();
+            return (I) encode((WsProxyContext<A>) acting, (IPacket) output);
+        }
+        return null;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <C extends IPContext<C>,
+            O extends IProtocol,
+            I extends IProtocol> O pipeDecode(C context, I input)
+    {
+        if (context.isProxy() && context instanceof IWsContext) {
+            return (O) decode((WsProxyContext<A>) context, (WsFrame) input);
+        }
+        else if (context.isProxy()) {
+            IPContext<?> acting = ((IProxyContext<?>) context).getActingContext();
+            return (O) decode((WsProxyContext<A>) acting, (WsFrame) input);
+        }
+        return null;
+    }
+
 }

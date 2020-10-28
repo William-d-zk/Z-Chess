@@ -30,7 +30,7 @@ package com.isahl.chess.queen.io.core.inf;
  * 
  * @author William.d.zk
  */
-public interface IStreamProtocol<C extends IContext<C>>
+public interface IStreamProtocol
         extends
         IProtocol
 {
@@ -39,16 +39,18 @@ public interface IStreamProtocol<C extends IContext<C>>
      * 
      * @param ctx
      */
-    default void afterEncode(C ctx)
-    {}
+    default <C extends IPContext<C>> void afterEncode(C ctx)
+    {
+    }
 
     /**
      * 解码结束后更新状态机状态
      * 
      * @param ctx
      */
-    default void afterDecode(C ctx)
-    {}
+    default <C extends IPContext<C>> void afterDecode(C ctx)
+    {
+    }
 
     /**
      * 扩展IProtocol 未对IContext进行约定
@@ -58,7 +60,7 @@ public interface IStreamProtocol<C extends IContext<C>>
      * 
      * @return
      */
-    default byte[] encode(C ctx)
+    default <C extends IPContext<C>> byte[] encode(C ctx)
     {
         byte[] data = encode();
         afterEncode(ctx);
@@ -72,7 +74,7 @@ public interface IStreamProtocol<C extends IContext<C>>
      * @param data
      * @param ctx
      */
-    default void decode(byte[] data, C ctx)
+    default <C extends IPContext<C>> void decode(byte[] data, C ctx)
     {
         decode(data);
         afterDecode(ctx);

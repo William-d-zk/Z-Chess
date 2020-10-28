@@ -36,7 +36,7 @@ public class Logger
         implements
         Serializable
 {
-    private static final long      serialVersionUID = 6165161241382365689L;
+    private static final long serialVersionUID = 6165161241382365689L;
 
     private final String           _Name;
     private final org.slf4j.Logger _Logger;
@@ -154,7 +154,8 @@ public class Logger
 
     public boolean isEnable(Level level)
     {
-        return switch (level) {
+        return switch (level)
+        {
             case ERROR -> _Logger.isErrorEnabled();
             case WARN -> _Logger.isWarnEnabled();
             case INFO -> _Logger.isInfoEnabled();
@@ -165,19 +166,17 @@ public class Logger
 
     public static String arrayToString(Object[] a)
     {
-        if (Objects.isNull(a))
-        { return "[]"; }
+        if (Objects.isNull(a)) { return "[]"; }
         int iMax = a.length - 1;
-        if (iMax == -1)
-        { return "[]"; }
+        if (iMax == -1) { return "[]"; }
 
         StringBuilder b = new StringBuilder();
         b.append("[\n");
-        for (int i = 0;; i++)
-        {
-            b.append("\t\t").append(a[i]);
-            if (i == iMax)
-            { return b.append("\n]").toString(); }
+        for (int i = 0;; i++) {
+            b.append("\t\t")
+             .append(a[i]);
+            if (i == iMax) { return b.append("\n]")
+                                     .toString(); }
             b.append(",\n");
         }
     }
@@ -186,7 +185,7 @@ public class Logger
      * 判断当前行是否存在有效数据，不存在返回 true 跳过当前行
      *
      * @param line
-     *             读入的当前行
+     *            读入的当前行
      * 
      * @return 是否跳过
      */

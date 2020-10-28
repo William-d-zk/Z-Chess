@@ -33,13 +33,11 @@ import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 
-import com.isahl.chess.pawn.endpoint.spring.device.jpa.model.MessageBody;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.isahl.chess.bishop.io.ZSort;
+import com.isahl.chess.bishop.io.ZSortHolder;
 import com.isahl.chess.bishop.io.mqtt.handler.IQttRouter;
-import com.isahl.chess.bishop.io.zfilter.ZContext;
 import com.isahl.chess.bishop.io.zhandler.ZClusterMappingCustom;
 import com.isahl.chess.bishop.io.zhandler.ZLinkMappingCustom;
 import com.isahl.chess.king.base.exception.ZException;
@@ -56,6 +54,7 @@ import com.isahl.chess.knight.raft.service.ClusterCustom;
 import com.isahl.chess.pawn.endpoint.spring.device.DeviceNode;
 import com.isahl.chess.pawn.endpoint.spring.device.config.DeviceConfig;
 import com.isahl.chess.pawn.endpoint.spring.device.jpa.model.DeviceEntity;
+import com.isahl.chess.pawn.endpoint.spring.device.jpa.model.MessageBody;
 import com.isahl.chess.pawn.endpoint.spring.device.jpa.repository.IDeviceJpaRepository;
 import com.isahl.chess.pawn.endpoint.spring.device.jpa.repository.IMessageJpaRepository;
 import com.isahl.chess.pawn.endpoint.spring.device.spi.IDeviceService;
@@ -76,10 +75,10 @@ public class DeviceService
         implements
         IDeviceService
 {
-    private final Logger                    _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
     private final DeviceNode                _DeviceNode;
-    private final ILinkCustom<ZContext>     _LinkCustom;
+    private final ILinkCustom               _LinkCustom;
     private final ClusterCustom<DeviceNode> _ClusterCustom;
     private final IDeviceJpaRepository      _DeviceRepository;
     private final IMessageJpaRepository     _MessageRepository;
@@ -92,23 +91,27 @@ public class DeviceService
                   IAioConfig ioConfig,
                   IRaftConfig raftConfig,
                   IMixConfig mixConfig,
-                  ILinkCustom<ZContext> linkCustom,
+                  ILinkCustom linkCustom,
                   IMessageJpaRepository messageRepository,
                   IDeviceJpaRepository deviceRepository,
                   IRaftDao raftDao,
                   IQttRouter qttRouter) throws IOException
     {
         final TimeWheel _TimeWheel = new TimeWheel();
-        List<ITriple>   hosts      = deviceConfig.getListeners().stream().map(listener ->
-                                   {
-                                       ZSort sort = switch (listener.getScheme()) {
-                                           case "ws" -> ZSort.WS_SERVER;
-                                           case "mqtt" -> ZSort.QTT_SERVER;
-                                           case "ws_mqtt" -> ZSort.WS_QTT_SERVER;
-                                           default -> throw new UnsupportedOperationException(listener.getScheme());
-                                       };
-                                       return new Triple<>(listener.getHost(), listener.getPort(), sort);
-                                   }).collect(Collectors.toList());
+        List<ITriple> hosts = deviceConfig.getListeners()
+                                          .stream()
+                                          .map(listener ->
+                                          {
+                                              ZSortHolder sort = switch (listener.getScheme())
+                                              {
+                                                  case "ws" -> ZSortHolder.WS_SERVER;
+                                                  case "mqtt" -> ZSortHolder.QTT_SERVER;
+                                                  case "ws_mqtt" -> ZSortHolder.WS_QTT_SERVER;
+                                                  default -> throw new UnsupportedOperationException(listener.getScheme());
+                                              };
+                                              return new Triple<>(listener.getHost(), listener.getPort(), sort);
+                                          })
+                                          .collect(Collectors.toList());
         _DeviceNode = new DeviceNode(hosts, ioConfig, raftConfig, mixConfig, _TimeWheel);
         _DeviceRepository = deviceRepository;
         _LinkCustom = linkCustom;
@@ -151,13 +154,14 @@ public class DeviceService
     @Override
     public MessageBody getMessageById(long id) throws ZException
     {
-        return _MessageRepository.getOne(id).getBody();
+        return _MessageRepository.getOne(id)
+                                 .getBody();
     }
 
     @Override
     public Stream<DeviceEntity> getOnlineDevices(String username) throws ZException
     {
-        Collection<ISession<ZContext>> sessions = _DeviceNode.getMappedSessionsWithType(ZUID.TYPE_CONSUMER_SLOT);
+        Collection<ISession> sessions = _DeviceNode.getMappedSessionsWithType(ZUID.TYPE_CONSUMER_SLOT);
         if (sessions == null || sessions.isEmpty()) return null;
         return sessions.stream()
                        .map(session -> _DeviceRepository.findByIdAndUsername(session.getIndex(), username))
@@ -165,12 +169,14 @@ public class DeviceService
     }
 
     @Override
-    public Stream<Pair<DeviceEntity, Map<String, IQoS.Level>>>
-           getOnlineDevicesWithTopic(String username) throws ZException
+    public Stream<Pair<DeviceEntity,
+                       Map<String,
+                           IQoS.Level>>> getOnlineDevicesWithTopic(String username) throws ZException
     {
         Stream<DeviceEntity> onlineDevices = getOnlineDevices(username);
-        if (onlineDevices != null)
-        { return onlineDevices.map(device -> new Pair<>(device, _QttRouter.groupBy(device.getId()))); }
+        if (onlineDevices != null) {
+            return onlineDevices.map(device -> new Pair<>(device, _QttRouter.groupBy(device.getId())));
+        }
         return null;
     }
 

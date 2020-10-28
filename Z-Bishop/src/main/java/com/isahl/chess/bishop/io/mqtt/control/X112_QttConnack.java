@@ -27,6 +27,7 @@ import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
 
 import com.isahl.chess.bishop.io.mqtt.QttControl;
 import com.isahl.chess.king.base.util.IoUtil;
+import com.isahl.chess.queen.io.core.inf.IPContext;
 
 /**
  * @author william.d.zk
@@ -34,12 +35,13 @@ import com.isahl.chess.king.base.util.IoUtil;
  * @date 2019-05-11
  */
 public class X112_QttConnack
-        extends QttControl
+        extends
+        QttControl
 {
     public final static int COMMAND = 0x112;
 
-    private boolean         mPresent;
-    private byte            mResponseCode;
+    private boolean mPresent;
+    private byte    mResponseCode;
 
     public X112_QttConnack()
     {
@@ -124,9 +126,10 @@ public class X112_QttConnack
     @Override
     public int encodec(byte[] data, int pos)
     {
-        pos += IoUtil.writeByte(mPresent ?
-                1:
-                0, data, pos);
+        pos += IoUtil.writeByte(mPresent ? 1
+                                         : 0,
+                                data,
+                                pos);
         pos += IoUtil.writeByte(mResponseCode, data, pos);
         return pos;
     }
@@ -179,7 +182,8 @@ public class X112_QttConnack
 
         static Code valueOf(byte code)
         {
-            return switch (code) {
+            return switch (code)
+            {
                 case 0 -> ACCEPT;
                 case 1 -> REJECT_UNACCEPTABLE_PROTOCOL;
                 case 2 -> REJECT_IDENTIFIER;

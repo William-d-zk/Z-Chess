@@ -24,8 +24,6 @@
 package com.isahl.chess.queen.io.core.inf;
 
 import com.isahl.chess.king.base.inf.IPair;
-import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.event.inf.IOperator;
 
 /**
@@ -33,19 +31,11 @@ import com.isahl.chess.queen.event.inf.IOperator;
  * 
  * @date 2019-06-28
  */
-public interface ISessionError<C extends IContext<C>>
+public interface ISessionError
         extends
-        IOperator<Throwable, ISession<C>, IPair>
+        IOperator<Throwable,
+                  ISession,
+                  IPair>
 {
-
-    @Override
-    default IPair handle(Throwable throwable, ISession<C> session)
-    {
-        getLogger().trace("error session:%s", throwable, session);
-        return session != null ?
-                new Pair<>(session, session.getContext().getSort().getCloser()):
-                null;
-    }
-
-    Logger getLogger();
+    IPair handle(Throwable throwable, ISession session);
 }

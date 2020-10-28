@@ -39,58 +39,66 @@ import com.isahl.chess.queen.io.core.inf.ISession;
 /**
  * @author william.d.zk
  */
-public class AioReader<C extends IContext<C>>
+public class AioReader
         implements
-        CompletionHandler<Integer, ISession<C>>
+        CompletionHandler<Integer,
+                          ISession>
 {
     private final Logger _Logger = Logger.getLogger("io.queen.operator." + getClass().getSimpleName());
 
     @Override
-    public void completed(Integer result, ISession<C> session)
+    public void completed(Integer result, ISession session)
     {
         AioWorker worker = (AioWorker) Thread.currentThread();
         switch (result)
         {
-            case -1:
-                worker.publishReadError(session.getContext().getSort().getError(),
-                                        READ_EOF,
-                                        new EOFException("Read Negative"),
-                                        session);
-                break;
-            case 0:
-                worker.publishReadError(session.getContext().getSort().getError(),
-                                        READ_ZERO,
-                                        new IllegalStateException("Read Zero"),
-                                        session);
-                try
+            case -1 -> worker.publishReadError(session.getContext()
+                                                      .getError(),
+                                               READ_EOF,
+                                               new EOFException("Read Negative"),
+                                               session);
+            case 0 ->
                 {
-                    session.readNext(this);
+                    worker.publishReadError(session.getContext()
+                                                   .getError(),
+                                            READ_ZERO,
+                                            new IllegalStateException("Read Zero"),
+                                            session);
+                    try {
+                        session.readNext(this);
+                    }
+                    catch (Exception e) {
+                        // ignore
+                    }
                 }
-                catch (Exception e)
+            default ->
                 {
-                    // ignore
+                    _Logger.debug("read count: %d | %s", result, session);
+                    try {
+                        worker.publishRead(session.getContext()
+                                                  .getReader(),
+                                           new AioPacket(session.read(result)),
+                                           session);
+                    }
+                    catch (Exception e) {
+                        worker.publishReadError(session.getContext()
+                                                       .getError(),
+                                                READ_FAILED,
+                                                e,
+                                                session);
+                    }
                 }
-                break;
-            default:
-                _Logger.debug("read count: %d | %s", result, session);
-                try
-                {
-                    worker.publishRead(session.getContext().getSort().getDecoder(),
-                                       new AioPacket(session.read(result)),
-                                       session);
-                }
-                catch (Exception e)
-                {
-                    worker.publishReadError(session.getContext().getSort().getError(), READ_FAILED, e, session);
-                }
-                break;
         }
     }
 
     @Override
-    public void failed(Throwable exc, ISession<C> session)
+    public void failed(Throwable exc, ISession session)
     {
         AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishReadError(session.getContext().getSort().getError(), READ_FAILED, exc, session);
+        worker.publishReadError(session.getContext()
+                                       .getError(),
+                                READ_FAILED,
+                                exc,
+                                session);
     }
 }

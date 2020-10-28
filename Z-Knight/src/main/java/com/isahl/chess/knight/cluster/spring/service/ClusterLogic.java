@@ -27,9 +27,8 @@ import java.nio.charset.StandardCharsets;
 
 import com.isahl.chess.bishop.io.mqtt.control.X11C_QttPingreq;
 import com.isahl.chess.bishop.io.mqtt.control.X11D_QttPingresp;
-import com.isahl.chess.bishop.io.ws.control.X104_Ping;
-import com.isahl.chess.bishop.io.ws.control.X105_Pong;
-import com.isahl.chess.bishop.io.zfilter.ZContext;
+import com.isahl.chess.bishop.io.ws.control.X103_Ping;
+import com.isahl.chess.bishop.io.ws.control.X104_Pong;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.event.handler.mix.ILogicHandler;
 import com.isahl.chess.queen.io.core.inf.IControl;
@@ -43,33 +42,37 @@ import com.isahl.chess.queen.io.core.inf.ISessionManager;
  */
 public class ClusterLogic
         implements
-        ILogicHandler<ZContext>
+        ILogicHandler
 {
 
-    private final Logger                    _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
 
-    private final ISessionManager<ZContext> _Manager;
+    private final ISessionManager _Manager;
 
-    public ClusterLogic(ISessionManager<ZContext> manager)
+    public ClusterLogic(ISessionManager manager)
     {
         _Manager = manager;
     }
 
     @Override
-    public ISessionManager<ZContext> getISessionManager()
+    public ISessionManager getISessionManager()
     {
         return _Manager;
     }
 
     @Override
-    public IControl<ZContext>[] handle(ISessionManager<ZContext> manager,
-                                       ISession<ZContext> session,
-                                       IControl<ZContext> content) throws Exception
+    public IControl[] handle(ISessionManager manager, ISession session, IControl content) throws Exception
     {
         _Logger.debug("cluster handle heartbeat");
-        return switch (content.serial()) {
-            case X104_Ping.COMMAND -> new X105_Pong[]{new X105_Pong(String.format("pong:%#x %s", session.getIndex(), session.getLocalAddress()).getBytes(StandardCharsets.UTF_8))};
-            case X11C_QttPingreq.COMMAND -> new X11D_QttPingresp[]{new X11D_QttPingresp()};
+        return switch (content.serial())
+        {
+            case X103_Ping.COMMAND -> new X104_Pong[] { new X104_Pong(String.format("pong:%#x %s",
+                                                                                    session.getIndex(),
+                                                                                    session.getLocalAddress())
+                                                                            .getBytes(StandardCharsets.UTF_8))
+                };
+            case X11C_QttPingreq.COMMAND -> new X11D_QttPingresp[] { new X11D_QttPingresp()
+                };
             default -> null;
         };
     }

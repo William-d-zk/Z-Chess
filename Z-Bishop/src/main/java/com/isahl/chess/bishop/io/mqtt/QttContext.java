@@ -23,7 +23,7 @@
 
 package com.isahl.chess.bishop.io.mqtt;
 
-import com.isahl.chess.bishop.io.zfilter.ZContext;
+import com.isahl.chess.bishop.io.ZContext;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.event.inf.ISort;
@@ -34,7 +34,7 @@ import com.isahl.chess.queen.io.core.inf.ISessionOption;
  */
 public class QttContext
         extends
-        ZContext
+        ZContext<QttContext>
 {
     private final static IPair SUPPORT_VERSION = new Pair<>(new String[] { "5.0.0",
                                                                            "3.1.1"
@@ -43,10 +43,10 @@ public class QttContext
                                                                         4
                                                             });
 
-    public QttContext(ISessionOption option, ISort<ZContext> sort)
+    public QttContext(ISessionOption option,
+                      ISort<QttContext> sort)
     {
         super(option, sort);
-        transfer();
     }
 
     public static IPair getSupportVersion()

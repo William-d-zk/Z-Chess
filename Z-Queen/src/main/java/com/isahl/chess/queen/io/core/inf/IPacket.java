@@ -46,11 +46,7 @@ public interface IPacket
 
     Status getStatus();
 
-    boolean isNoAbandon();
-
-    void setNoAbandon();
-
-    void frameReady();
+    void setAbandon();
 
     ByteBuffer getBuffer();
 
@@ -61,7 +57,8 @@ public interface IPacket
         No_Send,
         To_Send,
         Sending,
-        Sent
+        Sent,
+        Abandon;
     }
 
 }
