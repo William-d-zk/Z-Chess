@@ -108,8 +108,7 @@ public interface IClusterNode<K extends IPipeCore>
             }
 
             @Override
-            @SuppressWarnings("unchecked")
-            public IControl<?>[] createCommands(ISession session)
+            public IControl[] createCommands(ISession session)
             {
                 X106_Identity x106 = new X106_Identity(_ZUID.getPeerId());
                 return new IControl[] { x106

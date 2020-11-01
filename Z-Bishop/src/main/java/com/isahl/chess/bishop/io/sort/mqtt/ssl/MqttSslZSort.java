@@ -23,4 +23,46 @@
 
 package com.isahl.chess.bishop.io.sort.mqtt.ssl;
 
-public class MqttSslZSort {}
+import java.security.NoSuchAlgorithmException;
+
+import com.isahl.chess.bishop.io.mqtt.QttContext;
+import com.isahl.chess.bishop.io.sort.BaseSort;
+import com.isahl.chess.bishop.io.ssl.SSLFilter;
+import com.isahl.chess.bishop.io.ssl.SSLZContext;
+import com.isahl.chess.queen.event.inf.ISort;
+import com.isahl.chess.queen.io.core.inf.IFilterChain;
+import com.isahl.chess.queen.io.core.inf.ISessionOption;
+
+public class MqttSslZSort
+        extends
+        BaseSort<SSLZContext<QttContext>>
+{
+
+    private final ISort<QttContext>          _Acting;
+    final SSLFilter<SSLZContext<QttContext>> _Head = new SSLFilter<>();
+
+    public MqttSslZSort(Mode mode, Type type, ISort<QttContext> acting)
+    {
+        super(mode, type);
+        _Acting = acting;
+        _Head.linkFront(acting.getFilterChain());
+    }
+
+    @Override
+    public IFilterChain getFilterChain()
+    {
+        return _Head;
+    }
+
+    @Override
+    public SSLZContext<QttContext> newContext(ISessionOption option)
+    {
+        try {
+            return new SSLZContext<>(option, this, new QttContext(option, _Acting));
+        }
+        catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+}

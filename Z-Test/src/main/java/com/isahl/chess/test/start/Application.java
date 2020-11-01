@@ -26,11 +26,11 @@ package com.isahl.chess.test.start;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication(scanBasePackages = { "com.tgx.chess.test",
-                                            "com.tgx.chess.knight.json",
-                                            "com.tgx.chess.knight.raft",
-                                            "com.tgx.chess.pawn.endpoint",
-                                            "com.tgx.chess.open.api"
+@SpringBootApplication(scanBasePackages = { "com.isahl.chess.test",
+                                            "com.isahl.chess.knight.json",
+                                            "com.isahl.chess.knight.raft",
+                                            "com.isahl.chess.pawn.endpoint",
+                                            "com.isahl.chess.open.api"
 })
 public class Application
 {

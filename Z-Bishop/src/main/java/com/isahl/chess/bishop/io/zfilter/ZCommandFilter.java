@@ -92,7 +92,7 @@ public class ZCommandFilter<T extends ZContext<T>>
     @Override
     public ZCommand decode(T context, IFrame input)
     {
-        int serial = input.getPayload()[0] & 0xFF;
+        int serial = input.command();
         ZCommand _command = switch (serial)
         {
             case X01_EncryptRequest.COMMAND -> new X01_EncryptRequest();

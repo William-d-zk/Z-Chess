@@ -37,28 +37,28 @@ import com.isahl.chess.queen.io.core.inf.IQoS;
 public class ZClient
 {
 
-    private final Queue<IControl<?>>        _RecvMsgQueue = new LinkedList<>();
-    private final Map<IControl<?>,
-                      Integer>              _ConfirmMap   = new TreeMap<>(Comparator.comparing(IControl::getSequence));
-    private String                          clientId;
-    private String                          token;
-    private String                          username;
-    private String                          password;
-    private short                           localMsgId;
-    private long                            sequence;
-    private long                            sessionIndex;
-    private String                          sn;
+    private final Queue<IControl>        _RecvMsgQueue = new LinkedList<>();
+    private final Map<IControl,
+                      Integer>           _ConfirmMap   = new TreeMap<>(Comparator.comparing(IControl::getSequence));
+    private String                       clientId;
+    private String                       token;
+    private String                       username;
+    private String                       password;
+    private short                        localMsgId;
+    private long                         sequence;
+    private long                         sessionIndex;
+    private String                       sn;
 
     public ZClient()
     {
     }
 
-    public void offer(IControl<?> recv)
+    public void offer(IControl recv)
     {
         _RecvMsgQueue.offer(recv);
     }
 
-    public IControl<?> packet(IControl<?> content)
+    public IControl packet(IControl content)
     {
         content.setSequence(sequence++);
         IQoS.Level level = content.getLevel();
@@ -68,7 +68,7 @@ public class ZClient
         return content;
     }
 
-    public void confirm(IControl<?> recv)
+    public void confirm(IControl recv)
     {
 
     }

@@ -26,6 +26,7 @@ package com.isahl.chess.bishop.io.sort.websocket.ssl.proxy;
 import java.security.NoSuchAlgorithmException;
 
 import com.isahl.chess.bishop.io.sort.BaseSort;
+import com.isahl.chess.bishop.io.ssl.SSLFilter;
 import com.isahl.chess.bishop.io.ssl.SSLZContext;
 import com.isahl.chess.bishop.io.ws.WsProxyContext;
 import com.isahl.chess.bishop.io.ws.filter.WsControlFilter;
@@ -42,8 +43,8 @@ public class WsSslProxyZSort<A extends IPContext<A>>
         BaseSort<SSLZContext<WsProxyContext<A>>>
 {
 
-    private final ISort<WsProxyContext<A>>             _ActingSort;
-    private final WsHandShakeFilter<WsProxyContext<A>> _Head = new WsHandShakeFilter<>();
+    private final ISort<WsProxyContext<A>>     _ActingSort;
+    private final SSLFilter<WsProxyContext<A>> _Head = new SSLFilter<>();
 
     public WsSslProxyZSort(Mode mode,
                            Type type,
@@ -51,7 +52,8 @@ public class WsSslProxyZSort<A extends IPContext<A>>
     {
         super(mode, type);
         _ActingSort = actingSort;
-        _Head.linkFront(new WsFrameFilter<>())
+        _Head.linkFront(new WsHandShakeFilter<>())
+             .linkFront(new WsFrameFilter<>())
              .linkFront(new WsControlFilter<>())
              .linkFront(new WsProxyFilter<>())
              .linkFront(actingSort.getFilterChain());

@@ -51,7 +51,7 @@ public class ConsistentCustom
                 _Logger.debug("cluster mode");
                 X76_RaftNotify x76  = (X76_RaftNotify) protocol;
                 byte[]         data = x76.getPayload();
-                if (x76.getSerial() == ConsistentProtocol._SERIAL)
+                if (x76.load() == ConsistentProtocol._SERIAL)
                 {
                     ConsistentProtocol consistentProtocol = JsonUtil.readValue(data, ConsistentProtocol.class);
                     consistentProtocol.decode(data);
