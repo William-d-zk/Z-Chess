@@ -153,7 +153,7 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
                         break;
                     }
                     X75_RaftRequest x75 = (X75_RaftRequest) content;
-                    return _RaftNode.newLogEntry(x75.getSerial(),
+                    return _RaftNode.newLogEntry(x75.load(),
                                                  x75.getPayload(),
                                                  x75.getClientId(),
                                                  x75.getOrigin(),

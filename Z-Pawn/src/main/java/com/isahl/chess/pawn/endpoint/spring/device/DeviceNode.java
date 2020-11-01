@@ -31,9 +31,14 @@ import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.isahl.chess.bishop.io.ZSortHolder;
+import com.isahl.chess.bishop.io.mqtt.QttContext;
+import com.isahl.chess.bishop.io.ssl.SSLZContext;
+import com.isahl.chess.bishop.io.ws.WsContext;
+import com.isahl.chess.bishop.io.ws.WsProxyContext;
 import com.isahl.chess.bishop.io.ws.control.X103_Ping;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
@@ -57,6 +62,7 @@ import com.isahl.chess.queen.io.core.executor.ServerCore;
 import com.isahl.chess.queen.io.core.inf.IAioClient;
 import com.isahl.chess.queen.io.core.inf.IAioServer;
 import com.isahl.chess.queen.io.core.inf.IConnectActivity;
+import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionDismiss;
 import com.isahl.chess.queen.io.core.manager.MixManager;
@@ -107,67 +113,53 @@ public class DeviceNode
                            {
                                final String _Host = triple.getFirst();
                                final int _Port = triple.getSecond();
-                               final ISort<?> _Sort = triple.getThird();
-                               ISort.Mode mode = _Sort.getMode();
-                               ISort.Type type = _Sort.getType();
-                               final long _SessionType;
-                               if (mode == ISort.Mode.CLUSTER) {
-                                   _SessionType = type == ISort.Type.SYMMETRY ? ZUID.TYPE_CLUSTER
-                                                                              : type == ISort.Type.INNER ? ZUID.TYPE_INTERNAL
-                                                                                                         : ZUID.TYPE_PROVIDER;
-                               }
-                               else {
-                                   _SessionType = ZUID.TYPE_CONSUMER;
-                               }
-                               return new BaseAioServer(_Host, _Port, getSocketConfig(getSlot(_SessionType)))
+                               ZSortHolder holder = triple.getThird();
+                               switch (holder)
                                {
-                                   @Override
-                                   public ISort.Mode getMode()
-                                   {
-                                       return _Sort.getMode();
-                                   }
-
-                                   @Override
-                                   public ISession createSession(AsynchronousSocketChannel socketChannel,
-                                                                 IConnectActivity activity) throws IOException
-                                   {
-                                       return new AioSession<>(socketChannel,
-                                                               this,
-                                                               _Sort.newContext(this),
-                                                               activity,
-                                                               DeviceNode.this);
-                                   }
-
-                                   @Override
-                                   public void onCreate(ISession session)
-                                   {
-                                       session.setIndex(_ZUID.getId(_SessionType));
-                                       DeviceNode.this.addSession(session);
-                                   }
-
-                                   //                                   @Override
-                                   //                                   public ISort<?> getSort()
-                                   //                                   {
-                                   //                                       return _Sort;
-                                   //                                   }
-                                   //
-                                   //                                   @Override
-                                   //                                   public ZContext createContext(ISessionOption option, ISort<ZContext> sort)
-                                   //                                   {
-                                   //                                       return sort.newContext(option);
-                                   //                                   }
-                                   //
-                                   //                                   @Override
-                                   //                                   public IControl<ZContext>[] createCommands(ISession<ZContext> session)
-                                   //                                   {
-                                   //                                       if (_SessionType != ZUID.TYPE_CONSUMER) {
-                                   //                                           X106_Identity x106 = new X106_Identity(_ZUID.getPeerId());
-                                   //                                           return new X106_Identity[] { x106
-                                   //                                           };
-                                   //                                       }
-                                   //                                       return null;
-                                   //                                   }
-                               };
+                                   case QTT_CONSUMER:
+                                   case QTT_SERVER:
+                                   case QTT_SYMMETRY:
+                                       {
+                                           ISort<QttContext> sort = holder.getSort();
+                                           return buildAioServer(_Host, _Port, holder.getSlot(), sort);
+                                       }
+                                   case QTT_CONSUMER_SSL:
+                                   case QTT_SERVER_SSL:
+                                   case QTT_SYMMETRY_SSL:
+                                       {
+                                           ISort<SSLZContext<QttContext>> sort = holder.getSort();
+                                           return buildAioServer(_Host, _Port, holder.getSlot(), sort);
+                                       }
+                                   case WS_CONSUMER:
+                                   case WS_SERVER:
+                                   case WS_CLUSTER_SYMMETRY:
+                                   case WS_CLUSTER_CONSUMER:
+                                   case WS_CLUSTER_SERVER:
+                                       {
+                                           ISort<WsContext> sort = holder.getSort();
+                                           return buildAioServer(_Host, _Port, holder.getSlot(), sort);
+                                       }
+                                   case WS_CONSUMER_SSL:
+                                   case WS_SERVER_SSL:
+                                       {
+                                           ISort<SSLZContext<WsContext>> sort = holder.getSort();
+                                           return buildAioServer(_Host, _Port, holder.getSlot(), sort);
+                                       }
+                                   case WS_QTT_SERVER:
+                                   case WS_QTT_CONSUMER:
+                                       {
+                                           ISort<WsProxyContext<QttContext>> sort = holder.getSort();
+                                           return buildAioServer(_Host, _Port, holder.getSlot(), sort);
+                                       }
+                                   case WS_QTT_SERVER_SSL:
+                                   case WS_QTT_CONSUMER_SSL:
+                                       {
+                                           ISort<SSLZContext<WsProxyContext<QttContext>>> sort = holder.getSort();
+                                           return buildAioServer(_Host, _Port, holder.getSlot(), sort);
+                                       }
+                                   default:
+                                       return null;
+                               }
                            })
                            .collect(Collectors.toList());
         _GateClient = new BaseAioClient(_TimeWheel, getCore().getClusterChannelGroup())
@@ -209,6 +201,35 @@ public class DeviceNode
         _Ping = new X103_Ping(String.format("%#x,%s:%d", _ZUID.getPeerId(), _ClusterHost, _ClusterPort)
                                     .getBytes(StandardCharsets.UTF_8));
         _Logger.debug("Device Node Bean Load");
+    }
+
+    private <C extends IPContext<C>> IAioServer buildAioServer(final String _Host,
+                                                               final int _Port,
+                                                               final int _SessionSlot,
+                                                               final ISort<C> _Sort)
+    {
+        return new BaseAioServer(_Host, _Port, getSocketConfig(_SessionSlot))
+        {
+            @Override
+            public ISort.Mode getMode()
+            {
+                return _Sort.getMode();
+            }
+
+            @Override
+            public ISession createSession(AsynchronousSocketChannel socketChannel,
+                                          IConnectActivity activity) throws IOException
+            {
+                return new AioSession<>(socketChannel, this, _Sort.newContext(this), activity, DeviceNode.this);
+            }
+
+            @Override
+            public void onCreate(ISession session)
+            {
+                session.setIndex(_ZUID.getId(_SessionSlot));
+                DeviceNode.this.addSession(session);
+            }
+        };
     }
 
     public void start(ILogicHandler logicHandler,

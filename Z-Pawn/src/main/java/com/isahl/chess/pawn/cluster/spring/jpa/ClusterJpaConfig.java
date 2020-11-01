@@ -34,9 +34,9 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  * @author william.d.zk
  */
 @EnableJpaAuditing
-@EnableJpaRepositories({ "com.tgx.chess.pawn.cluster.spring.jpa.consensus.repository"
+@EnableJpaRepositories({ "com.isahl.chess.pawn.cluster.spring.jpa.consensus.repository"
 })
-@EntityScan({ "com.tgx.chess.pawn.cluster.spring.jpa.consensus.model"
+@EntityScan({ "com.isahl.chess.pawn.cluster.spring.jpa.consensus.model"
 })
 @EnableTransactionManagement
 @Configuration

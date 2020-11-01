@@ -66,7 +66,6 @@ import com.isahl.chess.queen.io.core.inf.ISession;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-06-10
  */
 

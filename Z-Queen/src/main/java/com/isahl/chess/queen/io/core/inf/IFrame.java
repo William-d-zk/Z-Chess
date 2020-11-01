@@ -44,6 +44,11 @@ public interface IFrame
 
     boolean isCtrl();
 
+    default int command()
+    {
+        return serial();
+    }
+
     default IPacket translate()
     {
         return null;

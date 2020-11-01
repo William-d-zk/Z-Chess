@@ -23,7 +23,6 @@
 
 package com.isahl.chess.knight.raft;
 
-import com.isahl.chess.bishop.io.ZContext;
 import com.isahl.chess.queen.io.core.inf.IControl;
 
 /**
@@ -33,7 +32,7 @@ import com.isahl.chess.queen.io.core.inf.IControl;
  */
 public interface IRaftMessage
         extends
-        IControl<ZContext>
+        IControl
 {
     long getPeerId();
 

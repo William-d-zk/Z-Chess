@@ -35,10 +35,10 @@ public class MqttZSort
         extends
         BaseSort<QttContext>
 {
-    final QttFrameFilter _QttFrameFilter = new QttFrameFilter();
+    final QttFrameFilter _Head = new QttFrameFilter();
     {
-        _QttFrameFilter.linkFront(new QttControlFilter())
-                       .linkFront(new QttCommandFilter());
+        _Head.linkFront(new QttControlFilter())
+             .linkFront(new QttCommandFilter());
     }
 
     public MqttZSort(Mode mode,
@@ -50,7 +50,7 @@ public class MqttZSort
     @Override
     public IFilterChain getFilterChain()
     {
-        return _QttFrameFilter;
+        return _Head;
     }
 
     @Override

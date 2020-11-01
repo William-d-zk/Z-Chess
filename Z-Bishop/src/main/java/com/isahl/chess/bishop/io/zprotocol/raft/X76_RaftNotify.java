@@ -55,7 +55,7 @@ public class X76_RaftNotify
     private transient boolean tLeader;
     private transient boolean tNotify;
 
-    public int getSerial()
+    public int load()
     {
         return mSerial;
     }

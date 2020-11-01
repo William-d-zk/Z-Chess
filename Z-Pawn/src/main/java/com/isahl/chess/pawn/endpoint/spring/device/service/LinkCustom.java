@@ -96,77 +96,80 @@ public class LinkCustom
     @Override
     public IPair handle(ISessionManager manager, ISession session, IControl input) throws Exception
     {
+        /*--检查X112 是否正常--*/
+        /*--检查device 是否正确，验证账户密码--*/
         switch (input.serial())
         {
-            case X111_QttConnect.COMMAND:
-                X111_QttConnect x111 = (X111_QttConnect) input;
-                DeviceEntity device = new DeviceEntity();
-                device.setToken(x111.getClientId());
-                device.setPassword(x111.getPassword());
-                device.setUsername(x111.getUserName());
-                device.setOperation(IStorage.Operation.OP_APPEND);
-                device = _DeviceRepository.findByToken(x111.getClientId());
-                X112_QttConnack x112 = new X112_QttConnack();
-                x112.responseOk();
-                /*--检查X112 是否正常--*/
-                int[] supportVersions = QttContext.getSupportVersion()
-                                                  .getSecond();
-                if (Arrays.stream(supportVersions)
-                          .noneMatch(version -> version == x111.getProtocolVersion()))
+            case X111_QttConnect.COMMAND ->
                 {
-                    x112.rejectUnacceptableProtocol();
-                }
-                else if (!x111.isClean() && x111.getClientIdLength() == 0) {
-                    x112.rejectIdentifier();
-                }
-                /*--检查device 是否正确，验证账户密码--*/
-                if (device == null) {
-                    x112.rejectIdentifier();
-                }
-                else if (!device.getUsername()
-                                .equalsIgnoreCase(x111.getUserName())
-                         || !device.getPassword()
-                                   .equals(x111.getPassword()))
-                {
-                    /*
-                     * @see DeviceEntity
-                     * username >=8 && <=32
-                     * password >=17 && <=32
-                     * no_empty
-                     */
-                    x112.rejectNotAuthorized();
-                }
-                if (x112.isOk() && device != null) {
-                    if (x111.isClean()) {
-                        _QttRouter.clean(device.primaryKey());
+                    X111_QttConnect x111 = (X111_QttConnect) input;
+                    DeviceEntity device = new DeviceEntity();
+                    device.setToken(x111.getClientId());
+                    device.setPassword(x111.getPassword());
+                    device.setUsername(x111.getUserName());
+                    device.setOperation(IStorage.Operation.OP_APPEND);
+                    device = _DeviceRepository.findByToken(x111.getClientId());
+                    X112_QttConnack x112 = new X112_QttConnack();
+                    x112.responseOk();
+                    int[] supportVersions = QttContext.getSupportVersion()
+                                                      .getSecond();
+                    if (Arrays.stream(supportVersions)
+                              .noneMatch(version -> version == x111.getProtocolVersion()))
+                    {
+                        x112.rejectUnacceptableProtocol();
                     }
-                    else {
+                    else if (!x111.isClean() && x111.getClientIdLength() == 0) {
+                        x112.rejectIdentifier();
+                    }
+                    if (device == null) {
+                        x112.rejectIdentifier();
+                    }
+                    else if (!device.getUsername()
+                                    .equalsIgnoreCase(x111.getUserName())
+                             || !device.getPassword()
+                                       .equals(x111.getPassword()))
+                    {
+                        /*
+                         * @see DeviceEntity
+                         * username >=8 && <=32
+                         * password >=17 && <=32
+                         * no_empty
+                         */
+                        x112.rejectNotAuthorized();
+                    }
+                    if (x112.isOk() && device != null) {
+                        if (x111.isClean()) {
+                            _QttRouter.clean(device.primaryKey());
+                        }
+                        else {
 
-                    }
-                    ISession old = manager.mapSession(device.primaryKey(), session);
-                    if (old != null) {
-                        X108_Shutdown x108 = new X108_Shutdown();
-                        x108.setSession(old);
-                        _Logger.info("re-login ok %s, wait for consistent notify", x111.getClientId());
-                        return new Pair<>(new X108_Shutdown[] { x108
-                        }, x111);
+                        }
+                        ISession old = manager.mapSession(device.primaryKey(), session);
+                        if (old != null) {
+                            X108_Shutdown x108 = new X108_Shutdown();
+                            x108.setSession(old);
+                            _Logger.info("re-login ok %s, wait for consistent notify", x111.getClientId());
+                            return new Pair<>(new X108_Shutdown[] { x108
+                            }, x111);
+                        }
+                        else {
+                            _Logger.info("login check ok:%s, wait for consistent notify", x111.getClientId());
+                            return new Pair<>(null, x111);
+                        }
                     }
                     else {
-                        _Logger.info("login check ok:%s, wait for consistent notify", x111.getClientId());
-                        return new Pair<>(null, x111);
+                        _Logger.info("reject %s",
+                                     x112.getCode()
+                                         .name());
+                        return new Pair<>(new X112_QttConnack[] { x112
+                        }, null);
                     }
                 }
-                else {
-                    _Logger.info("reject %s",
-                                 x112.getCode()
-                                     .name());
-                    return new Pair<>(new X112_QttConnack[] { x112
-                    }, null);
+            case X118_QttSubscribe.COMMAND, X11A_QttUnsubscribe.COMMAND ->
+                {
+                    _Logger.info("%s ,wait for consistent notify", input);
+                    return new Pair<>(null, input);
                 }
-            case X118_QttSubscribe.COMMAND:
-            case X11A_QttUnsubscribe.COMMAND:
-                _Logger.info("%s ,wait for consistent notify", input);
-                return new Pair<>(null, input);
         }
         return null;
     }
@@ -187,7 +190,7 @@ public class LinkCustom
              * ignore session
              */
             X76_RaftNotify x76 = (X76_RaftNotify) response;
-            int cmd = x76.getSerial();
+            int cmd = x76.load();
             request = ZSortHolder.create(cmd);
             request.decode(x76.getPayload());
             byLeader = x76.byLeader();

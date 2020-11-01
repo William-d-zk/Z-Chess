@@ -26,11 +26,12 @@ package com.isahl.chess.pawn.endpoint.spring.device.jpa.repository;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.isahl.chess.pawn.endpoint.spring.device.jpa.model.MessageEntity;
-import com.isahl.chess.pawn.spring.jpa.BaseRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import com.isahl.chess.pawn.endpoint.spring.device.jpa.model.MessageEntity;
+import com.isahl.chess.pawn.spring.jpa.BaseRepository;
 
 /**
  * @author william.d.zk
@@ -39,7 +40,8 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface IMessageJpaRepository
-        extends BaseRepository<MessageEntity>
+        extends
+        BaseRepository<MessageEntity>
 {
 
     MessageEntity findByOriginAndDestinationAndMsgId(long origin, long destination, long msgId);
@@ -51,11 +53,15 @@ public interface IMessageJpaRepository
 
     List<MessageEntity> findAllByOriginAndDestinationAndMsgId(long origin, long destination, long msgId);
 
-    List<MessageEntity>
-        findAllByOriginAndMsgIdAndDirectionAndOwner(long origin, long msgId, String direction, String owner);
+    List<MessageEntity> findAllByOriginAndMsgIdAndDirectionAndOwner(long origin,
+                                                                    long msgId,
+                                                                    String direction,
+                                                                    String owner);
 
-    List<MessageEntity>
-        findAllByDestinationAndMsgIdAndDirectionAndOwner(long destination, long msgId, String direction, String owner);
+    List<MessageEntity> findAllByDestinationAndMsgIdAndDirectionAndOwner(long destination,
+                                                                         long msgId,
+                                                                         String direction,
+                                                                         String owner);
 
     List<MessageEntity> findAllByDestinationAndMsgIdBefore(long destination, long msgId);
 

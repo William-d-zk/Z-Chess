@@ -23,8 +23,8 @@
 
 package com.isahl.chess.bishop.io.zprotocol;
 
-import com.isahl.chess.bishop.io.zprotocol.device.X20_SignUp;
 import com.isahl.chess.bishop.io.ws.WsFrame;
+import com.isahl.chess.bishop.io.zprotocol.device.X20_SignUp;
 import com.isahl.chess.bishop.io.zprotocol.device.X22_SignIn;
 import com.isahl.chess.bishop.io.zprotocol.device.X24_UpdateToken;
 import com.isahl.chess.bishop.io.zprotocol.device.X31_ConfirmMsg;
@@ -39,7 +39,8 @@ import com.isahl.chess.queen.io.core.inf.ICommandFactory;
  */
 public class ZServerFactory
         implements
-        ICommandFactory<ZCommand, WsFrame>
+        ICommandFactory<ZCommand,
+                        WsFrame>
 {
 
     @Override
@@ -51,14 +52,15 @@ public class ZServerFactory
     @Override
     public ZCommand create(int serial)
     {
-        return switch (serial) {
+        return switch (serial)
+        {
             case X20_SignUp.COMMAND -> new X20_SignUp();
             case X22_SignIn.COMMAND -> new X22_SignIn();
             case X24_UpdateToken.COMMAND -> new X24_UpdateToken();
             case X31_ConfirmMsg.COMMAND -> new X31_ConfirmMsg();
             case X32_MsgStatus.COMMAND -> new X32_MsgStatus();
             case X50_DeviceMsg.COMMAND -> new X50_DeviceMsg();
-            default -> null;
+            default -> throw new UnsupportedOperationException();
         };
     }
 

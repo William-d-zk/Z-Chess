@@ -37,13 +37,15 @@ public class WsZSort
 {
 
     private final WsHandShakeFilter<WsContext> _Head = new WsHandShakeFilter<>();
+    {
+        _Head.linkFront(new WsFrameFilter<>())
+             .linkFront(new WsControlFilter<>());
+    }
 
     public WsZSort(Mode mode,
                    Type type)
     {
         super(mode, type);
-        _Head.linkFront(new WsFrameFilter<WsContext>())
-             .linkFront(new WsControlFilter<WsContext>());
     }
 
     @Override

@@ -60,7 +60,7 @@ public class MessageEntity
     @Id
     @GeneratedValue(generator = "ZMessageGenerator")
     @GenericGenerator(name = "ZMessageGenerator",
-                      strategy = "com.tgx.chess.pawn.endpoint.spring.device.jpa.generator.ZMessageGenerator")
+                      strategy = "com.isahl.chess.pawn.endpoint.spring.device.jpa.generator.ZMessageGenerator")
     private long               id;
     @Column(updatable = false, nullable = false)
     private long               origin;

@@ -50,9 +50,9 @@ public class WsSslZSort
     {
         super(mode, type);
         _ActingSort = actingSort;
-        _Head.linkFront(new WsHandShakeFilter())
-             .linkFront(new WsFrameFilter())
-             .linkFront(new WsControlFilter());
+        _Head.linkFront(new WsHandShakeFilter<>())
+             .linkFront(new WsFrameFilter<>())
+             .linkFront(new WsControlFilter<>());
     }
 
     @Override

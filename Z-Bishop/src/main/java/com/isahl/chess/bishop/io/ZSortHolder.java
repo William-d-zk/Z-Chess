@@ -24,13 +24,21 @@
 package com.isahl.chess.bishop.io;
 
 import com.isahl.chess.bishop.io.mqtt.QttContext;
+import com.isahl.chess.bishop.io.mqtt.control.X111_QttConnect;
+import com.isahl.chess.bishop.io.mqtt.control.X11E_QttDisconnect;
 import com.isahl.chess.bishop.io.mqtt.filter.QttCommandFactory;
 import com.isahl.chess.bishop.io.sort.mqtt.MqttZSort;
+import com.isahl.chess.bishop.io.sort.mqtt.ssl.MqttSslZSort;
 import com.isahl.chess.bishop.io.sort.websocket.WsZSort;
 import com.isahl.chess.bishop.io.sort.websocket.proxy.WsProxyZSort;
 import com.isahl.chess.bishop.io.sort.websocket.ssl.WsSslZSort;
+import com.isahl.chess.bishop.io.sort.websocket.ssl.proxy.WsSslProxyZSort;
+import com.isahl.chess.bishop.io.ws.WsProxyContext;
 import com.isahl.chess.bishop.io.zprotocol.ZClusterFactory;
 import com.isahl.chess.bishop.io.zprotocol.ZServerFactory;
+import com.isahl.chess.bishop.io.zprotocol.raft.X70_RaftVote;
+import com.isahl.chess.bishop.io.zprotocol.raft.X76_RaftNotify;
+import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.queen.event.inf.ISort;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.IPContext;
@@ -43,13 +51,25 @@ public enum ZSortHolder
 {
     WS_CONSUMER(new WsZSort(ISort.Mode.LINK, ISort.Type.CONSUMER)),
     WS_SERVER(new WsZSort(ISort.Mode.LINK, ISort.Type.SERVER)),
+    WS_CONSUMER_SSL(new WsSslZSort(ISort.Mode.LINK, ISort.Type.CONSUMER, WS_CONSUMER.getSort())),
     WS_SERVER_SSL(new WsSslZSort(ISort.Mode.LINK, ISort.Type.SERVER, WS_SERVER.getSort())),
     WS_CLUSTER_SYMMETRY(new WsZSort(ISort.Mode.CLUSTER, ISort.Type.SYMMETRY)),
     WS_CLUSTER_CONSUMER(new WsZSort(ISort.Mode.CLUSTER, ISort.Type.CONSUMER)),
     WS_CLUSTER_SERVER(new WsZSort(ISort.Mode.CLUSTER, ISort.Type.SERVER)),
     QTT_SYMMETRY(new MqttZSort(ISort.Mode.LINK, ISort.Type.SYMMETRY)),
+    QTT_CONSUMER(new MqttZSort(ISort.Mode.LINK, ISort.Type.CONSUMER)),
     QTT_SERVER(new MqttZSort(ISort.Mode.LINK, ISort.Type.SERVER)),
-    WS_QTT_SERVER(new WsProxyZSort<QttContext>(ISort.Mode.LINK, ISort.Type.SERVER, QTT_SERVER.getSort()));
+    QTT_SERVER_SSL(new MqttSslZSort(ISort.Mode.LINK, ISort.Type.SERVER, QTT_SERVER.getSort())),
+    QTT_CONSUMER_SSL(new MqttSslZSort(ISort.Mode.LINK, ISort.Type.CONSUMER, QTT_CONSUMER.getSort())),
+    QTT_SYMMETRY_SSL(new MqttSslZSort(ISort.Mode.LINK, ISort.Type.SYMMETRY, QTT_SYMMETRY.getSort())),
+    WS_QTT_SERVER(new WsProxyZSort<QttContext>(ISort.Mode.LINK, ISort.Type.SERVER, QTT_SERVER.getSort())),
+    WS_QTT_SERVER_SSL(new WsSslProxyZSort<WsProxyContext<QttContext>>(ISort.Mode.LINK,
+                                                                      ISort.Type.SERVER,
+                                                                      WS_QTT_SERVER.getSort())),
+    WS_QTT_CONSUMER(new WsProxyZSort<QttContext>(ISort.Mode.LINK, ISort.Type.CONSUMER, QTT_CONSUMER.getSort())),
+    WS_QTT_CONSUMER_SSL(new WsSslProxyZSort<WsProxyContext<QttContext>>(ISort.Mode.LINK,
+                                                                        ISort.Type.CONSUMER,
+                                                                        WS_QTT_CONSUMER.getSort()));
 
     private final ISort<?> _Sort;
 
@@ -60,9 +80,13 @@ public enum ZSortHolder
 
     public static IControl create(int serial)
     {
-        if (serial > 0x110 && serial < 0x11F) { return _QttCommandFactory.create(serial); }
-        if (serial > 0x1F && serial < 0x6F) { return _ServerFactory.create(serial); }
-        if (serial >= 0x70 && serial <= 0x7F) { return _ClusterFactory.create(serial); }
+        if (serial >= X111_QttConnect.COMMAND && serial <= X11E_QttDisconnect.COMMAND) {
+            return _QttCommandFactory.create(serial);
+        }
+        if (serial >= 0x20 && serial <= 0x6F) { return _ServerFactory.create(serial); }
+        if (serial >= X70_RaftVote.COMMAND && serial <= X76_RaftNotify.COMMAND) {
+            return _ClusterFactory.create(serial);
+        }
         throw new IllegalArgumentException();
     }
 
@@ -75,49 +99,14 @@ public enum ZSortHolder
     {
         return (ISort<C>) _Sort;
     }
-    /*
-    
-    
-    final QttFrameFilter _QttFrameFilter = new QttFrameFilter();
+
+    public int getSlot()
     {
-        _QttFrameFilter.linkAfter(new ZEFilter());
-        _QttFrameFilter.linkFront(new QttControlFilter())
-                       .linkFront(new QttCommandFilter());
+        ISort.Mode mode = _Sort.getMode();
+        ISort.Type type = _Sort.getType();
+        return mode == ISort.Mode.LINK ? ZUID.TYPE_CONSUMER_SLOT
+                                       : type == ISort.Type.SYMMETRY ? ZUID.TYPE_CLUSTER_SLOT
+                                                                     : type == ISort.Type.INNER ? ZUID.TYPE_INTERNAL_SLOT
+                                                                                                : ZUID.TYPE_PROVIDER_SLOT;
     }
-    final WsHandShakeFilter _WsHandshakeFilter = new WsHandShakeFilter();
-    {
-        IFilterChain<ZContext> header = new ZEFilter();
-        _WsHandshakeFilter.linkAfter(header);
-        _WsHandshakeFilter.linkFront(new WsFrameFilter())
-                          .linkFront(new WsControlFilter())
-                          .linkFront(new ZCommandFilter(new ZServerFactory()));
-    }
-    
-    final WsFrameFilter _ClusterFrameFilter = new WsFrameFilter();
-    {
-        _ClusterFrameFilter.linkAfter(new ZEFilter());
-        _ClusterFrameFilter.linkFront(new WsControlFilter())
-                           .linkFront(new ZCommandFilter(new ZClusterFactory()));
-    }
-    
-    final WsHandShakeFilter _QttWsHandshakeFilter = new WsHandShakeFilter();
-    {
-        QttFrameFilter mQttFrameFilter = new QttFrameFilter();
-        mQttFrameFilter.linkFront(new QttControlFilter())
-                       .linkFront(new QttCommandFilter());
-        _QttWsHandshakeFilter.linkFront(new WsFrameFilter())
-                             .linkFront(new WsControlFilter())
-                             .linkFront(new WsProxyFilter(mQttFrameFilter));
-    }
-    
-    public static ICommandFactory<? extends IControl<ZContext>,
-                                  ? extends IFrame> getCommandFactory(int serial)
-    {
-        if (serial > 0x110 && serial < 0x11F) { return _QttCommandFactory; }
-        if (serial > 0x1F && serial < 0x6F) { return _ServerFactory; }
-        if (serial >= 0x70 && serial <= 0x7F) { return _ClusterFactory; }
-        throw new IllegalArgumentException();
-    }
-    
-     */
 }

@@ -23,9 +23,40 @@
 
 package com.isahl.chess.bishop.io.sort.mqtt.ssl;
 
+import com.isahl.chess.bishop.io.mqtt.QttContext;
 import com.isahl.chess.bishop.io.sort.BaseSort;
 import com.isahl.chess.bishop.io.zfilter.EZContext;
+import com.isahl.chess.bishop.io.zfilter.ZEFilter;
+import com.isahl.chess.queen.event.inf.ISort;
+import com.isahl.chess.queen.io.core.inf.IFilterChain;
+import com.isahl.chess.queen.io.core.inf.ISessionOption;
 
-public class MqttZlsZSort extends BaseSort<EZContext> {
-    public MqttZlsZSort() {super(mode, type);}
+public class MqttZlsZSort
+        extends
+        BaseSort<EZContext<QttContext>>
+{
+
+    protected MqttZlsZSort(Mode mode,
+                           Type type,
+                           ISort<QttContext> acting)
+    {
+        super(mode, type);
+        _Acting = acting;
+        _Head.linkFront(acting.getFilterChain());
+    }
+
+    private final ISort<QttContext>       _Acting;
+    final ZEFilter<EZContext<QttContext>> _Head = new ZEFilter<>();
+
+    @Override
+    public IFilterChain getFilterChain()
+    {
+        return _Head;
+    }
+
+    @Override
+    public EZContext<QttContext> newContext(ISessionOption option)
+    {
+        return new EZContext<>(option, this, new QttContext(option, _Acting));
+    }
 }

@@ -112,7 +112,7 @@ public class Rc4
         long   tick    = curTime ^ (code << 31);
         Random rd      = new Random(tick);
         byte[] xc;
-        if (seed == null || "".equals(seed.trim())) seed = "Tgx.Tina.Rc4" + System.nanoTime();
+        if (seed == null || "".equals(seed.trim())) seed = "Isahl.Tina.Rc4" + System.nanoTime();
         xc = seed.getBytes();
         byte[] key = new byte[20];
         for (int i = 0, j = 1; i < key.length; i++)
