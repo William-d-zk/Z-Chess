@@ -36,16 +36,14 @@ public class MqttZlsZSort
         BaseSort<EZContext<QttContext>>
 {
 
-    protected MqttZlsZSort(Mode mode,
-                           Type type,
-                           ISort<QttContext> acting)
+    public MqttZlsZSort(Mode mode, Type type, ISort<QttContext> actingSort)
     {
-        super(mode, type);
-        _Acting = acting;
-        _Head.linkFront(acting.getFilterChain());
+        super(mode, type, String.format("zls-%s", actingSort.getProtocol()));
+        _ActingSort = actingSort;
+        _Head.linkFront(actingSort.getFilterChain());
     }
 
-    private final ISort<QttContext>       _Acting;
+    private final ISort<QttContext>       _ActingSort;
     final ZEFilter<EZContext<QttContext>> _Head = new ZEFilter<>();
 
     @Override
@@ -57,6 +55,6 @@ public class MqttZlsZSort
     @Override
     public EZContext<QttContext> newContext(ISessionOption option)
     {
-        return new EZContext<>(option, this, new QttContext(option, _Acting));
+        return new EZContext<>(option, this, new QttContext(option, _ActingSort));
     }
 }

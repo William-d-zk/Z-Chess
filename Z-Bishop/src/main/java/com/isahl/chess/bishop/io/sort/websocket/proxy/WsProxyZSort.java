@@ -46,7 +46,7 @@ public class WsProxyZSort<A extends IPContext<A>>
                         Type type,
                         ISort<A> actingSort)
     {
-        super(mode, type);
+        super(mode, type, String.format("ws-proxy-%s", actingSort.getProtocol()));
         _ActingSort = actingSort;
         _Head.linkFront(new WsFrameFilter<>())
              .linkFront(new WsControlFilter<>())

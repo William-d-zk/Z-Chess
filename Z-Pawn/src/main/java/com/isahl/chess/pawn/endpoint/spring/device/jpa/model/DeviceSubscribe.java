@@ -24,43 +24,53 @@
 package com.isahl.chess.pawn.endpoint.spring.device.jpa.model;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.isahl.chess.queen.io.core.inf.IQoS;
 
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class DeviceSubscribe
         implements
         Serializable
 {
-    private static final long     serialVersionUID = -3075846478370159363L;
-    private final List<Subscribe> _Subscribes;
+    private static final long             serialVersionUID = -3075846478370159363L;
+    private final Map<String,
+                      IQoS.Level>         _Subscribes;
 
     @JsonCreator
-    public DeviceSubscribe(@JsonProperty("subscribes") List<Subscribe> subscribes)
+    public DeviceSubscribe(@JsonProperty("subscribes") Map<String,
+                                                           IQoS.Level> subscribes)
     {
         _Subscribes = subscribes;
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public List<Subscribe> getSubscribes()
+    public Map<String,
+               IQoS.Level> getSubscribes()
     {
         return _Subscribes;
     }
 
     public void addSubscribes(Subscribe subscribe)
     {
-
-        _Subscribes.add(subscribe);
-
+        if (_Subscribes.computeIfPresent(subscribe.getTopic(),
+                                         (t, o) -> subscribe.getLevel()
+                                                            .getValue() > o.getValue() ? subscribe.getLevel()
+                                                                                       : o) == null)
+        {
+            _Subscribes.put(subscribe.getTopic(), subscribe.getLevel());
+        }
     }
 
     public void clean()
     {
-        _Subscribes.clear();
+        if (_Subscribes != null) {
+            _Subscribes.clear();
+        }
     }
 }

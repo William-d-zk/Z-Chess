@@ -96,6 +96,7 @@ public class BaseAioClient
     public void onCreate(ISession session)
     {
         _Logger.debug("connected :%s", session);
+        session.ready();
     }
 
     @Override

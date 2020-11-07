@@ -38,7 +38,7 @@ import com.isahl.chess.king.base.inf.IValid;
  * 用于实现channel的load balance，需注意balance仅考虑了在当前port下
  * 并不关注session的全局负载，当多个channel共用session 时 balance
  * 需考虑Queue.size的作为指标进行balance的实现
- * 
+ *
  * @author William.d.zk
  */
 public interface ISession
@@ -82,16 +82,15 @@ public interface ISession
 
     /**
      * 获取 prefix 对应的 write load
-     * 
+     *
      * @param prefix
-     * 
      * @return
      */
     long prefixLoad(long prefix);
 
     /**
      * 增加被选中prefix hit的记录
-     * 
+     *
      * @param prefix
      */
     void prefixHit(long prefix);
@@ -111,4 +110,8 @@ public interface ISession
         closeOperator.handle("inner-close", this);
         getDismissCallback().onDismiss(this);
     }
+
+    void ready();
+
+    void error();
 }

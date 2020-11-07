@@ -255,9 +255,15 @@ public class DeviceConsumer
         }
         BaseAioConnector connector = new BaseAioConnector(host,
                                                           port,
-                                                          getSocketConfig(getSlot(ZUID.TYPE_CONSUMER)),
+                                                          getSocketConfig(ZUID.TYPE_CONSUMER_SLOT),
                                                           DeviceConsumer.this)
         {
+            @Override
+            public String getProtocol()
+            {
+                return zSortHolder.getSort()
+                                  .getProtocol();
+            }
 
             @Override
             public ISort.Mode getMode()
@@ -273,6 +279,7 @@ public class DeviceConsumer
                 DeviceConsumer.this.addSession(session);
                 zClient.setSessionIndex(sessionIndex);
                 _ZClientMap.put(session.getIndex(), zClient);
+                session.ready();
                 _Logger.debug("connected :%d", sessionIndex);
             }
 
@@ -332,6 +339,7 @@ public class DeviceConsumer
                                                                   true,
                                                                   DeviceConsumer.this::heartbeat,
                                                                   PRIORITY_NORMAL));
+
     }
 
     @Override

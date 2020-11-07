@@ -51,12 +51,15 @@ public abstract class BaseSort<C extends IPContext<C>>
     private final IgnoreOperator _Ignore        = new IgnoreOperator();
     private final Mode           _Mode;
     private final Type           _Type;
+    private final String         _Protocol;
 
     protected BaseSort(Mode mode,
-                       Type type)
+                       Type type,
+                       String protocol)
     {
         _Mode = mode;
         _Type = type;
+        _Protocol = protocol;
     }
 
     @Override
@@ -105,6 +108,12 @@ public abstract class BaseSort<C extends IPContext<C>>
     public IgnoreOperator getIgnore()
     {
         return _Ignore;
+    }
+
+    @Override
+    public String getProtocol()
+    {
+        return _Protocol;
     }
 
 }

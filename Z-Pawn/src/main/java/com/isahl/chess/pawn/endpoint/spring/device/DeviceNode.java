@@ -31,7 +31,6 @@ import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.isahl.chess.bishop.io.ZSortHolder;
@@ -40,6 +39,7 @@ import com.isahl.chess.bishop.io.ssl.SSLZContext;
 import com.isahl.chess.bishop.io.ws.WsContext;
 import com.isahl.chess.bishop.io.ws.WsProxyContext;
 import com.isahl.chess.bishop.io.ws.control.X103_Ping;
+import com.isahl.chess.bishop.io.zfilter.EZContext;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.schedule.ScheduleHandler;
@@ -123,11 +123,16 @@ public class DeviceNode
                                            ISort<QttContext> sort = holder.getSort();
                                            return buildAioServer(_Host, _Port, holder.getSlot(), sort);
                                        }
-                                   case QTT_CONSUMER_SSL:
                                    case QTT_SERVER_SSL:
+                                   case QTT_CONSUMER_SSL:
                                    case QTT_SYMMETRY_SSL:
                                        {
                                            ISort<SSLZContext<QttContext>> sort = holder.getSort();
+                                           return buildAioServer(_Host, _Port, holder.getSlot(), sort);
+                                       }
+                                   case QTT_SERVER_ZLS:
+                                       {
+                                           ISort<EZContext<QttContext>> sort = holder.getSort();
                                            return buildAioServer(_Host, _Port, holder.getSlot(), sort);
                                        }
                                    case WS_CONSUMER:
@@ -137,6 +142,11 @@ public class DeviceNode
                                    case WS_CLUSTER_SERVER:
                                        {
                                            ISort<WsContext> sort = holder.getSort();
+                                           return buildAioServer(_Host, _Port, holder.getSlot(), sort);
+                                       }
+                                   case WS_CLUSTER_SYMMETRY_ZLS:
+                                       {
+                                           ISort<EZContext<WsContext>> sort = holder.getSort();
                                            return buildAioServer(_Host, _Port, holder.getSlot(), sort);
                                        }
                                    case WS_CONSUMER_SSL:
@@ -186,6 +196,7 @@ public class DeviceNode
             @Override
             public void onCreate(ISession session)
             {
+                super.onCreate(session);
                 Duration gap = Duration.ofSeconds(session.getReadTimeOutSeconds() / 2);
                 _TimeWheel.acquire(session,
                                    new ScheduleHandler<>(gap, true, DeviceNode.this::heartbeat, PRIORITY_NORMAL));
@@ -228,6 +239,13 @@ public class DeviceNode
             {
                 session.setIndex(_ZUID.getId(_SessionSlot));
                 DeviceNode.this.addSession(session);
+                session.ready();
+            }
+
+            @Override
+            public String getProtocol()
+            {
+                return _Sort.getProtocol();
             }
         };
     }
@@ -240,7 +258,10 @@ public class DeviceNode
         for (IAioServer server : _AioServers) {
             server.bindAddress(server.getLocalAddress(), getCore().getServiceChannelGroup());
             server.pendingAccept();
-            _Logger.info(String.format("device node start %s ", server.getLocalAddress()));
+            _Logger.info(String.format("device node start %s %s @ %s",
+                                       server.getLocalAddress(),
+                                       server.getMode(),
+                                       server.getProtocol()));
         }
     }
 

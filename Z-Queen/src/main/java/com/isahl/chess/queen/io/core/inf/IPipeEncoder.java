@@ -51,7 +51,7 @@ public interface IPipeEncoder
             IFilter.ResultType resultType = IFilter.ResultType.IGNORE;
             while (previous != null) {
                 IPipeFilter pipeFilter = previous.getPipeFilter();
-                switch (resultType = pipeFilter.pipePeek(context, protocol))
+                switch (resultType = pipeFilter.pipeSeek(context, protocol))
                 {
                     case ERROR:
                         throw new ZException("error output: %s ; filter: %s", protocol, previous.getName());
@@ -68,7 +68,9 @@ public interface IPipeEncoder
                 }
                 previous = previous.getPrevious();
             }
-            if (resultType == IFilter.ResultType.IGNORE) { throw new ZException("no filter handle output: %s ", protocol); }
+            if (resultType == IFilter.ResultType.IGNORE) {
+                throw new ZException("no filter handle output: %s ", protocol);
+            }
         }
         return (IPacket) protocol;
     }

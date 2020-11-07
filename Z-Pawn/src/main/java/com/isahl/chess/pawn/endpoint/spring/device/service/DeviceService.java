@@ -106,6 +106,8 @@ public class DeviceService
                                                   case "ws" -> ZSortHolder.WS_SERVER;
                                                   case "mqtt" -> ZSortHolder.QTT_SERVER;
                                                   case "ws_mqtt" -> ZSortHolder.WS_QTT_SERVER;
+                                                  case "ssl_ws_mqtt" -> ZSortHolder.WS_QTT_SERVER_SSL;
+                                                  case "zls_mqtt" -> ZSortHolder.QTT_SERVER_ZLS;
                                                   default -> throw new UnsupportedOperationException(listener.getScheme());
                                               };
                                               return new Triple<>(listener.getHost(), listener.getPort(), sort);
@@ -125,10 +127,12 @@ public class DeviceService
     @PostConstruct
     private void start() throws IOException
     {
+        _RaftNode.init();
+
         _DeviceNode.start(_LogicHandler,
                           new ZLinkMappingCustom(_LinkCustom),
                           new ZClusterMappingCustom<>(_ClusterCustom));
-        _RaftNode.init();
+        _RaftNode.start();
         _Logger.info("device service start");
     }
 

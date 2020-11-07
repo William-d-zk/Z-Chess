@@ -115,6 +115,12 @@ public interface IClusterNode<K extends IPipeCore>
                 };
             }
 
+            @Override
+            public String getProtocol()
+            {
+                return _SortHolder.getSort()
+                                  .getProtocol();
+            }
         };
     }
 

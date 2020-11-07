@@ -30,13 +30,10 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.PostConstruct;
 
-import com.isahl.chess.knight.raft.config.IRaftConfig;
-import com.isahl.chess.knight.raft.service.ClusterCustom;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import com.lmax.disruptor.RingBuffer;
 import com.isahl.chess.bishop.io.zhandler.ZClusterMappingCustom;
 import com.isahl.chess.king.base.inf.IValid;
 import com.isahl.chess.king.base.log.Logger;
@@ -48,13 +45,16 @@ import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.knight.cluster.ClusterNode;
 import com.isahl.chess.knight.cluster.spring.model.ConsistentProtocol;
 import com.isahl.chess.knight.raft.IRaftDao;
+import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.model.RaftNode;
+import com.isahl.chess.knight.raft.service.ClusterCustom;
 import com.isahl.chess.queen.config.IAioConfig;
 import com.isahl.chess.queen.config.IClusterConfig;
 import com.isahl.chess.queen.event.handler.cluster.IConsistentCustom;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.inf.IConsistent;
 import com.isahl.chess.queen.io.core.inf.IProtocol;
+import com.lmax.disruptor.RingBuffer;
 
 @Service
 public class ConsistentService
@@ -88,6 +88,7 @@ public class ConsistentService
                            _ConsistentCustom,
                            new ClusterLogic(_ClusterNode));
         _RaftNode.init();
+        _RaftNode.start();
     }
 
     public void consistentSubmit(String content, boolean pub, long origin)
@@ -102,27 +103,24 @@ public class ConsistentService
     public <T extends IConsistent & IProtocol> void consistentSubmit(T consensus)
     {
         if (consensus == null) return;
-        final ReentrantLock      _Lock    = _ClusterNode.getCore().getLock(CONSENSUS);
-        final RingBuffer<QEvent> _Publish = _ClusterNode.getCore().getPublisher(CONSENSUS);
-        if (_Lock.tryLock())
-        {
-            try
-            {
+        final ReentrantLock _Lock = _ClusterNode.getCore()
+                                                .getLock(CONSENSUS);
+        final RingBuffer<QEvent> _Publish = _ClusterNode.getCore()
+                                                        .getPublisher(CONSENSUS);
+        if (_Lock.tryLock()) {
+            try {
                 long sequence = _Publish.next();
-                try
-                {
+                try {
                     QEvent event = _Publish.get(sequence);
                     event.produce(CONSENSUS,
                                   new Pair<>(consensus, consensus.getOrigin()),
                                   _ConsistentCustom.getOperator());
                 }
-                finally
-                {
+                finally {
                     _Publish.publish(sequence);
                 }
             }
-            finally
-            {
+            finally {
                 _Lock.unlock();
             }
         }

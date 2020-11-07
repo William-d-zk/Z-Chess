@@ -55,6 +55,7 @@ public class PipeDecoder
             }
         }
         catch (Exception e) {
+            session.error();
             return new Triple<>(e,
                                 session,
                                 session.getContext()

@@ -32,6 +32,7 @@ import com.isahl.chess.bishop.io.mqtt.handler.IQttDurable;
 import com.isahl.chess.bishop.io.mqtt.handler.QttRouter;
 import com.isahl.chess.king.base.schedule.Status;
 import com.isahl.chess.pawn.endpoint.spring.device.jpa.model.DeviceEntity;
+import com.isahl.chess.pawn.endpoint.spring.device.jpa.model.DeviceSubscribe;
 import com.isahl.chess.pawn.endpoint.spring.device.jpa.model.MessageEntity;
 import com.isahl.chess.pawn.endpoint.spring.device.jpa.repository.IDeviceJpaRepository;
 import com.isahl.chess.pawn.endpoint.spring.device.jpa.repository.IMessageJpaRepository;
@@ -50,7 +51,8 @@ public class DurableService
     private final IMessageJpaRepository _MessageJpaRepository;
     private final IDeviceJpaRepository  _DeviceJpaRepository;
 
-    public DurableService(IMessageJpaRepository messageJpaRepository, IDeviceJpaRepository deviceJpaRepository)
+    public DurableService(IMessageJpaRepository messageJpaRepository,
+                          IDeviceJpaRepository deviceJpaRepository)
     {
         _MessageJpaRepository = messageJpaRepository;
         _DeviceJpaRepository = deviceJpaRepository;
@@ -68,18 +70,28 @@ public class DurableService
     }
 
     @Override
-    public Map<String, IQoS.Level> loadSubscribe(long session)
+    public Map<String,
+               IQoS.Level> loadSubscribe(long session)
     {
+        DeviceEntity device = _DeviceJpaRepository.findById(session)
+                                                  .orElse(null);
+        if (device != null) {
+            DeviceSubscribe subscribe = device.getSubscribe();
+            if (subscribe != null) { return subscribe.getSubscribes(); }
+        }
         return null;
     }
 
     @Override
     public void cleanState(long session)
     {
-        DeviceEntity device = _DeviceJpaRepository.findById(session).orElse(null);
-        if (device != null)
-        {
-            device.getSubscribe().clean();
+        DeviceEntity device = _DeviceJpaRepository.findById(session)
+                                                  .orElse(null);
+        if (device != null) {
+            DeviceSubscribe subscribe = device.getSubscribe();
+            if (subscribe != null) {
+                subscribe.clean();
+            }
             _DeviceJpaRepository.save(device);
         }
     }

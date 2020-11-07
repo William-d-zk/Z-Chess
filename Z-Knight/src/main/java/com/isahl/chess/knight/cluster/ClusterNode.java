@@ -70,12 +70,12 @@ public class ClusterNode
         ISessionDismiss,
         IClusterNode<ClusterCore>
 {
-    private final Logger               _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
-    private final TimeWheel            _TimeWheel;
-    private final IAioServer           _AioServer;
-    private final IAioClient           _GateClient, _PeerClient;
-    private final ZUID                 _ZUID;
-    private final X103_Ping _Ping;
+    private final Logger     _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
+    private final TimeWheel  _TimeWheel;
+    private final IAioServer _AioServer;
+    private final IAioClient _GateClient, _PeerClient;
+    private final ZUID       _ZUID;
+    private final X103_Ping  _Ping;
 
     @Override
     public void onDismiss(ISession session)
@@ -96,7 +96,7 @@ public class ClusterNode
         IPair bind = raftConfig.getBind();
         final String _Host = bind.getFirst();
         final int _Port = bind.getSecond();
-        _AioServer = new BaseAioServer(_Host, _Port, getSocketConfig(getSlot(ZUID.TYPE_CLUSTER)))
+        _AioServer = new BaseAioServer(_Host, _Port, getSocketConfig(ZUID.TYPE_CLUSTER_SLOT))
         {
             @Override
             public ISort.Mode getMode()
@@ -110,6 +110,7 @@ public class ClusterNode
             {
                 session.setIndex(_ZUID.getId());
                 ClusterNode.this.addSession(session);
+                session.ready();
             }
 
             @Override
@@ -126,6 +127,13 @@ public class ClusterNode
                 X106_Identity x106 = new X106_Identity(_ZUID.getPeerId());
                 return new IControl[] { x106
                 };
+            }
+
+            @Override
+            public String getProtocol()
+            {
+                return ZSortHolder.WS_CLUSTER_SERVER.getSort()
+                                                    .getProtocol();
             }
         };
         _GateClient = new BaseAioClient(_TimeWheel, getCore().getClusterChannelGroup())

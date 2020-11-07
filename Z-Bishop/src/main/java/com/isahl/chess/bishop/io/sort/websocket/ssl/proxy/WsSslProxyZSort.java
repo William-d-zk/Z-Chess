@@ -50,7 +50,7 @@ public class WsSslProxyZSort<A extends IPContext<A>>
                            Type type,
                            ISort<WsProxyContext<A>> actingSort)
     {
-        super(mode, type);
+        super(mode, type, String.format("ssl-%s", actingSort.getProtocol()));
         _ActingSort = actingSort;
         _Head.linkFront(new WsHandShakeFilter<>())
              .linkFront(new WsFrameFilter<>())
@@ -76,4 +76,5 @@ public class WsSslProxyZSort<A extends IPContext<A>>
         }
         return null;
     }
+
 }

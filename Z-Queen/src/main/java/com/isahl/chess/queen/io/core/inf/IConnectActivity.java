@@ -36,4 +36,5 @@ public interface IConnectActivity
         ICommandCreator,
         ILifeCycle
 {
+    String getProtocol();
 }

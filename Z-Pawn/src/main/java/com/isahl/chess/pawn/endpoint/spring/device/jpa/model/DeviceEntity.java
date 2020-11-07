@@ -73,32 +73,32 @@ public class DeviceEntity
     @GeneratedValue(generator = "ZDeviceGenerator")
     @GenericGenerator(name = "ZDeviceGenerator",
                       strategy = "com.isahl.chess.pawn.endpoint.spring.device.jpa.generator.ZDeviceGenerator")
-    private long              id;
+    private long            id;
     @Column(length = 32, nullable = false, updatable = false)
-    private String            sn;
+    private String          sn;
     @Column(length = 32, nullable = false)
     @Length(min = 17, max = 32, message = "*Your password must have at least 17 characters less than 33 characters")
     @NotBlank(message = "*Please provide your password")
-    private String            password;
+    private String          password;
     @Column(length = 32, nullable = false)
     @Length(min = 8, max = 32, message = "* Your Username must have at least 8 characters less than 33 characters")
     @NotBlank(message = "*Please provide your username")
-    private String            username;
-    private int               passwordId;
+    private String          username;
+    private int             passwordId;
     @Column(length = 64, nullable = false, unique = true)
-    private String            token;
+    private String          token;
     @Column(name = "invalid_at", nullable = false)
-    private LocalDateTime     invalidAt;
+    private LocalDateTime   invalidAt;
     @Column(name = "wifi_mac", length = 32)
-    private String            wifiMac;
+    private String          wifiMac;
     @Column(name = "sensor_mac", length = 32)
-    private String            sensorMac;
+    private String          sensorMac;
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb")
-    private DeviceSubscribe   subscribe;
+    private DeviceSubscribe subscribe;
 
     @Transient
-    private Operation         mOperation       = Operation.OP_NULL;
+    private Operation mOperation = Operation.OP_NULL;
 
     public long getId()
     {
@@ -138,7 +138,7 @@ public class DeviceEntity
     @Override
     public String toString()
     {
-        return String.format("device{id:%s,token:%s,user:%s,pwdId:%d,pwd:%s,sn:%s,create:%s,update:%s,invalid:%s}",
+        return String.format("device{id:%s,token:%s,user:%s,pwdId:%d,pwd:%s,sn:%s,create:%s,update:%s,invalid:%s,sensor-mac:%s,wifi-mac:%s}",
                              getId(),
                              getToken(),
                              getUsername(),
