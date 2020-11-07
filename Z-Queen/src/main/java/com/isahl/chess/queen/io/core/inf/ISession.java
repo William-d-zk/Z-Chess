@@ -113,5 +113,4 @@ public interface ISession
 
     void ready();
 
-    void error();
 }

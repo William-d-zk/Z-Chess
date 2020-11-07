@@ -437,13 +437,6 @@ public class AioSession<C extends IPContext<C>>
     }
 
     @Override
-    public void error()
-    {
-        _Ctx.setInState(IPContext.DECODE_ERROR);
-        _Ctx.setOutState(IPContext.ENCODE_ERROR);
-    }
-
-    @Override
     public ISessionDismiss getDismissCallback()
     {
         return _DismissCallback;
