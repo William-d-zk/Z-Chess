@@ -48,7 +48,7 @@ public class WsSslZSort
                       Type type,
                       ISort<WsContext> actingSort)
     {
-        super(mode, type);
+        super(mode, type, String.format("ssl-%s", actingSort.getProtocol()));
         _ActingSort = actingSort;
         _Head.linkFront(new WsHandShakeFilter<>())
              .linkFront(new WsFrameFilter<>())

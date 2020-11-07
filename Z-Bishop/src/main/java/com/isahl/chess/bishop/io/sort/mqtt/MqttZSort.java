@@ -44,7 +44,7 @@ public class MqttZSort
     public MqttZSort(Mode mode,
                      Type type)
     {
-        super(mode, type);
+        super(mode, type, "qtt");
     }
 
     @Override

@@ -25,7 +25,7 @@ package com.isahl.chess.test.start;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.LinkedList;
+import java.util.HashMap;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,7 +47,7 @@ import com.isahl.chess.pawn.endpoint.spring.device.jpa.repository.IDeviceJpaRepo
 @SpringBootTest
 public class ApplicationTest
 {
-    private final Logger         _Logger = Logger.getLogger("z-chess.test." + getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("z-chess.test." + getClass().getSimpleName());
 
     @Autowired
     private JsonUtil             _JsonUtil;
@@ -58,7 +58,7 @@ public class ApplicationTest
     public void testZProgress()
     {
         ZProgress progress = new ZProgress(100);
-        String    json     = JsonUtil.writeValueAsString(progress);
+        String json = JsonUtil.writeValueAsString(progress);
         _Logger.info(json);
         ZProgress read = JsonUtil.readValue(json, ZProgress.class);
         _Logger.info("test end");
@@ -79,9 +79,10 @@ public class ApplicationTest
         deviceEntity.setUsername("test1234-A");
         deviceEntity.setPassword("88712390087654dfrtyiu0-123");
         deviceEntity.setPasswordId(0);
-        deviceEntity.setInvalidAt(LocalDateTime.now().plusDays(41));
+        deviceEntity.setInvalidAt(LocalDateTime.now()
+                                               .plusDays(41));
         deviceEntity.setToken(CryptUtil.SHA256("test"));
-        DeviceSubscribe subscribe = new DeviceSubscribe(new LinkedList<>());
+        DeviceSubscribe subscribe = new DeviceSubscribe(new HashMap<>());
         // subscribe.addSubscribes(new Subscribe(IQoS.Level.EXACTLY_ONCE, "test#"));
         deviceEntity.setSubscribe(subscribe);
         DeviceEntity exist = _DeviceJpaRepository.findByToken(deviceEntity.getToken());
@@ -95,17 +96,15 @@ public class ApplicationTest
         JsonNode jsonOutput = JsonUtil.readTree(getClass().getResourceAsStream("/output.json"));
         System.out.println(jsonOutput);
         JsonNode vehicleTypeWithRouteList = jsonOutput.get("vehicleTypeWithRouteList");
-        for (JsonNode e : vehicleTypeWithRouteList)
-        {
+        for (JsonNode e : vehicleTypeWithRouteList) {
             JsonNode jobList = e.get("jobList");
-            for (JsonNode job : jobList)
-            {
-                JsonNode attrs     = job.get("attrs");
-                JsonNode st        = attrs.get("service_time");
+            for (JsonNode job : jobList) {
+                JsonNode attrs = job.get("attrs");
+                JsonNode st = attrs.get("service_time");
                 JsonNode readyTime = attrs.get("ready_time");
-                JsonNode dueTime   = attrs.get("due_time");
-                JsonNode width     = attrs.get("width");
-                JsonNode height    = attrs.get("height");
+                JsonNode dueTime = attrs.get("due_time");
+                JsonNode width = attrs.get("width");
+                JsonNode height = attrs.get("height");
                 System.out.println("ready_time:" + LocalTime.ofSecondOfDay(readyTime.asLong() / 1000));
                 System.out.println("due_time:" + LocalTime.ofSecondOfDay(dueTime.asLong() / 1000));
             }

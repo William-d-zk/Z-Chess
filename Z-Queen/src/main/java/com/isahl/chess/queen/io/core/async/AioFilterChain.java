@@ -190,59 +190,12 @@ public abstract class AioFilterChain<C extends IPContext<C>,
         return protocol.superSerial() == type_serial;
     }
 
-    protected ResultType prePacketEncodec(C context, IPacket output)
-    {
-        return checkType(output, IProtocol.PACKET_SERIAL)
-               && output.outIdempotent(getLeftIdempotentBit())
-               && context.isOutConvert() ? ResultType.NEXT_STEP
-                                         : ResultType.IGNORE;
-    }
-
-    protected ResultType prePacketDecodec(C context, IPacket input)
-    {
-        return checkType(input, IProtocol.PACKET_SERIAL)
-               && input.inIdempotent(getRightIdempotentBit())
-               && context.isInConvert() ? ResultType.NEXT_STEP
-                                        : ResultType.IGNORE;
-    }
-
-    protected ResultType preCommandEncodec(C context, IProtocol output)
-    {
-        return context.isOutConvert() && checkType(output, IProtocol.COMMAND_SERIAL) ? ResultType.NEXT_STEP
-                                                                                     : ResultType.IGNORE;
-
-    }
-
-    protected ResultType preCommandDecodec(C context, IFrame input)
-    {
-        return context.isInConvert() && checkType(input, IProtocol.FRAME_SERIAL) && !input.isCtrl() ? ResultType.HANDLED
-                                                                                                    : ResultType.IGNORE;
-    }
-
     protected ResultType preFrameEncodec(C context, IProtocol output)
     {
         return context.isOutConvert() && checkType(output, IProtocol.FRAME_SERIAL) ? ResultType.NEXT_STEP
                                                                                    : ResultType.IGNORE;
     }
 
-    protected ResultType preFrameDecodec(C context, IPacket input)
-    {
-        return context.isInConvert() && checkType(input, IProtocol.PACKET_SERIAL) ? ResultType.NEXT_STEP
-                                                                                  : ResultType.IGNORE;
-    }
-
-    protected ResultType preControlEncode(C context, IProtocol output)
-    {
-        return context.isOutConvert() && checkType(output, IProtocol.CONTROL_SERIAL) ? ResultType.NEXT_STEP
-                                                                                     : ResultType.IGNORE;
-    }
-
-    protected ResultType preControlDecode(C context, IFrame input)
-    {
-        return context.isInConvert() && checkType(input, IProtocol.FRAME_SERIAL) && input.isCtrl() ? ResultType.HANDLED
-                                                                                                   : ResultType.IGNORE;
-
-    }
 
     protected ResultType preProxyEncode(C context, IProtocol output)
     {

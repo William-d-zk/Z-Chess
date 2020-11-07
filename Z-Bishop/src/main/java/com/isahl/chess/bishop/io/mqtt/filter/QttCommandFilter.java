@@ -46,15 +46,18 @@ public class QttCommandFilter
         super("mqtt_command");
     }
 
-
     @Override
-    public ResultType seek(QttContext context, QttCommand output) {
-        return null;
+    public ResultType seek(QttContext context, QttCommand output)
+    {
+        return context.isOutConvert() ? ResultType.NEXT_STEP
+                                      : ResultType.IGNORE;
     }
 
     @Override
-    public ResultType peek(QttContext context, QttFrame input) {
-        return null;
+    public ResultType peek(QttContext context, QttFrame input)
+    {
+        return context.isInConvert() && !input.isCtrl() ? ResultType.HANDLED
+                                                        : ResultType.IGNORE;
     }
 
     @Override
@@ -74,25 +77,38 @@ public class QttCommandFilter
         else return qttCommand;
     }
 
-
-    @Override    @SuppressWarnings("unchecked")
-    public <C extends IPContext<C>, O extends IProtocol> ResultType pipeSeek(C context, O output) {
-        return null;
+    @Override
+    public <C extends IPContext<C>,
+            O extends IProtocol> ResultType pipeSeek(C context, O output)
+    {
+        return checkType(output, IProtocol.COMMAND_SERIAL) ? seek((QttContext) context, (QttCommand) output)
+                                                           : ResultType.IGNORE;
     }
 
-    @Override    @SuppressWarnings("unchecked")
-    public <C extends IPContext<C>, I extends IProtocol> ResultType pipePeek(C context, I input) {
-        return null;
+    @Override
+    public <C extends IPContext<C>,
+            I extends IProtocol> ResultType pipePeek(C context, I input)
+    {
+        return checkType(input, IProtocol.FRAME_SERIAL) ? peek((QttContext) context, (QttFrame) input)
+                                                        : ResultType.IGNORE;
     }
 
-    @Override    @SuppressWarnings("unchecked")
-    public <C extends IPContext<C>, O extends IProtocol, I extends IProtocol> I pipeEncode(C context, O output) {
-        return null;
+    @Override
+    @SuppressWarnings("unchecked")
+    public <C extends IPContext<C>,
+            O extends IProtocol,
+            I extends IProtocol> I pipeEncode(C context, O output)
+    {
+        return (I) encode((QttContext) context, (QttCommand) output);
     }
 
-    @Override    @SuppressWarnings("unchecked")
-    public <C extends IPContext<C>, O extends IProtocol, I extends IProtocol> O pipeDecode(C context, I input) {
-        return null;
+    @Override
+    @SuppressWarnings("unchecked")
+    public <C extends IPContext<C>,
+            O extends IProtocol,
+            I extends IProtocol> O pipeDecode(C context, I input)
+    {
+        return (O) decode((QttContext) context, (QttFrame) input);
     }
 
 }

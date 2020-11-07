@@ -1,8 +1,8 @@
 /*
- * MIT License
- *
- * Copyright (c) 2016~2020. Z-Chess
- *
+ * MIT License                                                                   
+ *                                                                               
+ * Copyright (c) 2016~2020. Z-Chess                                              
+ *                                                                               
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
  * the Software without restriction, including without limitation the rights to
@@ -18,34 +18,38 @@
  * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                                                     
  */
 
-package com.isahl.chess.bishop.io.sort.websocket;
+package com.isahl.chess.bishop.io.sort.websocket.ssl;
 
 import com.isahl.chess.bishop.io.sort.BaseSort;
 import com.isahl.chess.bishop.io.ws.WsContext;
 import com.isahl.chess.bishop.io.ws.filter.WsControlFilter;
 import com.isahl.chess.bishop.io.ws.filter.WsFrameFilter;
 import com.isahl.chess.bishop.io.ws.filter.WsHandShakeFilter;
+import com.isahl.chess.bishop.io.zfilter.EZContext;
+import com.isahl.chess.bishop.io.zfilter.ZEFilter;
+import com.isahl.chess.queen.event.inf.ISort;
 import com.isahl.chess.queen.io.core.inf.IFilterChain;
 import com.isahl.chess.queen.io.core.inf.ISessionOption;
 
-public class WsZSort
+public class WsZlsZSort
         extends
-        BaseSort<WsContext>
+        BaseSort<EZContext<WsContext>>
 {
+    private final ISort<WsContext>               _ActingSort;
+    private final ZEFilter<EZContext<WsContext>> _Head = new ZEFilter<>();
 
-    private final WsHandShakeFilter<WsContext> _Head = new WsHandShakeFilter<>();
+    public WsZlsZSort(Mode mode,
+                      Type type,
+                      ISort<WsContext> actingSort)
     {
-        _Head.linkFront(new WsFrameFilter<>())
+        super(mode, type, String.format("zls-%s", actingSort.getProtocol()));
+        _ActingSort = actingSort;
+        _Head.linkFront(new WsHandShakeFilter<>())
+             .linkFront(new WsFrameFilter<>())
              .linkFront(new WsControlFilter<>());
-    }
-
-    public WsZSort(Mode mode,
-                   Type type)
-    {
-        super(mode, type, "ws");
     }
 
     @Override
@@ -55,8 +59,8 @@ public class WsZSort
     }
 
     @Override
-    public WsContext newContext(ISessionOption option)
+    public EZContext<WsContext> newContext(ISessionOption option)
     {
-        return new WsContext(option, this);
+        return new EZContext<>(option, this, _ActingSort.newContext(option));
     }
 }

@@ -84,12 +84,12 @@ public interface IPContext<C extends IPContext<C>>
 
     default boolean isInErrorState(int c)
     {
-        return stateAtLeast(c, DECODE_ERROR) || inState() == DECODE_NULL;
+        return stateAtLeast(c, DECODE_ERROR);
     }
 
     default boolean isOutErrorState(int c)
     {
-        return stateAtLeast(c, ENCODE_ERROR) | outState() == ENCODE_NULL;
+        return stateAtLeast(c, ENCODE_ERROR);
     }
 
     boolean isInErrorState();

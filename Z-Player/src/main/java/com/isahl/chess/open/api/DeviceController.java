@@ -116,7 +116,7 @@ public class DeviceController
         return ZResponse.success(result);
     }
 
-    @PostMapping("findAllDevices")
+    @PostMapping("devices")
     public ZResponse<Page<DeviceEntity>> findAllDevices(@RequestParam("sn") String sn,
                                                         @RequestParam("page") Integer page,
                                                         @RequestParam("size") Integer size)

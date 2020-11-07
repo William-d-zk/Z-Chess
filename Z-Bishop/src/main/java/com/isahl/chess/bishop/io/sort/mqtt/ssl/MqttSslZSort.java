@@ -38,14 +38,16 @@ public class MqttSslZSort
         BaseSort<SSLZContext<QttContext>>
 {
 
-    private final ISort<QttContext>          _Acting;
+    private final ISort<QttContext>          _ActingSort;
     final SSLFilter<SSLZContext<QttContext>> _Head = new SSLFilter<>();
 
-    public MqttSslZSort(Mode mode, Type type, ISort<QttContext> acting)
+    public MqttSslZSort(Mode mode,
+                        Type type,
+                        ISort<QttContext> actingSort)
     {
-        super(mode, type);
-        _Acting = acting;
-        _Head.linkFront(acting.getFilterChain());
+        super(mode, type, String.format("ssl-%s", actingSort.getProtocol()));
+        _ActingSort = actingSort;
+        _Head.linkFront(actingSort.getFilterChain());
     }
 
     @Override
@@ -58,7 +60,7 @@ public class MqttSslZSort
     public SSLZContext<QttContext> newContext(ISessionOption option)
     {
         try {
-            return new SSLZContext<>(option, this, new QttContext(option, _Acting));
+            return new SSLZContext<>(option, this, new QttContext(option, _ActingSort));
         }
         catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
