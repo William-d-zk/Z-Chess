@@ -26,8 +26,6 @@ package com.isahl.chess.queen.event.handler;
 import static com.isahl.chess.queen.event.inf.IOperator.Type.WRITE;
 import static com.isahl.chess.queen.event.inf.IOperator.Type.WROTE;
 
-import java.util.Objects;
-
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
@@ -104,14 +102,18 @@ public class EncodeHandler
     {
         IPContext<?> context = session.getContext();
         if (!context.isOutErrorState()) {
-            ITriple result = operator.handle(a, session);
-            if (Objects.nonNull(result)) {
-                Throwable throwable = result.getFirst();
-                event.error(IError.Type.FILTER_ENCODE, new Pair<>(throwable, session), result.getThird());
-                context.setOutState(IPContext.ENCODE_ERROR);
-            }
-            else {
+            try {
+                operator.handle(a, session);
                 event.reset();
+            }
+            catch (Exception e) {
+                _Logger.warning(String.format("write encode error: %s", session.toString()), e);
+                context.setOutState(IPContext.ENCODE_ERROR);
+                event.error(IError.Type.FILTER_ENCODE,
+                            new Pair<>(e, session),
+                            session.getContext()
+                                   .getSort()
+                                   .getError());
             }
         }
     }
