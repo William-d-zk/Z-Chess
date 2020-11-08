@@ -61,11 +61,7 @@ public interface ILogicHandler
                 try {
                     IControl[] response = handle(getISessionManager(), session, content);
                     if (Objects.nonNull(response) && response.length > 0) {
-                        event.produce(LOGIC,
-                                      new Pair<>(response, session),
-                                      session.getContext()
-                                             .getSort()
-                                             .getTransfer());
+                        event.produce(LOGIC, new Pair<>(response, session), session.getTransfer());
                     }
                     else {
                         event.ignore();
@@ -73,11 +69,7 @@ public interface ILogicHandler
                 }
                 catch (Exception e) {
                     getLogger().warning("logic handler interface", e);
-                    event.error(IError.Type.HANDLE_DATA,
-                                new Pair<>(e, session),
-                                session.getContext()
-                                       .getSort()
-                                       .getError());
+                    event.error(IError.Type.HANDLE_DATA, new Pair<>(e, session), session.getError());
                 }
             }
             else {

@@ -91,12 +91,7 @@ public interface IClusterNode<K extends IPipeCore>
             public ISession createSession(AsynchronousSocketChannel socketChannel,
                                           IConnectActivity activity) throws IOException
             {
-                return new AioSession<>(socketChannel,
-                                        this,
-                                        _SortHolder.getSort()
-                                                   .newContext(this),
-                                        activity,
-                                        client);
+                return new AioSession<>(socketChannel, this, _SortHolder.getSort(), activity, client);
             }
 
             @Override

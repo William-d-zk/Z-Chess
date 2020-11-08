@@ -134,7 +134,7 @@ public abstract class BaseAioConnector
     @Override
     public void shutdown()
     {
-        ITask.advanceRunState(_State, STOP.getCode());
+        ITask.advanceState(_State, STOP.getCode());
     }
 
     @Override

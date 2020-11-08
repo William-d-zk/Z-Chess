@@ -89,13 +89,13 @@ public class X04_EncryptConfirm
     }
 
     @Override
-    public <C extends IPContext<C>> void afterEncode(C ctx)
+    public <C extends IPContext> void afterEncode(C ctx)
     {
         ctx.updateOut();
     }
 
     @Override
-    public <C extends IPContext<C>> void afterDecode(C ctx)
+    public <C extends IPContext> void afterDecode(C ctx)
     {
         ctx.updateIn();
     }

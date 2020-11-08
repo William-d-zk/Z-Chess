@@ -214,10 +214,10 @@ public class DeviceNode
         _Logger.debug("Device Node Bean Load");
     }
 
-    private <C extends IPContext<C>> IAioServer buildAioServer(final String _Host,
-                                                               final int _Port,
-                                                               final int _SessionSlot,
-                                                               final ISort<C> _Sort)
+    private <C extends IPContext> IAioServer buildAioServer(final String _Host,
+                                                            final int _Port,
+                                                            final int _SessionSlot,
+                                                            final ISort<C> _Sort)
     {
         return new BaseAioServer(_Host, _Port, getSocketConfig(_SessionSlot))
         {
@@ -231,7 +231,7 @@ public class DeviceNode
             public ISession createSession(AsynchronousSocketChannel socketChannel,
                                           IConnectActivity activity) throws IOException
             {
-                return new AioSession<>(socketChannel, this, _Sort.newContext(this), activity, DeviceNode.this);
+                return new AioSession<>(socketChannel, this, _Sort, activity, DeviceNode.this);
             }
 
             @Override
@@ -239,7 +239,8 @@ public class DeviceNode
             {
                 session.setIndex(_ZUID.getId(_SessionSlot));
                 DeviceNode.this.addSession(session);
-                session.ready();
+                session.getContext()
+                       .ready();
             }
 
             @Override

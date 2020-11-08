@@ -25,7 +25,7 @@ package com.isahl.chess.queen.io.core.inf;
 /**
  * @author William.d.zk
  */
-public interface IFilter<C extends IPContext<C>,
+public interface IFilter<C extends IPContext,
                          O extends IProtocol,
                          I extends IProtocol>
 {

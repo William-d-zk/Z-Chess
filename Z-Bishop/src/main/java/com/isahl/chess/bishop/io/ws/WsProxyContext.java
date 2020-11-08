@@ -23,12 +23,6 @@
 
 package com.isahl.chess.bishop.io.ws;
 
-import java.util.Base64;
-import java.util.Random;
-
-import com.isahl.chess.bishop.io.ZContext;
-import com.isahl.chess.king.base.util.CryptUtil;
-import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.event.inf.ISort;
 import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.IProxyContext;
@@ -37,132 +31,28 @@ import com.isahl.chess.queen.io.core.inf.ISessionOption;
 /**
  * @author william.d.zk
  */
-public class WsProxyContext<A extends IPContext<A>>
+public class WsProxyContext<A extends IPContext>
         extends
-        ZContext<WsProxyContext<A>>
+        WsContext
         implements
-        IProxyContext<A>,
-        IWsContext
+        IProxyContext<A>
 {
 
-    private final String _SecKey, _SecAcceptExpect;
-    private final byte[] _Mask = new byte[4];
-    private final int    _MaxPayloadSize;
-    private final A      _ActingContext;
-    private int          mHandshakeState;
-    private WsHandshake  mHandshake;
+    private final A _ActingContext;
 
     public WsProxyContext(ISessionOption option,
-                          ISort<WsProxyContext<A>> sort,
+                          ISort.Mode mode,
+                          ISort.Type type,
                           A actingContext)
     {
-        super(option, sort);
+        super(option, mode, type);
         _ActingContext = actingContext;
-        _MaxPayloadSize = option.getSnfInByte() - 2;
-        if (sort.getType()
-                .equals(ISort.Type.CONSUMER))
-        {
-            Random r = new Random(System.nanoTime());
-            byte[] seed = new byte[17];
-            r.nextBytes(seed);
-            _SecKey = Base64.getEncoder()
-                            .encodeToString(CryptUtil.SHA1(seed));
-            _SecAcceptExpect = getSecAccept(_SecKey);
-            int pos = Math.abs(r.nextInt() % 13);
-            IoUtil.read(seed, pos, _Mask);
-        }
-        else {
-            _SecKey = _SecAcceptExpect = null;
-        }
-
-        switch (sort.getMode())
-        {
-            case CLUSTER:
-                advanceState(_DecodeState, DECODE_FRAME);
-                advanceState(_EncodeState, DECODE_FRAME);
-                break;
-            case LINK:
-            default:
-                break;
-        }
     }
 
     @Override
     public A getActingContext()
     {
         return _ActingContext;
-    }
-
-    @Override
-    public WsHandshake getHandshake()
-    {
-        return mHandshake;
-    }
-
-    @Override
-    public void setHandshake(WsHandshake handshake)
-    {
-        mHandshake = handshake;
-    }
-
-    @Override
-    public final int getMaxPayloadSize()
-    {
-        return _MaxPayloadSize;
-    }
-
-    @Override
-    public void reset()
-    {
-        if (mHandshake != null) {
-            mHandshake.dispose();
-        }
-        mHandshake = null;
-        super.reset();
-    }
-
-    @Override
-    public void dispose()
-    {
-        mHandshake = null;
-        super.dispose();
-    }
-
-    @Override
-    public void finish()
-    {
-        super.finish();
-        mHandshake = null;
-    }
-
-    @Override
-    public String getSeKey()
-    {
-        return _SecKey;
-    }
-
-    @Override
-    public byte[] getMask()
-    {
-        return _Mask;
-    }
-
-    @Override
-    public final void updateHandshakeState(int state)
-    {
-        mHandshakeState |= state;
-    }
-
-    @Override
-    public final boolean checkState(int state)
-    {
-        return mHandshakeState == state || (mHandshakeState & state) == state;
-    }
-
-    @Override
-    public String getSecAcceptExpect()
-    {
-        return _SecAcceptExpect;
     }
 
     @Override

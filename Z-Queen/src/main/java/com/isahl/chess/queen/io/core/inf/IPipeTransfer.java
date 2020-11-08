@@ -60,11 +60,7 @@ public interface IPipeTransfer
                              targetSession = session;
                              if (session == null) { return null; }
                          }
-                         return new Triple<>(command,
-                                             targetSession,
-                                             targetSession.getContext()
-                                                          .getSort()
-                                                          .getEncoder());
+                         return new Triple<>(command, targetSession, targetSession.getEncoder());
                      })
                      .collect(Collectors.toList());
     }

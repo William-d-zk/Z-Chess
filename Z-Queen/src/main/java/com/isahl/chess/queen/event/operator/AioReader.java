@@ -33,7 +33,6 @@ import java.nio.channels.CompletionHandler;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.io.core.async.AioPacket;
 import com.isahl.chess.queen.io.core.async.AioWorker;
-import com.isahl.chess.queen.io.core.inf.IContext;
 import com.isahl.chess.queen.io.core.inf.ISession;
 
 /**
@@ -52,15 +51,13 @@ public class AioReader
         AioWorker worker = (AioWorker) Thread.currentThread();
         switch (result)
         {
-            case -1 -> worker.publishReadError(session.getContext()
-                                                      .getError(),
+            case -1 -> worker.publishReadError(session.getError(),
                                                READ_EOF,
                                                new EOFException("Read Negative"),
                                                session);
             case 0 ->
                 {
-                    worker.publishReadError(session.getContext()
-                                                   .getError(),
+                    worker.publishReadError(session.getError(),
                                             READ_ZERO,
                                             new IllegalStateException("Read Zero"),
                                             session);
@@ -75,17 +72,10 @@ public class AioReader
                 {
                     _Logger.debug("read count: %d | %s", result, session);
                     try {
-                        worker.publishRead(session.getContext()
-                                                  .getReader(),
-                                           new AioPacket(session.read(result)),
-                                           session);
+                        worker.publishRead(session.getDecoder(), new AioPacket(session.read(result)), session);
                     }
                     catch (Exception e) {
-                        worker.publishReadError(session.getContext()
-                                                       .getError(),
-                                                READ_FAILED,
-                                                e,
-                                                session);
+                        worker.publishReadError(session.getError(), READ_FAILED, e, session);
                     }
                 }
         }
@@ -95,10 +85,6 @@ public class AioReader
     public void failed(Throwable exc, ISession session)
     {
         AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishReadError(session.getContext()
-                                       .getError(),
-                                READ_FAILED,
-                                exc,
-                                session);
+        worker.publishReadError(session.getError(), READ_FAILED, exc, session);
     }
 }

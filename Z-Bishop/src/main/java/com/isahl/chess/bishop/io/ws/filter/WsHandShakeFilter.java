@@ -46,7 +46,7 @@ import com.isahl.chess.queen.io.core.inf.IProxyContext;
 /**
  * @author William.d.zk
  */
-public class WsHandShakeFilter<T extends ZContext<T> & IWsContext>
+public class WsHandShakeFilter<T extends ZContext & IWsContext>
         extends
         AioFilterChain<T,
                        WsHandshake,
@@ -79,7 +79,6 @@ public class WsHandShakeFilter<T extends ZContext<T> & IWsContext>
     public ResultType peek(T context, IPacket input)
     {
         if (context.inState() == ENCODE_NULL) {
-            ISort<T> sort = context.getSort();
             ByteBuffer recvBuf = input.getBuffer();
             ByteBuffer cRvBuf = context.getRvBuffer();
             while (recvBuf.hasRemaining()) {
@@ -96,7 +95,7 @@ public class WsHandShakeFilter<T extends ZContext<T> & IWsContext>
                         for (String row : split) {
                             String[] rowSplit = row.split("\\s+", 2);
                             String httpKey = rowSplit[0].toUpperCase();
-                            switch (sort.getType())
+                            switch (context.getType())
                             {
                                 case SERVER:
                                     switch (httpKey)
@@ -230,14 +229,14 @@ public class WsHandShakeFilter<T extends ZContext<T> & IWsContext>
                                     return ResultType.ERROR;
                             }
                         }
-                        if (ISort.Type.SERVER.equals(sort.getType())) {
+                        if (ISort.Type.SERVER == context.getType()) {
                             context.setHandshake(new X101_HandShake((context.checkState(WsContext.HS_State_CLIENT_OK) ? "HTTP/1.1 101 Switching Protocols\r\n"
                                                                                                                       : "HTTP/1.1 400 Bad Request\r\n")
                                                                     + response.toString()
                                                                     + CRLF));
                             return ResultType.HANDLED;
                         }
-                        else if (ISort.Type.CONSUMER.equals(sort.getType())) {
+                        else if (ISort.Type.CONSUMER == context.getType()) {
                             if (context.checkState(WsContext.HS_State_ACCEPT_OK)) {
                                 context.setHandshake(new X101_HandShake(x));
                                 return ResultType.HANDLED;
@@ -265,7 +264,7 @@ public class WsHandShakeFilter<T extends ZContext<T> & IWsContext>
 
     @Override
     @SuppressWarnings("unchecked")
-    public <C extends IPContext<C>,
+    public <C extends IPContext,
             O extends IProtocol> ResultType pipeSeek(C context, O output)
     {
         //WsHandshake 继承自WsControl
@@ -285,7 +284,7 @@ public class WsHandShakeFilter<T extends ZContext<T> & IWsContext>
 
     @Override
     @SuppressWarnings("unchecked")
-    public <C extends IPContext<C>,
+    public <C extends IPContext,
             I extends IProtocol> ResultType pipePeek(C context, I input)
     {
         if (checkType(input, IProtocol.PACKET_SERIAL)) {
@@ -302,7 +301,7 @@ public class WsHandShakeFilter<T extends ZContext<T> & IWsContext>
 
     @Override
     @SuppressWarnings("unchecked")
-    public <C extends IPContext<C>,
+    public <C extends IPContext,
             O extends IProtocol,
             I extends IProtocol> I pipeEncode(C context, O output)
     {
@@ -322,7 +321,7 @@ public class WsHandShakeFilter<T extends ZContext<T> & IWsContext>
 
     @Override
     @SuppressWarnings("unchecked")
-    public <C extends IPContext<C>,
+    public <C extends IPContext,
             O extends IProtocol,
             I extends IProtocol> O pipeDecode(C context, I input)
     {

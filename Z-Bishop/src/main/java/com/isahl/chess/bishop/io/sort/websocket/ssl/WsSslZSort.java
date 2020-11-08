@@ -65,7 +65,7 @@ public class WsSslZSort
     public SSLZContext<WsContext> newContext(ISessionOption option)
     {
         try {
-            return new SSLZContext<>(option, this, _ActingSort.newContext(option));
+            return new SSLZContext<>(option, getMode(), getType(), _ActingSort.newContext(option));
         }
         catch (NoSuchAlgorithmException e) {
             e.printStackTrace();

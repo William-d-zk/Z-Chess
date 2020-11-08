@@ -23,17 +23,27 @@
 
 package com.isahl.chess.bishop.io;
 
+import static com.isahl.chess.king.base.schedule.inf.ITask.advanceState;
+
 import com.isahl.chess.queen.event.inf.ISort;
 import com.isahl.chess.queen.io.core.inf.ISessionOption;
 
 public class PlainZContext
         extends
-        ZContext<PlainZContext>
+        ZContext
 {
 
     public PlainZContext(ISessionOption option,
-                         ISort<PlainZContext> sort)
+                         ISort.Mode mode,
+                         ISort.Type type)
     {
-        super(option, sort);
+        super(option, mode, type);
+    }
+
+    @Override
+    public void ready()
+    {
+        advanceState(_DecodeState, DECODE_PAYLOAD);
+        advanceState(_EncodeState, ENCODE_PAYLOAD);
     }
 }

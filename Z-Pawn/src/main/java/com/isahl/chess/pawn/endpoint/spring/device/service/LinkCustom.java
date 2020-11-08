@@ -208,8 +208,6 @@ public class LinkCustom
                           .map(control -> new Triple<>(control,
                                                        control.getSession(),
                                                        control.getSession()
-                                                              .getContext()
-                                                              .getSort()
                                                               .getEncoder()))
                           .collect(Collectors.toList());
         }

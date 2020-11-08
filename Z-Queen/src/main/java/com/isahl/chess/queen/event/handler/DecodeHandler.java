@@ -65,7 +65,7 @@ public class DecodeHandler
         IOperator<IPacket,
                   ISession,
                   ITriple> packetOperator = event.getEventOp();
-        IPContext<?> context = session.getContext();
+        IPContext context = session.getContext();
         IPacket packet = packetContent.getFirst();
         if (!context.isInErrorState()) {
             try {
@@ -78,11 +78,7 @@ public class DecodeHandler
                 _Logger.warning(String.format("read decode error: %s", session.toString()), e);
                 context.setInState(IPContext.DECODE_ERROR);
                 // 此处为Pipeline中间环节，使用event进行事件传递，不使用dispatcher
-                event.error(IError.Type.FILTER_DECODE,
-                            new Pair<>(e, session),
-                            session.getContext()
-                                   .getSort()
-                                   .getError());
+                event.error(IError.Type.FILTER_DECODE, new Pair<>(e, session), session.getError());
             }
         }
         else {

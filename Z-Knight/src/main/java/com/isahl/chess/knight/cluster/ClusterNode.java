@@ -110,7 +110,8 @@ public class ClusterNode
             {
                 session.setIndex(_ZUID.getId());
                 ClusterNode.this.addSession(session);
-                session.ready();
+                session.getContext()
+                       .ready();
             }
 
             @Override
@@ -118,7 +119,7 @@ public class ClusterNode
                                           IConnectActivity activity) throws IOException
             {
                 ISort<WsContext> sort = ZSortHolder.WS_CLUSTER_SERVER.getSort();
-                return new AioSession<>(socketChannel, this, sort.newContext(this), activity, ClusterNode.this);
+                return new AioSession<>(socketChannel, this, sort, activity, ClusterNode.this);
             }
 
             @Override

@@ -37,7 +37,7 @@ public interface ISessionOption
     int INC_SEND_SIZE   = 1 << 12;
     int INC_QUEUE_SIZE  = 64;
 
-    void setOptions(AsynchronousSocketChannel channel);
+    void configChannel(AsynchronousSocketChannel channel);
 
     int getSnfInByte();
 

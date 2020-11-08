@@ -25,17 +25,17 @@ package com.isahl.chess.queen.io.core.inf;
 
 public interface IPipeFilter
 {
-    <C extends IPContext<C>,
+    <C extends IPContext,
      O extends IProtocol> IFilter.ResultType pipeSeek(C context, O output);
 
-    <C extends IPContext<C>,
+    <C extends IPContext,
      I extends IProtocol> IFilter.ResultType pipePeek(C context, I input);
 
-    <C extends IPContext<C>,
+    <C extends IPContext,
      O extends IProtocol,
      I extends IProtocol> I pipeEncode(C context, O output);
 
-    <C extends IPContext<C>,
+    <C extends IPContext,
      O extends IProtocol,
      I extends IProtocol> O pipeDecode(C context, I input);
 }

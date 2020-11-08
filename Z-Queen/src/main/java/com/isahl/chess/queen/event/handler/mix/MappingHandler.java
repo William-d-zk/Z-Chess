@@ -144,12 +144,7 @@ public class MappingHandler<T extends IStorage>
                         ISession session = handled.getSecond();
                         IControl[] toSends = handled.getThird();
                         if (toSends != null) {
-                            publish(_Writer,
-                                    WRITE,
-                                    new Pair<>(toSends, session),
-                                    session.getContext()
-                                           .getSort()
-                                           .getTransfer());
+                            publish(_Writer, WRITE, new Pair<>(toSends, session), session.getTransfer());
                         }
                     }
                     else {
@@ -175,12 +170,7 @@ public class MappingHandler<T extends IStorage>
                         ISession session = handled.getSecond();
                         IControl[] toSends = handled.getThird();
                         if (toSends != null) {
-                            publish(_Writer,
-                                    WRITE,
-                                    new Pair<>(toSends, session),
-                                    session.getContext()
-                                           .getSort()
-                                           .getTransfer());
+                            publish(_Writer, WRITE, new Pair<>(toSends, session), session.getTransfer());
                         }
                     }
                     else {
@@ -194,7 +184,7 @@ public class MappingHandler<T extends IStorage>
                     break;
                 case LINK:
                     IControl received = event.getContent()
-                                                .getFirst();
+                                             .getFirst();
                     ISession session = event.getContent()
                                             .getSecond();
                     if (received == null) { return; }
@@ -203,12 +193,7 @@ public class MappingHandler<T extends IStorage>
                         if (pair == null) return;
                         IControl[] toSends = pair.getFirst();
                         if (toSends != null && toSends.length > 0) {
-                            publish(_Writer,
-                                    WRITE,
-                                    new Pair<>(toSends, session),
-                                    session.getContext()
-                                           .getSort()
-                                           .getTransfer());
+                            publish(_Writer, WRITE, new Pair<>(toSends, session), session.getTransfer());
                         }
                         IConsistent transfer = pair.getSecond();
                         if (transfer != null) {
@@ -244,12 +229,7 @@ public class MappingHandler<T extends IStorage>
                         if (pair == null) return;
                         IControl[] toSends = pair.getFirst();
                         if (toSends != null && toSends.length > 0) {
-                            publish(_Writer,
-                                    WRITE,
-                                    new Pair<>(toSends, session),
-                                    session.getContext()
-                                           .getSort()
-                                           .getTransfer());
+                            publish(_Writer, WRITE, new Pair<>(toSends, session), session.getTransfer());
                         }
                         IConsistentNotify transferNotify = pair.getSecond();
                         if (transferNotify != null && transferNotify.doNotify()) {

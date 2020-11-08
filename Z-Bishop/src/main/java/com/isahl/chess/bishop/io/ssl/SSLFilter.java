@@ -31,7 +31,7 @@ import com.isahl.chess.queen.io.core.inf.IProtocol;
 /**
  * @author william.d.zk
  */
-public class SSLFilter<A extends IPContext<A>>
+public class SSLFilter<A extends IPContext>
         extends
         AioFilterChain<SSLZContext<A>,
                        IPacket,
@@ -69,21 +69,21 @@ public class SSLFilter<A extends IPContext<A>>
     }
 
     @Override
-    public <C extends IPContext<C>,
+    public <C extends IPContext,
             O extends IProtocol> ResultType pipeSeek(C context, O output)
     {
         return null;
     }
 
     @Override
-    public <C extends IPContext<C>,
+    public <C extends IPContext,
             I extends IProtocol> ResultType pipePeek(C context, I input)
     {
         return null;
     }
 
     @Override
-    public <C extends IPContext<C>,
+    public <C extends IPContext,
             O extends IProtocol,
             I extends IProtocol> I pipeEncode(C context, O output)
     {
@@ -91,7 +91,7 @@ public class SSLFilter<A extends IPContext<A>>
     }
 
     @Override
-    public <C extends IPContext<C>,
+    public <C extends IPContext,
             O extends IProtocol,
             I extends IProtocol> O pipeDecode(C context, I input)
     {

@@ -37,7 +37,7 @@ import com.isahl.chess.queen.io.core.inf.ISessionOption;
  * @author william.d.zk
  *         基于通讯协议的Pipeline 固有模式分类
  */
-public interface ISort<C extends IPContext<C>>
+public interface ISort<C extends IPContext>
 {
 
     enum Mode
@@ -72,11 +72,11 @@ public interface ISort<C extends IPContext<C>>
 
     IPipeTransfer getTransfer();
 
-    IFilterChain getFilterChain();
-
     ISessionCloser getCloser();
 
     ISessionError getError();
+
+    IFilterChain getFilterChain();
 
     IgnoreOperator getIgnore();
 

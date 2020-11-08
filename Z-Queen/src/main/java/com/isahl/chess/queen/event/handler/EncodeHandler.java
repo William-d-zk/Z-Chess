@@ -100,7 +100,7 @@ public class EncodeHandler
                                              ISession,
                                              ITriple> operator)
     {
-        IPContext<?> context = session.getContext();
+        IPContext context = session.getContext();
         if (!context.isOutErrorState()) {
             try {
                 operator.handle(a, session);
@@ -109,11 +109,7 @@ public class EncodeHandler
             catch (Exception e) {
                 _Logger.warning(String.format("write encode error: %s", session.toString()), e);
                 context.setOutState(IPContext.ENCODE_ERROR);
-                event.error(IError.Type.FILTER_ENCODE,
-                            new Pair<>(e, session),
-                            session.getContext()
-                                   .getSort()
-                                   .getError());
+                event.error(IError.Type.FILTER_ENCODE, new Pair<>(e, session), session.getError());
             }
         }
     }

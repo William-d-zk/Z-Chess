@@ -34,7 +34,7 @@ import com.isahl.chess.queen.io.core.inf.IFilterChain;
 import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.ISessionOption;
 
-public class WsProxyZSort<A extends IPContext<A>>
+public class WsProxyZSort<A extends IPContext>
         extends
         BaseSort<WsProxyContext<A>>
 {
@@ -63,6 +63,6 @@ public class WsProxyZSort<A extends IPContext<A>>
     @Override
     public WsProxyContext<A> newContext(ISessionOption option)
     {
-        return new WsProxyContext<>(option, this, _ActingSort.newContext(option));
+        return new WsProxyContext<>(option, getMode(), getType(), _ActingSort.newContext(option));
     }
 }

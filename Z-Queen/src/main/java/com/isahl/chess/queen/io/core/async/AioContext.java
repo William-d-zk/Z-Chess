@@ -22,9 +22,7 @@
  */
 package com.isahl.chess.queen.io.core.async;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.isahl.chess.queen.io.core.inf.IContext;
 import com.isahl.chess.queen.io.core.inf.ISessionOption;
@@ -36,8 +34,6 @@ public abstract class AioContext
         implements
         IContext
 {
-
-    protected final AtomicInteger _SessionState = new AtomicInteger(SESSION_CONNECTED);
 
     /*
      * 用于写出的 ByteBuffer 属于4096及其倍数的对齐块，应与 SocketOption 中系统写出 Buffer 的大小进行调整，
@@ -67,39 +63,8 @@ public abstract class AioContext
     @Override
     public void reset()
     {
-        _SessionState.set(ctlOf(SESSION_IDLE, 0));
         _RvBuf.clear();
         _WrBuf.clear();
-    }
-
-    @Override
-    public void close() throws IOException
-    {
-        advanceState(_SessionState, SESSION_CLOSE);
-    }
-
-    @Override
-    public void setSessionState(int state)
-    {
-        advanceState(_SessionState, state);
-    }
-
-    @Override
-    public int getSessionState()
-    {
-        return stateOf(_SessionState.get());
-    }
-
-    @Override
-    public boolean sessionStateLessThan(int targetState)
-    {
-        return stateLessThan(_SessionState.get(), targetState);
-    }
-
-    @Override
-    public void advanceChannelState(int state)
-    {
-        advanceState(_SessionState, state);
     }
 
     @Override
@@ -145,12 +110,6 @@ public abstract class AioContext
     public long getNtpArrivedTime()
     {
         return mServerArrivedTime;
-    }
-
-    @Override
-    public boolean isClosed()
-    {
-        return isClosed(_SessionState.get());
     }
 
 }

@@ -22,6 +22,8 @@
  */
 package com.isahl.chess.bishop.io.ws;
 
+import static com.isahl.chess.king.base.schedule.inf.ITask.advanceState;
+
 import java.util.Base64;
 import java.util.Random;
 
@@ -36,7 +38,7 @@ import com.isahl.chess.queen.io.core.inf.ISessionOption;
  */
 public class WsContext
         extends
-        ZContext<WsContext>
+        ZContext
         implements
         IWsContext
 {
@@ -48,13 +50,12 @@ public class WsContext
     private WsHandshake  mHandshake;
 
     public WsContext(ISessionOption option,
-                     ISort<WsContext> sort)
+                     ISort.Mode mode,
+                     ISort.Type type)
     {
-        super(option, sort);
+        super(option, mode, type);
         _MaxPayloadSize = option.getSnfInByte() - 2;
-        if (sort.getType()
-                .equals(ISort.Type.CONSUMER))
-        {
+        if (_Type == ISort.Type.CONSUMER) {
             Random r = new Random(System.nanoTime());
             byte[] seed = new byte[17];
             r.nextBytes(seed);
@@ -66,17 +67,6 @@ public class WsContext
         }
         else {
             _SecKey = _SecAcceptExpect = null;
-        }
-
-        switch (sort.getMode())
-        {
-            case CLUSTER:
-                advanceState(_DecodeState, DECODE_FRAME);
-                advanceState(_EncodeState, DECODE_FRAME);
-                break;
-            case LINK:
-            default:
-                break;
         }
     }
 
@@ -101,11 +91,11 @@ public class WsContext
     @Override
     public void reset()
     {
+        super.reset();
         if (mHandshake != null) {
             mHandshake.dispose();
         }
         mHandshake = null;
-        super.reset();
     }
 
     @Override
@@ -119,6 +109,9 @@ public class WsContext
     public void finish()
     {
         super.finish();
+        if (mHandshake != null) {
+            mHandshake.dispose();
+        }
         mHandshake = null;
     }
 
@@ -150,5 +143,24 @@ public class WsContext
     public String getSecAcceptExpect()
     {
         return _SecAcceptExpect;
+    }
+
+    @Override
+    public void ready()
+    {
+
+        switch (_Mode)
+        {
+            case CLUSTER ->
+                {
+                    advanceState(_DecodeState, DECODE_PAYLOAD);
+                    advanceState(_EncodeState, ENCODE_PAYLOAD);
+                }
+            case LINK ->
+                {
+                    advanceState(_DecodeState, DECODE_FRAME);
+                    advanceState(_EncodeState, ENCODE_FRAME);
+                }
+        }
     }
 }

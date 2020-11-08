@@ -95,7 +95,7 @@ public enum ZSortHolder
 
     private final ISort<?> _Sort;
 
-    <C extends IPContext<C>> ZSortHolder(ISort<C> sort)
+    <C extends IPContext> ZSortHolder(ISort<C> sort)
     {
         _Sort = sort;
     }
@@ -117,7 +117,7 @@ public enum ZSortHolder
     final static QttCommandFactory _QttCommandFactory = new QttCommandFactory();
 
     @SuppressWarnings("unchecked")
-    public <C extends IPContext<C>> ISort<C> getSort()
+    public <C extends IPContext> ISort<C> getSort()
     {
         return (ISort<C>) _Sort;
     }

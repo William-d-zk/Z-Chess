@@ -36,14 +36,12 @@ public interface IPipeEncoder
                   ISession,
                   ITriple>
 {
-    default <C extends IPContext<C>,
-             A extends IPContext<A>> IPacket protocolWrite(IControl output, ISession session)
+    default <C extends IPContext> IPacket protocolWrite(IControl output, ISession session)
     {
 
         C context = session.getContext();
         if (context == null || output == null) { return null; }
-        IFilterChain previous = context.getSort()
-                                       .getFilterChain()
+        IFilterChain previous = session.getFilterChain()
                                        .getChainTail();
         IProtocol protocol = output;
         CHAIN:

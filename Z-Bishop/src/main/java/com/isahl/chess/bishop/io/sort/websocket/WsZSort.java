@@ -57,6 +57,6 @@ public class WsZSort
     @Override
     public WsContext newContext(ISessionOption option)
     {
-        return new WsContext(option, this);
+        return new WsContext(option, getMode(), getType());
     }
 }

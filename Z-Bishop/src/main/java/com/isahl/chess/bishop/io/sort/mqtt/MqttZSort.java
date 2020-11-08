@@ -56,6 +56,6 @@ public class MqttZSort
     @Override
     public QttContext newContext(ISessionOption option)
     {
-        return new QttContext(option, this);
+        return new QttContext(option, getMode(), getType());
     }
 }

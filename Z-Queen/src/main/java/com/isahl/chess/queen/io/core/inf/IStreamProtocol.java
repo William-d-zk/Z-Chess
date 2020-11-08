@@ -39,7 +39,7 @@ public interface IStreamProtocol
      * 
      * @param ctx
      */
-    default <C extends IPContext<C>> void afterEncode(C ctx)
+    default <C extends IPContext> void afterEncode(C ctx)
     {
     }
 
@@ -48,7 +48,7 @@ public interface IStreamProtocol
      * 
      * @param ctx
      */
-    default <C extends IPContext<C>> void afterDecode(C ctx)
+    default <C extends IPContext> void afterDecode(C ctx)
     {
     }
 
@@ -60,7 +60,7 @@ public interface IStreamProtocol
      * 
      * @return
      */
-    default <C extends IPContext<C>> byte[] encode(C ctx)
+    default <C extends IPContext> byte[] encode(C ctx)
     {
         byte[] data = encode();
         afterEncode(ctx);
@@ -74,7 +74,7 @@ public interface IStreamProtocol
      * @param data
      * @param ctx
      */
-    default <C extends IPContext<C>> void decode(byte[] data, C ctx)
+    default <C extends IPContext> void decode(byte[] data, C ctx)
     {
         decode(data);
         afterDecode(ctx);

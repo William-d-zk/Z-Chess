@@ -22,6 +22,9 @@
  */
 package com.isahl.chess.queen.io.core.async;
 
+import static com.isahl.chess.king.base.schedule.inf.ITask.advanceState;
+import static com.isahl.chess.king.base.schedule.inf.ITask.stateAtLeast;
+import static com.isahl.chess.king.base.schedule.inf.ITask.stateLessThan;
 import static com.isahl.chess.king.base.util.IoUtil.longArrayToHex;
 
 import java.io.IOException;
@@ -37,21 +40,28 @@ import java.util.LinkedList;
 import java.util.Objects;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.ArrayUtil;
+import com.isahl.chess.queen.event.inf.ISort;
 import com.isahl.chess.queen.io.core.inf.IConnectActivity;
-import com.isahl.chess.queen.io.core.inf.IContext;
+import com.isahl.chess.queen.io.core.inf.IFilterChain;
 import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.IPacket;
+import com.isahl.chess.queen.io.core.inf.IPipeDecoder;
+import com.isahl.chess.queen.io.core.inf.IPipeEncoder;
+import com.isahl.chess.queen.io.core.inf.IPipeTransfer;
 import com.isahl.chess.queen.io.core.inf.ISession;
+import com.isahl.chess.queen.io.core.inf.ISessionCloser;
 import com.isahl.chess.queen.io.core.inf.ISessionDismiss;
+import com.isahl.chess.queen.io.core.inf.ISessionError;
 import com.isahl.chess.queen.io.core.inf.ISessionOption;
 
 /**
  * @author William.d.zk
  */
-public class AioSession<C extends IPContext<C>>
+public class AioSession<C extends IPContext>
         extends
         LinkedList<IPacket>
         implements
@@ -67,16 +77,18 @@ public class AioSession<C extends IPContext<C>>
      * 与系统的 SocketOption 的 RecvBuffer 相等大小， 至少可以一次性将系统 Buffer 中的数据全部转存
      */
     private final ByteBuffer      _RecvBuf;
-    private final C               _Ctx;
+    private final C               _Context;
     private final int             _HashCode;
     private final ISessionDismiss _DismissCallback;
     private final int             _QueueSizeMax;
+    private final ISort<C>        _Sort;
+    private final AtomicInteger   _State = new AtomicInteger(SESSION_CREATED);
     /*----------------------------------------------------------------------------------------------------------------*/
 
     /*----------------------------------------------------------------------------------------------------------------*/
     private long mIndex = DEFAULT_INDEX;
     /*
-     * 此处并不会进行空间初始化，完全依赖于 Context 的 WrBuf 初始化大小
+     * 此处并不会进行空间初始化，完全依赖于 Context 的 Wrbuf 实体，仅作为reference
      */
     private ByteBuffer mSending;
     /*
@@ -105,14 +117,14 @@ public class AioSession<C extends IPContext<C>>
 
     public AioSession(final AsynchronousSocketChannel channel,
                       final ISessionOption sessionOption,
-                      final C context,
+                      final ISort<C> sort,
                       final IConnectActivity activity,
                       final ISessionDismiss sessionDismiss) throws IOException
     {
         Objects.requireNonNull(sessionOption);
         Objects.requireNonNull(channel);
         Objects.requireNonNull(activity);
-        Objects.requireNonNull(context);
+        Objects.requireNonNull(sort);
 
         _Channel = channel;
         _HashCode = channel.hashCode();
@@ -123,10 +135,11 @@ public class AioSession<C extends IPContext<C>>
         _WriteTimeOutInSecond = sessionOption.getWriteTimeOutInSecond();
         _RecvBuf = ByteBuffer.allocate(sessionOption.getRcvInByte());
         _QueueSizeMax = sessionOption.getSendQueueMax();
-        _Ctx = context;
-        sessionOption.setOptions(channel);
+        _Sort = sort;
+        _Context = sort.newContext(sessionOption);
+        sessionOption.configChannel(channel);
         mHashKey = _HashCode;
-        mSending = _Ctx.getWrBuffer();
+        mSending = _Context.getWrBuffer();
         mSending.flip();
         mSendingBlank = mSending.capacity() - mSending.limit();
     }
@@ -134,7 +147,7 @@ public class AioSession<C extends IPContext<C>>
     @Override
     public boolean isValid()
     {
-        return (!_Ctx.isClosed() && _Ctx.isValid());
+        return !isClosed();
     }
 
     @Override
@@ -170,9 +183,10 @@ public class AioSession<C extends IPContext<C>>
     @Override
     public final void dispose()
     {
-        _Ctx.dispose();
-        mSending = null;
         clear();
+        _Context.dispose();
+        mReader = null;
+        mSending = null;
         mPrefix = null;
         reset();
     }
@@ -181,14 +195,14 @@ public class AioSession<C extends IPContext<C>>
     public final void close() throws IOException
     {
         if (isClosed()) { return; }
-        _Ctx.close();
+        advanceState(_State, SESSION_CLOSE);
         _Channel.close();
     }
 
     @Override
     public final boolean isClosed()
     {
-        return _Ctx.isClosed();
+        return stateAtLeast(_State.get(), SESSION_CLOSE);
     }
 
     @Override
@@ -292,7 +306,7 @@ public class AioSession<C extends IPContext<C>>
     @Override
     public C getContext()
     {
-        return _Ctx;
+        return _Context;
     }
 
     @Override
@@ -306,7 +320,7 @@ public class AioSession<C extends IPContext<C>>
         if (isClosed()) { return WRITE_STATUS.CLOSED; }
         ps.waitSend();
         if (size() > _QueueSizeMax) { throw new RejectedExecutionException(); }
-        if (_Ctx.sessionStateLessThan(IContext.SESSION_FLUSHED)) {
+        if (stateLessThan(_State.get(), SESSION_FLUSHED)) {
             // mSending 未托管给系统
             if (isEmpty()) {
                 switch (writePacket(ps))
@@ -324,7 +338,7 @@ public class AioSession<C extends IPContext<C>>
                 offer(ps);
                 writeBuffed2Sending();
             }
-            _Ctx.advanceChannelState(IContext.SESSION_SENDING);
+            advanceState(_State, SESSION_SENDING);
             flush(handler);
         }
         else {
@@ -349,13 +363,13 @@ public class AioSession<C extends IPContext<C>>
             mSending.clear();
             mSending.flip();
             if (isEmpty()) {
-                _Ctx.advanceChannelState(IContext.SESSION_IDLE);
+                advanceState(_State, SESSION_IDLE);
                 return WRITE_STATUS.IGNORE;
             }
-            _Ctx.advanceChannelState(IContext.SESSION_PENDING);
+            advanceState(_State, SESSION_PENDING);
         }
         writeBuffed2Sending();
-        _Ctx.advanceChannelState(IContext.SESSION_SENDING);
+        advanceState(_State, SESSION_SENDING);
         flush(handler);
         return WRITE_STATUS.FLUSHED;
     }
@@ -422,18 +436,11 @@ public class AioSession<C extends IPContext<C>>
                                                             NotYetConnectedException,
                                                             ShutdownChannelGroupException
     {
-        if (_Ctx.sessionStateLessThan(IContext.SESSION_FLUSHED) && mSending.hasRemaining()) {
+        if (stateLessThan(_State.get(), SESSION_FLUSHED) && mSending.hasRemaining()) {
             _Logger.debug("flush %d | %s", mSending.remaining(), this);
             _Channel.write(mSending, _WriteTimeOutInSecond, TimeUnit.SECONDS, this, handler);
-            _Ctx.advanceChannelState(IContext.SESSION_FLUSHED);
+            advanceState(_State, SESSION_FLUSHED);
         }
-    }
-
-    @Override
-    public void ready()
-    {
-        _Ctx.setInState(IPContext.DECODE_FRAME);
-        _Ctx.setOutState(IPContext.ENCODE_FRAME);
     }
 
     @Override
@@ -446,5 +453,47 @@ public class AioSession<C extends IPContext<C>>
     public int getReadTimeOutSeconds()
     {
         return _ReadTimeOutInSecond;
+    }
+
+    @Override
+    public ISessionError getError()
+    {
+        return _Sort.getError();
+    }
+
+    @Override
+    public ISessionCloser getCloser()
+    {
+        return _Sort.getCloser();
+    }
+
+    @Override
+    public IPipeEncoder getEncoder()
+    {
+        return _Sort.getEncoder();
+    }
+
+    @Override
+    public IPipeDecoder getDecoder()
+    {
+        return _Sort.getDecoder();
+    }
+
+    @Override
+    public IPipeTransfer getTransfer()
+    {
+        return _Sort.getTransfer();
+    }
+
+    @Override
+    public IFilterChain getFilterChain()
+    {
+        return _Sort.getFilterChain();
+    }
+
+    @Override
+    public ISort.Mode getMode()
+    {
+        return _Sort.getMode();
     }
 }

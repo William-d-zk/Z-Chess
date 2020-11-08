@@ -51,13 +51,8 @@ public class AioWriter
         AioWorker worker = (AioWorker) Thread.currentThread();
         switch (result)
         {
-            case -1 -> worker.publishWroteError(session.getContext()
-                                                       .getError(),
-                                                WRITE_EOF,
-                                                new EOFException("wrote -1!"),
-                                                session);
-            case 0 -> worker.publishWroteError(session.getContext()
-                                                      .getError(),
+            case -1 -> worker.publishWroteError(session.getError(), WRITE_EOF, new EOFException("wrote -1!"), session);
+            case 0 -> worker.publishWroteError(session.getError(),
                                                WRITE_ZERO,
                                                new IllegalArgumentException("wrote zero!"),
                                                session);
@@ -73,10 +68,6 @@ public class AioWriter
     public void failed(Throwable exc, ISession session)
     {
         AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishWroteError(session.getContext()
-                                        .getError(),
-                                 WRITE_FAILED,
-                                 exc,
-                                 session);
+        worker.publishWroteError(session.getError(), WRITE_FAILED, exc, session);
     }
 }

@@ -51,9 +51,7 @@ public class ErrorOperator
     public IPair handle(Throwable throwable, ISession session)
     {
         _Logger.trace("error session:%s", throwable, session);
-        return session != null ? new Pair<>(session,
-                                            session.getContext()
-                                                   .getCloser())
+        return session != null ? new Pair<>(session, session.getCloser())
                                : null;
     }
 }
