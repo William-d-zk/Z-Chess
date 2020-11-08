@@ -22,18 +22,17 @@
  */
 package com.isahl.chess.bishop.io;
 
+import static com.isahl.chess.king.base.schedule.inf.ITask.advanceState;
+import static com.isahl.chess.king.base.schedule.inf.ITask.stateAtLeast;
+import static com.isahl.chess.king.base.schedule.inf.ITask.stateLessThan;
+import static com.isahl.chess.queen.io.core.inf.ISession.stateOf;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.isahl.chess.king.base.inf.ITriple;
-import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.event.inf.ISort;
 import com.isahl.chess.queen.io.core.async.AioContext;
 import com.isahl.chess.queen.io.core.inf.IFrame;
 import com.isahl.chess.queen.io.core.inf.IPContext;
-import com.isahl.chess.queen.io.core.inf.IPacket;
-import com.isahl.chess.queen.io.core.inf.ISession;
-import com.isahl.chess.queen.io.core.inf.ISessionCloser;
-import com.isahl.chess.queen.io.core.inf.ISessionError;
 import com.isahl.chess.queen.io.core.inf.ISessionOption;
 
 /**
@@ -41,31 +40,37 @@ import com.isahl.chess.queen.io.core.inf.ISessionOption;
  * 
  * @date 2017-02-10
  */
-public class ZContext<C extends IPContext<C>>
+public abstract class ZContext
         extends
         AioContext
         implements
-        IPContext<C>
+        IPContext
 {
-    protected final AtomicInteger _EncodeState      = new AtomicInteger(ENCODE_NULL);
-    protected final AtomicInteger _DecodeState      = new AtomicInteger(DECODE_NULL);
-    private int                   mDecodingPosition = -1, mLackData = 1;
-    private IFrame                mCarrier;
-    private final ISort<C>        _Sort;
+    protected final AtomicInteger _EncodeState = new AtomicInteger(ENCODE_NULL);
+    protected final AtomicInteger _DecodeState = new AtomicInteger(DECODE_NULL);
+    protected final ISort.Mode    _Mode;
+    protected final ISort.Type    _Type;
+    /*----------------------------------------------------------------------------------------------------------------*/
+    private int    mDecodingPosition = -1, mLackData = 1;
+    private IFrame mCarrier;
 
     public ZContext(ISessionOption option,
-                    ISort<C> sort)
+                    ISort.Mode mode,
+                    ISort.Type type)
     {
         super(option);
-        _Sort = sort;
+        _Mode = mode;
+        _Type = type;
+        advanceState(_EncodeState, ENCODE_NULL);
+        advanceState(_DecodeState, DECODE_NULL);
     }
 
     @Override
     public void reset()
     {
+        advanceState(_EncodeState, ENCODE_NULL);
+        advanceState(_DecodeState, DECODE_NULL);
         super.reset();
-        _EncodeState.set(ctlOf(ENCODE_FRAME, 0));
-        _DecodeState.set(ctlOf(DECODE_FRAME, 0));
         mDecodingPosition = -1;
         mLackData = 1;
         if (mCarrier != null) {
@@ -148,56 +153,46 @@ public class ZContext<C extends IPContext<C>>
     @Override
     public boolean isInConvert()
     {
-        return isInConvert(_DecodeState.get());
+        return stateAtLeast(_DecodeState.get(), DECODE_PAYLOAD) && stateLessThan(_DecodeState.get(), DECODE_ERROR);
     }
 
     @Override
     public boolean isOutConvert()
     {
-        return isOutConvert(_EncodeState.get());
+        return stateAtLeast(_EncodeState.get(), ENCODE_PAYLOAD) && stateLessThan(_EncodeState.get(), ENCODE_ERROR);
     }
 
     @Override
     public boolean isInErrorState()
     {
-        return isInErrorState(_DecodeState.get());
+        return stateAtLeast(_DecodeState.get(), DECODE_ERROR);
     }
 
     @Override
     public boolean isOutErrorState()
     {
-        return isOutErrorState(_EncodeState.get());
+        return stateAtLeast(_EncodeState.get(), DECODE_ERROR);
     }
 
     @Override
-    public ISort<C> getSort()
+    public boolean isInFrame()
     {
-        return _Sort;
+        return _DecodeState.get() == DECODE_FRAME;
     }
 
     @Override
-    public ISessionError getError()
+    public boolean isOutFrame()
     {
-        return _Sort.getError();
+        return _EncodeState.get() == ENCODE_FRAME;
     }
 
-    @Override
-    public ISessionCloser getCloser()
+    public ISort.Type getType()
     {
-        return _Sort.getCloser();
+        return _Type;
     }
 
-    @Override
-    public IOperator<IPacket,
-                     ISession,
-                     ITriple> getReader()
-    {
-        return _Sort.getDecoder();
-    }
-
-    @Override
     public ISort.Mode getMode()
     {
-        return _Sort.getMode();
+        return _Mode;
     }
 }

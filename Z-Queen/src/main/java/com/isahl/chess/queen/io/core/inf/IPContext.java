@@ -23,9 +23,9 @@
 
 package com.isahl.chess.queen.io.core.inf;
 
-import com.isahl.chess.queen.event.inf.ISort;
+import static com.isahl.chess.queen.io.core.inf.ISession.COUNT_BITS;
 
-public interface IPContext<C extends IPContext<C>>
+public interface IPContext
         extends
         IContext
 {
@@ -64,37 +64,19 @@ public interface IPContext<C extends IPContext<C>>
     int ENCODE_PAYLOAD = 01 << COUNT_BITS;
     int ENCODE_ERROR   = 03 << COUNT_BITS;
 
-    default boolean isInConvert(int c)
-    {
-        return stateAtLeast(c, DECODE_FRAME) && stateLessThan(c, DECODE_ERROR);
-    }
-
-    default boolean isOutConvert(int c)
-    {
-        return stateAtLeast(c, ENCODE_FRAME) && stateLessThan(c, ENCODE_ERROR);
-    }
-
     boolean isInConvert();
 
     boolean isOutConvert();
+
+    boolean isInFrame();
+
+    boolean isOutFrame();
 
     int inState();
 
     int outState();
 
-    default boolean isInErrorState(int c)
-    {
-        return stateAtLeast(c, DECODE_ERROR);
-    }
-
-    default boolean isOutErrorState(int c)
-    {
-        return stateAtLeast(c, ENCODE_ERROR);
-    }
-
     boolean isInErrorState();
 
     boolean isOutErrorState();
-
-    ISort<C> getSort();
 }

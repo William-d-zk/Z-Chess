@@ -56,10 +56,7 @@ public class WroteOperator
         }
         catch (Exception e) {
             e.printStackTrace();
-            return new Triple<>(e,
-                                session,
-                                session.getContext()
-                                       .getError());
+            return new Triple<>(e, session, session.getError());
         }
         return null;
     }

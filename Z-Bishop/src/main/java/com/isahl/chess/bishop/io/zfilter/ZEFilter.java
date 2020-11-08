@@ -32,7 +32,7 @@ import com.isahl.chess.queen.io.core.inf.IProtocol;
 /**
  * @author William.d.zk
  */
-public class ZEFilter<T extends ZContext<T> & IEContext>
+public class ZEFilter<T extends ZContext & IEContext>
         extends
         AioFilterChain<T,
                        IPacket,
@@ -98,28 +98,33 @@ public class ZEFilter<T extends ZContext<T> & IEContext>
     }
 
     @Override
-    public <C extends IPContext<C>,
+    public <C extends IPContext,
             O extends IProtocol> ResultType pipeSeek(C context, O output)
     {
         return null;
     }
 
     @Override
-    public <C extends IPContext<C>,
+    public <C extends IPContext,
             I extends IProtocol> ResultType pipePeek(C context, I input)
     {
         return null;
     }
 
     @Override
-    public <C extends IPContext<C>, O extends IProtocol, I extends IProtocol> I pipeEncode(C context, O output) {
+    public <C extends IPContext,
+            O extends IProtocol,
+            I extends IProtocol> I pipeEncode(C context, O output)
+    {
         return null;
     }
 
     @Override
-    public <C extends IPContext<C>, O extends IProtocol, I extends IProtocol> O pipeDecode(C context, I input) {
+    public <C extends IPContext,
+            O extends IProtocol,
+            I extends IProtocol> O pipeDecode(C context, I input)
+    {
         return null;
     }
-
 
 }

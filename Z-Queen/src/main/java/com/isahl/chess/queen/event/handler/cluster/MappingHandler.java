@@ -149,12 +149,7 @@ public class MappingHandler<T extends IStorage>
                         ISession session = handled.getSecond();
                         IControl[] toSends = handled.getThird();
                         if (toSends != null) {
-                            publish(_Writer,
-                                    WRITE,
-                                    new Pair<>(toSends, session),
-                                    session.getContext()
-                                           .getSort()
-                                           .getTransfer());
+                            publish(_Writer, WRITE, new Pair<>(toSends, session), session.getTransfer());
                         }
                     }
                     else {
@@ -180,12 +175,7 @@ public class MappingHandler<T extends IStorage>
                         ISession session = handled.getSecond();
                         IControl[] toSends = handled.getThird();
                         if (toSends != null) {
-                            publish(_Writer,
-                                    WRITE,
-                                    new Pair<>(toSends, session),
-                                    session.getContext()
-                                           .getSort()
-                                           .getTransfer());
+                            publish(_Writer, WRITE, new Pair<>(toSends, session), session.getTransfer());
                         }
                     }
                     else {
@@ -208,12 +198,7 @@ public class MappingHandler<T extends IStorage>
                         if (pair == null) return;
                         IControl[] toSends = pair.getFirst();
                         if (toSends != null && toSends.length > 0) {
-                            publish(_Writer,
-                                    WRITE,
-                                    new Pair<>(toSends, session),
-                                    session.getContext()
-                                           .getSort()
-                                           .getTransfer());
+                            publish(_Writer, WRITE, new Pair<>(toSends, session), session.getTransfer());
                         }
                         IConsistentNotify notify = pair.getSecond();
                         if (notify != null) {

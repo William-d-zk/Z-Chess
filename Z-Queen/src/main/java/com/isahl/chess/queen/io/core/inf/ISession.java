@@ -49,6 +49,7 @@ public interface ISession
         IDisposable,
         IAddress,
         IValid,
+        IConnectMode,
         IReadable<ISession>,
         IWritable<ISession>,
         Comparable<ISession>
@@ -63,7 +64,7 @@ public interface ISession
 
     AsynchronousSocketChannel getChannel();
 
-    <T extends IPContext<T>> T getContext();
+    <T extends IPContext> T getContext();
 
     ISessionDismiss getDismissCallback();
 
@@ -106,11 +107,68 @@ public interface ISession
 
     default void innerClose()
     {
-        ISessionCloser closeOperator = getContext().getCloser();
+        ISessionCloser closeOperator = getCloser();
         closeOperator.handle("inner-close", this);
         getDismissCallback().onDismiss(this);
     }
 
-    void ready();
+    /* 最多支持8种状态 -3~4 */
+    int COUNT_BITS         = Integer.SIZE - 3;
+    int CAPACITY           = (1 << COUNT_BITS) - 1;
+    int SESSION_CREATED    = -3 << COUNT_BITS;
+    int SESSION_CONNECTED  = -2 << COUNT_BITS;     /* 只有链接成功时才会创建 ISession 和 IContext */
+    int SESSION_IDLE       = -1 << COUNT_BITS;     /* 处于空闲状态 */
+    int SESSION_PENDING    = 00 << COUNT_BITS;     /* 有待发数据，尚未完成编码 */
+    int SESSION_SENDING    = 01 << COUNT_BITS;     /* 有编码完成的数据在发送，已装入待发sending-buffer */
+    int SESSION_FLUSHED    = 02 << COUNT_BITS;     /* 有编码完成的数据在发送，write->wrote 事件等待 */
+    int SESSION_CLOSE      = 03 << COUNT_BITS;     /* 链路关闭，尚未完成清理 [any]->[close] */
+    int SESSION_TERMINATED = 04 << COUNT_BITS;     /* 终态，清理结束 */
 
+    default String getSessionStateStr(int c)
+    {
+        return switch (c)
+        {
+            case SESSION_CREATED -> "SESSION_CREATED";
+            case SESSION_CONNECTED -> "SESSION_CONNECTED";
+            case SESSION_IDLE -> "SESSION_IDLE";
+            case SESSION_PENDING -> "SESSION_PENDING";
+            case SESSION_SENDING -> "SESSION_SENDING";
+            case SESSION_FLUSHED -> "SESSION_FLUSHED";
+            case SESSION_CLOSE -> "SESSION_CLOSE";
+            case SESSION_TERMINATED -> "SESSION_TERMINATED";
+            default -> "UNKNOWN";
+        };
+    }
+
+    static int stateOf(int c)
+    {
+        return c & ~CAPACITY;
+    }
+
+    static int countOf(int c)
+    {
+        return c & CAPACITY;
+    }
+
+    static boolean isConnected(int c)
+    {
+        return c < SESSION_CLOSE;
+    }
+
+    static boolean isClosed(int c)
+    {
+        return c >= SESSION_CLOSE;
+    }
+
+    ISessionError getError();
+
+    ISessionCloser getCloser();
+
+    IPipeEncoder getEncoder();
+
+    IPipeDecoder getDecoder();
+
+    IPipeTransfer getTransfer();
+
+    IFilterChain getFilterChain();
 }

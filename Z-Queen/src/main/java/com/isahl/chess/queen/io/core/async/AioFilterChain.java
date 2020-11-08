@@ -22,22 +22,18 @@
  */
 package com.isahl.chess.queen.io.core.async;
 
-import java.util.Objects;
-
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.inf.IFilter;
 import com.isahl.chess.queen.io.core.inf.IFilterChain;
-import com.isahl.chess.queen.io.core.inf.IFrame;
 import com.isahl.chess.queen.io.core.inf.IPContext;
-import com.isahl.chess.queen.io.core.inf.IPacket;
 import com.isahl.chess.queen.io.core.inf.IPipeFilter;
 import com.isahl.chess.queen.io.core.inf.IProtocol;
 
 /**
  * @author William.d.zk
  */
-public abstract class AioFilterChain<C extends IPContext<C>,
+public abstract class AioFilterChain<C extends IPContext,
                                      O extends IProtocol,
                                      I extends IProtocol>
         implements
@@ -188,31 +184,6 @@ public abstract class AioFilterChain<C extends IPContext<C>,
     protected boolean checkType(IProtocol protocol, int type_serial)
     {
         return protocol.superSerial() == type_serial;
-    }
-
-    protected ResultType preFrameEncodec(C context, IProtocol output)
-    {
-        return context.isOutConvert() && checkType(output, IProtocol.FRAME_SERIAL) ? ResultType.NEXT_STEP
-                                                                                   : ResultType.IGNORE;
-    }
-
-
-    protected ResultType preProxyEncode(C context, IProtocol output)
-    {
-        if (Objects.isNull(context) || Objects.isNull(output)) { return ResultType.ERROR; }
-        return context.isOutConvert()
-               && (checkType(output, IProtocol.COMMAND_SERIAL)
-                   || checkType(output, IProtocol.CONTROL_SERIAL)
-                   || checkType(output, IProtocol.FRAME_SERIAL)
-                   || checkType(output, IProtocol.PACKET_SERIAL)) ? ResultType.NEXT_STEP
-                                                                  : ResultType.IGNORE;
-    }
-
-    protected ResultType preProxyDecode(C context, IFrame input)
-    {
-        if (Objects.isNull(context) || Objects.isNull(input)) { return ResultType.ERROR; }
-        return context.isInConvert() && checkType(input, IProtocol.FRAME_SERIAL) && !input.isCtrl() ? ResultType.HANDLED
-                                                                                                    : ResultType.IGNORE;
     }
 
     @Override

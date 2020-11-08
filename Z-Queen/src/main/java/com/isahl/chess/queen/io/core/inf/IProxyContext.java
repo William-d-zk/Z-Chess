@@ -23,7 +23,7 @@
 
 package com.isahl.chess.queen.io.core.inf;
 
-public interface IProxyContext<A extends IPContext<A>>
+public interface IProxyContext<A extends IPContext>
 {
     A getActingContext();
 }

@@ -197,11 +197,7 @@ public class DeviceConsumer
                 session = null;
             }
             if (Objects.nonNull(commands) && commands.length > 0 && Objects.nonNull(session)) {
-                event.produce(WRITE,
-                              new Pair<>(commands, session),
-                              session.getContext()
-                                     .getSort()
-                                     .getTransfer());
+                event.produce(WRITE, new Pair<>(commands, session), session.getTransfer());
             }
             else {
                 event.ignore();
@@ -279,7 +275,8 @@ public class DeviceConsumer
                 DeviceConsumer.this.addSession(session);
                 zClient.setSessionIndex(sessionIndex);
                 _ZClientMap.put(session.getIndex(), zClient);
-                session.ready();
+                session.getContext()
+                       .ready();
                 _Logger.debug("connected :%d", sessionIndex);
             }
 
@@ -288,12 +285,7 @@ public class DeviceConsumer
                                           IConnectActivity activity) throws IOException
             {
 
-                return new AioSession<>(socketChannel,
-                                        this,
-                                        zSortHolder.getSort()
-                                                   .newContext(this),
-                                        activity,
-                                        DeviceConsumer.this);
+                return new AioSession<>(socketChannel, this, zSortHolder.getSort(), activity, DeviceConsumer.this);
             }
 
             @Override

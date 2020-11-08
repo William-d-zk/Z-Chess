@@ -23,6 +23,8 @@
 
 package com.isahl.chess.bishop.io.mqtt;
 
+import static com.isahl.chess.king.base.schedule.inf.ITask.advanceState;
+
 import com.isahl.chess.bishop.io.ZContext;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.util.Pair;
@@ -34,7 +36,7 @@ import com.isahl.chess.queen.io.core.inf.ISessionOption;
  */
 public class QttContext
         extends
-        ZContext<QttContext>
+        ZContext
 {
     private final static IPair SUPPORT_VERSION = new Pair<>(new String[] { "5.0.0",
                                                                            "3.1.1"
@@ -44,9 +46,10 @@ public class QttContext
                                                             });
 
     public QttContext(ISessionOption option,
-                      ISort<QttContext> sort)
+                      ISort.Mode mode,
+                      ISort.Type type)
     {
-        super(option, sort);
+        super(option, mode, type);
     }
 
     public static IPair getSupportVersion()
@@ -78,4 +81,10 @@ public class QttContext
         return mVersion;
     }
 
+    @Override
+    public void ready()
+    {
+        advanceState(_DecodeState, DECODE_FRAME);
+        advanceState(_EncodeState, ENCODE_FRAME);
+    }
 }

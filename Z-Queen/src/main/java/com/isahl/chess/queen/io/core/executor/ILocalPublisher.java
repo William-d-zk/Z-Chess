@@ -59,11 +59,7 @@ public interface ILocalPublisher
                 long sequence = _LocalSendEvent.next();
                 try {
                     QEvent event = _LocalSendEvent.get(sequence);
-                    event.produce(type,
-                                  new Pair<>(toSends, session),
-                                  session.getContext()
-                                         .getSort()
-                                         .getTransfer());
+                    event.produce(type, new Pair<>(toSends, session), session.getTransfer());
                     return true;
                 }
                 finally {
@@ -88,11 +84,7 @@ public interface ILocalPublisher
             long sequence = _LocalCloseEvent.next();
             try {
                 QEvent event = _LocalCloseEvent.get(sequence);
-                event.produce(IOperator.Type.LOCAL_CLOSE,
-                              new Pair<>(null, session),
-                              session.getContext()
-                                     .getSort()
-                                     .getCloser());
+                event.produce(IOperator.Type.LOCAL_CLOSE, new Pair<>(null, session), session.getCloser());
             }
             finally {
                 _LocalCloseEvent.publish(sequence);

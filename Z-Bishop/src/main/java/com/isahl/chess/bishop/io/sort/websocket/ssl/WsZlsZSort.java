@@ -61,6 +61,6 @@ public class WsZlsZSort
     @Override
     public EZContext<WsContext> newContext(ISessionOption option)
     {
-        return new EZContext<>(option, this, _ActingSort.newContext(option));
+        return new EZContext<>(option, getMode(), getType(), _ActingSort.newContext(option));
     }
 }

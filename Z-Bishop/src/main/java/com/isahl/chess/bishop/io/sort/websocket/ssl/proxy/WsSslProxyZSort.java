@@ -38,7 +38,7 @@ import com.isahl.chess.queen.io.core.inf.IFilterChain;
 import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.ISessionOption;
 
-public class WsSslProxyZSort<A extends IPContext<A>>
+public class WsSslProxyZSort<A extends IPContext>
         extends
         BaseSort<SSLZContext<WsProxyContext<A>>>
 {
@@ -69,7 +69,7 @@ public class WsSslProxyZSort<A extends IPContext<A>>
     public SSLZContext<WsProxyContext<A>> newContext(ISessionOption option)
     {
         try {
-            return new SSLZContext<>(option, this, _ActingSort.newContext(option));
+            return new SSLZContext<>(option, getMode(), getType(), _ActingSort.newContext(option));
         }
         catch (NoSuchAlgorithmException e) {
             e.printStackTrace();

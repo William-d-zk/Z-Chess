@@ -60,7 +60,7 @@ public class MqttSslZSort
     public SSLZContext<QttContext> newContext(ISessionOption option)
     {
         try {
-            return new SSLZContext<>(option, this, new QttContext(option, _ActingSort));
+            return new SSLZContext<>(option, getMode(), getType(), _ActingSort.newContext(option));
         }
         catch (NoSuchAlgorithmException e) {
             e.printStackTrace();

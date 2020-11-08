@@ -23,7 +23,8 @@
 
 package com.isahl.chess.bishop.io.ssl;
 
-import java.io.IOException;
+import static com.isahl.chess.king.base.schedule.inf.ITask.advanceState;
+
 import java.security.NoSuchAlgorithmException;
 
 import javax.net.ssl.SSLContext;
@@ -41,9 +42,9 @@ import com.isahl.chess.queen.io.core.inf.ISslContext;
 /**
  * @author william.d.zk
  */
-public class SSLZContext<A extends IPContext<A>>
+public class SSLZContext<A extends IPContext>
         extends
-        ZContext<SSLZContext<A>>
+        ZContext
         implements
         ISslContext,
         IProxyContext<A>
@@ -54,13 +55,14 @@ public class SSLZContext<A extends IPContext<A>>
     private final A             _ActingContext;
 
     public SSLZContext(ISessionOption option,
-                       ISort<SSLZContext<A>> sort,
+                       ISort.Mode mode,
+                       ISort.Type type,
                        A acting) throws NoSuchAlgorithmException
     {
-        super(option, sort);
+        super(option, mode, type);
+        _ActingContext = acting;
         _SslContext = SSLContext.getInstance("TLSv1.3");
         _SslEngine = _SslContext.createSSLEngine();
-        _ActingContext = acting;
     }
 
     @Override
@@ -80,9 +82,9 @@ public class SSLZContext<A extends IPContext<A>>
     }
 
     @Override
-    public void close() throws IOException
+    public void reset()
     {
-        super.close();
+        super.reset();
         try {
             _SslEngine.closeInbound();
         }
@@ -96,5 +98,12 @@ public class SSLZContext<A extends IPContext<A>>
     public boolean isProxy()
     {
         return true;
+    }
+
+    @Override
+    public void ready()
+    {
+        advanceState(_DecodeState, DECODE_FRAME);
+        advanceState(_EncodeState, ENCODE_FRAME);
     }
 }

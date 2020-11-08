@@ -195,8 +195,6 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
                         return x72Stream.map(x72 -> new Triple<>(x72,
                                                                  x72.getSession(),
                                                                  x72.getSession()
-                                                                    .getContext()
-                                                                    .getSort()
                                                                     .getEncoder()))
                                         .collect(Collectors.toList());
                     }
@@ -209,8 +207,6 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
                         return x70Stream.map(x70 -> new Triple<>(x70,
                                                                  x70.getSession(),
                                                                  x70.getSession()
-                                                                    .getContext()
-                                                                    .getSort()
                                                                     .getEncoder()))
                                         .collect(Collectors.toList());
                     }
@@ -236,8 +232,7 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
                             .map(x72 -> new Triple<>(x72,
                                                      x72.getSession(),
                                                      x72.getSession()
-                                                        .getContext()
-                                                        .getSort()
+
                                                         .getEncoder()))
                             .collect(Collectors.toList());
         }
@@ -254,11 +249,7 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
             ISession leaderSession = manager.findSessionByPrefix(_RaftNode.getMachine()
                                                                           .getLeader());
             if (leaderSession != null) {
-                return Collections.singletonList(new Triple<>(x75,
-                                                              leaderSession,
-                                                              leaderSession.getContext()
-                                                                           .getSort()
-                                                                           .getEncoder()));
+                return Collections.singletonList(new Triple<>(x75, leaderSession, leaderSession.getEncoder()));
             }
             else {
                 _Logger.fetal("Leader connection miss,wait for reconnecting");

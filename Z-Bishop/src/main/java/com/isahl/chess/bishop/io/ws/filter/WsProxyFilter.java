@@ -40,7 +40,7 @@ import com.isahl.chess.queen.io.core.inf.IProxyContext;
  * 
  * @date 2019-05-07
  */
-public class WsProxyFilter<A extends IPContext<A>>
+public class WsProxyFilter<A extends IPContext>
         extends
         AioFilterChain<WsProxyContext<A>,
                        IPacket,
@@ -85,7 +85,7 @@ public class WsProxyFilter<A extends IPContext<A>>
 
     @Override
     @SuppressWarnings("unchecked")
-    public <C extends IPContext<C>,
+    public <C extends IPContext,
             O extends IProtocol> ResultType pipeSeek(C context, O output)
     {
         if (checkType(output, IProtocol.PACKET_SERIAL)) {
@@ -93,7 +93,7 @@ public class WsProxyFilter<A extends IPContext<A>>
                 return seek((WsProxyContext<A>) context, (IPacket) output);
             }
             else if (context.isProxy()) {//SSL|ZLS
-                IPContext<?> acting = ((IProxyContext<?>) context).getActingContext();
+                IPContext acting = ((IProxyContext<?>) context).getActingContext();
                 if (acting.isProxy() && acting instanceof IWsContext) {
                     return seek((WsProxyContext<A>) acting, (IPacket) output);
                 }
@@ -104,7 +104,7 @@ public class WsProxyFilter<A extends IPContext<A>>
 
     @Override
     @SuppressWarnings("unchecked")
-    public <C extends IPContext<C>,
+    public <C extends IPContext,
             I extends IProtocol> ResultType pipePeek(C context, I input)
     {
         if (checkType(input, IProtocol.FRAME_SERIAL)) {
@@ -112,7 +112,7 @@ public class WsProxyFilter<A extends IPContext<A>>
                 return peek((WsProxyContext<A>) context, (WsFrame) input);
             }
             else if (context.isProxy()) {
-                IPContext<?> acting = ((IProxyContext<?>) context).getActingContext();
+                IPContext acting = ((IProxyContext<?>) context).getActingContext();
                 if (acting.isProxy() && acting instanceof IWsContext) {
                     return peek((WsProxyContext<A>) acting, (WsFrame) input);
                 }
@@ -123,7 +123,7 @@ public class WsProxyFilter<A extends IPContext<A>>
 
     @Override
     @SuppressWarnings("unchecked")
-    public <C extends IPContext<C>,
+    public <C extends IPContext,
             O extends IProtocol,
             I extends IProtocol> I pipeEncode(C context, O output)
     {
@@ -132,7 +132,7 @@ public class WsProxyFilter<A extends IPContext<A>>
             return (I) encode((WsProxyContext<A>) context, (IPacket) output);
         }
         else if (context.isProxy()) {
-            IPContext<?> acting = ((IProxyContext<?>) context).getActingContext();
+            IPContext acting = ((IProxyContext<?>) context).getActingContext();
             return (I) encode((WsProxyContext<A>) acting, (IPacket) output);
         }
         return null;
@@ -140,7 +140,7 @@ public class WsProxyFilter<A extends IPContext<A>>
 
     @Override
     @SuppressWarnings("unchecked")
-    public <C extends IPContext<C>,
+    public <C extends IPContext,
             O extends IProtocol,
             I extends IProtocol> O pipeDecode(C context, I input)
     {
@@ -148,7 +148,7 @@ public class WsProxyFilter<A extends IPContext<A>>
             return (O) decode((WsProxyContext<A>) context, (WsFrame) input);
         }
         else if (context.isProxy()) {
-            IPContext<?> acting = ((IProxyContext<?>) context).getActingContext();
+            IPContext acting = ((IProxyContext<?>) context).getActingContext();
             return (O) decode((WsProxyContext<A>) acting, (WsFrame) input);
         }
         return null;

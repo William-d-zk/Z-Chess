@@ -46,7 +46,7 @@ public interface ISessionCreator
     ISession createSession(AsynchronousSocketChannel socketChannel, IConnectActivity activity) throws IOException;
 
     @Override
-    default void setOptions(AsynchronousSocketChannel channel)
+    default void configChannel(AsynchronousSocketChannel channel)
     {
         if (channel != null) {
             try {

@@ -84,11 +84,7 @@ public class DecodedDispatcher
                 if (Objects.nonNull(commands)) {
                     for (IControl cmd : commands) {
                         // dispatch 到对应的 处理器里
-                        dispatch(session.getContext()
-                                        .getSort(),
-                                 cmd,
-                                 session,
-                                 event.getEventOp());
+                        dispatch(cmd, session, event.getEventOp());
                     }
                 }
             }
@@ -101,15 +97,14 @@ public class DecodedDispatcher
         event.reset();
     }
 
-    private <C extends IPContext<C>> void dispatch(ISort<C> sorter,
-                                                   IControl cmd,
-                                                   ISession session,
-                                                   IOperator<IControl,
-                                                             ISession,
-                                                             ITriple> op)
+    private <C extends IPContext> void dispatch(IControl cmd,
+                                                ISession session,
+                                                IOperator<IControl,
+                                                          ISession,
+                                                          ITriple> op)
     {
         cmd.setSession(session);
-        IPair nextPipe = getNextPipe(sorter.getMode(), cmd);
+        IPair nextPipe = getNextPipe(session.getMode(), cmd);
         publish(nextPipe.getFirst(), nextPipe.getSecond(), new Pair<>(cmd, session), op);
     }
 

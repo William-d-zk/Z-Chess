@@ -41,7 +41,6 @@ import com.isahl.chess.queen.event.inf.IPipeEventHandler;
 import com.isahl.chess.queen.event.inf.ISort;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.inf.IConnectActivity;
-import com.isahl.chess.queen.io.core.inf.IContext;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.lmax.disruptor.RingBuffer;
 
@@ -121,8 +120,7 @@ public class IoDispatcher
                         IPair closeContent = event.getContent();
                         session = closeContent.getSecond();
                         if (!session.isClosed()) {
-                            error(getNextPipe(session.getContext()
-                                                     .getMode()),
+                            error(getNextPipe(session.getMode()),
                                   INITIATIVE_CLOSE,
                                   new Pair<>(QueenCode.LOCAL_CLOSE, session),
                                   event.getEventOp());
@@ -147,8 +145,7 @@ public class IoDispatcher
                                 session.summary());
                 if (!session.isClosed()) {
                     IPair result = errorOperator.handle(throwable, session);
-                    error(getNextPipe(session.getContext()
-                                             .getMode()),
+                    error(getNextPipe(session.getMode()),
                           PASSIVE_CLOSE,
                           new Pair<>(QueenCode.ERROR_CLOSE, session),
                           result.getSecond());

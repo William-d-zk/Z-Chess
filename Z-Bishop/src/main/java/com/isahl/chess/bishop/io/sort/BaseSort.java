@@ -38,7 +38,7 @@ import com.isahl.chess.queen.io.core.inf.IPipeTransfer;
 import com.isahl.chess.queen.io.core.inf.ISessionCloser;
 import com.isahl.chess.queen.io.core.inf.ISessionError;
 
-public abstract class BaseSort<C extends IPContext<C>>
+public abstract class BaseSort<C extends IPContext>
         implements
         ISort<C>
 {

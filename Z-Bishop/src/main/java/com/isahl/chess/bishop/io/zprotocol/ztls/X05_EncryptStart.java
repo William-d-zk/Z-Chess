@@ -73,13 +73,13 @@ public class X05_EncryptStart
     }
 
     @Override
-    public <C extends IPContext<C>> void afterDecode(C ctx)
+    public <C extends IPContext> void afterDecode(C ctx)
     {
         ctx.updateIn();
     }
 
     @Override
-    public <C extends IPContext<C>> void afterEncode(C ctx)
+    public <C extends IPContext> void afterEncode(C ctx)
     {
         ctx.updateOut();
     }

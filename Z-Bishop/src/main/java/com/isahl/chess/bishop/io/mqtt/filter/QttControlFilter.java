@@ -79,7 +79,7 @@ public class QttControlFilter
     }
 
     @Override
-    public <C extends IPContext<C>,
+    public <C extends IPContext,
             O extends IProtocol> ResultType pipeSeek(C context, O output)
     {
         return checkType(output, IProtocol.CONTROL_SERIAL) ? seek((QttContext) context, (QttControl) output)
@@ -87,7 +87,7 @@ public class QttControlFilter
     }
 
     @Override
-    public <C extends IPContext<C>,
+    public <C extends IPContext,
             I extends IProtocol> ResultType pipePeek(C context, I input)
     {
         return checkType(input, IProtocol.FRAME_SERIAL) ? peek((QttContext) context, (QttFrame) input)
@@ -96,7 +96,7 @@ public class QttControlFilter
 
     @Override
     @SuppressWarnings("unchecked")
-    public <C extends IPContext<C>,
+    public <C extends IPContext,
             O extends IProtocol,
             I extends IProtocol> I pipeEncode(C context, O output)
     {
@@ -105,7 +105,7 @@ public class QttControlFilter
 
     @Override
     @SuppressWarnings("unchecked")
-    public <C extends IPContext<C>,
+    public <C extends IPContext,
             O extends IProtocol,
             I extends IProtocol> O pipeDecode(C context, I input)
     {

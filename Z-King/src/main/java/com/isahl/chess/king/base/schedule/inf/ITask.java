@@ -58,21 +58,20 @@ public interface ITask
         return _Ctl.compareAndSet(expect, expect + 1);
     }
 
-    static void advanceRunState(AtomicInteger _Ctl, int targetState)
+    static void advanceState(AtomicInteger _Ctl, int targetState)
     {
-        for (;;)
-        {
+        for (;;) {
             int c = _Ctl.get();
             if (c >= targetState || _Ctl.compareAndSet(c, ctlOf(targetState, retryCountOf(c)))) break;
         }
     }
 
-    static boolean runStateLessThan(int c, int s)
+    static boolean stateLessThan(int c, int s)
     {
         return c < s;
     }
 
-    static boolean runStateAtLeast(int c, int s)
+    static boolean stateAtLeast(int c, int s)
     {
         return c >= s;
     }

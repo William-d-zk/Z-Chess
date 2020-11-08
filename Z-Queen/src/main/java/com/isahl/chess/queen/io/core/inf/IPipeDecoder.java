@@ -37,12 +37,11 @@ public interface IPipeDecoder
                   ISession,
                   ITriple>
 {
-    default <C extends IPContext<C>> IControl[] filterRead(IPacket input, ISession session)
+    default <C extends IPContext> IControl[] filterRead(IPacket input, ISession session)
     {
         C context = session.getContext();
         if (context == null || input == null) { return null; }
-        final IFilterChain _Header = context.getSort()
-                                            .getFilterChain()
+        final IFilterChain _Header = session.getFilterChain()
                                             .getChainHead();
         IControl[] commands = null;
         IProtocol protocol = input;

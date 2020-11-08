@@ -106,9 +106,7 @@ public class WriteDispatcher
                                 error(_Error,
                                       INITIATIVE_CLOSE,
                                       new Pair<>(new ZException("session to shutdown"), targetSession),
-                                      targetSession.getContext()
-                                                   .getSort()
-                                                   .getError());
+                                      targetSession.getError());
                             }
                         }
                         else publish(dispatchEncoder(targetSession.getHashKey()),
@@ -140,9 +138,7 @@ public class WriteDispatcher
                             error(_Error,
                                   INITIATIVE_CLOSE,
                                   new Pair<>(new ZException("session to shutdown"), session),
-                                  session.getContext()
-                                         .getSort()
-                                         .getError());
+                                  session.getError());
                         }
                         /*
                          * session == null 意味着 _SessionManager.find..失败

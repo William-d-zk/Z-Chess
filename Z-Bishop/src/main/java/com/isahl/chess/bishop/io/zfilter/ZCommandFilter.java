@@ -49,7 +49,7 @@ import com.isahl.chess.queen.io.core.inf.IProxyContext;
 /**
  * @author William.d.zk
  */
-public class ZCommandFilter<T extends ZContext<T>>
+public class ZCommandFilter<T extends ZContext>
         extends
         AioFilterChain<T,
                        ICommand,
@@ -215,7 +215,7 @@ public class ZCommandFilter<T extends ZContext<T>>
 
     @Override
     @SuppressWarnings("unchecked")
-    public <C extends IPContext<C>,
+    public <C extends IPContext,
             O extends IProtocol> ResultType pipeSeek(C context, O output)
     {
         if (checkType(output, IProtocol.COMMAND_SERIAL)) {
@@ -232,7 +232,7 @@ public class ZCommandFilter<T extends ZContext<T>>
 
     @Override
     @SuppressWarnings("unchecked")
-    public <C extends IPContext<C>,
+    public <C extends IPContext,
             I extends IProtocol> ResultType pipePeek(C context, I input)
     {
         if (checkType(input, IProtocol.FRAME_SERIAL)) {
@@ -249,7 +249,7 @@ public class ZCommandFilter<T extends ZContext<T>>
 
     @Override
     @SuppressWarnings("unchecked")
-    public <C extends IPContext<C>,
+    public <C extends IPContext,
             O extends IProtocol,
             I extends IProtocol> I pipeEncode(C context, O output)
     {
@@ -263,7 +263,7 @@ public class ZCommandFilter<T extends ZContext<T>>
 
     @Override
     @SuppressWarnings("unchecked")
-    public <C extends IPContext<C>,
+    public <C extends IPContext,
             O extends IProtocol,
             I extends IProtocol> O pipeDecode(C context, I input)
     {

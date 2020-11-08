@@ -23,6 +23,8 @@
 
 package com.isahl.chess.bishop.io.zfilter;
 
+import static com.isahl.chess.king.base.schedule.inf.ITask.advanceState;
+
 import com.isahl.chess.bishop.io.ZContext;
 import com.isahl.chess.king.base.crypt.util.Rc4;
 import com.isahl.chess.king.base.util.CryptUtil;
@@ -33,9 +35,9 @@ import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.IProxyContext;
 import com.isahl.chess.queen.io.core.inf.ISessionOption;
 
-public class EZContext<A extends IPContext<A>>
+public class EZContext<A extends IPContext>
         extends
-        ZContext<EZContext<A>>
+        ZContext
         implements
         IEContext,
         IProxyContext<A>
@@ -51,10 +53,11 @@ public class EZContext<A extends IPContext<A>>
     private IEncryptHandler mEncryptHandler;
 
     public EZContext(ISessionOption option,
-                     ISort<EZContext<A>> sort,
+                     ISort.Mode mode,
+                     ISort.Type type,
                      A acting)
     {
-        super(option, sort);
+        super(option, mode, type);
         _ActingContext = acting;
     }
 
@@ -239,18 +242,25 @@ public class EZContext<A extends IPContext<A>>
     @Override
     public boolean isInCrypt()
     {
-        return stateAtLeast(_DecodeState.get(), DECODE_PAYLOAD);
+        return _DecodeState.get() == DECODE_PAYLOAD;
     }
 
     @Override
     public boolean isOutCrypt()
     {
-        return stateAtLeast(_EncodeState.get(), ENCODE_PAYLOAD);
+        return _EncodeState.get() == ENCODE_PAYLOAD;
     }
 
     @Override
     public boolean isProxy()
     {
         return true;
+    }
+
+    @Override
+    public void ready()
+    {
+        advanceState(_DecodeState, DECODE_FRAME);
+        advanceState(_EncodeState, ENCODE_FRAME);
     }
 }
