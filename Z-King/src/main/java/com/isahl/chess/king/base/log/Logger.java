@@ -54,102 +54,103 @@ public class Logger
 
     public void trace(Object object)
     {
-        _Logger.trace(object.toString());
+
+        if (_Logger.isTraceEnabled()) _Logger.trace(object.toString());
     }
 
     public void trace(String msg)
     {
-        _Logger.trace(msg);
+        if (_Logger.isTraceEnabled()) _Logger.trace(msg);
     }
 
     public void trace(String formatter, Object... content)
     {
-        _Logger.trace(String.format(formatter, content));
+        if (_Logger.isTraceEnabled()) _Logger.trace(String.format(formatter, content));
     }
 
     public void trace(String formatter, Throwable throwable, Object... msg)
     {
-        _Logger.trace(String.format(formatter, msg), throwable);
+        if (_Logger.isTraceEnabled()) _Logger.trace(String.format(formatter, msg), throwable);
     }
 
     public void trace(String msg, Throwable throwable)
     {
-        _Logger.trace(msg, throwable);
+        if (_Logger.isTraceEnabled()) _Logger.trace(msg, throwable);
     }
 
     public void info(String msg)
     {
-        _Logger.info(msg);
+        if (_Logger.isInfoEnabled()) _Logger.info(msg);
     }
 
     public void info(Object object)
     {
-        _Logger.info(object.toString());
+        if (_Logger.isInfoEnabled()) _Logger.info(object.toString());
     }
 
     public void info(String formatter, Object... content)
     {
-        _Logger.info(String.format(formatter, content));
+        if (_Logger.isInfoEnabled()) _Logger.info(String.format(formatter, content));
     }
 
     public void warning(String msg)
     {
-        _Logger.warn(msg);
+        if (_Logger.isWarnEnabled()) _Logger.warn(msg);
     }
 
     public void warning(String msg, Throwable throwable)
     {
-        _Logger.warn(msg, throwable);
+        if (_Logger.isWarnEnabled()) _Logger.warn(msg, throwable);
     }
 
     public void warning(String formatter, Throwable throwable, Object... msg)
     {
-        _Logger.warn(String.format(formatter, msg), throwable);
+        if (_Logger.isWarnEnabled()) _Logger.warn(String.format(formatter, msg), throwable);
     }
 
     public void warning(String formatter, Object... msg)
     {
-        _Logger.warn(String.format(formatter, msg));
+        if (_Logger.isWarnEnabled()) _Logger.warn(String.format(formatter, msg));
     }
 
     public void warning(Throwable e)
     {
-        _Logger.warn("e:", e);
+        if (_Logger.isWarnEnabled()) _Logger.warn("e:", e);
     }
 
     public void debug(Object object)
     {
-        _Logger.debug(object.toString());
+        if (_Logger.isDebugEnabled()) _Logger.debug(object.toString());
     }
 
     public void debug(String msg)
     {
-        _Logger.debug(msg);
+        if (_Logger.isDebugEnabled()) _Logger.debug(msg);
     }
 
     public void debug(String formatter, Object... content)
     {
-        _Logger.debug(String.format(formatter, content));
+        if (_Logger.isDebugEnabled()) _Logger.debug(String.format(formatter, content));
     }
 
     public void debug(String msg, Throwable throwable)
     {
-        _Logger.debug(msg, throwable);
+        if (_Logger.isDebugEnabled()) _Logger.debug(msg, throwable);
     }
 
     public void fetal(String msg, Throwable throwable)
     {
-        _Logger.error(msg, throwable);
+        if (_Logger.isErrorEnabled()) _Logger.error(msg, throwable);
     }
 
     public void fetal(String msg)
     {
-        _Logger.error(msg);
+        if (_Logger.isErrorEnabled()) _Logger.error(msg);
     }
 
     public void fetal(String formatter, Object... params)
     {
-        _Logger.error(formatter, params);
+        if (_Logger.isErrorEnabled()) _Logger.error(formatter, params);
     }
 
     public boolean isEnable(Level level)

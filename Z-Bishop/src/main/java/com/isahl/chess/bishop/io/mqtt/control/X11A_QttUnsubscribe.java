@@ -33,7 +33,6 @@ import java.util.List;
 import com.isahl.chess.bishop.io.mqtt.QttCommand;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.inf.IConsistent;
-import com.isahl.chess.queen.io.core.inf.IPContext;
 
 /**
  * @author william.d.zk
@@ -123,7 +122,7 @@ public class X11A_QttUnsubscribe
     @Override
     public String toString()
     {
-        return String.format("unsubscribe local-id:%d topics:%s", getLocalId(), _Topics);
+        return String.format("unsubscribe msg-id:%d topics:%s", getMsgId(), _Topics);
     }
 
 }

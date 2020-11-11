@@ -30,7 +30,6 @@ import java.util.Objects;
 
 import com.isahl.chess.bishop.io.mqtt.QttCommand;
 import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.queen.io.core.inf.IPContext;
 
 /**
  * @author william.d.zk
@@ -108,7 +107,7 @@ public class X113_QttPublish
                              isDuplicate(),
                              isRetain(),
                              getLevel(),
-                             getLocalId(),
+                             getMsgId(),
                              getTopic(),
                              getPayload() == null ? "NULL"
                                                   : new String(getPayload(), StandardCharsets.UTF_8));

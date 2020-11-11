@@ -31,7 +31,6 @@ import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.io.core.inf.IConnectActivity;
-import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISession;
 
 /**
@@ -54,9 +53,9 @@ public class ConnectedOperator
             session = activity.createSession(channel, activity);
             // session == null 已经throw IOException了
             activity.onCreate(session);
+            session.ready();
             session.readNext(_AioReader);
-            IControl[] commands = activity.createCommands(session);
-            return new Triple<>(true, session, commands);
+            return new Triple<>(true, session, activity.createCommands(session));
         }
         catch (IOException e) {
             try {
@@ -69,8 +68,8 @@ public class ConnectedOperator
         }
         catch (Exception e) {
             // 此时session!=null
-            if (session != null) { return new Triple<>(false, session, e); }
-            return new Triple<>(false, channel, e);
+            return session != null ? new Triple<>(false, session, e)
+                                   : new Triple<>(false, channel, e);
         }
     }
 
