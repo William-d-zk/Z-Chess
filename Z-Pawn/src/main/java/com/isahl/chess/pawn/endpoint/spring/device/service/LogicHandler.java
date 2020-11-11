@@ -120,10 +120,10 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                                            .getValue() < EXACTLY_ONCE.getValue() ? OWNER_SERVER
                                                                                  : OWNER_CLIENT);
                 messageEntity.setBody(new MessageBody(x113.getTopic(), JsonUtil.readTree(x113.getPayload())));
-                messageEntity.setMsgId(x113.getMsgId());
                 messageEntity.setCmd(X113_QttPublish.COMMAND);
                 messageEntity.setOperation(OP_INSERT);
                 messageEntity.setStatus(Status.CREATED);
+                messageEntity.setMsgId(x113.getMsgId());
                 _MessageRepository.save(messageEntity);
                 List<IControl> pushList = new LinkedList<>();
                 switch (x113.getLevel())
@@ -154,7 +154,7 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                                                                                                               session.getIndex(),
                                                                                                               x115.getMsgId(),
                                                                                                               LocalDateTime.now()
-                                                                                                                           .minusSeconds(5));
+                                                                                                                           .minusMinutes(600));
                 update.setOwner(OWNER_CLIENT);
                 update.setOperation(OP_MODIFY);
                 _MessageRepository.save(update);
@@ -205,15 +205,15 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                  ISession targetSession = manager.findSessionByIndex(sessionIndex);
                  if (targetSession != null) {
                      IQoS.Level subscribeLevel = entry.getValue();
-                     X113_QttPublish publish = new X113_QttPublish();
-                     publish.setLevel(IQoS.Level.valueOf(min(subscribeLevel.getValue(), level.getValue())));
-                     publish.setTopic(message.getBody()
-                                             .getTopic());
+                     X113_QttPublish x113 = new X113_QttPublish();
+                     x113.setLevel(IQoS.Level.valueOf(min(subscribeLevel.getValue(), level.getValue())));
+                     x113.setTopic(message.getBody()
+                                          .getTopic());
                      byte[] payload = message.getBody()
                                              .contentBinary();
-                     publish.setPayload(payload);
-                     publish.setSession(targetSession);
-                     if (publish.getLevel() == ALMOST_ONCE) { return publish; }
+                     x113.setPayload(payload);
+                     x113.setSession(targetSession);
+                     if (x113.getLevel() == ALMOST_ONCE) { return x113; }
                      MessageEntity brokerMsg = new MessageEntity();
                      brokerMsg.setMsgId(_QttRouter.nextId());
                      brokerMsg.setOrigin(_RaftNode.getPeerId());
@@ -224,9 +224,9 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                      brokerMsg.setBody(message.getBody());
                      brokerMsg.setCmd(X113_QttPublish.COMMAND);
                      _MessageRepository.save(brokerMsg);
-                     publish.setMsgId(brokerMsg.getMsgId());
-                     _QttRouter.register(publish, sessionIndex);
-                     return publish;
+                     x113.setMsgId(brokerMsg.getMsgId());
+                     _QttRouter.register(x113, sessionIndex);
+                     return x113;
                  }
                  return null;
              })

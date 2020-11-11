@@ -32,7 +32,6 @@ import java.util.TreeMap;
 import com.isahl.chess.bishop.io.mqtt.QttCommand;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.inf.IConsistent;
-import com.isahl.chess.queen.io.core.inf.IPContext;
 
 /**
  * @author william.d.zk
@@ -137,8 +136,8 @@ public class X118_QttSubscribe
     @Override
     public String toString()
     {
-        return String.format("subscribe local-id:%d topics:%s",
-                             getLocalId(),
+        return String.format("subscribe msg-id:%d topics:%s",
+                             getMsgId(),
                              mSubscribes != null ? mSubscribes.toString()
                                                  : null);
     }

@@ -26,7 +26,6 @@ package com.isahl.chess.bishop.io.mqtt.control;
 import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
 
 import com.isahl.chess.bishop.io.mqtt.QttCommand;
-import com.isahl.chess.queen.io.core.inf.IPContext;
 
 /**
  * @author william.d.zk
@@ -48,6 +47,6 @@ public class X114_QttPuback
     @Override
     public String toString()
     {
-        return String.format("x114 puback:{local-id:%d}", getLocalId());
+        return String.format("x114 puback:{msg-id:%d}", getMsgId());
     }
 }

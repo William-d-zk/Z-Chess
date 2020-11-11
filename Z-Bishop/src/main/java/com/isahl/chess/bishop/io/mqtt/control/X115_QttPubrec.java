@@ -26,7 +26,6 @@ package com.isahl.chess.bishop.io.mqtt.control;
 import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
 
 import com.isahl.chess.bishop.io.mqtt.QttCommand;
-import com.isahl.chess.queen.io.core.inf.IPContext;
 
 /**
  * @author william.d.zk
@@ -48,6 +47,6 @@ public class X115_QttPubrec
     @Override
     public String toString()
     {
-        return String.format("x115 pubrec:{local-id:%d}", getLocalId());
+        return String.format("x115 pubrec:{msg-id:%d}", getMsgId());
     }
 }

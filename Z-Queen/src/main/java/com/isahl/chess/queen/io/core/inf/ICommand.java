@@ -43,7 +43,4 @@ public interface ICommand
 
     void setMsgId(long msgId);
 
-    int getLocalId();
-
-    void setLocalId(int localId);
 }

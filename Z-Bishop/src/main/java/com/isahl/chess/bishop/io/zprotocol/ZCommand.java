@@ -53,7 +53,6 @@ public class ZCommand
 
     private ISession mSession;
     private byte[]   mPayload;
-    private int      mLocalId;
 
     @Override
     public ICommand setSession(ISession session)
@@ -118,15 +117,4 @@ public class ZCommand
         return getCommand();
     }
 
-    @Override
-    public int getLocalId()
-    {
-        return mLocalId;
-    }
-
-    @Override
-    public void setLocalId(int localId)
-    {
-        mLocalId = localId;
-    }
 }
