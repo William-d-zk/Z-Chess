@@ -110,8 +110,6 @@ public class ClusterNode
             {
                 session.setIndex(_ZUID.getId());
                 ClusterNode.this.addSession(session);
-                session.getContext()
-                       .ready();
             }
 
             @Override

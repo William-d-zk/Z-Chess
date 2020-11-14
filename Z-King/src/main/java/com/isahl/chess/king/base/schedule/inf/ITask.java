@@ -38,14 +38,14 @@ public interface ITask
     int RETRY_COUNT_BITS = 2;
     int RETRY_LIMIT      = (1 << RETRY_COUNT_BITS) - 1;
 
-    static int runStateOf(int state)
+    static int stateOf(int state, int limit)
     {
-        return state & ~RETRY_LIMIT;
+        return state & ~limit;
     }
 
-    static int retryCountOf(int c)
+    static int countOf(int c, int limit)
     {
-        return c & RETRY_LIMIT;
+        return c & limit;
     }
 
     static int ctlOf(int rs, int rc)
@@ -58,11 +58,19 @@ public interface ITask
         return _Ctl.compareAndSet(expect, expect + 1);
     }
 
-    static void advanceState(AtomicInteger _Ctl, int targetState)
+    static void advanceState(AtomicInteger _Ctl, int targetState, int limit)
     {
         for (;;) {
             int c = _Ctl.get();
-            if (c >= targetState || _Ctl.compareAndSet(c, ctlOf(targetState, retryCountOf(c)))) break;
+            if (c >= targetState || _Ctl.compareAndSet(c, ctlOf(targetState, countOf(c, limit)))) break;
+        }
+    }
+
+    static void recedeState(AtomicInteger _Ctl, int targetState, int limit)
+    {
+        for (;;) {
+            int c = _Ctl.get();
+            if (c <= targetState || _Ctl.compareAndSet(c, ctlOf(targetState, countOf(c, limit)))) break;
         }
     }
 

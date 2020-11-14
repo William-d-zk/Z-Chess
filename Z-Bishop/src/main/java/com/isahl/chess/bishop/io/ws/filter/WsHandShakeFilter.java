@@ -64,7 +64,7 @@ public class WsHandShakeFilter<T extends ZContext & IWsContext>
     public IPacket encode(T context, WsHandshake output)
     {
         AioPacket encoded = new AioPacket(ByteBuffer.wrap(output.encode()));
-        context.setOutState(ENCODE_FRAME);
+        context.advanceOutState(ENCODE_FRAME);
         return encoded;
     }
 
@@ -257,7 +257,7 @@ public class WsHandShakeFilter<T extends ZContext & IWsContext>
     public WsHandshake decode(T context, IPacket input)
     {
         WsHandshake handshake = context.getHandshake();
-        context.setInState(DECODE_FRAME);
+        context.advanceInState(DECODE_FRAME);
         context.finish();
         return handshake;
     }

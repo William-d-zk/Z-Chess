@@ -25,7 +25,8 @@ package com.isahl.chess.bishop.io;
 import static com.isahl.chess.king.base.schedule.inf.ITask.advanceState;
 import static com.isahl.chess.king.base.schedule.inf.ITask.stateAtLeast;
 import static com.isahl.chess.king.base.schedule.inf.ITask.stateLessThan;
-import static com.isahl.chess.queen.io.core.inf.ISession.stateOf;
+import static com.isahl.chess.king.base.schedule.inf.ITask.stateOf;
+import static com.isahl.chess.queen.io.core.inf.ISession.CAPACITY;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -61,15 +62,15 @@ public abstract class ZContext
         super(option);
         _Mode = mode;
         _Type = type;
-        advanceState(_EncodeState, ENCODE_NULL);
-        advanceState(_DecodeState, DECODE_NULL);
+        advanceState(_EncodeState, ENCODE_NULL, CAPACITY);
+        advanceState(_DecodeState, DECODE_NULL, CAPACITY);
     }
 
     @Override
     public void reset()
     {
-        advanceState(_EncodeState, ENCODE_NULL);
-        advanceState(_DecodeState, DECODE_NULL);
+        advanceState(_EncodeState, ENCODE_NULL, CAPACITY);
+        advanceState(_DecodeState, DECODE_NULL, CAPACITY);
         super.reset();
         mDecodingPosition = -1;
         mLackData = 1;
@@ -129,37 +130,39 @@ public abstract class ZContext
     @Override
     public int outState()
     {
-        return stateOf(_EncodeState.get());
+        return stateOf(_EncodeState.get(), CAPACITY);
     }
 
     @Override
-    public void setOutState(int state)
+    public void advanceOutState(int state)
     {
-        advanceState(_EncodeState, state);
+        advanceState(_EncodeState, state, CAPACITY);
     }
 
     @Override
     public int inState()
     {
-        return stateOf(_DecodeState.get());
+        return stateOf(_DecodeState.get(), CAPACITY);
     }
 
     @Override
-    public void setInState(int state)
+    public void advanceInState(int state)
     {
-        advanceState(_DecodeState, state);
+        advanceState(_DecodeState, state, CAPACITY);
     }
 
     @Override
     public boolean isInConvert()
     {
-        return stateAtLeast(_DecodeState.get(), DECODE_PAYLOAD) && stateLessThan(_DecodeState.get(), DECODE_ERROR);
+        int state = _DecodeState.get();
+        return stateAtLeast(state, DECODE_PAYLOAD) && stateLessThan(state, DECODE_ERROR);
     }
 
     @Override
     public boolean isOutConvert()
     {
-        return stateAtLeast(_EncodeState.get(), ENCODE_PAYLOAD) && stateLessThan(_EncodeState.get(), ENCODE_ERROR);
+        int state = _EncodeState.get();
+        return stateAtLeast(state, ENCODE_PAYLOAD) && stateLessThan(state, ENCODE_ERROR);
     }
 
     @Override

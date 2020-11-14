@@ -23,6 +23,7 @@
 package com.isahl.chess.bishop.io.ws;
 
 import static com.isahl.chess.king.base.schedule.inf.ITask.advanceState;
+import static com.isahl.chess.queen.io.core.inf.ISession.CAPACITY;
 
 import java.util.Base64;
 import java.util.Random;
@@ -153,13 +154,13 @@ public class WsContext
         {
             case CLUSTER ->
                 {
-                    advanceState(_DecodeState, DECODE_PAYLOAD);
-                    advanceState(_EncodeState, ENCODE_PAYLOAD);
+                    advanceState(_DecodeState, DECODE_PAYLOAD, CAPACITY);
+                    advanceState(_EncodeState, ENCODE_PAYLOAD, CAPACITY);
                 }
             case LINK ->
                 {
-                    advanceState(_DecodeState, DECODE_FRAME);
-                    advanceState(_EncodeState, ENCODE_FRAME);
+                    advanceState(_DecodeState, DECODE_FRAME, CAPACITY);
+                    advanceState(_EncodeState, ENCODE_FRAME, CAPACITY);
                 }
         }
     }

@@ -25,7 +25,6 @@ package com.isahl.chess.bishop.io.mqtt.handler;
 
 import java.util.Map;
 
-import com.isahl.chess.bishop.io.ZContext;
 import com.isahl.chess.bishop.io.IRouter;
 import com.isahl.chess.queen.io.core.inf.IQoS;
 
@@ -38,14 +37,30 @@ public interface IQttRouter
         extends
         IRouter
 {
+    /**
+     * 向特定主题发送消息
+     * 
+     * @param topic
+     * @return
+     */
+    Map<Long,
+        IQoS.Level> broker(final String topic);
 
-    Map<Long, IQoS.Level> broker(final String topic);
+    /**
+     * 注册单个主题
+     * 
+     * @param topic
+     * @param level
+     * @param session
+     * @return
+     */
+    IQoS.Level subscribe(String topic, IQoS.Level level, long session);
 
-    boolean subscribe(String topic, IQoS.Level level, long session);
-
+    /**
+     * 注销主题
+     * 
+     * @param topic
+     * @param session
+     */
     void unsubscribe(String topic, long session);
-
-    Map<String, IQoS.Level> groupBy(long session);
-
-    void loadSubscribe(long session);
 }

@@ -76,7 +76,7 @@ public class DecodeHandler
             }
             catch (Exception e) {
                 _Logger.warning(String.format("read decode error: %s", session.toString()), e);
-                context.setInState(IPContext.DECODE_ERROR);
+                context.advanceInState(IPContext.DECODE_ERROR);
                 // 此处为Pipeline中间环节，使用event进行事件传递，不使用dispatcher
                 event.error(IError.Type.FILTER_DECODE, new Pair<>(e, session), session.getError());
             }

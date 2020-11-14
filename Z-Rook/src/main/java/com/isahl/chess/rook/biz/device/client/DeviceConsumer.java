@@ -275,8 +275,7 @@ public class DeviceConsumer
                 DeviceConsumer.this.addSession(session);
                 zClient.setSessionIndex(sessionIndex);
                 _ZClientMap.put(session.getIndex(), zClient);
-                session.getContext()
-                       .ready();
+                session.ready();
                 _Logger.debug("connected :%d", sessionIndex);
             }
 

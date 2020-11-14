@@ -39,7 +39,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import com.isahl.chess.bishop.io.ZContext;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
@@ -67,12 +66,6 @@ public class QttRouter
                       Map<Long,
                           IControl>>                  _QttStatusMap      = new ConcurrentSkipListMap<>();
     private final Queue<IPair>                        _SessionIdleQueue  = new ConcurrentLinkedQueue<>();
-    private final IQttDurable                         _QttDurable;
-
-    public QttRouter(IQttDurable durable)
-    {
-        _QttDurable = durable;
-    }
 
     @Override
     public Map<Long,
@@ -102,7 +95,6 @@ public class QttRouter
                                                            ConcurrentSkipListMap::new));
     }
 
-    @Override
     public Map<String,
                IQoS.Level> groupBy(long session)
     {
@@ -126,17 +118,7 @@ public class QttRouter
     }
 
     @Override
-    public void loadSubscribe(long session)
-    {
-        Map<String,
-            IQoS.Level> registered = _QttDurable.loadSubscribe(session);
-        if (registered != null && !registered.isEmpty()) {
-            registered.forEach((topic, level) -> subscribe(topic, level, session));
-        }
-    }
-
-    @Override
-    public boolean subscribe(String topic, IQoS.Level level, long session)
+    public IQoS.Level subscribe(String topic, IQoS.Level level, long session)
     {
         try {
             Pattern pattern = topicToRegex(topic);
@@ -153,11 +135,11 @@ public class QttRouter
             {
                 value.put(session, level);
             }
-            return true;
+            return value.get(session);
         }
         catch (IllegalArgumentException e) {
             e.printStackTrace();
-            return false;
+            return IQoS.Level.FAILURE;
         }
     }
 
@@ -279,7 +261,6 @@ public class QttRouter
         {
             entryValue.remove(sessionIndex);
         }
-        _QttDurable.cleanState(sessionIndex);
     }
 
 }

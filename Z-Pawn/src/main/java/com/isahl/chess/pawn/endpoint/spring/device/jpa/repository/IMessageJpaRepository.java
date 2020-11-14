@@ -53,6 +53,8 @@ public interface IMessageJpaRepository
 
     List<MessageEntity> findAllByOriginAndDestinationAndMsgId(long origin, long destination, long msgId);
 
+    List<MessageEntity> findAllByOriginOrDestination(long origin, long destination);
+
     List<MessageEntity> findAllByOriginAndMsgIdAndDirectionAndOwner(long origin,
                                                                     long msgId,
                                                                     String direction,

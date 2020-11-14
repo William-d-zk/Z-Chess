@@ -177,9 +177,7 @@ public class DeviceService
                            IQoS.Level>>> getOnlineDevicesWithTopic(String username) throws ZException
     {
         Stream<DeviceEntity> onlineDevices = getOnlineDevices(username);
-        if (onlineDevices != null) {
-            return onlineDevices.map(device -> new Pair<>(device, _QttRouter.groupBy(device.getId())));
-        }
+        if (onlineDevices != null) { return onlineDevices.map(device -> new Pair<>(device, device.getSubscribes())); }
         return null;
     }
 

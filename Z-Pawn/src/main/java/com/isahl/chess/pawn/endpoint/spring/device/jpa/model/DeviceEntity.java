@@ -24,6 +24,7 @@
 package com.isahl.chess.pawn.endpoint.spring.device.jpa.model;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -40,6 +41,7 @@ import org.hibernate.annotations.TypeDef;
 import org.hibernate.validator.constraints.Length;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -47,6 +49,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.isahl.chess.queen.db.inf.IStorage;
+import com.isahl.chess.queen.io.core.inf.IQoS;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 
 /**
@@ -219,6 +222,29 @@ public class DeviceEntity
     public DeviceSubscribe getSubscribe()
     {
         return subscribe;
+    }
+
+    @JsonIgnore
+    public Map<String,
+               IQoS.Level> getSubscribes()
+    {
+        return subscribe == null ? null
+                                 : subscribe.getSubscribes();
+    }
+
+    @JsonIgnore
+    public void addSubscribes(String topic, IQoS.Level level)
+    {
+        if (subscribe != null) {
+            subscribe.addSubscribes(topic, level);
+        }
+    }
+
+    public void unsubscribe(String topic)
+    {
+        if (subscribe != null) {
+            subscribe.unsubscribe(topic);
+        }
     }
 
     public void setSubscribe(DeviceSubscribe subscribe)

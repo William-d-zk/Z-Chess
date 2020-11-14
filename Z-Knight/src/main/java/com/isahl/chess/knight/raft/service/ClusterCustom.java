@@ -64,7 +64,7 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
 {
     private final Logger                        _Logger                      = Logger.getLogger("cluster.knight."
                                                                                                 + getClass().getSimpleName());
-    private final TypeReference<List<LogEntry>> _TypeReferenceOfLogEntryList = new TypeReference<List<LogEntry>>()
+    private final TypeReference<List<LogEntry>> _TypeReferenceOfLogEntryList = new TypeReference<>()
                                                                              {
                                                                              };
 

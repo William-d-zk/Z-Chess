@@ -24,6 +24,7 @@
 package com.isahl.chess.bishop.io.zfilter;
 
 import static com.isahl.chess.king.base.schedule.inf.ITask.advanceState;
+import static com.isahl.chess.queen.io.core.inf.ISession.CAPACITY;
 
 import com.isahl.chess.bishop.io.ZContext;
 import com.isahl.chess.king.base.crypt.util.Rc4;
@@ -230,13 +231,13 @@ public class EZContext<A extends IPContext>
     @Override
     public void cryptIn()
     {
-        advanceState(_DecodeState, DECODE_PAYLOAD);
+        advanceState(_DecodeState, DECODE_PAYLOAD, CAPACITY);
     }
 
     @Override
     public void cryptOut()
     {
-        advanceState(_EncodeState, ENCODE_PAYLOAD);
+        advanceState(_EncodeState, ENCODE_PAYLOAD, CAPACITY);
     }
 
     @Override
@@ -260,7 +261,7 @@ public class EZContext<A extends IPContext>
     @Override
     public void ready()
     {
-        advanceState(_DecodeState, DECODE_FRAME);
-        advanceState(_EncodeState, ENCODE_FRAME);
+        advanceState(_DecodeState, DECODE_FRAME, CAPACITY);
+        advanceState(_EncodeState, ENCODE_FRAME, CAPACITY);
     }
 }

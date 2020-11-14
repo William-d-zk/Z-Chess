@@ -23,6 +23,7 @@
 package com.isahl.chess.queen.io.core.async;
 
 import static com.isahl.chess.king.base.schedule.inf.ITask.advanceState;
+import static com.isahl.chess.king.base.schedule.inf.ITask.recedeState;
 import static com.isahl.chess.king.base.schedule.inf.ITask.stateAtLeast;
 import static com.isahl.chess.king.base.schedule.inf.ITask.stateLessThan;
 import static com.isahl.chess.king.base.util.IoUtil.longArrayToHex;
@@ -195,7 +196,7 @@ public class AioSession<C extends IPContext>
     public final void close() throws IOException
     {
         if (isClosed()) { return; }
-        advanceState(_State, SESSION_CLOSE);
+        advanceState(_State, SESSION_CLOSE, CAPACITY);
         _Channel.close();
     }
 
@@ -338,7 +339,7 @@ public class AioSession<C extends IPContext>
                 offer(ps);
                 writeBuffed2Sending();
             }
-            advanceState(_State, SESSION_SENDING);
+            advanceState(_State, SESSION_SENDING, CAPACITY);
             flush(handler);
         }
         else {
@@ -363,13 +364,13 @@ public class AioSession<C extends IPContext>
             mSending.clear();
             mSending.flip();
             if (isEmpty()) {
-                advanceState(_State, SESSION_IDLE);
+                recedeState(_State, SESSION_IDLE, CAPACITY);
                 return WRITE_STATUS.IGNORE;
             }
-            advanceState(_State, SESSION_PENDING);
+            recedeState(_State, SESSION_PENDING, CAPACITY);
         }
         writeBuffed2Sending();
-        advanceState(_State, SESSION_SENDING);
+        advanceState(_State, SESSION_SENDING, CAPACITY);
         flush(handler);
         return WRITE_STATUS.FLUSHED;
     }
@@ -439,7 +440,7 @@ public class AioSession<C extends IPContext>
         if (stateLessThan(_State.get(), SESSION_FLUSHED) && mSending.hasRemaining()) {
             _Logger.debug("flush %d | %s", mSending.remaining(), this);
             _Channel.write(mSending, _WriteTimeOutInSecond, TimeUnit.SECONDS, this, handler);
-            advanceState(_State, SESSION_FLUSHED);
+            advanceState(_State, SESSION_FLUSHED, CAPACITY);
         }
     }
 
@@ -495,5 +496,12 @@ public class AioSession<C extends IPContext>
     public ISort.Mode getMode()
     {
         return _Sort.getMode();
+    }
+
+    @Override
+    public void ready()
+    {
+        advanceState(_State, SESSION_CONNECTED, CAPACITY);
+        _Context.ready();
     }
 }

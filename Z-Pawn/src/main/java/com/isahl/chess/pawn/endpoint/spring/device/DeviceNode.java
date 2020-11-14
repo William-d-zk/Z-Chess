@@ -239,8 +239,7 @@ public class DeviceNode
             {
                 session.setIndex(_ZUID.getId(_SessionSlot));
                 DeviceNode.this.addSession(session);
-                session.getContext()
-                       .ready();
+                session.ready();
             }
 
             @Override

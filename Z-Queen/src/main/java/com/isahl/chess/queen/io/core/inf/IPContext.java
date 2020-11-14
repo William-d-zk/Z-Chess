@@ -37,9 +37,9 @@ public interface IPContext
 
     void finish();
 
-    void setOutState(int state);
+    void advanceOutState(int state);
 
-    void setInState(int state);
+    void advanceInState(int state);
 
     default boolean isProxy()
     {

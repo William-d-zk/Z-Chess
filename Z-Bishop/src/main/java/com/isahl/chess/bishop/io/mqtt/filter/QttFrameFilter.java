@@ -54,8 +54,8 @@ public class QttFrameFilter
     @Override
     public ResultType seek(QttContext context, QttFrame output)
     {
-        return context.isOutConvert() ? ResultType.NEXT_STEP
-                                      : ResultType.IGNORE;
+        return context.isOutFrame() ? ResultType.NEXT_STEP
+                                    : ResultType.IGNORE;
     }
 
     @Override
@@ -70,7 +70,7 @@ public class QttFrameFilter
     @Override
     public ResultType peek(QttContext context, IPacket input)
     {
-        if (context.isInConvert()) {
+        if (context.isInFrame()) {
             ByteBuffer recvBuf = input.getBuffer();
             ByteBuffer cRvBuf = context.getRvBuffer();
             QttFrame carrier = context.getCarrier();
@@ -135,20 +135,20 @@ public class QttFrameFilter
     public <C extends IPContext,
             O extends IProtocol> ResultType pipeSeek(C context, O output)
     {
-        if (checkType(output, IProtocol.FRAME_SERIAL) && context instanceof QttContext) {
-            return seek((QttContext) context, (QttFrame) output);
-        }
-        return ResultType.IGNORE;
+        return checkType(output, IProtocol.FRAME_SERIAL) && context instanceof QttContext
+                                                                                          ? seek((QttContext) context,
+                                                                                                 (QttFrame) output)
+                                                                                          : ResultType.IGNORE;
     }
 
     @Override
     public <C extends IPContext,
             I extends IProtocol> ResultType pipePeek(C context, I input)
     {
-        if (checkType(input, IProtocol.PACKET_SERIAL) && context instanceof QttContext) {
-            return peek((QttContext) context, (IPacket) input);
-        }
-        return ResultType.IGNORE;
+        return checkType(input, IProtocol.PACKET_SERIAL) && context instanceof QttContext
+                                                                                          ? peek((QttContext) context,
+                                                                                                 (IPacket) input)
+                                                                                          : ResultType.IGNORE;
     }
 
     @Override

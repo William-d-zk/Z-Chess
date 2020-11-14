@@ -24,6 +24,7 @@
 package com.isahl.chess.bishop.io.ssl;
 
 import static com.isahl.chess.king.base.schedule.inf.ITask.advanceState;
+import static com.isahl.chess.queen.io.core.inf.ISession.CAPACITY;
 
 import java.security.NoSuchAlgorithmException;
 
@@ -103,7 +104,7 @@ public class SSLZContext<A extends IPContext>
     @Override
     public void ready()
     {
-        advanceState(_DecodeState, DECODE_FRAME);
-        advanceState(_EncodeState, ENCODE_FRAME);
+        advanceState(_DecodeState, DECODE_FRAME, CAPACITY);
+        advanceState(_EncodeState, ENCODE_FRAME, CAPACITY);
     }
 }
