@@ -58,12 +58,23 @@ public class DeviceSubscribe
 
     public void addSubscribes(Subscribe subscribe)
     {
-        if (_Subscribes.computeIfPresent(subscribe.getTopic(),
-                                         (t, o) -> subscribe.getLevel()
-                                                            .getValue() > o.getValue() ? subscribe.getLevel()
-                                                                                       : o) == null)
+        addSubscribes(subscribe.getTopic(), subscribe.getLevel());
+    }
+
+    public void addSubscribes(String topic, IQoS.Level level)
+    {
+        if (_Subscribes.computeIfPresent(topic,
+                                         (t, o) -> level.getValue() > o.getValue() ? level
+                                                                                   : o) == null)
         {
-            _Subscribes.put(subscribe.getTopic(), subscribe.getLevel());
+            _Subscribes.put(topic, level);
+        }
+    }
+
+    public void unsubscribe(String topic)
+    {
+        if (_Subscribes != null) {
+            _Subscribes.remove(topic);
         }
     }
 

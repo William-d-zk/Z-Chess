@@ -23,14 +23,15 @@
 
 package com.isahl.chess.pawn.endpoint.spring.device.service;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
-import com.isahl.chess.bishop.io.mqtt.handler.IQttDurable;
-import com.isahl.chess.bishop.io.mqtt.handler.QttRouter;
-import com.isahl.chess.king.base.schedule.Status;
 import com.isahl.chess.pawn.endpoint.spring.device.jpa.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.spring.device.jpa.model.DeviceSubscribe;
 import com.isahl.chess.pawn.endpoint.spring.device.jpa.model.MessageEntity;
@@ -45,8 +46,6 @@ import com.isahl.chess.queen.io.core.inf.IQoS;
  */
 @Service
 public class DurableService
-        implements
-        IQttDurable
 {
     private final IMessageJpaRepository _MessageJpaRepository;
     private final IDeviceJpaRepository  _DeviceJpaRepository;
@@ -63,27 +62,7 @@ public class DurableService
 
     }
 
-    @Override
-    public void upsertState(long msgId, Status status, long session)
-    {
-
-    }
-
-    @Override
-    public Map<String,
-               IQoS.Level> loadSubscribe(long session)
-    {
-        DeviceEntity device = _DeviceJpaRepository.findById(session)
-                                                  .orElse(null);
-        if (device != null) {
-            DeviceSubscribe subscribe = device.getSubscribe();
-            if (subscribe != null) { return subscribe.getSubscribes(); }
-        }
-        return null;
-    }
-
-    @Override
-    public void cleanState(long session)
+    public void clean(long session)
     {
         DeviceEntity device = _DeviceJpaRepository.findById(session)
                                                   .orElse(null);
@@ -96,9 +75,30 @@ public class DurableService
         }
     }
 
-    @Bean
-    public QttRouter getQttRouter()
+    public DeviceEntity findDeviceByToken(String clientId)
     {
-        return new QttRouter(this);
+        return _DeviceJpaRepository.findByToken(clientId);
+    }
+
+    public void subscribe(Map<String,
+                              IQoS.Level> subscribes,
+                          long session,
+                          Function<Optional<DeviceEntity>,
+                                   BiConsumer<String,
+                                              IQoS.Level>> function)
+    {
+        Optional<DeviceEntity> deviceOptional = _DeviceJpaRepository.findById(session);
+        subscribes.forEach(function.apply(deviceOptional));
+        deviceOptional.ifPresent(_DeviceJpaRepository::save);
+    }
+
+    public void unsubscribe(List<String> topics,
+                            long session,
+                            Function<Optional<DeviceEntity>,
+                                     Consumer<String>> function)
+    {
+        Optional<DeviceEntity> deviceOptional = _DeviceJpaRepository.findById(session);
+        topics.forEach(function.apply(deviceOptional));
+        deviceOptional.ifPresent(_DeviceJpaRepository::save);
     }
 }

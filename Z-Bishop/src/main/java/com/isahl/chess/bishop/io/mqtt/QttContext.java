@@ -24,6 +24,9 @@
 package com.isahl.chess.bishop.io.mqtt;
 
 import static com.isahl.chess.king.base.schedule.inf.ITask.advanceState;
+import static com.isahl.chess.king.base.schedule.inf.ITask.stateAtLeast;
+import static com.isahl.chess.king.base.schedule.inf.ITask.stateLessThan;
+import static com.isahl.chess.queen.io.core.inf.ISession.CAPACITY;
 
 import com.isahl.chess.bishop.io.ZContext;
 import com.isahl.chess.king.base.inf.IPair;
@@ -84,7 +87,26 @@ public class QttContext
     @Override
     public void ready()
     {
-        advanceState(_DecodeState, DECODE_FRAME);
-        advanceState(_EncodeState, ENCODE_FRAME);
+        advanceState(_DecodeState, DECODE_FRAME, CAPACITY);
+        advanceState(_EncodeState, ENCODE_FRAME, CAPACITY);
     }
+
+    /*MQTT 协议对filter chain来说只有一个in frame 阶段所以 override isInFrame 与 outInFrame
+    * 避免filter 中 seek 和peek 方法多次判断 InFrame & InConvert OutFrame & OutConvert状态
+    * */
+
+    @Override
+    public boolean isInFrame()
+    {
+        int state = _DecodeState.get();
+        return stateAtLeast(state, DECODE_FRAME) && stateLessThan(state, DECODE_ERROR);
+    }
+
+    @Override
+    public boolean isOutFrame()
+    {
+        int state = _EncodeState.get();
+        return stateAtLeast(state, ENCODE_FRAME) && stateLessThan(state, ENCODE_ERROR);
+    }
+
 }

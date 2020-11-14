@@ -24,6 +24,7 @@
 package com.isahl.chess.bishop.io;
 
 import static com.isahl.chess.king.base.schedule.inf.ITask.advanceState;
+import static com.isahl.chess.queen.io.core.inf.ISession.CAPACITY;
 
 import com.isahl.chess.queen.event.inf.ISort;
 import com.isahl.chess.queen.io.core.inf.ISessionOption;
@@ -43,7 +44,7 @@ public class PlainZContext
     @Override
     public void ready()
     {
-        advanceState(_DecodeState, DECODE_PAYLOAD);
-        advanceState(_EncodeState, ENCODE_PAYLOAD);
+        advanceState(_DecodeState, DECODE_PAYLOAD, CAPACITY);
+        advanceState(_EncodeState, ENCODE_PAYLOAD, CAPACITY);
     }
 }

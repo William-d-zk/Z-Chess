@@ -83,14 +83,14 @@ public abstract class BaseAioConnector
         retry:
         for (;;) {
             int c = _State.get();
-            int rs = ITask.runStateOf(c);
+            int rs = ITask.stateOf(c, RETRY_LIMIT);
             if (rs >= STOP.getCode()) { return false; }
             for (;;) {
-                int rc = ITask.retryCountOf(c);
+                int rc = ITask.countOf(c, RETRY_LIMIT);
                 if (rc >= RETRY_LIMIT) { return false; }
                 if (ITask.compareAndIncrementRetry(_State, rc)) { return true; }
                 c = _State.get();// reload
-                if (ITask.runStateOf(c) != rs) {
+                if (ITask.stateOf(c, RETRY_LIMIT) != rs) {
                     continue retry;
                 }
             }
@@ -134,19 +134,19 @@ public abstract class BaseAioConnector
     @Override
     public void shutdown()
     {
-        ITask.advanceState(_State, STOP.getCode());
+        ITask.advanceState(_State, STOP.getCode(), RETRY_LIMIT);
     }
 
     @Override
     public boolean isShutdown()
     {
-        return ITask.runStateOf(_State.get()) >= STOP.getCode();
+        return ITask.stateOf(_State.get(), RETRY_LIMIT) >= STOP.getCode();
     }
 
     @Override
     public boolean isRunning()
     {
-        return ITask.runStateOf(_State.get()) < STOP.getCode();
+        return ITask.stateOf(_State.get(), RETRY_LIMIT) < STOP.getCode();
     }
 
     @Override

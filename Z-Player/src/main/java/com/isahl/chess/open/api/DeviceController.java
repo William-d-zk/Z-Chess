@@ -26,6 +26,7 @@ package com.isahl.chess.open.api;
 import static com.isahl.chess.king.base.util.IoUtil.isBlank;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -48,6 +49,7 @@ import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.open.api.model.DeviceDo;
 import com.isahl.chess.open.api.service.DeviceOpenService;
 import com.isahl.chess.pawn.endpoint.spring.device.jpa.model.DeviceEntity;
+import com.isahl.chess.pawn.endpoint.spring.device.jpa.model.DeviceSubscribe;
 import com.isahl.chess.pawn.endpoint.spring.device.model.DeviceStatus;
 
 /**
@@ -73,6 +75,7 @@ public class DeviceController
         deviceEntity.setSn(deviceDo.getSn());
         deviceEntity.setUsername(deviceDo.getUsername());
         deviceEntity.setPassword(deviceDo.getPassword());
+        deviceEntity.setSubscribe(new DeviceSubscribe(new HashMap<>()));
         return ZResponse.success(_DeviceService.save(deviceEntity));
     }
 
@@ -81,36 +84,31 @@ public class DeviceController
                                         @RequestParam(required = false) String sn,
                                         @RequestParam(required = false) Long id)
     {
-        IPair        result = null;
+        IPair result = null;
         DeviceEntity device = new DeviceEntity();
         device.setSn(sn);
         device.setToken(token);
         device.setId(id);
-        if (!isBlank(token) || !isBlank(sn))
-        {
+        if (!isBlank(token) || !isBlank(sn)) {
             DeviceEntity exist = _DeviceService.find(device);
-            if (Objects.nonNull(exist))
-            {
-                if (device.getInvalidAt().isBefore(LocalDateTime.now()))
+            if (Objects.nonNull(exist)) {
+                if (device.getInvalidAt()
+                          .isBefore(LocalDateTime.now()))
                 {
                     result = new Pair<>(DeviceStatus.INVALID, device);
                 }
-                else
-                {
+                else {
                     result = new Pair<>(DeviceStatus.AVAILABLE, device);
                 }
             }
         }
-        else
-        {
+        else {
             DeviceEntity exist = _DeviceService.find(device);
-            if (exist != null)
-            {
+            if (exist != null) {
                 result = new Pair<>(DeviceStatus.AVAILABLE, exist);
             }
         }
-        if (result == null)
-        {
+        if (result == null) {
             result = new Pair<>(DeviceStatus.MISS, null);
         }
         return ZResponse.success(result);
@@ -125,11 +123,11 @@ public class DeviceController
     }
 
     @GetMapping("online")
-    public @ResponseBody ZResponse<List<DeviceEntity>>
-           filterOnlineWithUsername(@RequestParam(name = "username") String username)
+    public @ResponseBody ZResponse<List<DeviceEntity>> filterOnlineWithUsername(@RequestParam(name = "username") String username)
     {
         if (isBlank(username)) return null;
-        return ZResponse.success(_DeviceService.filterOnlineDevices(username).collect(Collectors.toList()));
+        return ZResponse.success(_DeviceService.filterOnlineDevices(username)
+                                               .collect(Collectors.toList()));
     }
 
 }

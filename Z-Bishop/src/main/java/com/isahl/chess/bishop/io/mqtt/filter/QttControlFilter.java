@@ -50,15 +50,15 @@ public class QttControlFilter
     @Override
     public ResultType seek(QttContext context, QttControl output)
     {
-        return context.isOutConvert() ? ResultType.NEXT_STEP
-                                      : ResultType.IGNORE;
+        return context.isOutFrame() ? ResultType.NEXT_STEP
+                                    : ResultType.IGNORE;
     }
 
     @Override
     public ResultType peek(QttContext context, QttFrame input)
     {
-        return context.isInConvert() && input.isCtrl() ? ResultType.HANDLED
-                                                       : ResultType.IGNORE;
+        return context.isInFrame() && input.isCtrl() ? ResultType.HANDLED
+                                                     : ResultType.IGNORE;
     }
 
     @Override

@@ -140,16 +140,6 @@ public interface ISession
         };
     }
 
-    static int stateOf(int c)
-    {
-        return c & ~CAPACITY;
-    }
-
-    static int countOf(int c)
-    {
-        return c & CAPACITY;
-    }
-
     static boolean isConnected(int c)
     {
         return c < SESSION_CLOSE;
@@ -171,4 +161,6 @@ public interface ISession
     IPipeTransfer getTransfer();
 
     IFilterChain getFilterChain();
+
+    void ready();
 }
