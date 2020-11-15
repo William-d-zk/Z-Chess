@@ -64,15 +64,15 @@ public class DurableService
 
     public void clean(long session)
     {
-        DeviceEntity device = _DeviceJpaRepository.findById(session)
-                                                  .orElse(null);
-        if (device != null) {
-            DeviceSubscribe subscribe = device.getSubscribe();
-            if (subscribe != null) {
-                subscribe.clean();
-            }
-            _DeviceJpaRepository.save(device);
-        }
+        _DeviceJpaRepository.findById(session)
+                            .ifPresent(device ->
+                            {
+                                DeviceSubscribe subscribe = device.getSubscribe();
+                                if (subscribe != null) {
+                                    subscribe.clean();
+                                }
+                                _DeviceJpaRepository.save(device);
+                            });
     }
 
     public DeviceEntity findDeviceByToken(String clientId)
