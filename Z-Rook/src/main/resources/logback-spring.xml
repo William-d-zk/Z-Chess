@@ -52,5 +52,4 @@
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="APPLICATION"/>
     </root>
-    <logger name="com.isahl.chess.queen.io.core.executor.ServerCore" level="DEBUG"/>
 </configuration>
