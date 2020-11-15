@@ -115,4 +115,24 @@ public class DeviceDo
     {
         this.id = id;
     }
+
+    public String getWifiMac()
+    {
+        return wifiMac;
+    }
+
+    public void setWifiMac(String wifiMac)
+    {
+        this.wifiMac = wifiMac;
+    }
+
+    public String getSensorMac()
+    {
+        return sensorMac;
+    }
+
+    public void setSensorMac(String sensorMac)
+    {
+        this.sensorMac = sensorMac;
+    }
 }
