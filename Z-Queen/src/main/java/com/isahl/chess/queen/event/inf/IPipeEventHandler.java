@@ -24,11 +24,11 @@ package com.isahl.chess.queen.event.inf;
 
 import java.util.List;
 
-import com.lmax.disruptor.EventHandler;
-import com.lmax.disruptor.RingBuffer;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
+import com.lmax.disruptor.EventHandler;
+import com.lmax.disruptor.RingBuffer;
 
 /**
  * @author William.d.zk
@@ -40,64 +40,64 @@ public interface IPipeEventHandler<E extends IEvent>
 
     Logger getLogger();
 
-    default <V, A, R>
-            void
-            publish(RingBuffer<E> publisher, IOperator.Type type, IPair content, IOperator<V, A, R> operator)
+    default <V,
+             A,
+             R> void publish(RingBuffer<E> publisher,
+                             IOperator.Type type,
+                             IPair content,
+                             IOperator<V,
+                                       A,
+                                       R> operator)
     {
-        if (publisher == null)
-        { return; }
-        if (publisher.remainingCapacity() == 0)
-        {
+        if (publisher == null) { return; }
+        if (publisher.remainingCapacity() == 0) {
             getLogger().warning("publish block with %s", type.name());
         }
         long sequence = publisher.next();
-        try
-        {
+        try {
             E event = publisher.get(sequence);
             event.produce(type, content, operator);
         }
-        finally
-        {
+        finally {
             publisher.publish(sequence);
         }
     }
 
     default void publish(RingBuffer<E> publisher, List<ITriple> contents)
     {
-        if (publisher == null)
-        { return; }
-        if (publisher.remainingCapacity() == 0)
-        {
+        if (publisher == null) { return; }
+        if (publisher.remainingCapacity() == 0) {
             getLogger().warning("publish block with writer");
         }
         long sequence = publisher.next();
-        try
-        {
+        try {
             E event = publisher.get(sequence);
             event.produce(IOperator.Type.DISPATCH, contents);
         }
-        finally
-        {
+        finally {
             publisher.publish(sequence);
         }
     }
 
-    default <V, A, R> void error(RingBuffer<E> publisher, IError.Type type, IPair content, IOperator<V, A, R> operator)
+    default <V,
+             A,
+             R> void error(RingBuffer<E> publisher,
+                           IError.Type type,
+                           IPair content,
+                           IOperator<V,
+                                     A,
+                                     R> operator)
     {
-        if (publisher == null)
-        { return; }
-        if (publisher.remainingCapacity() == 0)
-        {
+        if (publisher == null) { return; }
+        if (publisher.remainingCapacity() == 0) {
             getLogger().warning("error block with %s", type.name());
         }
         long sequence = publisher.next();
-        try
-        {
+        try {
             E event = publisher.get(sequence);
             event.error(type, content, operator);
         }
-        finally
-        {
+        finally {
             publisher.publish(sequence);
         }
     }

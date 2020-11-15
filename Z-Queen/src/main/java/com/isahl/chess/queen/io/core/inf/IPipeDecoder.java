@@ -65,8 +65,7 @@ public interface IPipeDecoder
                             if (cmd != null) {
                                 cmd.setSession(session);
                                 if (commands == null) {
-                                    commands = new IControl[] { cmd
-                                    };
+                                    commands = new IControl[]{cmd};
                                 }
                                 else {
                                     IControl[] nCmd = new IControl[commands.length + 1];

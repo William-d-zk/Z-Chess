@@ -50,7 +50,8 @@ public enum RaftState
 
     public static RaftState valueOf(int code)
     {
-        return switch (code) {
+        return switch (code)
+        {
             case 0 -> FOLLOWER;
             case 1 -> ELECTOR;
             case 2 -> CANDIDATE;

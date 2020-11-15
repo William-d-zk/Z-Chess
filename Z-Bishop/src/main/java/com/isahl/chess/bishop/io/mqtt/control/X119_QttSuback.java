@@ -31,7 +31,6 @@ import java.util.List;
 
 import com.isahl.chess.bishop.io.mqtt.QttCommand;
 import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.queen.io.core.inf.IPContext;
 
 /**
  * @author william.d.zk

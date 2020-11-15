@@ -21,7 +21,6 @@
 
 package com.securityinnovation.jNeo.math;
 
-
 /**
  * Defines an interface for finding the inverse of a polynomial.
  * Different implementations of this interface will be optimized for
@@ -31,8 +30,7 @@ package com.securityinnovation.jNeo.math;
 public interface PolynomialInverter
 {
     /**
-     * Calculate the inverse of a polynomial. 
+     * Calculate the inverse of a polynomial.
      */
-    public abstract FullPolynomial invert(
-        FullPolynomial a);
+    public abstract FullPolynomial invert(FullPolynomial a);
 }

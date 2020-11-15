@@ -104,12 +104,10 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
         switch (content.serial())
         {
             case X101_HandShake.COMMAND:
-                return new IControl[] { content
-                };
+                return new IControl[]{content};
             case X103_Ping.COMMAND:
                 X103_Ping x103 = (X103_Ping) content;
-                return new IControl[] { new X104_Pong(x103.getPayload())
-                };
+                return new IControl[]{new X104_Pong(x103.getPayload())};
             case X113_QttPublish.COMMAND:
                 X113_QttPublish x113 = (X113_QttPublish) content;
                 MessageEntity messageEntity = new MessageEntity();
@@ -133,8 +131,7 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                         x115.setMsgId(x113.getMsgId());
                         _QttRouter.register(x115, session.getIndex());
                         // 此时尚未完成 message owner 的转换，所以只返回x115
-                        return new IControl[] { x115
-                        };
+                        return new IControl[]{x115};
                     case AT_LEAST_ONCE:
                         X114_QttPuback x114 = new X114_QttPuback();
                         x114.setMsgId(x113.getMsgId());
@@ -161,8 +158,7 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                 X116_QttPubrel x116 = new X116_QttPubrel();
                 x116.setMsgId(x115.getMsgId());
                 _QttRouter.register(x116, session.getIndex());
-                return new IControl[] { x116
-                };
+                return new IControl[]{x116};
             case X116_QttPubrel.COMMAND:
                 x116 = (X116_QttPubrel) content;
                 X117_QttPubcomp x117 = new X117_QttPubcomp();
@@ -185,8 +181,7 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                 _QttRouter.ack(x117, session.getIndex());
                 break;
             case X11C_QttPingreq.COMMAND:
-                return new IControl[] { new X11D_QttPingresp()
-                };
+                return new IControl[]{new X11D_QttPingresp()};
         }
         return null;
     }

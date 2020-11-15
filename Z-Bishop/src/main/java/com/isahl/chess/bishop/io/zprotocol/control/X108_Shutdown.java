@@ -26,7 +26,8 @@ package com.isahl.chess.bishop.io.zprotocol.control;
 import com.isahl.chess.bishop.io.zprotocol.ZCommand;
 
 public class X108_Shutdown
-        extends ZCommand
+        extends
+        ZCommand
 {
 
     public final static int COMMAND = 0x108;

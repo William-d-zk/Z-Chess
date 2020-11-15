@@ -30,8 +30,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author william.d.zk
  */
 
-@SpringBootApplication(scanBasePackages = { "com.isahl.chess"
-})
+@SpringBootApplication(scanBasePackages = {"com.isahl.chess"})
 public class ApplicationRook
 {
     public static void main(String[] args)

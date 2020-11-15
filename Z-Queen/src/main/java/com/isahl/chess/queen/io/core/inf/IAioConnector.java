@@ -29,22 +29,25 @@ import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
 
 import com.isahl.chess.king.base.schedule.inf.ITask;
-import com.isahl.chess.queen.io.core.async.AioWorker;
 import com.isahl.chess.queen.event.inf.IOperator;
+import com.isahl.chess.queen.io.core.async.AioWorker;
 
 /**
  * @author william.d.zk
  */
 public interface IAioConnector
         extends
-        CompletionHandler<Void, AsynchronousSocketChannel>,
+        CompletionHandler<Void,
+                          AsynchronousSocketChannel>,
         IConnectActivity,
         IConnected,
         IConnectError,
         ITask
 {
     @Override
-    IOperator<Throwable, IAioConnector, Void> getErrorOperator();
+    IOperator<Throwable,
+              IAioConnector,
+              Void> getErrorOperator();
 
     @Override
     default void completed(Void result, AsynchronousSocketChannel channel)

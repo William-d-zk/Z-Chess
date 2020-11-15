@@ -84,8 +84,8 @@ public class DeviceConfig
 
     private List<Server> listeners;
 
-    private Duration     passwordInvalidDays;
-    private String       passwordRandomSeed;
+    private Duration passwordInvalidDays;
+    private String   passwordRandomSeed;
 
     public Duration getPasswordInvalidDays()
     {

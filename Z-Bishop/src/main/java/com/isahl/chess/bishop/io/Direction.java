@@ -52,7 +52,8 @@ public enum Direction
 
     public static Direction parseShort(String value)
     {
-        return switch (value) {
+        return switch (value)
+        {
             case "S->C" -> SERVER_TO_CLIENT;
             case "C->S" -> CLIENT_TO_SERVER;
             case "L->F" -> LEADER_BR_FOLLOWER;

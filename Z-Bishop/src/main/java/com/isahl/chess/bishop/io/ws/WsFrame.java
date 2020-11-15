@@ -163,9 +163,8 @@ public class WsFrame
 
     public byte[] getPayloadLengthArray()
     {
-        if (mPayloadLength <= 0) return new byte[] { (byte) (mMask == null ? 0
-                                                                           : 0x80)
-        };
+        if (mPayloadLength <= 0) return new byte[]{(byte) (mMask == null ? 0
+                                                                         : 0x80)};
         int t_size = mPayloadLength > 0xFFFF ? 9
                                              : mPayloadLength > 0x7D ? 3
                                                                      : 1;

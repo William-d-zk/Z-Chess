@@ -30,7 +30,8 @@ import com.isahl.chess.king.base.util.IoUtil;
  * @author william.d.zk
  */
 public class X31_ConfirmMsg
-        extends ZCommand
+        extends
+        ZCommand
 {
     public final static int COMMAND = 0x31;
 

@@ -65,10 +65,10 @@ public class RaftMachine
         IRaftMachine,
         IStorage
 {
-    private final static int                   RAFT_MACHINE_SERIAL = DB_SERIAL + 3;
+    private final static int RAFT_MACHINE_SERIAL = DB_SERIAL + 3;
 
-    private final Logger                       _Logger             = Logger.getLogger("cluster.knight."
-                                                                                      + RaftMachine.class.getSimpleName());
+    private final Logger                       _Logger    = Logger.getLogger("cluster.knight."
+                                                                             + RaftMachine.class.getSimpleName());
     private final long                         _PeerId;
     private long                               mTerm;      // 触发选举时 mTerm > mIndexTerm
     private long                               mIndex;     // 本地日志Index，Leader：mIndex >= mCommit 其他状态：mIndex <= mCommit
@@ -79,10 +79,14 @@ public class RaftMachine
     private long                               mCommit;    // 集群中已知的最大CommitIndex
     private long                               mApplied;   // 本地已被应用的Index
     private int                                mState;
-    private Set<Triple<Long, String, Integer>> mPeerSet;
-    private Set<Triple<Long, String, Integer>> mGateSet;
+    private Set<Triple<Long,
+                       String,
+                       Integer>>               mPeerSet;
+    private Set<Triple<Long,
+                       String,
+                       Integer>>               mGateSet;
     @JsonIgnore
-    private Operation                          mOperation          = OP_NULL;
+    private Operation                          mOperation = OP_NULL;
     @JsonIgnore
     private int                                mLength;
 
@@ -105,7 +109,8 @@ public class RaftMachine
         mLeader = json.getLeader();
         mCommit = json.getCommit();
         mApplied = json.getApplied();
-        mState = json.getState().getCode();
+        mState = json.getState()
+                     .getCode();
         mPeerSet = json.getPeerSet();
         mGateSet = json.getGateSet();
         mLength = data.length;
@@ -223,13 +228,17 @@ public class RaftMachine
     }
 
     @Override
-    public Set<Triple<Long, String, Integer>> getPeerSet()
+    public Set<Triple<Long,
+                      String,
+                      Integer>> getPeerSet()
     {
         return mPeerSet;
     }
 
     @Override
-    public Set<Triple<Long, String, Integer>> getGateSet()
+    public Set<Triple<Long,
+                      String,
+                      Integer>> getGateSet()
     {
         return mGateSet;
     }
@@ -279,42 +288,52 @@ public class RaftMachine
         mApplied = applied;
     }
 
-    public void setPeerSet(Set<Triple<Long, String, Integer>> peerSet)
+    public void setPeerSet(Set<Triple<Long,
+                                      String,
+                                      Integer>> peerSet)
     {
         mPeerSet = peerSet;
     }
 
-    public void setGateSet(Set<Triple<Long, String, Integer>> gateSet)
+    public void setGateSet(Set<Triple<Long,
+                                      String,
+                                      Integer>> gateSet)
     {
         mGateSet = gateSet;
     }
 
     @SafeVarargs
-    public final void appendPeer(Triple<Long, String, Integer>... peers)
+    public final void appendPeer(Triple<Long,
+                                        String,
+                                        Integer>... peers)
     {
-        if (mPeerSet == null)
-        {
+        if (mPeerSet == null) {
             mPeerSet = new TreeSet<>(Comparator.comparing(ITriple::getFirst));
         }
         appendGraph(mPeerSet, peers);
     }
 
     @SafeVarargs
-    public final void appendGate(Triple<Long, String, Integer>... gates)
+    public final void appendGate(Triple<Long,
+                                        String,
+                                        Integer>... gates)
     {
-        if (mGateSet == null)
-        {
+        if (mGateSet == null) {
             mGateSet = new TreeSet<>(Comparator.comparing(ITriple::getFirst));
         }
         appendGraph(mGateSet, gates);
     }
 
     @SafeVarargs
-    private final void appendGraph(Set<Triple<Long, String, Integer>> set, Triple<Long, String, Integer>... a)
+    private final void appendGraph(Set<Triple<Long,
+                                              String,
+                                              Integer>> set,
+                                   Triple<Long,
+                                          String,
+                                          Integer>... a)
     {
         Objects.requireNonNull(set);
-        if (a == null || a.length == 0)
-        { return; }
+        if (a == null || a.length == 0) { return; }
         mPeerSet.addAll(Arrays.asList(a));
     }
 
@@ -322,8 +341,7 @@ public class RaftMachine
     public void apply(IRaftDao dao)
     {
         // TODO 分摊集群读写压力，需要在follower apply的时候notify 那些在follower上订阅了延迟一致的consumer
-        if (mIndex < mApplied)
-        {
+        if (mIndex < mApplied) {
             _Logger.warning(String.format("index %d < apply %d, roll back ", mIndex, mApplied));
         }
         mApplied = min(mIndex, mCommit);

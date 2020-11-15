@@ -23,9 +23,9 @@
 
 package com.isahl.chess.queen.event.handler.cluster;
 
-import com.isahl.chess.queen.io.core.inf.ITraceable;
 import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.io.core.inf.IProtocol;
+import com.isahl.chess.queen.io.core.inf.ITraceable;
 
 /**
  * @author william.d.zk
@@ -34,7 +34,9 @@ public interface IConsistentCustom
         extends
         IConsistentJudge
 {
-    <T extends ITraceable & IProtocol> IOperator<T, Throwable, Void> getOperator();
+    <T extends ITraceable & IProtocol> IOperator<T,
+                                                 Throwable,
+                                                 Void> getOperator();
 
     <T extends ITraceable & IProtocol> Void handle(T request, Throwable throwable);
 }

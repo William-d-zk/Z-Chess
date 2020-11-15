@@ -32,8 +32,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @date 2020/4/23
  */
 
-@SpringBootApplication(scanBasePackages = { "com.isahl.chess.knight"
-})
+@SpringBootApplication(scanBasePackages = {"com.isahl.chess.knight"})
 public class ApplicationKnight
 {
     public static void main(String[] args)

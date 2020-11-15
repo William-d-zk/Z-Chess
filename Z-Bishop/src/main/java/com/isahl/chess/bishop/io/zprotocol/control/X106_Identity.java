@@ -24,8 +24,8 @@ package com.isahl.chess.bishop.io.zprotocol.control;
 
 import static com.isahl.chess.queen.io.core.inf.ISessionManager.INVALID_INDEX;
 
-import com.isahl.chess.bishop.io.ws.WsFrame;
 import com.isahl.chess.bishop.io.ws.WsControl;
+import com.isahl.chess.bishop.io.ws.WsFrame;
 import com.isahl.chess.king.base.util.IoUtil;
 
 /**
@@ -57,14 +57,12 @@ public class X106_Identity
     public long[] getIdentities()
     {
         int size = (getPayload().length >>> 3);
-        if (size > 0)
-        {
+        if (size > 0) {
             long[] result = new long[size];
             IoUtil.readLongArray(getPayload(), 0, result);
             return result;
         }
-        return new long[] { -1L
-        };
+        return new long[]{-1L};
     }
 
     @Override

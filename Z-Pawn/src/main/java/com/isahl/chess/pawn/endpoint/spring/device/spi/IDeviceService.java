@@ -45,5 +45,7 @@ public interface IDeviceService
 
     Stream<DeviceEntity> getOnlineDevices(String username) throws ZException;
 
-    Stream<Pair<DeviceEntity, Map<String, IQoS.Level>>> getOnlineDevicesWithTopic(String username) throws ZException;
+    Stream<Pair<DeviceEntity,
+                Map<String,
+                    IQoS.Level>>> getOnlineDevicesWithTopic(String username) throws ZException;
 }

@@ -45,7 +45,6 @@ import com.isahl.chess.queen.event.handler.client.ClientWriteDispatcher;
 import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.async.AioWorker;
-import com.isahl.chess.queen.io.core.inf.IContext;
 import com.lmax.disruptor.BatchEventProcessor;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
@@ -133,9 +132,9 @@ public class ClientCore
         final MultiBufferBatchEventProcessor<QEvent> _IoDispatcher = new MultiBufferBatchEventProcessor<>(_DispatchIo,
                                                                                                           _DispatchIoBarriers,
                                                                                                           new ClientIoDispatcher(_LinkIoEvent,
-                                                                                                                                   _ReadAndLogicEvent,
-                                                                                                                                   _WroteEvent,
-                                                                                                                                   _ErrorEvents[0]));
+                                                                                                                                 _ReadAndLogicEvent,
+                                                                                                                                 _WroteEvent,
+                                                                                                                                 _ErrorEvents[0]));
         _IoDispatcher.setThreadName("IoDispatcher");
         for (int i = 0, size = _DispatchIo.length; i < size; i++) {
             _DispatchIo[i].addGatingSequences(_IoDispatcher.getSequences()[i]);
@@ -153,20 +152,18 @@ public class ClientCore
         final BatchEventProcessor<QEvent> _LinkProcessor = new BatchEventProcessor<>(_LinkIoEvent,
                                                                                      _LinkIoEvent.newBarrier(),
                                                                                      new ClientLinkHandler());
-        final RingBuffer<QEvent>[] _SendEvents = new RingBuffer[] { _BizLocalSendEvent,
-                                                                    _LinkIoEvent,
-                                                                    _ReadAndLogicEvent,
-                                                                    _WroteEvent
-        };
-        final SequenceBarrier[] _SendBarriers = new SequenceBarrier[] { _BizLocalSendEvent.newBarrier(),
-                                                                        _LinkIoEvent.newBarrier(_LinkProcessor.getSequence()),
-                                                                        _ReadAndLogicEvent.newBarrier(_LogicProcessor.getSequence()),
-                                                                        _WroteEvent.newBarrier()
-        };
+        final RingBuffer<QEvent>[] _SendEvents = new RingBuffer[]{_BizLocalSendEvent,
+                                                                  _LinkIoEvent,
+                                                                  _ReadAndLogicEvent,
+                                                                  _WroteEvent};
+        final SequenceBarrier[] _SendBarriers = new SequenceBarrier[]{_BizLocalSendEvent.newBarrier(),
+                                                                      _LinkIoEvent.newBarrier(_LinkProcessor.getSequence()),
+                                                                      _ReadAndLogicEvent.newBarrier(_LogicProcessor.getSequence()),
+                                                                      _WroteEvent.newBarrier()};
         final MultiBufferBatchEventProcessor<QEvent> _WriteDispatcher = new MultiBufferBatchEventProcessor<>(_SendEvents,
                                                                                                              _SendBarriers,
                                                                                                              new ClientWriteDispatcher(_ErrorEvents[1],
-                                                                                                                                         _EncodeEvent));
+                                                                                                                                       _EncodeEvent));
         _WriteDispatcher.setThreadName("WriteDispatcher");
         for (int i = 0, size = _SendEvents.length; i < size; i++) {
             _SendEvents[i].addGatingSequences(_WriteDispatcher.getSequences()[i]);

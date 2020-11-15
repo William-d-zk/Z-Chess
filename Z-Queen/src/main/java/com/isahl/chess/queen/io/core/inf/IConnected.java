@@ -33,5 +33,7 @@ import com.isahl.chess.queen.event.inf.IOperator;
  */
 public interface IConnected
 {
-    IOperator<IConnectActivity, AsynchronousSocketChannel, ITriple> getConnectedOperator();
+    IOperator<IConnectActivity,
+              AsynchronousSocketChannel,
+              ITriple> getConnectedOperator();
 }

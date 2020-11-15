@@ -23,9 +23,10 @@
 
 package com.isahl.chess.pawn.cluster.spring.jpa.consensus.repository;
 
-import com.isahl.chess.pawn.cluster.spring.jpa.consensus.model.ConsistentEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import com.isahl.chess.pawn.cluster.spring.jpa.consensus.model.ConsistentEntity;
 
 /**
  * @author william.d.zk
@@ -35,7 +36,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface IDataJpaRepository
         extends
-        JpaRepository<ConsistentEntity, Long>
+        JpaRepository<ConsistentEntity,
+                      Long>
 {
 
 }

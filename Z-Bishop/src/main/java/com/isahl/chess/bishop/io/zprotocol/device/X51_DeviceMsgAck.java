@@ -29,7 +29,8 @@ import com.isahl.chess.bishop.io.zprotocol.ZCommand;
  * @author William.d.zk
  */
 public class X51_DeviceMsgAck
-        extends ZCommand
+        extends
+        ZCommand
 {
     public final static int COMMAND = 0x51;
 

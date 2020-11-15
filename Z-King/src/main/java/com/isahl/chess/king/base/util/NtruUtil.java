@@ -82,8 +82,8 @@ public class NtruUtil
     {
         Random prng = new Random(seed);
         NtruEncryptKey key = NtruEncryptKey.genKey(oid, prng);
-        return new byte[][] { key.getPubKey(),
-                              key.getPrivKey()
+        return new byte[][]{key.getPubKey(),
+                            key.getPrivKey()
 
         };
     }

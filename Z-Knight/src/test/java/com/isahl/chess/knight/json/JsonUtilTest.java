@@ -34,11 +34,13 @@ class JsonUtilTest
     @Test
     void testZResponse()
     {
-        TypeReference<ZResponse<Pair<Integer, String>>> _type = new TypeReference<ZResponse<Pair<Integer, String>>>()
-                                                              {};
-        String                                          json  = JsonUtil.writeValueAsString(ZResponse.success(new Pair<>(1,
-                                                                                                                         "2")));
-        ZResponse<?>                                    read  = JsonUtil.readValue(json, _type);
+        TypeReference<ZResponse<Pair<Integer,
+                                     String>>> _type = new TypeReference<ZResponse<Pair<Integer,
+                                                                                        String>>>()
+                                     {
+                                     };
+        String json = JsonUtil.writeValueAsString(ZResponse.success(new Pair<>(1, "2")));
+        ZResponse<?> read = JsonUtil.readValue(json, _type);
         System.out.println(read);
     }
 }

@@ -43,9 +43,16 @@ public class TestAccountAuth
         src = src.replaceAll("#+", "#");
         src = src.replaceAll("(/#)+", "/#");
 
-        if (Pattern.compile("#\\+|\\+#").asPredicate().test(src))
+        if (Pattern.compile("#\\+|\\+#")
+                   .asPredicate()
+                   .test(src))
         { throw new IllegalArgumentException(src); }
-        if (!Pattern.compile("(/\\+)$").asPredicate().test(src) && !Pattern.compile("^\\+").asPredicate().test(src))
+        if (!Pattern.compile("(/\\+)$")
+                    .asPredicate()
+                    .test(src)
+            && !Pattern.compile("^\\+")
+                       .asPredicate()
+                       .test(src))
         {
             src = src.replaceAll("(\\+)$", "");
         }
@@ -60,8 +67,7 @@ public class TestAccountAuth
         System.out.println(String.format("pattern:%s", pattern));
         Matcher matcher = pattern.matcher("a/b/c");
         System.out.println(String.format("match:%s",
-                                         matcher.matches() ?
-                                                 matcher.group():
-                                                 "no matcher"));
+                                         matcher.matches() ? matcher.group()
+                                                           : "no matcher"));
     }
 }

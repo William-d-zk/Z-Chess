@@ -46,12 +46,13 @@ public class IoProviderConfig
         implements
         IAioConfig
 {
-    private Map<String, Integer> sizePowers;
+    private Map<String,
+                Integer> sizePowers;
 
-    private SocketConfig         consumer;
-    private SocketConfig         internal;
-    private SocketConfig         cluster;
-    private SocketConfig         provider;
+    private SocketConfig consumer;
+    private SocketConfig internal;
+    private SocketConfig cluster;
+    private SocketConfig provider;
 
     @Override
     public boolean isDomainActive(int type)
@@ -62,7 +63,8 @@ public class IoProviderConfig
     @Override
     public int getSizePower(int type)
     {
-        return switch (type) {
+        return switch (type)
+        {
             case ZUID.TYPE_CONSUMER_SLOT -> sizePowers.getOrDefault("consumer.0", 12);
             case ZUID.TYPE_INTERNAL_SLOT -> sizePowers.getOrDefault("internal.1", 7);
             case ZUID.TYPE_PROVIDER_SLOT -> sizePowers.getOrDefault("provider.2", 10);
@@ -74,7 +76,8 @@ public class IoProviderConfig
     @Override
     public ISocketConfig getSocketConfig(int type)
     {
-        return switch (type) {
+        return switch (type)
+        {
             case ZUID.TYPE_CONSUMER_SLOT -> consumer;
             case ZUID.TYPE_INTERNAL_SLOT -> internal;
             case ZUID.TYPE_PROVIDER_SLOT -> provider;
@@ -83,7 +86,8 @@ public class IoProviderConfig
         };
     }
 
-    public void setSizePowers(Map<String, Integer> sizePowers)
+    public void setSizePowers(Map<String,
+                                  Integer> sizePowers)
     {
         this.sizePowers = sizePowers;
     }

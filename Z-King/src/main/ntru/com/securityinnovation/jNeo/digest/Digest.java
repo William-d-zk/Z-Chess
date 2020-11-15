@@ -21,17 +21,18 @@
 
 package com.securityinnovation.jNeo.digest;
 
-
 /**
- * <p>This class defines an interface for digest operations. It is not declared
+ * <p>
+ * This class defines an interface for digest operations. It is not declared
  * as an interface because it provides a number of utility methods
  * for common operations on digest objects.
  *
- * <p>There are number of coventions used by all implementations
+ * <p>
+ * There are number of coventions used by all implementations
  * of all methods in the digest subclasses:
  * <UL>
  * <LI>All buffers must be non-null; a <code>NullPointerException</code>
- * will be thrown if any buffer is null. This is true even if the 
+ * will be thrown if any buffer is null. This is true even if the
  * input length is 0.
  *
  * <LI>In all cases where an offset and a length are supplied to indicate
@@ -60,46 +61,48 @@ public abstract class Digest
      */
     public abstract int getBlockLen();
 
-
     /**
      * Calculate the digest of the input and return the result.
      * This discards any existing internal state of the object.
      * The object is left initialized for a new hash operation
      * (see <code>reset()</code>).
      *
-     * @param input the array holding the input
-     * @param inputOffset the index of the start of the input data
-     * @param inputLength the number of bytes of input
-     * @param output the array to write the digest into
-     * @param outputOffset the index where the first byte of output
-     *        should go. This will use getDigestLen() bytes
-     *        following this index.
+     * @param input
+     *            the array holding the input
+     * @param inputOffset
+     *            the index of the start of the input data
+     * @param inputLength
+     *            the number of bytes of input
+     * @param output
+     *            the array to write the digest into
+     * @param outputOffset
+     *            the index where the first byte of output
+     *            should go. This will use getDigestLen() bytes
+     *            following this index.
      */
-    public void digest(
-        byte[] input, int inputOffset, int inputLength, 
-        byte[] output, int outputOffset)
+    public void digest(byte[] input, int inputOffset, int inputLength, byte[] output, int outputOffset)
     {
         reset();
         update(input, inputOffset, inputLength);
         finishDigest(output, outputOffset);
     }
 
-
     /**
      * Reinitialize the digest operation, discarding any internal state.
      */
     public abstract void reset();
 
-
     /**
      * Updates the message digest with new data.
      *
-     * @param data      the data to be added.
-     * @param offset    the start of the data in the array.
-     * @param length    the number of bytes of data to add.
+     * @param data
+     *            the data to be added.
+     * @param offset
+     *            the start of the data in the array.
+     * @param length
+     *            the number of bytes of data to add.
      */
     public abstract void update(byte[] data, int offset, int length);
-    
 
     /**
      * Completes the digest calculation and returns the result in the
@@ -108,7 +111,6 @@ public abstract class Digest
      * <code>reset()</code>).
      */
     public abstract void finishDigest(byte[] out, int outOffset);
-
 
     /**
      * Completes the digest calculation and returns the result
@@ -121,11 +123,10 @@ public abstract class Digest
         return dig;
     }
 
-
     /**
      * Default constructor. Hidden from the public API.
      */
     protected Digest()
-    {}
+    {
+    }
 }
-

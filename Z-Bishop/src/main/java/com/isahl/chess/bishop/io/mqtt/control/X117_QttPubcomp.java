@@ -25,9 +25,7 @@ package com.isahl.chess.bishop.io.mqtt.control;
 
 import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
 
-import com.isahl.chess.bishop.io.ZContext;
 import com.isahl.chess.bishop.io.mqtt.QttCommand;
-import com.isahl.chess.queen.io.core.inf.IPContext;
 
 /**
  * @author william.d.zk

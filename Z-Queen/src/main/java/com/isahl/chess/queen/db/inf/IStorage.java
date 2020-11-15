@@ -86,9 +86,8 @@ public interface IStorage
 
         public Operation predicate(byte value)
         {
-            return _Value == value ?
-                    this:
-                    null;
+            return _Value == value ? this
+                                   : null;
         }
 
         public static Operation convertOperationValue(final byte value)

@@ -43,10 +43,10 @@ public class ZProgress
 {
     private final long _Size;
 
-    private Progress   progress = Progress.NA;
-    private Status status   = Status.CREATED;
-    private long       count;
-    private boolean    exist;
+    private Progress progress = Progress.NA;
+    private Status   status   = Status.CREATED;
+    private long     count;
+    private boolean  exist;
 
     @JsonCreator
     public ZProgress(@JsonProperty("size") long size)

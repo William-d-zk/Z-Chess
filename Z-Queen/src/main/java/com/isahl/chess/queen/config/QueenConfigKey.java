@@ -33,21 +33,21 @@ public interface QueenConfigKey
         ConfigKey
 {
 
-    String OWNER_IO_POWER         = "power";
-    String KEY_POWER_SERVER       = "server";
-    String KEY_POWER_CLUSTER      = "cluster";
-    String KEY_POWER_INTERNAL     = "internal";
-    String KEY_POWER_CLIENT       = "client";
-    String KEY_POWER_LINK         = "link";
-    String KEY_POWER_ERROR        = "error";
-    String KEY_POWER_LOGIC        = "logic";
+    String OWNER_IO_POWER     = "power";
+    String KEY_POWER_SERVER   = "server";
+    String KEY_POWER_CLUSTER  = "cluster";
+    String KEY_POWER_INTERNAL = "internal";
+    String KEY_POWER_CLIENT   = "client";
+    String KEY_POWER_LINK     = "link";
+    String KEY_POWER_ERROR    = "error";
+    String KEY_POWER_LOGIC    = "logic";
 
-    String OWNER_PIPELINE_CORE    = "core";
-    String KEY_CORE_SERVER        = "server";
-    String KEY_CORE_CLUSTER       = "cluster";
-    String KEY_CORE_DECODER       = "decoder";
-    String KEY_CORE_LOGIC         = "logic";
-    String KEY_CORE_ENCODER       = "encoder";
+    String OWNER_PIPELINE_CORE = "core";
+    String KEY_CORE_SERVER     = "server";
+    String KEY_CORE_CLUSTER    = "cluster";
+    String KEY_CORE_DECODER    = "decoder";
+    String KEY_CORE_LOGIC      = "logic";
+    String KEY_CORE_ENCODER    = "encoder";
 
     String OWNER_SOCKET_OPTION    = "option";
     String KEY_OPTION_SNF         = "snf";
@@ -57,13 +57,13 @@ public interface QueenConfigKey
     String KEY_OPTION_TCP_NODELAY = "tcp_nodelay";
     String KEY_OPTION_SO_LINGER   = "so_linger";
 
-    String OWNER_SOCKET_SEND      = "send";
-    String KEY_SEND_QUEUE_SIZE    = "queue_size";
-    String OWNER_SOCKET_IN        = "in";
-    String KEY_IN_MINUTE          = "minute";
-    String OWNER_SOCKET_OUT       = "out";
-    String KEY_OUT_SECOND         = "second";
+    String OWNER_SOCKET_SEND   = "send";
+    String KEY_SEND_QUEUE_SIZE = "queue_size";
+    String OWNER_SOCKET_IN     = "in";
+    String KEY_IN_MINUTE       = "minute";
+    String OWNER_SOCKET_OUT    = "out";
+    String KEY_OUT_SECOND      = "second";
 
-    String OWNER_PROTOCOL_CRYPT   = "zcrypt";
-    String KEY_CRYPT_ENABLE       = "enable";
+    String OWNER_PROTOCOL_CRYPT = "zcrypt";
+    String KEY_CRYPT_ENABLE     = "enable";
 }

@@ -224,8 +224,7 @@ public class AioSession<C extends IPContext>
     @Override
     public final void bindPrefix(long prefix)
     {
-        mPrefix = mPrefix == null ? new long[] { prefix
-        }
+        mPrefix = mPrefix == null ? new long[]{prefix}
                                   : ArrayUtil.setSortAdd(prefix, mPrefix, PREFIX_MAX);
     }
 

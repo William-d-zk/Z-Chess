@@ -26,11 +26,7 @@ import com.securityinnovation.jNeo.ntruencrypt.KeyParams;
 
 interface PubKeyFormatter
 {
-    public byte[] encode(
-        KeyParams      keyParams,
-        FullPolynomial h);
+    public byte[] encode(KeyParams keyParams, FullPolynomial h);
 
-    public RawKeyData decode(
-        byte keyBlob[])
-        throws ParamSetNotSupportedException;
+    public RawKeyData decode(byte keyBlob[]) throws ParamSetNotSupportedException;
 }

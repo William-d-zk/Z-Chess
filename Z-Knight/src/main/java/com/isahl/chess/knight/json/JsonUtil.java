@@ -49,8 +49,7 @@ public class JsonUtil
 {
     private final static Logger       _Logger       = Logger.getLogger(JsonUtil.class.getSimpleName());
     private final static ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    static
-    {
+    static {
         OBJECT_MAPPER.registerModules(new ParameterNamesModule(JsonCreator.Mode.PROPERTIES),
                                       new Jdk8Module(),
                                       new JavaTimeModule());
@@ -93,8 +92,7 @@ public class JsonUtil
     public static <T> T readValue(byte[] input, Class<T> clazz)
     {
         if (input == null) return null;
-        try
-        {
+        try {
             return OBJECT_MAPPER.readValue(input, clazz);
         }
         catch (JsonParseException |
@@ -102,8 +100,7 @@ public class JsonUtil
         {
             e.printStackTrace();
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             _Logger.warning("read json[%s] error with %s", IoUtil.bin2Hex(input, ":"), clazz, e);
         }
         return null;
@@ -112,8 +109,7 @@ public class JsonUtil
     public static <T> T readValue(String input, Class<T> clazz)
     {
         if (IoUtil.isBlank(input)) return null;
-        try
-        {
+        try {
             return OBJECT_MAPPER.readValue(input, clazz);
         }
         catch (JsonParseException |
@@ -121,8 +117,7 @@ public class JsonUtil
         {
             e.printStackTrace();
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             _Logger.warning("read json[%s] error with %s", input, clazz, e);
         }
         return null;
@@ -131,8 +126,7 @@ public class JsonUtil
     public static <T> T readValue(byte[] input, TypeReference<T> type)
     {
         if (input == null) return null;
-        try
-        {
+        try {
             return OBJECT_MAPPER.readValue(input, type);
         }
         catch (JsonParseException |
@@ -140,8 +134,7 @@ public class JsonUtil
         {
             e.printStackTrace();
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             _Logger.warning("read json[%s] error with %s", IoUtil.bin2Hex(input, ":"), type, e);
         }
         return null;
@@ -150,8 +143,7 @@ public class JsonUtil
     public static <T> T readValue(String input, TypeReference<T> type)
     {
         if (IoUtil.isBlank(input)) return null;
-        try
-        {
+        try {
             return OBJECT_MAPPER.readValue(input, type);
         }
         catch (JsonParseException |
@@ -159,8 +151,7 @@ public class JsonUtil
         {
             e.printStackTrace();
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             _Logger.warning("read json[%s] error with %s", input, type, e);
         }
         return null;
@@ -169,8 +160,7 @@ public class JsonUtil
     public static <T> T readValue(InputStream input, TypeReference<T> type)
     {
         if (input == null) return null;
-        try
-        {
+        try {
             return OBJECT_MAPPER.readValue(input, type);
         }
         catch (JsonParseException |
@@ -178,8 +168,7 @@ public class JsonUtil
         {
             e.printStackTrace();
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             _Logger.warning("read json error with %s", type, e);
         }
         return null;
@@ -188,12 +177,10 @@ public class JsonUtil
     public static JsonNode readTree(byte[] input)
     {
         if (input == null) return OBJECT_MAPPER.nullNode();
-        try
-        {
+        try {
             return OBJECT_MAPPER.readTree(input);
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             _Logger.warning("read tree input[%s] error", IoUtil.bin2Hex(input, ":"), e);
             return OBJECT_MAPPER.nullNode();
         }
@@ -202,12 +189,10 @@ public class JsonUtil
     public static JsonNode readTree(String input)
     {
         if (IoUtil.isBlank(input)) return OBJECT_MAPPER.nullNode();
-        try
-        {
+        try {
             return OBJECT_MAPPER.readTree(input);
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             _Logger.warning("read tree input[%s] error", input, e);
             return OBJECT_MAPPER.nullNode();
         }
@@ -216,12 +201,10 @@ public class JsonUtil
     public static JsonNode readTree(InputStream input)
     {
         if (input == null) return OBJECT_MAPPER.nullNode();
-        try
-        {
+        try {
             return OBJECT_MAPPER.readTree(input);
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             _Logger.warning("read tree input stream error", e);
             return OBJECT_MAPPER.nullNode();
         }
@@ -235,12 +218,10 @@ public class JsonUtil
     public static <T> byte[] writeValueAsBytes(T input)
     {
         if (input == null) return null;
-        try
-        {
+        try {
             return OBJECT_MAPPER.writeValueAsBytes(input);
         }
-        catch (JsonProcessingException e)
-        {
+        catch (JsonProcessingException e) {
             _Logger.warning("write json error", e);
         }
         return null;
@@ -249,12 +230,10 @@ public class JsonUtil
     public static <T> String writeValueAsString(T input)
     {
         if (input == null) return null;
-        try
-        {
+        try {
             return OBJECT_MAPPER.writeValueAsString(input);
         }
-        catch (JsonProcessingException e)
-        {
+        catch (JsonProcessingException e) {
             _Logger.warning("write json error", e);
         }
         return null;

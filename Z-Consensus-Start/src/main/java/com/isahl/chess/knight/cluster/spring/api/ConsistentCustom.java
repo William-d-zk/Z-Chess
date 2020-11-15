@@ -22,12 +22,12 @@
  */
 package com.isahl.chess.knight.cluster.spring.api;
 
-import com.isahl.chess.knight.json.JsonUtil;
 import org.springframework.stereotype.Component;
 
 import com.isahl.chess.bishop.io.zprotocol.raft.X76_RaftNotify;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.knight.cluster.spring.model.ConsistentProtocol;
+import com.isahl.chess.knight.json.JsonUtil;
 import com.isahl.chess.queen.event.handler.cluster.IConsistentCustom;
 import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.io.core.inf.IProtocol;
@@ -43,33 +43,27 @@ public class ConsistentCustom
     @Override
     public <T extends ITraceable & IProtocol> Void handle(T protocol, Throwable throwable)
     {
-        if (throwable == null)
-        {
+        if (throwable == null) {
             _Logger.debug("notify---consistent");
-            if (protocol.serial() == X76_RaftNotify.COMMAND)
-            {
+            if (protocol.serial() == X76_RaftNotify.COMMAND) {
                 _Logger.debug("cluster mode");
-                X76_RaftNotify x76  = (X76_RaftNotify) protocol;
-                byte[]         data = x76.getPayload();
-                if (x76.load() == ConsistentProtocol._SERIAL)
-                {
+                X76_RaftNotify x76 = (X76_RaftNotify) protocol;
+                byte[] data = x76.getPayload();
+                if (x76.load() == ConsistentProtocol._SERIAL) {
                     ConsistentProtocol consistentProtocol = JsonUtil.readValue(data, ConsistentProtocol.class);
                     consistentProtocol.decode(data);
                     _Logger.debug("notify ok");
                 }
-                else
-                {
+                else {
                     _Logger.fetal("consistent notify failed");
                 }
             }
-            else
-            {
+            else {
                 _Logger.debug("single mode");
                 _Logger.debug("notify ok");
             }
         }
-        else
-        {
+        else {
             _Logger.warning("request:%s", throwable, protocol);
         }
         return null;
@@ -82,7 +76,9 @@ public class ConsistentCustom
     }
 
     @Override
-    public <T extends ITraceable & IProtocol> IOperator<T, Throwable, Void> getOperator()
+    public <T extends ITraceable & IProtocol> IOperator<T,
+                                                        Throwable,
+                                                        Void> getOperator()
     {
         return this::handle;
     }

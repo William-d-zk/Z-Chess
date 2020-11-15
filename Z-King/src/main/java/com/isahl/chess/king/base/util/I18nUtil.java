@@ -48,7 +48,8 @@ public interface I18nUtil
 
     static Charset getCharset(byte data)
     {
-        return switch (data & 0xF0) {
+        return switch (data & 0xF0)
+        {
             case CHARSET_ASCII -> StandardCharsets.US_ASCII;
             case CHARSET_UTF_8_NB -> StandardCharsets.UTF_16;
             case CHARSET_UTC_BE -> StandardCharsets.UTF_16BE;
@@ -84,7 +85,9 @@ public interface I18nUtil
         if (StandardCharsets.UTF_16BE.equals(charset)) return CHARSET_UTC_BE;
         if (StandardCharsets.UTF_16LE.equals(charset)) return CHARSET_UTC_LE;
         if (StandardCharsets.ISO_8859_1.equals(charset)) return CHARSET_ISO_8859_1;
-        return switch (charset.name().toUpperCase()) {
+        return switch (charset.name()
+                              .toUpperCase())
+        {
             case "GBK" -> CHARSET_GBK;
             case "GB2312" -> CHARSET_GB2312;
             case "GB18030" -> CHARSET_GB18030;
@@ -95,7 +98,8 @@ public interface I18nUtil
 
     static String getSerialType(int type)
     {
-        return switch (type & 0xF) {
+        return switch (type & 0xF)
+        {
             case SERIAL_TEXT -> "text";
             case SERIAL_BINARY -> "binary";
             case SERIAL_JSON -> "json";

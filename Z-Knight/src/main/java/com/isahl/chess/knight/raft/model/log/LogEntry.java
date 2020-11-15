@@ -42,16 +42,16 @@ public class LogEntry
 {
     private final static int _LOG_SERIAL = INTERNAL_SERIAL + 2;
 
-    private final long       _Term;
-    private final long       _Index;
-    private final long       _ClientPeer;
-    private final long       _Origin;
-    private final int        _PayloadSerial;
-    private final byte[]     _Payload;
-    private final boolean    _Public;
+    private final long    _Term;
+    private final long    _Index;
+    private final long    _ClientPeer;
+    private final long    _Origin;
+    private final int     _PayloadSerial;
+    private final byte[]  _Payload;
+    private final boolean _Public;
 
     @JsonIgnore
-    private Operation        mOperation  = Operation.OP_INSERT;
+    private Operation mOperation = Operation.OP_INSERT;
 
     @JsonIgnore
     private transient byte[] tData;
@@ -105,8 +105,7 @@ public class LogEntry
     @Override
     public byte[] encode()
     {
-        if (tData != null)
-        { return tData; }
+        if (tData != null) { return tData; }
         tData = super.encode();
         return tData;
     }
@@ -134,14 +133,12 @@ public class LogEntry
                              _Index,
                              _Term,
                              _ClientPeer,
-                             _Public ?
-                                     "all":
-                                     _ClientPeer,
+                             _Public ? "all"
+                                     : _ClientPeer,
                              _Origin,
                              _PayloadSerial,
-                             _Payload == null ?
-                                     0:
-                                     _Payload.length);
+                             _Payload == null ? 0
+                                              : _Payload.length);
     }
 
     @Override

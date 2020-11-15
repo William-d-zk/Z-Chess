@@ -56,18 +56,16 @@ public enum Progress
         public int getCount(String formatted)
         {
             String[] split = formatted.split(getSplit());
-            return "NA".equals(split[0]) ?
-                    0:
-                    Integer.parseInt(split[0]);
+            return "NA".equals(split[0]) ? 0
+                                         : Integer.parseInt(split[0]);
         }
 
         @Override
         public int getSize(String formatted)
         {
             String[] split = formatted.split(getSplit());
-            return "NA".equals(split[1]) ?
-                    0:
-                    Integer.parseInt(split[1]);
+            return "NA".equals(split[1]) ? 0
+                                         : Integer.parseInt(split[1]);
         }
     };
 

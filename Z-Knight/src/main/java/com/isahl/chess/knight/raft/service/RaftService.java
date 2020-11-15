@@ -23,19 +23,20 @@
 
 package com.isahl.chess.knight.raft.service;
 
-import com.isahl.chess.knight.raft.IRaftService;
-import com.isahl.chess.knight.raft.model.RaftGraph;
 import org.springframework.stereotype.Service;
 
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.topology.ZUID;
+import com.isahl.chess.knight.raft.IRaftService;
+import com.isahl.chess.knight.raft.model.RaftGraph;
 
 /**
  * @author william.d.zk
  */
 @Service
 public class RaftService
-        implements IRaftService
+        implements
+        IRaftService
 {
     @Override
     public long getLeader()

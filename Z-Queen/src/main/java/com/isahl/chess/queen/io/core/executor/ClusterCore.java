@@ -42,11 +42,11 @@ import com.isahl.chess.queen.event.handler.DecodeHandler;
 import com.isahl.chess.queen.event.handler.EncodeHandler;
 import com.isahl.chess.queen.event.handler.EncodedHandler;
 import com.isahl.chess.queen.event.handler.WriteDispatcher;
+import com.isahl.chess.queen.event.handler.cluster.ClusterMappingHandler;
 import com.isahl.chess.queen.event.handler.cluster.DecodedDispatcher;
 import com.isahl.chess.queen.event.handler.cluster.IClusterCustom;
 import com.isahl.chess.queen.event.handler.cluster.IConsistentCustom;
 import com.isahl.chess.queen.event.handler.cluster.IoDispatcher;
-import com.isahl.chess.queen.event.handler.cluster.ClusterMappingHandler;
 import com.isahl.chess.queen.event.handler.cluster.NotifyHandler;
 import com.isahl.chess.queen.event.handler.mix.ILogicHandler;
 import com.isahl.chess.queen.event.inf.IOperator;
@@ -197,25 +197,23 @@ public class ClusterCore
             _ClusterNotifiers[i].addGatingSequences(_ClusterNotifyProcessors[i].getSequence());
         }
         final RingBuffer<QEvent> _ClusterDecoded = createPipelineLite(_ClusterQueueSize << 1);
-        final RingBuffer<QEvent>[] _ClusterEvents = new RingBuffer[] { _ClusterIoEvent,
-                                                                       _ClusterDecoded,
-                                                                       _ConsensusApiEvent,
-                                                                       _ConsensusEvent
-        };
-        final SequenceBarrier[] _ClusterBarriers = new SequenceBarrier[] { _ClusterIoEvent.newBarrier(),
-                                                                           _ClusterDecoded.newBarrier(),
-                                                                           _ConsensusApiEvent.newBarrier(),
-                                                                           _ConsensusEvent.newBarrier()
-        };
+        final RingBuffer<QEvent>[] _ClusterEvents = new RingBuffer[]{_ClusterIoEvent,
+                                                                     _ClusterDecoded,
+                                                                     _ConsensusApiEvent,
+                                                                     _ConsensusEvent};
+        final SequenceBarrier[] _ClusterBarriers = new SequenceBarrier[]{_ClusterIoEvent.newBarrier(),
+                                                                         _ClusterDecoded.newBarrier(),
+                                                                         _ConsensusApiEvent.newBarrier(),
+                                                                         _ConsensusEvent.newBarrier()};
         final MultiBufferBatchEventProcessor<QEvent> _ClusterProcessor = new MultiBufferBatchEventProcessor<>(_ClusterEvents,
                                                                                                               _ClusterBarriers,
                                                                                                               new ClusterMappingHandler<>("CONSENSUS",
-                                                                                                                                   manager,
-                                                                                                                                   _ErrorEvents[2],
-                                                                                                                                   _ClusterWriteEvent,
-                                                                                                                                   _ClusterNotifiers,
-                                                                                                                                   clusterCustom,
-                                                                                                                                   consistentCustom));
+                                                                                                                                          manager,
+                                                                                                                                          _ErrorEvents[2],
+                                                                                                                                          _ClusterWriteEvent,
+                                                                                                                                          _ClusterNotifiers,
+                                                                                                                                          clusterCustom,
+                                                                                                                                          consistentCustom));
         _ClusterProcessor.setThreadName("ClusterProcessor");
         for (int i = 0, size = _ClusterEvents.length; i < size; i++) {
             _ClusterEvents[i].addGatingSequences(_ClusterProcessor.getSequences()[i]);
@@ -246,11 +244,10 @@ public class ClusterCore
                                                                                       logicHandler);
 
         /* wait to send */
-        final RingBuffer<QEvent>[] _SendEvents = new RingBuffer[] { _LogicEvent,
-                                                                    _ClusterWriteEvent,
-                                                                    _ClusterLocalSendEvent,
-                                                                    _WroteEvent
-        };
+        final RingBuffer<QEvent>[] _SendEvents = new RingBuffer[]{_LogicEvent,
+                                                                  _ClusterWriteEvent,
+                                                                  _ClusterLocalSendEvent,
+                                                                  _WroteEvent};
         final SequenceBarrier[] _SendBarriers = new SequenceBarrier[_SendEvents.length];
         Arrays.setAll(_SendBarriers,
                       slot -> slot == 0 ? _SendEvents[slot].newBarrier(_LogicProcessor.getSequence())

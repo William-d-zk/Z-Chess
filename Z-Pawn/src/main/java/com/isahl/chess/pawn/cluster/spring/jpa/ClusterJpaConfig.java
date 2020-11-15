@@ -34,14 +34,11 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  * @author william.d.zk
  */
 @EnableJpaAuditing
-@EnableJpaRepositories({ "com.isahl.chess.pawn.cluster.spring.jpa.consensus.repository"
-})
-@EntityScan({ "com.isahl.chess.pawn.cluster.spring.jpa.consensus.model"
-})
+@EnableJpaRepositories({"com.isahl.chess.pawn.cluster.spring.jpa.consensus.repository"})
+@EntityScan({"com.isahl.chess.pawn.cluster.spring.jpa.consensus.model"})
 @EnableTransactionManagement
 @Configuration
-@PropertySource({ "classpath:db.properties"
-})
+@PropertySource({"classpath:db.properties"})
 public class ClusterJpaConfig
 {
 

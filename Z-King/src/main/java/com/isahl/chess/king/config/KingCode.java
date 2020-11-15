@@ -27,4 +27,5 @@ package com.isahl.chess.king.config;
  * @author William.d.zk
  */
 public interface KingCode
-{}
+{
+}

@@ -47,7 +47,8 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to) {
+            return switch (to)
+            {
                 case CURRENCY_EUR -> data / CURRENCY_EUR.getSI();
                 case CURRENCY_USD -> data / CURRENCY_USD.getSI();
                 case CURRENCY_RMB -> data;
@@ -61,7 +62,8 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to) {
+            return switch (to)
+            {
                 case CURRENCY_EUR -> data;
                 case CURRENCY_USD -> data * getSI() / CURRENCY_USD.getSI();
                 case CURRENCY_RMB -> data * getSI();
@@ -75,7 +77,8 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to) {
+            return switch (to)
+            {
                 case CURRENCY_EUR -> data * getSI() / CURRENCY_EUR.getSI();
                 case CURRENCY_USD -> data;
                 case CURRENCY_RMB -> data * getSI();
@@ -92,7 +95,8 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to) {
+            return switch (to)
+            {
                 case WEIGHT_KG -> data * getSI();
                 case WEIGHT_G -> data * getSI() / WEIGHT_G.getSI();
                 case WEIGHT_TON -> data;
@@ -108,7 +112,8 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to) {
+            return switch (to)
+            {
                 case WEIGHT_TON -> data / WEIGHT_TON.getSI();
                 case WEIGHT_G -> data / WEIGHT_G.getSI();
                 case WEIGHT_KG -> data;
@@ -124,7 +129,8 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to) {
+            return switch (to)
+            {
                 case WEIGHT_TON -> data * getSI() / WEIGHT_TON.getSI();
                 case WEIGHT_KG -> data * getSI();
                 case WEIGHT_G -> data;
@@ -140,7 +146,8 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to) {
+            return switch (to)
+            {
                 case VOLUME_ML -> data / VOLUME_ML.getSI();
                 case VOLUME_CubicM -> data / VOLUME_CubicM.getSI();
                 case VOLUME_L -> data;
@@ -156,7 +163,8 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to) {
+            return switch (to)
+            {
                 case VOLUME_L -> data * getSI();
                 case VOLUME_CubicM -> data * getSI() / VOLUME_CubicM.getSI();
                 case VOLUME_ML -> data;
@@ -172,7 +180,8 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to) {
+            return switch (to)
+            {
                 case VOLUME_L -> data * getSI();
                 case VOLUME_ML -> data * getSI() / VOLUME_ML.getSI();
                 case VOLUME_CubicM -> data;
@@ -188,7 +197,8 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to) {
+            return switch (to)
+            {
                 case LENGTH_M -> data;
                 case LENGTH_CM -> data / LENGTH_CM.getSI();
                 case LENGTH_MM -> data / LENGTH_MM.getSI();
@@ -205,7 +215,8 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to) {
+            return switch (to)
+            {
                 case LENGTH_M -> data * getSI();
                 case LENGTH_CM -> data;
                 case LENGTH_MM -> data * getSI() / LENGTH_MM.getSI();
@@ -222,7 +233,8 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to) {
+            return switch (to)
+            {
                 case LENGTH_M -> data * getSI();
                 case LENGTH_CM -> data * getSI() / LENGTH_CM.getSI();
                 case LENGTH_MM -> data;
@@ -239,7 +251,8 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to) {
+            return switch (to)
+            {
                 case LENGTH_M -> data * getSI();
                 case LENGTH_CM -> data * getSI() / LENGTH_CM.getSI();
                 case LENGTH_MM -> data * getSI() / LENGTH_MM.getSI();
@@ -256,7 +269,8 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to) {
+            return switch (to)
+            {
                 case TIME_M -> data * getSI();
                 case TIME_S -> data * getSI() / TIME_S.getSI();
                 case TIME_H -> data;
@@ -272,7 +286,8 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to) {
+            return switch (to)
+            {
                 case TIME_H -> data / TIME_H.getSI();
                 case TIME_S -> data / TIME_S.getSI();
                 case TIME_M -> data;
@@ -288,7 +303,8 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to) {
+            return switch (to)
+            {
                 case TIME_H -> data * getSI() / TIME_H.getSI();
                 case TIME_M -> data * getSI();
                 case TIME_S -> data;
@@ -305,7 +321,8 @@ public enum Units
         public float translate(Units to, float data)
         {
 
-            return switch (to) {
+            return switch (to)
+            {
                 case SPEED_M_S -> data * getSI() / SPEED_M_S.getSI();
                 case SPEED_M_M -> data * getSI() / SPEED_M_M.getSI();
                 case SPEED_KM_H -> data;
@@ -322,7 +339,8 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to) {
+            return switch (to)
+            {
                 case SPEED_M_S -> data;
                 case SPEED_M_M -> data * getSI() / SPEED_M_M.getSI();
                 case SPEED_KM_H -> data * getSI() / SPEED_KM_H.getSI();
@@ -338,7 +356,8 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to) {
+            return switch (to)
+            {
                 case SPEED_M_S -> data * getSI() / SPEED_M_S.getSI();
                 case SPEED_M_M -> data;
                 case SPEED_KM_H -> data * getSI() / SPEED_KM_H.getSI();
@@ -354,7 +373,8 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to) {
+            return switch (to)
+            {
                 case PRICE_DIS_USD_KM -> data / PRICE_DIS_USD_KM.getSI();
                 case PRICE_DIS_USD_M -> data / PRICE_DIS_USD_M.getSI();
                 case PRICE_DIS_CNY_KM -> data / PRICE_DIS_CNY_KM.getSI();
@@ -371,7 +391,8 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to) {
+            return switch (to)
+            {
                 case PRICE_DIS_USD_KM -> data * getSI() / PRICE_DIS_USD_KM.getSI();
                 case PRICE_DIS_USD_M -> data * getSI() / PRICE_DIS_USD_M.getSI();
                 case PRICE_DIS_CNY_KM -> data * getSI();
@@ -388,7 +409,8 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to) {
+            return switch (to)
+            {
                 case PRICE_DIS_CNY_KM -> data * getSI() / PRICE_DIS_CNY_KM.getSI();
                 case PRICE_DIS_USD_KM -> data * getSI();
                 case PRICE_DIS_USD_M -> data * getSI() / PRICE_DIS_USD_M.getSI();
@@ -405,7 +427,8 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to) {
+            return switch (to)
+            {
                 case PRICE_DIS_CNY_KM -> data * getSI() / PRICE_DIS_CNY_KM.getSI();
                 case PRICE_DIS_USD_KM -> data * getSI() / PRICE_DIS_USD_KM.getSI();
                 case PRICE_DIS_USD_M -> data * getSI();
@@ -423,7 +446,8 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to) {
+            return switch (to)
+            {
                 case TIME_VOLUME_M_CubicM -> data * getSI();
                 case TIME_VOLUME_M_L -> data * getSI() / TIME_VOLUME_M_L.getSI();
                 default -> throw new IllegalArgumentException();
@@ -435,7 +459,8 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to) {
+            return switch (to)
+            {
                 case TIME_VOLUME_M_CubicM -> data / TIME_VOLUME_M_CubicM.getSI();
                 case TIME_VOLUME_M_L -> data;
                 default -> throw new IllegalArgumentException();
@@ -447,7 +472,8 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to) {
+            return switch (to)
+            {
                 case PROGRAM_STORAGE_B -> data;
                 case PROGRAM_STORAGE_KB -> data * getSI();
                 case PROGRAM_STORAGE_MB -> data * getSI() / PROGRAM_STORAGE_MB.getSI();
@@ -461,7 +487,8 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to) {
+            return switch (to)
+            {
                 case PROGRAM_STORAGE_B -> data * 1024;
                 case PROGRAM_STORAGE_MB -> data / PROGRAM_STORAGE_MB.getSI();
                 case PROGRAM_STORAGE_GB -> data / PROGRAM_STORAGE_GB.getSI();
@@ -474,7 +501,8 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to) {
+            return switch (to)
+            {
                 case PROGRAM_STORAGE_B -> data * 1024 * 1024;
                 case PROGRAM_STORAGE_KB -> data * getSI();
                 case PROGRAM_STORAGE_GB -> data * getSI() / PROGRAM_STORAGE_GB.getSI();
@@ -487,7 +515,8 @@ public enum Units
         @Override
         public float translate(Units to, float data)
         {
-            return switch (to) {
+            return switch (to)
+            {
                 case PROGRAM_STORAGE_B -> data * 1024 * 1024 * 1024;
                 case PROGRAM_STORAGE_KB -> data * getSI();
                 case PROGRAM_STORAGE_MB -> data * getSI() / PROGRAM_STORAGE_MB.getSI();
@@ -496,22 +525,22 @@ public enum Units
         }
     };
 
-    public Triple<Boolean, Float, Units>
+    public Triple<Boolean,
+                  Float,
+                  Units>
 
-           parse(String input)
+            parse(String input)
     {
         Float value = _Model.getValue(_Pattern, input);
-        return Objects.nonNull(value) ?
-                new Triple<>(true, value * getSI(), this):
-                new Triple<>(false, 0.0f, null);
+        return Objects.nonNull(value) ? new Triple<>(true, value * getSI(), this)
+                                      : new Triple<>(false, 0.0f, null);
     }
 
     public float getValue(String input)
     {
         Float value = _Model.getValue(_Pattern, input);
-        return value == null ?
-                0.0f:
-                value * getSI();
+        return value == null ? 0.0f
+                             : value * getSI();
     }
 
     private final String    _SignFormatter;
@@ -541,9 +570,8 @@ public enum Units
             {
                 Matcher matcher = pattern.matcher(input.toUpperCase());
 
-                return matcher.matches() ?
-                        Float.parseFloat(matcher.group(2)):
-                        null;
+                return matcher.matches() ? Float.parseFloat(matcher.group(2))
+                                         : null;
             }
         },
         /**
@@ -569,9 +597,8 @@ public enum Units
             {
                 Matcher matcher = pattern.matcher(input.toUpperCase());
 
-                return matcher.matches() ?
-                        Float.parseFloat(matcher.group(2)):
-                        null;
+                return matcher.matches() ? Float.parseFloat(matcher.group(2))
+                                         : null;
             }
         },
         /**
@@ -593,9 +620,8 @@ public enum Units
             {
                 Matcher matcher = pattern.matcher(input.toUpperCase());
 
-                return matcher.matches() ?
-                        Float.parseFloat(matcher.group(1)):
-                        null;
+                return matcher.matches() ? Float.parseFloat(matcher.group(1))
+                                         : null;
             }
         };
 
@@ -604,7 +630,10 @@ public enum Units
         abstract Float getValue(Pattern pattern, String input);
     }
 
-    Units(String formatter, float si, int precision, SignModel model)
+    Units(String formatter,
+          float si,
+          int precision,
+          SignModel model)
     {
         _SignFormatter = formatter;
         _Model = model;

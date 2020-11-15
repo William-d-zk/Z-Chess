@@ -29,21 +29,24 @@ import com.isahl.chess.king.base.inf.IPair;
 /**
  * @author William.d.zk
  */
-public class Pair<FIRST, SECOND>
+public class Pair<FIRST,
+                  SECOND>
         implements
         IPair
 {
     private FIRST  first;
     private SECOND second;
 
-    public Pair(FIRST first, SECOND second)
+    public Pair(FIRST first,
+                SECOND second)
     {
         this.first = first;
         this.second = second;
     }
 
     public Pair()
-    {}
+    {
+    }
 
     public void setFirst(FIRST f)
     {
@@ -68,7 +71,8 @@ public class Pair<FIRST, SECOND>
     }
 
     @Override
-    public Pair<FIRST, SECOND> clone()
+    public Pair<FIRST,
+                SECOND> clone()
     {
         return new Pair<>(first, second);
     }
@@ -76,12 +80,12 @@ public class Pair<FIRST, SECOND>
     @Override
     public boolean equals(Object obj)
     {
-        if (!(obj instanceof Pair))
-        { return false; }
-        if (this != obj)
-        {
+        if (!(obj instanceof Pair)) { return false; }
+        if (this != obj) {
             @SuppressWarnings("unchecked")
-            Pair<FIRST, SECOND> other = (Pair<FIRST, SECOND>) obj;
+            Pair<FIRST,
+                 SECOND> other = (Pair<FIRST,
+                                       SECOND>) obj;
             return first.equals(other.first) && second.equals(other.second);
         }
         return true;

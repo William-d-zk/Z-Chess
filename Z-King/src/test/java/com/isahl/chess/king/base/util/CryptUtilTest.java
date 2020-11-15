@@ -37,8 +37,7 @@ class CryptUtilTest
     void randomPassword()
     {
         CryptUtil cryptUtil = new CryptUtil();
-        for (int i = 0; i < 100; i++)
-        {
+        for (int i = 0; i < 100; i++) {
             String passwd = cryptUtil.randomPassword(17, 31);
             System.out.println(passwd);
         }

@@ -30,7 +30,8 @@ import com.isahl.chess.king.base.util.IoUtil;
  * @author William.d.zk
  */
 public class X50_DeviceMsg
-        extends ZCommand
+        extends
+        ZCommand
 {
     public final static int COMMAND = 0x50;
     private byte[]          payload;
@@ -61,8 +62,7 @@ public class X50_DeviceMsg
     public void setPayload(byte[] payload)
     {
         this.payload = payload;
-        if (payload.length > 4096)
-        { throw new IllegalArgumentException("payload length is over 4096"); }
+        if (payload.length > 4096) { throw new IllegalArgumentException("payload length is over 4096"); }
         payloadLength = payload.length;
     }
 

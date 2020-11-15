@@ -29,7 +29,8 @@ import com.isahl.chess.bishop.io.zprotocol.ZCommand;
  * @author william.d.zk
  */
 public class X25_AuthorisedToken
-        extends ZCommand
+        extends
+        ZCommand
 {
     public final static int COMMAND = 0x25;
 

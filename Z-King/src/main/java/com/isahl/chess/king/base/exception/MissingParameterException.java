@@ -30,7 +30,8 @@ public class MissingParameterException
         extends
         ZException
 {
-    public MissingParameterException(String function, String paramName)
+    public MissingParameterException(String function,
+                                     String paramName)
     {
         super("function %s missing param %s", function, paramName);
     }

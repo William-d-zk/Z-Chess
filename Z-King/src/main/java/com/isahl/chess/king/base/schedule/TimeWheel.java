@@ -48,7 +48,7 @@ public class TimeWheel
         extends
         ForkJoinPool
 {
-    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final Logger        _Logger = Logger.getLogger(getClass().getSimpleName());
     private final int           _SlotBitLeft;// must <= 10
     private final int           _HashMod;
     private final long          _Tick;
@@ -61,7 +61,9 @@ public class TimeWheel
         this(1, TimeUnit.SECONDS, 3);
     }
 
-    public TimeWheel(long tick, TimeUnit timeUnit, int bitLeft)
+    public TimeWheel(long tick,
+                     TimeUnit timeUnit,
+                     int bitLeft)
     {
         super(bitLeft, ForkJoinPool.defaultForkJoinWorkerThreadFactory, null, true);
         _Lock = new ReentrantLock();
@@ -76,42 +78,33 @@ public class TimeWheel
         final Thread _Timer = new Thread(() ->
         {
             int correction = 13;// 5~20
-            for (long align = 0, t, sleep, expect; !isShutdown();)
-            {
+            for (long align = 0, t, sleep, expect; !isShutdown();) {
                 t = System.currentTimeMillis();
                 sleep = _Tick - align;
                 expect = t + sleep;
-                if (sleep > correction)
-                {
-                    try
-                    {
+                if (sleep > correction) {
+                    try {
                         sleep(sleep - correction);
                     }
-                    catch (InterruptedException e)
-                    {
+                    catch (InterruptedException e) {
                         // ignore 没有地方执行interrupt操作
                     }
                 }
                 vCurrentMillisecond = System.currentTimeMillis();
                 _Lock.lock();
-                try
-                {
+                try {
                     List<HandleTask<?>> readyList = filterReady();
-                    if (!readyList.isEmpty())
-                    {
-                        for (HandleTask<?> ready : readyList)
-                        {
+                    if (!readyList.isEmpty()) {
+                        for (HandleTask<?> ready : readyList) {
                             submit(ready);
                         }
                     }
                     vCtxSlot++;
-                    if ((vCtxSlot &= _HashMod) == 0)
-                    {
+                    if ((vCtxSlot &= _HashMod) == 0) {
                         vCtxLoop++;
                     }
                 }
-                finally
-                {
+                finally {
                     _Lock.unlock();
                 }
                 // 此处-sleep 计算当期这次过程的偏差值
@@ -143,18 +136,16 @@ public class TimeWheel
     {
         IWheelItem<A> item = task._Item;
         _Lock.lock();
-        try
-        {
-            int         slot     = task.acquire(getCurrentLoop(), getCurrentSlot());
+        try {
+            int slot = task.acquire(getCurrentLoop(), getCurrentSlot());
             TickSlot<A> tickSlot = (TickSlot<A>) _ModHashEntryArray[slot & _HashMod];
-            int         index    = Collections.binarySearch(tickSlot, task);
-            tickSlot.add(index < 0 ?
-                    -index - 1:
-                    index, task);
+            int index = Collections.binarySearch(tickSlot, task);
+            tickSlot.add(index < 0 ? -index - 1
+                                   : index,
+                         task);
             item.setup();
         }
-        finally
-        {
+        finally {
             _Lock.unlock();
         }
         return task;
@@ -167,10 +158,8 @@ public class TimeWheel
                                                                        & _HashMod].iterator(); it.hasNext();)
         {
             HandleTask<?> handleTask = it.next();
-            if (handleTask.getLoop() == getCurrentLoop())
-            {
-                if (handleTask.isValid())
-                {
+            if (handleTask.getLoop() == getCurrentLoop()) {
+                if (handleTask.isValid()) {
                     readyList.add(handleTask);
                 }
                 it.remove();
@@ -206,9 +195,8 @@ public class TimeWheel
         default int compareTo(IWheelItem o)
         {
             int loopCmp = Long.compare(getTick(), o.getTick());
-            return loopCmp == 0 ?
-                    Integer.compare(getPriority(), o.getPriority()):
-                    loopCmp;
+            return loopCmp == 0 ? Integer.compare(getPriority(), o.getPriority())
+                                : loopCmp;
         }
     }
 
@@ -272,13 +260,11 @@ public class TimeWheel
         int acquire(int currentLoop, int currentSlot)
         {
             int slot;
-            if (currentSlot + _Slot > _HashMod)
-            {
+            if (currentSlot + _Slot > _HashMod) {
                 loop = _Loop + currentLoop + 1;
                 slot = _Slot + currentSlot - _HashMod - 1;
             }
-            else
-            {
+            else {
                 loop = currentLoop + _Loop;
                 slot = currentSlot + _Slot;
             }
@@ -289,22 +275,18 @@ public class TimeWheel
         public IWheelItem<V> call()
         {
             _Item.lock();
-            try
-            {
+            try {
                 V attach = _Item.get();
                 _Item.beforeCall();
-                if (isValid() && (attach == null || attach.isValid()))
-                {
+                if (isValid() && (attach == null || attach.isValid())) {
                     _Item.onCall();
-                    if (_Item.isCycle())
-                    {
+                    if (_Item.isCycle()) {
                         TimeWheel.this.acquire(HandleTask.this);
                     }
                 }
                 return _Item;
             }
-            finally
-            {
+            finally {
                 _Item.unlock();
             }
         }
@@ -325,12 +307,10 @@ public class TimeWheel
         public void cancel()
         {
             _Item.lock();
-            try
-            {
+            try {
                 vCancel = true;
             }
-            finally
-            {
+            finally {
                 _Item.unlock();
             }
         }

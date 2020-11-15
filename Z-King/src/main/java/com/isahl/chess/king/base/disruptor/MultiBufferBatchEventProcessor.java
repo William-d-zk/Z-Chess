@@ -42,10 +42,10 @@ public class MultiBufferBatchEventProcessor<T>
         implements
         EventProcessor
 {
-    private final Logger _Logger  = Logger.getLogger("base.king." + getClass().getSimpleName());
-    private static final int        IDLE     = 0;
-    private static final int        HALTED   = IDLE + 1;
-    private static final int        RUNNING  = HALTED + 1;
+    private final Logger     _Logger = Logger.getLogger("base.king." + getClass().getSimpleName());
+    private static final int IDLE    = 0;
+    private static final int HALTED  = IDLE + 1;
+    private static final int RUNNING = HALTED + 1;
 
     private final AtomicInteger     _Running = new AtomicInteger(IDLE);
     private final DataProvider<T>[] _Providers;
@@ -58,14 +58,12 @@ public class MultiBufferBatchEventProcessor<T>
                                           SequenceBarrier[] barriers,
                                           EventHandler<T> handler)
     {
-        if (providers.length != barriers.length)
-        { throw new IllegalArgumentException(); }
+        if (providers.length != barriers.length) { throw new IllegalArgumentException(); }
         _Providers = providers;
         _Barriers = barriers;
         _Handler = handler;
         _Sequences = new Sequence[providers.length];
-        for (int i = 0; i < _Sequences.length; i++)
-        {
+        for (int i = 0; i < _Sequences.length; i++) {
             _Sequences[i] = new Sequence(-1);
         }
     }
@@ -78,65 +76,53 @@ public class MultiBufferBatchEventProcessor<T>
     @Override
     public void run()
     {
-        if (_Running.compareAndSet(IDLE, RUNNING))
-        {
-            if (threadName != null) Thread.currentThread().setName(threadName);
-            for (SequenceBarrier barrier : _Barriers)
-            {
+        if (_Running.compareAndSet(IDLE, RUNNING)) {
+            if (threadName != null) Thread.currentThread()
+                                          .setName(threadName);
+            for (SequenceBarrier barrier : _Barriers) {
                 barrier.clearAlert();
             }
 
             final int barrierLength = _Barriers.length;
-            int       barrier_total_count;
-            while (true)
-            {
+            int barrier_total_count;
+            while (true) {
                 barrier_total_count = 0;
-                for (int i = 0; i < barrierLength; i++)
-                {
-                    SequenceBarrier barrier      = _Barriers[i];
-                    Sequence        sequence     = _Sequences[i];
-                    DataProvider<T> provider     = _Providers[i];
-                    long            nextSequence = sequence.get() + 1;
-                    try
-                    {
+                for (int i = 0; i < barrierLength; i++) {
+                    SequenceBarrier barrier = _Barriers[i];
+                    Sequence sequence = _Sequences[i];
+                    DataProvider<T> provider = _Providers[i];
+                    long nextSequence = sequence.get() + 1;
+                    try {
                         long available = barrier.waitFor(-1);
-                        if (nextSequence <= available)
-                        {
+                        if (nextSequence <= available) {
                             barrier_total_count += available - nextSequence + 1;
-                            while (nextSequence <= available)
-                            {
+                            while (nextSequence <= available) {
                                 _Handler.onEvent(provider.get(nextSequence), nextSequence, nextSequence == available);
                                 nextSequence++;
                             }
                         }
                         sequence.set(available);
                     }
-                    catch (AlertException e)
-                    {
+                    catch (AlertException e) {
                         /*
                          * 这个设计是为了动态终止processor，多路归并的场景中，reduce 不能被终止
                          */
                     }
-                    catch (Throwable ex)
-                    {
+                    catch (Throwable ex) {
                         sequence.set(nextSequence);
                     }
                 }
                 // 没有任何 前置生产者的存在事件的时候暂停 5ms 释放 CPU，不超过100个事件，将释放 CPU
-                if (barrier_total_count == 0)
-                {
+                if (barrier_total_count == 0) {
                     LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(5));
                 }
-                else if (barrier_total_count < 100)
-                {
+                else if (barrier_total_count < 100) {
                     Thread.yield();
                 }
             }
         }
-        else
-        {
-            if (_Running.get() == RUNNING)
-            { throw new IllegalStateException("Thread is already running"); }
+        else {
+            if (_Running.get() == RUNNING) { throw new IllegalStateException("Thread is already running"); }
         }
 
     }

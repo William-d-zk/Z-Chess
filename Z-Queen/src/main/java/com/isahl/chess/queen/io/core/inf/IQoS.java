@@ -52,15 +52,12 @@ public interface IQoS
     @Override
     default int compareTo(IQoS o)
     {
-        long seqDiff      = getSequence() - o.getSequence();
-        int  priorityDiff = getPriority() - o.getPriority();
-        return priorityDiff == 0 ?
-                (seqDiff == 0 ?
-                        hashCode() - o.hashCode():
-                        (seqDiff > 0 ?
-                                1:
-                                -1)):
-                priorityDiff;
+        long seqDiff = getSequence() - o.getSequence();
+        int priorityDiff = getPriority() - o.getPriority();
+        return priorityDiff == 0 ? (seqDiff == 0 ? hashCode() - o.hashCode()
+                                                 : (seqDiff > 0 ? 1
+                                                                : -1))
+                                 : priorityDiff;
     }
 
     Level getLevel();
@@ -110,7 +107,8 @@ public interface IQoS
 
         public static Level valueOf(int level)
         {
-            return switch (level) {
+            return switch (level)
+            {
                 case 0 -> ALMOST_ONCE;
                 case 1 -> AT_LEAST_ONCE;
                 case 2 -> EXACTLY_ONCE;

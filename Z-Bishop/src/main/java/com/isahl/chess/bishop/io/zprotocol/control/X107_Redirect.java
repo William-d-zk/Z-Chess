@@ -23,8 +23,8 @@
 
 package com.isahl.chess.bishop.io.zprotocol.control;
 
-import com.isahl.chess.bishop.io.ws.WsFrame;
 import com.isahl.chess.bishop.io.ws.WsControl;
+import com.isahl.chess.bishop.io.ws.WsFrame;
 import com.isahl.chess.king.base.util.IoUtil;
 
 /**
