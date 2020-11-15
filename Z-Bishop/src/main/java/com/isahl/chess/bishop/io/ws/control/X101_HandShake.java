@@ -22,6 +22,7 @@
  */
 package com.isahl.chess.bishop.io.ws.control;
 
+import com.isahl.chess.bishop.io.ws.IWsContext;
 import com.isahl.chess.bishop.io.ws.WsHandshake;
 
 /**
@@ -43,11 +44,13 @@ public class X101_HandShake
                            host,
                            secKey,
                            host,
-                           version));
+                           version),
+             IWsContext.HS_State_CONNECTION);
     }
 
-    public X101_HandShake(String handshake)
+    public X101_HandShake(String handshake,
+                          int code)
     {
-        super(COMMAND, handshake);
+        super(COMMAND, handshake, code);
     }
 }

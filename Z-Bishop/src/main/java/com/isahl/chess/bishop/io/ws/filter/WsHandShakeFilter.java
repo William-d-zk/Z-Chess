@@ -23,9 +23,9 @@
 
 package com.isahl.chess.bishop.io.ws.filter;
 
-import static com.isahl.chess.queen.io.core.inf.IPContext.DECODE_FRAME;
-import static com.isahl.chess.queen.io.core.inf.IPContext.ENCODE_FRAME;
-import static com.isahl.chess.queen.io.core.inf.IPContext.ENCODE_NULL;
+import static com.isahl.chess.bishop.io.ws.IWsContext.HS_State_ACCEPT_OK;
+import static com.isahl.chess.bishop.io.ws.IWsContext.HS_State_CLIENT_OK;
+import static com.isahl.chess.bishop.io.ws.IWsContext.HS_State_ERROR;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -63,22 +63,20 @@ public class WsHandShakeFilter<T extends ZContext & IWsContext>
     @Override
     public IPacket encode(T context, WsHandshake output)
     {
-        AioPacket encoded = new AioPacket(ByteBuffer.wrap(output.encode()));
-        context.advanceOutState(ENCODE_FRAME);
-        return encoded;
+        return new AioPacket(ByteBuffer.wrap(output.encode()));
     }
 
     @Override
     public ResultType seek(T context, WsHandshake output)
     {
-        return context.outState() == ENCODE_NULL ? ResultType.NEXT_STEP
-                                                 : ResultType.IGNORE;
+        return context.isOutFrame() ? ResultType.NEXT_STEP
+                                    : ResultType.IGNORE;
     }
 
     @Override
     public ResultType peek(T context, IPacket input)
     {
-        if (context.inState() == ENCODE_NULL) {
+        if (context.isInFrame()) {
             ByteBuffer recvBuf = input.getBuffer();
             ByteBuffer cRvBuf = context.getRvBuffer();
             while (recvBuf.hasRemaining()) {
@@ -230,15 +228,17 @@ public class WsHandShakeFilter<T extends ZContext & IWsContext>
                             }
                         }
                         if (ISort.Type.SERVER == context.getType()) {
-                            context.setHandshake(new X101_HandShake((context.checkState(WsContext.HS_State_CLIENT_OK) ? "HTTP/1.1 101 Switching Protocols\r\n"
-                                                                                                                      : "HTTP/1.1 400 Bad Request\r\n")
+                            context.setHandshake(new X101_HandShake((context.checkState(HS_State_CLIENT_OK) ? "HTTP/1.1 101 Switching Protocols\r\n"
+                                                                                                            : "HTTP/1.1 400 Bad Request\r\n")
                                                                     + response.toString()
-                                                                    + CRLF));
+                                                                    + CRLF,
+                                                                    context.checkState(HS_State_CLIENT_OK) ? HS_State_CLIENT_OK
+                                                                                                           : HS_State_ERROR));
                             return ResultType.HANDLED;
                         }
                         else if (ISort.Type.CONSUMER == context.getType()) {
-                            if (context.checkState(WsContext.HS_State_ACCEPT_OK)) {
-                                context.setHandshake(new X101_HandShake(x));
+                            if (context.checkState(HS_State_ACCEPT_OK)) {
+                                context.setHandshake(new X101_HandShake(x, HS_State_ACCEPT_OK));
                                 return ResultType.HANDLED;
                             }
                             _Logger.warning("client handshake error!");
@@ -257,7 +257,6 @@ public class WsHandShakeFilter<T extends ZContext & IWsContext>
     public WsHandshake decode(T context, IPacket input)
     {
         WsHandshake handshake = context.getHandshake();
-        context.advanceInState(DECODE_FRAME);
         context.finish();
         return handshake;
     }

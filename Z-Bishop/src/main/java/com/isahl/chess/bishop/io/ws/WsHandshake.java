@@ -33,9 +33,11 @@ public abstract class WsHandshake
 {
 
     public WsHandshake(int command,
-                       String msg)
+                       String msg,
+                       int code)
     {
         super(WsFrame.frame_op_code_ctrl_handshake, command, msg.getBytes(StandardCharsets.UTF_8));
+        _Code = code;
     }
 
     @Override
@@ -44,4 +46,15 @@ public abstract class WsHandshake
         return String.format("web socket handshake \n\n%s", new String(getPayload(), StandardCharsets.UTF_8));
     }
 
+    private final int _Code;
+
+    public boolean isClientOk()
+    {
+        return _Code == IWsContext.HS_State_CLIENT_OK;
+    }
+
+    public boolean isServerAccept()
+    {
+        return _Code == IWsContext.HS_State_ACCEPT_OK;
+    }
 }

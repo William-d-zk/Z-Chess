@@ -32,6 +32,7 @@ import com.isahl.chess.queen.io.core.async.AioPacket;
 import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.IPacket;
 import com.isahl.chess.queen.io.core.inf.IProtocol;
+import com.isahl.chess.queen.io.core.inf.IProxyContext;
 
 /**
  * @author william.d.zk
@@ -135,20 +136,39 @@ public class QttFrameFilter
     public <C extends IPContext,
             O extends IProtocol> ResultType pipeSeek(C context, O output)
     {
-        return checkType(output, IProtocol.FRAME_SERIAL) && context instanceof QttContext
-                                                                                          ? seek((QttContext) context,
-                                                                                                 (QttFrame) output)
-                                                                                          : ResultType.IGNORE;
+        if (checkType(output, IProtocol.FRAME_SERIAL)) {
+            if (context.isProxy()) {
+                IPContext acting = ((IProxyContext<?>) context).getActingContext();
+                if (acting instanceof QttContext && output instanceof QttFrame) {
+                    return seek((QttContext) acting, (QttFrame) output);
+                }
+                else if (acting.isProxy()) {
+                    IPContext acting2 = ((IProxyContext<?>) acting).getActingContext();
+                    if (acting2 instanceof QttContext) { return seek((QttContext) acting2, (QttFrame) output); }
+                }
+            }
+        }
+        return ResultType.IGNORE;
     }
 
     @Override
     public <C extends IPContext,
             I extends IProtocol> ResultType pipePeek(C context, I input)
     {
-        return checkType(input, IProtocol.PACKET_SERIAL) && context instanceof QttContext
-                                                                                          ? peek((QttContext) context,
-                                                                                                 (IPacket) input)
-                                                                                          : ResultType.IGNORE;
+        if (checkType(input, IProtocol.PACKET_SERIAL)) {
+            if (context.isProxy()) {
+                IPContext acting = ((IProxyContext<?>) context).getActingContext();
+                if (acting instanceof QttContext) {
+                    return peek((QttContext) context, (IPacket) input);
+                }
+                else if (acting.isProxy()) {
+                    IPContext acting2 = ((IProxyContext<?>) acting).getActingContext();
+                    if (acting2 instanceof QttContext) { return peek((QttContext) acting2, (IPacket) input); }
+                }
+            }
+
+        }
+        return ResultType.IGNORE;
     }
 
     @Override

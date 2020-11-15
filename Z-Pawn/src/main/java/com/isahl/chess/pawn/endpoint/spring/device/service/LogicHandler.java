@@ -64,6 +64,7 @@ import com.isahl.chess.queen.io.core.inf.IClusterPeer;
 import com.isahl.chess.queen.io.core.inf.IClusterTimer;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.INode;
+import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.IQoS;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionManager;
@@ -104,6 +105,13 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
         switch (content.serial())
         {
             case X101_HandShake.COMMAND:
+                X101_HandShake x101 = (X101_HandShake) content;
+                if (x101.isClientOk() || x101.isServerAccept()) {
+                    //server response 
+                    IPContext context = session.getContext();
+                    context.advanceInState(IPContext.DECODE_PAYLOAD);
+                    context.advanceOutState(IPContext.DECODE_PAYLOAD);
+                }
                 return new IControl[]{content};
             case X103_Ping.COMMAND:
                 X103_Ping x103 = (X103_Ping) content;

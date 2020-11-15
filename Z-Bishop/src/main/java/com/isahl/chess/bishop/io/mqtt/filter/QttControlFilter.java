@@ -29,6 +29,7 @@ import com.isahl.chess.bishop.io.mqtt.QttFrame;
 import com.isahl.chess.queen.io.core.async.AioFilterChain;
 import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.IProtocol;
+import com.isahl.chess.queen.io.core.inf.IProxyContext;
 
 /**
  * @author william.d.zk
@@ -82,8 +83,19 @@ public class QttControlFilter
     public <C extends IPContext,
             O extends IProtocol> ResultType pipeSeek(C context, O output)
     {
-        return checkType(output, IProtocol.CONTROL_SERIAL) ? seek((QttContext) context, (QttControl) output)
-                                                           : ResultType.IGNORE;
+        if (checkType(output, IProtocol.CONTROL_SERIAL)) {
+            if (context.isProxy()) {
+                IPContext acting = ((IProxyContext<?>) context).getActingContext();
+                if (acting instanceof QttContext && output instanceof QttControl) {
+                    return seek((QttContext) acting, (QttControl) output);
+                }
+                else if (acting.isProxy()) {
+                    IPContext acting2 = ((IProxyContext<?>) acting).getActingContext();
+                    if (acting2 instanceof QttContext) { return seek((QttContext) acting2, (QttControl) output); }
+                }
+            }
+        }
+        return ResultType.IGNORE;
     }
 
     @Override
