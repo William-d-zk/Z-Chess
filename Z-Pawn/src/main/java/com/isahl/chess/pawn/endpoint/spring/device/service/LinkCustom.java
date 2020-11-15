@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import com.isahl.chess.bishop.io.ZSortHolder;
@@ -48,6 +49,8 @@ import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
+import com.isahl.chess.knight.cluster.spring.model.ConsistentProtocol;
+import com.isahl.chess.knight.json.JsonUtil;
 import com.isahl.chess.pawn.endpoint.spring.device.jpa.model.DeviceEntity;
 import com.isahl.chess.queen.db.inf.IStorage;
 import com.isahl.chess.queen.event.handler.mix.ILinkCustom;
@@ -196,6 +199,7 @@ public class LinkCustom
                     _Logger.info("%s login ok -> %#x", x111.getClientId(), origin);
                     if (x111.isClean()) {
                         _QttRouter.clean(origin);
+                        _DurableService.clean(origin);
                     }
                     if (session != null) {
                         X112_QttConnack x112 = new X112_QttConnack();
@@ -251,6 +255,7 @@ public class LinkCustom
     @Override
     public void adjudge(IProtocol consensus)
     {
+        _Logger.info("link custom by leader %s", consensus);
         switch (consensus.serial())
         {
             case X111_QttConnect.COMMAND ->
@@ -273,11 +278,40 @@ public class LinkCustom
     @Override
     public <T extends ITraceable & IProtocol> Void handle(T request, Throwable throwable)
     {
+        if (throwable == null) {
+            _Logger.debug("notify---consistent");
+            if (request.serial() == X76_RaftNotify.COMMAND) {
+                _Logger.debug("cluster mode");
+                X76_RaftNotify x76 = (X76_RaftNotify) request;
+                byte[] data = x76.getPayload();
+                if (x76.load() == ConsistentProtocol._SERIAL) {
+                    ConsistentProtocol consistentProtocol = JsonUtil.readValue(data, ConsistentProtocol.class);
+                    consistentProtocol.decode(data);
+                    _Logger.debug("notify ok");
+                }
+                else {
+                    _Logger.fetal("consistent notify failed");
+                }
+            }
+            else {
+                _Logger.debug("single mode");
+                _Logger.debug("notify ok");
+            }
+        }
+        else {
+            _Logger.warning("request:%s", throwable, request);
+        }
         return null;
     }
 
     private void cleanMessage(long device)
     {
         //        List<MessageEntity> messageEntityList = _MessageRepository.findAllByOriginOrDestination(device, device);
+    }
+
+    @Bean
+    public IQttRouter getQttRouter()
+    {
+        return _QttRouter;
     }
 }

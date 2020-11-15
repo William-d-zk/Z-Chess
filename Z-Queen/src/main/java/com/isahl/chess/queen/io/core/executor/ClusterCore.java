@@ -46,7 +46,7 @@ import com.isahl.chess.queen.event.handler.cluster.DecodedDispatcher;
 import com.isahl.chess.queen.event.handler.cluster.IClusterCustom;
 import com.isahl.chess.queen.event.handler.cluster.IConsistentCustom;
 import com.isahl.chess.queen.event.handler.cluster.IoDispatcher;
-import com.isahl.chess.queen.event.handler.cluster.MappingHandler;
+import com.isahl.chess.queen.event.handler.cluster.ClusterMappingHandler;
 import com.isahl.chess.queen.event.handler.cluster.NotifyHandler;
 import com.isahl.chess.queen.event.handler.mix.ILogicHandler;
 import com.isahl.chess.queen.event.inf.IOperator;
@@ -209,7 +209,7 @@ public class ClusterCore
         };
         final MultiBufferBatchEventProcessor<QEvent> _ClusterProcessor = new MultiBufferBatchEventProcessor<>(_ClusterEvents,
                                                                                                               _ClusterBarriers,
-                                                                                                              new MappingHandler<>("CONSENSUS",
+                                                                                                              new ClusterMappingHandler<>("CONSENSUS",
                                                                                                                                    manager,
                                                                                                                                    _ErrorEvents[2],
                                                                                                                                    _ClusterWriteEvent,

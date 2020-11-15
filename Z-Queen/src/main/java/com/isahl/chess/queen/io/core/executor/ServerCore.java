@@ -45,7 +45,7 @@ import com.isahl.chess.queen.event.handler.WriteDispatcher;
 import com.isahl.chess.queen.event.handler.cluster.IClusterCustom;
 import com.isahl.chess.queen.event.handler.mix.ILinkCustom;
 import com.isahl.chess.queen.event.handler.mix.ILogicHandler;
-import com.isahl.chess.queen.event.handler.mix.MappingHandler;
+import com.isahl.chess.queen.event.handler.mix.MixMappingHandler;
 import com.isahl.chess.queen.event.handler.mix.MixDecodedDispatcher;
 import com.isahl.chess.queen.event.handler.mix.MixIoDispatcher;
 import com.isahl.chess.queen.event.inf.IOperator;
@@ -276,7 +276,7 @@ public class ServerCore
         };
         final MultiBufferBatchEventProcessor<QEvent> _LinkProcessor = new MultiBufferBatchEventProcessor<>(_LinkEvents,
                                                                                                            _LinkBarriers,
-                                                                                                           new MappingHandler<>("LINK",
+                                                                                                           new MixMappingHandler<>("LINK",
                                                                                                                                 manager,
                                                                                                                                 _ErrorEvents[0],
                                                                                                                                 _LinkWriteEvent,
@@ -302,7 +302,7 @@ public class ServerCore
         };
         final MultiBufferBatchEventProcessor<QEvent> _ClusterProcessor = new MultiBufferBatchEventProcessor<>(_ClusterEvents,
                                                                                                               _ClusterBarriers,
-                                                                                                              new MappingHandler<>("CONSENSUS",
+                                                                                                              new MixMappingHandler<>("CONSENSUS",
                                                                                                                                    manager,
                                                                                                                                    _ErrorEvents[1],
                                                                                                                                    _ClusterWriteEvent,
