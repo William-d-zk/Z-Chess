@@ -112,6 +112,7 @@
         <httpcore.version>4.4.13</httpcore.version>
         <!--TEST TOOLS VERSION-->
         <junit.jupiter.version>5.7.0</junit.jupiter.version>
+        <junit.platform.verssion>1.7.0</junit.platform.verssion>
         <mockito.version>3.6.0</mockito.version>
         <!--CACHE-->
         <ehcache.version>3.9.0</ehcache.version>
