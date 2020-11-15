@@ -51,9 +51,9 @@ import com.isahl.chess.queen.io.core.inf.IProtocol;
  */
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-@JsonIgnoreProperties(value = { "createdAt",
-                                "updatedAt"
-}, allowGetters = true)
+@JsonIgnoreProperties(value = {"createdAt",
+                               "updatedAt"},
+                      allowGetters = true)
 public abstract class AuditModel
         implements
         IProtocol,

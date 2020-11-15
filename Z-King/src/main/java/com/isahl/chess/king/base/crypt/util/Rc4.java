@@ -26,8 +26,8 @@ package com.isahl.chess.king.base.crypt.util;
 import java.nio.ByteBuffer;
 import java.util.Random;
 
-import com.isahl.chess.king.base.util.ArrayUtil;
 import com.isahl.chess.king.base.crypt.inf.ISymmetric;
+import com.isahl.chess.king.base.util.ArrayUtil;
 
 /**
  * @author William.d.zk
@@ -60,8 +60,7 @@ public class Rc4
         for (int i = 0; i < S.length; i++)
             S[i] = i;
         int j = 0;
-        for (int i = 0; i < S.length; i++)
-        {
+        for (int i = 0; i < S.length; i++) {
             j = (j + S[i] + (key[i % key.length] & 0xFF)) & 0xFF;
             ArrayUtil.swap(S, i, j);
         }
@@ -72,8 +71,7 @@ public class Rc4
 
         byte[] encodeData = new byte[data.length];
 
-        for (int x = 0; x < encodeData.length; x++)
-        {
+        for (int x = 0; x < encodeData.length; x++) {
             i = (i + 1) & 0xFF;
             j = (j + S[i]) & 0xFF;
             ArrayUtil.swap(S, i, j);
@@ -87,14 +85,11 @@ public class Rc4
     public static boolean isKeyValid(byte[] key)
     {
         byte[] bKey = key;
-        int    len  = bKey.length;
-        int    num  = 0;// 0x0E计数
-        if (len > 0 && len <= 256)
-        {
-            for (int i = 0; i < len; i++)
-            {
-                if ((bKey[i] & 0xFF) == 0x0E)
-                {
+        int len = bKey.length;
+        int num = 0;// 0x0E计数
+        if (len > 0 && len <= 256) {
+            for (int i = 0; i < len; i++) {
+                if ((bKey[i] & 0xFF) == 0x0E) {
                     num++;
                     if (num > 3) return false;
                 }
@@ -107,18 +102,16 @@ public class Rc4
     @Override
     public byte[] createKey(String seed)
     {
-        long   curTime = System.currentTimeMillis();
-        long   code    = hashCode();
-        long   tick    = curTime ^ (code << 31);
-        Random rd      = new Random(tick);
+        long curTime = System.currentTimeMillis();
+        long code = hashCode();
+        long tick = curTime ^ (code << 31);
+        Random rd = new Random(tick);
         byte[] xc;
         if (seed == null || "".equals(seed.trim())) seed = "Isahl.Tina.Rc4" + System.nanoTime();
         xc = seed.getBytes();
         byte[] key = new byte[20];
-        for (int i = 0, j = 1; i < key.length; i++)
-        {
-            for (byte b : xc)
-            {
+        for (int i = 0, j = 1; i < key.length; i++) {
+            for (byte b : xc) {
                 long dx = System.nanoTime() ^ tick ^ rd.nextLong() ^ b;
                 key[i] ^= dx >> j++;
                 if (j > 40) j = 1;
@@ -132,8 +125,7 @@ public class Rc4
         if (initialized || key == null) return;
         for (int i = 0; i < S.length; i++)
             S[i] = (byte) i;
-        for (int i = 0, j = 0; i < S.length; i++)
-        {
+        for (int i = 0, j = 0; i < S.length; i++) {
             j = (j + (S[i] & 0xFF) + (key[i % key.length] & 0xFF)) & 0xFF;
             ArrayUtil.swap(S, i, j);
         }
@@ -146,8 +138,7 @@ public class Rc4
         if (!buffer.hasRemaining() || key == null) return;
         ksa(key);
         int limit = buffer.limit();
-        for (int x = buffer.position(); x < limit; x++)
-        {
+        for (int x = buffer.position(); x < limit; x++) {
             i = ((i + 1) & Integer.MAX_VALUE) & 0xFF;
             j = ((j + (S[i] & 0xFF)) & Integer.MAX_VALUE) & 0xFF;
             ArrayUtil.swap(S, i, j);
@@ -162,8 +153,7 @@ public class Rc4
         if (dst == null || key == null) return;
         ksa(key);
         int limit = dst.length;
-        for (int x = 0; x < limit; x++)
-        {
+        for (int x = 0; x < limit; x++) {
             i = ((i + 1) & Integer.MAX_VALUE) & 0xFF;
             j = ((j + (S[i] & 0xFF)) & Integer.MAX_VALUE) & 0xFF;
             ArrayUtil.swap(S, i, j);

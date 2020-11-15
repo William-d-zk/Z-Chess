@@ -35,12 +35,14 @@ import com.isahl.chess.king.base.log.Logger;
  */
 public class CacheLogger
         implements
-        CacheEventListener<Object, Object>
+        CacheEventListener<Object,
+                           Object>
 {
     private final Logger _Logger = Logger.getLogger("player.ehcache." + getClass().getSimpleName());
 
     @Override
-    public void onEvent(CacheEvent<?, ?> cacheEvent)
+    public void onEvent(CacheEvent<?,
+                                   ?> cacheEvent)
     {
         _Logger.info("Key: {} | EventType: {} | Old value: {} | New value: {}",
                      cacheEvent.getKey(),

@@ -36,7 +36,8 @@ public enum RaftCode
     private final int    _Code;
     private final String _Description;
 
-    RaftCode(int code, String des)
+    RaftCode(int code,
+             String des)
     {
         _Code = code;
         _Description = des;
@@ -54,7 +55,8 @@ public enum RaftCode
 
     public static RaftCode valueOf(int code)
     {
-        return switch (code) {
+        return switch (code)
+        {
             case 0 -> SUCCESS;
             case 1 -> LOWER_TERM;
             case 2 -> CONFLICT;

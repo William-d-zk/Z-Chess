@@ -62,11 +62,11 @@ public class X20_SignUp
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 8
+        return super.dataLength()
+               + 8
                + sn.getBytes(StandardCharsets.UTF_8).length
-               + (Objects.nonNull(password) ?
-                       password.getBytes(StandardCharsets.UTF_8).length:
-                       0);
+               + (Objects.nonNull(password) ? password.getBytes(StandardCharsets.UTF_8).length
+                                            : 0);
     }
 
     @Override

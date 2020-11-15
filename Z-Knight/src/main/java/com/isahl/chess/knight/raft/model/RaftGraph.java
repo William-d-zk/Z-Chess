@@ -43,7 +43,8 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class RaftGraph
 {
-    private final NavigableMap<Long, RaftMachine> _NodeMap = new ConcurrentSkipListMap<>();
+    private final NavigableMap<Long,
+                               RaftMachine> _NodeMap = new ConcurrentSkipListMap<>();
 
     public boolean contains(long peerId)
     {
@@ -63,21 +64,21 @@ public class RaftGraph
      */
     public void remove(long... peers)
     {
-        if (peers != null)
-        {
-            for (long peer : peers)
-            {
+        if (peers != null) {
+            for (long peer : peers) {
                 _NodeMap.remove(peer);
             }
         }
     }
 
-    public NavigableMap<Long, RaftMachine> getNodeMap()
+    public NavigableMap<Long,
+                        RaftMachine> getNodeMap()
     {
         return _NodeMap;
     }
 
-    public void setNodeMap(Map<Long, RaftMachine> map)
+    public void setNodeMap(Map<Long,
+                               RaftMachine> map)
     {
         _NodeMap.putAll(map);
     }
@@ -99,8 +100,7 @@ public class RaftGraph
         return _NodeMap.values()
                        .stream()
                        .filter(machine -> machine.getTerm() == term && machine.getCandidate() == candidate)
-                       .count()
-               > _NodeMap.size() / 2;
+                       .count() > _NodeMap.size() / 2;
     }
 
     @JsonIgnore
@@ -108,10 +108,10 @@ public class RaftGraph
     {
         return _NodeMap.values()
                        .stream()
-                       .filter(machine -> machine.getTerm() == term && machine.getMatchIndex() >= index
+                       .filter(machine -> machine.getTerm() == term
+                                          && machine.getMatchIndex() >= index
                                           && machine.getLeader() == leader)
-                       .count()
-               > _NodeMap.size() / 2;
+                       .count() > _NodeMap.size() / 2;
     }
 
     public boolean isMinorReject(long candidate, long term)
@@ -119,8 +119,7 @@ public class RaftGraph
         return _NodeMap.values()
                        .stream()
                        .filter(machine -> machine.getTerm() >= term && machine.getCandidate() != candidate)
-                       .count()
-               <= _NodeMap.size() / 2;
+                       .count() <= _NodeMap.size() / 2;
     }
 
 }

@@ -39,11 +39,12 @@ public class Subscribe
 
     private static final long serialVersionUID = 2015588893664180796L;
 
-    private final IQoS.Level  _Level;
-    private final String      _Topic;
+    private final IQoS.Level _Level;
+    private final String     _Topic;
 
     @JsonCreator
-    public Subscribe(@JsonProperty("level") IQoS.Level level, @JsonProperty("topic") String topic)
+    public Subscribe(@JsonProperty("level") IQoS.Level level,
+                     @JsonProperty("topic") String topic)
     {
         _Level = level;
         _Topic = topic;

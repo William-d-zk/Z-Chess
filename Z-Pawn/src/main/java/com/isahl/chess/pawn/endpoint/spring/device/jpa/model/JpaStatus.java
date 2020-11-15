@@ -29,4 +29,5 @@ package com.isahl.chess.pawn.endpoint.spring.device.jpa.model;
  * @date 2019-06-15
  */
 public enum JpaStatus
-{}
+{
+}

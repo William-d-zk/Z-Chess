@@ -23,6 +23,7 @@
 
 package com.isahl.chess.queen.io.core.inf;
 
-public interface ISslContext {
+public interface ISslContext
+{
 
 }

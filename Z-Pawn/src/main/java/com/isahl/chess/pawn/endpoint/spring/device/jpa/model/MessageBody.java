@@ -51,14 +51,16 @@ public class MessageBody
                                                                     + MessageBody.class.getSimpleName());
     private static final long   serialVersionUID = -8904730289818144372L;
 
-    private final String        _Topic;
-    private final byte[]        _Content;
+    private final String _Topic;
+    private final byte[] _Content;
 
     @JsonCreator
-    public MessageBody(@JsonProperty("topic") String topic, @JsonProperty("content") JsonNode content)
+    public MessageBody(@JsonProperty("topic") String topic,
+                       @JsonProperty("content") JsonNode content)
     {
         _Topic = topic;
-        _Content = content.toString().getBytes(StandardCharsets.UTF_8);
+        _Content = content.toString()
+                          .getBytes(StandardCharsets.UTF_8);
     }
 
     public String getTopic()
@@ -69,34 +71,27 @@ public class MessageBody
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public JsonNode getContent()
     {
-        if (_Content == null || _Content.length == 0)
-        {
+        if (_Content == null || _Content.length == 0) {
             _Logger.warning("content null");
             return null;
         }
-        try
-        {
+        try {
             return JsonUtil.readTree(_Content);
         }
-        catch (Exception e)
-        {
-            try
-            {
+        catch (Exception e) {
+            try {
                 RawContent content = new RawContent();
                 content.setPayload(_Content);
-                try
-                {
+                try {
                     content.setRaw(new String(_Content, StandardCharsets.UTF_8));
                 }
-                catch (Exception stre)
-                {
+                catch (Exception stre) {
                     _Logger.debug(String.format("content:%s", IoUtil.bin2Hex(_Content, ":")));
                     // ignore
                 }
                 return JsonUtil.valueToTree(content);
             }
-            catch (Exception e1)
-            {
+            catch (Exception e1) {
                 e1.printStackTrace();
             }
         }
@@ -105,8 +100,7 @@ public class MessageBody
 
     public byte[] contentBinary()
     {
-        if (_Content == null || _Content.length == 0)
-        {
+        if (_Content == null || _Content.length == 0) {
             _Logger.warning("content null");
             return null;
         }

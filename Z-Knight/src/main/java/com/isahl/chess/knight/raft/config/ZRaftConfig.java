@@ -60,17 +60,14 @@ public class ZRaftConfig
     @PostConstruct
     void initUid() throws IOException
     {
-        if (peerTest != null && isClusterMode())
-        {
-            String            peerTestHost = peerTest.getFirst();
+        if (peerTest != null && isClusterMode()) {
+            String peerTestHost = peerTest.getFirst();
             InetSocketAddress peerTestAddr = new InetSocketAddress(peerTestHost, peerTest.getSecond());
-            try (Socket socket = new Socket())
-            {
+            try (Socket socket = new Socket()) {
                 socket.connect(peerTestAddr, 3000);
-                if (!socket.isConnected())
-                { throw new RuntimeException("peer test connect failed"); }
-                InetSocketAddress localAddr    = (InetSocketAddress) socket.getLocalSocketAddress();
-                String            localHostStr = localAddr.getHostString();
+                if (!socket.isConnected()) { throw new RuntimeException("peer test connect failed"); }
+                InetSocketAddress localAddr = (InetSocketAddress) socket.getLocalSocketAddress();
+                String localHostStr = localAddr.getHostString();
                 _Logger.debug("local host:%s", localHostStr);
                 bind.setFirst(localHostStr);
                 setNodeId(localHostStr);
@@ -81,9 +78,11 @@ public class ZRaftConfig
     @Override
     public ZUID createZUID()
     {
-        return zuid == null ?
-                zuid = new ZUID(getUid().getIdcId(), getUid().getClusterId(), getUid().getNodeId(), getUid().getType()):
-                zuid;
+        return zuid == null ? zuid = new ZUID(getUid().getIdcId(),
+                                              getUid().getClusterId(),
+                                              getUid().getNodeId(),
+                                              getUid().getType())
+                            : zuid;
     }
 
     public void setUid(Uid uid)
@@ -104,7 +103,8 @@ public class ZRaftConfig
     private Uid                   uid;
     private List<IPair>           peers;
     private List<IPair>           gates;
-    private Pair<String, Integer> bind;
+    private Pair<String,
+                 Integer>         bind;
     private ZUID                  zuid;
     private Duration              electInSecond;
     private Duration              snapshotInSecond;
@@ -170,11 +170,13 @@ public class ZRaftConfig
 
     private List<IPair> convert(List<String> content)
     {
-        return content.stream().map(str ->
-        {
-            String[] split = str.split(":", 2);
-            return new Pair<>(split[0], Integer.parseInt(split[1]));
-        }).collect(Collectors.toList());
+        return content.stream()
+                      .map(str ->
+                      {
+                          String[] split = str.split(":", 2);
+                          return new Pair<>(split[0], Integer.parseInt(split[1]));
+                      })
+                      .collect(Collectors.toList());
     }
 
     public void setBind(String bind)
@@ -264,17 +266,17 @@ public class ZRaftConfig
     private void setNodeId(String localHostStr)
     {
 
-        for (int i = 0, size = peers.size(); i < size; i++)
-        {
-            if (peers.get(i).getFirst().equals(localHostStr))
+        for (int i = 0, size = peers.size(); i < size; i++) {
+            if (peers.get(i)
+                     .getFirst()
+                     .equals(localHostStr))
             {
                 uid.setNodeId(i);
                 setInCongress(true);
                 break;
             }
         }
-        if (!inCongress)
-        {
+        if (!inCongress) {
             _Logger.warning("no set node-id,Learner?");
         }
     }

@@ -295,8 +295,7 @@ public class DeviceConsumer
                     case WS_CONSUMER:
                         WsContext wsContext = session.getContext();
                         X101_HandShake x101 = new X101_HandShake(host, wsContext.getSeKey(), wsContext.getWsVersion());
-                        return new IControl[] { x101
-                        };
+                        return new IControl[]{x101};
                     case QTT_SYMMETRY:
                         try {
                             X111_QttConnect x111 = new X111_QttConnect();
@@ -304,8 +303,7 @@ public class DeviceConsumer
                             x111.setUserName(zClient.getUsername());
                             x111.setPassword(zClient.getPassword());
                             x111.setClean();
-                            return new IControl[] { x111
-                            };
+                            return new IControl[]{x111};
                         }
                         catch (Exception e) {
                             _Logger.warning("create init commands fetal", e);

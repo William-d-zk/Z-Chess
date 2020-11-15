@@ -66,13 +66,11 @@ public class ClusterLogic
         _Logger.debug("cluster handle heartbeat");
         return switch (content.serial())
         {
-            case X103_Ping.COMMAND -> new X104_Pong[] { new X104_Pong(String.format("pong:%#x %s",
-                                                                                    session.getIndex(),
-                                                                                    session.getLocalAddress())
-                                                                            .getBytes(StandardCharsets.UTF_8))
-                };
-            case X11C_QttPingreq.COMMAND -> new X11D_QttPingresp[] { new X11D_QttPingresp()
-                };
+            case X103_Ping.COMMAND -> new X104_Pong[]{new X104_Pong(String.format("pong:%#x %s",
+                                                                                  session.getIndex(),
+                                                                                  session.getLocalAddress())
+                                                                          .getBytes(StandardCharsets.UTF_8))};
+            case X11C_QttPingreq.COMMAND -> new X11D_QttPingresp[]{new X11D_QttPingresp()};
             default -> null;
         };
     }

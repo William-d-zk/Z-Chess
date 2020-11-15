@@ -42,14 +42,14 @@ public class MessageDo
     @JsonIgnore
     private IStorage.Operation mOperation;
 
-    private long               id;
-    private String             mOwner;
-    private long               origin;
-    private long               destination;
-    private long               msgId;
-    private String             direction;
-    private String             topic;
-    private MessageBody        content;
+    private long        id;
+    private String      mOwner;
+    private long        origin;
+    private long        destination;
+    private long        msgId;
+    private String      direction;
+    private String      topic;
+    private MessageBody content;
 
     public IStorage.Operation operation()
     {

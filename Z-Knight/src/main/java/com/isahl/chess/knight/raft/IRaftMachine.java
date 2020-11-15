@@ -89,12 +89,16 @@ public interface IRaftMachine
     /**
      * @return 集群中所有节点
      */
-    Set<Triple<Long, String, Integer>> getPeerSet();
+    Set<Triple<Long,
+               String,
+               Integer>> getPeerSet();
 
     /**
      * @return 跨集群网关
      */
-    Set<Triple<Long, String, Integer>> getGateSet();
+    Set<Triple<Long,
+               String,
+               Integer>> getGateSet();
 
     RaftMachine createFollower();
 

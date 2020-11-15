@@ -57,12 +57,11 @@ import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
  */
 @Entity(name = "Device")
 @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
-@Table(indexes = { @Index(name = "device_idx_token_pwd_id", columnList = "token,password,passwordId"),
-                   @Index(name = "device_idx_token_pwd", columnList = "token,password"),
-                   @Index(name = "device_idx_sn", columnList = "sn"),
-                   @Index(name = "device_idx_token", columnList = "token"),
-                   @Index(name = "device_idx_username", columnList = "username")
-})
+@Table(indexes = {@Index(name = "device_idx_token_pwd_id", columnList = "token,password,passwordId"),
+                  @Index(name = "device_idx_token_pwd", columnList = "token,password"),
+                  @Index(name = "device_idx_sn", columnList = "sn"),
+                  @Index(name = "device_idx_token", columnList = "token"),
+                  @Index(name = "device_idx_username", columnList = "username")})
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class DeviceEntity
         extends

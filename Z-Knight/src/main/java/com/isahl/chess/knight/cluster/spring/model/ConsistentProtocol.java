@@ -40,7 +40,8 @@ import com.isahl.chess.queen.io.core.inf.IConsistent;
  */
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class ConsistentProtocol
-        extends JsonProtocol
+        extends
+        JsonProtocol
         implements
         IConsistent
 {
@@ -79,8 +80,7 @@ public class ConsistentProtocol
     @Override
     public byte[] encode()
     {
-        if (tData != null)
-        { return tData; }
+        if (tData != null) { return tData; }
         tData = super.encode();
         return tData;
     }

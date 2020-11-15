@@ -30,12 +30,14 @@ public class ZException
         extends
         RuntimeException
 {
-    public ZException(String formatter, Object... messages)
+    public ZException(String formatter,
+                      Object... messages)
     {
         super(String.format(formatter, messages));
     }
 
-    public ZException(Throwable cause, String message)
+    public ZException(Throwable cause,
+                      String message)
     {
         super(message, cause);
     }

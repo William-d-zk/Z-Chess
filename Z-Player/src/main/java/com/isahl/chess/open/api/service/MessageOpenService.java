@@ -29,7 +29,6 @@ import java.util.List;
 
 import javax.persistence.EntityNotFoundException;
 
-import com.isahl.chess.open.api.model.MessageDo;
 import org.hibernate.LazyInitializationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.jpa.JpaObjectRetrievalFailureException;
@@ -38,6 +37,7 @@ import org.springframework.stereotype.Service;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
+import com.isahl.chess.open.api.model.MessageDo;
 import com.isahl.chess.pawn.endpoint.spring.device.jpa.model.MessageEntity;
 import com.isahl.chess.pawn.endpoint.spring.device.jpa.repository.IMessageJpaRepository;
 
@@ -52,7 +52,8 @@ public class MessageOpenService
     private final IMessageJpaRepository _JpaRepository;
 
     @Autowired
-    public MessageOpenService(IRaftConfig clusterConfig, IMessageJpaRepository jpaRepository)
+    public MessageOpenService(IRaftConfig clusterConfig,
+                              IMessageJpaRepository jpaRepository)
     {
         _JpaRepository = jpaRepository;
         _ZUID = clusterConfig.createZUID();
@@ -63,10 +64,10 @@ public class MessageOpenService
         MessageEntity entity = null;
         EXIST:
         {
-            if (message.operation().getValue() > OP_INSERT.getValue())
+            if (message.operation()
+                       .getValue() > OP_INSERT.getValue())
             {
-                try
-                {
+                try {
                     entity = _JpaRepository.getOne(message.getId());
                     entity.setOwner(message.getOwner());
                     break EXIST;
@@ -80,19 +81,16 @@ public class MessageOpenService
             }
             // 当数据库中存在多条记录而被查询出来时，程序会报错。
             // TODO 需要改造
-            try
-            {
+            try {
                 entity = _JpaRepository.findByOriginAndDestinationAndMsgId(message.getOrigin(),
                                                                            message.getDestination(),
                                                                            message.getMsgId());
-                if (entity != null)
-                {
+                if (entity != null) {
                     entity.setOwner(message.getOwner());
                     break EXIST;
                 }
             }
-            catch (Exception e)
-            {
+            catch (Exception e) {
                 // msg id 重复
                 List<MessageEntity> toDelete = _JpaRepository.findAllByOriginAndDestinationAndMsgId(message.getOrigin(),
                                                                                                     message.getDestination(),
@@ -105,8 +103,7 @@ public class MessageOpenService
                                 message.getDestination(),
                                 message.getMsgId());
             }
-            if (entity == null)
-            {
+            if (entity == null) {
                 entity = new MessageEntity();
                 entity.setOrigin(message.getOrigin());
                 entity.setDestination(message.getDestination());
@@ -122,37 +119,29 @@ public class MessageOpenService
 
     public MessageEntity find(MessageEntity key)
     {
-        long primary     = key.primaryKey();
-        long msgId       = key.getMsgId();
-        long origin      = key.getOrigin();
+        long primary = key.primaryKey();
+        long msgId = key.getMsgId();
+        long origin = key.getOrigin();
         long destination = key.getDestination();
-        if (primary == 0 && (msgId == 0 || origin == 0 || destination == 0))
-        {
+        if (primary == 0 && (msgId == 0 || origin == 0 || destination == 0)) {
             return null;
         }
-        else
-        {
+        else {
             MessageEntity entity = null;
-            try
-            {
+            try {
                 entity = _JpaRepository.findByOriginAndDestinationAndMsgId(origin, destination, msgId);
             }
-            catch (EntityNotFoundException e)
-            {
+            catch (EntityNotFoundException e) {
                 _Logger.warning(e);
             }
-            if (entity != null)
-            { return entity; }
-            try
-            {
+            if (entity != null) { return entity; }
+            try {
                 entity = _JpaRepository.getOne(primary);
             }
-            catch (EntityNotFoundException e)
-            {
+            catch (EntityNotFoundException e) {
                 _Logger.warning(e);
             }
-            if (entity != null)
-            { return entity; }
+            if (entity != null) { return entity; }
         }
         return null;
     }

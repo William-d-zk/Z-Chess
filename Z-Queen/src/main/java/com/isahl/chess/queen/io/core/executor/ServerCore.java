@@ -45,9 +45,9 @@ import com.isahl.chess.queen.event.handler.WriteDispatcher;
 import com.isahl.chess.queen.event.handler.cluster.IClusterCustom;
 import com.isahl.chess.queen.event.handler.mix.ILinkCustom;
 import com.isahl.chess.queen.event.handler.mix.ILogicHandler;
-import com.isahl.chess.queen.event.handler.mix.MixMappingHandler;
 import com.isahl.chess.queen.event.handler.mix.MixDecodedDispatcher;
 import com.isahl.chess.queen.event.handler.mix.MixIoDispatcher;
+import com.isahl.chess.queen.event.handler.mix.MixMappingHandler;
 import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.async.AioWorker;
@@ -264,25 +264,23 @@ public class ServerCore
         /* 链路处理 */
         /* 所有带有路由规则绑定的数据都需要投递到这个 Pipeline -> _LinkDecoded */
         final RingBuffer<QEvent> _LinkDecoded = createPipelineLite(_LinkQueueSize);
-        final RingBuffer<QEvent>[] _LinkEvents = new RingBuffer[] { _LinkIoEvent,
-                                                                    _LinkDecoded,
-                                                                    _ConsensusApiEvent,
-                                                                    _NotifyEvent
-        };
-        final SequenceBarrier[] _LinkBarriers = new SequenceBarrier[] { _LinkIoEvent.newBarrier(),
-                                                                        _LinkDecoded.newBarrier(),
-                                                                        _ConsensusApiEvent.newBarrier(),
-                                                                        _NotifyEvent.newBarrier()
-        };
+        final RingBuffer<QEvent>[] _LinkEvents = new RingBuffer[]{_LinkIoEvent,
+                                                                  _LinkDecoded,
+                                                                  _ConsensusApiEvent,
+                                                                  _NotifyEvent};
+        final SequenceBarrier[] _LinkBarriers = new SequenceBarrier[]{_LinkIoEvent.newBarrier(),
+                                                                      _LinkDecoded.newBarrier(),
+                                                                      _ConsensusApiEvent.newBarrier(),
+                                                                      _NotifyEvent.newBarrier()};
         final MultiBufferBatchEventProcessor<QEvent> _LinkProcessor = new MultiBufferBatchEventProcessor<>(_LinkEvents,
                                                                                                            _LinkBarriers,
                                                                                                            new MixMappingHandler<>("LINK",
-                                                                                                                                manager,
-                                                                                                                                _ErrorEvents[0],
-                                                                                                                                _LinkWriteEvent,
-                                                                                                                                _ClusterEvent,
-                                                                                                                                linkCustom,
-                                                                                                                                clusterCustom));
+                                                                                                                                   manager,
+                                                                                                                                   _ErrorEvents[0],
+                                                                                                                                   _LinkWriteEvent,
+                                                                                                                                   _ClusterEvent,
+                                                                                                                                   linkCustom,
+                                                                                                                                   clusterCustom));
         _LinkProcessor.setThreadName("LinkProcessor");
         for (int i = 0, size = _LinkEvents.length; i < size; i++) {
             _LinkEvents[i].addGatingSequences(_LinkProcessor.getSequences()[i]);
@@ -290,25 +288,23 @@ public class ServerCore
         /* 集群处理 */
         /* 所有已解码完毕的集群通讯都进入这个 Pipeline -> _ClusterDecoded */
         final RingBuffer<QEvent> _ClusterDecoded = createPipelineLite(_ClusterQueueSize);
-        final RingBuffer<QEvent>[] _ClusterEvents = new RingBuffer[] { _ClusterIoEvent,
-                                                                       _ClusterDecoded,
-                                                                       _ConsensusEvent,
-                                                                       _ClusterEvent
-        };
-        final SequenceBarrier[] _ClusterBarriers = new SequenceBarrier[] { _ClusterIoEvent.newBarrier(),
-                                                                           _ClusterDecoded.newBarrier(),
-                                                                           _ConsensusEvent.newBarrier(),
-                                                                           _ClusterEvent.newBarrier()
-        };
+        final RingBuffer<QEvent>[] _ClusterEvents = new RingBuffer[]{_ClusterIoEvent,
+                                                                     _ClusterDecoded,
+                                                                     _ConsensusEvent,
+                                                                     _ClusterEvent};
+        final SequenceBarrier[] _ClusterBarriers = new SequenceBarrier[]{_ClusterIoEvent.newBarrier(),
+                                                                         _ClusterDecoded.newBarrier(),
+                                                                         _ConsensusEvent.newBarrier(),
+                                                                         _ClusterEvent.newBarrier()};
         final MultiBufferBatchEventProcessor<QEvent> _ClusterProcessor = new MultiBufferBatchEventProcessor<>(_ClusterEvents,
                                                                                                               _ClusterBarriers,
                                                                                                               new MixMappingHandler<>("CONSENSUS",
-                                                                                                                                   manager,
-                                                                                                                                   _ErrorEvents[1],
-                                                                                                                                   _ClusterWriteEvent,
-                                                                                                                                   _NotifyEvent,
-                                                                                                                                   linkCustom,
-                                                                                                                                   clusterCustom));
+                                                                                                                                      manager,
+                                                                                                                                      _ErrorEvents[1],
+                                                                                                                                      _ClusterWriteEvent,
+                                                                                                                                      _NotifyEvent,
+                                                                                                                                      linkCustom,
+                                                                                                                                      clusterCustom));
         _ClusterProcessor.setThreadName("ClusterProcessor");
         for (int i = 0, size = _ClusterEvents.length; i < size; i++) {
             _ClusterEvents[i].addGatingSequences(_ClusterProcessor.getSequences()[i]);

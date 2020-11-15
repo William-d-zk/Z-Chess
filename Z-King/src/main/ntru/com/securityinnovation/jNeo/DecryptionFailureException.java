@@ -31,7 +31,9 @@ package com.securityinnovation.jNeo;
  * failure or an NtruEncrypt decryption candidate having the wrong
  * format.
  */
-public class DecryptionFailureException extends NtruException
+public class DecryptionFailureException
+        extends
+        NtruException
 {
     /**
      * Constructs a new exception a default message.

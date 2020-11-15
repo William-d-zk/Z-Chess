@@ -52,9 +52,10 @@ public class RawContentController
     }
 
     @GetMapping("/message/topic")
-    public ZResponse<List<MessageBody>>
-           getMessageByTopic(@RequestParam(name = "topic") String topic,
-                             @RequestParam(name = "limit", defaultValue = "1", required = false) int limit)
+    public ZResponse<List<MessageBody>> getMessageByTopic(@RequestParam(name = "topic") String topic,
+                                                          @RequestParam(name = "limit",
+                                                                        defaultValue = "1",
+                                                                        required = false) int limit)
     {
         return ZResponse.success(_MessageService.listByTopic(topic, limit));
     }

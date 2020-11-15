@@ -23,6 +23,7 @@
 
 package com.isahl.chess.bishop.io.zprotocol;
 
+import com.isahl.chess.bishop.io.ws.WsFrame;
 import com.isahl.chess.bishop.io.zprotocol.raft.X70_RaftVote;
 import com.isahl.chess.bishop.io.zprotocol.raft.X71_RaftBallot;
 import com.isahl.chess.bishop.io.zprotocol.raft.X72_RaftAppend;
@@ -30,7 +31,6 @@ import com.isahl.chess.bishop.io.zprotocol.raft.X73_RaftAccept;
 import com.isahl.chess.bishop.io.zprotocol.raft.X74_RaftReject;
 import com.isahl.chess.bishop.io.zprotocol.raft.X75_RaftRequest;
 import com.isahl.chess.bishop.io.zprotocol.raft.X76_RaftNotify;
-import com.isahl.chess.bishop.io.ws.WsFrame;
 import com.isahl.chess.queen.io.core.inf.ICommandFactory;
 
 /**
@@ -40,7 +40,8 @@ import com.isahl.chess.queen.io.core.inf.ICommandFactory;
  */
 public class ZClusterFactory
         implements
-        ICommandFactory<ZCommand, WsFrame>
+        ICommandFactory<ZCommand,
+                        WsFrame>
 {
     @Override
     public ZCommand create(WsFrame frame)
@@ -52,7 +53,8 @@ public class ZClusterFactory
     public ZCommand create(int serial)
     {
 
-        return switch (serial) {
+        return switch (serial)
+        {
             case X70_RaftVote.COMMAND -> new X70_RaftVote();
             case X71_RaftBallot.COMMAND -> new X71_RaftBallot();
             case X72_RaftAppend.COMMAND -> new X72_RaftAppend();

@@ -403,8 +403,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
 
     private IControl[] lowTerm(long term, long peerId)
     {
-        return _SelfMachine.getTerm() > term ? new X74_RaftReject[] { reject(LOWER_TERM, peerId)
-        }
+        return _SelfMachine.getTerm() > term ? new X74_RaftReject[]{reject(LOWER_TERM, peerId)}
                                              : null;
     }
 
@@ -430,8 +429,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
             {
                 _Logger.debug("new term [follower → elector %d ] | candidate: %#x", term, candidate);
                 X71_RaftBallot vote = stepUp(candidate, term);
-                return new Pair<>(new X71_RaftBallot[] { vote
-                }, null);
+                return new Pair<>(new X71_RaftBallot[]{vote}, null);
             }
             else {
                 _Logger.debug("less than me; reject and [ follower → candidate] | mine:%d@%d > in:%d@%d",
@@ -445,8 +443,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         // elector|leader|candidate,one of these states ，candidate != INDEX_NAN 不需要重复判断
         else if (_SelfMachine.getCandidate() != candidate) {
             _Logger.debug("already vote [elector ×] | vote for:%#x not ♂ %#x", _SelfMachine.getCandidate(), candidate);
-            return new Pair<>(new X74_RaftReject[] { reject(ALREADY_VOTE, candidate)
-            }, null);
+            return new Pair<>(new X74_RaftReject[]{reject(ALREADY_VOTE, candidate)}, null);
         }
         return null;
     }
@@ -480,13 +477,11 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         if (response != null) return new Pair<>(response, null);
         if (highTerm(term) || _SelfMachine.getState() != LEADER) {
             _Logger.debug("follow leader %#x leader_commit: %d", leader, leaderCommit);
-            return new Pair<>(new IControl[] { follow(leader, term, leaderCommit, preIndex, preIndexTerm)
-            }, null);
+            return new Pair<>(new IControl[]{follow(leader, term, leaderCommit, preIndex, preIndexTerm)}, null);
         }
         // leader
         else if (_SelfMachine.getCandidate() != leader) {
-            return new Pair<>(new IControl[] { reject(ILLEGAL_STATE, leader)
-            }, null);
+            return new Pair<>(new IControl[]{reject(ILLEGAL_STATE, leader)}, null);
         }
         return null;
     }
@@ -530,8 +525,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
             else if (raftLog.getClientPeer() != _SelfMachine.getPeerId()) {
                 // leader -> follower -> client
                 ISession followerSession = manager.findSessionByPrefix(raftLog.getClientPeer());
-                return followerSession != null ? new Pair<>(new IControl[] { x76
-                }, x76)
+                return followerSession != null ? new Pair<>(new IControl[]{x76}, x76)
                                                : new Pair<>(null, x76);
             }
             else {
@@ -567,8 +561,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                     _Logger.debug("follower %#x,match failed,rollback %d",
                                   peerMachine.getPeerId(),
                                   peerMachine.getIndex());
-                    return new Pair<>(new X72_RaftAppend[] { createAppend(peerMachine, 1)
-                    }, null);
+                    return new Pair<>(new X72_RaftAppend[]{createAppend(peerMachine, 1)}, null);
                 }
                 else {
                     _Logger.warning("self %#x is old leader & send logs=> %#x,next-index wasn't catchup");

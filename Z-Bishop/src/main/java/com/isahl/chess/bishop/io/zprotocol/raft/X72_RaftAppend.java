@@ -170,8 +170,7 @@ public class X72_RaftAppend
                              mPreIndex,
                              mPreIndexTerm,
                              mCommit,
-                             getPayload() == null ?
-                                     0:
-                                     getPayload().length);
+                             getPayload() == null ? 0
+                                                  : getPayload().length);
     }
 }

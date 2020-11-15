@@ -42,7 +42,8 @@ import com.isahl.chess.king.config.Code;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ZResponse<T>
-        implements ICode,
+        implements
+        ICode,
         Serializable
 {
     private final int           _Code;
@@ -76,9 +77,8 @@ public class ZResponse<T>
     @Override
     public String format(Object... args)
     {
-        return _Formatter == null ?
-                null:
-                String.format(_Formatter, args);
+        return _Formatter == null ? null
+                                  : String.format(_Formatter, args);
     }
 
     public String getMessage()

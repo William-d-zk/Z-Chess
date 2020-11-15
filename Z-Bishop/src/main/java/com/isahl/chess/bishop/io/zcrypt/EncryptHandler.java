@@ -97,24 +97,21 @@ public class EncryptHandler
         if (recreate) {
             byte[] password = new byte[32];
             random.nextBytes(password);
-            byte[] time = new byte[] { 0,
-                                       0,
-                                       0,
-                                       0
-            };
-            byte[] version = new byte[] { 0,
-                                          0
-            };
+            byte[] time = new byte[]{0,
+                                     0,
+                                     0,
+                                     0};
+            byte[] version = new byte[]{0,
+                                        0};
 
             curVersion = (curVersion + 1) & (_VersionMask >>> _TotalSizeWidth);
             IoUtil.writeShort(curVersion, version, 0);
             try {
                 byte[][] keys = _Ntru.getKeys(password);
-                keyPair = new byte[][] { keys[KEY_PAIR_INDEX_PUBLIC_KEY],
-                                         keys[KEY_PAIR_INDEX_PASSWORD],
-                                         time,
-                                         version
-                };
+                keyPair = new byte[][]{keys[KEY_PAIR_INDEX_PUBLIC_KEY],
+                                       keys[KEY_PAIR_INDEX_PASSWORD],
+                                       time,
+                                       version};
             }
             catch (Exception e) {
                 return null;

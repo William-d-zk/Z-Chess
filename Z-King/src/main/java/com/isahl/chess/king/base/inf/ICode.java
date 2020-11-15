@@ -38,6 +38,9 @@ public interface ICode
 
     static ICode parse(int code, ICode... codes)
     {
-        return Stream.of(codes).filter(c -> c.getCode() == code).findAny().orElse(null);
+        return Stream.of(codes)
+                     .filter(c -> c.getCode() == code)
+                     .findAny()
+                     .orElse(null);
     }
 }

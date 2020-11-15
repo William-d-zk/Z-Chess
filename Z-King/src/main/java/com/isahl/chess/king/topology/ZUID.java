@@ -76,15 +76,15 @@ public class ZUID
      * ==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--=
      * =--==
      */
-    public static final long     TYPE_MASK          = ((1L << TYPE_BITS) - 1) << TYPE_SHIFT;
-    public static final long     TYPE_CONSUMER      = 0;
-    public static final long     TYPE_INTERNAL      = 1L << TYPE_SHIFT;
-    public static final long     TYPE_PROVIDER      = 2L << TYPE_SHIFT;
-    public static final long     TYPE_CLUSTER       = 3L << TYPE_SHIFT;
-    public static final int      TYPE_CONSUMER_SLOT = 0;
-    public static final int      TYPE_INTERNAL_SLOT = 1;
-    public static final int      TYPE_PROVIDER_SLOT = 2;
-    public static final int      TYPE_CLUSTER_SLOT  = 3;
+    public static final long TYPE_MASK          = ((1L << TYPE_BITS) - 1) << TYPE_SHIFT;
+    public static final long TYPE_CONSUMER      = 0;
+    public static final long TYPE_INTERNAL      = 1L << TYPE_SHIFT;
+    public static final long TYPE_PROVIDER      = 2L << TYPE_SHIFT;
+    public static final long TYPE_CLUSTER       = 3L << TYPE_SHIFT;
+    public static final int  TYPE_CONSUMER_SLOT = 0;
+    public static final int  TYPE_INTERNAL_SLOT = 1;
+    public static final int  TYPE_PROVIDER_SLOT = 2;
+    public static final int  TYPE_CLUSTER_SLOT  = 3;
     /*
      * ==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--=
      * =--==
@@ -97,25 +97,26 @@ public class ZUID
     private long                 sequence;
     private long                 lastTimestamp;
 
-    public ZUID(long idc_id, long cluster_id, long node_id, long type)
+    public ZUID(long idc_id,
+                long cluster_id,
+                long node_id,
+                long type)
     {
-        if (idc_id > MAX_IDC_ID || idc_id < 0)
-        {
+        if (idc_id > MAX_IDC_ID || idc_id < 0) {
             throw new IllegalArgumentException(String.format("idc region Id can't be greater than %d or less than 0",
                                                              MAX_IDC_ID));
         }
-        if (cluster_id > MAX_CLUSTER_SET_ID || cluster_id < 0)
-        {
+        if (cluster_id > MAX_CLUSTER_SET_ID || cluster_id < 0) {
             throw new IllegalArgumentException(String.format("cluster Id can't be greater than %d or less than 0",
                                                              MAX_CLUSTER_SET_ID));
         }
-        if (node_id > MAX_NODE_ID || node_id < 0)
-        {
+        if (node_id > MAX_NODE_ID || node_id < 0) {
             throw new IllegalArgumentException(String.format("node Id can't be greater than %d or less than 0",
                                                              MAX_NODE_ID));
         }
-        if (type > MAX_TYPE || type < 0)
-        { throw new IllegalArgumentException(String.format("type can't be greater than %d or less than 0", MAX_TYPE)); }
+        if (type > MAX_TYPE || type < 0) {
+            throw new IllegalArgumentException(String.format("type can't be greater than %d or less than 0", MAX_TYPE));
+        }
         _IdcId = idc_id;
         _ClusterId = cluster_id;
         _NodeId = node_id;
@@ -131,29 +132,24 @@ public class ZUID
     public ZUID(String uname)
     {
         Matcher matcher = UNAME_PATTERN.matcher(uname);
-        if (matcher.matches())
-        {
-            long idc_id     = Long.parseLong(matcher.group(1));
+        if (matcher.matches()) {
+            long idc_id = Long.parseLong(matcher.group(1));
             long cluster_id = Long.parseLong(matcher.group(2));
-            long node_id    = Long.parseLong(matcher.group(3));
-            long type       = Long.parseLong(matcher.group(4));
-            if (idc_id > MAX_IDC_ID || idc_id < 0)
-            {
+            long node_id = Long.parseLong(matcher.group(3));
+            long type = Long.parseLong(matcher.group(4));
+            if (idc_id > MAX_IDC_ID || idc_id < 0) {
                 throw new IllegalArgumentException(String.format("idc region Id can't be greater than %d or less than 0",
                                                                  MAX_IDC_ID));
             }
-            if (cluster_id > MAX_CLUSTER_SET_ID || cluster_id < 0)
-            {
+            if (cluster_id > MAX_CLUSTER_SET_ID || cluster_id < 0) {
                 throw new IllegalArgumentException(String.format("cluster Id can't be greater than %d or less than 0",
                                                                  MAX_CLUSTER_SET_ID));
             }
-            if (node_id > MAX_NODE_ID || node_id < 0)
-            {
+            if (node_id > MAX_NODE_ID || node_id < 0) {
                 throw new IllegalArgumentException(String.format("node Id can't be greater than %d or less than 0",
                                                                  MAX_NODE_ID));
             }
-            if (type > MAX_TYPE || type < 0)
-            {
+            if (type > MAX_TYPE || type < 0) {
                 throw new IllegalArgumentException(String.format("type can't be greater than %d or less than 0",
                                                                  MAX_TYPE));
             }
@@ -162,8 +158,7 @@ public class ZUID
             _NodeId = node_id;
             _Type = type;
         }
-        else
-        {
+        else {
             _IdcId = 0;
             _ClusterId = 0;
             _NodeId = 0;
@@ -186,17 +181,14 @@ public class ZUID
     {
         type &= TYPE_MASK;
         long timestamp = _TimestampSupplier.get();
-        if (lastTimestamp == timestamp)
-        {
+        if (lastTimestamp == timestamp) {
             sequence = (sequence + 1) & SEQUENCE_MASK;
-            if (sequence == 0)
-            {
+            if (sequence == 0) {
                 LockSupport.parkUntil(timestamp + 1);
                 timestamp = timestamp + 1;
             }
         }
-        else
-        {
+        else {
             sequence = 0L;
         }
         lastTimestamp = timestamp;

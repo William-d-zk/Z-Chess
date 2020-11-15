@@ -42,8 +42,7 @@ public class CrcCalculator
         _Parameters = params;
 
         hashSize = (byte) params.HashSize;
-        if (hashSize < 64)
-        {
+        if (hashSize < 64) {
             mask = (1L << hashSize) - 1;
         }
 
@@ -52,9 +51,8 @@ public class CrcCalculator
 
     public long Calc(byte[] data, int offset, int length)
     {
-        long init = _Parameters.RefOut ?
-                CrcHelper.ReverseBits(_Parameters.Init, hashSize):
-                _Parameters.Init;
+        long init = _Parameters.RefOut ? CrcHelper.ReverseBits(_Parameters.Init, hashSize)
+                                       : _Parameters.Init;
         long hash = ComputeCrc(init, data, offset, length);
         return (hash ^ _Parameters.XorOut) & mask;
     }
@@ -63,20 +61,16 @@ public class CrcCalculator
     {
         long crc = init;
 
-        if (_Parameters.RefOut)
-        {
-            for (int i = offset; i < offset + length; i++)
-            {
+        if (_Parameters.RefOut) {
+            for (int i = offset; i < offset + length; i++) {
                 crc = (_table[(int) ((crc ^ data[i]) & 0xFF)] ^ (crc >>> 8));
                 crc &= mask;
             }
         }
-        else
-        {
+        else {
             int toRight = (hashSize - 8);
             toRight = Math.max(toRight, 0);
-            for (int i = offset; i < offset + length; i++)
-            {
+            for (int i = offset; i < offset + length; i++) {
                 crc = (_table[(int) (((crc >> toRight) ^ data[i]) & 0xFF)] ^ (crc << 8));
                 crc &= mask;
             }
@@ -100,8 +94,7 @@ public class CrcCalculator
 
         long lastBit = (1L << (hashSize - 1));
 
-        for (int i = 0; i < 8; i++)
-        {
+        for (int i = 0; i < 8; i++) {
             if ((r & lastBit) != 0) r = ((r << 1) ^ _Parameters.Poly);
             else r <<= 1;
         }
@@ -111,7 +104,8 @@ public class CrcCalculator
         return r & mask;
     }
 
-    private static Map<AlgoParams, CrcCalculator> _CalcMap = new HashMap<>();
+    private static Map<AlgoParams,
+                       CrcCalculator> _CalcMap = new HashMap<>();
 
     public static long calc(AlgoParams algo, byte[] data)
     {
@@ -141,13 +135,11 @@ public class CrcCalculator
     //@formatter:on
     public static long calc4itu(byte[] data)
     {
-        if (data == null)
-        { return 0; }
-        int  pos = 0;
+        if (data == null) { return 0; }
+        int pos = 0;
         byte crc = 0;
-        int  len = data.length;
-        while (len > 0)
-        {
+        int len = data.length;
+        while (len > 0) {
             crc = table_byte[(crc ^ data[pos++]) & 0xFF];
             len--;
         }

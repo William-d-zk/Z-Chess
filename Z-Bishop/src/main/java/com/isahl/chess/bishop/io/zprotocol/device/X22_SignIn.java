@@ -32,7 +32,8 @@ import com.isahl.chess.king.base.util.IoUtil;
  * @author william.d.zk
  */
 public class X22_SignIn
-        extends ZCommand
+        extends
+        ZCommand
 {
     public final static int COMMAND = 0x22;
 
@@ -59,10 +60,10 @@ public class X22_SignIn
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 33
-               + (Objects.nonNull(password) ?
-                       password.getBytes().length:
-                       0);
+        return super.dataLength()
+               + 33
+               + (Objects.nonNull(password) ? password.getBytes().length
+                                            : 0);
     }
 
     @Override

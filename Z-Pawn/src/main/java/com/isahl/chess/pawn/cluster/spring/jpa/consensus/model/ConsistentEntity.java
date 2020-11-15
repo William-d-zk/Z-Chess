@@ -50,8 +50,7 @@ import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
  */
 @Entity(name = "Consistent")
 @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
-@Table(indexes = { @Index(name = "consistent_idx_consensus_id", columnList = "consensusId")
-})
+@Table(indexes = {@Index(name = "consistent_idx_consensus_id", columnList = "consensusId")})
 public class ConsistentEntity
         extends
         AuditModel
@@ -60,7 +59,7 @@ public class ConsistentEntity
     @GeneratedValue(generator = "ZConsistentGenerator")
     @GenericGenerator(name = "ZConsistentGenerator",
                       strategy = "com.isahl.chess.pawn.cluster.spring.jpa.generator.ZConsistentGenerator")
-    private long               id;
+    private long id;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "invalid_at", nullable = false)

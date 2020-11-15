@@ -54,16 +54,13 @@ public class RegExUtil
 
     public static Class<?> testType(String value)
     {
-        if (value.matches(BOOLEAN_PATTERN_STRING))
-        {
+        if (value.matches(BOOLEAN_PATTERN_STRING)) {
             return Boolean.TYPE;
         }
-        else if (value.matches(INTEGER_PATTERN_STRING))
-        {
+        else if (value.matches(INTEGER_PATTERN_STRING)) {
             return Integer.TYPE;
         }
-        else if (value.matches(DOUBLE_PATTERN_STRING))
-        { return Double.TYPE; }
+        else if (value.matches(DOUBLE_PATTERN_STRING)) { return Double.TYPE; }
         return String.class;
     }
 

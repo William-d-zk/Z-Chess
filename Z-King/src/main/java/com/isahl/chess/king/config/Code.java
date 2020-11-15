@@ -30,8 +30,9 @@ import com.isahl.chess.king.base.inf.ICode;
 /**
  * @author William.d.zk
  */
-public enum Code implements
-                 ICode
+public enum Code
+        implements
+        ICode
 {
 
     PLAIN_UNSUPPORTED(0xFF00, "不支持明文"),
@@ -53,9 +54,8 @@ public enum Code implements
     @Override
     public String format(Object... args)
     {
-        return Objects.isNull(args) || args.length == 0 ?
-                _Formatter:
-                String.format(_Formatter, args);
+        return Objects.isNull(args) || args.length == 0 ? _Formatter
+                                                        : String.format(_Formatter, args);
     }
 
     public String getFormatter()
@@ -63,7 +63,8 @@ public enum Code implements
         return _Formatter;
     }
 
-    Code(int code, String formatter)
+    Code(int code,
+         String formatter)
     {
         _Code = code;
         _Formatter = formatter;

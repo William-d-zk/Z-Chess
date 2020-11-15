@@ -47,41 +47,40 @@ import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
  */
 @Entity(name = "Message")
 @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
-@Table(indexes = { @Index(name = "message_idx_msg_id", columnList = "msgId")
-})
+@Table(indexes = {@Index(name = "message_idx_msg_id", columnList = "msgId")})
 public class MessageEntity
         extends
         AuditModel
         implements
         IStorage
 {
-    private static final long  serialVersionUID = -6502547239976531057L;
+    private static final long serialVersionUID = -6502547239976531057L;
 
     @Id
     @GeneratedValue(generator = "ZMessageGenerator")
     @GenericGenerator(name = "ZMessageGenerator",
                       strategy = "com.isahl.chess.pawn.endpoint.spring.device.jpa.generator.ZMessageGenerator")
-    private long               id;
+    private long        id;
     @Column(updatable = false, nullable = false)
-    private long               origin;
+    private long        origin;
     @Column(updatable = false, nullable = false)
-    private long               destination;
+    private long        destination;
     @Column(nullable = false)
-    private int                cmd;
+    private int         cmd;
     @Column(length = 4, updatable = false, nullable = false)
-    private String             direction;
+    private String      direction;
     @Column(length = 10, nullable = false)
-    private String             owner;
+    private String      owner;
     @Column(updatable = false, nullable = false)
-    private long               msgId;
+    private long        msgId;
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb")
-    private MessageBody        body;
-    private Status             status;
+    private MessageBody body;
+    private Status      status;
 
     @JsonIgnore
     @Transient
-    private IStorage.Operation mOperation       = IStorage.Operation.OP_NULL;
+    private IStorage.Operation mOperation = IStorage.Operation.OP_NULL;
 
     public long getId()
     {

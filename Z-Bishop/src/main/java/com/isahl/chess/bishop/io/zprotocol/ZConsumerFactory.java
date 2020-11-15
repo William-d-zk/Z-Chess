@@ -39,7 +39,8 @@ import com.isahl.chess.queen.io.core.inf.ICommandFactory;
  */
 public class ZConsumerFactory
         implements
-        ICommandFactory<ZCommand, WsFrame>
+        ICommandFactory<ZCommand,
+                        WsFrame>
 {
 
     @Override
@@ -51,7 +52,8 @@ public class ZConsumerFactory
     @Override
     public ZCommand create(int serial)
     {
-        return switch (serial) {
+        return switch (serial)
+        {
             case X21_SignUpResult.COMMAND -> new X21_SignUpResult();
             case X23_SignInResult.COMMAND -> new X23_SignInResult();
             case X25_AuthorisedToken.COMMAND -> new X25_AuthorisedToken();

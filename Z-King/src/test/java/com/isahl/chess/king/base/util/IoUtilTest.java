@@ -33,8 +33,8 @@ public class IoUtilTest
     @Test
     void long2Hex()
     {
-        long   l      = 0x00FF00FF00FF00L;
-        String hex    = "00:00:FF:00:FF:00:FF:00";
+        long l = 0x00FF00FF00FF00L;
+        String hex = "00:00:FF:00:FF:00:FF:00";
         String result = IoUtil.long2Hex(l, ":");
         assert hex.equals(result);
     }
@@ -42,8 +42,8 @@ public class IoUtilTest
     @Test
     void variableIntLength()
     {
-        byte[]     varLength = IoUtil.variableLength(16384);
-        ByteBuffer buf       = ByteBuffer.wrap(varLength);
+        byte[] varLength = IoUtil.variableLength(16384);
+        ByteBuffer buf = ByteBuffer.wrap(varLength);
         assert IoUtil.readVariableIntLength(buf) == 16384;
     }
 

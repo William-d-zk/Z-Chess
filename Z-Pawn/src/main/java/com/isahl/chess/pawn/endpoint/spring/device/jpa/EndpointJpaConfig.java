@@ -34,14 +34,11 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  * @author william.d.zk
  */
 @EnableJpaAuditing
-@EnableJpaRepositories({ "com.isahl.chess.pawn.endpoint.spring.device.jpa.repository"
-})
-@EntityScan({ "com.isahl.chess.pawn.endpoint.spring.device.jpa.model"
-})
+@EnableJpaRepositories({"com.isahl.chess.pawn.endpoint.spring.device.jpa.repository"})
+@EntityScan({"com.isahl.chess.pawn.endpoint.spring.device.jpa.model"})
 @EnableTransactionManagement
 @Configuration
-@PropertySource({ "classpath:db.properties"
-})
+@PropertySource({"classpath:db.properties"})
 public class EndpointJpaConfig
 {
 

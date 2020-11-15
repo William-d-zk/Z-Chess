@@ -30,8 +30,9 @@ import com.isahl.chess.king.base.inf.IStatus;
  * 
  * @date 2019-06-16
  */
-public enum DeviceStatus implements
-                         IStatus
+public enum DeviceStatus
+        implements
+        IStatus
 {
 
     MISS(CODE_MISS),

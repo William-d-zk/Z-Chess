@@ -106,8 +106,7 @@ public interface IClusterNode<K extends IPipeCore>
             public IControl[] createCommands(ISession session)
             {
                 X106_Identity x106 = new X106_Identity(_ZUID.getPeerId());
-                return new IControl[] { x106
-                };
+                return new IControl[]{x106};
             }
 
             @Override

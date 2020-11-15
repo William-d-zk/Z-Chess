@@ -41,12 +41,10 @@ public class QttContext
         extends
         ZContext
 {
-    private final static IPair SUPPORT_VERSION = new Pair<>(new String[] { "5.0.0",
-                                                                           "3.1.1"
-    },
-                                                            new int[] { 5,
-                                                                        4
-                                                            });
+    private final static IPair SUPPORT_VERSION = new Pair<>(new String[]{"5.0.0",
+                                                                         "3.1.1"},
+                                                            new int[]{5,
+                                                                      4});
 
     public QttContext(ISessionOption option,
                       ISort.Mode mode,

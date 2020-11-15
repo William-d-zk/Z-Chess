@@ -88,11 +88,11 @@ public class X111_QttConnect
     private String  mWillTopic;
     private byte[]  mWillMessage;
 
-    private final int _MQTT = IoUtil.readInt(new byte[] { 'M',
-                                                          'Q',
-                                                          'T',
-                                                          'T'
-    }, 0);
+    private final int _MQTT = IoUtil.readInt(new byte[]{'M',
+                                                        'Q',
+                                                        'T',
+                                                        'T'},
+                                             0);
 
     @Override
     public String toString()

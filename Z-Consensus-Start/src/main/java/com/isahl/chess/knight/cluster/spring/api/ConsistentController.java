@@ -46,7 +46,10 @@ public class ConsistentController
     @PostMapping("/consistent")
     public @ResponseBody Object consistent(String input)
     {
-        _ConsistentService.consistentSubmit(input, true, Instant.now().toEpochMilli());
+        _ConsistentService.consistentSubmit(input,
+                                            true,
+                                            Instant.now()
+                                                   .toEpochMilli());
         return input;
     }
 }

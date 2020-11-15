@@ -44,7 +44,7 @@ public class LogMeta
         extends
         BaseMeta
 {
-    private final static int                   _SERIAL = INTERNAL_SERIAL + 1;
+    private final static int _SERIAL = INTERNAL_SERIAL + 1;
 
     /**
      * 存储日志的 start index，由于有 snapshot的存在 start之前的日志将被抛弃，
@@ -65,9 +65,13 @@ public class LogMeta
     /** 已被应用到状态机日志index */
     private long                               mApplied;
     /** 集群节点信息 */
-    private Set<Triple<Long, String, Integer>> mPeerSet;
+    private Set<Triple<Long,
+                       String,
+                       Integer>>               mPeerSet;
     /** 集群跨分区网关 */
-    private Set<Triple<Long, String, Integer>> mGateSet;
+    private Set<Triple<Long,
+                       String,
+                       Integer>>               mGateSet;
 
     @JsonCreator
     public LogMeta(@JsonProperty("start") long start,
@@ -77,8 +81,12 @@ public class LogMeta
                    @JsonProperty("candidate") long candidate,
                    @JsonProperty("commit") long commit,
                    @JsonProperty("applied") long applied,
-                   @JsonProperty("peer_set") Set<Triple<Long, String, Integer>> peerSet,
-                   @JsonProperty("gate_set") Set<Triple<Long, String, Integer>> gateSet)
+                   @JsonProperty("peer_set") Set<Triple<Long,
+                                                        String,
+                                                        Integer>> peerSet,
+                   @JsonProperty("gate_set") Set<Triple<Long,
+                                                        String,
+                                                        Integer>> gateSet)
     {
         mStart = start;
         mTerm = term;
@@ -98,19 +106,15 @@ public class LogMeta
 
     public static LogMeta loadFromFile(RandomAccessFile file)
     {
-        try
-        {
-            if (file.length() > 0)
-            {
+        try {
+            if (file.length() > 0) {
                 file.seek(0);
                 int mLength = file.readInt();
-                if (mLength > 0)
-                {
+                if (mLength > 0) {
                     byte[] data = new byte[mLength];
                     file.read(data);
                     LogMeta logMeta = JsonUtil.readValue(data, LogMeta.class);
-                    if (logMeta != null)
-                    {
+                    if (logMeta != null) {
                         logMeta.setFile(file);
                         logMeta.decode(data);
                         return logMeta;
@@ -118,8 +122,7 @@ public class LogMeta
                 }
             }
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             e.printStackTrace();
         }
         return new LogMeta().setFile(file);
@@ -194,22 +197,30 @@ public class LogMeta
         mApplied = applied;
     }
 
-    public Set<Triple<Long, String, Integer>> getPeerSet()
+    public Set<Triple<Long,
+                      String,
+                      Integer>> getPeerSet()
     {
         return mPeerSet;
     }
 
-    public void setPeerSet(Set<Triple<Long, String, Integer>> peerSet)
+    public void setPeerSet(Set<Triple<Long,
+                                      String,
+                                      Integer>> peerSet)
     {
         mPeerSet = peerSet;
     }
 
-    public Set<Triple<Long, String, Integer>> getGateSet()
+    public Set<Triple<Long,
+                      String,
+                      Integer>> getGateSet()
     {
         return mGateSet;
     }
 
-    public void setGateSet(Set<Triple<Long, String, Integer>> gateSet)
+    public void setGateSet(Set<Triple<Long,
+                                      String,
+                                      Integer>> gateSet)
     {
         mGateSet = gateSet;
     }

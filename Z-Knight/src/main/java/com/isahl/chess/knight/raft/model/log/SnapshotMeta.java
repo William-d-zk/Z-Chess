@@ -43,30 +43,28 @@ public class SnapshotMeta
     private long             mTerm;
 
     @JsonCreator
-    public SnapshotMeta(@JsonProperty("term") long term, @JsonProperty("commit") long commit)
+    public SnapshotMeta(@JsonProperty("term") long term,
+                        @JsonProperty("commit") long commit)
     {
         mTerm = term;
         mCommit = commit;
     }
 
     private SnapshotMeta()
-    {}
+    {
+    }
 
     public static SnapshotMeta loadFromFile(RandomAccessFile file)
     {
-        try
-        {
-            if (file.length() > 0)
-            {
+        try {
+            if (file.length() > 0) {
                 file.seek(0);
                 int length = file.readInt();
-                if (length > 0)
-                {
+                if (length > 0) {
                     byte[] data = new byte[length];
                     file.read(data);
                     SnapshotMeta snapshotMeta = JsonUtil.readValue(data, SnapshotMeta.class);
-                    if (snapshotMeta != null)
-                    {
+                    if (snapshotMeta != null) {
                         snapshotMeta.setFile(file);
                         snapshotMeta.decode(data);
                         return snapshotMeta;
@@ -74,8 +72,7 @@ public class SnapshotMeta
                 }
             }
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             e.printStackTrace();
         }
         return new SnapshotMeta().setFile(file);

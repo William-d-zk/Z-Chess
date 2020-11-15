@@ -82,7 +82,8 @@ public enum Status
 
     public static Status valueOf(int code)
     {
-        return switch (code & ~ITask.RETRY_LIMIT) {
+        return switch (code & ~ITask.RETRY_LIMIT)
+        {
             case -1 << ITask.RETRY_COUNT_BITS -> MISS;
             case 0 -> CREATED;
             case 1 << ITask.RETRY_COUNT_BITS -> PENDING;

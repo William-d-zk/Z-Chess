@@ -70,7 +70,9 @@ public abstract class MqttProtocol
         final String      _Description;
         final Direction[] _Directions;
 
-        QTT_TYPE(int code, String description, Direction... directions)
+        QTT_TYPE(int code,
+                 String description,
+                 Direction... directions)
         {
             _Value = code << 4;
             _Directions = directions;
@@ -94,7 +96,8 @@ public abstract class MqttProtocol
 
         public static QTT_TYPE valueOf(int head)
         {
-            return switch (head & 240) {
+            return switch (head & 240)
+            {
                 case 1 << 4 -> CONNECT;
                 case 2 << 4 -> CONNACK;
                 case 3 << 4 -> PUBLISH;
@@ -122,19 +125,18 @@ public abstract class MqttProtocol
 
     private void checkOpCode()
     {
-        if (getLevel() == Level.ALMOST_ONCE && duplicate)
-        { throw new IllegalStateException("level == 0 && duplicate"); }
+        if (getLevel() == Level.ALMOST_ONCE && duplicate) {
+            throw new IllegalStateException("level == 0 && duplicate");
+        }
     }
 
     public static byte generateCtrl(boolean dup, boolean retain, Level qosLevel, QTT_TYPE qttType)
     {
         byte ctrl = 0;
-        ctrl |= dup ?
-                DUPLICATE_FLAG:
-                0;
-        ctrl |= retain ?
-                RETAIN_FLAG:
-                0;
+        ctrl |= dup ? DUPLICATE_FLAG
+                    : 0;
+        ctrl |= retain ? RETAIN_FLAG
+                       : 0;
         ctrl |= qosLevel.ordinal() << 1;
         ctrl |= qttType.getValue();
         return ctrl;
@@ -143,12 +145,10 @@ public abstract class MqttProtocol
     public void setDuplicate(boolean duplicate)
     {
         this.duplicate = duplicate;
-        if (duplicate)
-        {
+        if (duplicate) {
             frame_op_code |= DUPLICATE_FLAG;
         }
-        else
-        {
+        else {
             frame_op_code &= ~DUPLICATE_FLAG;
         }
     }
@@ -162,12 +162,10 @@ public abstract class MqttProtocol
     public void setRetain(boolean retain)
     {
         this.retain = retain;
-        if (retain)
-        {
+        if (retain) {
             frame_op_code |= RETAIN_FLAG;
         }
-        else
-        {
+        else {
             frame_op_code &= ~RETAIN_FLAG;
         }
     }
@@ -199,8 +197,7 @@ public abstract class MqttProtocol
     {
         frame_op_code = opCode;
         type = QTT_TYPE.valueOf(getOpCode());
-        if (Objects.isNull(type))
-        { throw new IllegalArgumentException(); }
+        if (Objects.isNull(type)) { throw new IllegalArgumentException(); }
         duplicate = (frame_op_code & DUPLICATE_FLAG) == DUPLICATE_FLAG;
         retain = (frame_op_code & RETAIN_FLAG) == RETAIN_FLAG;
         qos_level = (byte) ((frame_op_code & QOS_MASK) >> 1);

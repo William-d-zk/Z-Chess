@@ -39,15 +39,13 @@ public abstract class BaseMeta
 
     void update()
     {
-        try
-        {
+        try {
             mFile.seek(0);
             byte[] data = encode();
             mFile.writeInt(dataLength());
             mFile.write(data);
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -55,12 +53,10 @@ public abstract class BaseMeta
     void close()
     {
         update();
-        try
-        {
+        try {
             mFile.close();
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             e.printStackTrace();
         }
     }

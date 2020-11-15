@@ -35,7 +35,8 @@ public class ZApiException
         super(message);
     }
 
-    public ZApiException(String message, Throwable cause)
+    public ZApiException(String message,
+                         Throwable cause)
     {
         super(message, cause);
     }

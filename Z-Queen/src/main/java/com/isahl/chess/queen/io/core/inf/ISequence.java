@@ -33,7 +33,8 @@ public interface ISequence
     }
 
     default void setSequence(long sequence)
-    {}
+    {
+    }
 
     default boolean isOrder()
     {

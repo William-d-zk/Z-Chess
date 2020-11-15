@@ -71,8 +71,7 @@ abstract class ZBaseMappingCustom<E extends IMappingCustom>
                  * 内嵌逻辑，在ZCommandFilter中已经处理结束
                  * 此处仅执行转发逻辑
                  */
-                return new Pair<>(new IControl[] { content
-                }, null);
+                return new Pair<>(new IControl[]{content}, null);
             default:
                 if (_Then == null) return null;
                 return _Then.handle(manager, session, content);

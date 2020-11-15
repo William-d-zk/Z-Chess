@@ -31,7 +31,8 @@ import com.isahl.chess.king.base.inf.IReset;
  * @author William.d.zk
  */
 public interface ISymmetric
-        extends IReset
+        extends
+        IReset
 {
     byte[] createKey(String seed);
 

@@ -29,7 +29,9 @@ import com.isahl.chess.king.base.inf.ITriple;
 /**
  * @author William.d.zk
  */
-public class Triple<FIRST, SECOND, THIRD>
+public class Triple<FIRST,
+                    SECOND,
+                    THIRD>
         implements
         ITriple
 {
@@ -37,7 +39,9 @@ public class Triple<FIRST, SECOND, THIRD>
     private SECOND second;
     private THIRD  third;
 
-    public Triple(FIRST first, SECOND second, THIRD third)
+    public Triple(FIRST first,
+                  SECOND second,
+                  THIRD third)
     {
         this.first = first;
         this.second = second;
@@ -45,7 +49,8 @@ public class Triple<FIRST, SECOND, THIRD>
     }
 
     public Triple()
-    {}
+    {
+    }
 
     @Override
     public FIRST getFirst()
@@ -81,7 +86,9 @@ public class Triple<FIRST, SECOND, THIRD>
     }
 
     @Override
-    public Triple<FIRST, SECOND, THIRD> clone()
+    public Triple<FIRST,
+                  SECOND,
+                  THIRD> clone()
     {
         return new Triple<>(first, second, third);
     }
@@ -89,12 +96,14 @@ public class Triple<FIRST, SECOND, THIRD>
     @Override
     public boolean equals(Object obj)
     {
-        if (!(obj instanceof Triple))
-        { return false; }
-        if (this != obj)
-        {
+        if (!(obj instanceof Triple)) { return false; }
+        if (this != obj) {
             @SuppressWarnings("unchecked")
-            Triple<FIRST, SECOND, THIRD> other = (Triple<FIRST, SECOND, THIRD>) obj;
+            Triple<FIRST,
+                   SECOND,
+                   THIRD> other = (Triple<FIRST,
+                                          SECOND,
+                                          THIRD>) obj;
             return first.equals(other.first) && second.equals(other.second) && third.equals(other.third);
         }
         return true;

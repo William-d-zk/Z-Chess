@@ -31,7 +31,8 @@ package com.isahl.chess.king.base.inf;
 public interface IDisposable
 {
     default void dispose()
-    {}
+    {
+    }
 
     default boolean isDisposable()
     {
