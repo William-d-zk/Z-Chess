@@ -29,27 +29,25 @@ import com.isahl.chess.king.base.util.CryptUtil;
 
 public interface IWsContext
 {
-    public final static int HS_State_GET          = 1;
-    public final static int HS_State_HOST         = 1 << 1;
-    public final static int HS_State_UPGRADE      = 1 << 2;
-    public final static int HS_State_CONNECTION   = 1 << 3;
-    public final static int HS_State_SEC_KEY      = 1 << 4;
-    public final static int HS_State_ORIGIN       = 1 << 5;
-    public final static int HS_State_SEC_PROTOCOL = 1 << 6;
+    int HS_State_GET          = 1;
+    int HS_State_HOST         = 1 << 1;
+    int HS_State_UPGRADE      = 1 << 2;
+    int HS_State_CONNECTION   = 1 << 3;
+    int HS_State_SEC_KEY      = 1 << 4;
+    int HS_State_ORIGIN       = 1 << 5;
+    int HS_State_SEC_PROTOCOL = 1 << 6;
     // public final String mSecProtocol, mSubProtocol; //not support right now
-    public final static int HS_State_SEC_VERSION = 1 << 7;
-    public final static int HS_State_HTTP_101    = 1 << 8;
-    public final static int HS_State_SEC_ACCEPT  = 1 << 9;
-    public final static int HS_State_ACCEPT_OK   = HS_State_HTTP_101
-                                                   | HS_State_SEC_ACCEPT
-                                                   | HS_State_UPGRADE
-                                                   | HS_State_CONNECTION;
-    public final static int HS_State_CLIENT_OK   = HS_State_GET
-                                                   | HS_State_HOST
-                                                   | HS_State_UPGRADE
-                                                   | HS_State_CONNECTION
-                                                   | HS_State_SEC_KEY
-                                                   | HS_State_SEC_VERSION;
+    int HS_State_SEC_VERSION = 1 << 7;
+    int HS_State_HTTP_101    = 1 << 8;
+    int HS_State_SEC_ACCEPT  = 1 << 9;
+    int HS_State_ACCEPT_OK   = HS_State_HTTP_101 | HS_State_SEC_ACCEPT | HS_State_UPGRADE | HS_State_CONNECTION;
+    int HS_State_CLIENT_OK   = HS_State_GET
+                               | HS_State_HOST
+                               | HS_State_UPGRADE
+                               | HS_State_CONNECTION
+                               | HS_State_SEC_KEY
+                               | HS_State_SEC_VERSION;
+    int HS_State_ERROR       = -1 << 31;
 
     WsHandshake getHandshake();
 
