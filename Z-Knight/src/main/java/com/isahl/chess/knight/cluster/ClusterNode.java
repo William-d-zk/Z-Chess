@@ -36,6 +36,7 @@ import javax.annotation.PostConstruct;
 import com.isahl.chess.bishop.io.ZSortHolder;
 import com.isahl.chess.bishop.io.ws.WsContext;
 import com.isahl.chess.bishop.io.ws.control.X103_Ping;
+import com.isahl.chess.bishop.io.zcrypt.EncryptHandler;
 import com.isahl.chess.bishop.io.zprotocol.control.X106_Identity;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.log.Logger;
@@ -108,7 +109,6 @@ public class ClusterNode
             @Override
             public void onCreate(ISession session)
             {
-                session.setIndex(_ZUID.getId());
                 ClusterNode.this.addSession(session);
             }
 
@@ -123,7 +123,7 @@ public class ClusterNode
             @Override
             public IControl[] createCommands(ISession session)
             {
-                X106_Identity x106 = new X106_Identity(_ZUID.getPeerId());
+                X106_Identity x106 = new X106_Identity(_ZUID.getPeerId(), _ZUID.getId());
                 return new IControl[]{x106};
             }
 
@@ -185,7 +185,7 @@ public class ClusterNode
                       IConsistentCustom consistentCustom,
                       ILogicHandler logicHandler) throws IOException
     {
-        getCore().build(this, clusterCustom, consistentCustom, logicHandler);
+        getCore().build(this, clusterCustom, consistentCustom, logicHandler, EncryptHandler::new);
         _AioServer.bindAddress(_AioServer.getLocalAddress(), getCore().getClusterChannelGroup());
         _AioServer.pendingAccept();
         _Logger.debug(String.format("cluster start: %s", _AioServer.getLocalAddress()));

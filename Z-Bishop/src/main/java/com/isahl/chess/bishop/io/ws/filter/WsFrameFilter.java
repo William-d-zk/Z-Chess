@@ -27,6 +27,7 @@ import java.nio.ByteBuffer;
 import com.isahl.chess.bishop.io.ZContext;
 import com.isahl.chess.bishop.io.ws.IWsContext;
 import com.isahl.chess.bishop.io.ws.WsFrame;
+import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.async.AioFilterChain;
 import com.isahl.chess.queen.io.core.async.AioPacket;
 import com.isahl.chess.queen.io.core.inf.IPContext;
@@ -61,110 +62,100 @@ public class WsFrameFilter<T extends ZContext & IWsContext>
     }
 
     @Override
-    public ResultType seek(T context, WsFrame output)
-    {
-        return context.isOutConvert() ? ResultType.NEXT_STEP
-                                      : ResultType.IGNORE;
-    }
-
-    @Override
     public ResultType peek(T context, IPacket input)
     {
-        if (context.isInConvert()) {
-            ByteBuffer recvBuf = input.getBuffer();
-            ByteBuffer cRvBuf = context.getRvBuffer();
-            WsFrame carrier = context.getCarrier();
-            int lack = context.lack();
-            switch (context.position())
-            {
-                case -1:
-                    if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
-                    context.setCarrier(carrier = new WsFrame());
-                    byte value = recvBuf.get();
-                    carrier.setCtrl(WsFrame.getOpCode(value));
-                    carrier.frame_fin = WsFrame.isFrameFin(value);
-                    lack = context.lackLength(1, 1);
-                case 0:
-                    if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
-                    carrier.setMaskCode(recvBuf.get());
-                    cRvBuf.put(carrier.getLengthCode());
-                    lack = context.lackLength(1, carrier.lackLength(context.position()) + context.position());
-                case 1:
-                default:
-                    if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
-                    int target = context.position() + lack;
-                    do {
-                        int remain = recvBuf.remaining();
-                        int length = Math.min(remain, lack);
-                        for (int i = 0; i < length; i++) {
-                            cRvBuf.put(recvBuf.get());
-                        }
-                        lack = context.lackLength(length, target);
-                        if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
-                        cRvBuf.flip();
-                        // decoding
-                        if (carrier.getPayloadLength() < 0) {
-                            switch (target)
-                            {
-                                case WsFrame.frame_payload_length_7_no_mask_position:
-                                    carrier.setPayloadLength(cRvBuf.get());
-                                    carrier.setMask(null);
-                                    break;
-                                case WsFrame.frame_payload_length_16_no_mask_position:
-                                    carrier.setPayloadLength(cRvBuf.getShort(1) & 0xFFFF);
-                                    carrier.setMask(null);
-                                    break;
-                                case WsFrame.frame_payload_length_7_mask_position:
-                                    carrier.setPayloadLength(cRvBuf.get());
-                                    byte[] mask = new byte[4];
-                                    cRvBuf.get(mask);
-                                    carrier.setMask(mask);
-                                    break;
-                                case WsFrame.frame_payload_length_16_mask_position:
-                                    carrier.setPayloadLength(cRvBuf.getShort(1) & 0xFFFF);
-                                    cRvBuf.position(3);
-                                    mask = new byte[4];
-                                    cRvBuf.get(mask);
-                                    carrier.setMask(mask);
-                                    break;
-                                case WsFrame.frame_payload_length_63_no_mask_position:
-                                    carrier.setPayloadLength(cRvBuf.getLong(1));
-                                    carrier.setMask(null);
-                                    break;
-                                case WsFrame.frame_payload_length_63_mask_position:
-                                    carrier.setPayloadLength(cRvBuf.getLong(1));
-                                    cRvBuf.position(9);
-                                    mask = new byte[4];
-                                    cRvBuf.get(mask);
-                                    carrier.setMask(mask);
-                                    break;
-                                default:
-                                    break;
-                            }
-                            target = context.position() + (int) carrier.getPayloadLength();
-                            lack = context.lackLength(0, target);
-                            cRvBuf.clear();
-                            if (carrier.getPayloadLength() > context.getMaxPayloadSize()) {
-                                _Logger.warning("payload is too large");
-                                return ResultType.ERROR;
-                            }
-                            else if (carrier.getPayloadLength() == 0) { return ResultType.NEXT_STEP; }
-                        }
-                        else {
-                            if (carrier.getPayloadLength() > 0) {
-                                byte[] payload = new byte[(int) carrier.getPayloadLength()];
-                                cRvBuf.get(payload);
-                                carrier.setPayload(payload);
-                            }
-                            cRvBuf.clear();
-                            return ResultType.NEXT_STEP;
-                        }
+        ByteBuffer recvBuf = input.getBuffer();
+        ByteBuffer cRvBuf = context.getRvBuffer();
+        WsFrame carrier = context.getCarrier();
+        int lack = context.lack();
+        switch (context.position())
+        {
+            case -1:
+                if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
+                context.setCarrier(carrier = new WsFrame());
+                byte value = recvBuf.get();
+                carrier.setCtrl(WsFrame.getOpCode(value));
+                carrier.frame_fin = WsFrame.isFrameFin(value);
+                lack = context.lackLength(1, 1);
+            case 0:
+                if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
+                carrier.setMaskCode(recvBuf.get());
+                cRvBuf.put(carrier.getLengthCode());
+                lack = context.lackLength(1, carrier.lackLength(context.position()) + context.position());
+            case 1:
+            default:
+                if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
+                int target = context.position() + lack;
+                do {
+                    int remain = recvBuf.remaining();
+                    int length = Math.min(remain, lack);
+                    for (int i = 0; i < length; i++) {
+                        cRvBuf.put(recvBuf.get());
                     }
-                    while (recvBuf.hasRemaining());
-                    return ResultType.NEED_DATA;
-            }
+                    lack = context.lackLength(length, target);
+                    if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
+                    cRvBuf.flip();
+                    // decoding
+                    if (carrier.getPayloadLength() < 0) {
+                        switch (target)
+                        {
+                            case WsFrame.frame_payload_length_7_no_mask_position:
+                                carrier.setPayloadLength(cRvBuf.get());
+                                carrier.setMask(null);
+                                break;
+                            case WsFrame.frame_payload_length_16_no_mask_position:
+                                carrier.setPayloadLength(cRvBuf.getShort(1) & 0xFFFF);
+                                carrier.setMask(null);
+                                break;
+                            case WsFrame.frame_payload_length_7_mask_position:
+                                carrier.setPayloadLength(cRvBuf.get());
+                                byte[] mask = new byte[4];
+                                cRvBuf.get(mask);
+                                carrier.setMask(mask);
+                                break;
+                            case WsFrame.frame_payload_length_16_mask_position:
+                                carrier.setPayloadLength(cRvBuf.getShort(1) & 0xFFFF);
+                                cRvBuf.position(3);
+                                mask = new byte[4];
+                                cRvBuf.get(mask);
+                                carrier.setMask(mask);
+                                break;
+                            case WsFrame.frame_payload_length_63_no_mask_position:
+                                carrier.setPayloadLength(cRvBuf.getLong(1));
+                                carrier.setMask(null);
+                                break;
+                            case WsFrame.frame_payload_length_63_mask_position:
+                                carrier.setPayloadLength(cRvBuf.getLong(1));
+                                cRvBuf.position(9);
+                                mask = new byte[4];
+                                cRvBuf.get(mask);
+                                carrier.setMask(mask);
+                                break;
+                            default:
+                                break;
+                        }
+                        target = context.position() + (int) carrier.getPayloadLength();
+                        lack = context.lackLength(0, target);
+                        cRvBuf.clear();
+                        if (carrier.getPayloadLength() > context.getMaxPayloadSize()) {
+                            _Logger.warning("payload is too large");
+                            return ResultType.ERROR;
+                        }
+                        else if (carrier.getPayloadLength() == 0) { return ResultType.NEXT_STEP; }
+                    }
+                    else {
+                        if (carrier.getPayloadLength() > 0) {
+                            byte[] payload = new byte[(int) carrier.getPayloadLength()];
+                            cRvBuf.get(payload);
+                            carrier.setPayload(payload);
+                        }
+                        cRvBuf.clear();
+                        return ResultType.NEXT_STEP;
+                    }
+                }
+                while (recvBuf.hasRemaining());
+                return ResultType.NEED_DATA;
         }
-        return ResultType.IGNORE;
     }
 
     @Override
@@ -183,67 +174,57 @@ public class WsFrameFilter<T extends ZContext & IWsContext>
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public <C extends IPContext,
-            O extends IProtocol> ResultType pipeSeek(C context, O output)
+    public <O extends IProtocol> Pair<ResultType,
+                                      IPContext> pipeSeek(IPContext context, O output)
     {
         if (checkType(output, IProtocol.FRAME_SERIAL)) {
-            if (context instanceof IWsContext) {
-                return seek((T) context, (WsFrame) output);
+            if (context instanceof IWsContext && context.isOutConvert()) {
+                return new Pair<>(ResultType.NEXT_STEP, context);
             }
-            else if (context.isProxy()) {
-                //SSL|ZLS C指代的为SSLZContext 和 EZContext 需要脱壳 O 为IPacket
-                T acting = ((IProxyContext<T>) context).getActingContext();
-                return seek(acting, (WsFrame) output);
+            IPContext acting = context;
+            while (acting.isProxy()) {
+                if (acting instanceof IWsContext && acting.isOutConvert()) {
+                    return new Pair<>(ResultType.NEXT_STEP, acting);
+                }
+                acting = ((IProxyContext<?>) acting).getActingContext();
             }
         }
-        return ResultType.IGNORE;
+        return new Pair<>(ResultType.IGNORE, context);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <C extends IPContext,
-            I extends IProtocol> ResultType pipePeek(C context, I input)
+    public <I extends IProtocol> Pair<ResultType,
+                                      IPContext> pipePeek(IPContext context, I input)
     {
         if (checkType(input, IProtocol.PACKET_SERIAL)) {
-            if (context instanceof IWsContext) {
-                return peek((T) context, (IPacket) input);
+            if (context instanceof IWsContext && context.isInConvert()) {
+                return new Pair<>(peek((T) context, (IPacket) input), context);
             }
-            else if (context.isProxy()) {
-                T acting = ((IProxyContext<T>) context).getActingContext();
-                if (acting instanceof IWsContext) { return peek(acting, (IPacket) input); }
+            IPContext acting = context;
+            while (acting.isProxy()) {
+                if (acting instanceof IWsContext && acting.isInConvert()) {
+                    return new Pair<>(peek((T) acting, (IPacket) input), acting);
+                }
+                acting = ((IProxyContext<?>) acting).getActingContext();
             }
         }
-        return ResultType.IGNORE;
+        return new Pair<>(ResultType.IGNORE, context);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <C extends IPContext,
-            O extends IProtocol,
-            I extends IProtocol> I pipeEncode(C context, O output)
+    public <O extends IProtocol,
+            I extends IProtocol> I pipeEncode(IPContext context, O output)
     {
-        if (context instanceof IWsContext) {
-            return (I) encode((T) context, (WsFrame) output);
-        }
-        else if (context.isProxy()) {
-            return (I) encode(((IProxyContext<T>) context).getActingContext(), (WsFrame) output);
-        }
-        return null;
+        return (I) encode((T) context, (WsFrame) output);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <C extends IPContext,
-            O extends IProtocol,
-            I extends IProtocol> O pipeDecode(C context, I input)
+    public <O extends IProtocol,
+            I extends IProtocol> O pipeDecode(IPContext context, I input)
     {
-        if (context instanceof IWsContext) {
-            return (O) decode((T) context, (IPacket) input);
-        }
-        else if (context.isProxy()) {
-            return (O) decode(((IProxyContext<T>) context).getActingContext(), (IPacket) input);
-        }
-        return null;
+        return (O) decode((T) context, (IPacket) input);
     }
 }

@@ -32,6 +32,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 
 import com.isahl.chess.king.base.disruptor.MultiBufferBatchEventProcessor;
 import com.isahl.chess.king.base.log.Logger;
@@ -51,6 +52,7 @@ import com.isahl.chess.queen.event.handler.mix.MixMappingHandler;
 import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.async.AioWorker;
+import com.isahl.chess.queen.io.core.inf.IEncryptHandler;
 import com.isahl.chess.queen.io.core.manager.MixManager;
 import com.lmax.disruptor.BatchEventProcessor;
 import com.lmax.disruptor.RingBuffer;
@@ -224,7 +226,8 @@ public class ServerCore
     public <T extends IStorage> void build(MixManager manager,
                                            ILogicHandler logicHandler,
                                            ILinkCustom linkCustom,
-                                           IClusterCustom<T> clusterCustom)
+                                           IClusterCustom<T> clusterCustom,
+                                           Supplier<IEncryptHandler> encryptSupplier)
     {
         final RingBuffer<QEvent> _WroteEvent = createPipelineYield(_AioQueueSize << 1);
         final RingBuffer<QEvent> _LinkIoEvent = createPipelineYield(_LinkQueueSize);
@@ -259,7 +262,9 @@ public class ServerCore
         Arrays.setAll(_ReadEvents, slot -> createPipelineLite(_AioQueueSize));
         Arrays.setAll(_ReadBarriers, slot -> _ReadEvents[slot].newBarrier());
         Arrays.setAll(_DecodeProcessors,
-                      slot -> new BatchEventProcessor<>(_ReadEvents[slot], _ReadBarriers[slot], new DecodeHandler()));
+                      slot -> new BatchEventProcessor<>(_ReadEvents[slot],
+                                                        _ReadBarriers[slot],
+                                                        new DecodeHandler(encryptSupplier.get())));
 
         /* 链路处理 */
         /* 所有带有路由规则绑定的数据都需要投递到这个 Pipeline -> _LinkDecoded */
@@ -375,7 +380,7 @@ public class ServerCore
         Arrays.setAll(_EncodeProcessors,
                       slot -> new BatchEventProcessor<>(_WriteEvents[slot],
                                                         _WriteEvents[slot].newBarrier(),
-                                                        new EncodeHandler()));
+                                                        new EncodeHandler(encryptSupplier.get())));
         final RingBuffer<QEvent>[] _EncodedEvents = new RingBuffer[_EncoderCount];
         IoUtil.addArray(_WriteEvents, _EncodedEvents);
         final SequenceBarrier[] _EncodedBarriers = new SequenceBarrier[_EncodedEvents.length];

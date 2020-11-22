@@ -47,9 +47,10 @@ public interface IPipeTransfer
     @Override
     default List<ITriple> handle(IControl[] commands, ISession session)
     {
-        if (Objects.isNull(commands) || commands.length == 0) {
+        if (commands == null || commands.length == 0) {
             throw new MissingParameterException(getName(), "commands");
         }
+        else if (session == null) { throw new MissingParameterException(getName(), "session"); }
         return Stream.of(commands)
                      .filter(Objects::nonNull)
                      .map(command ->
@@ -58,7 +59,6 @@ public interface IPipeTransfer
                          if (targetSession == null) {
                              command.setSession(session);
                              targetSession = session;
-                             if (session == null) { return null; }
                          }
                          return new Triple<>(command, targetSession, targetSession.getEncoder());
                      })

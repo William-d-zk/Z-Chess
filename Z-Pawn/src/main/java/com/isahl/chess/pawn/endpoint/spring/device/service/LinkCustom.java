@@ -40,6 +40,7 @@ import com.isahl.chess.bishop.io.mqtt.control.X118_QttSubscribe;
 import com.isahl.chess.bishop.io.mqtt.control.X119_QttSuback;
 import com.isahl.chess.bishop.io.mqtt.control.X11A_QttUnsubscribe;
 import com.isahl.chess.bishop.io.mqtt.control.X11B_QttUnsuback;
+import com.isahl.chess.bishop.io.mqtt.control.X11E_QttDisconnect;
 import com.isahl.chess.bishop.io.mqtt.handler.IQttRouter;
 import com.isahl.chess.bishop.io.mqtt.handler.QttRouter;
 import com.isahl.chess.bishop.io.zprotocol.control.X108_Shutdown;
@@ -203,6 +204,12 @@ public class LinkCustom
                         X112_QttConnack x112 = new X112_QttConnack();
                         x112.responseOk();
                         x112.setSession(session);
+                        /*Qtt context 需要更新上下文状态，登录成功之前拒绝Command类型的指令*/
+                        session.getContext()
+                               .updateOut();
+                        session.getContext()
+                               .updateIn();
+                        /*========================================================*/
                         return Collections.singletonList(new Triple<>(x112, session, session.getEncoder()));
                     }
                 }
@@ -245,6 +252,10 @@ public class LinkCustom
                             return Collections.singletonList(new Triple<>(x11B, session, session.getEncoder()));
                         }
                     }
+                }
+            case X11E_QttDisconnect.COMMAND ->
+                {
+                    _Logger.info("disconnect");
                 }
         }
         return null;

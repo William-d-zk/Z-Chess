@@ -131,4 +131,14 @@ public enum ZSortHolder
                                                                      : type == ISort.Type.INNER ? ZUID.TYPE_INTERNAL_SLOT
                                                                                                 : ZUID.TYPE_PROVIDER_SLOT;
     }
+
+    public long getType()
+    {
+        ISort.Mode mode = _Sort.getMode();
+        ISort.Type type = _Sort.getType();
+        return mode == ISort.Mode.LINK ? ZUID.TYPE_CONSUMER
+                                       : type == ISort.Type.SYMMETRY ? ZUID.TYPE_CLUSTER
+                                                                     : type == ISort.Type.INNER ? ZUID.TYPE_INTERNAL
+                                                                                                : ZUID.TYPE_PROVIDER;
+    }
 }

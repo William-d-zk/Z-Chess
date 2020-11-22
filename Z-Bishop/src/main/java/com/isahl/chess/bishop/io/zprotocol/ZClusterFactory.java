@@ -23,7 +23,6 @@
 
 package com.isahl.chess.bishop.io.zprotocol;
 
-import com.isahl.chess.bishop.io.ws.WsFrame;
 import com.isahl.chess.bishop.io.zprotocol.raft.X70_RaftVote;
 import com.isahl.chess.bishop.io.zprotocol.raft.X71_RaftBallot;
 import com.isahl.chess.bishop.io.zprotocol.raft.X72_RaftAppend;
@@ -32,6 +31,7 @@ import com.isahl.chess.bishop.io.zprotocol.raft.X74_RaftReject;
 import com.isahl.chess.bishop.io.zprotocol.raft.X75_RaftRequest;
 import com.isahl.chess.bishop.io.zprotocol.raft.X76_RaftNotify;
 import com.isahl.chess.queen.io.core.inf.ICommandFactory;
+import com.isahl.chess.queen.io.core.inf.IFrame;
 
 /**
  * @author william.d.zk
@@ -41,10 +41,10 @@ import com.isahl.chess.queen.io.core.inf.ICommandFactory;
 public class ZClusterFactory
         implements
         ICommandFactory<ZCommand,
-                        WsFrame>
+                        IFrame>
 {
     @Override
-    public ZCommand create(WsFrame frame)
+    public ZCommand create(IFrame frame)
     {
         return create(frame.getPayload()[1] & 0xFF);
     }

@@ -28,6 +28,11 @@ import com.isahl.chess.bishop.io.ws.WsContext;
 import com.isahl.chess.bishop.io.ws.filter.WsControlFilter;
 import com.isahl.chess.bishop.io.ws.filter.WsFrameFilter;
 import com.isahl.chess.bishop.io.ws.filter.WsHandShakeFilter;
+import com.isahl.chess.bishop.io.zfilter.ZCommandFilter;
+import com.isahl.chess.bishop.io.zprotocol.ZClusterFactory;
+import com.isahl.chess.bishop.io.zprotocol.ZConsumerFactory;
+import com.isahl.chess.bishop.io.zprotocol.ZServerFactory;
+import com.isahl.chess.bishop.io.zprotocol.ZSymmetryFactory;
 import com.isahl.chess.queen.io.core.inf.IFilterChain;
 import com.isahl.chess.queen.io.core.inf.ISessionOption;
 
@@ -46,6 +51,11 @@ public class WsZSort
                    Type type)
     {
         super(mode, type, "ws");
+        _Head.getChainTail()
+             .linkFront(new ZCommandFilter<>(mode == Mode.CLUSTER ? new ZClusterFactory()
+                                                                  : type == Type.SERVER ? new ZServerFactory()
+                                                                                        : type == Type.SYMMETRY ? new ZSymmetryFactory()
+                                                                                                                : new ZConsumerFactory()));
     }
 
     @Override

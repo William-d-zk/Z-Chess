@@ -34,6 +34,8 @@ import com.isahl.chess.queen.event.inf.IError;
 import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.inf.IControl;
+import com.isahl.chess.queen.io.core.inf.IEContext;
+import com.isahl.chess.queen.io.core.inf.IEncryptHandler;
 import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.lmax.disruptor.EventHandler;
@@ -45,7 +47,13 @@ public class EncodeHandler
         implements
         EventHandler<QEvent>
 {
-    private final Logger _Logger = Logger.getLogger("io.queen.processor." + getClass().getSimpleName());
+    private final Logger          _Logger = Logger.getLogger("io.queen.processor." + getClass().getSimpleName());
+    private final IEncryptHandler _EncryptHandler;
+
+    public EncodeHandler(IEncryptHandler encryptHandler)
+    {
+        _EncryptHandler = encryptHandler;
+    }
 
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
@@ -101,6 +109,10 @@ public class EncodeHandler
                                              ITriple> operator)
     {
         IPContext context = session.getContext();
+        if (context instanceof IEContext) {
+            IEContext eContext = (IEContext) context;
+            eContext.setEncryptHandler(_EncryptHandler);
+        }
         if (!context.isOutErrorState()) {
             try {
                 operator.handle(a, session);

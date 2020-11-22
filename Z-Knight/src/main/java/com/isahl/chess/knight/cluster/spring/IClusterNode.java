@@ -97,15 +97,14 @@ public interface IClusterNode<K extends IPipeCore>
             @Override
             public void onCreate(ISession session)
             {
-                session.setIndex(_ZUID.getId(_Type));
-                _Manager.addSession(session);
                 client.onCreate(session);
+                _Manager.addSession(session);
             }
 
             @Override
             public IControl[] createCommands(ISession session)
             {
-                X106_Identity x106 = new X106_Identity(_ZUID.getPeerId());
+                X106_Identity x106 = new X106_Identity(_ZUID.getPeerId(), _ZUID.getId(_Type));
                 return new IControl[]{x106};
             }
 

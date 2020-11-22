@@ -23,19 +23,19 @@
 
 package com.isahl.chess.queen.io.core.inf;
 
+import com.isahl.chess.king.base.util.Pair;
+
 public interface IPipeFilter
 {
-    <C extends IPContext,
-     O extends IProtocol> IFilter.ResultType pipeSeek(C context, O output);
+    <O extends IProtocol> Pair<IFilter.ResultType,
+                               IPContext> pipeSeek(IPContext context, O output);
 
-    <C extends IPContext,
-     I extends IProtocol> IFilter.ResultType pipePeek(C context, I input);
+    <I extends IProtocol> Pair<IFilter.ResultType,
+                               IPContext> pipePeek(IPContext context, I input);
 
-    <C extends IPContext,
-     O extends IProtocol,
-     I extends IProtocol> I pipeEncode(C context, O output);
+    <O extends IProtocol,
+     I extends IProtocol> I pipeEncode(IPContext context, O output);
 
-    <C extends IPContext,
-     O extends IProtocol,
-     I extends IProtocol> O pipeDecode(C context, I input);
+    <O extends IProtocol,
+     I extends IProtocol> O pipeDecode(IPContext context, I input);
 }

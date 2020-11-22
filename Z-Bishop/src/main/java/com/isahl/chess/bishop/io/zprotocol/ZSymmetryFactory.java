@@ -20,35 +20,36 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.isahl.chess.queen.io.core.inf;
+
+package com.isahl.chess.bishop.io.zprotocol;
+
+import com.isahl.chess.queen.io.core.inf.ICommandFactory;
+import com.isahl.chess.queen.io.core.inf.IFrame;
 
 /**
- * @author William.d.zk
+ * @author william.d.zk
+ * 
+ * @date 2019-05-08
  */
-public interface IFilter<C extends IPContext,
-                         O extends IProtocol,
-                         I extends IProtocol>
+public class ZSymmetryFactory
+        implements
+        ICommandFactory<ZCommand,
+                        IFrame>
 {
-    default ResultType seek(C context, O output)
+    @Override
+    public ZCommand create(IFrame frame)
     {
-        return ResultType.IGNORE;
+        return create(frame.getPayload()[1] & 0xFF);
     }
 
-    default ResultType peek(C context, I input)
+    @Override
+    public ZCommand create(int serial)
     {
-        return ResultType.IGNORE;
+
+        return switch (serial)
+        {
+            default -> null;
+        };
     }
 
-    I encode(C context, O output);
-
-    O decode(C context, I input);
-
-    enum ResultType
-    {
-        ERROR,
-        NEED_DATA,
-        NEXT_STEP,
-        HANDLED,
-        IGNORE
-    }
 }

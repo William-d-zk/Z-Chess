@@ -37,9 +37,9 @@ public class X106_Identity
 {
     public final static int COMMAND = 0x106;
 
-    public X106_Identity(long... peerId)
+    public X106_Identity(long... id)
     {
-        this(IoUtil.writeLongArray(peerId));
+        this(IoUtil.writeLongArray(id));
     }
 
     public X106_Identity(byte[] payload)
@@ -54,6 +54,13 @@ public class X106_Identity
         return IoUtil.readLong(getPayload(), 0);
     }
 
+    public long getSessionIndex()
+    {
+        if (getPayload() == null) return INVALID_INDEX;
+        if (getPayload().length < 16) throw new ArrayIndexOutOfBoundsException();
+        return IoUtil.readLong(getPayload(), 8);
+    }
+
     public long[] getIdentities()
     {
         int size = (getPayload().length >>> 3);
@@ -62,7 +69,8 @@ public class X106_Identity
             IoUtil.readLongArray(getPayload(), 0, result);
             return result;
         }
-        return new long[]{-1L};
+        return new long[]{INVALID_INDEX,
+                          INVALID_INDEX};
     }
 
     @Override

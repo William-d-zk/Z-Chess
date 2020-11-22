@@ -23,6 +23,7 @@
 
 package com.isahl.chess.bishop.io.ssl;
 
+import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.async.AioFilterChain;
 import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.IPacket;
@@ -45,57 +46,61 @@ public class SSLFilter<A extends IPContext>
     }
 
     @Override
-    public ResultType seek(SSLZContext<A> context, IPacket output)
-    {
-        return null;
-    }
-
-    @Override
-    public ResultType peek(SSLZContext<A> context, IPacket input)
-    {
-        return null;
-    }
-
-    @Override
     public IPacket encode(SSLZContext<A> context, IPacket output)
     {
-        return null;
+
+        return output;
     }
 
     @Override
     public IPacket decode(SSLZContext<A> context, IPacket input)
     {
-        return null;
+
+        return input;
     }
 
     @Override
-    public <C extends IPContext,
-            O extends IProtocol> ResultType pipeSeek(C context, O output)
+    public <O extends IProtocol> Pair<ResultType,
+                                      IPContext> pipeSeek(IPContext context, O output)
     {
-        return null;
+        if (checkType(output, IProtocol.PACKET_SERIAL)
+            && context.isProxy()
+            && context instanceof SSLZContext
+            && context.isOutFrame())
+        {
+            return new Pair<>(ResultType.NEXT_STEP, context);
+        }
+        return new Pair<>(ResultType.IGNORE, context);
     }
 
     @Override
-    public <C extends IPContext,
-            I extends IProtocol> ResultType pipePeek(C context, I input)
+    public <I extends IProtocol> Pair<ResultType,
+                                      IPContext> pipePeek(IPContext context, I input)
     {
-        return null;
+        if (checkType(input, IProtocol.PACKET_SERIAL)
+            && context.isProxy()
+            && context instanceof SSLZContext
+            && context.isInFrame())
+        {
+            return new Pair<>(ResultType.NEXT_STEP, context);
+        }
+        return new Pair<>(ResultType.IGNORE, context);
     }
 
     @Override
-    public <C extends IPContext,
-            O extends IProtocol,
-            I extends IProtocol> I pipeEncode(C context, O output)
+    @SuppressWarnings("unchecked")
+    public <O extends IProtocol,
+            I extends IProtocol> I pipeEncode(IPContext context, O output)
     {
-        return null;
+        return (I) encode((SSLZContext<A>) context, (IPacket) output);
     }
 
     @Override
-    public <C extends IPContext,
-            O extends IProtocol,
-            I extends IProtocol> O pipeDecode(C context, I input)
+    @SuppressWarnings("unchecked")
+    public <O extends IProtocol,
+            I extends IProtocol> O pipeDecode(IPContext context, I input)
     {
-        return null;
+        return (O) decode((SSLZContext<A>) context, (IPacket) input);
     }
 
 }

@@ -54,7 +54,6 @@ public interface ISession
         IWritable<ISession>,
         Comparable<ISession>
 {
-    long DEFAULT_INDEX = -1;
 
     long getIndex();
 

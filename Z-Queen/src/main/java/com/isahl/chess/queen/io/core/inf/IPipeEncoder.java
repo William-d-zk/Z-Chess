@@ -25,6 +25,7 @@ package com.isahl.chess.queen.io.core.inf;
 
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.inf.ITriple;
+import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.event.inf.IOperator;
 
 /**
@@ -36,10 +37,10 @@ public interface IPipeEncoder
                   ISession,
                   ITriple>
 {
-    default <C extends IPContext> IPacket protocolWrite(IControl output, ISession session)
+    default IPacket protocolWrite(IControl output, ISession session)
     {
 
-        C context = session.getContext();
+        IPContext context = session.getContext();
         if (context == null || output == null) { return null; }
         IFilterChain previous = session.getFilterChain()
                                        .getChainTail();
@@ -49,7 +50,11 @@ public interface IPipeEncoder
             IFilter.ResultType resultType = IFilter.ResultType.IGNORE;
             while (previous != null) {
                 IPipeFilter pipeFilter = previous.getPipeFilter();
-                switch (resultType = pipeFilter.pipeSeek(context, protocol))
+                Pair<IFilter.ResultType,
+                     IPContext> seekResult = pipeFilter.pipeSeek(context, protocol);
+                resultType = seekResult.getFirst();
+                context = seekResult.getSecond();
+                switch (resultType)
                 {
                     case ERROR:
                         throw new ZException("error output: %s ; filter: %s", protocol, previous.getName());
