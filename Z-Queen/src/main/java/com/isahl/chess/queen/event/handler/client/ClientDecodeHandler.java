@@ -31,6 +31,7 @@ import com.isahl.chess.queen.event.handler.DecodeHandler;
 import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.inf.IControl;
+import com.isahl.chess.queen.io.core.inf.IEncryptHandler;
 import com.isahl.chess.queen.io.core.inf.ISession;
 
 /**
@@ -40,6 +41,11 @@ public class ClientDecodeHandler
         extends
         DecodeHandler
 {
+
+    public ClientDecodeHandler(IEncryptHandler encryptHandler)
+    {
+        super(encryptHandler);
+    }
 
     @Override
     protected void transfer(QEvent event,

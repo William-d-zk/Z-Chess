@@ -53,6 +53,7 @@ import com.isahl.chess.bishop.io.ws.control.X101_HandShake;
 import com.isahl.chess.bishop.io.ws.control.X102_Close;
 import com.isahl.chess.bishop.io.ws.control.X103_Ping;
 import com.isahl.chess.bishop.io.ws.control.X104_Pong;
+import com.isahl.chess.bishop.io.zcrypt.EncryptHandler;
 import com.isahl.chess.bishop.io.zprotocol.device.X21_SignUpResult;
 import com.isahl.chess.bishop.io.zprotocol.device.X22_SignIn;
 import com.isahl.chess.bishop.io.zprotocol.device.X23_SignInResult;
@@ -181,6 +182,8 @@ public class DeviceConsumer
                                                  break;
                                              case X112_QttConnack.COMMAND:
                                                  _Logger.debug("qtt connack %s", cmd);
+                                                 session.getContext()
+                                                        .ready();
                                                  break;
                                              default:
                                                  break;
@@ -202,7 +205,7 @@ public class DeviceConsumer
             else {
                 event.ignore();
             }
-        });
+        }, EncryptHandler::new);
         _Logger.debug("device consumer created");
     }
 
@@ -270,13 +273,10 @@ public class DeviceConsumer
             @Override
             public void onCreate(ISession session)
             {
-                long sessionIndex = _ZUid.getId(ZUID.TYPE_CONSUMER);
-                session.setIndex(sessionIndex);
                 DeviceConsumer.this.addSession(session);
-                zClient.setSessionIndex(sessionIndex);
-                _ZClientMap.put(session.getIndex(), zClient);
+                _ZClientMap.put(zClient.getClientUid(), zClient);
                 session.ready();
-                _Logger.debug("connected :%d", sessionIndex);
+                _Logger.debug("client %x connected %s:%d", zClient.getClientUid(), host, port);
             }
 
             @Override

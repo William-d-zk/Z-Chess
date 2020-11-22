@@ -32,6 +32,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 
 import com.isahl.chess.king.base.disruptor.MultiBufferBatchEventProcessor;
 import com.isahl.chess.king.base.schedule.TimeWheel;
@@ -45,6 +46,7 @@ import com.isahl.chess.queen.event.handler.client.ClientWriteDispatcher;
 import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.async.AioWorker;
+import com.isahl.chess.queen.io.core.inf.IEncryptHandler;
 import com.lmax.disruptor.BatchEventProcessor;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
@@ -99,7 +101,7 @@ public class ClientCore
      * ║ barrier, ━> publish event, ━━ pipeline, | handle event
 
      *                                        ━━> _LocalSend   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━║
-     *  ━━> _AioProducerEvents ║               ┏> _LinkIoEvent ━━━━{_MappingProcessor}|━━━━━━━━━━━━━━━━━━━━━║
+     *  ━━> _AioProducerEvents ║               ┏> _LinkIoEvent ━━━━{_LinkProcessor}|━━━━━━━━━━━━━━━━━━━━━━━━║
      *      _BizLocalClose     ║_IoDispatcher━━┫  _ReadEvent   ━━━━{_DecodeProcessor}|━━{_LogicProcessor}|━━║_WriteDispatcher┏>_EncodedEvent━━{_EncodedProcessor}|━┳━║[Event Done]
      * ┏━━> _ErrorEvent[2]     ║               ┃  _WroteBuffer ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━║                ┗>_ErrorEvent━┓                       ┗━>_ErrorEvent━┓
      * ┃┏━> _ErrorEvent[1]     ║               ┗> _ErrorEvent━┓                                                                            ┃                                      ┃
@@ -111,7 +113,7 @@ public class ClientCore
      * @formatter:on
      */
     @SuppressWarnings("unchecked")
-    public void build(final EventHandler<QEvent> _LogicHandler)
+    public void build(final EventHandler<QEvent> _LogicHandler, Supplier<IEncryptHandler> encryptSupplier)
     {
         final RingBuffer<QEvent> _WroteEvent = createPipelineYield(7);
         final RingBuffer<QEvent> _LinkIoEvent = createPipelineLite(2);
@@ -141,7 +143,7 @@ public class ClientCore
         }
         final BatchEventProcessor<QEvent> _DecodeProcessor = new BatchEventProcessor<>(_ReadAndLogicEvent,
                                                                                        _ReadAndLogicEvent.newBarrier(),
-                                                                                       new ClientDecodeHandler());
+                                                                                       new ClientDecodeHandler(encryptSupplier.get()));
         /*
          * 相对 server core 做了精简，decode 错误将在 logic processor 中按照 Ignore 进行处理
          * 最终被
@@ -170,16 +172,14 @@ public class ClientCore
         }
         final BatchEventProcessor<QEvent> _EncodeProcessor = new BatchEventProcessor<>(_EncodeEvent,
                                                                                        _EncodeEvent.newBarrier(),
-                                                                                       new EncodeHandler());
+                                                                                       new EncodeHandler(encryptSupplier.get()));
         final BatchEventProcessor<QEvent> _EncodedProcessor = new BatchEventProcessor<>(_EncodeEvent,
                                                                                         _EncodeEvent.newBarrier(_EncodeProcessor.getSequence()),
                                                                                         new EncodedHandler(_ErrorEvents[2]));
 
         _EncodeEvent.addGatingSequences(_EncodedProcessor.getSequence());
-        /*
-         * -------------------------------------------------------------------------------------------------
-         * ---------------
-         */
+        /* -------------------------------------------------------------------------------------------------*/
+
         submit(_IoDispatcher);
         submit(_DecodeProcessor);
         submit(_LinkProcessor);

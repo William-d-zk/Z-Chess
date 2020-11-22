@@ -39,6 +39,7 @@ import com.isahl.chess.bishop.io.ssl.SSLZContext;
 import com.isahl.chess.bishop.io.ws.WsContext;
 import com.isahl.chess.bishop.io.ws.WsProxyContext;
 import com.isahl.chess.bishop.io.ws.control.X103_Ping;
+import com.isahl.chess.bishop.io.zcrypt.EncryptHandler;
 import com.isahl.chess.bishop.io.zfilter.EZContext;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
@@ -121,19 +122,31 @@ public class DeviceNode
                                    case QTT_SYMMETRY:
                                        {
                                            ISort<QttContext> sort = holder.getSort();
-                                           return buildAioServer(_Host, _Port, holder.getSlot(), sort);
+                                           return buildAioServer(_Host,
+                                                                 _Port,
+                                                                 holder.getType(),
+                                                                 holder.getSlot(),
+                                                                 sort);
                                        }
                                    case QTT_SERVER_SSL:
                                    case QTT_CONSUMER_SSL:
                                    case QTT_SYMMETRY_SSL:
                                        {
                                            ISort<SSLZContext<QttContext>> sort = holder.getSort();
-                                           return buildAioServer(_Host, _Port, holder.getSlot(), sort);
+                                           return buildAioServer(_Host,
+                                                                 _Port,
+                                                                 holder.getType(),
+                                                                 holder.getSlot(),
+                                                                 sort);
                                        }
                                    case QTT_SERVER_ZLS:
                                        {
                                            ISort<EZContext<QttContext>> sort = holder.getSort();
-                                           return buildAioServer(_Host, _Port, holder.getSlot(), sort);
+                                           return buildAioServer(_Host,
+                                                                 _Port,
+                                                                 holder.getType(),
+                                                                 holder.getSlot(),
+                                                                 sort);
                                        }
                                    case WS_CONSUMER:
                                    case WS_SERVER:
@@ -142,30 +155,50 @@ public class DeviceNode
                                    case WS_CLUSTER_SERVER:
                                        {
                                            ISort<WsContext> sort = holder.getSort();
-                                           return buildAioServer(_Host, _Port, holder.getSlot(), sort);
+                                           return buildAioServer(_Host,
+                                                                 _Port,
+                                                                 holder.getType(),
+                                                                 holder.getSlot(),
+                                                                 sort);
                                        }
                                    case WS_CLUSTER_SYMMETRY_ZLS:
                                        {
                                            ISort<EZContext<WsContext>> sort = holder.getSort();
-                                           return buildAioServer(_Host, _Port, holder.getSlot(), sort);
+                                           return buildAioServer(_Host,
+                                                                 _Port,
+                                                                 holder.getType(),
+                                                                 holder.getSlot(),
+                                                                 sort);
                                        }
                                    case WS_CONSUMER_SSL:
                                    case WS_SERVER_SSL:
                                        {
                                            ISort<SSLZContext<WsContext>> sort = holder.getSort();
-                                           return buildAioServer(_Host, _Port, holder.getSlot(), sort);
+                                           return buildAioServer(_Host,
+                                                                 _Port,
+                                                                 holder.getType(),
+                                                                 holder.getSlot(),
+                                                                 sort);
                                        }
                                    case WS_QTT_SERVER:
                                    case WS_QTT_CONSUMER:
                                        {
                                            ISort<WsProxyContext<QttContext>> sort = holder.getSort();
-                                           return buildAioServer(_Host, _Port, holder.getSlot(), sort);
+                                           return buildAioServer(_Host,
+                                                                 _Port,
+                                                                 holder.getType(),
+                                                                 holder.getSlot(),
+                                                                 sort);
                                        }
                                    case WS_QTT_SERVER_SSL:
                                    case WS_QTT_CONSUMER_SSL:
                                        {
                                            ISort<SSLZContext<WsProxyContext<QttContext>>> sort = holder.getSort();
-                                           return buildAioServer(_Host, _Port, holder.getSlot(), sort);
+                                           return buildAioServer(_Host,
+                                                                 _Port,
+                                                                 holder.getType(),
+                                                                 holder.getSlot(),
+                                                                 sort);
                                        }
                                    default:
                                        return null;
@@ -216,6 +249,7 @@ public class DeviceNode
 
     private <C extends IPContext> IAioServer buildAioServer(final String _Host,
                                                             final int _Port,
+                                                            final long _Type,
                                                             final int _SessionSlot,
                                                             final ISort<C> _Sort)
     {
@@ -237,7 +271,7 @@ public class DeviceNode
             @Override
             public void onCreate(ISession session)
             {
-                session.setIndex(_ZUID.getId(_SessionSlot));
+                session.setIndex(_ZUID.getId(_Type));
                 DeviceNode.this.addSession(session);
                 session.ready();
             }
@@ -254,7 +288,7 @@ public class DeviceNode
                       ILinkCustom linkCustom,
                       IClusterCustom<RaftMachine> clusterCustom) throws IOException
     {
-        getCore().build(this, logicHandler, linkCustom, clusterCustom);
+        getCore().build(this, logicHandler, linkCustom, clusterCustom, EncryptHandler::new);
         for (IAioServer server : _AioServers) {
             server.bindAddress(server.getLocalAddress(), getCore().getServiceChannelGroup());
             server.pendingAccept();

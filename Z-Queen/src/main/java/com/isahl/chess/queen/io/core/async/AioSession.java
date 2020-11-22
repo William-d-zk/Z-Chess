@@ -27,6 +27,7 @@ import static com.isahl.chess.king.base.schedule.inf.ITask.recedeState;
 import static com.isahl.chess.king.base.schedule.inf.ITask.stateAtLeast;
 import static com.isahl.chess.king.base.schedule.inf.ITask.stateLessThan;
 import static com.isahl.chess.king.base.util.IoUtil.longArrayToHex;
+import static com.isahl.chess.queen.io.core.inf.ISessionManager.INVALID_INDEX;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -87,7 +88,7 @@ public class AioSession<C extends IPContext>
     /*----------------------------------------------------------------------------------------------------------------*/
 
     /*----------------------------------------------------------------------------------------------------------------*/
-    private long mIndex = DEFAULT_INDEX;
+    private long mIndex = INVALID_INDEX;
     /*
      * 此处并不会进行空间初始化，完全依赖于 Context 的 Wrbuf 实体，仅作为reference
      */
@@ -178,7 +179,7 @@ public class AioSession<C extends IPContext>
     @Override
     public void reset()
     {
-        mIndex = -1L;
+        mIndex = INVALID_INDEX;
     }
 
     @Override
@@ -216,7 +217,7 @@ public class AioSession<C extends IPContext>
     public final void setIndex(long index)
     {
         mIndex = index;
-        if (mIndex != -1L) {
+        if (mIndex != INVALID_INDEX) {
             mHashKey = mIndex;
         }
     }

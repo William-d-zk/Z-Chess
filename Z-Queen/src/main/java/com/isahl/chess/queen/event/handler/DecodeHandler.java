@@ -32,6 +32,8 @@ import com.isahl.chess.queen.event.inf.IError;
 import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.inf.IControl;
+import com.isahl.chess.queen.io.core.inf.IEContext;
+import com.isahl.chess.queen.io.core.inf.IEncryptHandler;
 import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.IPacket;
 import com.isahl.chess.queen.io.core.inf.ISession;
@@ -46,8 +48,11 @@ public class DecodeHandler
 {
     protected final Logger _Logger = Logger.getLogger("io.queen.processor." + getClass().getSimpleName());
 
-    public DecodeHandler()
+    private final IEncryptHandler _EncryptHandler;
+
+    public DecodeHandler(IEncryptHandler encryptHandler)
     {
+        _EncryptHandler = encryptHandler;
     }
 
     /**
@@ -67,6 +72,10 @@ public class DecodeHandler
                   ITriple> packetOperator = event.getEventOp();
         IPContext context = session.getContext();
         IPacket packet = packetContent.getFirst();
+        if (context instanceof IEContext) {
+            IEContext eContext = (IEContext) context;
+            eContext.setEncryptHandler(_EncryptHandler);
+        }
         if (!context.isInErrorState()) {
             try {
                 ITriple result = packetOperator.handle(packet, session);

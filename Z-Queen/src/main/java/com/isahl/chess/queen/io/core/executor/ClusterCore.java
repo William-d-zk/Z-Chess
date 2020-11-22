@@ -32,6 +32,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 
 import com.isahl.chess.king.base.disruptor.MultiBufferBatchEventProcessor;
 import com.isahl.chess.king.base.log.Logger;
@@ -52,6 +53,7 @@ import com.isahl.chess.queen.event.handler.mix.ILogicHandler;
 import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.async.AioWorker;
+import com.isahl.chess.queen.io.core.inf.IEncryptHandler;
 import com.isahl.chess.queen.io.core.manager.ClusterManager;
 import com.lmax.disruptor.BatchEventProcessor;
 import com.lmax.disruptor.RingBuffer;
@@ -163,7 +165,8 @@ public class ClusterCore
     public <T extends IStorage> void build(ClusterManager manager,
                                            IClusterCustom<T> clusterCustom,
                                            IConsistentCustom consistentCustom,
-                                           ILogicHandler logicHandler)
+                                           ILogicHandler logicHandler,
+                                           Supplier<IEncryptHandler> encryptSupplier)
     {
         final RingBuffer<QEvent> _WroteEvent = createPipelineYield(_AioQueueSize << 1);
         final RingBuffer<QEvent> _ClusterIoEvent = createPipelineYield(_ClusterQueueSize);
@@ -183,7 +186,9 @@ public class ClusterCore
         Arrays.setAll(_ReadEvents, slot -> createPipelineLite(_AioQueueSize));
         Arrays.setAll(_ReadBarriers, slot -> _ReadEvents[slot].newBarrier());
         Arrays.setAll(_DecodeProcessors,
-                      slot -> new BatchEventProcessor<>(_ReadEvents[slot], _ReadBarriers[slot], new DecodeHandler()));
+                      slot -> new BatchEventProcessor<>(_ReadEvents[slot],
+                                                        _ReadBarriers[slot],
+                                                        new DecodeHandler(encryptSupplier.get())));
         final RingBuffer<QEvent>[] _ClusterNotifiers = new RingBuffer[_LogicCount];
         final SequenceBarrier[] _ClusterNotifyBarriers = new SequenceBarrier[_ClusterNotifiers.length];
         final BatchEventProcessor<QEvent>[] _ClusterNotifyProcessors = new BatchEventProcessor[_ClusterNotifiers.length];
@@ -266,7 +271,7 @@ public class ClusterCore
         Arrays.setAll(_EncodeProcessors,
                       slot -> new BatchEventProcessor<>(_EncodeEvents[slot],
                                                         _EncodeEvents[slot].newBarrier(),
-                                                        new EncodeHandler()));
+                                                        new EncodeHandler(encryptSupplier.get())));
         final SequenceBarrier[] _EncodedBarriers = new SequenceBarrier[_EncodeEvents.length];
         Arrays.setAll(_EncodedBarriers, slot -> _EncodeEvents[slot].newBarrier(_EncodeProcessors[slot].getSequence()));
         final MultiBufferBatchEventProcessor<QEvent> _EncodedProcessor = new MultiBufferBatchEventProcessor<>(_EncodeEvents,

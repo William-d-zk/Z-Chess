@@ -27,6 +27,7 @@ import java.nio.ByteBuffer;
 
 import com.isahl.chess.bishop.io.mqtt.QttContext;
 import com.isahl.chess.bishop.io.mqtt.QttFrame;
+import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.async.AioFilterChain;
 import com.isahl.chess.queen.io.core.async.AioPacket;
 import com.isahl.chess.queen.io.core.inf.IPContext;
@@ -53,13 +54,6 @@ public class QttFrameFilter
     }
 
     @Override
-    public ResultType seek(QttContext context, QttFrame output)
-    {
-        return context.isOutFrame() ? ResultType.NEXT_STEP
-                                    : ResultType.IGNORE;
-    }
-
-    @Override
     public IPacket encode(QttContext context, QttFrame output)
     {
         ByteBuffer toWrite = ByteBuffer.allocate(output.dataLength());
@@ -71,57 +65,54 @@ public class QttFrameFilter
     @Override
     public ResultType peek(QttContext context, IPacket input)
     {
-        if (context.isInFrame()) {
-            ByteBuffer recvBuf = input.getBuffer();
-            ByteBuffer cRvBuf = context.getRvBuffer();
-            QttFrame carrier = context.getCarrier();
-            int lack = context.lack();
-            switch (context.position())
-            {
-                case -1:
-                    if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
-                    context.setCarrier(carrier = new QttFrame());
-                    byte value = recvBuf.get();
-                    carrier.setCtrl(value);
-                    lack = context.lackLength(1, 1);
-                case 0:
-                    if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
-                    carrier.setLengthCode(recvBuf.get());
-                    lack = context.lackLength(1, carrier.lackLength(context.position()) + context.position() + 1);
-                case 1:
-                default:
-                    if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
-                    int target = context.position() + lack;
-                    do {
-                        if (carrier.isLengthCodeLack()) {
-                            carrier.setLengthCode(recvBuf.get());
-                            lack = context.lackLength(1,
-                                                      target = carrier.lackLength(context.position())
-                                                               + context.position()
-                                                               + 1);
-                        }
-                        else {
-                            int length = Math.min(recvBuf.remaining(), lack);
-                            for (int i = 0; i < length; i++) {
-                                cRvBuf.put(recvBuf.get());
-                            }
-                            lack = context.lackLength(length, target);
-                            if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
-                            if (carrier.getPayloadLength() > 0) {
-                                byte[] payload = new byte[carrier.getPayloadLength()];
-                                cRvBuf.flip();
-                                cRvBuf.get(payload);
-                                carrier.setPayload(payload);
-                            }
-                            cRvBuf.clear();
-                            return ResultType.NEXT_STEP;
-                        }
+        ByteBuffer recvBuf = input.getBuffer();
+        ByteBuffer cRvBuf = context.getRvBuffer();
+        QttFrame carrier = context.getCarrier();
+        int lack = context.lack();
+        switch (context.position())
+        {
+            case -1:
+                if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
+                context.setCarrier(carrier = new QttFrame());
+                byte value = recvBuf.get();
+                carrier.setCtrl(value);
+                lack = context.lackLength(1, 1);
+            case 0:
+                if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
+                carrier.setLengthCode(recvBuf.get());
+                lack = context.lackLength(1, carrier.lackLength(context.position()) + context.position() + 1);
+            case 1:
+            default:
+                if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
+                int target = context.position() + lack;
+                do {
+                    if (carrier.isLengthCodeLack()) {
+                        carrier.setLengthCode(recvBuf.get());
+                        lack = context.lackLength(1,
+                                                  target = carrier.lackLength(context.position())
+                                                           + context.position()
+                                                           + 1);
                     }
-                    while (recvBuf.hasRemaining());
-                    return ResultType.NEED_DATA;
-            }
+                    else {
+                        int length = Math.min(recvBuf.remaining(), lack);
+                        for (int i = 0; i < length; i++) {
+                            cRvBuf.put(recvBuf.get());
+                        }
+                        lack = context.lackLength(length, target);
+                        if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
+                        if (carrier.getPayloadLength() > 0) {
+                            byte[] payload = new byte[carrier.getPayloadLength()];
+                            cRvBuf.flip();
+                            cRvBuf.get(payload);
+                            carrier.setPayload(payload);
+                        }
+                        cRvBuf.clear();
+                        return ResultType.NEXT_STEP;
+                    }
+                }
+                while (recvBuf.hasRemaining());
+                return ResultType.NEED_DATA;
         }
-        return ResultType.IGNORE;
     }
 
     @Override
@@ -133,58 +124,53 @@ public class QttFrameFilter
     }
 
     @Override
-    public <C extends IPContext,
-            O extends IProtocol> ResultType pipeSeek(C context, O output)
+    public <O extends IProtocol> Pair<ResultType,
+                                      IPContext> pipeSeek(IPContext context, O output)
     {
         if (checkType(output, IProtocol.FRAME_SERIAL)) {
-            if (context.isProxy()) {
-                IPContext acting = ((IProxyContext<?>) context).getActingContext();
-                if (acting instanceof QttContext && output instanceof QttFrame) {
-                    return seek((QttContext) acting, (QttFrame) output);
-                }
-                else if (acting.isProxy()) {
-                    IPContext acting2 = ((IProxyContext<?>) acting).getActingContext();
-                    if (acting2 instanceof QttContext) { return seek((QttContext) acting2, (QttFrame) output); }
-                }
+            if (context instanceof QttContext && context.isOutFrame()) {
+                return new Pair<>(ResultType.NEXT_STEP, context);
+            }
+            IPContext acting = context;
+            while (acting.isProxy()) {
+                acting = ((IProxyContext<?>) acting).getActingContext();
+                if (acting instanceof QttContext) { return new Pair<>(ResultType.NEXT_STEP, acting); }
             }
         }
-        return ResultType.IGNORE;
+        return new Pair<>(ResultType.IGNORE, context);
     }
 
     @Override
-    public <C extends IPContext,
-            I extends IProtocol> ResultType pipePeek(C context, I input)
+    public <I extends IProtocol> Pair<ResultType,
+                                      IPContext> pipePeek(IPContext context, I input)
     {
         if (checkType(input, IProtocol.PACKET_SERIAL)) {
-            if (context.isProxy()) {
-                IPContext acting = ((IProxyContext<?>) context).getActingContext();
-                if (acting instanceof QttContext) {
-                    return peek((QttContext) context, (IPacket) input);
-                }
-                else if (acting.isProxy()) {
-                    IPContext acting2 = ((IProxyContext<?>) acting).getActingContext();
-                    if (acting2 instanceof QttContext) { return peek((QttContext) acting2, (IPacket) input); }
+            if (context instanceof QttContext && context.isInFrame()) {
+                return new Pair<>(peek((QttContext) context, (IPacket) input), context);
+            }
+            IPContext acting = context;
+            while (acting.isProxy()) {
+                acting = ((IProxyContext<?>) acting).getActingContext();
+                if (acting instanceof QttContext && acting.isInFrame()) {
+                    return new Pair<>(peek((QttContext) acting, (IPacket) input), acting);
                 }
             }
-
         }
-        return ResultType.IGNORE;
+        return new Pair<>(ResultType.IGNORE, context);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <C extends IPContext,
-            O extends IProtocol,
-            I extends IProtocol> I pipeEncode(C context, O output)
+    public <O extends IProtocol,
+            I extends IProtocol> I pipeEncode(IPContext context, O output)
     {
         return (I) encode((QttContext) context, (QttFrame) output);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <C extends IPContext,
-            O extends IProtocol,
-            I extends IProtocol> O pipeDecode(C context, I input)
+    public <O extends IProtocol,
+            I extends IProtocol> O pipeDecode(IPContext context, I input)
     {
         return (O) decode((QttContext) context, (IPacket) input);
     }

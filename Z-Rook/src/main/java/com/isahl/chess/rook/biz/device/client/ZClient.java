@@ -30,6 +30,7 @@ import java.util.Queue;
 import java.util.TreeMap;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.IQoS;
 
@@ -40,17 +41,18 @@ public class ZClient
     private final Queue<IControl>        _RecvMsgQueue = new LinkedList<>();
     private final Map<IControl,
                       Integer>           _ConfirmMap   = new TreeMap<>(Comparator.comparing(IControl::getSequence));
+    private final ZUID                   _ZUID;
+    private final long                   _ClientUid;
     private String                       clientId;
     private String                       token;
     private String                       username;
     private String                       password;
-    private short                        localMsgId;
-    private long                         sequence;
-    private long                         sessionIndex;
     private String                       sn;
 
-    public ZClient()
+    public ZClient(ZUID zuid)
     {
+        _ZUID = zuid;
+        _ClientUid = _ZUID.getId(ZUID.TYPE_CONSUMER);
     }
 
     public void offer(IControl recv)
@@ -60,7 +62,7 @@ public class ZClient
 
     public IControl packet(IControl content)
     {
-        content.setSequence(sequence++);
+        content.setSequence(_ZUID.getId(ZUID.TYPE_CONSUMER));
         IQoS.Level level = content.getLevel();
         if (level.getValue() > IQoS.Level.ALMOST_ONCE.getValue()) {
             _ConfirmMap.put(content, level.getValue());
@@ -78,19 +80,14 @@ public class ZClient
         return clientId;
     }
 
+    public long getClientUid()
+    {
+        return _ClientUid;
+    }
+
     public void setClientId(String clientId)
     {
         this.clientId = clientId;
-    }
-
-    public long getSessionIndex()
-    {
-        return sessionIndex;
-    }
-
-    public void setSessionIndex(long index)
-    {
-        sessionIndex = index;
     }
 
     public String getSn()
@@ -133,23 +130,4 @@ public class ZClient
         this.password = password;
     }
 
-    public short getLocalMsgId()
-    {
-        return localMsgId;
-    }
-
-    public void setLocalMsgId(short localMsgId)
-    {
-        this.localMsgId = localMsgId;
-    }
-
-    public long getSequence()
-    {
-        return sequence;
-    }
-
-    public void setSequence(long sequence)
-    {
-        this.sequence = sequence;
-    }
 }

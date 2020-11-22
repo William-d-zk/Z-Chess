@@ -89,6 +89,17 @@ public class QttContext
         advanceState(_EncodeState, ENCODE_FRAME, CAPACITY);
     }
 
+    @Override
+    public void updateOut()
+    {
+        advanceOutState(ENCODE_PAYLOAD);
+    }
+
+    @Override
+    public void updateIn()
+    {
+        advanceInState(DECODE_PAYLOAD);
+    }
     /*MQTT 协议对filter chain来说只有一个in frame 阶段所以 override isInFrame 与 outInFrame
     * 避免filter 中 seek 和peek 方法多次判断 InFrame & InConvert OutFrame & OutConvert状态
     * */

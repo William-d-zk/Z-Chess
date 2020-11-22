@@ -35,10 +35,10 @@ import java.util.regex.Pattern;
  * session port prefix max 2^16
  * 00-0000-000-0000000-0000000000000000000000000000000000000-000000000
  * -2bit-
- * 00 Cluster symmetry communication
+ * 00 Client manager service
  * 01 Internal message queue broker
  * 10 Device consumer connection
- * 11 Client manager service
+ * 11 Cluster symmetry communication
  * -4bit-
  * Cluster region
  * -3bit-
@@ -70,12 +70,9 @@ public class ZUID
     public static final int      IDC_SHIFT          = CLUSTER_SHIFT + CLUSTER_BITS;
     public static final int      TYPE_BITS          = 2;
     public static final int      TYPE_SHIFT         = IDC_SHIFT + IDC_BITS;
-    private static final String  UNAME_FORMMATER    = "%d_%d_%d_%d@%d";
+    private static final String  UNAME_FORMATTER    = "%d_%d_%d_%d@%d";
     private static final Pattern UNAME_PATTERN      = Pattern.compile("(\\d+)_(\\d+)_(\\d+)_(\\d+)@(\\d+)");
-    /*
-     * ==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--=
-     * =--==
-     */
+    /* ==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--= */
     public static final long TYPE_MASK          = ((1L << TYPE_BITS) - 1) << TYPE_SHIFT;
     public static final long TYPE_CONSUMER      = 0;
     public static final long TYPE_INTERNAL      = 1L << TYPE_SHIFT;
@@ -85,17 +82,14 @@ public class ZUID
     public static final int  TYPE_INTERNAL_SLOT = 1;
     public static final int  TYPE_PROVIDER_SLOT = 2;
     public static final int  TYPE_CLUSTER_SLOT  = 3;
-    /*
-     * ==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--=
-     * =--==
-     */
+    /* ==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--= */
     private final long           _IdcId;
     private final long           _ClusterId;
     private final long           _NodeId;
     private final long           _Type;
     private final Supplier<Long> _TimestampSupplier;
-    private long                 sequence;
-    private long                 lastTimestamp;
+    private long                 mSequence;
+    private long                 mLastTimestamp;
 
     public ZUID(long idc_id,
                 long cluster_id,
@@ -174,30 +168,30 @@ public class ZUID
 
     public String getName()
     {
-        return String.format(UNAME_FORMMATER, _Type, _IdcId, _ClusterId, _NodeId, _TimestampSupplier.get());
+        return String.format(UNAME_FORMATTER, _Type, _IdcId, _ClusterId, _NodeId, _TimestampSupplier.get());
     }
 
     public long getId(long type)
     {
         type &= TYPE_MASK;
         long timestamp = _TimestampSupplier.get();
-        if (lastTimestamp == timestamp) {
-            sequence = (sequence + 1) & SEQUENCE_MASK;
-            if (sequence == 0) {
+        if (mLastTimestamp == timestamp) {
+            mSequence = (mSequence + 1) & SEQUENCE_MASK;
+            if (mSequence == 0) {
                 LockSupport.parkUntil(timestamp + 1);
                 timestamp = timestamp + 1;
             }
         }
         else {
-            sequence = 0L;
+            mSequence = 0L;
         }
-        lastTimestamp = timestamp;
+        mLastTimestamp = timestamp;
         return (_IdcId << IDC_SHIFT)
                | (_ClusterId << CLUSTER_SHIFT)
                | (_NodeId << NODE_SHIFT)
                | ((timestamp - EPOCH_MILLI) << TIMESTAMP_SHIFT)
                | type
-               | sequence;
+               | mSequence;
     }
 
     public long getPeerId()
@@ -242,7 +236,7 @@ public class ZUID
                + ", Type="
                + _Type
                + ", sequence="
-               + sequence
+               + mSequence
                + '}';
     }
 }

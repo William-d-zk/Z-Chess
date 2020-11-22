@@ -38,6 +38,7 @@ import org.springframework.stereotype.Service;
 
 import com.isahl.chess.bishop.io.ZSortHolder;
 import com.isahl.chess.bishop.io.mqtt.handler.IQttRouter;
+import com.isahl.chess.bishop.io.zcrypt.EncryptHandler;
 import com.isahl.chess.bishop.io.zhandler.ZClusterMappingCustom;
 import com.isahl.chess.bishop.io.zhandler.ZLinkMappingCustom;
 import com.isahl.chess.king.base.exception.ZException;

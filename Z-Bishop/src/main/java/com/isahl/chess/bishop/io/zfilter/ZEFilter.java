@@ -23,11 +23,13 @@
 package com.isahl.chess.bishop.io.zfilter;
 
 import com.isahl.chess.bishop.io.ZContext;
+import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.async.AioFilterChain;
 import com.isahl.chess.queen.io.core.inf.IEContext;
 import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.IPacket;
 import com.isahl.chess.queen.io.core.inf.IProtocol;
+import com.isahl.chess.queen.io.core.inf.IProxyContext;
 
 /**
  * @author William.d.zk
@@ -43,18 +45,6 @@ public class ZEFilter<T extends ZContext & IEContext>
     public ZEFilter()
     {
         super(NAME);
-    }
-
-    @Override
-    public ResultType seek(T context, IPacket output)
-    {
-        return null;
-    }
-
-    @Override
-    public ResultType peek(T context, IPacket input)
-    {
-        return null;
     }
 
     @Override
@@ -98,33 +88,52 @@ public class ZEFilter<T extends ZContext & IEContext>
     }
 
     @Override
-    public <C extends IPContext,
-            O extends IProtocol> ResultType pipeSeek(C context, O output)
+    public <O extends IProtocol> Pair<ResultType,
+                                      IPContext> pipeSeek(IPContext context, O output)
     {
-        return null;
+        if (checkType(output, IProtocol.PACKET_SERIAL)) {
+            IPContext acting = context;
+            while (acting.isProxy()) {
+                if (acting instanceof IEContext && acting.isOutConvert()) {
+                    return new Pair<>(ResultType.NEXT_STEP, acting);
+                }
+                acting = ((IProxyContext<?>) acting).getActingContext();
+            }
+        }
+        return new Pair<>(ResultType.IGNORE, context);
+
     }
 
     @Override
-    public <C extends IPContext,
-            I extends IProtocol> ResultType pipePeek(C context, I input)
+    public <I extends IProtocol> Pair<ResultType,
+                                      IPContext> pipePeek(IPContext context, I input)
     {
-        return null;
+        if (checkType(input, IProtocol.PACKET_SERIAL)) {
+            IPContext acting = context;
+            while (acting.isProxy()) { //EContext 本身就是 ProxyContext
+                if (acting instanceof IEContext && acting.isInConvert()) {
+                    return new Pair<>(ResultType.NEXT_STEP, acting);
+                }
+                acting = ((IProxyContext<?>) acting).getActingContext();
+            }
+        }
+        return new Pair<>(ResultType.IGNORE, context);
     }
 
     @Override
-    public <C extends IPContext,
-            O extends IProtocol,
-            I extends IProtocol> I pipeEncode(C context, O output)
+    @SuppressWarnings("unchecked")
+    public <O extends IProtocol,
+            I extends IProtocol> I pipeEncode(IPContext context, O output)
     {
-        return null;
+        return (I) encode((T) context, (IPacket) output);
     }
 
     @Override
-    public <C extends IPContext,
-            O extends IProtocol,
-            I extends IProtocol> O pipeDecode(C context, I input)
+    @SuppressWarnings("unchecked")
+    public <O extends IProtocol,
+            I extends IProtocol> O pipeDecode(IPContext context, I input)
     {
-        return null;
+        return (O) decode((T) context, (IPacket) input);
     }
 
 }

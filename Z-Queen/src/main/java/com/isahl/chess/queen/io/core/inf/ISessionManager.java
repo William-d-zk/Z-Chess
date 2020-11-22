@@ -31,7 +31,7 @@ import java.util.Collection;
  */
 public interface ISessionManager
 {
-    long INVALID_INDEX = -1;
+    long INVALID_INDEX = -1L;
     long NULL_INDEX    = 0;
 
     /**

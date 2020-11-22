@@ -172,8 +172,9 @@ public class ClusterCustom<T extends IClusterPeer & IClusterTimer>
                 {
                     X106_Identity x106 = (X106_Identity) content;
                     long peerId = x106.getIdentity();
-                    _Logger.debug("=========> map peerId:%#x", peerId);
-                    manager.mapSession(session.getIndex(), session, peerId);
+                    long sessionIndex = x106.getSessionIndex();
+                    _Logger.debug("=========> map peerId:%#x @ %#x", peerId, sessionIndex);
+                    manager.mapSession(sessionIndex, session, peerId);
                 }
             default -> throw new IllegalStateException("Unexpected value: " + content.serial());
         }

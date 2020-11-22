@@ -67,20 +67,6 @@ public class ZCommandFilter<T extends ZContext>
     }
 
     @Override
-    public ResultType seek(T context, ICommand output)
-    {
-        return context.isOutConvert() ? ResultType.NEXT_STEP
-                                      : ResultType.IGNORE;
-    }
-
-    @Override
-    public ResultType peek(T context, IFrame input)
-    {
-        return context.isInConvert() && !input.isCtrl() ? ResultType.HANDLED
-                                                        : ResultType.IGNORE;
-    }
-
-    @Override
     public WsFrame encode(T context, ICommand output)
     {
         WsFrame frame = new WsFrame();
@@ -101,8 +87,7 @@ public class ZCommandFilter<T extends ZContext>
             case X04_EncryptConfirm.COMMAND -> new X04_EncryptConfirm();
             case X05_EncryptStart.COMMAND -> new X05_EncryptStart();
             case X06_EncryptComp.COMMAND -> new X06_EncryptComp();
-            default -> _CommandFactory == null ? null
-                                               : _CommandFactory.create(serial);
+            default -> _CommandFactory == null ? null: _CommandFactory.create(serial);
         };
         if (_command == null) { throw new ZException("no define:%d ", input.getPayload()[0] & 0xFF); }
         _command.decode(input.getPayload(), context);
@@ -214,65 +199,58 @@ public class ZCommandFilter<T extends ZContext>
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public <C extends IPContext,
-            O extends IProtocol> ResultType pipeSeek(C context, O output)
+    public <O extends IProtocol> Pair<ResultType,
+                                      IPContext> pipeSeek(IPContext context, O output)
     {
         if (checkType(output, IProtocol.COMMAND_SERIAL)) {
-            if (context.isProxy()) {
-                T acting = ((IProxyContext<T>) context).getActingContext();
-                return seek(acting, (ICommand) output);
+            if (context instanceof ZContext && context.isOutConvert()) {
+                return new Pair<>(ResultType.NEXT_STEP, context);
             }
-            else {
-                return seek((T) context, (ICommand) output);
+            IPContext acting = context;
+            while (acting.isProxy()) {
+                acting = ((IProxyContext<?>) acting).getActingContext();
+                if (acting instanceof ZContext && acting.isOutConvert()) {
+                    return new Pair<>(ResultType.NEXT_STEP, acting);
+                }
             }
         }
-        return ResultType.IGNORE;
+        return new Pair<>(ResultType.IGNORE, context);
+    }
+
+    @Override
+    public <I extends IProtocol> Pair<ResultType,
+                                      IPContext> pipePeek(IPContext context, I input)
+    {
+        if (checkType(input, IProtocol.FRAME_SERIAL) && !((IFrame) input).isCtrl()) {
+            if (context instanceof ZContext && context.isInConvert()) {
+                return new Pair<>(ResultType.HANDLED, context);
+            }
+            IPContext acting = context;
+            while (acting.isProxy()) {
+                acting = ((IProxyContext<?>) acting).getActingContext();
+                if (acting instanceof ZContext && acting.isInConvert()) {
+                    return new Pair<>(ResultType.HANDLED, acting);
+                }
+            }
+        }
+        return new Pair<>(ResultType.IGNORE, context);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <C extends IPContext,
-            I extends IProtocol> ResultType pipePeek(C context, I input)
+    public <O extends IProtocol,
+            I extends IProtocol> I pipeEncode(IPContext context, O output)
     {
-        if (checkType(input, IProtocol.FRAME_SERIAL)) {
-            if (context.isProxy()) {
-                T acting = ((IProxyContext<T>) context).getActingContext();
-                return peek(acting, (IFrame) input);
-            }
-            else {
-                return peek((T) context, (IFrame) input);
-            }
-        }
-        return ResultType.IGNORE;
+
+        return (I) encode((T) context, (ICommand) output);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <C extends IPContext,
-            O extends IProtocol,
-            I extends IProtocol> I pipeEncode(C context, O output)
+    public <O extends IProtocol,
+            I extends IProtocol> O pipeDecode(IPContext context, I input)
     {
-        if (context.isProxy()) {
-            return (I) encode(((IProxyContext<T>) context).getActingContext(), (ICommand) output);
-        }
-        else {
-            return (I) encode((T) context, (ICommand) output);
-        }
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <C extends IPContext,
-            O extends IProtocol,
-            I extends IProtocol> O pipeDecode(C context, I input)
-    {
-        if (context.isProxy()) {
-            return (O) decode(((IProxyContext<T>) context).getActingContext(), (IFrame) input);
-        }
-        else {
-            return (O) decode((T) context, (IFrame) input);
-        }
+        return (O) decode((T) context, (IFrame) input);
     }
 
 }

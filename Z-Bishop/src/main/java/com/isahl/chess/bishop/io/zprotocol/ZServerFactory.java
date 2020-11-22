@@ -23,7 +23,6 @@
 
 package com.isahl.chess.bishop.io.zprotocol;
 
-import com.isahl.chess.bishop.io.ws.WsFrame;
 import com.isahl.chess.bishop.io.zprotocol.device.X20_SignUp;
 import com.isahl.chess.bishop.io.zprotocol.device.X22_SignIn;
 import com.isahl.chess.bishop.io.zprotocol.device.X24_UpdateToken;
@@ -31,6 +30,7 @@ import com.isahl.chess.bishop.io.zprotocol.device.X31_ConfirmMsg;
 import com.isahl.chess.bishop.io.zprotocol.device.X32_MsgStatus;
 import com.isahl.chess.bishop.io.zprotocol.device.X50_DeviceMsg;
 import com.isahl.chess.queen.io.core.inf.ICommandFactory;
+import com.isahl.chess.queen.io.core.inf.IFrame;
 
 /**
  * @author william.d.zk
@@ -40,11 +40,11 @@ import com.isahl.chess.queen.io.core.inf.ICommandFactory;
 public class ZServerFactory
         implements
         ICommandFactory<ZCommand,
-                        WsFrame>
+                        IFrame>
 {
 
     @Override
-    public ZCommand create(WsFrame frame)
+    public ZCommand create(IFrame frame)
     {
         return create(frame.getPayload()[1] & 0xFF);
     }
