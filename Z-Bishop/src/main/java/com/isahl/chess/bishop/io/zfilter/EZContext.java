@@ -161,12 +161,21 @@ public class EZContext<A extends IPContext>
         updateKeyIn();
     }
 
+    /*
+     * 处理流中仅提供信号即可，
+     * 真正的操作在decode 中使用 cryptIn最终执行
+     *
+     */
     @Override
     public void updateKeyIn()
     {
         mUpdateKeyIn = true;
     }
 
+    /*
+     * 处理流中仅提供信号即可，
+     * 真正的操作在encode 中使用 cryptOut最终执行
+     */
     @Override
     public void updateOut()
     {
