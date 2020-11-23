@@ -96,15 +96,13 @@ public class EZContext<A extends IPContext>
     @Override
     public Rc4 getSymmetricDecrypt()
     {
-        return mDecryptRc4 == null ? mDecryptRc4 = new Rc4()
-                                   : mDecryptRc4;
+        return mDecryptRc4 == null ? mDecryptRc4 = new Rc4(): mDecryptRc4;
     }
 
     @Override
     public Rc4 getSymmetricEncrypt()
     {
-        return mEncryptRc4 == null ? mEncryptRc4 = new Rc4()
-                                   : mEncryptRc4;
+        return mEncryptRc4 == null ? mEncryptRc4 = new Rc4(): mEncryptRc4;
     }
 
     @Override
@@ -161,6 +159,7 @@ public class EZContext<A extends IPContext>
     public void updateIn()
     {
         updateKeyIn();
+        advanceInState(DECODE_PAYLOAD);
     }
 
     @Override
@@ -173,6 +172,7 @@ public class EZContext<A extends IPContext>
     public void updateOut()
     {
         updateKeyOut();
+        advanceOutState(ENCODE_PAYLOAD);
     }
 
     @Override

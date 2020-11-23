@@ -26,6 +26,7 @@ package com.isahl.chess.bishop.io.mqtt.filter;
 import com.isahl.chess.bishop.io.mqtt.QttContext;
 import com.isahl.chess.bishop.io.mqtt.QttControl;
 import com.isahl.chess.bishop.io.mqtt.QttFrame;
+import com.isahl.chess.bishop.io.mqtt.control.X112_QttConnack;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.async.AioFilterChain;
 import com.isahl.chess.queen.io.core.inf.IFrame;
@@ -52,6 +53,17 @@ public class QttControlFilter
     @Override
     public QttFrame encode(QttContext context, QttControl output)
     {
+        /* Qtt Context 自身携带控制状态信息定义在协议之中，也只好在协议处理
+         * 层完成这一操作 [Server]
+         */
+        if (output.serial() == X112_QttConnack.COMMAND) {
+            X112_QttConnack x112 = (X112_QttConnack) output;
+            if (x112.isOk()) {
+                context.updateOut();
+                context.updateIn();
+            }
+        }
+        /*======================================================*/
         QttFrame frame = new QttFrame();
         frame.setCtrl(output.getCtrl());
         frame.setPayload(output.encode());
@@ -61,9 +73,22 @@ public class QttControlFilter
     @Override
     public QttControl decode(QttContext context, QttFrame input)
     {
-        QttControl qttControl = QttCommandFactory.createQttControl(input);
-        if (qttControl == null) throw new IllegalArgumentException("MQTT type error");
-        else return qttControl;
+        QttControl control = QttCommandFactory.createQttControl(input);
+        if (control == null) throw new IllegalArgumentException("MQTT type error");
+        else {
+            /* Qtt Context 自身携带控制状态信息定义在协议之中，也只好在协议处理
+             * 层完成这一操作 [Client]
+             */
+            if (input.serial() == X112_QttConnack.COMMAND) {
+                X112_QttConnack x112 = (X112_QttConnack) control;
+                if (x112.isOk()) {
+                    context.updateOut();
+                    context.updateIn();
+                }
+            }
+            /*======================================================*/
+            return control;
+        }
     }
 
     @Override

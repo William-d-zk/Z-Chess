@@ -204,12 +204,6 @@ public class LinkCustom
                         X112_QttConnack x112 = new X112_QttConnack();
                         x112.responseOk();
                         x112.setSession(session);
-                        /*Qtt context 需要更新上下文状态，登录成功之前拒绝Command类型的指令*/
-                        session.getContext()
-                               .updateOut();
-                        session.getContext()
-                               .updateIn();
-                        /*========================================================*/
                         return Collections.singletonList(new Triple<>(x112, session, session.getEncoder()));
                     }
                 }
