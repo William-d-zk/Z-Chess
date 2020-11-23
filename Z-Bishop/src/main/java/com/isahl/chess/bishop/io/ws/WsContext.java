@@ -164,4 +164,16 @@ public class WsContext
                 }
         }
     }
+
+    @Override
+    public void updateOut()
+    {
+        advanceOutState(ENCODE_PAYLOAD);
+    }
+
+    @Override
+    public void updateIn()
+    {
+        advanceInState(DECODE_PAYLOAD);
+    }
 }

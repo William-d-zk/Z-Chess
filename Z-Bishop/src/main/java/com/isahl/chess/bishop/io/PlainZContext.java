@@ -47,4 +47,5 @@ public class PlainZContext
         advanceState(_DecodeState, DECODE_PAYLOAD, CAPACITY);
         advanceState(_EncodeState, ENCODE_PAYLOAD, CAPACITY);
     }
+
 }
