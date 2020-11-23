@@ -159,7 +159,6 @@ public class EZContext<A extends IPContext>
     public void updateIn()
     {
         updateKeyIn();
-        advanceInState(DECODE_PAYLOAD);
     }
 
     @Override
@@ -172,7 +171,6 @@ public class EZContext<A extends IPContext>
     public void updateOut()
     {
         updateKeyOut();
-        advanceOutState(ENCODE_PAYLOAD);
     }
 
     @Override
