@@ -49,6 +49,7 @@ public interface IFilter<C extends IPContext,
         NEED_DATA,
         NEXT_STEP,
         HANDLED,
-        IGNORE
+        IGNORE,
+        CANCEL
     }
 }

@@ -95,7 +95,7 @@ public class QttControlFilter
     public <O extends IProtocol> Pair<ResultType,
                                       IPContext> pipeSeek(IPContext context, O output)
     {
-        if (checkType(output, IProtocol.CONTROL_SERIAL)) {
+        if (checkType(output, IProtocol.CONTROL_SERIAL) && output instanceof QttControl) {
             if (context instanceof QttContext && context.isOutFrame()) {
                 return new Pair<>(ResultType.NEXT_STEP, context);
             }
@@ -114,7 +114,7 @@ public class QttControlFilter
     public <I extends IProtocol> Pair<ResultType,
                                       IPContext> pipePeek(IPContext context, I input)
     {
-        if (checkType(input, IProtocol.FRAME_SERIAL) && ((IFrame) input).isCtrl()) {
+        if (checkType(input, IProtocol.FRAME_SERIAL) && input instanceof QttFrame && ((IFrame) input).isCtrl()) {
             if (context instanceof QttContext && context.isInFrame()) {
                 return new Pair<>(ResultType.HANDLED, context);
             }

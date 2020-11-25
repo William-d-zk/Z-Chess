@@ -88,7 +88,7 @@ public class WsControlFilter<T extends ZContext & IWsContext>
     public <O extends IProtocol> Pair<ResultType,
                                       IPContext> pipeSeek(IPContext context, O output)
     {
-        if (checkType(output, IProtocol.CONTROL_SERIAL)) {
+        if (checkType(output, IProtocol.CONTROL_SERIAL) && output instanceof WsControl) {
             if (context instanceof IWsContext && context.isOutConvert()) {
                 return new Pair<>(output.serial() != X101_HandShake.COMMAND ? ResultType.NEXT_STEP: ResultType.ERROR,
                                   context);
@@ -110,7 +110,7 @@ public class WsControlFilter<T extends ZContext & IWsContext>
     public <I extends IProtocol> Pair<ResultType,
                                       IPContext> pipePeek(IPContext context, I input)
     {
-        if (checkType(input, IProtocol.FRAME_SERIAL) && ((IFrame) input).isCtrl()) {
+        if (checkType(input, IProtocol.FRAME_SERIAL) && input instanceof WsFrame && ((IFrame) input).isCtrl()) {
             if (context instanceof IWsContext && context.isInConvert()) {
                 return new Pair<>(ResultType.HANDLED, context);
             }

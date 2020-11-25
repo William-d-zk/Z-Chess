@@ -70,28 +70,29 @@ public class DecodeHandler
         IOperator<IPacket,
                   ISession,
                   ITriple> packetOperator = event.getEventOp();
-        IPContext context = session.getContext();
         IPacket packet = packetContent.getFirst();
+        IPContext context = session.getContext();
         if (context instanceof IEContext) {
             IEContext eContext = (IEContext) context;
             eContext.setEncryptHandler(_EncryptHandler);
         }
-        if (!context.isInErrorState()) {
-            try {
-                ITriple result = packetOperator.handle(packet, session);
+        try {
+            ITriple result = packetOperator.handle(packet, session);
+            if (result != null) {
                 IControl[] commands = result.getFirst();
                 _Logger.trace("decoded commands:%s", Arrays.toString(commands));
                 transfer(event, commands, session, result.getThird());
             }
-            catch (Exception e) {
-                _Logger.warning(String.format("read decode error: %s", session.toString()), e);
-                context.advanceInState(IPContext.DECODE_ERROR);
-                // 此处为Pipeline中间环节，使用event进行事件传递，不使用dispatcher
-                event.error(IError.Type.FILTER_DECODE, new Pair<>(e, session), session.getError());
+            else {
+                //TODO ------
+                event.reset();
             }
         }
-        else {
-            event.ignore();
+        catch (Exception e) {
+            _Logger.warning(String.format("read decode error: %s", session.toString()), e);
+            context.advanceInState(IPContext.DECODE_ERROR);
+            // 此处为Pipeline中间环节，使用event进行事件传递，不使用dispatcher
+            event.error(IError.Type.FILTER_DECODE, new Pair<>(e, session), session.getError());
         }
     }
 

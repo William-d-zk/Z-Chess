@@ -48,7 +48,10 @@ import org.springframework.stereotype.Component;
 import com.isahl.chess.bishop.io.ZSortHolder;
 import com.isahl.chess.bishop.io.mqtt.control.X111_QttConnect;
 import com.isahl.chess.bishop.io.mqtt.control.X112_QttConnack;
+import com.isahl.chess.bishop.io.ssl.SSLZContext;
+import com.isahl.chess.bishop.io.ws.IWsContext;
 import com.isahl.chess.bishop.io.ws.WsContext;
+import com.isahl.chess.bishop.io.ws.WsProxyContext;
 import com.isahl.chess.bishop.io.ws.control.X101_HandShake;
 import com.isahl.chess.bishop.io.ws.control.X102_Close;
 import com.isahl.chess.bishop.io.ws.control.X103_Ping;
@@ -182,8 +185,6 @@ public class DeviceConsumer
                                                  break;
                                              case X112_QttConnack.COMMAND:
                                                  _Logger.debug("qtt connack %s", cmd);
-                                                 session.getContext()
-                                                        .ready();
                                                  break;
                                              default:
                                                  break;
@@ -293,9 +294,17 @@ public class DeviceConsumer
                 switch (zSortHolder)
                 {
                     case WS_CONSUMER:
-                        WsContext wsContext = session.getContext();
-                        X101_HandShake x101 = new X101_HandShake(host, wsContext.getSeKey(), wsContext.getWsVersion());
-                        return new IControl[]{x101};
+                    case WS_QTT_CONSUMER:
+                        IWsContext wsContext = session.getContext();
+                        return new IControl[]{wsContext.handshake(host)};
+                    case WS_CONSUMER_SSL:
+                        SSLZContext<WsContext> sslzContext = session.getContext();
+                        wsContext = sslzContext.getActingContext();
+                        return new IControl[]{wsContext.handshake(host)};
+                    case WS_QTT_CONSUMER_SSL:
+                        SSLZContext<WsProxyContext<?>> sslzPContext = session.getContext();
+                        wsContext = sslzPContext.getActingContext();
+                        return new IControl[]{wsContext.handshake(host)};
                     case QTT_SYMMETRY:
                         try {
                             X111_QttConnect x111 = new X111_QttConnect();

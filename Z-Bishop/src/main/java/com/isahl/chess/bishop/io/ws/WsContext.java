@@ -29,6 +29,7 @@ import java.util.Base64;
 import java.util.Random;
 
 import com.isahl.chess.bishop.io.ZContext;
+import com.isahl.chess.bishop.io.ws.control.X101_HandShake;
 import com.isahl.chess.king.base.util.CryptUtil;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.event.inf.ISort;
@@ -175,5 +176,10 @@ public class WsContext
     public void updateIn()
     {
         advanceInState(DECODE_PAYLOAD);
+    }
+
+    public WsHandshake handshake(String host)
+    {
+        return new X101_HandShake(host, getSeKey(), getWsVersion());
     }
 }

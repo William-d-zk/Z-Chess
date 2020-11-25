@@ -53,9 +53,9 @@ public interface IPipeDecoder
                 while (next != null) {
                     IPipeFilter pipeFilter = next.getPipeFilter();
                     Pair<IFilter.ResultType,
-                         IPContext> seekResult = pipeFilter.pipePeek(context, protocol);
-                    resultType = seekResult.getFirst();
-                    context = seekResult.getSecond();
+                         IPContext> peekResult = pipeFilter.pipePeek(context, protocol);
+                    resultType = peekResult.getFirst();
+                    context = peekResult.getSecond();
                     switch (resultType)
                     {
                         case ERROR:
@@ -79,6 +79,8 @@ public interface IPipeDecoder
                                 }
                             }
                             break Chain;
+                        case CANCEL:
+                            return null;
                         default:
                             break;
                     }

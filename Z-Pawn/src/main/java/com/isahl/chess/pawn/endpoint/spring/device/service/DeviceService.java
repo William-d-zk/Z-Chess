@@ -38,7 +38,6 @@ import org.springframework.stereotype.Service;
 
 import com.isahl.chess.bishop.io.ZSortHolder;
 import com.isahl.chess.bishop.io.mqtt.handler.IQttRouter;
-import com.isahl.chess.bishop.io.zcrypt.EncryptHandler;
 import com.isahl.chess.bishop.io.zhandler.ZClusterMappingCustom;
 import com.isahl.chess.bishop.io.zhandler.ZLinkMappingCustom;
 import com.isahl.chess.king.base.exception.ZException;
@@ -84,7 +83,6 @@ public class DeviceService
     private final IMessageJpaRepository     _MessageRepository;
     private final RaftNode<DeviceNode>      _RaftNode;
     private final LogicHandler<DeviceNode>  _LogicHandler;
-    private final IQttRouter                _QttRouter;
 
     @Autowired
     DeviceService(DeviceConfig deviceConfig,
@@ -119,10 +117,7 @@ public class DeviceService
         _LinkCustom = linkCustom;
         _RaftNode = new RaftNode<>(_TimeWheel, raftConfig, raftDao, _DeviceNode);
         _ClusterCustom = new ClusterCustom<>(_RaftNode);
-        _LogicHandler = new LogicHandler<>(_DeviceNode,
-                                           _QttRouter = qttRouter,
-                                           _RaftNode,
-                                           _MessageRepository = messageRepository);
+        _LogicHandler = new LogicHandler<>(_DeviceNode, qttRouter, _RaftNode, _MessageRepository = messageRepository);
     }
 
     @PostConstruct

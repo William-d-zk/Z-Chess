@@ -113,16 +113,14 @@ public class EncodeHandler
             IEContext eContext = (IEContext) context;
             eContext.setEncryptHandler(_EncryptHandler);
         }
-        if (!context.isOutErrorState()) {
-            try {
-                operator.handle(a, session);
-                event.reset();
-            }
-            catch (Exception e) {
-                _Logger.warning(String.format("write encode error: %s", session.toString()), e);
-                context.advanceOutState(IPContext.ENCODE_ERROR);
-                event.error(IError.Type.FILTER_ENCODE, new Pair<>(e, session), session.getError());
-            }
+        try {
+            operator.handle(a, session);
+            event.reset();
+        }
+        catch (Exception e) {
+            _Logger.warning(String.format("write encode error: %s", session.toString()), e);
+            context.advanceOutState(IPContext.ENCODE_ERROR);
+            event.error(IError.Type.FILTER_ENCODE, new Pair<>(e, session), session.getError());
         }
     }
 }

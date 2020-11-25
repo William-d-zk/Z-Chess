@@ -26,6 +26,7 @@ package com.isahl.chess.queen.event.handler.cluster;
 import static com.isahl.chess.queen.event.inf.IOperator.Type.CLUSTER;
 import static com.isahl.chess.queen.event.inf.IOperator.Type.DISPATCH;
 import static com.isahl.chess.queen.event.inf.IOperator.Type.LOGIC;
+import static com.isahl.chess.queen.event.inf.IOperator.Type.NULL;
 
 import java.util.Objects;
 
@@ -38,7 +39,6 @@ import com.isahl.chess.queen.event.inf.IPipeEventHandler;
 import com.isahl.chess.queen.event.inf.ISort;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.inf.IControl;
-import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.lmax.disruptor.RingBuffer;
 
@@ -88,7 +88,7 @@ public class DecodedDispatcher
                     }
                 }
             }
-            else {
+            else if (event.getEventType() != NULL) {
                 _Logger.warning("decoded dispatcher event type error: %s",
                                 event.getEventType()
                                      .name());
@@ -97,11 +97,11 @@ public class DecodedDispatcher
         event.reset();
     }
 
-    private <C extends IPContext> void dispatch(IControl cmd,
-                                                ISession session,
-                                                IOperator<IControl,
-                                                          ISession,
-                                                          ITriple> op)
+    private void dispatch(IControl cmd,
+                          ISession session,
+                          IOperator<IControl,
+                                    ISession,
+                                    ITriple> op)
     {
         cmd.setSession(session);
         IPair nextPipe = getNextPipe(session.getMode(), cmd);

@@ -38,7 +38,7 @@ public class IgnoreOperator
 {
 
     @Override
-    public IControl handle(IControl input, ISession iPackets)
+    public IControl handle(IControl input, ISession session)
     {
         return input;
     }
@@ -48,4 +48,6 @@ public class IgnoreOperator
     {
         return "operator.ignore";
     }
+
+    public static IgnoreOperator INSTANCE = new IgnoreOperator();
 }
