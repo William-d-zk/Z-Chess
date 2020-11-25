@@ -64,6 +64,9 @@ public class WsHandShakeFilter<T extends ZContext & IWsContext>
     @Override
     public IPacket encode(T context, WsHandshake output)
     {
+        if (output.isClientOk() || output.isServerAccept()) {
+            context.updateOut();
+        }
         return new AioPacket(ByteBuffer.wrap(output.encode()));
     }
 
@@ -167,9 +170,14 @@ public class WsHandShakeFilter<T extends ZContext & IWsContext>
                                             response.append(String.format("Sec-WebSocket-Accept: %s\r\n",
                                                                           context.getSecAccept(rowSplit[1])));
                                         }
-                                    default -> _Logger.warning("unchecked httpKey and content: [%s %s]",
-                                                               httpKey,
-                                                               rowSplit[1]);
+                                    default ->
+                                        {
+                                            _Logger.warning("unchecked httpKey and content: [%s %s]",
+                                                            httpKey,
+                                                            rowSplit[1]);
+                                            response.append(row)
+                                                    .append(CRLF);
+                                        }
                                 }
                                 break;
                             case CONSUMER:
@@ -249,6 +257,9 @@ public class WsHandShakeFilter<T extends ZContext & IWsContext>
     {
         WsHandshake handshake = context.getHandshake();
         context.finish();
+        if (handshake.isClientOk() || handshake.isServerAccept()) {
+            context.updateIn();
+        }
         return handshake;
     }
 

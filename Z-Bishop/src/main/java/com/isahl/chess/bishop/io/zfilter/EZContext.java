@@ -270,5 +270,6 @@ public class EZContext<A extends IPContext>
     {
         advanceState(_DecodeState, DECODE_FRAME, CAPACITY);
         advanceState(_EncodeState, ENCODE_FRAME, CAPACITY);
+        _ActingContext.ready();
     }
 }

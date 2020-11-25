@@ -60,4 +60,11 @@ public class WsProxyContext<A extends IPContext>
     {
         return true;
     }
+
+    @Override
+    public void ready()
+    {
+        super.ready();
+        _ActingContext.ready();
+    }
 }

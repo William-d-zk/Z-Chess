@@ -44,10 +44,10 @@ public class PipeDecoder
     public ITriple handle(IPacket input, ISession session)
     {
         IControl[] received = filterRead(input, session);
-        //一旦read出现异常将抛出到event-handler进行处理，无异常时才继续session.readNext()操作
+        /*一旦read出现异常将抛出到event-handler进行处理，
+         无异常时才继续session.readNext()操作*/
         session.readNext();
-        return received != null ? new Triple<>(received, session, session.getTransfer())
-                                : null;
+        return received != null ? new Triple<>(received, session, session.getTransfer()): null;
     }
 
     @Override
