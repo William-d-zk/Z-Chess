@@ -24,7 +24,9 @@
 package com.isahl.chess.bishop.io.ws;
 
 import com.isahl.chess.queen.event.inf.ISort;
+import com.isahl.chess.queen.io.core.async.AioPacket;
 import com.isahl.chess.queen.io.core.inf.IPContext;
+import com.isahl.chess.queen.io.core.inf.IPacket;
 import com.isahl.chess.queen.io.core.inf.IProxyContext;
 import com.isahl.chess.queen.io.core.inf.ISessionOption;
 
@@ -39,6 +41,7 @@ public class WsProxyContext<A extends IPContext>
 {
 
     private final A _ActingContext;
+    private IPacket mTransfer;
 
     public WsProxyContext(ISessionOption option,
                           ISort.Mode mode,
@@ -66,5 +69,38 @@ public class WsProxyContext<A extends IPContext>
     {
         super.ready();
         _ActingContext.ready();
+    }
+
+    /*这是一个协议性代理上下文特有的处理机制，粘包时，这个操作异常重要*/
+    public IPacket append(IPacket packet)
+    {
+        if (mTransfer == null) {
+            mTransfer = new AioPacket(1 << 12, false);
+        }
+        if (mTransfer.getBuffer()
+                     .capacity() < mTransfer.getBuffer()
+                                            .position()
+                                   + packet.getBuffer()
+                                           .limit())
+        {
+            AioPacket newBuf = new AioPacket(mTransfer.getBuffer()
+                                                      .capacity()
+                                             * 2
+                                             + packet.getBuffer()
+                                                     .limit(),
+                                             false);
+            newBuf.getBuffer()
+                  .put(mTransfer.getBuffer()
+                                .array())
+                  .put(packet.getBuffer()
+                             .array());
+            mTransfer = newBuf;
+        }
+        else {
+            mTransfer.getBuffer()
+                     .put(packet.getBuffer()
+                                .array());
+        }
+        return mTransfer;
     }
 }

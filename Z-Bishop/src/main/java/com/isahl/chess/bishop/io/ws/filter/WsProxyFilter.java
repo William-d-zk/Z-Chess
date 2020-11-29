@@ -68,7 +68,7 @@ public class WsProxyFilter<A extends IPContext>
     @Override
     public IPacket decode(WsProxyContext<A> context, WsFrame input)
     {
-        return new AioPacket(ByteBuffer.wrap(input.getPayload()));
+        return context.append(new AioPacket(ByteBuffer.wrap(input.getPayload())));
     }
 
     @Override
@@ -95,7 +95,7 @@ public class WsProxyFilter<A extends IPContext>
             IPContext acting = context;
             while (acting.isProxy()) {
                 if (acting instanceof IWsContext && acting.isInConvert()) {
-                    return new Pair<>(ResultType.NEXT_STEP, acting);
+                    return new Pair<>(ResultType.PROXY, acting);
                 }
                 acting = ((IProxyContext<?>) acting).getActingContext();
             }

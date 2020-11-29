@@ -77,14 +77,10 @@ public abstract class AioSessionManager<K extends IPipeCore>
         _Prefix2SessionMaps = new Map[_TYPE_COUNT];
         _SessionsSets = new Set[_TYPE_COUNT];
         Arrays.setAll(_SessionsSets,
-                      slot -> _AioConfig.isDomainActive(slot) ? new HashSet<>(1 << getConfigPower(slot))
-                                                              : null);
+                      slot -> _AioConfig.isDomainActive(slot) ? new HashSet<>(1 << getConfigPower(slot)): null);
         Arrays.setAll(_Index2SessionMaps,
-                      slot -> _AioConfig.isDomainActive(slot) ? new HashMap<>(1 << getConfigPower(slot))
-                                                              : null);
-        Arrays.setAll(_Prefix2SessionMaps,
-                      slot -> _AioConfig.isDomainActive(slot) ? new HashMap<>(23)
-                                                              : null);
+                      slot -> _AioConfig.isDomainActive(slot) ? new HashMap<>(1 << getConfigPower(slot)): null);
+        Arrays.setAll(_Prefix2SessionMaps, slot -> _AioConfig.isDomainActive(slot) ? new HashMap<>(23): null);
     }
 
     protected int getConfigPower(int slot)
@@ -151,10 +147,10 @@ public abstract class AioSessionManager<K extends IPipeCore>
          */
         long sessionIndex = session.getIndex();
         if (sessionIndex != INVALID_INDEX) {
-            _Index2SessionMaps[getSlot(session)].remove(sessionIndex);
+            _Index2SessionMaps[getSlot(_Index)].remove(sessionIndex);
         }
         // 检查可能覆盖的 Session 是否存在,_Index 已登录过
-        ISession oldSession = _Index2SessionMaps[getSlot(session)].put(_Index, session);
+        ISession oldSession = _Index2SessionMaps[getSlot(_Index)].put(_Index, session);
         session.setIndex(_Index);
         if (oldSession != null) {
             // 已经发生覆盖
@@ -176,7 +172,7 @@ public abstract class AioSessionManager<K extends IPipeCore>
             // 被覆盖的 Session 持有不同的 _Index
             else {
                 _Logger.fetal("被覆盖的session 持有不同的index，检查session.setIndex的引用;index: %d <=> old: %d", _Index, oldIndex);
-                ISession oldMappedSession = _Index2SessionMaps[getSlot(session)].get(oldIndex);
+                ISession oldMappedSession = _Index2SessionMaps[getSlot(oldIndex)].get(oldIndex);
                 /*
                  * oldIndex bind oldSession 已在 Map 完成其他的新的绑定关系。
                  * 由于MapSession是现成安全的，并不会存在此种情况
@@ -198,7 +194,7 @@ public abstract class AioSessionManager<K extends IPipeCore>
     {
         ISession old = mapSession(index, session);
         if (prefixArray != null) {
-            int slot = getSlot(session);
+            int slot = getSlot(index);
             Map<Long,
                 Set<ISession>> prefix2SessionMap = _Prefix2SessionMaps[slot];
             for (long prefix : prefixArray) {

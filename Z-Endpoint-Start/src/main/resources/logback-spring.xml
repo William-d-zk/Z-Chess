@@ -59,7 +59,7 @@
     <logger name="base.king" level="INFO">
         <appender-ref ref="Z-CHESS"/>
     </logger>
-    <logger name="io.queen" level="INFO">
+    <logger name="io.queen" level="DEBUG">
         <appender-ref ref="Z-CHESS"/>
     </logger>
     <logger name="protocol.bishop" level="INFO">

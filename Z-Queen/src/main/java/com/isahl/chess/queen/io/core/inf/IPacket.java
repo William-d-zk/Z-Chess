@@ -52,6 +52,8 @@ public interface IPacket
 
     IPacket wrapper(ByteBuffer buffer);
 
+    IPacket rewind();
+
     enum Status
     {
         No_Send,

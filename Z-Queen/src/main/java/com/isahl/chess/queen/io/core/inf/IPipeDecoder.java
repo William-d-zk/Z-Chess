@@ -46,6 +46,8 @@ public interface IPipeDecoder
                                             .getChainHead();
         IControl[] commands = null;
         IProtocol protocol = input;
+        IPacket proxy = null;
+
         for (IFilterChain next = _Header;; next = _Header, protocol = input, context = session.getContext()) {
             Chain:
             {
@@ -61,10 +63,21 @@ public interface IPipeDecoder
                         case ERROR:
                             throw new ZException("error input: %s ;filter: %s ", protocol, next.getName());
                         case NEED_DATA:
-                            return commands;
+                            if (commands != null) {
+                                return commands;
+                            }
+                            else if (proxy != null) {
+                                protocol = proxy.rewind();
+                                proxy = null;
+                                break;
+                            }
+                            return null;
                         case NEXT_STEP:
                             protocol = pipeFilter.pipeDecode(context, protocol);
                             break;
+                        case PROXY:
+                            proxy = pipeFilter.pipeDecode(context, protocol);
+                            break Chain;
                         case HANDLED:
                             IControl cmd = pipeFilter.pipeDecode(context, protocol);
                             if (cmd != null) {
