@@ -69,7 +69,7 @@ public interface IClusterNode<K extends IPipeCore>
                                          final long _Type,
                                          final ISessionManager _Manager,
                                          final ZSortHolder _SortHolder,
-                                         final ZUID _ZUID)
+                                         final ZUID _Zuid)
     {
         final String _Host = address.getFirst();
         final int _Port = address.getSecond();
@@ -104,7 +104,7 @@ public interface IClusterNode<K extends IPipeCore>
             @Override
             public IControl[] createCommands(ISession session)
             {
-                X106_Identity x106 = new X106_Identity(_ZUID.getPeerId(), _ZUID.getId(_Type));
+                X106_Identity x106 = new X106_Identity(_Zuid.getPeerId(), _Zuid.getId(_Type));
                 return new IControl[]{x106};
             }
 

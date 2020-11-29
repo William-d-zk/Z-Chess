@@ -32,7 +32,6 @@ import com.isahl.chess.queen.io.core.inf.IPacket;
 public class AioPacket
         implements
         IPacket
-
 {
     public final static int SERIAL = PACKET_SERIAL + 1;
 
@@ -44,9 +43,7 @@ public class AioPacket
     public AioPacket(int size,
                      boolean direct)
     {
-        _Buf = size > 0 ? (direct ? ByteBuffer.allocateDirect(size)
-                                  : ByteBuffer.allocate(size))
-                        : null;
+        _Buf = size > 0 ? (direct ? ByteBuffer.allocateDirect(size): ByteBuffer.allocate(size)): null;
 
     }
 
@@ -151,5 +148,12 @@ public class AioPacket
         boolean todo = (bit & mLeftIdempotentBit) == 0;
         mLeftIdempotentBit |= bit;
         return todo;
+    }
+
+    @Override
+    public IPacket rewind()
+    {
+        _Buf.rewind();
+        return this;
     }
 }

@@ -48,6 +48,7 @@ public interface IFilter<C extends IPContext,
         ERROR,
         NEED_DATA,
         NEXT_STEP,
+        PROXY,
         HANDLED,
         IGNORE,
         CANCEL

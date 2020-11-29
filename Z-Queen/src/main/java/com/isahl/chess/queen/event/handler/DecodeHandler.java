@@ -22,8 +22,6 @@
  */
 package com.isahl.chess.queen.event.handler;
 
-import java.util.Arrays;
-
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
@@ -39,19 +37,17 @@ import com.isahl.chess.queen.io.core.inf.IPacket;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.lmax.disruptor.EventHandler;
 
+import java.util.Arrays;
+
 /**
  * @author William.d.zk
  */
-public class DecodeHandler
-        implements
-        EventHandler<QEvent>
-{
+public class DecodeHandler implements EventHandler<QEvent> {
     protected final Logger _Logger = Logger.getLogger("io.queen.processor." + getClass().getSimpleName());
 
     private final IEncryptHandler _EncryptHandler;
 
-    public DecodeHandler(IEncryptHandler encryptHandler)
-    {
+    public DecodeHandler(IEncryptHandler encryptHandler) {
         _EncryptHandler = encryptHandler;
     }
 
@@ -60,16 +56,13 @@ public class DecodeHandler
      * 标记为Error后交由BarrierHandler进行分发
      */
     @Override
-    public void onEvent(QEvent event, long sequence, boolean batch) throws Exception
-    {
+    public void onEvent(QEvent event, long sequence, boolean batch) throws Exception {
         /*
          * 错误事件已在同级旁路中处理，此处不再关心错误处理
          */
         IPair packetContent = event.getContent();
         ISession session = packetContent.getSecond();
-        IOperator<IPacket,
-                  ISession,
-                  ITriple> packetOperator = event.getEventOp();
+        IOperator<IPacket, ISession, ITriple> packetOperator = event.getEventOp();
         IPacket packet = packetContent.getFirst();
         IPContext context = session.getContext();
         if (context instanceof IEContext) {
@@ -82,13 +75,10 @@ public class DecodeHandler
                 IControl[] commands = result.getFirst();
                 _Logger.trace("decoded commands:%s", Arrays.toString(commands));
                 transfer(event, commands, session, result.getThird());
-            }
-            else {
-                //TODO ------
+            } else {
                 event.reset();
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             _Logger.warning(String.format("read decode error: %s", session.toString()), e);
             context.advanceInState(IPContext.DECODE_ERROR);
             // 此处为Pipeline中间环节，使用event进行事件传递，不使用dispatcher
@@ -96,13 +86,7 @@ public class DecodeHandler
         }
     }
 
-    protected void transfer(QEvent event,
-                            IControl[] commands,
-                            ISession session,
-                            IOperator<IControl[],
-                                      ISession,
-                                      ITriple> operator)
-    {
+    protected void transfer(QEvent event, IControl[] commands, ISession session, IOperator<IControl[], ISession, ITriple> operator) {
         event.produce(IOperator.Type.DISPATCH, new Pair<>(commands, session), operator);
     }
 }

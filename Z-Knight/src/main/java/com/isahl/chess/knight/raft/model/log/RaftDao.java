@@ -185,8 +185,7 @@ public class RaftDao
     public long getEntryTerm(long index)
     {
         LogEntry entry = getEntry(index);
-        return entry == null ? TERM_NAN
-                             : entry.getTerm();
+        return entry == null ? TERM_NAN: entry.getTerm();
     }
 
     @Override

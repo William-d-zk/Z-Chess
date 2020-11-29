@@ -52,6 +52,7 @@ public interface IPipeEncoder
         {
             IFilter.ResultType resultType = IFilter.ResultType.IGNORE;
             while (previous != null) {
+                context = session.getContext();// 每次都要还原为最外层的context
                 IPipeFilter pipeFilter = previous.getPipeFilter();
                 Pair<IFilter.ResultType,
                      IPContext> seekResult = pipeFilter.pipeSeek(context, protocol);
@@ -76,7 +77,7 @@ public interface IPipeEncoder
                 }
                 previous = previous.getPrevious();
             }
-            if (resultType == IFilter.ResultType.IGNORE) {
+            if (resultType == IFilter.ResultType.IGNORE && protocol.superSerial() != IProtocol.PACKET_SERIAL) {
                 throw new ZException("no filter handle output: %s ", protocol);
             }
         }

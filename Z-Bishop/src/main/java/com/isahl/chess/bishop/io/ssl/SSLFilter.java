@@ -48,14 +48,12 @@ public class SSLFilter<A extends IPContext>
     @Override
     public IPacket encode(SSLZContext<A> context, IPacket output)
     {
-
         return output;
     }
 
     @Override
     public IPacket decode(SSLZContext<A> context, IPacket input)
     {
-
         return input;
     }
 
@@ -68,7 +66,7 @@ public class SSLFilter<A extends IPContext>
             && context instanceof SSLZContext
             && context.isOutFrame())
         {
-            return new Pair<>(ResultType.NEXT_STEP, context);
+            return new Pair<>(ResultType.HANDLED, context);
         }
         return new Pair<>(ResultType.IGNORE, context);
     }

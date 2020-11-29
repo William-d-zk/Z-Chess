@@ -170,14 +170,9 @@ public class WsHandShakeFilter<T extends ZContext & IWsContext>
                                             response.append(String.format("Sec-WebSocket-Accept: %s\r\n",
                                                                           context.getSecAccept(rowSplit[1])));
                                         }
-                                    default ->
-                                        {
-                                            _Logger.warning("unchecked httpKey and content: [%s %s]",
-                                                            httpKey,
-                                                            rowSplit[1]);
-                                            response.append(row)
-                                                    .append(CRLF);
-                                        }
+                                    default -> _Logger.warning("unchecked httpKey and content: [%s %s]",
+                                                               httpKey,
+                                                               rowSplit[1]);
                                 }
                                 break;
                             case CONSUMER:
@@ -289,6 +284,9 @@ public class WsHandShakeFilter<T extends ZContext & IWsContext>
                                       IPContext> pipePeek(IPContext context, I input)
     {
         if (checkType(input, IProtocol.PACKET_SERIAL)) {
+            if (context instanceof IWsContext && context.isInFrame()) {
+                return new Pair<>(peek((T) context, (IPacket) input), context);
+            }
             IPContext acting = context;
             while (acting.isProxy()) {
                 if (acting instanceof IWsContext && acting.isInFrame()) {
