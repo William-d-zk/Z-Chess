@@ -66,7 +66,7 @@ public interface IPipeDecoder
                             if (commands != null) {
                                 /*
                                   协议层已经完成处理，返回所有已处理完毕的
-                                  
+                                  IControl 对象。
                                  */
                                 return commands;
                             }
