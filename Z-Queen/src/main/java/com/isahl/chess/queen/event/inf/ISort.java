@@ -48,8 +48,8 @@ public interface ISort<C extends IPContext>
 
     enum Type
     {
-        SERVER,
         CONSUMER,
+        SERVER,
         SYMMETRY,
         INNER
     }

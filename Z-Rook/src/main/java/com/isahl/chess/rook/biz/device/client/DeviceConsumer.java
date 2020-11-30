@@ -230,7 +230,6 @@ public class DeviceConsumer
 
     }
 
-    @SuppressWarnings("unchecked")
     public void connect(ZSortHolder zSortHolder, ZClient zClient) throws IOException
     {
         final String host;
@@ -274,9 +273,10 @@ public class DeviceConsumer
             @Override
             public void onCreate(ISession session)
             {
+                //这个地方省略了对session.setIndex(type)的操作，Consumer.type == 0
+                super.onCreate(session);
                 DeviceConsumer.this.addSession(session);
                 _ZClientMap.put(zClient.getClientUid(), zClient);
-                session.ready();
                 _Logger.debug("client %x connected %s:%d", zClient.getClientUid(), host, port);
             }
 

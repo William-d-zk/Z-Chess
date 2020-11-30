@@ -34,6 +34,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.slf4j.event.Level;
+
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.queen.config.IAioConfig;
@@ -89,11 +91,6 @@ public abstract class AioSessionManager<K extends IPipeCore>
         return _AioConfig.getSizePower(slot);
     }
 
-    protected static int getSlot(ISession session)
-    {
-        return getSlot(session.getIndex());
-    }
-
     protected static int getSlot(long index)
     {
         return (int) ((index & ZUID.TYPE_MASK) >>> ZUID.TYPE_SHIFT);
@@ -102,21 +99,23 @@ public abstract class AioSessionManager<K extends IPipeCore>
     @Override
     public void addSession(ISession session)
     {
-        int slot = getSlot(session);
-        _Logger.debug(String.format("%s add session -> set slot:%s",
-                                    getClass().getSimpleName(),
-                                    slot == ZUID.TYPE_CONSUMER_SLOT ? "CONSUMER"
-                                                                    : slot == ZUID.TYPE_INTERNAL_SLOT ? "INTERNAL"
-                                                                                                      : slot == ZUID.TYPE_PROVIDER_SLOT ? "PROVIDER"
-                                                                                                                                        : slot == ZUID.TYPE_CLUSTER_SLOT ? "CLUSTER"
-                                                                                                                                                                         : "Illegal"));
+        int slot = getSlot(session.getIndex());
         _SessionsSets[slot].add(session);
+        if (!_Logger.isEnable(Level.DEBUG)) return;
+        _Logger.debug(String.format("%s add session -> set slot:%s", getClass().getSimpleName(), switch (slot)
+        {
+            case ZUID.TYPE_CONSUMER_SLOT -> "CONSUMER";
+            case ZUID.TYPE_INTERNAL_SLOT -> "INTERNAL";
+            case ZUID.TYPE_PROVIDER_SLOT -> "PROVIDER";
+            case ZUID.TYPE_CLUSTER_SLOT -> "CLUSTER";
+            default -> "Illegal";
+        }));
     }
 
     @Override
     public void rmSession(ISession session)
     {
-        int slot = getSlot(session);
+        int slot = getSlot(session.getIndex());
         _SessionsSets[slot].remove(session);
         long[] prefixArray = session.getPrefixArray();
         if (prefixArray != null) {
@@ -135,18 +134,18 @@ public abstract class AioSessionManager<K extends IPipeCore>
      * @return 正常情况下返回 _Index 返回 NULL_INDEX 说明 Map 失败。 或返回被覆盖的 OLD-INDEX 需要对其进行
      *         PortChannel 的清理操作。
      */
-    private ISession mapSession(long _Index, ISession session)
+    private ISession mapSession(final long _Index, ISession session)
     {
         _Logger.debug("session manager map-> %#x,%s", _Index, session);
-        if (_Index == INVALID_INDEX || _Index == NULL_INDEX) {
-            throw new IllegalArgumentException(String.format("index error %d", _Index));
-        }
+        if ((_Index & INVALID_INDEX) == NULL_INDEX) { throw new IllegalArgumentException("invalid index"); }
         /*
-         * 1:相同 Session 不同 _Index 进行登录，产生多个 _Index 对应 相同 Session 的情况 2:相同 _Index 在不同的 Session 上登录，产生覆盖
+         * 1:相同 Session 不同 _Index 进行登录，产生多个 _Index 对应 相同 Session 的情况 
+         * 2:相同 _Index 在不同的 Session 上登录，产生覆盖
          * Session 的情况。
          */
         long sessionIndex = session.getIndex();
-        if (sessionIndex != INVALID_INDEX) {
+        if ((sessionIndex & INVALID_INDEX) != NULL_INDEX) {
+            // session 已经 mapping 过了
             _Index2SessionMaps[getSlot(_Index)].remove(sessionIndex);
         }
         // 检查可能覆盖的 Session 是否存在,_Index 已登录过
@@ -159,9 +158,10 @@ public abstract class AioSessionManager<K extends IPipeCore>
                 if (oldSession != session) {
                     // 相同 _Index 登录在不同 Session 上登录
                     /*
-                     * 被覆盖的 Session 在 read EOF/TimeOut 时启动 Close 防止 rmSession 方法删除 _Index 的当前映射
+                     * 被覆盖的 Session 在 read EOF/TimeOut 时启动 Close 
+                     * oldSession.setIndex(仅包含Type信息）
                      */
-                    oldSession.setIndex(INVALID_INDEX);
+                    oldSession.setIndex(oldIndex & ZUID.TYPE_MASK);
                     if (oldSession.isValid()) {
                         _Logger.warning("覆盖在线session: %s", oldSession);
                         return oldSession;
@@ -175,7 +175,7 @@ public abstract class AioSessionManager<K extends IPipeCore>
                 ISession oldMappedSession = _Index2SessionMaps[getSlot(oldIndex)].get(oldIndex);
                 /*
                  * oldIndex bind oldSession 已在 Map 完成其他的新的绑定关系。
-                 * 由于MapSession是现成安全的，并不会存在此种情况
+                 * 由于MapSession是线程安全的，并不会存在此种情况
                  */
                 if (oldMappedSession == oldSession) {
                     _Logger.fetal("oldMappedSession == oldSession -> Ignore, 检查MapSession 是否存在线程安全问题");// Ignore

@@ -39,6 +39,7 @@ import com.isahl.chess.queen.event.operator.ConnectFailedOperator;
 import com.isahl.chess.queen.event.operator.ConnectedOperator;
 import com.isahl.chess.queen.io.core.inf.IAioConnector;
 import com.isahl.chess.queen.io.core.inf.IConnectActivity;
+import com.isahl.chess.queen.io.core.inf.ISession;
 
 /**
  * @author william.d.zk
@@ -153,5 +154,11 @@ public abstract class BaseAioConnector
     public boolean isValid()
     {
         return !isShutdown();
+    }
+
+    @Override
+    public void onCreate(ISession session)
+    {
+        session.ready();
     }
 }

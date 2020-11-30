@@ -64,20 +64,29 @@ public interface IPipeDecoder
                             throw new ZException("error input: %s ;filter: %s ", protocol, next.getName());
                         case NEED_DATA:
                             if (commands != null) {
+                                /*
+                                  协议层已经完成处理，返回所有已处理完毕的
+                                  
+                                 */
                                 return commands;
                             }
                             else if (proxy != null) {
-                                protocol = proxy.rewind();
+                                /*
+                                  协议层代理
+                                  例如 WS→QTT
+                                    QttFrame 已将 proxy 持有的数据处理完毕
+                                    重置proxy状态，等待新的WsFrame
+                                 */
                                 proxy = null;
-                                break;
+                                break Chain;
                             }
                             return null;
                         case NEXT_STEP:
                             protocol = pipeFilter.pipeDecode(context, protocol);
                             break;
                         case PROXY:
-                            proxy = pipeFilter.pipeDecode(context, protocol);
-                            break Chain;
+                            protocol = proxy = pipeFilter.pipeDecode(context, protocol);
+                            break;
                         case HANDLED:
                             IControl cmd = pipeFilter.pipeDecode(context, protocol);
                             if (cmd != null) {

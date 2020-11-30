@@ -24,6 +24,8 @@ package com.isahl.chess.queen.io.core.inf;
 
 import java.util.Collection;
 
+import com.isahl.chess.king.topology.ZUID;
+
 /**
  * @author William.d.zk
  * 
@@ -31,7 +33,7 @@ import java.util.Collection;
  */
 public interface ISessionManager
 {
-    long INVALID_INDEX = -1L;
+    long INVALID_INDEX = ~ZUID.TYPE_MASK;
     long NULL_INDEX    = 0;
 
     /**
