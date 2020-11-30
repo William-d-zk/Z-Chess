@@ -97,6 +97,8 @@ public interface IClusterNode<K extends IPipeCore>
             @Override
             public void onCreate(ISession session)
             {
+                super.onCreate(session);
+                session.setIndex(_Type);
                 client.onCreate(session);
                 _Manager.addSession(session);
             }

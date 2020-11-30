@@ -183,6 +183,7 @@ public class DeviceNode
             @Override
             public void onCreate(ISession session)
             {
+
                 DeviceNode.this.addSession(session);
                 session.ready();
             }

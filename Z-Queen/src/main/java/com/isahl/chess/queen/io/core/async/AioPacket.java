@@ -151,9 +151,9 @@ public class AioPacket
     }
 
     @Override
-    public IPacket rewind()
+    public IPacket flip()
     {
-        _Buf.rewind();
+        _Buf.flip();
         return this;
     }
 }

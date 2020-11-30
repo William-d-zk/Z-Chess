@@ -68,7 +68,7 @@ public class WsProxyFilter<A extends IPContext>
     @Override
     public IPacket decode(WsProxyContext<A> context, WsFrame input)
     {
-        return context.append(new AioPacket(ByteBuffer.wrap(input.getPayload())));
+        return new AioPacket(ByteBuffer.wrap(input.getPayload()));
     }
 
     @Override

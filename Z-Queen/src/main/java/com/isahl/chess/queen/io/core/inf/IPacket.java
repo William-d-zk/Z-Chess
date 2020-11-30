@@ -52,7 +52,7 @@ public interface IPacket
 
     IPacket wrapper(ByteBuffer buffer);
 
-    IPacket rewind();
+    IPacket flip();
 
     enum Status
     {
