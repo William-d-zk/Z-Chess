@@ -65,7 +65,8 @@ class Sha512
         wOff = 0;
         java.util.Arrays.fill(W, 0);
 
-        /* sha-512 initial hash value
+        /*
+         * sha-512 initial hash value
          * The first 64 bits of the fractional parts of the square roots
          * of the first eight prime numbers
          */
@@ -305,10 +306,11 @@ class Sha512
         return rotateRight(x, 19) ^ rotateRight(x, 61) ^ (x >>> 6);
     }
 
-    /* sha-384 and sha-512 Constants
-         * (represent the first 64 bits of the fractional parts of the
+    /*
+     * sha-384 and sha-512 Constants
+     * (represent the first 64 bits of the fractional parts of the
      * cube roots of the first sixty-four prime numbers)
-         */
+     */
     static final long[] K = {0x428a2f98d728ae22L,
                              0x7137449123ef65cdL,
                              0xb5c0fbcfec4d3b2fL,

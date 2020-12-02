@@ -118,7 +118,7 @@ public abstract class Digest
      */
     public byte[] finishDigest()
     {
-        byte dig[] = new byte[getDigestLen()];
+        byte[] dig = new byte[getDigestLen()];
         finishDigest(dig, 0);
         return dig;
     }

@@ -71,7 +71,7 @@ public interface IMessageJpaRepository
 
     List<MessageEntity> findAllByOriginAndMsgIdAfter(long origin, long msgId);
 
-    @Query(value = "select * from \"tgx-z-chess-device\".message m where m.payload->>'topic'=:p_topic limit :p_limit order by desc ",
+    @Query(value = "select * from \"isahl.z-chess\".message m where m.payload->>'topic'=:p_topic limit :p_limit order by desc ",
            nativeQuery = true)
     List<MessageEntity> listByTopic(@Param("p_topic") String topic, @Param("p_limit") int limit);
 }

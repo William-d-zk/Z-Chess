@@ -26,7 +26,7 @@ import com.securityinnovation.jNeo.ntruencrypt.KeyParams;
 
 interface PrivKeyFormatter
 {
-    public byte[] encode(KeyParams keyParams, FullPolynomial h, FullPolynomial f);
+    byte[] encode(KeyParams keyParams, FullPolynomial h, FullPolynomial f);
 
-    public RawKeyData decode(byte keyBlob[]) throws ParamSetNotSupportedException;
+    RawKeyData decode(byte[] keyBlob) throws ParamSetNotSupportedException;
 }
