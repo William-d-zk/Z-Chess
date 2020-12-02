@@ -67,4 +67,4 @@ public enum DigestAlgorithm
             return null;
         }
     }
-};
+}

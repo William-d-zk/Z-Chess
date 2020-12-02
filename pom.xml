@@ -100,7 +100,7 @@
         <slf4j.version>1.7.30</slf4j.version>
         <logback.version>1.2.3</logback.version>
         <!--SPRING-BOOT-->
-        <spring-boot.version>2.3.5.RELEASE</spring-boot.version>
+        <spring-boot.version>2.4.0</spring-boot.version>
         <!--Commons-IO-->
         <commons-io.version>2.8.0</commons-io.version>
         <!--DB-->
@@ -109,7 +109,7 @@
         <!--PIPELINE-->
         <disruptor.version>3.4.2</disruptor.version>
         <!--TOOLS-->
-        <httpcore.version>4.4.13</httpcore.version>
+        <httpcore.version>4.4.14</httpcore.version>
         <!--TEST TOOLS VERSION-->
         <junit.jupiter.version>5.7.0</junit.jupiter.version>
         <junit.platform.verssion>1.7.0</junit.platform.verssion>

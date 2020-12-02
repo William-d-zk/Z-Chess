@@ -64,7 +64,7 @@ public class PolynomialInverterModPowerOfPrime
      */
     public PolynomialInverterModPowerOfPrime(int _powerOfPrime,
                                              int _prime,
-                                             short _invModPrime[])
+                                             short[] _invModPrime)
     {
         super(_prime, _invModPrime);
         powerOfPrime = _powerOfPrime;

@@ -37,7 +37,7 @@ public class MGF1
     /**
      * The MGF seed concatenated with the 4-byte MGF counter.
      */
-    private byte seedAndCounter[];
+    private byte[] seedAndCounter;
 
     /**
      * The underlying hash algorithm.
@@ -47,7 +47,7 @@ public class MGF1
     /**
      * State to hold the generated output that has not been returned yet.
      */
-    private byte outputStream[];
+    private byte[] outputStream;
 
     /**
      * The index of the first unreturned byte in outputStream.
@@ -93,7 +93,7 @@ public class MGF1
     public MGF1(DigestAlgorithm hashAlg,
                 int _minNumRuns,
                 boolean hashSeed,
-                byte seed[],
+                byte[] seed,
                 int seedOffset,
                 int seedLength)
     {

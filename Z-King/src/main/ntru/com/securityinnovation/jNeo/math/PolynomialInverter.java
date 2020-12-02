@@ -32,5 +32,5 @@ public interface PolynomialInverter
     /**
      * Calculate the inverse of a polynomial.
      */
-    public abstract FullPolynomial invert(FullPolynomial a);
+    FullPolynomial invert(FullPolynomial a);
 }

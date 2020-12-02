@@ -33,7 +33,7 @@ public class ParamSetNotSupportedException
      * Constructs a new exception with the supplied OID as the detail message,
      * formatted as "w.x.y.z".
      */
-    public ParamSetNotSupportedException(byte oid[])
+    public ParamSetNotSupportedException(byte[] oid)
     {
         super("Ntru key parameter set (" + oidToString(oid) + ") is not supported");
     }
@@ -50,7 +50,7 @@ public class ParamSetNotSupportedException
     /**
      * Create a string containing the OID as "w.x.y.z".
      */
-    private static String oidToString(byte oid[])
+    private static String oidToString(byte[] oid)
     {
         String s = "";
         if (oid.length > 0) s += oid[0];

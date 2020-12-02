@@ -45,13 +45,13 @@ class PrivKeyFormatter_PrivateKeyPackedFv1
         FullPolynomial F = KeyFormatterUtil.recoverF(f);
         ByteArrayOutputStream os = new ByteArrayOutputStream((f.p.length + 4) / 5);
         MGF_TP_1.encodeTrinomial(F, os);
-        byte encodedF[] = os.toByteArray();
+        byte[] encodedF = os.toByteArray();
 
         // Allocate output buffer
         int len = (KeyFormatterUtil.fillHeader(tag, keyParams.OIDBytes, null)
                    + BitPack.pack(keyParams.N, keyParams.q)
                    + encodedF.length);
-        byte ret[] = new byte[len];
+        byte[] ret = new byte[len];
 
         // Encode the output
         int offset = KeyFormatterUtil.fillHeader(tag, keyParams.OIDBytes, ret);
@@ -60,7 +60,7 @@ class PrivKeyFormatter_PrivateKeyPackedFv1
         return ret;
     }
 
-    public RawKeyData decode(byte keyBlob[]) throws ParamSetNotSupportedException
+    public RawKeyData decode(byte[] keyBlob) throws ParamSetNotSupportedException
     {
         // Parse the header, recover the key parameters.
         if (keyBlob[0] != tag) throw new IllegalArgumentException("key blob tag not recognized");
