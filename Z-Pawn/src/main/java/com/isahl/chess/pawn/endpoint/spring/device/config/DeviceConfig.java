@@ -35,15 +35,6 @@ import org.springframework.context.annotation.PropertySource;
 @Configuration("device_config")
 public class DeviceConfig
 {
-    public List<Server> getListeners()
-    {
-        return listeners;
-    }
-
-    public void setListeners(List<Server> listeners)
-    {
-        this.listeners = listeners;
-    }
 
     public static class Server
     {
@@ -83,9 +74,19 @@ public class DeviceConfig
     }
 
     private List<Server> listeners;
+    private Duration     passwordInvalidDays;
+    private String       passwordRandomSeed;
+    private boolean      multiBind;
 
-    private Duration passwordInvalidDays;
-    private String   passwordRandomSeed;
+    public List<Server> getListeners()
+    {
+        return listeners;
+    }
+
+    public void setListeners(List<Server> listeners)
+    {
+        this.listeners = listeners;
+    }
 
     public Duration getPasswordInvalidDays()
     {
@@ -107,4 +108,13 @@ public class DeviceConfig
         this.passwordRandomSeed = passwordRandomSeed;
     }
 
+    public boolean isMultiBind()
+    {
+        return multiBind;
+    }
+
+    public void setMultiBind(boolean multiBind)
+    {
+        this.multiBind = multiBind;
+    }
 }

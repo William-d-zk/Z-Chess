@@ -23,6 +23,7 @@
 
 package com.isahl.chess.pawn.endpoint.spring.device.jpa.model;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -37,6 +38,7 @@ public class Subscribe
         Serializable
 {
 
+    @Serial
     private static final long serialVersionUID = 2015588893664180796L;
 
     private final IQoS.Level _Level;

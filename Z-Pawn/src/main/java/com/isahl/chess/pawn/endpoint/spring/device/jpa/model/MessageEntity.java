@@ -40,6 +40,8 @@ import com.isahl.chess.king.base.schedule.Status;
 import com.isahl.chess.queen.db.inf.IStorage;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 
+import java.io.Serial;
+
 /**
  * @author william.d.zk
  * 
@@ -54,6 +56,7 @@ public class MessageEntity
         implements
         IStorage
 {
+    @Serial
     private static final long serialVersionUID = -6502547239976531057L;
 
     @Id

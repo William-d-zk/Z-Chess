@@ -124,9 +124,11 @@ public abstract class AioSessionManager<K extends IPipeCore>
                                          .remove(session);
             }
         }
-        ISession old = _Index2SessionMaps[slot].get(session.getIndex());
-        if (old == session) {
-            _Index2SessionMaps[slot].remove(session.getIndex());
+        _Index2SessionMaps[slot].remove(session.getIndex(), session);
+        if (session.isMultiBind() && session.getBindIndex() != null) {
+            for (long i : session.getBindIndex()) {
+                _Index2SessionMaps[slot].remove(i, session);
+            }
         }
     }
 
@@ -137,20 +139,29 @@ public abstract class AioSessionManager<K extends IPipeCore>
     private ISession mapSession(final long _Index, ISession session)
     {
         _Logger.debug("session manager map-> %#x,%s", _Index, session);
-        if ((_Index & INVALID_INDEX) == NULL_INDEX) { throw new IllegalArgumentException("invalid index"); }
+        if (_Index == INVALID_INDEX || (_Index & INVALID_INDEX) == NULL_INDEX) {
+            throw new IllegalArgumentException("invalid index");
+        }
         /*
          * 1:相同 Session 不同 _Index 进行登录，产生多个 _Index 对应 相同 Session 的情况 
          * 2:相同 _Index 在不同的 Session 上登录，产生覆盖
          * Session 的情况。
          */
         long sessionIndex = session.getIndex();
-        if ((sessionIndex & INVALID_INDEX) != NULL_INDEX) {
-            // session 已经 mapping 过了
-            _Index2SessionMaps[getSlot(_Index)].remove(sessionIndex);
+        if ((sessionIndex & INVALID_INDEX) != NULL_INDEX && sessionIndex != _Index && !session.isMultiBind()) {
+            // session 已经 mapping 过了 且 不允许多绑定结构
+            _Index2SessionMaps[getSlot(sessionIndex)].remove(sessionIndex);
         }
         // 检查可能覆盖的 Session 是否存在,_Index 已登录过
         ISession oldSession = _Index2SessionMaps[getSlot(_Index)].put(_Index, session);
-        session.setIndex(_Index);
+        if ((sessionIndex & INVALID_INDEX) == NULL_INDEX || !session.isMultiBind()) {
+            //首次登陆 或 执行唯一登陆逻辑[覆盖]
+            session.setIndex(_Index);
+        }
+        else {
+            //session 持有multi-bind 特征，且已经index绑定过了
+            session.bindIndex(_Index);
+        }
         if (oldSession != null) {
             // 已经发生覆盖
             long oldIndex = oldSession.getIndex();
@@ -158,8 +169,10 @@ public abstract class AioSessionManager<K extends IPipeCore>
                 if (oldSession != session) {
                     // 相同 _Index 登录在不同 Session 上登录
                     /*
-                     * 被覆盖的 Session 在 read EOF/TimeOut 时启动 Close 
-                     * oldSession.setIndex(仅包含Type信息）
+                        被覆盖的 session 在 read EOF/TimeOut 时启动 Close
+                        old-session.setIndex(仅包含Type信息）回到初始态
+                        此操作在multi-bind情况下依然适用，index-mapping 将出现迁移
+                        但持有type信息的情况下，multi-bind.index依然可以有效映射
                      */
                     oldSession.setIndex(oldIndex & ZUID.TYPE_MASK);
                     if (oldSession.isValid()) {
@@ -167,23 +180,31 @@ public abstract class AioSessionManager<K extends IPipeCore>
                         return oldSession;
                     }
                 }
-                // 相同 Session 上相同 _Index 重复登录
+                // 相同 session 上相同 _Index 重复登录
             }
-            // 被覆盖的 Session 持有不同的 _Index
             else {
-                _Logger.fetal("被覆盖的session 持有不同的index，检查session.setIndex的引用;index: %d <=> old: %d", _Index, oldIndex);
-                ISession oldMappedSession = _Index2SessionMaps[getSlot(oldIndex)].get(oldIndex);
-                /*
-                 * oldIndex bind oldSession 已在 Map 完成其他的新的绑定关系。
-                 * 由于MapSession是线程安全的，并不会存在此种情况
-                 */
-                if (oldMappedSession == oldSession) {
-                    _Logger.fetal("oldMappedSession == oldSession -> Ignore, 检查MapSession 是否存在线程安全问题");// Ignore
+                // 被覆盖的 session 持有不同的 _Index
+                if (oldSession.isMultiBind()) {
+                    //old-session 是允许多绑定场景时，发生的是multi-bind自身的迁移情况
+                    oldSession.unbindIndex(_Index);
                 }
-                else if (oldMappedSession == null) {
-                    _Logger.debug("oldMappedSession == null -> oldIndex invalid");// oldIndex 已失效
+                else {
+                    _Logger.fetal("被覆盖的session 持有不同的index，检查session.setIndex的引用;index: %d <=> old: %d",
+                                  _Index,
+                                  oldIndex);
+                    ISession oldMappedSession = _Index2SessionMaps[getSlot(oldIndex)].get(oldIndex);
+                    /*
+                     * oldIndex bind oldSession 已在 Map 完成其他的新的绑定关系。
+                     * 由于MapSession是线程安全的，并不应该出现此种情况
+                     */
+                    if (oldMappedSession == oldSession) {
+                        _Logger.fetal("oldMappedSession == oldSession -> Ignore, 检查MapSession 是否存在线程安全问题");// Ignore
+                    }
+                    else if (oldMappedSession == null) {
+                        _Logger.debug("oldMappedSession == null -> oldIndex invalid");// oldIndex 已失效
+                    }
+
                 }
-                // else oldIndex 已完成其他的绑定过程无需做任何处理。
             }
         }
         return null;

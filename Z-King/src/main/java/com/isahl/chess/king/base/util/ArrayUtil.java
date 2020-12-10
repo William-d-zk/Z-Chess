@@ -25,6 +25,7 @@ package com.isahl.chess.king.base.util;
 import static java.lang.System.arraycopy;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * @author William.d.zk
@@ -33,7 +34,7 @@ public interface ArrayUtil
 {
     static long[] setFiFoAdd(long _l, long[] a)
     {
-        if (a == null) throw new NullPointerException();
+        if (a == null) { return new long[]{_l}; }
         int i = 0, size = a.length;
         for (; i < size; i++) {
             if (a[i] == _l) return a;
@@ -54,40 +55,36 @@ public interface ArrayUtil
 
     static long[] setSortAdd(long _l, long[] a)
     {
-        if (a == null) throw new NullPointerException();
+        if (a == null) { return new long[]{_l}; }
         int pos = Arrays.binarySearch(a, _l);
-        if (pos >= 0) return a;
-        else {
-            return setAdd(_l, a, pos);
-        }
+        return pos >= 0 ? a: setAdd(_l, a, -1 - pos);
     }
 
     static long[] setSortAdd(long _l, long[] a, long prefix)
     {
-        if (a == null) throw new NullPointerException();
+        if (a == null) { return new long[]{_l}; }
         int pos = binarySearch0(a, _l, prefix);
-        if (pos >= 0) return a;
-        else {
-            return setAdd(_l, a, pos);
-        }
+        return pos >= 0 ? a: setAdd(_l, a, -1 - pos);
     }
 
     static long[] setAdd(long _l, long[] a, int pos)
     {
-        pos = -1 - pos;
+        if (a == null) { return new long[]{_l}; }
         long[] t = new long[a.length + 1];
-        t[pos] = _l;
+        if (pos > a.length) pos = a.length;
         if (pos > 0 && pos < a.length) {
             arraycopy(a, 0, t, 0, pos);
             arraycopy(a, pos, t, pos + 1, a.length - pos);
         }
         else if (pos == 0) arraycopy(a, 0, t, 1, a.length);
         else arraycopy(a, 0, t, 0, a.length);
+        t[pos] = _l;
         return t;
     }
 
     static int binarySearch0(long[] a, long key, long prefix)
     {
+        Objects.requireNonNull(a);
         int low = 0;
         int high = a.length - 1;
 
@@ -104,7 +101,7 @@ public interface ArrayUtil
 
     static long[] setNoZeroFiFoRm(long _l, final long[] a)
     {
-        if (a == null) throw new NullPointerException();
+        Objects.requireNonNull(a);
         if (_l != 0) {
             int k = -1;
             for (int i = 0; i < a.length; i++) {
@@ -114,35 +111,46 @@ public interface ArrayUtil
                 }
             }
             if (k < 0) return a;
-
-            long[] t = new long[a.length - 1];
-            if (k > 0 && k < a.length - 1) {
-                arraycopy(a, 0, t, 0, k);
-                arraycopy(a, k + 1, t, k, a.length - k - 1);
-            }
-            else if (k == 0) arraycopy(a, 1, t, 0, t.length);
-            else arraycopy(a, 0, t, 0, t.length);
-            return t;
+            return newArray(a, k);
         }
         return a;
     }
 
     static long[] setNoZeroSortRm(long _l, final long[] a)
     {
-        if (a == null) throw new NullPointerException();
+        if (a == null) { return null; }
         if (_l != 0) {
             int k = Arrays.binarySearch(a, _l);
             if (k < 0) return a;
-            long[] t = new long[a.length - 1];
-            if (k > 0 && k < a.length - 1) {
-                arraycopy(a, 0, t, 0, k);
-                arraycopy(a, k + 1, t, k, a.length - k - 1);
+            switch (a.length)
+            {
+                case 0, 1 ->
+                    {
+                        return null;
+                    }
+                case 2 ->
+                    {
+                        return k == 0 ? new long[]{a[1]}: new long[]{a[0]};
+                    }
+                default ->
+                    {
+                        return newArray(a, k);
+                    }
             }
-            else if (k == 0) arraycopy(a, 1, t, 0, t.length);
-            else arraycopy(a, 0, t, 0, t.length);
-            return t;
         }
         return a;
+    }
+
+    private static long[] newArray(long[] a, int k)
+    {
+        long[] t = new long[a.length - 1];
+        if (k > 0 && k < a.length - 1) {
+            arraycopy(a, 0, t, 0, k);
+            arraycopy(a, k + 1, t, k, a.length - k - 1);
+        }
+        else if (k == 0) arraycopy(a, 1, t, 0, t.length);
+        else arraycopy(a, 0, t, 0, t.length);
+        return t;
     }
 
     static void swap(final long[] idx, int o, int p)

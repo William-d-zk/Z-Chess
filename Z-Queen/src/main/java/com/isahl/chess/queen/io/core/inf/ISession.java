@@ -54,12 +54,17 @@ public interface ISession
         IWritable<ISession>,
         Comparable<ISession>
 {
+    boolean isMultiBind();
+
+    long[] getBindIndex();
+
+    void bindIndex(long index);
+
+    void unbindIndex(long index);
 
     long getIndex();
 
-    void setIndex(long _Index);
-
-    long getHashKey();
+    void setIndex(long index);
 
     AsynchronousSocketChannel getChannel();
 

@@ -23,6 +23,7 @@
 
 package com.isahl.chess.pawn.endpoint.spring.device.model;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -40,9 +41,11 @@ public class RawContent
         Serializable
 {
 
+    @Serial
     private static final long serialVersionUID = 2945521462766851875L;
-    private String            raw;
-    private byte[]            payload;
+
+    private String raw;
+    private byte[] payload;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String getRaw()
