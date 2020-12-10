@@ -116,7 +116,9 @@
         <mockito.version>3.6.0</mockito.version>
         <!--CACHE-->
         <ehcache.version>3.9.0</ehcache.version>
+        <!--JSON-->
         <jackson.version>2.11.3</jackson.version>
+        <json-schema.version>1.0.45</json-schema.version>
     </properties>
     <dependencies>
         <!--Log-->
@@ -245,7 +247,7 @@
                 <artifactId>ehcache</artifactId>
                 <version>${ehcache.version}</version>
             </dependency>
-            <!-- 测试用依赖 -->
+            <!-- Test -->
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter</artifactId>
@@ -312,6 +314,11 @@
                 <groupId>com.fasterxml.jackson.datatype</groupId>
                 <artifactId>jackson-datatype-jsr310</artifactId>
                 <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.networknt</groupId>
+                <artifactId>json-schema-validator</artifactId>
+                <version>${json-schema.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

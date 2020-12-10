@@ -23,6 +23,7 @@
 
 package com.isahl.chess.pawn.endpoint.spring.device.jpa.model;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Map;
 
@@ -38,6 +39,7 @@ public class DeviceSubscribe
         implements
         Serializable
 {
+    @Serial
     private static final long             serialVersionUID = -3075846478370159363L;
     private final Map<String,
                       IQoS.Level>         _Subscribes;

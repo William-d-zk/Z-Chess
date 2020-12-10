@@ -28,6 +28,7 @@ import static com.isahl.chess.king.base.schedule.inf.ITask.stateAtLeast;
 import static com.isahl.chess.king.base.schedule.inf.ITask.stateLessThan;
 import static com.isahl.chess.king.base.util.IoUtil.longArrayToHex;
 import static com.isahl.chess.queen.io.core.inf.ISessionManager.INVALID_INDEX;
+import static com.isahl.chess.queen.io.core.inf.ISessionManager.NULL_INDEX;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -85,10 +86,12 @@ public class AioSession<C extends IPContext>
     private final int             _QueueSizeMax;
     private final ISort<C>        _Sort;
     private final AtomicInteger   _State = new AtomicInteger(SESSION_CREATED);
+    private final boolean         _MultiBind;
     /*----------------------------------------------------------------------------------------------------------------*/
 
     /*----------------------------------------------------------------------------------------------------------------*/
-    private long mIndex = INVALID_INDEX;
+    private long   mIndex = INVALID_INDEX;
+    private long[] mBindIndex;
     /*
      * 此处并不会进行空间初始化，完全依赖于 Context 的 Wrbuf 实体，仅作为reference
      */
@@ -97,7 +100,6 @@ public class AioSession<C extends IPContext>
      * Session close 只能出现在 QueenManager 的工作线程中 所以关闭操作只需要做到全域线程可见即可，不需要处理写冲突
      */
     private long[] mPrefix;
-    private long   mHashKey;
     private int    mWroteExpect;
     private int    mSendingBlank;
     /* reader */
@@ -117,17 +119,20 @@ public class AioSession<C extends IPContext>
                              size());
     }
 
-    public AioSession(final AsynchronousSocketChannel channel,
-                      final ISessionOption sessionOption,
-                      final ISort<C> sort,
-                      final IConnectActivity activity,
-                      final ISessionDismiss sessionDismiss) throws IOException
+    public AioSession(AsynchronousSocketChannel channel,
+                      long type,
+                      ISessionOption sessionOption,
+                      ISort<C> sort,
+                      IConnectActivity activity,
+                      ISessionDismiss sessionDismiss,
+                      boolean multiBind) throws IOException
     {
         Objects.requireNonNull(sessionOption);
         Objects.requireNonNull(channel);
         Objects.requireNonNull(activity);
         Objects.requireNonNull(sort);
-
+        //------------------------------------------------------------
+        _MultiBind = multiBind;
         _Channel = channel;
         _HashCode = channel.hashCode();
         _RemoteAddress = (InetSocketAddress) channel.getRemoteAddress();
@@ -139,8 +144,9 @@ public class AioSession<C extends IPContext>
         _QueueSizeMax = sessionOption.getSendQueueMax();
         _Sort = sort;
         _Context = sort.newContext(sessionOption);
+        //------------------------------------------------------------
         sessionOption.configChannel(channel);
-        mHashKey = _HashCode;
+        mIndex = type;
         mSending = _Context.getWrBuffer();
         mSending.flip();
         mSendingBlank = mSending.capacity() - mSending.limit();
@@ -150,6 +156,12 @@ public class AioSession<C extends IPContext>
     public boolean isValid()
     {
         return !isClosed();
+    }
+
+    @Override
+    public boolean isMultiBind()
+    {
+        return _MultiBind;
     }
 
     @Override
@@ -214,19 +226,37 @@ public class AioSession<C extends IPContext>
     }
 
     @Override
+    public long[] getBindIndex()
+    {
+        return mBindIndex;
+    }
+
+    @Override
     public final void setIndex(long index)
     {
         mIndex = index;
-        if (mIndex != INVALID_INDEX) {
-            mHashKey = mIndex;
+    }
+
+    @Override
+    public void bindIndex(long index)
+    {
+        if (index != INVALID_INDEX && index != NULL_INDEX) {
+            mBindIndex = ArrayUtil.setSortAdd(index, mBindIndex);
+        }
+    }
+
+    @Override
+    public void unbindIndex(long index)
+    {
+        if (index != INVALID_INDEX && index != NULL_INDEX) {
+            mBindIndex = ArrayUtil.setNoZeroSortRm(index, mBindIndex);
         }
     }
 
     @Override
     public final void bindPrefix(long prefix)
     {
-        mPrefix = mPrefix == null ? new long[]{prefix}
-                                  : ArrayUtil.setSortAdd(prefix, mPrefix, PREFIX_MAX);
+        mPrefix = mPrefix == null ? new long[]{prefix}: ArrayUtil.setSortAdd(prefix, mPrefix, PREFIX_MAX);
     }
 
     @Override
@@ -260,12 +290,6 @@ public class AioSession<C extends IPContext>
     public final long[] getPrefixArray()
     {
         return mPrefix;
-    }
-
-    @Override
-    public final long getHashKey()
-    {
-        return mHashKey;
     }
 
     @Override
@@ -346,8 +370,7 @@ public class AioSession<C extends IPContext>
             offer(ps);
             _Logger.debug("aio event delay, session buffed packets %d", size());
         }
-        return isEmpty() ? WRITE_STATUS.UNFINISHED
-                         : WRITE_STATUS.IN_SENDING;
+        return isEmpty() ? WRITE_STATUS.UNFINISHED: WRITE_STATUS.IN_SENDING;
     }
 
     @Override
@@ -503,5 +526,17 @@ public class AioSession<C extends IPContext>
     {
         advanceState(_State, SESSION_CONNECTED, CAPACITY);
         _Context.ready();
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        return this == o;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return _HashCode;
     }
 }

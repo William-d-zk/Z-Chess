@@ -117,7 +117,13 @@ public class ClusterNode
                                           IConnectActivity activity) throws IOException
             {
                 ISort<WsContext> sort = ZSortHolder.WS_CLUSTER_SERVER.getSort();
-                return new AioSession<>(socketChannel, this, sort, activity, ClusterNode.this);
+                return new AioSession<>(socketChannel,
+                                        ZUID.TYPE_CLUSTER,
+                                        this,
+                                        sort,
+                                        activity,
+                                        ClusterNode.this,
+                                        false);
             }
 
             @Override

@@ -91,6 +91,7 @@ public class DeviceNode
     }
 
     public DeviceNode(List<ITriple> hosts,
+                      boolean multiBind,
                       IAioConfig bizIoConfig,
                       IRaftConfig raftConfig,
                       IMixConfig serverConfig,
@@ -114,7 +115,8 @@ public class DeviceNode
                                                      _Port,
                                                      holder.getType(),
                                                      holder.getSlot(),
-                                                     holder.getSort());
+                                                     holder.getSort(),
+                                                     multiBind);
                            })
                            .collect(Collectors.toList());
         _GateClient = new BaseAioClient(_TimeWheel, getCore().getClusterChannelGroup())
@@ -163,7 +165,8 @@ public class DeviceNode
                                                             final int _Port,
                                                             final long _Type,
                                                             final int _SessionSlot,
-                                                            final ISort<C> _Sort)
+                                                            final ISort<C> _Sort,
+                                                            final boolean _MultiBind)
     {
         return new BaseAioServer(_Host, _Port, getSocketConfig(_SessionSlot))
         {
@@ -177,13 +180,12 @@ public class DeviceNode
             public ISession createSession(AsynchronousSocketChannel socketChannel,
                                           IConnectActivity activity) throws IOException
             {
-                return new AioSession<>(socketChannel, this, _Sort, activity, DeviceNode.this);
+                return new AioSession<>(socketChannel, _Type, this, _Sort, activity, DeviceNode.this, _MultiBind);
             }
 
             @Override
             public void onCreate(ISession session)
             {
-
                 DeviceNode.this.addSession(session);
                 session.ready();
             }

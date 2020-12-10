@@ -117,8 +117,8 @@ public class DecodedDispatcher
 
     protected RingBuffer<QEvent> dispatchWorker(IControl cmd)
     {
-        return _LogicWorkers[(int) cmd.getSession()
-                                      .getHashKey()
+        return _LogicWorkers[cmd.getSession()
+                                .hashCode()
                              & _WorkerMask];
     }
 

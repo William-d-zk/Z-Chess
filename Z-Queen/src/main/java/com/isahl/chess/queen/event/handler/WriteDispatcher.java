@@ -63,9 +63,9 @@ public class WriteDispatcher
         _Mask = _Encoders.length - 1;
     }
 
-    private RingBuffer<QEvent> dispatchEncoder(long seq)
+    private RingBuffer<QEvent> dispatchEncoder(int code)
     {
-        return _Encoders[(int) (seq & _Mask)];
+        return _Encoders[code & _Mask];
     }
 
     @Override
@@ -109,7 +109,7 @@ public class WriteDispatcher
                                       targetSession.getError());
                             }
                         }
-                        else publish(dispatchEncoder(targetSession.getHashKey()),
+                        else publish(dispatchEncoder(targetSession.hashCode()),
                                      WRITE,
                                      new Pair<>(content, targetSession),
                                      triple.getThird());
@@ -122,7 +122,7 @@ public class WriteDispatcher
                 int wroteCount = wroteContent.getFirst();
                 session = wroteContent.getSecond();
                 if (session.isValid()) {
-                    publish(dispatchEncoder(session.getHashKey()),
+                    publish(dispatchEncoder(session.hashCode()),
                             WROTE,
                             new Pair<>(wroteCount, session),
                             event.getEventOp());
@@ -149,7 +149,7 @@ public class WriteDispatcher
                             _Logger.warning("dispatch failed [ %s ]", session);
                         }
                     }
-                    else publish(dispatchEncoder(session.getHashKey()),
+                    else publish(dispatchEncoder(session.hashCode()),
                                  WRITE,
                                  new Pair<>(command, session),
                                  content.getThird());

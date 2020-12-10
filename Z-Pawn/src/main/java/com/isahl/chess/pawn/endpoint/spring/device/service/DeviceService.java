@@ -112,7 +112,7 @@ public class DeviceService
                                               return new Triple<>(listener.getHost(), listener.getPort(), sort);
                                           })
                                           .collect(Collectors.toList());
-        _DeviceNode = new DeviceNode(hosts, ioConfig, raftConfig, mixConfig, _TimeWheel);
+        _DeviceNode = new DeviceNode(hosts, deviceConfig.isMultiBind(), ioConfig, raftConfig, mixConfig, _TimeWheel);
         _DeviceRepository = deviceRepository;
         _LinkCustom = linkCustom;
         _RaftNode = new RaftNode<>(_TimeWheel, raftConfig, raftDao, _DeviceNode);

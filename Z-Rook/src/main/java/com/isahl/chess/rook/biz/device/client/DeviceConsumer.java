@@ -285,7 +285,13 @@ public class DeviceConsumer
                                           IConnectActivity activity) throws IOException
             {
 
-                return new AioSession<>(socketChannel, this, zSortHolder.getSort(), activity, DeviceConsumer.this);
+                return new AioSession<>(socketChannel,
+                                        ZUID.TYPE_CONSUMER,
+                                        this,
+                                        zSortHolder.getSort(),
+                                        activity,
+                                        DeviceConsumer.this,
+                                        false);
             }
 
             @Override

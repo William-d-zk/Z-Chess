@@ -108,7 +108,7 @@ public class IoDispatcher
                         _Logger.trace("read");
                         IPair readContent = event.getContent();
                         ISession session = readContent.getSecond();
-                        publish(dispatchWorker(session.getHashKey()), DECODE, readContent, event.getEventOp());
+                        publish(dispatchWorker(session.hashCode()), DECODE, readContent, event.getEventOp());
                         break;
                     case WROTE:
                         _Logger.trace("wrote");
@@ -155,15 +155,14 @@ public class IoDispatcher
         event.reset();
     }
 
-    private RingBuffer<QEvent> dispatchWorker(long seq)
+    private RingBuffer<QEvent> dispatchWorker(int code)
     {
-        return _Workers[(int) (seq & _WorkerMask)];
+        return _Workers[code & _WorkerMask];
     }
 
     protected RingBuffer<QEvent> getNextPipe(ISort.Mode mode)
     {
-        return mode == ISort.Mode.CLUSTER ? _Cluster
-                                          : null;
+        return mode == ISort.Mode.CLUSTER ? _Cluster: null;
     }
 
     @Override

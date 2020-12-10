@@ -23,6 +23,7 @@
 
 package com.isahl.chess.pawn.endpoint.spring.device.jpa.model;
 
+import java.io.Serial;
 import java.time.LocalDateTime;
 import java.util.Map;
 
@@ -69,6 +70,7 @@ public class DeviceEntity
         implements
         IStorage
 {
+    @Serial
     private static final long serialVersionUID = -6645586986057373344L;
 
     @Id

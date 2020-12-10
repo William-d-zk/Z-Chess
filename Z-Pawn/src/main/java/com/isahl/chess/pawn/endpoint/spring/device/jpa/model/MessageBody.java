@@ -23,6 +23,7 @@
 
 package com.isahl.chess.pawn.endpoint.spring.device.jpa.model;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 
@@ -49,6 +50,7 @@ public class MessageBody
 {
     private static final Logger _Logger          = Logger.getLogger("endpoint.pawn."
                                                                     + MessageBody.class.getSimpleName());
+    @Serial
     private static final long   serialVersionUID = -8904730289818144372L;
 
     private final String _Topic;
