@@ -52,25 +52,25 @@ import java.util.regex.Pattern;
  */
 public class ZUID
 {
-    public static final long EPOCH_MILLI = LocalDateTime.of(2018, Month.JUNE, 1, 0, 0)
-                                                        .toEpochSecond(ZoneOffset.UTC);
 
-    public static final int  SEQUENCE_BITS      = 10;
-    public static final long SEQUENCE_MASK      = ~(-1L << SEQUENCE_BITS);
-    public static final int  TIMESTAMP_BITS     = 38;
-    public static final int  TIMESTAMP_SHIFT    = SEQUENCE_BITS;
-    public static final int  NODE_BITS          = 7;
-    public static final int  NODE_SHIFT         = TIMESTAMP_SHIFT + TIMESTAMP_BITS;
-    public static final int  CLUSTER_BITS       = 3;
-    public static final int  CLUSTER_SHIFT      = NODE_SHIFT + NODE_BITS;
-    public static final int  IDC_BITS           = 4;
-    public static final int  IDC_SHIFT          = CLUSTER_SHIFT + CLUSTER_BITS;
-    public static final int  TYPE_BITS          = 2;
-    public static final int  TYPE_SHIFT         = IDC_SHIFT + IDC_BITS;
-    public static final int  MAX_TYPE           = (1 << TYPE_BITS) - 1;
-    public static final int  MAX_IDC_ID         = (1 << IDC_BITS) - 1;
-    public static final int  MAX_CLUSTER_SET_ID = (1 << CLUSTER_BITS) - 1;
-    public static final int  MAX_NODE_ID        = (1 << NODE_BITS) - 1;
+    public static final LocalDateTime EPOCH_DATE         = LocalDateTime.of(2018, Month.JUNE, 1, 0, 0);
+    public static final long          EPOCH_MILLI        = EPOCH_DATE.toEpochSecond(ZoneOffset.UTC);
+    public static final int           SEQUENCE_BITS      = 10;
+    public static final long          SEQUENCE_MASK      = ~(-1L << SEQUENCE_BITS);
+    public static final int           TIMESTAMP_BITS     = 38;
+    public static final int           TIMESTAMP_SHIFT    = SEQUENCE_BITS;
+    public static final int           NODE_BITS          = 7;
+    public static final int           NODE_SHIFT         = TIMESTAMP_SHIFT + TIMESTAMP_BITS;
+    public static final int           CLUSTER_BITS       = 3;
+    public static final int           CLUSTER_SHIFT      = NODE_SHIFT + NODE_BITS;
+    public static final int           IDC_BITS           = 4;
+    public static final int           IDC_SHIFT          = CLUSTER_SHIFT + CLUSTER_BITS;
+    public static final int           TYPE_BITS          = 2;
+    public static final int           TYPE_SHIFT         = IDC_SHIFT + IDC_BITS;
+    public static final int           MAX_TYPE           = (1 << TYPE_BITS) - 1;
+    public static final int           MAX_IDC_ID         = (1 << IDC_BITS) - 1;
+    public static final int           MAX_CLUSTER_SET_ID = (1 << CLUSTER_BITS) - 1;
+    public static final int           MAX_NODE_ID        = (1 << NODE_BITS) - 1;
 
     private static final String  UNAME_FORMATTER = "%d_%d_%d_%d@%d";
     private static final Pattern UNAME_PATTERN   = Pattern.compile("(\\d+)_(\\d+)_(\\d+)_(\\d+)@(\\d+)");

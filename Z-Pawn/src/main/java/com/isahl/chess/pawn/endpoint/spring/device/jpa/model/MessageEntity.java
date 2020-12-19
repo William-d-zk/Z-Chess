@@ -23,6 +23,9 @@
 
 package com.isahl.chess.pawn.endpoint.spring.device.jpa.model;
 
+import java.io.Serial;
+import java.time.LocalDateTime;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -34,13 +37,19 @@ import javax.persistence.Transient;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
+import org.springframework.data.annotation.CreatedDate;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.isahl.chess.king.base.schedule.Status;
 import com.isahl.chess.queen.db.inf.IStorage;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
-
-import java.io.Serial;
 
 /**
  * @author william.d.zk
@@ -49,7 +58,10 @@ import java.io.Serial;
  */
 @Entity(name = "Message")
 @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
-@Table(indexes = {@Index(name = "message_idx_msg_id", columnList = "msgId")})
+@Table(indexes = { @Index(name = "message_idx_msg_id", columnList = "msgId"),
+                   @Index(name = "origin_idx", columnList = "origin"),
+                   @Index(name = "destination_idx", columnList = "destination")})
+@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class MessageEntity
         extends
         AuditModel
@@ -80,6 +92,9 @@ public class MessageEntity
     @Column(columnDefinition = "jsonb")
     private MessageBody body;
     private Status      status;
+
+    @Column(name = "invalid_at", nullable = false, updatable = false)
+    private LocalDateTime invalidAt;
 
     @JsonIgnore
     @Transient
@@ -203,6 +218,20 @@ public class MessageEntity
     public void setStatus(Status status)
     {
         this.status = status;
+    }
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    public LocalDateTime getInvalidAt()
+    {
+        return invalidAt;
+    }
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    public void setInvalidAt(LocalDateTime invalidAt)
+    {
+        this.invalidAt = invalidAt;
     }
 
     private final static int MESSAGE_ENTITY_SERIAL = AUDIT_MODEL_SERIAL + 2;
