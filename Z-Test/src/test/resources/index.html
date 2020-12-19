@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Paho MQTT.js </title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css"
+          integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B"
+          crossorigin="anonymous">
+
+    <!-- 引用MQTT的CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript"></script>
+
+</head>
+
+<body>
+
+<div class="container">
+    <div class="row">
+        <div class="col">
+        </div>
+        <h1>Paho MQTT.js Test!</h1>
+        <div class="col">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md">
+
+        </div>
+        <div class="col-md-5">
+            <div class="card border-success">
+                <div class="card-img-top"><img class=""
+                                               src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1534998931421&di=9c27aaeef01a83dd530a40f7b06aae1f&imgtype=0&src=http%3A%2F%2Fpic.58pic.com%2F58pic%2F15%2F53%2F67%2F93a58PICrhF_1024.png"
+                                               width="50px" height="50px" alt=""></div>
+
+                <div class="card-body">
+                    <h4 class="card-title">LED control</h4>
+                    <p class="card-text">
+                        <button type="button" class="btn btn-primary" onclick='publish("ON");'>开灯</button>
+                        <button type="button" class="btn btn-seconday" onclick='publish("OFF");'>关灯</button>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md">
+
+        </div>
+
+    </div>
+</div>
+
+<!-- 相关业务代码 -->
+<script src="utility_paho.js"></script>
+
+</body>
+
+</html>

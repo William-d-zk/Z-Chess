@@ -53,6 +53,7 @@ import com.isahl.chess.bishop.io.ws.control.X104_Pong;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.schedule.Status;
+import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.knight.json.JsonUtil;
 import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.pawn.endpoint.spring.device.jpa.model.MessageBody;
@@ -115,18 +116,21 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                 messageEntity.setDestination(_RaftNode.getPeerId());
                 messageEntity.setDirection(CLIENT_TO_SERVER.getShort());
                 messageEntity.setOwner(x113.getLevel()
-                                           .getValue() < EXACTLY_ONCE.getValue() ? OWNER_SERVER
-                                                                                 : OWNER_CLIENT);
+                                           .getValue() < EXACTLY_ONCE.getValue() ? OWNER_SERVER: OWNER_CLIENT);
                 messageEntity.setBody(new MessageBody(x113.getTopic(), JsonUtil.readTree(x113.getPayload())));
                 messageEntity.setCmd(X113_QttPublish.COMMAND);
                 messageEntity.setOperation(OP_INSERT);
-                messageEntity.setStatus(Status.CREATED);
+                messageEntity.setStatus(Status.COMPLETED);
                 messageEntity.setMsgId(x113.getMsgId());
+                messageEntity.setInvalidAt(x113.isRetain() ? ZUID.EPOCH_DATE
+                                                           : LocalDateTime.now()
+                                                                          .plusDays(30));
                 _MessageRepository.save(messageEntity);
                 List<IControl> pushList = new LinkedList<>();
                 switch (x113.getLevel())
                 {
                     case EXACTLY_ONCE:
+                        messageEntity.setStatus(Status.CREATED);
                         X115_QttPubrec x115 = new X115_QttPubrec();
                         x115.setMsgId(x113.getMsgId());
                         _QttRouter.register(x115, session.getIndex());
@@ -143,39 +147,59 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
             case X114_QttPuback.COMMAND:
                 X114_QttPuback x114 = (X114_QttPuback) content;
                 _QttRouter.ack(x114, session.getIndex());
+                MessageEntity update = _MessageRepository.findByOriginAndDestinationAndMsgIdAndCreatedAtAfter(_RaftNode.getPeerId(),
+                                                                                                              session.getIndex(),
+                                                                                                              x114.getMsgId(),
+                                                                                                              LocalDateTime.now()
+                                                                                                                           .minusMinutes(5));
+                if (update != null) {
+                    update.setOwner(OWNER_CLIENT);
+                    update.setOperation(OP_MODIFY);
+                    update.setStatus(Status.COMPLETED);
+                    _MessageRepository.save(update);
+                }
                 break;
             case X115_QttPubrec.COMMAND:
                 X115_QttPubrec x115 = (X115_QttPubrec) content;
                 _QttRouter.ack(x115, session.getIndex());
-                MessageEntity update = _MessageRepository.findByOriginAndDestinationAndMsgIdAndCreatedAtAfter(_RaftNode.getPeerId(),
-                                                                                                              session.getIndex(),
-                                                                                                              x115.getMsgId(),
-                                                                                                              LocalDateTime.now()
-                                                                                                                           .minusMinutes(600));
-                update.setOwner(OWNER_CLIENT);
-                update.setOperation(OP_MODIFY);
-                _MessageRepository.save(update);
-                X116_QttPubrel x116 = new X116_QttPubrel();
-                x116.setMsgId(x115.getMsgId());
-                _QttRouter.register(x116, session.getIndex());
-                return new IControl[]{x116};
+                update = _MessageRepository.findByOriginAndDestinationAndMsgIdAndCreatedAtAfter(_RaftNode.getPeerId(),
+                                                                                                session.getIndex(),
+                                                                                                x115.getMsgId(),
+                                                                                                LocalDateTime.now()
+                                                                                                             .minusHours(10));
+                if (update != null) {
+                    update.setOwner(OWNER_CLIENT);
+                    update.setOperation(OP_MODIFY);
+                    update.setStatus(Status.RUNNING);
+                    _MessageRepository.save(update);
+
+                    X116_QttPubrel x116 = new X116_QttPubrel();
+                    x116.setMsgId(x115.getMsgId());
+                    _QttRouter.register(x116, session.getIndex());
+                    return new IControl[]{x116};
+                }
+                break;
             case X116_QttPubrel.COMMAND:
-                x116 = (X116_QttPubrel) content;
+                X116_QttPubrel x116 = (X116_QttPubrel) content;
                 X117_QttPubcomp x117 = new X117_QttPubcomp();
                 x117.setMsgId(x116.getMsgId());
                 _QttRouter.ack(x116, session.getIndex());
-                pushList = new LinkedList<>();
-                pushList.add(x117);
                 update = _MessageRepository.findByOriginAndDestinationAndMsgIdAndCreatedAtAfter(session.getIndex(),
                                                                                                 _RaftNode.getPeerId(),
                                                                                                 x116.getMsgId(),
                                                                                                 LocalDateTime.now()
                                                                                                              .minusSeconds(5));
-                update.setOwner(OWNER_SERVER);
-                update.setOperation(OP_MODIFY);
-                update = _MessageRepository.save(update);
-                brokerTopic(manager, update, EXACTLY_ONCE, pushList);
-                return pushList.toArray(new IControl[0]);
+                if (update != null) {
+                    update.setOwner(OWNER_SERVER);
+                    update.setOperation(OP_MODIFY);
+                    update.setStatus(Status.COMPLETED);
+                    update = _MessageRepository.save(update);
+                    pushList = new LinkedList<>();
+                    pushList.add(x117);
+                    brokerTopic(manager, update, EXACTLY_ONCE, pushList);
+                    return pushList.toArray(new IControl[0]);
+                }
+                break;
             case X117_QttPubcomp.COMMAND:
                 x117 = (X117_QttPubcomp) content;
                 _QttRouter.ack(x117, session.getIndex());
@@ -216,10 +240,14 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                      brokerMsg.setOperation(OP_INSERT);
                      brokerMsg.setOwner(OWNER_SERVER);
                      brokerMsg.setDirection(SERVER_TO_CLIENT.getShort());
+                     brokerMsg.setStatus(Status.CREATED);
                      brokerMsg.setBody(message.getBody());
                      brokerMsg.setCmd(X113_QttPublish.COMMAND);
+                     brokerMsg.setInvalidAt(message.getInvalidAt());
                      _MessageRepository.save(brokerMsg);
                      x113.setMsgId(brokerMsg.getMsgId());
+                     x113.setRetain(message.getInvalidAt()
+                                           .isEqual(ZUID.EPOCH_DATE));
                      _QttRouter.register(x113, sessionIndex);
                      return x113;
                  }
@@ -227,6 +255,11 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
              })
              .filter(Objects::nonNull)
              .forEach(pushList::add);
+        if (_RaftNode.isClusterMode()) {
+            //集群模式需要将消息进行广播，集群结构中，每个数据存储单元都设计为独立的。
+            //TODO
+        }
+
         _Logger.debug("push %s", pushList);
     }
 

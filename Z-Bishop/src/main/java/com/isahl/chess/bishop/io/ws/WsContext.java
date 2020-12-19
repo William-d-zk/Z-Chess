@@ -31,7 +31,6 @@ import java.util.Random;
 import com.isahl.chess.bishop.io.ZContext;
 import com.isahl.chess.bishop.io.ws.control.X101_HandShake;
 import com.isahl.chess.king.base.util.CryptUtil;
-import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.event.inf.ISort;
 import com.isahl.chess.queen.io.core.inf.ISessionOption;
 
@@ -57,19 +56,18 @@ public class WsContext
     {
         super(option, mode, type);
         _MaxPayloadSize = option.getSnfInByte() - 2;
+        Random r = new Random(System.nanoTime());
         if (_Type == ISort.Type.CONSUMER) {
-            Random r = new Random(System.nanoTime());
             byte[] seed = new byte[17];
             r.nextBytes(seed);
             _SecKey = Base64.getEncoder()
                             .encodeToString(CryptUtil.SHA1(seed));
             _SecAcceptExpect = getSecAccept(_SecKey);
-            int pos = Math.abs(r.nextInt() % 13);
-            IoUtil.read(seed, pos, _Mask);
         }
         else {
             _SecKey = _SecAcceptExpect = null;
         }
+        r.nextBytes(_Mask);
     }
 
     @Override
@@ -126,7 +124,7 @@ public class WsContext
     @Override
     public byte[] getMask()
     {
-        return _Mask;
+        return _Type == ISort.Type.CONSUMER ? _Mask: null;
     }
 
     @Override

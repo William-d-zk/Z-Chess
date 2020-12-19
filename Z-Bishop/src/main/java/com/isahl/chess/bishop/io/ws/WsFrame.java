@@ -75,8 +75,8 @@ public class WsFrame
     private byte[]           mPayload;
     private long             mPayloadLength                           = -1;
     // mask | first payload_length
-    private byte mPayload_Mask;
-    private int  mMaskLength = -1;
+    private byte mMaskCode;
+    private int  mMaskLength;
 
     public WsFrame()
     {
@@ -129,9 +129,7 @@ public class WsFrame
     public void setPayload(byte[] payload)
     {
         mPayload = payload;
-        mPayloadLength = payload == null ? 0
-                                         : payload.length;
-
+        mPayloadLength = payload == null ? 0: payload.length;
     }
 
     public byte[] getMask()
@@ -141,9 +139,10 @@ public class WsFrame
 
     public void setMask(byte[] mask)
     {
-        mMask = mask;
-        mMaskLength = mask == null ? 0
-                                   : mask.length;
+        if (mask != null) {
+            mMask = mask;
+            mMaskLength = mask.length;
+        }
     }
 
     public long getPayloadLength()
@@ -163,11 +162,8 @@ public class WsFrame
 
     public byte[] getPayloadLengthArray()
     {
-        if (mPayloadLength <= 0) return new byte[]{(byte) (mMask == null ? 0
-                                                                         : 0x80)};
-        int t_size = mPayloadLength > 0xFFFF ? 9
-                                             : mPayloadLength > 0x7D ? 3
-                                                                     : 1;
+        if (mPayloadLength <= 0) return new byte[]{(byte) (mMask == null ? 0: 0x80)};
+        int t_size = mPayloadLength > 0xFFFF ? 9: mPayloadLength > 0x7D ? 3: 1;
         byte[] x = new byte[t_size];
         if (mPayloadLength > 0xFFFF) {
             x[0] = 0x7F;
@@ -178,7 +174,7 @@ public class WsFrame
             IoUtil.writeShort((int) mPayloadLength, x, 1);
         }
         else x[0] = (byte) mPayloadLength;
-        if (mMask != null) x[0] |= 0x80;
+        if (mMask != null) mMaskCode = x[0] |= 0x80;
         return x;
     }
 
@@ -209,21 +205,15 @@ public class WsFrame
     @Override
     public int dataLength()
     {
-        return 1
-               + mMaskLength
-               + (int) mPayloadLength
-               + (mPayloadLength > 0xFFFF ? 9
-                                          : mPayloadLength > 0x7D ? 3
-                                                                  : 1);
+        return 1 + mMaskLength + (int) mPayloadLength + (mPayloadLength > 0xFFFF ? 9: mPayloadLength > 0x7D ? 3: 1);
 
     }
 
     @Override
     public int lackLength(int position)
     {
-        int result = (mPayload_Mask & 0x80) != 0 ? 4
-                                                 : 0;
-        return switch (mPayload_Mask & 0x7F)
+        int result = (mMaskCode & 0x80) != 0 ? 4: 0;
+        return switch (mMaskCode & 0x7F)
         {
             case 0x7F -> 9 + result;
             case 0x7E -> 3 + result;
@@ -233,18 +223,17 @@ public class WsFrame
 
     public void setMaskCode(byte b)
     {
-        mPayload_Mask = b;
+        mMaskCode = b;
     }
 
     public byte getLengthCode()
     {
-        return (byte) (mPayload_Mask & 0x7F);
+        return (byte) (mMaskCode & 0x7F);
     }
 
     public byte getFrameFin()
     {
-        if (frame_fragment) return frame_fin ? getFragmentEndFrame()
-                                             : getFragmentFrame();
+        if (frame_fragment) return frame_fin ? getFragmentEndFrame(): getFragmentFrame();
         else return getFrame(frame_op_code);
     }
 
@@ -278,7 +267,7 @@ public class WsFrame
         mPayload = null;
         mPayloadLength = -1;
         mMaskLength = -1;
-        mPayload_Mask = 0;
+        mMaskCode = 0;
         frame_op_code = 0;
         frame_fragment = false;
         frame_fin = false;
@@ -290,12 +279,12 @@ public class WsFrame
         byte attr = data[pos++];
         frame_op_code = getOpCode(attr);
         frame_fin = isFrameFin(attr);
-        mPayload_Mask = data[pos++];
+        mMaskCode = data[pos++];
         int p = lackLength(pos);
         switch (p)
         {
             case WsFrame.frame_payload_length_7_no_mask_position:
-                setPayloadLength(mPayload_Mask & 0x7F);
+                setPayloadLength(mMaskCode & 0x7F);
                 setMask(null);
                 break;
             case WsFrame.frame_payload_length_16_no_mask_position:
@@ -304,7 +293,7 @@ public class WsFrame
                 pos += 2;
                 break;
             case WsFrame.frame_payload_length_7_mask_position:
-                setPayloadLength(mPayload_Mask & 0x7F);
+                setPayloadLength(mMaskCode & 0x7F);
                 byte[] mask = new byte[4];
                 pos = IoUtil.read(data, pos, mask);
                 setMask(mask);

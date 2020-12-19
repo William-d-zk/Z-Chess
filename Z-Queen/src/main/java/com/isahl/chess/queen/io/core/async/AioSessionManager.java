@@ -79,10 +79,14 @@ public abstract class AioSessionManager<K extends IPipeCore>
         _Prefix2SessionMaps = new Map[_TYPE_COUNT];
         _SessionsSets = new Set[_TYPE_COUNT];
         Arrays.setAll(_SessionsSets,
-                      slot -> _AioConfig.isDomainActive(slot) ? new HashSet<>(1 << getConfigPower(slot)): null);
+                      slot -> _AioConfig.isDomainActive(slot) ? new HashSet<>(1 << getConfigPower(slot))
+                                                              : null);
         Arrays.setAll(_Index2SessionMaps,
-                      slot -> _AioConfig.isDomainActive(slot) ? new HashMap<>(1 << getConfigPower(slot)): null);
-        Arrays.setAll(_Prefix2SessionMaps, slot -> _AioConfig.isDomainActive(slot) ? new HashMap<>(23): null);
+                      slot -> _AioConfig.isDomainActive(slot) ? new HashMap<>(1 << getConfigPower(slot))
+                                                              : null);
+        Arrays.setAll(_Prefix2SessionMaps,
+                      slot -> _AioConfig.isDomainActive(slot) ? new HashMap<>(23)
+                                                              : null);
     }
 
     protected int getConfigPower(int slot)
@@ -143,7 +147,7 @@ public abstract class AioSessionManager<K extends IPipeCore>
             throw new IllegalArgumentException("invalid index");
         }
         /*
-         * 1:相同 Session 不同 _Index 进行登录，产生多个 _Index 对应 相同 Session 的情况 
+         * 1:相同 Session 不同 _Index 进行登录，产生多个 _Index 对应 相同 Session 的情况
          * 2:相同 _Index 在不同的 Session 上登录，产生覆盖
          * Session 的情况。
          */
@@ -286,13 +290,13 @@ public abstract class AioSessionManager<K extends IPipeCore>
 
     public Set<ISession> getSessionSetWithType(int typeSlot)
     {
-        if (typeSlot <= ZUID.MAX_TYPE) { return _SessionsSets[typeSlot]; }
-        return null;
+        return typeSlot > ZUID.MAX_TYPE ? null
+                                        : _SessionsSets[typeSlot];
     }
 
     public Collection<ISession> getMappedSessionsWithType(int typeSlot)
     {
-        if (typeSlot <= ZUID.MAX_TYPE) { return _Index2SessionMaps[typeSlot].values(); }
-        return null;
+        return typeSlot > ZUID.MAX_TYPE ? null
+                                        : _Index2SessionMaps[typeSlot].values();
     }
 }
