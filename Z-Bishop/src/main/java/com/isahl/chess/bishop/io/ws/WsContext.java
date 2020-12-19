@@ -46,7 +46,7 @@ public class WsContext
 
     private final String _SecKey, _SecAcceptExpect;
     private final int    _MaxPayloadSize;
-    private final byte[] _Mask = new byte[4];
+    private final byte[] _Mask;
     private int          mHandshakeState;
     private WsHandshake  mHandshake;
 
@@ -56,18 +56,20 @@ public class WsContext
     {
         super(option, mode, type);
         _MaxPayloadSize = option.getSnfInByte() - 2;
-        Random r = new Random(System.nanoTime());
         if (_Type == ISort.Type.CONSUMER) {
+            Random r = new Random(System.nanoTime());
             byte[] seed = new byte[17];
             r.nextBytes(seed);
             _SecKey = Base64.getEncoder()
                             .encodeToString(CryptUtil.SHA1(seed));
             _SecAcceptExpect = getSecAccept(_SecKey);
+            _Mask = new byte[4];
+            r.nextBytes(_Mask);
         }
         else {
             _SecKey = _SecAcceptExpect = null;
+            _Mask = null;
         }
-        r.nextBytes(_Mask);
     }
 
     @Override
@@ -124,7 +126,7 @@ public class WsContext
     @Override
     public byte[] getMask()
     {
-        return _Type == ISort.Type.CONSUMER ? _Mask: null;
+        return _Mask;
     }
 
     @Override
