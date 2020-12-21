@@ -1,26 +1,23 @@
-/*
- * MIT License
+/******************************************************************************
+ * NTRU Cryptography Reference Source Code
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (C) 2009-2016  Security Innovation (SI)
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * SI has dedicated the work to the public domain by waiving all of its rights
+ * to the work worldwide under copyright law, including all related and
+ * neighboring rights, to the extent allowed by law.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * You can copy, modify, distribute and perform the work, even for commercial
+ * purposes, all without asking permission. You should have received a copy of
+ * the creative commons license (CC0 1.0 universal) along with this program.
+ * See the license file for more information. 
+ *
+ *
+ *********************************************************************************/
 
 package com.securityinnovation.jNeo.inputstream;
 
@@ -33,6 +30,7 @@ import com.securityinnovation.jNeo.digest.DigestAlgorithm;
  * This class implements an InputStream whose output conforms to
  * the X9.82 specification for "Hash Function DRBG Using Any Approved
  * Hash Function" (section 10.1.3 of ANS X9.82, Part 3, Draft July 2003).
+ *
  * <p>
  * In addition to the InputStream API, this class also adds
  * functions for seeding and reseeding the DRBG.
@@ -55,70 +53,70 @@ public class X982Drbg
     // on digital signtures. The recommended value of t for each
     // hash algorithm is the leading <n> bytes of this string,
     // where n = the digest length of the hash algorithm.
-    private final static byte[] t = { (byte) 0xcf,
-                                      (byte) 0x83,
-                                      (byte) 0xe1,
-                                      (byte) 0x35,
-                                      (byte) 0x7e,
-                                      (byte) 0xef,
-                                      (byte) 0xb8,
-                                      (byte) 0xbd,
-                                      (byte) 0xf1,
-                                      (byte) 0x54,
-                                      (byte) 0x28,
-                                      (byte) 0x50,
-                                      (byte) 0xd6,
-                                      (byte) 0x6d,
-                                      (byte) 0x80,
-                                      (byte) 0x07,
-                                      (byte) 0xd6,
-                                      (byte) 0x20,
-                                      (byte) 0xe4,
-                                      (byte) 0x05,
-                                      (byte) 0x0b,
-                                      (byte) 0x57,
-                                      (byte) 0x15,
-                                      (byte) 0xdc,
-                                      (byte) 0x83,
-                                      (byte) 0xf4,
-                                      (byte) 0xa9,
-                                      (byte) 0x21,
-                                      (byte) 0xd3,
-                                      (byte) 0x6c,
-                                      (byte) 0xe9,
-                                      (byte) 0xce,
-                                      (byte) 0x47,
-                                      (byte) 0xd0,
-                                      (byte) 0xd1,
-                                      (byte) 0x3c,
-                                      (byte) 0x5d,
-                                      (byte) 0x85,
-                                      (byte) 0xf2,
-                                      (byte) 0xb0,
-                                      (byte) 0xff,
-                                      (byte) 0x83,
-                                      (byte) 0x18,
-                                      (byte) 0xd2,
-                                      (byte) 0x87,
-                                      (byte) 0x7e,
-                                      (byte) 0xec,
-                                      (byte) 0x2f,
-                                      (byte) 0x63,
-                                      (byte) 0xb9,
-                                      (byte) 0x31,
-                                      (byte) 0xbd,
-                                      (byte) 0x47,
-                                      (byte) 0x41,
-                                      (byte) 0x7a,
-                                      (byte) 0x81,
-                                      (byte) 0xa5,
-                                      (byte) 0x38,
-                                      (byte) 0x32,
-                                      (byte) 0x7a,
-                                      (byte) 0xf9,
-                                      (byte) 0x27,
-                                      (byte) 0xda,
-                                      (byte) 0x3e };
+    private final static byte[] t = {(byte) 0xcf,
+                                     (byte) 0x83,
+                                     (byte) 0xe1,
+                                     (byte) 0x35,
+                                     (byte) 0x7e,
+                                     (byte) 0xef,
+                                     (byte) 0xb8,
+                                     (byte) 0xbd,
+                                     (byte) 0xf1,
+                                     (byte) 0x54,
+                                     (byte) 0x28,
+                                     (byte) 0x50,
+                                     (byte) 0xd6,
+                                     (byte) 0x6d,
+                                     (byte) 0x80,
+                                     (byte) 0x07,
+                                     (byte) 0xd6,
+                                     (byte) 0x20,
+                                     (byte) 0xe4,
+                                     (byte) 0x05,
+                                     (byte) 0x0b,
+                                     (byte) 0x57,
+                                     (byte) 0x15,
+                                     (byte) 0xdc,
+                                     (byte) 0x83,
+                                     (byte) 0xf4,
+                                     (byte) 0xa9,
+                                     (byte) 0x21,
+                                     (byte) 0xd3,
+                                     (byte) 0x6c,
+                                     (byte) 0xe9,
+                                     (byte) 0xce,
+                                     (byte) 0x47,
+                                     (byte) 0xd0,
+                                     (byte) 0xd1,
+                                     (byte) 0x3c,
+                                     (byte) 0x5d,
+                                     (byte) 0x85,
+                                     (byte) 0xf2,
+                                     (byte) 0xb0,
+                                     (byte) 0xff,
+                                     (byte) 0x83,
+                                     (byte) 0x18,
+                                     (byte) 0xd2,
+                                     (byte) 0x87,
+                                     (byte) 0x7e,
+                                     (byte) 0xec,
+                                     (byte) 0x2f,
+                                     (byte) 0x63,
+                                     (byte) 0xb9,
+                                     (byte) 0x31,
+                                     (byte) 0xbd,
+                                     (byte) 0x47,
+                                     (byte) 0x41,
+                                     (byte) 0x7a,
+                                     (byte) 0x81,
+                                     (byte) 0xa5,
+                                     (byte) 0x38,
+                                     (byte) 0x32,
+                                     (byte) 0x7a,
+                                     (byte) 0xf9,
+                                     (byte) 0x27,
+                                     (byte) 0xda,
+                                     (byte) 0x3e};
 
     /**
      * Implement the Initialize_Hash_DRBG algorithm from the X9.82 spec.
@@ -129,7 +127,7 @@ public class X982Drbg
     public void seed(byte[] _seed)
     {
         // TBD: Sanity-check seed based on hash alg?
-        // sha1 --> len>160/8
+        // sha1   --> len>160/8
         // sha256 --> len>256/8
         // sha512 --> len>512/8
 
@@ -164,11 +162,11 @@ public class X982Drbg
         ctr = 1;
 
         // Set new V = leftmost _seed.length bits of
-        // Hash(V | newSeed | 0x01) |
-        // Hash(V | newSeed | 0x02) |
-        // Hash(V | newSeed | 0x03) |
-        // ...
-        //
+        //                Hash(V | newSeed | 0x01) |
+        //                Hash(V | newSeed | 0x02) |
+        //                Hash(V | newSeed | 0x03) |
+        //                ...
+        // 
         // so that new V.length = _seed.length.
 
         // tmp = V | newSeed | 0x01
@@ -177,7 +175,7 @@ public class X982Drbg
         System.arraycopy(_seed, 0, tmp, V.length, _seed.length);
         tmp[tmp.length - 1] = 1;
 
-        // Allocate a buffer to hold the new V.
+        // Allocate a buffer to hold the new V. 
         // Do as many full blocks as we can directly into newV
         // then do a final update into tmp and extract a partial block.
         int hashLen = mHash.getDigestLen();
@@ -226,9 +224,10 @@ public class X982Drbg
      * Implement the Hash_DRBG algorithm from the X9.82 spec.
      * This implementation does not support any user input.
      */
+
     public int read(byte[] out, int offset, int len)
     {
-        if (out == null) throw new NullPointerException("Output buffer is null");
+        //        if (out == null) throw new NullPointerException("Output buffer is null");
         if (offset + len > out.length) throw new IllegalArgumentException("Writing "
                                                                           + len
                                                                           + " bytes of output starting at offset "
@@ -242,7 +241,7 @@ public class X982Drbg
         // Generate output bits
         hashGen(out, offset, len);
 
-        // Update State: V = V + C + out[..len] + ctr
+        // Update State: V = V + C + out[..len] + ctr 
         int suffixOffset = Math.max(offset, offset + len - V.length);
         int suffixLength = Math.min(len, V.length);
         plusEquals(V, C, 0, C.length);
@@ -292,6 +291,7 @@ public class X982Drbg
         int carry = 0;
         int i = len - 1, j = accum.length - 1;
         while ((i >= 0) && (j >= 0)) {
+            int oldCarry = carry;
             carry = (0xff & accum[j]) + (0xff & in[i]) + carry;
             accum[j] = (byte) carry;
             carry >>= 8;
@@ -321,7 +321,7 @@ public class X982Drbg
     /**
      * The underlying hash function driving the PRNG.
      */
-    private Digest mHash;
+    private final Digest mHash;
 
     /**
      * The seed vector, called V in the X9.82 spec. Updated in

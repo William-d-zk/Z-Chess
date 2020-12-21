@@ -1,26 +1,23 @@
-/*
- * MIT License
+/******************************************************************************
+ * NTRU Cryptography Reference Source Code
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (C) 2009-2016  Security Innovation (SI)
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * SI has dedicated the work to the public domain by waiving all of its rights
+ * to the work worldwide under copyright law, including all related and
+ * neighboring rights, to the extent allowed by law.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * You can copy, modify, distribute and perform the work, even for commercial
+ * purposes, all without asking permission. You should have received a copy of
+ * the creative commons license (CC0 1.0 universal) along with this program.
+ * See the license file for more information. 
+ *
+ *
+ *********************************************************************************/
 
 package com.securityinnovation.jNeo.inputstream;
 
@@ -31,6 +28,7 @@ import java.io.InputStream;
  * <p>
  * This class buffers the output of an InputStream. It is parameterized
  * by an InputStream that it wraps and a buffer length.
+ *
  * <p>
  * This differs from the standard java.io.BufferedInputStream in
  * that the standard BIS reads n bytes of input from its wrapped
@@ -38,6 +36,7 @@ import java.io.InputStream;
  * on the other hand, reads n bytes of input from the wrapped input,
  * doles it out, and when it is all consumed it will request another
  * n bytes of input from the wrapped InputStream.
+ *
  * <p>
  * This class was written to buffer the output of the X9.82 DRBG.
  * The DRBG is defined to hash its internal state to produce the
@@ -90,6 +89,7 @@ public class RefillingBufferedInputStream
      *            offset at which to start storing bytes.
      * @param len
      *            maximum number of bytes to read.
+     *
      *            See the parallel <code>read</code> method in
      *            <code>InputStream</code>.
      */

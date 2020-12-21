@@ -1,26 +1,23 @@
-/*
- * MIT License
+/******************************************************************************
+ * NTRU Cryptography Reference Source Code
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (C) 2009-2016  Security Innovation (SI)
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * SI has dedicated the work to the public domain by waiving all of its rights
+ * to the work worldwide under copyright law, including all related and
+ * neighboring rights, to the extent allowed by law.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * You can copy, modify, distribute and perform the work, even for commercial
+ * purposes, all without asking permission. You should have received a copy of
+ * the creative commons license (CC0 1.0 universal) along with this program.
+ * See the license file for more information. 
+ *
+ *
+ *********************************************************************************/
 
 package com.securityinnovation.jNeo.digest;
 
@@ -159,7 +156,7 @@ class Sha1
     }
 
     // SHA-1 block routines
-    // ......................................................................
+    //......................................................................
 
     /** The buffer used to store the last incomplete block. */
     private byte[] buf = new byte[BLOCK_LEN];
@@ -169,6 +166,8 @@ class Sha1
 
     /** The number of bytes that have been input to the digest. */
     private long byteCount;
+
+    private static final long MAXCNT = (1L << 61) - 1L;
 
     /** Length of the final hash (in bytes). */
     static final int HASH_LEN = 20;
@@ -234,7 +233,7 @@ class Sha1
 
         int A, B, C, D, E;
 
-        /* initLeader A - E */
+        /* init A - E */
 
         A = state[0];
         B = state[1];

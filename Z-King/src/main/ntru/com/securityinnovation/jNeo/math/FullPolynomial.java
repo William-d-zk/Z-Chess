@@ -1,26 +1,23 @@
-/*
- * MIT License
+/******************************************************************************
+ * NTRU Cryptography Reference Source Code
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (C) 2009-2016  Security Innovation (SI)
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * SI has dedicated the work to the public domain by waiving all of its rights
+ * to the work worldwide under copyright law, including all related and
+ * neighboring rights, to the extent allowed by law.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * You can copy, modify, distribute and perform the work, even for commercial
+ * purposes, all without asking permission. You should have received a copy of
+ * the creative commons license (CC0 1.0 universal) along with this program.
+ * See the license file for more information. 
+ *
+ *
+ *********************************************************************************/
 
 package com.securityinnovation.jNeo.math;
 
@@ -73,7 +70,7 @@ public class FullPolynomial
      * @param newLowerLimit
      *            the new smallest coefficient value.
      */
-    public static final void recenterModQ(FullPolynomial a, int q, int newLowerLimit)
+    public static void recenterModQ(FullPolynomial a, int q, int newLowerLimit)
     {
         int newUpperLimit = newLowerLimit + q;
         for (int i = 0; i < a.p.length; i++) {
@@ -91,6 +88,7 @@ public class FullPolynomial
      *            the first polynomial.
      * @param b
      *            the second polynomial. It must be of the same degree as a.
+     *
      * @return a*b modulo X^N.
      */
     public static FullPolynomial convolution(FullPolynomial a, FullPolynomial b)
@@ -116,6 +114,7 @@ public class FullPolynomial
      * @param coefficientModulus
      *            the modulus for the coefficients of the
      *            resulting polynomial.
+     *
      * @return a*b modulo X^N.
      */
     public static FullPolynomial convolution(FullPolynomial a, FullPolynomial b, int coefficientModulus)
@@ -136,9 +135,10 @@ public class FullPolynomial
      *            the second addend.
      * @param coefficientModulus
      *            the modulus for the polynomial coefficients
+     *
      * @return the resulting polynomial.
      */
-    public static final FullPolynomial add(FullPolynomial a, FullPolynomial b, int coefficientModulus)
+    public static FullPolynomial add(FullPolynomial a, FullPolynomial b, int coefficientModulus)
     {
         FullPolynomial c = new FullPolynomial(a.p.length);
         for (int i = 0; i < c.p.length; i++)
@@ -160,12 +160,13 @@ public class FullPolynomial
      *            the modulus for the polynomial coefficients.
      * @param newLowerLimit
      *            the smallest coefficient value of the result.
+     *
      * @return the resulting polynomial.
      */
-    public static final FullPolynomial addAndRecenter(FullPolynomial a,
-                                                      FullPolynomial b,
-                                                      int coefficientModulus,
-                                                      int newLowerLimit)
+    public static FullPolynomial addAndRecenter(FullPolynomial a,
+                                                FullPolynomial b,
+                                                int coefficientModulus,
+                                                int newLowerLimit)
     {
         FullPolynomial c = new FullPolynomial(a.p.length);
         for (int i = 0; i < c.p.length; i++)
@@ -185,9 +186,10 @@ public class FullPolynomial
      *            the subtrahend.
      * @param coefficientModulus
      *            the modulus for the polynomial coefficients.
+     *
      * @return the difference.
      */
-    public static final FullPolynomial subtract(FullPolynomial a, FullPolynomial b, int coefficientModulus)
+    public static FullPolynomial subtract(FullPolynomial a, FullPolynomial b, int coefficientModulus)
     {
         FullPolynomial c = new FullPolynomial(a.p.length);
         for (int i = 0; i < c.p.length; i++)
@@ -209,12 +211,13 @@ public class FullPolynomial
      *            the modulus for the polynomial coefficients.
      * @param newLowerLimit
      *            the smallest coefficient value of the result.
+     *
      * @return the difference.
      */
-    public static final FullPolynomial subtractAndRecenter(FullPolynomial a,
-                                                           FullPolynomial b,
-                                                           int coefficientModulus,
-                                                           int newLowerLimit)
+    public static FullPolynomial subtractAndRecenter(FullPolynomial a,
+                                                     FullPolynomial b,
+                                                     int coefficientModulus,
+                                                     int newLowerLimit)
     {
         FullPolynomial c = new FullPolynomial(a.p.length);
         for (int i = 0; i < c.p.length; i++)
@@ -228,6 +231,7 @@ public class FullPolynomial
      *
      * @param o
      *            the object to compare to.
+     *
      * @return true iff o is a FullPolynomial with the same degree as
      *         this object and the respective coefficient lists contain the
      *         same values.
@@ -238,7 +242,7 @@ public class FullPolynomial
             FullPolynomial other = (FullPolynomial) o;
             return java.util.Arrays.equals(p, other.p);
         }
-        catch (Exception e) {}
+        catch (Exception ignored) {}
         return false;
     }
 

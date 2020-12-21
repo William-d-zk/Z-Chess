@@ -1,27 +1,23 @@
-/*
- * MIT License
+/******************************************************************************
+ * NTRU Cryptography Reference Source Code
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (C) 2009-2016  Security Innovation (SI)
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * SI has dedicated the work to the public domain by waiving all of its rights
+ * to the work worldwide under copyright law, including all related and
+ * neighboring rights, to the extent allowed by law.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * You can copy, modify, distribute and perform the work, even for commercial
+ * purposes, all without asking permission. You should have received a copy of
+ * the creative commons license (CC0 1.0 universal) along with this program.
+ * See the license file for more information. 
+ *
+ *
+ *********************************************************************************/
 package com.securityinnovation.jNeo.ntruencrypt;
 
 import java.io.IOException;
@@ -206,7 +202,7 @@ public class NtruEncryptKey
      * @param message
      *            the plaintext
      * @param prng
-     *            the PRNG to use as a source of randomness during cipher.
+     *            the PRNG to use as a source of randomness during encryption.
      */
     public byte[] encrypt(byte[] message, Random prng) throws ObjectClosedException, PlaintextBadLengthException
     {
@@ -405,38 +401,33 @@ public class NtruEncryptKey
         byte a1 = 0, a2 = 0;
         switch (b & 0x07)
         {
-            case (0):
-                a1 = 0;
-                a2 = 0;
-                break;
-            case (1):
-                a1 = 0;
-                a2 = 1;
-                break;
-            case (2):
-                a1 = 0;
-                a2 = -1;
-                break;
-            case (3):
-                a1 = 1;
-                a2 = 0;
-                break;
-            case (4):
-                a1 = 1;
-                a2 = 1;
-                break;
-            case (5):
-                a1 = 1;
-                a2 = -1;
-                break;
-            case (6):
-                a1 = -1;
-                a2 = 0;
-                break;
-            case (7):
-                a1 = -1;
-                a2 = 1;
-                break;
+            case (1) -> a2 = 1;
+            case (2) -> a2 = -1;
+            case (3) ->
+                {
+                    a1 = 1;
+                    a2 = 0;
+                }
+            case (4) ->
+                {
+                    a1 = 1;
+                    a2 = 1;
+                }
+            case (5) ->
+                {
+                    a1 = 1;
+                    a2 = -1;
+                }
+            case (6) ->
+                {
+                    a1 = -1;
+                    a2 = 0;
+                }
+            case (7) ->
+                {
+                    a1 = -1;
+                    a2 = 1;
+                }
         }
         if (offset < maxOffset) poly[offset++] = a1;
         if (offset < maxOffset) poly[offset] = a2;
@@ -502,27 +493,27 @@ public class NtruEncryptKey
         if (t2 == -1) t2 = 2;
         int t = ((t1 << 2) | t2);
 
-        switch (t)
+        return switch (t)
         {
-            case (0):
-                return 0x00; // (t1,t2)=( 0, 0) ==> t = 0000
-            case (1):
-                return 0x01; // (t1,t2)=( 0, 1) ==> t = 0001
-            case (2):
-                return 0x02; // (t1,t2)=( 0, -1) ==> t = 0010
-            case (4):
-                return 0x03; // (t1,t2)=( 1, 0) ==> t = 0100
-            case (5):
-                return 0x04; // (t1,t2)=( 1, 1) ==> t = 0101
-            case (6):
-                return 0x05; // (t1,t2)=( 1, -1) ==> t = 0110
-            case (8):
-                return 0x06; // (t1,t2)=(-1, 0) ==> t = 1000
-            case (9):
-                return 0x07; // (t1,t2)=(-1, 1) ==> t = 1001
-            default:
-                return -1; // (t1,t2)=(-1, -1) ==> t = 1010
-        }
+            //  (t1,t2)=( 0,  0)  ==>  t = 0000
+            case (0) -> (byte) 0x00;
+            //  (t1,t2)=( 0,  1)  ==>  t = 0001
+            case (1) -> (byte) 0x01;
+            //  (t1,t2)=( 0, -1)  ==>  t = 0010
+            case (2) -> (byte) 0x02;
+            //  (t1,t2)=( 1,  0)  ==>  t = 0100
+            case (4) -> (byte) 0x03;
+            //  (t1,t2)=( 1,  1)  ==>  t = 0101
+            case (5) -> (byte) 0x04;
+            //  (t1,t2)=( 1, -1)  ==>  t = 0110
+            case (6) -> (byte) 0x05;
+            //  (t1,t2)=(-1,  0)  ==>  t = 1000
+            case (8) -> (byte) 0x06;
+            //  (t1,t2)=(-1,  1)  ==>  t = 1001
+            case (9) -> (byte) 0x07;
+            //  (t1,t2)=(-1, -1)  ==>  t = 1010
+            default -> (byte) -1;
+        };
     }
 
     /*
@@ -567,7 +558,7 @@ public class NtruEncryptKey
         // Break the integer into bytes and put into the bits[] array.
         if (bOffset < bits.length) bits[bOffset++] = (byte) (val >> 16);
         if (bOffset < bits.length) bits[bOffset++] = (byte) (val >> 8);
-        if (bOffset < bits.length) bits[bOffset++] = (byte) (val);
+        if (bOffset < bits.length) bits[bOffset] = (byte) (val);
 
         return true;
     }
@@ -575,7 +566,7 @@ public class NtruEncryptKey
     byte[] convPolyTrinaryToBinary(FullPolynomial trin)
     {
         // The output of this operation is supposed to have
-        // the form (b | mLen | m | p0) so we can
+        // the form   (b | mLen | m | p0)  so we can
         // calculate how many bytes that is supposed to be.
         int numBytes = (keyParams.db / 8 + keyParams.lLen + keyParams.maxMsgLenBytes + 1);
         byte[] b = new byte[numBytes];
@@ -636,7 +627,7 @@ public class NtruEncryptKey
         R4[i] = 0;
         if (remElements > 0) R4[i] |= (byte) ((R.p[j++] & 0x03) << 6);
         if (remElements > 1) R4[i] |= (byte) ((R.p[j++] & 0x03) << 4);
-        if (remElements > 2) R4[i] |= (byte) ((R.p[j++] & 0x03) << 2);
+        if (remElements > 2) R4[i] |= (byte) ((R.p[j] & 0x03) << 2);
 
         return R4;
     }
@@ -657,7 +648,7 @@ public class NtruEncryptKey
 
     /*
      * check_dm0
-     * Verify that the trinomial p has at least dm0 -1's,
+     * Verify that the trinomial p has at least dm0 -1's, 
      * at least dm0 0's, and at least dm0 1's.
      */
     boolean check_dm0(FullPolynomial p, int dm0)
@@ -668,7 +659,7 @@ public class NtruEncryptKey
             if (s == -1) numNegOnes++;
             else if (s == 1) numOnes += 1;
         }
-        return !((numOnes < dm0) || (numNegOnes < dm0) || (p.p.length - (numOnes + numNegOnes) < dm0));
+        return (numOnes >= dm0) && (numNegOnes >= dm0) && (p.p.length - (numOnes + numNegOnes) >= dm0);
     }
 
     int parseMsgLengthFromM(byte[] M)
@@ -693,7 +684,7 @@ public class NtruEncryptKey
         // 1) First db bytes are random data. Nothing to check there.
 
         // 2) Next lLen bytes are the message length. Decode this and
-        // verify it is valid.
+        //    verify it is valid.
         int mLen = 0;
         if (M.length >= db + keyParams.lLen) mLen = parseMsgLengthFromM(M);
         if ((mLen < 0) || (mLen >= keyParams.maxMsgLenBytes)) {
@@ -707,7 +698,10 @@ public class NtruEncryptKey
 
         // 4) Remaining bytes are p0. Make sure they are all 0.
         for (int i = db + keyParams.lLen + mLen; (i < M.length); i++)
-            if (M[i] != 0) ok = false;
+            if (M[i] != 0) {
+                ok = false;
+                break;
+            }
 
         if (ok) return mLen;
         else return -1;

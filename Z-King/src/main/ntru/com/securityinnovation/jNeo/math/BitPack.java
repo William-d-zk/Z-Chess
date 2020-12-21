@@ -1,26 +1,23 @@
-/*
- * MIT License
+/******************************************************************************
+ * NTRU Cryptography Reference Source Code
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (C) 2009-2016  Security Innovation (SI)
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * SI has dedicated the work to the public domain by waiving all of its rights
+ * to the work worldwide under copyright law, including all related and
+ * neighboring rights, to the extent allowed by law.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * You can copy, modify, distribute and perform the work, even for commercial
+ * purposes, all without asking permission. You should have received a copy of
+ * the creative commons license (CC0 1.0 universal) along with this program.
+ * See the license file for more information. 
+ *
+ *
+ *********************************************************************************/
 
 package com.securityinnovation.jNeo.math;
 
@@ -28,6 +25,7 @@ package com.securityinnovation.jNeo.math;
  * This class provides utilities for packing values represented by
  * 16-bit integers into byte arrays, such that the packed elements use
  * only the minimal number of bits in the output stream.
+ *
  * <p>
  * For example, given an array of values, each of which is in the
  * range 0..2^9-1, the values could be represented in java as a short
@@ -42,15 +40,15 @@ public class BitPack
      * <p>
      * For example:
      * <br>
-     * val=5 --> return 3 (2^2 < 5 < 2^3)
+     * val=5 --&gt; return 3 (2^2 &lt; 5 &lt; 2^3)
      * <br>
-     * val=17 --> return 5 (2^4 < 17 < 2^5)
+     * val=17 --&gt; return 5 (2^4 &lt; 17 &lt; 2^5)
      *
      * @param val
      *            the value being measured
      * @return the smallest number of bits needed to represent the input value.
      */
-    public static final int countBits(int val)
+    public static int countBits(int val)
     {
         for (int i = 0; i < 32; i++)
             if ((1 << i) > val) return i;
@@ -67,7 +65,7 @@ public class BitPack
      *         significant 'numbits' bits are set (1) and the remaining
      *         bits are clear (0).
      */
-    public static final int lowBitMask(int numBits)
+    public static int lowBitMask(int numBits)
     {
         return ~(-1 << numBits);
     }
@@ -82,10 +80,11 @@ public class BitPack
      *            a maximal element value, larger than any
      *            input value (typically one larger than the max
      *            input value).
+     *
      * @return the number of elements required for the output array,
      *         or 0 on error.
      */
-    public final static int pack(int numElts, int maxEltValue)
+    public static int pack(int numElts, int maxEltValue)
     {
         return pack(numElts, maxEltValue, null, 0, null, 0);
     }
@@ -112,7 +111,7 @@ public class BitPack
      * @return the number of elements used in the output array,
      *         or 0 on error.
      */
-    public final static int pack(int numElts, int maxEltValue, short[] src, int srcOffset, byte[] tgt, int tgtOffset)
+    public static int pack(int numElts, int maxEltValue, short[] src, int srcOffset, byte[] tgt, int tgtOffset)
     {
         // Get the number of bits in each element
         int bitsPerElement = countBits(maxEltValue - 1);
@@ -149,13 +148,13 @@ public class BitPack
      * @return the number of elements used in the output array,
      *         or 0 on error.
      */
-    public final static int pack(int numElts,
-                                 int maxEltValue,
-                                 int maxOutLen,
-                                 short[] src,
-                                 int srcOffset,
-                                 byte[] tgt,
-                                 int tgtOffset)
+    public static int pack(int numElts,
+                           int maxEltValue,
+                           int maxOutLen,
+                           short[] src,
+                           int srcOffset,
+                           byte[] tgt,
+                           int tgtOffset)
     {
         if (tgt == null) return maxOutLen;
 
@@ -183,6 +182,7 @@ public class BitPack
                 // stream. Then clear cur, and mask the used bits out
                 // of next.
                 int shift = cb + nb - 8;
+                int tmp = 0xff & (cur | (next >> shift));
                 tgt[j++] = (byte) (cur | (next >> shift));
                 cur = 0;
                 cb = 0;
@@ -209,7 +209,7 @@ public class BitPack
      * @return the number of input bytes that would be consumed,
      *         or 0 on error.
      */
-    public final static int unpack(int numElts, int maxEltValue)
+    public static int unpack(int numElts, int maxEltValue)
     {
         return unpack(numElts, maxEltValue, null, 0, null, 0);
     }
@@ -237,7 +237,7 @@ public class BitPack
      * @return the number of input bytes that were consumed,
      *         or 0 on error.
      */
-    public final static int unpack(int numElts, int maxEltValue, byte[] src, int srcOffset, short[] tgt, int tgtOffset)
+    public static int unpack(int numElts, int maxEltValue, byte[] src, int srcOffset, short[] tgt, int tgtOffset)
     {
         // Get the number of bits in each element
         int bitsPerElement = countBits(maxEltValue - 1);
