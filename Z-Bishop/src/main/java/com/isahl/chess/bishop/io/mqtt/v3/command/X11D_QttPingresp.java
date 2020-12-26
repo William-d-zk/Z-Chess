@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.io.mqtt.v3.protocol;
+package com.isahl.chess.bishop.io.mqtt.v3.command;
 
 import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
 
@@ -32,16 +32,15 @@ import com.isahl.chess.bishop.io.mqtt.QttControl;
  * 
  * @date 2019-05-30
  */
-public class X11E_QttDisconnect
+public class X11D_QttPingresp
         extends
         QttControl
 {
-    public final static int COMMAND = 0x11E;
+    public final static int COMMAND = 0x11D;
 
-    public X11E_QttDisconnect()
+    public X11D_QttPingresp()
     {
         super(COMMAND);
-        setCtrl(generateCtrl(false, false, ALMOST_ONCE, QTT_TYPE.DISCONNECT));
+        setCtrl(generateCtrl(false, false, ALMOST_ONCE, QTT_TYPE.PINGRESP));
     }
-
 }

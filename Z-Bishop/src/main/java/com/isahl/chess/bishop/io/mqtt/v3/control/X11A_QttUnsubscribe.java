@@ -21,13 +21,14 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.io.mqtt.v3.protocol;
+package com.isahl.chess.bishop.io.mqtt.v3.control;
 
 import static com.isahl.chess.queen.io.core.inf.IQoS.Level.AT_LEAST_ONCE;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import com.isahl.chess.bishop.io.mqtt.QttCommand;
 import com.isahl.chess.king.base.util.IoUtil;
@@ -38,23 +39,19 @@ import com.isahl.chess.queen.io.core.inf.IConsistent;
  * 
  * @date 2019-05-30
  */
-public class X118_QttSubscribe
+public class X11A_QttUnsubscribe
         extends
         QttCommand
         implements
         IConsistent
 {
+    public final static int COMMAND = 0x11A;
 
-    public final static int COMMAND = 0x118;
-
-    public X118_QttSubscribe()
+    public X11A_QttUnsubscribe()
     {
         super(COMMAND);
-        setCtrl(generateCtrl(false, false, AT_LEAST_ONCE, QTT_TYPE.SUBSCRIBE));
+        setCtrl(generateCtrl(false, false, AT_LEAST_ONCE, QTT_TYPE.UNSUBSCRIBE));
     }
-
-    private Map<String,
-                Level> mSubscribes;
 
     @Override
     public boolean isMapping()
@@ -72,44 +69,34 @@ public class X118_QttSubscribe
     public int dataLength()
     {
         int length = super.dataLength();
-        if (mSubscribes != null) {
-            for (Map.Entry<String,
-                           Level> entry : mSubscribes.entrySet())
-            {
-                String topic = entry.getKey();
-                // 2byte UTF-8 length 1byte Qos-lv
-                length += 3 + topic.getBytes(StandardCharsets.UTF_8).length;
-            }
+        for (String topic : _Topics) {
+            length += 2 + topic.getBytes(StandardCharsets.UTF_8).length;
         }
         return length;
     }
 
-    public Map<String,
-               Level> getSubscribes()
+    private final List<String> _Topics = new ArrayList<>(3);
+
+    public List<String> getTopics()
     {
-        return mSubscribes;
+        return _Topics;
     }
 
-    public void addSubscribe(String topic, Level level)
+    public void setTopics(String... topics)
     {
-        if (mSubscribes == null) {
-            mSubscribes = new TreeMap<>();
-        }
-        mSubscribes.put(topic, level);
+        Collections.addAll(_Topics, topics);
     }
 
     @Override
     public int decodec(byte[] data, int pos)
     {
         pos = super.decodec(data, pos);
-
-        while (pos < data.length) {
+        for (int size = data.length; pos < size;) {
             int utfSize = IoUtil.readUnsignedShort(data, pos);
             pos += 2;
             String topic = IoUtil.readString(data, pos, utfSize, StandardCharsets.UTF_8);
             pos += utfSize;
-            Level level = Level.valueOf(data[pos++]);
-            addSubscribe(topic, level);
+            _Topics.add(topic);
         }
         return pos;
     }
@@ -118,28 +105,12 @@ public class X118_QttSubscribe
     public int encodec(byte[] data, int pos)
     {
         pos = super.encodec(data, pos);
-        if (mSubscribes != null) {
-            for (Map.Entry<String,
-                           Level> entry : mSubscribes.entrySet())
-            {
-                byte[] topic = entry.getKey()
-                                    .getBytes(StandardCharsets.UTF_8);
-                Level level = entry.getValue();
-                pos += IoUtil.writeShort(topic.length, data, pos);
-                pos += IoUtil.write(topic, data, pos);
-                pos += IoUtil.writeByte(level.ordinal(), data, pos);
-            }
+        for (String topic : _Topics) {
+            byte[] topicData = topic.getBytes(StandardCharsets.UTF_8);
+            pos += IoUtil.writeShort(topicData.length, data, pos);
+            pos += IoUtil.write(topicData, data, pos);
         }
         return pos;
-    }
-
-    @Override
-    public String toString()
-    {
-        return String.format("subscribe msg-id:%d topics:%s",
-                             getMsgId(),
-                             mSubscribes != null ? mSubscribes.toString()
-                                                 : null);
     }
 
     @Override
@@ -147,4 +118,11 @@ public class X118_QttSubscribe
     {
         return getSession().getIndex();
     }
+
+    @Override
+    public String toString()
+    {
+        return String.format("unsubscribe msg-id:%d topics:%s", getMsgId(), _Topics);
+    }
+
 }

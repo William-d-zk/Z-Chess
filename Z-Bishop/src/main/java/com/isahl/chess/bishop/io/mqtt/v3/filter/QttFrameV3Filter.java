@@ -40,7 +40,7 @@ import com.isahl.chess.queen.io.core.inf.IProxyContext;
  * 
  * @date 2019-05-07
  */
-public class QttFrameFilter
+public class QttFrameV3Filter
         extends
         AioFilterChain<QttContext,
                        QttFrameV3,
@@ -48,7 +48,7 @@ public class QttFrameFilter
 {
     public final static String NAME = "mqtt_frame";
 
-    public QttFrameFilter()
+    public QttFrameV3Filter()
     {
         super(NAME);
     }

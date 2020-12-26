@@ -26,23 +26,23 @@ package com.isahl.chess.bishop.io.sort.mqtt;
 import com.isahl.chess.bishop.io.mqtt.QttContext;
 import com.isahl.chess.bishop.io.mqtt.v3.filter.QttCommandFilter;
 import com.isahl.chess.bishop.io.mqtt.v3.filter.QttControlFilter;
-import com.isahl.chess.bishop.io.mqtt.v3.filter.QttFrameFilter;
+import com.isahl.chess.bishop.io.mqtt.v3.filter.QttFrameV3Filter;
 import com.isahl.chess.bishop.io.sort.BaseSort;
 import com.isahl.chess.queen.io.core.inf.IFilterChain;
 import com.isahl.chess.queen.io.core.inf.ISessionOption;
 
-public class MqttZSort
+public class MqttV3ZSort
         extends
         BaseSort<QttContext>
 {
-    final QttFrameFilter _Head = new QttFrameFilter();
+    final QttFrameV3Filter _Head = new QttFrameV3Filter();
     {
         _Head.linkFront(new QttControlFilter())
              .linkFront(new QttCommandFilter());
     }
 
-    public MqttZSort(Mode mode,
-                     Type type)
+    public MqttV3ZSort(Mode mode,
+                       Type type)
     {
         super(mode, type, "qtt");
     }

@@ -26,7 +26,7 @@ package com.isahl.chess.bishop.io.mqtt.v3.filter;
 import com.isahl.chess.bishop.io.mqtt.QttContext;
 import com.isahl.chess.bishop.io.mqtt.QttControl;
 import com.isahl.chess.bishop.io.mqtt.v3.QttFrameV3;
-import com.isahl.chess.bishop.io.mqtt.v3.protocol.X112_QttConnack;
+import com.isahl.chess.bishop.io.mqtt.v3.control.X112_QttConnack;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.async.AioFilterChain;
 import com.isahl.chess.queen.io.core.inf.IFrame;
