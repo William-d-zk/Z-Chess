@@ -21,26 +21,26 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.io.mqtt.filter;
+package com.isahl.chess.bishop.io.mqtt.v3.filter;
 
 import com.isahl.chess.bishop.io.mqtt.MqttProtocol;
 import com.isahl.chess.bishop.io.mqtt.QttCommand;
 import com.isahl.chess.bishop.io.mqtt.QttControl;
-import com.isahl.chess.bishop.io.mqtt.QttFrame;
-import com.isahl.chess.bishop.io.mqtt.control.X111_QttConnect;
-import com.isahl.chess.bishop.io.mqtt.control.X112_QttConnack;
-import com.isahl.chess.bishop.io.mqtt.control.X113_QttPublish;
-import com.isahl.chess.bishop.io.mqtt.control.X114_QttPuback;
-import com.isahl.chess.bishop.io.mqtt.control.X115_QttPubrec;
-import com.isahl.chess.bishop.io.mqtt.control.X116_QttPubrel;
-import com.isahl.chess.bishop.io.mqtt.control.X117_QttPubcomp;
-import com.isahl.chess.bishop.io.mqtt.control.X118_QttSubscribe;
-import com.isahl.chess.bishop.io.mqtt.control.X119_QttSuback;
-import com.isahl.chess.bishop.io.mqtt.control.X11A_QttUnsubscribe;
-import com.isahl.chess.bishop.io.mqtt.control.X11B_QttUnsuback;
-import com.isahl.chess.bishop.io.mqtt.control.X11C_QttPingreq;
-import com.isahl.chess.bishop.io.mqtt.control.X11D_QttPingresp;
-import com.isahl.chess.bishop.io.mqtt.control.X11E_QttDisconnect;
+import com.isahl.chess.bishop.io.mqtt.v3.QttFrameV3;
+import com.isahl.chess.bishop.io.mqtt.v3.protocol.X111_QttConnect;
+import com.isahl.chess.bishop.io.mqtt.v3.protocol.X112_QttConnack;
+import com.isahl.chess.bishop.io.mqtt.v3.protocol.X113_QttPublish;
+import com.isahl.chess.bishop.io.mqtt.v3.protocol.X114_QttPuback;
+import com.isahl.chess.bishop.io.mqtt.v3.protocol.X115_QttPubrec;
+import com.isahl.chess.bishop.io.mqtt.v3.protocol.X116_QttPubrel;
+import com.isahl.chess.bishop.io.mqtt.v3.protocol.X117_QttPubcomp;
+import com.isahl.chess.bishop.io.mqtt.v3.protocol.X118_QttSubscribe;
+import com.isahl.chess.bishop.io.mqtt.v3.protocol.X119_QttSuback;
+import com.isahl.chess.bishop.io.mqtt.v3.protocol.X11A_QttUnsubscribe;
+import com.isahl.chess.bishop.io.mqtt.v3.protocol.X11B_QttUnsuback;
+import com.isahl.chess.bishop.io.mqtt.v3.protocol.X11C_QttPingreq;
+import com.isahl.chess.bishop.io.mqtt.v3.protocol.X11D_QttPingresp;
+import com.isahl.chess.bishop.io.mqtt.v3.protocol.X11E_QttDisconnect;
 import com.isahl.chess.queen.io.core.inf.ICommandFactory;
 import com.isahl.chess.queen.io.core.inf.IControl;
 
@@ -52,11 +52,11 @@ import com.isahl.chess.queen.io.core.inf.IControl;
 public class QttCommandFactory
         implements
         ICommandFactory<IControl,
-                        QttFrame>
+                QttFrameV3>
 {
 
     @Override
-    public IControl create(QttFrame frame)
+    public IControl create(QttFrameV3 frame)
     {
         QttCommand qttCommand = createQttCommand(frame);
         if (qttCommand == null) {
@@ -92,7 +92,7 @@ public class QttCommandFactory
         };
     }
 
-    public static QttControl createQttControl(QttFrame frame)
+    public static QttControl createQttControl(QttFrameV3 frame)
     {
         {
             QttControl qttControl;
@@ -124,7 +124,7 @@ public class QttCommandFactory
         }
     }
 
-    public static QttCommand createQttCommand(QttFrame frame)
+    public static QttCommand createQttCommand(QttFrameV3 frame)
     {
         QttCommand qttCommand;
         switch (frame.getType())

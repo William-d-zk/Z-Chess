@@ -117,7 +117,7 @@ public abstract class MqttProtocol
         }
     }
 
-    byte             frame_op_code;
+    protected byte   frame_op_code;
     private boolean  duplicate;
     private boolean  retain;
     private byte     qos_level;
@@ -133,10 +133,8 @@ public abstract class MqttProtocol
     public static byte generateCtrl(boolean dup, boolean retain, Level qosLevel, QTT_TYPE qttType)
     {
         byte ctrl = 0;
-        ctrl |= dup ? DUPLICATE_FLAG
-                    : 0;
-        ctrl |= retain ? RETAIN_FLAG
-                       : 0;
+        ctrl |= dup ? DUPLICATE_FLAG: 0;
+        ctrl |= retain ? RETAIN_FLAG: 0;
         ctrl |= qosLevel.ordinal() << 1;
         ctrl |= qttType.getValue();
         return ctrl;
@@ -193,7 +191,7 @@ public abstract class MqttProtocol
         frame_op_code |= type.getValue();
     }
 
-    void setOpCode(byte opCode)
+    protected void setOpCode(byte opCode)
     {
         frame_op_code = opCode;
         type = QTT_TYPE.valueOf(getOpCode());
@@ -204,7 +202,7 @@ public abstract class MqttProtocol
         checkOpCode();
     }
 
-    byte getOpCode()
+    protected byte getOpCode()
     {
         return frame_op_code;
     }

@@ -23,9 +23,9 @@
 
 package com.isahl.chess.bishop.io;
 
-import com.isahl.chess.bishop.io.mqtt.control.X111_QttConnect;
-import com.isahl.chess.bishop.io.mqtt.control.X11E_QttDisconnect;
-import com.isahl.chess.bishop.io.mqtt.filter.QttCommandFactory;
+import com.isahl.chess.bishop.io.mqtt.v3.protocol.X111_QttConnect;
+import com.isahl.chess.bishop.io.mqtt.v3.protocol.X11E_QttDisconnect;
+import com.isahl.chess.bishop.io.mqtt.v3.filter.QttCommandFactory;
 import com.isahl.chess.bishop.io.sort.mqtt.MqttZSort;
 import com.isahl.chess.bishop.io.sort.mqtt.ssl.MqttSslZSort;
 import com.isahl.chess.bishop.io.sort.mqtt.ssl.MqttZlsZSort;
