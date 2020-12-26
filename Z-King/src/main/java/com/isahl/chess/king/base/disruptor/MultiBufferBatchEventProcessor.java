@@ -27,7 +27,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.LockSupport;
 
-import com.isahl.chess.king.base.log.Logger;
 import com.lmax.disruptor.AlertException;
 import com.lmax.disruptor.DataProvider;
 import com.lmax.disruptor.EventHandler;
@@ -42,7 +41,6 @@ public class MultiBufferBatchEventProcessor<T>
         implements
         EventProcessor
 {
-    private final Logger     _Logger = Logger.getLogger("base.king." + getClass().getSimpleName());
     private static final int IDLE    = 0;
     private static final int HALTED  = IDLE + 1;
     private static final int RUNNING = HALTED + 1;
