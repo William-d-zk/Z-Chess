@@ -21,32 +21,42 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.io.mqtt.v3.protocol;
+package com.isahl.chess.bishop.io.sort.mqtt.ssl;
 
-import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
+import com.isahl.chess.bishop.io.mqtt.QttContext;
+import com.isahl.chess.bishop.io.sort.BaseSort;
+import com.isahl.chess.bishop.io.zfilter.EZContext;
+import com.isahl.chess.bishop.io.zfilter.ZEFilter;
+import com.isahl.chess.queen.event.inf.ISort;
+import com.isahl.chess.queen.io.core.inf.IFilterChain;
+import com.isahl.chess.queen.io.core.inf.ISessionOption;
 
-import com.isahl.chess.bishop.io.mqtt.QttCommand;
-
-/**
- * @author william.d.zk
- * 
- * @date 2019-05-30
- */
-public class X115_QttPubrec
+public class MqttV5ZlsZSort
         extends
-        QttCommand
+        BaseSort<EZContext<QttContext>>
 {
-    public final static int COMMAND = 0x119;
 
-    public X115_QttPubrec()
+    public MqttV5ZlsZSort(Mode mode,
+                          Type type,
+                          ISort<QttContext> actingSort)
     {
-        super(COMMAND);
-        setCtrl(generateCtrl(false, false, ALMOST_ONCE, QTT_TYPE.PUBREC));
+        super(mode, type, String.format("zls-%s", actingSort.getProtocol()));
+        _ActingSort = actingSort;
+        _Head.linkFront(actingSort.getFilterChain());
+    }
+
+    private final ISort<QttContext>       _ActingSort;
+    final ZEFilter<EZContext<QttContext>> _Head = new ZEFilter<>();
+
+    @Override
+    public IFilterChain getFilterChain()
+    {
+        return _Head;
     }
 
     @Override
-    public String toString()
+    public EZContext<QttContext> newContext(ISessionOption option)
     {
-        return String.format("x115 pubrec:{msg-id:%d}", getMsgId());
+        return new EZContext<>(option, getMode(), getType(), _ActingSort.newContext(option));
     }
 }

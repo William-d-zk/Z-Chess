@@ -46,8 +46,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.isahl.chess.bishop.io.ZSortHolder;
-import com.isahl.chess.bishop.io.mqtt.v3.protocol.X111_QttConnect;
-import com.isahl.chess.bishop.io.mqtt.v3.protocol.X112_QttConnack;
+import com.isahl.chess.bishop.io.mqtt.v3.control.X111_QttConnect;
+import com.isahl.chess.bishop.io.mqtt.v3.control.X112_QttConnack;
 import com.isahl.chess.bishop.io.ssl.SSLZContext;
 import com.isahl.chess.bishop.io.ws.IWsContext;
 import com.isahl.chess.bishop.io.ws.WsContext;

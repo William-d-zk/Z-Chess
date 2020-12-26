@@ -1,8 +1,8 @@
 /*
- * MIT License
- *
- * Copyright (c) 2016~2020. Z-Chess
- *
+ * MIT License                                                                   
+ *                                                                               
+ * Copyright (c) 2016~2020. Z-Chess                                              
+ *                                                                               
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
  * the Software without restriction, including without limitation the rights to
@@ -18,36 +18,33 @@
  * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                                                     
  */
 
-package com.isahl.chess.bishop.io.sort.mqtt.ssl;
-
-import java.security.NoSuchAlgorithmException;
+package com.isahl.chess.bishop.io.sort.mqtt;
 
 import com.isahl.chess.bishop.io.mqtt.QttContext;
+import com.isahl.chess.bishop.io.mqtt.v3.filter.QttCommandFilter;
+import com.isahl.chess.bishop.io.mqtt.v3.filter.QttControlFilter;
+import com.isahl.chess.bishop.io.mqtt.v3.filter.QttFrameV3Filter;
 import com.isahl.chess.bishop.io.sort.BaseSort;
-import com.isahl.chess.bishop.io.ssl.SSLFilter;
-import com.isahl.chess.bishop.io.ssl.SSLZContext;
-import com.isahl.chess.queen.event.inf.ISort;
 import com.isahl.chess.queen.io.core.inf.IFilterChain;
 import com.isahl.chess.queen.io.core.inf.ISessionOption;
 
-public class MqttSslZSort
+public class MqttV5ZSort
         extends
-        BaseSort<SSLZContext<QttContext>>
+        BaseSort<QttContext>
 {
-
-    private final ISort<QttContext>          _ActingSort;
-    final SSLFilter<SSLZContext<QttContext>> _Head = new SSLFilter<>();
-
-    public MqttSslZSort(Mode mode,
-                        Type type,
-                        ISort<QttContext> actingSort)
+    final QttFrameV3Filter _Head = new QttFrameV3Filter();
     {
-        super(mode, type, String.format("ssl-%s", actingSort.getProtocol()));
-        _ActingSort = actingSort;
-        _Head.linkFront(actingSort.getFilterChain());
+        _Head.linkFront(new QttControlFilter())
+             .linkFront(new QttCommandFilter());
+    }
+
+    public MqttV5ZSort(Mode mode,
+                       Type type)
+    {
+        super(mode, type, "qtt");
     }
 
     @Override
@@ -57,14 +54,8 @@ public class MqttSslZSort
     }
 
     @Override
-    public SSLZContext<QttContext> newContext(ISessionOption option)
+    public QttContext newContext(ISessionOption option)
     {
-        try {
-            return new SSLZContext<>(option, getMode(), getType(), _ActingSort.newContext(option));
-        }
-        catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return new QttContext(option, getMode(), getType());
     }
 }
