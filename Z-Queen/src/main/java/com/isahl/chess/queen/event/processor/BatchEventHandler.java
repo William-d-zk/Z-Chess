@@ -20,56 +20,49 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.isahl.chess.queen.event.inf;
 
-import java.util.List;
+package com.isahl.chess.queen.event.processor;
 
-import com.isahl.chess.king.base.inf.IPair;
-import com.isahl.chess.king.base.inf.IReset;
-import com.isahl.chess.king.base.inf.ITriple;
-import com.isahl.chess.queen.event.inf.IError.Type;
+import java.util.LinkedList;
+import java.util.Queue;
+
+import com.isahl.chess.queen.event.inf.IEvent;
+import com.isahl.chess.queen.event.inf.IOperator;
+import com.lmax.disruptor.EventHandler;
 
 /**
- * @author William.d.zk
+ * @author william.d.zk
+ * @date 2020/12/26
  */
-public interface IEvent
-        extends
-        IReset
+public abstract class BatchEventHandler<E extends IEvent>
+        implements
+        EventHandler<E>
 {
-    IOperator.Type getEventType();
 
-    IError.Type getErrorType();
+    private final Queue<E> _BatchBuffered = new LinkedList<>();
 
-    <T,
-     U,
-     R> IOperator<T,
-                  U,
-                  R> getEventOp();
-
-    IPair getContent();
-
-    List<ITriple> getContentList();
-
-    <V,
-     A,
-     R> void produce(IOperator.Type t,
-                     IPair content,
-                     IOperator<V,
-                               A,
-                               R> operator);
-
-    <E,
-     H,
-     R> void error(IError.Type t,
-                   IPair content,
-                   IOperator<E,
-                             H,
-                             R> operator);
-
-    void produce(IOperator.Type t, List<ITriple> cp);
-
-    default boolean hasError()
+    @Override
+    public void onEvent(E event, long sequence, boolean endOfBatch) throws Exception
     {
-        return getErrorType() != Type.NO_ERROR;
+        if (endOfBatch && _BatchBuffered.isEmpty()) {
+            doEvent(event);
+        }
+        else {
+            bufferBatch(event);
+            if (endOfBatch) {
+                doBatch(_BatchBuffered);
+                _BatchBuffered.clear();
+            }
+        }
+    }
+
+    public abstract void doEvent(E event);
+
+    public abstract void doBatch(Queue<E> events);
+
+    private void bufferBatch(E event)
+    {
+        if (event == null || event.getEventType() == IOperator.Type.IGNORE) { return; }
+        _BatchBuffered.offer(event);
     }
 }
