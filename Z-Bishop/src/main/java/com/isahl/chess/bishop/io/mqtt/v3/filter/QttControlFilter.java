@@ -21,11 +21,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.io.mqtt.filter;
+package com.isahl.chess.bishop.io.mqtt.v3.filter;
 
-import com.isahl.chess.bishop.io.mqtt.QttCommand;
 import com.isahl.chess.bishop.io.mqtt.QttContext;
-import com.isahl.chess.bishop.io.mqtt.QttFrame;
+import com.isahl.chess.bishop.io.mqtt.QttControl;
+import com.isahl.chess.bishop.io.mqtt.v3.QttFrameV3;
+import com.isahl.chess.bishop.io.mqtt.v3.protocol.X112_QttConnack;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.async.AioFilterChain;
 import com.isahl.chess.queen.io.core.inf.IFrame;
@@ -36,48 +37,72 @@ import com.isahl.chess.queen.io.core.inf.IProxyContext;
 /**
  * @author william.d.zk
  * 
- * @date 2019-05-08
+ * @date 2019-05-13
  */
-public class QttCommandFilter
+public class QttControlFilter
         extends
         AioFilterChain<QttContext,
-                       QttCommand,
-                       QttFrame>
+                       QttControl,
+                QttFrameV3>
 {
-    public QttCommandFilter()
+    public QttControlFilter()
     {
-        super("mqtt_command");
+        super("mqtt_control");
     }
 
     @Override
-    public QttFrame encode(QttContext context, QttCommand output)
+    public QttFrameV3 encode(QttContext context, QttControl output)
     {
-        QttFrame frame = new QttFrame();
+        /* Qtt Context 自身携带控制状态信息定义在协议之中，也只好在协议处理
+         * 层完成这一操作 [Server]
+         */
+        if (output.serial() == X112_QttConnack.COMMAND) {
+            X112_QttConnack x112 = (X112_QttConnack) output;
+            if (x112.isOk()) {
+                context.updateOut();
+                context.updateIn();
+            }
+        }
+        /*======================================================*/
+        QttFrameV3 frame = new QttFrameV3();
         frame.setCtrl(output.getCtrl());
-        frame.setPayload(output.encode(context));
+        frame.setPayload(output.encode());
         return frame;
     }
 
     @Override
-    public QttCommand decode(QttContext context, QttFrame input)
+    public QttControl decode(QttContext context, QttFrameV3 input)
     {
-        QttCommand qttCommand = QttCommandFactory.createQttCommand(input);
-        if (qttCommand == null) throw new IllegalArgumentException("MQTT type error");
-        else return qttCommand;
+        QttControl control = QttCommandFactory.createQttControl(input);
+        if (control == null) throw new IllegalArgumentException("MQTT type error");
+        else {
+            /* Qtt Context 自身携带控制状态信息定义在协议之中，也只好在协议处理
+             * 层完成这一操作 [Client]
+             */
+            if (input.serial() == X112_QttConnack.COMMAND) {
+                X112_QttConnack x112 = (X112_QttConnack) control;
+                if (x112.isOk()) {
+                    context.updateOut();
+                    context.updateIn();
+                }
+            }
+            /*======================================================*/
+            return control;
+        }
     }
 
     @Override
     public <O extends IProtocol> Pair<ResultType,
                                       IPContext> pipeSeek(IPContext context, O output)
     {
-        if (checkType(output, IProtocol.COMMAND_SERIAL)) {
-            if (context instanceof QttContext && context.isOutConvert()) {
+        if (checkType(output, IProtocol.CONTROL_SERIAL) && output instanceof QttControl) {
+            if (context instanceof QttContext && context.isOutFrame()) {
                 return new Pair<>(ResultType.NEXT_STEP, context);
             }
             IPContext acting = context;
             while (acting.isProxy()) {
                 acting = ((IProxyContext<?>) acting).getActingContext();
-                if (acting instanceof QttContext && acting.isInConvert()) {
+                if (acting instanceof QttContext && acting.isOutFrame()) {
                     return new Pair<>(ResultType.NEXT_STEP, acting);
                 }
             }
@@ -89,12 +114,16 @@ public class QttCommandFilter
     public <I extends IProtocol> Pair<ResultType,
                                       IPContext> pipePeek(IPContext context, I input)
     {
-        if (checkType(input, IProtocol.FRAME_SERIAL) && !((IFrame) input).isCtrl()) {
-            if (context instanceof QttContext) { return new Pair<>(ResultType.HANDLED, context); }
+        if (checkType(input, IProtocol.FRAME_SERIAL) && input instanceof QttFrameV3 && ((IFrame) input).isCtrl()) {
+            if (context instanceof QttContext && context.isInFrame()) {
+                return new Pair<>(ResultType.HANDLED, context);
+            }
             IPContext acting = context;
             while (acting.isProxy()) {
-                acting = ((IProxyContext<?>) context).getActingContext();
-                if (acting instanceof QttContext) { return new Pair<>(ResultType.HANDLED, acting); }
+                acting = ((IProxyContext<?>) acting).getActingContext();
+                if (acting instanceof QttContext && acting.isInFrame()) {
+                    return new Pair<>(ResultType.HANDLED, acting);
+                }
             }
         }
         return new Pair<>(ResultType.IGNORE, context);
@@ -105,7 +134,7 @@ public class QttCommandFilter
     public <O extends IProtocol,
             I extends IProtocol> I pipeEncode(IPContext context, O output)
     {
-        return (I) encode((QttContext) context, (QttCommand) output);
+        return (I) encode((QttContext) context, (QttControl) output);
     }
 
     @Override
@@ -113,7 +142,7 @@ public class QttCommandFilter
     public <O extends IProtocol,
             I extends IProtocol> O pipeDecode(IPContext context, I input)
     {
-        return (O) decode((QttContext) context, (QttFrame) input);
+        return (O) decode((QttContext) context, (QttFrameV3) input);
     }
 
 }

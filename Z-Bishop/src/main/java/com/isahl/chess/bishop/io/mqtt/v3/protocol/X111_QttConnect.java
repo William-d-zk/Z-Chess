@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.isahl.chess.bishop.io.mqtt.control;
+package com.isahl.chess.bishop.io.mqtt.v3.protocol;
 
 import static com.isahl.chess.king.base.util.IoUtil.isBlank;
 import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;

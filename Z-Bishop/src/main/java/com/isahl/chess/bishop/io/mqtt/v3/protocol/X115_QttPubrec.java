@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.io.mqtt.control;
+package com.isahl.chess.bishop.io.mqtt.v3.protocol;
 
 import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
 
@@ -32,21 +32,21 @@ import com.isahl.chess.bishop.io.mqtt.QttCommand;
  * 
  * @date 2019-05-30
  */
-public class X114_QttPuback
+public class X115_QttPubrec
         extends
         QttCommand
 {
-    public final static int COMMAND = 0x114;
+    public final static int COMMAND = 0x119;
 
-    public X114_QttPuback()
+    public X115_QttPubrec()
     {
         super(COMMAND);
-        setCtrl(generateCtrl(false, false, ALMOST_ONCE, QTT_TYPE.PUBACK));
+        setCtrl(generateCtrl(false, false, ALMOST_ONCE, QTT_TYPE.PUBREC));
     }
 
     @Override
     public String toString()
     {
-        return String.format("x114 puback:{msg-id:%d}", getMsgId());
+        return String.format("x115 pubrec:{msg-id:%d}", getMsgId());
     }
 }

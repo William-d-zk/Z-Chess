@@ -21,12 +21,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.io.mqtt.filter;
+package com.isahl.chess.bishop.io.mqtt.v3.filter;
 
 import java.nio.ByteBuffer;
 
 import com.isahl.chess.bishop.io.mqtt.QttContext;
-import com.isahl.chess.bishop.io.mqtt.QttFrame;
+import com.isahl.chess.bishop.io.mqtt.v3.QttFrameV3;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.async.AioFilterChain;
 import com.isahl.chess.queen.io.core.async.AioPacket;
@@ -43,7 +43,7 @@ import com.isahl.chess.queen.io.core.inf.IProxyContext;
 public class QttFrameFilter
         extends
         AioFilterChain<QttContext,
-                       QttFrame,
+                       QttFrameV3,
                        IPacket>
 {
     public final static String NAME = "mqtt_frame";
@@ -54,7 +54,7 @@ public class QttFrameFilter
     }
 
     @Override
-    public IPacket encode(QttContext context, QttFrame output)
+    public IPacket encode(QttContext context, QttFrameV3 output)
     {
         ByteBuffer toWrite = ByteBuffer.allocate(output.dataLength());
         toWrite.position(output.encodec(toWrite.array(), toWrite.position()))
@@ -67,13 +67,13 @@ public class QttFrameFilter
     {
         ByteBuffer recvBuf = input.getBuffer();
         ByteBuffer cRvBuf = context.getRvBuffer();
-        QttFrame carrier = context.getCarrier();
+        QttFrameV3 carrier = context.getCarrier();
         int lack = context.lack();
         switch (context.position())
         {
             case -1:
                 if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
-                context.setCarrier(carrier = new QttFrame());
+                context.setCarrier(carrier = new QttFrameV3());
                 byte value = recvBuf.get();
                 carrier.setCtrl(value);
                 lack = context.lackLength(1, 1);
@@ -116,9 +116,9 @@ public class QttFrameFilter
     }
 
     @Override
-    public QttFrame decode(QttContext context, IPacket input)
+    public QttFrameV3 decode(QttContext context, IPacket input)
     {
-        QttFrame frame = context.getCarrier();
+        QttFrameV3 frame = context.getCarrier();
         context.finish();
         return frame;
     }
@@ -164,7 +164,7 @@ public class QttFrameFilter
     public <O extends IProtocol,
             I extends IProtocol> I pipeEncode(IPContext context, O output)
     {
-        return (I) encode((QttContext) context, (QttFrame) output);
+        return (I) encode((QttContext) context, (QttFrameV3) output);
     }
 
     @Override

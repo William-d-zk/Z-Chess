@@ -25,8 +25,8 @@ package com.isahl.chess.knight.cluster.spring.service;
 
 import java.nio.charset.StandardCharsets;
 
-import com.isahl.chess.bishop.io.mqtt.control.X11C_QttPingreq;
-import com.isahl.chess.bishop.io.mqtt.control.X11D_QttPingresp;
+import com.isahl.chess.bishop.io.mqtt.v3.protocol.X11C_QttPingreq;
+import com.isahl.chess.bishop.io.mqtt.v3.protocol.X11D_QttPingresp;
 import com.isahl.chess.bishop.io.ws.control.X103_Ping;
 import com.isahl.chess.bishop.io.ws.control.X104_Pong;
 import com.isahl.chess.king.base.log.Logger;

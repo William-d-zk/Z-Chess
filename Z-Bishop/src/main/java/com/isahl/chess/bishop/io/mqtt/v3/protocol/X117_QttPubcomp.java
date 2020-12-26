@@ -21,9 +21,9 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.io.mqtt.control;
+package com.isahl.chess.bishop.io.mqtt.v3.protocol;
 
-import static com.isahl.chess.queen.io.core.inf.IQoS.Level.AT_LEAST_ONCE;
+import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
 
 import com.isahl.chess.bishop.io.mqtt.QttCommand;
 
@@ -32,21 +32,21 @@ import com.isahl.chess.bishop.io.mqtt.QttCommand;
  * 
  * @date 2019-05-30
  */
-public class X116_QttPubrel
+public class X117_QttPubcomp
         extends
         QttCommand
 {
-    public final static int COMMAND = 0x116;
+    public final static int COMMAND = 0x117;
 
-    public X116_QttPubrel()
+    public X117_QttPubcomp()
     {
         super(COMMAND);
-        setCtrl(generateCtrl(false, false, AT_LEAST_ONCE, QTT_TYPE.PUBREL));
+        setCtrl(generateCtrl(false, false, ALMOST_ONCE, QTT_TYPE.PUBCOMP));
     }
 
     @Override
     public String toString()
     {
-        return String.format("x116 pubrel:{msg-id:%d}", getMsgId());
+        return String.format("x117 pubcomp:{msg-id:%d}", getMsgId());
     }
 }

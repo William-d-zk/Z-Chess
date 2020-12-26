@@ -1,30 +1,31 @@
 /*
- * MIT License
- *
- * Copyright (c) 2016~2020. Z-Chess
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of
- * this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to
+ * MIT License                                                                     
+ *                                                                                 
+ * Copyright (c) 2016~2020. Z-Chess                                                
+ *                                                                                 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * this software and associated documentation files (the "Software"), to deal in   
+ * the Software without restriction, including without limitation the rights to    
  * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- * the Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * the Software, and to permit persons to whom the Software is furnished to do so, 
+ * subject to the following conditions:                                            
+ *                                                                                 
+ * The above copyright notice and this permission notice shall be included in all  
+ * copies or substantial portions of the Software.                                 
+ *                                                                                 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR      
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
- * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR 
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER  
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN         
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.      
  */
 
-package com.isahl.chess.bishop.io.mqtt;
+package com.isahl.chess.bishop.io.mqtt.v5;
 
 import java.nio.ByteBuffer;
 
+import com.isahl.chess.bishop.io.mqtt.MqttProtocol;
 import com.isahl.chess.king.base.inf.IReset;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.inf.IFrame;
@@ -35,7 +36,7 @@ import com.isahl.chess.queen.io.core.inf.IVariableLength;
  * 
  * @date 2019-05-02
  */
-public class QttFrame
+public class QttFrameV5
         extends
         MqttProtocol
         implements
@@ -47,11 +48,11 @@ public class QttFrame
     public boolean isCtrl()
     {
         int head = getOpCode() & 240;
-        return head == QTT_TYPE.CONNECT._Value
-               || head == QTT_TYPE.CONNACK._Value
-               || head == QTT_TYPE.PINGREQ._Value
-               || head == QTT_TYPE.PINGRESP._Value
-               || head == QTT_TYPE.DISCONNECT._Value;
+        return head == QTT_TYPE.CONNECT.getValue()
+               || head == QTT_TYPE.CONNACK.getValue()
+               || head == QTT_TYPE.PINGREQ.getValue()
+               || head == QTT_TYPE.PINGRESP.getValue()
+               || head == QTT_TYPE.DISCONNECT.getValue();
     }
 
     @Override
@@ -108,8 +109,7 @@ public class QttFrame
             throw new IndexOutOfBoundsException();
         }
         mPayload = payload;
-        mPayloadLength = mPayload == null ? 0
-                                          : mPayload.length;
+        mPayloadLength = mPayload == null ? 0: mPayload.length;
     }
 
     @Override
@@ -125,10 +125,7 @@ public class QttFrame
     {
         return 1
                + mPayloadLength
-               + (mPayloadLength < 128 ? 1
-                                       : mPayloadLength < 16384 ? 2
-                                                                : mPayloadLength < 2097152 ? 3
-                                                                                           : 4);
+               + (mPayloadLength < 128 ? 1: mPayloadLength < 16384 ? 2: mPayloadLength < 2097152 ? 3: 4);
     }
 
     @Override
