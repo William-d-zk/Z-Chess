@@ -63,6 +63,7 @@ public interface IPipeEncoder
                     case ERROR:
                         throw new ZException("error output: %s ; filter: %s", protocol, previous.getName());
                     case NEED_DATA:
+                    case CANCEL:
                         return null;
                     case NEXT_STEP:
                         protocol = pipeFilter.pipeEncode(context, protocol);
@@ -72,8 +73,6 @@ public interface IPipeEncoder
                         break CHAIN;
                     case IGNORE:
                         break;
-                    case CANCEL:
-                        return null;
                 }
                 previous = previous.getPrevious();
             }

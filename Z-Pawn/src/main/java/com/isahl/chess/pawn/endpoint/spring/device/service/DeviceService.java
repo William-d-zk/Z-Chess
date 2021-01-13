@@ -107,6 +107,7 @@ public class DeviceService
                                                   case "ws_mqtt" -> ZSortHolder.WS_QTT_SERVER;
                                                   case "ssl_ws_mqtt" -> ZSortHolder.WS_QTT_SERVER_SSL;
                                                   case "zls_mqtt" -> ZSortHolder.QTT_SERVER_ZLS;
+                                                  case "ssl_mqtt" -> ZSortHolder.QTT_SERVER_SSL;
                                                   default -> throw new UnsupportedOperationException(listener.getScheme());
                                               };
                                               return new Triple<>(listener.getHost(), listener.getPort(), sort);

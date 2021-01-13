@@ -54,6 +54,10 @@ public interface IPacket
 
     IPacket flip();
 
+    void replaceWith(ByteBuffer src);
+
+    void expand(int size);
+
     enum Status
     {
         No_Send,

@@ -333,8 +333,7 @@ public interface IoUtil
         if (b == null || length == 0) return null;
         if (length < 0 || length > b.length || pos + length > b.length) throw new ArrayIndexOutOfBoundsException();
         StringBuilder sb = new StringBuilder(length * 2);
-        String s = split != null && split.length > 0 ? split[0]
-                                                     : "";
+        String s = split != null && split.length > 0 ? split[0]: "";
         for (int i = pos, size = pos + length; i < size; i++) {
             sb.append(HEX_DIGITS[(b[i] & 0xf0) >>> 4]);
             sb.append(HEX_DIGITS[b[i] & 0x0f]);
@@ -348,8 +347,7 @@ public interface IoUtil
     static String long2Hex(long l, String... split)
     {
         StringBuilder sb = new StringBuilder(16);
-        String s = Objects.nonNull(split) && split.length > 0 ? split[0]
-                                                              : "";
+        String s = Objects.nonNull(split) && split.length > 0 ? split[0]: "";
         for (int i = 7; i >= 0; i--) {
             int x = (int) (l >> i * 8);
             sb.append(HEX_DIGITS[(x & 0xF0) >>> 4]);

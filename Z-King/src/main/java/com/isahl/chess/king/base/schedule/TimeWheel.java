@@ -140,9 +140,7 @@ public class TimeWheel
             int slot = task.acquire(getCurrentLoop(), getCurrentSlot());
             TickSlot<A> tickSlot = (TickSlot<A>) _ModHashEntryArray[slot & _HashMod];
             int index = Collections.binarySearch(tickSlot, task);
-            tickSlot.add(index < 0 ? -index - 1
-                                   : index,
-                         task);
+            tickSlot.add(index < 0 ? -index - 1: index, task);
             item.setup();
         }
         finally {
@@ -195,8 +193,7 @@ public class TimeWheel
         default int compareTo(IWheelItem o)
         {
             int loopCmp = Long.compare(getTick(), o.getTick());
-            return loopCmp == 0 ? Integer.compare(getPriority(), o.getPriority())
-                                : loopCmp;
+            return loopCmp == 0 ? Integer.compare(getPriority(), o.getPriority()): loopCmp;
         }
     }
 

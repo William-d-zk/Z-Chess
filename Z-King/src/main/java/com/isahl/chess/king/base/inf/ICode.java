@@ -23,8 +23,6 @@
 
 package com.isahl.chess.king.base.inf;
 
-import java.util.stream.Stream;
-
 /**
  * @author william.d.zk
  * 
@@ -32,15 +30,8 @@ import java.util.stream.Stream;
  */
 public interface ICode
 {
-    int getCode();
+    int getCode(Object... condition);
 
     String format(Object... args);
 
-    static ICode parse(int code, ICode... codes)
-    {
-        return Stream.of(codes)
-                     .filter(c -> c.getCode() == code)
-                     .findAny()
-                     .orElse(null);
-    }
 }

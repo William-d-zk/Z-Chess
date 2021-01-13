@@ -51,8 +51,7 @@ public class CrcCalculator
 
     public long Calc(byte[] data, int offset, int length)
     {
-        long init = _Parameters.RefOut ? CrcHelper.ReverseBits(_Parameters.Init, hashSize)
-                                       : _Parameters.Init;
+        long init = _Parameters.RefOut ? CrcHelper.ReverseBits(_Parameters.Init, hashSize): _Parameters.Init;
         long hash = ComputeCrc(init, data, offset, length);
         return (hash ^ _Parameters.XorOut) & mask;
     }

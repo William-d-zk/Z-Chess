@@ -46,7 +46,7 @@ public enum Code
     private final String _Formatter;
 
     @Override
-    public int getCode()
+    public int getCode(Object... condition)
     {
         return _Code;
     }
@@ -54,8 +54,7 @@ public enum Code
     @Override
     public String format(Object... args)
     {
-        return Objects.isNull(args) || args.length == 0 ? _Formatter
-                                                        : String.format(_Formatter, args);
+        return Objects.isNull(args) || args.length == 0 ? _Formatter: String.format(_Formatter, args);
     }
 
     public String getFormatter()

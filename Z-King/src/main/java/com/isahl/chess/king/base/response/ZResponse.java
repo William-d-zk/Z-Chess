@@ -69,7 +69,8 @@ public class ZResponse<T>
         _CreateAt = createAt;
     }
     // @formatter:on
-    public int getCode()
+    @Override
+    public int getCode(Object... condition)
     {
         return _Code;
     }
@@ -77,8 +78,7 @@ public class ZResponse<T>
     @Override
     public String format(Object... args)
     {
-        return _Formatter == null ? null
-                                  : String.format(_Formatter, args);
+        return _Formatter == null ? null: String.format(_Formatter, args);
     }
 
     public String getMessage()

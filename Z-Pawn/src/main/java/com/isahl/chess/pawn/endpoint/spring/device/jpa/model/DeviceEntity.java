@@ -229,8 +229,7 @@ public class DeviceEntity
     public Map<String,
                IQoS.Level> getSubscribes()
     {
-        return subscribe == null ? null
-                                 : subscribe.getSubscribes();
+        return subscribe == null ? null: subscribe.getSubscribes();
     }
 
     @JsonIgnore
