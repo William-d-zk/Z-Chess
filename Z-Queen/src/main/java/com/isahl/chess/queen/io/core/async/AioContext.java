@@ -35,19 +35,18 @@ public abstract class AioContext
         IContext
 {
 
-    /*
-     * 用于写出的 ByteBuffer 属于4096及其倍数的对齐块，应与 SocketOption 中系统写出 Buffer 的大小进行调整，
-     * 存在 一次性投递多个 IControl 的可能性 AioPacket 中的 ByteBuffer 仅用于串行化
-     * IControl 对象
+    /**
+     * 存在 一次性投递多个 IControl 的可能性
+     * AioPacket 中的 ByteBuffer 仅用于序列化Control 对象
+     * 创建时以SocketOption配置为基准进行设定，
+     * 
      */
-    private final ByteBuffer _WrBuf;
+    private ByteBuffer mWrBuf;
 
-    /*
-     * 用于缓存 IPoS 分块带入的 RecvBuffer 内容 由于 AioWorker 中 channel 的 read_buffer - protocol_buffer - 都以
-     * SocketOption 设定为准，所以不存在 IPoS 带入一个包含多个分页的协议
-     * 内容的情况
+    /**
+     * 用于缓存 IPoS 分块带入的 RecvBuffer 内容
      */
-    private final ByteBuffer _RvBuf;
+    private ByteBuffer mRvBuf;
 
     private long mClientStartTime;
     private long mServerArrivedTime;
@@ -56,33 +55,33 @@ public abstract class AioContext
 
     protected AioContext(ISessionOption option)
     {
-        _RvBuf = ByteBuffer.allocate(option.getRcvInByte());
-        _WrBuf = ByteBuffer.allocate(option.getSnfInByte());
+        mRvBuf = ByteBuffer.allocate(option.getRcvInByte());
+        mWrBuf = ByteBuffer.allocate(option.getSnfInByte());
     }
 
     @Override
     public void reset()
     {
-        _RvBuf.clear();
-        _WrBuf.clear();
+        mRvBuf.clear();
+        mWrBuf.clear();
     }
 
     @Override
     public ByteBuffer getWrBuffer()
     {
-        return _WrBuf;
+        return mWrBuf;
     }
 
     @Override
     public ByteBuffer getRvBuffer()
     {
-        return _RvBuf;
+        return mRvBuf;
     }
 
     @Override
     public int getSendMaxSize()
     {
-        return _WrBuf.capacity();
+        return mWrBuf.capacity();
     }
 
     @Override

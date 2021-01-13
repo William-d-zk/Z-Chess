@@ -23,12 +23,6 @@
 
 package com.isahl.chess.bishop.io.mqtt;
 
-import static com.isahl.chess.bishop.io.Direction.CLIENT_TO_SERVER;
-import static com.isahl.chess.bishop.io.Direction.SERVER_TO_CLIENT;
-
-import java.util.Objects;
-
-import com.isahl.chess.bishop.io.Direction;
 import com.isahl.chess.queen.io.core.inf.IDuplicate;
 import com.isahl.chess.queen.io.core.inf.IProtocol;
 import com.isahl.chess.queen.io.core.inf.IQoS;
@@ -44,93 +38,29 @@ public abstract class MqttProtocol
         IQoS,
         IDuplicate
 {
+    public final static byte VERSION_V3_1_1 = 4;
+    public final static byte VERSION_V5_0   = 5;
+
     private final static byte DUPLICATE_FLAG = 1 << 3;
     private final static byte RETAIN_FLAG    = 1;
     private final static byte QOS_MASK       = 3 << 1;
 
-    public enum QTT_TYPE
-    {
+    protected byte mFrameOpCode;
+    protected int  mVersion;
 
-        CONNECT(1, "Client request to connect to Server", CLIENT_TO_SERVER),
-        CONNACK(2, "Connect acknowledgment", SERVER_TO_CLIENT),
-        PUBLISH(3, "Publish message", CLIENT_TO_SERVER, SERVER_TO_CLIENT),
-        PUBACK(4, "Publish acknowledgment", CLIENT_TO_SERVER, SERVER_TO_CLIENT),
-        PUBREC(5, "Publish received (assured delivery part 1)", CLIENT_TO_SERVER, SERVER_TO_CLIENT),
-        PUBREL(6, "Publish release (assured delivery part 2)", CLIENT_TO_SERVER, SERVER_TO_CLIENT),
-        PUBCOMP(7, "Publish complete (assured delivery part 3)", CLIENT_TO_SERVER, SERVER_TO_CLIENT),
-        SUBSCRIBE(8, "Client subscribe request", CLIENT_TO_SERVER),
-        SUBACK(9, "Subscribe acknowledgment", SERVER_TO_CLIENT),
-        UNSUBSCRIBE(10, "Unsubscribe request", CLIENT_TO_SERVER),
-        UNSUBACK(11, "Unsubscribe acknowledgment", SERVER_TO_CLIENT),
-        PINGREQ(12, "PING request", CLIENT_TO_SERVER),
-        PINGRESP(13, "PING response", SERVER_TO_CLIENT),
-        DISCONNECT(14, "Client is disconnecting", CLIENT_TO_SERVER);
-
-        final int         _Value;
-        final String      _Description;
-        final Direction[] _Directions;
-
-        QTT_TYPE(int code,
-                 String description,
-                 Direction... directions)
-        {
-            _Value = code << 4;
-            _Directions = directions;
-            _Description = description;
-        }
-
-        public final int getValue()
-        {
-            return _Value;
-        }
-
-        public Direction[] getDirections()
-        {
-            return _Directions;
-        }
-
-        public String getDescription()
-        {
-            return _Description;
-        }
-
-        public static QTT_TYPE valueOf(int head)
-        {
-            return switch (head & 240)
-            {
-                case 1 << 4 -> CONNECT;
-                case 2 << 4 -> CONNACK;
-                case 3 << 4 -> PUBLISH;
-                case 4 << 4 -> PUBACK;
-                case 5 << 4 -> PUBREC;
-                case 6 << 4 -> PUBREL;
-                case 7 << 4 -> PUBCOMP;
-                case 8 << 4 -> SUBSCRIBE;
-                case 9 << 4 -> SUBACK;
-                case 10 << 4 -> UNSUBSCRIBE;
-                case 11 << 4 -> UNSUBACK;
-                case 12 << 4 -> PINGREQ;
-                case 13 << 4 -> PINGRESP;
-                case 14 << 4 -> DISCONNECT;
-                default -> throw new IllegalArgumentException();
-            };
-        }
-    }
-
-    protected byte   frame_op_code;
-    private boolean  duplicate;
-    private boolean  retain;
-    private byte     qos_level;
-    private QTT_TYPE type;
+    private boolean mDuplicate;
+    private boolean mRetain;
+    private byte    mQosLevel;
+    private QttType mType;
 
     private void checkOpCode()
     {
-        if (getLevel() == Level.ALMOST_ONCE && duplicate) {
+        if (getLevel() == Level.ALMOST_ONCE && mDuplicate) {
             throw new IllegalStateException("level == 0 && duplicate");
         }
     }
 
-    public static byte generateCtrl(boolean dup, boolean retain, Level qosLevel, QTT_TYPE qttType)
+    public static byte generateCtrl(boolean dup, boolean retain, Level qosLevel, QttType qttType)
     {
         byte ctrl = 0;
         ctrl |= dup ? DUPLICATE_FLAG: 0;
@@ -142,69 +72,69 @@ public abstract class MqttProtocol
 
     public void setDuplicate(boolean duplicate)
     {
-        this.duplicate = duplicate;
+        this.mDuplicate = duplicate;
         if (duplicate) {
-            frame_op_code |= DUPLICATE_FLAG;
+            mFrameOpCode |= DUPLICATE_FLAG;
         }
         else {
-            frame_op_code &= ~DUPLICATE_FLAG;
+            mFrameOpCode &= ~DUPLICATE_FLAG;
         }
     }
 
     @Override
     public boolean isDuplicate()
     {
-        return duplicate;
+        return mDuplicate;
     }
 
     public void setRetain(boolean retain)
     {
-        this.retain = retain;
+        this.mRetain = retain;
         if (retain) {
-            frame_op_code |= RETAIN_FLAG;
+            mFrameOpCode |= RETAIN_FLAG;
         }
         else {
-            frame_op_code &= ~RETAIN_FLAG;
+            mFrameOpCode &= ~RETAIN_FLAG;
         }
     }
 
     public boolean isRetain()
     {
-        return retain;
+        return mRetain;
     }
 
     public void setLevel(Level level)
     {
-        qos_level = (byte) level.ordinal();
-        frame_op_code &= ~QOS_MASK;
-        frame_op_code |= qos_level << 1;
+        mQosLevel = (byte) level.ordinal();
+        mFrameOpCode &= ~QOS_MASK;
+        mFrameOpCode |= mQosLevel << 1;
     }
 
-    public QTT_TYPE getType()
+    public QttType getType()
     {
-        return type;
+        return mType;
     }
 
-    public void setType(QTT_TYPE type)
+    public void setType(QttType type)
     {
-        this.type = type;
-        frame_op_code |= type.getValue();
+        this.mType = type;
+        mFrameOpCode |= type.getValue();
     }
 
     protected void setOpCode(byte opCode)
     {
-        frame_op_code = opCode;
-        type = QTT_TYPE.valueOf(getOpCode());
-        if (Objects.isNull(type)) { throw new IllegalArgumentException(); }
-        duplicate = (frame_op_code & DUPLICATE_FLAG) == DUPLICATE_FLAG;
-        retain = (frame_op_code & RETAIN_FLAG) == RETAIN_FLAG;
-        qos_level = (byte) ((frame_op_code & QOS_MASK) >> 1);
+        mFrameOpCode = opCode;
+        mType = QttType.valueOf(getOpCode());
+        if (mType == null) { throw new IllegalArgumentException(); }
+        mDuplicate = (mFrameOpCode & DUPLICATE_FLAG) == DUPLICATE_FLAG;
+        mRetain = (mFrameOpCode & RETAIN_FLAG) == RETAIN_FLAG;
+        mQosLevel = (byte) ((mFrameOpCode & QOS_MASK) >> 1);
         checkOpCode();
     }
 
     protected byte getOpCode()
     {
-        return frame_op_code;
+        return mFrameOpCode;
     }
 
     @Override
@@ -215,7 +145,17 @@ public abstract class MqttProtocol
 
     public IQoS.Level getLevel()
     {
-        return IQoS.Level.valueOf(qos_level);
+        return IQoS.Level.valueOf(mQosLevel);
+    }
+
+    public int getVersion()
+    {
+        return mVersion;
+    }
+
+    public void setVersion(int version)
+    {
+        mVersion = version;
     }
 
 }

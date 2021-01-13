@@ -66,8 +66,7 @@ public class CryptUtil
             int length = src.length;
             for (int i = 0; i < length; i++) {
                 IoUtil.writeByte((src[i] & 0xFF) ^ xor, src, i);
-                xor = (byte) (xor < xor_e ? xor + 1
-                                          : xor_s);
+                xor = (byte) (xor < xor_e ? xor + 1: xor_s);
             }
             return xor;
         }
@@ -166,8 +165,7 @@ public class CryptUtil
             }
             if (four[3] == pad) {
                 if (start < src.length) throw new IOException("bad BASE 64 In->");
-                l = four[2] == pad ? 1
-                                   : 2;
+                l = four[2] == pad ? 1: 2;
             }
             else l = 3;
             for (i = 0, aux = 0; i < 4; i++)
@@ -203,10 +201,8 @@ public class CryptUtil
             }
             char b1 = chars.charAt((buffer << 8) >>> 26);
             char b2 = chars.charAt((buffer << 14) >>> 26);
-            char b3 = (byteCounter < 2) ? pad
-                                        : chars.charAt((buffer << 20) >>> 26);
-            char b4 = (byteCounter < 3) ? pad
-                                        : chars.charAt((buffer << 26) >>> 26);
+            char b3 = (byteCounter < 2) ? pad: chars.charAt((buffer << 20) >>> 26);
+            char b4 = (byteCounter < 3) ? pad: chars.charAt((buffer << 26) >>> 26);
             encodeDst.append(b1)
                      .append(b2)
                      .append(b3)

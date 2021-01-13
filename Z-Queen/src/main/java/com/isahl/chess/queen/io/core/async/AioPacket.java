@@ -24,6 +24,7 @@ package com.isahl.chess.queen.io.core.async;
 
 import java.nio.ByteBuffer;
 
+import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.inf.IPacket;
 
 /**
@@ -35,27 +36,26 @@ public class AioPacket
 {
     public final static int SERIAL = PACKET_SERIAL + 1;
 
-    private final ByteBuffer _Buf;
-    private Status           mStatus = Status.No_Send;
-    private int              mRightIdempotentBit;
-    private int              mLeftIdempotentBit;
+    private ByteBuffer mBuf;
+    private Status     mStatus = Status.No_Send;
+    private int        mRightIdempotentBit;
+    private int        mLeftIdempotentBit;
 
     public AioPacket(int size,
                      boolean direct)
     {
-        _Buf = size > 0 ? (direct ? ByteBuffer.allocateDirect(size): ByteBuffer.allocate(size)): null;
-
+        mBuf = size > 0 ? (direct ? ByteBuffer.allocateDirect(size): ByteBuffer.allocate(size)): null;
     }
 
     public AioPacket(ByteBuffer buf)
     {
-        _Buf = buf;
+        mBuf = buf;
     }
 
     @Override
     public ByteBuffer getBuffer()
     {
-        return _Buf;
+        return mBuf;
     }
 
     @Override
@@ -119,7 +119,7 @@ public class AioPacket
     @Override
     public int dataLength()
     {
-        return _Buf.capacity();
+        return mBuf.capacity();
     }
 
     @Override
@@ -153,7 +153,32 @@ public class AioPacket
     @Override
     public IPacket flip()
     {
-        _Buf.flip();
+        mBuf.flip();
         return this;
+    }
+
+    @Override
+    public void replaceWith(ByteBuffer src)
+    {
+        if (mBuf.capacity() < src.remaining()) {
+            int size = src.remaining();
+            mBuf = mBuf.isDirect() ? ByteBuffer.allocateDirect(size): ByteBuffer.allocate(size);
+        }
+        else {
+            mBuf.clear();
+        }
+        mBuf.put(src)
+            .flip();
+    }
+
+    @Override
+    public void expand(int size)
+    {
+        int newSize = mBuf.capacity() + size;
+        ByteBuffer newBuf = mBuf.isDirect() ? ByteBuffer.allocateDirect(newSize): ByteBuffer.allocate(newSize);
+        IoUtil.write(mBuf.array(), newBuf.array(), 0);
+        newBuf.position(mBuf.position());
+        newBuf.limit(mBuf.limit());
+        mBuf = newBuf;
     }
 }

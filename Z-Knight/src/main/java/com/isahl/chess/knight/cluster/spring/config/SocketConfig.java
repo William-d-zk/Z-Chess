@@ -23,7 +23,20 @@
 
 package com.isahl.chess.knight.cluster.spring.config;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.time.Duration;
+
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 
 import org.springframework.util.unit.DataSize;
 
@@ -33,15 +46,21 @@ public class SocketConfig
         implements
         ISocketConfig
 {
-    private boolean  keepAlive;
-    private Duration connectTimeoutInSecond;
-    private Duration writeTimeoutInSecond;
-    private Duration readTimeoutInMinute;
-    private Duration soLingerInSecond;
-    private DataSize sendBufferSize;
-    private DataSize recvBufferSize;
-    private int      sendQueueMax;
-    private boolean  tcpNoDelay;
+    private boolean        keepAlive;
+    private Duration       connectTimeoutInSecond;
+    private Duration       writeTimeoutInSecond;
+    private Duration       readTimeoutInMinute;
+    private Duration       soLingerInSecond;
+    private DataSize       sendBufferSize;
+    private DataSize       recvBufferSize;
+    private int            sendQueueMax;
+    private boolean        tcpNoDelay;
+    private String         keyStorePath;
+    private String         trustKeyStorePath;
+    private String         keyPassword;
+    private String         trustKeyPassword;
+    private KeyManager[]   keyManagers;
+    private TrustManager[] trustManagers;
 
     @Override
     public boolean isKeepAlive()
@@ -140,5 +159,90 @@ public class SocketConfig
     public void setConnectTimeoutInSecond(Duration connectTimeoutInSecond)
     {
         this.connectTimeoutInSecond = connectTimeoutInSecond;
+    }
+
+    public void setKeyStorePath(String keyStorePath)
+    {
+        this.keyStorePath = keyStorePath;
+    }
+
+    private KeyStore loadKeyStore(String path, String password) throws KeyStoreException,
+                                                                IOException,
+                                                                NoSuchAlgorithmException,
+                                                                CertificateException
+    {
+        KeyStore keyStore = KeyStore.getInstance("PKCS12");
+        keyStore.load(getClass().getResourceAsStream(path), password.toCharArray());
+        return keyStore;
+    }
+
+    public void setTrustKeyStorePath(String trustKeyStorePath)
+    {
+        this.trustKeyStorePath = trustKeyStorePath;
+    }
+
+    public void setKeyPassword(String keyPassword)
+    {
+        this.keyPassword = keyPassword;
+    }
+
+    public void setTrustKeyPassword(String trustKeyPassword)
+    {
+        this.trustKeyPassword = trustKeyPassword;
+    }
+
+    @Override
+    public TrustManager[] getTrustManagers()
+    {
+        if (trustManagers == null && trustKeyStorePath != null && trustKeyPassword != null) {
+            try {
+                KeyStore keyStore = loadKeyStore(trustKeyStorePath, trustKeyPassword);
+                TrustManagerFactory factory = TrustManagerFactory.getInstance("PKIX", "SunJSSE");
+                factory.init(keyStore);
+                return trustManagers = factory.getTrustManagers();
+            }
+            catch (KeyStoreException |
+                   IOException |
+                   NoSuchAlgorithmException |
+                   CertificateException |
+                   NoSuchProviderException e)
+            {
+                e.printStackTrace();
+                return null;
+            }
+        }
+        return trustManagers;
+    }
+
+    @Override
+    public KeyManager[] getKeyManagers()
+    {
+        if (keyManagers == null && keyStorePath != null && keyPassword != null) {
+            try {
+                KeyStore keyStore = loadKeyStore(keyStorePath, keyPassword);
+                KeyManagerFactory factory = KeyManagerFactory.getInstance("PKIX", "SunJSSE");
+                factory.init(keyStore, keyPassword.toCharArray());
+                return keyManagers = factory.getKeyManagers();
+            }
+            catch (KeyStoreException |
+                   IOException |
+                   NoSuchAlgorithmException |
+                   CertificateException |
+                   NoSuchProviderException |
+                   UnrecoverableKeyException e)
+            {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        return keyManagers;
+    }
+
+    @Override
+    public void init()
+    {
+        getKeyManagers();
+        getTrustManagers();
     }
 }

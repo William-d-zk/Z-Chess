@@ -50,6 +50,12 @@
                 <configuration>
                     <layout>JAR</layout>
                     <mainClass>com.isahl.chess.knight.start.ApplicationKnight</mainClass>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-configuration-processor</artifactId>
+                        </exclude>
+                    </excludes>
                 </configuration>
                 <executions>
                     <execution>

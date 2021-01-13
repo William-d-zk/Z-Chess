@@ -532,15 +532,13 @@ public enum Units
             parse(String input)
     {
         Float value = _Model.getValue(_Pattern, input);
-        return Objects.nonNull(value) ? new Triple<>(true, value * getSI(), this)
-                                      : new Triple<>(false, 0.0f, null);
+        return Objects.nonNull(value) ? new Triple<>(true, value * getSI(), this): new Triple<>(false, 0.0f, null);
     }
 
     public float getValue(String input)
     {
         Float value = _Model.getValue(_Pattern, input);
-        return value == null ? 0.0f
-                             : value * getSI();
+        return value == null ? 0.0f: value * getSI();
     }
 
     private final String    _SignFormatter;
@@ -570,8 +568,7 @@ public enum Units
             {
                 Matcher matcher = pattern.matcher(input.toUpperCase());
 
-                return matcher.matches() ? Float.parseFloat(matcher.group(2))
-                                         : null;
+                return matcher.matches() ? Float.parseFloat(matcher.group(2)): null;
             }
         },
         /**
@@ -597,8 +594,7 @@ public enum Units
             {
                 Matcher matcher = pattern.matcher(input.toUpperCase());
 
-                return matcher.matches() ? Float.parseFloat(matcher.group(2))
-                                         : null;
+                return matcher.matches() ? Float.parseFloat(matcher.group(2)): null;
             }
         },
         /**
@@ -620,8 +616,7 @@ public enum Units
             {
                 Matcher matcher = pattern.matcher(input.toUpperCase());
 
-                return matcher.matches() ? Float.parseFloat(matcher.group(1))
-                                         : null;
+                return matcher.matches() ? Float.parseFloat(matcher.group(1)): null;
             }
         };
 

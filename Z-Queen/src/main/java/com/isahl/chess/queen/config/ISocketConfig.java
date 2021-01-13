@@ -25,6 +25,9 @@ package com.isahl.chess.queen.config;
 
 import java.time.Duration;
 
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.TrustManager;
+
 /**
  * @author william.d.zk
  * 
@@ -77,4 +80,19 @@ public interface ISocketConfig
     {
         return Duration.ofSeconds(5);
     }
+
+    default KeyManager[] getKeyManagers()
+    {
+        return null;
+    }
+
+    default TrustManager[] getTrustManagers()
+    {
+        return null;
+    }
+
+    default void init()
+    {
+    }
+
 }

@@ -58,9 +58,9 @@ import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
  */
 @Entity(name = "Message")
 @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
-@Table(indexes = { @Index(name = "message_idx_msg_id", columnList = "msgId"),
-                   @Index(name = "origin_idx", columnList = "origin"),
-                   @Index(name = "destination_idx", columnList = "destination")})
+@Table(indexes = {@Index(name = "message_idx_msg_id", columnList = "msgId"),
+                  @Index(name = "origin_idx", columnList = "origin"),
+                  @Index(name = "destination_idx", columnList = "destination")})
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class MessageEntity
         extends

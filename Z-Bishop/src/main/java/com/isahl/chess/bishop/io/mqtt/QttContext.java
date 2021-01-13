@@ -23,10 +23,14 @@
 
 package com.isahl.chess.bishop.io.mqtt;
 
+import static com.isahl.chess.bishop.io.mqtt.MqttProtocol.VERSION_V3_1_1;
+import static com.isahl.chess.bishop.io.mqtt.MqttProtocol.VERSION_V5_0;
 import static com.isahl.chess.king.base.schedule.inf.ITask.advanceState;
 import static com.isahl.chess.king.base.schedule.inf.ITask.stateAtLeast;
 import static com.isahl.chess.king.base.schedule.inf.ITask.stateLessThan;
 import static com.isahl.chess.queen.io.core.inf.ISession.CAPACITY;
+
+import java.util.stream.IntStream;
 
 import com.isahl.chess.bishop.io.ZContext;
 import com.isahl.chess.king.base.inf.IPair;
@@ -41,10 +45,10 @@ public class QttContext
         extends
         ZContext
 {
-    private final static IPair SUPPORT_VERSION = new Pair<>(new String[]{"5.0.0",
+    private final static IPair SUPPORT_VERSION = new Pair<>(new String[]{"5.0",
                                                                          "3.1.1"},
-                                                            new int[]{5,
-                                                                      4});
+                                                            new int[]{VERSION_V5_0,
+                                                                      VERSION_V3_1_1});
 
     public QttContext(ISessionOption option,
                       ISort.Mode mode,
@@ -58,19 +62,14 @@ public class QttContext
         return SUPPORT_VERSION;
     }
 
-    public static int getLastVersion()
+    public static boolean isNoSupportVersion(int version)
     {
-        int[] versions = SUPPORT_VERSION.getSecond();
-        return versions[0];
+        int[] supportedVersions = SUPPORT_VERSION.getSecond();
+        return IntStream.of(supportedVersions)
+                        .noneMatch(v -> v == version);
     }
 
-    public static int getCurrentVersion()
-    {
-        int[] versions = SUPPORT_VERSION.getSecond();
-        return versions[1];
-    }
-
-    private int mVersion = getCurrentVersion();
+    private int mVersion ;
 
     public void setVersion(int version)
     {

@@ -28,6 +28,7 @@ import java.security.NoSuchAlgorithmException;
 import com.isahl.chess.bishop.io.sort.BaseSort;
 import com.isahl.chess.bishop.io.ssl.SSLFilter;
 import com.isahl.chess.bishop.io.ssl.SSLZContext;
+import com.isahl.chess.bishop.io.ssl.SslHandShakeFilter;
 import com.isahl.chess.bishop.io.ws.WsContext;
 import com.isahl.chess.bishop.io.ws.filter.WsControlFilter;
 import com.isahl.chess.bishop.io.ws.filter.WsFrameFilter;
@@ -42,7 +43,7 @@ public class WsSslZSort
 {
     private final ISort<WsContext> _ActingSort;
 
-    private final SSLFilter<SSLZContext<WsContext>> _Head = new SSLFilter<>();
+    private final SslHandShakeFilter<SSLZContext<WsContext>> _Head = new SslHandShakeFilter<>();
 
     public WsSslZSort(Mode mode,
                       Type type,
@@ -50,7 +51,8 @@ public class WsSslZSort
     {
         super(mode, type, String.format("ssl-%s", actingSort.getProtocol()));
         _ActingSort = actingSort;
-        _Head.linkFront(new WsHandShakeFilter<>())
+        _Head.linkFront(new SSLFilter<>())
+             .linkFront(new WsHandShakeFilter<>())
              .linkFront(new WsFrameFilter<>())
              .linkFront(new WsControlFilter<>());
     }

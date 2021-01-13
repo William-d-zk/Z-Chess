@@ -70,8 +70,10 @@ public interface QueenCode
     String ERROR_CLOSE = "error close";
     String LOCAL_CLOSE = "error close";
 
-    static String parseRCode(int code)
+    static String codeOf(int code)
     {
+
+
         return switch (code)
         {
             case PLAIN_UNSUPPORTED -> "PLAIN_UNSUPPORTED";

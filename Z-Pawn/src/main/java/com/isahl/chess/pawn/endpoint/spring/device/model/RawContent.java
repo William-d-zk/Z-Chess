@@ -36,6 +36,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
  * @date 2019/12/1
  */
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class RawContent
         implements
         Serializable
@@ -47,7 +48,6 @@ public class RawContent
     private String raw;
     private byte[] payload;
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     public String getRaw()
     {
         return raw;

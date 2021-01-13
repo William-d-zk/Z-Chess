@@ -23,7 +23,6 @@
 
 package com.isahl.chess.pawn.endpoint.spring.device.service;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -34,13 +33,13 @@ import org.springframework.stereotype.Component;
 
 import com.isahl.chess.bishop.io.ZSortHolder;
 import com.isahl.chess.bishop.io.mqtt.QttContext;
-import com.isahl.chess.bishop.io.mqtt.v3.control.X111_QttConnect;
-import com.isahl.chess.bishop.io.mqtt.v3.control.X112_QttConnack;
-import com.isahl.chess.bishop.io.mqtt.v3.control.X118_QttSubscribe;
-import com.isahl.chess.bishop.io.mqtt.v3.control.X119_QttSuback;
-import com.isahl.chess.bishop.io.mqtt.v3.control.X11A_QttUnsubscribe;
-import com.isahl.chess.bishop.io.mqtt.v3.control.X11B_QttUnsuback;
-import com.isahl.chess.bishop.io.mqtt.v3.control.X11E_QttDisconnect;
+import com.isahl.chess.bishop.io.mqtt.control.X111_QttConnect;
+import com.isahl.chess.bishop.io.mqtt.control.X112_QttConnack;
+import com.isahl.chess.bishop.io.mqtt.control.X118_QttSubscribe;
+import com.isahl.chess.bishop.io.mqtt.control.X119_QttSuback;
+import com.isahl.chess.bishop.io.mqtt.control.X11A_QttUnsubscribe;
+import com.isahl.chess.bishop.io.mqtt.control.X11B_QttUnsuback;
+import com.isahl.chess.bishop.io.mqtt.control.X11E_QttDisconnect;
 import com.isahl.chess.bishop.io.mqtt.handler.IQttRouter;
 import com.isahl.chess.bishop.io.mqtt.handler.QttRouter;
 import com.isahl.chess.bishop.io.zprotocol.control.X108_Shutdown;
@@ -107,12 +106,8 @@ public class LinkCustom
                     device = _DurableService.findDeviceByToken(x111.getClientId());
                     X112_QttConnack x112 = new X112_QttConnack();
                     x112.responseOk();
-                    int[] supportVersions = QttContext.getSupportVersion()
-                                                      .getSecond();
-                    if (Arrays.stream(supportVersions)
-                              .noneMatch(version -> version == x111.getProtocolVersion()))
-                    {
-                        x112.rejectUnacceptableProtocol();
+                    if (QttContext.isNoSupportVersion(x111.getVersion())) {
+                        x112.rejectUnsupportedVersion();
                     }
                     else if (!x111.isClean() && x111.getClientIdLength() == 0) {
                         x112.rejectIdentifier();

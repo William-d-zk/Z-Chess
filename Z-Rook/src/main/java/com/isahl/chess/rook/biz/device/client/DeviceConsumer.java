@@ -46,12 +46,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.isahl.chess.bishop.io.ZSortHolder;
-import com.isahl.chess.bishop.io.mqtt.v3.control.X111_QttConnect;
-import com.isahl.chess.bishop.io.mqtt.v3.control.X112_QttConnack;
+import com.isahl.chess.bishop.io.mqtt.control.X111_QttConnect;
+import com.isahl.chess.bishop.io.mqtt.control.X112_QttConnack;
 import com.isahl.chess.bishop.io.ssl.SSLZContext;
 import com.isahl.chess.bishop.io.ws.IWsContext;
 import com.isahl.chess.bishop.io.ws.WsContext;
-import com.isahl.chess.bishop.io.ws.WsProxyContext;
 import com.isahl.chess.bishop.io.ws.control.X101_HandShake;
 import com.isahl.chess.bishop.io.ws.control.X102_Close;
 import com.isahl.chess.bishop.io.ws.control.X103_Ping;
@@ -304,12 +303,9 @@ public class DeviceConsumer
                         IWsContext wsContext = session.getContext();
                         return new IControl[]{wsContext.handshake(host)};
                     case WS_CONSUMER_SSL:
-                        SSLZContext<WsContext> sslzContext = session.getContext();
-                        wsContext = sslzContext.getActingContext();
-                        return new IControl[]{wsContext.handshake(host)};
                     case WS_QTT_CONSUMER_SSL:
-                        SSLZContext<WsProxyContext<?>> sslzPContext = session.getContext();
-                        wsContext = sslzPContext.getActingContext();
+                        SSLZContext<WsContext> sslContext = session.getContext();
+                        wsContext = sslContext.getActingContext();
                         return new IControl[]{wsContext.handshake(host)};
                     case QTT_SYMMETRY:
                         try {

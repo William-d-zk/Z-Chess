@@ -33,23 +33,27 @@ import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
 import static com.isahl.chess.queen.io.core.inf.IQoS.Level.EXACTLY_ONCE;
 import static java.lang.Math.min;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import com.isahl.chess.bishop.io.mqtt.v3.command.X113_QttPublish;
-import com.isahl.chess.bishop.io.mqtt.v3.command.X114_QttPuback;
-import com.isahl.chess.bishop.io.mqtt.v3.command.X115_QttPubrec;
-import com.isahl.chess.bishop.io.mqtt.v3.command.X116_QttPubrel;
-import com.isahl.chess.bishop.io.mqtt.v3.command.X117_QttPubcomp;
-import com.isahl.chess.bishop.io.mqtt.v3.command.X11C_QttPingreq;
-import com.isahl.chess.bishop.io.mqtt.v3.command.X11D_QttPingresp;
+import javax.net.ssl.SSLEngineResult;
+
+import com.isahl.chess.bishop.io.mqtt.command.X113_QttPublish;
+import com.isahl.chess.bishop.io.mqtt.command.X114_QttPuback;
+import com.isahl.chess.bishop.io.mqtt.command.X115_QttPubrec;
+import com.isahl.chess.bishop.io.mqtt.command.X116_QttPubrel;
+import com.isahl.chess.bishop.io.mqtt.command.X117_QttPubcomp;
+import com.isahl.chess.bishop.io.mqtt.control.X11C_QttPingreq;
+import com.isahl.chess.bishop.io.mqtt.control.X11D_QttPingresp;
 import com.isahl.chess.bishop.io.mqtt.handler.IQttRouter;
 import com.isahl.chess.bishop.io.ws.control.X101_HandShake;
 import com.isahl.chess.bishop.io.ws.control.X103_Ping;
 import com.isahl.chess.bishop.io.ws.control.X104_Pong;
+import com.isahl.chess.bishop.io.zprotocol.control.X105_SslHandShake;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.schedule.Status;
@@ -109,6 +113,15 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
             case X103_Ping.COMMAND:
                 X103_Ping x103 = (X103_Ping) content;
                 return new IControl[]{new X104_Pong(x103.getPayload())};
+            case X105_SslHandShake.COMMAND:
+                X105_SslHandShake x105 = (X105_SslHandShake) content;
+                if (x105.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.NEED_WRAP) {
+                    x105.setPayload("hello".getBytes(StandardCharsets.UTF_8));
+                }
+                else {
+                    break;
+                }
+                return new IControl[]{content};
             case X113_QttPublish.COMMAND:
                 X113_QttPublish x113 = (X113_QttPublish) content;
                 MessageEntity messageEntity = new MessageEntity();
@@ -172,7 +185,6 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                     update.setOperation(OP_MODIFY);
                     update.setStatus(Status.RUNNING);
                     _MessageRepository.save(update);
-
                     X116_QttPubrel x116 = new X116_QttPubrel();
                     x116.setMsgId(x115.getMsgId());
                     _QttRouter.register(x116, session.getIndex());

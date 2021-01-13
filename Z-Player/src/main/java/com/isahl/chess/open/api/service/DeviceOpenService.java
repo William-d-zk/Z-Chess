@@ -34,10 +34,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import javax.persistence.EntityNotFoundException;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
@@ -45,7 +42,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
@@ -112,8 +108,7 @@ public class DeviceOpenService
             else if (!isBlank(device.getToken())) {
                 exist = _JpaRepository.findByToken(device.getToken());
             }
-            DeviceEntity entity = exist == null ? new DeviceEntity()
-                                                : exist;
+            DeviceEntity entity = exist == null ? new DeviceEntity(): exist;
             if (exist == null) {
                 String source = String.format("sn:%s,random %s%d",
                                               device.getSn(),
@@ -166,20 +161,14 @@ public class DeviceOpenService
 
     public Page<DeviceEntity> findAll(String sn, Pageable pageable)
     {
-        return _JpaRepository.findAll(new Specification<DeviceEntity>()
+        return _JpaRepository.findAll((Specification<DeviceEntity>) (root, criteriaQuery, criteriaBuilder) ->
         {
-            @Override
-            public Predicate toPredicate(Root<DeviceEntity> root,
-                                         CriteriaQuery<?> criteriaQuery,
-                                         CriteriaBuilder criteriaBuilder)
-            {
-                List<Predicate> predicates = new ArrayList<>();
-                if (!StringUtils.isEmpty(sn)) {
-                    predicates.add(criteriaBuilder.like(root.get("sn"), "%" + sn + "%"));
-                }
-                return criteriaQuery.where(predicates.toArray(new Predicate[0]))
-                                    .getRestriction();
+            List<Predicate> predicates = new ArrayList<>();
+            if (!IoUtil.isBlank(sn)) {
+                predicates.add(criteriaBuilder.like(root.get("sn"), "%" + sn + "%"));
             }
+            return criteriaQuery.where(predicates.toArray(new Predicate[0]))
+                                .getRestriction();
         }, pageable);
     }
 }

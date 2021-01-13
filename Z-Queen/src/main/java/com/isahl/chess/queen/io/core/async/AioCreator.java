@@ -24,6 +24,9 @@ package com.isahl.chess.queen.io.core.async;
 
 import java.time.Duration;
 
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.TrustManager;
+
 import com.isahl.chess.queen.config.ISocketConfig;
 import com.isahl.chess.queen.io.core.inf.ISessionCreator;
 
@@ -39,6 +42,7 @@ public abstract class AioCreator
     protected AioCreator(ISocketConfig config)
     {
         _Config = config;
+        config.init();
     }
 
     @Override
@@ -95,5 +99,17 @@ public abstract class AioCreator
     public Duration getConnectTimeout()
     {
         return _Config.getConnectTimeoutInSecond();
+    }
+
+    @Override
+    public KeyManager[] getKeyManagers()
+    {
+        return _Config.getKeyManagers();
+    }
+
+    @Override
+    public TrustManager[] getTrustManagers()
+    {
+        return _Config.getTrustManagers();
     }
 }

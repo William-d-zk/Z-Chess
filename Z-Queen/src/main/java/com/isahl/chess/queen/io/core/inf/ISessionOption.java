@@ -25,6 +25,9 @@ package com.isahl.chess.queen.io.core.inf;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.time.Duration;
 
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.TrustManager;
+
 /**
  * @author William.d.zk
  */
@@ -56,5 +59,15 @@ public interface ISessionOption
     Duration getSoLingerInSecond();
 
     Duration getConnectTimeout();
+
+    default KeyManager[] getKeyManagers()
+    {
+        return null;
+    }
+
+    default TrustManager[] getTrustManagers()
+    {
+        return null;
+    }
 
 }

@@ -47,6 +47,11 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>com.isahl.chess</groupId>
             <artifactId>protocol.z-bishop</artifactId>
             <version>${project.version}</version>
@@ -62,6 +67,12 @@
                 <configuration>
                     <layout>JAR</layout>
                     <mainClass>com.isahl.chess.rook.ApplicationRook</mainClass>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-configuration-processor</artifactId>
+                        </exclude>
+                    </excludes>
                 </configuration>
             </plugin>
         </plugins>

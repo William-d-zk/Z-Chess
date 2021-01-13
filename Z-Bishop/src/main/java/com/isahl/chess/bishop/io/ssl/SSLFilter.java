@@ -48,39 +48,65 @@ public class SSLFilter<A extends IPContext>
     @Override
     public IPacket encode(SSLZContext<A> context, IPacket output)
     {
+        if (output.outIdempotent(getLeftIdempotentBit())) {
+            context.doWrap(output);
+        }
         return output;
     }
 
     @Override
     public IPacket decode(SSLZContext<A> context, IPacket input)
     {
+        if (input.inIdempotent(getRightIdempotentBit())) {
+            context.doUnwrap(input);
+        }
         return input;
     }
 
     @Override
+    public ResultType peek(SSLZContext<A> context, IPacket input)
+    {
+        if (input.getBuffer()
+                 .hasRemaining())
+        {
+
+        }
+        return ResultType.NEED_DATA;
+    }
+
+    @Override
+    public ResultType seek(SSLZContext<A> context, IPacket output)
+    {
+
+        return ResultType.IGNORE;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
     public <O extends IProtocol> Pair<ResultType,
                                       IPContext> pipeSeek(IPContext context, O output)
     {
         if (checkType(output, IProtocol.PACKET_SERIAL)
             && context.isProxy()
             && context instanceof SSLZContext
-            && context.isOutFrame())
+            && context.isOutConvert())
         {
-            return new Pair<>(ResultType.HANDLED, context);
+            return new Pair<>(seek((SSLZContext<A>) context, (IPacket) output), context);
         }
         return new Pair<>(ResultType.IGNORE, context);
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <I extends IProtocol> Pair<ResultType,
                                       IPContext> pipePeek(IPContext context, I input)
     {
         if (checkType(input, IProtocol.PACKET_SERIAL)
             && context.isProxy()
             && context instanceof SSLZContext
-            && context.isInFrame())
+            && context.isInConvert())
         {
-            return new Pair<>(ResultType.NEXT_STEP, context);
+            return new Pair<>(peek((SSLZContext<A>) context, (IPacket) input), context);
         }
         return new Pair<>(ResultType.IGNORE, context);
     }
