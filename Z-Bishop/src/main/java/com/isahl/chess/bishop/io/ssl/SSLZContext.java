@@ -60,12 +60,9 @@ public class SSLZContext<A extends IPContext>
     private final SSLEngine     _SslEngine;
     private final SSLContext    _SslContext;
     private final SSLSession    _SslSession;
-    private final ByteBuffer    _SslAppInBuffer;
-    private final ByteBuffer    _SslNetOutBuffer;
-    private final ByteBuffer    _SslNetInBuffer;
+    private final ByteBuffer    _AppInBuffer;
     private final A             _ActingContext;
-
-    private boolean mNetBuffered;
+    private boolean             mNetBuffered;
 
     public SSLZContext(ISessionOption option,
                        ISort.Mode mode,
@@ -83,15 +80,16 @@ public class SSLZContext<A extends IPContext>
             throw new ZException(e, "ssl context init failed");
         }
         _SslEngine = _SslContext.createSSLEngine();
-        _SslEngine.setEnabledProtocols(new String[]{"SSLv3",
-                                                    "TLSv1.2",
-                                                    "TLSv1.3"});
-        _SslSession = _SslEngine.getSession();
-        _SslAppInBuffer = ByteBuffer.allocate(_SslSession.getApplicationBufferSize());
-        _SslNetOutBuffer = ByteBuffer.allocate(_SslSession.getPacketBufferSize());
-        _SslNetInBuffer = ByteBuffer.allocate(_SslSession.getPacketBufferSize());
+        _SslEngine.setEnabledProtocols(new String[] { "TLSv1.2"
+        });
         _SslEngine.setUseClientMode(type == ISort.Type.CONSUMER);
         _SslEngine.setNeedClientAuth(type == ISort.Type.SERVER);
+        _SslSession = _SslEngine.getSession();
+        _AppInBuffer = ByteBuffer.allocate(_SslSession.getApplicationBufferSize());
+        if (_SslSession.getPacketBufferSize() > getRvBuffer().capacity()) {
+            throw new NegativeArraySizeException("pls check io config @ recv_buffer_size");
+        }
+
     }
 
     @Override
@@ -121,9 +119,13 @@ public class SSLZContext<A extends IPContext>
             LOGGER.info("ssl in bound exception %s", e.getMessage());
         }
         _SslEngine.closeOutbound();
-        _SslAppInBuffer.clear();
-        _SslNetInBuffer.clear();
-        _SslNetOutBuffer.clear();
+    }
+
+    @Override
+    public void dispose()
+    {
+        super.dispose();
+        reset();
     }
 
     @Override
@@ -176,23 +178,19 @@ public class SSLZContext<A extends IPContext>
     {
         try {
             ByteBuffer toSendBuffer = toSend.getBuffer();
-            if (toSendBuffer.remaining() > _SslNetOutBuffer.remaining()) {
-                LOGGER.warning("buffer overflow risk");
-            }
-            SSLEngineResult result = _SslEngine.wrap(toSendBuffer, _SslNetOutBuffer);
-            int wrapped = result.bytesProduced();
+            ByteBuffer netSendBuffer = ByteBuffer.allocate(_SslSession.getPacketBufferSize());
+            SSLEngineResult result = _SslEngine.wrap(toSendBuffer, netSendBuffer);
+            int produced = result.bytesProduced();
             switch (result.getStatus())
             {
                 case OK, BUFFER_UNDERFLOW ->
                     {
                         doTask();
-                        _SslNetOutBuffer.flip();
-                        toSend.replaceWith(_SslNetOutBuffer);
+                        netSendBuffer.flip();
+                        toSend.replaceWith(netSendBuffer);
                     }
                 case CLOSED, BUFFER_OVERFLOW -> throw new ZException("ssl wrap error:%s", result.getStatus());
-
             }
-            _SslNetOutBuffer.clear();
             return _SslEngine.getHandshakeStatus();
         }
         catch (SSLException e) {
@@ -203,48 +201,74 @@ public class SSLZContext<A extends IPContext>
     public SSLEngineResult.HandshakeStatus doUnwrap(IPacket input)
     {
         try {
-            SSLEngineResult result;
             ByteBuffer netInBuffer = input.getBuffer();
             netInBuffer.mark();
             if (mNetBuffered) {
-                _SslNetInBuffer.put(netInBuffer);
-                _SslNetInBuffer.flip();
-                netInBuffer = _SslNetInBuffer;
+                getRvBuffer().put(netInBuffer);
+                getRvBuffer().flip();
+                netInBuffer = getRvBuffer();
             }
-            result = _SslEngine.unwrap(netInBuffer, _SslAppInBuffer);
-            int wrapped = result.bytesProduced();
-            switch (result.getStatus())
-            {
-                case OK ->
-                    {
-                        doTask();
-                        _SslNetInBuffer.clear();
-                        mNetBuffered = false;
-                        _SslAppInBuffer.flip();
-                        input.replaceWith(_SslAppInBuffer);
-                    }
-                case BUFFER_UNDERFLOW ->
-                    {
-                        if (netInBuffer.hasRemaining()) {
-                            throw new ZException(new IllegalStateException(),
-                                                 "state error,unwrap under flow & input has remain");
+            SSLEngineResult.Status resultStatus;
+            do {
+                int mark = netInBuffer.position();
+                SSLEngineResult result = _SslEngine.unwrap(netInBuffer, _AppInBuffer);
+                int consumed = result.bytesConsumed();
+                int produced = result.bytesProduced();
+                resultStatus = result.getStatus();
+                switch (resultStatus)
+                {
+                    case OK ->
+                        {
+                            doTask();
+                            if (netInBuffer.hasRemaining()) {
+                                if (netInBuffer != getRvBuffer()) {
+                                    getRvBuffer().put(netInBuffer);
+                                    mNetBuffered = true;
+                                }
+                                else {
+                                    netInBuffer.compact();
+                                }
+                            }
+                            else {
+                                mNetBuffered = false;
+                                netInBuffer.clear();
+                            }
                         }
-                        _SslAppInBuffer.clear();
-                        if (mNetBuffered) {
-                            //回到
-                            _SslNetInBuffer.limit(_SslNetInBuffer.capacity());
+                    case BUFFER_UNDERFLOW ->
+                        {
+                            if (netInBuffer.hasRemaining()) {
+                                throw new ZException(new IllegalStateException(),
+                                                     "state error,unwrap under flow & input has remain");
+                            }
+                            if (mNetBuffered) {
+                                if (netInBuffer.position() > 0) {
+                                    netInBuffer.compact();
+                                }
+                                else {
+                                    netInBuffer.position(netInBuffer.limit());
+                                    netInBuffer.limit(netInBuffer.capacity());
+                                }
+                            }
+                            else {
+                                /*
+                                   netInBuffer ==  input.getBuffer()
+                                 */
+                                netInBuffer.reset();
+                                getRvBuffer().put(netInBuffer);
+                                mNetBuffered = true;
+                            }
+                            return _SslEngine.getHandshakeStatus();
                         }
-                        else {
-                            netInBuffer.reset();
-                            _SslNetInBuffer.put(netInBuffer);
-                            mNetBuffered = true;
-                        }
-                    }
-                case CLOSED, BUFFER_OVERFLOW -> throw new ZException("ssl unwrap error:%s", result.getStatus());
+                    case CLOSED -> throw new ZException("ssl unwrap closed:%s", result.getStatus());
+                    case BUFFER_OVERFLOW -> throw new ZException("ssl unwrap overflow");
+                }
             }
+            while (resultStatus != SSLEngineResult.Status.OK);
             return _SslEngine.getHandshakeStatus();
         }
-        catch (SSLException e) {
+        catch (
+
+        SSLException e) {
             throw new ZException(e, "ssl unwrap error");
         }
     }
