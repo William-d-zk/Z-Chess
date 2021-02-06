@@ -28,6 +28,7 @@ import com.isahl.chess.queen.io.core.async.AioFilterChain;
 import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.IPacket;
 import com.isahl.chess.queen.io.core.inf.IProtocol;
+import com.isahl.chess.queen.io.core.inf.IProxyContext;
 
 /**
  * @author william.d.zk
@@ -48,7 +49,7 @@ public class SSLFilter<A extends IPContext>
     @Override
     public IPacket encode(SSLZContext<A> context, IPacket output)
     {
-        if (output.outIdempotent(getLeftIdempotentBit())) {
+        if (context.isOutCrypt() && output.outIdempotent(getLeftIdempotentBit())) {
             context.doWrap(output);
         }
         return output;
@@ -57,56 +58,36 @@ public class SSLFilter<A extends IPContext>
     @Override
     public IPacket decode(SSLZContext<A> context, IPacket input)
     {
-        if (input.inIdempotent(getRightIdempotentBit())) {
-            context.doUnwrap(input);
+        if (context.isInCrypt() && input.inIdempotent(getRightIdempotentBit())) {
+
         }
         return input;
     }
 
     @Override
-    public ResultType peek(SSLZContext<A> context, IPacket input)
-    {
-        if (input.getBuffer()
-                 .hasRemaining())
-        {
-
-        }
-        return ResultType.NEED_DATA;
-    }
-
-    @Override
-    public ResultType seek(SSLZContext<A> context, IPacket output)
-    {
-
-        return ResultType.IGNORE;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
     public <O extends IProtocol> Pair<ResultType,
                                       IPContext> pipeSeek(IPContext context, O output)
     {
         if (checkType(output, IProtocol.PACKET_SERIAL)
             && context.isProxy()
-            && context instanceof SSLZContext
-            && context.isOutConvert())
+            && context.isOutConvert()
+            && context instanceof SSLZContext)
         {
-            return new Pair<>(seek((SSLZContext<A>) context, (IPacket) output), context);
+            return new Pair<>(ResultType.NEXT_STEP, ((IProxyContext<?>) context).getActingContext());
         }
         return new Pair<>(ResultType.IGNORE, context);
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <I extends IProtocol> Pair<ResultType,
                                       IPContext> pipePeek(IPContext context, I input)
     {
         if (checkType(input, IProtocol.PACKET_SERIAL)
             && context.isProxy()
-            && context instanceof SSLZContext
-            && context.isInConvert())
+            && context.isInConvert()
+            && context instanceof SSLZContext)
         {
-            return new Pair<>(peek((SSLZContext<A>) context, (IPacket) input), context);
+            return new Pair<>(ResultType.NEXT_STEP, ((IProxyContext<?>) context).getActingContext());
         }
         return new Pair<>(ResultType.IGNORE, context);
     }

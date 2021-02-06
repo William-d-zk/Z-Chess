@@ -44,7 +44,9 @@ public class AioPacket
     public AioPacket(int size,
                      boolean direct)
     {
-        mBuf = size > 0 ? (direct ? ByteBuffer.allocateDirect(size): ByteBuffer.allocate(size)): null;
+        mBuf = size > 0 ? (direct ? ByteBuffer.allocateDirect(size)
+                                  : ByteBuffer.allocate(size))
+                        : null;
     }
 
     public AioPacket(ByteBuffer buf)
@@ -158,27 +160,30 @@ public class AioPacket
     }
 
     @Override
-    public void replaceWith(ByteBuffer src)
+    public void put(ByteBuffer src)
     {
         if (mBuf.capacity() < src.remaining()) {
             int size = src.remaining();
-            mBuf = mBuf.isDirect() ? ByteBuffer.allocateDirect(size): ByteBuffer.allocate(size);
+            mBuf = mBuf.isDirect() ? ByteBuffer.allocateDirect(size)
+                                   : ByteBuffer.allocate(size);
         }
         else {
             mBuf.clear();
         }
-        mBuf.put(src)
-            .flip();
+        IoUtil.write(src.array(), src.position(), mBuf.array(), mBuf.position(), src.remaining());
+        //mBuf.position == 0
+        mBuf.limit(src.remaining());
+    }
+
+    @Override
+    public void replace(ByteBuffer src)
+    {
+        mBuf = src;
     }
 
     @Override
     public void expand(int size)
     {
-        int newSize = mBuf.capacity() + size;
-        ByteBuffer newBuf = mBuf.isDirect() ? ByteBuffer.allocateDirect(newSize): ByteBuffer.allocate(newSize);
-        IoUtil.write(mBuf.array(), newBuf.array(), 0);
-        newBuf.position(mBuf.position());
-        newBuf.limit(mBuf.limit());
-        mBuf = newBuf;
+        mBuf = IoUtil.expandBuffer(mBuf, size);
     }
 }

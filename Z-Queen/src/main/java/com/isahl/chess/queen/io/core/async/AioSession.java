@@ -210,6 +210,7 @@ public class AioSession<C extends IPContext>
     {
         if (isClosed()) { return; }
         advanceState(_State, SESSION_CLOSE, CAPACITY);
+        _Context.dispose();
         if (_Channel != null) {
             _Channel.close();
         }

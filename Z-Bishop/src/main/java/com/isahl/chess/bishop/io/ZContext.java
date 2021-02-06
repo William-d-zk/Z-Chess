@@ -32,7 +32,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.isahl.chess.queen.event.inf.ISort;
 import com.isahl.chess.queen.io.core.async.AioContext;
-import com.isahl.chess.queen.io.core.inf.IFrame;
 import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.ISessionOption;
 
@@ -53,7 +52,7 @@ public abstract class ZContext
     protected final ISort.Type    _Type;
     /*----------------------------------------------------------------------------------------------------------------*/
     private int    mDecodingPosition = -1, mLackData = 1;
-    private IFrame mCarrier;
+    private Object mCarrier;
 
     public ZContext(ISessionOption option,
                     ISort.Mode mode,
@@ -74,9 +73,6 @@ public abstract class ZContext
         super.reset();
         mDecodingPosition = -1;
         mLackData = 1;
-        if (mCarrier != null) {
-            mCarrier.reset();
-        }
         mCarrier = null;
     }
 
@@ -97,14 +93,14 @@ public abstract class ZContext
     }
 
     @SuppressWarnings("unchecked")
-    public <F extends IFrame> F getCarrier()
+    public <F> F getCarrier()
     {
         return (F) mCarrier;
     }
 
-    public void setCarrier(IFrame frame)
+    public void setCarrier(Object carrier)
     {
-        mCarrier = frame;
+        mCarrier = carrier;
     }
 
     @Override

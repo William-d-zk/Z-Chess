@@ -164,7 +164,6 @@ public class EZContext<A extends IPContext>
     /*
      * 处理流中仅提供信号即可，
      * 真正的操作在decode 中使用 cryptIn最终执行
-     *
      */
     @Override
     public void updateKeyIn()
@@ -238,13 +237,13 @@ public class EZContext<A extends IPContext>
     @Override
     public void cryptIn()
     {
-        advanceState(_DecodeState, DECODE_PAYLOAD, CAPACITY);
+        advanceInState(DECODE_PAYLOAD);
     }
 
     @Override
     public void cryptOut()
     {
-        advanceState(_EncodeState, ENCODE_PAYLOAD, CAPACITY);
+        advanceOutState(ENCODE_PAYLOAD);
     }
 
     @Override

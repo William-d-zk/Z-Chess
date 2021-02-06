@@ -74,8 +74,8 @@ public interface IPipeDecoder
                                 /*
                                   协议层代理
                                   例如 WS→QTT
-                                    QttFrame 已将 proxy 持有的数据处理完毕
-                                    重置proxy状态，等待新的WsFrame
+                                  QttFrame 已将 proxy 持有的数据处理完毕
+                                  重置 proxy 状态，等待新的 WsFrame
                                  */
                                 proxy = null;
                                 break Chain;

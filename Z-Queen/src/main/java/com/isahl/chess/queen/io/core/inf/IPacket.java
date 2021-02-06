@@ -54,7 +54,9 @@ public interface IPacket
 
     IPacket flip();
 
-    void replaceWith(ByteBuffer src);
+    void put(ByteBuffer src);
+
+    void replace(ByteBuffer src);
 
     void expand(int size);
 
