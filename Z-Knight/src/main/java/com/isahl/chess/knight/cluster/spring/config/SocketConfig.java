@@ -23,7 +23,6 @@
 
 package com.isahl.chess.knight.cluster.spring.config;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -172,7 +171,9 @@ public class SocketConfig
                                                                 CertificateException
     {
         KeyStore keyStore = KeyStore.getInstance("PKCS12");
-        keyStore.load(getClass().getResourceAsStream(path), password.toCharArray());
+        keyStore.load(getClass().getClassLoader()
+                                .getResourceAsStream(path),
+                      password.toCharArray());
         return keyStore;
     }
 
@@ -220,7 +221,7 @@ public class SocketConfig
         if (keyManagers == null && keyStorePath != null && keyPassword != null) {
             try {
                 KeyStore keyStore = loadKeyStore(keyStorePath, keyPassword);
-                KeyManagerFactory factory = KeyManagerFactory.getInstance("PKIX", "SunJSSE");
+                KeyManagerFactory factory = KeyManagerFactory.getInstance("SunX509", "SunJSSE");
                 factory.init(keyStore, keyPassword.toCharArray());
                 return keyManagers = factory.getKeyManagers();
             }

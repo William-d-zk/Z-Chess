@@ -41,12 +41,14 @@ public abstract class AioContext
      * 创建时以SocketOption配置为基准进行设定，
      * 
      */
-    private ByteBuffer mWrBuf;
+    private final ByteBuffer _WrBuf;
 
-    /**
-     * 用于缓存 IPoS 分块带入的 RecvBuffer 内容
+    /*
+     * 用于缓存 IPoS 分块带入的 RecvBuffer 内容 由于 AioWorker 中 channel 的 read_buffer - protocol_buffer - 都以
+     * SocketOption 设定为准，所以不存在 IPoS 带入一个包含多个分页的协议
+     * 内容的情况
      */
-    private ByteBuffer mRvBuf;
+    private final ByteBuffer _RvBuf;
 
     private long mClientStartTime;
     private long mServerArrivedTime;
@@ -55,33 +57,33 @@ public abstract class AioContext
 
     protected AioContext(ISessionOption option)
     {
-        mRvBuf = ByteBuffer.allocate(option.getRcvInByte());
-        mWrBuf = ByteBuffer.allocate(option.getSnfInByte());
+        _RvBuf = ByteBuffer.allocate(option.getRcvInByte());
+        _WrBuf = ByteBuffer.allocate(option.getSnfInByte());
     }
 
     @Override
     public void reset()
     {
-        mRvBuf.clear();
-        mWrBuf.clear();
+        _RvBuf.clear();
+        _WrBuf.clear();
     }
 
     @Override
     public ByteBuffer getWrBuffer()
     {
-        return mWrBuf;
+        return _WrBuf;
     }
 
     @Override
     public ByteBuffer getRvBuffer()
     {
-        return mRvBuf;
+        return _RvBuf;
     }
 
     @Override
     public int getSendMaxSize()
     {
-        return mWrBuf.capacity();
+        return _WrBuf.capacity();
     }
 
     @Override

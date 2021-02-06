@@ -97,4 +97,10 @@ public class X105_SslHandShake
                              getHandshakeStatus(),
                              new String(getPayload(), StandardCharsets.UTF_8));
     }
+
+    @Override
+    public int superSerial()
+    {
+        return CONTROL_SERIAL;
+    }
 }

@@ -23,11 +23,16 @@
 
 package com.isahl.chess.bishop.io.ssl;
 
+import static javax.net.ssl.SSLEngineResult.HandshakeStatus.NEED_UNWRAP;
+import static javax.net.ssl.SSLEngineResult.HandshakeStatus.NEED_WRAP;
+import static javax.net.ssl.SSLEngineResult.HandshakeStatus.NOT_HANDSHAKING;
+
 import java.nio.ByteBuffer;
 
 import javax.net.ssl.SSLEngineResult;
 
 import com.isahl.chess.bishop.io.zprotocol.control.X105_SslHandShake;
+import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.async.AioFilterChain;
 import com.isahl.chess.queen.io.core.async.AioPacket;
@@ -54,30 +59,41 @@ public class SslHandShakeFilter<A extends IPContext>
     @Override
     public IPacket encode(SSLZContext<A> context, IControl output)
     {
-
         AioPacket toSend = new AioPacket(ByteBuffer.wrap(output.encode()));
-        SSLEngineResult.HandshakeStatus handshakeStatus = context.doWrap(toSend);
-        if (handshakeStatus == SSLEngineResult.HandshakeStatus.NEED_UNWRAP) { return toSend; }
-        return null;
+        SSLEngineResult.HandshakeStatus handshakeStatus;
+        ByteBuffer netOutBuffer = null;
+        do {
+            if (netOutBuffer == null) {
+                netOutBuffer = context.doWrap(toSend);
+            }
+            else {
+                IoUtil.appendBuffer(netOutBuffer, context.doWrap(toSend));
+            }
+            handshakeStatus = context.getHandShakeStatus();
+        }
+        while (handshakeStatus == NEED_WRAP);
+        if (handshakeStatus == NOT_HANDSHAKING) {
+            context.cryptIn();
+            context.cryptOut();
+        }
+        toSend.replace(netOutBuffer.flip());
+        return toSend;
     }
 
     @Override
     public ResultType seek(SSLZContext<A> context, IControl output)
     {
         SSLEngineResult.HandshakeStatus handshakeStatus = context.getHandShakeStatus();
-        for (;;) {
+        boolean loop = false;
+        do {
             switch (handshakeStatus)
             {
-                case NOT_HANDSHAKING ->
+                case NOT_HANDSHAKING -> loop = false;
+                case NEED_TASK ->
                     {
-                        return ResultType.IGNORE;
+                        handshakeStatus = context.doTask();
+                        loop = true;
                     }
-                case FINISHED ->
-                    {
-                        context.updateOut();
-                        return ResultType.IGNORE;
-                    }
-                case NEED_TASK -> handshakeStatus = context.doTask();
                 case NEED_WRAP ->
                     {
                         return ResultType.HANDLED;
@@ -88,6 +104,8 @@ public class SslHandShakeFilter<A extends IPContext>
                     }
             }
         }
+        while (loop);
+        return ResultType.IGNORE;
     }
 
     @Override
@@ -98,50 +116,59 @@ public class SslHandShakeFilter<A extends IPContext>
         input.getBuffer()
              .get(hello);
         X105_SslHandShake x105 = new X105_SslHandShake(hello);
-        x105.setHandshakeStatus(context.getHandShakeStatus());
+        SSLEngineResult.HandshakeStatus handshakeStatus = context.getHandShakeStatus();
+        x105.setHandshakeStatus(handshakeStatus);
+        if (handshakeStatus == NOT_HANDSHAKING) {
+            context.cryptIn();
+            context.cryptOut();
+        }
+        context.finish();
         return x105;
     }
 
     @Override
     public ResultType peek(SSLZContext<A> context, IPacket input)
     {
-        if (input.getBuffer()
-                 .hasRemaining())
-        {
-            SSLEngineResult.HandshakeStatus handshakeStatus = context.getHandShakeStatus();
-            for (int c = 0;; c++) {
-                switch (handshakeStatus)
-                {
-                    case NOT_HANDSHAKING ->
-                        {
-                            return ResultType.IGNORE;
+        SSLEngineResult.HandshakeStatus handshakeStatus = context.getHandShakeStatus();
+        ByteBuffer netInBuffer = input.getBuffer();
+        ByteBuffer localBuffer = context.getRvBuffer();
+        ByteBuffer appInBuffer = null;
+        if (localBuffer.position() > 0) {
+            localBuffer.put(netInBuffer);
+            localBuffer.flip();
+            netInBuffer = localBuffer;
+        }
+        boolean loop = netInBuffer.hasRemaining();
+        while (loop) {
+            switch (handshakeStatus)
+            {
+                case NOT_HANDSHAKING ->
+                    {
+                        return ResultType.IGNORE;
+                    }
+                case FINISHED ->
+                    {
+                        context.updateIn();
+                        context.updateOut();
+                        return ResultType.IGNORE;
+                    }
+                case NEED_WRAP ->
+                    {
+                        if (appInBuffer != null) {
+                            input.put(appInBuffer.flip());
                         }
-                    case FINISHED ->
-                        {
-                            context.finish();
-                            context.updateIn();
-                            return ResultType.IGNORE;
-                        }
-                    case NEED_WRAP ->
-                        {
-                            return ResultType.HANDLED;
-                        }
-                    case NEED_TASK -> handshakeStatus = context.doTask();
-                    case NEED_UNWRAP, NEED_UNWRAP_AGAIN ->
-                        {
-                            if (c > 0) {
-                                return ResultType.NEED_DATA;
-                            }
-                            else {
-                                handshakeStatus = context.doUnwrap(input);
-                            }
-                        }
-                }
+                        return ResultType.HANDLED;
+                    }
+                case NEED_TASK -> handshakeStatus = context.doTask();
+                case NEED_UNWRAP, NEED_UNWRAP_AGAIN ->
+                    {
+                        appInBuffer = context.doUnwrap(netInBuffer);
+                        handshakeStatus = context.getHandShakeStatus();
+                        loop = handshakeStatus != NEED_UNWRAP || netInBuffer.hasRemaining();
+                    }
             }
         }
-        else {
-            return ResultType.NEED_DATA;
-        }
+        return ResultType.NEED_DATA;
     }
 
     @Override
