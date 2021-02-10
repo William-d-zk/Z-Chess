@@ -140,7 +140,7 @@ public class AioSession<C extends IPContext>
         _DismissCallback = sessionDismiss;
         _ReadTimeOutInSecond = sessionOption.getReadTimeOutInSecond();
         _WriteTimeOutInSecond = sessionOption.getWriteTimeOutInSecond();
-        _RecvBuf = ByteBuffer.allocate(sessionOption.getRcvInByte());
+        _RecvBuf = ByteBuffer.allocate(sessionOption.getRcvByte());
         _QueueSizeMax = sessionOption.getSendQueueMax();
         _Sort = sort;
         _Context = sort.newContext(sessionOption);

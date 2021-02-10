@@ -38,11 +38,9 @@ import javax.net.ssl.SSLSession;
 
 import com.isahl.chess.bishop.io.ZContext;
 import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.event.inf.ISort;
 import com.isahl.chess.queen.io.core.inf.IEContext;
 import com.isahl.chess.queen.io.core.inf.IPContext;
-import com.isahl.chess.queen.io.core.inf.IPacket;
 import com.isahl.chess.queen.io.core.inf.IProxyContext;
 import com.isahl.chess.queen.io.core.inf.ISessionOption;
 
@@ -56,12 +54,11 @@ public class SSLZContext<A extends IPContext>
         IEContext,
         IProxyContext<A>
 {
-    private final static Logger LOGGER = Logger.getLogger(SSLZContext.class.getSimpleName());
-    private final SSLEngine     _SslEngine;
-    private final SSLContext    _SslContext;
-    private final SSLSession    _SslSession;
-    private final ByteBuffer    _AppInBuffer;
-    private final A             _ActingContext;
+    private final SSLEngine  _SslEngine;
+    private final SSLContext _SslContext;
+    private final SSLSession _SslSession;
+    private final A          _ActingContext;
+    private final int        _AppInBufferSize;
 
     private boolean mUpdateKeyIn, mUpdateKeyOut;
 
@@ -77,19 +74,15 @@ public class SSLZContext<A extends IPContext>
             _SslContext.init(option.getKeyManagers(), option.getTrustManagers(), null);
         }
         catch (KeyManagementException e) {
-            LOGGER.fetal("ssl context init failed", e);
             throw new ZException(e, "ssl context init failed");
         }
         _SslEngine = _SslContext.createSSLEngine();
         _SslEngine.setEnabledProtocols(new String[] { "TLSv1.2"
         });
         _SslEngine.setUseClientMode(type == ISort.Type.CONSUMER);
-        _SslEngine.setNeedClientAuth(type == ISort.Type.SERVER);
+        _SslEngine.setNeedClientAuth(type == ISort.Type.SERVER && option.isSslClientAuth());
         _SslSession = _SslEngine.getSession();
-        _AppInBuffer = ByteBuffer.allocate(_SslSession.getApplicationBufferSize());
-        if (_SslSession.getPacketBufferSize() > getRvBuffer().capacity()) {
-            throw new NegativeArraySizeException("pls check io config @ recv_buffer_size");
-        }
+        _AppInBufferSize = option.getSslAppSize();
     }
 
     @Override
@@ -117,7 +110,7 @@ public class SSLZContext<A extends IPContext>
             _SslEngine.closeInbound();
         }
         catch (SSLException e) {
-            LOGGER.info("ssl in bound exception %s", e.getMessage());
+            throw new ZException(e, "ssl in bound exception %s");
         }
         _SslEngine.closeOutbound();
         super.reset();
@@ -217,12 +210,11 @@ public class SSLZContext<A extends IPContext>
         mUpdateKeyOut = true;
     }
 
-    public ByteBuffer doWrap(IPacket output)
+    public ByteBuffer doWrap(ByteBuffer output)
     {
         try {
-            ByteBuffer appOutBuffer = output.getBuffer();
             ByteBuffer netOutBuffer = ByteBuffer.allocate(_SslSession.getPacketBufferSize());
-            SSLEngineResult result = _SslEngine.wrap(appOutBuffer, netOutBuffer);
+            SSLEngineResult result = _SslEngine.wrap(output, netOutBuffer);
             int produced = result.bytesProduced();
             switch (result.getStatus())
             {
@@ -233,7 +225,7 @@ public class SSLZContext<A extends IPContext>
                     }
                 case CLOSED, BUFFER_OVERFLOW -> throw new ZException("ssl wrap error:%s", result.getStatus());
             }
-            return appOutBuffer;
+            return null;
         }
         catch (SSLException e) {
             throw new ZException(e, "ssl wrap error");
@@ -244,8 +236,8 @@ public class SSLZContext<A extends IPContext>
     {
         try {
             netInBuffer.mark();
-            _AppInBuffer.mark();
-            SSLEngineResult result = _SslEngine.unwrap(netInBuffer, _AppInBuffer);
+            ByteBuffer appInBuffer = ByteBuffer.allocate(_AppInBufferSize);
+            SSLEngineResult result = _SslEngine.unwrap(netInBuffer, appInBuffer);
             int consumed = result.bytesConsumed();
             int produced = result.bytesProduced();
             switch (result.getStatus())
@@ -265,24 +257,17 @@ public class SSLZContext<A extends IPContext>
                             netInBuffer.reset();
                             getRvBuffer().put(netInBuffer);
                         }
-                        _AppInBuffer.reset();
-                        return _AppInBuffer;
+                        return null;
                     }
                 case CLOSED -> throw new ZException("ssl unwrap closed:%s", result.getStatus());
                 case BUFFER_OVERFLOW -> throw new ZException("ssl unwrap overflow");
             }
-            return _AppInBuffer;
+            return produced > 0 ? appInBuffer
+                                : null;
         }
         catch (SSLException e) {
             throw new ZException(e, "ssl unwrap error");
         }
-    }
-
-    @Override
-    public void finish()
-    {
-        super.finish();
-        _AppInBuffer.clear();
     }
 
     @Override
@@ -307,5 +292,17 @@ public class SSLZContext<A extends IPContext>
     public boolean isOutCrypt()
     {
         return _EncodeState.get() == ENCODE_PAYLOAD;
+    }
+
+    @Override
+    protected ByteBuffer allocateRcv(ISessionOption option)
+    {
+        return ByteBuffer.allocate(Math.max(option.getRcvByte(), option.getSslPacketSize()));
+    }
+
+    @Override
+    protected ByteBuffer allocateSnf(ISessionOption option)
+    {
+        return ByteBuffer.allocate(Math.max(option.getSnfByte(), option.getSslPacketSize()));
     }
 }

@@ -27,6 +27,7 @@ import static java.lang.System.arraycopy;
 
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.ReadOnlyBufferException;
 import java.nio.charset.Charset;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -678,6 +679,17 @@ public interface IoUtil
         return len;
     }
 
+    static int write(ByteBuffer v, ByteBuffer b)
+    {
+        if (v == b) { throw new IllegalArgumentException("The source buffer is this buffer"); }
+        if (b.isReadOnly()) { throw new ReadOnlyBufferException(); }
+        int length = Math.min(b.remaining(), v.remaining());
+        arraycopy(v.array(), v.position(), b.array(), b.position(), length);
+        v.position(v.position() + length);
+        b.position(b.position() + length);
+        return length;
+    }
+
     static int write(byte[] v, byte[] data, int pos)
     {
         return write(v, 0, data, pos, v.length);
@@ -883,16 +895,18 @@ public interface IoUtil
         if (src.remaining() >= res.position()) {
             write(res.array(), 0, src.array(), src.position(), res.position());
             src.position(src.position() + res.position());
+            return src;
         }
         else {
-            int newSize = src.capacity() + res.position();
+            int newSize = src.capacity() + res.position() << 1;
             ByteBuffer expand = src.isDirect() ? ByteBuffer.allocateDirect(newSize)
                                                : ByteBuffer.allocate(newSize);
             write(src.array(), 0, expand.array(), 0, src.position());
             expand.position(src.position());
             write(res.array(), 0, expand.array(), expand.position(), res.position());
             expand.position(expand.position() + res.position());
+            return expand;
         }
-        return src;
     }
+
 }

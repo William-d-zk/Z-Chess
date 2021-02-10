@@ -23,6 +23,8 @@ import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
 
+import protocol.KnockKnockProtocol;
+
 /**
  * @author garden
  * @create 8/11/18
@@ -71,11 +73,14 @@ public class SSLClient
 
             // set up the SSL Context
             SSLContext sslContext = SSLContext.getInstance("TLS");
-            sslContext.init(new KeyManager[]{x509KeyManager}, new TrustManager[]{x509TrustManager}, null);
+            sslContext.init(new KeyManager[] { x509KeyManager
+            }, new TrustManager[] { x509TrustManager
+            }, null);
 
             SSLSocketFactory socketFactory = sslContext.getSocketFactory();
             SSLSocket kkSocket = (SSLSocket) socketFactory.createSocket("127.0.0.1", 1888);
-            kkSocket.setEnabledProtocols(new String[]{"TLSv1.2"});
+            kkSocket.setEnabledProtocols(new String[] { "TLSv1.2"
+            });
 
             PrintWriter out = new PrintWriter(kkSocket.getOutputStream(), true);
             BufferedReader in = new BufferedReader(new InputStreamReader(kkSocket.getInputStream()));
@@ -83,6 +88,11 @@ public class SSLClient
             BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
             String fromServer;
             String fromUser;
+
+            String outputLine;
+            KnockKnockProtocol kkp = new KnockKnockProtocol();
+            outputLine = kkp.processInput(null);
+            out.println(outputLine);
 
             while ((fromServer = in.readLine()) != null) {
                 System.out.println("Server: " + fromServer);

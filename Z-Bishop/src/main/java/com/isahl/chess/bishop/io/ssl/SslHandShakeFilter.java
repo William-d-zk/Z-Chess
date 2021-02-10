@@ -24,8 +24,8 @@
 package com.isahl.chess.bishop.io.ssl;
 
 import static javax.net.ssl.SSLEngineResult.HandshakeStatus.NEED_UNWRAP;
+import static javax.net.ssl.SSLEngineResult.HandshakeStatus.NEED_UNWRAP_AGAIN;
 import static javax.net.ssl.SSLEngineResult.HandshakeStatus.NEED_WRAP;
-import static javax.net.ssl.SSLEngineResult.HandshakeStatus.NOT_HANDSHAKING;
 
 import java.nio.ByteBuffer;
 
@@ -50,7 +50,6 @@ public class SslHandShakeFilter<A extends IPContext>
                        IControl,
                        IPacket>
 {
-
     public SslHandShakeFilter()
     {
         super("z-ssl-handshake");
@@ -59,25 +58,19 @@ public class SslHandShakeFilter<A extends IPContext>
     @Override
     public IPacket encode(SSLZContext<A> context, IControl output)
     {
-        AioPacket toSend = new AioPacket(ByteBuffer.wrap(output.encode()));
         SSLEngineResult.HandshakeStatus handshakeStatus;
         ByteBuffer netOutBuffer = null;
         do {
             if (netOutBuffer == null) {
-                netOutBuffer = context.doWrap(toSend);
+                netOutBuffer = context.doWrap(ByteBuffer.wrap(output.encode()));
             }
             else {
-                IoUtil.appendBuffer(netOutBuffer, context.doWrap(toSend));
+                netOutBuffer = IoUtil.appendBuffer(netOutBuffer, context.doWrap(ByteBuffer.wrap(output.encode())));
             }
             handshakeStatus = context.getHandShakeStatus();
         }
         while (handshakeStatus == NEED_WRAP);
-        if (handshakeStatus == NOT_HANDSHAKING) {
-            context.cryptIn();
-            context.cryptOut();
-        }
-        toSend.replace(netOutBuffer.flip());
-        return toSend;
+        return new AioPacket(netOutBuffer.flip());
     }
 
     @Override
@@ -88,7 +81,12 @@ public class SslHandShakeFilter<A extends IPContext>
         do {
             switch (handshakeStatus)
             {
-                case NOT_HANDSHAKING -> loop = false;
+                case NOT_HANDSHAKING, FINISHED ->
+                    {
+                        loop = false;
+                        context.updateOut();
+                        _Logger.info("SSL ready to write");
+                    }
                 case NEED_TASK ->
                     {
                         handshakeStatus = context.doTask();
@@ -111,17 +109,24 @@ public class SslHandShakeFilter<A extends IPContext>
     @Override
     public IControl decode(SSLZContext<A> context, IPacket input)
     {
-        byte[] hello = new byte[input.getBuffer()
-                                     .remaining()];
-        input.getBuffer()
-             .get(hello);
-        X105_SslHandShake x105 = new X105_SslHandShake(hello);
+        IPacket unwrapped = context.getCarrier();
+
+        X105_SslHandShake x105;
+        if (unwrapped != null
+            && unwrapped.getBuffer()
+                        .hasRemaining())
+        {
+            byte[] hello = new byte[unwrapped.getBuffer()
+                                             .remaining()];
+            unwrapped.getBuffer()
+                     .get(hello);
+            x105 = new X105_SslHandShake(hello);
+        }
+        else {
+            x105 = new X105_SslHandShake(null);
+        }
         SSLEngineResult.HandshakeStatus handshakeStatus = context.getHandShakeStatus();
         x105.setHandshakeStatus(handshakeStatus);
-        if (handshakeStatus == NOT_HANDSHAKING) {
-            context.cryptIn();
-            context.cryptOut();
-        }
         context.finish();
         return x105;
     }
@@ -134,7 +139,7 @@ public class SslHandShakeFilter<A extends IPContext>
         ByteBuffer localBuffer = context.getRvBuffer();
         ByteBuffer appInBuffer = null;
         if (localBuffer.position() > 0) {
-            localBuffer.put(netInBuffer);
+            IoUtil.write(netInBuffer, localBuffer);
             localBuffer.flip();
             netInBuffer = localBuffer;
         }
@@ -142,20 +147,16 @@ public class SslHandShakeFilter<A extends IPContext>
         while (loop) {
             switch (handshakeStatus)
             {
-                case NOT_HANDSHAKING ->
-                    {
-                        return ResultType.IGNORE;
-                    }
-                case FINISHED ->
+                case NOT_HANDSHAKING, FINISHED ->
                     {
                         context.updateIn();
-                        context.updateOut();
+                        _Logger.info("SSL ready to read");
                         return ResultType.IGNORE;
                     }
                 case NEED_WRAP ->
                     {
                         if (appInBuffer != null) {
-                            input.put(appInBuffer.flip());
+                            context.setCarrier(new AioPacket(appInBuffer.flip()));
                         }
                         return ResultType.HANDLED;
                     }
@@ -164,7 +165,8 @@ public class SslHandShakeFilter<A extends IPContext>
                     {
                         appInBuffer = context.doUnwrap(netInBuffer);
                         handshakeStatus = context.getHandShakeStatus();
-                        loop = handshakeStatus != NEED_UNWRAP || netInBuffer.hasRemaining();
+                        loop = handshakeStatus != NEED_UNWRAP && handshakeStatus != NEED_UNWRAP_AGAIN
+                               || netInBuffer.hasRemaining();
                     }
             }
         }

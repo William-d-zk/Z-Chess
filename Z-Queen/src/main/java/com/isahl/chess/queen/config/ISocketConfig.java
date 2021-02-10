@@ -30,69 +30,60 @@ import javax.net.ssl.TrustManager;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/2/1
  */
-public interface ISocketConfig
-{
+public interface ISocketConfig {
 
-    default boolean isKeepAlive()
-    {
+    default boolean isKeepAlive() {
         return true;
     }
 
-    default Duration getWriteTimeoutInSecond()
-    {
+    default Duration getWriteTimeoutInSecond() {
         return Duration.ofSeconds(30);
     }
 
-    default Duration getReadTimeoutInMinute()
-    {
+    default Duration getReadTimeoutInMinute() {
         return Duration.ofMinutes(15);
     }
 
-    default int getSendQueueMax()
-    {
+    default int getSendQueueMax() {
         return 64;
     }
 
-    default int getRcvInByte()
-    {
+    default int getRcvInByte() {
         return 65536;
     }
 
-    default int getSnfInByte()
-    {
+    default int getSnfInByte() {
         return 131072;
     }
 
-    default boolean isTcpNoDelay()
-    {
+    default boolean isTcpNoDelay() {
         return true;
     }
 
-    default Duration getSoLingerInSecond()
-    {
+    default Duration getSoLingerInSecond() {
         return Duration.ofSeconds(30);
     }
 
-    default Duration getConnectTimeoutInSecond()
-    {
+    default Duration getConnectTimeoutInSecond() {
         return Duration.ofSeconds(5);
     }
 
-    default KeyManager[] getKeyManagers()
-    {
+    default KeyManager[] getKeyManagers() {
         return null;
     }
 
-    default TrustManager[] getTrustManagers()
-    {
+    default TrustManager[] getTrustManagers() {
         return null;
     }
 
-    default void init()
-    {
+    default void init() {
     }
 
+    int getSslPacketBufferSize();
+
+    int getSslAppBufferSize();
+
+    boolean isClientAuth();
 }

@@ -51,8 +51,8 @@ public interface ISessionCreator
         if (channel != null) {
             try {
                 channel.setOption(StandardSocketOptions.TCP_NODELAY, isTcpNoDelay());
-                channel.setOption(StandardSocketOptions.SO_RCVBUF, getRcvInByte());
-                channel.setOption(StandardSocketOptions.SO_SNDBUF, getSnfInByte());
+                channel.setOption(StandardSocketOptions.SO_RCVBUF, getRcvByte());
+                channel.setOption(StandardSocketOptions.SO_SNDBUF, getSnfByte());
                 channel.setOption(StandardSocketOptions.SO_KEEPALIVE, isKeepAlive());
             }
             catch (IOException e) {

@@ -45,4 +45,9 @@ public class X11E_QttDisconnect
         setCtrl(generateCtrl(false, false, ALMOST_ONCE, QttType.DISCONNECT));
     }
 
+    @Override
+    public boolean isMapping()
+    {
+        return true;
+    }
 }

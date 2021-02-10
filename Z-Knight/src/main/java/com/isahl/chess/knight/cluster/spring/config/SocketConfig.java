@@ -24,6 +24,7 @@
 package com.isahl.chess.knight.cluster.spring.config;
 
 import java.io.IOException;
+import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -34,11 +35,15 @@ import java.time.Duration;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.springframework.util.unit.DataSize;
 
+import com.isahl.chess.king.base.exception.ZException;
+import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.config.ISocketConfig;
 
 public class SocketConfig
@@ -60,6 +65,9 @@ public class SocketConfig
     private String         trustKeyPassword;
     private KeyManager[]   keyManagers;
     private TrustManager[] trustManagers;
+    private boolean        clientAuth;
+    private int            sslPacketBufferSize;
+    private int            sslAppBufferSize;
 
     @Override
     public boolean isKeepAlive()
@@ -162,7 +170,8 @@ public class SocketConfig
 
     public void setKeyStorePath(String keyStorePath)
     {
-        this.keyStorePath = keyStorePath;
+        this.keyStorePath = IoUtil.isBlank(keyStorePath) ? null
+                                                         : keyStorePath;
     }
 
     private KeyStore loadKeyStore(String path, String password) throws KeyStoreException,
@@ -179,7 +188,8 @@ public class SocketConfig
 
     public void setTrustKeyStorePath(String trustKeyStorePath)
     {
-        this.trustKeyStorePath = trustKeyStorePath;
+        this.trustKeyStorePath = IoUtil.isBlank(trustKeyStorePath) ? null
+                                                                   : trustKeyStorePath;
     }
 
     public void setKeyPassword(String keyPassword)
@@ -243,7 +253,41 @@ public class SocketConfig
     @Override
     public void init()
     {
-        getKeyManagers();
-        getTrustManagers();
+        try {
+            SSLContext sslCtx = SSLContext.getInstance("TLSv1.2");
+            sslCtx.init(getKeyManagers(), getTrustManagers(), null);
+            SSLSession sslSession = sslCtx.createSSLEngine()
+                                          .getSession();
+            sslPacketBufferSize = sslSession.getPacketBufferSize();
+            sslAppBufferSize = sslSession.getApplicationBufferSize();
+        }
+        catch (NoSuchAlgorithmException |
+               KeyManagementException e)
+        {
+            throw new ZException(e, "ssl static init failed");
+        }
+    }
+
+    @Override
+    public int getSslPacketBufferSize()
+    {
+        return sslPacketBufferSize;
+    }
+
+    @Override
+    public int getSslAppBufferSize()
+    {
+        return sslAppBufferSize;
+    }
+
+    public void setClientAuth(boolean auth)
+    {
+        clientAuth = auth;
+    }
+
+    @Override
+    public boolean isClientAuth()
+    {
+        return clientAuth;
     }
 }

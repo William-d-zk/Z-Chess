@@ -95,7 +95,8 @@ public class X105_SslHandShake
     {
         return String.format("X105_SslHandShake{HandshakeStatus=%s;[HELLO]:%s}",
                              getHandshakeStatus(),
-                             new String(getPayload(), StandardCharsets.UTF_8));
+                             getPayload() != null ? new String(getPayload(), StandardCharsets.UTF_8)
+                                                  : "NULL");
     }
 
     @Override
