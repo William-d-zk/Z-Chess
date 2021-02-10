@@ -50,4 +50,9 @@ public class X102_Close
         return new X102_Close(getPayload());
     }
 
+    @Override
+    public boolean isMapping()
+    {
+        return true;
+    }
 }

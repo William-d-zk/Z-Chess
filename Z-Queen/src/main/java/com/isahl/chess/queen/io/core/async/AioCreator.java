@@ -46,13 +46,13 @@ public abstract class AioCreator
     }
 
     @Override
-    public int getSnfInByte()
+    public int getSnfByte()
     {
         return _Config.getSnfInByte();
     }
 
     @Override
-    public int getRcvInByte()
+    public int getRcvByte()
     {
         return _Config.getRcvInByte();
     }
@@ -111,5 +111,22 @@ public abstract class AioCreator
     public TrustManager[] getTrustManagers()
     {
         return _Config.getTrustManagers();
+    }
+
+    @Override
+    public boolean isSslClientAuth() {
+        return _Config.isClientAuth();
+    }
+
+    @Override
+    public int getSslPacketSize()
+    {
+        return _Config.getSslPacketBufferSize();
+    }
+
+    @Override
+    public int getSslAppSize()
+    {
+        return _Config.getSslAppBufferSize();
     }
 }

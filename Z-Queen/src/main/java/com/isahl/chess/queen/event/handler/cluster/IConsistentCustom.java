@@ -38,5 +38,5 @@ public interface IConsistentCustom
                                                  Throwable,
                                                  Void> getOperator();
 
-    <T extends ITraceable & IProtocol> Void handle(T request, Throwable throwable);
+    <T extends ITraceable & IProtocol> Void consistentHandle(T request, Throwable throwable);
 }

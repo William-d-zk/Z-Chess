@@ -42,9 +42,13 @@ public interface ISessionOption
 
     void configChannel(AsynchronousSocketChannel channel);
 
-    int getSnfInByte();
+    int getSnfByte();
 
-    int getRcvInByte();
+    int getRcvByte();
+
+    int getSslPacketSize();
+
+    int getSslAppSize();
 
     int getSendQueueMax();
 
@@ -68,6 +72,11 @@ public interface ISessionOption
     default TrustManager[] getTrustManagers()
     {
         return null;
+    }
+
+    default boolean isSslClientAuth()
+    {
+        return false;
     }
 
 }

@@ -103,6 +103,7 @@ public class DeviceService
                                               ZSortHolder sort = switch (listener.getScheme())
                                               {
                                                   case "ws" -> ZSortHolder.WS_SERVER;
+                                                  case "wss" -> ZSortHolder.WS_SERVER_SSL;
                                                   case "mqtt" -> ZSortHolder.QTT_SERVER;
                                                   case "ws_mqtt" -> ZSortHolder.WS_QTT_SERVER;
                                                   case "ssl_ws_mqtt" -> ZSortHolder.WS_QTT_SERVER_SSL;

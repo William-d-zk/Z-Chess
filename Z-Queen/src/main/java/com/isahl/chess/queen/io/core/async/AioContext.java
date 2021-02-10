@@ -57,8 +57,8 @@ public abstract class AioContext
 
     protected AioContext(ISessionOption option)
     {
-        _RvBuf = ByteBuffer.allocate(option.getRcvInByte());
-        _WrBuf = ByteBuffer.allocate(option.getSnfInByte());
+        _RvBuf = allocateRcv(option);
+        _WrBuf = allocateSnf(option);
     }
 
     @Override
@@ -113,4 +113,13 @@ public abstract class AioContext
         return mServerArrivedTime;
     }
 
+    protected ByteBuffer allocateRcv(ISessionOption option)
+    {
+        return ByteBuffer.allocate(option.getRcvByte());
+    }
+
+    protected ByteBuffer allocateSnf(ISessionOption option)
+    {
+        return ByteBuffer.allocate(option.getSnfByte());
+    }
 }

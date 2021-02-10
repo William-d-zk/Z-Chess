@@ -25,6 +25,7 @@ package com.isahl.chess.rook.config;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -35,11 +36,14 @@ import java.time.Duration;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.springframework.util.unit.DataSize;
 
+import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.queen.config.ISocketConfig;
 
 public class SocketConfig
@@ -61,6 +65,9 @@ public class SocketConfig
     private String         trustKeyPassword;
     private KeyManager[]   keyManagers;
     private TrustManager[] trustManagers;
+    private int            sslPacketBufferSize;
+    private int            sslAppBufferSize;
+    private boolean        clientAuth;
 
     @Override
     public boolean isKeepAlive()
@@ -187,7 +194,6 @@ public class SocketConfig
         this.trustKeyPassword = trustKeyPassword;
     }
 
-
     @Override
     public TrustManager[] getTrustManagers()
     {
@@ -199,9 +205,10 @@ public class SocketConfig
                 return trustManagers = factory.getTrustManagers();
             }
             catch (KeyStoreException |
-                    IOException |
-                    NoSuchAlgorithmException |
-                    CertificateException | NoSuchProviderException e)
+                   IOException |
+                   NoSuchAlgorithmException |
+                   CertificateException |
+                   NoSuchProviderException e)
             {
                 e.printStackTrace();
                 return null;
@@ -221,10 +228,11 @@ public class SocketConfig
                 return keyManagers = factory.getKeyManagers();
             }
             catch (KeyStoreException |
-                    IOException |
-                    NoSuchAlgorithmException |
-                    CertificateException |
-                    NoSuchProviderException | UnrecoverableKeyException e)
+                   IOException |
+                   NoSuchAlgorithmException |
+                   CertificateException |
+                   NoSuchProviderException |
+                   UnrecoverableKeyException e)
             {
                 e.printStackTrace();
                 return null;
@@ -234,4 +242,44 @@ public class SocketConfig
         return keyManagers;
     }
 
+    @Override
+    public void init()
+    {
+        try {
+            SSLContext sslCtx = SSLContext.getInstance("TLSv1.2");
+            sslCtx.init(getKeyManagers(), getTrustManagers(), null);
+            SSLSession sslSession = sslCtx.createSSLEngine()
+                                          .getSession();
+            sslPacketBufferSize = sslSession.getPacketBufferSize();
+            sslAppBufferSize = sslSession.getApplicationBufferSize();
+        }
+        catch (NoSuchAlgorithmException |
+               KeyManagementException e)
+        {
+            throw new ZException(e, "ssl static init failed");
+        }
+    }
+
+    @Override
+    public int getSslPacketBufferSize()
+    {
+        return sslPacketBufferSize;
+    }
+
+    @Override
+    public int getSslAppBufferSize()
+    {
+        return sslAppBufferSize;
+    }
+
+    public void setClientAuth(boolean auth)
+    {
+        clientAuth = auth;
+    }
+
+    @Override
+    public boolean isClientAuth()
+    {
+        return clientAuth;
+    }
 }

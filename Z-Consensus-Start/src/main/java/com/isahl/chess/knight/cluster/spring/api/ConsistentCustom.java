@@ -41,7 +41,7 @@ public class ConsistentCustom
     private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
 
     @Override
-    public <T extends ITraceable & IProtocol> Void handle(T protocol, Throwable throwable)
+    public <T extends ITraceable & IProtocol> Void consistentHandle(T protocol, Throwable throwable)
     {
         if (throwable == null) {
             _Logger.debug("notify---consistent");
@@ -80,6 +80,6 @@ public class ConsistentCustom
                                                         Throwable,
                                                         Void> getOperator()
     {
-        return this::handle;
+        return this::consistentHandle;
     }
 }

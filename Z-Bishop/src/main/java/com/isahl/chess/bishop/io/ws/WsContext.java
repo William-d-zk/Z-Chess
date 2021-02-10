@@ -55,7 +55,7 @@ public class WsContext
                      ISort.Type type)
     {
         super(option, mode, type);
-        _MaxPayloadSize = option.getSnfInByte() - 2;
+        _MaxPayloadSize = option.getSnfByte() - 2;
         if (_Type == ISort.Type.CONSUMER) {
             Random r = new Random(System.nanoTime());
             byte[] seed = new byte[17];

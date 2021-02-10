@@ -42,6 +42,7 @@ import com.isahl.chess.bishop.io.mqtt.control.X11B_QttUnsuback;
 import com.isahl.chess.bishop.io.mqtt.control.X11E_QttDisconnect;
 import com.isahl.chess.bishop.io.mqtt.handler.IQttRouter;
 import com.isahl.chess.bishop.io.mqtt.handler.QttRouter;
+import com.isahl.chess.bishop.io.ws.control.X102_Close;
 import com.isahl.chess.bishop.io.zprotocol.control.X108_Shutdown;
 import com.isahl.chess.bishop.io.zprotocol.raft.X76_RaftNotify;
 import com.isahl.chess.king.base.inf.IPair;
@@ -84,7 +85,7 @@ public class LinkCustom
      * @param session
      * @param input
      * 
-     * @return first | 需要直接转换成
+     * @return first | 当前Link链路上需要返回的结果，second | 需要进行一致性处理的结果
      * 
      * @throws Exception
      */
@@ -95,6 +96,7 @@ public class LinkCustom
         /*--检查device 是否正确，验证账户密码--*/
         switch (input.serial())
         {
+            case X102_Close.COMMAND -> session.innerClose();
             case X111_QttConnect.COMMAND ->
                 {
                     X111_QttConnect x111 = (X111_QttConnect) input;
@@ -270,11 +272,11 @@ public class LinkCustom
                                                         Throwable,
                                                         Void> getOperator()
     {
-        return this::handle;
+        return this::consistentHandle;
     }
 
     @Override
-    public <T extends ITraceable & IProtocol> Void handle(T request, Throwable throwable)
+    public <T extends ITraceable & IProtocol> Void consistentHandle(T request, Throwable throwable)
     {
         if (throwable == null) {
             _Logger.debug("notify---consistent");
