@@ -42,7 +42,8 @@ import com.isahl.chess.queen.io.core.inf.IProxyContext;
 public class QttControlFilter
         extends
         AioFilterChain<QttContext,
-                       QttControl, QttFrame>
+                       QttControl,
+                       QttFrame>
 {
     public QttControlFilter()
     {
@@ -52,6 +53,7 @@ public class QttControlFilter
     @Override
     public QttFrame encode(QttContext context, QttControl output)
     {
+        output.setContext(context);
         /*
             Qtt Context 自身携带控制状态信息定义在协议之中，也只好在协议处理
             层完成这一操作 [Server]
@@ -76,6 +78,7 @@ public class QttControlFilter
         QttControl control = QttCommandFactory.createQttControl(input);
         if (control == null) throw new IllegalArgumentException("MQTT type error");
         else {
+            control.setContext(context);
             /*
                 Qtt Context 自身携带控制状态信息定义在协议之中，也只好在协议处理
                 层完成这一操作 [Client]

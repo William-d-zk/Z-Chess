@@ -23,6 +23,7 @@
 
 package com.isahl.chess.bishop.io.zprotocol;
 
+import com.isahl.chess.queen.io.core.inf.ICommand;
 import com.isahl.chess.queen.io.core.inf.ICommandFactory;
 import com.isahl.chess.queen.io.core.inf.IFrame;
 
@@ -33,17 +34,17 @@ import com.isahl.chess.queen.io.core.inf.IFrame;
  */
 public class ZSymmetryFactory
         implements
-        ICommandFactory<ZCommand,
+        ICommandFactory<ICommand,
                         IFrame>
 {
     @Override
-    public ZCommand create(IFrame frame)
+    public ICommand create(IFrame frame)
     {
         return create(frame.getPayload()[1] & 0xFF);
     }
 
     @Override
-    public ZCommand create(int serial)
+    public ICommand create(int serial)
     {
 
         return switch (serial)

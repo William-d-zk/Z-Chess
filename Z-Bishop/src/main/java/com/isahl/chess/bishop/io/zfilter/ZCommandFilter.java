@@ -56,10 +56,10 @@ public class ZCommandFilter<T extends ZContext>
                        IFrame>
 {
 
-    private final ICommandFactory<ZCommand,
+    private final ICommandFactory<ICommand,
                                   IFrame> _CommandFactory;
 
-    public ZCommandFilter(ICommandFactory<ZCommand,
+    public ZCommandFilter(ICommandFactory<ICommand,
                                           IFrame> factory)
     {
         super("z_command");
@@ -76,10 +76,10 @@ public class ZCommandFilter<T extends ZContext>
     }
 
     @Override
-    public ZCommand decode(T context, IFrame input)
+    public ICommand decode(T context, IFrame input)
     {
         int serial = input.command();
-        ZCommand _command = switch (serial)
+        ICommand _command = switch (serial)
         {
             case X01_EncryptRequest.COMMAND -> new X01_EncryptRequest();
             case X02_AsymmetricPub.COMMAND -> new X02_AsymmetricPub();

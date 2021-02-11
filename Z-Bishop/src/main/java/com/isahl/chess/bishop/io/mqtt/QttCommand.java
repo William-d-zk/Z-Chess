@@ -45,9 +45,9 @@ public abstract class QttCommand
         _Command = command;
     }
 
-    private long     mMsgId = -1;
-    private ISession mSession;
-    private byte[]   mPayload;
+    private long       mMsgId = -1;
+    private ISession   mSession;
+    private byte[]     mPayload;
 
     @Override
     public void setCtrl(byte ctrl)
@@ -104,10 +104,9 @@ public abstract class QttCommand
     }
 
     @Override
-    public ICommand setSession(ISession session)
+    public void setSession(ISession session)
     {
         mSession = session;
-        return this;
     }
 
     @Override
@@ -140,8 +139,13 @@ public abstract class QttCommand
     @Override
     public int dataLength()
     {
-        return 2
-               + (mPayload == null ? 0
-                                   : mPayload.length);
+        return 2 + (mPayload == null ? 0: mPayload.length);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public QttContext getContext()
+    {
+        return mContext;
     }
 }

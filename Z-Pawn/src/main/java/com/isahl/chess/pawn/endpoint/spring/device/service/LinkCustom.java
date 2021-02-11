@@ -139,8 +139,7 @@ public class LinkCustom
                             X108_Shutdown x108 = new X108_Shutdown();
                             x108.setSession(old);
                             _Logger.info("re-login ok %s, wait for consistent notify", x111.getClientId());
-                            return new Pair<>(new X108_Shutdown[] { x108
-                            }, x111);
+                            return new Pair<>(new X108_Shutdown[]{x108}, x111);
                         }
                         else {
                             _Logger.info("login check ok:%s, wait for consistent notify", x111.getClientId());
@@ -151,8 +150,7 @@ public class LinkCustom
                         _Logger.info("reject %s",
                                      x112.getCode()
                                          .name());
-                        return new Pair<>(new X112_QttConnack[] { x112
-                        }, null);
+                        return new Pair<>(new X112_QttConnack[]{x112}, null);
                     }
                 }
             case X118_QttSubscribe.COMMAND, X11A_QttUnsubscribe.COMMAND ->

@@ -29,6 +29,7 @@ import com.isahl.chess.bishop.io.zprotocol.device.X24_UpdateToken;
 import com.isahl.chess.bishop.io.zprotocol.device.X31_ConfirmMsg;
 import com.isahl.chess.bishop.io.zprotocol.device.X32_MsgStatus;
 import com.isahl.chess.bishop.io.zprotocol.device.X50_DeviceMsg;
+import com.isahl.chess.queen.io.core.inf.ICommand;
 import com.isahl.chess.queen.io.core.inf.ICommandFactory;
 import com.isahl.chess.queen.io.core.inf.IFrame;
 
@@ -39,18 +40,18 @@ import com.isahl.chess.queen.io.core.inf.IFrame;
  */
 public class ZServerFactory
         implements
-        ICommandFactory<ZCommand,
+        ICommandFactory<ICommand,
                         IFrame>
 {
 
     @Override
-    public ZCommand create(IFrame frame)
+    public ICommand create(IFrame frame)
     {
         return create(frame.getPayload()[1] & 0xFF);
     }
 
     @Override
-    public ZCommand create(int serial)
+    public ICommand create(int serial)
     {
         return switch (serial)
         {

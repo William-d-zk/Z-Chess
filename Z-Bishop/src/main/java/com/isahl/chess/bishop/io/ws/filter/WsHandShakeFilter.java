@@ -53,8 +53,8 @@ public class WsHandShakeFilter<T extends ZContext & IWsContext>
                        WsHandshake,
                        IPacket>
 {
-    private final static String CRLF     = "\r\n";
-    private final static String CRLFCRLF = CRLF + CRLF;
+    private final static String CRLF      = "\r\n";
+    private final static String CRLF_CRLF = CRLF + CRLF;
 
     public WsHandShakeFilter()
     {
@@ -80,7 +80,7 @@ public class WsHandShakeFilter<T extends ZContext & IWsContext>
             cRvBuf.put(c);
             if (c == '\n' && cRvBuf.position() > 4) {
                 String x = new String(cRvBuf.array(), cRvBuf.position() - 4, 4);
-                if (CRLFCRLF.equals(x)) {
+                if (CRLF_CRLF.equals(x)) {
                     cRvBuf.flip();
                     x = new String(cRvBuf.array(), cRvBuf.position(), cRvBuf.limit(), StandardCharsets.UTF_8);
                     _Logger.debug("receive handshake\r\n%s", x);
@@ -224,17 +224,17 @@ public class WsHandShakeFilter<T extends ZContext & IWsContext>
                         }
                     }
                     if (ISort.Type.SERVER == context.getType()) {
-                        context.setHandshake(new X101_HandShake((context.checkState(HS_State_CLIENT_OK) ? "HTTP/1.1 101 Switching Protocols\r\n"
-                                                                                                        : "HTTP/1.1 400 Bad Request\r\n")
-                                                                + response.toString()
-                                                                + CRLF,
-                                                                context.checkState(HS_State_CLIENT_OK) ? HS_State_CLIENT_OK
-                                                                                                       : HS_State_ERROR));
+                        context.setCarrier(new X101_HandShake((context.checkState(HS_State_CLIENT_OK) ? "HTTP/1.1 101 Switching Protocols\r\n"
+                                                                                                      : "HTTP/1.1 400 Bad Request\r\n")
+                                                              + response.toString()
+                                                              + CRLF,
+                                                              context.checkState(HS_State_CLIENT_OK) ? HS_State_CLIENT_OK
+                                                                                                     : HS_State_ERROR));
                         return ResultType.HANDLED;
                     }
                     else if (ISort.Type.CONSUMER == context.getType()) {
                         if (context.checkState(HS_State_ACCEPT_OK)) {
-                            context.setHandshake(new X101_HandShake(x, HS_State_ACCEPT_OK));
+                            context.setCarrier(new X101_HandShake(x, HS_State_ACCEPT_OK));
                             return ResultType.HANDLED;
                         }
                         _Logger.warning("client handshake error!");
@@ -250,7 +250,7 @@ public class WsHandShakeFilter<T extends ZContext & IWsContext>
     @Override
     public WsHandshake decode(T context, IPacket input)
     {
-        WsHandshake handshake = context.getHandshake();
+        WsHandshake handshake = context.getCarrier();
         context.finish();
         if (handshake.isClientOk() || handshake.isServerAccept()) {
             context.updateIn();

@@ -38,11 +38,7 @@ public interface IControl
         IMappingMessage,
         IDisposable
 {
-    @Override
-    default IControl setSession(ISession session)
-    {
-        return this;
-    }
+    <C extends IContext> C getContext();
 
     @Override
     default int superSerial()
@@ -71,9 +67,8 @@ public interface IControl
         return false;
     }
 
-    default IControl failed(int code)
+    default void failed(int code)
     {
-        return null;
     }
 
 }

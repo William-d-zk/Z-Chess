@@ -25,6 +25,7 @@ package com.isahl.chess.bishop.io.zprotocol;
 import java.nio.charset.Charset;
 import java.util.Objects;
 
+import com.isahl.chess.bishop.io.ZContext;
 import com.isahl.chess.king.base.util.CryptUtil;
 import com.isahl.chess.king.base.util.I18nUtil;
 import com.isahl.chess.king.base.util.IoUtil;
@@ -55,6 +56,7 @@ public abstract class ZProtocol
     private long             mSequence               = -1;
     private transient long   tTransactionKey         = -1;
     private byte             mCtrlCode;
+    private ZContext         mContext;
 
     protected ZProtocol(int command,
                         boolean hasMsgId,
@@ -147,8 +149,7 @@ public abstract class ZProtocol
         else {
             mHAttr |= 0x40;
         }
-        mMsgId = flag ? _uid
-                      : 0;
+        mMsgId = flag ? _uid: 0;
     }
 
     public final void setCharset(Charset charset)
@@ -244,8 +245,7 @@ public abstract class ZProtocol
 
     protected int minLength()
     {
-        return isGlobalMsg() ? min_msg_uid_size
-                             : min_no_msg_uid_size;
+        return isGlobalMsg() ? min_msg_uid_size: min_no_msg_uid_size;
     }
 
     @Override
@@ -257,8 +257,7 @@ public abstract class ZProtocol
     @Override
     public void setSequence(long sequence)
     {
-        mSequence = mSequence < 0 ? sequence
-                                  : mSequence;
+        mSequence = mSequence < 0 ? sequence: mSequence;
     }
 
     public long getTransactionKey()
@@ -268,8 +267,7 @@ public abstract class ZProtocol
 
     public void setTransactionKey(long _key)
     {
-        tTransactionKey = tTransactionKey < 0 ? _key
-                                              : tTransactionKey;
+        tTransactionKey = tTransactionKey < 0 ? _key: tTransactionKey;
     }
 
     public byte getTypeCode()
@@ -318,4 +316,15 @@ public abstract class ZProtocol
 
     }
 
+    public void setContext(ZContext context)
+    {
+        mContext = context;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public ZContext getContext()
+    {
+        return mContext;
+    }
 }

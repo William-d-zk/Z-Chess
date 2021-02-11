@@ -48,7 +48,6 @@ public class WsContext
     private final int    _MaxPayloadSize;
     private final byte[] _Mask;
     private int          mHandshakeState;
-    private WsHandshake  mHandshake;
 
     public WsContext(ISessionOption option,
                      ISort.Mode mode,
@@ -73,48 +72,9 @@ public class WsContext
     }
 
     @Override
-    public WsHandshake getHandshake()
-    {
-        return mHandshake;
-    }
-
-    @Override
-    public void setHandshake(WsHandshake handshake)
-    {
-        mHandshake = handshake;
-    }
-
-    @Override
     public final int getMaxPayloadSize()
     {
         return _MaxPayloadSize;
-    }
-
-    @Override
-    public void reset()
-    {
-        super.reset();
-        if (mHandshake != null) {
-            mHandshake.dispose();
-        }
-        mHandshake = null;
-    }
-
-    @Override
-    public void dispose()
-    {
-        mHandshake = null;
-        super.dispose();
-    }
-
-    @Override
-    public void finish()
-    {
-        super.finish();
-        if (mHandshake != null) {
-            mHandshake.dispose();
-        }
-        mHandshake = null;
     }
 
     @Override
