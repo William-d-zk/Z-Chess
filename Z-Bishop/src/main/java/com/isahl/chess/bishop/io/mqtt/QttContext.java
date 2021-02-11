@@ -45,10 +45,12 @@ public class QttContext
         extends
         ZContext
 {
-    private final static IPair SUPPORT_VERSION = new Pair<>(new String[]{"5.0",
-                                                                         "3.1.1"},
-                                                            new int[]{VERSION_V5_0,
-                                                                      VERSION_V3_1_1});
+    private final static IPair SUPPORT_VERSION = new Pair<>(new String[] { "5.0",
+                                                                           "3.1.1"
+    },
+                                                            new int[] { VERSION_V5_0,
+                                                                        VERSION_V3_1_1
+                                                            });
 
     public QttContext(ISessionOption option,
                       ISort.Mode mode,
@@ -69,7 +71,7 @@ public class QttContext
                         .noneMatch(v -> v == version);
     }
 
-    private int mVersion ;
+    private int mVersion;
 
     public void setVersion(int version)
     {
@@ -86,18 +88,6 @@ public class QttContext
     {
         advanceState(_DecodeState, DECODE_FRAME, CAPACITY);
         advanceState(_EncodeState, ENCODE_FRAME, CAPACITY);
-    }
-
-    @Override
-    public void updateOut()
-    {
-        advanceOutState(ENCODE_PAYLOAD);
-    }
-
-    @Override
-    public void updateIn()
-    {
-        advanceInState(DECODE_PAYLOAD);
     }
 
     /*MQTT 协议对filter chain来说只有一个in frame 阶段所以 override isInFrame 与 outInFrame

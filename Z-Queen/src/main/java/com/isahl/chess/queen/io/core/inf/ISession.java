@@ -70,6 +70,8 @@ public interface ISession
 
     <T extends IPContext> T getContext();
 
+    <T extends IPContext> T getContext(Class<T> clazz);
+
     ISessionDismiss getDismissCallback();
 
     long[] getPrefixArray();

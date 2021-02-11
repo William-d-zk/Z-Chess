@@ -45,6 +45,7 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.ArrayUtil;
 import com.isahl.chess.queen.event.inf.ISort;
@@ -55,6 +56,7 @@ import com.isahl.chess.queen.io.core.inf.IPacket;
 import com.isahl.chess.queen.io.core.inf.IPipeDecoder;
 import com.isahl.chess.queen.io.core.inf.IPipeEncoder;
 import com.isahl.chess.queen.io.core.inf.IPipeTransfer;
+import com.isahl.chess.queen.io.core.inf.IProxyContext;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionCloser;
 import com.isahl.chess.queen.io.core.inf.ISessionDismiss;
@@ -259,7 +261,9 @@ public class AioSession<C extends IPContext>
     @Override
     public final void bindPrefix(long prefix)
     {
-        mPrefix = mPrefix == null ? new long[]{prefix}: ArrayUtil.setSortAdd(prefix, mPrefix, PREFIX_MAX);
+        mPrefix = mPrefix == null ? new long[] { prefix
+        }
+                                  : ArrayUtil.setSortAdd(prefix, mPrefix, PREFIX_MAX);
     }
 
     @Override
@@ -338,6 +342,22 @@ public class AioSession<C extends IPContext>
     }
 
     @Override
+    public <T extends IPContext> T getContext(Class<T> clazz)
+    {
+        if (_Context.getClass() == clazz) {
+            return (T) _Context;
+        }
+        else {
+            IPContext context = _Context;
+            while (context.isProxy()) {
+                context = ((IProxyContext<?>) context).getActingContext();
+                if (context.getClass() == clazz) { return (T) context; }
+            }
+            throw new ZException("not found context instanceof %s", clazz.getSimpleName());
+        }
+    }
+
+    @Override
     public WRITE_STATUS write(IPacket ps,
                               CompletionHandler<Integer,
                                                 ISession> handler) throws WritePendingException,
@@ -373,7 +393,8 @@ public class AioSession<C extends IPContext>
             offer(ps);
             _Logger.debug("aio event delay, session buffed packets %d", size());
         }
-        return isEmpty() ? WRITE_STATUS.UNFINISHED: WRITE_STATUS.IN_SENDING;
+        return isEmpty() ? WRITE_STATUS.UNFINISHED
+                         : WRITE_STATUS.IN_SENDING;
     }
 
     @Override
