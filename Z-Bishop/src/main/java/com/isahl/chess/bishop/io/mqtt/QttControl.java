@@ -51,8 +51,7 @@ public abstract class QttControl
     @Override
     public int dataLength()
     {
-        return Objects.nonNull(mPayload) ? mPayload.length
-                                         : 0;
+        return Objects.nonNull(mPayload) ? mPayload.length: 0;
     }
 
     @Override
@@ -74,10 +73,9 @@ public abstract class QttControl
     }
 
     @Override
-    public IControl setSession(ISession session)
+    public void setSession(ISession session)
     {
         mSession = session;
-        return this;
     }
 
     @Override
@@ -109,4 +107,12 @@ public abstract class QttControl
         mSession = null;
         mPayload = null;
     }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public QttContext getContext()
+    {
+        return mContext;
+    }
+
 }

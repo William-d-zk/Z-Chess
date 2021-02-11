@@ -31,7 +31,6 @@ public abstract class WsHandshake
         extends
         WsControl
 {
-
     public WsHandshake(int command,
                        String msg,
                        int code)

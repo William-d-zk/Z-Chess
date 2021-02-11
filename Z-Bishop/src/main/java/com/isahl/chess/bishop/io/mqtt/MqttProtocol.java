@@ -45,8 +45,9 @@ public abstract class MqttProtocol
     private final static byte RETAIN_FLAG    = 1;
     private final static byte QOS_MASK       = 3 << 1;
 
-    protected byte mFrameOpCode;
-    protected int  mVersion;
+    protected byte       mFrameOpCode;
+    protected int        mVersion;
+    protected QttContext mContext;
 
     private boolean mDuplicate;
     private boolean mRetain;
@@ -156,6 +157,11 @@ public abstract class MqttProtocol
     public void setVersion(int version)
     {
         mVersion = version;
+    }
+
+    public void setContext(QttContext context)
+    {
+        mContext = context;
     }
 
 }

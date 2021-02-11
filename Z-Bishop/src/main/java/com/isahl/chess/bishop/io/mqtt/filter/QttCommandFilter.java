@@ -52,6 +52,7 @@ public class QttCommandFilter
     @Override
     public QttFrame encode(QttContext context, QttCommand output)
     {
+        output.setContext(context);
         QttFrame frame = new QttFrame();
         frame.setCtrl(output.getCtrl());
         frame.setPayload(output.encode(context));
@@ -63,7 +64,10 @@ public class QttCommandFilter
     {
         QttCommand qttCommand = QttCommandFactory.createQttCommand(input);
         if (qttCommand == null) throw new IllegalArgumentException("MQTT type error");
-        else return qttCommand;
+        else {
+            qttCommand.setContext(context);
+            return qttCommand;
+        }
     }
 
     @Override

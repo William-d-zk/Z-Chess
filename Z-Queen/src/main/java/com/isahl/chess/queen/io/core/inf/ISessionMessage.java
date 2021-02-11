@@ -34,8 +34,7 @@ public interface ISessionMessage
         return null;
     }
 
-    default ISessionMessage setSession(ISession session)
+    default void setSession(ISession session)
     {
-        return this;
     }
 }

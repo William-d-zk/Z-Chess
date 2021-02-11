@@ -23,7 +23,6 @@
 
 package com.isahl.chess.bishop.io.zprotocol;
 
-import com.isahl.chess.queen.io.core.inf.ICommand;
 import com.isahl.chess.queen.io.core.inf.ISession;
 
 /**
@@ -39,10 +38,7 @@ public class ZCommand
     protected ZCommand(int command,
                        boolean hasMsgId)
     {
-        super(command,
-              hasMsgId,
-              hasMsgId ? 0
-                       : -1);
+        super(command, hasMsgId, hasMsgId ? 0: -1);
     }
 
     public ZCommand(int command,
@@ -55,10 +51,9 @@ public class ZCommand
     private byte[]   mPayload;
 
     @Override
-    public ICommand setSession(ISession session)
+    public void setSession(ISession session)
     {
         mSession = session;
-        return this;
     }
 
     @Override
@@ -106,9 +101,7 @@ public class ZCommand
     @Override
     public int dataLength()
     {
-        return minLength()
-               + (mPayload == null ? 0
-                                   : mPayload.length);
+        return minLength() + (mPayload == null ? 0: mPayload.length);
     }
 
     @Override

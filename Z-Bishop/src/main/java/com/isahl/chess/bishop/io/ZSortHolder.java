@@ -112,9 +112,9 @@ public enum ZSortHolder
         throw new IllegalArgumentException();
     }
 
-    final static ZServerFactory    _ServerFactory     = new ZServerFactory();
-    final static ZClusterFactory   _ClusterFactory    = new ZClusterFactory();
-    final static QttCommandFactory _QttCommandFactory = new QttCommandFactory();
+    final static ZServerFactory  _ServerFactory     = new ZServerFactory();
+    final static ZClusterFactory _ClusterFactory    = new ZClusterFactory();
+    final static QttCommandFactory  _QttCommandFactory = new QttCommandFactory();
 
     @SuppressWarnings("unchecked")
     public <C extends IPContext> ISort<C> getSort()

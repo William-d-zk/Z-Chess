@@ -30,6 +30,7 @@ import com.isahl.chess.bishop.io.zprotocol.raft.X73_RaftAccept;
 import com.isahl.chess.bishop.io.zprotocol.raft.X74_RaftReject;
 import com.isahl.chess.bishop.io.zprotocol.raft.X75_RaftRequest;
 import com.isahl.chess.bishop.io.zprotocol.raft.X76_RaftNotify;
+import com.isahl.chess.queen.io.core.inf.ICommand;
 import com.isahl.chess.queen.io.core.inf.ICommandFactory;
 import com.isahl.chess.queen.io.core.inf.IFrame;
 
@@ -40,17 +41,17 @@ import com.isahl.chess.queen.io.core.inf.IFrame;
  */
 public class ZClusterFactory
         implements
-        ICommandFactory<ZCommand,
+        ICommandFactory<ICommand,
                         IFrame>
 {
     @Override
-    public ZCommand create(IFrame frame)
+    public ICommand create(IFrame frame)
     {
         return create(frame.getPayload()[1] & 0xFF);
     }
 
     @Override
-    public ZCommand create(int serial)
+    public ICommand create(int serial)
     {
 
         return switch (serial)

@@ -43,6 +43,7 @@ public abstract class WsControl
     private final int    _Command;
     private final byte   _CtrlCode;
     private ISession     mSession;
+    private WsContext    mContext;
 
     public WsControl(byte code,
                      int command,
@@ -113,17 +114,15 @@ public abstract class WsControl
     }
 
     @Override
-    public WsControl setSession(ISession session)
+    public void setSession(ISession session)
     {
         mSession = session;
-        return this;
     }
 
     @Override
     public int dataLength()
     {
-        return Objects.nonNull(_Payload) ? _Payload.length
-                                         : 0;
+        return Objects.nonNull(_Payload) ? _Payload.length: 0;
     }
 
     @Override
@@ -132,13 +131,24 @@ public abstract class WsControl
         int command = serial();
         return String.format("cmd: %#x, %s",
                              command,
-                             _Payload == null ? "[NULL] payload"
-                                              : new String(_Payload, StandardCharsets.UTF_8));
+                             _Payload == null ? "[NULL] payload": new String(_Payload, StandardCharsets.UTF_8));
     }
 
     @Override
     public Level getLevel()
     {
         return ALMOST_ONCE;
+    }
+
+    public void setContext(WsContext context)
+    {
+        mContext = context;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public WsContext getContext()
+    {
+        return mContext;
     }
 }
