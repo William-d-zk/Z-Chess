@@ -185,6 +185,18 @@ public abstract class ZContext
         return _EncodeState.get() == ENCODE_FRAME;
     }
 
+    @Override
+    public void updateOut()
+    {
+        advanceOutState(ENCODE_PAYLOAD);
+    }
+
+    @Override
+    public void updateIn()
+    {
+        advanceInState(DECODE_PAYLOAD);
+    }
+
     public ISort.Type getType()
     {
         return _Type;

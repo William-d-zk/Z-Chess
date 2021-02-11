@@ -38,8 +38,8 @@ import javax.net.ssl.SSLSession;
 
 import com.isahl.chess.bishop.io.ZContext;
 import com.isahl.chess.king.base.exception.ZException;
+import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.event.inf.ISort;
-import com.isahl.chess.queen.io.core.inf.IEContext;
 import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.IProxyContext;
 import com.isahl.chess.queen.io.core.inf.ISessionOption;
@@ -51,7 +51,6 @@ public class SSLZContext<A extends IPContext>
         extends
         ZContext
         implements
-        IEContext,
         IProxyContext<A>
 {
     private final SSLEngine  _SslEngine;
@@ -59,8 +58,6 @@ public class SSLZContext<A extends IPContext>
     private final SSLSession _SslSession;
     private final A          _ActingContext;
     private final int        _AppInBufferSize;
-
-    private boolean mUpdateKeyIn, mUpdateKeyOut;
 
     public SSLZContext(ISessionOption option,
                        ISort.Mode mode,
@@ -104,8 +101,6 @@ public class SSLZContext<A extends IPContext>
     @Override
     public void reset()
     {
-        mUpdateKeyIn = false;
-        mUpdateKeyOut = false;
         try {
             _SslEngine.closeInbound();
         }
@@ -157,59 +152,6 @@ public class SSLZContext<A extends IPContext>
         return _SslEngine.getHandshakeStatus();
     }
 
-    @Override
-    public boolean needUpdateKeyIn()
-    {
-        if (mUpdateKeyIn) {
-            mUpdateKeyIn = false;
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean needUpdateKeyOut()
-    {
-        if (mUpdateKeyOut) {
-            mUpdateKeyOut = false;
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public void updateIn()
-    {
-        updateKeyIn();
-    }
-
-    /*
-     * 处理流中仅提供信号即可，
-     * 真正的操作在decode 中使用 cryptIn最终执行
-     *
-     */
-    @Override
-    public void updateKeyIn()
-    {
-        mUpdateKeyIn = true;
-    }
-
-    /*
-     * 处理流中仅提供信号即可，
-     * 真正的操作在encode 中使用 cryptOut最终执行
-     */
-    @Override
-    public void updateOut()
-    {
-        updateKeyOut();
-    }
-
-    @Override
-    public void updateKeyOut()
-    {
-        mUpdateKeyOut = true;
-    }
-
     public ByteBuffer doWrap(ByteBuffer output)
     {
         try {
@@ -255,7 +197,7 @@ public class SSLZContext<A extends IPContext>
                         }
                         else {
                             netInBuffer.reset();
-                            getRvBuffer().put(netInBuffer);
+                            IoUtil.write(netInBuffer, getRvBuffer());
                         }
                         return null;
                     }
@@ -268,30 +210,6 @@ public class SSLZContext<A extends IPContext>
         catch (SSLException e) {
             throw new ZException(e, "ssl unwrap error");
         }
-    }
-
-    @Override
-    public void cryptIn()
-    {
-        advanceInState(DECODE_PAYLOAD);
-    }
-
-    @Override
-    public void cryptOut()
-    {
-        advanceOutState(ENCODE_PAYLOAD);
-    }
-
-    @Override
-    public boolean isInCrypt()
-    {
-        return _DecodeState.get() == DECODE_PAYLOAD;
-    }
-
-    @Override
-    public boolean isOutCrypt()
-    {
-        return _EncodeState.get() == ENCODE_PAYLOAD;
     }
 
     @Override

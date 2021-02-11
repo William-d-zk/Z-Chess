@@ -39,8 +39,8 @@ public class MqttSslZSort
         BaseSort<SSLZContext<QttContext>>
 {
 
-    private final ISort<QttContext>                   _ActingSort;
-    final SslHandShakeFilter<SSLZContext<QttContext>> _Head = new SslHandShakeFilter<>();
+    private final ISort<QttContext>                           _ActingSort;
+    private final SslHandShakeFilter<SSLZContext<QttContext>> _Head = new SslHandShakeFilter<>();
 
     public MqttSslZSort(Mode mode,
                         Type type,
