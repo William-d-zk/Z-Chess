@@ -21,14 +21,14 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.io.zprotocol;
+package com.isahl.chess.bishop.io.ws.zchat.zprotocol;
 
-import com.isahl.chess.bishop.io.zprotocol.device.X20_SignUp;
-import com.isahl.chess.bishop.io.zprotocol.device.X22_SignIn;
-import com.isahl.chess.bishop.io.zprotocol.device.X24_UpdateToken;
-import com.isahl.chess.bishop.io.zprotocol.device.X31_ConfirmMsg;
-import com.isahl.chess.bishop.io.zprotocol.device.X32_MsgStatus;
-import com.isahl.chess.bishop.io.zprotocol.device.X50_DeviceMsg;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X20_SignUp;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X22_SignIn;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X24_UpdateToken;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X31_ConfirmMsg;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X32_MsgStatus;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X50_DeviceMsg;
 import com.isahl.chess.queen.io.core.inf.ICommand;
 import com.isahl.chess.queen.io.core.inf.ICommandFactory;
 import com.isahl.chess.queen.io.core.inf.IFrame;

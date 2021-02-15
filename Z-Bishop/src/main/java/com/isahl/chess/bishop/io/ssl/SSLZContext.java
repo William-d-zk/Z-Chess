@@ -36,7 +36,7 @@ import javax.net.ssl.SSLEngineResult;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSession;
 
-import com.isahl.chess.bishop.io.ZContext;
+import com.isahl.chess.bishop.io.ws.zchat.ZContext;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.event.inf.ISort;
@@ -74,8 +74,7 @@ public class SSLZContext<A extends IPContext>
             throw new ZException(e, "ssl context init failed");
         }
         _SslEngine = _SslContext.createSSLEngine();
-        _SslEngine.setEnabledProtocols(new String[] { "TLSv1.2"
-        });
+        _SslEngine.setEnabledProtocols(new String[]{"TLSv1.2"});
         _SslEngine.setUseClientMode(type == ISort.Type.CONSUMER);
         _SslEngine.setNeedClientAuth(type == ISort.Type.SERVER && option.isSslClientAuth());
         _SslSession = _SslEngine.getSession();
@@ -105,7 +104,7 @@ public class SSLZContext<A extends IPContext>
             _SslEngine.closeInbound();
         }
         catch (SSLException e) {
-            throw new ZException(e, "ssl in bound exception %s");
+            throw new ZException(e, "ssl in bound exception");
         }
         _SslEngine.closeOutbound();
         super.reset();
@@ -204,8 +203,7 @@ public class SSLZContext<A extends IPContext>
                 case CLOSED -> throw new ZException("ssl unwrap closed:%s", result.getStatus());
                 case BUFFER_OVERFLOW -> throw new ZException("ssl unwrap overflow");
             }
-            return produced > 0 ? appInBuffer
-                                : null;
+            return produced > 0 ? appInBuffer: null;
         }
         catch (SSLException e) {
             throw new ZException(e, "ssl unwrap error");

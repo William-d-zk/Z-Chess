@@ -30,7 +30,7 @@ import static com.isahl.chess.bishop.io.ws.IWsContext.HS_State_ERROR;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
-import com.isahl.chess.bishop.io.ZContext;
+import com.isahl.chess.bishop.io.ws.zchat.ZContext;
 import com.isahl.chess.bishop.io.ws.IWsContext;
 import com.isahl.chess.bishop.io.ws.WsContext;
 import com.isahl.chess.bishop.io.ws.WsHandshake;
@@ -268,11 +268,14 @@ public class WsHandShakeFilter<T extends ZContext & IWsContext>
                 return new Pair<>(ResultType.NEXT_STEP, context);
             }
             IPContext acting = context;
-            while (acting.isProxy()) {
+            while (acting.isProxy() || acting instanceof IWsContext) {
                 if (acting instanceof IWsContext && acting.isOutFrame()) {
                     return new Pair<>(ResultType.NEXT_STEP, acting);
                 }
-                acting = ((IProxyContext<?>) acting).getActingContext();
+                else if (acting.isProxy()) {
+                    acting = ((IProxyContext<?>) acting).getActingContext();
+                }
+                else break;
             }
         }
         return new Pair<>(ResultType.IGNORE, context);
@@ -288,11 +291,14 @@ public class WsHandShakeFilter<T extends ZContext & IWsContext>
                 return new Pair<>(peek((T) context, (IPacket) input), context);
             }
             IPContext acting = context;
-            while (acting.isProxy()) {
+            while (acting.isProxy() || acting instanceof IWsContext) {
                 if (acting instanceof IWsContext && acting.isInFrame()) {
                     return new Pair<>(peek((T) acting, (IPacket) input), acting);
                 }
-                acting = ((IProxyContext<?>) acting).getActingContext();
+                else if (acting.isProxy()) {
+                    acting = ((IProxyContext<?>) acting).getActingContext();
+                }
+                else break;
             }
         }
         return new Pair<>(ResultType.IGNORE, context);

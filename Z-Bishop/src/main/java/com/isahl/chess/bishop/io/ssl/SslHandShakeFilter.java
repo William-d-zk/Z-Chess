@@ -31,7 +31,7 @@ import java.nio.ByteBuffer;
 
 import javax.net.ssl.SSLEngineResult;
 
-import com.isahl.chess.bishop.io.zprotocol.control.X105_SslHandShake;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X105_SslHandShake;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.async.AioFilterChain;

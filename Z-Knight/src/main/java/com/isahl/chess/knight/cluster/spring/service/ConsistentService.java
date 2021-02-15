@@ -34,7 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import com.isahl.chess.bishop.io.zhandler.ZClusterMappingCustom;
+import com.isahl.chess.bishop.io.ws.zchat.zhandler.ZClusterMappingCustom;
 import com.isahl.chess.king.base.inf.IValid;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.schedule.ScheduleHandler;

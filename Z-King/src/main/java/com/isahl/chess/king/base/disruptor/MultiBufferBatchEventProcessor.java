@@ -80,15 +80,15 @@ public class MultiBufferBatchEventProcessor<T>
             for (SequenceBarrier barrier : _Barriers) {
                 barrier.clearAlert();
             }
-
             final int barrierLength = _Barriers.length;
             int barrier_total_count;
+
             while (true) {
                 barrier_total_count = 0;
                 for (int i = 0; i < barrierLength; i++) {
+                    DataProvider<T> provider = _Providers[i];
                     SequenceBarrier barrier = _Barriers[i];
                     Sequence sequence = _Sequences[i];
-                    DataProvider<T> provider = _Providers[i];
                     long nextSequence = sequence.get() + 1;
                     try {
                         long available = barrier.waitFor(-1);
@@ -147,6 +147,39 @@ public class MultiBufferBatchEventProcessor<T>
     public boolean isRunning()
     {
         return _Running.get() != IDLE;
+    }
+
+    private void processEvents(final int barrierLength)
+    {
+        int barrier_total_count = 0;
+        for (int i = 0; i < barrierLength; i = i < barrierLength - 1 ? i + 1: 0) {
+            DataProvider<T> provider = _Providers[i];
+            SequenceBarrier barrier = _Barriers[i];
+            Sequence sequence = _Sequences[i];
+            long nextSequence = sequence.get() + 1;
+
+            try {
+                long available = barrier.waitFor(-1);
+                if (nextSequence <= available) {
+                    barrier_total_count += available - nextSequence + 1;
+                    while (nextSequence <= available) {
+                        _Handler.onEvent(provider.get(nextSequence), nextSequence, nextSequence == available);
+                        nextSequence++;
+                    }
+                }
+                sequence.set(available);
+            }
+            catch (AlertException e) {
+                /*
+                 * 这个设计是为了动态终止processor，多路归并的场景中，reduce 不能被终止
+                 */
+            }
+            catch (Throwable ex) {
+                sequence.set(nextSequence);
+            }
+
+        }
+
     }
 
 }

@@ -22,7 +22,7 @@
  */
 package com.isahl.chess.bishop.io.ws.filter;
 
-import com.isahl.chess.bishop.io.ZContext;
+import com.isahl.chess.bishop.io.ws.zchat.ZContext;
 import com.isahl.chess.bishop.io.ws.IWsContext;
 import com.isahl.chess.bishop.io.ws.WsControl;
 import com.isahl.chess.bishop.io.ws.WsFrame;
@@ -30,8 +30,8 @@ import com.isahl.chess.bishop.io.ws.control.X101_HandShake;
 import com.isahl.chess.bishop.io.ws.control.X102_Close;
 import com.isahl.chess.bishop.io.ws.control.X103_Ping;
 import com.isahl.chess.bishop.io.ws.control.X104_Pong;
-import com.isahl.chess.bishop.io.zprotocol.control.X106_Identity;
-import com.isahl.chess.bishop.io.zprotocol.control.X107_Redirect;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X106_Identity;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X107_Redirect;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.async.AioFilterChain;
 import com.isahl.chess.queen.io.core.inf.IFrame;
@@ -94,13 +94,16 @@ public class WsControlFilter<T extends ZContext & IWsContext>
                                   context);
             }
             IPContext acting = context;
-            while (acting.isProxy()) {
+            while (acting.isProxy() || acting instanceof IWsContext) {
                 if (acting instanceof IWsContext && acting.isOutConvert()) {
                     return new Pair<>(output.serial() != X101_HandShake.COMMAND ? ResultType.NEXT_STEP
                                                                                 : ResultType.ERROR,
                                       acting);
                 }
-                acting = ((IProxyContext<?>) acting).getActingContext();
+                else if (acting.isProxy()) {
+                    acting = ((IProxyContext<?>) acting).getActingContext();
+                }
+                else break;
             }
         }
         return new Pair<>(ResultType.IGNORE, context);
@@ -115,11 +118,14 @@ public class WsControlFilter<T extends ZContext & IWsContext>
                 return new Pair<>(ResultType.HANDLED, context);
             }
             IPContext acting = context;
-            while (acting.isProxy()) {
+            while (acting.isProxy() || acting instanceof IWsContext) {
                 if (acting instanceof IWsContext && acting.isInConvert()) {
                     return new Pair<>(ResultType.HANDLED, acting);
                 }
-                acting = ((IProxyContext<?>) acting).getActingContext();
+                else if (acting.isProxy()) {
+                    acting = ((IProxyContext<?>) acting).getActingContext();
+                }
+                else break;
             }
         }
         return new Pair<>(ResultType.IGNORE, context);

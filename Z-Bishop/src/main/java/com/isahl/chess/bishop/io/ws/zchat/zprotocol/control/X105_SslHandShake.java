@@ -21,13 +21,13 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.io.zprotocol.control;
+package com.isahl.chess.bishop.io.ws.zchat.zprotocol.control;
 
 import java.nio.charset.StandardCharsets;
 
 import javax.net.ssl.SSLEngineResult;
 
-import com.isahl.chess.bishop.io.zprotocol.ZCommand;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZCommand;
 import com.isahl.chess.king.base.util.IoUtil;
 
 public class X105_SslHandShake

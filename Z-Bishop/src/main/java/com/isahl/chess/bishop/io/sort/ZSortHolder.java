@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,24 +21,21 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.io;
+package com.isahl.chess.bishop.io.sort;
 
 import com.isahl.chess.bishop.io.mqtt.control.X111_QttConnect;
 import com.isahl.chess.bishop.io.mqtt.control.X11E_QttDisconnect;
 import com.isahl.chess.bishop.io.mqtt.filter.QttCommandFactory;
 import com.isahl.chess.bishop.io.sort.mqtt.MqttZSort;
-import com.isahl.chess.bishop.io.sort.mqtt.ssl.MqttSslZSort;
-import com.isahl.chess.bishop.io.sort.mqtt.ssl.MqttZlsZSort;
-import com.isahl.chess.bishop.io.sort.websocket.WsJSort;
-import com.isahl.chess.bishop.io.sort.websocket.WsZSort;
+import com.isahl.chess.bishop.io.sort.ssl.SslZSort;
+import com.isahl.chess.bishop.io.sort.websocket.WsTextZSort;
 import com.isahl.chess.bishop.io.sort.websocket.proxy.WsProxyZSort;
-import com.isahl.chess.bishop.io.sort.websocket.ssl.WsSslZSort;
-import com.isahl.chess.bishop.io.sort.websocket.ssl.WsZlsZSort;
-import com.isahl.chess.bishop.io.sort.websocket.ssl.proxy.WsSslProxyZSort;
-import com.isahl.chess.bishop.io.zprotocol.ZClusterFactory;
-import com.isahl.chess.bishop.io.zprotocol.ZServerFactory;
-import com.isahl.chess.bishop.io.zprotocol.raft.X70_RaftVote;
-import com.isahl.chess.bishop.io.zprotocol.raft.X76_RaftNotify;
+import com.isahl.chess.bishop.io.ws.zchat.WsZSort;
+import com.isahl.chess.bishop.io.ws.zchat.ZlsZSort;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZClusterFactory;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZServerFactory;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X70_RaftVote;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X76_RaftNotify;
 import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.queen.event.inf.ISort;
 import com.isahl.chess.queen.io.core.inf.IControl;
@@ -50,51 +47,52 @@ import com.isahl.chess.queen.io.core.inf.IPContext;
  */
 public enum ZSortHolder
 {
-    WS_CONSUMER(new WsZSort(ISort.Mode.LINK, ISort.Type.CONSUMER)),
-    WS_SERVER(new WsZSort(ISort.Mode.LINK, ISort.Type.SERVER)),
-    WS_CONSUMER_SSL(new WsSslZSort(ISort.Mode.LINK,
-                                   ISort.Type.CONSUMER,
-                                   new WsZSort(ISort.Mode.LINK, ISort.Type.CONSUMER))),
-    WS_SERVER_SSL(new WsSslZSort(ISort.Mode.LINK, ISort.Type.SERVER, new WsZSort(ISort.Mode.LINK, ISort.Type.SERVER))),
+    WS_ZCHAT_CONSUMER(new WsZSort(ISort.Mode.LINK, ISort.Type.CONSUMER)),
+    WS_ZCHAT_SERVER(new WsZSort(ISort.Mode.LINK, ISort.Type.SERVER)),
+    WS_ZCHAT_CONSUMER_SSL(new SslZSort<>(ISort.Mode.LINK,
+                                         ISort.Type.CONSUMER,
+                                         new WsZSort(ISort.Mode.LINK, ISort.Type.CONSUMER))),
+    WS_ZCHAT_SERVER_SSL(new SslZSort<>(ISort.Mode.LINK,
+                                       ISort.Type.SERVER,
+                                       new WsZSort(ISort.Mode.LINK, ISort.Type.SERVER))),
     WS_CLUSTER_SYMMETRY(new WsZSort(ISort.Mode.CLUSTER, ISort.Type.SYMMETRY)),
     WS_CLUSTER_CONSUMER(new WsZSort(ISort.Mode.CLUSTER, ISort.Type.CONSUMER)),
     WS_CLUSTER_SERVER(new WsZSort(ISort.Mode.CLUSTER, ISort.Type.SERVER)),
-    WS_CLUSTER_SYMMETRY_ZLS(new WsZlsZSort(ISort.Mode.CLUSTER,
-                                           ISort.Type.SYMMETRY,
-                                           new WsZSort(ISort.Mode.CLUSTER, ISort.Type.SYMMETRY))),
-    WS_PLAIN_JSON_SERVER(new WsJSort(ISort.Mode.LINK, ISort.Type.SERVER)),
-    WS_PLAIN_JSON_SERVER_SSL(new WsSslZSort(ISort.Mode.LINK, ISort.Type.SERVER,new WsJSort(ISort.Mode.LINK, ISort.Type.SERVER))),
+    WS_CLUSTER_SYMMETRY_ZLS(new ZlsZSort(ISort.Mode.CLUSTER,
+                                         ISort.Type.SYMMETRY,
+                                         new WsZSort(ISort.Mode.CLUSTER, ISort.Type.SYMMETRY))),
+    WS_PLAIN_TEXT_SERVER(new WsTextZSort(ISort.Mode.LINK, ISort.Type.SERVER)),
+    WS_PLAIN_TEXT_SERVER_SSL(new SslZSort<>(ISort.Mode.LINK,
+                                            ISort.Type.SERVER,
+                                            new WsTextZSort(ISort.Mode.LINK, ISort.Type.SERVER))),
     QTT_SERVER(new MqttZSort(ISort.Mode.LINK, ISort.Type.SERVER)),
     QTT_CONSUMER(new MqttZSort(ISort.Mode.LINK, ISort.Type.CONSUMER)),
     QTT_SYMMETRY(new MqttZSort(ISort.Mode.LINK, ISort.Type.SYMMETRY)),
-    QTT_SERVER_SSL(new MqttSslZSort(ISort.Mode.LINK,
-                                    ISort.Type.SERVER,
-                                    new MqttZSort(ISort.Mode.LINK, ISort.Type.SERVER))),
-    QTT_CONSUMER_SSL(new MqttSslZSort(ISort.Mode.LINK,
-                                      ISort.Type.CONSUMER,
-                                      new MqttZSort(ISort.Mode.LINK, ISort.Type.CONSUMER))),
-    QTT_SYMMETRY_SSL(new MqttSslZSort(ISort.Mode.LINK,
-                                      ISort.Type.SYMMETRY,
-                                      new MqttZSort(ISort.Mode.LINK, ISort.Type.SYMMETRY))),
-    QTT_SERVER_ZLS(new MqttZlsZSort(ISort.Mode.LINK,
-                                    ISort.Type.SERVER,
-                                    new MqttZSort(ISort.Mode.LINK, ISort.Type.SERVER))),
+    QTT_SERVER_SSL(new SslZSort<>(ISort.Mode.LINK,
+                                  ISort.Type.SERVER,
+                                  new MqttZSort(ISort.Mode.LINK, ISort.Type.SERVER))),
+    QTT_CONSUMER_SSL(new SslZSort<>(ISort.Mode.LINK,
+                                    ISort.Type.CONSUMER,
+                                    new MqttZSort(ISort.Mode.LINK, ISort.Type.CONSUMER))),
+    QTT_SYMMETRY_SSL(new SslZSort<>(ISort.Mode.LINK,
+                                    ISort.Type.SYMMETRY,
+                                    new MqttZSort(ISort.Mode.LINK, ISort.Type.SYMMETRY))),
     WS_QTT_SERVER(new WsProxyZSort<>(ISort.Mode.LINK,
                                      ISort.Type.SERVER,
                                      new MqttZSort(ISort.Mode.LINK, ISort.Type.SERVER))),
-    WS_QTT_SERVER_SSL(new WsSslProxyZSort<>(ISort.Mode.LINK,
-                                            ISort.Type.SERVER,
-                                            new WsProxyZSort<>(ISort.Mode.LINK,
-                                                               ISort.Type.SERVER,
-                                                               new MqttZSort(ISort.Mode.LINK, ISort.Type.SERVER)))),
+    WS_QTT_SERVER_SSL(new SslZSort<>(ISort.Mode.LINK,
+                                     ISort.Type.SERVER,
+                                     new WsProxyZSort<>(ISort.Mode.LINK,
+                                                        ISort.Type.SERVER,
+                                                        new MqttZSort(ISort.Mode.LINK, ISort.Type.SERVER)))),
     WS_QTT_CONSUMER(new WsProxyZSort<>(ISort.Mode.LINK,
                                        ISort.Type.CONSUMER,
                                        new MqttZSort(ISort.Mode.LINK, ISort.Type.CONSUMER))),
-    WS_QTT_CONSUMER_SSL(new WsSslProxyZSort<>(ISort.Mode.LINK,
-                                              ISort.Type.CONSUMER,
-                                              new WsProxyZSort<>(ISort.Mode.LINK,
-                                                                 ISort.Type.CONSUMER,
-                                                                 new MqttZSort(ISort.Mode.LINK, ISort.Type.CONSUMER))));
+    WS_QTT_CONSUMER_SSL(new SslZSort<>(ISort.Mode.LINK,
+                                       ISort.Type.CONSUMER,
+                                       new WsProxyZSort<>(ISort.Mode.LINK,
+                                                          ISort.Type.CONSUMER,
+                                                          new MqttZSort(ISort.Mode.LINK, ISort.Type.CONSUMER))));
 
     private final ISort<?> _Sort;
 

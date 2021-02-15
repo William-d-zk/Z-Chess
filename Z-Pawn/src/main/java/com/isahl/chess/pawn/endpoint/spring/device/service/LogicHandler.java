@@ -42,6 +42,8 @@ import java.util.Objects;
 
 import javax.net.ssl.SSLEngineResult;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.isahl.chess.bishop.io.mqtt.command.X113_QttPublish;
 import com.isahl.chess.bishop.io.mqtt.command.X114_QttPuback;
 import com.isahl.chess.bishop.io.mqtt.command.X115_QttPubrec;
@@ -53,7 +55,8 @@ import com.isahl.chess.bishop.io.mqtt.handler.IQttRouter;
 import com.isahl.chess.bishop.io.ws.control.X101_HandShake;
 import com.isahl.chess.bishop.io.ws.control.X103_Ping;
 import com.isahl.chess.bishop.io.ws.control.X104_Pong;
-import com.isahl.chess.bishop.io.zprotocol.control.X105_SslHandShake;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X105_SslHandShake;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X10A_Text;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.schedule.Status;
@@ -121,6 +124,14 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                 else {
                     break;
                 }
+                return new IControl[]{content};
+            case X10A_Text.COMMAND:
+                X10A_Text x10A = (X10A_Text) content;
+                String jsonStr = new String(x10A.getPayload(), StandardCharsets.UTF_8);
+                _Logger.info("x10A:%s", jsonStr);
+                JsonNode json = JsonUtil.readTree(jsonStr);
+                ((ObjectNode) json).put("response", "hello");
+                x10A.setPayload(JsonUtil.writeNodeAsBytes(json));
                 return new IControl[]{content};
             case X113_QttPublish.COMMAND:
                 X113_QttPublish x113 = (X113_QttPublish) content;

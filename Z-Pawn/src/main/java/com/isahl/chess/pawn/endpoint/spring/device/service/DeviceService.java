@@ -36,10 +36,10 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.isahl.chess.bishop.io.ZSortHolder;
 import com.isahl.chess.bishop.io.mqtt.handler.IQttRouter;
-import com.isahl.chess.bishop.io.zhandler.ZClusterMappingCustom;
-import com.isahl.chess.bishop.io.zhandler.ZLinkMappingCustom;
+import com.isahl.chess.bishop.io.sort.ZSortHolder;
+import com.isahl.chess.bishop.io.ws.zchat.zhandler.ZClusterMappingCustom;
+import com.isahl.chess.bishop.io.ws.zchat.zhandler.ZLinkMappingCustom;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
@@ -102,13 +102,14 @@ public class DeviceService
                                           {
                                               ZSortHolder sort = switch (listener.getScheme())
                                               {
-                                                  case "ws" -> ZSortHolder.WS_SERVER;
-                                                  case "wss" -> ZSortHolder.WS_SERVER_SSL;
                                                   case "mqtt" -> ZSortHolder.QTT_SERVER;
-                                                  case "ws_mqtt" -> ZSortHolder.WS_QTT_SERVER;
-                                                  case "ssl_ws_mqtt" -> ZSortHolder.WS_QTT_SERVER_SSL;
-                                                  case "zls_mqtt" -> ZSortHolder.QTT_SERVER_ZLS;
-                                                  case "ssl_mqtt" -> ZSortHolder.QTT_SERVER_SSL;
+                                                  case "ws-mqtt" -> ZSortHolder.WS_QTT_SERVER;
+                                                  case "tls-mqtt" -> ZSortHolder.QTT_SERVER_SSL;
+                                                  case "ws-zchat" -> ZSortHolder.WS_ZCHAT_SERVER;
+                                                  case "wss-zchat" -> ZSortHolder.WS_ZCHAT_SERVER_SSL;
+                                                  case "wss-mqtt" -> ZSortHolder.WS_QTT_SERVER_SSL;
+                                                  case "ws-text" -> ZSortHolder.WS_PLAIN_TEXT_SERVER;
+                                                  case "wss-text" -> ZSortHolder.WS_PLAIN_TEXT_SERVER_SSL;
                                                   default -> throw new UnsupportedOperationException(listener.getScheme());
                                               };
                                               return new Triple<>(listener.getHost(), listener.getPort(), sort);

@@ -33,11 +33,11 @@ import java.time.Duration;
 
 import javax.annotation.PostConstruct;
 
-import com.isahl.chess.bishop.io.ZSortHolder;
+import com.isahl.chess.bishop.io.sort.ZSortHolder;
 import com.isahl.chess.bishop.io.ws.WsContext;
 import com.isahl.chess.bishop.io.ws.control.X103_Ping;
-import com.isahl.chess.bishop.io.zcrypt.EncryptHandler;
-import com.isahl.chess.bishop.io.zprotocol.control.X106_Identity;
+import com.isahl.chess.bishop.io.ws.zchat.zcrypt.EncryptHandler;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X106_Identity;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.schedule.ScheduleHandler;

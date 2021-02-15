@@ -21,12 +21,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.io.zfilter;
+package com.isahl.chess.bishop.io.ws.zchat.zfilter;
 
 import static com.isahl.chess.king.base.schedule.inf.ITask.advanceState;
 import static com.isahl.chess.queen.io.core.inf.ISession.CAPACITY;
 
-import com.isahl.chess.bishop.io.ZContext;
+import com.isahl.chess.bishop.io.ws.zchat.ZContext;
 import com.isahl.chess.king.base.crypt.util.Rc4;
 import com.isahl.chess.king.base.util.CryptUtil;
 import com.isahl.chess.queen.event.inf.ISort;

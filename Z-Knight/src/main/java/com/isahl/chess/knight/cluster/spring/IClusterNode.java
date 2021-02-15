@@ -29,8 +29,8 @@ import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.isahl.chess.bishop.io.ZSortHolder;
-import com.isahl.chess.bishop.io.zprotocol.control.X106_Identity;
+import com.isahl.chess.bishop.io.sort.ZSortHolder;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X106_Identity;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.topology.ZUID;
@@ -68,12 +68,12 @@ public interface IClusterNode<K extends IPipeCore>
                                          IAioClient client,
                                          final long _Type,
                                          final ISessionManager _Manager,
-                                         final ZSortHolder _SortHolder,
+                                         final ZSortHolder _ZSortHolder,
                                          final ZUID _Zuid)
     {
         final String _Host = address.getFirst();
         final int _Port = address.getSecond();
-        if (_SortHolder.getSort()
+        if (_ZSortHolder.getSort()
                        .getMode() != ISort.Mode.CLUSTER)
         {
             throw new IllegalArgumentException("sort mode is wrong in cluster define");
@@ -83,7 +83,7 @@ public interface IClusterNode<K extends IPipeCore>
             @Override
             public ISort.Mode getMode()
             {
-                return _SortHolder.getSort()
+                return _ZSortHolder.getSort()
                                   .getMode();
             }
 
@@ -91,7 +91,7 @@ public interface IClusterNode<K extends IPipeCore>
             public ISession createSession(AsynchronousSocketChannel socketChannel,
                                           IConnectActivity activity) throws IOException
             {
-                return new AioSession<>(socketChannel, _Type, this, _SortHolder.getSort(), activity, client, false);
+                return new AioSession<>(socketChannel, _Type, this, _ZSortHolder.getSort(), activity, client, false);
             }
 
             @Override
@@ -112,7 +112,7 @@ public interface IClusterNode<K extends IPipeCore>
             @Override
             public String getProtocol()
             {
-                return _SortHolder.getSort()
+                return _ZSortHolder.getSort()
                                   .getProtocol();
             }
         };

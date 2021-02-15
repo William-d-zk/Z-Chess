@@ -239,4 +239,17 @@ public class JsonUtil
         return null;
     }
 
+    public static byte[] writeNodeAsBytes(JsonNode input)
+    {
+        if (input == null) return null;
+        try {
+            return OBJECT_MAPPER.writeValueAsBytes(input);
+        }
+        catch (JsonProcessingException e) {
+            _Logger.warning("write json error", e);
+        }
+        return null;
+
+    }
+
 }

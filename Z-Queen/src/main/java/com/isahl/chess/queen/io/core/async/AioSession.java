@@ -212,9 +212,13 @@ public class AioSession<C extends IPContext>
     {
         if (isClosed()) { return; }
         advanceState(_State, SESSION_CLOSE, CAPACITY);
-        _Context.dispose();
-        if (_Channel != null) {
-            _Channel.close();
+        try {
+            _Context.dispose();
+        }
+        finally {
+            if (_Channel != null) {
+                _Channel.close();
+            }
         }
     }
 
@@ -261,9 +265,7 @@ public class AioSession<C extends IPContext>
     @Override
     public final void bindPrefix(long prefix)
     {
-        mPrefix = mPrefix == null ? new long[] { prefix
-        }
-                                  : ArrayUtil.setSortAdd(prefix, mPrefix, PREFIX_MAX);
+        mPrefix = mPrefix == null ? new long[]{prefix}: ArrayUtil.setSortAdd(prefix, mPrefix, PREFIX_MAX);
     }
 
     @Override
@@ -393,8 +395,7 @@ public class AioSession<C extends IPContext>
             offer(ps);
             _Logger.debug("aio event delay, session buffed packets %d", size());
         }
-        return isEmpty() ? WRITE_STATUS.UNFINISHED
-                         : WRITE_STATUS.IN_SENDING;
+        return isEmpty() ? WRITE_STATUS.UNFINISHED: WRITE_STATUS.IN_SENDING;
     }
 
     @Override

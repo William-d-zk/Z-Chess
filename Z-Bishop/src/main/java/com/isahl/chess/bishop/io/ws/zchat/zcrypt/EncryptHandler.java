@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.io.zcrypt;
+package com.isahl.chess.bishop.io.ws.zchat.zcrypt;
 
 import java.util.Random;
 

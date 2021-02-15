@@ -36,16 +36,16 @@ import com.isahl.chess.queen.io.core.inf.ISessionOption;
  * @author william.d.zk
  * @date 2021/2/14
  */
-public class WsTSort
+public class WsTextZSort
         extends
         BaseSort<WsContext>
 {
     private final WsHandShakeFilter<WsContext> _Head = new WsHandShakeFilter<>();
 
-    public WsTSort(Mode mode,
-                   Type type)
+    public WsTextZSort(Mode mode,
+                       Type type)
     {
-        super(mode, type, "ws_text");
+        super(mode, type, "ws-text");
         _Head.linkFront(new WsFrameFilter<>())
              .linkFront(new WsControlFilter<>())
              .linkFront(new WsTextFilter<>());

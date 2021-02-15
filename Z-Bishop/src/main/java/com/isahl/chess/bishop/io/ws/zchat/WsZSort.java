@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.io.sort.websocket;
+package com.isahl.chess.bishop.io.ws.zchat;
 
 import com.isahl.chess.bishop.io.sort.BaseSort;
 import com.isahl.chess.bishop.io.ws.WsContext;
@@ -46,7 +46,7 @@ public class WsZSort
     public WsZSort(Mode mode,
                    Type type)
     {
-        super(mode, type, "ws-z-chat");
+        super(mode, type, "ws-zchat");
         _Head.linkFront(new WsFrameFilter<>())
              .linkFront(new WsControlFilter<>())
              .linkFront(new ZCommandFilter<>(mode == Mode.CLUSTER ? new ZClusterFactory()
