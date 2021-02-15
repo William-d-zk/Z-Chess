@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,32 +21,35 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.io.sort.mqtt.ssl;
+package com.isahl.chess.bishop.io.sort.websocket;
 
-import com.isahl.chess.bishop.io.mqtt.QttContext;
 import com.isahl.chess.bishop.io.sort.BaseSort;
-import com.isahl.chess.bishop.io.zfilter.EZContext;
-import com.isahl.chess.bishop.io.zfilter.ZEFilter;
-import com.isahl.chess.queen.event.inf.ISort;
+import com.isahl.chess.bishop.io.ws.WsContext;
+import com.isahl.chess.bishop.io.ws.filter.WsControlFilter;
+import com.isahl.chess.bishop.io.ws.filter.WsFrameFilter;
+import com.isahl.chess.bishop.io.ws.filter.WsHandShakeFilter;
+import com.isahl.chess.bishop.io.ws.filter.WsTextFilter;
 import com.isahl.chess.queen.io.core.inf.IFilterChain;
 import com.isahl.chess.queen.io.core.inf.ISessionOption;
 
-public class MqttZlsZSort
+/**
+ * @author william.d.zk
+ * @date 2021/2/14
+ */
+public class WsTSort
         extends
-        BaseSort<EZContext<QttContext>>
+        BaseSort<WsContext>
 {
+    private final WsHandShakeFilter<WsContext> _Head = new WsHandShakeFilter<>();
 
-    public MqttZlsZSort(Mode mode,
-                        Type type,
-                        ISort<QttContext> actingSort)
+    public WsTSort(Mode mode,
+                   Type type)
     {
-        super(mode, type, String.format("zls-%s", actingSort.getProtocol()));
-        _ActingSort = actingSort;
-        _Head.linkFront(actingSort.getFilterChain());
+        super(mode, type, "ws_text");
+        _Head.linkFront(new WsFrameFilter<>())
+             .linkFront(new WsControlFilter<>())
+             .linkFront(new WsTextFilter<>());
     }
-
-    private final ISort<QttContext>       _ActingSort;
-    final ZEFilter<EZContext<QttContext>> _Head = new ZEFilter<>();
 
     @Override
     public IFilterChain getFilterChain()
@@ -55,8 +58,8 @@ public class MqttZlsZSort
     }
 
     @Override
-    public EZContext<QttContext> newContext(ISessionOption option)
+    public WsContext newContext(ISessionOption option)
     {
-        return new EZContext<>(option, getMode(), getType(), _ActingSort.newContext(option));
+        return new WsContext(option, getMode(), getType());
     }
 }

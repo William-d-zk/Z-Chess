@@ -79,7 +79,7 @@ public class ZCommandFilter<T extends ZContext>
     public ICommand decode(T context, IFrame input)
     {
         int serial = input.command();
-        ICommand _command = switch (serial)
+        ICommand command = switch (serial)
         {
             case X01_EncryptRequest.COMMAND -> new X01_EncryptRequest();
             case X02_AsymmetricPub.COMMAND -> new X02_AsymmetricPub();
@@ -89,14 +89,14 @@ public class ZCommandFilter<T extends ZContext>
             case X06_EncryptComp.COMMAND -> new X06_EncryptComp();
             default -> _CommandFactory == null ? null: _CommandFactory.create(serial);
         };
-        if (_command == null) { throw new ZException("no define:%d ", input.getPayload()[0] & 0xFF); }
-        _command.decode(input.getPayload(), context);
-        switch (_command.serial())
+        if (command == null) { throw new ZException("no define:%d ", input.getPayload()[0] & 0xFF); }
+        command.decode(input.getPayload(), context);
+        switch (command.serial())
         {
             case X01_EncryptRequest.COMMAND:
                 if (context instanceof IEContext) {
                     IEContext ec = (IEContext) context;
-                    X01_EncryptRequest x01 = (X01_EncryptRequest) _command;
+                    X01_EncryptRequest x01 = (X01_EncryptRequest) command;
                     IEncryptHandler encryptHandler = ec.getEncryptHandler();
                     if (encryptHandler == null) return new X06_EncryptComp(Code.PLAIN_UNSUPPORTED.getCode());
                     Pair<Integer,
@@ -113,7 +113,7 @@ public class ZCommandFilter<T extends ZContext>
             case X02_AsymmetricPub.COMMAND:
                 if (context instanceof IEContext) {
                     IEContext ec = (IEContext) context;
-                    X02_AsymmetricPub x02 = (X02_AsymmetricPub) _command;
+                    X02_AsymmetricPub x02 = (X02_AsymmetricPub) command;
                     IEncryptHandler encryptHandler = ec.getEncryptHandler();
                     byte[] symmetricKey = ec.getSymmetricEncrypt()
                                             .createKey("z-tls-rc4");
@@ -137,7 +137,7 @@ public class ZCommandFilter<T extends ZContext>
             case X03_Cipher.COMMAND:
                 if (context instanceof IEContext) {
                     IEContext ec = (IEContext) context;
-                    X03_Cipher x03 = (X03_Cipher) _command;
+                    X03_Cipher x03 = (X03_Cipher) command;
                     IEncryptHandler encryptHandler = ec.getEncryptHandler();
                     if (ec.getPubKeyId() == x03.pubKeyId) {
                         byte[] symmetricKey = encryptHandler.getSymmetricKey(x03.pubKeyId, x03.cipher);
@@ -167,7 +167,7 @@ public class ZCommandFilter<T extends ZContext>
             case X04_EncryptConfirm.COMMAND:
                 if (context instanceof IEContext) {
                     IEContext ec = (IEContext) context;
-                    X04_EncryptConfirm x04 = (X04_EncryptConfirm) _command;
+                    X04_EncryptConfirm x04 = (X04_EncryptConfirm) command;
                     IEncryptHandler encryptHandler = ec.getEncryptHandler();
                     if (x04.symmetricKeyId == ec.getSymmetricKeyId()
                         && Arrays.equals(encryptHandler.getSymmetricKeySign(ec.getReRollKey()), x04.getSign()))
@@ -186,7 +186,7 @@ public class ZCommandFilter<T extends ZContext>
             case X05_EncryptStart.COMMAND:
                 if (context instanceof IEContext) {
                     IEContext ec = (IEContext) context;
-                    X05_EncryptStart x05 = (X05_EncryptStart) _command;
+                    X05_EncryptStart x05 = (X05_EncryptStart) command;
                     if (ec.getSymmetricKeyId() != x05.symmetricKeyId) throw new IllegalStateException("symmetric key id is not equals");
                     _Logger.debug("encrypt start, no response");
                 }
@@ -194,7 +194,7 @@ public class ZCommandFilter<T extends ZContext>
             case X06_EncryptComp.COMMAND:
                 return null;
             default:
-                return _command;
+                return command;
         }
     }
 

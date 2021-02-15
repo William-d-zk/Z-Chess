@@ -29,6 +29,7 @@ import com.isahl.chess.bishop.io.mqtt.filter.QttCommandFactory;
 import com.isahl.chess.bishop.io.sort.mqtt.MqttZSort;
 import com.isahl.chess.bishop.io.sort.mqtt.ssl.MqttSslZSort;
 import com.isahl.chess.bishop.io.sort.mqtt.ssl.MqttZlsZSort;
+import com.isahl.chess.bishop.io.sort.websocket.WsJSort;
 import com.isahl.chess.bishop.io.sort.websocket.WsZSort;
 import com.isahl.chess.bishop.io.sort.websocket.proxy.WsProxyZSort;
 import com.isahl.chess.bishop.io.sort.websocket.ssl.WsSslZSort;
@@ -61,6 +62,8 @@ public enum ZSortHolder
     WS_CLUSTER_SYMMETRY_ZLS(new WsZlsZSort(ISort.Mode.CLUSTER,
                                            ISort.Type.SYMMETRY,
                                            new WsZSort(ISort.Mode.CLUSTER, ISort.Type.SYMMETRY))),
+    WS_PLAIN_JSON_SERVER(new WsJSort(ISort.Mode.LINK, ISort.Type.SERVER)),
+    WS_PLAIN_JSON_SERVER_SSL(new WsSslZSort(ISort.Mode.LINK, ISort.Type.SERVER,new WsJSort(ISort.Mode.LINK, ISort.Type.SERVER))),
     QTT_SERVER(new MqttZSort(ISort.Mode.LINK, ISort.Type.SERVER)),
     QTT_CONSUMER(new MqttZSort(ISort.Mode.LINK, ISort.Type.CONSUMER)),
     QTT_SYMMETRY(new MqttZSort(ISort.Mode.LINK, ISort.Type.SYMMETRY)),
@@ -112,9 +115,9 @@ public enum ZSortHolder
         throw new IllegalArgumentException();
     }
 
-    final static ZServerFactory  _ServerFactory     = new ZServerFactory();
-    final static ZClusterFactory _ClusterFactory    = new ZClusterFactory();
-    final static QttCommandFactory  _QttCommandFactory = new QttCommandFactory();
+    final static ZServerFactory    _ServerFactory     = new ZServerFactory();
+    final static ZClusterFactory   _ClusterFactory    = new ZClusterFactory();
+    final static QttCommandFactory _QttCommandFactory = new QttCommandFactory();
 
     @SuppressWarnings("unchecked")
     public <C extends IPContext> ISort<C> getSort()
