@@ -23,32 +23,31 @@
 
 package com.isahl.chess.bishop.io.ws.filter;
 
-import static com.isahl.chess.bishop.io.ws.WsFrame.frame_op_code_no_ctrl_json;
-
-import com.isahl.chess.bishop.io.ZContext;
 import com.isahl.chess.bishop.io.ws.IWsContext;
 import com.isahl.chess.bishop.io.ws.WsFrame;
-import com.isahl.chess.bishop.io.zprotocol.control.X10A_Json;
+import com.isahl.chess.bishop.io.ws.zchat.ZContext;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X10A_Text;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.async.AioFilterChain;
 import com.isahl.chess.queen.io.core.inf.ICommand;
 import com.isahl.chess.queen.io.core.inf.IFrame;
 import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.IProtocol;
+import com.isahl.chess.queen.io.core.inf.IProxyContext;
 
 /**
  * @author william.d.zk
  * @date 2021/2/14
  */
-public class WsJsonFilter<T extends ZContext & IWsContext>
+public class WsTextFilter<T extends ZContext & IWsContext>
         extends
         AioFilterChain<T,
                        ICommand,
                        IFrame>
 {
-    public WsJsonFilter()
+    public WsTextFilter()
     {
-        super("ws_json");
+        super("ws_text");
     }
 
     @Override
@@ -63,11 +62,7 @@ public class WsJsonFilter<T extends ZContext & IWsContext>
     @Override
     public ICommand decode(T context, IFrame input)
     {
-        ICommand command = new X10A_Json();
-        byte ctrl = input.getCtrl();
-        if (ctrl != frame_op_code_no_ctrl_json) {
-            _Logger.warning("input should be formatted by json");
-        }
+        ICommand command = new X10A_Text();
         command.setPayload(input.getPayload());
         return command;
     }
@@ -76,11 +71,21 @@ public class WsJsonFilter<T extends ZContext & IWsContext>
     public <O extends IProtocol> Pair<ResultType,
                                       IPContext> pipeSeek(IPContext context, O output)
     {
-        if (checkType(output, IProtocol.COMMAND_SERIAL)
-            && context instanceof IWsContext
-            && context.isOutConvert()
-            && !context.isProxy())
-        {
+        if (checkType(output, IProtocol.COMMAND_SERIAL) && output instanceof X10A_Text) {
+            if (context instanceof IWsContext && context.isOutConvert()) {
+                //作为最尾端的filter出现，需要处理context的代理链
+                return new Pair<>(ResultType.NEXT_STEP, context);
+            }
+            IPContext acting = context;
+            while (acting.isProxy() || acting instanceof IWsContext) {
+                if (acting instanceof IWsContext && acting.isOutConvert()) {
+                    return new Pair<>(ResultType.NEXT_STEP, acting);
+                }
+                else if (acting.isProxy()) {
+                    acting = ((IProxyContext<?>) acting).getActingContext();
+                }
+                else break;
+            }
             return new Pair<>(ResultType.NEXT_STEP, context);
         }
         return new Pair<>(ResultType.IGNORE, context);
@@ -90,12 +95,8 @@ public class WsJsonFilter<T extends ZContext & IWsContext>
     public <I extends IProtocol> Pair<ResultType,
                                       IPContext> pipePeek(IPContext context, I input)
     {
-        if (checkType(input, IProtocol.FRAME_SERIAL)
-            && !((IFrame) input).isCtrl()
-            && context.isInConvert()
-            && context instanceof IWsContext
-            && !context.isProxy())
-        {
+        if (checkType(input, IProtocol.FRAME_SERIAL) && context.isInConvert() && context instanceof IWsContext) {
+            //filter 一定连在WsFrameFilter之后,从而不再判断额外的信息。
             return new Pair<>(ResultType.HANDLED, context);
         }
         return new Pair<>(ResultType.IGNORE, context);

@@ -21,14 +21,14 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.io.zhandler;
+package com.isahl.chess.bishop.io.ws.zchat.zhandler;
 
-import com.isahl.chess.bishop.io.zprotocol.ztls.X01_EncryptRequest;
-import com.isahl.chess.bishop.io.zprotocol.ztls.X02_AsymmetricPub;
-import com.isahl.chess.bishop.io.zprotocol.ztls.X03_Cipher;
-import com.isahl.chess.bishop.io.zprotocol.ztls.X04_EncryptConfirm;
-import com.isahl.chess.bishop.io.zprotocol.ztls.X05_EncryptStart;
-import com.isahl.chess.bishop.io.zprotocol.ztls.X06_EncryptComp;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.zls.X01_EncryptRequest;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.zls.X02_AsymmetricPub;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.zls.X03_Cipher;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.zls.X04_EncryptConfirm;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.zls.X05_EncryptStart;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.zls.X06_EncryptComp;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;

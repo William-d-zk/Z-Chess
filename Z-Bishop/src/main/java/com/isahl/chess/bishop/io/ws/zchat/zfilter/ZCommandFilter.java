@@ -20,19 +20,18 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.isahl.chess.bishop.io.zfilter;
+package com.isahl.chess.bishop.io.ws.zchat.zfilter;
 
 import java.util.Arrays;
 
-import com.isahl.chess.bishop.io.ZContext;
+import com.isahl.chess.bishop.io.ws.zchat.ZContext;
 import com.isahl.chess.bishop.io.ws.WsFrame;
-import com.isahl.chess.bishop.io.zprotocol.ZCommand;
-import com.isahl.chess.bishop.io.zprotocol.ztls.X01_EncryptRequest;
-import com.isahl.chess.bishop.io.zprotocol.ztls.X02_AsymmetricPub;
-import com.isahl.chess.bishop.io.zprotocol.ztls.X03_Cipher;
-import com.isahl.chess.bishop.io.zprotocol.ztls.X04_EncryptConfirm;
-import com.isahl.chess.bishop.io.zprotocol.ztls.X05_EncryptStart;
-import com.isahl.chess.bishop.io.zprotocol.ztls.X06_EncryptComp;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.zls.X01_EncryptRequest;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.zls.X02_AsymmetricPub;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.zls.X03_Cipher;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.zls.X04_EncryptConfirm;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.zls.X05_EncryptStart;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.zls.X06_EncryptComp;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.config.Code;

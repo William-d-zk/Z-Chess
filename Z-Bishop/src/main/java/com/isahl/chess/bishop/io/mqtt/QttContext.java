@@ -32,7 +32,7 @@ import static com.isahl.chess.queen.io.core.inf.ISession.CAPACITY;
 
 import java.util.stream.IntStream;
 
-import com.isahl.chess.bishop.io.ZContext;
+import com.isahl.chess.bishop.io.ws.zchat.ZContext;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.event.inf.ISort;

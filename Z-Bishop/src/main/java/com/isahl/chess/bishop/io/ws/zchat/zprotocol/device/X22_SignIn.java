@@ -21,11 +21,11 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.io.zprotocol.device;
+package com.isahl.chess.bishop.io.ws.zchat.zprotocol.device;
 
 import java.util.Objects;
 
-import com.isahl.chess.bishop.io.zprotocol.ZCommand;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZCommand;
 import com.isahl.chess.king.base.util.IoUtil;
 
 /**

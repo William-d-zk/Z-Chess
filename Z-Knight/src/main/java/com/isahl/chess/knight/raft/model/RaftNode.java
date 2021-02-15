@@ -46,12 +46,12 @@ import java.util.Queue;
 import java.util.Random;
 import java.util.stream.Stream;
 
-import com.isahl.chess.bishop.io.zprotocol.raft.X70_RaftVote;
-import com.isahl.chess.bishop.io.zprotocol.raft.X71_RaftBallot;
-import com.isahl.chess.bishop.io.zprotocol.raft.X72_RaftAppend;
-import com.isahl.chess.bishop.io.zprotocol.raft.X73_RaftAccept;
-import com.isahl.chess.bishop.io.zprotocol.raft.X74_RaftReject;
-import com.isahl.chess.bishop.io.zprotocol.raft.X76_RaftNotify;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X70_RaftVote;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X71_RaftBallot;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X72_RaftAppend;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X73_RaftAccept;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X74_RaftReject;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X76_RaftNotify;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.inf.IValid;

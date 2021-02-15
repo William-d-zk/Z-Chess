@@ -24,7 +24,7 @@ package com.isahl.chess.knight.cluster.spring.api;
 
 import org.springframework.stereotype.Component;
 
-import com.isahl.chess.bishop.io.zprotocol.raft.X76_RaftNotify;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X76_RaftNotify;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.knight.cluster.spring.model.ConsistentProtocol;
 import com.isahl.chess.knight.json.JsonUtil;

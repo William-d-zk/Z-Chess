@@ -33,9 +33,9 @@ import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.isahl.chess.bishop.io.ZSortHolder;
+import com.isahl.chess.bishop.io.sort.ZSortHolder;
 import com.isahl.chess.bishop.io.ws.control.X103_Ping;
-import com.isahl.chess.bishop.io.zcrypt.EncryptHandler;
+import com.isahl.chess.bishop.io.ws.zchat.zcrypt.EncryptHandler;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.schedule.ScheduleHandler;

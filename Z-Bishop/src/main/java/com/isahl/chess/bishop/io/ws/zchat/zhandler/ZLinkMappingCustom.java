@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.io.zhandler;
+package com.isahl.chess.bishop.io.ws.zchat.zhandler;
 
 import java.util.List;
 

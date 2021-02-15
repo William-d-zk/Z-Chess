@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.io.zprotocol;
+package com.isahl.chess.bishop.io.ws.zchat.zprotocol;
 
 import com.isahl.chess.queen.io.core.inf.ISession;
 

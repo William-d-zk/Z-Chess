@@ -32,12 +32,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.isahl.chess.bishop.io.ZSortHolder;
+import com.isahl.chess.bishop.io.sort.ZSortHolder;
 import com.isahl.chess.bishop.io.ws.control.X102_Close;
-import com.isahl.chess.bishop.io.zprotocol.device.X20_SignUp;
-import com.isahl.chess.bishop.io.zprotocol.device.X22_SignIn;
-import com.isahl.chess.bishop.io.zprotocol.device.X50_DeviceMsg;
-import com.isahl.chess.bishop.io.zprotocol.ztls.X01_EncryptRequest;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X20_SignUp;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X22_SignIn;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X50_DeviceMsg;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.zls.X01_EncryptRequest;
 import com.isahl.chess.rook.biz.device.client.DeviceConsumer;
 import com.isahl.chess.rook.biz.device.client.ZClient;
 
@@ -58,7 +58,7 @@ public class ConsumerController
     @PostMapping("/consumer/ws/start")
     public String wsStart(@RequestBody ZClient zClient) throws IOException
     {
-        _DeviceClient.connect(ZSortHolder.WS_CONSUMER, zClient);
+        _DeviceClient.connect(ZSortHolder.WS_ZCHAT_CONSUMER, zClient);
         return "async commit ws_start consumer request";
     }
 

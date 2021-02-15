@@ -45,7 +45,7 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.isahl.chess.bishop.io.ZSortHolder;
+import com.isahl.chess.bishop.io.sort.ZSortHolder;
 import com.isahl.chess.bishop.io.mqtt.control.X111_QttConnect;
 import com.isahl.chess.bishop.io.mqtt.control.X112_QttConnack;
 import com.isahl.chess.bishop.io.ssl.SSLZContext;
@@ -55,14 +55,14 @@ import com.isahl.chess.bishop.io.ws.control.X101_HandShake;
 import com.isahl.chess.bishop.io.ws.control.X102_Close;
 import com.isahl.chess.bishop.io.ws.control.X103_Ping;
 import com.isahl.chess.bishop.io.ws.control.X104_Pong;
-import com.isahl.chess.bishop.io.zcrypt.EncryptHandler;
-import com.isahl.chess.bishop.io.zprotocol.device.X21_SignUpResult;
-import com.isahl.chess.bishop.io.zprotocol.device.X22_SignIn;
-import com.isahl.chess.bishop.io.zprotocol.device.X23_SignInResult;
-import com.isahl.chess.bishop.io.zprotocol.device.X30_EventMsg;
-import com.isahl.chess.bishop.io.zprotocol.device.X31_ConfirmMsg;
-import com.isahl.chess.bishop.io.zprotocol.ztls.X03_Cipher;
-import com.isahl.chess.bishop.io.zprotocol.ztls.X05_EncryptStart;
+import com.isahl.chess.bishop.io.ws.zchat.zcrypt.EncryptHandler;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X21_SignUpResult;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X22_SignIn;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X23_SignInResult;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X30_EventMsg;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X31_ConfirmMsg;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.zls.X03_Cipher;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.zls.X05_EncryptStart;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.log.Logger;
@@ -229,13 +229,13 @@ public class DeviceConsumer
 
     }
 
-    public void connect(ZSortHolder zSortHolder, ZClient zClient) throws IOException
+    public void connect(ZSortHolder ZSortHolder, ZClient zClient) throws IOException
     {
         final String host;
         final int port;
-        switch (zSortHolder)
+        switch (ZSortHolder)
         {
-            case WS_CONSUMER ->
+            case WS_ZCHAT_CONSUMER ->
                 {
                     host = _ConsumerConfig.getWs()
                                           .getHost();
@@ -259,7 +259,7 @@ public class DeviceConsumer
             @Override
             public String getProtocol()
             {
-                return zSortHolder.getSort()
+                return ZSortHolder.getSort()
                                   .getProtocol();
             }
 
@@ -287,7 +287,7 @@ public class DeviceConsumer
                 return new AioSession<>(socketChannel,
                                         ZUID.TYPE_CONSUMER,
                                         this,
-                                        zSortHolder.getSort(),
+                                        ZSortHolder.getSort(),
                                         activity,
                                         DeviceConsumer.this,
                                         false);
@@ -296,13 +296,13 @@ public class DeviceConsumer
             @Override
             public IControl[] createCommands(ISession session)
             {
-                switch (zSortHolder)
+                switch (ZSortHolder)
                 {
-                    case WS_CONSUMER:
+                    case WS_ZCHAT_CONSUMER:
                     case WS_QTT_CONSUMER:
                         IWsContext wsContext = session.getContext();
                         return new IControl[]{wsContext.handshake(host)};
-                    case WS_CONSUMER_SSL:
+                    case WS_ZCHAT_CONSUMER_SSL:
                     case WS_QTT_CONSUMER_SSL:
                         SSLZContext<WsContext> sslContext = session.getContext();
                         wsContext = sslContext.getActingContext();

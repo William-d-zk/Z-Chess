@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.isahl.chess.bishop.io.zprotocol.control;
+package com.isahl.chess.bishop.io.ws.zchat.zprotocol.control;
 
 import static com.isahl.chess.queen.io.core.inf.ISessionManager.INVALID_INDEX;
 

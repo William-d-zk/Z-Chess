@@ -21,15 +21,15 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.io.zprotocol;
+package com.isahl.chess.bishop.io.ws.zchat.zprotocol;
 
-import com.isahl.chess.bishop.io.zprotocol.raft.X70_RaftVote;
-import com.isahl.chess.bishop.io.zprotocol.raft.X71_RaftBallot;
-import com.isahl.chess.bishop.io.zprotocol.raft.X72_RaftAppend;
-import com.isahl.chess.bishop.io.zprotocol.raft.X73_RaftAccept;
-import com.isahl.chess.bishop.io.zprotocol.raft.X74_RaftReject;
-import com.isahl.chess.bishop.io.zprotocol.raft.X75_RaftRequest;
-import com.isahl.chess.bishop.io.zprotocol.raft.X76_RaftNotify;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X70_RaftVote;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X71_RaftBallot;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X72_RaftAppend;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X73_RaftAccept;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X74_RaftReject;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X75_RaftRequest;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X76_RaftNotify;
 import com.isahl.chess.queen.io.core.inf.ICommand;
 import com.isahl.chess.queen.io.core.inf.ICommandFactory;
 import com.isahl.chess.queen.io.core.inf.IFrame;

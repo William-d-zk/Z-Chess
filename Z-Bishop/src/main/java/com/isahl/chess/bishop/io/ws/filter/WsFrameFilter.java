@@ -24,7 +24,7 @@ package com.isahl.chess.bishop.io.ws.filter;
 
 import java.nio.ByteBuffer;
 
-import com.isahl.chess.bishop.io.ZContext;
+import com.isahl.chess.bishop.io.ws.zchat.ZContext;
 import com.isahl.chess.bishop.io.ws.IWsContext;
 import com.isahl.chess.bishop.io.ws.WsFrame;
 import com.isahl.chess.king.base.util.Pair;
@@ -182,11 +182,14 @@ public class WsFrameFilter<T extends ZContext & IWsContext>
                 return new Pair<>(ResultType.NEXT_STEP, context);
             }
             IPContext acting = context;
-            while (acting.isProxy()) {
+            while (acting.isProxy() || acting instanceof IWsContext) {
                 if (acting instanceof IWsContext && acting.isOutConvert()) {
                     return new Pair<>(ResultType.NEXT_STEP, acting);
                 }
-                acting = ((IProxyContext<?>) acting).getActingContext();
+                else if (acting.isProxy()) {
+                    acting = ((IProxyContext<?>) acting).getActingContext();
+                }
+                else break;
             }
         }
         return new Pair<>(ResultType.IGNORE, context);
@@ -202,11 +205,14 @@ public class WsFrameFilter<T extends ZContext & IWsContext>
                 return new Pair<>(peek((T) context, (IPacket) input), context);
             }
             IPContext acting = context;
-            while (acting.isProxy()) {
+            while (acting.isProxy() || acting instanceof IWsContext) {
                 if (acting instanceof IWsContext && acting.isInConvert()) {
                     return new Pair<>(peek((T) acting, (IPacket) input), acting);
                 }
-                acting = ((IProxyContext<?>) acting).getActingContext();
+                else if (acting.isProxy()) {
+                    acting = ((IProxyContext<?>) acting).getActingContext();
+                }
+                else break;
             }
         }
         return new Pair<>(ResultType.IGNORE, context);

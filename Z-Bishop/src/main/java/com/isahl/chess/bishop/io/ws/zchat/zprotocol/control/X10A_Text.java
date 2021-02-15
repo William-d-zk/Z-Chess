@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.io.zprotocol.control;
+package com.isahl.chess.bishop.io.ws.zchat.zprotocol.control;
 
 import static com.isahl.chess.bishop.io.ws.WsFrame.frame_op_code_no_ctrl_txt;
 

@@ -103,7 +103,7 @@ public interface IPipeDecoder
                             break Chain;
                         case CANCEL:
                             return null;
-                        default:
+                        case IGNORE:
                             break;
                     }
                     next = next.getNext();
