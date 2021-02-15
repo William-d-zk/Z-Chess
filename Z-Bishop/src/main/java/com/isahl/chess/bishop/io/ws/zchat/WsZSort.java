@@ -21,42 +21,38 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.io.sort.websocket.ssl.proxy;
-
-import java.security.NoSuchAlgorithmException;
+package com.isahl.chess.bishop.io.sort.websocket;
 
 import com.isahl.chess.bishop.io.sort.BaseSort;
-import com.isahl.chess.bishop.io.ssl.SSLFilter;
-import com.isahl.chess.bishop.io.ssl.SSLZContext;
-import com.isahl.chess.bishop.io.ws.WsProxyContext;
+import com.isahl.chess.bishop.io.ws.WsContext;
 import com.isahl.chess.bishop.io.ws.filter.WsControlFilter;
 import com.isahl.chess.bishop.io.ws.filter.WsFrameFilter;
 import com.isahl.chess.bishop.io.ws.filter.WsHandShakeFilter;
-import com.isahl.chess.bishop.io.ws.filter.WsProxyFilter;
-import com.isahl.chess.queen.event.inf.ISort;
+import com.isahl.chess.bishop.io.ws.zchat.zfilter.ZCommandFilter;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZClusterFactory;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZConsumerFactory;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZServerFactory;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZSymmetryFactory;
 import com.isahl.chess.queen.io.core.inf.IFilterChain;
-import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.ISessionOption;
 
-public class WsSslProxyZSort<A extends IPContext>
+public class WsZSort
         extends
-        BaseSort<SSLZContext<WsProxyContext<A>>>
+        BaseSort<WsContext>
 {
 
-    private final ISort<WsProxyContext<A>>     _ActingSort;
-    private final SSLFilter<WsProxyContext<A>> _Head = new SSLFilter<>();
+    private final WsHandShakeFilter<WsContext> _Head = new WsHandShakeFilter<>();
 
-    public WsSslProxyZSort(Mode mode,
-                           Type type,
-                           ISort<WsProxyContext<A>> actingSort)
+    public WsZSort(Mode mode,
+                   Type type)
     {
-        super(mode, type, String.format("ssl-%s", actingSort.getProtocol()));
-        _ActingSort = actingSort;
-        _Head.linkFront(new WsHandShakeFilter<>())
-             .linkFront(new WsFrameFilter<>())
+        super(mode, type, "ws-z-chat");
+        _Head.linkFront(new WsFrameFilter<>())
              .linkFront(new WsControlFilter<>())
-             .linkFront(new WsProxyFilter<>())
-             .linkFront(actingSort.getFilterChain());
+             .linkFront(new ZCommandFilter<>(mode == Mode.CLUSTER ? new ZClusterFactory()
+                                                                  : type == Type.SERVER ? new ZServerFactory()
+                                                                                        : type == Type.SYMMETRY ? new ZSymmetryFactory()
+                                                                                                                : new ZConsumerFactory()));
     }
 
     @Override
@@ -66,15 +62,8 @@ public class WsSslProxyZSort<A extends IPContext>
     }
 
     @Override
-    public SSLZContext<WsProxyContext<A>> newContext(ISessionOption option)
+    public WsContext newContext(ISessionOption option)
     {
-        try {
-            return new SSLZContext<>(option, getMode(), getType(), _ActingSort.newContext(option));
-        }
-        catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return new WsContext(option, getMode(), getType());
     }
-
 }
