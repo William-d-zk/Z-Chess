@@ -33,7 +33,7 @@ import org.apache.commons.io.FileUtils;
 
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.knight.json.JsonUtil;
+import com.isahl.chess.king.base.util.JsonUtil;
 
 public class Segment
 {

@@ -25,6 +25,7 @@ package com.isahl.chess.knight.json;
 
 import java.util.Objects;
 
+import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.queen.io.core.inf.IProtocol;
 
 /**

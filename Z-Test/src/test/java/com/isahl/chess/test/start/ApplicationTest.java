@@ -34,7 +34,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.response.ZProgress;
 import com.isahl.chess.king.base.response.ZResponse;
-import com.isahl.chess.knight.json.JsonUtil;
+import com.isahl.chess.king.base.util.JsonUtil;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
