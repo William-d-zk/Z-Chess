@@ -102,11 +102,11 @@ public class SSLZContext<A extends IPContext>
     {
         try {
             _SslEngine.closeInbound();
+            _SslEngine.closeOutbound();
         }
         catch (SSLException e) {
-            throw new ZException(e, "ssl in bound exception");
+            e.printStackTrace();
         }
-        _SslEngine.closeOutbound();
         super.reset();
     }
 
