@@ -35,7 +35,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.knight.json.JsonUtil;
+import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.pawn.endpoint.spring.device.model.RawContent;
 
 /**

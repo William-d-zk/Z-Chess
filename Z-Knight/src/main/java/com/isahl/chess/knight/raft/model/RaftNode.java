@@ -62,7 +62,7 @@ import com.isahl.chess.king.base.schedule.inf.ICancelable;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.topology.ZUID;
-import com.isahl.chess.knight.json.JsonUtil;
+import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.knight.raft.IRaftDao;
 import com.isahl.chess.knight.raft.IRaftMachine;
 import com.isahl.chess.knight.raft.IRaftMessage;

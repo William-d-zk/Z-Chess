@@ -48,7 +48,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.knight.json.JsonUtil;
+import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.knight.raft.IRaftDao;
 import com.isahl.chess.knight.raft.IRaftMachine;
 import com.isahl.chess.knight.raft.RaftState;

@@ -113,7 +113,7 @@ public class TimeWheel
         });
         _Timer.setName(String.format("TimerWheel-%d", _Timer.getId()));
         _Timer.start();
-        _Logger.debug("timer wheel start %s", _Timer.getName());
+        _Logger.info("timer wheel start %s", _Timer.getName());
     }
 
     private int getCurrentLoop()
