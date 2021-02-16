@@ -23,25 +23,24 @@
 
 package com.isahl.chess.queen.event.handler.cluster;
 
-import static com.isahl.chess.queen.event.inf.IError.Type.INITIATIVE_CLOSE;
-import static com.isahl.chess.queen.event.inf.IError.Type.PASSIVE_CLOSE;
-import static com.isahl.chess.queen.event.inf.IOperator.Type.DECODE;
-import static com.isahl.chess.queen.event.inf.IOperator.Type.WROTE;
+import static com.isahl.chess.king.base.inf.IError.Type.INITIATIVE_CLOSE;
+import static com.isahl.chess.king.base.inf.IError.Type.PASSIVE_CLOSE;
 
 import java.nio.channels.AsynchronousSocketChannel;
 
+import com.isahl.chess.king.base.disruptor.event.OperatorType;
+import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
+import com.isahl.chess.king.base.disruptor.event.inf.IPipeEventHandler;
+import com.isahl.chess.king.base.inf.IError;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.config.QueenCode;
-import com.isahl.chess.queen.event.inf.IError;
-import com.isahl.chess.queen.event.inf.IOperator;
-import com.isahl.chess.queen.event.inf.IPipeEventHandler;
-import com.isahl.chess.queen.event.inf.ISort;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.inf.IConnectActivity;
 import com.isahl.chess.queen.io.core.inf.ISession;
+import com.isahl.chess.queen.io.core.inf.ISort;
 import com.lmax.disruptor.RingBuffer;
 
 /**
@@ -108,12 +107,12 @@ public class IoDispatcher
                         _Logger.trace("read");
                         IPair readContent = event.getContent();
                         ISession session = readContent.getSecond();
-                        publish(dispatchWorker(session.hashCode()), DECODE, readContent, event.getEventOp());
+                        publish(dispatchWorker(session.hashCode()), OperatorType.DECODE, readContent, event.getEventOp());
                         break;
                     case WROTE:
                         _Logger.trace("wrote");
                         IPair wroteContent = event.getContent();
-                        publish(_IoWrote, WROTE, wroteContent, event.getEventOp());
+                        publish(_IoWrote, OperatorType. WROTE, wroteContent, event.getEventOp());
                         break;
                     case LOCAL_CLOSE:
                         _Logger.trace("local close");

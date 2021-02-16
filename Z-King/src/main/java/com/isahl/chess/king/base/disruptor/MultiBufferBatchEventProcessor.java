@@ -27,17 +27,19 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.LockSupport;
 
+import com.isahl.chess.king.base.disruptor.event.inf.IEvent;
 import com.lmax.disruptor.AlertException;
 import com.lmax.disruptor.DataProvider;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.EventProcessor;
 import com.lmax.disruptor.Sequence;
 import com.lmax.disruptor.SequenceBarrier;
+import com.lmax.disruptor.TimeoutException;
 
 /**
  * @author William.d.zk
  */
-public class MultiBufferBatchEventProcessor<T>
+public class MultiBufferBatchEventProcessor<T extends IEvent>
         implements
         EventProcessor
 {
@@ -81,40 +83,18 @@ public class MultiBufferBatchEventProcessor<T>
                 barrier.clearAlert();
             }
             final int barrierLength = _Barriers.length;
-            int barrier_total_count;
-
-            while (true) {
-                barrier_total_count = 0;
-                for (int i = 0; i < barrierLength; i++) {
-                    DataProvider<T> provider = _Providers[i];
-                    SequenceBarrier barrier = _Barriers[i];
-                    Sequence sequence = _Sequences[i];
-                    long nextSequence = sequence.get() + 1;
-                    try {
-                        long available = barrier.waitFor(-1);
-                        if (nextSequence <= available) {
-                            barrier_total_count += available - nextSequence + 1;
-                            while (nextSequence <= available) {
-                                _Handler.onEvent(provider.get(nextSequence), nextSequence, nextSequence == available);
-                                nextSequence++;
-                            }
-                        }
-                        sequence.set(available);
-                    }
-                    catch (AlertException e) {
-                        /*
-                         * 这个设计是为了动态终止processor，多路归并的场景中，reduce 不能被终止
-                         */
-                    }
-                    catch (Throwable ex) {
-                        sequence.set(nextSequence);
-                    }
-                }
+            int count = 0;
+            for (int i = 0, c = 0; i < barrierLength; i = i == barrierLength - 1 ? 0: i + 1, c = c == 100 ? 0: c + 1) {
+                DataProvider<T> provider = _Providers[i];
+                SequenceBarrier barrier = _Barriers[i];
+                Sequence sequence = _Sequences[i];
+                count += processEvents(provider, barrier, sequence);
                 // 没有任何 前置生产者的存在事件的时候暂停 5ms 释放 CPU，不超过100个事件，将释放 CPU
-                if (barrier_total_count == 0) {
+                if (c == 50 && count < 50) {
                     LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(5));
                 }
-                else if (barrier_total_count < 100) {
+                else if (c == 99) {
+                    count = 0;
                     Thread.yield();
                 }
             }
@@ -140,7 +120,9 @@ public class MultiBufferBatchEventProcessor<T>
     public void halt()
     {
         _Running.set(HALTED);
-        _Barriers[0].alert();
+        for (SequenceBarrier barrier : _Barriers) {
+            barrier.alert();
+        }
     }
 
     @Override
@@ -149,37 +131,30 @@ public class MultiBufferBatchEventProcessor<T>
         return _Running.get() != IDLE;
     }
 
-    private void processEvents(final int barrierLength)
+    private long processEvents(DataProvider<T> provider, SequenceBarrier barrier, Sequence sequence)
     {
-        int barrier_total_count = 0;
-        for (int i = 0; i < barrierLength; i = i < barrierLength - 1 ? i + 1: 0) {
-            DataProvider<T> provider = _Providers[i];
-            SequenceBarrier barrier = _Barriers[i];
-            Sequence sequence = _Sequences[i];
-            long nextSequence = sequence.get() + 1;
-
-            try {
-                long available = barrier.waitFor(-1);
-                if (nextSequence <= available) {
-                    barrier_total_count += available - nextSequence + 1;
-                    while (nextSequence <= available) {
-                        _Handler.onEvent(provider.get(nextSequence), nextSequence, nextSequence == available);
-                        nextSequence++;
-                    }
-                }
-                sequence.set(available);
+        long nextSequence = sequence.get() + 1;
+        long available = -1;
+        try {
+            available = barrier.waitFor(-1);
+            while (nextSequence <= available) {
+                _Handler.onEvent(provider.get(nextSequence), nextSequence, nextSequence == available);
+                nextSequence++;
             }
-            catch (AlertException e) {
-                /*
-                 * 这个设计是为了动态终止processor，多路归并的场景中，reduce 不能被终止
-                 */
-            }
-            catch (Throwable ex) {
-                sequence.set(nextSequence);
-            }
-
+            sequence.set(available);
         }
-
+        catch (TimeoutException |
+               AlertException e)
+        {
+            /*
+             * AlertException设计是为了动态终止processor，多路归并的场景中，reduce 不能被终止
+             * TimeoutException 在多路归并的场景中不适用，waitFor(-1）一定会取得当前最后一个可用
+             */
+        }
+        catch (Throwable ex) {
+            sequence.set(nextSequence);
+            nextSequence++;
+        }
+        return available - nextSequence + 1;
     }
-
 }

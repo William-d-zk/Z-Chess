@@ -30,11 +30,11 @@ import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
 import com.isahl.chess.king.base.inf.IFailed;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.schedule.inf.ITask;
 import com.isahl.chess.queen.config.ISocketConfig;
-import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.event.operator.ConnectFailedOperator;
 import com.isahl.chess.queen.event.operator.ConnectedOperator;
 import com.isahl.chess.queen.io.core.inf.IAioConnector;

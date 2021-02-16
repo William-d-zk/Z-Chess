@@ -24,8 +24,6 @@
 package com.isahl.chess.rook.biz.device.client;
 
 import static com.isahl.chess.king.base.schedule.TimeWheel.IWheelItem.PRIORITY_NORMAL;
-import static com.isahl.chess.queen.event.inf.IOperator.Type.BIZ_LOCAL;
-import static com.isahl.chess.queen.event.inf.IOperator.Type.WRITE;
 
 import java.io.IOException;
 import java.nio.channels.AsynchronousChannelGroup;
@@ -42,12 +40,13 @@ import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 
+import com.isahl.chess.king.base.disruptor.event.OperatorType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.isahl.chess.bishop.io.sort.ZSortHolder;
 import com.isahl.chess.bishop.io.mqtt.control.X111_QttConnect;
 import com.isahl.chess.bishop.io.mqtt.control.X112_QttConnack;
+import com.isahl.chess.bishop.io.sort.ZSortHolder;
 import com.isahl.chess.bishop.io.ssl.SSLZContext;
 import com.isahl.chess.bishop.io.ws.IWsContext;
 import com.isahl.chess.bishop.io.ws.WsContext;
@@ -73,8 +72,6 @@ import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.queen.config.IAioConfig;
-import com.isahl.chess.queen.event.inf.IOperator;
-import com.isahl.chess.queen.event.inf.ISort;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.async.AioSession;
 import com.isahl.chess.queen.io.core.async.AioSessionManager;
@@ -86,6 +83,7 @@ import com.isahl.chess.queen.io.core.inf.IConnectActivity;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionDismiss;
+import com.isahl.chess.queen.io.core.inf.ISort;
 import com.isahl.chess.rook.config.ConsumerConfig;
 
 /**
@@ -126,7 +124,7 @@ public class DeviceConsumer
         {
             IControl[] commands;
             final ISession session;
-            if (event.getEventType() == IOperator.Type.LOGIC) {// 与 Server Node 处理过程存在较大的差异，中间去掉一个decoded dispatcher 所以此处入参为 IControl[]
+            if (event.getEventType() == OperatorType.LOGIC) {// 与 Server Node 处理过程存在较大的差异，中间去掉一个decoded dispatcher 所以此处入参为 IControl[]
                 IPair logicContent = event.getContent();
                 commands = logicContent.getFirst();
                 session = logicContent.getSecond();
@@ -200,7 +198,7 @@ public class DeviceConsumer
                 session = null;
             }
             if (Objects.nonNull(commands) && commands.length > 0 && Objects.nonNull(session)) {
-                event.produce(WRITE, new Pair<>(commands, session), session.getTransfer());
+                event.produce(OperatorType.WRITE, new Pair<>(commands, session), session.getTransfer());
             }
             else {
                 event.ignore();
@@ -352,14 +350,14 @@ public class DeviceConsumer
 
     private void heartbeat(ISession session)
     {
-        getCore().send(session, BIZ_LOCAL, _Ping);
+        getCore().send(session, OperatorType.BIZ_LOCAL, _Ping);
     }
 
     public final void sendLocal(long sessionIndex, IControl... toSends)
     {
         ISession session = findSessionByIndex(sessionIndex);
         if (Objects.nonNull(session)) {
-            _ClientCore.send(session, BIZ_LOCAL, toSends);
+            _ClientCore.send(session, OperatorType.BIZ_LOCAL, toSends);
         }
         else {
             throw new ZException("client-id:%d,is offline;send % failed", sessionIndex, Arrays.toString(toSends));
@@ -370,7 +368,7 @@ public class DeviceConsumer
     {
         ISession session = findSessionByIndex(sessionIndex);
         if (Objects.nonNull(session)) {
-            _ClientCore.close(session, BIZ_LOCAL);
+            _ClientCore.close(session,OperatorType. BIZ_LOCAL);
         }
         else {
             throw new ZException("client session is not exist");

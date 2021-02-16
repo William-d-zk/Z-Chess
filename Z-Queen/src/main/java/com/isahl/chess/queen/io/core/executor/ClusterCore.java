@@ -31,10 +31,12 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
 import com.isahl.chess.king.base.disruptor.MultiBufferBatchEventProcessor;
+import com.isahl.chess.king.base.disruptor.event.OperatorType;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.config.IClusterConfig;
@@ -50,7 +52,6 @@ import com.isahl.chess.queen.event.handler.cluster.IConsistentCustom;
 import com.isahl.chess.queen.event.handler.cluster.IoDispatcher;
 import com.isahl.chess.queen.event.handler.cluster.NotifyHandler;
 import com.isahl.chess.queen.event.handler.mix.ILogicHandler;
-import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.async.AioWorker;
 import com.isahl.chess.queen.io.core.inf.IEncryptHandler;
@@ -105,6 +106,21 @@ public class ClusterCore
         }
     };
 
+    private static final ThreadFactory _SelfThreadFactory = new ThreadFactory()
+    {
+        private final AtomicInteger   _ThreadNumber    = new AtomicInteger(1);
+        private final SecurityManager _SecurityManager = System.getSecurityManager();
+        private final ThreadGroup     _ThreadGroup     = (_SecurityManager != null) ? _SecurityManager.getThreadGroup()
+                                                                                    : Thread.currentThread()
+                                                                                            .getThreadGroup();;
+
+        @Override
+        public Thread newThread(Runnable r)
+        {
+            return new Thread(_ThreadGroup, r, "ClusterCore." + _ThreadNumber.getAndIncrement());
+        }
+    };
+
     /**
      * 
      */
@@ -113,7 +129,12 @@ public class ClusterCore
     @SuppressWarnings("unchecked")
     public ClusterCore(IClusterConfig config)
     {
-        super(config.getPoolSize(), config.getPoolSize(), 100, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
+        super(config.getPoolSize(),
+              config.getPoolSize(),
+              100,
+              TimeUnit.MILLISECONDS,
+              new LinkedBlockingQueue<>(),
+              _SelfThreadFactory);
         _ClusterCacheConcurrentQueue = new ConcurrentLinkedQueue<>();
         _ClusterIoCount = 1 << config.getClusterIoCountPower();
         _DecoderCount = 1 << config.getDecoderCountPower();
@@ -307,23 +328,19 @@ public class ClusterCore
     }
 
     @Override
-    public ReentrantLock getLock(IOperator.Type type)
+    public ReentrantLock getLock(OperatorType type)
     {
-        switch (type)
+        return switch (type)
         {
-            case CLUSTER_LOCAL:
-                return _ClusterLock;
-            case CONSENSUS:
-                return _ConsensusApiLock;
-            case CLUSTER_TIMER:
-                return _ConsensusLock;
-            default:
-                throw new IllegalArgumentException(String.format("error type:%s", type));
-        }
+            case CLUSTER_LOCAL -> _ClusterLock;
+            case CONSENSUS -> _ConsensusApiLock;
+            case CLUSTER_TIMER -> _ConsensusLock;
+            default -> throw new IllegalArgumentException(String.format("error type:%s", type));
+        };
     }
 
     @Override
-    public RingBuffer<QEvent> getPublisher(IOperator.Type type)
+    public RingBuffer<QEvent> getPublisher(OperatorType type)
     {
         return switch (type)
         {
@@ -335,9 +352,9 @@ public class ClusterCore
     }
 
     @Override
-    public RingBuffer<QEvent> getCloser(IOperator.Type type)
+    public RingBuffer<QEvent> getCloser(OperatorType type)
     {
-        if (type == IOperator.Type.CLUSTER_LOCAL) { return _ClusterLocalCloseEvent; }
+        if (type == OperatorType.CLUSTER_LOCAL) { return _ClusterLocalCloseEvent; }
         throw new IllegalArgumentException(String.format("get closer type error:%s ", type.name()));
     }
 

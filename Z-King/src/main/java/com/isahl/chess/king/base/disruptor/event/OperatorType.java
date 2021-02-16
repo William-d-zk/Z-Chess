@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -20,54 +20,31 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.isahl.chess.queen.event.inf;
 
-import java.util.Objects;
+package com.isahl.chess.king.base.disruptor.event;
 
 /**
- * @author William.d.zk
+ * @author william.d.zk
+ * @date 2021/2/16
  */
-@FunctionalInterface
-public interface IOperator<T,
-                           U,
-                           R>
+public enum OperatorType
 {
-    R handle(T t, U u);
-
-    default <V> IOperator<T,
-                          U,
-                          V> andThen(IOperator<? super T,
-                                               ? super R,
-                                               ? extends V> after)
-    {
-        Objects.requireNonNull(after);
-        return (t, u) -> after.handle(t, handle(t, u));
-    }
-
-    enum Type
-    {
-        NULL,
-        CONNECTED,
-        ACCEPTED,
-        LOCAL_CLOSE,
-        READ,
-        WRITE,
-        WROTE,
-        DECODE,
-        BIZ_LOCAL,
-        CLUSTER_LOCAL,
-        LINK,
-        CLUSTER,
-        LOGIC,
-        CONSENSUS,
-        NOTIFY,
-        CLUSTER_TIMER,
-        DISPATCH,
-        IGNORE
-    }
-
-    default String getName()
-    {
-        return "operator.";
-    }
+    NULL,
+    CONNECTED,
+    ACCEPTED,
+    LOCAL_CLOSE,
+    READ,
+    WRITE,
+    WROTE,
+    DECODE,
+    BIZ_LOCAL,
+    CLUSTER_LOCAL,
+    LINK,
+    CLUSTER,
+    LOGIC,
+    CONSENSUS,
+    NOTIFY,
+    CLUSTER_TIMER,
+    DISPATCH,
+    IGNORE;
 }

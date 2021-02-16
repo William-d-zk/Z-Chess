@@ -23,22 +23,22 @@
 
 package com.isahl.chess.queen.event.handler.cluster;
 
-import static com.isahl.chess.queen.event.inf.IError.Type.MAPPING_ERROR;
-import static com.isahl.chess.queen.event.inf.IOperator.Type.NOTIFY;
-import static com.isahl.chess.queen.event.inf.IOperator.Type.WRITE;
+import static com.isahl.chess.king.base.disruptor.event.OperatorType.NOTIFY;
+import static com.isahl.chess.king.base.inf.IError.Type.MAPPING_ERROR;
 
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.List;
 import java.util.Objects;
 
+import com.isahl.chess.king.base.disruptor.event.OperatorType;
+import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
+import com.isahl.chess.king.base.disruptor.event.inf.IPipeEventHandler;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.queen.db.inf.IStorage;
-import com.isahl.chess.queen.event.inf.IOperator;
-import com.isahl.chess.queen.event.inf.IPipeEventHandler;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.inf.IAioConnector;
 import com.isahl.chess.queen.io.core.inf.IAioServer;
@@ -149,7 +149,7 @@ public class ClusterMappingHandler<T extends IStorage>
                         ISession session = handled.getSecond();
                         IControl[] toSends = handled.getThird();
                         if (toSends != null) {
-                            publish(_Writer, WRITE, new Pair<>(toSends, session), session.getTransfer());
+                            publish(_Writer, OperatorType.WRITE, new Pair<>(toSends, session), session.getTransfer());
                         }
                     }
                     else {
@@ -175,7 +175,7 @@ public class ClusterMappingHandler<T extends IStorage>
                         ISession session = handled.getSecond();
                         IControl[] toSends = handled.getThird();
                         if (toSends != null) {
-                            publish(_Writer, WRITE, new Pair<>(toSends, session), session.getTransfer());
+                            publish(_Writer, OperatorType.WRITE, new Pair<>(toSends, session), session.getTransfer());
                         }
                     }
                     else {
@@ -198,7 +198,7 @@ public class ClusterMappingHandler<T extends IStorage>
                         if (pair == null) return;
                         IControl[] toSends = pair.getFirst();
                         if (toSends != null && toSends.length > 0) {
-                            publish(_Writer, WRITE, new Pair<>(toSends, session), session.getTransfer());
+                            publish(_Writer, OperatorType.WRITE, new Pair<>(toSends, session), session.getTransfer());
                         }
                         IConsistentNotify notify = pair.getSecond();
                         if (notify != null) {
@@ -278,7 +278,7 @@ public class ClusterMappingHandler<T extends IStorage>
         Objects.requireNonNull(request);
         RingBuffer<QEvent> notifier = _Notifiers[(int) (request.getOrigin() >> ZUID.NODE_SHIFT) & _NotifyModMask];
         if (throwable == null) {
-            publish(notifier, NOTIFY, new Pair<>(request, null), operator);
+            publish(notifier, OperatorType.NOTIFY, new Pair<>(request, null), operator);
         }
         else {
             error(notifier, MAPPING_ERROR, new Pair<>(request, throwable), operator);

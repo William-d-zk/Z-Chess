@@ -23,17 +23,17 @@
 
 package com.isahl.chess.queen.event.handler.client;
 
-import static com.isahl.chess.queen.event.inf.IError.Type.CONNECT_FAILED;
-import static com.isahl.chess.queen.event.inf.IOperator.Type.WRITE;
+import static com.isahl.chess.king.base.inf.IError.Type.CONNECT_FAILED;
 
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.List;
 
+import com.isahl.chess.king.base.disruptor.event.OperatorType;
+import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.inf.IConnectActivity;
 import com.isahl.chess.queen.io.core.inf.IControl;
@@ -73,7 +73,7 @@ public class ClientLinkHandler
             }
         }
         else {
-            if (event.getEventType() == IOperator.Type.CONNECTED) {
+            if (event.getEventType() == OperatorType.CONNECTED) {
                 try {
                     IPair connectedContent = event.getContent();
                     IConnectActivity connectActivity = connectedContent.getFirst();
@@ -88,7 +88,7 @@ public class ClientLinkHandler
                     IOperator<IControl[],
                               ISession,
                               List<ITriple>> sendTransferOperator = connectedHandled.getThird();
-                    event.produce(WRITE, new Pair<>(waitToSend, session), sendTransferOperator);
+                    event.produce(OperatorType.WRITE, new Pair<>(waitToSend, session), sendTransferOperator);
                     _Logger.debug(String.format("link mappingHandle %s,connected", session));
                 }
                 catch (Exception e) {

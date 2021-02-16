@@ -22,17 +22,17 @@
  */
 package com.isahl.chess.queen.event.processor;
 
-import static com.isahl.chess.queen.event.inf.IError.Type.NO_ERROR;
+import static com.isahl.chess.king.base.inf.IError.Type.NO_ERROR;
 
 import java.util.List;
 
+import com.isahl.chess.king.base.disruptor.event.OperatorType;
+import com.isahl.chess.king.base.disruptor.event.inf.IEvent;
+import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
+import com.isahl.chess.king.base.inf.IError;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.IReset;
 import com.isahl.chess.king.base.inf.ITriple;
-import com.isahl.chess.queen.event.inf.IError;
-import com.isahl.chess.queen.event.inf.IEvent;
-import com.isahl.chess.queen.event.inf.IOperator;
-import com.isahl.chess.queen.event.inf.IOperator.Type;
 import com.lmax.disruptor.EventFactory;
 
 /**
@@ -45,7 +45,7 @@ public class QEvent
 {
     public static final EventFactory<QEvent> EVENT_FACTORY = new QEventFactory();
     private IError.Type                      mErrType      = NO_ERROR;
-    private IOperator.Type                   mType         = IOperator.Type.NULL;
+    private OperatorType mType         = OperatorType.NULL;
     private IPair                            mContent;
     private IOperator<?,
                       ?,
@@ -66,7 +66,7 @@ public class QEvent
     @Override
     public void reset()
     {
-        mType = IOperator.Type.NULL;
+        mType = OperatorType.NULL;
         mErrType = NO_ERROR;
         mOperator = null;
         mContent = null;
@@ -75,7 +75,7 @@ public class QEvent
 
     public void ignore()
     {
-        mType = Type.IGNORE;
+        mType = OperatorType.IGNORE;
         mErrType = NO_ERROR;
         mContent = null;
         mOperator = null;
@@ -92,7 +92,7 @@ public class QEvent
     }
 
     @Override
-    public IOperator.Type getEventType()
+    public OperatorType getEventType()
     {
         return mType;
     }
@@ -106,7 +106,7 @@ public class QEvent
     @Override
     public <V,
             A,
-            R> void produce(IOperator.Type t,
+            R> void produce(OperatorType t,
                             IPair content,
                             IOperator<V,
                                       A,
@@ -120,7 +120,7 @@ public class QEvent
     }
 
     @Override
-    public void produce(IOperator.Type t, List<ITriple> cp)
+    public void produce(OperatorType t, List<ITriple> cp)
     {
         mErrType = NO_ERROR;
         mType = t;
@@ -138,7 +138,7 @@ public class QEvent
                                     H,
                                     R> operator)
     {
-        mType = IOperator.Type.NULL;
+        mType = OperatorType.NULL;
         mErrType = t;
         mContent = content;
         mOperator = operator;

@@ -39,10 +39,10 @@ import javax.net.ssl.SSLSession;
 import com.isahl.chess.bishop.io.ws.zchat.ZContext;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.queen.event.inf.ISort;
 import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.IProxyContext;
 import com.isahl.chess.queen.io.core.inf.ISessionOption;
+import com.isahl.chess.queen.io.core.inf.ISort;
 
 /**
  * @author william.d.zk
@@ -105,9 +105,11 @@ public class SSLZContext<A extends IPContext>
             _SslEngine.closeOutbound();
         }
         catch (SSLException e) {
-            e.printStackTrace();
+            throw new ZException(e, "ssl context reset");
         }
-        super.reset();
+        finally {
+            super.reset();
+        }
     }
 
     @Override

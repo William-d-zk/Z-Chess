@@ -23,9 +23,9 @@
 
 package com.isahl.chess.queen.event.handler.cluster;
 
+import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.inf.IProtocol;
 import com.lmax.disruptor.EventHandler;

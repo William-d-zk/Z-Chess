@@ -35,9 +35,9 @@ import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZClusterFactory;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZConsumerFactory;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZServerFactory;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZSymmetryFactory;
-import com.isahl.chess.queen.event.inf.ISort;
 import com.isahl.chess.queen.io.core.inf.IFilterChain;
 import com.isahl.chess.queen.io.core.inf.ISessionOption;
+import com.isahl.chess.queen.io.core.inf.ISort;
 
 public class ZlsZSort
         extends

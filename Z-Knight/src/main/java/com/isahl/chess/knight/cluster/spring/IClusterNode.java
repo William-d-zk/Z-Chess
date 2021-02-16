@@ -23,20 +23,18 @@
 
 package com.isahl.chess.knight.cluster.spring;
 
-import static com.isahl.chess.queen.event.inf.IOperator.Type.CLUSTER_TIMER;
-
 import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.isahl.chess.bishop.io.sort.ZSortHolder;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X106_Identity;
+import com.isahl.chess.king.base.disruptor.event.OperatorType;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.queen.config.ISocketConfig;
 import com.isahl.chess.queen.db.inf.IStorage;
-import com.isahl.chess.queen.event.inf.ISort;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.async.AioSession;
 import com.isahl.chess.queen.io.core.async.BaseAioConnector;
@@ -50,6 +48,7 @@ import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.INode;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionManager;
+import com.isahl.chess.queen.io.core.inf.ISort;
 import com.lmax.disruptor.RingBuffer;
 
 /**
@@ -133,7 +132,7 @@ public interface IClusterNode<K extends IPipeCore>
             long sequence = _ConsensusEvent.next();
             try {
                 QEvent event = _ConsensusEvent.get(sequence);
-                event.produce(CLUSTER_TIMER, new Pair<>(content, null), null);
+                event.produce(OperatorType.CLUSTER_TIMER, new Pair<>(content, null), null);
             }
             finally {
                 _ConsensusEvent.publish(sequence);

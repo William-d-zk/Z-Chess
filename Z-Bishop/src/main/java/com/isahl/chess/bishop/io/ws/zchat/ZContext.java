@@ -30,10 +30,10 @@ import static com.isahl.chess.queen.io.core.inf.ISession.CAPACITY;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.isahl.chess.queen.event.inf.ISort;
 import com.isahl.chess.queen.io.core.async.AioContext;
 import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.ISessionOption;
+import com.isahl.chess.queen.io.core.inf.ISort;
 
 /**
  * @author William.d.zk

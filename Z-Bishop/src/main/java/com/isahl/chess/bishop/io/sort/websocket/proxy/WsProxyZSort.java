@@ -29,10 +29,10 @@ import com.isahl.chess.bishop.io.ws.filter.WsControlFilter;
 import com.isahl.chess.bishop.io.ws.filter.WsFrameFilter;
 import com.isahl.chess.bishop.io.ws.filter.WsHandShakeFilter;
 import com.isahl.chess.bishop.io.ws.filter.WsProxyFilter;
-import com.isahl.chess.queen.event.inf.ISort;
 import com.isahl.chess.queen.io.core.inf.IFilterChain;
 import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.ISessionOption;
+import com.isahl.chess.queen.io.core.inf.ISort;
 
 public class WsProxyZSort<A extends IPContext>
         extends

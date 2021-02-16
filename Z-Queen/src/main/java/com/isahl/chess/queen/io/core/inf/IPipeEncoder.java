@@ -25,10 +25,10 @@ package com.isahl.chess.queen.io.core.inf;
 
 import java.nio.ByteBuffer;
 
+import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.io.core.async.AioPacket;
 
 /**

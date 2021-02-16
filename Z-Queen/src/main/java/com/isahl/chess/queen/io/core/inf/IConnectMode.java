@@ -23,8 +23,6 @@
 
 package com.isahl.chess.queen.io.core.inf;
 
-import com.isahl.chess.queen.event.inf.ISort;
-
 public interface IConnectMode
 {
     ISort.Mode getMode();

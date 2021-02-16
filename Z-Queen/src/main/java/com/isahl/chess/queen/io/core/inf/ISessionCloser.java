@@ -23,7 +23,7 @@
 
 package com.isahl.chess.queen.io.core.inf;
 
-import com.isahl.chess.queen.event.inf.IOperator;
+import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
 
 /**
  * @author william.d.zk

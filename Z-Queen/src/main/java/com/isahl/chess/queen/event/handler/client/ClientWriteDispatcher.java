@@ -23,18 +23,17 @@
 
 package com.isahl.chess.queen.event.handler.client;
 
-import static com.isahl.chess.queen.event.inf.IOperator.Type.WRITE;
-import static com.isahl.chess.queen.event.inf.IOperator.Type.WROTE;
 
 import java.util.List;
 import java.util.Objects;
 
+import com.isahl.chess.king.base.disruptor.event.OperatorType;
+import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
+import com.isahl.chess.king.base.disruptor.event.inf.IPipeEventHandler;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.event.inf.IOperator;
-import com.isahl.chess.queen.event.inf.IPipeEventHandler;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISession;
@@ -87,7 +86,7 @@ public class ClientWriteDispatcher
                                   List<ITriple>> transferOperator = event.getEventOp();
                         List<ITriple> triples = transferOperator.handle(commands, session);
                         for (ITriple triple : triples) {
-                            publish(_Encoder, WRITE, new Pair<>(triple.getFirst(), session), triple.getThird());
+                            publish(_Encoder, OperatorType.WRITE, new Pair<>(triple.getFirst(), session), triple.getThird());
                         }
                     }
                     break;
@@ -95,7 +94,7 @@ public class ClientWriteDispatcher
                     IPair wroteContent = event.getContent();
                     session = wroteContent.getSecond();
                     if (session.isValid()) {
-                        publish(_Encoder, WROTE, wroteContent, event.getEventOp());
+                        publish(_Encoder, OperatorType.WROTE, wroteContent, event.getEventOp());
                     }
                     break;
                 default:

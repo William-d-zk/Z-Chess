@@ -26,8 +26,8 @@ package com.isahl.chess.queen.event.processor;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import com.isahl.chess.queen.event.inf.IEvent;
-import com.isahl.chess.queen.event.inf.IOperator;
+import com.isahl.chess.king.base.disruptor.event.OperatorType;
+import com.isahl.chess.king.base.disruptor.event.inf.IEvent;
 import com.lmax.disruptor.EventHandler;
 
 /**
@@ -62,7 +62,7 @@ public abstract class BatchEventHandler<E extends IEvent>
 
     private void bufferBatch(E event)
     {
-        if (event == null || event.getEventType() == IOperator.Type.IGNORE) { return; }
+        if (event == null || event.getEventType() == OperatorType.IGNORE) { return; }
         _BatchBuffered.offer(event);
     }
 }

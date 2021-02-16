@@ -23,9 +23,9 @@
 
 package com.isahl.chess.queen.event.handler;
 
+import com.isahl.chess.king.base.disruptor.event.inf.IPipeEventHandler;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.queen.event.inf.IPipeEventHandler;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.lmax.disruptor.RingBuffer;

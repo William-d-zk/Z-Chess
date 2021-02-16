@@ -22,15 +22,14 @@
  */
 package com.isahl.chess.queen.io.core.inf;
 
-import static com.isahl.chess.queen.event.inf.IOperator.Type.ACCEPTED;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
 
-import com.isahl.chess.queen.event.inf.IOperator;
+import com.isahl.chess.king.base.disruptor.event.OperatorType;
+import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
 import com.isahl.chess.queen.io.core.async.AioWorker;
 
 /**
@@ -52,7 +51,7 @@ public interface IAioServer
     default void completed(AsynchronousSocketChannel channel, IAioServer server)
     {
         AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishConnected(server.getConnectedOperator(), server, ACCEPTED, channel);
+        worker.publishConnected(server.getConnectedOperator(), server, OperatorType.ACCEPTED, channel);
         server.pendingAccept();
     }
 

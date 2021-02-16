@@ -23,7 +23,6 @@
 
 package com.isahl.chess.bishop.io.sort;
 
-import com.isahl.chess.queen.event.inf.ISort;
 import com.isahl.chess.queen.event.operator.AioWriter;
 import com.isahl.chess.queen.event.operator.CloseOperator;
 import com.isahl.chess.queen.event.operator.ErrorOperator;
@@ -37,6 +36,7 @@ import com.isahl.chess.queen.io.core.inf.IPipeEncoder;
 import com.isahl.chess.queen.io.core.inf.IPipeTransfer;
 import com.isahl.chess.queen.io.core.inf.ISessionCloser;
 import com.isahl.chess.queen.io.core.inf.ISessionError;
+import com.isahl.chess.queen.io.core.inf.ISort;
 
 public abstract class BaseSort<C extends IPContext>
         implements

@@ -25,8 +25,8 @@ package com.isahl.chess.queen.io.core.executor;
 
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.isahl.chess.king.base.disruptor.event.OperatorType;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.inf.IActivity;
 import com.isahl.chess.queen.io.core.inf.IControl;
@@ -42,14 +42,14 @@ public interface ILocalPublisher
         extends
         IActivity
 {
-    RingBuffer<QEvent> getPublisher(IOperator.Type type);
+    RingBuffer<QEvent> getPublisher(OperatorType type);
 
-    RingBuffer<QEvent> getCloser(IOperator.Type type);
+    RingBuffer<QEvent> getCloser(OperatorType type);
 
-    ReentrantLock getLock(IOperator.Type type);
+    ReentrantLock getLock(OperatorType type);
 
     @Override
-    default boolean send(ISession session, IOperator.Type type, IControl... toSends)
+    default boolean send(ISession session, OperatorType type, IControl... toSends)
     {
         if (session == null || toSends == null || toSends.length == 0) { return false; }
         final RingBuffer<QEvent> _LocalSendEvent = getPublisher(type);
@@ -74,7 +74,7 @@ public interface ILocalPublisher
     }
 
     @Override
-    default void close(ISession session, IOperator.Type type)
+    default void close(ISession session, OperatorType type)
     {
         if (session == null) { return; }
         final RingBuffer<QEvent> _LocalCloseEvent = getCloser(type);
@@ -84,7 +84,7 @@ public interface ILocalPublisher
             long sequence = _LocalCloseEvent.next();
             try {
                 QEvent event = _LocalCloseEvent.get(sequence);
-                event.produce(IOperator.Type.LOCAL_CLOSE, new Pair<>(null, session), session.getCloser());
+                event.produce(OperatorType.LOCAL_CLOSE, new Pair<>(null, session), session.getCloser());
             }
             finally {
                 _LocalCloseEvent.publish(sequence);

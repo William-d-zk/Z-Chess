@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -20,23 +20,32 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package com.isahl.chess.king.base.disruptor.event.inf;
 
-package com.isahl.chess.queen.event.handler.cluster;
-
-import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
-import com.isahl.chess.queen.io.core.inf.IProtocol;
-import com.isahl.chess.queen.io.core.inf.ITraceable;
+import java.util.Objects;
 
 /**
- * @author william.d.zk
+ * @author William.d.zk
  */
-public interface IConsistentCustom
-        extends
-        IConsistentJudge
+@FunctionalInterface
+public interface IOperator<T,
+                           U,
+                           R>
 {
-    <T extends ITraceable & IProtocol> IOperator<T,
-                                                 Throwable,
-                                                 Void> getOperator();
+    R handle(T t, U u);
 
-    <T extends ITraceable & IProtocol> Void consistentHandle(T request, Throwable throwable);
+    default <V> IOperator<T,
+                          U,
+                          V> andThen(IOperator<? super T,
+                                               ? super R,
+                                               ? extends V> after)
+    {
+        Objects.requireNonNull(after);
+        return (t, u) -> after.handle(t, handle(t, u));
+    }
+
+    default String getName()
+    {
+        return "operator.";
+    }
 }

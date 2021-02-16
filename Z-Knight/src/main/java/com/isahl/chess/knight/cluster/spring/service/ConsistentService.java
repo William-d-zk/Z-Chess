@@ -22,8 +22,6 @@
  */
 package com.isahl.chess.knight.cluster.spring.service;
 
-import static com.isahl.chess.queen.event.inf.IOperator.Type.CONSENSUS;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.locks.ReentrantLock;
@@ -35,6 +33,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import com.isahl.chess.bishop.io.ws.zchat.zhandler.ZClusterMappingCustom;
+import com.isahl.chess.king.base.disruptor.event.OperatorType;
 import com.isahl.chess.king.base.inf.IValid;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.schedule.ScheduleHandler;
@@ -104,15 +103,15 @@ public class ConsistentService
     {
         if (consensus == null) return;
         final ReentrantLock _Lock = _ClusterNode.getCore()
-                                                .getLock(CONSENSUS);
+                                                .getLock(OperatorType.CONSENSUS);
         final RingBuffer<QEvent> _Publish = _ClusterNode.getCore()
-                                                        .getPublisher(CONSENSUS);
+                                                        .getPublisher(OperatorType.CONSENSUS);
         if (_Lock.tryLock()) {
             try {
                 long sequence = _Publish.next();
                 try {
                     QEvent event = _Publish.get(sequence);
-                    event.produce(CONSENSUS,
+                    event.produce(OperatorType.CONSENSUS,
                                   new Pair<>(consensus, consensus.getOrigin()),
                                   _ConsistentCustom.getOperator());
                 }
