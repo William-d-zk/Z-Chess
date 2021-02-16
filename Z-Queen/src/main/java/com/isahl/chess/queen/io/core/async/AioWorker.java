@@ -25,13 +25,14 @@ package com.isahl.chess.queen.io.core.async;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.Objects;
 
+import com.isahl.chess.king.base.disruptor.event.OperatorType;
+import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
+import com.isahl.chess.king.base.inf.IError;
+import com.isahl.chess.king.base.inf.IError.Type;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.event.inf.IError;
-import com.isahl.chess.queen.event.inf.IError.Type;
-import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.event.operator.WroteOperator;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.inf.IAioConnector;
@@ -89,7 +90,7 @@ public class AioWorker
                                             A,
                                             R> op,
                             final IError.Type eType,
-                            final IOperator.Type type,
+                            final OperatorType type,
                             IPair content)
     {
         if (producer.remainingCapacity() == 0) {
@@ -116,12 +117,12 @@ public class AioWorker
                             IPacket pack,
                             final ISession session)
     {
-        publish(_Producer, op, IError.Type.NO_ERROR, IOperator.Type.READ, new Pair<>(pack, session));
+        publish(_Producer, op, IError.Type.NO_ERROR, OperatorType.READ, new Pair<>(pack, session));
     }
 
     public void publishWrote(final WroteOperator op, final int wroteCnt, final ISession session)
     {
-        publish(_Producer, op, IError.Type.NO_ERROR, IOperator.Type.WROTE, new Pair<>(wroteCnt, session));
+        publish(_Producer, op, IError.Type.NO_ERROR, OperatorType.WROTE, new Pair<>(wroteCnt, session));
     }
 
     public <T> void publishWroteError(final ISessionError op,
@@ -129,14 +130,14 @@ public class AioWorker
                                       final T t,
                                       final ISession session)
     {
-        publish(_Producer, op, eType, IOperator.Type.WROTE, new Pair<>(t, session));
+        publish(_Producer, op, eType, OperatorType.WROTE, new Pair<>(t, session));
     }
 
     public void publishConnected(final IOperator<IConnectActivity,
                                                  AsynchronousSocketChannel,
                                                  ITriple> op,
                                  final IConnectActivity activity,
-                                 final IOperator.Type type,
+                                 final OperatorType type,
                                  final AsynchronousSocketChannel channel)
     {
         publish(_Producer, op, IError.Type.NO_ERROR, type, new Pair<>(activity, channel));
@@ -148,7 +149,7 @@ public class AioWorker
                                        final Throwable e,
                                        final IAioConnector cActive)
     {
-        publish(_Producer, op, IError.Type.CONNECT_FAILED, IOperator.Type.NULL, new Pair<>(e, cActive));
+        publish(_Producer, op, IError.Type.CONNECT_FAILED, OperatorType.NULL, new Pair<>(e, cActive));
     }
 
     public void publishAcceptError(final IOperator<Throwable,
@@ -157,11 +158,11 @@ public class AioWorker
                                    final Throwable e,
                                    final IAioServer cActive)
     {
-        publish(_Producer, op, Type.ACCEPT_FAILED, IOperator.Type.NULL, new Pair<>(e, cActive));
+        publish(_Producer, op, Type.ACCEPT_FAILED, OperatorType.NULL, new Pair<>(e, cActive));
     }
 
     public <T> void publishReadError(final ISessionError op, final IError.Type eType, final T t, final ISession session)
     {
-        publish(_Producer, op, eType, IOperator.Type.READ, new Pair<>(t, session));
+        publish(_Producer, op, eType, OperatorType.READ, new Pair<>(t, session));
     }
 }

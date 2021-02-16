@@ -23,15 +23,14 @@
 
 package com.isahl.chess.queen.event.handler;
 
-import static com.isahl.chess.queen.event.inf.IOperator.Type.WRITE;
-import static com.isahl.chess.queen.event.inf.IOperator.Type.WROTE;
 
+import com.isahl.chess.king.base.disruptor.event.OperatorType;
+import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
+import com.isahl.chess.king.base.inf.IError;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.event.inf.IError;
-import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.IEContext;
@@ -81,7 +80,7 @@ public class EncodeHandler
                     IOperator<IControl,
                               ISession,
                               ITriple> writeOperator = event.getEventOp();
-                    _Logger.debug("%s→  %s | %s", WRITE, cmd, session);
+                    _Logger.debug("%s→  %s | %s", OperatorType.WRITE, cmd, session);
                     encodeHandler(event, cmd, session, writeOperator);
                     cmd.dispose();
                     break;
@@ -92,7 +91,7 @@ public class EncodeHandler
                     IOperator<Integer,
                               ISession,
                               ITriple> wroteOperator = event.getEventOp();
-                    _Logger.debug("%s→  %s | %s", WROTE, wroteCnt, session);
+                    _Logger.debug("%s→  %s | %s", OperatorType.WROTE, wroteCnt, session);
                     encodeHandler(event, wroteCnt, session, wroteOperator);
                     break;
                 default:

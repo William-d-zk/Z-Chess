@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -20,14 +20,15 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.isahl.chess.queen.event.inf;
+package com.isahl.chess.king.base.disruptor.event.inf;
 
 import java.util.List;
 
+import com.isahl.chess.king.base.disruptor.event.OperatorType;
+import com.isahl.chess.king.base.inf.IError;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.IReset;
 import com.isahl.chess.king.base.inf.ITriple;
-import com.isahl.chess.queen.event.inf.IError.Type;
 
 /**
  * @author William.d.zk
@@ -36,7 +37,7 @@ public interface IEvent
         extends
         IReset
 {
-    IOperator.Type getEventType();
+    OperatorType getEventType();
 
     IError.Type getErrorType();
 
@@ -52,7 +53,7 @@ public interface IEvent
 
     <V,
      A,
-     R> void produce(IOperator.Type t,
+     R> void produce(OperatorType t,
                      IPair content,
                      IOperator<V,
                                A,
@@ -66,10 +67,10 @@ public interface IEvent
                              H,
                              R> operator);
 
-    void produce(IOperator.Type t, List<ITriple> cp);
+    void produce(OperatorType t, List<ITriple> cp);
 
     default boolean hasError()
     {
-        return getErrorType() != Type.NO_ERROR;
+        return getErrorType() != IError.Type.NO_ERROR;
     }
 }

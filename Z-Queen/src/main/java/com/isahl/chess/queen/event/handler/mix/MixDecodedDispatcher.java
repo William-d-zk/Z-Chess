@@ -23,16 +23,15 @@
 
 package com.isahl.chess.queen.event.handler.mix;
 
-import static com.isahl.chess.queen.event.inf.IOperator.Type.LINK;
-import static com.isahl.chess.queen.event.inf.IOperator.Type.LOGIC;
 
+import com.isahl.chess.king.base.disruptor.event.OperatorType;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.event.handler.cluster.DecodedDispatcher;
-import com.isahl.chess.queen.event.inf.ISort;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.inf.IControl;
+import com.isahl.chess.queen.io.core.inf.ISort;
 import com.lmax.disruptor.RingBuffer;
 
 /**
@@ -59,10 +58,10 @@ public class MixDecodedDispatcher
     {
         if (mode == ISort.Mode.LINK) {
             if (cmd.isMapping()) {
-                return new Pair<>(_Link, LINK);
+                return new Pair<>(_Link, OperatorType.LINK);
             }
             else {
-                return new Pair<>(dispatchWorker(cmd), LOGIC);
+                return new Pair<>(dispatchWorker(cmd),OperatorType. LOGIC);
             }
         }
         return super.getNextPipe(mode, cmd);

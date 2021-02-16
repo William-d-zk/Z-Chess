@@ -28,10 +28,10 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
 import com.isahl.chess.king.base.exception.MissingParameterException;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.queen.event.inf.IOperator;
 
 /**
  * @author william.d.zk

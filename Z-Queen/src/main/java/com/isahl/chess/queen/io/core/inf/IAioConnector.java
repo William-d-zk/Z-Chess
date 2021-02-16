@@ -23,13 +23,12 @@
 
 package com.isahl.chess.queen.io.core.inf;
 
-import static com.isahl.chess.queen.event.inf.IOperator.Type.CONNECTED;
-
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
 
+import com.isahl.chess.king.base.disruptor.event.OperatorType;
+import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
 import com.isahl.chess.king.base.schedule.inf.ITask;
-import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.io.core.async.AioWorker;
 
 /**
@@ -53,7 +52,7 @@ public interface IAioConnector
     default void completed(Void result, AsynchronousSocketChannel channel)
     {
         AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishConnected(getConnectedOperator(), this, CONNECTED, channel);
+        worker.publishConnected(getConnectedOperator(), this, OperatorType.CONNECTED, channel);
     }
 
     @Override

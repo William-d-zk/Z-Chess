@@ -35,6 +35,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
 import com.isahl.chess.king.base.disruptor.MultiBufferBatchEventProcessor;
+import com.isahl.chess.king.base.disruptor.event.OperatorType;
 import com.isahl.chess.king.base.schedule.TimeWheel;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.event.handler.EncodeHandler;
@@ -43,7 +44,6 @@ import com.isahl.chess.queen.event.handler.client.ClientDecodeHandler;
 import com.isahl.chess.queen.event.handler.client.ClientIoDispatcher;
 import com.isahl.chess.queen.event.handler.client.ClientLinkHandler;
 import com.isahl.chess.queen.event.handler.client.ClientWriteDispatcher;
-import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.async.AioWorker;
 import com.isahl.chess.queen.io.core.inf.IEncryptHandler;
@@ -230,19 +230,19 @@ public class ClientCore
     }
 
     @Override
-    public RingBuffer<QEvent> getPublisher(IOperator.Type type)
+    public RingBuffer<QEvent> getPublisher(OperatorType type)
     {
         return _BizLocalSendEvent;
     }
 
     @Override
-    public RingBuffer<QEvent> getCloser(IOperator.Type type)
+    public RingBuffer<QEvent> getCloser(OperatorType type)
     {
         return _BizLocalCloseEvent;
     }
 
     @Override
-    public ReentrantLock getLock(IOperator.Type type)
+    public ReentrantLock getLock(OperatorType type)
     {
         return _LocalLock;
     }

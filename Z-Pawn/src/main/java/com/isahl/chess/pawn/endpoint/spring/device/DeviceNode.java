@@ -24,7 +24,6 @@
 package com.isahl.chess.pawn.endpoint.spring.device;
 
 import static com.isahl.chess.king.base.schedule.TimeWheel.IWheelItem.PRIORITY_NORMAL;
-import static com.isahl.chess.queen.event.inf.IOperator.Type.CLUSTER_LOCAL;
 
 import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
@@ -36,6 +35,7 @@ import java.util.stream.Collectors;
 import com.isahl.chess.bishop.io.sort.ZSortHolder;
 import com.isahl.chess.bishop.io.ws.control.X103_Ping;
 import com.isahl.chess.bishop.io.ws.zchat.zcrypt.EncryptHandler;
+import com.isahl.chess.king.base.disruptor.event.OperatorType;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.schedule.ScheduleHandler;
@@ -50,7 +50,6 @@ import com.isahl.chess.queen.config.IMixConfig;
 import com.isahl.chess.queen.event.handler.cluster.IClusterCustom;
 import com.isahl.chess.queen.event.handler.mix.ILinkCustom;
 import com.isahl.chess.queen.event.handler.mix.ILogicHandler;
-import com.isahl.chess.queen.event.inf.ISort;
 import com.isahl.chess.queen.io.core.async.AioSession;
 import com.isahl.chess.queen.io.core.async.BaseAioClient;
 import com.isahl.chess.queen.io.core.async.BaseAioServer;
@@ -61,6 +60,7 @@ import com.isahl.chess.queen.io.core.inf.IConnectActivity;
 import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionDismiss;
+import com.isahl.chess.queen.io.core.inf.ISort;
 import com.isahl.chess.queen.io.core.manager.MixManager;
 
 /**
@@ -246,7 +246,7 @@ public class DeviceNode
     private void heartbeat(ISession session)
     {
         _Logger.debug("device_cluster heartbeat => %s ", session.getRemoteAddress());
-        getCore().send(session, CLUSTER_LOCAL, _Ping);
+        getCore().send(session, OperatorType.CLUSTER_LOCAL, _Ping);
     }
 
     @Override

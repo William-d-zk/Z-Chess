@@ -23,11 +23,11 @@
 
 package com.isahl.chess.queen.io.core.inf;
 
-import com.isahl.chess.queen.event.inf.IOperator;
+import com.isahl.chess.king.base.disruptor.event.OperatorType;
 
 public interface IActivity
 {
-    boolean send(ISession session, IOperator.Type eventType, IControl... toSends);
+    boolean send(ISession session, OperatorType eventType, IControl... toSends);
 
-    void close(ISession session, IOperator.Type eventType);
+    void close(ISession session, OperatorType eventType);
 }

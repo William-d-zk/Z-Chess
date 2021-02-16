@@ -25,11 +25,11 @@ package com.isahl.chess.knight.cluster.spring.api;
 import org.springframework.stereotype.Component;
 
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X76_RaftNotify;
+import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.knight.cluster.spring.model.ConsistentProtocol;
 import com.isahl.chess.knight.json.JsonUtil;
 import com.isahl.chess.queen.event.handler.cluster.IConsistentCustom;
-import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.io.core.inf.IProtocol;
 import com.isahl.chess.queen.io.core.inf.ITraceable;
 

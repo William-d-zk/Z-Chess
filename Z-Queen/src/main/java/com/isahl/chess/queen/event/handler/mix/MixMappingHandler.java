@@ -23,21 +23,19 @@
 
 package com.isahl.chess.queen.event.handler.mix;
 
-import static com.isahl.chess.queen.event.inf.IOperator.Type.CONSENSUS;
-import static com.isahl.chess.queen.event.inf.IOperator.Type.NOTIFY;
-import static com.isahl.chess.queen.event.inf.IOperator.Type.WRITE;
 
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.List;
 
+import com.isahl.chess.king.base.disruptor.event.OperatorType;
+import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
+import com.isahl.chess.king.base.disruptor.event.inf.IPipeEventHandler;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.db.inf.IStorage;
 import com.isahl.chess.queen.event.handler.cluster.IClusterCustom;
-import com.isahl.chess.queen.event.inf.IOperator;
-import com.isahl.chess.queen.event.inf.IPipeEventHandler;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.inf.IAioConnector;
 import com.isahl.chess.queen.io.core.inf.IAioServer;
@@ -144,7 +142,7 @@ public class MixMappingHandler<T extends IStorage>
                         ISession session = handled.getSecond();
                         IControl[] toSends = handled.getThird();
                         if (toSends != null) {
-                            publish(_Writer, WRITE, new Pair<>(toSends, session), session.getTransfer());
+                            publish(_Writer, OperatorType.WRITE, new Pair<>(toSends, session), session.getTransfer());
                         }
                     }
                     else {
@@ -170,7 +168,7 @@ public class MixMappingHandler<T extends IStorage>
                         ISession session = handled.getSecond();
                         IControl[] toSends = handled.getThird();
                         if (toSends != null) {
-                            publish(_Writer, WRITE, new Pair<>(toSends, session), session.getTransfer());
+                            publish(_Writer,OperatorType. WRITE, new Pair<>(toSends, session), session.getTransfer());
                         }
                     }
                     else {
@@ -193,13 +191,13 @@ public class MixMappingHandler<T extends IStorage>
                         if (pair == null) return;
                         IControl[] toSends = pair.getFirst();
                         if (toSends != null && toSends.length > 0) {
-                            publish(_Writer, WRITE, new Pair<>(toSends, session), session.getTransfer());
+                            publish(_Writer, OperatorType.WRITE, new Pair<>(toSends, session), session.getTransfer());
                         }
                         IConsistent transfer = pair.getSecond();
                         if (transfer != null) {
                             if (_ClusterCustom.waitForCommit()) {
                                 publish(_Transfer,
-                                        CONSENSUS,
+                                        OperatorType. CONSENSUS,
                                         new Pair<>(pair.getSecond(), session),
                                         _LinkCustom.getOperator());
                             }
@@ -229,11 +227,11 @@ public class MixMappingHandler<T extends IStorage>
                         if (pair == null) return;
                         IControl[] toSends = pair.getFirst();
                         if (toSends != null && toSends.length > 0) {
-                            publish(_Writer, WRITE, new Pair<>(toSends, session), session.getTransfer());
+                            publish(_Writer,OperatorType. WRITE, new Pair<>(toSends, session), session.getTransfer());
                         }
                         IConsistentNotify notify = pair.getSecond();
                         if (notify != null && notify.doNotify()) {
-                            publish(_Transfer, NOTIFY, new Pair<>(notify, null), _LinkCustom.getOperator());
+                            publish(_Transfer, OperatorType.NOTIFY, new Pair<>(notify, null), _LinkCustom.getOperator());
                         }
                     }
                     catch (Exception e) {

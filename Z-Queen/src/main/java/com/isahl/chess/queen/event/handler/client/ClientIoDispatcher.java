@@ -23,20 +23,19 @@
 
 package com.isahl.chess.queen.event.handler.client;
 
-import static com.isahl.chess.queen.event.inf.IError.Type.INITIATIVE_CLOSE;
-import static com.isahl.chess.queen.event.inf.IError.Type.PASSIVE_CLOSE;
-import static com.isahl.chess.queen.event.inf.IOperator.Type.DECODE;
-import static com.isahl.chess.queen.event.inf.IOperator.Type.WROTE;
+import static com.isahl.chess.king.base.inf.IError.Type.INITIATIVE_CLOSE;
+import static com.isahl.chess.king.base.inf.IError.Type.PASSIVE_CLOSE;
 
 import java.nio.channels.AsynchronousSocketChannel;
 
+import com.isahl.chess.king.base.disruptor.event.OperatorType;
+import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
+import com.isahl.chess.king.base.disruptor.event.inf.IPipeEventHandler;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.config.QueenCode;
-import com.isahl.chess.queen.event.inf.IOperator;
-import com.isahl.chess.queen.event.inf.IPipeEventHandler;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.inf.IConnectActivity;
 import com.isahl.chess.queen.io.core.inf.ISession;
@@ -103,12 +102,12 @@ public class ClientIoDispatcher
                         case READ ->
                             {
                                 IPair readContent = event.getContent();
-                                publish(_Decoder, DECODE, readContent, event.getEventOp());
+                                publish(_Decoder, OperatorType.DECODE, readContent, event.getEventOp());
                             }
                         case WROTE ->
                             {
                                 IPair wroteContent = event.getContent();
-                                publish(_Wrote, WROTE, wroteContent, event.getEventOp());
+                                publish(_Wrote, OperatorType.WROTE, wroteContent, event.getEventOp());
                             }
                         case LOCAL_CLOSE ->
                             {

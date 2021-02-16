@@ -23,9 +23,9 @@
 
 package com.isahl.chess.queen.event.operator;
 
-import static com.isahl.chess.queen.event.inf.IError.Type.WRITE_EOF;
-import static com.isahl.chess.queen.event.inf.IError.Type.WRITE_FAILED;
-import static com.isahl.chess.queen.event.inf.IError.Type.WRITE_ZERO;
+import static com.isahl.chess.king.base.inf.IError.Type.WRITE_EOF;
+import static com.isahl.chess.king.base.inf.IError.Type.WRITE_FAILED;
+import static com.isahl.chess.king.base.inf.IError.Type.WRITE_ZERO;
 
 import java.io.EOFException;
 import java.nio.channels.CompletionHandler;

@@ -31,10 +31,12 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
 import com.isahl.chess.king.base.disruptor.MultiBufferBatchEventProcessor;
+import com.isahl.chess.king.base.disruptor.event.OperatorType;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.config.IMixConfig;
@@ -49,7 +51,6 @@ import com.isahl.chess.queen.event.handler.mix.ILogicHandler;
 import com.isahl.chess.queen.event.handler.mix.MixDecodedDispatcher;
 import com.isahl.chess.queen.event.handler.mix.MixIoDispatcher;
 import com.isahl.chess.queen.event.handler.mix.MixMappingHandler;
-import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.async.AioWorker;
 import com.isahl.chess.queen.io.core.inf.IEncryptHandler;
@@ -114,7 +115,7 @@ public class ServerCore
         public Thread newThread(Runnable r)
         {
             return new AioWorker(r,
-                                 String.format("AioWorker.server.%d", count++),
+                                 String.format("server.aw.%d", count++),
                                  _AioCacheConcurrentQueue::offer,
                                  _AioCacheConcurrentQueue.poll());
         }
@@ -128,23 +129,44 @@ public class ServerCore
         public Thread newThread(Runnable r)
         {
             return new AioWorker(r,
-                                 String.format("AioWorker.cluster.%d", count++),
+                                 String.format("cluster.aw.%d", count++),
                                  _ClusterCacheConcurrentQueue::offer,
                                  _ClusterCacheConcurrentQueue.poll());
         }
     };
 
-    private final ReentrantLock      _LocalLock        = new ReentrantLock();
-    private final ReentrantLock      _ClusterLock      = new ReentrantLock();
-    private final ReentrantLock      _ConsensusLock    = new ReentrantLock();
-    private final ReentrantLock      _ConsensusApiLock = new ReentrantLock();
+    private static final ThreadFactory _SelfThreadFactory = new ThreadFactory()
+    {
+        private final AtomicInteger   _ThreadNumber    = new AtomicInteger(1);
+        private final SecurityManager _SecurityManager = System.getSecurityManager();
+        private final ThreadGroup     _ThreadGroup     = (_SecurityManager != null) ? _SecurityManager.getThreadGroup()
+                                                                                    : Thread.currentThread()
+                                                                                            .getThreadGroup();;
+
+        @Override
+        public Thread newThread(Runnable r)
+        {
+            return new Thread(_ThreadGroup, r, "ServerCore." + _ThreadNumber.getAndIncrement());
+        }
+    };
+
+    private final ReentrantLock _LocalLock        = new ReentrantLock();
+    private final ReentrantLock _ClusterLock      = new ReentrantLock();
+    private final ReentrantLock _ConsensusLock    = new ReentrantLock();
+    private final ReentrantLock _ConsensusApiLock = new ReentrantLock();
+
     private AsynchronousChannelGroup mServiceChannelGroup;
     private AsynchronousChannelGroup mClusterChannelGroup;
 
     @SuppressWarnings("unchecked")
     public ServerCore(IMixConfig config)
     {
-        super(config.getPoolSize(), config.getPoolSize(), 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
+        super(config.getPoolSize(),
+              config.getPoolSize(),
+              15,
+              TimeUnit.SECONDS,
+              new LinkedBlockingQueue<>(),
+              _SelfThreadFactory);
         _LogicCount = 1 << config.getLogicCountPower();
         _DecoderCount = 1 << config.getDecoderCountPower();
         _EncoderCount = 1 << config.getEncoderCountPower();
@@ -167,12 +189,9 @@ public class ServerCore
         Arrays.setAll(_AioProducerEvents, slot ->
         {
             RingBuffer<QEvent> rb = createPipelineYield(_AioQueueSize);
-            if (!(slot < _BizIoCount ? _AioCacheConcurrentQueue
-                                     : _ClusterCacheConcurrentQueue).offer(rb))
-            {
+            if (!(slot < _BizIoCount ? _AioCacheConcurrentQueue: _ClusterCacheConcurrentQueue).offer(rb)) {
                 _Logger.warning(String.format("%s cache queue offer failed :%d",
-                                              slot < _BizIoCount ? "biz io"
-                                                                 : "cluster io",
+                                              slot < _BizIoCount ? "biz io": "cluster io",
                                               slot));
             }
             return rb;
@@ -429,7 +448,7 @@ public class ServerCore
     }
 
     @Override
-    public RingBuffer<QEvent> getCloser(IOperator.Type type)
+    public RingBuffer<QEvent> getCloser(OperatorType type)
     {
         return switch (type)
         {
@@ -440,7 +459,7 @@ public class ServerCore
     }
 
     @Override
-    public ReentrantLock getLock(IOperator.Type type)
+    public ReentrantLock getLock(OperatorType type)
     {
         return switch (type)
         {
@@ -453,7 +472,7 @@ public class ServerCore
     }
 
     @Override
-    public RingBuffer<QEvent> getPublisher(IOperator.Type type)
+    public RingBuffer<QEvent> getPublisher(OperatorType type)
     {
         return switch (type)
         {

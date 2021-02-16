@@ -30,9 +30,9 @@ import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 
+import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.queen.config.ISocketConfig;
-import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.event.operator.AcceptFailedOperator;
 import com.isahl.chess.queen.event.operator.ConnectedOperator;
 import com.isahl.chess.queen.io.core.inf.IAioServer;

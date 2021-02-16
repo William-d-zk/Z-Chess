@@ -23,13 +23,12 @@
 
 package com.isahl.chess.queen.event.handler.mix;
 
-import static com.isahl.chess.queen.event.inf.IOperator.Type.LOGIC;
-
 import java.util.Objects;
 
+import com.isahl.chess.king.base.disruptor.event.OperatorType;
+import com.isahl.chess.king.base.inf.IError;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.event.inf.IError;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISession;
@@ -52,7 +51,7 @@ public interface ILogicHandler
 
     default void doEvent(QEvent event, long sequence, boolean endOfBatch)
     {
-        if (event.getEventType() == LOGIC) {
+        if (event.getEventType() == OperatorType.LOGIC) {
             IControl content = event.getContent()
                                     .getFirst();
             ISession session = event.getContent()
@@ -61,7 +60,7 @@ public interface ILogicHandler
                 try {
                     IControl[] response = handle(getISessionManager(), session, content);
                     if (Objects.nonNull(response) && response.length > 0) {
-                        event.produce(LOGIC, new Pair<>(response, session), session.getTransfer());
+                        event.produce(OperatorType.LOGIC, new Pair<>(response, session), session.getTransfer());
                     }
                     else {
                         event.ignore();

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,17 +21,9 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.queen.event.inf;
+package com.isahl.chess.queen.io.core.inf;
 
 import com.isahl.chess.queen.event.operator.IgnoreOperator;
-import com.isahl.chess.queen.io.core.inf.IFilterChain;
-import com.isahl.chess.queen.io.core.inf.IPContext;
-import com.isahl.chess.queen.io.core.inf.IPipeDecoder;
-import com.isahl.chess.queen.io.core.inf.IPipeEncoder;
-import com.isahl.chess.queen.io.core.inf.IPipeTransfer;
-import com.isahl.chess.queen.io.core.inf.ISessionCloser;
-import com.isahl.chess.queen.io.core.inf.ISessionError;
-import com.isahl.chess.queen.io.core.inf.ISessionOption;
 
 /**
  * @author william.d.zk

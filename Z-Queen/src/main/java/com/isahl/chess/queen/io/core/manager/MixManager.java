@@ -23,8 +23,8 @@
 
 package com.isahl.chess.queen.io.core.manager;
 
+import com.isahl.chess.king.base.disruptor.event.OperatorType;
 import com.isahl.chess.queen.config.IAioConfig;
-import com.isahl.chess.queen.event.inf.IOperator;
 import com.isahl.chess.queen.io.core.async.AioSessionManager;
 import com.isahl.chess.queen.io.core.executor.ServerCore;
 import com.isahl.chess.queen.io.core.inf.IActivity;
@@ -50,13 +50,13 @@ public abstract class MixManager
     }
 
     @Override
-    public void close(ISession session, IOperator.Type type)
+    public void close(ISession session, OperatorType type)
     {
         _ServerCore.close(session, type);
     }
 
     @Override
-    public final boolean send(ISession session, IOperator.Type type, IControl... commands)
+    public final boolean send(ISession session, OperatorType type, IControl... commands)
     {
         return _ServerCore.send(session, type, commands);
     }

@@ -24,7 +24,6 @@
 package com.isahl.chess.knight.cluster;
 
 import static com.isahl.chess.king.base.schedule.TimeWheel.IWheelItem.PRIORITY_NORMAL;
-import static com.isahl.chess.queen.event.inf.IOperator.Type.CLUSTER_LOCAL;
 
 import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
@@ -38,6 +37,7 @@ import com.isahl.chess.bishop.io.ws.WsContext;
 import com.isahl.chess.bishop.io.ws.control.X103_Ping;
 import com.isahl.chess.bishop.io.ws.zchat.zcrypt.EncryptHandler;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X106_Identity;
+import com.isahl.chess.king.base.disruptor.event.OperatorType;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.schedule.ScheduleHandler;
@@ -51,7 +51,6 @@ import com.isahl.chess.queen.config.IClusterConfig;
 import com.isahl.chess.queen.event.handler.cluster.IClusterCustom;
 import com.isahl.chess.queen.event.handler.cluster.IConsistentCustom;
 import com.isahl.chess.queen.event.handler.mix.ILogicHandler;
-import com.isahl.chess.queen.event.inf.ISort;
 import com.isahl.chess.queen.io.core.async.AioSession;
 import com.isahl.chess.queen.io.core.async.BaseAioClient;
 import com.isahl.chess.queen.io.core.async.BaseAioServer;
@@ -62,6 +61,7 @@ import com.isahl.chess.queen.io.core.inf.IConnectActivity;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionDismiss;
+import com.isahl.chess.queen.io.core.inf.ISort;
 import com.isahl.chess.queen.io.core.manager.ClusterManager;
 
 public class ClusterNode
@@ -224,7 +224,7 @@ public class ClusterNode
     private void heartbeat(ISession session)
     {
         _Logger.debug("cluster heartbeat =>%s", session.getRemoteAddress());
-        getCore().send(session, CLUSTER_LOCAL, _Ping);
+        getCore().send(session, OperatorType.CLUSTER_LOCAL, _Ping);
     }
 
     @Override

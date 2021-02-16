@@ -23,23 +23,19 @@
 
 package com.isahl.chess.queen.event.handler.cluster;
 
-import static com.isahl.chess.queen.event.inf.IOperator.Type.CLUSTER;
-import static com.isahl.chess.queen.event.inf.IOperator.Type.DISPATCH;
-import static com.isahl.chess.queen.event.inf.IOperator.Type.LOGIC;
-import static com.isahl.chess.queen.event.inf.IOperator.Type.NULL;
-
 import java.util.Objects;
 
+import com.isahl.chess.king.base.disruptor.event.OperatorType;
+import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
+import com.isahl.chess.king.base.disruptor.event.inf.IPipeEventHandler;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.event.inf.IOperator;
-import com.isahl.chess.queen.event.inf.IPipeEventHandler;
-import com.isahl.chess.queen.event.inf.ISort;
 import com.isahl.chess.queen.event.processor.QEvent;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISession;
+import com.isahl.chess.queen.io.core.inf.ISort;
 import com.lmax.disruptor.RingBuffer;
 
 /**
@@ -77,7 +73,7 @@ public class DecodedDispatcher
             }
         }
         else {
-            if (event.getEventType() == DISPATCH) {
+            if (event.getEventType() == OperatorType.DISPATCH) {
                 IPair dispatchContent = event.getContent();
                 ISession session = dispatchContent.getSecond();
                 IControl[] commands = dispatchContent.getFirst();
@@ -88,7 +84,7 @@ public class DecodedDispatcher
                     }
                 }
             }
-            else if (event.getEventType() != NULL) {
+            else if (event.getEventType() != OperatorType.NULL) {
                 _Logger.warning("decoded dispatcher event type error: %s",
                                 event.getEventType()
                                      .name());
@@ -111,8 +107,8 @@ public class DecodedDispatcher
     protected IPair getNextPipe(ISort.Mode mode, IControl cmd)
     {
         _Logger.debug("decoded: %s | %s", cmd, mode);
-        return mode == ISort.Mode.CLUSTER && cmd.isMapping() ? new Pair<>(_Cluster, CLUSTER)
-                                                             : new Pair<>(dispatchWorker(cmd), LOGIC);
+        return mode == ISort.Mode.CLUSTER && cmd.isMapping() ? new Pair<>(_Cluster, OperatorType.CLUSTER)
+                                                             : new Pair<>(dispatchWorker(cmd), OperatorType.LOGIC);
     }
 
     protected RingBuffer<QEvent> dispatchWorker(IControl cmd)

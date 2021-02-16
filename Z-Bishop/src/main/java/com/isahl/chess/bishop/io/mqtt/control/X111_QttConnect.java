@@ -28,7 +28,6 @@ import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
-import com.isahl.chess.bishop.io.mqtt.QttContext;
 import com.isahl.chess.bishop.io.mqtt.QttControl;
 import com.isahl.chess.bishop.io.mqtt.QttType;
 import com.isahl.chess.king.base.util.IoUtil;

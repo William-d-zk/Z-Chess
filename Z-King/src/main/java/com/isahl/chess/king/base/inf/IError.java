@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.isahl.chess.queen.event.inf;
+package com.isahl.chess.king.base.inf;
 
 import java.util.Objects;
 
@@ -82,8 +82,7 @@ public interface IError
         @Override
         public String getMsg(Object... args)
         {
-            return Objects.isNull(args) || args.length == 0 ? _MsgFormatter
-                                                            : String.format(_MsgFormatter, args);
+            return Objects.isNull(args) || args.length == 0 ? _MsgFormatter: String.format(_MsgFormatter, args);
         }
 
     }
