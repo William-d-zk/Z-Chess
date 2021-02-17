@@ -52,7 +52,7 @@ import com.isahl.chess.queen.event.handler.cluster.IConsistentCustom;
 import com.isahl.chess.queen.event.handler.cluster.IoDispatcher;
 import com.isahl.chess.queen.event.handler.cluster.NotifyHandler;
 import com.isahl.chess.queen.event.handler.mix.ILogicHandler;
-import com.isahl.chess.queen.event.processor.QEvent;
+import com.isahl.chess.queen.event.QEvent;
 import com.isahl.chess.queen.io.core.async.AioWorker;
 import com.isahl.chess.queen.io.core.inf.IEncryptHandler;
 import com.isahl.chess.queen.io.core.manager.ClusterManager;

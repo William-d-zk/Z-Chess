@@ -50,7 +50,7 @@ import com.isahl.chess.knight.raft.service.ClusterCustom;
 import com.isahl.chess.queen.config.IAioConfig;
 import com.isahl.chess.queen.config.IClusterConfig;
 import com.isahl.chess.queen.event.handler.cluster.IConsistentCustom;
-import com.isahl.chess.queen.event.processor.QEvent;
+import com.isahl.chess.queen.event.QEvent;
 import com.isahl.chess.queen.io.core.inf.IConsistent;
 import com.isahl.chess.queen.io.core.inf.IProtocol;
 import com.lmax.disruptor.RingBuffer;

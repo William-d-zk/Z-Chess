@@ -31,7 +31,7 @@ import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.event.processor.QEvent;
+import com.isahl.chess.queen.event.QEvent;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.IEContext;
 import com.isahl.chess.queen.io.core.inf.IEncryptHandler;

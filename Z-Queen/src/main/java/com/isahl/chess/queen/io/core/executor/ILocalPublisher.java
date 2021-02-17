@@ -27,7 +27,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import com.isahl.chess.king.base.disruptor.event.OperatorType;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.event.processor.QEvent;
+import com.isahl.chess.queen.event.QEvent;
 import com.isahl.chess.queen.io.core.inf.IActivity;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISession;

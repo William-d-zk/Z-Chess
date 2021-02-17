@@ -23,7 +23,6 @@
 
 package com.isahl.chess.queen.event.handler.cluster;
 
-import static com.isahl.chess.king.base.disruptor.event.OperatorType.NOTIFY;
 import static com.isahl.chess.king.base.inf.IError.Type.MAPPING_ERROR;
 
 import java.nio.channels.AsynchronousSocketChannel;
@@ -39,7 +38,7 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.queen.db.inf.IStorage;
-import com.isahl.chess.queen.event.processor.QEvent;
+import com.isahl.chess.queen.event.QEvent;
 import com.isahl.chess.queen.io.core.inf.IAioConnector;
 import com.isahl.chess.queen.io.core.inf.IAioServer;
 import com.isahl.chess.queen.io.core.inf.IConnectActivity;

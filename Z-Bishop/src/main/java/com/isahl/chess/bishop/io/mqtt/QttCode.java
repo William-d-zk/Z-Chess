@@ -72,9 +72,7 @@ public enum QttCode
     CONNECTION_RATE_EXCEEDED(-1, 0x9F),
     MAXIMUM_CONNECT_TIME(-1, 0xA0),
     SUBSCRIPTION_IDENTIFIERS_UNSUPPORTED(-1, 0xA1),
-    WILDCARD_SUBSCRIPTION_UNSUPPORTED(-1, 0xA2)
-
-    ;
+    WILDCARD_SUBSCRIPTION_UNSUPPORTED(-1, 0xA2);
 
     private final byte _V3Code;
     private final byte _V5Code;
