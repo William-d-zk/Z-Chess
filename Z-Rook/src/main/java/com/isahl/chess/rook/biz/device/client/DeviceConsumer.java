@@ -72,7 +72,7 @@ import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.queen.config.IAioConfig;
-import com.isahl.chess.queen.event.processor.QEvent;
+import com.isahl.chess.queen.event.QEvent;
 import com.isahl.chess.queen.io.core.async.AioSession;
 import com.isahl.chess.queen.io.core.async.AioSessionManager;
 import com.isahl.chess.queen.io.core.async.BaseAioConnector;

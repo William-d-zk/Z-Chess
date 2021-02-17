@@ -24,7 +24,7 @@
 package com.isahl.chess.queen.event.handler.mix;
 
 import com.isahl.chess.queen.event.handler.cluster.IoDispatcher;
-import com.isahl.chess.queen.event.processor.QEvent;
+import com.isahl.chess.queen.event.QEvent;
 import com.isahl.chess.queen.io.core.inf.ISort;
 import com.lmax.disruptor.RingBuffer;
 

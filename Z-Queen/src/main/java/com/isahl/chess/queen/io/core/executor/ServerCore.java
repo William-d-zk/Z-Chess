@@ -51,7 +51,7 @@ import com.isahl.chess.queen.event.handler.mix.ILogicHandler;
 import com.isahl.chess.queen.event.handler.mix.MixDecodedDispatcher;
 import com.isahl.chess.queen.event.handler.mix.MixIoDispatcher;
 import com.isahl.chess.queen.event.handler.mix.MixMappingHandler;
-import com.isahl.chess.queen.event.processor.QEvent;
+import com.isahl.chess.queen.event.QEvent;
 import com.isahl.chess.queen.io.core.async.AioWorker;
 import com.isahl.chess.queen.io.core.inf.IEncryptHandler;
 import com.isahl.chess.queen.io.core.manager.MixManager;

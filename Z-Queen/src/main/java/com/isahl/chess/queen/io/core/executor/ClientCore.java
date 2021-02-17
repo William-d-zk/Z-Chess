@@ -44,7 +44,7 @@ import com.isahl.chess.queen.event.handler.client.ClientDecodeHandler;
 import com.isahl.chess.queen.event.handler.client.ClientIoDispatcher;
 import com.isahl.chess.queen.event.handler.client.ClientLinkHandler;
 import com.isahl.chess.queen.event.handler.client.ClientWriteDispatcher;
-import com.isahl.chess.queen.event.processor.QEvent;
+import com.isahl.chess.queen.event.QEvent;
 import com.isahl.chess.queen.io.core.async.AioWorker;
 import com.isahl.chess.queen.io.core.inf.IEncryptHandler;
 import com.lmax.disruptor.BatchEventProcessor;
