@@ -26,9 +26,8 @@ package com.isahl.chess.king.base.response;
 import java.io.Serializable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.king.base.schedule.Status;
 
@@ -37,7 +36,7 @@ import com.isahl.chess.king.base.schedule.Status;
  * 
  * @date 2020/7/7
  */
-@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ZProgress
         implements
         Serializable

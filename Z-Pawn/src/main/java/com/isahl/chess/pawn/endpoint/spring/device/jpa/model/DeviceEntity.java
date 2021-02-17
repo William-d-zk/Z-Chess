@@ -43,7 +43,7 @@ import org.hibernate.validator.constraints.Length;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -63,7 +63,7 @@ import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
                   @Index(name = "device_idx_sn", columnList = "sn"),
                   @Index(name = "device_idx_token", columnList = "token"),
                   @Index(name = "device_idx_username", columnList = "username")})
-@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class DeviceEntity
         extends
         AuditModel

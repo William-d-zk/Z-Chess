@@ -40,7 +40,7 @@ import org.hibernate.annotations.TypeDef;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -60,7 +60,7 @@ import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 @Table(indexes = {@Index(name = "message_idx_msg_id", columnList = "msgId"),
                   @Index(name = "origin_idx", columnList = "origin"),
                   @Index(name = "destination_idx", columnList = "destination")})
-@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class MessageEntity
         extends
         AuditModel

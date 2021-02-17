@@ -25,7 +25,7 @@ package com.isahl.chess.open.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.pawn.endpoint.spring.device.jpa.model.MessageBody;
 import com.isahl.chess.queen.db.inf.IStorage;
@@ -36,7 +36,7 @@ import com.isahl.chess.queen.db.inf.IStorage;
  * @date 2020/5/11
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class MessageDo
 {
     @JsonIgnore
