@@ -31,8 +31,8 @@
         <groupId>com.isahl.chess</groupId>
         <version>1.0.12-SNAPSHOT</version>
     </parent>
-    <artifactId>test.z-player</artifactId>
-    <name>Z-Test</name>
+    <artifactId>test.z-audience</artifactId>
+    <name>Z-Audience</name>
     <dependencies>
         <dependency>
             <groupId>com.isahl.chess</groupId>
