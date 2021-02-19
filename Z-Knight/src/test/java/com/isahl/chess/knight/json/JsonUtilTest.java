@@ -23,11 +23,11 @@
 
 package com.isahl.chess.knight.json;
 
-import com.isahl.chess.king.base.util.JsonUtil;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.isahl.chess.king.base.response.ZResponse;
+import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.king.base.util.Pair;
 
 class JsonUtilTest

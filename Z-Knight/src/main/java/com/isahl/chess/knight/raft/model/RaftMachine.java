@@ -43,12 +43,12 @@ import java.util.TreeSet;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.base.util.JsonUtil;
+import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.knight.raft.IRaftDao;
 import com.isahl.chess.knight.raft.IRaftMachine;
 import com.isahl.chess.knight.raft.RaftState;
@@ -59,7 +59,7 @@ import com.isahl.chess.queen.db.inf.IStorage;
  * 
  * @date 2019/12/10
  */
-@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class RaftMachine
         implements
         IRaftMachine,

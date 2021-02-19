@@ -119,9 +119,8 @@ public class DeviceOpenService
                 entity.setToken(IoUtil.bin2Hex(_CryptUtil.sha256(source.getBytes(StandardCharsets.UTF_8))));
                 entity.setSn(device.getSn());
                 entity.setUsername(device.getUsername());
-                entity.setSensorMac(device.getSensorMac());
-                entity.setWifiMac(device.getWifiMac());
                 entity.setSubscribe(device.getSubscribe());
+                entity.setProfile(device.getProfile());
             }
             if (exist == null
                 || exist.getInvalidAt()

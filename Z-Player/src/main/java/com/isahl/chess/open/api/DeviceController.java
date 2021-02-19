@@ -76,8 +76,7 @@ public class DeviceController
         deviceEntity.setUsername(deviceDo.getUsername());
         deviceEntity.setPassword(deviceDo.getPassword());
         deviceEntity.setSubscribe(new DeviceSubscribe(new HashMap<>()));
-        deviceEntity.setWifiMac(deviceDo.getWifiMac());
-        deviceEntity.setSensorMac(deviceDo.getSensorMac());
+        deviceEntity.setProfile(deviceDo.getProfile());
         return ZResponse.success(_DeviceService.save(deviceEntity));
     }
 

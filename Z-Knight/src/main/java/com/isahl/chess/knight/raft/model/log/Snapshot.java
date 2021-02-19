@@ -23,7 +23,7 @@
 
 package com.isahl.chess.knight.raft.model.log;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.knight.json.JsonProtocol;
 import com.isahl.chess.queen.db.inf.IStorage;
@@ -34,7 +34,7 @@ import com.isahl.chess.queen.io.core.inf.IConsistent;
  * 
  * @date 2020/7/13
  */
-@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class Snapshot
         extends
         JsonProtocol
