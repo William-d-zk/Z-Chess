@@ -59,7 +59,8 @@ import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 @Table(indexes = {@Index(name = "message_idx_msg_id", columnList = "msgId"),
                   @Index(name = "origin_idx", columnList = "origin"),
-                  @Index(name = "destination_idx", columnList = "destination")})
+                  @Index(name = "destination_idx", columnList = "destination"),
+                  @Index(name = "topic_idx", columnList = "topic")})
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class MessageEntity
         extends
@@ -74,23 +75,25 @@ public class MessageEntity
     @GeneratedValue(generator = "ZMessageGenerator")
     @GenericGenerator(name = "ZMessageGenerator",
                       strategy = "com.isahl.chess.pawn.endpoint.spring.device.jpa.generator.ZMessageGenerator")
-    private long        id;
+    private long   id;
     @Column(updatable = false, nullable = false)
-    private long        origin;
+    private long   origin;
     @Column(updatable = false, nullable = false)
-    private long        destination;
+    private long   destination;
     @Column(nullable = false)
-    private int         cmd;
+    private int    cmd;
     @Column(length = 4, updatable = false, nullable = false)
-    private String      direction;
+    private String direction;
     @Column(length = 10, nullable = false)
-    private String      owner;
+    private String owner;
     @Column(updatable = false, nullable = false)
-    private long        msgId;
+    private long   msgId;
+    private Status status;
+    private String topic;
+
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb")
     private MessageBody body;
-    private Status      status;
 
     @Column(name = "invalid_at", nullable = false, updatable = false)
     private LocalDateTime invalidAt;
@@ -234,4 +237,14 @@ public class MessageEntity
     }
 
     private final static int MESSAGE_ENTITY_SERIAL = AUDIT_MODEL_SERIAL + 2;
+
+    public String getTopic()
+    {
+        return topic;
+    }
+
+    public void setTopic(String topic)
+    {
+        this.topic = topic;
+    }
 }
