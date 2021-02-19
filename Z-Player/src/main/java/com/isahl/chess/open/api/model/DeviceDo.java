@@ -29,8 +29,9 @@ import org.springframework.lang.NonNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.isahl.chess.pawn.endpoint.spring.device.jpa.model.DeviceProfile;
 
 /**
  * @author william.d.zk
@@ -38,47 +39,46 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
  * @date 2019-06-15
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class DeviceDo
 {
-    private long    id;
-    private String  sn;
-    private String  username;
-    private String  password;
-    private String  token;
-    private String  wifiMac;
-    private String  sensorMac;
-    private Instant invalidAt;
+    private long          mId;
+    private String        mSn;
+    private String        mUsername;
+    private String        mPassword;
+    private String        mToken;
+    private DeviceProfile mProfile;
+    private Instant       mInvalidAt;
 
     public String getSn()
     {
-        return sn;
+        return mSn;
     }
 
     public void setSn(@NonNull String sn)
     {
-        this.sn = sn.toUpperCase();
+        this.mSn = sn.toUpperCase();
     }
 
     public void setPassword(@NonNull String password)
     {
-        this.password = password;
+        this.mPassword = password;
     }
 
     public String getPassword()
     {
-        return password;
+        return mPassword;
     }
 
     public void setToken(@NonNull String token)
     {
-        this.token = token.toUpperCase();
+        this.mToken = token.toUpperCase();
     }
 
     @JsonIgnore
     public String getToken()
     {
-        return token;
+        return mToken;
     }
 
     public String getClientId()
@@ -88,51 +88,41 @@ public class DeviceDo
 
     public Instant getInvalidAt()
     {
-        return invalidAt;
+        return mInvalidAt;
     }
 
     public void setInvalidAt(Instant invalidAt)
     {
-        this.invalidAt = invalidAt;
+        this.mInvalidAt = invalidAt;
     }
 
     public String getUsername()
     {
-        return username;
+        return mUsername;
     }
 
     public void setUsername(String username)
     {
-        this.username = username;
+        this.mUsername = username;
     }
 
     public long getId()
     {
-        return id;
+        return mId;
     }
 
     public void setId(long id)
     {
-        this.id = id;
+        this.mId = id;
     }
 
-    public String getWifiMac()
+    public DeviceProfile getProfile()
     {
-        return wifiMac;
+        return mProfile;
     }
 
-    public void setWifiMac(String wifiMac)
+    public void setProfile(DeviceProfile profile)
     {
-        this.wifiMac = wifiMac;
-    }
-
-    public String getSensorMac()
-    {
-        return sensorMac;
-    }
-
-    public void setSensorMac(String sensorMac)
-    {
-        this.sensorMac = sensorMac;
+        this.mProfile = profile;
     }
 }

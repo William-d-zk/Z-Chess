@@ -43,7 +43,7 @@ import org.hibernate.validator.constraints.Length;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -63,7 +63,7 @@ import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
                   @Index(name = "device_idx_sn", columnList = "sn"),
                   @Index(name = "device_idx_token", columnList = "token"),
                   @Index(name = "device_idx_username", columnList = "username")})
-@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class DeviceEntity
         extends
         AuditModel
@@ -77,26 +77,26 @@ public class DeviceEntity
     @GeneratedValue(generator = "ZDeviceGenerator")
     @GenericGenerator(name = "ZDeviceGenerator",
                       strategy = "com.isahl.chess.pawn.endpoint.spring.device.jpa.generator.ZDeviceGenerator")
-    private long            id;
+    private long          id;
     @Column(length = 32, nullable = false, updatable = false)
-    private String          sn;
+    private String        sn;
     @Column(length = 32, nullable = false)
     @Length(min = 17, max = 32, message = "*Your password must have at least 17 characters less than 33 characters")
     @NotBlank(message = "*Please provide your password")
-    private String          password;
+    private String        password;
     @Column(length = 32, nullable = false)
     @Length(min = 8, max = 32, message = "* Your Username must have at least 8 characters less than 33 characters")
     @NotBlank(message = "*Please provide your username")
-    private String          username;
-    private int             passwordId;
+    private String        username;
+    private int           passwordId;
     @Column(length = 64, nullable = false, unique = true)
-    private String          token;
+    private String        token;
     @Column(name = "invalid_at", nullable = false)
-    private LocalDateTime   invalidAt;
-    @Column(name = "wifi_mac", length = 32)
-    private String          wifiMac;
-    @Column(name = "sensor_mac", length = 32)
-    private String          sensorMac;
+    private LocalDateTime invalidAt;
+    @Type(type = "jsonb")
+    @Column(columnDefinition = "jsonb")
+    private DeviceProfile profile;
+
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb")
     private DeviceSubscribe subscribe;
@@ -142,18 +142,17 @@ public class DeviceEntity
     @Override
     public String toString()
     {
-        return String.format("device{id:%s,token:%s,user:%s,pwdId:%d,pwd:%s,sn:%s,create:%s,update:%s,invalid:%s,sensor-mac:%s,wifi-mac:%s}",
+        return String.format("device{id:%s,token:%s,user:%s,pwdId:%d,pwd:%s,sn:%s,profile:%s,create:%s,update:%s,invalid:%s}",
                              getId(),
                              getToken(),
                              getUsername(),
                              getPasswordId(),
                              getPassword(),
                              getSn(),
+                             getProfile(),
                              getCreatedAt(),
                              getUpdatedAt(),
-                             getInvalidAt(),
-                             getSensorMac(),
-                             getWifiMac());
+                             getInvalidAt());
     }
 
     public int getPasswordId()
@@ -200,26 +199,6 @@ public class DeviceEntity
         this.username = username;
     }
 
-    public String getWifiMac()
-    {
-        return wifiMac;
-    }
-
-    public void setWifiMac(String wifiMac)
-    {
-        this.wifiMac = wifiMac;
-    }
-
-    public String getSensorMac()
-    {
-        return sensorMac;
-    }
-
-    public void setSensorMac(String sensorMac)
-    {
-        this.sensorMac = sensorMac;
-    }
-
     public DeviceSubscribe getSubscribe()
     {
         return subscribe;
@@ -245,6 +224,16 @@ public class DeviceEntity
         if (subscribe != null) {
             subscribe.unsubscribe(topic);
         }
+    }
+
+    public DeviceProfile getProfile()
+    {
+        return profile;
+    }
+
+    public void setProfile(DeviceProfile profile)
+    {
+        this.profile = profile;
     }
 
     public void setSubscribe(DeviceSubscribe subscribe)

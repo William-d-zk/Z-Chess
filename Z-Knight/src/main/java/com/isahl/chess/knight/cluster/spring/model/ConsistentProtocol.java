@@ -28,7 +28,7 @@ import java.nio.charset.StandardCharsets;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.knight.json.JsonProtocol;
 import com.isahl.chess.queen.io.core.inf.IConsistent;
@@ -38,7 +38,7 @@ import com.isahl.chess.queen.io.core.inf.IConsistent;
  * 
  * @date 2020/4/25
  */
-@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ConsistentProtocol
         extends
         JsonProtocol

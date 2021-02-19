@@ -25,7 +25,7 @@ package com.isahl.chess.open.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.pawn.endpoint.spring.device.jpa.model.MessageBody;
 import com.isahl.chess.queen.db.inf.IStorage;
@@ -36,20 +36,20 @@ import com.isahl.chess.queen.db.inf.IStorage;
  * @date 2020/5/11
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class MessageDo
 {
     @JsonIgnore
     private IStorage.Operation mOperation;
 
-    private long        id;
+    private long        mId;
     private String      mOwner;
-    private long        origin;
-    private long        destination;
-    private long        msgId;
-    private String      direction;
-    private String      topic;
-    private MessageBody content;
+    private long        mOrigin;
+    private long        mDestination;
+    private long        mMsgId;
+    private String      mDirection;
+    private String      mTopic;
+    private MessageBody mContent;
 
     public IStorage.Operation operation()
     {
@@ -64,7 +64,7 @@ public class MessageDo
 
     public long getId()
     {
-        return id;
+        return mId;
     }
 
     public String getOwner()
@@ -79,66 +79,66 @@ public class MessageDo
 
     public void setId(long id)
     {
-        this.id = id;
+        this.mId = id;
     }
 
     public long getOrigin()
     {
-        return origin;
+        return mOrigin;
     }
 
     public void setOrigin(long origin)
     {
-        this.origin = origin;
+        this.mOrigin = origin;
     }
 
     public long getDestination()
     {
-        return destination;
+        return mDestination;
     }
 
     public void setDestination(long destination)
     {
-        this.destination = destination;
+        this.mDestination = destination;
     }
 
     public long getMsgId()
     {
-        return msgId;
+        return mMsgId;
     }
 
     public void setMsgId(long msgId)
     {
-        this.msgId = msgId;
+        this.mMsgId = msgId;
     }
 
     public String getDirection()
     {
-        return direction;
+        return mDirection;
     }
 
     public void setDirection(String direction)
     {
-        this.direction = direction;
+        this.mDirection = direction;
     }
 
     public String getTopic()
     {
-        return topic;
+        return mTopic;
     }
 
     public void setTopic(String topic)
     {
-        this.topic = topic;
+        this.mTopic = topic;
     }
 
     public MessageBody getContent()
     {
-        return content;
+        return mContent;
     }
 
     public void setContent(MessageBody content)
     {
-        this.content = content;
+        this.mContent = content;
     }
 }
