@@ -100,7 +100,7 @@
         <slf4j.version>1.7.30</slf4j.version>
         <logback.version>1.2.3</logback.version>
         <!--SPRING-BOOT-->
-        <spring-boot.version>2.4.2</spring-boot.version>
+        <spring-boot.version>2.4.3</spring-boot.version>
         <!--Commons-IO-->
         <commons-io.version>2.8.0</commons-io.version>
         <!--DB-->
@@ -118,6 +118,7 @@
         <ehcache.version>3.9.0</ehcache.version>
         <!--JSON-->
         <jackson.version>2.12.1</jackson.version>
+<!--        <jackson.version>2.11.4</jackson.version>-->
         <json-schema.version>1.0.48</json-schema.version>
     </properties>
     <dependencies>
@@ -282,6 +283,11 @@
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
@@ -298,6 +304,11 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.module</groupId>
                 <artifactId>jackson-module-jsonSchema</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.module</groupId>
+                <artifactId>jackson-module-jaxb-annotations</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
             <dependency>

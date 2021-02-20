@@ -24,6 +24,7 @@
 package com.isahl.chess.pawn.endpoint.spring.device.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,7 +57,11 @@ public class MessageService
     @Override
     public List<MessageBody> listByTopic(String topic, int limit) throws ZException
     {
-        return null;
+
+        List<MessageEntity> messageList = _MessageRepository.listByTopic(topic, limit);
+        return messageList.stream()
+                          .map(MessageEntity::getBody)
+                          .collect(Collectors.toList());
     }
 
     @Override
