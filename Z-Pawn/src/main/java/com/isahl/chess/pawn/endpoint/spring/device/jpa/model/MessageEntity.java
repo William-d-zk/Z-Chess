@@ -23,21 +23,6 @@
 
 package com.isahl.chess.pawn.endpoint.spring.device.jpa.model;
 
-import java.io.Serial;
-import java.time.LocalDateTime;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -49,6 +34,19 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.isahl.chess.king.base.schedule.Status;
 import com.isahl.chess.queen.db.inf.IStorage;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+import java.io.Serial;
+import java.time.LocalDateTime;
 
 /**
  * @author william.d.zk
@@ -88,7 +86,9 @@ public class MessageEntity
     private String owner;
     @Column(updatable = false, nullable = false)
     private long   msgId;
+    @Column(nullable = false)
     private Status status;
+    @Column(length = 511, nullable = false, updatable = false)
     private String topic;
 
     @Type(type = "jsonb")

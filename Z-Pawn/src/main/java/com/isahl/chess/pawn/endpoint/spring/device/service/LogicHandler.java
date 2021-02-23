@@ -23,25 +23,6 @@
 
 package com.isahl.chess.pawn.endpoint.spring.device.service;
 
-import static com.isahl.chess.bishop.io.Direction.CLIENT_TO_SERVER;
-import static com.isahl.chess.bishop.io.Direction.OWNER_CLIENT;
-import static com.isahl.chess.bishop.io.Direction.OWNER_SERVER;
-import static com.isahl.chess.bishop.io.Direction.SERVER_TO_CLIENT;
-import static com.isahl.chess.queen.db.inf.IStorage.Operation.OP_INSERT;
-import static com.isahl.chess.queen.db.inf.IStorage.Operation.OP_MODIFY;
-import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
-import static com.isahl.chess.queen.io.core.inf.IQoS.Level.EXACTLY_ONCE;
-import static java.lang.Math.min;
-
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import javax.net.ssl.SSLEngineResult;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.isahl.chess.bishop.io.mqtt.command.X113_QttPublish;
@@ -75,6 +56,24 @@ import com.isahl.chess.queen.io.core.inf.INode;
 import com.isahl.chess.queen.io.core.inf.IQoS;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionManager;
+
+import javax.net.ssl.SSLEngineResult;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import static com.isahl.chess.bishop.io.Direction.CLIENT_TO_SERVER;
+import static com.isahl.chess.bishop.io.Direction.OWNER_CLIENT;
+import static com.isahl.chess.bishop.io.Direction.OWNER_SERVER;
+import static com.isahl.chess.bishop.io.Direction.SERVER_TO_CLIENT;
+import static com.isahl.chess.queen.db.inf.IStorage.Operation.OP_INSERT;
+import static com.isahl.chess.queen.db.inf.IStorage.Operation.OP_MODIFY;
+import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
+import static com.isahl.chess.queen.io.core.inf.IQoS.Level.EXACTLY_ONCE;
+import static java.lang.Math.min;
 
 /**
  * @author william.d.zk
@@ -141,6 +140,7 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                 messageEntity.setDirection(CLIENT_TO_SERVER.getShort());
                 messageEntity.setOwner(x113.getLevel()
                                            .getValue() < EXACTLY_ONCE.getValue() ? OWNER_SERVER: OWNER_CLIENT);
+                messageEntity.setTopic(x113.getTopic());
                 messageEntity.setBody(new MessageBody(x113.getTopic(), JsonUtil.readTree(x113.getPayload())));
                 messageEntity.setCmd(X113_QttPublish.COMMAND);
                 messageEntity.setOperation(OP_INSERT);

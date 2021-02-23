@@ -23,16 +23,15 @@
 
 package com.isahl.chess.open.api;
 
-import java.util.List;
-
+import com.isahl.chess.king.base.response.ZResponse;
+import com.isahl.chess.pawn.endpoint.spring.device.jpa.model.MessageBody;
+import com.isahl.chess.pawn.endpoint.spring.device.spi.IMessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.isahl.chess.king.base.response.ZResponse;
-import com.isahl.chess.pawn.endpoint.spring.device.jpa.model.MessageBody;
-import com.isahl.chess.pawn.endpoint.spring.device.spi.IMessageService;
+import java.util.List;
 
 /**
  * @author william.d.zk
@@ -40,13 +39,13 @@ import com.isahl.chess.pawn.endpoint.spring.device.spi.IMessageService;
  * @date 2019/11/3
  */
 @RestController
-public class RawContentController
+public class MessageController
 {
 
     private final IMessageService _MessageService;
 
     @Autowired
-    public RawContentController(IMessageService messageService)
+    public MessageController(IMessageService messageService)
     {
         _MessageService = messageService;
     }
