@@ -23,23 +23,21 @@
 
 package com.isahl.chess.open.api.service;
 
-import static com.isahl.chess.queen.db.inf.IStorage.Operation.OP_INSERT;
-
-import java.util.List;
-
-import javax.persistence.EntityNotFoundException;
-
-import org.hibernate.LazyInitializationException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.jpa.JpaObjectRetrievalFailureException;
-import org.springframework.stereotype.Service;
-
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.open.api.model.MessageDo;
 import com.isahl.chess.pawn.endpoint.spring.device.jpa.model.MessageEntity;
 import com.isahl.chess.pawn.endpoint.spring.device.jpa.repository.IMessageJpaRepository;
+import org.hibernate.LazyInitializationException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.jpa.JpaObjectRetrievalFailureException;
+import org.springframework.stereotype.Service;
+
+import javax.persistence.EntityNotFoundException;
+import java.util.List;
+
+import static com.isahl.chess.queen.db.inf.IStorage.Operation.OP_INSERT;
 
 /**
  * @author william.d.zk
@@ -150,4 +148,5 @@ public class MessageOpenService
     {
         return _ZUID.getId();
     }
+
 }

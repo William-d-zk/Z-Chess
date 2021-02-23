@@ -23,17 +23,17 @@
 
 package com.isahl.chess.pawn.endpoint.spring.device.service;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.pawn.endpoint.spring.device.jpa.model.MessageBody;
 import com.isahl.chess.pawn.endpoint.spring.device.jpa.model.MessageEntity;
 import com.isahl.chess.pawn.endpoint.spring.device.jpa.repository.IMessageJpaRepository;
 import com.isahl.chess.pawn.endpoint.spring.device.spi.IMessageService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author william.d.zk
@@ -67,6 +67,10 @@ public class MessageService
     @Override
     public List<MessageEntity> findAfterId(long id)
     {
-        return null;
+        return _MessageRepository.findAll((Specification<MessageEntity>) (root,
+                                                                          criteriaQuery,
+                                                                          criteriaBuilder) -> criteriaQuery.where(criteriaBuilder.greaterThan(root.get("id"),
+                                                                                                                                              id))
+                                                                                                           .getRestriction());
     }
 }

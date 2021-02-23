@@ -23,10 +23,6 @@
 
 package com.isahl.chess.pawn.endpoint.spring.device.jpa.model;
 
-import java.io.Serial;
-import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -38,12 +34,17 @@ import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.pawn.endpoint.spring.device.model.RawContent;
 
+import java.io.Serial;
+import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+
 /**
  * @author william.d.zk
  * 
  * @date 2019-07-31
  */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class MessageBody
         implements
         Serializable
@@ -70,7 +71,6 @@ public class MessageBody
         return _Topic;
     }
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     public JsonNode getContent()
     {
         if (_Content == null || _Content.length == 0) {

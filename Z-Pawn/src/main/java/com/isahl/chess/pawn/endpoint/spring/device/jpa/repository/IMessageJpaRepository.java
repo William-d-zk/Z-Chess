@@ -23,15 +23,14 @@
 
 package com.isahl.chess.pawn.endpoint.spring.device.jpa.repository;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
+import com.isahl.chess.pawn.endpoint.spring.device.jpa.model.MessageEntity;
+import com.isahl.chess.pawn.spring.jpa.BaseRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.isahl.chess.pawn.endpoint.spring.device.jpa.model.MessageEntity;
-import com.isahl.chess.pawn.spring.jpa.BaseRepository;
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * @author william.d.zk
@@ -71,8 +70,7 @@ public interface IMessageJpaRepository
 
     List<MessageEntity> findAllByOriginAndMsgIdAfter(long origin, long msgId);
 
-    @Query(value = "select * from \"isahl-z-chess\".message m where m.body->>'topic'=:p_topic limit :p_limit order by desc ",
+    @Query(value = "select * from \"z-chess\".message m where m.body->>'topic'=:p_topic order by id desc limit :p_limit",
            nativeQuery = true)
     List<MessageEntity> listByTopic(@Param("p_topic") String topic, @Param("p_limit") int limit);
-
 }
