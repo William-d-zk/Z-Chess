@@ -23,19 +23,6 @@
 
 package com.isahl.chess.pawn.endpoint.spring.device.service;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.annotation.PostConstruct;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.isahl.chess.bishop.io.mqtt.handler.IQttRouter;
 import com.isahl.chess.bishop.io.sort.ZSortHolder;
 import com.isahl.chess.bishop.io.ws.zchat.zhandler.ZClusterMappingCustom;
@@ -52,7 +39,7 @@ import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.knight.raft.service.ClusterCustom;
 import com.isahl.chess.pawn.endpoint.spring.device.DeviceNode;
-import com.isahl.chess.pawn.endpoint.spring.device.config.DeviceConfig;
+import com.isahl.chess.pawn.endpoint.spring.device.config.MixConfig;
 import com.isahl.chess.pawn.endpoint.spring.device.jpa.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.spring.device.jpa.model.MessageBody;
 import com.isahl.chess.pawn.endpoint.spring.device.jpa.repository.IDeviceJpaRepository;
@@ -63,6 +50,18 @@ import com.isahl.chess.queen.config.IMixConfig;
 import com.isahl.chess.queen.event.handler.mix.ILinkCustom;
 import com.isahl.chess.queen.io.core.inf.IQoS;
 import com.isahl.chess.queen.io.core.inf.ISession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author william.d.zk
@@ -85,8 +84,8 @@ public class DeviceService
     private final LogicHandler<DeviceNode>  _LogicHandler;
 
     @Autowired
-    DeviceService(DeviceConfig deviceConfig,
-                  IAioConfig ioConfig,
+    DeviceService(MixConfig deviceConfig,
+                  @Qualifier("pawn_io_config") IAioConfig ioConfig,
                   IRaftConfig raftConfig,
                   IMixConfig mixConfig,
                   ILinkCustom linkCustom,

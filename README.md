@@ -36,10 +36,16 @@
 * 集成了springboot-rest作为服务接口层
 * 集群管理职能开发中。
 
-## Z-Rook 多路复用型客户端
+## Z-Rook 数据存储
 
 ## Z-Pawn endpoint，边缘服务；使用MQTT协议为嵌入性系统提供接入服务。
 
-## Z-Player Z-Chess管理后台
+## Z-Player 基于endpoint的 open api
 
-## Z-Audience Z-Chess 测试用例
+## Z-Referee 安全策略、授权内控
+
+## Z-Audience 测试用例等
+
+## Z-Arena 暂时作为启动器
+
+

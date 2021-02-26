@@ -26,7 +26,7 @@ package com.isahl.chess.pawn.endpoint.spring.device.jpa.repository;
 import org.springframework.stereotype.Repository;
 
 import com.isahl.chess.pawn.endpoint.spring.device.jpa.model.DeviceEntity;
-import com.isahl.chess.pawn.spring.jpa.BaseRepository;
+import com.isahl.chess.rook.storage.jpa.repository.BaseRepository;
 
 /**
  * @author william.d.zk
@@ -35,8 +35,7 @@ import com.isahl.chess.pawn.spring.jpa.BaseRepository;
  */
 @Repository
 public interface IDeviceJpaRepository
-        extends
-        BaseRepository<DeviceEntity>
+        extends BaseRepository<DeviceEntity>
 {
     DeviceEntity findByToken(String token);
 

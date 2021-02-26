@@ -24,7 +24,7 @@
 package com.isahl.chess.pawn.endpoint.spring.device.jpa.repository;
 
 import com.isahl.chess.pawn.endpoint.spring.device.jpa.model.MessageEntity;
-import com.isahl.chess.pawn.spring.jpa.BaseRepository;
+import com.isahl.chess.rook.storage.jpa.repository.BaseRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
