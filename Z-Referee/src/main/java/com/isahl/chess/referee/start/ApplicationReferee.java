@@ -21,22 +21,16 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.referee.security.oauth.service;
+package com.isahl.chess.referee.start;
 
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@Service
-public class UserDetailServiceImpl
-        implements
-        UserDetailsService
+@SpringBootApplication(scanBasePackages = {"com.isahl.chess.referee.security"})
+public class ApplicationReferee
 {
-
-    @Override
-    public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException
+    public static void main(String[] args)
     {
-        return null;
+        SpringApplication.run(ApplicationReferee.class, args);
     }
 }

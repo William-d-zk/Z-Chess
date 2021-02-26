@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.referee.security.oauth.config;
+package com.isahl.chess.referee.security.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -37,7 +37,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true, jsr250Enabled = true)
-@ConfigurationProperties( prefix = "z-chess.referee.security")
+@ConfigurationProperties(prefix = "z-chess.referee.security")
 @PropertySource("classpath:security.properties")
 public class SecurityConfig
         extends
@@ -59,6 +59,7 @@ public class SecurityConfig
     @Override
     protected void configure(HttpSecurity http) throws Exception
     {
+        /*
         http.headers()
             .frameOptions()
             .disable();
@@ -84,14 +85,12 @@ public class SecurityConfig
             .and()
             .logout()
             .logoutSuccessUrl("/login?logout");  //退出登录成功URL
-        /*
+        */
         http.httpBasic()  //HTTP Basic认证方式
             .and()
             .authorizeRequests()  // 授权配置
             .anyRequest()  // 所有请求
             .authenticated(); // 都需要认证
-        
-         */
     }
 
     @Override
@@ -105,6 +104,5 @@ public class SecurityConfig
     public BCryptPasswordEncoder passwordEncoder()
     {
         return new BCryptPasswordEncoder();
-
     }
 }
