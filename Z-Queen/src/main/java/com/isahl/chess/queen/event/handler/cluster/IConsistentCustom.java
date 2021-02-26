@@ -34,9 +34,12 @@ public interface IConsistentCustom
         extends
         IConsistentJudge
 {
-    <T extends ITraceable & IProtocol> IOperator<T,
-                                                 Throwable,
-                                                 Void> getOperator();
+    default <T extends ITraceable & IProtocol> IOperator<T,
+                                                         Throwable,
+                                                         Void> getOperator()
+    {
+        return this::resolve;
+    }
 
-    <T extends ITraceable & IProtocol> Void consistentHandle(T request, Throwable throwable);
+    <T extends ITraceable & IProtocol> Void resolve(T request, Throwable throwable);
 }

@@ -21,43 +21,23 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.model.log;
+package com.isahl.chess.pawn.cluster.jpa.consensus.repository;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.isahl.chess.bishop.io.json.JsonProtocol;
+import com.isahl.chess.pawn.cluster.jpa.consensus.model.ConsistentEntity;
 
-public abstract class BaseMeta
+/**
+ * @author william.d.zk
+ * 
+ * @date 2020/4/23
+ */
+@Repository
+public interface IDataJpaRepository
         extends
-        JsonProtocol
+        JpaRepository<ConsistentEntity,
+                      Long>
 {
 
-    @JsonIgnore
-    protected RandomAccessFile mFile;
-
-    void update()
-    {
-        try {
-            mFile.seek(0);
-            byte[] data = encode();
-            mFile.writeInt(dataLength());
-            mFile.write(data);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    void close()
-    {
-        update();
-        try {
-            mFile.close();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 }

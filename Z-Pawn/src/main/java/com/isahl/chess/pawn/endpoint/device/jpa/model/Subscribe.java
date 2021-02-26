@@ -21,43 +21,44 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.model.log;
+package com.isahl.chess.pawn.endpoint.device.jpa.model;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.Serial;
+import java.io.Serializable;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.isahl.chess.bishop.io.json.JsonProtocol;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.isahl.chess.queen.io.core.inf.IQoS;
 
-public abstract class BaseMeta
-        extends
-        JsonProtocol
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+public class Subscribe
+        implements
+        Serializable
 {
 
-    @JsonIgnore
-    protected RandomAccessFile mFile;
+    @Serial
+    private static final long serialVersionUID = 2015588893664180796L;
 
-    void update()
+    private final IQoS.Level _Level;
+    private final String     _Topic;
+
+    @JsonCreator
+    public Subscribe(@JsonProperty("level") IQoS.Level level,
+                     @JsonProperty("topic") String topic)
     {
-        try {
-            mFile.seek(0);
-            byte[] data = encode();
-            mFile.writeInt(dataLength());
-            mFile.write(data);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        _Level = level;
+        _Topic = topic;
     }
 
-    void close()
+    public IQoS.Level getLevel()
     {
-        update();
-        try {
-            mFile.close();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        return _Level;
+    }
+
+    public String getTopic()
+    {
+        return _Topic;
     }
 }

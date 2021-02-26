@@ -21,43 +21,18 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.model.log;
+package com.isahl.chess.player.api.config;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.annotation.Configuration;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.isahl.chess.bishop.io.json.JsonProtocol;
-
-public abstract class BaseMeta
-        extends
-        JsonProtocol
+/**
+ * @author william.d.zk
+ * 
+ * @date 2020/6/6
+ */
+@Configuration
+@EnableCaching
+public class EhcacheConfig
 {
-
-    @JsonIgnore
-    protected RandomAccessFile mFile;
-
-    void update()
-    {
-        try {
-            mFile.seek(0);
-            byte[] data = encode();
-            mFile.writeInt(dataLength());
-            mFile.write(data);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    void close()
-    {
-        update();
-        try {
-            mFile.close();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 }

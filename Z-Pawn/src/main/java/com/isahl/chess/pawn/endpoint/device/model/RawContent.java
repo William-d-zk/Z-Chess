@@ -21,43 +21,50 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.model.log;
+package com.isahl.chess.pawn.endpoint.device.model;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.Serial;
+import java.io.Serializable;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.isahl.chess.bishop.io.json.JsonProtocol;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
-public abstract class BaseMeta
-        extends
-        JsonProtocol
+/**
+ * @author Idempotent
+ * 
+ * @date 2019/12/1
+ */
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class RawContent
+        implements
+        Serializable
 {
 
-    @JsonIgnore
-    protected RandomAccessFile mFile;
+    @Serial
+    private static final long serialVersionUID = 2945521462766851875L;
 
-    void update()
+    private String raw;
+    private byte[] payload;
+
+    public String getRaw()
     {
-        try {
-            mFile.seek(0);
-            byte[] data = encode();
-            mFile.writeInt(dataLength());
-            mFile.write(data);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        return raw;
     }
 
-    void close()
+    public void setRaw(String raw)
     {
-        update();
-        try {
-            mFile.close();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.raw = raw;
+    }
+
+    public byte[] getPayload()
+    {
+        return payload;
+    }
+
+    public void setPayload(byte[] payload)
+    {
+        this.payload = payload;
     }
 }

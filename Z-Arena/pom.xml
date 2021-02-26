@@ -36,7 +36,12 @@
     <dependencies>
         <dependency>
             <groupId>com.isahl.chess</groupId>
-            <artifactId>endpoint.z-pawn</artifactId>
+            <artifactId>biz.z-player</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.isahl.chess</groupId>
+            <artifactId>security.z-referee</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
@@ -49,7 +54,7 @@
                 <version>${spring-boot.version}</version>
                 <configuration>
                     <layout>JAR</layout>
-                    <mainClass>com.isahl.chess.arena.ApplicationArena</mainClass>
+                    <mainClass>com.isahl.chess.arena.start.ApplicationArena</mainClass>
                     <excludes>
                         <exclude>
                             <groupId>org.springframework.boot</groupId>

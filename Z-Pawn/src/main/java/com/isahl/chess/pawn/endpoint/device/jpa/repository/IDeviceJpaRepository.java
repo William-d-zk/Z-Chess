@@ -21,43 +21,27 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.model.log;
+package com.isahl.chess.pawn.endpoint.device.jpa.repository;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import org.springframework.stereotype.Repository;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.isahl.chess.bishop.io.json.JsonProtocol;
+import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
+import com.isahl.chess.rook.storage.jpa.repository.BaseRepository;
 
-public abstract class BaseMeta
-        extends
-        JsonProtocol
+/**
+ * @author william.d.zk
+ * 
+ * @date 2020-1-20
+ */
+@Repository
+public interface IDeviceJpaRepository
+        extends BaseRepository<DeviceEntity>
 {
+    DeviceEntity findByToken(String token);
 
-    @JsonIgnore
-    protected RandomAccessFile mFile;
+    DeviceEntity findBySn(String sn);
 
-    void update()
-    {
-        try {
-            mFile.seek(0);
-            byte[] data = encode();
-            mFile.writeInt(dataLength());
-            mFile.write(data);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    DeviceEntity findBySnOrToken(String sn, String token);
 
-    void close()
-    {
-        update();
-        try {
-            mFile.close();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    DeviceEntity findByIdAndUsername(long id, String username);
 }

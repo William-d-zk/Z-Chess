@@ -21,43 +21,44 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.model.log;
+package com.isahl.chess.pawn.endpoint.device.model;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import com.isahl.chess.king.base.inf.IStatus;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.isahl.chess.bishop.io.json.JsonProtocol;
-
-public abstract class BaseMeta
-        extends
-        JsonProtocol
+/**
+ * @author william.d.zk
+ * 
+ * @date 2019-06-16
+ */
+public enum DeviceStatus
+        implements
+        IStatus
 {
 
-    @JsonIgnore
-    protected RandomAccessFile mFile;
+    MISS(CODE_MISS),
+    CREATED(CODE_CREATED),
+    INVALID(CODE_INVALID),
+    INCOMPLETE(CODE_INCOMPLETE),
+    AVAILABLE(CODE_AVAILABLE),
+    DISABLE(CODE_DISABLE);
 
-    void update()
+    private final int _Code;
+
+    DeviceStatus(int code)
     {
-        try {
-            mFile.seek(0);
-            byte[] data = encode();
-            mFile.writeInt(dataLength());
-            mFile.write(data);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        _Code = code;
     }
 
-    void close()
+    @Override
+    public String getStatus()
     {
-        update();
-        try {
-            mFile.close();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        return name();
     }
+
+    @Override
+    public int getCode()
+    {
+        return _Code;
+    }
+
 }

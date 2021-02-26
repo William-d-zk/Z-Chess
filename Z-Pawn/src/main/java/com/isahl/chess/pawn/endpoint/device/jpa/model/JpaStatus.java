@@ -21,43 +21,13 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.model.log;
+package com.isahl.chess.pawn.endpoint.device.jpa.model;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.isahl.chess.bishop.io.json.JsonProtocol;
-
-public abstract class BaseMeta
-        extends
-        JsonProtocol
+/**
+ * @author william.d.zk
+ * 
+ * @date 2019-06-15
+ */
+public enum JpaStatus
 {
-
-    @JsonIgnore
-    protected RandomAccessFile mFile;
-
-    void update()
-    {
-        try {
-            mFile.seek(0);
-            byte[] data = encode();
-            mFile.writeInt(dataLength());
-            mFile.write(data);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    void close()
-    {
-        update();
-        try {
-            mFile.close();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 }

@@ -21,43 +21,22 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.model.log;
+package com.isahl.chess.pawn.endpoint.device.spi;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.isahl.chess.bishop.io.json.JsonProtocol;
+import com.isahl.chess.king.base.exception.ZException;
+import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageBody;
+import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageEntity;
 
-public abstract class BaseMeta
-        extends
-        JsonProtocol
+/**
+ * @author william.d.zk
+ * 
+ * @date 2020/2/21
+ */
+public interface IMessageService
 {
+    List<MessageBody> listByTopic(String topic, int limit) throws ZException;
 
-    @JsonIgnore
-    protected RandomAccessFile mFile;
-
-    void update()
-    {
-        try {
-            mFile.seek(0);
-            byte[] data = encode();
-            mFile.writeInt(dataLength());
-            mFile.write(data);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    void close()
-    {
-        update();
-        try {
-            mFile.close();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    List<MessageEntity> findAfterId(long id) throws ZException;
 }
