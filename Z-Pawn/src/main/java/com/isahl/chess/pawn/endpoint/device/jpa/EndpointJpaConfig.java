@@ -25,21 +25,19 @@ package com.isahl.chess.pawn.endpoint.device.jpa;
 
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import com.isahl.chess.rook.storage.jpa.config.BaseJpaConfig;
 
 /**
  * @author william.d.zk
  */
-@EnableJpaAuditing
 @EnableJpaRepositories({"com.isahl.chess.pawn.endpoint.device.jpa.repository"})
 @EntityScan({"com.isahl.chess.pawn.endpoint.device.jpa.model"})
-@EnableTransactionManagement
 @Configuration
-@PropertySource({"classpath:db.properties"})
 public class EndpointJpaConfig
+        extends
+        BaseJpaConfig
 {
 
 }
