@@ -21,23 +21,21 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.referee.security.oauth.service;
+package com.isahl.chess.referee.security.service;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.isahl.chess.king.base.log.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.WebAttributes;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 
-import com.isahl.chess.king.base.log.Logger;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 @Component
 public class CustomAccessDeniedHandler
@@ -45,7 +43,7 @@ public class CustomAccessDeniedHandler
         AccessDeniedHandler
 {
 
-    private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("security.referee" + getClass().getSimpleName());
 
     @Override
     public void handle(HttpServletRequest request,

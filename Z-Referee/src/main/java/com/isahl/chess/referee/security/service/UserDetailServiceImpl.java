@@ -21,23 +21,34 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.referee.security.oauth.service;
+package com.isahl.chess.referee.security.service;
 
-import javax.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Component;
-import org.springframework.util.AntPathMatcher;
-
-@Component("rbacPermission")
-public class RbacPermission
+@Service
+public class UserDetailServiceImpl
+        implements
+        UserDetailsService
 {
 
-    private AntPathMatcher antPathMatcher = new AntPathMatcher();
+    private final PasswordEncoder _PasswordEncoder;
 
-    public boolean hasPermission(HttpServletRequest request, Authentication authentication)
+    @Autowired
+    public UserDetailServiceImpl(PasswordEncoder passwordEncoder)
     {
-        Object principal = authentication.getPrincipal();
-        return false;
+        _PasswordEncoder = passwordEncoder;
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException
+    {
+        return new User(username, _PasswordEncoder.encode("ok"), AuthorityUtils.createAuthorityList("admin"));
     }
 }
