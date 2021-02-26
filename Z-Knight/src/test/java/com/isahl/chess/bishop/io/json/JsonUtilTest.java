@@ -21,43 +21,27 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.model.log;
+package com.isahl.chess.bishop.io.json;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.isahl.chess.bishop.io.json.JsonProtocol;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.isahl.chess.king.base.response.ZResponse;
+import com.isahl.chess.king.base.util.JsonUtil;
+import com.isahl.chess.king.base.util.Pair;
 
-public abstract class BaseMeta
-        extends
-        JsonProtocol
+class JsonUtilTest
 {
-
-    @JsonIgnore
-    protected RandomAccessFile mFile;
-
-    void update()
+    @Test
+    void testZResponse()
     {
-        try {
-            mFile.seek(0);
-            byte[] data = encode();
-            mFile.writeInt(dataLength());
-            mFile.write(data);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    void close()
-    {
-        update();
-        try {
-            mFile.close();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        TypeReference<ZResponse<Pair<Integer,
+                                     String>>> _type = new TypeReference<ZResponse<Pair<Integer,
+                                                                                        String>>>()
+                                     {
+                                     };
+        String json = JsonUtil.writeValueAsString(ZResponse.success(new Pair<>(1, "2")));
+        ZResponse<?> read = JsonUtil.readValue(json, _type);
+        System.out.println(read);
     }
 }

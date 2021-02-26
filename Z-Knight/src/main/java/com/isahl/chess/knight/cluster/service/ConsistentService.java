@@ -23,41 +23,37 @@
 package com.isahl.chess.knight.cluster.service;
 
 import com.isahl.chess.bishop.io.ws.zchat.zhandler.ZClusterMappingCustom;
-import com.isahl.chess.king.base.disruptor.event.OperatorType;
 import com.isahl.chess.king.base.inf.IValid;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.schedule.ScheduleHandler;
 import com.isahl.chess.king.base.schedule.TimeWheel;
 import com.isahl.chess.king.base.schedule.inf.ICancelable;
 import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.knight.cluster.ClusterNode;
 import com.isahl.chess.knight.cluster.model.ConsistentProtocol;
 import com.isahl.chess.knight.raft.IRaftDao;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.model.RaftNode;
-import com.isahl.chess.knight.raft.service.ClusterCustom;
+import com.isahl.chess.knight.raft.service.IConsistentService;
+import com.isahl.chess.knight.raft.service.RaftCustom;
 import com.isahl.chess.queen.config.IAioConfig;
 import com.isahl.chess.queen.config.IClusterConfig;
-import com.isahl.chess.queen.event.QEvent;
 import com.isahl.chess.queen.event.handler.cluster.IConsistentCustom;
-import com.isahl.chess.queen.io.core.inf.IConsistent;
-import com.isahl.chess.queen.io.core.inf.IProtocol;
-import com.lmax.disruptor.RingBuffer;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class ConsistentService
+        implements
+        IConsistentService
 {
 
-    private final Logger                     _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
-    private final ClusterNode                _ClusterNode;
-    private final ClusterCustom<ClusterNode> _ClusterCustom;
-    private final IConsistentCustom          _ConsistentCustom;
-    private final RaftNode<ClusterNode>      _RaftNode;
-    private final TimeWheel                  _TimeWheel;
+    private final Logger                  _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
+    private final ClusterNode             _ClusterNode;
+    private final RaftCustom<ClusterNode> _RaftCustom;
+    private final IConsistentCustom       _ConsistentCustom;
+    private final RaftNode<ClusterNode>   _RaftNode;
+    private final TimeWheel               _TimeWheel;
 
     public ConsistentService(IAioConfig ioConfig,
                              IClusterConfig clusterConfig,
@@ -69,52 +65,25 @@ public class ConsistentService
         _ClusterNode = new ClusterNode(ioConfig, clusterConfig, raftConfig, _TimeWheel);
         _RaftNode = new RaftNode<>(_TimeWheel, raftConfig, raftDao, _ClusterNode);
         _ConsistentCustom = consistentCustom;
-        _ClusterCustom = new ClusterCustom<>(_RaftNode);
+        _RaftCustom = new RaftCustom<>(_RaftNode);
         start();
     }
 
     private void start() throws IOException
     {
-        _ClusterNode.start(new ZClusterMappingCustom<>(_ClusterCustom),
-                           _ConsistentCustom,
-                           new ClusterLogic(_ClusterNode));
+        _ClusterNode.start(new ZClusterMappingCustom<>(_RaftCustom), _ConsistentCustom, new ClusterLogic(_ClusterNode));
         _RaftNode.init();
         _RaftNode.start();
     }
 
-    public void consistentSubmit(String content, boolean pub, long origin)
+    public void submit(String content, boolean pub, long origin)
     {
         if (IoUtil.isBlank(content)) return;
-        consistentSubmit(new ConsistentProtocol(content.getBytes(StandardCharsets.UTF_8),
-                                                pub,
-                                                _ClusterNode.getZuid(),
-                                                origin));
-    }
-
-    public <T extends IConsistent & IProtocol> void consistentSubmit(T consensus)
-    {
-        if (consensus == null) return;
-        final ReentrantLock _Lock = _ClusterNode.getCore()
-                                                .getLock(OperatorType.CONSENSUS);
-        final RingBuffer<QEvent> _Publish = _ClusterNode.getCore()
-                                                        .getPublisher(OperatorType.CONSENSUS);
-        if (_Lock.tryLock()) {
-            try {
-                long sequence = _Publish.next();
-                try {
-                    QEvent event = _Publish.get(sequence);
-                    event.produce(OperatorType.CONSENSUS,
-                                  new Pair<>(consensus, consensus.getOrigin()),
-                                  _ConsistentCustom.getOperator());
-                }
-                finally {
-                    _Publish.publish(sequence);
-                }
-            }
-            finally {
-                _Lock.unlock();
-            }
-        }
+        ConsistentProtocol consensus = new ConsistentProtocol(content.getBytes(StandardCharsets.UTF_8),
+                                                              pub,
+                                                              _RaftNode.getRaftZuid(),
+                                                              origin);
+        submit(consensus, _ClusterNode, _ConsistentCustom);
         _Logger.debug("consistent submit %s", consensus);
     }
 

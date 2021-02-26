@@ -21,43 +21,31 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.model.log;
+package com.isahl.chess.pawn.endpoint.device.spi;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.isahl.chess.bishop.io.json.JsonProtocol;
+import com.isahl.chess.king.base.exception.ZException;
+import com.isahl.chess.king.base.util.Pair;
+import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
+import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageBody;
+import com.isahl.chess.queen.io.core.inf.IQoS;
 
-public abstract class BaseMeta
-        extends
-        JsonProtocol
+public interface IDeviceService
 {
+    DeviceEntity saveDevice(DeviceEntity device) throws ZException;
 
-    @JsonIgnore
-    protected RandomAccessFile mFile;
+    DeviceEntity findDevice(DeviceEntity key) throws ZException;
 
-    void update()
-    {
-        try {
-            mFile.seek(0);
-            byte[] data = encode();
-            mFile.writeInt(dataLength());
-            mFile.write(data);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    MessageBody getMessageById(long id) throws ZException;
 
-    void close()
-    {
-        update();
-        try {
-            mFile.close();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    List<DeviceEntity> findAllDevices() throws ZException;
+
+    Stream<DeviceEntity> getOnlineDevices(String username) throws ZException;
+
+    Stream<Pair<DeviceEntity,
+                Map<String,
+                    IQoS.Level>>> getOnlineDevicesWithTopic(String username) throws ZException;
 }

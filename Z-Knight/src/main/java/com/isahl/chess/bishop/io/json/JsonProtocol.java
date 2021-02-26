@@ -21,43 +21,40 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.model.log;
+package com.isahl.chess.bishop.io.json;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.util.Objects;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.isahl.chess.bishop.io.json.JsonProtocol;
+import com.isahl.chess.king.base.util.JsonUtil;
+import com.isahl.chess.queen.io.core.inf.IProtocol;
 
-public abstract class BaseMeta
-        extends
-        JsonProtocol
+/**
+ * @author william.d.zk
+ */
+public abstract class JsonProtocol
+        implements
+        IProtocol
 {
+    private int mLength;
 
-    @JsonIgnore
-    protected RandomAccessFile mFile;
-
-    void update()
+    @Override
+    public byte[] encode()
     {
-        try {
-            mFile.seek(0);
-            byte[] data = encode();
-            mFile.writeInt(dataLength());
-            mFile.write(data);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        byte[] b = JsonUtil.writeValueAsBytes(this);
+        Objects.requireNonNull(b);
+        mLength = b.length;
+        return b;
     }
 
-    void close()
+    @Override
+    public int decode(byte[] data)
     {
-        update();
-        try {
-            mFile.close();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        return mLength = data.length;
+    }
+
+    @Override
+    public int dataLength()
+    {
+        return mLength;
     }
 }

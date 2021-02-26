@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,55 +21,69 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.model.log;
+package com.isahl.chess.pawn.endpoint.device.jpa.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.isahl.chess.bishop.io.json.JsonProtocol;
-import com.isahl.chess.queen.db.inf.IStorage;
-import com.isahl.chess.queen.io.core.inf.IConsistent;
 
-/**
- * @author william.d.zk
- * 
- * @date 2020/7/13
- */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class Snapshot
-        extends
-        JsonProtocol
-        implements
-        IConsistent,
-        IStorage
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+public class DeviceProfile
 {
+    private String wifiMac;
+    private String sensorMac;
+    private String bluetoothMac;
+    private String imei;
+    private String imsi;
 
-    @Override
-    public long primaryKey()
+    public String getWifiMac()
     {
-        return 0;
+        return wifiMac;
     }
 
-    @Override
-    public Operation operation()
+    public void setWifiMac(String wifiMac)
     {
-        return null;
+        this.wifiMac = wifiMac;
     }
 
-    @Override
-    public Strategy strategy()
+    public String getSensorMac()
     {
-        return null;
+        return sensorMac;
     }
 
-    @Override
-    public int serial()
+    public void setSensorMac(String sensorMac)
     {
-        return 0;
+        this.sensorMac = sensorMac;
     }
 
-    @Override
-    public long getOrigin()
+    public String getBluetoothMac()
     {
-        return 0;
+        return bluetoothMac;
+    }
+
+    public void setBluetoothMac(String bluetoothMac)
+    {
+        this.bluetoothMac = bluetoothMac;
+    }
+
+    public String getImei()
+    {
+        return imei;
+    }
+
+    public void setImei(String imei)
+    {
+        this.imei = imei;
+    }
+
+    public String getImsi()
+    {
+        return imsi;
+    }
+
+    public void setImsi(String imsi)
+    {
+        this.imsi = imsi;
     }
 }

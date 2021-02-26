@@ -21,43 +21,25 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.model.log;
+package com.isahl.chess.pawn.cluster.jpa;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.isahl.chess.bishop.io.json.JsonProtocol;
-
-public abstract class BaseMeta
-        extends
-        JsonProtocol
+/**
+ * @author william.d.zk
+ */
+@EnableJpaAuditing
+@EnableJpaRepositories({"com.isahl.chess.pawn.cluster.jpa.consensus.repository"})
+@EntityScan({"com.isahl.chess.pawn.cluster.jpa.consensus.model"})
+@EnableTransactionManagement
+@Configuration
+@PropertySource({"classpath:db.properties"})
+public class ClusterJpaConfig
 {
 
-    @JsonIgnore
-    protected RandomAccessFile mFile;
-
-    void update()
-    {
-        try {
-            mFile.seek(0);
-            byte[] data = encode();
-            mFile.writeInt(dataLength());
-            mFile.write(data);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    void close()
-    {
-        update();
-        try {
-            mFile.close();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 }

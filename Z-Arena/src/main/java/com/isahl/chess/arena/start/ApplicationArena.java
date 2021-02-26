@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,43 +21,25 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.model.log;
+package com.isahl.chess.arena.start;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.isahl.chess.bishop.io.json.JsonProtocol;
+/**
+ * @author william.d.zk
+ */
 
-public abstract class BaseMeta
-        extends
-        JsonProtocol
+@SpringBootApplication(scanBasePackages = {"com.isahl.chess.knight.raft",
+                                           "com.isahl.chess.rook.storage",
+                                           "com.isahl.chess.pawn.endpoint",
+                                           "com.isahl.chess.arena.gateway",
+                                           "com.isahl.chess.player.api",
+                                           "com.isahl.chess.referee.security"})
+public class ApplicationArena
 {
-
-    @JsonIgnore
-    protected RandomAccessFile mFile;
-
-    void update()
+    public static void main(String[] args)
     {
-        try {
-            mFile.seek(0);
-            byte[] data = encode();
-            mFile.writeInt(dataLength());
-            mFile.write(data);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    void close()
-    {
-        update();
-        try {
-            mFile.close();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        SpringApplication.run(ApplicationArena.class, args);
     }
 }

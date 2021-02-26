@@ -70,14 +70,14 @@ public class ZLinkMappingCustom
                                                         Throwable,
                                                         Void> getOperator()
     {
-        return this::consistentHandle;
+        return this::resolve;
     }
 
     @Override
-    public <T extends ITraceable & IProtocol> Void consistentHandle(T request, Throwable throwable)
+    public <T extends ITraceable & IProtocol> Void resolve(T request, Throwable throwable)
     {
         if (_Then != null) {
-            _Then.consistentHandle(request, throwable);
+            _Then.resolve(request, throwable);
         }
         return null;
     }

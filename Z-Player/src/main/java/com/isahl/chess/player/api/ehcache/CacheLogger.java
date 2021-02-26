@@ -21,43 +21,33 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.model.log;
+package com.isahl.chess.player.api.ehcache;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import org.ehcache.event.CacheEvent;
+import org.ehcache.event.CacheEventListener;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.isahl.chess.bishop.io.json.JsonProtocol;
+import com.isahl.chess.king.base.log.Logger;
 
-public abstract class BaseMeta
-        extends
-        JsonProtocol
+/**
+ * @author william.d.zk
+ * 
+ * @date 2020/6/6
+ */
+public class CacheLogger
+        implements
+        CacheEventListener<Object,
+                           Object>
 {
+    private final Logger _Logger = Logger.getLogger("player.ehcache." + getClass().getSimpleName());
 
-    @JsonIgnore
-    protected RandomAccessFile mFile;
-
-    void update()
+    @Override
+    public void onEvent(CacheEvent<?,
+                                   ?> cacheEvent)
     {
-        try {
-            mFile.seek(0);
-            byte[] data = encode();
-            mFile.writeInt(dataLength());
-            mFile.write(data);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    void close()
-    {
-        update();
-        try {
-            mFile.close();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        _Logger.info("Key: {} | EventType: {} | Old value: {} | New value: {}",
+                     cacheEvent.getKey(),
+                     cacheEvent.getType(),
+                     cacheEvent.getOldValue(),
+                     cacheEvent.getNewValue());
     }
 }

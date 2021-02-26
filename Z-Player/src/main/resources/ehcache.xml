@@ -39,7 +39,7 @@
 
         <listeners>
             <listener>
-                <class>com.isahl.chess.player.ehcache.CacheLogger</class>
+                <class>com.isahl.chess.player.api.ehcache.CacheLogger</class>
                 <event-firing-mode>ASYNCHRONOUS</event-firing-mode>
                 <event-ordering-mode>UNORDERED</event-ordering-mode>
                 <events-to-fire-on>CREATED</events-to-fire-on>

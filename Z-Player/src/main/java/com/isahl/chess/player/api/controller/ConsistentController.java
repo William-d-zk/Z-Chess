@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -20,44 +20,35 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package com.isahl.chess.player.api.controller;
 
-package com.isahl.chess.knight.raft.model.log;
+import com.isahl.chess.knight.raft.service.IConsistentService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.time.Instant;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.isahl.chess.bishop.io.json.JsonProtocol;
-
-public abstract class BaseMeta
-        extends
-        JsonProtocol
+@RestController
+public class ConsistentController
 {
 
-    @JsonIgnore
-    protected RandomAccessFile mFile;
+    private final IConsistentService _ConsistentService;
 
-    void update()
+    @Autowired
+    public ConsistentController(IConsistentService consistentService)
     {
-        try {
-            mFile.seek(0);
-            byte[] data = encode();
-            mFile.writeInt(dataLength());
-            mFile.write(data);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        _ConsistentService = consistentService;
     }
 
-    void close()
+    @PostMapping("/consistent")
+    public @ResponseBody Object consistent(String input)
     {
-        update();
-        try {
-            mFile.close();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        _ConsistentService.submit(input,
+                                  true,
+                                  Instant.now()
+                                         .toEpochMilli());
+        return input;
     }
 }
