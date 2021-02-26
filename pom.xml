@@ -75,6 +75,24 @@
                     <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
                 </repository>
             </distributionManagement>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
     <modules>
@@ -85,9 +103,9 @@
         <module>Z-Rook</module>
         <module>Z-Pawn</module>
         <module>Z-Player</module>
-        <module>Z-Endpoint-Start</module>
-        <module>Z-Consensus-Start</module>
+        <module>Z-Referee</module>
         <module>Z-Audience</module>
+        <module>Z-Arena</module>
     </modules>
     <properties>
         <!--RT-->
@@ -118,7 +136,7 @@
         <ehcache.version>3.9.0</ehcache.version>
         <!--JSON-->
         <jackson.version>2.12.1</jackson.version>
-<!--        <jackson.version>2.11.4</jackson.version>-->
+        <!--        <jackson.version>2.11.4</jackson.version>-->
         <json-schema.version>1.0.48</json-schema.version>
     </properties>
     <dependencies>
@@ -220,6 +238,11 @@
                 <artifactId>spring-boot-configuration-processor</artifactId>
                 <version>${spring-boot.version}</version>
                 <optional>true</optional>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.security.oauth.boot</groupId>
+                <artifactId>spring-security-oauth2-autoconfigure</artifactId>
+                <version>${spring-boot.version}</version>
             </dependency>
             <!--  postgresql DB -->
             <dependency>
@@ -364,20 +387,6 @@
                 </executions>
             </plugin>
             -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>1.6</version>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-install-plugin</artifactId>

@@ -23,7 +23,13 @@
 
 package com.isahl.chess.pawn.cluster.spring.jpa.consensus.model;
 
-import java.util.Date;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.isahl.chess.knight.cluster.model.ConsistentProtocol;
+import com.isahl.chess.rook.storage.jpa.model.AuditModel;
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -33,15 +39,7 @@ import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.isahl.chess.knight.cluster.spring.model.ConsistentProtocol;
-import com.isahl.chess.pawn.cluster.spring.jpa.model.AuditModel;
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+import java.util.Date;
 
 /**
  * @author william.d.zk
@@ -109,5 +107,13 @@ public class ConsistentEntity
     public void setConsensusId(long consensusId)
     {
         this.consensusId = consensusId;
+    }
+
+    private final static int SERIAL = AUDIT_MODEL_SERIAL + 1000;
+
+    @Override
+    public int serial()
+    {
+        return SERIAL;
     }
 }

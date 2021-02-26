@@ -23,14 +23,6 @@
 
 package com.isahl.chess.pawn.endpoint.spring.device.service;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Component;
-
 import com.isahl.chess.bishop.io.mqtt.QttContext;
 import com.isahl.chess.bishop.io.mqtt.control.X111_QttConnect;
 import com.isahl.chess.bishop.io.mqtt.control.X112_QttConnack;
@@ -52,7 +44,7 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.knight.cluster.spring.model.ConsistentProtocol;
+import com.isahl.chess.knight.cluster.model.ConsistentProtocol;
 import com.isahl.chess.pawn.endpoint.spring.device.jpa.model.DeviceEntity;
 import com.isahl.chess.queen.db.inf.IStorage;
 import com.isahl.chess.queen.event.handler.mix.ILinkCustom;
@@ -62,8 +54,17 @@ import com.isahl.chess.queen.io.core.inf.IQoS;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionManager;
 import com.isahl.chess.queen.io.core.inf.ITraceable;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 @Component
+@Qualifier
 public class LinkCustom
         implements
         ILinkCustom

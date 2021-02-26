@@ -43,7 +43,6 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.schedule.ScheduleHandler;
 import com.isahl.chess.king.base.schedule.TimeWheel;
 import com.isahl.chess.king.topology.ZUID;
-import com.isahl.chess.knight.cluster.spring.IClusterNode;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.model.RaftMachine;
 import com.isahl.chess.queen.config.IAioConfig;
