@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,23 +21,18 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.cluster.jpa;
+package com.isahl.chess.rook.storage.jpa.config;
 
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import com.isahl.chess.rook.storage.jpa.config.BaseJpaConfig;
-
-/**
- * @author william.d.zk
- */
-@EnableJpaRepositories({"com.isahl.chess.pawn.cluster.jpa.consensus.repository"})
-@EntityScan({"com.isahl.chess.pawn.cluster.jpa.consensus.model"})
+@EnableJpaAuditing
+@EnableTransactionManagement
 @Configuration
-public class ClusterJpaConfig
-        extends
-        BaseJpaConfig
+@PropertySource({"classpath:db.properties"})
+public class BaseJpaConfig
 {
 
 }
