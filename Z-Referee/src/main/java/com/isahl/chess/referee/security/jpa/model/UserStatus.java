@@ -21,33 +21,11 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.referee.security.service;
+package com.isahl.chess.referee.security.jpa.model;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
-
-import com.isahl.chess.referee.security.jpa.repository.IUserRepository;
-
-@Service
-public class UserDetailServiceImpl
-        implements
-        UserDetailsService
+public enum UserStatus
 {
-
-    private final IUserRepository _UserRepository;
-
-    @Autowired
-    public UserDetailServiceImpl(IUserRepository userRepository)
-    {
-        _UserRepository = userRepository;
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException
-    {
-        return _UserRepository.findByUsername(username);
-    }
+    COMMON,
+    INVALID,
+    LOCKED;
 }

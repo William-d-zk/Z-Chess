@@ -55,7 +55,7 @@ import java.util.Map;
 /**
  * @author william.d.zk
  */
-@Entity(name = "Device")
+@Entity(name = "device")
 @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 @Table(indexes = {@Index(name = "device_idx_token_pwd_id", columnList = "token,password,passwordId"),
                   @Index(name = "device_idx_token_pwd", columnList = "token,password"),
@@ -64,7 +64,8 @@ import java.util.Map;
                   @Index(name = "device_idx_username", columnList = "username")})
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class DeviceEntity
-        extends AuditModel
+        extends
+        AuditModel
         implements
         IStorage
 {
