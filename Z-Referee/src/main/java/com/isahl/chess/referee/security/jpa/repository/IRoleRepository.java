@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,33 +21,17 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.player.api.ehcache;
+package com.isahl.chess.referee.security.jpa.repository;
 
-import org.ehcache.event.CacheEvent;
-import org.ehcache.event.CacheEventListener;
+import org.springframework.stereotype.Repository;
 
-import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.referee.security.jpa.model.RoleEntity;
+import com.isahl.chess.rook.storage.jpa.repository.BaseRepository;
 
-/**
- * @author william.d.zk
- * 
- * @date 2020/6/6
- */
-public class CacheLogger
-        implements
-        CacheEventListener<Object,
-                           Object>
+@Repository
+public interface IRoleRepository
+        extends
+        BaseRepository<RoleEntity>
 {
-    private final Logger _Logger = Logger.getLogger("player.ehcache." + getClass().getSimpleName());
-
-    @Override
-    public void onEvent(CacheEvent<?,
-                                   ?> cacheEvent)
-    {
-        _Logger.info("Key: {} | EventType: {} | Old value: {} | New value: {}",
-                     cacheEvent.getKey(),
-                     cacheEvent.getType(),
-                     cacheEvent.getOldValue(),
-                     cacheEvent.getNewValue());
-    }
+    RoleEntity findByName(String name);
 }

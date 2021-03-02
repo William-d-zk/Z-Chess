@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,18 +21,17 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.player.api.config;
+package com.isahl.chess.referee.security.jpa.repository;
 
-import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Repository;
 
-/**
- * @author william.d.zk
- * 
- * @date 2020/6/6
- */
-@Configuration
-@EnableCaching
-public class EhcacheConfig
+import com.isahl.chess.referee.security.jpa.model.PermissionEntity;
+import com.isahl.chess.rook.storage.jpa.repository.BaseRepository;
+
+@Repository
+public interface IPermissionRepository
+        extends
+        BaseRepository<PermissionEntity>
 {
+    PermissionEntity findByUrl(String url);
 }

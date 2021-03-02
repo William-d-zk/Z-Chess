@@ -21,33 +21,18 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.referee.security.service;
+package com.isahl.chess.referee.security.jpa.repository;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 
-import com.isahl.chess.referee.security.jpa.repository.IUserRepository;
+import com.isahl.chess.referee.security.jpa.model.UserEntity;
+import com.isahl.chess.rook.storage.jpa.repository.BaseRepository;
 
-@Service
-public class UserDetailServiceImpl
-        implements
-        UserDetailsService
+@Repository
+public interface IUserRepository
+        extends
+        BaseRepository<UserEntity>
 {
+    UserEntity findByUsername(String username);
 
-    private final IUserRepository _UserRepository;
-
-    @Autowired
-    public UserDetailServiceImpl(IUserRepository userRepository)
-    {
-        _UserRepository = userRepository;
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException
-    {
-        return _UserRepository.findByUsername(username);
-    }
 }

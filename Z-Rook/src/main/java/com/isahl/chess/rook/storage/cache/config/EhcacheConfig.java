@@ -21,33 +21,18 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.referee.security.service;
+package com.isahl.chess.rook.storage.cache.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.annotation.Configuration;
 
-import com.isahl.chess.referee.security.jpa.repository.IUserRepository;
-
-@Service
-public class UserDetailServiceImpl
-        implements
-        UserDetailsService
+/**
+ * @author william.d.zk
+ * 
+ * @date 2020/6/6
+ */
+@Configuration
+@EnableCaching
+public class EhcacheConfig
 {
-
-    private final IUserRepository _UserRepository;
-
-    @Autowired
-    public UserDetailServiceImpl(IUserRepository userRepository)
-    {
-        _UserRepository = userRepository;
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException
-    {
-        return _UserRepository.findByUsername(username);
-    }
 }

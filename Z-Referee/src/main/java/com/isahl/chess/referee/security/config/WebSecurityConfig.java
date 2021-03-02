@@ -39,10 +39,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true, jsr250Enabled = true)
 @ConfigurationProperties(prefix = "z-chess.referee.security")
 @PropertySource("classpath:security.properties")
-public class SecurityConfig
+public class WebSecurityConfig
         extends
         WebSecurityConfigurerAdapter
 {
+
+    private final BCryptPasswordEncoder _PasswordEncoder = new BCryptPasswordEncoder();
 
     private String[] ignorePatterns;
 
@@ -103,6 +105,6 @@ public class SecurityConfig
     @Bean
     public BCryptPasswordEncoder passwordEncoder()
     {
-        return new BCryptPasswordEncoder();
+        return _PasswordEncoder;
     }
 }

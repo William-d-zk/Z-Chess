@@ -54,7 +54,7 @@ import java.time.LocalDateTime;
  * 
  * @date 2019-07-22
  */
-@Entity(name = "Message")
+@Entity(name = "message")
 @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 @Table(indexes = {@Index(name = "message_idx_msg_id", columnList = "msgId"),
                   @Index(name = "origin_idx", columnList = "origin"),

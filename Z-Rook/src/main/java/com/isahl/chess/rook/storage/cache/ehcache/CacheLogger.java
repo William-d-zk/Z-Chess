@@ -21,33 +21,33 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.referee.security.service;
+package com.isahl.chess.rook.storage.cache.ehcache;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
+import org.ehcache.event.CacheEvent;
+import org.ehcache.event.CacheEventListener;
 
-import com.isahl.chess.referee.security.jpa.repository.IUserRepository;
+import com.isahl.chess.king.base.log.Logger;
 
-@Service
-public class UserDetailServiceImpl
+/**
+ * @author william.d.zk
+ * 
+ * @date 2020/6/6
+ */
+public class CacheLogger
         implements
-        UserDetailsService
+        CacheEventListener<Object,
+                           Object>
 {
-
-    private final IUserRepository _UserRepository;
-
-    @Autowired
-    public UserDetailServiceImpl(IUserRepository userRepository)
-    {
-        _UserRepository = userRepository;
-    }
+    private final Logger _Logger = Logger.getLogger("player.ehcache." + getClass().getSimpleName());
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException
+    public void onEvent(CacheEvent<?,
+                                   ?> cacheEvent)
     {
-        return _UserRepository.findByUsername(username);
+        _Logger.info("Key: {} | EventType: {} | Old value: {} | New value: {}",
+                     cacheEvent.getKey(),
+                     cacheEvent.getType(),
+                     cacheEvent.getOldValue(),
+                     cacheEvent.getNewValue());
     }
 }

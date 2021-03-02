@@ -21,23 +21,32 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.referee.security.service;
+package com.isahl.chess.referee.start;
 
-import javax.servlet.http.HttpServletRequest;
+import com.isahl.chess.referee.security.jpa.repository.IPermissionRepository;
+import com.isahl.chess.referee.security.jpa.repository.IRoleRepository;
+import com.isahl.chess.referee.security.service.InvocationSecurityMetadataSourceService;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.access.ConfigAttribute;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Component;
-import org.springframework.util.AntPathMatcher;
+import java.util.Collection;
 
-@Component("rbacPermission")
-public class RbacPermission
+@SpringBootTest
+class ApplicationRefereeTest
 {
+    @Autowired
+    IRoleRepository                         roleRepository;
+    @Autowired
+    IPermissionRepository                   permissionRepository;
+    @Autowired
+    InvocationSecurityMetadataSourceService invocationSecurityMetadataSourceService;
 
-    private AntPathMatcher antPathMatcher = new AntPathMatcher();
-
-    public boolean hasPermission(HttpServletRequest request, Authentication authentication)
+    @Test
+    void getRole()
     {
-        Object principal = authentication.getPrincipal();
-        return false;
+        Collection<ConfigAttribute> collection = invocationSecurityMetadataSourceService.getAllConfigAttributes();
+        System.out.println(collection);
     }
 }
