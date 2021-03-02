@@ -36,7 +36,7 @@ import javax.persistence.Table;
 import java.io.Serializable;
 
 @Entity(name = "permission")
-@Table(indexes = {@Index(name = "name-idx", columnList = "name"),
+@Table(indexes = {@Index(name = "name-idx", columnList = "\"name\""),
                   @Index(name = "url-idx", columnList = "url")})
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class PermissionEntity

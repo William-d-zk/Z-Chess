@@ -23,6 +23,7 @@
 
 package com.isahl.chess.referee.security.component;
 
+import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.CryptUtil;
 import com.isahl.chess.referee.security.jpa.model.PermissionEntity;
 import com.isahl.chess.referee.security.jpa.model.RoleEntity;
@@ -31,6 +32,7 @@ import com.isahl.chess.referee.security.jpa.repository.IPermissionRepository;
 import com.isahl.chess.referee.security.jpa.repository.IRoleRepository;
 import com.isahl.chess.referee.security.jpa.repository.IUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -46,15 +48,20 @@ public class JpaInitialization
     private final IUserRepository       _UserRepository;
     private final IPermissionRepository _PermissionRepository;
     private final CryptUtil             _CryptUtil = new CryptUtil();
+    private final BCryptPasswordEncoder _PasswordEncoder;
+
+    private final Logger _Logger = Logger.getLogger("security.referee." + getClass().getSimpleName());
 
     @Autowired
     public JpaInitialization(IRoleRepository roleRepository,
                              IUserRepository userRepository,
-                             IPermissionRepository permissionRepository)
+                             IPermissionRepository permissionRepository,
+                             BCryptPasswordEncoder passwordEncoder)
     {
         _RoleRepository = roleRepository;
         _UserRepository = userRepository;
         _PermissionRepository = permissionRepository;
+        _PasswordEncoder = passwordEncoder;
     }
 
     @PostConstruct
@@ -99,8 +106,10 @@ public class JpaInitialization
             authorities.add(_RoleRepository.findByName("admin"));
             user.setAuthorities(authorities);
             user.setInvalidAt(LocalDateTime.now()
-                                           .plusYears(15));
-            user.setPassword(_CryptUtil.randomPassword(17, 32));
+                                           .plusYears(5));
+            String password = _CryptUtil.randomPassword(17, 32);
+            _Logger.info("user:%s,pwd-plain:%s", user.getUsername(), password);
+            user.setPassword(_PasswordEncoder.encode(password));
             _UserRepository.save(user);
         }
         if (users.stream()
@@ -112,7 +121,9 @@ public class JpaInitialization
             user.setAuthorities(Collections.singletonList(_RoleRepository.findByName("user")));
             user.setInvalidAt(LocalDateTime.now()
                                            .plusYears(1));
-            user.setPassword(_CryptUtil.randomPassword(9, 12));
+            String password = _CryptUtil.randomPassword(9, 12);
+            _Logger.info("user:%s,pwd-plain:%s", user.getUsername(), password);
+            user.setPassword(_PasswordEncoder.encode(password));
             _UserRepository.save(user);
         }
         if (permissions.stream()

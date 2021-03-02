@@ -25,7 +25,9 @@ package com.isahl.chess.referee.security.jpa.model;
 
 public enum UserStatus
 {
+
     COMMON,
     INVALID,
-    LOCKED;
+    LOCKED,
+    DISABLED;
 }
