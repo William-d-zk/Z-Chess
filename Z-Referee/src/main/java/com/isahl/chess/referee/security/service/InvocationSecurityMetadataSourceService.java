@@ -99,6 +99,6 @@ public class InvocationSecurityMetadataSourceService
     @Override
     public boolean supports(Class<?> clazz)
     {
-        return false;
+        return true;
     }
 }

@@ -47,6 +47,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.isahl.chess.referee.security.jpa.model.UserStatus.COMMON;
+import static com.isahl.chess.referee.security.jpa.model.UserStatus.DISABLED;
 
 @Entity(name = "user")
 @Table(indexes = {@Index(name = "username_idx", columnList = "username")})
@@ -121,7 +122,7 @@ public class UserEntity
     @Override
     public boolean isEnabled()
     {
-        return false;
+        return status!=DISABLED;
     }
 
     public void setUsername(String username)
