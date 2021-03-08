@@ -42,7 +42,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
+/**
+ * @author william.d.zk
+ * @date 2021/3/1
+ */
 @Service
 public class InvocationSecurityMetadataSourceService
         implements

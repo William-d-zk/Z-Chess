@@ -40,6 +40,10 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 
+/**
+ * @author william.d.zk
+ * @date 2021/3/5
+ */
 @Entity(name = "role")
 @Table(indexes = {@Index(name = "role_name_idx", columnList = "name")})
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)

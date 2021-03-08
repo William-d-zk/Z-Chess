@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.referee.security.jpa.model;
+package com.isahl.chess.referee.security.jpa.model.oauth;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -29,93 +29,55 @@ import com.isahl.chess.rook.storage.jpa.model.AuditModel;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.Table;
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
  * @author william.d.zk
  * @date 2021/3/5
  */
-@Entity(name = "permission")
-@Table(indexes = {@Index(name = "name_idx", columnList = "name"),
-                  @Index(name = "url_idx", columnList = "url")})
+@Entity
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class PermissionEntity
+public class OauthAccessToken
         extends
         AuditModel
         implements
         Serializable
+
 {
+    @Serial
+    private static final long serialVersionUID = 3470254183734664175L;
+
+    public static int SERIAL_OAUTH_ACCESS_TOKEN = ClientDetail.SERIAL_CLIENT_DETAIL + 1;
+
     @Id
-    @GeneratedValue
-    private long   id;
-    @Column(nullable = false, unique = true)
-    private String name;
-    @Column(nullable = false, unique = true)
-    private String url;
+    private String authenticationId;
     @Column(nullable = false)
-    private String description;
-    private int    priority;
-
-    public void setId(long id)
-    {
-        this.id = id;
-    }
-
-    public long getId()
-    {
-        return id;
-    }
-
-    public static int SERIAL_PERMISSION = RoleEntity.SERIAL_ROLE + 1;
+    private byte[] authentication;
+    @Column(nullable = false)
+    private String tokenId;
+    @Column(nullable = false)
+    private byte[] token;
+    @Column(nullable = false)
+    private String username;
+    @Column(nullable = false)
+    private String clientId;
+    private String refreshToken;
 
     @Override
     public int serial()
     {
-        return SERIAL_PERMISSION;
+        return SERIAL_OAUTH_ACCESS_TOKEN;
     }
 
-    public String getName()
+    public String getAuthenticationId()
     {
-        return name;
+        return authenticationId;
     }
 
-    public void setName(String name)
+    public void setAuthenticationId(String authenticationId)
     {
-        this.name = name;
+        this.authenticationId = authenticationId;
     }
-
-    public String getUrl()
-    {
-        return url;
-    }
-
-    public void setUrl(String url)
-    {
-        this.url = url;
-    }
-
-    public String getDescription()
-    {
-        return description;
-    }
-
-    public void setDescription(String description)
-    {
-        this.description = description;
-    }
-
-    public int getPriority()
-    {
-        return priority;
-    }
-
-    public void setPriority(int priority)
-    {
-        this.priority = priority;
-    }
-
 }

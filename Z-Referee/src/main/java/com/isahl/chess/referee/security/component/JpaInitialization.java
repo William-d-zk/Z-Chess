@@ -41,6 +41,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * @author william.d.zk
+ * @date 2021/3/5
+ */
 @Component
 public class JpaInitialization
 {

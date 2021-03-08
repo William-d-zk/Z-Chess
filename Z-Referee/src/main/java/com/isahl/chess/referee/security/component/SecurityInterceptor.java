@@ -39,6 +39,10 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import java.io.IOException;
 
+/**
+ * @author william.d.zk
+ * @date 2021/3/5
+ */
 @Component
 public class SecurityInterceptor
         extends

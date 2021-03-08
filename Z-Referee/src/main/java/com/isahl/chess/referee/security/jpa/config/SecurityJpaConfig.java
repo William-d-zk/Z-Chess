@@ -28,7 +28,10 @@ import org.springframework.context.annotation.Configuration;
 
 import com.isahl.chess.rook.storage.jpa.config.BaseJpaConfig;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-
+/**
+ * @author william.d.zk
+ * @date 2021/2/5
+ */
 @Configuration
 @EnableJpaRepositories({"com.isahl.chess.referee.security.jpa.repository"})
 @EntityScan({"com.isahl.chess.referee.security.jpa.model"})

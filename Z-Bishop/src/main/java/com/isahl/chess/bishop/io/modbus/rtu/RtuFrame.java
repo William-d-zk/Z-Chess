@@ -21,37 +21,67 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.referee.security.service;
+package com.isahl.chess.bishop.io.modbus.rtu;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
-
-import com.isahl.chess.referee.security.jpa.repository.IUserRepository;
+import com.isahl.chess.bishop.io.modbus.ModbusProtocol;
+import com.isahl.chess.queen.io.core.inf.IFrame;
 
 /**
  * @author william.d.zk
- * @date 2021/3/1
+ * @date 2021/3/7
  */
-@Service
-public class UserDetailServiceImpl
+public class RtuFrame
+        extends
+        ModbusProtocol
         implements
-        UserDetailsService
+        IFrame
 {
 
-    private final IUserRepository _UserRepository;
-
-    @Autowired
-    public UserDetailServiceImpl(IUserRepository userRepository)
+    @Override
+    public void reset()
     {
-        _UserRepository = userRepository;
+
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException
+    public void setCtrl(byte ctrl)
     {
-        return _UserRepository.findByUsername(username);
+
+    }
+
+    @Override
+    public void setPayload(byte[] payload)
+    {
+
+    }
+
+    @Override
+    public byte[] getPayload()
+    {
+        return new byte[0];
+    }
+
+    @Override
+    public byte getCtrl()
+    {
+        return 0;
+    }
+
+    @Override
+    public boolean isCtrl()
+    {
+        return false;
+    }
+
+    @Override
+    public int dataLength()
+    {
+        return 0;
+    }
+
+    @Override
+    public int serial()
+    {
+        return 0;
     }
 }

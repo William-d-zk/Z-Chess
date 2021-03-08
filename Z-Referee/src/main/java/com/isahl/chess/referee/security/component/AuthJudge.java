@@ -33,6 +33,10 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 
+/**
+ * @author william.d.zk
+ * @date 2021/3/5
+ */
 @Component
 public class AuthJudge
         implements

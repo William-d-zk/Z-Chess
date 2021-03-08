@@ -21,37 +21,29 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.referee.security.service;
+package com.isahl.chess.referee.security.jpa.model.oauth;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
-
-import com.isahl.chess.referee.security.jpa.repository.IUserRepository;
+import javax.persistence.Column;
+import javax.persistence.Id;
 
 /**
  * @author william.d.zk
- * @date 2021/3/1
+ * @date 2021/3/5
  */
-@Service
-public class UserDetailServiceImpl
-        implements
-        UserDetailsService
+public class OauthClientDetails
 {
+    @Id
+    private String   clientId;
+    private String[] resourceIds;
+    private String   scope;
+    private String   clientSecret;
+    private String[] authorizedGrantTypes;
+    private String   webServerRedirectUri;
+    private String[] authorities;
+    private boolean  accessTokenValidity;
+    private boolean  refreshTokenValidity;
+    @Column(length = 4096, nullable = false)
+    private byte[]   additionalInformation;
+    private String   autoapprove;
 
-    private final IUserRepository _UserRepository;
-
-    @Autowired
-    public UserDetailServiceImpl(IUserRepository userRepository)
-    {
-        _UserRepository = userRepository;
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException
-    {
-        return _UserRepository.findByUsername(username);
-    }
 }
