@@ -28,6 +28,10 @@ import org.springframework.stereotype.Repository;
 import com.isahl.chess.referee.security.jpa.model.UserEntity;
 import com.isahl.chess.rook.storage.jpa.repository.BaseRepository;
 
+/**
+ * @author william.d.zk
+ * @date 2021/3/5
+ */
 @Repository
 public interface IUserRepository
         extends

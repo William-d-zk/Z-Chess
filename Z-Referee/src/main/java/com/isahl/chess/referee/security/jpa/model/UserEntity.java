@@ -46,9 +46,13 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static com.isahl.chess.referee.security.jpa.model.UserStatus.COMMON;
-import static com.isahl.chess.referee.security.jpa.model.UserStatus.DISABLED;
+import static com.isahl.chess.referee.security.jpa.model.Status.COMMON;
+import static com.isahl.chess.referee.security.jpa.model.Status.DISABLED;
 
+/**
+ * @author william.d.zk
+ * @date 2021/3/5
+ */
 @Entity(name = "user")
 @Table(indexes = {@Index(name = "username_idx", columnList = "username")})
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
@@ -72,7 +76,7 @@ public class UserEntity
     @Column(name = "invalid_at", nullable = false)
     private LocalDateTime invalidAt;
     @Column(nullable = false)
-    private UserStatus    status = COMMON;
+    private Status        status = COMMON;
 
     @ManyToMany(fetch = FetchType.EAGER)
     private List<RoleEntity> authorities;
@@ -103,13 +107,13 @@ public class UserEntity
     @Override
     public boolean isAccountNonExpired()
     {
-        return status != UserStatus.INVALID;
+        return status != Status.INVALID;
     }
 
     @Override
     public boolean isAccountNonLocked()
     {
-        return status != UserStatus.LOCKED;
+        return status != Status.LOCKED;
     }
 
     @Override
@@ -122,7 +126,7 @@ public class UserEntity
     @Override
     public boolean isEnabled()
     {
-        return status!=DISABLED;
+        return status != DISABLED;
     }
 
     public void setUsername(String username)
@@ -165,12 +169,12 @@ public class UserEntity
         this.invalidAt = invalidAt;
     }
 
-    public UserStatus getStatus()
+    public Status getStatus()
     {
         return status;
     }
 
-    public void setStatus(UserStatus status)
+    public void setStatus(Status status)
     {
         this.status = status;
     }

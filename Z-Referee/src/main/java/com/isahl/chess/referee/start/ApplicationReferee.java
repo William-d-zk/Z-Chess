@@ -26,6 +26,10 @@ package com.isahl.chess.referee.start;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+/**
+ * @author william.d.zk
+ * @date 2021/3/1
+ */
 @SpringBootApplication(scanBasePackages = {"com.isahl.chess.referee.security"})
 public class ApplicationReferee
 {

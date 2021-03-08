@@ -21,13 +21,21 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.referee.security.jpa.model;
+package com.isahl.chess.referee.security.jpa.model.oauth;
 
-public enum UserStatus
+import javax.persistence.Column;
+import javax.persistence.Table;
+
+/**
+ * @author william.d.zk
+ * @date 2021/3/5
+ */
+@Table
+public class OauthRefreshToken
 {
 
-    COMMON,
-    INVALID,
-    LOCKED,
-    DISABLED;
+    @Column(length = 4096)
+    private byte[] authentication;
+    private byte[] token;
+    private String tokenId;
 }
