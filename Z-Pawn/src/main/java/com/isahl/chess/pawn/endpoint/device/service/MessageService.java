@@ -28,10 +28,12 @@ import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageBody;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageEntity;
 import com.isahl.chess.pawn.endpoint.device.jpa.repository.IMessageJpaRepository;
 import com.isahl.chess.pawn.endpoint.device.spi.IMessageService;
+import com.isahl.chess.pawn.endpoint.device.spi.plugin.IMessagePlugin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,11 +49,14 @@ public class MessageService
 {
 
     private final IMessageJpaRepository _MessageRepository;
+    private final List<IMessagePlugin>  _MessagePlugins;
 
     @Autowired
-    public MessageService(IMessageJpaRepository jpaRepository)
+    public MessageService(IMessageJpaRepository jpaRepository,
+                          List<IMessagePlugin> messagePlugins)
     {
         _MessageRepository = jpaRepository;
+        _MessagePlugins = messagePlugins;
     }
 
     @Override
@@ -73,4 +78,24 @@ public class MessageService
                                                                                                                                               id))
                                                                                                            .getRestriction());
     }
+
+    @Override
+    public MessageEntity handleMessage(MessageEntity msgEntity)
+    {
+        _MessagePlugins.forEach(plugin -> plugin.handleMessage(msgEntity));
+        return msgEntity;
+    }
+
+    @Override
+    public MessageEntity find1Msg(long src, long dest, long msgId, LocalDateTime time)
+    {
+        return _MessageRepository.findByOriginAndDestinationAndMsgIdAndCreatedAtAfter(src, dest, msgId, time);
+    }
+
+    @Override
+    public MessageEntity find1Msg(long msgUid)
+    {
+        return _MessageRepository.getOne(msgUid);
+    }
+
 }

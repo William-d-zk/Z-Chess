@@ -23,11 +23,12 @@
 
 package com.isahl.chess.pawn.endpoint.device.spi;
 
-import java.util.List;
-
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageBody;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageEntity;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * @author william.d.zk
@@ -39,4 +40,10 @@ public interface IMessageService
     List<MessageBody> listByTopic(String topic, int limit) throws ZException;
 
     List<MessageEntity> findAfterId(long id) throws ZException;
+
+    MessageEntity handleMessage(MessageEntity msgEntity);
+
+    MessageEntity find1Msg(long src, long dest, long msgId, LocalDateTime time);
+
+    MessageEntity find1Msg(long msgUid);
 }
