@@ -69,12 +69,14 @@ public abstract class ModbusRtuProtocol
     @Override
     public int decodec(byte[] data, int pos)
     {
+        int off = pos;
         mAddress = data[pos++];
         mCtrl = data[pos++];
         mPayload = new byte[data.length - 2 - pos];
         pos += IoUtil.read(data, pos, mPayload);
         mCrc = IoUtil.readShort(data, pos);
         pos += 2;
+        mLength = pos - off;
         return pos;
     }
 
