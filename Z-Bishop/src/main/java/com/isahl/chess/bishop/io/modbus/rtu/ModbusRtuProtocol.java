@@ -23,65 +23,64 @@
 
 package com.isahl.chess.bishop.io.modbus.rtu;
 
-import com.isahl.chess.bishop.io.modbus.ModbusProtocol;
-import com.isahl.chess.queen.io.core.inf.IFrame;
+import com.isahl.chess.king.base.util.CryptUtil;
+import com.isahl.chess.king.base.util.IoUtil;
+import com.isahl.chess.queen.io.core.inf.IProtocol;
 
 /**
  * @author william.d.zk
- * @date 2021/3/7
+ * @date 2021/3/21
  */
-public class RtuFrame
-        extends
-        ModbusProtocol
+public abstract class ModbusRtuProtocol
         implements
-        IFrame
+        IProtocol
 {
 
-    @Override
-    public void reset()
+    public ModbusRtuProtocol(byte address,
+                             byte ctrl,
+                             byte[] payload)
     {
+        mAddress = address;
+        mCtrl = ctrl;
+        mPayload = payload;
+    }
 
+    public ModbusRtuProtocol()
+    {
+    }
+
+    protected int    mLength;
+    protected byte   mAddress;
+    protected byte   mCtrl;
+    protected byte[] mPayload;
+    protected int    mCrc;
+
+    @Override
+    public int encodec(byte[] data, int pos)
+    {
+        int off = pos;
+        pos += IoUtil.writeByte(mAddress, data, pos);
+        pos += IoUtil.writeByte(mCtrl, data, pos);
+        pos += IoUtil.write(mPayload, data, pos);
+        pos += IoUtil.writeShort(mCrc = CryptUtil.crc16_modbus(data, off, pos - off), data, pos);
+        return pos;
     }
 
     @Override
-    public void setCtrl(byte ctrl)
+    public int decodec(byte[] data, int pos)
     {
-
-    }
-
-    @Override
-    public void setPayload(byte[] payload)
-    {
-
-    }
-
-    @Override
-    public byte[] getPayload()
-    {
-        return new byte[0];
-    }
-
-    @Override
-    public byte getCtrl()
-    {
-        return 0;
-    }
-
-    @Override
-    public boolean isCtrl()
-    {
-        return false;
+        mAddress = data[pos++];
+        mCtrl = data[pos++];
+        mPayload = new byte[data.length - 2 - pos];
+        pos += IoUtil.read(data, pos, mPayload);
+        mCrc = IoUtil.readShort(data, pos);
+        pos += 2;
+        return pos;
     }
 
     @Override
     public int dataLength()
     {
-        return 0;
-    }
-
-    @Override
-    public int serial()
-    {
-        return 0;
+        return mLength > 0 ? mLength: (mLength = 4 + (mPayload == null ? 0: mPayload.length));
     }
 }

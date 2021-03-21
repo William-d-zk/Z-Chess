@@ -23,14 +23,14 @@
 
 package com.isahl.chess.king.base.util;
 
-import static java.lang.System.arraycopy;
-
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ReadOnlyBufferException;
 import java.nio.charset.Charset;
 import java.util.Objects;
 import java.util.function.Consumer;
+
+import static java.lang.System.arraycopy;
 
 /**
  * @author William.d.zk
@@ -839,6 +839,15 @@ public interface IoUtil
     static String readString(byte[] data, int pos, int length, Charset charset)
     {
         return new String(data, pos, length, charset);
+    }
+
+    static int swapLhb(int src)
+    {
+        int dest = 0;
+        dest = src & 0xFF00;
+        dest >>= 8;
+        dest |= (src & 0x00FF) << 8;
+        return dest;
     }
 
     static boolean isBlank(final CharSequence cs)

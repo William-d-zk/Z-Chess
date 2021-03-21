@@ -33,13 +33,24 @@ import org.junit.jupiter.api.Test;
 class CryptUtilTest
 {
 
+    private CryptUtil cryptUtil = new CryptUtil();
+
     @Test
     void randomPassword()
     {
-        CryptUtil cryptUtil = new CryptUtil();
         for (int i = 0; i < 100; i++) {
             String passwd = cryptUtil.randomPassword(17, 31);
             System.out.println(passwd);
         }
+    }
+
+    @Test
+    void crcTest()
+    {
+        byte[] input = IoUtil.hex2bin("ABC0");
+        int crc16 = CryptUtil.crc16(input, 0, input.length);
+        System.out.println(IoUtil.long2Hex(IoUtil.swapLhb(crc16), ":"));
+        int crc32 = CryptUtil.crc32(input, 0, input.length);
+        System.out.println(IoUtil.long2Hex(crc32, ":"));
     }
 }

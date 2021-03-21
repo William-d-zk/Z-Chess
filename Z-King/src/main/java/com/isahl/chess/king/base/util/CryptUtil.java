@@ -86,6 +86,27 @@ public class CryptUtil
         return (s2 << 16) & 0xFFFF0000 | s1 & 0xFFFF;
     }
 
+    public static int crc16(byte[] buf, int off, int len)
+    {
+        int crc = 0xFFFF;
+        while (len-- != 0) {
+            crc ^= buf[off++] & 0xFF;
+            for (int i = 0; i < 8; i++) {
+                if ((crc & 1) > 0) {
+                    crc >>>= 1;
+                    crc ^= 0xA001;
+                }
+                else crc >>>= 1;
+            }
+        }
+        return crc;
+    }
+
+    public static int crc16_modbus(byte[] buf, int off, int len)
+    {
+        return IoUtil.swapLhb(crc16(buf, off, len));
+    }
+
     public static int crc32(byte[] buf, int off, int len)
     {
         int crc = 0xFFFFFFFF;
