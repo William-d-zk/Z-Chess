@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -20,28 +20,19 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.isahl.chess.queen.io.core.inf;
 
-import java.net.InetSocketAddress;
+package com.isahl.chess.queen.io.core.async.inf;
+
+import com.isahl.chess.queen.io.core.inf.INetworkOption;
+import com.isahl.chess.queen.io.core.inf.IPContext;
+import com.isahl.chess.queen.io.core.inf.ISort;
 
 /**
  * @author william.d.zk
  */
-public interface IAddress
+public interface IAioSort<C extends IPContext>
+        extends
+        ISort<C>
 {
-
-    InetSocketAddress getRemoteAddress();
-
-    default void setRemoteAddress(InetSocketAddress address)
-    {
-        throw new UnsupportedOperationException("final member!");
-    }
-
-    InetSocketAddress getLocalAddress();
-
-    default void setLocalAddress(InetSocketAddress address)
-    {
-        throw new UnsupportedOperationException("final member!");
-    }
-
+    C newContext(INetworkOption option);
 }

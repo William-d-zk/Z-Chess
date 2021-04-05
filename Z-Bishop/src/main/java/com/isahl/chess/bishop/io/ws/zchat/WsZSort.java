@@ -34,11 +34,11 @@ import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZConsumerFactory;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZServerFactory;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZSymmetryFactory;
 import com.isahl.chess.queen.io.core.inf.IFilterChain;
-import com.isahl.chess.queen.io.core.inf.ISessionOption;
+import com.isahl.chess.queen.io.core.inf.INetworkOption;
 
 public class WsZSort
         extends
-        BaseSort<WsContext>
+        BaseSort<WsContext >
 {
 
     private final WsHandShakeFilter<WsContext> _Head = new WsHandShakeFilter<>();
@@ -62,7 +62,7 @@ public class WsZSort
     }
 
     @Override
-    public WsContext newContext(ISessionOption option)
+    public WsContext newContext(INetworkOption option)
     {
         return new WsContext(option, getMode(), getType());
     }

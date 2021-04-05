@@ -31,7 +31,7 @@ package com.isahl.chess.queen.io.core.inf;
  * 
  * @author william.d.zk
  * 
- * @see ICommandCreator
+ * @see IConnectedCommand
  */
 public interface ICommandFactory<T extends IProtocol,
                                  I extends IFrame>

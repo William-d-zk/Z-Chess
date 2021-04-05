@@ -22,9 +22,6 @@
  */
 package com.isahl.chess.queen.io.core.async;
 
-import java.nio.channels.AsynchronousSocketChannel;
-import java.util.Objects;
-
 import com.isahl.chess.king.base.disruptor.event.OperatorType;
 import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
 import com.isahl.chess.king.base.inf.IError;
@@ -35,14 +32,18 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.event.QEvent;
 import com.isahl.chess.queen.event.operator.WroteOperator;
-import com.isahl.chess.queen.io.core.inf.IAioConnector;
-import com.isahl.chess.queen.io.core.inf.IAioServer;
+import com.isahl.chess.queen.io.core.async.inf.IAioConnection;
+import com.isahl.chess.queen.io.core.async.inf.IAioConnector;
+import com.isahl.chess.queen.io.core.async.inf.IAioServer;
 import com.isahl.chess.queen.io.core.inf.IAvailable;
 import com.isahl.chess.queen.io.core.inf.IConnectActivity;
 import com.isahl.chess.queen.io.core.inf.IPacket;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionError;
 import com.lmax.disruptor.RingBuffer;
+
+import java.nio.channels.AsynchronousSocketChannel;
+import java.util.Objects;
 
 /**
  * @author William.d.zk
@@ -133,7 +134,7 @@ public class AioWorker
         publish(_Producer, op, eType, OperatorType.WROTE, new Pair<>(t, session));
     }
 
-    public void publishConnected(final IOperator<IConnectActivity,
+    public void publishConnected(final IOperator<IAioConnection,
                                                  AsynchronousSocketChannel,
                                                  ITriple> op,
                                  final IConnectActivity activity,

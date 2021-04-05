@@ -23,20 +23,20 @@
 
 package com.isahl.chess.queen.io.core.async;
 
+import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
+import com.isahl.chess.king.base.inf.ITriple;
+import com.isahl.chess.queen.config.ISocketConfig;
+import com.isahl.chess.queen.event.operator.AcceptFailedOperator;
+import com.isahl.chess.queen.event.operator.ConnectedOperator;
+import com.isahl.chess.queen.io.core.async.inf.IAioConnection;
+import com.isahl.chess.queen.io.core.async.inf.IAioServer;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.StandardSocketOptions;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
-
-import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
-import com.isahl.chess.king.base.inf.ITriple;
-import com.isahl.chess.queen.config.ISocketConfig;
-import com.isahl.chess.queen.event.operator.AcceptFailedOperator;
-import com.isahl.chess.queen.event.operator.ConnectedOperator;
-import com.isahl.chess.queen.io.core.inf.IAioServer;
-import com.isahl.chess.queen.io.core.inf.IConnectActivity;
 
 /**
  * @author william.d.zk
@@ -100,7 +100,7 @@ public abstract class BaseAioServer
     }
 
     @Override
-    public IOperator<IConnectActivity,
+    public IOperator<IAioConnection,
                      AsynchronousSocketChannel,
                      ITriple> getConnectedOperator()
     {

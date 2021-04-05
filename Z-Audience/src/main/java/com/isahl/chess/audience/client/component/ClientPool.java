@@ -1,24 +1,24 @@
 /*
- * MIT License                                                                     
- *                                                                                 
- * Copyright (c) 2016~2021. Z-Chess                                                
- *                                                                                 
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
- * this software and associated documentation files (the "Software"), to deal in   
- * the Software without restriction, including without limitation the rights to    
+ * MIT License
+ *
+ * Copyright (c) 2016~2021. Z-Chess
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
  * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- * the Software, and to permit persons to whom the Software is furnished to do so, 
- * subject to the following conditions:                                            
- *                                                                                 
- * The above copyright notice and this permission notice shall be included in all  
- * copies or substantial portions of the Software.                                 
- *                                                                                 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR      
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR 
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER  
- * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN         
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.      
+ * FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package com.isahl.chess.audience.client.component;
@@ -55,18 +55,19 @@ import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.queen.config.IAioConfig;
 import com.isahl.chess.queen.event.QEvent;
+import com.isahl.chess.queen.io.core.async.AioManager;
 import com.isahl.chess.queen.io.core.async.AioSession;
-import com.isahl.chess.queen.io.core.async.AioSessionManager;
 import com.isahl.chess.queen.io.core.async.BaseAioConnector;
+import com.isahl.chess.queen.io.core.async.inf.IAioClient;
+import com.isahl.chess.queen.io.core.async.inf.IAioConnector;
 import com.isahl.chess.queen.io.core.executor.ClientCore;
-import com.isahl.chess.queen.io.core.inf.IAioClient;
-import com.isahl.chess.queen.io.core.inf.IAioConnector;
 import com.isahl.chess.queen.io.core.inf.IConnectActivity;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionDismiss;
 import com.isahl.chess.queen.io.core.inf.ISort;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -87,13 +88,12 @@ import static com.isahl.chess.king.base.schedule.TimeWheel.IWheelItem.PRIORITY_N
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-05-12
  */
 @Component
 public class ClientPool
         extends
-        AioSessionManager<ClientCore>
+        AioManager<ClientCore>
         implements
         IAioClient,
         ISessionDismiss
@@ -109,7 +109,7 @@ public class ClientPool
     private final X103_Ping                _Ping   = new X103_Ping();
 
     @Autowired
-    public ClientPool(IAioConfig bizIoConfig,
+    public ClientPool(@Qualifier("io_consumer_config") IAioConfig bizIoConfig,
                       ConsumerConfig consumerConfig) throws IOException
     {
         super(bizIoConfig);
@@ -267,10 +267,10 @@ public class ClientPool
             }
 
             @Override
-            public void onCreate(ISession session)
+            public void onCreated(ISession session)
             {
                 //这个地方省略了对session.setIndex(type)的操作，Consumer.type == 0
-                super.onCreate(session);
+                super.onCreated(session);
                 ClientPool.this.addSession(session);
                 _ZClientMap.put(client.getClientId(), client);
                 _Logger.debug("client %x connected %s:%d", client.getClientId(), host, port);
@@ -291,7 +291,7 @@ public class ClientPool
             }
 
             @Override
-            public IControl[] createCommands(ISession session)
+            public IControl[] onConnectedCommands(ISession session)
             {
                 switch (ZSortHolder)
                 {
@@ -328,7 +328,7 @@ public class ClientPool
     private ICancelable mHeartbeatTask;
 
     @Override
-    public void onCreate(ISession session)
+    public void onCreated(ISession session)
     {
         Duration gap = Duration.ofSeconds(session.getReadTimeOutSeconds() / 2);
         mHeartbeatTask = _TimeWheel.acquire(session,

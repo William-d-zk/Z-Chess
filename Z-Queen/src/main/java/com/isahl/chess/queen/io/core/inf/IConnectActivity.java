@@ -31,9 +31,8 @@ public interface IConnectActivity
         extends
         IAddress,
         IConnectMode,
-        ISessionCreator,
         ISessionCreated,
-        ICommandCreator,
+        IConnectedCommand,
         ILifeCycle
 {
     String getProtocol();

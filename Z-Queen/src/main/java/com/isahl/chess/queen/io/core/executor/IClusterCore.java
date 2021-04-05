@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,20 +21,16 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.queen.io.core.inf;
+package com.isahl.chess.queen.io.core.executor;
 
+import java.io.IOException;
+import java.nio.channels.AsynchronousChannelGroup;
 /**
- * 完成连接时 构建需要首次发送的数据包，仅使用ICommand 接口
- * 使用 ISession 的 最小发送单元ICommand 作为接口规范
- * 
- * @author william.d.zk
- * 
- * @see ICommandFactory
+ * @author William.d.zk
  */
-public interface ICommandCreator
+public interface IClusterCore
+        extends
+        IPipeCore
 {
-    default IControl[] createCommands(ISession session)
-    {
-        return null;
-    }
+    AsynchronousChannelGroup getClusterChannelGroup() throws IOException;
 }

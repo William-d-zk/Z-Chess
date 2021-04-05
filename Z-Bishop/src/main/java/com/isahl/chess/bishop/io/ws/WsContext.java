@@ -22,17 +22,17 @@
  */
 package com.isahl.chess.bishop.io.ws;
 
-import static com.isahl.chess.king.base.schedule.inf.ITask.advanceState;
-import static com.isahl.chess.queen.io.core.inf.ISession.CAPACITY;
+import com.isahl.chess.bishop.io.ws.control.X101_HandShake;
+import com.isahl.chess.bishop.io.ws.zchat.ZContext;
+import com.isahl.chess.king.base.util.CryptUtil;
+import com.isahl.chess.queen.io.core.inf.INetworkOption;
+import com.isahl.chess.queen.io.core.inf.ISort;
 
 import java.util.Base64;
 import java.util.Random;
 
-import com.isahl.chess.bishop.io.ws.control.X101_HandShake;
-import com.isahl.chess.bishop.io.ws.zchat.ZContext;
-import com.isahl.chess.king.base.util.CryptUtil;
-import com.isahl.chess.queen.io.core.inf.ISessionOption;
-import com.isahl.chess.queen.io.core.inf.ISort;
+import static com.isahl.chess.king.base.schedule.inf.ITask.advanceState;
+import static com.isahl.chess.queen.io.core.inf.ISession.CAPACITY;
 
 /**
  * @author William.d.zk
@@ -49,7 +49,7 @@ public class WsContext
     private final byte[] _Mask;
     private int          mHandshakeState;
 
-    public WsContext(ISessionOption option,
+    public WsContext(INetworkOption option,
                      ISort.Mode mode,
                      ISort.Type type)
     {
