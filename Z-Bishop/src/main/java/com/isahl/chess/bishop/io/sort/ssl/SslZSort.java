@@ -23,28 +23,29 @@
 
 package com.isahl.chess.bishop.io.sort.ssl;
 
-import java.security.NoSuchAlgorithmException;
-
 import com.isahl.chess.bishop.io.sort.BaseSort;
 import com.isahl.chess.bishop.io.ssl.SSLFilter;
 import com.isahl.chess.bishop.io.ssl.SSLZContext;
 import com.isahl.chess.bishop.io.ssl.SslHandShakeFilter;
+import com.isahl.chess.queen.io.core.async.inf.IAioSort;
 import com.isahl.chess.queen.io.core.inf.IFilterChain;
+import com.isahl.chess.queen.io.core.inf.INetworkOption;
 import com.isahl.chess.queen.io.core.inf.IPContext;
-import com.isahl.chess.queen.io.core.inf.ISessionOption;
-import com.isahl.chess.queen.io.core.inf.ISort;
+import com.isahl.chess.queen.io.core.inf.ISslOption;
+
+import java.security.NoSuchAlgorithmException;
 
 public class SslZSort<T extends IPContext>
         extends
         BaseSort<SSLZContext<T>>
 {
-    private final ISort<T> _ActingSort;
+    private final IAioSort<T> _ActingSort;
 
     private final SslHandShakeFilter<SSLZContext<T>> _Head = new SslHandShakeFilter<>();
 
     public SslZSort(Mode mode,
                     Type type,
-                    ISort<T> actingSort)
+                    IAioSort<T> actingSort)
     {
         super(mode, type, String.format("ssl-%s", actingSort.getProtocol()));
         _ActingSort = actingSort;
@@ -59,10 +60,10 @@ public class SslZSort<T extends IPContext>
     }
 
     @Override
-    public SSLZContext<T> newContext(ISessionOption option)
+    public SSLZContext<T> newContext(INetworkOption option)
     {
         try {
-            return new SSLZContext<>(option, getMode(), getType(), _ActingSort.newContext(option));
+            return new SSLZContext<>((ISslOption) option, getMode(), getType(), _ActingSort.newContext(option));
         }
         catch (NoSuchAlgorithmException e) {
             e.printStackTrace();

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -20,22 +20,36 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+
 package com.isahl.chess.queen.io.core.inf;
 
-import java.io.IOException;
-
-import com.isahl.chess.king.base.inf.IFailed;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.TrustManager;
 
 /**
  * @author William.d.zk
  */
-public interface IAioClient
+public interface ISslOption
         extends
-        IFailed<IAioConnector>,
-        ISessionCreated,
-        ISessionDismiss
+        INetworkOption
 {
-    void connect(IAioConnector connector) throws IOException;
 
-    void shutdown(ISession session);
+    default KeyManager[] getKeyManagers()
+    {
+        return null;
+    }
+
+    default TrustManager[] getTrustManagers()
+    {
+        return null;
+    }
+
+    default boolean isSslClientAuth()
+    {
+        return false;
+    }
+
+    int getSslPacketSize();
+
+    int getSslAppSize();
 }

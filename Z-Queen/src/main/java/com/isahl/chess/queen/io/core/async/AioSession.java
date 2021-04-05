@@ -22,32 +22,10 @@
  */
 package com.isahl.chess.queen.io.core.async;
 
-import static com.isahl.chess.king.base.schedule.inf.ITask.advanceState;
-import static com.isahl.chess.king.base.schedule.inf.ITask.recedeState;
-import static com.isahl.chess.king.base.schedule.inf.ITask.stateAtLeast;
-import static com.isahl.chess.king.base.schedule.inf.ITask.stateLessThan;
-import static com.isahl.chess.king.base.util.IoUtil.longArrayToHex;
-import static com.isahl.chess.queen.io.core.inf.ISessionManager.INVALID_INDEX;
-import static com.isahl.chess.queen.io.core.inf.ISessionManager.NULL_INDEX;
-
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
-import java.nio.channels.AsynchronousSocketChannel;
-import java.nio.channels.CompletionHandler;
-import java.nio.channels.NotYetConnectedException;
-import java.nio.channels.ReadPendingException;
-import java.nio.channels.ShutdownChannelGroupException;
-import java.nio.channels.WritePendingException;
-import java.util.LinkedList;
-import java.util.Objects;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.ArrayUtil;
+import com.isahl.chess.queen.io.core.async.inf.IAioSort;
 import com.isahl.chess.queen.io.core.inf.IConnectActivity;
 import com.isahl.chess.queen.io.core.inf.IFilterChain;
 import com.isahl.chess.queen.io.core.inf.IPContext;
@@ -60,8 +38,32 @@ import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionCloser;
 import com.isahl.chess.queen.io.core.inf.ISessionDismiss;
 import com.isahl.chess.queen.io.core.inf.ISessionError;
-import com.isahl.chess.queen.io.core.inf.ISessionOption;
 import com.isahl.chess.queen.io.core.inf.ISort;
+import com.isahl.chess.queen.io.core.inf.ISslOption;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.Channel;
+import java.nio.channels.CompletionHandler;
+import java.nio.channels.NotYetConnectedException;
+import java.nio.channels.ReadPendingException;
+import java.nio.channels.ShutdownChannelGroupException;
+import java.nio.channels.WritePendingException;
+import java.util.LinkedList;
+import java.util.Objects;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static com.isahl.chess.king.base.schedule.inf.ITask.advanceState;
+import static com.isahl.chess.king.base.schedule.inf.ITask.recedeState;
+import static com.isahl.chess.king.base.schedule.inf.ITask.stateAtLeast;
+import static com.isahl.chess.king.base.schedule.inf.ITask.stateLessThan;
+import static com.isahl.chess.king.base.util.IoUtil.longArrayToHex;
+import static com.isahl.chess.queen.io.core.inf.ISessionManager.INVALID_INDEX;
+import static com.isahl.chess.queen.io.core.inf.ISessionManager.NULL_INDEX;
 
 /**
  * @author William.d.zk
@@ -86,7 +88,7 @@ public class AioSession<C extends IPContext>
     private final int             _HashCode;
     private final ISessionDismiss _DismissCallback;
     private final int             _QueueSizeMax;
-    private final ISort<C>        _Sort;
+    private final IAioSort<C>     _Sort;
     private final AtomicInteger   _State = new AtomicInteger(SESSION_CREATED);
     private final boolean         _MultiBind;
     /*----------------------------------------------------------------------------------------------------------------*/
@@ -123,13 +125,13 @@ public class AioSession<C extends IPContext>
 
     public AioSession(AsynchronousSocketChannel channel,
                       long type,
-                      ISessionOption sessionOption,
-                      ISort<C> sort,
+                      ISslOption option,
+                      IAioSort<C> sort,
                       IConnectActivity activity,
                       ISessionDismiss sessionDismiss,
                       boolean multiBind) throws IOException
     {
-        Objects.requireNonNull(sessionOption);
+        Objects.requireNonNull(option);
         Objects.requireNonNull(channel);
         Objects.requireNonNull(activity);
         Objects.requireNonNull(sort);
@@ -140,14 +142,14 @@ public class AioSession<C extends IPContext>
         _RemoteAddress = (InetSocketAddress) channel.getRemoteAddress();
         _LocalAddress = (InetSocketAddress) channel.getLocalAddress();
         _DismissCallback = sessionDismiss;
-        _ReadTimeOutInSecond = sessionOption.getReadTimeOutInSecond();
-        _WriteTimeOutInSecond = sessionOption.getWriteTimeOutInSecond();
-        _RecvBuf = ByteBuffer.allocate(sessionOption.getRcvByte());
-        _QueueSizeMax = sessionOption.getSendQueueMax();
+        _ReadTimeOutInSecond = option.getReadTimeOutInSecond();
+        _WriteTimeOutInSecond = option.getWriteTimeOutInSecond();
+        _RecvBuf = ByteBuffer.allocate(option.getRcvByte());
+        _QueueSizeMax = option.getSendQueueMax();
         _Sort = sort;
-        _Context = sort.newContext(sessionOption);
+        _Context = sort.newContext(option);
         //------------------------------------------------------------
-        sessionOption.configChannel(channel);
+        option.configChannel(channel);
         mIndex = type;
         mSending = _Context.getWrBuffer();
         mSending.flip();
@@ -173,21 +175,9 @@ public class AioSession<C extends IPContext>
     }
 
     @Override
-    public void setLocalAddress(InetSocketAddress address)
-    {
-        throw new UnsupportedOperationException(" final member!");
-    }
-
-    @Override
     public InetSocketAddress getRemoteAddress()
     {
         return _RemoteAddress;
-    }
-
-    @Override
-    public void setRemoteAddress(InetSocketAddress address)
-    {
-        throw new UnsupportedOperationException(" final member!");
     }
 
     @Override
@@ -302,7 +292,7 @@ public class AioSession<C extends IPContext>
     }
 
     @Override
-    public final AsynchronousSocketChannel getChannel()
+    public final Channel getChannel()
     {
         return _Channel;
     }

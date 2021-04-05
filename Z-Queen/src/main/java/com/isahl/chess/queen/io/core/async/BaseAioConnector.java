@@ -37,8 +37,8 @@ import com.isahl.chess.king.base.schedule.inf.ITask;
 import com.isahl.chess.queen.config.ISocketConfig;
 import com.isahl.chess.queen.event.operator.ConnectFailedOperator;
 import com.isahl.chess.queen.event.operator.ConnectedOperator;
-import com.isahl.chess.queen.io.core.inf.IAioConnector;
-import com.isahl.chess.queen.io.core.inf.IConnectActivity;
+import com.isahl.chess.queen.io.core.async.inf.IAioConnection;
+import com.isahl.chess.queen.io.core.async.inf.IAioConnector;
 import com.isahl.chess.queen.io.core.inf.ISession;
 
 /**
@@ -117,7 +117,7 @@ public abstract class BaseAioConnector
     }
 
     @Override
-    public IOperator<IConnectActivity,
+    public IOperator<IAioConnection,
                      AsynchronousSocketChannel,
                      ITriple> getConnectedOperator()
     {
@@ -157,7 +157,7 @@ public abstract class BaseAioConnector
     }
 
     @Override
-    public void onCreate(ISession session)
+    public void onCreated(ISession session)
     {
         session.ready();
     }

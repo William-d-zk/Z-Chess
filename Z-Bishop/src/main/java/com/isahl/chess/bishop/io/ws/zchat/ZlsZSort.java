@@ -35,20 +35,20 @@ import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZClusterFactory;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZConsumerFactory;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZServerFactory;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZSymmetryFactory;
+import com.isahl.chess.queen.io.core.async.inf.IAioSort;
 import com.isahl.chess.queen.io.core.inf.IFilterChain;
-import com.isahl.chess.queen.io.core.inf.ISessionOption;
-import com.isahl.chess.queen.io.core.inf.ISort;
+import com.isahl.chess.queen.io.core.inf.INetworkOption;
 
 public class ZlsZSort
         extends
-        BaseSort<EZContext<WsContext>>
+        BaseSort<EZContext<WsContext> >
 {
-    private final ISort<WsContext>               _ActingSort;
+    private final IAioSort<WsContext > _ActingSort;
     private final ZEFilter<EZContext<WsContext>> _Head = new ZEFilter<>();
 
     public ZlsZSort(Mode mode,
                     Type type,
-                    ISort<WsContext> actingSort)
+                    IAioSort<WsContext > actingSort)
     {
         super(mode, type, String.format("zls-%s", actingSort.getProtocol()));
         _ActingSort = actingSort;
@@ -68,7 +68,7 @@ public class ZlsZSort
     }
 
     @Override
-    public EZContext<WsContext> newContext(ISessionOption option)
+    public EZContext<WsContext> newContext(INetworkOption option)
     {
         return new EZContext<>(option, getMode(), getType(), _ActingSort.newContext(option));
     }

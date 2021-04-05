@@ -21,48 +21,20 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.queen.io.core.manager;
-
-import com.isahl.chess.king.base.disruptor.event.OperatorType;
-import com.isahl.chess.queen.config.IAioConfig;
-import com.isahl.chess.queen.io.core.async.AioManager;
-import com.isahl.chess.queen.io.core.executor.ServerCore;
-import com.isahl.chess.queen.io.core.inf.IActivity;
-import com.isahl.chess.queen.io.core.inf.IControl;
-import com.isahl.chess.queen.io.core.inf.ISession;
+package com.isahl.chess.queen.io.core.inf;
 
 /**
- * @author william.d.zk
+ * @author William.d.zk
  */
-public abstract class MixManager
-        extends AioManager<ServerCore>
-        implements
-        IActivity
+public interface IPortChannel
 {
-    private final ServerCore _ServerCore;
-
-    public MixManager(IAioConfig config,
-                      ServerCore serverCore)
+    /**
+     * @return 0 ignore channel dispatch operation , otherwise dispatch to
+     *         target channel.
+     * 
+     */
+    default int channel()
     {
-        super(config);
-        _ServerCore = serverCore;
-    }
-
-    @Override
-    public void close(ISession session, OperatorType type)
-    {
-        _ServerCore.close(session, type);
-    }
-
-    @Override
-    public final boolean send(ISession session, OperatorType type, IControl... commands)
-    {
-        return _ServerCore.send(session, type, commands);
-    }
-
-    @Override
-    protected ServerCore getCore()
-    {
-        return _ServerCore;
+        return 0;
     }
 }

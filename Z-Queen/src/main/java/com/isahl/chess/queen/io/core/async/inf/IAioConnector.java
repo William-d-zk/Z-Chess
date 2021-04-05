@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -20,51 +20,46 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.isahl.chess.queen.io.core.inf;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.nio.channels.AsynchronousChannelGroup;
-import java.nio.channels.AsynchronousSocketChannel;
-import java.nio.channels.CompletionHandler;
+package com.isahl.chess.queen.io.core.async.inf;
 
 import com.isahl.chess.king.base.disruptor.event.OperatorType;
 import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
+import com.isahl.chess.king.base.schedule.inf.ITask;
 import com.isahl.chess.queen.io.core.async.AioWorker;
+import com.isahl.chess.queen.io.core.inf.ISslOption;
+
+import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.CompletionHandler;
 
 /**
- * @author William.d.zk
+ * @author william.d.zk
  */
-public interface IAioServer
+public interface IAioConnector
         extends
-        IConnected,
-        IConnectActivity,
-        IConnectError,
-        CompletionHandler<AsynchronousSocketChannel,
-                          IAioServer>
+        CompletionHandler<Void,
+                          AsynchronousSocketChannel>,
+        IAioConnection,
+        ITask,
+        ISslOption
 {
-    void bindAddress(InetSocketAddress address, AsynchronousChannelGroup channelGroup) throws IOException;
-
-    void pendingAccept();
-
-    @Override
-    default void completed(AsynchronousSocketChannel channel, IAioServer server)
-    {
-        AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishConnected(server.getConnectedOperator(), server, OperatorType.ACCEPTED, channel);
-        server.pendingAccept();
-    }
-
-    @Override
-    default void failed(Throwable exc, IAioServer server)
-    {
-        AioWorker worker = (AioWorker) Thread.currentThread();
-        worker.publishAcceptError(server.getErrorOperator(), exc, server);
-        server.pendingAccept();
-    }
-
     @Override
     IOperator<Throwable,
-              IAioServer,
+              IAioConnector,
               Void> getErrorOperator();
+
+    @Override
+    default void completed(Void result, AsynchronousSocketChannel channel)
+    {
+        AioWorker worker = (AioWorker) Thread.currentThread();
+        worker.publishConnected(getConnectedOperator(), this, OperatorType.CONNECTED, channel);
+    }
+
+    @Override
+    default void failed(Throwable exc, AsynchronousSocketChannel channel)
+    {
+        AioWorker worker = (AioWorker) Thread.currentThread();
+        worker.publishConnectingError(getErrorOperator(), exc, this);
+    }
+
 }

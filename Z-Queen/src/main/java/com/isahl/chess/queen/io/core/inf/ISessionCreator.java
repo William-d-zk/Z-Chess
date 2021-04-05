@@ -23,41 +23,23 @@
 package com.isahl.chess.queen.io.core.inf;
 
 import java.io.IOException;
-import java.net.StandardSocketOptions;
-import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.Channel;
 
 /**
  * @author William.d.zk
  */
-public interface ISessionCreator
-        extends
-        ISessionOption
+public interface ISessionCreator<C extends Channel>
 {
     /**
      * 由于继承了 ISessionOption 和 IContextCreator 所以在 create_session 入参中不再显示声明这两个参数
      * 
-     * @param socketChannel
-     *            已完成连接的 socket
+     * @param channel
+     *            已完成连接的 channel
      * @param activity
      *            连接执行器实际执行单元
      * 
      * @return session
      */
-    ISession createSession(AsynchronousSocketChannel socketChannel, IConnectActivity activity) throws IOException;
+    ISession createSession(C channel, IConnectActivity activity) throws IOException;
 
-    @Override
-    default void configChannel(AsynchronousSocketChannel channel)
-    {
-        if (channel != null) {
-            try {
-                channel.setOption(StandardSocketOptions.TCP_NODELAY, isTcpNoDelay());
-                channel.setOption(StandardSocketOptions.SO_RCVBUF, getRcvByte());
-                channel.setOption(StandardSocketOptions.SO_SNDBUF, getSnfByte());
-                channel.setOption(StandardSocketOptions.SO_KEEPALIVE, isKeepAlive());
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 }

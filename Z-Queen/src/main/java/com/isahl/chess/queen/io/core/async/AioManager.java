@@ -22,7 +22,14 @@
  */
 package com.isahl.chess.queen.io.core.async;
 
-import static com.isahl.chess.queen.io.core.inf.ISession.PREFIX_MAX;
+import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.topology.ZUID;
+import com.isahl.chess.queen.config.IAioConfig;
+import com.isahl.chess.queen.config.ISocketConfig;
+import com.isahl.chess.queen.io.core.executor.IPipeCore;
+import com.isahl.chess.queen.io.core.inf.ISession;
+import com.isahl.chess.queen.io.core.inf.ISessionManager;
+import org.slf4j.event.Level;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,15 +41,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.slf4j.event.Level;
-
-import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.topology.ZUID;
-import com.isahl.chess.queen.config.IAioConfig;
-import com.isahl.chess.queen.config.ISocketConfig;
-import com.isahl.chess.queen.io.core.executor.IPipeCore;
-import com.isahl.chess.queen.io.core.inf.ISession;
-import com.isahl.chess.queen.io.core.inf.ISessionManager;
+import static com.isahl.chess.queen.io.core.inf.ISession.PREFIX_MAX;
 
 /**
  * 所有io 管理器的父类，存在一定的存储空间的浪费。
@@ -52,7 +51,7 @@ import com.isahl.chess.queen.io.core.inf.ISessionManager;
  *
  * @author William.d.zk
  */
-public abstract class AioSessionManager<K extends IPipeCore>
+public abstract class AioManager<K extends IPipeCore>
         implements
         ISessionManager
 {
@@ -71,7 +70,7 @@ public abstract class AioSessionManager<K extends IPipeCore>
     }
 
     @SuppressWarnings("unchecked")
-    public AioSessionManager(IAioConfig config)
+    public AioManager(IAioConfig config)
     {
         final int _TYPE_COUNT = ZUID.MAX_TYPE + 1;
         _AioConfig = config;
