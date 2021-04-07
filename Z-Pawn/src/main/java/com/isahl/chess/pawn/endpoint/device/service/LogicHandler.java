@@ -200,14 +200,13 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                     update.setOperation(OP_MODIFY);
                     update.setStatus(Status.RUNNING);
                     _MessageService.handleMessage(update);
-                    X116_QttPubrel x116 = new X116_QttPubrel();
-                    x116.setMsgId(x115.getMsgId());
-                    _QttRouter.register(x116, session.getIndex());
-                    return new IControl[]{x116};
                 }
-                break;
+                X116_QttPubrel x116 = new X116_QttPubrel();
+                x116.setMsgId(x115.getMsgId());
+                _QttRouter.register(x116, session.getIndex());
+                return new IControl[]{x116};
             case X116_QttPubrel.COMMAND:
-                X116_QttPubrel x116 = (X116_QttPubrel) content;
+                x116 = (X116_QttPubrel) content;
                 X117_QttPubcomp x117 = new X117_QttPubcomp();
                 x117.setMsgId(x116.getMsgId());
                 _QttRouter.ack(x116, session.getIndex());
@@ -216,17 +215,16 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                                                   x116.getMsgId(),
                                                   LocalDateTime.now()
                                                                .minusSeconds(5));
+                pushList = new LinkedList<>();
+                pushList.add(x117);
                 if (update != null) {
                     update.setOwner(OWNER_SERVER);
                     update.setOperation(OP_MODIFY);
                     update.setStatus(Status.COMPLETED);
                     update = _MessageService.handleMessage(update);
-                    pushList = new LinkedList<>();
-                    pushList.add(x117);
                     brokerTopic(manager, update, EXACTLY_ONCE, pushList);
-                    return pushList.toArray(new IControl[0]);
                 }
-                break;
+                return pushList.toArray(new IControl[0]);
             case X117_QttPubcomp.COMMAND:
                 x117 = (X117_QttPubcomp) content;
                 _QttRouter.ack(x117, session.getIndex());

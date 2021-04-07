@@ -23,6 +23,14 @@
 
 package com.isahl.chess.bishop.io.mqtt.handler;
 
+import com.isahl.chess.king.base.inf.IPair;
+import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.base.util.Pair;
+import com.isahl.chess.king.base.util.Triple;
+import com.isahl.chess.queen.io.core.inf.ICommand;
+import com.isahl.chess.queen.io.core.inf.IControl;
+import com.isahl.chess.queen.io.core.inf.IQoS;
+
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -38,14 +46,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import com.isahl.chess.king.base.inf.IPair;
-import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.queen.io.core.inf.ICommand;
-import com.isahl.chess.queen.io.core.inf.IControl;
-import com.isahl.chess.queen.io.core.inf.IQoS;
 
 /**
  * @author william.d.zk
@@ -81,8 +81,7 @@ public class QttRouter
                                          IQoS.Level> entryValue = entry.getValue();
                                      return pattern.matcher(topic)
                                                    .matches()
-                                            && !entryValue.isEmpty() ? entryValue
-                                                                     : null;
+                                            && !entryValue.isEmpty() ? entryValue: null;
 
                                  })
                                  .filter(Objects::nonNull)
@@ -90,8 +89,7 @@ public class QttRouter
                                  .flatMap(Set::stream)
                                  .collect(Collectors.toMap(Map.Entry::getKey,
                                                            Map.Entry::getValue,
-                                                           (l, r) -> l.getValue() > r.getValue() ? l
-                                                                                                 : r,
+                                                           (l, r) -> l.getValue() > r.getValue() ? l: r,
                                                            ConcurrentSkipListMap::new));
     }
 
@@ -129,10 +127,7 @@ public class QttRouter
                 value = new ConcurrentSkipListMap<>();
                 _Topic2SessionsMap.put(pattern, value);
             }
-            if (value.computeIfPresent(session,
-                                       (key, old) -> old.getValue() > level.getValue() ? old
-                                                                                       : level) == null)
-            {
+            if (value.computeIfPresent(session, (key, old) -> old.getValue() > level.getValue() ? old: level) == null) {
                 value.put(session, level);
             }
             return value.get(session);
@@ -222,16 +217,17 @@ public class QttRouter
     }
 
     @Override
-    public void ack(ICommand stateMessage, long sessionIndex)
+    public boolean ack(ICommand stateMessage, long sessionIndex)
     {
         int idleMax = stateMessage.getSession()
                                   .getReadTimeOutSeconds();
         long msgId = stateMessage.getMsgId();
-        if (_QttStatusMap.computeIfPresent(sessionIndex, (key, old) ->
+        boolean[] acked = {true,
+                           true};
+        if (acked[0] = _QttStatusMap.computeIfPresent(sessionIndex, (key, old) ->
         {
-            old.remove(msgId);
-            return old.isEmpty() ? old
-                                 : null;
+            acked[1] = old.remove(msgId) == null;
+            return old.isEmpty() ? old: null;
         }) != null) {
             _SessionIdleQueue.offer(new Pair<>(sessionIndex, Instant.now()));
         }
@@ -246,6 +242,7 @@ public class QttRouter
                 it.remove();
             }
         }
+        return acked[0] & acked[1];
     }
 
     @Override
