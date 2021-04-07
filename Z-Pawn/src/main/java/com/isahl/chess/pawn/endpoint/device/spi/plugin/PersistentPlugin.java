@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,49 +21,30 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.io;
+package com.isahl.chess.pawn.endpoint.device.spi.plugin;
 
-import com.isahl.chess.queen.io.core.inf.ICommand;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-/**
- * @author william.d.zk
- * 
- * @date 2019-08-04
- */
-public interface IRouter
+import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageEntity;
+import com.isahl.chess.pawn.endpoint.device.jpa.repository.IMessageJpaRepository;
+
+@Component
+public class PersistentPlugin
+        implements
+        IMessagePlugin
 {
-    /**
-     * generate message id
-     * 
-     * @return id
-     */
-    long nextId();
+    private final IMessageJpaRepository _Repository;
 
-    /**
-     * register message with state for session by id
-     * 
-     * @param stateMessage
-     *            message with state
-     * @param sessionIndex
-     *            session index
-     */
-    void register(ICommand stateMessage, long sessionIndex);
+    @Autowired
+    public PersistentPlugin(IMessageJpaRepository repository)
+    {
+        _Repository = repository;
+    }
 
-    /**
-     * feed back message state
-     * 
-     * @param stateMessage
-     *            message with state
-     * @param sessionIndex
-     *            session index
-     */
-    boolean ack(ICommand stateMessage, long sessionIndex);
-
-    /**
-     * clean session state machine for message stack
-     * 
-     * @param sessionIndex
-     *            session index
-     */
-    void clean(long sessionIndex);
+    @Override
+    public void handleMessage(MessageEntity msgEntity)
+    {
+        _Repository.save(msgEntity);
+    }
 }
