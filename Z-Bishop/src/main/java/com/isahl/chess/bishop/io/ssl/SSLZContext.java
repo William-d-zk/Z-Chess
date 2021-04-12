@@ -105,7 +105,7 @@ public class SSLZContext<A extends IPContext>
             _SslEngine.closeOutbound();
         }
         catch (SSLException e) {
-            throw new ZException(e, "ssl context reset");
+            e.printStackTrace();
         }
         finally {
             super.reset();
