@@ -27,11 +27,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**
@@ -49,8 +51,8 @@ public class WebSecurityConfig
 {
 
     private final BCryptPasswordEncoder _PasswordEncoder = new BCryptPasswordEncoder();
-
-    private String[] ignorePatterns;
+    private String                      mode;
+    private String[]                    ignorePatterns;
 
     public String[] getIgnorePatterns()
     {
@@ -83,7 +85,7 @@ public class WebSecurityConfig
             .loginPage("/login")   //登录请求页
             .loginProcessingUrl("/login")  //登录POST请求路径
             .usernameParameter("username") //登录用户名参数
-            .passwordParameter("password") //登录密码参数
+            .passwordParameter("password.md") //登录密码参数
             .defaultSuccessUrl("/main")   //默认登录成功页面
             .and()
             .exceptionHandling()
@@ -109,13 +111,28 @@ public class WebSecurityConfig
             .logoutSuccessUrl("/");
             
          */
-        http.httpBasic()  //HTTP Basic认证方式
+        http.cors()
             .and()
-            .authorizeRequests()  // 授权配置
-            .anyRequest()  // 所有请求
-            .authenticated();// 都需要认证
+            .csrf()
+            .disable();
+        switch (mode)
+        {
+            case "oauth" -> oauth(http);
+            case "jwt" -> jwt(http);
+            case "basic" -> basic(http);
+            default -> none(http);
+        }
         http.logout()
             .logoutSuccessUrl("/");//退出登录成功URL
+    }
+
+    private void basic(HttpSecurity http) throws Exception
+    {
+        http.httpBasic()
+            .and()
+            .authorizeRequests()
+            .anyRequest()
+            .authenticated();
     }
 
     @Override
@@ -125,9 +142,47 @@ public class WebSecurityConfig
            .antMatchers(ignorePatterns);
     }
 
+    private void none(HttpSecurity http) throws Exception
+    {
+        http.authorizeRequests()
+            .anyRequest()
+            .permitAll();
+    }
+
+    private void oauth(HttpSecurity http) throws Exception
+    {
+
+    }
+
+    private void jwt(HttpSecurity http) throws Exception
+    {
+        http.sessionManagement()
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .and()
+            .authorizeRequests()  // 授权配置
+            .antMatchers(HttpMethod.OPTIONS, "/**")
+            .permitAll()
+            .antMatchers(ignorePatterns)
+            .permitAll()
+            .anyRequest()
+            .authenticated()//message 需要验证
+        ;
+        http.headers().cacheControl();
+    }
+
     @Bean
     public BCryptPasswordEncoder passwordEncoder()
     {
         return _PasswordEncoder;
+    }
+
+    public String getMode()
+    {
+        return mode;
+    }
+
+    public void setMode(String mode)
+    {
+        this.mode = mode;
     }
 }

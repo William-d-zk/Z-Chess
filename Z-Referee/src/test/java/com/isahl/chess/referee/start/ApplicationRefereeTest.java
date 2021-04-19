@@ -26,10 +26,12 @@ package com.isahl.chess.referee.start;
 import com.isahl.chess.referee.security.jpa.repository.IPermissionRepository;
 import com.isahl.chess.referee.security.jpa.repository.IRoleRepository;
 import com.isahl.chess.referee.security.service.InvocationSecurityMetadataSourceService;
+import com.isahl.chess.referee.security.service.UserDetailServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.access.ConfigAttribute;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 
@@ -48,5 +50,15 @@ class ApplicationRefereeTest
     {
         Collection<ConfigAttribute> collection = invocationSecurityMetadataSourceService.getAllConfigAttributes();
         System.out.println(collection);
+    }
+
+    @Autowired
+    UserDetailServiceImpl userDetailService;
+
+    @Test
+    void getUser()
+    {
+        UserDetails user = userDetailService.loadUserByUsername("root");
+        System.out.println(user);
     }
 }

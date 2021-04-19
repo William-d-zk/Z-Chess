@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.referee.security.component;
+package com.isahl.chess.referee.security.jpa.config;
 
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.CryptUtil;
@@ -32,8 +32,8 @@ import com.isahl.chess.referee.security.jpa.repository.IPermissionRepository;
 import com.isahl.chess.referee.security.jpa.repository.IRoleRepository;
 import com.isahl.chess.referee.security.jpa.repository.IUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
@@ -41,26 +41,21 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * @author william.d.zk
- * @date 2021/3/5
- */
-@Component
-public class JpaInitialization
+@Configuration
+public class JpaDataConfig
 {
     private final IRoleRepository       _RoleRepository;
     private final IUserRepository       _UserRepository;
     private final IPermissionRepository _PermissionRepository;
-    private final CryptUtil             _CryptUtil = new CryptUtil();
     private final BCryptPasswordEncoder _PasswordEncoder;
 
     private final Logger _Logger = Logger.getLogger("security.referee." + getClass().getSimpleName());
 
     @Autowired
-    public JpaInitialization(IRoleRepository roleRepository,
-                             IUserRepository userRepository,
-                             IPermissionRepository permissionRepository,
-                             BCryptPasswordEncoder passwordEncoder)
+    public JpaDataConfig(IRoleRepository roleRepository,
+                         IUserRepository userRepository,
+                         IPermissionRepository permissionRepository,
+                         BCryptPasswordEncoder passwordEncoder)
     {
         _RoleRepository = roleRepository;
         _UserRepository = userRepository;
@@ -111,7 +106,7 @@ public class JpaInitialization
             user.setAuthorities(authorities);
             user.setInvalidAt(LocalDateTime.now()
                                            .plusYears(5));
-            String password = _CryptUtil.randomPassword(17, 32);
+            String password = CryptUtil.Password(17, 32);
             _Logger.info("user:%s,pwd-plain:%s", user.getUsername(), password);
             user.setPassword(_PasswordEncoder.encode(password));
             _UserRepository.save(user);
@@ -125,7 +120,7 @@ public class JpaInitialization
             user.setAuthorities(Collections.singletonList(_RoleRepository.findByName("user")));
             user.setInvalidAt(LocalDateTime.now()
                                            .plusYears(1));
-            String password = _CryptUtil.randomPassword(9, 12);
+            String password = CryptUtil.Password(9, 12);
             _Logger.info("user:%s,pwd-plain:%s", user.getUsername(), password);
             user.setPassword(_PasswordEncoder.encode(password));
             _UserRepository.save(user);

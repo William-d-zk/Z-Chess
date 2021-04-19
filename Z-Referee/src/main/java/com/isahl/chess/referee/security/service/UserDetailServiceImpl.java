@@ -40,7 +40,6 @@ public class UserDetailServiceImpl
         implements
         UserDetailsService
 {
-
     private final IUserRepository _UserRepository;
 
     @Autowired

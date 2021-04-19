@@ -303,7 +303,7 @@ public class CryptUtil
                 baos.write(wr);
             }
             baos.flush();
-            return new String(baos.toByteArray(), charSet);
+            return baos.toString(charSet);
         }
         catch (Exception e) {
             // #debug error
@@ -423,5 +423,10 @@ public class CryptUtil
     public static byte[] SHA1(byte[] input)
     {
         return _Instance.sha1(input);
+    }
+
+    public static String Password(int min, int max)
+    {
+        return _Instance.randomPassword(min, max);
     }
 }
