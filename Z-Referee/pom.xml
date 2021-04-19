@@ -33,6 +33,9 @@
     </parent>
     <name>Z-Referee</name>
     <artifactId>security.z-referee</artifactId>
+    <properties>
+        <jjwt.version>0.11.2</jjwt.version>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>com.isahl.chess</groupId>
@@ -75,6 +78,23 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>${jjwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
         </dependency>
     </dependencies>
     <build>

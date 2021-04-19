@@ -23,6 +23,7 @@
 
 package com.isahl.chess.referee.security.service;
 
+import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.referee.security.jpa.model.PermissionEntity;
 import com.isahl.chess.referee.security.jpa.model.RoleEntity;
@@ -42,6 +43,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 /**
  * @author william.d.zk
  * @date 2021/3/1
@@ -51,6 +53,8 @@ public class InvocationSecurityMetadataSourceService
         implements
         FilterInvocationSecurityMetadataSource
 {
+    private final Logger _Logger = Logger.getLogger("security.referee." + getClass().getSimpleName());
+
     private final IPermissionRepository             _PermissionRepository;
     private final IRoleRepository                   _RoleRepository;
     private final Map<String,
@@ -102,6 +106,7 @@ public class InvocationSecurityMetadataSourceService
     @Override
     public boolean supports(Class<?> clazz)
     {
+        _Logger.info("supports:%s", clazz);
         return true;
     }
 }
