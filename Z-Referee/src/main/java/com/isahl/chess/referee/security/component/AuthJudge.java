@@ -23,6 +23,8 @@
 
 package com.isahl.chess.referee.security.component;
 
+import com.isahl.chess.referee.security.config.ISecurityConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.ConfigAttribute;
@@ -42,6 +44,13 @@ public class AuthJudge
         implements
         AccessDecisionManager
 {
+    private final String _SecurityMode;
+
+    @Autowired
+    public AuthJudge(ISecurityConfig config)
+    {
+        _SecurityMode = config.getMode();
+    }
 
     @Override
     public void decide(Authentication authentication,
@@ -49,19 +58,20 @@ public class AuthJudge
                        Collection<ConfigAttribute> configAttributes) throws AccessDeniedException,
                                                                      InsufficientAuthenticationException
     {
-        if (configAttributes != null && !configAttributes.isEmpty()) {
-            String authority;
-            for (ConfigAttribute configAttribute : configAttributes) {
-                authority = configAttribute.getAttribute();
-
-                for (GrantedAuthority ga : authentication.getAuthorities()) {
-                    if (authority.trim()
-                                 .equals(ga.getAuthority()
-                                           .trim()))
-                    { return; }
+        if (!"none".equals(_SecurityMode)) {
+            if (configAttributes != null && !configAttributes.isEmpty()) {
+                String authority;
+                for (ConfigAttribute configAttribute : configAttributes) {
+                    authority = configAttribute.getAttribute();
+                    for (GrantedAuthority ga : authentication.getAuthorities()) {
+                        if (authority.trim()
+                                     .equals(ga.getAuthority()
+                                               .trim()))
+                        { return; }
+                    }
                 }
+                throw new AccessDeniedException("no access permission");
             }
-            throw new AccessDeniedException("no access permission");
         }
     }
 
