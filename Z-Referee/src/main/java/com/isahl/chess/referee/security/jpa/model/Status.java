@@ -32,5 +32,5 @@ public enum Status
     COMMON,
     INVALID,
     LOCKED,
-    DISABLED;
+    DISABLED
 }
