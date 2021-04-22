@@ -48,6 +48,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 public class WebSecurityConfig
         extends
         WebSecurityConfigurerAdapter
+        implements
+        ISecurityConfig
 {
 
     private final BCryptPasswordEncoder _PasswordEncoder = new BCryptPasswordEncoder();
@@ -111,9 +113,7 @@ public class WebSecurityConfig
             .logoutSuccessUrl("/");
             
          */
-        http.cors()
-            .and()
-            .csrf()
+        http.csrf()
             .disable();
         switch (mode)
         {
@@ -124,6 +124,12 @@ public class WebSecurityConfig
         }
         http.logout()
             .logoutSuccessUrl("/");//退出登录成功URL
+    }
+
+    private void disableCors(HttpSecurity http) throws Exception
+    {
+        http.cors()
+            .disable();
     }
 
     private void basic(HttpSecurity http) throws Exception
@@ -151,7 +157,14 @@ public class WebSecurityConfig
 
     private void oauth(HttpSecurity http) throws Exception
     {
-
+        http.antMatcher("/**")
+            .authorizeRequests()
+            .antMatchers("/")
+            .permitAll()
+            .anyRequest()
+            .authenticated()
+            .and()
+            .oauth2Login();
     }
 
     private void jwt(HttpSecurity http) throws Exception
@@ -167,7 +180,8 @@ public class WebSecurityConfig
             .anyRequest()
             .authenticated()//message 需要验证
         ;
-        http.headers().cacheControl();
+        http.headers()
+            .cacheControl();
     }
 
     @Bean
@@ -176,6 +190,7 @@ public class WebSecurityConfig
         return _PasswordEncoder;
     }
 
+    @Override
     public String getMode()
     {
         return mode;
