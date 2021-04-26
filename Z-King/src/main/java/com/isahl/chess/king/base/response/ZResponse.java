@@ -23,9 +23,6 @@
 
 package com.isahl.chess.king.base.response;
 
-import java.io.Serializable;
-import java.time.LocalDateTime;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -38,6 +35,9 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.isahl.chess.king.base.inf.ICode;
 import com.isahl.chess.king.config.Code;
+
+import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -128,5 +128,10 @@ public class ZResponse<T>
     public static ZResponse<Void> error(int code, String message)
     {
         return new ZResponse<>(code, message, null, null, LocalDateTime.now());
+    }
+
+    public int getCode()
+    {
+        return _Code;
     }
 }
