@@ -23,26 +23,26 @@
 
 package com.isahl.chess.bishop.io.ssl;
 
-import static com.isahl.chess.king.base.schedule.inf.ITask.advanceState;
-import static com.isahl.chess.queen.io.core.inf.ISession.CAPACITY;
-
-import java.nio.ByteBuffer;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
+import com.isahl.chess.bishop.io.ws.zchat.ZContext;
+import com.isahl.chess.king.base.exception.ZException;
+import com.isahl.chess.king.base.util.IoUtil;
+import com.isahl.chess.queen.io.core.inf.INetworkOption;
+import com.isahl.chess.queen.io.core.inf.IPContext;
+import com.isahl.chess.queen.io.core.inf.IProxyContext;
+import com.isahl.chess.queen.io.core.inf.ISort;
+import com.isahl.chess.queen.io.core.inf.ISslOption;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLEngineResult;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSession;
+import java.nio.ByteBuffer;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
-import com.isahl.chess.bishop.io.ws.zchat.ZContext;
-import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.queen.io.core.inf.IPContext;
-import com.isahl.chess.queen.io.core.inf.IProxyContext;
-import com.isahl.chess.queen.io.core.inf.ISessionOption;
-import com.isahl.chess.queen.io.core.inf.ISort;
+import static com.isahl.chess.king.base.schedule.inf.ITask.advanceState;
+import static com.isahl.chess.queen.io.core.inf.ISession.CAPACITY;
 
 /**
  * @author william.d.zk
@@ -59,7 +59,7 @@ public class SSLZContext<A extends IPContext>
     private final A          _ActingContext;
     private final int        _AppInBufferSize;
 
-    public SSLZContext(ISessionOption option,
+    public SSLZContext(ISslOption option,
                        ISort.Mode mode,
                        ISort.Type type,
                        A acting) throws NoSuchAlgorithmException
@@ -105,7 +105,7 @@ public class SSLZContext<A extends IPContext>
             _SslEngine.closeOutbound();
         }
         catch (SSLException e) {
-            throw new ZException(e, "ssl context reset");
+            e.printStackTrace();
         }
         finally {
             super.reset();
@@ -213,14 +213,14 @@ public class SSLZContext<A extends IPContext>
     }
 
     @Override
-    protected ByteBuffer allocateRcv(ISessionOption option)
+    protected ByteBuffer allocateRcv(INetworkOption option)
     {
-        return ByteBuffer.allocate(Math.max(option.getRcvByte(), option.getSslPacketSize()));
+        return ByteBuffer.allocate(Math.max(option.getRcvByte(), ((ISslOption) option).getSslPacketSize()));
     }
 
     @Override
-    protected ByteBuffer allocateSnf(ISessionOption option)
+    protected ByteBuffer allocateSnf(INetworkOption option)
     {
-        return ByteBuffer.allocate(Math.max(option.getSnfByte(), option.getSslPacketSize()));
+        return ByteBuffer.allocate(Math.max(option.getSnfByte(), ((ISslOption) option).getSslPacketSize()));
     }
 }

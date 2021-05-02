@@ -23,17 +23,18 @@
 
 package com.isahl.chess.queen.io.core.inf;
 
-import java.nio.channels.AsynchronousSocketChannel;
-
 import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
 import com.isahl.chess.king.base.inf.ITriple;
+import com.isahl.chess.queen.io.core.async.inf.IAioConnection;
+
+import java.nio.channels.AsynchronousSocketChannel;
 
 /**
  * @author William.d.zk
  */
 public interface IConnected
 {
-    IOperator<IConnectActivity,
+    IOperator<IAioConnection,
               AsynchronousSocketChannel,
               ITriple> getConnectedOperator();
 }

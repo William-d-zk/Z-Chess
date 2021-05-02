@@ -25,7 +25,7 @@ package com.isahl.chess.queen.io.core.manager;
 
 import com.isahl.chess.king.base.disruptor.event.OperatorType;
 import com.isahl.chess.queen.config.IAioConfig;
-import com.isahl.chess.queen.io.core.async.AioSessionManager;
+import com.isahl.chess.queen.io.core.async.AioManager;
 import com.isahl.chess.queen.io.core.executor.ServerCore;
 import com.isahl.chess.queen.io.core.inf.IActivity;
 import com.isahl.chess.queen.io.core.inf.IControl;
@@ -35,8 +35,7 @@ import com.isahl.chess.queen.io.core.inf.ISession;
  * @author william.d.zk
  */
 public abstract class MixManager
-        extends
-        AioSessionManager<ServerCore>
+        extends AioManager<ServerCore>
         implements
         IActivity
 {

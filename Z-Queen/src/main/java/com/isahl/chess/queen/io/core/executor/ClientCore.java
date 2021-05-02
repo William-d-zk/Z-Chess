@@ -23,17 +23,6 @@
 
 package com.isahl.chess.queen.io.core.executor;
 
-import java.io.IOException;
-import java.nio.channels.AsynchronousChannelGroup;
-import java.util.Arrays;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Supplier;
-
 import com.isahl.chess.king.base.disruptor.MultiBufferBatchEventProcessor;
 import com.isahl.chess.king.base.disruptor.event.OperatorType;
 import com.isahl.chess.king.base.schedule.TimeWheel;
@@ -51,6 +40,17 @@ import com.lmax.disruptor.BatchEventProcessor;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.SequenceBarrier;
+
+import java.io.IOException;
+import java.nio.channels.AsynchronousChannelGroup;
+import java.util.Arrays;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 
 /**
  * @author william.d.zk
@@ -187,12 +187,6 @@ public class ClientCore
         submit(_WriteDispatcher);
         submit(_EncodeProcessor);
         submit(_EncodedProcessor);
-    }
-
-    @Override
-    public AsynchronousChannelGroup getClusterChannelGroup() throws IOException
-    {
-        return null;
     }
 
     @Override

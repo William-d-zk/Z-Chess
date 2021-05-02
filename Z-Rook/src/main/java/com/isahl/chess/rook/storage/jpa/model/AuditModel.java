@@ -32,6 +32,11 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.queen.db.inf.IStorage;
 import com.isahl.chess.queen.io.core.inf.IProtocol;
+import com.vladmihalcea.hibernate.type.array.IntArrayType;
+import com.vladmihalcea.hibernate.type.array.ListArrayType;
+import com.vladmihalcea.hibernate.type.array.StringArrayType;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -47,6 +52,10 @@ import java.util.Objects;
 /**
  * @author william.d.zk
  */
+@TypeDefs({@TypeDef(name = "string-array", typeClass = StringArrayType.class),
+           @TypeDef(name = "int-array", typeClass = IntArrayType.class),
+           @TypeDef(name = "list-array", typeClass = ListArrayType.class)})
+
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @JsonIgnoreProperties(value = {"createdAt",

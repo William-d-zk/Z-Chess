@@ -57,7 +57,7 @@ public interface IRouter
      * @param sessionIndex
      *            session index
      */
-    void ack(ICommand stateMessage, long sessionIndex);
+    boolean ack(ICommand stateMessage, long sessionIndex);
 
     /**
      * clean session state machine for message stack

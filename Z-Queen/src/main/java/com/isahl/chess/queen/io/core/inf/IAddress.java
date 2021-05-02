@@ -34,12 +34,14 @@ public interface IAddress
 
     default void setRemoteAddress(InetSocketAddress address)
     {
+        throw new UnsupportedOperationException("final member!");
     }
 
     InetSocketAddress getLocalAddress();
 
     default void setLocalAddress(InetSocketAddress address)
     {
+        throw new UnsupportedOperationException("final member!");
     }
 
 }

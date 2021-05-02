@@ -37,6 +37,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+/**
+ * @author william.d.zk
+ * @date 2021/3/1
+ */
 @Component
 public class CustomAccessDeniedHandler
         implements

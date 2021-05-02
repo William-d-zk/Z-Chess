@@ -35,7 +35,8 @@ import com.isahl.chess.rook.storage.jpa.repository.BaseRepository;
  */
 @Repository
 public interface IDeviceJpaRepository
-        extends BaseRepository<DeviceEntity>
+        extends
+        BaseRepository<DeviceEntity>
 {
     DeviceEntity findByToken(String token);
 

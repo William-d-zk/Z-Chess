@@ -41,10 +41,9 @@ import com.isahl.chess.knight.raft.service.RaftCustom;
 import com.isahl.chess.pawn.endpoint.device.DeviceNode;
 import com.isahl.chess.pawn.endpoint.device.config.MixConfig;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
-import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageBody;
 import com.isahl.chess.pawn.endpoint.device.jpa.repository.IDeviceJpaRepository;
-import com.isahl.chess.pawn.endpoint.device.jpa.repository.IMessageJpaRepository;
 import com.isahl.chess.pawn.endpoint.device.spi.IDeviceService;
+import com.isahl.chess.pawn.endpoint.device.spi.IMessageService;
 import com.isahl.chess.queen.config.IAioConfig;
 import com.isahl.chess.queen.config.IMixConfig;
 import com.isahl.chess.queen.event.handler.mix.ILinkCustom;
@@ -80,7 +79,6 @@ public class DeviceService
     private final ILinkCustom              _LinkCustom;
     private final RaftCustom<DeviceNode>   _RaftCustom;
     private final IDeviceJpaRepository     _DeviceRepository;
-    private final IMessageJpaRepository    _MessageRepository;
     private final RaftNode<DeviceNode>     _RaftNode;
     private final LogicHandler<DeviceNode> _LogicHandler;
 
@@ -90,10 +88,10 @@ public class DeviceService
                   IRaftConfig raftConfig,
                   IMixConfig mixConfig,
                   ILinkCustom linkCustom,
-                  IMessageJpaRepository messageRepository,
                   IDeviceJpaRepository deviceRepository,
                   IRaftDao raftDao,
-                  IQttRouter qttRouter) throws IOException
+                  IQttRouter qttRouter,
+                  IMessageService messageService) throws IOException
     {
         final TimeWheel _TimeWheel = new TimeWheel();
         List<ITriple> hosts = deviceConfig.getListeners()
@@ -120,7 +118,7 @@ public class DeviceService
         _LinkCustom = linkCustom;
         _RaftNode = new RaftNode<>(_TimeWheel, raftConfig, raftDao, _DeviceNode);
         _RaftCustom = new RaftCustom<>(_RaftNode);
-        _LogicHandler = new LogicHandler<>(_DeviceNode, qttRouter, _RaftNode, _MessageRepository = messageRepository);
+        _LogicHandler = new LogicHandler<>(_DeviceNode, qttRouter, _RaftNode, messageService);
     }
 
     @PostConstruct
@@ -149,13 +147,6 @@ public class DeviceService
     public List<DeviceEntity> findAllDevices() throws ZException
     {
         return _DeviceRepository.findAll();
-    }
-
-    @Override
-    public MessageBody getMessageById(long id) throws ZException
-    {
-        return _MessageRepository.getOne(id)
-                                 .getBody();
     }
 
     @Override

@@ -37,6 +37,7 @@ import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZServerFactory;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X70_RaftVote;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X76_RaftNotify;
 import com.isahl.chess.king.topology.ZUID;
+import com.isahl.chess.queen.io.core.async.inf.IAioSort;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.ISort;
@@ -94,9 +95,9 @@ public enum ZSortHolder
                                                           ISort.Type.CONSUMER,
                                                           new MqttZSort(ISort.Mode.LINK, ISort.Type.CONSUMER))));
 
-    private final ISort<?> _Sort;
+    private final IAioSort<?> _Sort;
 
-    <C extends IPContext> ZSortHolder(ISort<C> sort)
+    <C extends IPContext> ZSortHolder(IAioSort<C> sort)
     {
         _Sort = sort;
     }
@@ -118,9 +119,9 @@ public enum ZSortHolder
     final static QttCommandFactory _QttCommandFactory = new QttCommandFactory();
 
     @SuppressWarnings("unchecked")
-    public <C extends IPContext> ISort<C> getSort()
+    public <C extends IPContext> IAioSort<C> getSort()
     {
-        return (ISort<C>) _Sort;
+        return (IAioSort<C>) _Sort;
     }
 
     public int getSlot()

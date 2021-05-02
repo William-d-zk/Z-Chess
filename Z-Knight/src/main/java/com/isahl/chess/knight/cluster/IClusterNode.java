@@ -35,8 +35,8 @@ import com.isahl.chess.queen.event.QEvent;
 import com.isahl.chess.queen.io.core.async.AioSession;
 import com.isahl.chess.queen.io.core.async.BaseAioConnector;
 import com.isahl.chess.queen.io.core.executor.IPipeCore;
-import com.isahl.chess.queen.io.core.inf.IAioClient;
-import com.isahl.chess.queen.io.core.inf.IAioConnector;
+import com.isahl.chess.queen.io.core.async.inf.IAioClient;
+import com.isahl.chess.queen.io.core.async.inf.IAioConnector;
 import com.isahl.chess.queen.io.core.inf.IClusterPeer;
 import com.isahl.chess.queen.io.core.inf.IClusterTimer;
 import com.isahl.chess.queen.io.core.inf.IConnectActivity;
@@ -94,15 +94,15 @@ public interface IClusterNode<K extends IPipeCore>
             }
 
             @Override
-            public void onCreate(ISession session)
+            public void onCreated(ISession session)
             {
-                super.onCreate(session);
-                client.onCreate(session);
+                super.onCreated(session);
+                client.onCreated(session);
                 _Manager.addSession(session);
             }
 
             @Override
-            public IControl[] createCommands(ISession session)
+            public IControl[] onConnectedCommands(ISession session)
             {
                 X106_Identity x106 = new X106_Identity(_Zuid.getPeerId(), _Zuid.getId(_Type));
                 return new IControl[]{x106};

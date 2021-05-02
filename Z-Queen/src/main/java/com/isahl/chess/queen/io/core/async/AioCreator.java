@@ -22,20 +22,25 @@
  */
 package com.isahl.chess.queen.io.core.async;
 
-import java.time.Duration;
+import com.isahl.chess.queen.config.ISocketConfig;
+import com.isahl.chess.queen.io.core.inf.ISessionCreator;
+import com.isahl.chess.queen.io.core.inf.ISslOption;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.TrustManager;
-
-import com.isahl.chess.queen.config.ISocketConfig;
-import com.isahl.chess.queen.io.core.inf.ISessionCreator;
+import java.io.IOException;
+import java.net.StandardSocketOptions;
+import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.NetworkChannel;
+import java.time.Duration;
 
 /**
  * @author William.d.zk
  */
 public abstract class AioCreator
         implements
-        ISessionCreator
+        ISessionCreator<AsynchronousSocketChannel>,
+        ISslOption
 {
     private final ISocketConfig _Config;
 
@@ -114,7 +119,8 @@ public abstract class AioCreator
     }
 
     @Override
-    public boolean isSslClientAuth() {
+    public boolean isSslClientAuth()
+    {
         return _Config.isClientAuth();
     }
 
@@ -128,5 +134,21 @@ public abstract class AioCreator
     public int getSslAppSize()
     {
         return _Config.getSslAppBufferSize();
+    }
+
+    @Override
+    public void configChannel(NetworkChannel channel)
+    {
+        if (channel != null) {
+            try {
+                channel.setOption(StandardSocketOptions.TCP_NODELAY, isTcpNoDelay());
+                channel.setOption(StandardSocketOptions.SO_RCVBUF, getRcvByte());
+                channel.setOption(StandardSocketOptions.SO_SNDBUF, getSnfByte());
+                channel.setOption(StandardSocketOptions.SO_KEEPALIVE, isKeepAlive());
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

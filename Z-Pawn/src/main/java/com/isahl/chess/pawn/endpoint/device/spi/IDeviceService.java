@@ -23,23 +23,20 @@
 
 package com.isahl.chess.pawn.endpoint.device.spi;
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
-
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
-import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageBody;
 import com.isahl.chess.queen.io.core.inf.IQoS;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 
 public interface IDeviceService
 {
     DeviceEntity saveDevice(DeviceEntity device) throws ZException;
 
     DeviceEntity findDevice(DeviceEntity key) throws ZException;
-
-    MessageBody getMessageById(long id) throws ZException;
 
     List<DeviceEntity> findAllDevices() throws ZException;
 

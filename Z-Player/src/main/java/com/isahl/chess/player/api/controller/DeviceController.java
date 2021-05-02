@@ -27,11 +27,11 @@ import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.response.ZResponse;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.player.api.model.DeviceDo;
-import com.isahl.chess.player.api.service.MixOpenService;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceSubscribe;
 import com.isahl.chess.pawn.endpoint.device.model.DeviceStatus;
+import com.isahl.chess.player.api.model.DeviceDo;
+import com.isahl.chess.player.api.service.MixOpenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -58,7 +58,7 @@ import static com.isahl.chess.king.base.util.IoUtil.isBlank;
 @RequestMapping("device")
 public class DeviceController
 {
-    private final Logger            _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final Logger         _Logger = Logger.getLogger(getClass().getSimpleName());
     private final MixOpenService _DeviceService;
 
     @Autowired
@@ -73,7 +73,6 @@ public class DeviceController
         DeviceEntity deviceEntity = new DeviceEntity();
         deviceEntity.setSn(deviceDo.getSn());
         deviceEntity.setUsername(deviceDo.getUsername());
-        deviceEntity.setPassword(deviceDo.getPassword());
         deviceEntity.setSubscribe(new DeviceSubscribe(new HashMap<>()));
         deviceEntity.setProfile(deviceDo.getProfile());
         return ZResponse.success(_DeviceService.save(deviceEntity));
@@ -114,7 +113,7 @@ public class DeviceController
         return ZResponse.success(result);
     }
 
-    @PostMapping("devices")
+    @PostMapping("all")
     public ZResponse<Page<DeviceEntity>> findAllDevices(@RequestParam("sn") String sn,
                                                         @RequestParam("page") Integer page,
                                                         @RequestParam("size") Integer size)
