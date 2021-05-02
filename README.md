@@ -38,7 +38,13 @@
 
 ## Z-Rook 数据存储
 
+* 通过JPA结构进行数据库的DAO层，数据库默认为Postgresql
+* 集成了Springboot-cache/ehcache 作为缓存层
+
 ## Z-Pawn endpoint，边缘服务；使用MQTT协议为嵌入性系统提供接入服务。
+
+* 基于Knight的集群体系，同时支持单机部署和集群部署。
+* 提供了接入设备以及消息存储管理结构，由于websocket协议并没有规范消息处理的结构所以依据MQTT的消息处理行为规范为蓝本设定了消息管理体系
 
 ## Z-Player 基于endpoint的 open api
 
@@ -46,6 +52,6 @@
 
 ## Z-Audience 测试用例等
 
-## Z-Arena 暂时作为启动器
+## Z-Arena 网关
 
 

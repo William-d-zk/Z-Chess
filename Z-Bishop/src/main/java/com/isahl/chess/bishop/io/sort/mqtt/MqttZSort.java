@@ -29,7 +29,8 @@ import com.isahl.chess.bishop.io.mqtt.filter.QttControlFilter;
 import com.isahl.chess.bishop.io.mqtt.filter.QttFrameFilter;
 import com.isahl.chess.bishop.io.sort.BaseSort;
 import com.isahl.chess.queen.io.core.inf.IFilterChain;
-import com.isahl.chess.queen.io.core.inf.ISessionOption;
+import com.isahl.chess.queen.io.core.inf.INetworkOption;
+import com.isahl.chess.queen.io.core.inf.ISslOption;
 
 public class MqttZSort
         extends
@@ -54,7 +55,7 @@ public class MqttZSort
     }
 
     @Override
-    public QttContext newContext(ISessionOption option)
+    public QttContext newContext(INetworkOption option)
     {
         return new QttContext(option, getMode(), getType());
     }

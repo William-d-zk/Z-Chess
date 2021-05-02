@@ -30,7 +30,7 @@ import com.isahl.chess.bishop.io.ws.filter.WsFrameFilter;
 import com.isahl.chess.bishop.io.ws.filter.WsHandShakeFilter;
 import com.isahl.chess.bishop.io.ws.filter.WsTextFilter;
 import com.isahl.chess.queen.io.core.inf.IFilterChain;
-import com.isahl.chess.queen.io.core.inf.ISessionOption;
+import com.isahl.chess.queen.io.core.inf.INetworkOption;
 
 /**
  * @author william.d.zk
@@ -58,7 +58,7 @@ public class WsTextZSort
     }
 
     @Override
-    public WsContext newContext(ISessionOption option)
+    public WsContext newContext(INetworkOption option)
     {
         return new WsContext(option, getMode(), getType());
     }

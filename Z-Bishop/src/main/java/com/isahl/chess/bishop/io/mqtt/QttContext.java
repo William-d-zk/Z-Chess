@@ -23,20 +23,20 @@
 
 package com.isahl.chess.bishop.io.mqtt;
 
+import com.isahl.chess.bishop.io.ws.zchat.ZContext;
+import com.isahl.chess.king.base.inf.IPair;
+import com.isahl.chess.king.base.util.Pair;
+import com.isahl.chess.queen.io.core.inf.INetworkOption;
+import com.isahl.chess.queen.io.core.inf.ISort;
+
+import java.util.stream.IntStream;
+
 import static com.isahl.chess.bishop.io.mqtt.MqttProtocol.VERSION_V3_1_1;
 import static com.isahl.chess.bishop.io.mqtt.MqttProtocol.VERSION_V5_0;
 import static com.isahl.chess.king.base.schedule.inf.ITask.advanceState;
 import static com.isahl.chess.king.base.schedule.inf.ITask.stateAtLeast;
 import static com.isahl.chess.king.base.schedule.inf.ITask.stateLessThan;
 import static com.isahl.chess.queen.io.core.inf.ISession.CAPACITY;
-
-import java.util.stream.IntStream;
-
-import com.isahl.chess.bishop.io.ws.zchat.ZContext;
-import com.isahl.chess.king.base.inf.IPair;
-import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.queen.io.core.inf.ISessionOption;
-import com.isahl.chess.queen.io.core.inf.ISort;
 
 /**
  * @author william.d.zk
@@ -50,7 +50,7 @@ public class QttContext
                                                             new int[]{VERSION_V5_0,
                                                                       VERSION_V3_1_1});
 
-    public QttContext(ISessionOption option,
+    public QttContext(INetworkOption option,
                       ISort.Mode mode,
                       ISort.Type type)
     {

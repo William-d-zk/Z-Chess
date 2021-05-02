@@ -72,7 +72,5 @@ public interface ISort<C extends IPContext>
 
     IgnoreOperator getIgnore();
 
-    C newContext(ISessionOption option);
-
     String getProtocol();
 }

@@ -23,17 +23,15 @@
 
 package com.isahl.chess.queen.io.core.executor;
 
-import java.io.IOException;
-import java.nio.channels.AsynchronousChannelGroup;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
-
 import com.isahl.chess.queen.event.QEvent;
 import com.lmax.disruptor.LiteBlockingWaitStrategy;
 import com.lmax.disruptor.LiteTimeoutBlockingWaitStrategy;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.WaitStrategy;
 import com.lmax.disruptor.YieldingWaitStrategy;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author william.d.zk
@@ -42,7 +40,7 @@ import com.lmax.disruptor.YieldingWaitStrategy;
  */
 public interface IPipeCore
 {
-    AsynchronousChannelGroup getClusterChannelGroup() throws IOException;
+
 
     default RingBuffer<QEvent> createPipeline(int size, WaitStrategy waitStrategy)
     {

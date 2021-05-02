@@ -23,18 +23,18 @@
 
 package com.isahl.chess.bishop.io.ws.zchat.zfilter;
 
-import static com.isahl.chess.king.base.schedule.inf.ITask.advanceState;
-import static com.isahl.chess.queen.io.core.inf.ISession.CAPACITY;
-
 import com.isahl.chess.bishop.io.ws.zchat.ZContext;
 import com.isahl.chess.king.base.crypt.util.Rc4;
 import com.isahl.chess.king.base.util.CryptUtil;
 import com.isahl.chess.queen.io.core.inf.IEContext;
 import com.isahl.chess.queen.io.core.inf.IEncryptHandler;
+import com.isahl.chess.queen.io.core.inf.INetworkOption;
 import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.IProxyContext;
-import com.isahl.chess.queen.io.core.inf.ISessionOption;
 import com.isahl.chess.queen.io.core.inf.ISort;
+
+import static com.isahl.chess.king.base.schedule.inf.ITask.advanceState;
+import static com.isahl.chess.queen.io.core.inf.ISession.CAPACITY;
 
 public class EZContext<A extends IPContext>
         extends
@@ -53,7 +53,7 @@ public class EZContext<A extends IPContext>
     private Rc4             mEncryptRc4, mDecryptRc4;
     private IEncryptHandler mEncryptHandler;
 
-    public EZContext(ISessionOption option,
+    public EZContext(INetworkOption option,
                      ISort.Mode mode,
                      ISort.Type type,
                      A acting)

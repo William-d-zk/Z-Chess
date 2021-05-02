@@ -22,15 +22,15 @@
  */
 package com.isahl.chess.queen.io.core.async;
 
-import java.nio.ByteBuffer;
-
 import com.isahl.chess.queen.io.core.inf.IContext;
 import com.isahl.chess.queen.io.core.inf.ISessionOption;
+
+import java.nio.ByteBuffer;
 
 /**
  * @author William.d.zk
  */
-public abstract class AioContext
+public abstract class AioContext<O extends ISessionOption>
         implements
         IContext
 {
@@ -55,7 +55,7 @@ public abstract class AioContext
     private long mServerResponseTime;
     private long mClientArrivedTime;
 
-    protected AioContext(ISessionOption option)
+    protected AioContext(O option)
     {
         _RvBuf = allocateRcv(option);
         _WrBuf = allocateSnf(option);
@@ -113,12 +113,12 @@ public abstract class AioContext
         return mServerArrivedTime;
     }
 
-    protected ByteBuffer allocateRcv(ISessionOption option)
+    protected ByteBuffer allocateRcv(O option)
     {
         return ByteBuffer.allocate(option.getRcvByte());
     }
 
-    protected ByteBuffer allocateSnf(ISessionOption option)
+    protected ByteBuffer allocateSnf(O option)
     {
         return ByteBuffer.allocate(option.getSnfByte());
     }

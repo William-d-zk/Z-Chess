@@ -24,31 +24,33 @@
 package com.isahl.chess.referee.security.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.isahl.chess.referee.security.jpa.repository.IUserRepository;
+
+/**
+ * @author william.d.zk
+ * @date 2021/3/1
+ */
 @Service
 public class UserDetailServiceImpl
         implements
         UserDetailsService
 {
-
-    private final PasswordEncoder _PasswordEncoder;
+    private final IUserRepository _UserRepository;
 
     @Autowired
-    public UserDetailServiceImpl(PasswordEncoder passwordEncoder)
+    public UserDetailServiceImpl(IUserRepository userRepository)
     {
-        _PasswordEncoder = passwordEncoder;
+        _UserRepository = userRepository;
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException
     {
-        return new User(username, _PasswordEncoder.encode("ok"), AuthorityUtils.createAuthorityList("admin"));
+        return _UserRepository.findByUsername(username);
     }
 }

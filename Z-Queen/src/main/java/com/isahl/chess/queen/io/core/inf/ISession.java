@@ -23,13 +23,13 @@
 
 package com.isahl.chess.queen.io.core.inf;
 
-import java.io.Closeable;
-import java.nio.channels.AsynchronousSocketChannel;
-import java.util.Queue;
-
 import com.isahl.chess.king.base.inf.IDisposable;
 import com.isahl.chess.king.base.inf.IReset;
 import com.isahl.chess.king.base.inf.IValid;
+
+import java.io.Closeable;
+import java.nio.channels.Channel;
+import java.util.Queue;
 
 /**
  * session index 以 H16Bit 为限 提供port-channel聚合能力,
@@ -66,7 +66,7 @@ public interface ISession
 
     void setIndex(long index);
 
-    AsynchronousSocketChannel getChannel();
+    Channel getChannel();
 
     <T extends IPContext> T getContext();
 

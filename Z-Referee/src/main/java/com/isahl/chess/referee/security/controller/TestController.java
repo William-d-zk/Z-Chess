@@ -33,7 +33,7 @@ import com.isahl.chess.king.base.response.ZResponse;
 @RestController
 public class TestController
 {
-    @GetMapping("/test/hello")
+    @GetMapping("/user/common")
     public @ResponseBody ZResponse<String> hello(@RequestParam("input") String input)
     {
         return ZResponse.success("world");

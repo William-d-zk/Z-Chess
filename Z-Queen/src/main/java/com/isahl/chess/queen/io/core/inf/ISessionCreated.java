@@ -27,5 +27,5 @@ package com.isahl.chess.queen.io.core.inf;
  */
 public interface ISessionCreated
 {
-    void onCreate(ISession session);
+    void onCreated(ISession session);
 }

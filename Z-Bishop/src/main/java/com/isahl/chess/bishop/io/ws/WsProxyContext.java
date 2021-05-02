@@ -24,10 +24,10 @@
 package com.isahl.chess.bishop.io.ws;
 
 import com.isahl.chess.queen.io.core.async.AioPacket;
+import com.isahl.chess.queen.io.core.inf.INetworkOption;
 import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.IPacket;
 import com.isahl.chess.queen.io.core.inf.IProxyContext;
-import com.isahl.chess.queen.io.core.inf.ISessionOption;
 import com.isahl.chess.queen.io.core.inf.ISort;
 
 /**
@@ -43,7 +43,7 @@ public class WsProxyContext<A extends IPContext>
     private final A _ActingContext;
     private IPacket mTransfer;
 
-    public WsProxyContext(ISessionOption option,
+    public WsProxyContext(INetworkOption option,
                           ISort.Mode mode,
                           ISort.Type type,
                           A actingContext)

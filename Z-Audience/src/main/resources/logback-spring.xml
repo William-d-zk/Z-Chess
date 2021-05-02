@@ -68,5 +68,7 @@
     <logger name="endpoint.pawn" level="INFO">
         <appender-ref ref="Z-CHESS"/>
     </logger>
-
+    <logger name="security.referee" level="DEBUG">
+        <appender-ref ref="Z-CHESS"/>
+    </logger>
 </configuration>

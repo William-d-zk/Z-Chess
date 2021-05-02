@@ -23,15 +23,6 @@
 
 package com.isahl.chess.knight.cluster;
 
-import static com.isahl.chess.king.base.schedule.TimeWheel.IWheelItem.PRIORITY_NORMAL;
-
-import java.io.IOException;
-import java.nio.channels.AsynchronousSocketChannel;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-
-import javax.annotation.PostConstruct;
-
 import com.isahl.chess.bishop.io.sort.ZSortHolder;
 import com.isahl.chess.bishop.io.ws.WsContext;
 import com.isahl.chess.bishop.io.ws.control.X103_Ping;
@@ -53,15 +44,24 @@ import com.isahl.chess.queen.event.handler.mix.ILogicHandler;
 import com.isahl.chess.queen.io.core.async.AioSession;
 import com.isahl.chess.queen.io.core.async.BaseAioClient;
 import com.isahl.chess.queen.io.core.async.BaseAioServer;
+import com.isahl.chess.queen.io.core.async.inf.IAioClient;
+import com.isahl.chess.queen.io.core.async.inf.IAioServer;
+import com.isahl.chess.queen.io.core.async.inf.IAioSort;
 import com.isahl.chess.queen.io.core.executor.ClusterCore;
-import com.isahl.chess.queen.io.core.inf.IAioClient;
-import com.isahl.chess.queen.io.core.inf.IAioServer;
 import com.isahl.chess.queen.io.core.inf.IConnectActivity;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionDismiss;
 import com.isahl.chess.queen.io.core.inf.ISort;
 import com.isahl.chess.queen.io.core.manager.ClusterManager;
+
+import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+
+import static com.isahl.chess.king.base.schedule.TimeWheel.IWheelItem.PRIORITY_NORMAL;
 
 public class ClusterNode
         extends
@@ -106,27 +106,21 @@ public class ClusterNode
             }
 
             @Override
-            public void onCreate(ISession session)
+            public void onCreated(ISession session)
             {
                 ClusterNode.this.addSession(session);
             }
 
             @Override
-            public ISession createSession(AsynchronousSocketChannel socketChannel,
+            public ISession createSession(AsynchronousSocketChannel channel,
                                           IConnectActivity activity) throws IOException
             {
-                ISort<WsContext> sort = ZSortHolder.WS_CLUSTER_SERVER.getSort();
-                return new AioSession<>(socketChannel,
-                                        ZUID.TYPE_CLUSTER,
-                                        this,
-                                        sort,
-                                        activity,
-                                        ClusterNode.this,
-                                        false);
+                IAioSort<WsContext> sort = ZSortHolder.WS_CLUSTER_SERVER.getSort();
+                return new AioSession<>(channel, ZUID.TYPE_CLUSTER, this, sort, activity, ClusterNode.this, false);
             }
 
             @Override
-            public IControl[] createCommands(ISession session)
+            public IControl[] onConnectedCommands(ISession session)
             {
                 X106_Identity x106 = new X106_Identity(_ZUID.getPeerId(), _ZUID.getId());
                 return new IControl[]{x106};
@@ -142,9 +136,9 @@ public class ClusterNode
         _GateClient = new BaseAioClient(_TimeWheel, getCore().getClusterChannelGroup())
         {
             @Override
-            public void onCreate(ISession session)
+            public void onCreated(ISession session)
             {
-                super.onCreate(session);
+                super.onCreated(session);
                 Duration gap = Duration.ofSeconds(session.getReadTimeOutSeconds() / 2);
                 _TimeWheel.acquire(session,
                                    new ScheduleHandler<>(gap, true, ClusterNode.this::heartbeat, PRIORITY_NORMAL));
@@ -161,9 +155,9 @@ public class ClusterNode
         {
 
             @Override
-            public void onCreate(ISession session)
+            public void onCreated(ISession session)
             {
-                super.onCreate(session);
+                super.onCreated(session);
                 Duration gap = Duration.ofSeconds(session.getReadTimeOutSeconds() / 2);
                 _TimeWheel.acquire(session,
                                    new ScheduleHandler<>(gap, true, ClusterNode.this::heartbeat, PRIORITY_NORMAL));

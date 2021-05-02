@@ -22,18 +22,18 @@
  */
 package com.isahl.chess.bishop.io.ws.zchat;
 
+import com.isahl.chess.queen.io.core.async.AioContext;
+import com.isahl.chess.queen.io.core.inf.INetworkOption;
+import com.isahl.chess.queen.io.core.inf.IPContext;
+import com.isahl.chess.queen.io.core.inf.ISort;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
 import static com.isahl.chess.king.base.schedule.inf.ITask.advanceState;
 import static com.isahl.chess.king.base.schedule.inf.ITask.stateAtLeast;
 import static com.isahl.chess.king.base.schedule.inf.ITask.stateLessThan;
 import static com.isahl.chess.king.base.schedule.inf.ITask.stateOf;
 import static com.isahl.chess.queen.io.core.inf.ISession.CAPACITY;
-
-import java.util.concurrent.atomic.AtomicInteger;
-
-import com.isahl.chess.queen.io.core.async.AioContext;
-import com.isahl.chess.queen.io.core.inf.IPContext;
-import com.isahl.chess.queen.io.core.inf.ISessionOption;
-import com.isahl.chess.queen.io.core.inf.ISort;
 
 /**
  * @author William.d.zk
@@ -42,7 +42,7 @@ import com.isahl.chess.queen.io.core.inf.ISort;
  */
 public abstract class ZContext
         extends
-        AioContext
+        AioContext<INetworkOption>
         implements
         IPContext
 {
@@ -54,7 +54,7 @@ public abstract class ZContext
     private int    mDecodingPosition = -1, mLackData = 1;
     private Object mCarrier;
 
-    public ZContext(ISessionOption option,
+    public ZContext(INetworkOption option,
                     ISort.Mode mode,
                     ISort.Type type)
     {
