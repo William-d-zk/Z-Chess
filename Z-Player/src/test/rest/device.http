@@ -1,0 +1,15 @@
+POST http://test.isahl.com:8080/device/register
+Content-Type: application/json
+
+{
+  "sn": "z-chess.device-local-test.00001",
+  "username": "isahl.test",
+  "profile":
+  {
+    "wifi_mac": "09:12:11:3F:2D:8E",
+    "sensor_mac": "09:12:11:3A:2D:8E",
+    "bluetooth_mac": "09:12:11:7F:2D:8E",
+    "imei": "766781230782475",
+    "imsi": "460001357924680"
+  }
+}
