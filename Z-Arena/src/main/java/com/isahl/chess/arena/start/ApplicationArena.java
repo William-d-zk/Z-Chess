@@ -28,6 +28,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
  * @author william.d.zk
+ * @date 2021/02/17
  */
 
 @SpringBootApplication(scanBasePackages = {"com.isahl.chess.knight.raft",

@@ -56,20 +56,17 @@ import static com.isahl.chess.king.base.util.IoUtil.isBlank;
  */
 @RestController
 @RequestMapping("device")
-public class DeviceController
-{
-    private final Logger         _Logger = Logger.getLogger(getClass().getSimpleName());
+public class DeviceController {
+    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
     private final MixOpenService _DeviceService;
 
     @Autowired
-    public DeviceController(MixOpenService deviceService)
-    {
+    public DeviceController(MixOpenService deviceService) {
         _DeviceService = deviceService;
     }
 
     @PostMapping("register")
-    public ZResponse<DeviceEntity> registerDevice(@RequestBody DeviceDo deviceDo)
-    {
+    public ZResponse<DeviceEntity> registerDevice(@RequestBody DeviceDo deviceDo) {
         DeviceEntity deviceEntity = new DeviceEntity();
         deviceEntity.setSn(deviceDo.getSn());
         deviceEntity.setUsername(deviceDo.getUsername());
@@ -79,32 +76,19 @@ public class DeviceController
     }
 
     @GetMapping("query")
-    public ZResponse<IPair> queryDevice(@RequestParam(required = false) String token,
-                                        @RequestParam(required = false) String sn,
-                                        @RequestParam(required = false) Long id)
-    {
+    public ZResponse<IPair> queryDevice(@RequestParam(required = false) String token, @RequestParam(required = false) String sn) {
         IPair result = null;
         DeviceEntity device = new DeviceEntity();
         device.setSn(sn);
         device.setToken(token);
-        device.setId(id);
         if (!isBlank(token) || !isBlank(sn)) {
-            DeviceEntity exist = _DeviceService.find(device);
+            DeviceEntity exist = _DeviceService.find(sn, token);
             if (Objects.nonNull(exist)) {
-                if (device.getInvalidAt()
-                          .isBefore(LocalDateTime.now()))
-                {
+                if (device.getInvalidAt().isBefore(LocalDateTime.now())) {
                     result = new Pair<>(DeviceStatus.INVALID, device);
-                }
-                else {
+                } else {
                     result = new Pair<>(DeviceStatus.AVAILABLE, device);
                 }
-            }
-        }
-        else {
-            DeviceEntity exist = _DeviceService.find(device);
-            if (exist != null) {
-                result = new Pair<>(DeviceStatus.AVAILABLE, exist);
             }
         }
         if (result == null) {
@@ -114,19 +98,15 @@ public class DeviceController
     }
 
     @PostMapping("all")
-    public ZResponse<Page<DeviceEntity>> findAllDevices(@RequestParam("sn") String sn,
-                                                        @RequestParam("page") Integer page,
-                                                        @RequestParam("size") Integer size)
-    {
+    public ZResponse<Page<DeviceEntity>> findAllDevices(@RequestParam("sn") String sn, @RequestParam("page") Integer page, @RequestParam("size") Integer size) {
         return ZResponse.success(_DeviceService.findAll(sn, PageRequest.of(page, size)));
     }
 
     @GetMapping("online")
-    public @ResponseBody ZResponse<List<DeviceEntity>> filterOnlineWithUsername(@RequestParam(name = "username") String username)
-    {
+    public @ResponseBody
+    ZResponse<List<DeviceEntity>> filterOnlineWithUsername(@RequestParam(name = "username") String username) {
         if (isBlank(username)) return null;
-        return ZResponse.success(_DeviceService.filterOnlineDevices(username)
-                                               .collect(Collectors.toList()));
+        return ZResponse.success(_DeviceService.filterOnlineDevices(username).collect(Collectors.toList()));
     }
 
 }

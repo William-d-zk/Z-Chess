@@ -54,65 +54,45 @@ import static com.isahl.chess.queen.db.inf.IStorage.Operation.OP_INSERT;
  * @author william.d.zk
  */
 @Service
-public class MixOpenService
-{
+public class MixOpenService {
     private final IDeviceJpaRepository _JpaRepository;
-    private final MixConfig            _MixConfig;
-    private final CryptUtil            _CryptUtil = new CryptUtil();
-    private final Logger               _Logger    = Logger.getLogger("biz.player." + getClass().getSimpleName());
-    private final IDeviceService       _DeviceService;
+    private final MixConfig _MixConfig;
+    private final CryptUtil _CryptUtil = new CryptUtil();
+    private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+    private final IDeviceService _DeviceService;
 
     @Autowired
-    public MixOpenService(IDeviceJpaRepository jpaRepository,
-                          MixConfig mixConfig,
-                          IDeviceService deviceService)
-    {
+    public MixOpenService(IDeviceJpaRepository jpaRepository, MixConfig mixConfig, IDeviceService deviceService) {
         _JpaRepository = jpaRepository;
         _MixConfig = mixConfig;
         _DeviceService = deviceService;
     }
 
-    public DeviceEntity save(DeviceEntity device) throws ZException
-    {
-        if (device.operation()
-                  .getValue() > OP_INSERT.getValue())
-        {   // update 
+    public DeviceEntity save(DeviceEntity device) throws ZException {
+        if (device.operation().getValue() > OP_INSERT.getValue()) {   // update
             DeviceEntity exist;
             try {
                 exist = _JpaRepository.getOne(device.primaryKey());
-            }
-            catch (EntityNotFoundException e) {
+            } catch (EntityNotFoundException e) {
                 _Logger.warning("entity_not_found_exception", e);
-                throw new ZException(e,
-                                     device.operation()
-                                           .name());
+                throw new ZException(e, device.operation().name());
             }
-            if (exist.getInvalidAt()
-                     .isBefore(LocalDateTime.now())
-                || device.getPasswordId() > exist.getPasswordId())
-            {
+            if (exist.getInvalidAt().isBefore(LocalDateTime.now()) || device.getPasswordId() > exist.getPasswordId()) {
                 exist.setPassword(_CryptUtil.randomPassword(17, 32));
                 exist.increasePasswordId();
-                exist.setInvalidAt(LocalDateTime.now()
-                                                .plus(_MixConfig.getPasswordInvalidDays()));
+                exist.setInvalidAt(LocalDateTime.now().plus(_MixConfig.getPasswordInvalidDays()));
             }
             return _JpaRepository.save(exist);
-        }
-        else {
+        } else {
             DeviceEntity exist = null;
             if (!isBlank(device.getSn())) {
                 exist = _JpaRepository.findBySn(device.getSn());
-            }
-            else if (!isBlank(device.getToken())) {
+            } else if (!isBlank(device.getToken())) {
                 exist = _JpaRepository.findByToken(device.getToken());
             }
-            DeviceEntity entity = exist == null ? new DeviceEntity(): exist;
+            DeviceEntity entity = exist == null ? new DeviceEntity() : exist;
             if (exist == null) {
-                String source = String.format("sn:%s,random %s%d",
-                                              device.getSn(),
-                                              _MixConfig.getPasswordRandomSeed(),
-                                              Instant.now()
-                                                     .toEpochMilli());
+                String source = String.format("sn:%s,random %s%d", device.getSn(), _MixConfig.getPasswordRandomSeed(), Instant.now().toEpochMilli());
                 _Logger.debug("new device %s ", source);
                 entity.setToken(IoUtil.bin2Hex(_CryptUtil.sha256(source.getBytes(StandardCharsets.UTF_8))));
                 entity.setSn(device.getSn());
@@ -120,52 +100,38 @@ public class MixOpenService
                 entity.setSubscribe(device.getSubscribe());
                 entity.setProfile(device.getProfile());
             }
-            if (exist == null
-                || exist.getInvalidAt()
-                        .isBefore(LocalDateTime.now()))
-            {
+            if (exist == null || exist.getInvalidAt().isBefore(LocalDateTime.now())) {
                 entity.setPassword(_CryptUtil.randomPassword(17, 32));
                 entity.increasePasswordId();
-                entity.setInvalidAt(LocalDateTime.now()
-                                                 .plus(_MixConfig.getPasswordInvalidDays()));
+                entity.setInvalidAt(LocalDateTime.now().plus(_MixConfig.getPasswordInvalidDays()));
             }
             return _JpaRepository.save(entity);
         }
     }
 
-    public DeviceEntity find(DeviceEntity device) throws ZException
-    {
-        DeviceEntity exist = _JpaRepository.findBySnOrToken(device.getSn(), device.getToken());
-        if (exist == null) {
-            exist = _JpaRepository.getOne(device.getId());
-        }
-        return exist;
+    public DeviceEntity find(String token, String sn) throws ZException {
+        return _JpaRepository.findBySnOrToken(sn, token);
     }
 
-    public Stream<DeviceEntity> filterOnlineDevices(String username)
-    {
+
+    public Stream<DeviceEntity> filterOnlineDevices(String username) {
         if (isBlank(username)) return null;
         return _DeviceService.getOnlineDevices(username);
     }
 
     @Cacheable(value = "onlineOfUser", key = "#username")
-    public long countOnlineDevices(String username)
-    {
+    public long countOnlineDevices(String username) {
         if (isBlank(username)) return 0;
-        return _DeviceService.getOnlineDevices(username)
-                             .count();
+        return _DeviceService.getOnlineDevices(username).count();
     }
 
-    public Page<DeviceEntity> findAll(String sn, Pageable pageable)
-    {
-        return _JpaRepository.findAll((Specification<DeviceEntity>) (root, criteriaQuery, criteriaBuilder) ->
-        {
+    public Page<DeviceEntity> findAll(String sn, Pageable pageable) {
+        return _JpaRepository.findAll((Specification<DeviceEntity>) (root, criteriaQuery, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
             if (!IoUtil.isBlank(sn)) {
                 predicates.add(criteriaBuilder.like(root.get("sn"), "%" + sn + "%"));
             }
-            return criteriaQuery.where(predicates.toArray(new Predicate[0]))
-                                .getRestriction();
+            return criteriaQuery.where(predicates.toArray(new Predicate[0])).getRestriction();
         }, pageable);
     }
 }

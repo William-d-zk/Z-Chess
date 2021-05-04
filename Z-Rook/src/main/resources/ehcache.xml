@@ -26,17 +26,17 @@
         xmlns='http://www.ehcache.org/v3'
         xsi:schemaLocation="
             http://www.ehcache.org/v3
-            http://www.ehcache.org/schema/ehcache-core-3.8.xsd">
+            http://www.ehcache.org/schema/ehcache-core-3.9.xsd">
 
     <!-- Persistent cache directory -->
-    <persistence directory="spring-boot-ehcache/cache"/>
+    <persistence directory="rook/ehcache"/>
 
     <!-- Default cache template -->
-    <cache-template name="default">
+    <cache-template name="rook-default">
         <expiry>
-            <ttl unit="seconds">15</ttl>
+            <ttl>15</ttl>
         </expiry>
-
+<!--        <resilience></resilience>-->
         <listeners>
             <listener>
                 <class>com.isahl.chess.rook.storage.cache.ehcache.CacheLogger</class>
@@ -55,8 +55,8 @@
         </resources>
     </cache-template>
 
-    <cache alias="onlineOfUser" uses-template="default">
-        <key-type>java.lang.String</key-type>
-        <value-type>java.lang.Long</value-type>
+    <cache alias="areaOfCircleCache" uses-template="rook-default">
+        <key-type>java.lang.Integer</key-type>
+        <value-type>java.lang.Double</value-type>
     </cache>
 </config>

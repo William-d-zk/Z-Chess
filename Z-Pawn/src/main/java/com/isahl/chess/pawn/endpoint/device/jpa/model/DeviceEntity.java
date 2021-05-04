@@ -87,6 +87,7 @@ public class DeviceEntity
     @Length(min = 8, max = 32, message = "* Your Username must have at least 8 characters less than 33 characters")
     @NotBlank(message = "*Please provide your username")
     private String        username;
+    @JsonIgnore
     private int           passwordId;
     @Column(length = 64, nullable = false, unique = true)
     private String        token;

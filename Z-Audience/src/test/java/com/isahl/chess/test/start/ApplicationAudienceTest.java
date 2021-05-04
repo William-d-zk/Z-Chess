@@ -23,14 +23,11 @@
 
 package com.isahl.chess.test.start;
 
-import java.time.LocalTime;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.response.ZProgress;
 import com.isahl.chess.king.base.response.ZResponse;
@@ -64,24 +61,4 @@ public class ApplicationAudienceTest
     {
     }
 
-    @Test
-    public void output()
-    {
-        JsonNode jsonOutput = JsonUtil.readTree(getClass().getResourceAsStream("/output.json"));
-        System.out.println(jsonOutput);
-        JsonNode vehicleTypeWithRouteList = jsonOutput.get("vehicleTypeWithRouteList");
-        for (JsonNode e : vehicleTypeWithRouteList) {
-            JsonNode jobList = e.get("jobList");
-            for (JsonNode job : jobList) {
-                JsonNode attrs = job.get("attrs");
-                JsonNode st = attrs.get("service_time");
-                JsonNode readyTime = attrs.get("ready_time");
-                JsonNode dueTime = attrs.get("due_time");
-                JsonNode width = attrs.get("width");
-                JsonNode height = attrs.get("height");
-                System.out.println("ready_time:" + LocalTime.ofSecondOfDay(readyTime.asLong() / 1000));
-                System.out.println("due_time:" + LocalTime.ofSecondOfDay(dueTime.asLong() / 1000));
-            }
-        }
-    }
 }

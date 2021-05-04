@@ -78,14 +78,10 @@ public abstract class AioManager<K extends IPipeCore>
         _Prefix2SessionMaps = new Map[_TYPE_COUNT];
         _SessionsSets = new Set[_TYPE_COUNT];
         Arrays.setAll(_SessionsSets,
-                      slot -> _AioConfig.isDomainActive(slot) ? new HashSet<>(1 << getConfigPower(slot))
-                                                              : null);
+                      slot -> _AioConfig.isDomainActive(slot) ? new HashSet<>(1 << getConfigPower(slot)): null);
         Arrays.setAll(_Index2SessionMaps,
-                      slot -> _AioConfig.isDomainActive(slot) ? new HashMap<>(1 << getConfigPower(slot))
-                                                              : null);
-        Arrays.setAll(_Prefix2SessionMaps,
-                      slot -> _AioConfig.isDomainActive(slot) ? new HashMap<>(23)
-                                                              : null);
+                      slot -> _AioConfig.isDomainActive(slot) ? new HashMap<>(1 << getConfigPower(slot)): null);
+        Arrays.setAll(_Prefix2SessionMaps, slot -> _AioConfig.isDomainActive(slot) ? new HashMap<>(23): null);
     }
 
     protected int getConfigPower(int slot)
@@ -289,13 +285,11 @@ public abstract class AioManager<K extends IPipeCore>
 
     public Set<ISession> getSessionSetWithType(int typeSlot)
     {
-        return typeSlot > ZUID.MAX_TYPE ? null
-                                        : _SessionsSets[typeSlot];
+        return typeSlot > ZUID.MAX_TYPE ? null: _SessionsSets[typeSlot];
     }
 
     public Collection<ISession> getMappedSessionsWithType(int typeSlot)
     {
-        return typeSlot > ZUID.MAX_TYPE ? null
-                                        : _Index2SessionMaps[typeSlot].values();
+        return typeSlot > ZUID.MAX_TYPE ? null: _Index2SessionMaps[typeSlot].values();
     }
 }
