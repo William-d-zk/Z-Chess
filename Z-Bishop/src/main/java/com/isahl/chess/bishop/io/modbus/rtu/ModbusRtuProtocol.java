@@ -85,4 +85,20 @@ public abstract class ModbusRtuProtocol
     {
         return mLength > 0 ? mLength: (mLength = 4 + (mPayload == null ? 0: mPayload.length));
     }
+
+    public int getCrc()
+    {
+        return mCrc;
+    }
+
+    public void setAddress(byte address)
+    {
+        mAddress = address;
+    }
+
+    public byte getAddress()
+    {
+        return mAddress;
+    }
+
 }

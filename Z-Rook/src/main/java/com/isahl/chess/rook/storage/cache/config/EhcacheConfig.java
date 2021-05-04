@@ -25,14 +25,16 @@ package com.isahl.chess.rook.storage.cache.config;
 
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/6/6
  */
 @Configuration
 @EnableCaching
+@PropertySource({"classpath:cache.properties"})
 public class EhcacheConfig
 {
+
 }

@@ -90,10 +90,10 @@ public class ClientCore
     {
         super(poolSize(), poolSize(), 15, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
         _AioProducerEvents = new RingBuffer[_IoCount = ioCount];
-        Arrays.setAll(_AioProducerEvents, slot -> createPipelineYield(6));
+        Arrays.setAll(_AioProducerEvents, slot -> createPipelineYield(1 << 6));
         _AioCacheConcurrentQueue = new ConcurrentLinkedQueue<>(Arrays.asList(_AioProducerEvents));
-        _BizLocalCloseEvent = createPipelineLite(5);
-        _BizLocalSendEvent = createPipelineLite(5);
+        _BizLocalCloseEvent = createPipelineLite(1 << 5);
+        _BizLocalSendEvent = createPipelineLite(1 << 5);
         // _TimeWheel.acquire("client event", new ScheduleHandler<>(45, true));
     }
 
@@ -115,16 +115,16 @@ public class ClientCore
     @SuppressWarnings("unchecked")
     public void build(final EventHandler<QEvent> _LogicHandler, Supplier<IEncryptHandler> encryptSupplier)
     {
-        final RingBuffer<QEvent> _WroteEvent = createPipelineYield(7);
-        final RingBuffer<QEvent> _LinkIoEvent = createPipelineLite(2);
+        final RingBuffer<QEvent> _WroteEvent = createPipelineYield(1 << 7);
+        final RingBuffer<QEvent> _LinkIoEvent = createPipelineLite(1 << 2);
         final RingBuffer<QEvent>[] _ErrorEvents = new RingBuffer[3];
         final RingBuffer<QEvent>[] _DispatchIo = new RingBuffer[4 + _IoCount];
-        final RingBuffer<QEvent> _ReadAndLogicEvent = createPipelineLite(6);
-        final RingBuffer<QEvent> _EncodeEvent = createPipelineLite(7);
+        final RingBuffer<QEvent> _ReadAndLogicEvent = createPipelineLite(1 << 6);
+        final RingBuffer<QEvent> _EncodeEvent = createPipelineLite(1 << 7);
         final SequenceBarrier[] _DispatchIoBarriers = new SequenceBarrier[_DispatchIo.length];
         final SequenceBarrier[] _ErrorBarriers = new SequenceBarrier[_ErrorEvents.length];
         final SequenceBarrier[] _AioProducerBarriers = new SequenceBarrier[_IoCount];
-        Arrays.setAll(_ErrorEvents, slot -> createPipelineLite(5));
+        Arrays.setAll(_ErrorEvents, slot -> createPipelineLite(1 << 5));
         Arrays.setAll(_ErrorBarriers, slot -> _ErrorEvents[slot].newBarrier());
         Arrays.setAll(_AioProducerBarriers, slot -> _AioProducerEvents[slot].newBarrier());
         IoUtil.addArray(_AioProducerEvents, _DispatchIo, _BizLocalCloseEvent);

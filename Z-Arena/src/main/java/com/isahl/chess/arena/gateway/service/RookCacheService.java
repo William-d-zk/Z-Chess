@@ -21,33 +21,23 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.rook.storage.cache.ehcache;
+package com.isahl.chess.arena.gateway.service;
 
-import org.ehcache.event.CacheEvent;
-import org.ehcache.event.CacheEventListener;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
 
 import com.isahl.chess.king.base.log.Logger;
 
-/**
- * @author william.d.zk
- * 
- * @date 2020/6/6
- */
-public class CacheLogger
-        implements
-        CacheEventListener<Object,
-                           Object>
+@Service
+public class RookCacheService
 {
-    private final Logger _Logger = Logger.getLogger("rook.ehcache." + getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("arena." + getClass().getSimpleName());
 
-    @Override
-    public void onEvent(CacheEvent<?,
-                                   ?> cacheEvent)
+    @Cacheable(value = "areaOfCircleCache", key = "#radius", condition = "#radius > 5")
+    public double areaOfCircle(int radius)
     {
-        _Logger.info("Rook-Cache Key: {%s} | EventType: {%s} | Old value: {%s} | New value: {%s}",
-                     cacheEvent.getKey(),
-                     cacheEvent.getType(),
-                     cacheEvent.getOldValue(),
-                     cacheEvent.getNewValue());
+        _Logger.info("calculate the area of a circle with a radius of {}", radius);
+        return Math.PI * Math.pow(radius, 2);
     }
+
 }

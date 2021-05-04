@@ -29,7 +29,7 @@
     <parent>
         <artifactId>framework.z-chess</artifactId>
         <groupId>com.isahl.chess</groupId>
-        <version>1.0.12-SNAPSHOT</version>
+        <version>1.0.13-SNAPSHOT</version>
     </parent>
     <name>Z-Arena</name>
     <artifactId>gateway.z-arena</artifactId>
@@ -43,6 +43,10 @@
             <groupId>com.isahl.chess</groupId>
             <artifactId>security.z-referee</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
         </dependency>
     </dependencies>
     <build>

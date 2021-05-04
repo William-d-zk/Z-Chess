@@ -21,33 +21,36 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.rook.storage.cache.ehcache;
+package com.isahl.chess.arena.gateway.rest;
 
-import org.ehcache.event.CacheEvent;
-import org.ehcache.event.CacheEventListener;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.arena.gateway.service.RookCacheService;
 
-/**
- * @author william.d.zk
- * 
- * @date 2020/6/6
- */
-public class CacheLogger
-        implements
-        CacheEventListener<Object,
-                           Object>
+@RestController
+@RequestMapping("/rest/calculate")
+public class RookCacheApi
 {
-    private final Logger _Logger = Logger.getLogger("rook.ehcache." + getClass().getSimpleName());
 
-    @Override
-    public void onEvent(CacheEvent<?,
-                                   ?> cacheEvent)
+    private final RookCacheService _RookCacheService;
+
+    @Autowired
+    public RookCacheApi(RookCacheService _RookCacheService)
     {
-        _Logger.info("Rook-Cache Key: {%s} | EventType: {%s} | Old value: {%s} | New value: {%s}",
-                     cacheEvent.getKey(),
-                     cacheEvent.getType(),
-                     cacheEvent.getOldValue(),
-                     cacheEvent.getNewValue());
+        this._RookCacheService = _RookCacheService;
+    }
+
+    @GetMapping(path = "/areaOfCircle", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Double> areaOfCircle(@RequestParam int radius)
+    {
+        double result = _RookCacheService.areaOfCircle(radius);
+
+        return ResponseEntity.ok(result);
     }
 }

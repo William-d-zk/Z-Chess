@@ -23,6 +23,7 @@
 
 package com.isahl.chess.rook.storage.jpa.config;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
@@ -31,6 +32,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableJpaAuditing
 @EnableTransactionManagement
 @Configuration
+@ConditionalOnMissingBean(name = {"jpaAuditingHandler"})
 @PropertySource({"classpath:db.properties"})
 public class BaseJpaConfig
 {

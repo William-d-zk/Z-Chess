@@ -23,9 +23,9 @@
 
 package com.isahl.chess.king.config;
 
-import java.util.Objects;
-
 import com.isahl.chess.king.base.inf.ICode;
+
+import java.util.Objects;
 
 /**
  * @author William.d.zk
@@ -40,7 +40,8 @@ public enum Code
     ILLEGAL_PARAM(0x0010, "非法参数 %s"),
     SUCCESS(0x00FF, "成功"),
     FORBIDDEN(0x0101, "禁止访问 %s"),
-    UNAUTHORIZED(0x0102, "无权访问 %s");
+    UNAUTHORIZED(0x0102, "无权访问 %s"),
+    MISS(0x010F, "访问的资源不存在 %s");
 
     private final int    _Code;
     private final String _Formatter;

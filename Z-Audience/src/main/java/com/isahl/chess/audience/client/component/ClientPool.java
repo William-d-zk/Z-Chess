@@ -23,7 +23,7 @@
 
 package com.isahl.chess.audience.client.component;
 
-import com.isahl.chess.audience.client.config.ConsumerConfig;
+import com.isahl.chess.audience.client.config.ClientConfig;
 import com.isahl.chess.audience.client.model.Client;
 import com.isahl.chess.bishop.io.mqtt.control.X111_QttConnect;
 import com.isahl.chess.bishop.io.mqtt.control.X112_QttConnack;
@@ -99,7 +99,7 @@ public class ClientPool
         ISessionDismiss
 {
     private final Logger                   _Logger = Logger.getLogger(getClass().getSimpleName());
-    private final ConsumerConfig           _ConsumerConfig;
+    private final ClientConfig             _ClientConfig;
     private final AsynchronousChannelGroup _ChannelGroup;
     private final ClientCore               _ClientCore;
     private final TimeWheel                _TimeWheel;
@@ -110,12 +110,12 @@ public class ClientPool
 
     @Autowired
     public ClientPool(@Qualifier("io_consumer_config") IAioConfig bizIoConfig,
-                      ConsumerConfig consumerConfig) throws IOException
+                      ClientConfig clientConfig) throws IOException
     {
         super(bizIoConfig);
-        _ZClientMap = new HashMap<>(1 << getConfigPower(getSlot(ZUID.TYPE_PROVIDER)));
-        _ConsumerConfig = consumerConfig;
-        int ioCount = _ConsumerConfig.getIoCount();
+        _ZClientMap = new HashMap<>(1 << getConfigPower(getSlot(ZUID.TYPE_CONSUMER)));
+        _ClientConfig = clientConfig;
+        int ioCount = _ClientConfig.getIoCount();
         _ClientCore = new ClientCore(ioCount);
         _TimeWheel = _ClientCore.getTimeWheel();
         _ChannelGroup = AsynchronousChannelGroup.withFixedThreadPool(ioCount, _ClientCore.getWorkerThreadFactory());
@@ -234,17 +234,17 @@ public class ClientPool
         {
             case WS_ZCHAT_CONSUMER ->
                 {
-                    host = _ConsumerConfig.getWs()
-                                          .getHost();
-                    port = _ConsumerConfig.getWs()
-                                          .getPort();
+                    host = _ClientConfig.getWs()
+                                        .getHost();
+                    port = _ClientConfig.getWs()
+                                        .getPort();
                 }
             case QTT_SYMMETRY ->
                 {
-                    host = _ConsumerConfig.getQtt()
-                                          .getHost();
-                    port = _ConsumerConfig.getQtt()
-                                          .getPort();
+                    host = _ClientConfig.getQtt()
+                                        .getHost();
+                    port = _ClientConfig.getQtt()
+                                        .getPort();
                 }
             default -> throw new UnsupportedOperationException();
         }

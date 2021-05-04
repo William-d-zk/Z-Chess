@@ -27,15 +27,22 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
+import java.io.Serial;
+import java.io.Serializable;
+
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class DeviceProfile
+        implements
+        Serializable
 {
-    private String wifiMac;
-    private String sensorMac;
-    private String bluetoothMac;
-    private String imei;
-    private String imsi;
+    @Serial
+    private static final long serialVersionUID = -3059633247602550952L;
+    private String            wifiMac;
+    private String            sensorMac;
+    private String            bluetoothMac;
+    private String            imei;
+    private String            imsi;
 
     public String getWifiMac()
     {
