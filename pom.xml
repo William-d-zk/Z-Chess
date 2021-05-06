@@ -189,7 +189,7 @@
         <!--SECURITY-->
         <jjwt.version>0.11.2</jjwt.version>
         <spring-security-jwt.version>1.1.1.RELEASE</spring-security-jwt.version>
-        <spring-security-oauth2-autoconfigure.version>2.4.4</spring-security-oauth2-autoconfigure.version>
+        <spring-security-oauth2-autoconfigure.version>2.4.5</spring-security-oauth2-autoconfigure.version>
         <spring-security-oauth2.version>2.5.1.RELEASE</spring-security-oauth2.version>
     </properties>
     <dependencies>
