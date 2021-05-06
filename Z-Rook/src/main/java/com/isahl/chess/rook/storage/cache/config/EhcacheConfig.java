@@ -23,9 +23,18 @@
 
 package com.isahl.chess.rook.storage.cache.config;
 
+import com.isahl.chess.king.base.log.Logger;
+import org.ehcache.config.builders.CacheConfigurationBuilder;
+import org.ehcache.jsr107.Eh107Configuration;
+import org.ehcache.xml.XmlConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+
+import javax.cache.CacheManager;
+import java.net.URL;
+import java.util.Objects;
 
 /**
  * @author william.d.zk
@@ -37,4 +46,50 @@ import org.springframework.context.annotation.PropertySource;
 public class EhcacheConfig
 {
 
+    private final Logger _Logger = Logger.getLogger("rook.cache." + getClass().getSimpleName());
+
+    private final CacheManager _CacheManager;
+
+    /*    
+    
+    //    private final CacheEventListener _Listener;
+    
+    @Autowired
+    public EhcacheConfig()
+    {
+        URL ehcaheUrl = Objects.requireNonNull(getClass().getResource("/ehcache.xml"));
+        XmlConfiguration xmlConfiguration = new XmlConfiguration(ehcaheUrl);
+        _CacheManager = CacheManagerBuilder.newCacheManager(xmlConfiguration);
+        _CacheManager.init();
+        org.ehcache.config.Configuration configuration = _CacheManager.getRuntimeConfiguration();
+    }
+    
+    @Bean
+    public CacheManager getCacheManager()
+    {
+        return _CacheManager;
+    }
+    
+    @Bean
+    public Cache<Integer,
+                 Double> getCache0()
+    {
+        return _CacheManager.getCache("areaOfCircleCache", Integer.class, Double.class);
+    }
+    */
+    @Autowired
+    public EhcacheConfig(CacheManager cm) throws ClassNotFoundException,
+                                          InstantiationException,
+                                          IllegalAccessException
+    {
+        _CacheManager = cm;
+        URL ehcaheUrl = Objects.requireNonNull(getClass().getResource("/ehcache.xml"));
+        XmlConfiguration xmlConfiguration = new XmlConfiguration(ehcaheUrl);
+        CacheConfigurationBuilder<Integer,
+                                  Double> builder = xmlConfiguration.newCacheConfigurationBuilderFromTemplate("rook-default",
+                                                                                                              Integer.class,
+                                                                                                              Double.class);
+
+        _CacheManager.createCache("cache0", Eh107Configuration.fromEhcacheCacheConfiguration(builder.build()));
+    }
 }

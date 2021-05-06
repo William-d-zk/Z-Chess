@@ -40,4 +40,10 @@ public class RookCacheService
         return Math.PI * Math.pow(radius, 2);
     }
 
+    @Cacheable(value = "cache0", key = "#radius", condition = "#radius > 5")
+    public double cache0(int radius)
+    {
+        _Logger.info("calculate the area of a circle with a radius of {}", radius);
+        return Math.PI * Math.pow(radius, 2);
+    }
 }

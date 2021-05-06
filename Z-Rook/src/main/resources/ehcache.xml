@@ -29,25 +29,25 @@
             http://www.ehcache.org/schema/ehcache-core-3.9.xsd">
 
     <!-- Persistent cache directory -->
-    <persistence directory="rook/ehcache"/>
+    <persistence directory="${user.home}/cache-data"/>
 
     <!-- Default cache template -->
     <cache-template name="rook-default">
         <expiry>
             <ttl>15</ttl>
         </expiry>
-<!--        <resilience></resilience>-->
         <listeners>
             <listener>
                 <class>com.isahl.chess.rook.storage.cache.ehcache.CacheLogger</class>
                 <event-firing-mode>ASYNCHRONOUS</event-firing-mode>
                 <event-ordering-mode>UNORDERED</event-ordering-mode>
                 <events-to-fire-on>CREATED</events-to-fire-on>
+                <events-to-fire-on>UPDATED</events-to-fire-on>
                 <events-to-fire-on>EXPIRED</events-to-fire-on>
+                <events-to-fire-on>REMOVED</events-to-fire-on>
                 <events-to-fire-on>EVICTED</events-to-fire-on>
             </listener>
         </listeners>
-
         <resources>
             <heap>1000</heap>
             <offheap unit="MB">10</offheap>
