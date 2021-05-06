@@ -125,7 +125,6 @@ public class DeviceService
     private void start() throws IOException
     {
         _RaftNode.init();
-
         _DeviceNode.start(_LogicHandler, new ZLinkMappingCustom(_LinkCustom), new ZClusterMappingCustom<>(_RaftCustom));
         _RaftNode.start();
         _Logger.info("device service start");
@@ -165,8 +164,7 @@ public class DeviceService
                            IQoS.Level>>> getOnlineDevicesWithTopic(String username) throws ZException
     {
         Stream<DeviceEntity> onlineDevices = getOnlineDevices(username);
-        if (onlineDevices != null) { return onlineDevices.map(device -> new Pair<>(device, device.getSubscribes())); }
-        return null;
+        return onlineDevices != null ? onlineDevices.map(device -> new Pair<>(device, device.getSubscribes())): null;
     }
 
     @Bean

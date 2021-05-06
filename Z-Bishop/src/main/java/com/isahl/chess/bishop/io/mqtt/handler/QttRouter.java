@@ -67,6 +67,7 @@ public class QttRouter
                           IControl>>                  _QttStatusMap      = new ConcurrentSkipListMap<>();
     private final Queue<IPair>                        _SessionIdleQueue  = new ConcurrentLinkedQueue<>();
 
+
     @Override
     public Map<Long,
                IQoS.Level> broker(final String topic)
@@ -104,7 +105,6 @@ public class QttRouter
                                      Pattern pattern = entry.getKey();
                                      Map<Long,
                                          IQoS.Level> sessionsLv = entry.getValue();
-
                                      return sessionsLv.entrySet()
                                                       .stream()
                                                       .map(e -> new Triple<>(e.getKey(),
@@ -188,6 +188,11 @@ public class QttRouter
                 }
             }
         }
+    }
+
+    @Override
+    public void will(String topic, IQoS.Level level, long session, boolean retained) {
+
     }
 
     @Override

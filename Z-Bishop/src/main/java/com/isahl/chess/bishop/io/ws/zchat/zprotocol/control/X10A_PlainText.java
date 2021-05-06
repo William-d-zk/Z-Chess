@@ -23,19 +23,19 @@
 
 package com.isahl.chess.bishop.io.ws.zchat.zprotocol.control;
 
-import static com.isahl.chess.bishop.io.ws.WsFrame.frame_op_code_no_ctrl_txt;
-
 import com.isahl.chess.bishop.io.ws.WsContext;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.inf.ICommand;
 import com.isahl.chess.queen.io.core.inf.IContext;
 import com.isahl.chess.queen.io.core.inf.ISession;
 
+import static com.isahl.chess.bishop.io.ws.WsFrame.frame_op_code_no_ctrl_txt;
+
 /**
  * @author william.d.zk
  * @date 2021/2/14
  */
-public class X10A_Text
+public class X10A_PlainText
         implements
         ICommand
 {
@@ -47,14 +47,14 @@ public class X10A_Text
     private WsContext  mContext;
     private byte[]     mPayload;
 
-    public X10A_Text(int command,
-                     byte code)
+    public X10A_PlainText(int command,
+                          byte code)
     {
         _Command = command;
         _CtrlCode = code;
     }
 
-    public X10A_Text()
+    public X10A_PlainText()
     {
         this(COMMAND, frame_op_code_no_ctrl_txt);
     }

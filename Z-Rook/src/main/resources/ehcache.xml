@@ -54,9 +54,4 @@
             <disk persistent="true" unit="MB">20</disk>
         </resources>
     </cache-template>
-
-    <cache alias="areaOfCircleCache" uses-template="rook-default">
-        <key-type>java.lang.Integer</key-type>
-        <value-type>java.lang.Double</value-type>
-    </cache>
 </config>

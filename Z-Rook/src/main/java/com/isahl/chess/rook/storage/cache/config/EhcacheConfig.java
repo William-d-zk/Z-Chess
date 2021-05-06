@@ -27,11 +27,11 @@ import com.isahl.chess.king.base.log.Logger;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
 import org.ehcache.jsr107.Eh107Configuration;
 import org.ehcache.xml.XmlConfiguration;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
+import javax.cache.Cache;
 import javax.cache.CacheManager;
 import java.net.URL;
 import java.util.Objects;
@@ -48,48 +48,28 @@ public class EhcacheConfig
 
     private final Logger _Logger = Logger.getLogger("rook.cache." + getClass().getSimpleName());
 
-    private final CacheManager _CacheManager;
+    private static XmlConfiguration _RookConfig;
+    private static final String     DEFAULT_TEMPLATE_NAME = "rook-default";
 
-    /*    
-    
-    //    private final CacheEventListener _Listener;
-    
-    @Autowired
     public EhcacheConfig()
     {
         URL ehcaheUrl = Objects.requireNonNull(getClass().getResource("/ehcache.xml"));
-        XmlConfiguration xmlConfiguration = new XmlConfiguration(ehcaheUrl);
-        _CacheManager = CacheManagerBuilder.newCacheManager(xmlConfiguration);
-        _CacheManager.init();
-        org.ehcache.config.Configuration configuration = _CacheManager.getRuntimeConfiguration();
+        _RookConfig = new XmlConfiguration(ehcaheUrl);
     }
-    
-    @Bean
-    public CacheManager getCacheManager()
-    {
-        return _CacheManager;
-    }
-    
-    @Bean
-    public Cache<Integer,
-                 Double> getCache0()
-    {
-        return _CacheManager.getCache("areaOfCircleCache", Integer.class, Double.class);
-    }
-    */
-    @Autowired
-    public EhcacheConfig(CacheManager cm) throws ClassNotFoundException,
-                                          InstantiationException,
-                                          IllegalAccessException
-    {
-        _CacheManager = cm;
-        URL ehcaheUrl = Objects.requireNonNull(getClass().getResource("/ehcache.xml"));
-        XmlConfiguration xmlConfiguration = new XmlConfiguration(ehcaheUrl);
-        CacheConfigurationBuilder<Integer,
-                                  Double> builder = xmlConfiguration.newCacheConfigurationBuilderFromTemplate("rook-default",
-                                                                                                              Integer.class,
-                                                                                                              Double.class);
 
-        _CacheManager.createCache("cache0", Eh107Configuration.fromEhcacheCacheConfiguration(builder.build()));
+    public static <K,
+                   V> Cache<K,
+                            V> createCache(CacheManager cacheManager,
+                                           String cacheName,
+                                           Class<K> keyType,
+                                           Class<V> valueType) throws ClassNotFoundException,
+                                                               InstantiationException,
+                                                               IllegalAccessException
+    {
+        CacheConfigurationBuilder<K,
+                                  V> builder = _RookConfig.newCacheConfigurationBuilderFromTemplate(DEFAULT_TEMPLATE_NAME,
+                                                                                                    keyType,
+                                                                                                    valueType);
+        return cacheManager.createCache(cacheName, Eh107Configuration.fromEhcacheCacheConfiguration(builder.build()));
     }
 }

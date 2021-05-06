@@ -26,7 +26,7 @@ package com.isahl.chess.bishop.io.ws.filter;
 import com.isahl.chess.bishop.io.ws.IWsContext;
 import com.isahl.chess.bishop.io.ws.WsFrame;
 import com.isahl.chess.bishop.io.ws.zchat.ZContext;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X10A_Text;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X10A_PlainText;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.async.AioFilterChain;
 import com.isahl.chess.queen.io.core.inf.ICommand;
@@ -62,7 +62,7 @@ public class WsTextFilter<T extends ZContext & IWsContext>
     @Override
     public ICommand decode(T context, IFrame input)
     {
-        ICommand command = new X10A_Text();
+        ICommand command = new X10A_PlainText();
         command.setPayload(input.getPayload());
         return command;
     }
@@ -71,7 +71,7 @@ public class WsTextFilter<T extends ZContext & IWsContext>
     public <O extends IProtocol> Pair<ResultType,
                                       IPContext> pipeSeek(IPContext context, O output)
     {
-        if (checkType(output, IProtocol.COMMAND_SERIAL) && output instanceof X10A_Text) {
+        if (checkType(output, IProtocol.COMMAND_SERIAL) && output instanceof X10A_PlainText) {
             if (context instanceof IWsContext && context.isOutConvert()) {
                 //作为最尾端的filter出现，需要处理context的代理链
                 return new Pair<>(ResultType.NEXT_STEP, context);
