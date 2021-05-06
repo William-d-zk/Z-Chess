@@ -37,7 +37,7 @@ import com.isahl.chess.bishop.io.ws.control.X101_HandShake;
 import com.isahl.chess.bishop.io.ws.control.X103_Ping;
 import com.isahl.chess.bishop.io.ws.control.X104_Pong;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X105_SslHandShake;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X10A_Text;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X10A_PlainText;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.schedule.Status;
@@ -124,8 +124,8 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                     break;
                 }
                 return new IControl[]{content};
-            case X10A_Text.COMMAND:
-                X10A_Text x10A = (X10A_Text) content;
+            case X10A_PlainText.COMMAND:
+                X10A_PlainText x10A = (X10A_PlainText) content;
                 String jsonStr = new String(x10A.getPayload(), StandardCharsets.UTF_8);
                 _Logger.info("x10A:%s", jsonStr);
                 JsonNode json = JsonUtil.readTree(jsonStr);
@@ -284,7 +284,6 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
             //集群模式需要将消息进行广播，集群结构中，每个数据存储单元都设计为独立的。
             //TODO
         }
-
         _Logger.debug("push %s", pushList);
     }
 
