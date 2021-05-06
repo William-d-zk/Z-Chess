@@ -53,4 +53,12 @@ public class RookCacheApi
 
         return ResponseEntity.ok(result);
     }
+
+    @GetMapping(path = "/cache0", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Double> cache0(@RequestParam int radius)
+    {
+        double result = _RookCacheService.cache0(radius);
+
+        return ResponseEntity.ok(result);
+    }
 }
