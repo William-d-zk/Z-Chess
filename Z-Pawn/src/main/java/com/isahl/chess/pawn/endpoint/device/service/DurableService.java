@@ -23,6 +23,19 @@
 
 package com.isahl.chess.pawn.endpoint.device.service;
 
+import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
+import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceSubscribe;
+import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageEntity;
+import com.isahl.chess.pawn.endpoint.device.jpa.repository.IDeviceJpaRepository;
+import com.isahl.chess.pawn.endpoint.device.jpa.repository.IMessageJpaRepository;
+import com.isahl.chess.queen.io.core.inf.IQoS;
+import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
+import javax.cache.CacheManager;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -30,14 +43,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import org.springframework.stereotype.Service;
-
-import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
-import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceSubscribe;
-import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageEntity;
-import com.isahl.chess.pawn.endpoint.device.jpa.repository.IDeviceJpaRepository;
-import com.isahl.chess.pawn.endpoint.device.jpa.repository.IMessageJpaRepository;
-import com.isahl.chess.queen.io.core.inf.IQoS;
+import static java.time.temporal.ChronoUnit.MINUTES;
 
 /**
  * @author william.d.zk
@@ -49,12 +55,25 @@ public class DurableService
 {
     private final IMessageJpaRepository _MessageJpaRepository;
     private final IDeviceJpaRepository  _DeviceJpaRepository;
+    private final CacheManager          _CacheManager;
 
     public DurableService(IMessageJpaRepository messageJpaRepository,
-                          IDeviceJpaRepository deviceJpaRepository)
+                          IDeviceJpaRepository deviceJpaRepository,
+                          CacheManager cacheManager)
     {
         _MessageJpaRepository = messageJpaRepository;
         _DeviceJpaRepository = deviceJpaRepository;
+        _CacheManager = cacheManager;
+    }
+
+    @PostConstruct
+    void initService() throws ClassNotFoundException, InstantiationException, IllegalAccessException
+    {
+        EhcacheConfig.createCache(_CacheManager,
+                                  "device_cache",
+                                  String.class,
+                                  DeviceEntity.class,
+                                  Duration.of(20, MINUTES));
     }
 
     public void saveMessageState(MessageEntity message, long session)
@@ -75,6 +94,7 @@ public class DurableService
                             });
     }
 
+    @Cacheable(value = "device_cache", key = "#clientId")
     public DeviceEntity findDeviceByToken(String clientId)
     {
         return _DeviceJpaRepository.findByToken(clientId);

@@ -194,6 +194,9 @@ public class LinkCustom
                 {
                     X111_QttConnect x111 = (X111_QttConnect) clientRequest;
                     _Logger.info("%s login ok -> %#x", x111.getClientId(), origin);
+                    if (x111.hasWill()) {
+                        _QttRouter.will(x111.getWillTopic(), x111.getWillQoS(), origin, x111.isWillRetain());
+                    }
                     if (x111.isClean()) {
                         _QttRouter.clean(origin);
                         _DurableService.clean(origin);

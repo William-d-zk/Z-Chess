@@ -64,9 +64,8 @@ public class QttRouter
     private final AtomicLong                          _AtomicIdentity    = new AtomicLong(Long.MIN_VALUE);
     private final Map<Long,
                       Map<Long,
-                          IControl>>                  _QttStatusMap      = new ConcurrentSkipListMap<>();
+                          IControl>>                  _QttRetainMap      = new ConcurrentSkipListMap<>();
     private final Queue<IPair>                        _SessionIdleQueue  = new ConcurrentLinkedQueue<>();
-
 
     @Override
     public Map<Long,
@@ -191,7 +190,8 @@ public class QttRouter
     }
 
     @Override
-    public void will(String topic, IQoS.Level level, long session, boolean retained) {
+    public void will(String topic, IQoS.Level level, long session, boolean retained)
+    {
 
     }
 
@@ -205,7 +205,7 @@ public class QttRouter
     public void register(ICommand stateMessage, long sessionIndex)
     {
         long msgId = stateMessage.getMsgId();
-        if (_QttStatusMap.computeIfPresent(sessionIndex, (key, _LocalIdMessageMap) ->
+        if (_QttRetainMap.computeIfPresent(sessionIndex, (key, _LocalIdMessageMap) ->
         {
             IControl old = _LocalIdMessageMap.put(msgId, stateMessage);
             if (old == null) {
@@ -216,7 +216,7 @@ public class QttRouter
             final Map<Long,
                       IControl> _LocalIdMessageMap = new HashMap<>(7);
             _LocalIdMessageMap.put(msgId, stateMessage);
-            _QttStatusMap.put(sessionIndex, _LocalIdMessageMap);
+            _QttRetainMap.put(sessionIndex, _LocalIdMessageMap);
             _Logger.debug("first recv: %s", stateMessage);
         }
     }
@@ -229,7 +229,7 @@ public class QttRouter
         long msgId = stateMessage.getMsgId();
         boolean[] acked = {true,
                            true};
-        if (acked[0] = _QttStatusMap.computeIfPresent(sessionIndex, (key, old) ->
+        if (acked[0] = _QttRetainMap.computeIfPresent(sessionIndex, (key, old) ->
         {
             acked[1] = old.remove(msgId) == null;
             return old.isEmpty() ? old: null;
@@ -243,7 +243,7 @@ public class QttRouter
             if (Instant.now()
                        .isAfter(idle.plusSeconds(idleMax)))
             {
-                _QttStatusMap.remove(rmSessionIndex);
+                _QttRetainMap.remove(rmSessionIndex);
                 it.remove();
             }
         }
@@ -254,7 +254,7 @@ public class QttRouter
     public void clean(long sessionIndex)
     {
         final Map<Long,
-                  IControl> _LocalIdMessageMap = _QttStatusMap.remove(sessionIndex);
+                  IControl> _LocalIdMessageMap = _QttRetainMap.remove(sessionIndex);
         if (_LocalIdMessageMap != null) {
             _LocalIdMessageMap.clear();
         }
@@ -265,4 +265,9 @@ public class QttRouter
         }
     }
 
+    @Override
+    public void disconnect(long sessionIndex)
+    {
+
+    }
 }

@@ -23,115 +23,95 @@
 
 package com.isahl.chess.player.api.service;
 
-import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.CryptUtil;
-import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.pawn.endpoint.device.config.MixConfig;
+import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
-import com.isahl.chess.pawn.endpoint.device.jpa.repository.IDeviceJpaRepository;
 import com.isahl.chess.pawn.endpoint.device.spi.IDeviceService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.Predicate;
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Stream;
-
-import static com.isahl.chess.king.base.util.IoUtil.isBlank;
-import static com.isahl.chess.queen.db.inf.IStorage.Operation.OP_INSERT;
 
 /**
  * @author william.d.zk
  */
 @Service
-public class MixOpenService {
-    private final IDeviceJpaRepository _JpaRepository;
-    private final MixConfig _MixConfig;
-    private final CryptUtil _CryptUtil = new CryptUtil();
+public class MixOpenService
+{
     private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+
     private final IDeviceService _DeviceService;
 
     @Autowired
-    public MixOpenService(IDeviceJpaRepository jpaRepository, MixConfig mixConfig, IDeviceService deviceService) {
-        _JpaRepository = jpaRepository;
-        _MixConfig = mixConfig;
+    public MixOpenService(IDeviceService deviceService)
+    {
         _DeviceService = deviceService;
     }
 
-    public DeviceEntity save(DeviceEntity device) throws ZException {
-        if (device.operation().getValue() > OP_INSERT.getValue()) {   // update
-            DeviceEntity exist;
-            try {
-                exist = _JpaRepository.getOne(device.primaryKey());
-            } catch (EntityNotFoundException e) {
-                _Logger.warning("entity_not_found_exception", e);
-                throw new ZException(e, device.operation().name());
-            }
-            if (exist.getInvalidAt().isBefore(LocalDateTime.now()) || device.getPasswordId() > exist.getPasswordId()) {
-                exist.setPassword(_CryptUtil.randomPassword(17, 32));
-                exist.increasePasswordId();
-                exist.setInvalidAt(LocalDateTime.now().plus(_MixConfig.getPasswordInvalidDays()));
-            }
-            return _JpaRepository.save(exist);
-        } else {
-            DeviceEntity exist = null;
-            if (!isBlank(device.getSn())) {
-                exist = _JpaRepository.findBySn(device.getSn());
-            } else if (!isBlank(device.getToken())) {
-                exist = _JpaRepository.findByToken(device.getToken());
-            }
-            DeviceEntity entity = exist == null ? new DeviceEntity() : exist;
-            if (exist == null) {
-                String source = String.format("sn:%s,random %s%d", device.getSn(), _MixConfig.getPasswordRandomSeed(), Instant.now().toEpochMilli());
-                _Logger.debug("new device %s ", source);
-                entity.setToken(IoUtil.bin2Hex(_CryptUtil.sha256(source.getBytes(StandardCharsets.UTF_8))));
-                entity.setSn(device.getSn());
-                entity.setUsername(device.getUsername());
-                entity.setSubscribe(device.getSubscribe());
-                entity.setProfile(device.getProfile());
-            }
-            if (exist == null || exist.getInvalidAt().isBefore(LocalDateTime.now())) {
-                entity.setPassword(_CryptUtil.randomPassword(17, 32));
-                entity.increasePasswordId();
-                entity.setInvalidAt(LocalDateTime.now().plus(_MixConfig.getPasswordInvalidDays()));
-            }
-            return _JpaRepository.save(entity);
-        }
-    }
-
-    public DeviceEntity find(String token, String sn) throws ZException {
-        return _JpaRepository.findBySnOrToken(sn, token);
-    }
-
-
-    public Stream<DeviceEntity> filterOnlineDevices(String username) {
-        if (isBlank(username)) return null;
-        return _DeviceService.getOnlineDevices(username);
-    }
-
+    /*
+    
+    
+    
+    
+    
     @Cacheable(value = "onlineOfUser", key = "#username")
-    public long countOnlineDevices(String username) {
+    public long countOnlineDevices(String username)
+    {
         if (isBlank(username)) return 0;
-        return _DeviceService.getOnlineDevices(username).count();
+        return _DeviceService.getOnlineDevices(username)
+                             .count();
+    }
+    */
+    public DeviceEntity newDevice(DeviceEntity device)
+    {
+        return _DeviceService.upsertDevice(device);
     }
 
-    public Page<DeviceEntity> findAll(String sn, Pageable pageable) {
-        return _JpaRepository.findAll((Specification<DeviceEntity>) (root, criteriaQuery, criteriaBuilder) -> {
-            List<Predicate> predicates = new ArrayList<>();
-            if (!IoUtil.isBlank(sn)) {
-                predicates.add(criteriaBuilder.like(root.get("sn"), "%" + sn + "%"));
+    public DeviceEntity findDevice(String sn, String token)
+    {
+        return _DeviceService.queryDevice(sn, token);
+    }
+
+    @SafeVarargs
+    public final List<DeviceEntity> findAllByColumns(Pageable pageable,
+                                                     Triple<String,
+                                                            Object,
+                                                            Predicate.BooleanOperator>... columns)
+    {
+        return _DeviceService.findDevices((Specification<DeviceEntity>) (root, criteriaQuery, criteriaBuilder) ->
+        {
+            if (columns != null && columns.length > 0) {
+                Predicate.BooleanOperator last = null;
+                List<Predicate> predicates = new LinkedList<>();
+                for (Triple<String,
+                            Object,
+                            Predicate.BooleanOperator> triple : columns)
+                {
+                    String column = triple.getFirst();
+                    Object key = triple.getSecond();
+                    Predicate.BooleanOperator op = triple.getThird();
+                    Predicate predicate = criteriaBuilder.equal(root.get(column), key);
+                    if (last != null) {
+                        switch (last)
+                        {
+                            case AND -> criteriaBuilder.and(predicate);
+                            case OR -> criteriaBuilder.or(predicate);
+                        }
+                    }
+                    predicates.add(predicate);
+                    last = op;
+                }
+                return criteriaQuery.where(predicates.toArray(new Predicate[0]))
+                                    .getRestriction();
             }
-            return criteriaQuery.where(predicates.toArray(new Predicate[0])).getRestriction();
+            else {
+                return criteriaQuery.getRestriction();
+            }
         }, pageable);
     }
+
 }

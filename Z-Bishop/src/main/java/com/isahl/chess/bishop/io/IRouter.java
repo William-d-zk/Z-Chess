@@ -66,4 +66,11 @@ public interface IRouter
      *            session index
      */
     void clean(long sessionIndex);
+
+    /**
+     * on disconnect event
+     * @param sessionIndex
+     */
+    void disconnect(long sessionIndex);
+
 }

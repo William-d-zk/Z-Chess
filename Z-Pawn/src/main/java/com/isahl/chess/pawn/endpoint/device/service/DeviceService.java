@@ -31,9 +31,9 @@ import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.schedule.TimeWheel;
-import com.isahl.chess.king.base.util.Pair;
+import com.isahl.chess.king.base.util.CryptUtil;
+import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.knight.raft.IRaftDao;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.model.RaftNode;
@@ -47,21 +47,26 @@ import com.isahl.chess.pawn.endpoint.device.spi.IMessageService;
 import com.isahl.chess.queen.config.IAioConfig;
 import com.isahl.chess.queen.config.IMixConfig;
 import com.isahl.chess.queen.event.handler.mix.ILinkCustom;
-import com.isahl.chess.queen.io.core.inf.IQoS;
-import com.isahl.chess.queen.io.core.inf.ISession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
-import java.util.Collection;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
+import static com.isahl.chess.king.base.util.IoUtil.isBlank;
+import static com.isahl.chess.queen.db.inf.IStorage.Operation.OP_INSERT;
 
 /**
  * @author william.d.zk
@@ -73,8 +78,9 @@ public class DeviceService
         implements
         IDeviceService
 {
-    private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
-
+    private final Logger                   _Logger    = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
+    private final MixConfig                _MixConfig;
+    private final CryptUtil                _CryptUtil = new CryptUtil();
     private final DeviceNode               _DeviceNode;
     private final ILinkCustom              _LinkCustom;
     private final RaftCustom<DeviceNode>   _RaftCustom;
@@ -94,6 +100,7 @@ public class DeviceService
                   IMessageService messageService) throws IOException
     {
         final TimeWheel _TimeWheel = new TimeWheel();
+        _MixConfig = deviceConfig;
         List<ITriple> hosts = deviceConfig.getListeners()
                                           .stream()
                                           .map(listener ->
@@ -130,24 +137,95 @@ public class DeviceService
         _Logger.info("device service start");
     }
 
-    @Override
-    public DeviceEntity saveDevice(DeviceEntity device) throws ZException
+    @CachePut(value = "device_cache", key = "#device.token")
+    public DeviceEntity saveDevice(DeviceEntity device)
     {
         return _DeviceRepository.save(device);
     }
 
     @Override
-    public DeviceEntity findDevice(DeviceEntity key) throws ZException
+    public DeviceEntity upsertDevice(DeviceEntity device) throws ZException
     {
-        return _DeviceRepository.findBySnOrToken(key.getSn(), key.getToken());
+        if (device.operation()
+                  .getValue() > OP_INSERT.getValue())
+        {   // update
+            DeviceEntity exist;
+            try {
+                exist = _DeviceRepository.getOne(device.primaryKey());
+            }
+            catch (EntityNotFoundException e) {
+                _Logger.warning("entity_not_found_exception", e);
+                throw new ZException(e,
+                                     device.operation()
+                                           .name());
+            }
+            if (exist.getInvalidAt()
+                     .isBefore(LocalDateTime.now())
+                || device.getPasswordId() > exist.getPasswordId())
+            {
+                exist.setPassword(_CryptUtil.randomPassword(17, 32));
+                exist.increasePasswordId();
+                exist.setInvalidAt(LocalDateTime.now()
+                                                .plus(_MixConfig.getPasswordInvalidDays()));
+            }
+            return saveDevice(exist);
+        }
+        else {
+            DeviceEntity exist = null;
+            if (!isBlank(device.getSn())) {
+                exist = _DeviceRepository.findBySn(device.getSn());
+            }
+            else if (!isBlank(device.getToken())) {
+                exist = _DeviceRepository.findByToken(device.getToken());
+            }
+            DeviceEntity entity = exist == null ? new DeviceEntity(): exist;
+            if (exist == null) {
+                String source = String.format("sn:%s,random %s%d",
+                                              device.getSn(),
+                                              _MixConfig.getPasswordRandomSeed(),
+                                              Instant.now()
+                                                     .toEpochMilli());
+                _Logger.debug("new device %s ", source);
+                entity.setToken(IoUtil.bin2Hex(_CryptUtil.sha256(source.getBytes(StandardCharsets.UTF_8))));
+                entity.setSn(device.getSn());
+                entity.setUsername(device.getUsername());
+                entity.setSubscribe(device.getSubscribe());
+                entity.setProfile(device.getProfile());
+            }
+            if (exist == null
+                || exist.getInvalidAt()
+                        .isBefore(LocalDateTime.now()))
+            {
+                entity.setPassword(_CryptUtil.randomPassword(17, 32));
+                entity.increasePasswordId();
+                entity.setInvalidAt(LocalDateTime.now()
+                                                 .plus(_MixConfig.getPasswordInvalidDays()));
+            }
+            return saveDevice(entity);
+        }
     }
 
     @Override
-    public List<DeviceEntity> findAllDevices() throws ZException
+    @Cacheable(value = "device_cache", key = "#token", unless = "#token==null")
+    public DeviceEntity queryDevice(String sn, String token) throws ZException
     {
-        return _DeviceRepository.findAll();
+        return _DeviceRepository.findBySnOrToken(sn, token);
     }
 
+    @Override
+    public List<DeviceEntity> findDevices(Specification<DeviceEntity> condition, Pageable pageable) throws ZException
+    {
+        return _DeviceRepository.findAll(condition, pageable)
+                                .toList();
+    }
+
+    @Override
+    public DeviceEntity getOneDevice(long id)
+    {
+        return _DeviceRepository.getOne(id);
+    }
+
+    /*
     @Override
     public Stream<DeviceEntity> getOnlineDevices(String username) throws ZException
     {
@@ -157,7 +235,7 @@ public class DeviceService
                        .map(session -> _DeviceRepository.findByIdAndUsername(session.getIndex(), username))
                        .filter(Objects::nonNull);
     }
-
+    
     @Override
     public Stream<Pair<DeviceEntity,
                        Map<String,
@@ -166,7 +244,7 @@ public class DeviceService
         Stream<DeviceEntity> onlineDevices = getOnlineDevices(username);
         return onlineDevices != null ? onlineDevices.map(device -> new Pair<>(device, device.getSubscribes())): null;
     }
-
+    */
     @Bean
     public DeviceNode getDeviceNode()
     {

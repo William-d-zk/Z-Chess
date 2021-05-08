@@ -25,6 +25,7 @@ package com.isahl.chess.rook.storage.cache.config;
 
 import com.isahl.chess.king.base.log.Logger;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
+import org.ehcache.config.builders.ExpiryPolicyBuilder;
 import org.ehcache.jsr107.Eh107Configuration;
 import org.ehcache.xml.XmlConfiguration;
 import org.springframework.cache.annotation.EnableCaching;
@@ -34,6 +35,7 @@ import org.springframework.context.annotation.PropertySource;
 import javax.cache.Cache;
 import javax.cache.CacheManager;
 import java.net.URL;
+import java.time.Duration;
 import java.util.Objects;
 
 /**
@@ -62,14 +64,17 @@ public class EhcacheConfig
                             V> createCache(CacheManager cacheManager,
                                            String cacheName,
                                            Class<K> keyType,
-                                           Class<V> valueType) throws ClassNotFoundException,
-                                                               InstantiationException,
-                                                               IllegalAccessException
+                                           Class<V> valueType,
+                                           Duration expiry) throws ClassNotFoundException,
+                                                            InstantiationException,
+                                                            IllegalAccessException
     {
         CacheConfigurationBuilder<K,
                                   V> builder = _RookConfig.newCacheConfigurationBuilderFromTemplate(DEFAULT_TEMPLATE_NAME,
                                                                                                     keyType,
                                                                                                     valueType);
-        return cacheManager.createCache(cacheName, Eh107Configuration.fromEhcacheCacheConfiguration(builder.build()));
+        return cacheManager.createCache(cacheName,
+                                        Eh107Configuration.fromEhcacheCacheConfiguration(builder.withExpiry(ExpiryPolicyBuilder.timeToIdleExpiration(expiry))
+                                                                                                .build()));
     }
 }
