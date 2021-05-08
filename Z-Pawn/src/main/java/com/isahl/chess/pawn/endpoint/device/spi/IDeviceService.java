@@ -24,25 +24,27 @@
 package com.isahl.chess.pawn.endpoint.device.spi;
 
 import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
-import com.isahl.chess.queen.io.core.inf.IQoS;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
 
 public interface IDeviceService
 {
-    DeviceEntity saveDevice(DeviceEntity device) throws ZException;
+    DeviceEntity upsertDevice(DeviceEntity device) throws ZException;
 
-    DeviceEntity findDevice(DeviceEntity key) throws ZException;
+    DeviceEntity queryDevice(String sn, String token) throws ZException;
 
-    List<DeviceEntity> findAllDevices() throws ZException;
+    List<DeviceEntity> findDevices(Specification<DeviceEntity> condition, Pageable pageable) throws ZException;
 
+    DeviceEntity getOneDevice(long id);
+
+    /*
     Stream<DeviceEntity> getOnlineDevices(String username) throws ZException;
-
+    
     Stream<Pair<DeviceEntity,
                 Map<String,
                     IQoS.Level>>> getOnlineDevicesWithTopic(String username) throws ZException;
+     */
 }

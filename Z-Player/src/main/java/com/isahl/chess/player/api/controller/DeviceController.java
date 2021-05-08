@@ -27,13 +27,13 @@ import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.response.ZResponse;
 import com.isahl.chess.king.base.util.Pair;
+import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceSubscribe;
 import com.isahl.chess.pawn.endpoint.device.model.DeviceStatus;
 import com.isahl.chess.player.api.model.DeviceDo;
 import com.isahl.chess.player.api.service.MixOpenService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -47,46 +47,54 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static com.isahl.chess.king.base.util.IoUtil.isBlank;
+import static javax.persistence.criteria.Predicate.BooleanOperator.AND;
 
 /**
  * @author william.d.zk
  */
 @RestController
 @RequestMapping("device")
-public class DeviceController {
-    private final Logger _Logger = Logger.getLogger(getClass().getSimpleName());
-    private final MixOpenService _DeviceService;
+public class DeviceController
+{
+    private final Logger         _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final MixOpenService _MixService;
 
     @Autowired
-    public DeviceController(MixOpenService deviceService) {
-        _DeviceService = deviceService;
+    public DeviceController(MixOpenService mixService)
+    {
+        _MixService = mixService;
     }
 
     @PostMapping("register")
-    public ZResponse<DeviceEntity> registerDevice(@RequestBody DeviceDo deviceDo) {
+    public ZResponse<DeviceEntity> registerDevice(@RequestBody DeviceDo deviceDo)
+    {
         DeviceEntity deviceEntity = new DeviceEntity();
         deviceEntity.setSn(deviceDo.getSn());
         deviceEntity.setUsername(deviceDo.getUsername());
         deviceEntity.setSubscribe(new DeviceSubscribe(new HashMap<>()));
         deviceEntity.setProfile(deviceDo.getProfile());
-        return ZResponse.success(_DeviceService.save(deviceEntity));
+        return ZResponse.success(_MixService.newDevice(deviceEntity));
     }
 
     @GetMapping("query")
-    public ZResponse<IPair> queryDevice(@RequestParam(required = false) String token, @RequestParam(required = false) String sn) {
+    public ZResponse<IPair> queryDevice(@RequestParam(required = false) String token,
+                                        @RequestParam(required = false) String sn)
+    {
         IPair result = null;
         DeviceEntity device = new DeviceEntity();
         device.setSn(sn);
         device.setToken(token);
         if (!isBlank(token) || !isBlank(sn)) {
-            DeviceEntity exist = _DeviceService.find(sn, token);
+            DeviceEntity exist = _MixService.findDevice(sn, token);
             if (Objects.nonNull(exist)) {
-                if (device.getInvalidAt().isBefore(LocalDateTime.now())) {
+                if (device.getInvalidAt()
+                          .isBefore(LocalDateTime.now()))
+                {
                     result = new Pair<>(DeviceStatus.INVALID, device);
-                } else {
+                }
+                else {
                     result = new Pair<>(DeviceStatus.AVAILABLE, device);
                 }
             }
@@ -98,15 +106,26 @@ public class DeviceController {
     }
 
     @PostMapping("all")
-    public ZResponse<Page<DeviceEntity>> findAllDevices(@RequestParam("sn") String sn, @RequestParam("page") Integer page, @RequestParam("size") Integer size) {
-        return ZResponse.success(_DeviceService.findAll(sn, PageRequest.of(page, size)));
+    public ZResponse<List<DeviceEntity>> listDevices(@RequestParam("sn") String sn,
+                                                     @RequestParam("page") Integer page,
+                                                     @RequestParam("size") Integer size)
+    {
+        Objects.requireNonNull(sn);
+        size = size < 1 ? 10: size > 50 ? 50: size;
+        page = page < 1 ? 1: page > 5 ? 5: page;
+        return ZResponse.success(_MixService.findAllByColumns(PageRequest.of(page, size), new Triple<>("sn", sn, AND)));
     }
 
     @GetMapping("online")
-    public @ResponseBody
-    ZResponse<List<DeviceEntity>> filterOnlineWithUsername(@RequestParam(name = "username") String username) {
+    public @ResponseBody ZResponse<List<DeviceEntity>> listOnlineDevices(@RequestParam(name = "username") String username,
+                                                                         @RequestParam("page") Integer page,
+                                                                         @RequestParam("size") Integer size)
+    {
         if (isBlank(username)) return null;
-        return ZResponse.success(_DeviceService.filterOnlineDevices(username).collect(Collectors.toList()));
+        size = size < 1 ? 10: size > 50 ? 50: size;
+        page = page < 1 ? 1: page > 5 ? 5: page;
+        return ZResponse.success(_MixService.findAllByColumns(PageRequest.of(page, size),
+                                                              new Triple<>("username", username, AND)));
     }
 
 }

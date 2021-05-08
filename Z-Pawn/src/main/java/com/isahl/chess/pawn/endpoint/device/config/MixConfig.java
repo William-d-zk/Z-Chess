@@ -35,7 +35,6 @@ import java.util.List;
 @Configuration("pawn_mix_config")
 public class MixConfig
 {
-
     public static class Server
     {
         String host;
