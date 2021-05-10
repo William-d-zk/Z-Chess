@@ -52,20 +52,6 @@ public class MixOpenService
         _DeviceService = deviceService;
     }
 
-    /*
-    
-    
-    
-    
-    
-    @Cacheable(value = "onlineOfUser", key = "#username")
-    public long countOnlineDevices(String username)
-    {
-        if (isBlank(username)) return 0;
-        return _DeviceService.getOnlineDevices(username)
-                             .count();
-    }
-    */
     public DeviceEntity newDevice(DeviceEntity device)
     {
         return _DeviceService.upsertDevice(device);

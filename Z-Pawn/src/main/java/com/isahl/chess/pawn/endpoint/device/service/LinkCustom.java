@@ -37,6 +37,7 @@ import com.isahl.chess.bishop.io.sort.ZSortHolder;
 import com.isahl.chess.bishop.io.ws.control.X102_Close;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X108_Shutdown;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X76_RaftNotify;
+import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
@@ -68,24 +69,28 @@ public class LinkCustom
 {
     private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
-    private final IQttRouter     _QttRouter = new QttRouter();
-    private final DurableService _DurableService;
+    private final IQttRouter    _QttRouter = new QttRouter();
+    private final DeviceService _DeviceService;
 
     @Autowired
-    public LinkCustom(DurableService durableService)
+    public LinkCustom(DeviceService durableService)
     {
-        _DurableService = durableService;
+        _DeviceService = durableService;
     }
 
     /**
      *
      * @param manager
+     *            session 管理器
      * @param session
+     *            当前处理的 session
      * @param input
+     *            收到的消息
      * 
      * @return first | 当前Link链路上需要返回的结果，second | 需要进行一致性处理的结果
      * 
      * @throws Exception
+     *             可能出现的执行异常
      */
     @Override
     public IPair handle(ISessionManager manager, ISession session, IControl input) throws Exception
@@ -103,7 +108,7 @@ public class LinkCustom
                     device.setPassword(x111.getPassword());
                     device.setUsername(x111.getUserName());
                     device.setOperation(IStorage.Operation.OP_APPEND);
-                    device = _DurableService.findDeviceByToken(x111.getClientId());
+                    device = _DeviceService.findDeviceByToken(x111.getClientId());
                     X112_QttConnack x112 = new X112_QttConnack();
                     QttContext qttContext = session.getContext(QttContext.class);
                     qttContext.setVersion(x111.getVersion());
@@ -199,7 +204,10 @@ public class LinkCustom
                     }
                     if (x111.isClean()) {
                         _QttRouter.clean(origin);
-                        _DurableService.clean(origin);
+                        _DeviceService.clean(origin);
+                    }
+                    else {
+                        _DeviceService.loadHistory(origin);
                     }
                     if (session != null) {
                         QttContext qttContext = session.getContext(QttContext.class);
@@ -218,7 +226,7 @@ public class LinkCustom
                     if (subscribes != null) {
                         X119_QttSuback x119 = new X119_QttSuback();
                         x119.setMsgId(x118.getMsgId());
-                        _DurableService.subscribe(subscribes, origin, optional -> (topic, level) ->
+                        _DeviceService.subscribe(subscribes, origin, optional -> (topic, level) ->
                         {
                             IQoS.Level lv = _QttRouter.subscribe(topic, level, origin);
                             x119.addResult(lv);
@@ -236,7 +244,7 @@ public class LinkCustom
                     X11A_QttUnsubscribe x11A = (X11A_QttUnsubscribe) clientRequest;
                     List<String> topics = x11A.getTopics();
                     if (topics != null) {
-                        _DurableService.unsubscribe(topics, origin, optional -> topic ->
+                        _DeviceService.unsubscribe(topics, origin, optional -> topic ->
                         {
                             _QttRouter.unsubscribe(topic, origin);
                             optional.ifPresent(device -> device.unsubscribe(topic));
@@ -253,6 +261,8 @@ public class LinkCustom
             case X11E_QttDisconnect.COMMAND ->
                 {
                     _Logger.info("disconnect");
+                    _QttRouter.disconnect(session.getIndex());
+                    throw new ZException("service active close");
                 }
         }
         return null;
@@ -300,11 +310,6 @@ public class LinkCustom
             _Logger.warning("request:%s", throwable, request);
         }
         return null;
-    }
-
-    private void cleanMessage(long device)
-    {
-        //        List<MessageEntity> messageEntityList = _MessageRepository.findAllByOriginOrDestination(device, device);
     }
 
     @Bean

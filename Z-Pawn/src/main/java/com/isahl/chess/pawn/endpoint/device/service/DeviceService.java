@@ -23,118 +23,138 @@
 
 package com.isahl.chess.pawn.endpoint.device.service;
 
-import com.isahl.chess.bishop.io.mqtt.handler.IQttRouter;
-import com.isahl.chess.bishop.io.sort.ZSortHolder;
-import com.isahl.chess.bishop.io.ws.zchat.zhandler.ZClusterMappingCustom;
-import com.isahl.chess.bishop.io.ws.zchat.zhandler.ZLinkMappingCustom;
 import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.schedule.TimeWheel;
 import com.isahl.chess.king.base.util.CryptUtil;
 import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.knight.raft.IRaftDao;
-import com.isahl.chess.knight.raft.config.IRaftConfig;
-import com.isahl.chess.knight.raft.model.RaftNode;
-import com.isahl.chess.knight.raft.service.RaftCustom;
-import com.isahl.chess.pawn.endpoint.device.DeviceNode;
 import com.isahl.chess.pawn.endpoint.device.config.MixConfig;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
+import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceSubscribe;
+import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageEntity;
 import com.isahl.chess.pawn.endpoint.device.jpa.repository.IDeviceJpaRepository;
+import com.isahl.chess.pawn.endpoint.device.jpa.repository.IMessageJpaRepository;
+import com.isahl.chess.pawn.endpoint.device.model.ShadowDevice;
 import com.isahl.chess.pawn.endpoint.device.spi.IDeviceService;
-import com.isahl.chess.pawn.endpoint.device.spi.IMessageService;
-import com.isahl.chess.queen.config.IAioConfig;
-import com.isahl.chess.queen.config.IMixConfig;
-import com.isahl.chess.queen.event.handler.mix.ILinkCustom;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import com.isahl.chess.queen.io.core.inf.IQoS;
+import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import javax.cache.CacheManager;
 import javax.persistence.EntityNotFoundException;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
+import static com.isahl.chess.bishop.io.Direction.OWNER_SERVER;
 import static com.isahl.chess.king.base.util.IoUtil.isBlank;
 import static com.isahl.chess.queen.db.inf.IStorage.Operation.OP_INSERT;
+import static java.time.temporal.ChronoUnit.MINUTES;
 
 /**
  * @author william.d.zk
- * @date 2019-06-10
+ * 
+ * @date 2020-09-09
  */
-
 @Service
 public class DeviceService
         implements
         IDeviceService
 {
-    private final Logger                   _Logger    = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
-    private final MixConfig                _MixConfig;
-    private final CryptUtil                _CryptUtil = new CryptUtil();
-    private final DeviceNode               _DeviceNode;
-    private final ILinkCustom              _LinkCustom;
-    private final RaftCustom<DeviceNode>   _RaftCustom;
-    private final IDeviceJpaRepository     _DeviceRepository;
-    private final RaftNode<DeviceNode>     _RaftNode;
-    private final LogicHandler<DeviceNode> _LogicHandler;
+    private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
-    @Autowired
-    DeviceService(MixConfig deviceConfig,
-                  @Qualifier("pawn_io_config") IAioConfig ioConfig,
-                  IRaftConfig raftConfig,
-                  IMixConfig mixConfig,
-                  ILinkCustom linkCustom,
-                  IDeviceJpaRepository deviceRepository,
-                  IRaftDao raftDao,
-                  IQttRouter qttRouter,
-                  IMessageService messageService) throws IOException
+    private final IMessageJpaRepository   _MessageJpaRepository;
+    private final IDeviceJpaRepository    _DeviceRepository;
+    private final CacheManager            _CacheManager;
+    private final CryptUtil               _CryptUtil      = new CryptUtil();
+    private final MixConfig               _MixConfig;
+    private final Map<Long,
+                      ShadowDevice>       _ShawdowDevices = new HashMap<>(1 << 10);
+
+    public DeviceService(IMessageJpaRepository messageJpaRepository,
+                         IDeviceJpaRepository deviceRepository,
+                         CacheManager cacheManager,
+                         MixConfig mixConfig)
     {
-        final TimeWheel _TimeWheel = new TimeWheel();
-        _MixConfig = deviceConfig;
-        List<ITriple> hosts = deviceConfig.getListeners()
-                                          .stream()
-                                          .map(listener ->
-                                          {
-                                              ZSortHolder sort = switch (listener.getScheme())
-                                              {
-                                                  case "mqtt" -> ZSortHolder.QTT_SERVER;
-                                                  case "ws-mqtt" -> ZSortHolder.WS_QTT_SERVER;
-                                                  case "tls-mqtt" -> ZSortHolder.QTT_SERVER_SSL;
-                                                  case "ws-zchat" -> ZSortHolder.WS_ZCHAT_SERVER;
-                                                  case "wss-zchat" -> ZSortHolder.WS_ZCHAT_SERVER_SSL;
-                                                  case "wss-mqtt" -> ZSortHolder.WS_QTT_SERVER_SSL;
-                                                  case "ws-text" -> ZSortHolder.WS_PLAIN_TEXT_SERVER;
-                                                  case "wss-text" -> ZSortHolder.WS_PLAIN_TEXT_SERVER_SSL;
-                                                  default -> throw new UnsupportedOperationException(listener.getScheme());
-                                              };
-                                              return new Triple<>(listener.getHost(), listener.getPort(), sort);
-                                          })
-                                          .collect(Collectors.toList());
-        _DeviceNode = new DeviceNode(hosts, deviceConfig.isMultiBind(), ioConfig, raftConfig, mixConfig, _TimeWheel);
+        _MessageJpaRepository = messageJpaRepository;
         _DeviceRepository = deviceRepository;
-        _LinkCustom = linkCustom;
-        _RaftNode = new RaftNode<>(_TimeWheel, raftConfig, raftDao, _DeviceNode);
-        _RaftCustom = new RaftCustom<>(_RaftNode);
-        _LogicHandler = new LogicHandler<>(_DeviceNode, qttRouter, _RaftNode, messageService);
+        _CacheManager = cacheManager;
+        _MixConfig = mixConfig;
     }
 
     @PostConstruct
-    private void start() throws IOException
+    void initService() throws ClassNotFoundException, InstantiationException, IllegalAccessException
     {
-        _RaftNode.init();
-        _DeviceNode.start(_LogicHandler, new ZLinkMappingCustom(_LinkCustom), new ZClusterMappingCustom<>(_RaftCustom));
-        _RaftNode.start();
-        _Logger.info("device service start");
+        EhcacheConfig.createCache(_CacheManager,
+                                  "device_cache",
+                                  String.class,
+                                  DeviceEntity.class,
+                                  Duration.of(20, MINUTES));
+    }
+
+    public void saveMessageState(MessageEntity message, long session)
+    {
+
+    }
+
+    public void clean(long deviceId)
+    {
+        _MessageJpaRepository.deleteAllByDestination(deviceId, OWNER_SERVER);
+        _DeviceRepository.findById(deviceId)
+                         .ifPresent(device ->
+                         {
+                             DeviceSubscribe subscribe = device.getSubscribe();
+                             if (subscribe != null) {
+                                 subscribe.clean();
+                             }
+                             saveDevice(device);
+                         });
+    }
+
+    public void loadHistory(long session)
+    {
+        List<MessageEntity> myHistory = _MessageJpaRepository.findAllByDestinationAndOwner(session, OWNER_SERVER);
+
+    }
+
+    @Cacheable(value = "device_cache", key = "#token")
+    public DeviceEntity findDeviceByToken(String token)
+    {
+        return _DeviceRepository.findByToken(token);
+    }
+
+    public void subscribe(Map<String,
+                              IQoS.Level> subscribes,
+                          long deviceId,
+                          Function<Optional<DeviceEntity>,
+                                   BiConsumer<String,
+                                              IQoS.Level>> function)
+    {
+        Optional<DeviceEntity> deviceOptional = _DeviceRepository.findById(deviceId);
+        subscribes.forEach(function.apply(deviceOptional));
+        deviceOptional.ifPresent(this::saveDevice);
+    }
+
+    public void unsubscribe(List<String> topics,
+                            long deviceId,
+                            Function<Optional<DeviceEntity>,
+                                     Consumer<String>> function)
+    {
+        Optional<DeviceEntity> deviceOptional = _DeviceRepository.findById(deviceId);
+        topics.forEach(function.apply(deviceOptional));
+        deviceOptional.ifPresent(this::saveDevice);
     }
 
     @CachePut(value = "device_cache", key = "#device.token")
@@ -225,35 +245,23 @@ public class DeviceService
         return _DeviceRepository.getOne(id);
     }
 
-    /*
     @Override
-    public Stream<DeviceEntity> getOnlineDevices(String username) throws ZException
+    public List<ShadowDevice> getOnlineDevicesByUsername(String username)
     {
-        Collection<ISession> sessions = _DeviceNode.getMappedSessionsWithType(ZUID.TYPE_CONSUMER_SLOT);
-        if (sessions == null || sessions.isEmpty()) return null;
-        return sessions.stream()
-                       .map(session -> _DeviceRepository.findByIdAndUsername(session.getIndex(), username))
-                       .filter(Objects::nonNull);
-    }
-    
-    @Override
-    public Stream<Pair<DeviceEntity,
-                       Map<String,
-                           IQoS.Level>>> getOnlineDevicesWithTopic(String username) throws ZException
-    {
-        Stream<DeviceEntity> onlineDevices = getOnlineDevices(username);
-        return onlineDevices != null ? onlineDevices.map(device -> new Pair<>(device, device.getSubscribes())): null;
-    }
-    */
-    @Bean
-    public DeviceNode getDeviceNode()
-    {
-        return _DeviceNode;
+        return null;
     }
 
-    @Bean
-    public RaftNode<DeviceNode> getRaftNode()
+    @Override
+    public List<ShadowDevice> getOnlineDevicesByTopic(String topic)
     {
-        return _RaftNode;
+        return null;
     }
+
+    @Override
+    public List<ShadowDevice> getOnlineDevices()
+    {
+        //        Collection<ISession> sessions = _DeviceNode.getMappedSessionsWithType(TYPE_CONSUMER_SLOT);
+        return null;
+    }
+
 }
