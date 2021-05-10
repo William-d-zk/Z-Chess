@@ -44,33 +44,34 @@ public interface IRouter
      * 
      * @param stateMessage
      *            message with state
-     * @param sessionIndex
+     * @param session
      *            session index
      */
-    void register(ICommand stateMessage, long sessionIndex);
+    void register(ICommand stateMessage, long session);
 
     /**
      * feed back message state
      * 
      * @param stateMessage
      *            message with state
-     * @param sessionIndex
+     * @param session
      *            session index
      */
-    boolean ack(ICommand stateMessage, long sessionIndex);
+    boolean ack(ICommand stateMessage, long session);
 
     /**
      * clean session state machine for message stack
      * 
-     * @param sessionIndex
+     * @param session
      *            session index
      */
-    void clean(long sessionIndex);
+    void clean(long session);
 
     /**
      * on disconnect event
-     * @param sessionIndex
+     * 
+     * @param session
      */
-    void disconnect(long sessionIndex);
+    void disconnect(long session);
 
 }

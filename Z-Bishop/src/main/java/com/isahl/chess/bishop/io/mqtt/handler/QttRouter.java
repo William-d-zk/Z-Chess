@@ -251,23 +251,24 @@ public class QttRouter
     }
 
     @Override
-    public void clean(long sessionIndex)
+    public void clean(long session)
     {
         final Map<Long,
-                  IControl> _LocalIdMessageMap = _QttRetainMap.remove(sessionIndex);
+                  IControl> _LocalIdMessageMap = _QttRetainMap.remove(session);
         if (_LocalIdMessageMap != null) {
             _LocalIdMessageMap.clear();
         }
         for (Map<Long,
                  IQoS.Level> entryValue : _Topic2SessionsMap.values())
         {
-            entryValue.remove(sessionIndex);
+            entryValue.remove(session);
         }
     }
 
     @Override
-    public void disconnect(long sessionIndex)
+    public void disconnect(long session)
     {
-
+        _Topic2SessionsMap.values()
+                          .forEach(map -> map.remove(session));
     }
 }

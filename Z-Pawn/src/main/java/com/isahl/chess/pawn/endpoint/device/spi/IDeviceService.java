@@ -25,6 +25,7 @@ package com.isahl.chess.pawn.endpoint.device.spi;
 
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
+import com.isahl.chess.pawn.endpoint.device.model.ShadowDevice;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -32,6 +33,7 @@ import java.util.List;
 
 public interface IDeviceService
 {
+
     DeviceEntity upsertDevice(DeviceEntity device) throws ZException;
 
     DeviceEntity queryDevice(String sn, String token) throws ZException;
@@ -40,11 +42,10 @@ public interface IDeviceService
 
     DeviceEntity getOneDevice(long id);
 
-    /*
-    Stream<DeviceEntity> getOnlineDevices(String username) throws ZException;
-    
-    Stream<Pair<DeviceEntity,
-                Map<String,
-                    IQoS.Level>>> getOnlineDevicesWithTopic(String username) throws ZException;
-     */
+    List<ShadowDevice> getOnlineDevicesByUsername(String username);
+
+    List<ShadowDevice> getOnlineDevicesByTopic(String topic);
+
+    List<ShadowDevice> getOnlineDevices();
+
 }
