@@ -134,6 +134,9 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                 return new IControl[]{content};
             case X113_QttPublish.COMMAND:
                 X113_QttPublish x113 = (X113_QttPublish) content;
+                if (x113.isRetain()) {
+                    _QttRouter.retain(x113.getTopic(), x113);
+                }
                 MessageEntity messageEntity = new MessageEntity();
                 messageEntity.setOrigin(session.getIndex());
                 messageEntity.setDestination(_RaftNode.getPeerId());
@@ -145,9 +148,9 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                 messageEntity.setOperation(OP_INSERT);
                 messageEntity.setStatus(Status.CREATED);
                 messageEntity.setMsgId(x113.getMsgId());
-                messageEntity.setInvalidAt(x113.isRetain() ? ZUID.EPOCH_DATE
-                                                           : LocalDateTime.now()
-                                                                          .plusDays(30));
+                messageEntity.setInvalidAt(LocalDateTime.now()
+                                                        .plusDays(1));
+
                 List<IControl> pushList = new LinkedList<>();
                 switch (x113.getLevel())
                 {

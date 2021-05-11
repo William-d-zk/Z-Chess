@@ -23,12 +23,12 @@
 
 package com.isahl.chess.bishop.io.mqtt;
 
-import java.nio.ByteBuffer;
-
 import com.isahl.chess.king.base.inf.IReset;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.inf.IFrame;
 import com.isahl.chess.queen.io.core.inf.IVariableLength;
+
+import java.nio.ByteBuffer;
 
 /**
  * @author william.d.zk
@@ -51,7 +51,8 @@ public class QttFrame
                || head == QttType.CONNACK.getValue()
                || head == QttType.PINGREQ.getValue()
                || head == QttType.PINGRESP.getValue()
-               || head == QttType.DISCONNECT.getValue();
+               || head == QttType.DISCONNECT.getValue()
+               || head == QttType.AUTH.getValue();
     }
 
     @Override

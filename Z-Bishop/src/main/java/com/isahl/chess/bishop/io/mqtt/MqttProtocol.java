@@ -109,6 +109,9 @@ public abstract class MqttProtocol
         mQosLevel = (byte) level.ordinal();
         mFrameOpCode &= ~QOS_MASK;
         mFrameOpCode |= mQosLevel << 1;
+        if (mQosLevel == 0) {
+            setDuplicate(false);
+        }
     }
 
     public QttType getType()

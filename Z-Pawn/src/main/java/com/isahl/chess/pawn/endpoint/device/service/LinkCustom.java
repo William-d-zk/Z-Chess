@@ -33,6 +33,7 @@ import com.isahl.chess.bishop.io.mqtt.control.X11B_QttUnsuback;
 import com.isahl.chess.bishop.io.mqtt.control.X11E_QttDisconnect;
 import com.isahl.chess.bishop.io.mqtt.handler.IQttRouter;
 import com.isahl.chess.bishop.io.mqtt.handler.QttRouter;
+import com.isahl.chess.bishop.io.mqtt.v5.control.X11F_QttAuth;
 import com.isahl.chess.bishop.io.sort.ZSortHolder;
 import com.isahl.chess.bishop.io.ws.control.X102_Close;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X108_Shutdown;
@@ -261,8 +262,13 @@ public class LinkCustom
             case X11E_QttDisconnect.COMMAND ->
                 {
                     _Logger.info("disconnect");
-                    _QttRouter.disconnect(session.getIndex());
+                    _QttRouter.clean(session.getIndex());
+                    _DeviceService.clean(session.getIndex());
                     throw new ZException("service active close");
+                }
+            case X11F_QttAuth.COMMAND ->
+                {
+
                 }
         }
         return null;
