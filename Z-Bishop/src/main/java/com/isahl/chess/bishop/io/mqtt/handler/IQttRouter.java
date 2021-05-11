@@ -23,10 +23,11 @@
 
 package com.isahl.chess.bishop.io.mqtt.handler;
 
-import com.isahl.chess.bishop.io.IRouter;
-import com.isahl.chess.queen.io.core.inf.IQoS;
-
 import java.util.Map;
+
+import com.isahl.chess.bishop.io.IRouter;
+import com.isahl.chess.bishop.io.mqtt.MqttProtocol;
+import com.isahl.chess.queen.io.core.inf.IQoS;
 
 /**
  * @author william.d.zk
@@ -37,6 +38,9 @@ public interface IQttRouter
         extends
         IRouter
 {
+
+    void retain(String topic, MqttProtocol msg);
+
     /**
      * 向特定主题发送消息
      * 

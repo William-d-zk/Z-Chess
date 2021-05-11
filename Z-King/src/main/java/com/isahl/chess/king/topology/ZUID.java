@@ -53,7 +53,7 @@ import java.util.regex.Pattern;
 public class ZUID
 {
 
-    public static final LocalDateTime EPOCH_DATE         = LocalDateTime.of(2018, Month.JUNE, 1, 0, 0);
+    public static final LocalDateTime EPOCH_DATE         = LocalDateTime.of(2021, Month.JUNE, 1, 0, 0);
     public static final long          EPOCH_MILLI        = EPOCH_DATE.toEpochSecond(ZoneOffset.UTC);
     public static final int           SEQUENCE_BITS      = 10;
     public static final long          SEQUENCE_MASK      = ~(-1L << SEQUENCE_BITS);

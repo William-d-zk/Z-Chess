@@ -67,11 +67,4 @@ public interface IRouter
      */
     void clean(long session);
 
-    /**
-     * on disconnect event
-     * 
-     * @param session
-     */
-    void disconnect(long session);
-
 }
