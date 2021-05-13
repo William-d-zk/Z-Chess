@@ -60,7 +60,7 @@ import java.util.stream.Collectors;
 @Service
 public class NodeService
 {
-    private final Logger                   _Logger    = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
     private final DeviceNode               _DeviceNode;
     private final ILinkCustom              _LinkCustom;
@@ -115,28 +115,6 @@ public class NodeService
         _Logger.info("device service start");
     }
 
-
-
-    /*
-    @Override
-    public Stream<DeviceEntity> getOnlineDevices(String username) throws ZException
-    {
-        Collection<ISession> sessions = _DeviceNode.getMappedSessionsWithType(ZUID.TYPE_CONSUMER_SLOT);
-        if (sessions == null || sessions.isEmpty()) return null;
-        return sessions.stream()
-                       .map(session -> _DeviceRepository.findByIdAndUsername(session.getIndex(), username))
-                       .filter(Objects::nonNull);
-    }
-    
-    @Override
-    public Stream<Pair<DeviceEntity,
-                       Map<String,
-                           IQoS.Level>>> getOnlineDevicesWithTopic(String username) throws ZException
-    {
-        Stream<DeviceEntity> onlineDevices = getOnlineDevices(username);
-        return onlineDevices != null ? onlineDevices.map(device -> new Pair<>(device, device.getSubscribes())): null;
-    }
-    */
     @Bean
     public DeviceNode getDeviceNode()
     {

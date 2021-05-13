@@ -23,11 +23,11 @@
 
 package com.isahl.chess.bishop.io.mqtt.handler;
 
-import java.util.Map;
-
 import com.isahl.chess.bishop.io.IRouter;
 import com.isahl.chess.bishop.io.mqtt.MqttProtocol;
 import com.isahl.chess.queen.io.core.inf.IQoS;
+
+import java.util.Map;
 
 /**
  * @author william.d.zk
@@ -76,6 +76,6 @@ public interface IQttRouter
      * @param session
      * @param retained
      */
-    void will(String topic, IQoS.Level level, long session, boolean retained);
+    void will(String topic, IQoS.Level level, long session, boolean retained, byte[] payload);
 
 }
