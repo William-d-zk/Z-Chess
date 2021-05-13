@@ -273,7 +273,7 @@ public class QttRouter
     @Override
     public void clean(long session)
     {
-        Optional.of(_QttIdentifierMap.remove(session))
+        Optional.ofNullable(_QttIdentifierMap.remove(session))
                 .ifPresent(Map::clear);
         _Topic2SessionsMap.values()
                           .forEach(map -> map.remove(session));

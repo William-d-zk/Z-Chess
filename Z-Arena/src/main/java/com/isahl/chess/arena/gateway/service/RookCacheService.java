@@ -23,10 +23,17 @@
 
 package com.isahl.chess.arena.gateway.service;
 
+import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import com.isahl.chess.king.base.log.Logger;
+import javax.annotation.PostConstruct;
+import javax.cache.CacheManager;
+import java.time.Duration;
+
+import static java.time.temporal.ChronoUnit.MINUTES;
 
 @Service
 public class RookCacheService
@@ -45,5 +52,19 @@ public class RookCacheService
     {
         _Logger.info("calculate the area of a circle with a radius of {}", radius);
         return Math.PI * Math.pow(radius, 2);
+    }
+
+    final CacheManager _CacheManager;
+
+    @Autowired
+    public RookCacheService(CacheManager cacheManager)
+    {
+        _CacheManager = cacheManager;
+    }
+
+    @PostConstruct
+    void post() throws ClassNotFoundException, InstantiationException, IllegalAccessException
+    {
+        EhcacheConfig.createCache(_CacheManager, "cache0", Integer.class, Double.class, Duration.of(20, MINUTES));
     }
 }

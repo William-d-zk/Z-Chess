@@ -26,6 +26,7 @@ package com.isahl.chess.player.api.service;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
+import com.isahl.chess.pawn.endpoint.device.jpa.model.ShadowEntity;
 import com.isahl.chess.pawn.endpoint.device.spi.IDeviceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +34,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.Predicate;
+import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -42,6 +44,7 @@ import java.util.List;
 @Service
 public class MixOpenService
 {
+
     private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
 
     private final IDeviceService _DeviceService;
@@ -63,15 +66,17 @@ public class MixOpenService
     }
 
     @SafeVarargs
-    public final List<DeviceEntity> findAllByColumns(Pageable pageable,
-                                                     Triple<String,
-                                                            Object,
-                                                            Predicate.BooleanOperator>... columns)
+    public final List<DeviceEntity> findAllByColumnsAfter(Pageable pageable,
+                                                          LocalDateTime dateTime,
+                                                          Triple<String,
+                                                                 Object,
+                                                                 Predicate.BooleanOperator>... columns)
     {
         return _DeviceService.findDevices((Specification<DeviceEntity>) (root, criteriaQuery, criteriaBuilder) ->
         {
             if (columns != null && columns.length > 0) {
-                Predicate.BooleanOperator last = null;
+                criteriaBuilder.greaterThan(root.get("create_at"), dateTime);
+                Predicate.BooleanOperator last = Predicate.BooleanOperator.AND;
                 List<Predicate> predicates = new LinkedList<>();
                 for (Triple<String,
                             Object,
@@ -98,6 +103,11 @@ public class MixOpenService
                 return criteriaQuery.getRestriction();
             }
         }, pageable);
+    }
+
+    public List<ShadowEntity> getOnlineDevice(Pageable pageable){
+//        _DeviceService.getOnlineDevices().
+        return null;
     }
 
 }

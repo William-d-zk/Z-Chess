@@ -30,7 +30,6 @@ import com.isahl.chess.bishop.io.mqtt.filter.QttFrameFilter;
 import com.isahl.chess.bishop.io.sort.BaseSort;
 import com.isahl.chess.queen.io.core.inf.IFilterChain;
 import com.isahl.chess.queen.io.core.inf.INetworkOption;
-import com.isahl.chess.queen.io.core.inf.ISslOption;
 
 public class MqttZSort
         extends

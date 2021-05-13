@@ -33,7 +33,7 @@ import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceSubscribe;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageEntity;
 import com.isahl.chess.pawn.endpoint.device.jpa.repository.IDeviceJpaRepository;
 import com.isahl.chess.pawn.endpoint.device.jpa.repository.IMessageJpaRepository;
-import com.isahl.chess.pawn.endpoint.device.model.ShadowDevice;
+import com.isahl.chess.pawn.endpoint.device.jpa.model.ShadowEntity;
 import com.isahl.chess.pawn.endpoint.device.spi.IDeviceService;
 import com.isahl.chess.queen.io.core.inf.IQoS;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
@@ -81,7 +81,7 @@ public class DeviceService
     private final CryptUtil               _CryptUtil      = new CryptUtil();
     private final MixConfig               _MixConfig;
     private final Map<Long,
-                      ShadowDevice>       _ShawdowDevices = new HashMap<>(1 << 10);
+            ShadowEntity>       _ShawdowDevices = new HashMap<>(1 << 10);
 
     public DeviceService(IMessageJpaRepository messageJpaRepository,
                          IDeviceJpaRepository deviceRepository,
@@ -226,7 +226,7 @@ public class DeviceService
     }
 
     @Override
-    @Cacheable(value = "device_cache", key = "#token", unless = "#token==null")
+    @Cacheable(value = "device_cache", key = "#token", unless = "#token == null")
     public DeviceEntity queryDevice(String sn, String token) throws ZException
     {
         return _DeviceRepository.findBySnOrToken(sn, token);
@@ -246,19 +246,19 @@ public class DeviceService
     }
 
     @Override
-    public List<ShadowDevice> getOnlineDevicesByUsername(String username)
+    public List<ShadowEntity> getOnlineDevicesByUsername(String username)
     {
         return null;
     }
 
     @Override
-    public List<ShadowDevice> getOnlineDevicesByTopic(String topic)
+    public List<ShadowEntity> getOnlineDevicesByTopic(String topic)
     {
         return null;
     }
 
     @Override
-    public List<ShadowDevice> getOnlineDevices()
+    public List<ShadowEntity> getOnlineDevices()
     {
         //        Collection<ISession> sessions = _DeviceNode.getMappedSessionsWithType(TYPE_CONSUMER_SLOT);
         return null;

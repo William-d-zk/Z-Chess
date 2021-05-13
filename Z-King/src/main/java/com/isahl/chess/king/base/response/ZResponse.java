@@ -50,7 +50,7 @@ public class ZResponse<T>
     private final String        _Message;
     private final T             _Detail;
     private final String        _Formatter;
-    private final LocalDateTime _CreateAt;
+    private final LocalDateTime _DateTime;
 
     // @formatter:off
     @JsonCreator
@@ -58,15 +58,15 @@ public class ZResponse<T>
                      @JsonProperty("message") String message,
                      @JsonProperty("detail") T detail,
                      @JsonProperty("formatter") String formatter,
-                     @JsonProperty("create_at")
+                     @JsonProperty("date_time")
                      @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-                     @JsonSerialize(using = LocalDateTimeSerializer.class) LocalDateTime createAt)
+                     @JsonSerialize(using = LocalDateTimeSerializer.class) LocalDateTime dateTime)
     {
         _Code = code;
         _Message = message;
         _Detail = detail;
         _Formatter = formatter;
-        _CreateAt = createAt;
+        _DateTime = dateTime;
     }
     // @formatter:on
     @Override
@@ -93,9 +93,9 @@ public class ZResponse<T>
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    public LocalDateTime getCreateAt()
+    public LocalDateTime getDateTime()
     {
-        return _CreateAt;
+        return _DateTime;
     }
 
     public static <E> ZResponse<E> success(E e)

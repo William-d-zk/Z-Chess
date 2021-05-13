@@ -22,16 +22,16 @@
  */
 package com.isahl.chess.bishop.io.mqtt.control;
 
-import static com.isahl.chess.king.base.util.IoUtil.isBlank;
-import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Objects;
-
 import com.isahl.chess.bishop.io.mqtt.QttControl;
 import com.isahl.chess.bishop.io.mqtt.QttType;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.inf.IConsistent;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
+
+import static com.isahl.chess.king.base.util.IoUtil.isBlank;
+import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
 
 /**
  * @author william.d.zk
@@ -342,7 +342,7 @@ public class X111_QttConnect
             throw new IndexOutOfBoundsException(String.format("fix head length error ![%d]", protocolNameLength));
         }
         int mqtt = IoUtil.readInt(data, pos);
-        pos += 4;
+        pos += protocolNameLength;
         if (mqtt != _MQTT) { throw new IllegalArgumentException("FixHead Protocol name wrong"); }
         mVersion = data[pos++];
         setControlCode(data[pos++]);

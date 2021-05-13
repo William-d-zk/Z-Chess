@@ -25,6 +25,7 @@ package com.isahl.chess.pawn.endpoint.device.jpa.repository;
 
 import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageEntity;
 import com.isahl.chess.rook.storage.jpa.repository.BaseRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -53,8 +54,7 @@ public interface IMessageJpaRepository
 
     List<MessageEntity> findAllByOriginAndDestinationAndMsgId(long origin, long destination, long msgId);
 
-    List<MessageEntity> findAllByDestinationAndOwner(long destination,String owner);
-
+    List<MessageEntity> findAllByDestinationAndOwner(long destination, String owner);
 
     List<MessageEntity> findAllByOriginOrDestination(long origin, long destination);
 
@@ -79,6 +79,7 @@ public interface IMessageJpaRepository
     List<MessageEntity> listByTopic(@Param("p_topic") String topic, @Param("p_limit") int limit);
 
     @Transactional
+    @Modifying
     @Query(value = "delete from \"z-chess\".message m where m.destination=:p_dest and m.owner=:p_owner",
            nativeQuery = true)
     void deleteAllByDestination(@Param("p_dest") long destination, @Param("p_owner") String owner);
