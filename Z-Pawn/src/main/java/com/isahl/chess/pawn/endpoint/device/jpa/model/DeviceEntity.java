@@ -211,11 +211,10 @@ public class DeviceEntity
         return subscribe == null ? null: subscribe.getSubscribes();
     }
 
-    @JsonIgnore
-    public void addSubscribes(String topic, IQoS.Level level)
+    public void subscribe(String topic, IQoS.Level level)
     {
         if (subscribe != null) {
-            subscribe.addSubscribes(topic, level);
+            subscribe.subscribe(topic, level);
         }
     }
 

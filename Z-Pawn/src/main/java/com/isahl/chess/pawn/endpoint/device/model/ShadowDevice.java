@@ -31,6 +31,8 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageBody;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.Subscribe;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Queue;
 
@@ -40,22 +42,31 @@ import java.util.Queue;
  */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ShadowDevice
+        implements
+        Serializable
 {
+
+    @Serial
+    private static final long serialVersionUID = -6248323684179351633L;
+
     private final long               _DeviceId;
     private final List<Subscribe>    _Subscribes;
     private final Queue<MessageBody> _MsgQueue;
     private final Subscribe          _WillSubscribe;
+    private final MessageBody        _WillPayload;
 
     @JsonCreator
     public ShadowDevice(@JsonProperty("device_id") long deviceId,
                         @JsonProperty("subscribes") List<Subscribe> subscribes,
                         @JsonProperty("msg_queue") Queue<MessageBody> msgQueue,
-                        @JsonProperty("will_subscribe") Subscribe willSubscribe)
+                        @JsonProperty("will_subscribe") Subscribe willSubscribe,
+                        @JsonProperty("will_payload") MessageBody willPayload)
     {
         _DeviceId = deviceId;
         _Subscribes = subscribes;
         _MsgQueue = msgQueue;
         _WillSubscribe = willSubscribe;
+        _WillPayload = willPayload;
     }
 
     @JsonIgnore
@@ -78,4 +89,5 @@ public class ShadowDevice
     {
         return _WillSubscribe;
     }
+
 }

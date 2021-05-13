@@ -42,9 +42,9 @@ class DurableServiceTest
         Map<String,
             IQoS.Level> subscribes = new HashMap<>();
         DeviceSubscribe subscribe = new DeviceSubscribe(subscribes);
-        subscribe.addSubscribes(new Subscribe(IQoS.Level.ALMOST_ONCE, "topic0"));
-        subscribe.addSubscribes(new Subscribe(IQoS.Level.EXACTLY_ONCE, "topic1"));
-        subscribe.addSubscribes(new Subscribe(IQoS.Level.AT_LEAST_ONCE, "topic2"));
+        subscribe.subscribe(new Subscribe(IQoS.Level.ALMOST_ONCE, "topic0"));
+        subscribe.subscribe(new Subscribe(IQoS.Level.EXACTLY_ONCE, "topic1"));
+        subscribe.subscribe(new Subscribe(IQoS.Level.AT_LEAST_ONCE, "topic2"));
         ObjectMapper mapper = new ObjectMapper();
         System.out.println(mapper.writeValueAsString(subscribe));
     }

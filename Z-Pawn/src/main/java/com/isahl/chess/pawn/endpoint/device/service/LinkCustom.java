@@ -231,7 +231,7 @@ public class LinkCustom
                         {
                             IQoS.Level lv = _QttRouter.subscribe(topic, level, origin);
                             x119.addResult(lv);
-                            optional.ifPresent(device -> device.addSubscribes(topic, level));
+                            optional.ifPresent(device -> device.subscribe(topic, level));
                         });
                         if (session != null) {
                             x119.setSession(session);

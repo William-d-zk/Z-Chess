@@ -29,7 +29,7 @@
             http://www.ehcache.org/schema/ehcache-core-3.9.xsd">
 
     <!-- Persistent cache directory -->
-    <persistence directory="${user.home}/cache-data"/>
+    <persistence directory="${user.home}/Z-Chess/cache-data"/>
 
     <!-- Default cache template -->
     <cache-template name="rook-default">

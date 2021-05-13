@@ -23,14 +23,13 @@
 
 package com.isahl.chess.player.api.controller;
 
-import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.response.ZResponse;
-import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
+import com.isahl.chess.king.config.Code;
+import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceSubscribe;
-import com.isahl.chess.pawn.endpoint.device.model.DeviceStatus;
 import com.isahl.chess.player.api.model.DeviceDo;
 import com.isahl.chess.player.api.service.MixOpenService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +45,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 
 import static com.isahl.chess.king.base.util.IoUtil.isBlank;
 import static javax.persistence.criteria.Predicate.BooleanOperator.AND;
@@ -59,12 +57,12 @@ import static javax.persistence.criteria.Predicate.BooleanOperator.AND;
 public class DeviceController
 {
     private final Logger         _Logger = Logger.getLogger(getClass().getSimpleName());
-    private final MixOpenService _MixService;
+    private final MixOpenService _MixOpenService;
 
     @Autowired
-    public DeviceController(MixOpenService mixService)
+    public DeviceController(MixOpenService mixOpenService)
     {
-        _MixService = mixService;
+        _MixOpenService = mixOpenService;
     }
 
     @PostMapping("register")
@@ -75,57 +73,51 @@ public class DeviceController
         deviceEntity.setUsername(deviceDo.getUsername());
         deviceEntity.setSubscribe(new DeviceSubscribe(new HashMap<>()));
         deviceEntity.setProfile(deviceDo.getProfile());
-        return ZResponse.success(_MixService.newDevice(deviceEntity));
+        return ZResponse.success(_MixOpenService.newDevice(deviceEntity));
     }
 
     @GetMapping("query")
-    public ZResponse<IPair> queryDevice(@RequestParam(required = false) String token,
-                                        @RequestParam(required = false) String sn)
+    public ZResponse<?> queryDevice(@RequestParam(required = false) String token,
+                                    @RequestParam(required = false) String sn)
     {
-        IPair result = null;
-        DeviceEntity device = new DeviceEntity();
-        device.setSn(sn);
-        device.setToken(token);
         if (!isBlank(token) || !isBlank(sn)) {
-            DeviceEntity exist = _MixService.findDevice(sn, token);
-            if (Objects.nonNull(exist)) {
-                if (device.getInvalidAt()
-                          .isBefore(LocalDateTime.now()))
-                {
-                    result = new Pair<>(DeviceStatus.INVALID, device);
-                }
-                else {
-                    result = new Pair<>(DeviceStatus.AVAILABLE, device);
-                }
-            }
+            DeviceEntity exist = _MixOpenService.findDevice(sn, token);
+            if (exist != null) { return ZResponse.success(exist); }
         }
-        if (result == null) {
-            result = new Pair<>(DeviceStatus.MISS, null);
-        }
-        return ZResponse.success(result);
+        return ZResponse.error(Code.MISS.getCode(), "device miss");
     }
 
-    @PostMapping("all")
-    public ZResponse<List<DeviceEntity>> listDevices(@RequestParam("sn") String sn,
-                                                     @RequestParam("page") Integer page,
-                                                     @RequestParam("size") Integer size)
+    /**
+     * 不推荐使用，数据量大的时候JPA 默认生成的SQL 持有 offset,limit
+     * 推荐使用带有 查询条件的请求方式
+     * 
+     * @param page
+     * @param size
+     * @return
+     */
+    @GetMapping("all")
+    public ZResponse<List<DeviceEntity>> listDevices(@RequestParam(name = "create_at",
+                                                                   required = false) LocalDateTime createAt,
+                                                     @RequestParam(name = "username", required = false) String username,
+                                                     @RequestParam(name = "page", required = false) Integer page,
+                                                     @RequestParam(name = "size", required = false) Integer size)
     {
-        Objects.requireNonNull(sn);
-        size = size < 1 ? 10: size > 50 ? 50: size;
-        page = page < 1 ? 1: page > 5 ? 5: page;
-        return ZResponse.success(_MixService.findAllByColumns(PageRequest.of(page, size), new Triple<>("sn", sn, AND)));
+        size = size < 1 ? 1: size > 50 ? 50: size;
+        page = page < 0 ? 0: page;
+        return ZResponse.success(_MixOpenService.findAllByColumnsAfter(PageRequest.of(page, size),
+                                                                       createAt == null ? ZUID.EPOCH_DATE: createAt,
+                                                                       new Triple<>("username", username, AND)));
     }
 
     @GetMapping("online")
-    public @ResponseBody ZResponse<List<DeviceEntity>> listOnlineDevices(@RequestParam(name = "username") String username,
-                                                                         @RequestParam("page") Integer page,
-                                                                         @RequestParam("size") Integer size)
+    public @ResponseBody ZResponse<?> listOnlineDevices(@RequestParam(name = "username") String username,
+                                                        @RequestParam("page") Integer page,
+                                                        @RequestParam("size") Integer size)
     {
         if (isBlank(username)) return null;
         size = size < 1 ? 10: size > 50 ? 50: size;
-        page = page < 1 ? 1: page > 5 ? 5: page;
-        return ZResponse.success(_MixService.findAllByColumns(PageRequest.of(page, size),
-                                                              new Triple<>("username", username, AND)));
+        page = page < 0 ? 0: page;
+        return ZResponse.success(_MixOpenService.getOnlineDevice(PageRequest.of(page, size)));
     }
 
 }

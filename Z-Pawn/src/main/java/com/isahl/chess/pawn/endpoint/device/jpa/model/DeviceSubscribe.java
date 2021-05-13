@@ -23,16 +23,16 @@
 
 package com.isahl.chess.pawn.endpoint.device.jpa.model;
 
-import java.io.Serial;
-import java.io.Serializable;
-import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.queen.io.core.inf.IQoS;
+
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.Map;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class DeviceSubscribe
@@ -58,17 +58,14 @@ public class DeviceSubscribe
         return _Subscribes;
     }
 
-    public void addSubscribes(Subscribe subscribe)
+    public void subscribe(Subscribe subscribe)
     {
-        addSubscribes(subscribe.getTopic(), subscribe.getLevel());
+        subscribe(subscribe.getTopic(), subscribe.getLevel());
     }
 
-    public void addSubscribes(String topic, IQoS.Level level)
+    public void subscribe(String topic, IQoS.Level level)
     {
-        if (_Subscribes.computeIfPresent(topic,
-                                         (t, o) -> level.getValue() > o.getValue() ? level
-                                                                                   : o) == null)
-        {
+        if (_Subscribes.computeIfPresent(topic, (t, o) -> level.getValue() > o.getValue() ? level: o) == null) {
             _Subscribes.put(topic, level);
         }
     }
