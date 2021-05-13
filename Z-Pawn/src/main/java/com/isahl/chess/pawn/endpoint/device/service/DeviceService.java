@@ -23,20 +23,28 @@
 
 package com.isahl.chess.pawn.endpoint.device.service;
 
+import com.isahl.chess.bishop.io.IRouter;
+import com.isahl.chess.bishop.io.mqtt.handler.IQttRouter;
 import com.isahl.chess.king.base.exception.ZException;
+import com.isahl.chess.king.base.inf.IValid;
 import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.base.schedule.ScheduleHandler;
+import com.isahl.chess.king.base.schedule.TimeWheel;
 import com.isahl.chess.king.base.util.CryptUtil;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.pawn.endpoint.device.config.MixConfig;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceSubscribe;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageEntity;
+import com.isahl.chess.pawn.endpoint.device.jpa.model.ShadowEntity;
 import com.isahl.chess.pawn.endpoint.device.jpa.repository.IDeviceJpaRepository;
 import com.isahl.chess.pawn.endpoint.device.jpa.repository.IMessageJpaRepository;
-import com.isahl.chess.pawn.endpoint.device.jpa.model.ShadowEntity;
+import com.isahl.chess.pawn.endpoint.device.jpa.repository.IShadowJpaRepository;
+import com.isahl.chess.pawn.endpoint.device.model.ShadowDevice;
 import com.isahl.chess.pawn.endpoint.device.spi.IDeviceService;
 import com.isahl.chess.queen.io.core.inf.IQoS;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
@@ -51,14 +59,16 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static com.isahl.chess.bishop.io.Direction.OWNER_SERVER;
+import static com.isahl.chess.king.base.schedule.TimeWheel.IWheelItem.PRIORITY_NORMAL;
 import static com.isahl.chess.king.base.util.IoUtil.isBlank;
 import static com.isahl.chess.queen.db.inf.IStorage.Operation.OP_INSERT;
 import static java.time.temporal.ChronoUnit.MINUTES;
@@ -76,32 +86,64 @@ public class DeviceService
     private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
     private final IMessageJpaRepository   _MessageJpaRepository;
-    private final IDeviceJpaRepository    _DeviceRepository;
+    private final IDeviceJpaRepository    _DeviceJpaRepository;
+    private final IShadowJpaRepository    _ShadowJpaRepository;
     private final CacheManager            _CacheManager;
-    private final CryptUtil               _CryptUtil      = new CryptUtil();
+    private final CryptUtil               _CryptUtil        = new CryptUtil();
     private final MixConfig               _MixConfig;
     private final Map<Long,
-            ShadowEntity>       _ShawdowDevices = new HashMap<>(1 << 10);
+                      ShadowDevice>       _ShadowDevices    = new HashMap<>(1 << 10);
+    private final TimeWheel               _TimeWheel;
+    private final ShadowBatch             _BatchHandleLogin = new ShadowBatch();
+    private final ShadowBatch             _BatchHandleIdle  = new ShadowBatch();
 
+    private static class ShadowBatch
+            extends
+            ConcurrentLinkedQueue<ShadowEntity>
+            implements
+            IValid
+    {
+    }
+
+    @Autowired
     public DeviceService(IMessageJpaRepository messageJpaRepository,
                          IDeviceJpaRepository deviceRepository,
+                         IShadowJpaRepository shadowJpaRepository,
                          CacheManager cacheManager,
-                         MixConfig mixConfig)
+                         MixConfig mixConfig,
+                         TimeWheel timeWheel)
     {
         _MessageJpaRepository = messageJpaRepository;
-        _DeviceRepository = deviceRepository;
+        _DeviceJpaRepository = deviceRepository;
+        _ShadowJpaRepository = shadowJpaRepository;
         _CacheManager = cacheManager;
         _MixConfig = mixConfig;
+        _TimeWheel = timeWheel;
     }
 
     @PostConstruct
-    void initService() throws ClassNotFoundException, InstantiationException, IllegalAccessException
+    public void init() throws ClassNotFoundException, InstantiationException, IllegalAccessException
     {
         EhcacheConfig.createCache(_CacheManager,
-                                  "device_cache",
+                                  "device_token_cache",
                                   String.class,
                                   DeviceEntity.class,
                                   Duration.of(20, MINUTES));
+        EhcacheConfig.createCache(_CacheManager,
+                                  "device_id_cache",
+                                  Long.class,
+                                  DeviceEntity.class,
+                                  Duration.of(15, MINUTES));
+        _TimeWheel.acquire(_BatchHandleLogin,
+                           new ScheduleHandler<>(Duration.ofSeconds(10),
+                                                 true,
+                                                 this::batchHandleLogin,
+                                                 PRIORITY_NORMAL));
+        _TimeWheel.acquire(_BatchHandleIdle,
+                           new ScheduleHandler<>(Duration.ofSeconds(300),
+                                                 true,
+                                                 this::batchHandleIdle,
+                                                 PRIORITY_NORMAL));
     }
 
     public void saveMessageState(MessageEntity message, long session)
@@ -109,30 +151,45 @@ public class DeviceService
 
     }
 
-    public void clean(long deviceId)
+    public void clean(long deviceId, IRouter router)
     {
-        _MessageJpaRepository.deleteAllByDestination(deviceId, OWNER_SERVER);
-        _DeviceRepository.findById(deviceId)
-                         .ifPresent(device ->
-                         {
-                             DeviceSubscribe subscribe = device.getSubscribe();
-                             if (subscribe != null) {
-                                 subscribe.clean();
-                             }
-                             saveDevice(device);
-                         });
+        router.clean(deviceId);
+        _DeviceJpaRepository.findById(deviceId)
+                            .ifPresent(device ->
+                            {
+                                DeviceSubscribe subscribe = device.getSubscribe();
+                                if (subscribe != null) {
+                                    subscribe.clean();
+                                }
+                                saveDevice(device);
+                            });
     }
 
-    public void loadHistory(long session)
+    public void load(long session, IQttRouter qttRouter)
     {
-        List<MessageEntity> myHistory = _MessageJpaRepository.findAllByDestinationAndOwner(session, OWNER_SERVER);
-
+        DeviceEntity device = findDeviceById(session);
+        if (device != null) {
+            DeviceSubscribe subscribe = device.getSubscribe();
+            if (subscribe != null
+                && !subscribe.getSubscribes()
+                             .isEmpty())
+            {
+                subscribe.getSubscribes()
+                         .forEach((topic, level) -> qttRouter.subscribe(topic, level, session));
+            }
+        }
     }
 
-    @Cacheable(value = "device_cache", key = "#token")
+    @Cacheable(value = "device_id_cache", key = "#session", unless = "#session == 0 || #result == null")
+    public DeviceEntity findDeviceById(long session)
+    {
+        return _DeviceJpaRepository.getOne(session);
+    }
+
+    @Cacheable(value = "device_token_cache", key = "#token")
     public DeviceEntity findDeviceByToken(String token)
     {
-        return _DeviceRepository.findByToken(token);
+        return _DeviceJpaRepository.findByToken(token);
     }
 
     public void subscribe(Map<String,
@@ -142,7 +199,7 @@ public class DeviceService
                                    BiConsumer<String,
                                               IQoS.Level>> function)
     {
-        Optional<DeviceEntity> deviceOptional = _DeviceRepository.findById(deviceId);
+        Optional<DeviceEntity> deviceOptional = _DeviceJpaRepository.findById(deviceId);
         subscribes.forEach(function.apply(deviceOptional));
         deviceOptional.ifPresent(this::saveDevice);
     }
@@ -152,15 +209,15 @@ public class DeviceService
                             Function<Optional<DeviceEntity>,
                                      Consumer<String>> function)
     {
-        Optional<DeviceEntity> deviceOptional = _DeviceRepository.findById(deviceId);
+        Optional<DeviceEntity> deviceOptional = _DeviceJpaRepository.findById(deviceId);
         topics.forEach(function.apply(deviceOptional));
         deviceOptional.ifPresent(this::saveDevice);
     }
 
-    @CachePut(value = "device_cache", key = "#device.token")
+    @CachePut(value = "device_token_cache", key = "#device.token")
     public DeviceEntity saveDevice(DeviceEntity device)
     {
-        return _DeviceRepository.save(device);
+        return _DeviceJpaRepository.save(device);
     }
 
     @Override
@@ -171,7 +228,7 @@ public class DeviceService
         {   // update
             DeviceEntity exist;
             try {
-                exist = _DeviceRepository.getOne(device.primaryKey());
+                exist = _DeviceJpaRepository.getOne(device.primaryKey());
             }
             catch (EntityNotFoundException e) {
                 _Logger.warning("entity_not_found_exception", e);
@@ -193,10 +250,10 @@ public class DeviceService
         else {
             DeviceEntity exist = null;
             if (!isBlank(device.getSn())) {
-                exist = _DeviceRepository.findBySn(device.getSn());
+                exist = _DeviceJpaRepository.findBySn(device.getSn());
             }
             else if (!isBlank(device.getToken())) {
-                exist = _DeviceRepository.findByToken(device.getToken());
+                exist = _DeviceJpaRepository.findByToken(device.getToken());
             }
             DeviceEntity entity = exist == null ? new DeviceEntity(): exist;
             if (exist == null) {
@@ -226,42 +283,63 @@ public class DeviceService
     }
 
     @Override
-    @Cacheable(value = "device_cache", key = "#token", unless = "#token == null")
+    @Cacheable(value = "device_token_cache", key = "#token", unless = "#token == null")
     public DeviceEntity queryDevice(String sn, String token) throws ZException
     {
-        return _DeviceRepository.findBySnOrToken(sn, token);
+        return _DeviceJpaRepository.findBySnOrToken(sn, token);
     }
 
     @Override
     public List<DeviceEntity> findDevices(Specification<DeviceEntity> condition, Pageable pageable) throws ZException
     {
-        return _DeviceRepository.findAll(condition, pageable)
-                                .toList();
+        return _DeviceJpaRepository.findAll(condition, pageable)
+                                   .toList();
     }
 
     @Override
     public DeviceEntity getOneDevice(long id)
     {
-        return _DeviceRepository.getOne(id);
+        return _DeviceJpaRepository.getOne(id);
     }
 
     @Override
-    public List<ShadowEntity> getOnlineDevicesByUsername(String username)
+    public List<ShadowEntity> getOnlineDevices(Specification<ShadowEntity> condition,
+                                               Pageable pageable) throws ZException
     {
-        return null;
+        return _ShadowJpaRepository.findAll(condition, pageable)
+                                   .toList();
     }
 
-    @Override
-    public List<ShadowEntity> getOnlineDevicesByTopic(String topic)
+    public void login(long deviceId)
     {
-        return null;
+        DeviceEntity device = findDeviceById(deviceId);
+        if (device != null) {
+            ShadowDevice shadow = _ShadowDevices.computeIfAbsent(deviceId,
+                                                                 (id) -> new ShadowDevice(deviceId,
+                                                                                          device.getSubscribe(),
+                                                                                          new LinkedList<>(),
+                                                                                          null,
+                                                                                          null));
+
+            _BatchHandleLogin.add(shadow.convert());
+        }
     }
 
-    @Override
-    public List<ShadowEntity> getOnlineDevices()
+    public void will(String topic, IQoS.Level qos, long deviceId, boolean retain, byte[] payload, IQttRouter qttRouter)
     {
-        //        Collection<ISession> sessions = _DeviceNode.getMappedSessionsWithType(TYPE_CONSUMER_SLOT);
-        return null;
+        qttRouter.will(topic, qos, deviceId, retain, payload);
+        //TODO 更新shadow管理器
     }
 
+    private void batchHandleLogin(ShadowBatch batch)
+    {
+        if (batch.isEmpty()) { return; }
+        batch.forEach(_ShadowJpaRepository::save);
+    }
+
+    private void batchHandleIdle(ShadowBatch batch)
+    {
+        if (batch.isEmpty()) { return; }
+        batch.forEach(entity -> _ShadowJpaRepository.deleteByDevice(entity.getDeviceId()));
+    }
 }

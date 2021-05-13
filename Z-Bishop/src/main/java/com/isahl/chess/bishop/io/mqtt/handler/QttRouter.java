@@ -210,7 +210,7 @@ public class QttRouter
     }
 
     @Override
-    public void will(String topic, IQoS.Level level, long session, boolean retained)
+    public void will(String topic, IQoS.Level level, long session, boolean retained, byte[] payload)
     {
 
     }

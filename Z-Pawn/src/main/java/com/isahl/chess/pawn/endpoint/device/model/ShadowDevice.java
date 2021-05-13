@@ -23,18 +23,19 @@
 
 package com.isahl.chess.pawn.endpoint.device.model;
 
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.Queue;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceSubscribe;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageBody;
+import com.isahl.chess.pawn.endpoint.device.jpa.model.ShadowEntity;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.Subscribe;
-
-import java.io.Serial;
-import java.io.Serializable;
-import java.util.List;
-import java.util.Queue;
 
 /**
  * @author william.d.zk
@@ -50,17 +51,17 @@ public class ShadowDevice
     private static final long serialVersionUID = -6248323684179351633L;
 
     private final long               _DeviceId;
-    private final List<Subscribe>    _Subscribes;
+    private final DeviceSubscribe    _Subscribes;
     private final Queue<MessageBody> _MsgQueue;
     private final Subscribe          _WillSubscribe;
-    private final MessageBody        _WillPayload;
+    private final byte[]             _WillPayload;
 
     @JsonCreator
     public ShadowDevice(@JsonProperty("device_id") long deviceId,
-                        @JsonProperty("subscribes") List<Subscribe> subscribes,
+                        @JsonProperty("subscribes") DeviceSubscribe subscribes,
                         @JsonProperty("msg_queue") Queue<MessageBody> msgQueue,
                         @JsonProperty("will_subscribe") Subscribe willSubscribe,
-                        @JsonProperty("will_payload") MessageBody willPayload)
+                        @JsonProperty("will_payload") byte[] willPayload)
     {
         _DeviceId = deviceId;
         _Subscribes = subscribes;
@@ -75,7 +76,7 @@ public class ShadowDevice
         return _DeviceId;
     }
 
-    public List<Subscribe> getSubscribes()
+    public DeviceSubscribe getSubscribes()
     {
         return _Subscribes;
     }
@@ -88,6 +89,20 @@ public class ShadowDevice
     public Subscribe getWillSubscribe()
     {
         return _WillSubscribe;
+    }
+
+    public byte[] getWillPayload()
+    {
+        return _WillPayload;
+    }
+
+    public ShadowEntity convert()
+    {
+        ShadowEntity entity = new ShadowEntity();
+        entity.setDeviceId(_DeviceId);
+        entity.setWillPayload(_WillPayload);
+        entity.setWillSubscribe(_WillSubscribe);
+        return entity;
     }
 
 }

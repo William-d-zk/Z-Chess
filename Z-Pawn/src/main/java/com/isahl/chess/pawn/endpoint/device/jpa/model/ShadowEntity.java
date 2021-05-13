@@ -23,6 +23,7 @@
 
 package com.isahl.chess.pawn.endpoint.device.jpa.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.queen.db.inf.IStorage;
@@ -60,15 +61,16 @@ public class ShadowEntity
     @Id
     @GeneratedValue
     @Column(name = "shadow_id")
-    private long        shadowId;
+    @JsonIgnore
+    private long      shadowId;
     @OneToOne(targetEntity = DeviceEntity.class, cascade = CascadeType.ALL)
-    private long        deviceId;
+    private long      device;
     @Type(type = "jsonb")
     @Column(name = "will_subscribe", columnDefinition = "jsonb")
-    private Subscribe   willSubscribe;
-    @Column(name = "will_payload", columnDefinition = "jsonb")
-    @Type(type = "jsonb")
-    private MessageBody willPayload;
+    private Subscribe willSubscribe;
+    @Column(name = "will_payload")
+    @Type(type = "org.hibernate.type.BinaryType")
+    private byte[]    willPayload;
 
     public long getShadowId()
     {
@@ -82,12 +84,12 @@ public class ShadowEntity
 
     public long getDeviceId()
     {
-        return deviceId;
+        return device;
     }
 
     public void setDeviceId(long deviceId)
     {
-        this.deviceId = deviceId;
+        this.device = deviceId;
     }
 
     public Subscribe getWillSubscribe()
@@ -100,12 +102,12 @@ public class ShadowEntity
         this.willSubscribe = willSubscribe;
     }
 
-    public MessageBody getWillPayload()
+    public byte[] getWillPayload()
     {
         return willPayload;
     }
 
-    public void setWillPayload(MessageBody willPayload)
+    public void setWillPayload(byte[] willPayload)
     {
         this.willPayload = willPayload;
     }
@@ -116,7 +118,7 @@ public class ShadowEntity
     @Override
     public long primaryKey()
     {
-        return deviceId;
+        return device;
     }
 
     @Override

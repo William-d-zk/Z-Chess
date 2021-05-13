@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,27 +21,28 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.spi;
+package com.isahl.chess.pawn.endpoint.device.jpa.repository;
 
-import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.ShadowEntity;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
+import com.isahl.chess.rook.storage.jpa.repository.BaseRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import javax.transaction.Transactional;
 
-public interface IDeviceService
+/**
+ * @author william.d.zk
+ * @date 2021/5/13
+ */
+@Repository
+public interface IShadowJpaRepository
+        extends
+        BaseRepository<ShadowEntity>
 {
-
-    DeviceEntity upsertDevice(DeviceEntity device) throws ZException;
-
-    DeviceEntity queryDevice(String sn, String token) throws ZException;
-
-    List<DeviceEntity> findDevices(Specification<DeviceEntity> condition, Pageable pageable) throws ZException;
-
-    DeviceEntity getOneDevice(long id);
-
-    List<ShadowEntity> getOnlineDevices(Specification<ShadowEntity> condition, Pageable pageable) throws ZException;
-
+    @Transactional
+    @Modifying
+    @Query(value = "delete from \"z-chess\".shadow m where m.device_id=:p_device_id", nativeQuery = true)
+    void deleteByDevice(@Param("p_device_id") long deviceId);
 }

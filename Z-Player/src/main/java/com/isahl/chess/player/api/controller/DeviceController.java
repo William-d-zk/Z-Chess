@@ -32,6 +32,7 @@ import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceSubscribe;
 import com.isahl.chess.player.api.model.DeviceDo;
 import com.isahl.chess.player.api.service.MixOpenService;
+import com.isahl.chess.queen.db.inf.IStorage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -73,6 +74,7 @@ public class DeviceController
         deviceEntity.setUsername(deviceDo.getUsername());
         deviceEntity.setSubscribe(new DeviceSubscribe(new HashMap<>()));
         deviceEntity.setProfile(deviceDo.getProfile());
+        deviceEntity.setOperation(IStorage.Operation.OP_INSERT);
         return ZResponse.success(_MixOpenService.newDevice(deviceEntity));
     }
 

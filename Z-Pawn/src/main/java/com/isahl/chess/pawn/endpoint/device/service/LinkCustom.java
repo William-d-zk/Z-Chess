@@ -23,6 +23,14 @@
 
 package com.isahl.chess.pawn.endpoint.device.service;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
+
 import com.isahl.chess.bishop.io.mqtt.QttContext;
 import com.isahl.chess.bishop.io.mqtt.control.X111_QttConnect;
 import com.isahl.chess.bishop.io.mqtt.control.X112_QttConnack;
@@ -45,9 +53,9 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
+import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.knight.cluster.model.ConsistentProtocol;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
-import com.isahl.chess.queen.db.inf.IStorage;
 import com.isahl.chess.queen.event.handler.mix.ILinkCustom;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.IProtocol;
@@ -55,13 +63,6 @@ import com.isahl.chess.queen.io.core.inf.IQoS;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionManager;
 import com.isahl.chess.queen.io.core.inf.ITraceable;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Component;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 @Component
 public class LinkCustom
@@ -74,9 +75,9 @@ public class LinkCustom
     private final DeviceService _DeviceService;
 
     @Autowired
-    public LinkCustom(DeviceService durableService)
+    public LinkCustom(DeviceService deviceService)
     {
-        _DeviceService = durableService;
+        _DeviceService = deviceService;
     }
 
     /**
@@ -104,12 +105,6 @@ public class LinkCustom
             case X111_QttConnect.COMMAND ->
                 {
                     X111_QttConnect x111 = (X111_QttConnect) input;
-                    DeviceEntity device = new DeviceEntity();
-                    device.setToken(x111.getClientId());
-                    device.setPassword(x111.getPassword());
-                    device.setUsername(x111.getUserName());
-                    device.setOperation(IStorage.Operation.OP_APPEND);
-                    device = _DeviceService.findDeviceByToken(x111.getClientId());
                     X112_QttConnack x112 = new X112_QttConnack();
                     QttContext qttContext = session.getContext(QttContext.class);
                     qttContext.setVersion(x111.getVersion());
@@ -121,24 +116,31 @@ public class LinkCustom
                     else if (!x111.isClean() && x111.getClientIdLength() == 0) {
                         x112.rejectIdentifier();
                     }
-                    if (device == null) {
-                        x112.rejectIdentifier();
+                    long deviceId = ZUID.INVALID_PEER_ID;
+                    if (x112.isOk()) {
+                        DeviceEntity device = _DeviceService.findDeviceByToken(x111.getClientId());
+                        if (device == null) {
+                            x112.rejectIdentifier();
+                        }
+                        else if (!device.getUsername()
+                                        .equalsIgnoreCase(x111.getUserName())
+                                 || !device.getPassword()
+                                           .equals(x111.getPassword()))
+                        {
+                            /*
+                             * @see DeviceEntity
+                             * username >=8 && <=32
+                             * password >=17 && <=32
+                             * no_empty
+                             */
+                            x112.rejectNotAuthorized();
+                        }
+                        else {
+                            deviceId = device.primaryKey();
+                        }
                     }
-                    else if (!device.getUsername()
-                                    .equalsIgnoreCase(x111.getUserName())
-                             || !device.getPassword()
-                                       .equals(x111.getPassword()))
-                    {
-                        /*
-                         * @see DeviceEntity
-                         * username >=8 && <=32
-                         * password >=17 && <=32
-                         * no_empty
-                         */
-                        x112.rejectNotAuthorized();
-                    }
-                    if (x112.isOk() && device != null) {
-                        ISession old = manager.mapSession(device.primaryKey(), session);
+                    if (x112.isOk()) {
+                        ISession old = manager.mapSession(deviceId, session);
                         if (old != null) {
                             X108_Shutdown x108 = new X108_Shutdown();
                             x108.setSession(old);
@@ -200,16 +202,21 @@ public class LinkCustom
                 {
                     X111_QttConnect x111 = (X111_QttConnect) clientRequest;
                     _Logger.info("%s login ok -> %#x", x111.getClientId(), origin);
-                    if (x111.hasWill()) {
-                        _QttRouter.will(x111.getWillTopic(), x111.getWillQoS(), origin, x111.isWillRetain());
-                    }
                     if (x111.isClean()) {
-                        _QttRouter.clean(origin);
-                        _DeviceService.clean(origin);
+                        _DeviceService.clean(origin, _QttRouter);
                     }
                     else {
-                        _DeviceService.loadHistory(origin);
+                        _DeviceService.load(origin, _QttRouter);
                     }
+                    if (x111.hasWill()) {
+                        _DeviceService.will(x111.getWillTopic(),
+                                            x111.getWillQoS(),
+                                            origin,
+                                            x111.isWillRetain(),
+                                            x111.getPayload(),
+                                            _QttRouter);
+                    }
+                    _DeviceService.login(origin);
                     if (session != null) {
                         QttContext qttContext = session.getContext(QttContext.class);
                         X112_QttConnack x112 = new X112_QttConnack();
@@ -262,8 +269,7 @@ public class LinkCustom
             case X11E_QttDisconnect.COMMAND ->
                 {
                     _Logger.info("disconnect");
-                    _QttRouter.clean(session.getIndex());
-                    _DeviceService.clean(session.getIndex());
+                    _DeviceService.clean(session.getIndex(), _QttRouter);
                     throw new ZException("service active close");
                 }
             case X11F_QttAuth.COMMAND ->
