@@ -26,6 +26,7 @@ package com.isahl.chess.pawn.endpoint.device.spi;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageBody;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageEntity;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
@@ -40,10 +41,11 @@ public interface IMessageService
 {
     List<MessageBody> listByTopic(String topic, int limit) throws ZException;
 
+    long generateMsgId(long origin, long destination);
+
     MessageEntity handleMessage(MessageEntity msgEntity);
 
     Optional<MessageEntity> find1Msg(Specification<MessageEntity> specification);
 
-    long generateMsgId(long origin, long destination);
-
+    List<MessageEntity> findAllMsg(Specification<MessageEntity> specification, Pageable pageable);
 }

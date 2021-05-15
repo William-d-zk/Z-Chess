@@ -35,6 +35,7 @@ import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -153,4 +154,10 @@ public class MessageService
         return (getLast(odKey) + 1) & 0xFFFF;
     }
 
+    @Override
+    public List<MessageEntity> findAllMsg(Specification<MessageEntity> specification, Pageable pageable)
+    {
+        return _MessageRepository.findAll(specification, pageable)
+                                 .toList();
+    }
 }
