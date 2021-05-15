@@ -33,6 +33,7 @@ import org.springframework.stereotype.Repository;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author william.d.zk
@@ -44,6 +45,11 @@ public interface IMessageJpaRepository
         extends
         BaseRepository<MessageEntity>
 {
+    Optional<MessageEntity> findByOriginAndDestinationAndTopicAndMsgIdAndCreatedAtAfter(long origin,
+                                                                                        long destination,
+                                                                                        String topic,
+                                                                                        long msgId,
+                                                                                        LocalDateTime time);
 
     MessageEntity findByOriginAndDestinationAndMsgId(long origin, long destination, long msgId);
 

@@ -37,7 +37,6 @@ import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.knight.raft.service.RaftCustom;
 import com.isahl.chess.pawn.endpoint.device.DeviceNode;
 import com.isahl.chess.pawn.endpoint.device.config.MixConfig;
-import com.isahl.chess.pawn.endpoint.device.jpa.repository.IDeviceJpaRepository;
 import com.isahl.chess.pawn.endpoint.device.spi.IMessageService;
 import com.isahl.chess.queen.config.IAioConfig;
 import com.isahl.chess.queen.config.IMixConfig;
@@ -74,12 +73,11 @@ public class NodeService
                 IRaftConfig raftConfig,
                 IMixConfig mixConfig,
                 ILinkCustom linkCustom,
-                IDeviceJpaRepository deviceRepository,
                 IRaftDao raftDao,
                 IQttRouter qttRouter,
-                IMessageService messageService) throws IOException
+                IMessageService messageService,
+                TimeWheel timeWheel) throws IOException
     {
-        final TimeWheel _TimeWheel = new TimeWheel();
         List<ITriple> hosts = deviceConfig.getListeners()
                                           .stream()
                                           .map(listener ->
@@ -99,9 +97,9 @@ public class NodeService
                                               return new Triple<>(listener.getHost(), listener.getPort(), sort);
                                           })
                                           .collect(Collectors.toList());
-        _DeviceNode = new DeviceNode(hosts, deviceConfig.isMultiBind(), ioConfig, raftConfig, mixConfig, _TimeWheel);
+        _DeviceNode = new DeviceNode(hosts, deviceConfig.isMultiBind(), ioConfig, raftConfig, mixConfig, timeWheel);
         _LinkCustom = linkCustom;
-        _RaftNode = new RaftNode<>(_TimeWheel, raftConfig, raftDao, _DeviceNode);
+        _RaftNode = new RaftNode<>(timeWheel, raftConfig, raftDao, _DeviceNode);
         _RaftCustom = new RaftCustom<>(_RaftNode);
         _LogicHandler = new LogicHandler<>(_DeviceNode, qttRouter, _RaftNode, messageService);
     }
@@ -126,4 +124,5 @@ public class NodeService
     {
         return _RaftNode;
     }
+
 }

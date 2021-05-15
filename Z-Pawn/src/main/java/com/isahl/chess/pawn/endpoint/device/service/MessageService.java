@@ -23,19 +23,30 @@
 
 package com.isahl.chess.pawn.endpoint.device.service;
 
+import com.isahl.chess.bishop.io.IRouter;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageBody;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageEntity;
 import com.isahl.chess.pawn.endpoint.device.jpa.repository.IMessageJpaRepository;
 import com.isahl.chess.pawn.endpoint.device.spi.IMessageService;
 import com.isahl.chess.pawn.endpoint.device.spi.plugin.IMessagePlugin;
+import com.isahl.chess.queen.io.core.inf.ICommand;
+import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import javax.annotation.PostConstruct;
+import javax.cache.CacheManager;
+import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
+import java.util.Random;
 import java.util.stream.Collectors;
+
+import static java.time.temporal.ChronoUnit.MINUTES;
 
 /**
  * @author william.d.zk
@@ -50,13 +61,32 @@ public class MessageService
 
     private final IMessageJpaRepository _MessageRepository;
     private final List<IMessagePlugin>  _MessagePlugins;
+    private final CacheManager          _CacheManager;
+    private final Random                _Random = new Random();
 
     @Autowired
     public MessageService(IMessageJpaRepository jpaRepository,
+                          CacheManager cacheManager,
                           List<IMessagePlugin> messagePlugins)
     {
         _MessageRepository = jpaRepository;
         _MessagePlugins = messagePlugins;
+        _CacheManager = cacheManager;
+    }
+
+    @PostConstruct
+    void init() throws ClassNotFoundException, InstantiationException, IllegalAccessException
+    {
+        EhcacheConfig.createCache(_CacheManager,
+                                  "message_cache",
+                                  String.class,
+                                  MessageEntity.class,
+                                  Duration.of(2, MINUTES));
+        EhcacheConfig.createCache(_CacheManager,
+                                  "message_cache_msg_id",
+                                  String.class,
+                                  MessageEntity.class,
+                                  Duration.of(2, MINUTES));
     }
 
     @Override
@@ -69,7 +99,6 @@ public class MessageService
                           .collect(Collectors.toList());
     }
 
-    @Override
     public List<MessageEntity> findAfterId(long id)
     {
         return _MessageRepository.findAll((Specification<MessageEntity>) (root,
@@ -87,15 +116,41 @@ public class MessageService
     }
 
     @Override
-    public MessageEntity find1Msg(long src, long dest, long msgId, LocalDateTime time)
+    public Optional<MessageEntity> find1Msg(Specification<MessageEntity> specification)
     {
-        return _MessageRepository.findByOriginAndDestinationAndMsgIdAndCreatedAtAfter(src, dest, msgId, time);
+        return _MessageRepository.findOne(specification);
+    }
+
+    public void ackLv1(long peer, ICommand stateMessage, long session, IRouter router)
+    {
+        if (router.ack(stateMessage, session)) {
+
+        }
+    }
+
+    public void ackL2(long peer, ICommand stateMessage, long session, IRouter router)
+    {
+        if (router.ack(stateMessage, session)) {
+
+        }
     }
 
     @Override
-    public MessageEntity find1Msg(long msgUid)
+    public long generateMsgId(long origin, long destination)
     {
-        return _MessageRepository.getOne(msgUid);
+        return getNew(String.format("%x->%x", origin, destination));
+    }
+
+    @Cacheable(key = "#odKey", value = "message_cache_msg_id", unless = "#odKey == null")
+    public long getLast(String odKey)
+    {
+        return _Random.nextInt() & 0xFFFF;
+    }
+
+    @CachePut(key = "#odKey", value = "message_cache_msg_id", unless = "#odKey == null")
+    public long getNew(String odKey)
+    {
+        return (getLast(odKey) + 1) & 0xFFFF;
     }
 
 }

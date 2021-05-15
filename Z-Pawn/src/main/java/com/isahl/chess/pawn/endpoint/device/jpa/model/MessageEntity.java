@@ -23,14 +23,9 @@
 
 package com.isahl.chess.pawn.endpoint.device.jpa.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.isahl.chess.king.base.schedule.Status;
 import com.isahl.chess.queen.db.inf.IStorage;
 import com.isahl.chess.rook.storage.jpa.model.AuditModel;
@@ -41,13 +36,14 @@ import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.io.Serial;
-import java.time.LocalDateTime;
 
 /**
  * @author william.d.zk
@@ -87,7 +83,8 @@ public class MessageEntity
     private String owner;
     @Column(updatable = false, nullable = false)
     private long   msgId;
-    @Column(nullable = false)
+    @Column(nullable = false, length = 10)
+    @Enumerated(EnumType.STRING)
     private Status status;
     @Column(length = 511, nullable = false, updatable = false)
     private String topic;
@@ -95,9 +92,6 @@ public class MessageEntity
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb")
     private MessageBody body;
-
-    @Column(name = "invalid_at", nullable = false, updatable = false)
-    private LocalDateTime invalidAt;
 
     @JsonIgnore
     @Transient
@@ -221,20 +215,6 @@ public class MessageEntity
     public void setStatus(Status status)
     {
         this.status = status;
-    }
-
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    public LocalDateTime getInvalidAt()
-    {
-        return invalidAt;
-    }
-
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
-    public void setInvalidAt(LocalDateTime invalidAt)
-    {
-        this.invalidAt = invalidAt;
     }
 
     private final static int MESSAGE_ENTITY_SERIAL = AUDIT_MODEL_SERIAL + 2;
