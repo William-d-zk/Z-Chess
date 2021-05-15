@@ -68,14 +68,4 @@ public interface IQttRouter
      */
     void unsubscribe(String topic, long session);
 
-    /**
-     * 设置遗嘱
-     * 
-     * @param topic
-     * @param level
-     * @param session
-     * @param retained
-     */
-    void will(String topic, IQoS.Level level, long session, boolean retained, byte[] payload);
-
 }

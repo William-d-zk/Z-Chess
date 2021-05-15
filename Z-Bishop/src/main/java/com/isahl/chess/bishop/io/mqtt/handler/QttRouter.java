@@ -155,13 +155,8 @@ public class QttRouter
             _Logger.debug("topic %s,pattern %s", topic, pattern);
             Subscribe subscribe = _Topic2SessionsMap.computeIfAbsent(pattern,
                                                                      p -> new Subscribe(new ConcurrentSkipListMap<>()));
-            if (subscribe.sessionMap.computeIfPresent(session,
-                                                      (key, old) -> old.getValue() > level.getValue() ? old
-                                                                                                      : level) == null)
-            {
-                subscribe.sessionMap.put(session, level);
-            }
-            return subscribe.sessionMap.get(session);
+            return subscribe.sessionMap.computeIfPresent(session,
+                                                         (key, old) -> old.getValue() > level.getValue() ? old: level);
         }
         catch (IllegalArgumentException e) {
             e.printStackTrace();
@@ -207,12 +202,6 @@ public class QttRouter
                 subscribe.remove(session);
             }
         });
-    }
-
-    @Override
-    public void will(String topic, IQoS.Level level, long session, boolean retained, byte[] payload)
-    {
-
     }
 
     @Override

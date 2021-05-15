@@ -23,14 +23,6 @@
 
 package com.isahl.chess.pawn.endpoint.device.service;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Component;
-
 import com.isahl.chess.bishop.io.mqtt.QttContext;
 import com.isahl.chess.bishop.io.mqtt.control.X111_QttConnect;
 import com.isahl.chess.bishop.io.mqtt.control.X112_QttConnack;
@@ -63,6 +55,13 @@ import com.isahl.chess.queen.io.core.inf.IQoS;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionManager;
 import com.isahl.chess.queen.io.core.inf.ITraceable;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 @Component
 public class LinkCustom
@@ -208,15 +207,12 @@ public class LinkCustom
                     else {
                         _DeviceService.load(origin, _QttRouter);
                     }
-                    if (x111.hasWill()) {
-                        _DeviceService.will(x111.getWillTopic(),
-                                            x111.getWillQoS(),
-                                            origin,
-                                            x111.isWillRetain(),
-                                            x111.getPayload(),
-                                            _QttRouter);
-                    }
-                    _DeviceService.login(origin);
+                    _DeviceService.onLogin(origin,
+                                           x111.hasWill(),
+                                           x111.getWillTopic(),
+                                           x111.getWillQoS(),
+                                           x111.isWillRetain(),
+                                           x111.getPayload());
                     if (session != null) {
                         QttContext qttContext = session.getContext(QttContext.class);
                         X112_QttConnack x112 = new X112_QttConnack();
