@@ -37,6 +37,7 @@ import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceSubscribe;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageEntity;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.ShadowEntity;
+import com.isahl.chess.pawn.endpoint.device.jpa.model.Subscribe;
 import com.isahl.chess.pawn.endpoint.device.jpa.repository.IDeviceJpaRepository;
 import com.isahl.chess.pawn.endpoint.device.jpa.repository.IMessageJpaRepository;
 import com.isahl.chess.pawn.endpoint.device.jpa.repository.IShadowJpaRepository;
@@ -310,7 +311,12 @@ public class DeviceService
                                    .toList();
     }
 
-    public void login(long deviceId)
+    public void onLogin(long deviceId,
+                        boolean hasWill,
+                        String willTopic,
+                        IQoS.Level willQoS,
+                        boolean willRetain,
+                        byte[] payload)
     {
         DeviceEntity device = findDeviceById(deviceId);
         if (device != null) {
@@ -318,17 +324,13 @@ public class DeviceService
                                                                  (id) -> new ShadowDevice(deviceId,
                                                                                           device.getSubscribe(),
                                                                                           new LinkedList<>(),
-                                                                                          null,
-                                                                                          null));
-
+                                                                                          hasWill ? new Subscribe(willQoS,
+                                                                                                                  willTopic)
+                                                                                                  : null,
+                                                                                          hasWill ? payload: null,
+                                                                                          !hasWill && willRetain));
             _BatchHandleLogin.add(shadow.convert());
         }
-    }
-
-    public void will(String topic, IQoS.Level qos, long deviceId, boolean retain, byte[] payload, IQttRouter qttRouter)
-    {
-        qttRouter.will(topic, qos, deviceId, retain, payload);
-        //TODO 更新shadow管理器
     }
 
     private void batchHandleLogin(ShadowBatch batch)

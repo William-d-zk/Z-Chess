@@ -360,10 +360,12 @@ public class X111_QttConnect
         if (mFlagWill) {
             int willTopicLength = IoUtil.readUnsignedShort(data, pos);
             pos += 2;
+            if (willTopicLength < 1) throw new IllegalArgumentException("will-topic must not be blank");
             mWillTopic = new String(data, pos, willTopicLength, StandardCharsets.UTF_8);
             pos += willTopicLength;
             int willMessageLength = IoUtil.readUnsignedShort(data, pos);
             pos += 2;
+            if (willMessageLength < 1) throw new IllegalArgumentException("will-payload must not be blank");
             mWillMessage = new byte[willMessageLength];
             pos = IoUtil.read(data, pos, mWillMessage, 0, willMessageLength);
         }

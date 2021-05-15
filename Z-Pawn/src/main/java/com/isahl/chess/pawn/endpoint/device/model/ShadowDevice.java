@@ -23,10 +23,6 @@
 
 package com.isahl.chess.pawn.endpoint.device.model;
 
-import java.io.Serial;
-import java.io.Serializable;
-import java.util.Queue;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -36,6 +32,10 @@ import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceSubscribe;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageBody;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.ShadowEntity;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.Subscribe;
+
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.Queue;
 
 /**
  * @author william.d.zk
@@ -55,19 +55,22 @@ public class ShadowDevice
     private final Queue<MessageBody> _MsgQueue;
     private final Subscribe          _WillSubscribe;
     private final byte[]             _WillPayload;
+    private final boolean            _WillRetain;
 
     @JsonCreator
     public ShadowDevice(@JsonProperty("device_id") long deviceId,
                         @JsonProperty("subscribes") DeviceSubscribe subscribes,
                         @JsonProperty("msg_queue") Queue<MessageBody> msgQueue,
                         @JsonProperty("will_subscribe") Subscribe willSubscribe,
-                        @JsonProperty("will_payload") byte[] willPayload)
+                        @JsonProperty("will_payload") byte[] willPayload,
+                        @JsonProperty("will_retain") boolean willRetain)
     {
         _DeviceId = deviceId;
         _Subscribes = subscribes;
         _MsgQueue = msgQueue;
         _WillSubscribe = willSubscribe;
         _WillPayload = willPayload;
+        _WillRetain = willRetain;
     }
 
     @JsonIgnore
