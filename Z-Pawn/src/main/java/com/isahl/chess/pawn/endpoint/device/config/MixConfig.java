@@ -23,7 +23,9 @@
 
 package com.isahl.chess.pawn.endpoint.device.config;
 
+import com.isahl.chess.king.base.schedule.TimeWheel;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
@@ -72,10 +74,11 @@ public class MixConfig
         }
     }
 
-    private List<Server> listeners;
-    private Duration     passwordInvalidDays;
-    private String       passwordRandomSeed;
-    private boolean      multiBind;
+    private List<Server>    listeners;
+    private Duration        passwordInvalidDays;
+    private String          passwordRandomSeed;
+    private boolean         multiBind;
+    private final TimeWheel _TimeWheel = new TimeWheel();
 
     public List<Server> getListeners()
     {
@@ -115,5 +118,11 @@ public class MixConfig
     public void setMultiBind(boolean multiBind)
     {
         this.multiBind = multiBind;
+    }
+
+    @Bean
+    public TimeWheel getTimeWheel()
+    {
+        return _TimeWheel;
     }
 }

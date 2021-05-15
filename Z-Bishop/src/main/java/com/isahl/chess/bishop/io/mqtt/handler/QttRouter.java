@@ -231,19 +231,19 @@ public class QttRouter
     }
 
     @Override
-    public boolean ack(ICommand stateMessage, long sessionIndex)
+    public boolean ack(ICommand stateMessage, long session)
     {
         int idleMax = stateMessage.getSession()
                                   .getReadTimeOutSeconds();
         long msgId = stateMessage.getMsgId();
         boolean[] acked = {true,
                            true};
-        if (acked[0] = _QttIdentifierMap.computeIfPresent(sessionIndex, (key, old) ->
+        if (acked[0] = _QttIdentifierMap.computeIfPresent(session, (key, old) ->
         {
             acked[1] = old.remove(msgId) == null;
             return old.isEmpty() ? old: null;
         }) != null) {
-            _SessionIdleQueue.offer(new Pair<>(sessionIndex, Instant.now()));
+            _SessionIdleQueue.offer(new Pair<>(session, Instant.now()));
         }
         for (Iterator<IPair> it = _SessionIdleQueue.iterator(); it.hasNext();) {
             IPair pair = it.next();

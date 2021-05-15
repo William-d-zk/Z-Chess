@@ -39,7 +39,6 @@ import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageEntity;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.ShadowEntity;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.Subscribe;
 import com.isahl.chess.pawn.endpoint.device.jpa.repository.IDeviceJpaRepository;
-import com.isahl.chess.pawn.endpoint.device.jpa.repository.IMessageJpaRepository;
 import com.isahl.chess.pawn.endpoint.device.jpa.repository.IShadowJpaRepository;
 import com.isahl.chess.pawn.endpoint.device.model.ShadowDevice;
 import com.isahl.chess.pawn.endpoint.device.spi.IDeviceService;
@@ -86,7 +85,6 @@ public class DeviceService
 {
     private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
-    private final IMessageJpaRepository   _MessageJpaRepository;
     private final IDeviceJpaRepository    _DeviceJpaRepository;
     private final IShadowJpaRepository    _ShadowJpaRepository;
     private final CacheManager            _CacheManager;
@@ -107,14 +105,12 @@ public class DeviceService
     }
 
     @Autowired
-    public DeviceService(IMessageJpaRepository messageJpaRepository,
-                         IDeviceJpaRepository deviceRepository,
+    public DeviceService(IDeviceJpaRepository deviceRepository,
                          IShadowJpaRepository shadowJpaRepository,
                          CacheManager cacheManager,
                          MixConfig mixConfig,
                          TimeWheel timeWheel)
     {
-        _MessageJpaRepository = messageJpaRepository;
         _DeviceJpaRepository = deviceRepository;
         _ShadowJpaRepository = shadowJpaRepository;
         _CacheManager = cacheManager;

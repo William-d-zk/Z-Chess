@@ -56,6 +56,7 @@ public interface IRouter
      *            message with state
      * @param session
      *            session index
+     * @return 是否对消息完成了ack动作
      */
     boolean ack(ICommand stateMessage, long session);
 

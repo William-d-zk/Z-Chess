@@ -74,8 +74,8 @@ public class MixOpenService
     {
         return _DeviceService.findDevices((Specification<DeviceEntity>) (root, criteriaQuery, criteriaBuilder) ->
         {
+            criteriaBuilder.greaterThan(root.get("create_at"), dateTime);
             if (columns != null && columns.length > 0) {
-                criteriaBuilder.greaterThan(root.get("create_at"), dateTime);
                 Predicate.BooleanOperator last = Predicate.BooleanOperator.AND;
                 List<Predicate> predicates = new LinkedList<>();
                 for (Triple<String,
