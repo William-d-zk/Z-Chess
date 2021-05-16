@@ -32,13 +32,7 @@ import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.OneToOne;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import java.io.Serial;
 
 /**
@@ -63,8 +57,7 @@ public class ShadowEntity
     @Column(name = "shadow_id")
     @JsonIgnore
     private long      shadowId;
-    @OneToOne(targetEntity = DeviceEntity.class, cascade = CascadeType.ALL)
-    private long      device;
+    private long      deviceId;
     @Type(type = "jsonb")
     @Column(name = "will_subscribe", columnDefinition = "jsonb")
     private Subscribe willSubscribe;
@@ -86,12 +79,12 @@ public class ShadowEntity
 
     public long getDeviceId()
     {
-        return device;
+        return deviceId;
     }
 
     public void setDeviceId(long deviceId)
     {
-        this.device = deviceId;
+        this.deviceId = deviceId;
     }
 
     public Subscribe getWillSubscribe()
@@ -120,7 +113,13 @@ public class ShadowEntity
     @Override
     public long primaryKey()
     {
-        return device;
+        return shadowId;
+    }
+
+    @Override
+    public long foreignKey()
+    {
+        return deviceId;
     }
 
     @Override

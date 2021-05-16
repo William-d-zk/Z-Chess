@@ -49,7 +49,7 @@
         </encoder>
     </appender>
 
-    <root level="INFO">
+    <root level="DEBUG">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="Z-CHESS"/>
     </root>
@@ -57,10 +57,10 @@
     <logger name="base.king" level="INFO">
         <appender-ref ref="Z-CHESS"/>
     </logger>
-    <logger name="io.queen" level="INFO">
+    <logger name="io.queen" level="DEBUG">
         <appender-ref ref="Z-CHESS"/>
     </logger>
-    <logger name="protocol.bishop" level="INFO">
+    <logger name="protocol.bishop" level="DEBUG">
         <appender-ref ref="Z-CHESS"/>
     </logger>
     <logger name="cluster.knight" level="DEBUG">
@@ -69,7 +69,7 @@
     <logger name="storage.rook" level="DEBUG">
         <appender-ref ref="Z-CHESS"/>
     </logger>
-    <logger name="endpoint.pawn" level="INFO">
+    <logger name="endpoint.pawn" level="DEBUG">
         <appender-ref ref="Z-CHESS"/>
     </logger>
     <logger name="security.referee" level="DEBUG">

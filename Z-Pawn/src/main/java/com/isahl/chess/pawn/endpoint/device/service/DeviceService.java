@@ -58,11 +58,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -184,7 +180,7 @@ public class DeviceService
                                    .orElse(null);
     }
 
-    @Cacheable(value = "device_token_cache", key = "#token")
+    @Cacheable(value = "device_token_cache", key = "#token", unless = "#result == null")
     public DeviceEntity findDeviceByToken(String token)
     {
         return _DeviceJpaRepository.findByToken(token);
@@ -325,7 +321,8 @@ public class DeviceService
                                                                                                                   willTopic)
                                                                                                   : null,
                                                                                           hasWill ? payload: null,
-                                                                                          !hasWill && willRetain));
+                                                                                          !hasWill && willRetain,
+                                                                                          device.getUsername()));
             _BatchHandleLogin.add(shadow.convert());
         }
     }
@@ -339,12 +336,30 @@ public class DeviceService
     private void batchHandleLogin(ShadowBatch batch)
     {
         if (batch.isEmpty()) { return; }
-        batch.forEach(_ShadowJpaRepository::save);
+        try {
+            for (Iterator<ShadowEntity> it = batch.iterator(); it.hasNext();) {
+                ShadowEntity shadow = it.next();
+                it.remove();
+                _ShadowJpaRepository.save(shadow);
+            }
+        }
+        catch (Exception e) {
+            _Logger.warning(e);
+        }
     }
 
     private void batchHandleIdle(ShadowBatch batch)
     {
         if (batch.isEmpty()) { return; }
-        batch.forEach(entity -> _ShadowJpaRepository.deleteByDevice(entity.getDeviceId()));
+        try {
+            for (Iterator<ShadowEntity> it = batch.iterator(); it.hasNext();) {
+                ShadowEntity shadow = it.next();
+                it.remove();
+                _ShadowJpaRepository.deleteByDevice(shadow.getDeviceId());
+            }
+        }
+        catch (Exception e) {
+            _Logger.warning(e);
+        }
     }
 }

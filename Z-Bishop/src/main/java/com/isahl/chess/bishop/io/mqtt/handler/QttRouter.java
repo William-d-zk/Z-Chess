@@ -210,10 +210,10 @@ public class QttRouter
     }
 
     @Override
-    public void register(ICommand stateMessage, long sessionIndex)
+    public void register(ICommand stateMessage, long session)
     {
         long msgId = stateMessage.getMsgId();
-        if (_QttIdentifierMap.computeIfPresent(sessionIndex, (key, _LocalIdMessageMap) ->
+        if (_QttIdentifierMap.computeIfPresent(session, (key, _LocalIdMessageMap) ->
         {
             IControl old = _LocalIdMessageMap.put(msgId, stateMessage);
             if (old == null) {
@@ -221,10 +221,11 @@ public class QttRouter
             }
             return _LocalIdMessageMap;
         }) == null) {
+            //previous == null
             final Map<Long,
                       IControl> _LocalIdMessageMap = new HashMap<>(7);
             _LocalIdMessageMap.put(msgId, stateMessage);
-            _QttIdentifierMap.put(sessionIndex, _LocalIdMessageMap);
+            _QttIdentifierMap.put(session, _LocalIdMessageMap);
             _Logger.debug("first recv: %s", stateMessage);
         }
     }
@@ -239,9 +240,11 @@ public class QttRouter
                            true};
         if (acked[0] = _QttIdentifierMap.computeIfPresent(session, (key, old) ->
         {
-            acked[1] = old.remove(msgId) == null;
+            _Logger.debug("ack %d:%x", msgId, session);
+            acked[1] = old.remove(msgId) != null;
             return old.isEmpty() ? old: null;
         }) != null) {
+            _Logger.debug("idle: %x", session);
             _SessionIdleQueue.offer(new Pair<>(session, Instant.now()));
         }
         for (Iterator<IPair> it = _SessionIdleQueue.iterator(); it.hasNext();) {
