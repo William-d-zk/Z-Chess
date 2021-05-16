@@ -101,8 +101,12 @@ public class DeviceController
     public ZResponse<List<DeviceEntity>> listDevices(@RequestParam(name = "create_at",
                                                                    required = false) LocalDateTime createAt,
                                                      @RequestParam(name = "username", required = false) String username,
-                                                     @RequestParam(name = "page", required = false) Integer page,
-                                                     @RequestParam(name = "size", required = false) Integer size)
+                                                     @RequestParam(name = "page",
+                                                                   required = false,
+                                                                   defaultValue = "0") Integer page,
+                                                     @RequestParam(name = "size",
+                                                                   required = false,
+                                                                   defaultValue = "20") Integer size)
     {
         size = size < 1 ? 1: size > 50 ? 50: size;
         page = page < 0 ? 0: page;
@@ -111,15 +115,33 @@ public class DeviceController
                                                                        new Triple<>("username", username, AND)));
     }
 
-    @GetMapping("online")
-    public @ResponseBody ZResponse<?> listOnlineDevices(@RequestParam(name = "username") String username,
-                                                        @RequestParam("page") Integer page,
-                                                        @RequestParam("size") Integer size)
+    @GetMapping("online/all")
+    public @ResponseBody ZResponse<?> listOnlineDevices(@RequestParam(value = "page",
+                                                                      defaultValue = "0",
+                                                                      required = false) Integer page,
+                                                        @RequestParam(value = "size",
+                                                                      defaultValue = "20",
+                                                                      required = false) Integer size)
     {
-        if (isBlank(username)) return null;
         size = size < 1 ? 10: size > 50 ? 50: size;
         page = page < 0 ? 0: page;
         return ZResponse.success(_MixOpenService.getOnlineDevice(PageRequest.of(page, size)));
     }
 
+    @GetMapping("online/group-by")
+    public @ResponseBody ZResponse<?> filterOnlineDevicesByUsername(@RequestParam("username") String username,
+                                                                    @RequestParam(value = "page",
+                                                                                  required = false,
+                                                                                  defaultValue = "0") Integer page,
+                                                                    @RequestParam(value = "size",
+                                                                                  defaultValue = "20",
+                                                                                  required = false) Integer size)
+    {
+        size = size < 1 ? 10: size > 50 ? 50: size;
+        page = page < 0 ? 0: page;
+        if (isBlank(username)) {
+            return ZResponse.success(_MixOpenService.getOnlineDevice(PageRequest.of(page, size)));
+        }
+        return ZResponse.success(_MixOpenService.getOnlineDevicesGroupByUsername(username, PageRequest.of(page, size)));
+    }
 }

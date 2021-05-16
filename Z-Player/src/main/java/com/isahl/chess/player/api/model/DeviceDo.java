@@ -23,15 +23,13 @@
 
 package com.isahl.chess.player.api.model;
 
-import java.time.Instant;
-
-import org.springframework.lang.NonNull;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceProfile;
+import org.springframework.lang.NonNull;
 
 /**
  * @author william.d.zk
@@ -42,13 +40,11 @@ import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceProfile;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class DeviceDo
 {
-    private long          mId;
     private String        mSn;
     private String        mUsername;
     private String        mPassword;
     private String        mToken;
     private DeviceProfile mProfile;
-    private Instant       mInvalidAt;
 
     public String getSn()
     {
@@ -86,16 +82,6 @@ public class DeviceDo
         return getToken();
     }
 
-    public Instant getInvalidAt()
-    {
-        return mInvalidAt;
-    }
-
-    public void setInvalidAt(Instant invalidAt)
-    {
-        this.mInvalidAt = invalidAt;
-    }
-
     public String getUsername()
     {
         return mUsername;
@@ -106,16 +92,6 @@ public class DeviceDo
         this.mUsername = username;
     }
 
-    public long getId()
-    {
-        return mId;
-    }
-
-    public void setId(long id)
-    {
-        this.mId = id;
-    }
-
     public DeviceProfile getProfile()
     {
         return mProfile;
@@ -124,5 +100,16 @@ public class DeviceDo
     public void setProfile(DeviceProfile profile)
     {
         this.mProfile = profile;
+    }
+
+    public static DeviceDo of(DeviceEntity entity)
+    {
+        DeviceDo deviceDo = new DeviceDo();
+        deviceDo.setUsername(entity.getUsername());
+        deviceDo.setPassword(entity.getPassword());
+        deviceDo.setSn(entity.getSn());
+        deviceDo.setToken(entity.getToken());
+        deviceDo.setProfile(entity.getProfile());
+        return deviceDo;
     }
 }

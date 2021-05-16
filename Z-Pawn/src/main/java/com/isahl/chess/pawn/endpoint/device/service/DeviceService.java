@@ -300,10 +300,10 @@ public class DeviceService
     }
 
     @Override
-    public List<ShadowEntity> getOnlineDevices(Specification<ShadowEntity> condition,
-                                               Pageable pageable) throws ZException
+    public final List<ShadowEntity> getOnlineDevices(Specification<ShadowEntity> specification,
+                                                     Pageable pageable) throws ZException
     {
-        return _ShadowJpaRepository.findAll(condition, pageable)
+        return _ShadowJpaRepository.findAll(specification, pageable)
                                    .toList();
     }
 
@@ -327,6 +327,12 @@ public class DeviceService
                                                                                           !hasWill && willRetain));
             _BatchHandleLogin.add(shadow.convert());
         }
+    }
+
+    @Override
+    public List<DeviceEntity> findDevicesIn(List<Long> deviceIdList)
+    {
+        return _DeviceJpaRepository.findAllById(deviceIdList);
     }
 
     private void batchHandleLogin(ShadowBatch batch)
