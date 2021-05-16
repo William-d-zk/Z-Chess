@@ -212,7 +212,7 @@ public class LinkCustom
                                            x111.getWillTopic(),
                                            x111.getWillQoS(),
                                            x111.isWillRetain(),
-                                           x111.getPayload());
+                                           x111.getWillMessage());
                     if (session != null) {
                         QttContext qttContext = session.getContext(QttContext.class);
                         X112_QttConnack x112 = new X112_QttConnack();
