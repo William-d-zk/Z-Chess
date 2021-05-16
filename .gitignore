@@ -1,6 +1,7 @@
 .classpath
 .gradle
 .idea
+.jpb
 build
 target
 gradle
@@ -13,3 +14,4 @@ mvn_deploy.sh
 gradlew
 gradlew.bat
 .vscode
+.DS_Store
