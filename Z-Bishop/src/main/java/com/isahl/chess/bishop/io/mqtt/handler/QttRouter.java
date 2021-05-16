@@ -33,15 +33,7 @@ import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.IQoS;
 
 import java.time.Instant;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Queue;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -155,8 +147,15 @@ public class QttRouter
             _Logger.debug("topic %s,pattern %s", topic, pattern);
             Subscribe subscribe = _Topic2SessionsMap.computeIfAbsent(pattern,
                                                                      p -> new Subscribe(new ConcurrentSkipListMap<>()));
-            return subscribe.sessionMap.computeIfPresent(session,
-                                                         (key, old) -> old.getValue() > level.getValue() ? old: level);
+            IQoS.Level lv = subscribe.sessionMap.computeIfPresent(session,
+                                                                  (key,
+                                                                   old) -> old.getValue() > level.getValue() ? old
+                                                                                                             : level);
+            if (lv == null) {
+                subscribe.sessionMap.put(session, level);
+                return level;
+            }
+            return lv;
         }
         catch (IllegalArgumentException e) {
             e.printStackTrace();
