@@ -23,14 +23,12 @@
 
 package com.isahl.chess.pawn.endpoint.device.service;
 
-import com.isahl.chess.bishop.io.IRouter;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageBody;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageEntity;
 import com.isahl.chess.pawn.endpoint.device.jpa.repository.IMessageJpaRepository;
 import com.isahl.chess.pawn.endpoint.device.spi.IMessageService;
 import com.isahl.chess.pawn.endpoint.device.spi.plugin.IMessagePlugin;
-import com.isahl.chess.queen.io.core.inf.ICommand;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CachePut;
@@ -119,21 +117,8 @@ public class MessageService
     @Override
     public Optional<MessageEntity> find1Msg(Specification<MessageEntity> specification)
     {
+        //TODO 此处直接访问DB不是个好设计，中间应该有一层Batch-Async + Cache的中间层降低DB负载
         return _MessageRepository.findOne(specification);
-    }
-
-    public void ackLv1(long peer, ICommand stateMessage, long session, IRouter router)
-    {
-        if (router.ack(stateMessage, session)) {
-
-        }
-    }
-
-    public void ackL2(long peer, ICommand stateMessage, long session, IRouter router)
-    {
-        if (router.ack(stateMessage, session)) {
-
-        }
     }
 
     @Override

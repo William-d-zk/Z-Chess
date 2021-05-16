@@ -184,41 +184,45 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                 x116.setMsgId(x115.getMsgId());
                 return new IControl[]{x116};
             case X116_QttPubrel.COMMAND:
+                //x113 → server → x115 → client → x116 , 服务段收到 x116,需要注意
                 x116 = (X116_QttPubrel) content;
                 X117_QttPubcomp x117 = new X117_QttPubcomp();
                 x117.setMsgId(x116.getMsgId());
-                _QttRouter.ack(x116, session.getIndex());
-                Optional<MessageEntity> update = _MessageService.find1Msg((Specification<MessageEntity>) (root,
-                                                                                                          criteriaQuery,
-                                                                                                          criteriaBuilder) ->
-                {
-                    Predicate predicate = criteriaBuilder.and(criteriaBuilder.greaterThan(root.get("create_at"),
-                                                                                          LocalDateTime.now()
-                                                                                                       .minusSeconds(3)),
-                                                              criteriaBuilder.equal(root.get("origin"),
-                                                                                    session.getIndex()),
-                                                              criteriaBuilder.equal(root.get("destination"),
-                                                                                    _RaftNode.getPeerId()),
-                                                              criteriaBuilder.equal(root.get("msg_id"),
-                                                                                    x116.getMsgId()),
-                                                              criteriaBuilder.equal(root.get("owner"), OWNER_CLIENT),
-                                                              criteriaBuilder.notEqual(root.get("status"),
-                                                                                       Status.COMPLETED.getCode())
-
-                    );
-                    return criteriaQuery.where(predicate)
-                                        .getRestriction();
-                });
                 pushList = new LinkedList<>();
                 pushList.add(x117);
-                update.ifPresent(msg ->
-                {
-                    msg.setOwner(OWNER_SERVER);
-                    msg.setOperation(OP_MODIFY);
-                    msg.setStatus(Status.COMPLETED);
-                    msg = _MessageService.handleMessage(msg);
-                    brokerTopic(manager, msg, pushList);
-                });
+                if (_QttRouter.ack(x116, session.getIndex()) && !x116.isDuplicate()) {
+                    //仅在首次处理中进行数据库访问
+                    Optional<MessageEntity> update = _MessageService.find1Msg((Specification<MessageEntity>) (root,
+                                                                                                              criteriaQuery,
+                                                                                                              criteriaBuilder) ->
+                    {
+                        Predicate predicate = criteriaBuilder.and(criteriaBuilder.greaterThan(root.get("create_at"),
+                                                                                              LocalDateTime.now()
+                                                                                                           .minusSeconds(3)),
+                                                                  criteriaBuilder.equal(root.get("origin"),
+                                                                                        session.getIndex()),
+                                                                  criteriaBuilder.equal(root.get("destination"),
+                                                                                        _RaftNode.getPeerId()),
+                                                                  criteriaBuilder.equal(root.get("msg_id"),
+                                                                                        x116.getMsgId()),
+                                                                  criteriaBuilder.equal(root.get("owner"),
+                                                                                        OWNER_CLIENT),
+                                                                  criteriaBuilder.notEqual(root.get("status"),
+                                                                                           Status.COMPLETED.getCode())
+
+                        );
+                        return criteriaQuery.where(predicate)
+                                            .getRestriction();
+                    });
+                    update.ifPresent(msg ->
+                    {
+                        msg.setOwner(OWNER_SERVER);
+                        msg.setOperation(OP_MODIFY);
+                        msg.setStatus(Status.COMPLETED);
+                        msg = _MessageService.handleMessage(msg);
+                        brokerTopic(manager, msg, pushList);
+                    });
+                }
                 return pushList.toArray(new IControl[0]);
             case X117_QttPubcomp.COMMAND:
                 x117 = (X117_QttPubcomp) content;
