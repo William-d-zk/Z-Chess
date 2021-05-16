@@ -23,15 +23,12 @@
 
 package com.isahl.chess.bishop.io.ws.zchat.zhandler;
 
-import java.util.List;
-
 import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.queen.event.handler.mix.ILinkCustom;
-import com.isahl.chess.queen.io.core.inf.IControl;
-import com.isahl.chess.queen.io.core.inf.IProtocol;
-import com.isahl.chess.queen.io.core.inf.ISessionManager;
-import com.isahl.chess.queen.io.core.inf.ITraceable;
+import com.isahl.chess.queen.io.core.inf.*;
+
+import java.util.List;
 
 /**
  * @author william.d.zk
@@ -53,8 +50,15 @@ public class ZLinkMappingCustom
     @Override
     public List<ITriple> notify(ISessionManager manager, IControl request, long origin)
     {
-        return _Then != null ? _Then.notify(manager, request, origin)
-                             : null;
+        return _Then != null ? _Then.notify(manager, request, origin): null;
+    }
+
+    @Override
+    public void close(ISession session)
+    {
+        if (_Then != null) {
+            _Then.close(session);
+        }
     }
 
     @Override
