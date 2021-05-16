@@ -100,11 +100,11 @@ public class MessageService
 
     public List<MessageEntity> findAfterId(long id)
     {
-        return _MessageRepository.findAll((Specification<MessageEntity>) (root,
-                                                                          criteriaQuery,
-                                                                          criteriaBuilder) -> criteriaQuery.where(criteriaBuilder.greaterThan(root.get("id"),
-                                                                                                                                              id))
-                                                                                                           .getRestriction());
+        return _MessageRepository.findAll((Specification<MessageEntity>) (root, criteriaQuery, criteriaBuilder) ->
+        {
+            return criteriaQuery.where(criteriaBuilder.greaterThan(root.get("id"), id))
+                                .getRestriction();
+        });
     }
 
     @Override

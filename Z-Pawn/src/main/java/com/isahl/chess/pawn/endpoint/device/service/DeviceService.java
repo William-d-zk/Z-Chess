@@ -180,7 +180,8 @@ public class DeviceService
     @Cacheable(value = "device_id_cache", key = "#session", unless = "#session == 0 || #result == null")
     public DeviceEntity findDeviceById(long session)
     {
-        return _DeviceJpaRepository.getOne(session);
+        return _DeviceJpaRepository.findById(session)
+                                   .orElse(null);
     }
 
     @Cacheable(value = "device_token_cache", key = "#token")
