@@ -56,6 +56,7 @@ public class ShadowDevice
     private final Subscribe          _WillSubscribe;
     private final byte[]             _WillPayload;
     private final boolean            _WillRetain;
+    private final String             _Username;
 
     @JsonCreator
     public ShadowDevice(@JsonProperty("device_id") long deviceId,
@@ -63,7 +64,8 @@ public class ShadowDevice
                         @JsonProperty("msg_queue") Queue<MessageBody> msgQueue,
                         @JsonProperty("will_subscribe") Subscribe willSubscribe,
                         @JsonProperty("will_payload") byte[] willPayload,
-                        @JsonProperty("will_retain") boolean willRetain)
+                        @JsonProperty("will_retain") boolean willRetain,
+                        @JsonProperty("username") String username)
     {
         _DeviceId = deviceId;
         _Subscribes = subscribes;
@@ -71,6 +73,7 @@ public class ShadowDevice
         _WillSubscribe = willSubscribe;
         _WillPayload = willPayload;
         _WillRetain = willRetain;
+        _Username = username;
     }
 
     @JsonIgnore
@@ -99,9 +102,15 @@ public class ShadowDevice
         return _WillPayload;
     }
 
+    public boolean isWillRetain()
+    {
+        return _WillRetain;
+    }
+
     public ShadowEntity convert()
     {
         ShadowEntity entity = new ShadowEntity();
+        entity.setUsername(_Username);
         entity.setDeviceId(_DeviceId);
         entity.setWillPayload(_WillPayload);
         entity.setWillSubscribe(_WillSubscribe);

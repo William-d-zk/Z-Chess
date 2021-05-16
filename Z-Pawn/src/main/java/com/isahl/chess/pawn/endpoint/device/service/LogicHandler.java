@@ -196,19 +196,19 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                                                                                                               criteriaQuery,
                                                                                                               criteriaBuilder) ->
                     {
-                        Predicate predicate = criteriaBuilder.and(criteriaBuilder.greaterThan(root.get("create_at"),
+                        Predicate predicate = criteriaBuilder.and(criteriaBuilder.greaterThan(root.get("createdAt"),
                                                                                               LocalDateTime.now()
                                                                                                            .minusSeconds(3)),
                                                                   criteriaBuilder.equal(root.get("origin"),
                                                                                         session.getIndex()),
                                                                   criteriaBuilder.equal(root.get("destination"),
                                                                                         _RaftNode.getPeerId()),
-                                                                  criteriaBuilder.equal(root.get("msg_id"),
+                                                                  criteriaBuilder.equal(root.get("msgId"),
                                                                                         x116.getMsgId()),
                                                                   criteriaBuilder.equal(root.get("owner"),
                                                                                         OWNER_CLIENT),
                                                                   criteriaBuilder.notEqual(root.get("status"),
-                                                                                           Status.COMPLETED.getCode())
+                                                                                           Status.COMPLETED)
 
                         );
                         return criteriaQuery.where(predicate)

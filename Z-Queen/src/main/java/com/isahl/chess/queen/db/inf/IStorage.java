@@ -22,10 +22,10 @@
  */
 package com.isahl.chess.queen.db.inf;
 
+import com.isahl.chess.queen.io.core.inf.IProtocol;
+
 import java.util.Objects;
 import java.util.stream.Stream;
-
-import com.isahl.chess.queen.io.core.inf.IProtocol;
 
 /**
  * @author William.d.zk
@@ -41,6 +41,11 @@ public interface IStorage
     }
 
     long primaryKey();
+
+    default long foreignKey()
+    {
+        return 0;
+    }
 
     Operation operation();
 
@@ -86,8 +91,7 @@ public interface IStorage
 
         public Operation predicate(byte value)
         {
-            return _Value == value ? this
-                                   : null;
+            return _Value == value ? this: null;
         }
 
         public static Operation convertOperationValue(final byte value)
