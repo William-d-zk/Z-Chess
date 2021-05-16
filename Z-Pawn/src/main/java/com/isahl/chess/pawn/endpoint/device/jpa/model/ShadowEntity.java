@@ -71,6 +71,8 @@ public class ShadowEntity
     @Column(name = "will_payload")
     @Type(type = "org.hibernate.type.BinaryType")
     private byte[]    willPayload;
+    @Column(length = 32)
+    private String    username;
 
     public long getShadowId()
     {
@@ -146,4 +148,13 @@ public class ShadowEntity
 
     private final static int SHADOW_ENTITY_SERIAL = AUDIT_MODEL_SERIAL + 3;
 
+    public String getUsername()
+    {
+        return username;
+    }
+
+    public void setUsername(String username)
+    {
+        this.username = username;
+    }
 }

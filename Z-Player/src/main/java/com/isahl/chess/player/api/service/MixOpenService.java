@@ -28,6 +28,7 @@ import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.ShadowEntity;
 import com.isahl.chess.pawn.endpoint.device.spi.IDeviceService;
+import com.isahl.chess.player.api.model.DeviceDo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -37,6 +38,9 @@ import javax.persistence.criteria.Predicate;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.isahl.chess.king.base.util.IoUtil.isBlank;
 
 /**
  * @author william.d.zk
@@ -105,9 +109,30 @@ public class MixOpenService
         }, pageable);
     }
 
-    public List<ShadowEntity> getOnlineDevice(Pageable pageable){
-//        _DeviceService.getOnlineDevices().
-        return null;
+    public List<DeviceDo> getOnlineDevice(Pageable pageable)
+    {
+        return shadows2DeviceDo(_DeviceService.getOnlineDevices(null, pageable));
+    }
+
+    private List<DeviceDo> shadows2DeviceDo(List<ShadowEntity> shadows)
+    {
+        if (shadows == null || shadows.isEmpty()) { return new LinkedList<>(); }
+        List<DeviceEntity> devices = _DeviceService.findDevicesIn(shadows.stream()
+                                                                         .map(ShadowEntity::getDeviceId)
+                                                                         .collect(Collectors.toList()));
+        return devices.stream()
+                      .map(DeviceDo::of)
+                      .collect(Collectors.toList());
+    }
+
+    public List<DeviceDo> getOnlineDevicesGroupByUsername(String username, Pageable pageable)
+    {
+        if (isBlank(username)) { return getOnlineDevice(pageable); }
+        return shadows2DeviceDo(_DeviceService.getOnlineDevices((Specification<ShadowEntity>) (r, q, builder) ->
+        {
+            return q.where(builder.equal(r.get("username"), username))
+                    .getRestriction();
+        }, pageable));
     }
 
 }

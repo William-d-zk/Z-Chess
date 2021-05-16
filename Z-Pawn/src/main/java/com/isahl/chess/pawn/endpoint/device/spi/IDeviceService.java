@@ -40,8 +40,10 @@ public interface IDeviceService
 
     List<DeviceEntity> findDevices(Specification<DeviceEntity> condition, Pageable pageable) throws ZException;
 
+    List<DeviceEntity> findDevicesIn(List<Long> deviceIdList);
+
     DeviceEntity getOneDevice(long id);
 
-    List<ShadowEntity> getOnlineDevices(Specification<ShadowEntity> condition, Pageable pageable) throws ZException;
+    List<ShadowEntity> getOnlineDevices(Specification<ShadowEntity> specification, Pageable pageable) throws ZException;
 
 }
