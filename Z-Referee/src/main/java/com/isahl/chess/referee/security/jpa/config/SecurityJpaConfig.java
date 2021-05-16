@@ -33,7 +33,7 @@ import com.isahl.chess.rook.storage.jpa.config.BaseJpaConfig;
  * @author william.d.zk
  * @date 2021/2/5
  */
-@Configuration
+@Configuration("security_jpa_config")
 @EnableJpaRepositories({"com.isahl.chess.referee.security.jpa.repository"})
 @EntityScan({"com.isahl.chess.referee.security.jpa.model"})
 public class SecurityJpaConfig

@@ -35,17 +35,10 @@ import com.isahl.chess.player.api.service.MixOpenService;
 import com.isahl.chess.queen.db.inf.IStorage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.List;
 
 import static com.isahl.chess.king.base.util.IoUtil.isBlank;
 import static javax.persistence.criteria.Predicate.BooleanOperator.AND;
@@ -67,7 +60,7 @@ public class DeviceController
     }
 
     @PostMapping("register")
-    public ZResponse<DeviceEntity> registerDevice(@RequestBody DeviceDo deviceDo)
+    public @ResponseBody ZResponse<?> registerDevice(@RequestBody DeviceDo deviceDo)
     {
         DeviceEntity deviceEntity = new DeviceEntity();
         deviceEntity.setSn(deviceDo.getSn());
@@ -79,8 +72,8 @@ public class DeviceController
     }
 
     @GetMapping("query")
-    public ZResponse<?> queryDevice(@RequestParam(required = false) String token,
-                                    @RequestParam(required = false) String sn)
+    public @ResponseBody ZResponse<?> queryDevice(@RequestParam(required = false) String token,
+                                                  @RequestParam(required = false) String sn)
     {
         if (!isBlank(token) || !isBlank(sn)) {
             DeviceEntity exist = _MixOpenService.findDevice(sn, token);
@@ -98,15 +91,15 @@ public class DeviceController
      * @return
      */
     @GetMapping("all")
-    public ZResponse<List<DeviceEntity>> listDevices(@RequestParam(name = "create_at",
-                                                                   required = false) LocalDateTime createAt,
-                                                     @RequestParam(name = "username", required = false) String username,
-                                                     @RequestParam(name = "page",
-                                                                   required = false,
-                                                                   defaultValue = "0") Integer page,
-                                                     @RequestParam(name = "size",
-                                                                   required = false,
-                                                                   defaultValue = "20") Integer size)
+    public @ResponseBody ZResponse<?> listDevices(@RequestParam(name = "create_at",
+                                                                required = false) LocalDateTime createAt,
+                                                  @RequestParam(name = "username", required = false) String username,
+                                                  @RequestParam(name = "page",
+                                                                defaultValue = "0",
+                                                                required = false) Integer page,
+                                                  @RequestParam(name = "size",
+                                                                defaultValue = "20",
+                                                                required = false) Integer size)
     {
         size = size < 1 ? 1: size > 50 ? 50: size;
         page = page < 0 ? 0: page;

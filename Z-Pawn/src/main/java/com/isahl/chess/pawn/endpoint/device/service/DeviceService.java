@@ -33,15 +33,12 @@ import com.isahl.chess.king.base.schedule.TimeWheel;
 import com.isahl.chess.king.base.util.CryptUtil;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.pawn.endpoint.device.config.MixConfig;
-import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
-import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceSubscribe;
-import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageEntity;
-import com.isahl.chess.pawn.endpoint.device.jpa.model.ShadowEntity;
-import com.isahl.chess.pawn.endpoint.device.jpa.model.Subscribe;
+import com.isahl.chess.pawn.endpoint.device.jpa.model.*;
 import com.isahl.chess.pawn.endpoint.device.jpa.repository.IDeviceJpaRepository;
 import com.isahl.chess.pawn.endpoint.device.jpa.repository.IShadowJpaRepository;
 import com.isahl.chess.pawn.endpoint.device.model.ShadowDevice;
 import com.isahl.chess.pawn.endpoint.device.spi.IDeviceService;
+import com.isahl.chess.pawn.endpoint.device.spi.ILinkService;
 import com.isahl.chess.queen.io.core.inf.IQoS;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,7 +74,8 @@ import static java.time.temporal.ChronoUnit.MINUTES;
 @Service
 public class DeviceService
         implements
-        IDeviceService
+        IDeviceService,
+        ILinkService
 {
     private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
@@ -133,7 +131,7 @@ public class DeviceService
                                                  this::batchHandleLogin,
                                                  PRIORITY_NORMAL));
         _TimeWheel.acquire(_BatchHandleIdle,
-                           new ScheduleHandler<>(Duration.ofSeconds(300),
+                           new ScheduleHandler<>(Duration.ofSeconds(20),
                                                  true,
                                                  this::batchHandleIdle,
                                                  PRIORITY_NORMAL));
@@ -167,6 +165,7 @@ public class DeviceService
         _BatchHandleIdle.add(entity);
     }
 
+    @Override
     public void load(long session, IQttRouter qttRouter)
     {
         DeviceEntity device = findDeviceById(session);
@@ -195,6 +194,7 @@ public class DeviceService
         return _DeviceJpaRepository.findByToken(token);
     }
 
+    @Override
     public void subscribe(Map<String,
                               IQoS.Level> subscribes,
                           long deviceId,
@@ -207,6 +207,7 @@ public class DeviceService
         deviceOptional.ifPresent(this::saveDevice);
     }
 
+    @Override
     public void unsubscribe(List<String> topics,
                             long deviceId,
                             Function<Optional<DeviceEntity>,

@@ -34,9 +34,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication(scanBasePackages = {"com.isahl.chess.knight.raft",
                                            "com.isahl.chess.rook.storage",
                                            "com.isahl.chess.pawn.endpoint",
-                                           "com.isahl.chess.arena.gateway",
+                                           "com.isahl.chess.referee.security",
                                            "com.isahl.chess.player.api",
-                                           "com.isahl.chess.referee.security"})
+                                           "com.isahl.chess.arena.gateway"})
 public class ApplicationArena
 {
     public static void main(String[] args)

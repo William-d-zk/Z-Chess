@@ -32,7 +32,7 @@ import com.isahl.chess.rook.storage.jpa.config.BaseJpaConfig;
 /**
  * @author william.d.zk
  */
-@EnableJpaRepositories({"com.isahl.chess.pawn.endpoint.device.jpa.repository"})
+@EnableJpaRepositories(basePackages = {"com.isahl.chess.pawn.endpoint.device.jpa.repository"})
 @EntityScan({"com.isahl.chess.pawn.endpoint.device.jpa.model"})
 @Configuration
 public class EndpointJpaConfig

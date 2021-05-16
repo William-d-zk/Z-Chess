@@ -34,7 +34,7 @@ import com.isahl.chess.rook.storage.jpa.config.BaseJpaConfig;
  */
 @EnableJpaRepositories({"com.isahl.chess.pawn.cluster.jpa.consensus.repository"})
 @EntityScan({"com.isahl.chess.pawn.cluster.jpa.consensus.model"})
-@Configuration
+@Configuration("cluster_jpa_config")
 public class ClusterJpaConfig
         extends
         BaseJpaConfig

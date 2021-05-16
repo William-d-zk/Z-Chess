@@ -31,7 +31,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @EnableJpaAuditing
 @EnableTransactionManagement
-@Configuration
+@Configuration("base_jpa_config")
 @ConditionalOnMissingBean(name = {"jpaAuditingHandler"})
 @PropertySource({"classpath:db.properties"})
 public class BaseJpaConfig

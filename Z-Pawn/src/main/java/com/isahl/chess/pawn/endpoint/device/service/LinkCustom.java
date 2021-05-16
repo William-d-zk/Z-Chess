@@ -24,13 +24,7 @@
 package com.isahl.chess.pawn.endpoint.device.service;
 
 import com.isahl.chess.bishop.io.mqtt.QttContext;
-import com.isahl.chess.bishop.io.mqtt.control.X111_QttConnect;
-import com.isahl.chess.bishop.io.mqtt.control.X112_QttConnack;
-import com.isahl.chess.bishop.io.mqtt.control.X118_QttSubscribe;
-import com.isahl.chess.bishop.io.mqtt.control.X119_QttSuback;
-import com.isahl.chess.bishop.io.mqtt.control.X11A_QttUnsubscribe;
-import com.isahl.chess.bishop.io.mqtt.control.X11B_QttUnsuback;
-import com.isahl.chess.bishop.io.mqtt.control.X11E_QttDisconnect;
+import com.isahl.chess.bishop.io.mqtt.control.*;
 import com.isahl.chess.bishop.io.mqtt.handler.IQttRouter;
 import com.isahl.chess.bishop.io.mqtt.handler.QttRouter;
 import com.isahl.chess.bishop.io.mqtt.v5.control.X11F_QttAuth;
@@ -48,13 +42,10 @@ import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.knight.cluster.model.ConsistentProtocol;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
+import com.isahl.chess.pawn.endpoint.device.spi.IDeviceService;
+import com.isahl.chess.pawn.endpoint.device.spi.ILinkService;
 import com.isahl.chess.queen.event.handler.mix.ILinkCustom;
-import com.isahl.chess.queen.io.core.inf.IControl;
-import com.isahl.chess.queen.io.core.inf.IProtocol;
-import com.isahl.chess.queen.io.core.inf.IQoS;
-import com.isahl.chess.queen.io.core.inf.ISession;
-import com.isahl.chess.queen.io.core.inf.ISessionManager;
-import com.isahl.chess.queen.io.core.inf.ITraceable;
+import com.isahl.chess.queen.io.core.inf.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
@@ -70,13 +61,16 @@ public class LinkCustom
 {
     private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
-    private final IQttRouter    _QttRouter = new QttRouter();
-    private final DeviceService _DeviceService;
+    private final IQttRouter     _QttRouter = new QttRouter();
+    private final IDeviceService _DeviceService;
+    private final ILinkService   _LinkService;
 
     @Autowired
-    public LinkCustom(DeviceService deviceService)
+    public LinkCustom(IDeviceService deviceService,
+                      ILinkService linkService)
     {
         _DeviceService = deviceService;
+        _LinkService = linkService;
     }
 
     /**
@@ -117,7 +111,7 @@ public class LinkCustom
                     }
                     long deviceId = ZUID.INVALID_PEER_ID;
                     if (x112.isOk()) {
-                        DeviceEntity device = _DeviceService.findDeviceByToken(x111.getClientId());
+                        DeviceEntity device = _LinkService.findDeviceByToken(x111.getClientId());
                         if (device == null) {
                             x112.rejectIdentifier();
                         }
@@ -202,17 +196,17 @@ public class LinkCustom
                     X111_QttConnect x111 = (X111_QttConnect) clientRequest;
                     _Logger.info("%s login ok -> %#x", x111.getClientId(), origin);
                     if (x111.isClean()) {
-                        _DeviceService.clean(origin, _QttRouter);
+                        _LinkService.clean(origin, _QttRouter);
                     }
                     else {
-                        _DeviceService.load(origin, _QttRouter);
+                        _LinkService.load(origin, _QttRouter);
                     }
-                    _DeviceService.onLogin(origin,
-                                           x111.hasWill(),
-                                           x111.getWillTopic(),
-                                           x111.getWillQoS(),
-                                           x111.isWillRetain(),
-                                           x111.getWillMessage());
+                    _LinkService.onLogin(origin,
+                                         x111.hasWill(),
+                                         x111.getWillTopic(),
+                                         x111.getWillQoS(),
+                                         x111.isWillRetain(),
+                                         x111.getWillMessage());
                     if (session != null) {
                         QttContext qttContext = session.getContext(QttContext.class);
                         X112_QttConnack x112 = new X112_QttConnack();
@@ -230,7 +224,7 @@ public class LinkCustom
                     if (subscribes != null) {
                         X119_QttSuback x119 = new X119_QttSuback();
                         x119.setMsgId(x118.getMsgId());
-                        _DeviceService.subscribe(subscribes, origin, optional -> (topic, level) ->
+                        _LinkService.subscribe(subscribes, origin, optional -> (topic, level) ->
                         {
                             IQoS.Level lv = _QttRouter.subscribe(topic, level, origin);
                             x119.addResult(lv);
@@ -248,7 +242,7 @@ public class LinkCustom
                     X11A_QttUnsubscribe x11A = (X11A_QttUnsubscribe) clientRequest;
                     List<String> topics = x11A.getTopics();
                     if (topics != null) {
-                        _DeviceService.unsubscribe(topics, origin, optional -> topic ->
+                        _LinkService.unsubscribe(topics, origin, optional -> topic ->
                         {
                             _QttRouter.unsubscribe(topic, origin);
                             optional.ifPresent(device -> device.unsubscribe(topic));
@@ -265,7 +259,7 @@ public class LinkCustom
             case X11E_QttDisconnect.COMMAND ->
                 {
                     _Logger.info("disconnect");
-                    _DeviceService.offline(session.getIndex(), _QttRouter);
+                    _LinkService.offline(session.getIndex(), _QttRouter);
                     throw new ZException("service active close");
                 }
             case X11F_QttAuth.COMMAND ->
@@ -279,7 +273,7 @@ public class LinkCustom
     @Override
     public void close(ISession session)
     {
-        _DeviceService.offline(session.getIndex(), _QttRouter);
+        _LinkService.offline(session.getIndex(), _QttRouter);
     }
 
     @Override
