@@ -23,6 +23,7 @@
 
 package com.isahl.chess.pawn.endpoint.device.spi;
 
+import com.isahl.chess.bishop.io.IRouter;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.ShadowEntity;
@@ -46,4 +47,5 @@ public interface IDeviceService
 
     List<ShadowEntity> getOnlineDevices(Specification<ShadowEntity> specification, Pageable pageable) throws ZException;
 
+    void offline(long deviceId, IRouter router);
 }

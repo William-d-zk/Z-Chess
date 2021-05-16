@@ -57,6 +57,7 @@ public class ShadowEntity
     @Column(name = "shadow_id")
     @JsonIgnore
     private long      shadowId;
+    @Column(unique = true)
     private long      deviceId;
     @Type(type = "jsonb")
     @Column(name = "will_subscribe", columnDefinition = "jsonb")
@@ -66,6 +67,15 @@ public class ShadowEntity
     private byte[]    willPayload;
     @Column(length = 32)
     private String    username;
+
+    public ShadowEntity()
+    {
+    }
+
+    public ShadowEntity(long deviceId)
+    {
+        this.deviceId = deviceId;
+    }
 
     public long getShadowId()
     {

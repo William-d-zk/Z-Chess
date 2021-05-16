@@ -265,7 +265,7 @@ public class LinkCustom
             case X11E_QttDisconnect.COMMAND ->
                 {
                     _Logger.info("disconnect");
-                    _DeviceService.clean(session.getIndex(), _QttRouter);
+                    _DeviceService.offline(session.getIndex(), _QttRouter);
                     throw new ZException("service active close");
                 }
             case X11F_QttAuth.COMMAND ->
@@ -274,6 +274,12 @@ public class LinkCustom
                 }
         }
         return null;
+    }
+
+    @Override
+    public void close(ISession session)
+    {
+        _DeviceService.offline(session.getIndex(), _QttRouter);
     }
 
     @Override

@@ -156,6 +156,15 @@ public class DeviceService
                                 }
                                 saveDevice(device);
                             });
+
+    }
+
+    @Override
+    public void offline(long deviceId, IRouter router)
+    {
+        ShadowDevice shadow = _ShadowDevices.remove(deviceId);
+        ShadowEntity entity = shadow != null ? shadow.convert(): new ShadowEntity(deviceId);
+        _BatchHandleIdle.add(entity);
     }
 
     public void load(long session, IQttRouter qttRouter)
@@ -336,10 +345,15 @@ public class DeviceService
     private void batchHandleLogin(ShadowBatch batch)
     {
         if (batch.isEmpty()) { return; }
+        _Logger.info("batch login: %d", batch.size());
         try {
             for (Iterator<ShadowEntity> it = batch.iterator(); it.hasNext();) {
                 ShadowEntity shadow = it.next();
                 it.remove();
+                ShadowEntity exist = _ShadowJpaRepository.findByDeviceId(shadow.getDeviceId());
+                if (exist != null) {
+                    shadow.setShadowId(exist.getShadowId());
+                }
                 _ShadowJpaRepository.save(shadow);
             }
         }
@@ -351,6 +365,7 @@ public class DeviceService
     private void batchHandleIdle(ShadowBatch batch)
     {
         if (batch.isEmpty()) { return; }
+        _Logger.info("batch handle idle: %d", batch.size());
         try {
             for (Iterator<ShadowEntity> it = batch.iterator(); it.hasNext();) {
                 ShadowEntity shadow = it.next();

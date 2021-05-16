@@ -23,10 +23,6 @@
 
 package com.isahl.chess.queen.event.handler.mix;
 
-
-import java.nio.channels.AsynchronousSocketChannel;
-import java.util.List;
-
 import com.isahl.chess.king.base.disruptor.event.OperatorType;
 import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
 import com.isahl.chess.king.base.disruptor.event.inf.IPipeEventHandler;
@@ -39,15 +35,12 @@ import com.isahl.chess.queen.event.QEvent;
 import com.isahl.chess.queen.event.handler.cluster.IClusterCustom;
 import com.isahl.chess.queen.io.core.async.inf.IAioConnector;
 import com.isahl.chess.queen.io.core.async.inf.IAioServer;
-import com.isahl.chess.queen.io.core.inf.IConnectActivity;
-import com.isahl.chess.queen.io.core.inf.IConsistent;
-import com.isahl.chess.queen.io.core.inf.IConsistentNotify;
-import com.isahl.chess.queen.io.core.inf.IControl;
-import com.isahl.chess.queen.io.core.inf.ISession;
-import com.isahl.chess.queen.io.core.inf.ISessionDismiss;
-import com.isahl.chess.queen.io.core.inf.ISessionManager;
+import com.isahl.chess.queen.io.core.inf.*;
 import com.isahl.chess.queen.io.core.manager.MixManager;
 import com.lmax.disruptor.RingBuffer;
+
+import java.nio.channels.AsynchronousSocketChannel;
+import java.util.List;
 
 /**
  * @author william.d.zk
@@ -119,6 +112,7 @@ public class MixMappingHandler<T extends IStorage>
                     closeOperator.handle(null, session);
                     if (!closed) {
                         dismiss.onDismiss(session);
+                        _LinkCustom.close(session);
                     }
                     break;
                 default:
@@ -168,7 +162,7 @@ public class MixMappingHandler<T extends IStorage>
                         ISession session = handled.getSecond();
                         IControl[] toSends = handled.getThird();
                         if (toSends != null) {
-                            publish(_Writer,OperatorType. WRITE, new Pair<>(toSends, session), session.getTransfer());
+                            publish(_Writer, OperatorType.WRITE, new Pair<>(toSends, session), session.getTransfer());
                         }
                     }
                     else {
@@ -197,7 +191,7 @@ public class MixMappingHandler<T extends IStorage>
                         if (transfer != null) {
                             if (_ClusterCustom.waitForCommit()) {
                                 publish(_Transfer,
-                                        OperatorType. CONSENSUS,
+                                        OperatorType.CONSENSUS,
                                         new Pair<>(pair.getSecond(), session),
                                         _LinkCustom.getOperator());
                             }
@@ -227,11 +221,14 @@ public class MixMappingHandler<T extends IStorage>
                         if (pair == null) return;
                         IControl[] toSends = pair.getFirst();
                         if (toSends != null && toSends.length > 0) {
-                            publish(_Writer,OperatorType. WRITE, new Pair<>(toSends, session), session.getTransfer());
+                            publish(_Writer, OperatorType.WRITE, new Pair<>(toSends, session), session.getTransfer());
                         }
                         IConsistentNotify notify = pair.getSecond();
                         if (notify != null && notify.doNotify()) {
-                            publish(_Transfer, OperatorType.NOTIFY, new Pair<>(notify, null), _LinkCustom.getOperator());
+                            publish(_Transfer,
+                                    OperatorType.NOTIFY,
+                                    new Pair<>(notify, null),
+                                    _LinkCustom.getOperator());
                         }
                     }
                     catch (Exception e) {
