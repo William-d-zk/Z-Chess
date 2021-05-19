@@ -52,6 +52,22 @@
     </scm>
     <profiles>
         <profile>
+            <id>run</id>
+            <properties>
+                <profiles.active>run</profiles.active>
+            </properties>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <repositories>
+                <repository>
+                    <id>aliyun-maven-repo</id>
+                    <name>aliyun-maven</name>
+                    <url>https://maven.aliyun.com/repository/central</url>
+                </repository>
+            </repositories>
+        </profile>
+        <profile>
             <id>dev</id>
             <properties>
                 <profiles.active>dev</profiles.active>
