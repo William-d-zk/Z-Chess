@@ -40,7 +40,7 @@ public interface ISort<C extends IPContext>
 
     enum Type
     {
-        CONSUMER,
+        CLIENT,
         SERVER,
         SYMMETRY,
         INNER

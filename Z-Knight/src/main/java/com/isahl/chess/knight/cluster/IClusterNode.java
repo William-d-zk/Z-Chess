@@ -34,17 +34,12 @@ import com.isahl.chess.queen.db.inf.IStorage;
 import com.isahl.chess.queen.event.QEvent;
 import com.isahl.chess.queen.io.core.async.AioSession;
 import com.isahl.chess.queen.io.core.async.BaseAioConnector;
-import com.isahl.chess.queen.io.core.executor.IPipeCore;
+import com.isahl.chess.queen.io.core.async.BaseAioServer;
 import com.isahl.chess.queen.io.core.async.inf.IAioClient;
 import com.isahl.chess.queen.io.core.async.inf.IAioConnector;
-import com.isahl.chess.queen.io.core.inf.IClusterPeer;
-import com.isahl.chess.queen.io.core.inf.IClusterTimer;
-import com.isahl.chess.queen.io.core.inf.IConnectActivity;
-import com.isahl.chess.queen.io.core.inf.IControl;
-import com.isahl.chess.queen.io.core.inf.INode;
-import com.isahl.chess.queen.io.core.inf.ISession;
-import com.isahl.chess.queen.io.core.inf.ISessionManager;
-import com.isahl.chess.queen.io.core.inf.ISort;
+import com.isahl.chess.queen.io.core.async.inf.IAioServer;
+import com.isahl.chess.queen.io.core.executor.IPipeCore;
+import com.isahl.chess.queen.io.core.inf.*;
 import com.lmax.disruptor.RingBuffer;
 
 import java.io.IOException;
@@ -62,57 +57,136 @@ public interface IClusterNode<K extends IPipeCore>
         IClusterTimer,
         INode
 {
-    default IAioConnector buildConnector(IPair address,
-                                         ISocketConfig socketConfig,
-                                         IAioClient client,
-                                         final long _Type,
+    default IAioConnector buildConnector(final IPair _Address,
+                                         final ISocketConfig _SocketConfig,
+                                         final IAioClient _Client,
                                          final ISessionManager _Manager,
                                          final ZSortHolder _ZSortHolder,
-                                         final ZUID _Zuid)
+                                         final ZUID _ZUid)
     {
-        final String _Host = address.getFirst();
-        final int _Port = address.getSecond();
+        final String _Host = _Address.getFirst();
+        final int _Port = _Address.getSecond();
+        final long _Type = _ZSortHolder.getType();
         if (_ZSortHolder.getSort()
-                       .getMode() != ISort.Mode.CLUSTER)
+                        .getMode() != ISort.Mode.CLUSTER)
         {
             throw new IllegalArgumentException("sort mode is wrong in cluster define");
         }
-        return new BaseAioConnector(_Host, _Port, socketConfig, client)
+        return new BaseAioConnector(_Host, _Port, _SocketConfig, _Client)
         {
             @Override
             public ISort.Mode getMode()
             {
                 return _ZSortHolder.getSort()
-                                  .getMode();
+                                   .getMode();
             }
 
             @Override
             public ISession createSession(AsynchronousSocketChannel socketChannel,
                                           IConnectActivity activity) throws IOException
             {
-                return new AioSession<>(socketChannel, _Type, this, _ZSortHolder.getSort(), activity, client, false);
+                return new AioSession<>(socketChannel, _Type, this, _ZSortHolder.getSort(), activity, _Client, false);
             }
 
             @Override
             public void onCreated(ISession session)
             {
                 super.onCreated(session);
-                client.onCreated(session);
+                _Client.onCreated(session);
                 _Manager.addSession(session);
             }
 
             @Override
             public IControl[] onConnectedCommands(ISession session)
             {
-                X106_Identity x106 = new X106_Identity(_Zuid.getPeerId(), _Zuid.getId(_Type));
-                return new IControl[]{x106};
+                if (_ZSortHolder.getSort()
+                                .getMode() == ISort.Mode.CLUSTER)
+                {
+                    X106_Identity x106 = new X106_Identity(_ZUid.getPeerId(), _ZUid.getId(_Type));
+                    return new IControl[]{x106};
+                }
+                return null;
             }
 
             @Override
             public String getProtocol()
             {
                 return _ZSortHolder.getSort()
-                                  .getProtocol();
+                                   .getProtocol();
+            }
+        };
+    }
+
+    default IAioServer buildServer(final IPair _Address,
+                                   final ISocketConfig _SocketConfig,
+                                   final ZSortHolder _ZSortHolder,
+                                   final ISessionManager _Manager,
+                                   final ISessionDismiss _Dismiss,
+                                   final ZUID _ZUid,
+                                   final boolean _MultiBind)
+    {
+        final String _Host = _Address.getFirst();
+        final int _Port = _Address.getSecond();
+        return buildServer(_Host, _Port, _SocketConfig, _ZSortHolder, _Manager, _Dismiss, _ZUid, _MultiBind);
+    }
+
+    default IAioServer buildServer(final String _Host,
+                                   final int _Port,
+                                   final ISocketConfig _SocketConfig,
+                                   final ZSortHolder _ZSortHolder,
+                                   final ISessionManager _Manager,
+                                   final ISessionDismiss _Dismiss,
+                                   final ZUID _ZUid,
+                                   final boolean _MultiBind)
+    {
+
+        final long _Type = _ZSortHolder.getType();
+        return new BaseAioServer(_Host, _Port, _SocketConfig)
+        {
+            @Override
+            public ISort.Mode getMode()
+            {
+                return _ZSortHolder.getSort()
+                                   .getMode();
+            }
+
+            @Override
+            public ISession createSession(AsynchronousSocketChannel socketChannel,
+                                          IConnectActivity activity) throws IOException
+            {
+                return new AioSession<>(socketChannel,
+                                        _Type,
+                                        this,
+                                        _ZSortHolder.getSort(),
+                                        activity,
+                                        _Dismiss,
+                                        _MultiBind);
+            }
+
+            @Override
+            public void onCreated(ISession session)
+            {
+                _Manager.addSession(session);
+                session.ready();
+            }
+
+            @Override
+            public String getProtocol()
+            {
+                return _ZSortHolder.getSort()
+                                   .getProtocol();
+            }
+
+            @Override
+            public IControl[] onConnectedCommands(ISession session)
+            {
+                if (_ZSortHolder.getSort()
+                                .getMode() == ISort.Mode.CLUSTER)
+                {
+                    X106_Identity x106 = new X106_Identity(_ZUid.getPeerId(), _ZUid.getId(_Type));
+                    return new IControl[]{x106};
+                }
+                return null;
             }
         };
     }

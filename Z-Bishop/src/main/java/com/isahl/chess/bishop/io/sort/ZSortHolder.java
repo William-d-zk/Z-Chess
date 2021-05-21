@@ -42,22 +42,24 @@ import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.ISort;
 
+import static com.isahl.chess.king.topology.ZUID.*;
+
 /**
  * @author william.d.zk
  * @date 2019-06-30
  */
 public enum ZSortHolder
 {
-    WS_ZCHAT_CONSUMER(new WsZSort(ISort.Mode.LINK, ISort.Type.CONSUMER)),
+    WS_ZCHAT_CONSUMER(new WsZSort(ISort.Mode.LINK, ISort.Type.CLIENT)),
     WS_ZCHAT_SERVER(new WsZSort(ISort.Mode.LINK, ISort.Type.SERVER)),
     WS_ZCHAT_CONSUMER_SSL(new SslZSort<>(ISort.Mode.LINK,
-                                         ISort.Type.CONSUMER,
-                                         new WsZSort(ISort.Mode.LINK, ISort.Type.CONSUMER))),
+                                         ISort.Type.CLIENT,
+                                         new WsZSort(ISort.Mode.LINK, ISort.Type.CLIENT))),
     WS_ZCHAT_SERVER_SSL(new SslZSort<>(ISort.Mode.LINK,
                                        ISort.Type.SERVER,
                                        new WsZSort(ISort.Mode.LINK, ISort.Type.SERVER))),
     WS_CLUSTER_SYMMETRY(new WsZSort(ISort.Mode.CLUSTER, ISort.Type.SYMMETRY)),
-    WS_CLUSTER_CONSUMER(new WsZSort(ISort.Mode.CLUSTER, ISort.Type.CONSUMER)),
+    WS_CLUSTER_CONSUMER(new WsZSort(ISort.Mode.CLUSTER, ISort.Type.CLIENT)),
     WS_CLUSTER_SERVER(new WsZSort(ISort.Mode.CLUSTER, ISort.Type.SERVER)),
     WS_CLUSTER_SYMMETRY_ZLS(new ZlsZSort(ISort.Mode.CLUSTER,
                                          ISort.Type.SYMMETRY,
@@ -66,18 +68,26 @@ public enum ZSortHolder
     WS_PLAIN_TEXT_SERVER_SSL(new SslZSort<>(ISort.Mode.LINK,
                                             ISort.Type.SERVER,
                                             new WsTextZSort(ISort.Mode.LINK, ISort.Type.SERVER))),
+    QTT_CONSUMER(new MqttZSort(ISort.Mode.LINK, ISort.Type.CLIENT)),
     QTT_SERVER(new MqttZSort(ISort.Mode.LINK, ISort.Type.SERVER)),
-    QTT_CONSUMER(new MqttZSort(ISort.Mode.LINK, ISort.Type.CONSUMER)),
     QTT_SYMMETRY(new MqttZSort(ISort.Mode.LINK, ISort.Type.SYMMETRY)),
+    QTT_CONSUMER_SSL(new SslZSort<>(ISort.Mode.LINK,
+                                    ISort.Type.CLIENT,
+                                    new MqttZSort(ISort.Mode.LINK, ISort.Type.CLIENT))),
     QTT_SERVER_SSL(new SslZSort<>(ISort.Mode.LINK,
                                   ISort.Type.SERVER,
                                   new MqttZSort(ISort.Mode.LINK, ISort.Type.SERVER))),
-    QTT_CONSUMER_SSL(new SslZSort<>(ISort.Mode.LINK,
-                                    ISort.Type.CONSUMER,
-                                    new MqttZSort(ISort.Mode.LINK, ISort.Type.CONSUMER))),
     QTT_SYMMETRY_SSL(new SslZSort<>(ISort.Mode.LINK,
                                     ISort.Type.SYMMETRY,
                                     new MqttZSort(ISort.Mode.LINK, ISort.Type.SYMMETRY))),
+    WS_QTT_CONSUMER(new WsProxyZSort<>(ISort.Mode.LINK,
+                                       ISort.Type.CLIENT,
+                                       new MqttZSort(ISort.Mode.LINK, ISort.Type.CLIENT))),
+    WS_QTT_CONSUMER_SSL(new SslZSort<>(ISort.Mode.LINK,
+                                       ISort.Type.CLIENT,
+                                       new WsProxyZSort<>(ISort.Mode.LINK,
+                                                          ISort.Type.CLIENT,
+                                                          new MqttZSort(ISort.Mode.LINK, ISort.Type.CLIENT)))),
     WS_QTT_SERVER(new WsProxyZSort<>(ISort.Mode.LINK,
                                      ISort.Type.SERVER,
                                      new MqttZSort(ISort.Mode.LINK, ISort.Type.SERVER))),
@@ -85,15 +95,7 @@ public enum ZSortHolder
                                      ISort.Type.SERVER,
                                      new WsProxyZSort<>(ISort.Mode.LINK,
                                                         ISort.Type.SERVER,
-                                                        new MqttZSort(ISort.Mode.LINK, ISort.Type.SERVER)))),
-    WS_QTT_CONSUMER(new WsProxyZSort<>(ISort.Mode.LINK,
-                                       ISort.Type.CONSUMER,
-                                       new MqttZSort(ISort.Mode.LINK, ISort.Type.CONSUMER))),
-    WS_QTT_CONSUMER_SSL(new SslZSort<>(ISort.Mode.LINK,
-                                       ISort.Type.CONSUMER,
-                                       new WsProxyZSort<>(ISort.Mode.LINK,
-                                                          ISort.Type.CONSUMER,
-                                                          new MqttZSort(ISort.Mode.LINK, ISort.Type.CONSUMER))));
+                                                        new MqttZSort(ISort.Mode.LINK, ISort.Type.SERVER))));
 
     private final IAioSort<?> _Sort;
 
@@ -128,19 +130,19 @@ public enum ZSortHolder
     {
         ISort.Mode mode = _Sort.getMode();
         ISort.Type type = _Sort.getType();
-        return mode == ISort.Mode.LINK ? ZUID.TYPE_CONSUMER_SLOT
-                                       : type == ISort.Type.SYMMETRY ? ZUID.TYPE_CLUSTER_SLOT
-                                                                     : type == ISort.Type.INNER ? ZUID.TYPE_INTERNAL_SLOT
-                                                                                                : ZUID.TYPE_PROVIDER_SLOT;
+        return mode == ISort.Mode.LINK ? TYPE_CONSUMER_SLOT
+                                       : type == ISort.Type.INNER ? TYPE_INTERNAL_SLOT
+                                                                  : type == ISort.Type.SERVER ? TYPE_PROVIDER_SLOT
+                                                                                              : TYPE_CLUSTER_SLOT;
     }
 
     public long getType()
     {
         ISort.Mode mode = _Sort.getMode();
         ISort.Type type = _Sort.getType();
-        return mode == ISort.Mode.LINK ? ZUID.TYPE_CONSUMER
-                                       : type == ISort.Type.SYMMETRY ? ZUID.TYPE_CLUSTER
-                                                                     : type == ISort.Type.INNER ? ZUID.TYPE_INTERNAL
-                                                                                                : ZUID.TYPE_PROVIDER;
+        return mode == ISort.Mode.LINK ? TYPE_CONSUMER
+                                       : type == ISort.Type.INNER ? ZUID.TYPE_INTERNAL
+                                                                  : type == ISort.Type.SERVER ? TYPE_PROVIDER
+                                                                                              : TYPE_CLUSTER;
     }
 }

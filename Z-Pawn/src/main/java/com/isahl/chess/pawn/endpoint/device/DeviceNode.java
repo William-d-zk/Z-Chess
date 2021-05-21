@@ -38,25 +38,19 @@ import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.model.RaftMachine;
 import com.isahl.chess.queen.config.IAioConfig;
 import com.isahl.chess.queen.config.IMixConfig;
+import com.isahl.chess.queen.config.ISocketConfig;
 import com.isahl.chess.queen.event.handler.cluster.IClusterCustom;
 import com.isahl.chess.queen.event.handler.mix.ILinkCustom;
 import com.isahl.chess.queen.event.handler.mix.ILogicHandler;
-import com.isahl.chess.queen.io.core.async.AioSession;
 import com.isahl.chess.queen.io.core.async.BaseAioClient;
-import com.isahl.chess.queen.io.core.async.BaseAioServer;
 import com.isahl.chess.queen.io.core.async.inf.IAioClient;
 import com.isahl.chess.queen.io.core.async.inf.IAioServer;
-import com.isahl.chess.queen.io.core.async.inf.IAioSort;
 import com.isahl.chess.queen.io.core.executor.ServerCore;
-import com.isahl.chess.queen.io.core.inf.IConnectActivity;
-import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionDismiss;
-import com.isahl.chess.queen.io.core.inf.ISort;
 import com.isahl.chess.queen.io.core.manager.MixManager;
 
 import java.io.IOException;
-import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
@@ -66,7 +60,6 @@ import static com.isahl.chess.king.base.schedule.TimeWheel.IWheelItem.PRIORITY_N
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-05-12
  */
 public class DeviceNode
@@ -81,8 +74,8 @@ public class DeviceNode
     private final IAioClient       _PeerClient;
     private final IAioClient       _GateClient;
     private final TimeWheel        _TimeWheel;
-    private final ZUID             _ZUID;
-    private final X103_Ping        _Ping;
+    private final ZUID             _ZUid;
+    private final X103_Ping        _PeerPing, _GatePing;
 
     @Override
     public void onDismiss(ISession session)
@@ -100,24 +93,38 @@ public class DeviceNode
     {
         super(bizIoConfig, new ServerCore(serverConfig));
         _TimeWheel = timeWheel;
-        _ZUID = raftConfig.createZUID();
-        IPair bind = raftConfig.getBind();
-        final String _ClusterHost = bind.getFirst();
-        final int _ClusterPort = bind.getSecond();
-        hosts.add(new Triple<>(_ClusterHost, _ClusterPort, ZSortHolder.WS_CLUSTER_SERVER));
-
+        _ZUid = raftConfig.createZUID();
+        IPair peerBind = raftConfig.getPeerBind();
+        final String _PeerBindHost = peerBind.getFirst();
+        final int _PeerBindPort = peerBind.getSecond();
+        hosts.add(new Triple<>(_PeerBindHost, _PeerBindPort, ZSortHolder.WS_CLUSTER_SERVER));
+        _PeerPing = new X103_Ping(String.format("%#x,%s:%d", _ZUid.getPeerId(), _PeerBindHost, _PeerBindPort)
+                                        .getBytes(StandardCharsets.UTF_8));
+        if (raftConfig.isGateNode()) {
+            IPair gateBind = raftConfig.getGateBind();
+            final String _GateBindHost = gateBind.getFirst();
+            final int _GateBindPort = gateBind.getSecond();
+            hosts.add(new Triple<>(_GateBindHost, _GateBindPort, ZSortHolder.WS_CLUSTER_SYMMETRY));
+            _GatePing = new X103_Ping(String.format("%#x,%s:%d", _ZUid.getPeerId(), _GateBindHost, _GateBindPort)
+                                            .getBytes(StandardCharsets.UTF_8));
+        }
+        else {
+            _GatePing = null;
+        }
         _AioServers = hosts.stream()
                            .map(triple ->
                            {
                                final String _Host = triple.getFirst();
                                final int _Port = triple.getSecond();
-                               ZSortHolder holder = triple.getThird();
-                               return buildAioServer(_Host,
-                                                     _Port,
-                                                     holder.getType(),
-                                                     holder.getSlot(),
-                                                     holder.getSort(),
-                                                     multiBind);
+                               final ZSortHolder _Holder = triple.getThird();
+                               return buildServer(_Host,
+                                                  _Port,
+                                                  getSocketConfig(_Holder.getSlot()),
+                                                  _Holder,
+                                                  DeviceNode.this,
+                                                  DeviceNode.this,
+                                                  _ZUid,
+                                                  multiBind);
                            })
                            .collect(Collectors.toList());
         _GateClient = new BaseAioClient(_TimeWheel, getCore().getClusterChannelGroup())
@@ -128,7 +135,7 @@ public class DeviceNode
                 super.onCreated(session);
                 Duration gap = Duration.ofSeconds(session.getReadTimeOutSeconds() / 2);
                 _TimeWheel.acquire(session,
-                                   new ScheduleHandler<>(gap, true, DeviceNode.this::heartbeat, PRIORITY_NORMAL));
+                                   new ScheduleHandler<>(gap, true, DeviceNode.this::gateHeartbeat, PRIORITY_NORMAL));
             }
 
             @Override
@@ -147,7 +154,7 @@ public class DeviceNode
                 super.onCreated(session);
                 Duration gap = Duration.ofSeconds(session.getReadTimeOutSeconds() / 2);
                 _TimeWheel.acquire(session,
-                                   new ScheduleHandler<>(gap, true, DeviceNode.this::heartbeat, PRIORITY_NORMAL));
+                                   new ScheduleHandler<>(gap, true, DeviceNode.this::peerHeartbeat, PRIORITY_NORMAL));
             }
 
             @Override
@@ -157,46 +164,8 @@ public class DeviceNode
                 super.onDismiss(session);
             }
         };
-        _Ping = new X103_Ping(String.format("%#x,%s:%d", _ZUID.getPeerId(), _ClusterHost, _ClusterPort)
-                                    .getBytes(StandardCharsets.UTF_8));
+
         _Logger.debug("Device Node Bean Load");
-    }
-
-    private <C extends IPContext> IAioServer buildAioServer(final String _Host,
-                                                            final int _Port,
-                                                            final long _Type,
-                                                            final int _SessionSlot,
-                                                            final IAioSort<C> _Sort,
-                                                            final boolean _MultiBind)
-    {
-        return new BaseAioServer(_Host, _Port, getSocketConfig(_SessionSlot))
-        {
-            @Override
-            public ISort.Mode getMode()
-            {
-                return _Sort.getMode();
-            }
-
-            @Override
-            public ISession createSession(AsynchronousSocketChannel socketChannel,
-                                          IConnectActivity activity) throws IOException
-            {
-                return new AioSession<>(socketChannel, _Type, this, _Sort, activity, DeviceNode.this, _MultiBind);
-            }
-
-            @Override
-            public void onCreated(ISession session)
-            {
-                DeviceNode.this.addSession(session);
-                session.ready();
-            }
-
-            @Override
-            public String getProtocol()
-            {
-                return _Sort.getProtocol();
-            }
-        };
     }
 
     public void start(ILogicHandler logicHandler,
@@ -217,25 +186,17 @@ public class DeviceNode
     @Override
     public void addPeer(IPair remote) throws IOException
     {
-        _PeerClient.connect(buildConnector(remote,
-                                           getSocketConfig(ZUID.TYPE_PROVIDER_SLOT),
-                                           _PeerClient,
-                                           ZUID.TYPE_PROVIDER,
-                                           this,
-                                           ZSortHolder.WS_CLUSTER_CONSUMER,
-                                           _ZUID));
+        final ZSortHolder _Holder = ZSortHolder.WS_CLUSTER_CONSUMER;
+        ISocketConfig socketConfig = getSocketConfig(_Holder.getSlot());
+        _PeerClient.connect(buildConnector(remote, socketConfig, _PeerClient, DeviceNode.this, _Holder, _ZUid));
     }
 
     @Override
     public void addGate(IPair remote) throws IOException
     {
-        _GateClient.connect(buildConnector(remote,
-                                           getSocketConfig(ZUID.TYPE_INTERNAL_SLOT),
-                                           _GateClient,
-                                           ZUID.TYPE_INTERNAL,
-                                           this,
-                                           ZSortHolder.WS_CLUSTER_SYMMETRY,
-                                           _ZUID));
+        final ZSortHolder _Holder = ZSortHolder.WS_CLUSTER_SYMMETRY;
+        ISocketConfig socketConfig = getSocketConfig(_Holder.getSlot());
+        _GateClient.connect(buildConnector(remote, socketConfig, _GateClient, DeviceNode.this, _Holder, _ZUid));
     }
 
     @Override
@@ -244,15 +205,22 @@ public class DeviceNode
         return super.getCore();
     }
 
-    private void heartbeat(ISession session)
+    private void peerHeartbeat(ISession session)
     {
         _Logger.debug("device_cluster heartbeat => %s ", session.getRemoteAddress());
-        getCore().send(session, OperatorType.CLUSTER_LOCAL, _Ping);
+        getCore().send(session, OperatorType.CLUSTER_LOCAL, _PeerPing);
+    }
+
+    private void gateHeartbeat(ISession session)
+    {
+        _Logger.debug("device_cluster heartbeat => %s ", session.getRemoteAddress());
+        getCore().send(session, OperatorType.CLUSTER_LOCAL, _GatePing);
     }
 
     @Override
-    public long getZuid()
+    public long getZUid()
     {
-        return _ZUID.getId();
+        return _ZUid.getId();
     }
+
 }

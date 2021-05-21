@@ -30,5 +30,5 @@ package com.isahl.chess.queen.io.core.inf;
  */
 public interface INode
 {
-    long getZuid();
+    long getZUid();
 }

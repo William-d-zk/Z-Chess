@@ -23,25 +23,20 @@
 
 package com.isahl.chess.knight.raft.config;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.time.Duration;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import javax.annotation.PostConstruct;
-
+import com.isahl.chess.king.base.inf.IPair;
+import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.base.util.Pair;
+import com.isahl.chess.king.topology.ZUID;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.util.unit.DataSize;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.isahl.chess.king.base.inf.IPair;
-import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.king.topology.ZUID;
+import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.time.Duration;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Configuration
 @ConfigurationProperties(prefix = "z.chess.raft")
@@ -58,19 +53,34 @@ public class ZRaftConfig
     }
 
     @PostConstruct
-    void initUid() throws IOException
+    void init() throws IOException
     {
-        if (peerTest != null && isClusterMode()) {
-            String peerTestHost = peerTest.getFirst();
-            InetSocketAddress peerTestAddr = new InetSocketAddress(peerTestHost, peerTest.getSecond());
-            try (Socket socket = new Socket()) {
-                socket.connect(peerTestAddr, 3000);
-                if (!socket.isConnected()) { throw new RuntimeException("peer test connect failed"); }
-                InetSocketAddress localAddr = (InetSocketAddress) socket.getLocalSocketAddress();
-                String localHostStr = localAddr.getHostString();
-                _Logger.debug("local host:%s", localHostStr);
-                bind.setFirst(localHostStr);
-                setNodeId(localHostStr);
+        if (isClusterMode()) {
+            for (int i = 0, size = peers.size(); i < size; i++) {
+                if (peerBind.getFirst()
+                            .equalsIgnoreCase(peers.get(i)
+                                                   .getFirst()))
+                {
+                    uid.setNodeId(i);
+                    setInCongress(true);
+                }
+            }
+
+            if (!isInCongress()) {
+                _Logger.warning("no set node-id,Learner?");
+            }
+            if (gateBind != null) {
+                for (IPair gate : gates) {
+                    if (gateBind.getFirst()
+                                .equalsIgnoreCase(gate.getFirst()))
+                    {
+                        setBeGate();
+                        _Logger.info("the node %s:%d gate", gateBind.getFirst(), gateBind.getSecond());
+                    }
+                }
+            }
+            if (!isGateNode()) {
+                _Logger.info("the node isn't gate");
             }
         }
     }
@@ -104,7 +114,9 @@ public class ZRaftConfig
     private List<IPair>           peers;
     private List<IPair>           gates;
     private Pair<String,
-                 Integer>         bind;
+                 Integer>         peerBind;
+    private Pair<String,
+                 Integer>         gateBind;
     private ZUID                  zuid;
     private Duration              electInSecond;
     private Duration              snapshotInSecond;
@@ -112,9 +124,8 @@ public class ZRaftConfig
     private Duration              clientSubmitInSecond;
     private DataSize              snapshotMinSize;
     private DataSize              snapshotFragmentMaxSize;
-    private IPair                 peerTest;
-    private IPair                 gateTest;
     private boolean               inCongress;
+    private boolean               beGate;
     private boolean               clusterMode;
     private int                   maxSegmentSize;
     private String                baseDir;
@@ -146,21 +157,15 @@ public class ZRaftConfig
     }
 
     @Override
-    public IPair getBind()
+    public IPair getPeerBind()
     {
-        return bind;
+        return peerBind;
     }
 
     @Override
-    public IPair getPeerTest()
+    public IPair getGateBind()
     {
-        return peerTest;
-    }
-
-    @Override
-    public IPair getGateTest()
-    {
-        return gateTest;
+        return gateBind;
     }
 
     public void setGates(List<String> gates)
@@ -179,22 +184,16 @@ public class ZRaftConfig
                       .collect(Collectors.toList());
     }
 
-    public void setBind(String bind)
+    public void setPeerBind(String bind)
     {
         String[] split = bind.split(":", 2);
-        this.bind = new Pair<>(split[0], Integer.parseInt(split[1]));
+        this.peerBind = new Pair<>(split[0], Integer.parseInt(split[1]));
     }
 
-    public void setPeerTest(String test)
+    public void setGateBind(String test)
     {
         String[] split = test.split(":", 2);
-        peerTest = new Pair<>(split[0], Integer.parseInt(split[1]));
-    }
-
-    public void setGateTest(String test)
-    {
-        String[] split = test.split(":", 2);
-        gateTest = new Pair<>(split[0], Integer.parseInt(split[1]));
+        gateBind = new Pair<>(split[0], Integer.parseInt(split[1]));
     }
 
     public Duration getElectInSecond()
@@ -262,25 +261,6 @@ public class ZRaftConfig
         this.clientSubmitInSecond = clientSubmitInSecond;
     }
 
-    @JsonIgnore
-    private void setNodeId(String localHostStr)
-    {
-
-        for (int i = 0, size = peers.size(); i < size; i++) {
-            if (peers.get(i)
-                     .getFirst()
-                     .equals(localHostStr))
-            {
-                uid.setNodeId(i);
-                setInCongress(true);
-                break;
-            }
-        }
-        if (!inCongress) {
-            _Logger.warning("no set node-id,Learner?");
-        }
-    }
-
     @Override
     public boolean isInCongress()
     {
@@ -301,5 +281,16 @@ public class ZRaftConfig
     public void setClusterMode(boolean mode)
     {
         clusterMode = mode;
+    }
+
+    @Override
+    public boolean isGateNode()
+    {
+        return gates.isEmpty();
+    }
+
+    public void setBeGate()
+    {
+        beGate = true;
     }
 }

@@ -138,7 +138,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
             if (peers != null) {
                 for (int i = 0, size = peers.size(); i < size; i++) {
                     IPair pair = peers.get(i);
-                    _SelfMachine.appendPeer(new Triple<>(_ZUID.getPeerId(i), pair.getFirst(), pair.getSecond()));
+                    _SelfMachine.appendPeer(new Triple<>(_ZUID.getPeerIdByNode(i), pair.getFirst(), pair.getSecond()));
                 }
                 _RaftDao.getLogMeta()
                         .setPeerSet(_SelfMachine.getPeerSet());
