@@ -75,7 +75,7 @@ public class SSLZContext<A extends IPContext>
         }
         _SslEngine = _SslContext.createSSLEngine();
         _SslEngine.setEnabledProtocols(new String[]{"TLSv1.2"});
-        _SslEngine.setUseClientMode(type == ISort.Type.CONSUMER);
+        _SslEngine.setUseClientMode(type == ISort.Type.CLIENT);
         _SslEngine.setNeedClientAuth(type == ISort.Type.SERVER && option.isSslClientAuth());
         _SslSession = _SslEngine.getSession();
         _AppInBufferSize = option.getSslAppSize();
