@@ -69,7 +69,7 @@ public class ZRaftConfig
             if (!isInCongress()) {
                 _Logger.warning("no set node-id,Learner?");
             }
-            if (gateBind != null) {
+            if (gateBind != null && gates != null) {
                 for (IPair gate : gates) {
                     if (gateBind.getFirst()
                                 .equalsIgnoreCase(gate.getFirst()))
