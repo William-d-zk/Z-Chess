@@ -85,15 +85,25 @@ public class ClusterNode
         _TimeWheel = timeWheel;
         _ZUid = raftConfig.createZUID();
         _Logger.debug(_ZUid);
-        IPair peerBind = raftConfig.getPeerBind();
-        final ZSortHolder _PeerHolder = ZSortHolder.WS_CLUSTER_SERVER;
-        _PeerServer = buildServer(peerBind,
-                                  getSocketConfig(_PeerHolder.getSlot()),
-                                  _PeerHolder,
-                                  this,
-                                  this,
-                                  _ZUid,
-                                  false);
+        if (raftConfig.isInCongress()) {
+            IPair peerBind = raftConfig.getPeerBind();
+            final ZSortHolder _PeerHolder = ZSortHolder.WS_CLUSTER_SERVER;
+            _PeerServer = buildServer(peerBind,
+                                      getSocketConfig(_PeerHolder.getSlot()),
+                                      _PeerHolder,
+                                      this,
+                                      this,
+                                      _ZUid,
+                                      false);
+            String peerHost = peerBind.getFirst();
+            int peerPort = peerBind.getSecond();
+            _PeerPing = new X103_Ping(String.format("%#x,%s:%d", _ZUid.getPeerId(), peerHost, peerPort)
+                                            .getBytes(StandardCharsets.UTF_8));
+        }
+        else {
+            _PeerServer = null;
+            _PeerPing = null;
+        }
         if (raftConfig.isGateNode()) {
             final ZSortHolder _GateHolder = ZSortHolder.WS_CLUSTER_SYMMETRY;
             IPair gateBind = raftConfig.getGateBind();
@@ -113,10 +123,6 @@ public class ClusterNode
             _GateServer = null;
             _GatePing = null;
         }
-        String peerHost = peerBind.getFirst();
-        int peerPort = peerBind.getSecond();
-        _PeerPing = new X103_Ping(String.format("%#x,%s:%d", _ZUid.getPeerId(), peerHost, peerPort)
-                                        .getBytes(StandardCharsets.UTF_8));
         _GateClient = new BaseAioClient(_TimeWheel, getCore().getClusterChannelGroup())
         {
             @Override

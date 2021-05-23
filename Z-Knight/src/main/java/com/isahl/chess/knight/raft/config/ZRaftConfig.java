@@ -34,6 +34,7 @@ import org.springframework.util.unit.DataSize;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -56,25 +57,25 @@ public class ZRaftConfig
     void init() throws IOException
     {
         if (isClusterMode()) {
+            String hostname = InetAddress.getLocalHost()
+                                         .getHostName();
             for (int i = 0, size = peers.size(); i < size; i++) {
-                if (peerBind.getFirst()
-                            .equalsIgnoreCase(peers.get(i)
+                if (hostname.equalsIgnoreCase(peers.get(i)
                                                    .getFirst()))
                 {
                     uid.setNodeId(i);
                     setInCongress(true);
+                    peerBind = new Pair<>(hostname, peerPort);
                 }
             }
-
             if (!isInCongress()) {
                 _Logger.warning("no set node-id,Learner?");
             }
-            if (gateBind != null && gates != null) {
+            if (gates != null) {
                 for (IPair gate : gates) {
-                    if (gateBind.getFirst()
-                                .equalsIgnoreCase(gate.getFirst()))
-                    {
+                    if (hostname.equalsIgnoreCase(gate.getFirst())) {
                         setBeGate();
+                        gateBind = new Pair<>(hostname, gatePort);
                         _Logger.info("the node %s:%d gate", gateBind.getFirst(), gateBind.getSecond());
                     }
                 }
@@ -110,25 +111,25 @@ public class ZRaftConfig
         this.peers = convert(peers);
     }
 
-    private Uid                   uid;
-    private List<IPair>           peers;
-    private List<IPair>           gates;
-    private Pair<String,
-                 Integer>         peerBind;
-    private Pair<String,
-                 Integer>         gateBind;
-    private ZUID                  zuid;
-    private Duration              electInSecond;
-    private Duration              snapshotInSecond;
-    private Duration              heartbeatInSecond;
-    private Duration              clientSubmitInSecond;
-    private DataSize              snapshotMinSize;
-    private DataSize              snapshotFragmentMaxSize;
-    private boolean               inCongress;
-    private boolean               beGate;
-    private boolean               clusterMode;
-    private int                   maxSegmentSize;
-    private String                baseDir;
+    private Uid         uid;
+    private IPair       peerBind;
+    private IPair       gateBind;
+    private int         peerPort;
+    private int         gatePort;
+    private List<IPair> peers;
+    private List<IPair> gates;
+    private ZUID        zuid;
+    private Duration    electInSecond;
+    private Duration    snapshotInSecond;
+    private Duration    heartbeatInSecond;
+    private Duration    clientSubmitInSecond;
+    private DataSize    snapshotMinSize;
+    private DataSize    snapshotFragmentMaxSize;
+    private boolean     inCongress;
+    private boolean     beGate;
+    private boolean     clusterMode;
+    private int         maxSegmentSize;
+    private String      baseDir;
 
     public int getMaxSegmentSize()
     {
@@ -176,24 +177,8 @@ public class ZRaftConfig
     private List<IPair> convert(List<String> content)
     {
         return content.stream()
-                      .map(str ->
-                      {
-                          String[] split = str.split(":", 2);
-                          return new Pair<>(split[0], Integer.parseInt(split[1]));
-                      })
+                      .map(str -> new Pair<>(str, 0))
                       .collect(Collectors.toList());
-    }
-
-    public void setPeerBind(String bind)
-    {
-        String[] split = bind.split(":", 2);
-        this.peerBind = new Pair<>(split[0], Integer.parseInt(split[1]));
-    }
-
-    public void setGateBind(String test)
-    {
-        String[] split = test.split(":", 2);
-        gateBind = new Pair<>(split[0], Integer.parseInt(split[1]));
     }
 
     public Duration getElectInSecond()
@@ -292,5 +277,15 @@ public class ZRaftConfig
     public void setBeGate()
     {
         beGate = true;
+    }
+
+    public void setPeerPort(int peerPort)
+    {
+        this.peerPort = peerPort;
+    }
+
+    public void setGatePort(int gatePort)
+    {
+        this.gatePort = gatePort;
     }
 }
