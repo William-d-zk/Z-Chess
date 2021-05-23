@@ -286,7 +286,7 @@ public class ZRaftConfig
     @Override
     public boolean isGateNode()
     {
-        return gates.isEmpty();
+        return gates != null && !gates.isEmpty();
     }
 
     public void setBeGate()
