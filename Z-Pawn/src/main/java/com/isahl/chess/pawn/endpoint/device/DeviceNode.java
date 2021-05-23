@@ -169,7 +169,6 @@ public class DeviceNode
                 super.onDismiss(session);
             }
         };
-
         _Logger.debug("Device Node Bean Load");
     }
 
