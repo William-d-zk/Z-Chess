@@ -94,12 +94,17 @@ public class DeviceNode
         super(bizIoConfig, new ServerCore(serverConfig));
         _TimeWheel = timeWheel;
         _ZUid = raftConfig.createZUID();
-        IPair peerBind = raftConfig.getPeerBind();
-        final String _PeerBindHost = peerBind.getFirst();
-        final int _PeerBindPort = peerBind.getSecond();
-        hosts.add(new Triple<>(_PeerBindHost, _PeerBindPort, ZSortHolder.WS_CLUSTER_SERVER));
-        _PeerPing = new X103_Ping(String.format("%#x,%s:%d", _ZUid.getPeerId(), _PeerBindHost, _PeerBindPort)
-                                        .getBytes(StandardCharsets.UTF_8));
+        if (raftConfig.isInCongress()) {
+            IPair peerBind = raftConfig.getPeerBind();
+            final String _PeerBindHost = peerBind.getFirst();
+            final int _PeerBindPort = peerBind.getSecond();
+            hosts.add(new Triple<>(_PeerBindHost, _PeerBindPort, ZSortHolder.WS_CLUSTER_SERVER));
+            _PeerPing = new X103_Ping(String.format("%#x,%s:%d", _ZUid.getPeerId(), _PeerBindHost, _PeerBindPort)
+                                            .getBytes(StandardCharsets.UTF_8));
+        }
+        else {
+            _PeerPing = null;
+        }
         if (raftConfig.isGateNode()) {
             IPair gateBind = raftConfig.getGateBind();
             final String _GateBindHost = gateBind.getFirst();

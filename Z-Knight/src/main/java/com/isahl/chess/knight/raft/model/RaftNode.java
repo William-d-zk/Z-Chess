@@ -112,6 +112,10 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
             _Logger.info("single model skip init raft node");
             return;
         }
+        if (!_RaftConfig.isInCongress()) {
+            _Logger.info("learner reset all");
+            return;
+        }
         /* _RaftDao 启动的时候已经装载了 snapshot */
         _SelfMachine.setTerm(_RaftDao.getLogMeta()
                                      .getTerm());
