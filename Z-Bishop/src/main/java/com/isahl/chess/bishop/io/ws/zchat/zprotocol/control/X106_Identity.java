@@ -22,11 +22,11 @@
  */
 package com.isahl.chess.bishop.io.ws.zchat.zprotocol.control;
 
-import static com.isahl.chess.queen.io.core.inf.ISessionManager.INVALID_INDEX;
-
 import com.isahl.chess.bishop.io.ws.WsControl;
 import com.isahl.chess.bishop.io.ws.WsFrame;
 import com.isahl.chess.king.base.util.IoUtil;
+
+import static com.isahl.chess.queen.io.core.inf.ISessionManager.INVALID_INDEX;
 
 /**
  * @author William.d.zk
@@ -54,7 +54,7 @@ public class X106_Identity
         return IoUtil.readLong(getPayload(), 0);
     }
 
-    public long getSessionIndex()
+    public long getIndex()
     {
         if (getPayload() == null) return INVALID_INDEX;
         if (getPayload().length < 16) throw new ArrayIndexOutOfBoundsException();

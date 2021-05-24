@@ -59,8 +59,6 @@ public enum ZSortHolder
                                        ISort.Type.SERVER,
                                        new WsZSort(ISort.Mode.LINK, ISort.Type.SERVER))),
     WS_CLUSTER_SYMMETRY(new WsZSort(ISort.Mode.CLUSTER, ISort.Type.SYMMETRY)),
-    WS_CLUSTER_CONSUMER(new WsZSort(ISort.Mode.CLUSTER, ISort.Type.CLIENT)),
-    WS_CLUSTER_SERVER(new WsZSort(ISort.Mode.CLUSTER, ISort.Type.SERVER)),
     WS_CLUSTER_SYMMETRY_ZLS(new ZlsZSort(ISort.Mode.CLUSTER,
                                          ISort.Type.SYMMETRY,
                                          new WsZSort(ISort.Mode.CLUSTER, ISort.Type.SYMMETRY))),

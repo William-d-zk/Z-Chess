@@ -124,7 +124,6 @@ public class AioSession<C extends IPContext>
     }
 
     public AioSession(AsynchronousSocketChannel channel,
-                      long type,
                       ISslOption option,
                       IAioSort<C> sort,
                       IConnectActivity activity,
@@ -150,7 +149,7 @@ public class AioSession<C extends IPContext>
         _Context = sort.newContext(option);
         //------------------------------------------------------------
         option.configChannel(channel);
-        mIndex = type;
+        mIndex = INVALID_INDEX;
         mSending = _Context.getWrBuffer();
         mSending.flip();
         mSendingBlank = mSending.capacity() - mSending.limit();

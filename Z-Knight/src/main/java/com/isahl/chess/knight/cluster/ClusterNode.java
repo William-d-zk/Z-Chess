@@ -87,7 +87,7 @@ public class ClusterNode
         _Logger.debug(_ZUid);
         if (raftConfig.isInCongress()) {
             IPair peerBind = raftConfig.getPeerBind();
-            final ZSortHolder _PeerHolder = ZSortHolder.WS_CLUSTER_SERVER;
+            final ZSortHolder _PeerHolder = ZSortHolder.WS_CLUSTER_SYMMETRY;
             _PeerServer = buildServer(peerBind,
                                       getSocketConfig(_PeerHolder.getSlot()),
                                       _PeerHolder,
@@ -186,7 +186,7 @@ public class ClusterNode
     @Override
     public void addPeer(IPair remote) throws IOException
     {
-        final ZSortHolder _Holder = ZSortHolder.WS_CLUSTER_CONSUMER;
+        final ZSortHolder _Holder = ZSortHolder.WS_CLUSTER_SYMMETRY;
         ISocketConfig socketConfig = getSocketConfig(_Holder.getSlot());
         _PeerClient.connect(buildConnector(remote, socketConfig, _PeerClient, ClusterNode.this, _Holder, _ZUid));
     }

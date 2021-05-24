@@ -172,9 +172,9 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
                 {
                     X106_Identity x106 = (X106_Identity) content;
                     long peerId = x106.getIdentity();
-                    long sessionIndex = x106.getSessionIndex();
-                    _Logger.debug("=========> map peerId:%#x @ %#x", peerId, sessionIndex);
-                    manager.mapSession(sessionIndex, session, peerId);
+                    long index = x106.getIndex();
+                    _Logger.debug("=========> map peerId:%#x @ %#x", peerId, index);
+                    manager.mapSession(index, session, peerId);
                 }
             default -> throw new IllegalStateException("Unexpected value: " + content.serial());
         }

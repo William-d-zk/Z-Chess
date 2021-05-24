@@ -98,7 +98,7 @@ public class DeviceNode
             IPair peerBind = raftConfig.getPeerBind();
             final String _PeerBindHost = peerBind.getFirst();
             final int _PeerBindPort = peerBind.getSecond();
-            hosts.add(new Triple<>(_PeerBindHost, _PeerBindPort, ZSortHolder.WS_CLUSTER_SERVER));
+            hosts.add(new Triple<>(_PeerBindHost, _PeerBindPort, ZSortHolder.WS_CLUSTER_SYMMETRY));
             _PeerPing = new X103_Ping(String.format("%#x,%s:%d", _ZUid.getPeerId(), _PeerBindHost, _PeerBindPort)
                                             .getBytes(StandardCharsets.UTF_8));
         }
@@ -190,7 +190,7 @@ public class DeviceNode
     @Override
     public void addPeer(IPair remote) throws IOException
     {
-        final ZSortHolder _Holder = ZSortHolder.WS_CLUSTER_CONSUMER;
+        final ZSortHolder _Holder = ZSortHolder.WS_CLUSTER_SYMMETRY;
         ISocketConfig socketConfig = getSocketConfig(_Holder.getSlot());
         _PeerClient.connect(buildConnector(remote, socketConfig, _PeerClient, DeviceNode.this, _Holder, _ZUid));
     }
