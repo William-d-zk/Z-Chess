@@ -66,7 +66,6 @@ public interface IClusterNode<K extends IPipeCore>
     {
         final String _Host = _Address.getFirst();
         final int _Port = _Address.getSecond();
-        final long _Type = _ZSortHolder.getType();
         if (_ZSortHolder.getSort()
                         .getMode() != ISort.Mode.CLUSTER)
         {
@@ -85,7 +84,7 @@ public interface IClusterNode<K extends IPipeCore>
             public ISession createSession(AsynchronousSocketChannel socketChannel,
                                           IConnectActivity activity) throws IOException
             {
-                return new AioSession<>(socketChannel, _Type, this, _ZSortHolder.getSort(), activity, _Client, false);
+                return new AioSession<>(socketChannel, this, _ZSortHolder.getSort(), activity, _Client, false);
             }
 
             @Override
@@ -102,7 +101,7 @@ public interface IClusterNode<K extends IPipeCore>
                 if (_ZSortHolder.getSort()
                                 .getMode() == ISort.Mode.CLUSTER)
                 {
-                    X106_Identity x106 = new X106_Identity(_ZUid.getPeerId(), _ZUid.getId(_Type));
+                    X106_Identity x106 = new X106_Identity(_ZUid.getPeerId(), _ZUid.getId());
                     return new IControl[]{x106};
                 }
                 return null;
@@ -140,7 +139,6 @@ public interface IClusterNode<K extends IPipeCore>
                                    final boolean _MultiBind)
     {
 
-        final long _Type = _ZSortHolder.getType();
         return new BaseAioServer(_Host, _Port, _SocketConfig)
         {
             @Override
@@ -154,13 +152,7 @@ public interface IClusterNode<K extends IPipeCore>
             public ISession createSession(AsynchronousSocketChannel socketChannel,
                                           IConnectActivity activity) throws IOException
             {
-                return new AioSession<>(socketChannel,
-                                        _Type,
-                                        this,
-                                        _ZSortHolder.getSort(),
-                                        activity,
-                                        _Dismiss,
-                                        _MultiBind);
+                return new AioSession<>(socketChannel, this, _ZSortHolder.getSort(), activity, _Dismiss, _MultiBind);
             }
 
             @Override
@@ -183,7 +175,7 @@ public interface IClusterNode<K extends IPipeCore>
                 if (_ZSortHolder.getSort()
                                 .getMode() == ISort.Mode.CLUSTER)
                 {
-                    X106_Identity x106 = new X106_Identity(_ZUid.getPeerId(), _ZUid.getId(_Type));
+                    X106_Identity x106 = new X106_Identity(_ZUid.getPeerId(), _ZUid.getId());
                     return new IControl[]{x106};
                 }
                 return null;
