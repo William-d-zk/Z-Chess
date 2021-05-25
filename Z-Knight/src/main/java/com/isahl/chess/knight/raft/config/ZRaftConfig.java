@@ -177,7 +177,11 @@ public class ZRaftConfig
     private List<IPair> convert(List<String> content)
     {
         return content.stream()
-                      .map(str -> new Pair<>(str, 0))
+                      .map(str ->
+                      {
+                          String[] split = str.split(":", 2);
+                          return new Pair<>(split[0], split[1]);
+                      })
                       .collect(Collectors.toList());
     }
 
