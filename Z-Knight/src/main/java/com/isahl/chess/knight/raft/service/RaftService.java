@@ -23,12 +23,15 @@
 
 package com.isahl.chess.knight.raft.service;
 
+import com.isahl.chess.knight.raft.model.RaftMachine;
 import org.springframework.stereotype.Service;
 
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.knight.raft.IRaftService;
 import com.isahl.chess.knight.raft.model.RaftGraph;
+
+import java.util.Map;
 
 /**
  * @author william.d.zk
@@ -60,5 +63,12 @@ public class RaftService
     public boolean rmNode(IPair... nodes)
     {
         return false;
+    }
+
+    @Override
+    public void setTopology(Map<Long,
+                                RaftMachine> peerMap)
+    {
+
     }
 }

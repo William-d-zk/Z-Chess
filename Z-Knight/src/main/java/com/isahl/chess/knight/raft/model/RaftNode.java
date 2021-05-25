@@ -23,35 +23,7 @@
 
 package com.isahl.chess.knight.raft.model;
 
-import static com.isahl.chess.king.topology.ZUID.INVALID_PEER_ID;
-import static com.isahl.chess.knight.raft.IRaftMachine.INDEX_NAN;
-import static com.isahl.chess.knight.raft.IRaftMachine.MIN_START;
-import static com.isahl.chess.knight.raft.RaftState.CANDIDATE;
-import static com.isahl.chess.knight.raft.RaftState.ELECTOR;
-import static com.isahl.chess.knight.raft.RaftState.FOLLOWER;
-import static com.isahl.chess.knight.raft.RaftState.LEADER;
-import static com.isahl.chess.knight.raft.model.RaftCode.ALREADY_VOTE;
-import static com.isahl.chess.knight.raft.model.RaftCode.CONFLICT;
-import static com.isahl.chess.knight.raft.model.RaftCode.ILLEGAL_STATE;
-import static com.isahl.chess.knight.raft.model.RaftCode.LOWER_TERM;
-import static java.lang.Math.min;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Queue;
-import java.util.Random;
-import java.util.stream.Stream;
-
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X70_RaftVote;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X71_RaftBallot;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X72_RaftAppend;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X73_RaftAccept;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X74_RaftReject;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X76_RaftNotify;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.*;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.inf.IValid;
@@ -70,13 +42,18 @@ import com.isahl.chess.knight.raft.RaftState;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.model.log.LogEntry;
 import com.isahl.chess.queen.db.inf.IStorage;
-import com.isahl.chess.queen.io.core.inf.IClusterPeer;
-import com.isahl.chess.queen.io.core.inf.IClusterTimer;
-import com.isahl.chess.queen.io.core.inf.IConsistent;
-import com.isahl.chess.queen.io.core.inf.IControl;
-import com.isahl.chess.queen.io.core.inf.IProtocol;
-import com.isahl.chess.queen.io.core.inf.ISession;
-import com.isahl.chess.queen.io.core.inf.ISessionManager;
+import com.isahl.chess.queen.io.core.inf.*;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Stream;
+
+import static com.isahl.chess.king.topology.ZUID.INVALID_PEER_ID;
+import static com.isahl.chess.knight.raft.IRaftMachine.INDEX_NAN;
+import static com.isahl.chess.knight.raft.IRaftMachine.MIN_START;
+import static com.isahl.chess.knight.raft.RaftState.*;
+import static com.isahl.chess.knight.raft.model.RaftCode.*;
+import static java.lang.Math.min;
 
 /**
  * @author william.d.zk
@@ -135,6 +112,10 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
             _Logger.info("single model skip init raft node");
             return;
         }
+        if (!_RaftConfig.isInCongress()) {
+            _Logger.info("learner reset all");
+            return;
+        }
         /* _RaftDao 启动的时候已经装载了 snapshot */
         _SelfMachine.setTerm(_RaftDao.getLogMeta()
                                      .getTerm());
@@ -161,7 +142,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
             if (peers != null) {
                 for (int i = 0, size = peers.size(); i < size; i++) {
                     IPair pair = peers.get(i);
-                    _SelfMachine.appendPeer(new Triple<>(_ZUID.getPeerId(i), pair.getFirst(), pair.getSecond()));
+                    _SelfMachine.appendPeer(new Triple<>(_ZUID.getPeerIdByNode(i), pair.getFirst(), pair.getSecond()));
                 }
                 _RaftDao.getLogMeta()
                         .setPeerSet(_SelfMachine.getPeerSet());
@@ -213,7 +194,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                     }
                 }
             }
-            _Logger.info("raft-node : %s start", _SelfMachine.getPeerId());
+            _Logger.info("raft-node : %x start", _SelfMachine.getPeerId());
         }
     }
 
@@ -403,8 +384,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
 
     private IControl[] lowTerm(long term, long peerId)
     {
-        return _SelfMachine.getTerm() > term ? new X74_RaftReject[]{reject(LOWER_TERM, peerId)}
-                                             : null;
+        return _SelfMachine.getTerm() > term ? new X74_RaftReject[]{reject(LOWER_TERM, peerId)}: null;
     }
 
     private boolean highTerm(long term)
@@ -525,8 +505,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
             else if (raftLog.getClientPeer() != _SelfMachine.getPeerId()) {
                 // leader -> follower -> client
                 ISession followerSession = manager.findSessionByPrefix(raftLog.getClientPeer());
-                return followerSession != null ? new Pair<>(new IControl[]{x76}, x76)
-                                               : new Pair<>(null, x76);
+                return followerSession != null ? new Pair<>(new IControl[]{x76}, x76): new Pair<>(null, x76);
             }
             else {
                 /*
@@ -608,8 +587,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                 LogEntry entry = _RaftDao.getEntry(i);
                 if (entry != null) result.add(entry);
             }
-            return result.isEmpty() ? null
-                                    : result;
+            return result.isEmpty() ? null: result;
         }
     }
 

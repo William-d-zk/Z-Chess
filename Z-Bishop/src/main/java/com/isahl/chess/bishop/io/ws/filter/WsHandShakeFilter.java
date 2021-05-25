@@ -175,7 +175,7 @@ public class WsHandShakeFilter<T extends ZContext & IWsContext>
                                                                rowSplit[1]);
                                 }
                                 break;
-                            case CONSUMER:
+                            case CLIENT:
                                 switch (httpKey)
                                 {
                                     case "HTTP/1.1" ->
@@ -232,7 +232,7 @@ public class WsHandShakeFilter<T extends ZContext & IWsContext>
                                                                                                      : HS_State_ERROR));
                         return ResultType.HANDLED;
                     }
-                    else if (ISort.Type.CONSUMER == context.getType()) {
+                    else if (ISort.Type.CLIENT == context.getType()) {
                         if (context.checkState(HS_State_ACCEPT_OK)) {
                             context.setCarrier(new X101_HandShake(x, HS_State_ACCEPT_OK));
                             return ResultType.HANDLED;

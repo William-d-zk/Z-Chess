@@ -32,7 +32,7 @@ import com.isahl.chess.queen.io.core.inf.ISort;
  */
 public interface IAioSort<C extends IPContext>
         extends
-        ISort<C>
+        ISort
 {
     C newContext(INetworkOption option);
 }

@@ -32,7 +32,7 @@ public class X104_Pong
         extends
         WsControl
 {
-    public final static int COMMAND = 0x105;
+    public final static int COMMAND = 0x104;
 
     public X104_Pong()
     {

@@ -23,21 +23,17 @@
 
 package com.isahl.chess.knight.raft.config;
 
-import java.time.Duration;
-import java.util.List;
-
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.topology.ZUID;
+
+import java.time.Duration;
+import java.util.List;
 
 /**
  * @author william.d.zk
  */
 public interface IRaftConfig
 {
-    IPair getPeerTest();
-
-    IPair getGateTest();
-
     /**
      * 当前集群的节点列表
      * 
@@ -58,7 +54,14 @@ public interface IRaftConfig
      * 
      * @return
      */
-    IPair getBind();
+    IPair getPeerBind();
+
+    /**
+     * 集群服务绑定的分区节点地址 host:port
+     * 
+     * @return
+     */
+    IPair getGateBind();
 
     /**
      * 集群标识UID 集群最大容量为 2^14 (16384) 个节点
@@ -70,6 +73,8 @@ public interface IRaftConfig
     Uid getUid();
 
     boolean isInCongress();
+
+    boolean isGateNode();
 
     ZUID createZUID();
 
