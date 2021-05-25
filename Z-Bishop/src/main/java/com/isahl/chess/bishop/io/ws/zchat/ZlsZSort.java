@@ -41,14 +41,14 @@ import com.isahl.chess.queen.io.core.inf.INetworkOption;
 
 public class ZlsZSort
         extends
-        BaseSort<EZContext<WsContext> >
+        BaseSort<EZContext<WsContext>>
 {
-    private final IAioSort<WsContext > _ActingSort;
+    private final IAioSort<WsContext>            _ActingSort;
     private final ZEFilter<EZContext<WsContext>> _Head = new ZEFilter<>();
 
     public ZlsZSort(Mode mode,
                     Type type,
-                    IAioSort<WsContext > actingSort)
+                    IAioSort<WsContext> actingSort)
     {
         super(mode, type, String.format("zls-%s", actingSort.getProtocol()));
         _ActingSort = actingSort;

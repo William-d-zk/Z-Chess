@@ -201,15 +201,16 @@ public class ZUID
         return (_IdcId << IDC_SHIFT) | (_ClusterId << CLUSTER_SHIFT) | (_NodeId << NODE_SHIFT) | (_Type << TYPE_SHIFT);
     }
 
-    public long getPeerId(long nodeId)
+    public long getPeerIdByNode(long nodeId)
     {
         nodeId &= (1L << NODE_BITS) - 1;
         return (_IdcId << IDC_SHIFT) | (_ClusterId << CLUSTER_SHIFT) | (nodeId << NODE_SHIFT) | (_Type << TYPE_SHIFT);
     }
 
-    public long getDevicePeerId()
+    public long getPeerIdByType(long type)
     {
-        return (_IdcId << IDC_SHIFT) | (_ClusterId << CLUSTER_SHIFT) | (_NodeId << NODE_SHIFT) | TYPE_CONSUMER;
+        type &= TYPE_MASK;
+        return (_IdcId << IDC_SHIFT) | (_ClusterId << CLUSTER_SHIFT) | (_NodeId << NODE_SHIFT) | type;
     }
 
     public long getClusterId(long clusterId)

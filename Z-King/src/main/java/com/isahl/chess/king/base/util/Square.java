@@ -22,9 +22,9 @@
  */
 package com.isahl.chess.king.base.util;
 
-import java.util.Objects;
-
 import com.isahl.chess.king.base.inf.ISquare;
+
+import java.util.Objects;
 
 /**
  * @author William.d.zk

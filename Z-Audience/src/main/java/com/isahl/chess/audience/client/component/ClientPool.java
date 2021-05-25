@@ -282,7 +282,6 @@ public class ClientPool
             {
 
                 return new AioSession<>(socketChannel,
-                                        ZUID.TYPE_CONSUMER,
                                         this,
                                         ZSortHolder.getSort(),
                                         activity,

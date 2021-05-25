@@ -29,7 +29,7 @@ import com.isahl.chess.queen.event.operator.IgnoreOperator;
  * @author william.d.zk
  *         基于通讯协议的Pipeline 固有模式分类
  */
-public interface ISort<C extends IPContext>
+public interface ISort
 {
 
     enum Mode
@@ -40,7 +40,7 @@ public interface ISort<C extends IPContext>
 
     enum Type
     {
-        CONSUMER,
+        CLIENT,
         SERVER,
         SYMMETRY,
         INNER

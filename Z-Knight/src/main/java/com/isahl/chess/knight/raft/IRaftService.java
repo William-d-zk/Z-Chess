@@ -25,6 +25,9 @@ package com.isahl.chess.knight.raft;
 
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.knight.raft.model.RaftGraph;
+import com.isahl.chess.knight.raft.model.RaftMachine;
+
+import java.util.Map;
 
 /**
  * @author william.d.zk
@@ -65,5 +68,8 @@ public interface IRaftService
      * @return success / failed
      */
     boolean rmNode(IPair... nodes);
+
+    void setTopology(Map<Long,
+                         RaftMachine> peerMap);
 
 }
