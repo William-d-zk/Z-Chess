@@ -180,7 +180,7 @@ public class ZRaftConfig
                       .map(str ->
                       {
                           String[] split = str.split(":", 2);
-                          return new Pair<>(split[0], split[1]);
+                          return new Pair<>(split[0], Integer.getInteger(split[1]));
                       })
                       .collect(Collectors.toList());
     }
