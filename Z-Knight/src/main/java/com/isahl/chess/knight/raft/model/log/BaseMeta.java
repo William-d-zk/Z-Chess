@@ -23,11 +23,11 @@
 
 package com.isahl.chess.knight.raft.model.log;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.isahl.chess.bishop.io.json.JsonProtocol;
+
+import java.io.IOException;
+import java.io.RandomAccessFile;
 
 public abstract class BaseMeta
         extends
@@ -44,6 +44,8 @@ public abstract class BaseMeta
             byte[] data = encode();
             mFile.writeInt(dataLength());
             mFile.write(data);
+            mFile.getFD()
+                 .sync();
         }
         catch (IOException e) {
             e.printStackTrace();

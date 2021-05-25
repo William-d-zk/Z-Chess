@@ -72,8 +72,6 @@ public interface QueenCode
 
     static String codeOf(int code)
     {
-
-
         return switch (code)
         {
             case PLAIN_UNSUPPORTED -> "PLAIN_UNSUPPORTED";
