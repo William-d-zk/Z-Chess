@@ -49,6 +49,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -104,13 +105,15 @@ public class NodeService
         _LogicHandler = new LogicHandler<>(_DeviceNode, qttRouter, _RaftNode, messageService);
     }
 
+    private final AtomicInteger _AtomicCount = new AtomicInteger(0);
+
     @PostConstruct
     private void start() throws IOException
     {
         _RaftNode.init();
         _DeviceNode.start(_LogicHandler, new ZLinkMappingCustom(_LinkCustom), new ZClusterMappingCustom<>(_RaftCustom));
         _RaftNode.start();
-        _Logger.info("device service start");
+        _Logger.info("device service start %d", _AtomicCount.getAndIncrement());
     }
 
     @Bean

@@ -66,7 +66,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
 {
     private final Logger                       _Logger         = Logger.getLogger("cluster.knight."
                                                                                   + getClass().getSimpleName());
-    private final ZUID                         _ZUID;
+    private final ZUID                         _ZUid;
     private final IRaftConfig                  _RaftConfig;
     private final M                            _ClusterPeer;
     private final IRaftDao                     _RaftDao;
@@ -87,7 +87,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         _TimeWheel = timeWheel;
         _RaftConfig = clusterConfig;
         _ClusterPeer = manager;
-        _ZUID = clusterConfig.createZUID();
+        _ZUid = clusterConfig.createZUID();
         _RaftDao = raftDao;
         _ElectSchedule = new ScheduleHandler<>(_RaftConfig.getElectInSecond(), RaftNode::stepDown);
         _HeartbeatSchedule = new ScheduleHandler<>(_RaftConfig.getHeartbeatInSecond(), RaftNode::heartbeat);
@@ -95,7 +95,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                                                          .multipliedBy(2),
                                               RaftNode::startVote);
         _RaftGraph = new RaftGraph();
-        _SelfMachine = new RaftMachine(_ZUID.getPeerId());
+        _SelfMachine = new RaftMachine(_ZUid.getPeerId());
         _RaftGraph.append(_SelfMachine);
         _SnapshotFragmentMaxSize = _RaftConfig.getSnapshotFragmentMaxSize();
     }
@@ -142,7 +142,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
             if (peers != null) {
                 for (int i = 0, size = peers.size(); i < size; i++) {
                     IPair pair = peers.get(i);
-                    _SelfMachine.appendPeer(new Triple<>(_ZUID.getPeerIdByNode(i), pair.getFirst(), pair.getSecond()));
+                    _SelfMachine.appendPeer(new Triple<>(_ZUid.getPeerIdByNode(i), pair.getFirst(), pair.getSecond()));
                 }
                 _RaftDao.getLogMeta()
                         .setPeerSet(_SelfMachine.getPeerSet());
@@ -153,7 +153,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
             if (gates != null) {
                 for (int i = 0, size = gates.size(); i < size; i++) {
                     IPair pair = gates.get(i);
-                    _SelfMachine.appendGate(new Triple<>(_ZUID.getClusterId(i), pair.getFirst(), pair.getSecond()));
+                    _SelfMachine.appendGate(new Triple<>(_ZUid.getClusterId(i), pair.getFirst(), pair.getSecond()));
                 }
                 _RaftDao.getLogMeta()
                         .setGateSet(_SelfMachine.getGateSet());
@@ -188,7 +188,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
             if (_SelfMachine.getGateSet() != null) {
                 for (ITriple remote : _SelfMachine.getGateSet()) {
                     long gateId = remote.getFirst();
-                    if (gateId != _ZUID.getClusterId()) {
+                    if (gateId != _ZUid.getClusterId()) {
                         _ClusterPeer.addGate(new Pair<>(remote.getSecond(), remote.getThird()));
                         _Logger.info("->gate : %s:%d", remote.getSecond(), remote.getThird());
                     }
@@ -260,7 +260,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
 
     private X71_RaftBallot ballot()
     {
-        X71_RaftBallot vote = new X71_RaftBallot(_ZUID.getId());
+        X71_RaftBallot vote = new X71_RaftBallot(_ZUid.getId());
         vote.setElectorId(_SelfMachine.getPeerId());
         vote.setTerm(_SelfMachine.getTerm());
         vote.setIndex(_SelfMachine.getIndex());
@@ -270,7 +270,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
 
     private X73_RaftAccept accept()
     {
-        X73_RaftAccept accept = new X73_RaftAccept(_ZUID.getId());
+        X73_RaftAccept accept = new X73_RaftAccept(_ZUid.getId());
         accept.setFollowerId(_SelfMachine.getPeerId());
         accept.setTerm(_SelfMachine.getTerm());
         accept.setCatchUp(_SelfMachine.getIndex());
@@ -281,7 +281,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
 
     private X74_RaftReject reject(RaftCode raftCode, long rejectTo)
     {
-        X74_RaftReject reject = new X74_RaftReject(_ZUID.getId());
+        X74_RaftReject reject = new X74_RaftReject(_ZUid.getId());
         reject.setPeerId(_SelfMachine.getPeerId());
         reject.setTerm(_SelfMachine.getTerm());
         reject.setIndex(_SelfMachine.getIndex());
@@ -842,7 +842,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                          {
                              ISession session = manager.findSessionByPrefix(peerId);
                              if (session != null) {
-                                 X70_RaftVote x70 = new X70_RaftVote(_ZUID.getId());
+                                 X70_RaftVote x70 = new X70_RaftVote(_ZUid.getId());
                                  x70.setElectorId(peerId);
                                  x70.setCandidateId(update.getPeerId());
                                  x70.setTerm(update.getTerm());
@@ -887,7 +887,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
 
     private X72_RaftAppend createAppend(RaftMachine follower, int limit)
     {
-        X72_RaftAppend x72 = new X72_RaftAppend(_ZUID.getId());
+        X72_RaftAppend x72 = new X72_RaftAppend(_ZUid.getId());
         x72.setLeaderId(_SelfMachine.getPeerId());
         x72.setTerm(_SelfMachine.getTerm());
         x72.setCommit(_SelfMachine.getCommit());
@@ -957,17 +957,17 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
 
     public long getRaftZuid()
     {
-        return _ZUID.getId();
+        return _ZUid.getId();
     }
 
     public long getPeerId()
     {
-        return _ZUID.getPeerId();
+        return _ZUid.getPeerId();
     }
 
     private X76_RaftNotify createNotify(LogEntry raftLog)
     {
-        X76_RaftNotify x76 = new X76_RaftNotify(_ZUID.getId());
+        X76_RaftNotify x76 = new X76_RaftNotify(_ZUid.getId());
         x76.setSerial(raftLog.getPayloadSerial());
         x76.setPayload(raftLog.getPayload());
         x76.setOrigin(raftLog.getOrigin());
