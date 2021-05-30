@@ -202,12 +202,12 @@
         <slf4j.version>1.7.30</slf4j.version>
         <logback.version>1.2.3</logback.version>
         <!--SPRING-BOOT-->
-        <spring-boot.version>2.4.5</spring-boot.version>
+        <spring-boot.version>2.5.0</spring-boot.version>
         <!--Commons-IO-->
-        <commons-io.version>2.8.0</commons-io.version>
+        <commons-io.version>2.9.0</commons-io.version>
         <!--DB-->
         <postgresql.driver.version>42.2.20</postgresql.driver.version>
-        <hibernate-types-52.version>2.10.4</hibernate-types-52.version>
+        <hibernate-types-52.version>2.11.1</hibernate-types-52.version>
         <!--PIPELINE-->
         <disruptor.version>3.4.4</disruptor.version>
         <!--TOOLS-->
@@ -225,7 +225,7 @@
         <!--SECURITY-->
         <jjwt.version>0.11.2</jjwt.version>
         <spring-security-jwt.version>1.1.1.RELEASE</spring-security-jwt.version>
-        <spring-security-oauth2-autoconfigure.version>2.4.5</spring-security-oauth2-autoconfigure.version>
+        <spring-security-oauth2-autoconfigure.version>2.5.0</spring-security-oauth2-autoconfigure.version>
         <spring-security-oauth2.version>2.5.1.RELEASE</spring-security-oauth2.version>
     </properties>
     <dependencies>
