@@ -41,7 +41,8 @@ public enum Code
     SUCCESS(0x00FF, "成功"),
     FORBIDDEN(0x0101, "禁止访问 %s"),
     UNAUTHORIZED(0x0102, "无权访问 %s"),
-    MISS(0x010F, "访问的资源不存在 %s");
+    MISS(0x010F, "访问的资源不存在 %s"),
+    ERROR(0xFFFE, "错误[ %s ]");
 
     private final int    _Code;
     private final String _Formatter;
