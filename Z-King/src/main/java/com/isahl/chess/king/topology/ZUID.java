@@ -46,7 +46,7 @@ import java.util.regex.Pattern;
  * -7bit-
  * Endpoint identity
  * -38bit-
- * Timestamp gap 2018-06-01 00:00:00.000
+ * Timestamp gap 2021-06-01 00:00:00.000
  * -10bit-
  * sequence in one millisecond
  */
