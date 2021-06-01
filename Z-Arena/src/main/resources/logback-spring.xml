@@ -49,8 +49,8 @@
         </encoder>
     </appender>
 
-    <root level="INFO">
-        <appender-ref ref="Z-CHESS"/>
+    <root level="debug">
+        <appender-ref ref="CONSOLE"/>
     </root>
 
     <logger name="base.king" level="INFO">
@@ -71,7 +71,13 @@
     <logger name="endpoint.pawn" level="DEBUG">
         <appender-ref ref="Z-CHESS"/>
     </logger>
+    <logger name="biz.player" level="DEBUG">
+        <appender-ref ref="Z-CHESS"/>
+    </logger>
     <logger name="security.referee" level="DEBUG">
+        <appender-ref ref="Z-CHESS"/>
+    </logger>
+    <logger name="gateway.arena" level="DEBUG">
         <appender-ref ref="Z-CHESS"/>
     </logger>
 </configuration>

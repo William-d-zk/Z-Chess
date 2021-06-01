@@ -41,7 +41,7 @@ public class ConsistentOpenService
         IConsistentService
 {
 
-    private final Logger               _Logger = Logger.getLogger("player.consistent." + getClass().getSimpleName());
+    private final Logger               _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
     private final DeviceNode           _DeviceNode;
     private final RaftNode<DeviceNode> _RaftNode;
     private final IConsistentCustom    _ConsistentCustom;
