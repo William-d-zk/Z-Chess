@@ -50,7 +50,6 @@
     </appender>
 
     <root level="INFO">
-        <appender-ref ref="CONSOLE"/>
         <appender-ref ref="Z-CHESS"/>
     </root>
 
