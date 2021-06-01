@@ -21,26 +21,40 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.referee.security.component;
+package com.isahl.chess.referee.security.oauth;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+import com.isahl.chess.referee.security.oauth.client.OAuth2Client;
 
-@Configuration
-@ConfigurationProperties(prefix = "z-chess.referee.security.code")
-@PropertySource("classpath:security.code.properties")
-public class RefereeCode
+import java.io.Serial;
+import java.io.Serializable;
+
+public class OAuth2Storage
+        implements
+        Serializable
 {
-    private String authorNoPermission;
+    @Serial
+    private static final long serialVersionUID = 7886872340025936249L;
 
-    public String getAuthorNoPermission()
+    private String         jwtSignKey   = "z-chess.isahl.jwt";
+    private OAuth2Client[] auth2Clients = {};
+
+    public String getJwtSignKey()
     {
-        return authorNoPermission;
+        return jwtSignKey;
     }
 
-    public void setAuthorNoPermission(String authorNoPermission)
+    public void setJwtSignKey(String jwtSignKey)
     {
-        this.authorNoPermission = authorNoPermission;
+        this.jwtSignKey = jwtSignKey;
+    }
+
+    public OAuth2Client[] getAuth2Clients()
+    {
+        return auth2Clients;
+    }
+
+    public void setAuth2Clients(OAuth2Client[] auth2Clients)
+    {
+        this.auth2Clients = auth2Clients;
     }
 }
