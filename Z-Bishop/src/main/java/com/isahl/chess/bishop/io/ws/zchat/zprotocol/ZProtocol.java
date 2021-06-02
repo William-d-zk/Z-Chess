@@ -22,9 +22,6 @@
  */
 package com.isahl.chess.bishop.io.ws.zchat.zprotocol;
 
-import java.nio.charset.Charset;
-import java.util.Objects;
-
 import com.isahl.chess.bishop.io.ws.zchat.ZContext;
 import com.isahl.chess.king.base.util.CryptUtil;
 import com.isahl.chess.king.base.util.I18nUtil;
@@ -32,6 +29,9 @@ import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.inf.ICommand;
 import com.isahl.chess.queen.io.core.inf.IDuplicate;
 import com.isahl.chess.queen.io.core.inf.IQoS;
+
+import java.nio.charset.Charset;
+import java.util.Objects;
 
 /**
  * @author William.d.zk
@@ -305,7 +305,7 @@ public abstract class ZProtocol
     @Override
     public String toString()
     {
-        return String.format("%s CMD: 0x%X | version:%d charset:%s serial-type:%s qos:%s msgId:%d |",
+        return String.format("%s CMD: 0x%x | version:%d charset:%s serial-type:%s qos:%s msgId:%d |",
                              getClass().getSimpleName(),
                              _Command,
                              getVersion(),

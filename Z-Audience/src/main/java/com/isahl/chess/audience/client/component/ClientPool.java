@@ -143,7 +143,7 @@ public class ClientPool
                                                  byte[] token = x22.getToken();
                                                  Client client = _ZClientMap.get(session.getIndex());
                                                  if (client == null) {
-                                                     _Logger.warning("client %x not found", session.getIndex());
+                                                     _Logger.warning("client 0x%x not found", session.getIndex());
                                                  }
                                                  else {
                                                      client.setToken(IoUtil.bin2Hex(token));
@@ -273,7 +273,7 @@ public class ClientPool
                 super.onCreated(session);
                 ClientPool.this.addSession(session);
                 _ZClientMap.put(client.getClientId(), client);
-                _Logger.debug("client %x connected %s:%d", client.getClientId(), host, port);
+                _Logger.debug("client 0x%x connected %s:%d", client.getClientId(), host, port);
             }
 
             @Override

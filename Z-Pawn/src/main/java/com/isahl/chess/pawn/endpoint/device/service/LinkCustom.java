@@ -177,6 +177,7 @@ public class LinkCustom
              */
             X76_RaftNotify x76 = (X76_RaftNotify) response;
             int cmd = x76.load();
+            _Logger.debug("client-request cmd:0x%x", cmd);
             clientRequest = ZSortHolder.create(cmd);
             clientRequest.decode(x76.getPayload());
             _Logger.info("notify cluster client by leader %s", x76.byLeader());
