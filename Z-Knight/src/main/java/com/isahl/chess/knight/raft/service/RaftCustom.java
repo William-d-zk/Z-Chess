@@ -233,23 +233,23 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
                             .map(x72 -> new Triple<>(x72,
                                                      x72.getSession(),
                                                      x72.getSession()
-
                                                         .getEncoder()))
                             .collect(Collectors.toList());
         }
         else if (_RaftNode.getMachine()
                           .getLeader() != ZUID.INVALID_PEER_ID)
         {
-            X75_RaftRequest x75 = new X75_RaftRequest(_RaftNode.getRaftZuid());
-            x75.setSerial(request.serial());
-            x75.setPayload(request.encode());
-            x75.setOrigin(request.getOrigin());
-            x75.setClientId(_RaftNode.getMachine()
-                                     .getPeerId());
-            x75.setPublic(request.isPublic());
+
             ISession leaderSession = manager.findSessionByPrefix(_RaftNode.getMachine()
                                                                           .getLeader());
             if (leaderSession != null) {
+                X75_RaftRequest x75 = new X75_RaftRequest(_RaftNode.getRaftZuid());
+                x75.setSerial(request.serial());
+                x75.setPayload(request.encode());
+                x75.setOrigin(request.getOrigin());
+                x75.setClientId(_RaftNode.getMachine()
+                                         .getPeerId());
+                x75.setPublic(request.isPublic());
                 return Collections.singletonList(new Triple<>(x75, leaderSession, leaderSession.getEncoder()));
             }
             else {
