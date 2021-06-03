@@ -23,10 +23,10 @@
 
 package com.isahl.chess.bishop.io.mqtt.command;
 
-import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
-
 import com.isahl.chess.bishop.io.mqtt.QttCommand;
 import com.isahl.chess.bishop.io.mqtt.QttType;
+
+import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
 
 /**
  * @author william.d.zk
@@ -37,7 +37,7 @@ public class X115_QttPubrec
         extends
         QttCommand
 {
-    public final static int COMMAND = 0x119;
+    public final static int COMMAND = 0x115;
 
     public X115_QttPubrec()
     {
