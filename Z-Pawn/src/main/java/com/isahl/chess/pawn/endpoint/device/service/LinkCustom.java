@@ -157,6 +157,10 @@ public class LinkCustom
                     _Logger.info("%s ,wait for consistent notify", input);
                     return new Pair<>(null, input);
                 }
+            case X11F_QttAuth.COMMAND ->
+                {
+
+                }
         }
         return null;
     }
@@ -260,8 +264,9 @@ public class LinkCustom
             case X11E_QttDisconnect.COMMAND ->
                 {
                     _Logger.info("disconnect");
-                    _LinkService.offline(session.getIndex(), _QttRouter);
-                    throw new ZException("service active close");
+                    if (_LinkService.offline(session.getIndex(), _QttRouter)) {
+                        throw new ZException("service active close");
+                    }
                 }
             case X11F_QttAuth.COMMAND ->
                 {
