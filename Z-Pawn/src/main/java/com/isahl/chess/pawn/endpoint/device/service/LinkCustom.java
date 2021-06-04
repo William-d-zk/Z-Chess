@@ -152,7 +152,7 @@ public class LinkCustom
                         return new Pair<>(new X112_QttConnack[]{x112}, null);
                     }
                 }
-            case X118_QttSubscribe.COMMAND, X11A_QttUnsubscribe.COMMAND ->
+            case X118_QttSubscribe.COMMAND, X11A_QttUnsubscribe.COMMAND, X11E_QttDisconnect.COMMAND ->
                 {
                     _Logger.info("%s ,wait for consistent notify", input);
                     return new Pair<>(null, input);
