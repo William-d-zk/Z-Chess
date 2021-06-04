@@ -49,7 +49,7 @@ public interface ILinkService
                      Function<Optional<DeviceEntity>,
                               Consumer<String>> function);
 
-    void offline(long deviceId, IRouter router);
+    boolean offline(long deviceId, IRouter router);
 
     DeviceEntity findDeviceByToken(String token);
 
