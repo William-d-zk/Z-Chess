@@ -25,6 +25,7 @@ package com.isahl.chess.knight.raft.model.log;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.isahl.chess.bishop.io.json.JsonProtocol;
+import com.isahl.chess.king.base.inf.IReset;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -32,6 +33,8 @@ import java.io.RandomAccessFile;
 public abstract class BaseMeta
         extends
         JsonProtocol
+        implements
+        IReset
 {
 
     @JsonIgnore

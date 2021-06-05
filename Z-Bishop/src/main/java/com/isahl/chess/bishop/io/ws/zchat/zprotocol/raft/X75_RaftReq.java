@@ -32,7 +32,7 @@ import com.isahl.chess.queen.io.core.inf.IConsistent;
  * 
  * @date 2020/4/11
  */
-public class X75_RaftRequest
+public class X75_RaftReq
         extends
         ZCommand
         implements
@@ -40,12 +40,12 @@ public class X75_RaftRequest
 {
     public final static int COMMAND = 0x75;
 
-    public X75_RaftRequest()
+    public X75_RaftReq()
     {
         super(COMMAND, true);
     }
 
-    public X75_RaftRequest(long msgId)
+    public X75_RaftReq(long msgId)
     {
         super(COMMAND, msgId);
     }
@@ -81,10 +81,7 @@ public class X75_RaftRequest
     {
         pos += IoUtil.writeLong(mClientId, data, pos);
         pos += IoUtil.writeLong(mOrigin, data, pos);
-        pos += IoUtil.writeByte(mPublic ? 1
-                                        : 0,
-                                data,
-                                pos);
+        pos += IoUtil.writeByte(mPublic ? 1: 0, data, pos);
         pos += IoUtil.writeShort(mSerial, data, pos);
         return pos;
     }
@@ -138,13 +135,11 @@ public class X75_RaftRequest
     @Override
     public String toString()
     {
-        return String.format(" X75_RaftRequest { client:%#x, origin:%#x, serial:%#x,payload[%d] public:%s ",
+        return String.format(" X75_RaftRequest { client:%#x, origin:%#x, serial:%#x,payload[%d] public:%s }",
                              mClientId,
                              mOrigin,
                              mSerial,
-                             getPayload() == null ? 0
-                                                  : getPayload().length,
-                             mPublic ? "all"
-                                     : "one");
+                             getPayload() == null ? 0: getPayload().length,
+                             mPublic ? "all": "one");
     }
 }

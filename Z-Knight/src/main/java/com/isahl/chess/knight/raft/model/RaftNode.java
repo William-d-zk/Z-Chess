@@ -496,7 +496,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
             _SelfMachine.commit(nextCommit, _RaftDao);
             _Logger.debug("leader commit:%d@%d", nextCommit, _SelfMachine.getTerm());
             LogEntry raftLog = _RaftDao.getEntry(nextCommit);
-            X76_RaftNotify x76 = createNotify(raftLog);
+            X77_RaftNotify x76 = createNotify(raftLog);
             x76.setLeader();
             if (raftLog.isPublic()) {
                 x76.setNotify();
@@ -777,17 +777,28 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         _AppendLogQueue.addAll(entryList);
     }
 
-    public <T extends IConsistent & IProtocol> Stream<X72_RaftAppend> newLogEntry(T request,
-                                                                                  long client,
-                                                                                  ISessionManager manager)
+    public <T extends IConsistent & IProtocol> Stream<X72_RaftAppend> newLeaderLogEntry(T request,
+                                                                                        long client,
+                                                                                        ISessionManager manager)
     {
-        return newLogEntry(request.serial(),
-                           request.encode(),
-                           client,
-                           request.getOrigin(),
-                           request.isPublic(),
-                           IStorage.Operation.OP_INSERT,
-                           manager);
+
+        _Logger.debug("create new raft log");
+        LogEntry newEntry = new LogEntry(_SelfMachine.getTerm(),
+                                         _SelfMachine.getIndex() + 1,
+                                         client,
+                                         request.getOrigin(),
+                                         request.serial(),
+                                         request.encode(),
+                                         request.isPublic());
+        newEntry.setOperation(IStorage.Operation.OP_INSERT);
+        if (_RaftDao.appendLog(newEntry)) {
+            _SelfMachine.appendLog(newEntry.getIndex(), newEntry.getTerm(), _RaftDao);
+            _Logger.debug("leader appended log %d@%d", newEntry.getIndex(), newEntry.getTerm());
+            return createBroadcasts(manager);
+        }
+        _Logger.fetal("RAFT WAL failed!");
+        stepDown();
+        return null;
     }
 
     public IPair newLogEntry(int serial, byte[] payload, long client, long origin, boolean pub, ISessionManager manager)
@@ -829,6 +840,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
             return createBroadcasts(manager);
         }
         _Logger.fetal("RAFT WAL failed!");
+
         return null;
     }
 
@@ -965,16 +977,16 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         return _ZUid.getPeerId();
     }
 
-    private X76_RaftNotify createNotify(LogEntry raftLog)
+    private X77_RaftNotify createNotify(LogEntry raftLog)
     {
-        X76_RaftNotify x76 = new X76_RaftNotify(_ZUid.getId());
+        X77_RaftNotify x76 = new X77_RaftNotify(_ZUid.getId());
         x76.setSerial(raftLog.getPayloadSerial());
         x76.setPayload(raftLog.getPayload());
         x76.setOrigin(raftLog.getOrigin());
         return x76;
     }
 
-    private Stream<X76_RaftNotify> createNotifyStream(ISessionManager manager, LogEntry raftLog)
+    private Stream<X77_RaftNotify> createNotifyStream(ISessionManager manager, LogEntry raftLog)
     {
         return _RaftGraph.getNodeMap()
                          .values()
@@ -984,7 +996,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                          {
                              ISession followerSession = manager.findSessionByPrefix(machine.getPeerId());
                              if (followerSession != null) {
-                                 X76_RaftNotify x76 = createNotify(raftLog);
+                                 X77_RaftNotify x76 = createNotify(raftLog);
                                  x76.setSession(followerSession);
                                  return x76;
                              }

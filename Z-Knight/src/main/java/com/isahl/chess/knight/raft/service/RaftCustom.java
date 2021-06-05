@@ -30,8 +30,8 @@ import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X71_RaftBallot;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X72_RaftAppend;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X73_RaftAccept;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X74_RaftReject;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X75_RaftRequest;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X76_RaftNotify;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X75_RaftReq;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X77_RaftNotify;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
@@ -142,7 +142,7 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
                                               x74.getState());
                 }
             // client → leader
-            case X75_RaftRequest.COMMAND ->
+            case X75_RaftReq.COMMAND ->
                 {
                     if (_RaftNode.getMachine()
                                  .getState() != LEADER)
@@ -152,7 +152,7 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
                                                  .getState());
                         break;
                     }
-                    X75_RaftRequest x75 = (X75_RaftRequest) content;
+                    X75_RaftReq x75 = (X75_RaftReq) content;
                     return _RaftNode.newLogEntry(x75.load(),
                                                  x75.getPayload(),
                                                  x75.getClientId(),
@@ -161,9 +161,9 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
                                                  manager);
                 }
             // leader → client
-            case X76_RaftNotify.COMMAND ->
+            case X77_RaftNotify.COMMAND ->
                 {
-                    X76_RaftNotify x76 = (X76_RaftNotify) content;
+                    X77_RaftNotify x76 = (X77_RaftNotify) content;
                     x76.setNotify();
                     return new Pair<>(null, x76);
                 }
@@ -226,7 +226,7 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
             /*
              * session belong to Link
              */
-            return _RaftNode.newLogEntry(request,
+            return _RaftNode.newLeaderLogEntry(request,
                                          _RaftNode.getMachine()
                                                   .getPeerId(),
                                          manager)
@@ -243,7 +243,7 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
             ISession leaderSession = manager.findSessionByPrefix(_RaftNode.getMachine()
                                                                           .getLeader());
             if (leaderSession != null) {
-                X75_RaftRequest x75 = new X75_RaftRequest(_RaftNode.getRaftZuid());
+                X75_RaftReq x75 = new X75_RaftReq(_RaftNode.getRaftZuid());
                 x75.setSerial(request.serial());
                 x75.setPayload(request.encode());
                 x75.setOrigin(request.getOrigin());
