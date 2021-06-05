@@ -32,20 +32,20 @@ import com.isahl.chess.queen.io.core.inf.IConsistentNotify;
  * 
  * @date 2020/4/11
  */
-public class X76_RaftNotify
+public class X77_RaftNotify
         extends
         ZCommand
         implements
         IConsistentNotify
 {
-    public final static int COMMAND = 0x76;
+    public final static int COMMAND = 0x77;
 
-    public X76_RaftNotify()
+    public X77_RaftNotify()
     {
         super(COMMAND, true);
     }
 
-    public X76_RaftNotify(long msgId)
+    public X77_RaftNotify(long msgId)
     {
         super(COMMAND, msgId);
     }

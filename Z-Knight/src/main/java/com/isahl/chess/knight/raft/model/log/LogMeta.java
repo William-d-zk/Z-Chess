@@ -23,12 +23,6 @@
 
 package com.isahl.chess.knight.raft.model.log;
 
-import static com.isahl.chess.knight.raft.IRaftMachine.MIN_START;
-
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.util.Set;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -37,6 +31,12 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.king.base.util.Triple;
+
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.Set;
+
+import static com.isahl.chess.knight.raft.IRaftMachine.MIN_START;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -72,6 +72,21 @@ public class LogMeta
     private Set<Triple<Long,
                        String,
                        Integer>>               mGateSet;
+
+    @Override
+    public void reset()
+    {
+        mStart = 0;
+        mIndex = 0;
+        mIndexTerm = 0;
+        mTerm = 0;
+        mCandidate = 0;
+        mCommit = 0;
+        mApplied = 0;
+        if (mPeerSet != null) mPeerSet.clear();
+        if (mGateSet != null) mGateSet.clear();
+        update();
+    }
 
     @JsonCreator
     public LogMeta(@JsonProperty("start") long start,

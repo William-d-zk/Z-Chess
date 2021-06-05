@@ -23,13 +23,7 @@
 
 package com.isahl.chess.bishop.io.ws.zchat.zprotocol;
 
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X70_RaftVote;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X71_RaftBallot;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X72_RaftAppend;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X73_RaftAccept;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X74_RaftReject;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X75_RaftRequest;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X76_RaftNotify;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.*;
 import com.isahl.chess.queen.io.core.inf.ICommand;
 import com.isahl.chess.queen.io.core.inf.ICommandFactory;
 import com.isahl.chess.queen.io.core.inf.IFrame;
@@ -61,8 +55,9 @@ public class ZClusterFactory
             case X72_RaftAppend.COMMAND -> new X72_RaftAppend();
             case X73_RaftAccept.COMMAND -> new X73_RaftAccept();
             case X74_RaftReject.COMMAND -> new X74_RaftReject();
-            case X75_RaftRequest.COMMAND -> new X75_RaftRequest();
-            case X76_RaftNotify.COMMAND -> new X76_RaftNotify();
+            case X75_RaftReq.COMMAND -> new X75_RaftReq();
+            case X76_RaftResp.COMMAND -> new X76_RaftResp();
+            case X77_RaftNotify.COMMAND -> new X77_RaftNotify();
             default -> null;
         };
     }
