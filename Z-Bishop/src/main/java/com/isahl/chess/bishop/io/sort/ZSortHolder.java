@@ -35,7 +35,7 @@ import com.isahl.chess.bishop.io.ws.zchat.ZlsZSort;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZClusterFactory;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZServerFactory;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X70_RaftVote;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X76_RaftNotify;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X77_RaftNotify;
 import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.queen.io.core.async.inf.IAioSort;
 import com.isahl.chess.queen.io.core.inf.IControl;
@@ -108,7 +108,7 @@ public enum ZSortHolder
             return _QttCommandFactory.create(serial);
         }
         if (serial >= 0x20 && serial <= 0x6F) { return _ServerFactory.create(serial); }
-        if (serial >= X70_RaftVote.COMMAND && serial <= X76_RaftNotify.COMMAND) {
+        if (serial >= X70_RaftVote.COMMAND && serial <= X77_RaftNotify.COMMAND) {
             return _ClusterFactory.create(serial);
         }
         throw new IllegalArgumentException();

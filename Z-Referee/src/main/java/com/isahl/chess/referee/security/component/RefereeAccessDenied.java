@@ -21,20 +21,36 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.referee.start;
+package com.isahl.chess.referee.security.component;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.stereotype.Component;
 
-/**
- * @author william.d.zk
- * @date 2021/3/1
- */
-@SpringBootApplication(scanBasePackages = {"com.isahl.chess.referee.security"})
-public class ApplicationReferee
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+@Component
+public class RefereeAccessDenied
+        implements
+        AccessDeniedHandler
 {
-    public static void main(String[] args)
+
+    private final RefereeCode _RefereeCode;
+
+    @Autowired
+    public RefereeAccessDenied(RefereeCode refereeCode)
     {
-        SpringApplication.run(ApplicationReferee.class, args);
+        _RefereeCode = refereeCode;
+    }
+
+    @Override
+    public void handle(HttpServletRequest httpServletRequest,
+                       HttpServletResponse resp,
+                       AccessDeniedException e) throws IOException
+    {
+        resp.sendError(HttpServletResponse.SC_FORBIDDEN, _RefereeCode.getAuthorNoPermission());
     }
 }

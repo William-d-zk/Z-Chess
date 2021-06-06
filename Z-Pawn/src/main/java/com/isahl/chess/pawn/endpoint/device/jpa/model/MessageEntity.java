@@ -67,6 +67,7 @@ public class MessageEntity
     private static final long serialVersionUID = -6502547239976531057L;
 
     @Id
+    @JsonIgnore
     @GeneratedValue(generator = "ZMessageGenerator")
     @GenericGenerator(name = "ZMessageGenerator",
                       strategy = "com.isahl.chess.pawn.endpoint.device.jpa.generator.ZMessageGenerator")

@@ -25,68 +25,49 @@ package com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft;
 
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZCommand;
 import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.queen.io.core.inf.IConsistentNotify;
+import com.isahl.chess.queen.io.core.inf.IConsistent;
 
 /**
  * @author william.d.zk
  * 
  * @date 2020/4/11
  */
-public class X76_RaftNotify
+public class X75_RaftReq
         extends
         ZCommand
         implements
-        IConsistentNotify
+        IConsistent
 {
-    public final static int COMMAND = 0x76;
+    public final static int COMMAND = 0x75;
 
-    public X76_RaftNotify()
+    public X75_RaftReq()
     {
         super(COMMAND, true);
     }
 
-    public X76_RaftNotify(long msgId)
+    public X75_RaftReq(long msgId)
     {
         super(COMMAND, msgId);
     }
 
-    private int               mSerial;
-    private long              mOrigin;
-    private transient boolean tLeader;
-    private transient boolean tNotify;
+    private long    mClientId;
+    private int     mPayloadSerial;
+    private long    mOrigin;
+    private boolean mPublic;
 
-    public int load()
+    public int getPayloadSerial()
     {
-        return mSerial;
+        return mPayloadSerial;
     }
 
-    public void setSerial(int serial)
+    public void setPayloadSerial(int payloadSerial)
     {
-        mSerial = serial;
+        mPayloadSerial = payloadSerial;
     }
 
-    @Override
-    public int encodec(byte[] data, int pos)
+    public void setOrigin(long origin)
     {
-        pos += IoUtil.writeShort(mSerial, data, pos);
-        pos += IoUtil.writeLong(mOrigin, data, pos);
-        return pos;
-    }
-
-    @Override
-    public int decodec(byte[] data, int pos)
-    {
-        mSerial = IoUtil.readUnsignedShort(data, pos);
-        pos += 2;
-        mOrigin = IoUtil.readLong(data, pos);
-        pos += 8;
-        return pos;
-    }
-
-    @Override
-    public int dataLength()
-    {
-        return super.dataLength() + 10;
+        mOrigin = origin;
     }
 
     @Override
@@ -95,9 +76,43 @@ public class X76_RaftNotify
         return mOrigin;
     }
 
-    public void setOrigin(long origin)
+    @Override
+    public int encodec(byte[] data, int pos)
     {
-        mOrigin = origin;
+        pos += IoUtil.writeLong(mClientId, data, pos);
+        pos += IoUtil.writeLong(mOrigin, data, pos);
+        pos += IoUtil.writeByte(mPublic ? 1: 0, data, pos);
+        pos += IoUtil.writeShort(mPayloadSerial, data, pos);
+        return pos;
+    }
+
+    @Override
+    public int decodec(byte[] data, int pos)
+    {
+        mClientId = IoUtil.readLong(data, pos);
+        pos += 8;
+        mOrigin = IoUtil.readLong(data, pos);
+        pos += 8;
+        mPublic = data[pos++] > 0;
+        mPayloadSerial = IoUtil.readUnsignedShort(data, pos);
+        pos += 2;
+        return pos;
+    }
+
+    @Override
+    public int dataLength()
+    {
+        return super.dataLength() + 19;
+    }
+
+    public long getClientId()
+    {
+        return mClientId;
+    }
+
+    public void setClientId(long clientId)
+    {
+        mClientId = clientId;
     }
 
     @Override
@@ -107,24 +122,24 @@ public class X76_RaftNotify
     }
 
     @Override
-    public boolean byLeader()
+    public boolean isPublic()
     {
-        return tLeader;
+        return mPublic;
     }
 
-    public void setLeader()
+    public void setPublic(boolean pub)
     {
-        tLeader = true;
-    }
-
-    public void setNotify()
-    {
-        tNotify = true;
+        mPublic = pub;
     }
 
     @Override
-    public boolean doNotify()
+    public String toString()
     {
-        return tNotify;
+        return String.format(" X75_RaftRequest { client:%#x, origin:%#x, serial:%#x,payload[%d] public:%s }",
+                             mClientId,
+                             mOrigin,
+                             mPayloadSerial,
+                             getPayload() == null ? 0: getPayload().length,
+                             mPublic ? "all": "one");
     }
 }

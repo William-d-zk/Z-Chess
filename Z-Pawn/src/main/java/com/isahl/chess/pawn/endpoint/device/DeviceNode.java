@@ -69,7 +69,6 @@ public class DeviceNode
         ISessionDismiss,
         IClusterNode<ServerCore>
 {
-
     private final List<IAioServer> _AioServers;
     private final IAioClient       _PeerClient;
     private final IAioClient       _GateClient;

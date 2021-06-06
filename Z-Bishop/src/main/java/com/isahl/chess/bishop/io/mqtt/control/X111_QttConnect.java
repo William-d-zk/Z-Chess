@@ -96,7 +96,8 @@ public class X111_QttConnect
     @Override
     public String toString()
     {
-        return String.format("connect:[ctrl-code %x clientId:%s clean:%s willQoS:%s willRetain:%s willTopic:%s willMessage:%s user:%s password:%s keepalive:%d ]",
+        return String.format("%s:[ctrl-code 0x%x clientId:%s clean:%s willQoS:%s willRetain:%s willTopic:%s willMessage:%s user:%s password:%s keepalive:%d ]",
+                             getClass().getSimpleName(),
                              getControlCode(),
                              getClientId(),
                              isClean(),
@@ -391,7 +392,6 @@ public class X111_QttConnect
                                                                   passwordLength));
             }
             byte[] pwd = new byte[passwordLength];
-
             pos = IoUtil.read(data, pos, pwd, 0, passwordLength);
             mPassword = new String(pwd, StandardCharsets.UTF_8);
         }

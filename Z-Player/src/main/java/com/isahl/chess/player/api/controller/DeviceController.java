@@ -50,7 +50,7 @@ import static javax.persistence.criteria.Predicate.BooleanOperator.AND;
 @RequestMapping("device")
 public class DeviceController
 {
-    private final Logger         _Logger = Logger.getLogger(getClass().getSimpleName());
+    private final Logger         _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
     private final MixOpenService _MixOpenService;
 
     @Autowired

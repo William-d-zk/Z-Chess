@@ -1,7 +1,0 @@
-spring:
-  security:
-    user:
-      name: isahl
-      password: ok
-  datasource:
-    url: jdbc:postgresql://localhost:5432/isahl.z-chess

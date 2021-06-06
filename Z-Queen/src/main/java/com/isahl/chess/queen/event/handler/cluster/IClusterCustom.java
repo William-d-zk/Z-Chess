@@ -23,14 +23,14 @@
 
 package com.isahl.chess.queen.event.handler.cluster;
 
-import java.util.List;
-
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.queen.db.inf.IStorage;
 import com.isahl.chess.queen.event.handler.IMappingCustom;
 import com.isahl.chess.queen.io.core.inf.IConsistent;
-import com.isahl.chess.queen.io.core.inf.IProtocol;
+import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISessionManager;
+
+import java.util.List;
 
 /**
  * @author william.d.zk
@@ -83,7 +83,7 @@ public interface IClusterCustom<T extends IStorage>
      * @return triples
      *         [托管给集群IoSwitch.write(triples) 或 Transfer → Link.notify(triples)]
      */
-    <E extends IConsistent & IProtocol> List<ITriple> consensus(ISessionManager manager, E request);
+    <E extends IConsistent & IControl> List<ITriple> consensus(ISessionManager manager, E request);
 
     /**
      * 用于验证是否需要执行集群commit

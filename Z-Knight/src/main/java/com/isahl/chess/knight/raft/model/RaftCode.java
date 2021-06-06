@@ -31,7 +31,8 @@ public enum RaftCode
     ILLEGAL_STATE(3, "illegal state,reject"),
     SPLIT_CLUSTER(4, "split cluster,reject"),
     ALREADY_VOTE(5, "already vote,reject"),
-    OBSOLETE(6, "index obsolete,reject");
+    OBSOLETE(6, "index obsolete,reject"),
+    WAL_FAILED(7, "log entry write failed");
 
     private final int    _Code;
     private final String _Description;
@@ -64,6 +65,7 @@ public enum RaftCode
             case 4 -> SPLIT_CLUSTER;
             case 5 -> ALREADY_VOTE;
             case 6 -> OBSOLETE;
+            case 7 -> WAL_FAILED;
             default -> throw new UnsupportedOperationException();
         };
     }

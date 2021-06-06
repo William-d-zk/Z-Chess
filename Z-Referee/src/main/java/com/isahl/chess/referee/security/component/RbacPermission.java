@@ -33,7 +33,7 @@ import javax.servlet.http.HttpServletRequest;
  * @author william.d.zk
  * @date 2021/3/5
  */
-@Component("rbac-permission")
+@Component
 public class RbacPermission
 {
 

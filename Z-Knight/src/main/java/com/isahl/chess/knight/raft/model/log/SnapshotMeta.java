@@ -23,15 +23,15 @@
 
 package com.isahl.chess.knight.raft.model.log;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.king.base.util.JsonUtil;
+
+import java.io.IOException;
+import java.io.RandomAccessFile;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class SnapshotMeta
@@ -52,6 +52,14 @@ public class SnapshotMeta
 
     private SnapshotMeta()
     {
+    }
+
+    @Override
+    public void reset()
+    {
+        mCommit = 0;
+        mTerm = 0;
+        update();
     }
 
     public static SnapshotMeta loadFromFile(RandomAccessFile file)

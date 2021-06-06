@@ -23,16 +23,24 @@
 
 package com.isahl.chess.knight.raft.model.log;
 
-import static com.isahl.chess.knight.raft.IRaftMachine.MIN_START;
-import static com.isahl.chess.knight.raft.IRaftMachine.TERM_NAN;
+import com.isahl.chess.king.base.exception.ZException;
+import com.isahl.chess.king.base.inf.IPair;
+import com.isahl.chess.king.base.inf.ITriple;
+import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.base.util.Triple;
+import com.isahl.chess.knight.raft.IRaftDao;
+import com.isahl.chess.knight.raft.config.IRaftConfig;
+import com.isahl.chess.knight.raft.config.ZRaftConfig;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.List;
-import java.util.Objects;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -41,16 +49,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.knight.raft.IRaftDao;
-import com.isahl.chess.knight.raft.config.ZRaftConfig;
+import static com.isahl.chess.knight.raft.IRaftMachine.MIN_START;
+import static com.isahl.chess.knight.raft.IRaftMachine.TERM_NAN;
 
 @Component
 public class RaftDao
@@ -65,10 +65,12 @@ public class RaftDao
     private final int                    _MaxSegmentSize;
     private final TreeMap<Long,
                           Segment>       _Index2SegmentMap = new TreeMap<>();
-    private LogMeta                      mLogMeta;
-    private SnapshotMeta                 mSnapshotMeta;
-    private volatile long                vTotalSize;
-    private volatile boolean             vValid;
+    private final IRaftConfig            _RaftConfig;
+
+    private LogMeta          mLogMeta;
+    private SnapshotMeta     mSnapshotMeta;
+    private volatile long    vTotalSize;
+    private volatile boolean vValid;
     // 表示是否正在安装snapshot，leader向follower安装，leader和follower同时处于installSnapshot状态
     private final AtomicBoolean _InstallSnapshot = new AtomicBoolean(false);
     // 表示节点自己是否在对状态机做snapshot
@@ -78,6 +80,7 @@ public class RaftDao
     @Autowired
     public RaftDao(ZRaftConfig config)
     {
+        _RaftConfig = config;
         String baseDir = config.getBaseDir();
         _LogMetaDir = String.format("%s%s.raft", baseDir, File.separator);
         _LogDataDir = String.format("%s%sdata", baseDir, File.separator);
@@ -122,7 +125,16 @@ public class RaftDao
         catch (FileNotFoundException e) {
             _Logger.warning("meta file not exist, name=%s", metaFileName);
         }
-        installSnapshot();
+        if (checkState()) {
+            installSnapshot();
+        }
+        else {
+            mLogMeta.reset();
+            mSnapshotMeta.reset();
+            _Index2SegmentMap.clear();
+            clearSegments();
+            loadDefaultGraphSet();
+        }
         vValid = true;
     }
 
@@ -132,6 +144,39 @@ public class RaftDao
         mLogMeta.close();
         mSnapshotMeta.close();
         _Logger.debug("raft dao dispose");
+    }
+
+    @Override
+    public void loadDefaultGraphSet()
+    {
+        List<IPair> peers = _RaftConfig.getPeers();
+        if (peers != null) {
+            Set<Triple<Long,
+                       String,
+                       Integer>> peerSet = new TreeSet<>(Comparator.comparing(ITriple::getFirst));
+            for (int i = 0, size = peers.size(); i < size; i++) {
+                IPair pair = peers.get(i);
+                peerSet.add(new Triple<>(_RaftConfig.createZUID()
+                                                    .getPeerIdByNode(i),
+                                         pair.getFirst(),
+                                         pair.getSecond()));
+            }
+            mLogMeta.setPeerSet(peerSet);
+        }
+        List<IPair> gates = _RaftConfig.getGates();
+        if (gates != null) {
+            Set<Triple<Long,
+                       String,
+                       Integer>> gateSet = new TreeSet<>(Comparator.comparing(ITriple::getFirst));
+            for (int i = 0, size = gates.size(); i < size; i++) {
+                IPair pair = gates.get(i);
+                gateSet.add(new Triple<>(_RaftConfig.createZUID()
+                                                    .getClusterId(i),
+                                         pair.getFirst(),
+                                         pair.getSecond()));
+            }
+            mLogMeta.setGateSet(gateSet);
+        }
     }
 
     @Override
@@ -273,6 +318,28 @@ public class RaftDao
         return null;
     }
 
+    private void clearSegments()
+    {
+        File dataDir = new File(_LogDataDir);
+        File[] subs = dataDir.listFiles();
+        if (subs != null) {
+            Stream.of(subs)
+                  .forEach(sub ->
+                  {
+                      if (sub.isDirectory()) {
+                          if (sub.listFiles() == null) {
+                              boolean success = sub.delete();
+                              _Logger.info("remove segment-dir %s[%s]", sub.getName(), success);
+                          }
+                      }
+                      else {
+                          boolean success = sub.delete();
+                          _Logger.info("remove segment %s[%s]", sub.getName(), success);
+                      }
+                  });
+        }
+    }
+
     @Override
     public boolean appendLog(LogEntry entry)
     {
@@ -374,7 +441,6 @@ public class RaftDao
         long endIndex = getEndIndex();
         if (newEndIndex >= endIndex) { return null; }
         _Logger.debug("Truncating log from old end index %d to new end index %d", getEndIndex(), newEndIndex);
-
         while (!_Index2SegmentMap.isEmpty()) {
             Segment segment = _Index2SegmentMap.lastEntry()
                                                .getValue();
@@ -436,7 +502,16 @@ public class RaftDao
 
     private void installSnapshot()
     {
+        // TODO 安装本地已经获取的 sn
+        //  snapshot 存档。
+        // 1. 检查snapshot的完整性
+        // 2. 检查snapshot的数签
+    }
 
+    private boolean checkState()
+    {
+        return (_Index2SegmentMap.isEmpty() && mLogMeta.getIndex() == 0)
+               || mLogMeta.getIndex() == _Index2SegmentMap.lastKey();
     }
 
     @Override

@@ -23,23 +23,6 @@
 
 package com.isahl.chess.knight.raft.model;
 
-import static com.isahl.chess.king.topology.ZUID.INVALID_PEER_ID;
-import static com.isahl.chess.knight.raft.RaftState.CANDIDATE;
-import static com.isahl.chess.knight.raft.RaftState.ELECTOR;
-import static com.isahl.chess.knight.raft.RaftState.FOLLOWER;
-import static com.isahl.chess.knight.raft.RaftState.LEADER;
-import static com.isahl.chess.queen.db.inf.IStorage.Operation.OP_APPEND;
-import static com.isahl.chess.queen.db.inf.IStorage.Operation.OP_INSERT;
-import static com.isahl.chess.queen.db.inf.IStorage.Operation.OP_MODIFY;
-import static com.isahl.chess.queen.db.inf.IStorage.Operation.OP_NULL;
-import static java.lang.Long.min;
-
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeSet;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -53,6 +36,13 @@ import com.isahl.chess.knight.raft.IRaftDao;
 import com.isahl.chess.knight.raft.IRaftMachine;
 import com.isahl.chess.knight.raft.RaftState;
 import com.isahl.chess.queen.db.inf.IStorage;
+
+import java.util.*;
+
+import static com.isahl.chess.king.topology.ZUID.INVALID_PEER_ID;
+import static com.isahl.chess.knight.raft.RaftState.*;
+import static com.isahl.chess.queen.db.inf.IStorage.Operation.*;
+import static java.lang.Long.min;
 
 /**
  * @author william.d.zk
@@ -325,12 +315,12 @@ public class RaftMachine
     }
 
     @SafeVarargs
-    private final void appendGraph(Set<Triple<Long,
-                                              String,
-                                              Integer>> set,
-                                   Triple<Long,
-                                          String,
-                                          Integer>... a)
+    private void appendGraph(Set<Triple<Long,
+                                        String,
+                                        Integer>> set,
+                             Triple<Long,
+                                    String,
+                                    Integer>... a)
     {
         Objects.requireNonNull(set);
         if (a == null || a.length == 0) { return; }
