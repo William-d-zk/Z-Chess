@@ -25,13 +25,15 @@ package com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft;
 
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZCommand;
 import com.isahl.chess.king.base.util.IoUtil;
+import com.isahl.chess.queen.io.core.inf.IConsistentNotify;
 import com.isahl.chess.queen.io.core.inf.ITraceable;
 
 public class X76_RaftResp
         extends
         ZCommand
         implements
-        ITraceable
+        ITraceable,
+        IConsistentNotify
 {
 
     public final static int COMMAND = 0x76;
@@ -60,6 +62,7 @@ public class X76_RaftResp
                              mOrigin);
     }
 
+    @Override
     public int getPayloadSerial()
     {
         return mPayloadSerial;
@@ -136,4 +139,15 @@ public class X76_RaftResp
         return true;
     }
 
+    @Override
+    public boolean byLeader()
+    {
+        return false;
+    }
+
+    @Override
+    public boolean doNotify()
+    {
+        return true;
+    }
 }

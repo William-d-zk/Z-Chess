@@ -63,6 +63,17 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
         _RaftNode = raftNode;
     }
 
+    /**
+     *
+     * @param manager
+     * @param session
+     * @param content
+     *
+     * @return IPair
+     *              first : list of command implements 'IControl',broadcast to all cluster peers
+     *             second : command implements 'IConsistentNotify',
+     * @throws Exception
+     */
     @Override
     public IPair handle(ISessionManager manager, ISession session, IControl content) throws Exception
     {
