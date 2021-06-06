@@ -71,4 +71,5 @@ public interface IRaftDao
 
     long getTotalSize();
 
+    void loadDefaultGraphSet();
 }

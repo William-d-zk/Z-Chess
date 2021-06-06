@@ -124,7 +124,7 @@ public class MessageService
     @Override
     public long generateMsgId(long origin, long destination)
     {
-        return getNew(String.format("%x->%x", origin, destination));
+        return getNew(String.format("0x%x->0x%x", origin, destination));
     }
 
     @Cacheable(key = "#odKey", value = "message_cache_msg_id", unless = "#odKey == null")

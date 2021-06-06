@@ -131,10 +131,7 @@ public class DeviceService
                                                  this::batchHandleLogin,
                                                  PRIORITY_NORMAL));
         _TimeWheel.acquire(_BatchHandleIdle,
-                           new ScheduleHandler<>(Duration.ofSeconds(20),
-                                                 true,
-                                                 this::batchHandleIdle,
-                                                 PRIORITY_NORMAL));
+                           new ScheduleHandler<>(Duration.ofSeconds(20), true, this::batchHandleIdle, PRIORITY_NORMAL));
     }
 
     public void saveMessageState(MessageEntity message, long session)
@@ -158,11 +155,12 @@ public class DeviceService
     }
 
     @Override
-    public void offline(long deviceId, IRouter router)
+    public boolean offline(long deviceId, IRouter router)
     {
         ShadowDevice shadow = _ShadowDevices.remove(deviceId);
         ShadowEntity entity = shadow != null ? shadow.convert(): new ShadowEntity(deviceId);
         _BatchHandleIdle.add(entity);
+        return shadow != null;
     }
 
     @Override

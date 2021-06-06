@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,53 +21,40 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.king.config;
+package com.isahl.chess.referee.security.oauth;
 
-import com.isahl.chess.king.base.inf.ICode;
+import com.isahl.chess.referee.security.oauth.client.OAuth2Client;
 
-import java.util.Objects;
+import java.io.Serial;
+import java.io.Serializable;
 
-/**
- * @author William.d.zk
- */
-public enum Code
+public class OAuth2Storage
         implements
-        ICode
+        Serializable
 {
+    @Serial
+    private static final long serialVersionUID = 7886872340025936249L;
 
-    PLAIN_UNSUPPORTED(0xFF00, "不支持明文"),
-    SYMMETRIC_KEY_OK(0xFF01, "对称秘钥成功"),
-    ILLEGAL_PARAM(0x0010, "非法参数 %s"),
-    SUCCESS(0x00FF, "成功"),
-    FORBIDDEN(0x0101, "禁止访问 %s"),
-    UNAUTHORIZED(0x0102, "无权访问 %s"),
-    MISS(0x010F, "访问的资源不存在 %s"),
-    ERROR(0xFFFE, "错误[ %s ]");
+    private String         jwtSignKey   = "z-chess.isahl.jwt";
+    private OAuth2Client[] auth2Clients = {};
 
-    private final int    _Code;
-    private final String _Formatter;
-
-    @Override
-    public int getCode(Object... condition)
+    public String getJwtSignKey()
     {
-        return _Code;
+        return jwtSignKey;
     }
 
-    @Override
-    public String format(Object... args)
+    public void setJwtSignKey(String jwtSignKey)
     {
-        return Objects.isNull(args) || args.length == 0 ? _Formatter: String.format(_Formatter, args);
+        this.jwtSignKey = jwtSignKey;
     }
 
-    public String getFormatter()
+    public OAuth2Client[] getAuth2Clients()
     {
-        return _Formatter;
+        return auth2Clients;
     }
 
-    Code(int code,
-         String formatter)
+    public void setAuth2Clients(OAuth2Client[] auth2Clients)
     {
-        _Code = code;
-        _Formatter = formatter;
+        this.auth2Clients = auth2Clients;
     }
 }

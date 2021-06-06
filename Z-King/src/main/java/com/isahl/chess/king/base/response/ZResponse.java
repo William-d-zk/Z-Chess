@@ -125,9 +125,19 @@ public class ZResponse<T>
                                LocalDateTime.now());
     }
 
+    public static ZResponse<Void> error(String message)
+    {
+        return error(Code.ERROR.getCode(), message, null, null);
+    }
+
     public static ZResponse<Void> error(int code, String message)
     {
-        return new ZResponse<>(code, message, null, null, LocalDateTime.now());
+        return error(code, message, null, null);
+    }
+
+    public static <E> ZResponse<E> error(int code, String message, E detail, String formatter)
+    {
+        return new ZResponse<>(code, message, detail, formatter, LocalDateTime.now());
     }
 
     public int getCode()

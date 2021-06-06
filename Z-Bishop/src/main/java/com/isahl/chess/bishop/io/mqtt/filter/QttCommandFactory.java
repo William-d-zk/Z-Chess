@@ -27,20 +27,8 @@ import com.isahl.chess.bishop.io.mqtt.QttCommand;
 import com.isahl.chess.bishop.io.mqtt.QttControl;
 import com.isahl.chess.bishop.io.mqtt.QttFrame;
 import com.isahl.chess.bishop.io.mqtt.QttType;
-import com.isahl.chess.bishop.io.mqtt.command.X113_QttPublish;
-import com.isahl.chess.bishop.io.mqtt.command.X114_QttPuback;
-import com.isahl.chess.bishop.io.mqtt.command.X115_QttPubrec;
-import com.isahl.chess.bishop.io.mqtt.command.X116_QttPubrel;
-import com.isahl.chess.bishop.io.mqtt.command.X117_QttPubcomp;
-import com.isahl.chess.bishop.io.mqtt.control.X111_QttConnect;
-import com.isahl.chess.bishop.io.mqtt.control.X112_QttConnack;
-import com.isahl.chess.bishop.io.mqtt.control.X118_QttSubscribe;
-import com.isahl.chess.bishop.io.mqtt.control.X119_QttSuback;
-import com.isahl.chess.bishop.io.mqtt.control.X11A_QttUnsubscribe;
-import com.isahl.chess.bishop.io.mqtt.control.X11B_QttUnsuback;
-import com.isahl.chess.bishop.io.mqtt.control.X11C_QttPingreq;
-import com.isahl.chess.bishop.io.mqtt.control.X11D_QttPingresp;
-import com.isahl.chess.bishop.io.mqtt.control.X11E_QttDisconnect;
+import com.isahl.chess.bishop.io.mqtt.command.*;
+import com.isahl.chess.bishop.io.mqtt.control.*;
 import com.isahl.chess.bishop.io.mqtt.v5.control.X11F_QttAuth;
 import com.isahl.chess.queen.io.core.inf.ICommandFactory;
 import com.isahl.chess.queen.io.core.inf.IControl;
@@ -73,25 +61,47 @@ public class QttCommandFactory
     @Override
     public IControl create(int serial)
     {
-        QttType qttType = QttType.valueOf(serial);
-        return switch (qttType)
-        {
-            case CONNECT -> new X111_QttConnect();
-            case CONNACK -> new X112_QttConnack();
-            case PINGREQ -> new X11C_QttPingreq();
-            case PINGRESP -> new X11D_QttPingresp();
-            case DISCONNECT -> new X11E_QttDisconnect();
-            case PUBLISH -> new X113_QttPublish();
-            case PUBACK -> new X114_QttPuback();
-            case PUBREC -> new X115_QttPubrec();
-            case PUBREL -> new X116_QttPubrel();
-            case PUBCOMP -> new X117_QttPubcomp();
-            case SUBSCRIBE -> new X118_QttSubscribe();
-            case SUBACK -> new X119_QttSuback();
-            case UNSUBSCRIBE -> new X11A_QttUnsubscribe();
-            case UNSUBACK -> new X11B_QttUnsuback();
-            case AUTH -> new X11F_QttAuth();
-        };
+        if (serial >= X111_QttConnect.COMMAND && serial <= X11F_QttAuth.COMMAND) {
+            return switch (serial)
+            {
+                case X111_QttConnect.COMMAND -> new X111_QttConnect();
+                case X112_QttConnack.COMMAND -> new X112_QttConnack();
+                case X113_QttPublish.COMMAND -> new X113_QttPublish();
+                case X114_QttPuback.COMMAND -> new X114_QttPuback();
+                case X115_QttPubrec.COMMAND -> new X115_QttPubrec();
+                case X116_QttPubrel.COMMAND -> new X116_QttPubrel();
+                case X117_QttPubcomp.COMMAND -> new X117_QttPubcomp();
+                case X118_QttSubscribe.COMMAND -> new X118_QttSubscribe();
+                case X119_QttSuback.COMMAND -> new X119_QttSuback();
+                case X11A_QttUnsubscribe.COMMAND -> new X11A_QttUnsubscribe();
+                case X11B_QttUnsuback.COMMAND -> new X11B_QttUnsuback();
+                case X11C_QttPingreq.COMMAND -> new X11C_QttPingreq();
+                case X11D_QttPingresp.COMMAND -> new X11D_QttPingresp();
+                case X11E_QttDisconnect.COMMAND -> new X11E_QttDisconnect();
+                case X11F_QttAuth.COMMAND -> new X11F_QttAuth();
+                default -> null;
+            };
+        }
+        else {
+            return switch (QttType.valueOf(serial))
+            {
+                case CONNECT -> new X111_QttConnect();
+                case CONNACK -> new X112_QttConnack();
+                case PUBLISH -> new X113_QttPublish();
+                case PUBACK -> new X114_QttPuback();
+                case PUBREC -> new X115_QttPubrec();
+                case PUBREL -> new X116_QttPubrel();
+                case PUBCOMP -> new X117_QttPubcomp();
+                case SUBSCRIBE -> new X118_QttSubscribe();
+                case SUBACK -> new X119_QttSuback();
+                case UNSUBSCRIBE -> new X11A_QttUnsubscribe();
+                case UNSUBACK -> new X11B_QttUnsuback();
+                case PINGREQ -> new X11C_QttPingreq();
+                case PINGRESP -> new X11D_QttPingresp();
+                case DISCONNECT -> new X11E_QttDisconnect();
+                case AUTH -> new X11F_QttAuth();
+            };
+        }
     }
 
     public static QttControl createQttControl(QttFrame frame)

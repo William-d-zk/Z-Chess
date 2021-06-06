@@ -110,7 +110,7 @@ public class NodeService
         _RaftNode.init();
         _DeviceNode.start(_LogicHandler, new ZLinkMappingCustom(_LinkCustom), new ZClusterMappingCustom<>(_RaftCustom));
         _RaftNode.start();
-        _Logger.info("device service start");
+        _Logger.info(" device service start ");
     }
 
     @Bean

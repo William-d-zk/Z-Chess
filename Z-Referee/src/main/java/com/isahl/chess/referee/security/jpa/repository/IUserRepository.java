@@ -23,6 +23,7 @@
 
 package com.isahl.chess.referee.security.jpa.repository;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Repository;
 
 import com.isahl.chess.referee.security.jpa.model.UserEntity;
@@ -37,6 +38,6 @@ public interface IUserRepository
         extends
         BaseRepository<UserEntity>
 {
+    @PreAuthorize("hasAnyRole('admin') or principal.username.equals(#username)")
     UserEntity findByUsername(String username);
-
 }

@@ -1,0 +1,14 @@
+{
+  "properties": [
+    {
+      "name": "z.chess.raft.uid.type",
+      "type": "java.lang.Integer",
+      "description": "Description for z.chess.raft.uid.type."
+    },
+    {
+      "name": "z.chess.provider.io.consumer.trust_key_store_path",
+      "type": "java.lang.String",
+      "description": "Description for z.chess.provider.io.consumer.trust_key_store_path."
+    }
+  ]
+}

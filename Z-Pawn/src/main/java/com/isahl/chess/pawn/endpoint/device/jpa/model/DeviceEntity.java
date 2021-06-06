@@ -73,6 +73,7 @@ public class DeviceEntity
     private static final long serialVersionUID = -6645586986057373344L;
 
     @Id
+    @JsonIgnore
     @GeneratedValue(generator = "ZDeviceGenerator")
     @GenericGenerator(name = "ZDeviceGenerator",
                       strategy = "com.isahl.chess.pawn.endpoint.device.jpa.generator.ZDeviceGenerator")

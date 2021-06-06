@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -25,49 +25,64 @@ package com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft;
 
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZCommand;
 import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.queen.io.core.inf.IConsistent;
+import com.isahl.chess.queen.io.core.inf.ITraceable;
 
-/**
- * @author william.d.zk
- * 
- * @date 2020/4/11
- */
-public class X75_RaftRequest
+public class X76_RaftResp
         extends
         ZCommand
         implements
-        IConsistent
+        ITraceable
 {
-    public final static int COMMAND = 0x75;
 
-    public X75_RaftRequest()
+    public final static int COMMAND = 0x76;
+
+    public X76_RaftResp()
     {
         super(COMMAND, true);
     }
 
-    public X75_RaftRequest(long msgId)
+    public X76_RaftResp(long msgId)
     {
         super(COMMAND, msgId);
     }
 
-    private long    mClientId;
-    private int     mSerial;
-    private long    mOrigin;
-    private boolean mPublic;
+    private long mClientId;
+    private int  mPayloadSerial;
+    private long mOrigin;
+    private byte mCode;
 
-    public int load()
+    @Override
+    public String toString()
     {
-        return mSerial;
+        return String.format("X76_RaftResp { client:0x%x,payload_serial:0x%x,origin:0x%x }",
+                             mClientId,
+                             mPayloadSerial,
+                             mOrigin);
     }
 
-    public void setSerial(int serial)
+    public int getPayloadSerial()
     {
-        mSerial = serial;
+        return mPayloadSerial;
+    }
+
+    public void setPayloadSerial(int payloadSerial)
+    {
+        mPayloadSerial = payloadSerial;
     }
 
     public void setOrigin(long origin)
     {
         mOrigin = origin;
+    }
+
+    public int getCode()
+    {
+        return mCode;
+    }
+
+    public void setCode(byte code)
+    {
+        mCode = code;
     }
 
     @Override
@@ -81,11 +96,8 @@ public class X75_RaftRequest
     {
         pos += IoUtil.writeLong(mClientId, data, pos);
         pos += IoUtil.writeLong(mOrigin, data, pos);
-        pos += IoUtil.writeByte(mPublic ? 1
-                                        : 0,
-                                data,
-                                pos);
-        pos += IoUtil.writeShort(mSerial, data, pos);
+        pos += IoUtil.writeShort(mPayloadSerial, data, pos);
+        pos += IoUtil.writeByte(mCode, data, pos);
         return pos;
     }
 
@@ -96,9 +108,9 @@ public class X75_RaftRequest
         pos += 8;
         mOrigin = IoUtil.readLong(data, pos);
         pos += 8;
-        mPublic = data[pos++] > 0;
-        mSerial = IoUtil.readUnsignedShort(data, pos);
+        mPayloadSerial = IoUtil.readUnsignedShort(data, pos);
         pos += 2;
+        mCode = data[pos++];
         return pos;
     }
 
@@ -124,27 +136,4 @@ public class X75_RaftRequest
         return true;
     }
 
-    @Override
-    public boolean isPublic()
-    {
-        return mPublic;
-    }
-
-    public void setPublic(boolean pub)
-    {
-        mPublic = pub;
-    }
-
-    @Override
-    public String toString()
-    {
-        return String.format(" X75_RaftRequest { client:%#x, origin:%#x, serial:%#x,payload[%d] public:%s ",
-                             mClientId,
-                             mOrigin,
-                             mSerial,
-                             getPayload() == null ? 0
-                                                  : getPayload().length,
-                             mPublic ? "all"
-                                     : "one");
-    }
 }

@@ -31,8 +31,7 @@ import com.isahl.chess.bishop.io.mqtt.v5.control.X11F_QttAuth;
 import com.isahl.chess.bishop.io.sort.ZSortHolder;
 import com.isahl.chess.bishop.io.ws.control.X102_Close;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X108_Shutdown;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X76_RaftNotify;
-import com.isahl.chess.king.base.exception.ZException;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X77_RaftNotify;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
@@ -152,10 +151,14 @@ public class LinkCustom
                         return new Pair<>(new X112_QttConnack[]{x112}, null);
                     }
                 }
-            case X118_QttSubscribe.COMMAND, X11A_QttUnsubscribe.COMMAND ->
+            case X118_QttSubscribe.COMMAND, X11A_QttUnsubscribe.COMMAND, X11E_QttDisconnect.COMMAND ->
                 {
                     _Logger.info("%s ,wait for consistent notify", input);
                     return new Pair<>(null, input);
+                }
+            case X11F_QttAuth.COMMAND ->
+                {
+
                 }
         }
         return null;
@@ -170,16 +173,17 @@ public class LinkCustom
          * 在集群处理时 x76 携带了cluster 领域的session_index 作为入参，并在此处转换为 client-request.session_index
          */
         IControl clientRequest;
-        if (response.serial() == X76_RaftNotify.COMMAND) {
+        if (response.serial() == X77_RaftNotify.COMMAND) {
             /*
              * raft_client -> Link, session belong to cluster
              * ignore session
              */
-            X76_RaftNotify x76 = (X76_RaftNotify) response;
-            int cmd = x76.load();
+            X77_RaftNotify x77 = (X77_RaftNotify) response;
+            int cmd = x77.payloadSerial();
+            _Logger.debug("client-request cmd:0x%x", cmd);
             clientRequest = ZSortHolder.create(cmd);
-            clientRequest.decode(x76.getPayload());
-            _Logger.info("notify cluster client by leader %s", x76.byLeader());
+            clientRequest.decode(x77.getPayload());
+            _Logger.info("notify cluster client by leader %s", x77.byLeader());
         }
         else {
             /*
@@ -259,8 +263,13 @@ public class LinkCustom
             case X11E_QttDisconnect.COMMAND ->
                 {
                     _Logger.info("disconnect");
-                    _LinkService.offline(session.getIndex(), _QttRouter);
-                    throw new ZException("service active close");
+                    if (_LinkService.offline(session.getIndex(), _QttRouter)) {
+                        _Logger.info("shadow device offline 0x%x", session.getIndex());
+                    }
+                    else {
+                        _Logger.warning("no login device → offline");
+                    }
+                    session.innerClose();
                 }
             case X11F_QttAuth.COMMAND ->
                 {
@@ -296,11 +305,11 @@ public class LinkCustom
     {
         if (throwable == null) {
             _Logger.debug("notify---consistent");
-            if (request.serial() == X76_RaftNotify.COMMAND) {
+            if (request.serial() == X77_RaftNotify.COMMAND) {
                 _Logger.debug("cluster mode");
-                X76_RaftNotify x76 = (X76_RaftNotify) request;
+                X77_RaftNotify x76 = (X77_RaftNotify) request;
                 byte[] data = x76.getPayload();
-                if (x76.load() == ConsistentProtocol._SERIAL) {
+                if (x76.payloadSerial() == ConsistentProtocol._SERIAL) {
                     ConsistentProtocol consistentProtocol = JsonUtil.readValue(data, ConsistentProtocol.class);
                     consistentProtocol.decode(data);
                     _Logger.debug("notify ok");

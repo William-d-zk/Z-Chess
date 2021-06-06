@@ -111,7 +111,6 @@ public class WebSecurityConfig
             .accessDeniedPage("/401");
         http.logout()
             .logoutSuccessUrl("/");
-            
          */
         http.csrf()
             .disable();
@@ -164,7 +163,10 @@ public class WebSecurityConfig
             .anyRequest()
             .authenticated()
             .and()
-            .oauth2Login();
+            .oauth2Login()
+            .and()
+            .exceptionHandling()
+            .accessDeniedPage("/401");
     }
 
     private void jwt(HttpSecurity http) throws Exception
@@ -179,7 +181,9 @@ public class WebSecurityConfig
             .permitAll()
             .anyRequest()
             .authenticated()//message 需要验证
-        ;
+            .and()
+            .exceptionHandling()
+            .accessDeniedPage("/401");
         http.headers()
             .cacheControl();
     }

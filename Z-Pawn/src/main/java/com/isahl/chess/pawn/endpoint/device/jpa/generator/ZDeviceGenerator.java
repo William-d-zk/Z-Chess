@@ -23,19 +23,17 @@
 
 package com.isahl.chess.pawn.endpoint.device.jpa.generator;
 
-import java.io.Serializable;
-
-import javax.annotation.PostConstruct;
-
+import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.topology.ZUID;
+import com.isahl.chess.knight.raft.config.ZRaftConfig;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.id.IdentifierGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.topology.ZUID;
-import com.isahl.chess.knight.raft.config.ZRaftConfig;
+import javax.annotation.PostConstruct;
+import java.io.Serializable;
 
 /**
  * 
@@ -78,7 +76,7 @@ public class ZDeviceGenerator
     public Serializable generate(SharedSessionContractImplementor session, Object object) throws HibernateException
     {
         long id = next();
-        _Logger.debug("generate z-id %x, %s", id, object);
+        _Logger.debug("generate z-id 0x%x, %s", id, object);
         return id;
     }
 
