@@ -23,14 +23,14 @@
 
 package com.isahl.chess.bishop.io.ws.zchat.zhandler;
 
-import java.util.List;
-
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.queen.db.inf.IStorage;
 import com.isahl.chess.queen.event.handler.cluster.IClusterCustom;
 import com.isahl.chess.queen.io.core.inf.IConsistent;
-import com.isahl.chess.queen.io.core.inf.IProtocol;
+import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISessionManager;
+
+import java.util.List;
 
 /**
  * @author william.d.zk
@@ -51,15 +51,13 @@ public class ZClusterMappingCustom<T extends IStorage>
     @Override
     public List<ITriple> onTimer(ISessionManager manager, T content)
     {
-        return _Then != null ? _Then.onTimer(manager, content)
-                             : null;
+        return _Then != null ? _Then.onTimer(manager, content): null;
     }
 
     @Override
-    public <E extends IConsistent & IProtocol> List<ITriple> consensus(ISessionManager manager, E request)
+    public <E extends IConsistent & IControl> List<ITriple> consensus(ISessionManager manager, E request)
     {
-        return _Then != null ? _Then.consensus(manager, request)
-                             : null;
+        return _Then != null ? _Then.consensus(manager, request): null;
     }
 
     @Override
