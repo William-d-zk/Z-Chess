@@ -76,7 +76,7 @@ public class LogMeta
     @Override
     public void reset()
     {
-        mStart = 0;
+        mStart = MIN_START;
         mIndex = 0;
         mIndexTerm = 0;
         mTerm = 0;
