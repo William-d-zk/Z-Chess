@@ -353,7 +353,6 @@ public class RaftDao
         _Logger.debug("wait to append %s", entry);
         Objects.requireNonNull(entry);
         long newEndIndex = getEndIndex() + 1;
-        long newEndTerm = entry.getTerm();
         if (entry.getIndex() == newEndIndex) {
             int entrySize = entry.dataLength() + 4;
             boolean isNeedNewSegmentFile = false;
