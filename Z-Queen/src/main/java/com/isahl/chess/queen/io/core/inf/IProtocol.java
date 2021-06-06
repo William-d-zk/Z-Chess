@@ -22,8 +22,6 @@
  */
 package com.isahl.chess.queen.io.core.inf;
 
-import java.util.Objects;
-
 /**
  * @author William.d.zk
  */
@@ -76,7 +74,7 @@ public interface IProtocol
 
     default int decode(byte[] input, int pos, int length)
     {
-        Objects.requireNonNull(input);
+        if (input == null || input.length == 0) { return 0; }
         // dataLength 此处表达了最短长度值
         int len = dataLength();
         if (len > length || (input.length < len || pos + length > input.length)) {
@@ -87,6 +85,7 @@ public interface IProtocol
 
     default int decode(byte[] data)
     {
+        if (data == null || data.length == 0) { return 0; }
         return decode(data, 0, data.length);
     }
 

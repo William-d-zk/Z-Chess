@@ -216,7 +216,7 @@ public abstract class ZProtocol
     @Override
     public final int decode(byte[] input, int pos, int length)
     {
-        Objects.requireNonNull(input);
+        if (input == null || input.length == 0 || length == 0) { return 0; }
         // dataLength 此处表达了最短长度值
         int len = dataLength();
         if (len > length || (input.length < len || pos + length > input.length)) {
