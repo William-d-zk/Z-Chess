@@ -24,8 +24,12 @@
 package com.isahl.chess.knight.raft.model.log;
 
 import com.isahl.chess.king.base.exception.ZException;
+import com.isahl.chess.king.base.inf.IPair;
+import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.knight.raft.IRaftDao;
+import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.config.ZRaftConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -36,9 +40,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.List;
-import java.util.Objects;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -63,10 +65,12 @@ public class RaftDao
     private final int                    _MaxSegmentSize;
     private final TreeMap<Long,
                           Segment>       _Index2SegmentMap = new TreeMap<>();
-    private LogMeta                      mLogMeta;
-    private SnapshotMeta                 mSnapshotMeta;
-    private volatile long                vTotalSize;
-    private volatile boolean             vValid;
+    private final IRaftConfig            _RaftConfig;
+
+    private LogMeta          mLogMeta;
+    private SnapshotMeta     mSnapshotMeta;
+    private volatile long    vTotalSize;
+    private volatile boolean vValid;
     // 表示是否正在安装snapshot，leader向follower安装，leader和follower同时处于installSnapshot状态
     private final AtomicBoolean _InstallSnapshot = new AtomicBoolean(false);
     // 表示节点自己是否在对状态机做snapshot
@@ -76,6 +80,7 @@ public class RaftDao
     @Autowired
     public RaftDao(ZRaftConfig config)
     {
+        _RaftConfig = config;
         String baseDir = config.getBaseDir();
         _LogMetaDir = String.format("%s%s.raft", baseDir, File.separator);
         _LogDataDir = String.format("%s%sdata", baseDir, File.separator);
@@ -128,6 +133,7 @@ public class RaftDao
             mSnapshotMeta.reset();
             _Index2SegmentMap.clear();
             clearSegments();
+            loadDefaultGraphSet();
         }
         vValid = true;
     }
@@ -138,6 +144,39 @@ public class RaftDao
         mLogMeta.close();
         mSnapshotMeta.close();
         _Logger.debug("raft dao dispose");
+    }
+
+    @Override
+    public void loadDefaultGraphSet()
+    {
+        List<IPair> peers = _RaftConfig.getPeers();
+        if (peers != null) {
+            Set<Triple<Long,
+                       String,
+                       Integer>> peerSet = new TreeSet<>(Comparator.comparing(ITriple::getFirst));
+            for (int i = 0, size = peers.size(); i < size; i++) {
+                IPair pair = peers.get(i);
+                peerSet.add(new Triple<>(_RaftConfig.createZUID()
+                                                    .getPeerIdByNode(i),
+                                         pair.getFirst(),
+                                         pair.getSecond()));
+            }
+            mLogMeta.setPeerSet(peerSet);
+        }
+        List<IPair> gates = _RaftConfig.getGates();
+        if (gates != null) {
+            Set<Triple<Long,
+                       String,
+                       Integer>> gateSet = new TreeSet<>(Comparator.comparing(ITriple::getFirst));
+            for (int i = 0, size = gates.size(); i < size; i++) {
+                IPair pair = gates.get(i);
+                gateSet.add(new Triple<>(_RaftConfig.createZUID()
+                                                    .getClusterId(i),
+                                         pair.getFirst(),
+                                         pair.getSecond()));
+            }
+            mLogMeta.setGateSet(gateSet);
+        }
     }
 
     @Override

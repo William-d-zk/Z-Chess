@@ -34,7 +34,6 @@ import com.isahl.chess.king.base.schedule.TimeWheel;
 import com.isahl.chess.king.base.schedule.inf.ICancelable;
 import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.knight.raft.IRaftDao;
 import com.isahl.chess.knight.raft.IRaftMachine;
@@ -140,26 +139,11 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
 
         if (_SelfMachine.getPeerSet() == null) {
             /* 首次启动或删除本地状态机重启,仅需要连接node_id < self.node_id的peer */
-            List<IPair> peers = _RaftConfig.getPeers();
-            if (peers != null) {
-                for (int i = 0, size = peers.size(); i < size; i++) {
-                    IPair pair = peers.get(i);
-                    _SelfMachine.appendPeer(new Triple<>(_ZUid.getPeerIdByNode(i), pair.getFirst(), pair.getSecond()));
-                }
-                _RaftDao.getLogMeta()
-                        .setPeerSet(_SelfMachine.getPeerSet());
-            }
-        }
-        if (_SelfMachine.getGateSet() == null) {
-            List<IPair> gates = _RaftConfig.getGates();
-            if (gates != null) {
-                for (int i = 0, size = gates.size(); i < size; i++) {
-                    IPair pair = gates.get(i);
-                    _SelfMachine.appendGate(new Triple<>(_ZUid.getClusterId(i), pair.getFirst(), pair.getSecond()));
-                }
-                _RaftDao.getLogMeta()
-                        .setGateSet(_SelfMachine.getGateSet());
-            }
+            _RaftDao.loadDefaultGraphSet();
+            _SelfMachine.setPeerSet(_RaftDao.getLogMeta()
+                                            .getPeerSet());
+            _SelfMachine.setGateSet(_RaftDao.getLogMeta()
+                                            .getGateSet());
         }
         // 启动snapshot定时回写计时器
         _TimeWheel.acquire(_RaftDao,
