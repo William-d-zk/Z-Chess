@@ -70,7 +70,6 @@ public class X77_RaftNotify
     {
         pos += IoUtil.writeShort(mPayloadSerial, data, pos);
         pos += IoUtil.writeLong(mOrigin, data, pos);
-        pos += IoUtil.write(getPayload(), data, pos);
         return pos;
     }
 
@@ -81,10 +80,6 @@ public class X77_RaftNotify
         pos += 2;
         mOrigin = IoUtil.readLong(data, pos);
         pos += 8;
-        if (data.length > pos) {
-            setPayload(new byte[data.length - pos]);
-            return IoUtil.read(data, pos, getPayload());
-        }
         return pos;
     }
 

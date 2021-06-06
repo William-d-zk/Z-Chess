@@ -80,10 +80,6 @@ public class X72_RaftAppend
         pos += 8;
         mFollowerId = IoUtil.readLong(data, pos);
         pos += 8;
-        if (data.length > pos) {
-            setPayload(new byte[data.length - pos]);
-            return IoUtil.read(data, pos, getPayload());
-        }
         return pos;
     }
 
@@ -96,7 +92,6 @@ public class X72_RaftAppend
         pos += IoUtil.writeLong(mPreIndexTerm, data, pos);
         pos += IoUtil.writeLong(mCommit, data, pos);
         pos += IoUtil.writeLong(mFollowerId, data, pos);
-        pos += IoUtil.write(getPayload(), data, pos);
         return pos;
     }
 
