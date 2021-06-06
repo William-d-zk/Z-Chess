@@ -85,7 +85,7 @@ public class LogMeta
         mApplied = 0;
         if (mPeerSet != null) mPeerSet.clear();
         if (mGateSet != null) mGateSet.clear();
-        update();
+        flush();
     }
 
     @JsonCreator

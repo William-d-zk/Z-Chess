@@ -180,7 +180,7 @@ public class LinkCustom
              */
             X77_RaftNotify x77 = (X77_RaftNotify) response;
             int cmd = x77.payloadSerial();
-            _Logger.debug("client-request cmd:0x%x", cmd);
+            _Logger.debug("client-request cmd:%#x", cmd);
             clientRequest = ZSortHolder.create(cmd);
             clientRequest.decode(x77.getPayload());
             _Logger.info("notify cluster client by leader %s", x77.byLeader());
@@ -264,7 +264,7 @@ public class LinkCustom
                 {
                     _Logger.info("disconnect");
                     if (_LinkService.offline(session.getIndex(), _QttRouter)) {
-                        _Logger.info("shadow device offline 0x%x", session.getIndex());
+                        _Logger.info("shadow device offline %#x", session.getIndex());
                     }
                     else {
                         _Logger.warning("no login device → offline");

@@ -134,6 +134,7 @@ public class RaftDao
             _Index2SegmentMap.clear();
             clearSegments();
             loadDefaultGraphSet();
+            flushAll();
         }
         vValid = true;
     }
@@ -177,13 +178,19 @@ public class RaftDao
             }
             mLogMeta.setGateSet(gateSet);
         }
+
     }
 
     @Override
-    public void updateAll()
+    public void flushAll()
     {
-        mLogMeta.update();
-        mSnapshotMeta.update();
+        mLogMeta.flush();
+        mSnapshotMeta.flush();
+    }
+
+    public void flush()
+    {
+        mLogMeta.flush();
     }
 
     @Override
@@ -277,7 +284,7 @@ public class RaftDao
     {
         mSnapshotMeta.setCommit(lastIncludeIndex);
         mSnapshotMeta.setTerm(lastIncludeTerm);
-        mSnapshotMeta.update();
+        mSnapshotMeta.flush();
     }
 
     private final static Pattern SEGMENT_NAME = Pattern.compile("z_chess_raft_seg_(\\d+)-(\\d+)_([rw])");
