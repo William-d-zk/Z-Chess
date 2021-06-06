@@ -33,6 +33,7 @@ import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.topology.ZUID;
+import com.isahl.chess.knight.raft.model.RaftCode;
 import com.isahl.chess.knight.raft.model.RaftMachine;
 import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.knight.raft.model.log.LogEntry;
@@ -147,6 +148,15 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
                                                        x75.isPublic(),
                                                        manager,
                                                        x75.getSession());
+                }
+            // leader → client [failed]
+            case X76_RaftResp.COMMAND ->
+                {
+                    X76_RaftResp x76 = (X76_RaftResp) content;
+                    _Logger.warning("leader reps: %s | %s",
+                                    x76.toString(),
+                                    RaftCode.valueOf(x76.getCode())
+                                            .getDescription());
                 }
             // leader → client
             case X77_RaftNotify.COMMAND ->
