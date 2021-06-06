@@ -51,6 +51,15 @@ public class X76_RaftResp
     private long mOrigin;
     private byte mCode;
 
+    @Override
+    public String toString()
+    {
+        return String.format("X76_RaftResp { client:0x%x,payload_serial:0x%x,origin:0x%x }",
+                             mClientId,
+                             mPayloadSerial,
+                             mOrigin);
+    }
+
     public int getPayloadSerial()
     {
         return mPayloadSerial;
