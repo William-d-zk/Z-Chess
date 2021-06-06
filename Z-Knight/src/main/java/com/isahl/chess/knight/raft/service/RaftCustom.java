@@ -33,7 +33,6 @@ import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.topology.ZUID;
-import com.isahl.chess.knight.raft.model.RaftCode;
 import com.isahl.chess.knight.raft.model.RaftMachine;
 import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.knight.raft.model.log.LogEntry;
@@ -70,8 +69,9 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
      * @param content
      *
      * @return IPair
-     *              first : list of command implements 'IControl',broadcast to all cluster peers
-     *             second : command implements 'IConsistentNotify',
+     *         first : list of command implements 'IControl',broadcast to all
+     *         cluster peers
+     *         second : command implements 'IConsistentNotify',
      * @throws Exception
      */
     @Override
@@ -160,21 +160,18 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
                                                        manager,
                                                        x75.getSession());
                 }
-            // leader → client [failed]
+            // leader → client 
             case X76_RaftResp.COMMAND ->
                 {
                     X76_RaftResp x76 = (X76_RaftResp) content;
-                    _Logger.warning("leader reps: %s | %s",
-                                    x76.toString(),
-                                    RaftCode.valueOf(x76.getCode())
-                                            .getDescription());
+                    return new Pair<>(null, x76);
                 }
             // leader → client
             case X77_RaftNotify.COMMAND ->
                 {
-                    X77_RaftNotify x76 = (X77_RaftNotify) content;
-                    x76.setNotify();
-                    return new Pair<>(null, x76);
+                    X77_RaftNotify x77 = (X77_RaftNotify) content;
+                    x77.setNotify();
+                    return new Pair<>(null, x77);
                 }
             // peer *, behind → previous
             case X106_Identity.COMMAND ->
