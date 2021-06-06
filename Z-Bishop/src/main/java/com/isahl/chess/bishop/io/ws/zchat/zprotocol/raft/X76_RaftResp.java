@@ -47,13 +47,18 @@ public class X76_RaftResp
     }
 
     private long mClientId;
-    private int  mSerial;
+    private int  mPayloadSerial;
     private long mOrigin;
     private byte mCode;
 
-    public void setSerial(int serial)
+    public int getPayloadSerial()
     {
-        mSerial = serial;
+        return mPayloadSerial;
+    }
+
+    public void setPayloadSerial(int payloadSerial)
+    {
+        mPayloadSerial = payloadSerial;
     }
 
     public void setOrigin(long origin)
@@ -64,6 +69,11 @@ public class X76_RaftResp
     public int getCode()
     {
         return mCode;
+    }
+
+    public void setCode(byte code)
+    {
+        mCode = code;
     }
 
     @Override
@@ -77,7 +87,7 @@ public class X76_RaftResp
     {
         pos += IoUtil.writeLong(mClientId, data, pos);
         pos += IoUtil.writeLong(mOrigin, data, pos);
-        pos += IoUtil.writeShort(mSerial, data, pos);
+        pos += IoUtil.writeShort(mPayloadSerial, data, pos);
         pos += IoUtil.writeByte(mCode, data, pos);
         return pos;
     }
@@ -89,7 +99,7 @@ public class X76_RaftResp
         pos += 8;
         mOrigin = IoUtil.readLong(data, pos);
         pos += 8;
-        mSerial = IoUtil.readUnsignedShort(data, pos);
+        mPayloadSerial = IoUtil.readUnsignedShort(data, pos);
         pos += 2;
         mCode = data[pos++];
         return pos;

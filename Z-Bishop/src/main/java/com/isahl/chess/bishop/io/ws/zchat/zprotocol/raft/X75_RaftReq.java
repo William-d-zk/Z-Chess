@@ -51,18 +51,18 @@ public class X75_RaftReq
     }
 
     private long    mClientId;
-    private int     mSerial;
+    private int     mPayloadSerial;
     private long    mOrigin;
     private boolean mPublic;
 
-    public int load()
+    public int getPayloadSerial()
     {
-        return mSerial;
+        return mPayloadSerial;
     }
 
-    public void setSerial(int serial)
+    public void setPayloadSerial(int payloadSerial)
     {
-        mSerial = serial;
+        mPayloadSerial = payloadSerial;
     }
 
     public void setOrigin(long origin)
@@ -82,7 +82,7 @@ public class X75_RaftReq
         pos += IoUtil.writeLong(mClientId, data, pos);
         pos += IoUtil.writeLong(mOrigin, data, pos);
         pos += IoUtil.writeByte(mPublic ? 1: 0, data, pos);
-        pos += IoUtil.writeShort(mSerial, data, pos);
+        pos += IoUtil.writeShort(mPayloadSerial, data, pos);
         return pos;
     }
 
@@ -94,7 +94,7 @@ public class X75_RaftReq
         mOrigin = IoUtil.readLong(data, pos);
         pos += 8;
         mPublic = data[pos++] > 0;
-        mSerial = IoUtil.readUnsignedShort(data, pos);
+        mPayloadSerial = IoUtil.readUnsignedShort(data, pos);
         pos += 2;
         return pos;
     }
@@ -138,7 +138,7 @@ public class X75_RaftReq
         return String.format(" X75_RaftRequest { client:%#x, origin:%#x, serial:%#x,payload[%d] public:%s }",
                              mClientId,
                              mOrigin,
-                             mSerial,
+                             mPayloadSerial,
                              getPayload() == null ? 0: getPayload().length,
                              mPublic ? "all": "one");
     }

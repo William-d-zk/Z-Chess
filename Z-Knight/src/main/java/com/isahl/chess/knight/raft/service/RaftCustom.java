@@ -25,13 +25,7 @@ package com.isahl.chess.knight.raft.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X106_Identity;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X70_RaftVote;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X71_RaftBallot;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X72_RaftAppend;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X73_RaftAccept;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X74_RaftReject;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X75_RaftReq;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X77_RaftNotify;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.*;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
@@ -42,19 +36,12 @@ import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.knight.raft.model.RaftMachine;
 import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.knight.raft.model.log.LogEntry;
+import com.isahl.chess.queen.db.inf.IStorage;
 import com.isahl.chess.queen.event.handler.cluster.IClusterCustom;
-import com.isahl.chess.queen.io.core.inf.IClusterPeer;
-import com.isahl.chess.queen.io.core.inf.IClusterTimer;
-import com.isahl.chess.queen.io.core.inf.IConsistent;
-import com.isahl.chess.queen.io.core.inf.IControl;
-import com.isahl.chess.queen.io.core.inf.IProtocol;
-import com.isahl.chess.queen.io.core.inf.ISession;
-import com.isahl.chess.queen.io.core.inf.ISessionManager;
+import com.isahl.chess.queen.io.core.inf.*;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.isahl.chess.knight.raft.RaftState.LEADER;
 
@@ -153,12 +140,13 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
                         break;
                     }
                     X75_RaftReq x75 = (X75_RaftReq) content;
-                    return _RaftNode.newLogEntry(x75.load(),
-                                                 x75.getPayload(),
-                                                 x75.getClientId(),
-                                                 x75.getOrigin(),
-                                                 x75.isPublic(),
-                                                 manager);
+                    return _RaftNode.newLeaderLogEntry(x75.getPayloadSerial(),
+                                                       x75.getPayload(),
+                                                       x75.getClientId(),
+                                                       x75.getOrigin(),
+                                                       x75.isPublic(),
+                                                       manager,
+                                                       x75.getSession());
                 }
             // leader → client
             case X77_RaftNotify.COMMAND ->
@@ -184,40 +172,33 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
     @Override
     public List<ITriple> onTimer(ISessionManager manager, RaftMachine machine)
     {
-        switch (machine.operation())
-        {
+
+        if (machine.operation() == IStorage.Operation.OP_MODIFY) {
             // step down → follower
-            case OP_MODIFY -> _RaftNode.turnToFollower(machine);
-            // heartbeat
-            case OP_APPEND ->
-                {
-                    Stream<X72_RaftAppend> x72Stream = _RaftNode.checkLogAppend(machine, manager);
-                    if (x72Stream != null) {
-                        return x72Stream.map(x72 -> new Triple<>(x72,
-                                                                 x72.getSession(),
-                                                                 x72.getSession()
-                                                                    .getEncoder()))
-                                        .collect(Collectors.toList());
-                    }
-                }
-            // vote
-            case OP_INSERT ->
-                {
-                    Stream<X70_RaftVote> x70Stream = _RaftNode.checkVoteState(machine, manager);
-                    if (x70Stream != null) {
-                        return x70Stream.map(x70 -> new Triple<>(x70,
-                                                                 x70.getSession(),
-                                                                 x70.getSession()
-                                                                    .getEncoder()))
-                                        .collect(Collectors.toList());
-                    }
-                }
+            _RaftNode.turnToFollower(machine);
         }
-        return null;
+        return switch (machine.operation())
+        {
+            // heartbeat
+            case OP_APPEND -> _RaftNode.checkLogAppend(machine,
+                                                       manager,
+                                                       cmd -> new Triple<>(cmd,
+                                                                           cmd.getSession(),
+                                                                           cmd.getSession()
+                                                                              .getEncoder()));
+            // vote
+            case OP_INSERT -> _RaftNode.checkVoteState(machine,
+                                                       manager,
+                                                       cmd -> new Triple<>(cmd,
+                                                                           cmd.getSession(),
+                                                                           cmd.getSession()
+                                                                              .getEncoder()));
+            default -> null;
+        };
     }
 
     @Override
-    public <E extends IConsistent & IProtocol> List<ITriple> consensus(ISessionManager manager, E request)
+    public <E extends IConsistent & IControl> List<ITriple> consensus(ISessionManager manager, E request)
     {
         _Logger.debug("cluster consensus %s", request);
         if (_RaftNode.getMachine()
@@ -226,15 +207,15 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
             /*
              * session belong to Link
              */
-            return _RaftNode.newLeaderLogEntry(request,
-                                         _RaftNode.getMachine()
-                                                  .getPeerId(),
-                                         manager)
-                            .map(x72 -> new Triple<>(x72,
-                                                     x72.getSession(),
-                                                     x72.getSession()
-                                                        .getEncoder()))
-                            .collect(Collectors.toList());
+            return _RaftNode.newLocalLogEntry(request,
+                                              _RaftNode.getMachine()
+                                                       .getPeerId(),
+                                              manager,
+                                              cmd -> new Triple<>(cmd,
+                                                                  cmd.getSession(),
+                                                                  cmd.getSession()
+                                                                     .getEncoder()),
+                                              request.getSession());
         }
         else if (_RaftNode.getMachine()
                           .getLeader() != ZUID.INVALID_PEER_ID)
@@ -244,7 +225,7 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
                                                                           .getLeader());
             if (leaderSession != null) {
                 X75_RaftReq x75 = new X75_RaftReq(_RaftNode.getRaftZuid());
-                x75.setSerial(request.serial());
+                x75.setPayloadSerial(request.serial());
                 x75.setPayload(request.encode());
                 x75.setOrigin(request.getOrigin());
                 x75.setClientId(_RaftNode.getMachine()
@@ -257,6 +238,7 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
             }
         }
         _Logger.fetal("cluster is electing");
+        // TODO 返回一个x76.failed 
         return null;
     }
 
