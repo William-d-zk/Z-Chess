@@ -97,8 +97,11 @@ public class X75_RaftReq
         mPublic = data[pos++] > 0;
         mPayloadSerial = IoUtil.readUnsignedShort(data, pos);
         pos += 2;
-        setPayload(new byte[data.length - pos]);
-        return IoUtil.read(data, pos, getPayload());
+        if (data.length > pos) {
+            setPayload(new byte[data.length - pos]);
+            return IoUtil.read(data, pos, getPayload());
+        }
+        return pos;
     }
 
     @Override
