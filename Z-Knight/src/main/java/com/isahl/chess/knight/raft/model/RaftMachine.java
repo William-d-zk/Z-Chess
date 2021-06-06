@@ -349,6 +349,7 @@ public class RaftMachine
         dao.updateLogCommit(mCommit);
         mApplied = mCommit;
         dao.updateLogApplied(mApplied);
+        dao.flush();
     }
 
     @Override
@@ -504,7 +505,19 @@ public class RaftMachine
                              mApplied,
                              mLeader,
                              mCandidate,
-                             mPeerSet);
+                             peerSetString());
     }
 
+    private String peerSetString()
+    {
+        StringBuilder sb = new StringBuilder("[\n");
+
+        for (ITriple triple : mPeerSet) {
+            sb.append("\t<")
+              .append(String.format(" %#x, %s, %d ", triple.getFirst(), triple.getSecond(), triple.getThird()))
+              .append(">\n");
+        }
+        sb.append(']');
+        return sb.toString();
+    }
 }

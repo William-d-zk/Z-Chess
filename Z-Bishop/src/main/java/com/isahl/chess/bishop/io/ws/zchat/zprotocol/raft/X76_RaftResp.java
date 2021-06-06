@@ -54,7 +54,7 @@ public class X76_RaftResp
     @Override
     public String toString()
     {
-        return String.format("X76_RaftResp { client:0x%x,payload_serial:0x%x,origin:0x%x }",
+        return String.format("X76_RaftResp { client:%#x,payload_serial:%#x,origin:%#x }",
                              mClientId,
                              mPayloadSerial,
                              mOrigin);

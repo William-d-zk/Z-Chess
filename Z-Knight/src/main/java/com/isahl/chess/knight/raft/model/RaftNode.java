@@ -180,7 +180,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                     }
                 }
             }
-            _Logger.info("raft-node : 0x%x start", _SelfMachine.getPeerId());
+            _Logger.info("raft-node : %#x start", _SelfMachine.getPeerId());
         }
     }
 
