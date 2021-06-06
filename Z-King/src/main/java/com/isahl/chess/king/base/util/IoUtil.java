@@ -815,12 +815,30 @@ public interface IoUtil
         return readIpAdr(src, 0);
     }
 
+    /**
+     * 需要注意返回值是 src_off + len, pos 的目标值
+     * 
+     * @param src
+     * @param src_off
+     * @param dst
+     * @param dst_off
+     * @param len
+     * @return target_position
+     */
     static int read(byte[] src, int src_off, byte[] dst, int dst_off, int len)
     {
         arraycopy(src, src_off, dst, dst_off, len);
         return src_off + len;
     }
 
+    /**
+     * 需要注意返回值是 src_off + len, pos 的目标值
+     * 
+     * @param src
+     * @param src_off
+     * @param dst
+     * @return target_position
+     */
     static int read(byte[] src, int src_off, byte[] dst)
     {
         return read(src, src_off, dst, 0, dst.length);

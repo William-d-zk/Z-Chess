@@ -497,7 +497,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
 
             // peerMachine.getIndex() > _SelfMachine.getCommit()时，raftLog 不可能为 null
             _SelfMachine.commit(nextCommit, _RaftDao);
-            _Logger.debug("leader commit:%d@%d", nextCommit, _SelfMachine.getTerm());
+            _Logger.debug("leader commit: %d @%d", nextCommit, _SelfMachine.getTerm());
             LogEntry raftLog = _RaftDao.getEntry(nextCommit);
             X77_RaftNotify x77 = createNotify(raftLog);
             x77.setLeader();
@@ -805,7 +805,12 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                                             mapper);
         if (cmds == null) {
             stepDown();
-            X76_RaftResp x76 = failedWal(client, request.getOrigin(), request.serial(), payload, session);
+            X76_RaftResp x76 = raftResp(RaftCode.WAL_FAILED,
+                                        client,
+                                        request.getOrigin(),
+                                        request.serial(),
+                                        payload,
+                                        session);
             return Collections.singletonList(mapper.apply(x76));
         }
         else return cmds;
@@ -827,21 +832,27 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                                                    manager,
                                                    Function.identity());
         if (cmds != null && !cmds.isEmpty()) {
-            return new Pair<>(cmds.toArray(ZCommand[]::new), null);
+            return new Pair<>(cmds.toArray(ZCommand[]::new),
+                              raftResp(SUCCESS, client, origin, payloadSerial, payload, session));
         }
         else {
-            return new Pair<>(null, failedWal(client, origin, payloadSerial, payload, session));
+            return new Pair<>(null, raftResp(RaftCode.WAL_FAILED, client, origin, payloadSerial, payload, session));
         }
     }
 
-    private X76_RaftResp failedWal(long client, long origin, int payloadSerial, byte[] payload, ISession session)
+    private X76_RaftResp raftResp(RaftCode code,
+                                  long client,
+                                  long origin,
+                                  int payloadSerial,
+                                  byte[] payload,
+                                  ISession session)
     {
         X76_RaftResp x76 = new X76_RaftResp();
         x76.setClientId(client);
         x76.setOrigin(origin);
         x76.setPayloadSerial(payloadSerial);
         x76.setPayload(payload);
-        x76.setCode((byte) RaftCode.WAL_FAILED.getCode());
+        x76.setCode((byte) code.getCode());
         x76.setSession(session);
         return x76;
     }
@@ -1018,7 +1029,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
     private X77_RaftNotify createNotify(LogEntry raftLog)
     {
         X77_RaftNotify x76 = new X77_RaftNotify(_ZUid.getId());
-        x76.setSerial(raftLog.getPayloadSerial());
+        x76.setPayloadSerial(raftLog.getPayloadSerial());
         x76.setPayload(raftLog.getPayload());
         x76.setOrigin(raftLog.getOrigin());
         return x76;

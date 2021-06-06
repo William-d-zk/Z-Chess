@@ -55,12 +55,6 @@ public class X11E_QttDisconnect
     }
 
     @Override
-    public boolean isPublic()
-    {
-        return true;
-    }
-
-    @Override
     public long getOrigin()
     {
         return getSession().getIndex();

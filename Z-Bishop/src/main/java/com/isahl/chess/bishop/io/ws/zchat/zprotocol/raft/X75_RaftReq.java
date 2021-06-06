@@ -83,6 +83,7 @@ public class X75_RaftReq
         pos += IoUtil.writeLong(mOrigin, data, pos);
         pos += IoUtil.writeByte(mPublic ? 1: 0, data, pos);
         pos += IoUtil.writeShort(mPayloadSerial, data, pos);
+        pos += IoUtil.write(getPayload(), data, pos);
         return pos;
     }
 
@@ -96,7 +97,8 @@ public class X75_RaftReq
         mPublic = data[pos++] > 0;
         mPayloadSerial = IoUtil.readUnsignedShort(data, pos);
         pos += 2;
-        return pos;
+        setPayload(new byte[data.length - pos]);
+        return IoUtil.read(data, pos, getPayload());
     }
 
     @Override

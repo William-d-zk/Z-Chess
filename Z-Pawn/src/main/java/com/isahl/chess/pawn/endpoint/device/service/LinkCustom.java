@@ -32,7 +32,6 @@ import com.isahl.chess.bishop.io.sort.ZSortHolder;
 import com.isahl.chess.bishop.io.ws.control.X102_Close;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X108_Shutdown;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X77_RaftNotify;
-import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
@@ -179,12 +178,12 @@ public class LinkCustom
              * raft_client -> Link, session belong to cluster
              * ignore session
              */
-            X77_RaftNotify x76 = (X77_RaftNotify) response;
-            int cmd = x76.load();
+            X77_RaftNotify x77 = (X77_RaftNotify) response;
+            int cmd = x77.payloadSerial();
             _Logger.debug("client-request cmd:0x%x", cmd);
             clientRequest = ZSortHolder.create(cmd);
-            clientRequest.decode(x76.getPayload());
-            _Logger.info("notify cluster client by leader %s", x76.byLeader());
+            clientRequest.decode(x77.getPayload());
+            _Logger.info("notify cluster client by leader %s", x77.byLeader());
         }
         else {
             /*
@@ -265,8 +264,12 @@ public class LinkCustom
                 {
                     _Logger.info("disconnect");
                     if (_LinkService.offline(session.getIndex(), _QttRouter)) {
-                        throw new ZException("service active close");
+                        _Logger.info("shadow device offline 0x%x", session.getIndex());
                     }
+                    else {
+                        _Logger.warning("no login device → offline");
+                    }
+                    session.innerClose();
                 }
             case X11F_QttAuth.COMMAND ->
                 {
@@ -306,7 +309,7 @@ public class LinkCustom
                 _Logger.debug("cluster mode");
                 X77_RaftNotify x76 = (X77_RaftNotify) request;
                 byte[] data = x76.getPayload();
-                if (x76.load() == ConsistentProtocol._SERIAL) {
+                if (x76.payloadSerial() == ConsistentProtocol._SERIAL) {
                     ConsistentProtocol consistentProtocol = JsonUtil.readValue(data, ConsistentProtocol.class);
                     consistentProtocol.decode(data);
                     _Logger.debug("notify ok");

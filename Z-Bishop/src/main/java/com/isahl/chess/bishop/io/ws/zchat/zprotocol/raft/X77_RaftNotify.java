@@ -50,37 +50,39 @@ public class X77_RaftNotify
         super(COMMAND, msgId);
     }
 
-    private int               mSerial;
+    private int               mPayloadSerial;
     private long              mOrigin;
     private transient boolean tLeader;
     private transient boolean tNotify;
 
-    public int load()
+    public int payloadSerial()
     {
-        return mSerial;
+        return mPayloadSerial;
     }
 
-    public void setSerial(int serial)
+    public void setPayloadSerial(int payloadSerial)
     {
-        mSerial = serial;
+        mPayloadSerial = payloadSerial;
     }
 
     @Override
     public int encodec(byte[] data, int pos)
     {
-        pos += IoUtil.writeShort(mSerial, data, pos);
+        pos += IoUtil.writeShort(mPayloadSerial, data, pos);
         pos += IoUtil.writeLong(mOrigin, data, pos);
+        pos += IoUtil.write(getPayload(), data, pos);
         return pos;
     }
 
     @Override
     public int decodec(byte[] data, int pos)
     {
-        mSerial = IoUtil.readUnsignedShort(data, pos);
+        mPayloadSerial = IoUtil.readUnsignedShort(data, pos);
         pos += 2;
         mOrigin = IoUtil.readLong(data, pos);
         pos += 8;
-        return pos;
+        setPayload(new byte[data.length - pos]);
+        return IoUtil.read(data, pos, getPayload());
     }
 
     @Override
