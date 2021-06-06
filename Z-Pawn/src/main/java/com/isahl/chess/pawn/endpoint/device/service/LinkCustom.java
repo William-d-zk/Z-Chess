@@ -31,6 +31,7 @@ import com.isahl.chess.bishop.io.mqtt.v5.control.X11F_QttAuth;
 import com.isahl.chess.bishop.io.sort.ZSortHolder;
 import com.isahl.chess.bishop.io.ws.control.X102_Close;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X108_Shutdown;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X76_RaftResp;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X77_RaftNotify;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
@@ -173,24 +174,29 @@ public class LinkCustom
          * 在集群处理时 x76 携带了cluster 领域的session_index 作为入参，并在此处转换为 client-request.session_index
          */
         IControl clientRequest;
-        if (response.serial() == X77_RaftNotify.COMMAND) {
-            /*
-             * raft_client -> Link, session belong to cluster
-             * ignore session
-             */
-            X77_RaftNotify x77 = (X77_RaftNotify) response;
-            int cmd = x77.payloadSerial();
-            _Logger.debug("client-request cmd:%#x", cmd);
-            clientRequest = ZSortHolder.create(cmd);
-            clientRequest.decode(x77.getPayload());
-            _Logger.info("notify cluster client by leader %s", x77.byLeader());
-        }
-        else {
-            /*
-             * single mode
-             */
-            clientRequest = response;
-            _Logger.info("notify client single mode");
+        switch (response.serial())
+        {
+            case X77_RaftNotify.COMMAND, X76_RaftResp.COMMAND ->
+                {
+                    /*
+                     * raft_client -> Link, session belong to cluster
+                     * ignore session
+                     */
+                    IConsistentNotify notify = (IConsistentNotify) response;
+                    int cmd = notify.getPayloadSerial();
+                    _Logger.debug("client-request cmd:%#x", cmd);
+                    clientRequest = ZSortHolder.create(cmd);
+                    clientRequest.decode(response.getPayload());
+                    _Logger.info("notify cluster client by leader %s", notify.byLeader());
+                }
+            default ->
+                {
+                    /*
+                     * single mode
+                     */
+                    clientRequest = response;
+                    _Logger.info("notify client single mode");
+                }
         }
         ISession session = manager.findSessionByIndex(origin);
         switch (clientRequest.serial())
@@ -309,7 +315,7 @@ public class LinkCustom
                 _Logger.debug("cluster mode");
                 X77_RaftNotify x76 = (X77_RaftNotify) request;
                 byte[] data = x76.getPayload();
-                if (x76.payloadSerial() == ConsistentProtocol._SERIAL) {
+                if (x76.getPayloadSerial() == ConsistentProtocol._SERIAL) {
                     ConsistentProtocol consistentProtocol = JsonUtil.readValue(data, ConsistentProtocol.class);
                     consistentProtocol.decode(data);
                     _Logger.debug("notify ok");
