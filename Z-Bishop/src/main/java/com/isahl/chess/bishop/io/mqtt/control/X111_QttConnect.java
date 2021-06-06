@@ -392,7 +392,6 @@ public class X111_QttConnect
                                                                   passwordLength));
             }
             byte[] pwd = new byte[passwordLength];
-
             pos = IoUtil.read(data, pos, pwd, 0, passwordLength);
             mPassword = new String(pwd, StandardCharsets.UTF_8);
         }
