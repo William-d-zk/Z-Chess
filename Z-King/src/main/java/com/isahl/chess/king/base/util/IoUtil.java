@@ -681,6 +681,7 @@ public interface IoUtil
 
     static int write(byte[] v, byte[] data, int pos)
     {
+        if (v == null || v.length == 0) return 0;
         return write(v, 0, data, pos, v.length);
     }
 
