@@ -271,7 +271,6 @@ public class LinkCustom
                 }
             case X11E_QttDisconnect.COMMAND ->
                 {
-                    _Logger.info("disconnect %#x | session %s", origin, session);
                     if (session != null) {
                         if (_LinkService.offline(session.getIndex(), _QttRouter)) {
                             _Logger.info("shadow device offline %#x", session.getIndex());
@@ -282,7 +281,7 @@ public class LinkCustom
                         session.innerClose();
                     }
                     else {
-                        _Logger.warning("disconnect %#x | ", origin);
+                        _Logger.info("disconnect :%#x,session → null", origin);
                     }
                 }
             case X11F_QttAuth.COMMAND ->
