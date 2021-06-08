@@ -517,7 +517,9 @@ public class RaftDao
     private boolean checkState()
     {
         return (_Index2SegmentMap.isEmpty() && mLogMeta.getIndex() == 0)
-               || mLogMeta.getIndex() == _Index2SegmentMap.lastKey();
+               || mLogMeta.getIndex() == _Index2SegmentMap.lastEntry()
+                                                          .getValue()
+                                                          .getEndIndex();
     }
 
     @Override
