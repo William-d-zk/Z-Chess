@@ -271,14 +271,19 @@ public class LinkCustom
                 }
             case X11E_QttDisconnect.COMMAND ->
                 {
-                    _Logger.info("disconnect");
-                    if (_LinkService.offline(session.getIndex(), _QttRouter)) {
-                        _Logger.info("shadow device offline %#x", session.getIndex());
+                    _Logger.info("disconnect %#x | session %s", origin, session);
+                    if (session != null) {
+                        if (_LinkService.offline(session.getIndex(), _QttRouter)) {
+                            _Logger.info("shadow device offline %#x", session.getIndex());
+                        }
+                        else {
+                            _Logger.warning("no login device → offline");
+                        }
+                        session.innerClose();
                     }
                     else {
-                        _Logger.warning("no login device → offline");
+                        _Logger.warning("disconnect %#x | ", origin);
                     }
-                    session.innerClose();
                 }
             case X11F_QttAuth.COMMAND ->
                 {
