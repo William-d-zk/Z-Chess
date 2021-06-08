@@ -83,7 +83,7 @@ public class RaftDao
         _RaftConfig = config;
         String baseDir = config.getBaseDir();
         _LogMetaDir = String.format("%s%s.raft", baseDir, File.separator);
-        _LogDataDir = String.format("%s%sdata", baseDir, File.separator);
+        _LogDataDir = String.format("%s%s.data", baseDir, File.separator);
         _SnapshotDir = String.format("%s%s.snapshot", baseDir, File.separator);
         _MaxSegmentSize = config.getMaxSegmentSize();
     }
