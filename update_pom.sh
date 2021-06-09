@@ -22,7 +22,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-version="1.0.13-SNAPSHOT"
+version="1.0.13"
 # shellcheck disable=SC2044
 for file in $(find \./Z-* -name "pom.xml"); do
   echo $file
