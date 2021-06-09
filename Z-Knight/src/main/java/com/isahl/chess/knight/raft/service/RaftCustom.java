@@ -190,7 +190,6 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
     @Override
     public List<ITriple> onTimer(ISessionManager manager, RaftMachine machine)
     {
-
         if (machine.operation() == IStorage.Operation.OP_MODIFY) {
             // step down → follower
             _RaftNode.turnToFollower(machine);
@@ -242,7 +241,7 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
             ISession leaderSession = manager.findSessionByPrefix(_RaftNode.getMachine()
                                                                           .getLeader());
             if (leaderSession != null) {
-                X75_RaftReq x75 = new X75_RaftReq(_RaftNode.getRaftZuid());
+                X75_RaftReq x75 = new X75_RaftReq(_RaftNode.getRaftZUid());
                 x75.setPayloadSerial(request.serial());
                 x75.setPayload(request.encode());
                 x75.setOrigin(request.getOrigin());
