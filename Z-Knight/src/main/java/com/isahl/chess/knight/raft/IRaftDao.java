@@ -35,7 +35,9 @@ public interface IRaftDao
         extends
         IValid
 {
-    void updateAll();
+    void flush();
+
+    void flushAll();
 
     long getEndIndex();
 
@@ -72,4 +74,5 @@ public interface IRaftDao
     long getTotalSize();
 
     void loadDefaultGraphSet();
+
 }

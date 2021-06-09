@@ -83,7 +83,7 @@ public class RaftDao
         _RaftConfig = config;
         String baseDir = config.getBaseDir();
         _LogMetaDir = String.format("%s%s.raft", baseDir, File.separator);
-        _LogDataDir = String.format("%s%sdata", baseDir, File.separator);
+        _LogDataDir = String.format("%s%s.data", baseDir, File.separator);
         _SnapshotDir = String.format("%s%s.snapshot", baseDir, File.separator);
         _MaxSegmentSize = config.getMaxSegmentSize();
     }
@@ -134,6 +134,7 @@ public class RaftDao
             _Index2SegmentMap.clear();
             clearSegments();
             loadDefaultGraphSet();
+            flushAll();
         }
         vValid = true;
     }
@@ -177,13 +178,19 @@ public class RaftDao
             }
             mLogMeta.setGateSet(gateSet);
         }
+
     }
 
     @Override
-    public void updateAll()
+    public void flushAll()
     {
-        mLogMeta.update();
-        mSnapshotMeta.update();
+        mLogMeta.flush();
+        mSnapshotMeta.flush();
+    }
+
+    public void flush()
+    {
+        mLogMeta.flush();
     }
 
     @Override
@@ -277,7 +284,7 @@ public class RaftDao
     {
         mSnapshotMeta.setCommit(lastIncludeIndex);
         mSnapshotMeta.setTerm(lastIncludeTerm);
-        mSnapshotMeta.update();
+        mSnapshotMeta.flush();
     }
 
     private final static Pattern SEGMENT_NAME = Pattern.compile("z_chess_raft_seg_(\\d+)-(\\d+)_([rw])");
@@ -346,7 +353,6 @@ public class RaftDao
         _Logger.debug("wait to append %s", entry);
         Objects.requireNonNull(entry);
         long newEndIndex = getEndIndex() + 1;
-        long newEndTerm = entry.getTerm();
         if (entry.getIndex() == newEndIndex) {
             int entrySize = entry.dataLength() + 4;
             boolean isNeedNewSegmentFile = false;
@@ -511,7 +517,9 @@ public class RaftDao
     private boolean checkState()
     {
         return (_Index2SegmentMap.isEmpty() && mLogMeta.getIndex() == 0)
-               || mLogMeta.getIndex() == _Index2SegmentMap.lastKey();
+               || mLogMeta.getIndex() == _Index2SegmentMap.lastEntry()
+                                                          .getValue()
+                                                          .getEndIndex();
     }
 
     @Override

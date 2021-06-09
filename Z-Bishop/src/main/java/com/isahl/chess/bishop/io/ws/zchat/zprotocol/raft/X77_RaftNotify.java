@@ -55,7 +55,8 @@ public class X77_RaftNotify
     private transient boolean tLeader;
     private transient boolean tNotify;
 
-    public int payloadSerial()
+    @Override
+    public int getPayloadSerial()
     {
         return mPayloadSerial;
     }

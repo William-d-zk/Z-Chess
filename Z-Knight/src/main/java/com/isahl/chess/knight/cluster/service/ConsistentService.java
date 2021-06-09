@@ -81,7 +81,7 @@ public class ConsistentService
         if (IoUtil.isBlank(content)) return;
         ConsistentProtocol consensus = new ConsistentProtocol(content.getBytes(StandardCharsets.UTF_8),
                                                               pub,
-                                                              _RaftNode.getRaftZuid(),
+                                                              _RaftNode.getRaftZUid(),
                                                               origin);
         submit(consensus, _ClusterNode, _ConsistentCustom);
         _Logger.debug("consistent submit %s", consensus);

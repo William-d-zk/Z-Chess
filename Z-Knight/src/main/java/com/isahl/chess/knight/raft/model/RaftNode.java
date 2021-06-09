@@ -180,11 +180,11 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                     }
                 }
             }
-            _Logger.info("raft-node : 0x%x start", _SelfMachine.getPeerId());
+            _Logger.info("raft-node : %#x start", _SelfMachine.getPeerId());
         }
     }
 
-    public void load(List<IRaftMessage> snapshot)
+    public void installSnapshot(List<IRaftMessage> snapshot)
     {
 
     }
@@ -464,6 +464,13 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         return peerMachine;
     }
 
+    /**
+     * follower → leader
+     * 
+     * @return
+     *         first : broadcost to peers
+     *         second : resp to origin
+     */
     public IPair onAccept(long peerId, long term, long index, long leader, ISessionManager manager)
     {
         RaftMachine peerMachine = getMachine(peerId, term);
@@ -478,7 +485,6 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         if (peerMachine.getMatchIndex() > _SelfMachine.getCommit()
             && _RaftGraph.isMajorAcceptLeader(_SelfMachine.getPeerId(), _SelfMachine.getTerm(), nextCommit))
         {
-
             // peerMachine.getIndex() > _SelfMachine.getCommit()时，raftLog 不可能为 null
             _SelfMachine.commit(nextCommit, _RaftDao);
             _Logger.debug("leader commit: %d @%d", nextCommit, _SelfMachine.getTerm());
@@ -486,7 +492,6 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
             X77_RaftNotify x77 = createNotify(raftLog);
             x77.setLeader();
             if (raftLog.isPublic()) {
-                x77.setNotify();
                 return new Pair<>(createNotifyStream(manager, raftLog, Function.identity()).toArray(IControl[]::new),
                                   x77);
             }
@@ -501,7 +506,6 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                  * 作为client 收到 notify
                  * x77 投递给notify-custom
                  */
-                x77.setNotify();
                 return new Pair<>(null, x77);
             }
         }
@@ -1000,7 +1004,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         return true;
     }
 
-    public long getRaftZuid()
+    public long getRaftZUid()
     {
         return _ZUid.getId();
     }
@@ -1012,11 +1016,11 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
 
     private X77_RaftNotify createNotify(LogEntry raftLog)
     {
-        X77_RaftNotify x76 = new X77_RaftNotify(_ZUid.getId());
-        x76.setPayloadSerial(raftLog.getPayloadSerial());
-        x76.setPayload(raftLog.getPayload());
-        x76.setOrigin(raftLog.getOrigin());
-        return x76;
+        X77_RaftNotify x77 = new X77_RaftNotify(_ZUid.getId());
+        x77.setPayloadSerial(raftLog.getPayloadSerial());
+        x77.setPayload(raftLog.getPayload());
+        x77.setOrigin(raftLog.getOrigin());
+        return x77;
     }
 
     private <T> List<T> createNotifyStream(ISessionManager manager,
@@ -1032,9 +1036,9 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                          {
                              ISession followerSession = manager.findSessionByPrefix(machine.getPeerId());
                              if (followerSession != null) {
-                                 X77_RaftNotify x76 = createNotify(raftLog);
-                                 x76.setSession(followerSession);
-                                 return x76;
+                                 X77_RaftNotify x77 = createNotify(raftLog);
+                                 x77.setSession(followerSession);
+                                 return x77;
                              }
                              else {
                                  _Logger.debug("not found %#x 's session", machine.getPeerId());

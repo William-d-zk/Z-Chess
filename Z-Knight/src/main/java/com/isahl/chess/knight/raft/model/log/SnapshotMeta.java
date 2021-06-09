@@ -59,7 +59,7 @@ public class SnapshotMeta
     {
         mCommit = 0;
         mTerm = 0;
-        update();
+        flush();
     }
 
     public static SnapshotMeta loadFromFile(RandomAccessFile file)
