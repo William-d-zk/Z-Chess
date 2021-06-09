@@ -23,17 +23,16 @@
 
 package com.isahl.chess.knight.raft.model.log;
 
+import com.isahl.chess.king.base.exception.ZException;
+import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.base.util.JsonUtil;
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.commons.io.FileUtils;
-
-import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.JsonUtil;
 
 public class Segment
 {
@@ -88,9 +87,7 @@ public class Segment
         mFileName = file.getAbsolutePath();
         _FileDirectory = file.getParent();
         mCanWrite = canWrite;
-        mRandomAccessFile = new RandomAccessFile(file,
-                                                 isCanWrite() ? "rw"
-                                                              : "r");
+        mRandomAccessFile = new RandomAccessFile(file, isCanWrite() ? "rw": "r");
         _StartIndex = startIndex;
         mEndIndex = endIndex;
         mFileSize = mRandomAccessFile.length();
@@ -161,7 +158,7 @@ public class Segment
             mRandomAccessFile.read(data);
             LogEntry entry = JsonUtil.readValue(data, LogEntry.class);
             if (entry != null) {
-                entry.decode(data);
+                entry.decode(data);//仅更新 length 信息
                 endIndex = entry.getIndex();
                 if (startIndex < 0) {
                     startIndex = endIndex;
@@ -171,14 +168,9 @@ public class Segment
             offset = mRandomAccessFile.getFilePointer();
         }
         if (startIndex != _StartIndex) {
-            throw new IllegalArgumentException(String.format("first entry index %d isn't equal segment's start_index %d",
-                                                             startIndex,
-                                                             _StartIndex));
+            throw new ZException("first entry index %d isn't equal segment's start_index %d", startIndex, _StartIndex);
         }
         if (endIndex != mEndIndex) {
-            _Logger.debug("input end_index isn't equal read end_index, update mEndIndex %d-> endIndex %d",
-                          mEndIndex,
-                          endIndex);
             mEndIndex = endIndex;
         }
     }
@@ -203,16 +195,15 @@ public class Segment
     public void addRecord(LogEntry entry)
     {
         try {
-            int length = entry.dataLength();
-            mRandomAccessFile.writeInt(length);
             long offset = mRandomAccessFile.getFilePointer();
+            byte[] entryData = entry.encode();
+            mRandomAccessFile.writeInt(entry.dataLength());
+            mRandomAccessFile.write(entryData);
             _Records.add(new Record(offset, entry));
-            mRandomAccessFile.write(entry.encode());
             mEndIndex = entry.getIndex();
         }
         catch (IOException e) {
-            _Logger.warning("add record failed ", e);
-            throw new ZException("add record failed ");
+            throw new ZException("add record failed ", e);
         }
     }
 

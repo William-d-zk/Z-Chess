@@ -240,11 +240,11 @@ public class QttRouter
                            true};
         if (acked[0] = _QttIdentifierMap.computeIfPresent(session, (key, old) ->
         {
-            _Logger.debug("ack %d@0x%x", msgId, session);
+            _Logger.debug("ack %d @ %#x", msgId, session);
             acked[1] = old.remove(msgId) != null;
             return old.isEmpty() ? old: null;
         }) != null) {
-            _Logger.debug("idle: 0x%x", session);
+            _Logger.debug("idle: %#x", session);
             _SessionIdleQueue.offer(new Pair<>(session, Instant.now()));
         }
         for (Iterator<IPair> it = _SessionIdleQueue.iterator(); it.hasNext();) {

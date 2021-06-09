@@ -40,7 +40,7 @@ public abstract class BaseMeta
     @JsonIgnore
     protected RandomAccessFile mFile;
 
-    void update()
+    void flush()
     {
         try {
             mFile.seek(0);
@@ -57,7 +57,7 @@ public abstract class BaseMeta
 
     void close()
     {
-        update();
+        flush();
         try {
             mFile.close();
         }

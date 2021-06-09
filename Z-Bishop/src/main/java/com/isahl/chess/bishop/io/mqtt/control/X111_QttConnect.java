@@ -96,7 +96,7 @@ public class X111_QttConnect
     @Override
     public String toString()
     {
-        return String.format("%s:[ctrl-code 0x%x clientId:%s clean:%s willQoS:%s willRetain:%s willTopic:%s willMessage:%s user:%s password:%s keepalive:%d ]",
+        return String.format("%s:[ctrl-code %#x clientId:%s clean:%s willQoS:%s willRetain:%s willTopic:%s willMessage:%s user:%s password:%s keepalive:%d ]",
                              getClass().getSimpleName(),
                              getControlCode(),
                              getClientId(),

@@ -34,4 +34,7 @@ public interface IConsistentNotify
     boolean byLeader();
 
     boolean doNotify();
+
+    int getPayloadSerial();
+
 }
