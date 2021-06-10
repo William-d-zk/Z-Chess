@@ -51,11 +51,12 @@ import java.util.concurrent.locks.ReentrantLock;
  * 
  * @date 2020/4/23
  */
-public interface IClusterNode<K extends ILocalPublisher>
+public interface IClusterNode
         extends
         IClusterPeer,
         IClusterTimer,
-        INode
+        INode,
+        ILocalPublisher
 {
     default IAioConnector buildConnector(final IPair _Address,
                                          final ISocketConfig _SocketConfig,
@@ -183,13 +184,11 @@ public interface IClusterNode<K extends ILocalPublisher>
         };
     }
 
-    K getExternal();
-
     @Override
     default <T extends IStorage> void timerEvent(T content)
     {
-        final RingBuffer<QEvent> _ConsensusEvent = getExternal().getPublisher(OperatorType.CLUSTER_TIMER);
-        final ReentrantLock _ConsensusLock = getExternal().getLock(OperatorType.CLUSTER_TIMER);
+        final RingBuffer<QEvent> _ConsensusEvent = getPublisher(OperatorType.CLUSTER_TIMER);
+        final ReentrantLock _ConsensusLock = getLock(OperatorType.CLUSTER_TIMER);
         /*
         通过 Schedule thread-pool 进行 timer 执行, 排队执行。
          */
@@ -210,10 +209,10 @@ public interface IClusterNode<K extends ILocalPublisher>
     }
 
     @Override
-    default void confChange(IPair confPair)
+    default void changeTopology(IPair confPair)
     {
-        final RingBuffer<QEvent> _ConsensusApiEvent = getExternal().getPublisher(OperatorType.CONSENSUS);
-        final ReentrantLock _ConsensusApiLock = getExternal().getLock(OperatorType.CONSENSUS);
+        final RingBuffer<QEvent> _ConsensusApiEvent = getPublisher(OperatorType.CONSENSUS);
+        final ReentrantLock _ConsensusApiLock = getLock(OperatorType.CONSENSUS);
         _ConsensusApiLock.lock();
         try {
             long sequence = _ConsensusApiEvent.next();

@@ -26,8 +26,6 @@ package com.isahl.chess.knight.raft;
 import com.isahl.chess.knight.raft.model.RaftGraph;
 import com.isahl.chess.knight.raft.model.RaftMachine;
 
-import java.util.Map;
-
 /**
  * @author william.d.zk
  * 
@@ -66,9 +64,7 @@ public interface IRaftService
      * 
      * @return success / failed
      */
-    boolean rmPeer(long peerId);
+    boolean removePeer(long peerId);
 
-    void setTopology(Map<Long,
-                         RaftMachine> peerMap);
 
 }

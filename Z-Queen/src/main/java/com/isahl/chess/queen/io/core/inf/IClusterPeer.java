@@ -34,9 +34,9 @@ import java.io.IOException;
  */
 public interface IClusterPeer
 {
-    void addPeer(IPair remote) throws IOException;
+    void setupPeer(IPair remote) throws IOException;
 
-    void addGate(IPair remote) throws IOException;
+    void setupGate(IPair remote) throws IOException;
 
-    void confChange(IPair conf);
+    void changeTopology(IPair conf);
 }

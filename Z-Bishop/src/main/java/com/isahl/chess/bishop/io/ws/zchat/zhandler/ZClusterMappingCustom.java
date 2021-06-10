@@ -61,6 +61,12 @@ public class ZClusterMappingCustom<T extends IStorage>
     }
 
     @Override
+    public <E extends IConsistent & IControl> List<ITriple> change(ISessionManager manager, E topology)
+    {
+        return _Then != null ? _Then.change(manager, topology): null;
+    }
+
+    @Override
     public boolean waitForCommit()
     {
         return _Then != null && _Then.waitForCommit();

@@ -25,16 +25,33 @@ package com.isahl.chess.queen.io.core.manager;
 
 import com.isahl.chess.king.base.disruptor.event.OperatorType;
 import com.isahl.chess.queen.config.IAioConfig;
+import com.isahl.chess.queen.db.inf.IStorage;
+import com.isahl.chess.queen.event.QEvent;
+import com.isahl.chess.queen.event.handler.cluster.IClusterCustom;
+import com.isahl.chess.queen.event.handler.cluster.IConsistentCustom;
+import com.isahl.chess.queen.event.handler.mix.ILogicHandler;
 import com.isahl.chess.queen.io.core.async.AioManager;
 import com.isahl.chess.queen.io.core.executor.ClusterCore;
+import com.isahl.chess.queen.io.core.executor.IClusterCore;
+import com.isahl.chess.queen.io.core.executor.ILocalPublisher;
 import com.isahl.chess.queen.io.core.inf.IActivity;
 import com.isahl.chess.queen.io.core.inf.IControl;
+import com.isahl.chess.queen.io.core.inf.IEncryptHandler;
 import com.isahl.chess.queen.io.core.inf.ISession;
+import com.lmax.disruptor.RingBuffer;
+
+import java.io.IOException;
+import java.nio.channels.AsynchronousChannelGroup;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 
 public class ClusterManager
-        extends AioManager<ClusterCore>
+        extends
+        AioManager
         implements
-        IActivity
+        IActivity,
+        IClusterCore,
+        ILocalPublisher
 {
     private final ClusterCore _ClusterCore;
 
@@ -52,14 +69,40 @@ public class ClusterManager
     }
 
     @Override
+    public RingBuffer<QEvent> getPublisher(OperatorType type)
+    {
+        return _ClusterCore.getPublisher(type);
+    }
+
+    @Override
+    public RingBuffer<QEvent> getCloser(OperatorType type)
+    {
+        return _ClusterCore.getCloser(type);
+    }
+
+    @Override
+    public ReentrantLock getLock(OperatorType type)
+    {
+        return _ClusterCore.getLock(type);
+    }
+
+    @Override
     public final boolean send(ISession session, OperatorType type, IControl... commands)
     {
         return _ClusterCore.send(session, type, commands);
     }
 
-    @Override
-    protected ClusterCore getCore()
+    public <T extends IStorage> void build(IClusterCustom<T> clusterCustom,
+                                           IConsistentCustom consistentCustom,
+                                           ILogicHandler logicHandler,
+                                           Supplier<IEncryptHandler> encryptSupplier)
     {
-        return _ClusterCore;
+        _ClusterCore.build(this, clusterCustom, consistentCustom, logicHandler, encryptSupplier);
+    }
+
+    @Override
+    public AsynchronousChannelGroup getClusterChannelGroup() throws IOException
+    {
+        return _ClusterCore.getClusterChannelGroup();
     }
 }

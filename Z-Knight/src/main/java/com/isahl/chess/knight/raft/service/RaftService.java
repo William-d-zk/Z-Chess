@@ -28,22 +28,20 @@ import com.isahl.chess.knight.raft.IRaftService;
 import com.isahl.chess.knight.raft.model.RaftGraph;
 import com.isahl.chess.knight.raft.model.RaftMachine;
 import com.isahl.chess.knight.raft.model.RaftNode;
-import org.springframework.stereotype.Service;
-
-import java.util.Map;
+import com.isahl.chess.queen.io.core.inf.IClusterPeer;
+import com.isahl.chess.queen.io.core.inf.IClusterTimer;
 
 /**
  * @author william.d.zk
  */
-@Service
-public class RaftService
+public class RaftService<M extends IClusterPeer & IClusterTimer>
         implements
         IRaftService
 {
 
-    private final RaftNode<?> _RaftNode;
+    private final RaftNode<M> _RaftNode;
 
-    public RaftService(RaftNode<?> raftNode)
+    public RaftService(RaftNode<M> raftNode)
     {
         _RaftNode = raftNode;
     }
@@ -67,15 +65,9 @@ public class RaftService
     }
 
     @Override
-    public boolean rmPeer(long peerId)
+    public boolean removePeer(long peerId)
     {
-        return false;
+        return getTopology().remove(peerId);
     }
 
-    @Override
-    public void setTopology(Map<Long,
-                                RaftMachine> peerMap)
-    {
-
-    }
 }

@@ -26,20 +26,11 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.queen.config.IAioConfig;
 import com.isahl.chess.queen.config.ISocketConfig;
-import com.isahl.chess.queen.io.core.executor.IPipeCore;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionManager;
 import org.slf4j.event.Level;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 import static com.isahl.chess.queen.io.core.inf.ISession.PREFIX_MAX;
 
@@ -51,7 +42,7 @@ import static com.isahl.chess.queen.io.core.inf.ISession.PREFIX_MAX;
  *
  * @author William.d.zk
  */
-public abstract class AioManager<K extends IPipeCore>
+public class AioManager
         implements
         ISessionManager
 {
@@ -280,8 +271,6 @@ public abstract class AioManager<K extends IPipeCore>
     {
         return _Prefix2SessionMaps[getSlot(prefix)].get(prefix);
     }
-
-    protected abstract K getCore();
 
     public Set<ISession> getSessionSetWithType(int typeSlot)
     {
