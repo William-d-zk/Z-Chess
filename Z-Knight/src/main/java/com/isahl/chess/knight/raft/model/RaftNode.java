@@ -1060,7 +1060,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                                  return x77;
                              }
                              else {
-                                 _Logger.debug("not found %#x 's session", machine.getPeerId());
+                                 _Logger.debug("not found session %#x", machine.getPeerId());
                                  return null;
                              }
                          })

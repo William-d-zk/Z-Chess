@@ -474,10 +474,24 @@ public class RaftMachine
     public void reset()
     {
         mIndex = 0;
-        mMatchIndex = INDEX_NAN;
         mIndexTerm = 0;
+        mMatchIndex = INDEX_NAN;
+        mTerm = 0;
         mApplied = 0;
         mCommit = 0;
+    }
+
+    @Override
+    public void merge(IRaftMachine old)
+    {
+        if (mIndex != old.getIndex() || mTerm != old.getTerm() || mIndexTerm != old.getIndexTerm()) {
+            reset();
+        }
+        mState = FOLLOWER.getCode();
+        mCandidate = INVALID_PEER_ID;
+        mLeader = INVALID_PEER_ID;
+        mPeerSet.addAll(old.getPeerSet());
+        mGateSet.addAll(old.getGateSet());
     }
 
     @Override

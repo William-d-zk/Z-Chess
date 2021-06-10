@@ -55,7 +55,7 @@ public interface IRaftService
      * 
      * @return success / failed
      */
-    boolean addPeer(RaftMachine peer);
+    boolean appendPeer(RaftMachine peer);
 
     /**
      * 移除集群节点

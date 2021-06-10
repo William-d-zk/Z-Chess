@@ -28,9 +28,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
-import java.util.Map;
 import java.util.NavigableMap;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
@@ -71,12 +69,6 @@ public class RaftGraph
         return _NodeMap;
     }
 
-    public void setNodeMap(Map<Long,
-                               RaftMachine> map)
-    {
-        _NodeMap.putAll(map);
-    }
-
     public boolean append(RaftMachine machine)
     {
         return _NodeMap.putIfAbsent(machine.getPeerId(), machine) == machine;
@@ -84,8 +76,13 @@ public class RaftGraph
 
     public void merge(RaftGraph other)
     {
-        Objects.requireNonNull(other);
-        _NodeMap.putAll(other._NodeMap);
+        if (other != null && !other._NodeMap.isEmpty()) {
+            other._NodeMap.forEach((peer, machine) -> _NodeMap.merge(peer, machine, ((o, n) ->
+            {
+                o.merge(n);
+                return o;
+            })));
+        }
     }
 
     @JsonIgnore

@@ -23,11 +23,11 @@
 
 package com.isahl.chess.knight.raft;
 
-import java.util.Set;
-
 import com.isahl.chess.king.base.inf.IReset;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.knight.raft.model.RaftMachine;
+
+import java.util.Set;
 
 /**
  * @author william.d.zk
@@ -123,5 +123,7 @@ public interface IRaftMachine
     IRaftMachine createCandidate();
 
     IRaftMachine createLeader();
+
+    void merge(IRaftMachine old);
 
 }
