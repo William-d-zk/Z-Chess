@@ -23,6 +23,7 @@
 
 package com.isahl.chess.knight.raft.service;
 
+import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.knight.raft.IRaftService;
 import com.isahl.chess.knight.raft.model.RaftGraph;
 import com.isahl.chess.knight.raft.model.RaftMachine;
@@ -58,15 +59,27 @@ public class RaftService<M extends IClusterPeer & IClusterTimer>
     }
 
     @Override
-    public boolean appendPeer(RaftMachine peer)
+    public void appendPeer(Triple<Long,
+                                  String,
+                                  Integer> peer)
     {
-        return getTopology().append(peer);
+        if (_RaftNode.getMachine()
+                     .getPeerSet()
+                     .add(peer))
+        {
+            getTopology().append(new RaftMachine(peer.getFirst()));
+        }
     }
 
     @Override
-    public boolean removePeer(long peerId)
+    public void removePeer(long peerId)
     {
-        return getTopology().remove(peerId);
+        if (_RaftNode.getMachine()
+                     .getPeerSet()
+                     .removeIf(t -> t.getFirst() == peerId))
+        {
+            getTopology().remove(peerId);
+        }
     }
 
 }

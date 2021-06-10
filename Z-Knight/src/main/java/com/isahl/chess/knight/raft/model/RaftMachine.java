@@ -482,19 +482,6 @@ public class RaftMachine
     }
 
     @Override
-    public void merge(IRaftMachine old)
-    {
-        if (mIndex != old.getIndex() || mTerm != old.getTerm() || mIndexTerm != old.getIndexTerm()) {
-            reset();
-        }
-        mState = FOLLOWER.getCode();
-        mCandidate = INVALID_PEER_ID;
-        mLeader = INVALID_PEER_ID;
-        mPeerSet.addAll(old.getPeerSet());
-        mGateSet.addAll(old.getGateSet());
-    }
-
-    @Override
     public String toString()
     {
         return String.format("\n{\n"

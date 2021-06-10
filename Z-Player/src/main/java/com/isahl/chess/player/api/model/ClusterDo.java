@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,50 +21,49 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft;
+package com.isahl.chess.player.api.model;
 
-import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.knight.raft.model.RaftGraph;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 /**
  * @author william.d.zk
- * 
- * @date 2020/2/20
+ * @date 2021/6/11
  */
-public interface IRaftService
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+public class ClusterDo
 {
-    /**
-     * 获取集群的leader信息
-     * 
-     * @return leader peer_id
-     */
-    long getLeader();
+    private long   peerId;
+    private String host;
+    private int    port;
 
-    /**
-     * 获取集群拓扑
-     * 
-     * @return
-     */
-    RaftGraph getTopology();
+    public long getPeerId()
+    {
+        return peerId;
+    }
 
-    /**
-     * 向集群中添加节点
-     * triple [first#peerId|second#address|third#port]
-     * 
-     * @param peer
-     * 
-     */
-    void appendPeer(Triple<Long,
-                              String,
-                              Integer> peer);
+    public void setPeerId(long peerId)
+    {
+        this.peerId = peerId;
+    }
 
-    /**
-     * 移除集群节点
-     * 
-     * @param peerId
-     * 
-     * @return success / failed
-     */
-    void removePeer(long peerId);
+    public String getHost()
+    {
+        return host;
+    }
 
+    public void setHost(String host)
+    {
+        this.host = host;
+    }
+
+    public int getPort()
+    {
+        return port;
+    }
+
+    public void setPort(int port)
+    {
+        this.port = port;
+    }
 }

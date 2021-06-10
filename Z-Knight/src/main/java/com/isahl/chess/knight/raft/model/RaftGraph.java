@@ -58,9 +58,9 @@ public class RaftGraph
     /**
      * @param peer
      */
-    public boolean remove(long peer)
+    public void remove(long peer)
     {
-        return _NodeMap.remove(peer) != null;
+        _NodeMap.remove(peer);
     }
 
     public NavigableMap<Long,
@@ -69,20 +69,9 @@ public class RaftGraph
         return _NodeMap;
     }
 
-    public boolean append(RaftMachine machine)
+    public void append(RaftMachine machine)
     {
-        return _NodeMap.putIfAbsent(machine.getPeerId(), machine) == machine;
-    }
-
-    public void merge(RaftGraph other)
-    {
-        if (other != null && !other._NodeMap.isEmpty()) {
-            other._NodeMap.forEach((peer, machine) -> _NodeMap.merge(peer, machine, ((o, n) ->
-            {
-                o.merge(n);
-                return o;
-            })));
-        }
+     _NodeMap.putIfAbsent(machine.getPeerId(), machine) ;
     }
 
     @JsonIgnore
