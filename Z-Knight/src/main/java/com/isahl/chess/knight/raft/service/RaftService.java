@@ -23,7 +23,6 @@
 
 package com.isahl.chess.knight.raft.service;
 
-import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.knight.raft.IRaftService;
 import com.isahl.chess.knight.raft.model.RaftGraph;
 import com.isahl.chess.knight.raft.model.RaftMachine;
@@ -38,7 +37,6 @@ public class RaftService<M extends IClusterPeer & IClusterTimer>
         implements
         IRaftService
 {
-
     private final RaftNode<M> _RaftNode;
 
     public RaftService(RaftNode<M> raftNode)
@@ -49,7 +47,8 @@ public class RaftService<M extends IClusterPeer & IClusterTimer>
     @Override
     public long getLeader()
     {
-        return ZUID.INVALID_PEER_ID;
+        return _RaftNode.getMachine()
+                        .getLeader();
     }
 
     @Override
@@ -59,7 +58,7 @@ public class RaftService<M extends IClusterPeer & IClusterTimer>
     }
 
     @Override
-    public boolean addPeer(RaftMachine peer)
+    public boolean appendPeer(RaftMachine peer)
     {
         return getTopology().append(peer);
     }
