@@ -30,6 +30,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
 
+/**
+ * @author william.d.zk
+ * @date 2019/12/01
+ */
 @RestController
 public class ConsistentController
 {

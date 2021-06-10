@@ -23,41 +23,46 @@
 
 package com.isahl.chess.player.api.controller;
 
+import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.response.ZResponse;
-import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageBody;
-import com.isahl.chess.pawn.endpoint.device.spi.IMessageService;
+import com.isahl.chess.king.base.util.Triple;
+import com.isahl.chess.knight.raft.service.RaftService;
+import com.isahl.chess.pawn.endpoint.device.DeviceNode;
+import com.isahl.chess.player.api.model.ClusterDo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 /**
  * @author william.d.zk
- * @date 2019/11/3
+ * @date 2021/6/11
  */
-@RestController
-@RequestMapping("message")
-public class MessageController
+@RestController("cluster")
+public class ClusterController
 {
-
-    private final IMessageService _MessageService;
+    private final RaftService<DeviceNode> _RaftService;
 
     @Autowired
-    public MessageController(IMessageService messageService)
+    public ClusterController(RaftService<DeviceNode> raftService)
     {
-        _MessageService = messageService;
+        _RaftService = raftService;
     }
 
-    @GetMapping("topic")
-    public ZResponse<List<MessageBody>> getMessageByTopic(@RequestParam(name = "topic") String topic,
-                                                          @RequestParam(name = "limit",
-                                                                        defaultValue = "1",
-                                                                        required = false) int limit)
+    @PostMapping("change")
+    public @ResponseBody ZResponse<?> changeTopology(@RequestBody ClusterDo peer)
     {
-        return ZResponse.success(_MessageService.listByTopic(topic, limit));
+        Triple<Long,
+               String,
+               Integer> triple = new Triple<>(peer.getPeerId(), peer.getHost(), peer.getPort());
+        try {
+            _RaftService.appendPeer(triple);
+            return ZResponse.success(_RaftService.getTopology());
+        }
+        catch (ZException e) {
+            return ZResponse.error(e.getMessage());
+        }
     }
 
 }

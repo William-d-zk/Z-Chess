@@ -124,6 +124,4 @@ public interface IRaftMachine
 
     IRaftMachine createLeader();
 
-    void merge(IRaftMachine old);
-
 }
