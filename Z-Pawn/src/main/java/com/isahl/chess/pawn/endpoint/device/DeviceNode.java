@@ -67,7 +67,7 @@ public class DeviceNode
         MixManager
         implements
         ISessionDismiss,
-        IClusterNode<ServerCore>
+        IClusterNode
 {
     private final List<IAioServer> _AioServers;
     private final IAioClient       _PeerClient;
@@ -131,7 +131,7 @@ public class DeviceNode
                                                   multiBind);
                            })
                            .collect(Collectors.toList());
-        _GateClient = new BaseAioClient(_TimeWheel, getCore().getClusterChannelGroup())
+        _GateClient = new BaseAioClient(_TimeWheel, getClusterChannelGroup())
         {
             @Override
             public void onCreated(ISession session)
@@ -149,7 +149,7 @@ public class DeviceNode
                 super.onDismiss(session);
             }
         };
-        _PeerClient = new BaseAioClient(_TimeWheel, getCore().getClusterChannelGroup())
+        _PeerClient = new BaseAioClient(_TimeWheel, getClusterChannelGroup())
         {
 
             @Override
@@ -175,9 +175,9 @@ public class DeviceNode
                       ILinkCustom linkCustom,
                       IClusterCustom<RaftMachine> clusterCustom) throws IOException
     {
-        getCore().build(this, logicHandler, linkCustom, clusterCustom, EncryptHandler::new);
+        build(logicHandler, linkCustom, clusterCustom, EncryptHandler::new);
         for (IAioServer server : _AioServers) {
-            server.bindAddress(server.getLocalAddress(), getCore().getServiceChannelGroup());
+            server.bindAddress(server.getLocalAddress(), getServiceChannelGroup());
             server.pendingAccept();
             _Logger.info(String.format("device node start %s %s @ %s",
                                        server.getLocalAddress(),
@@ -187,7 +187,7 @@ public class DeviceNode
     }
 
     @Override
-    public void addPeer(IPair remote) throws IOException
+    public void setupPeer(IPair remote) throws IOException
     {
         final ZSortHolder _Holder = ZSortHolder.WS_CLUSTER_SYMMETRY;
         ISocketConfig socketConfig = getSocketConfig(_Holder.getSlot());
@@ -195,35 +195,23 @@ public class DeviceNode
     }
 
     @Override
-    public void addGate(IPair remote) throws IOException
+    public void setupGate(IPair remote) throws IOException
     {
         final ZSortHolder _Holder = ZSortHolder.WS_CLUSTER_SYMMETRY;
         ISocketConfig socketConfig = getSocketConfig(_Holder.getSlot());
         _GateClient.connect(buildConnector(remote, socketConfig, _GateClient, DeviceNode.this, _Holder, _ZUid));
     }
 
-    @Override
-    public ServerCore getCore()
-    {
-        return super.getCore();
-    }
-
-    @Override
-    public ServerCore getExternal()
-    {
-        return getCore();
-    }
-
     private void peerHeartbeat(ISession session)
     {
         _Logger.debug("device_cluster heartbeat => %s ", session.getRemoteAddress());
-        getCore().send(session, OperatorType.CLUSTER_LOCAL, _PeerPing);
+        send(session, OperatorType.CLUSTER_LOCAL, _PeerPing);
     }
 
     private void gateHeartbeat(ISession session)
     {
         _Logger.debug("device_cluster heartbeat => %s ", session.getRemoteAddress());
-        getCore().send(session, OperatorType.CLUSTER_LOCAL, _GatePing);
+        send(session, OperatorType.CLUSTER_LOCAL, _GatePing);
     }
 
     @Override

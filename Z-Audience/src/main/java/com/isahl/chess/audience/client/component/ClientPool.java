@@ -93,7 +93,7 @@ import static com.isahl.chess.king.base.schedule.TimeWheel.IWheelItem.PRIORITY_N
 @Component
 public class ClientPool
         extends
-        AioManager<ClientCore>
+        AioManager
         implements
         IAioClient,
         ISessionDismiss
@@ -281,12 +281,7 @@ public class ClientPool
                                           IConnectActivity activity) throws IOException
             {
 
-                return new AioSession<>(socketChannel,
-                                        this,
-                                        ZSortHolder.getSort(),
-                                        activity,
-                                        ClientPool.this,
-                                        false);
+                return new AioSession<>(socketChannel, this, ZSortHolder.getSort(), activity, ClientPool.this, false);
             }
 
             @Override
@@ -348,7 +343,7 @@ public class ClientPool
 
     private void heartbeat(ISession session)
     {
-        getCore().send(session, OperatorType.BIZ_LOCAL, _Ping);
+        _ClientCore.send(session, OperatorType.BIZ_LOCAL, _Ping);
     }
 
     public final void sendLocal(long sessionIndex, IControl... toSends)
@@ -399,9 +394,4 @@ public class ClientPool
                                                  }));
     }
 
-    @Override
-    protected ClientCore getCore()
-    {
-        return _ClientCore;
-    }
 }

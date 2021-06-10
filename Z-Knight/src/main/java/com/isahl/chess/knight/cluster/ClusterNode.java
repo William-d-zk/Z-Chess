@@ -60,7 +60,7 @@ public class ClusterNode
         ClusterManager
         implements
         ISessionDismiss,
-        IClusterNode<ClusterCore>
+        IClusterNode
 {
     private final Logger     _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
     private final TimeWheel  _TimeWheel;
@@ -123,7 +123,7 @@ public class ClusterNode
             _GateServer = null;
             _GatePing = null;
         }
-        _GateClient = new BaseAioClient(_TimeWheel, getCore().getClusterChannelGroup())
+        _GateClient = new BaseAioClient(_TimeWheel, getClusterChannelGroup())
         {
             @Override
             public void onCreated(ISession session)
@@ -141,7 +141,7 @@ public class ClusterNode
                 super.onDismiss(session);
             }
         };
-        _PeerClient = new BaseAioClient(_TimeWheel, getCore().getClusterChannelGroup())
+        _PeerClient = new BaseAioClient(_TimeWheel, getClusterChannelGroup())
         {
 
             @Override
@@ -172,19 +172,19 @@ public class ClusterNode
                       IConsistentCustom consistentCustom,
                       ILogicHandler logicHandler) throws IOException
     {
-        getCore().build(this, clusterCustom, consistentCustom, logicHandler, EncryptHandler::new);
-        _PeerServer.bindAddress(_PeerServer.getLocalAddress(), getCore().getClusterChannelGroup());
+        build(clusterCustom, consistentCustom, logicHandler, EncryptHandler::new);
+        _PeerServer.bindAddress(_PeerServer.getLocalAddress(), getClusterChannelGroup());
         _PeerServer.pendingAccept();
         _Logger.debug("cluster start→peer:%s", _PeerServer.getLocalAddress());
         if (_GateServer != null) {
-            _GateServer.bindAddress(_GateServer.getLocalAddress(), getCore().getClusterChannelGroup());
+            _GateServer.bindAddress(_GateServer.getLocalAddress(), getClusterChannelGroup());
             _GateServer.pendingAccept();
             _Logger.debug("cluster start:gate: %s", _GateServer.getLocalAddress());
         }
     }
 
     @Override
-    public void addPeer(IPair remote) throws IOException
+    public void setupPeer(IPair remote) throws IOException
     {
         final ZSortHolder _Holder = ZSortHolder.WS_CLUSTER_SYMMETRY;
         ISocketConfig socketConfig = getSocketConfig(_Holder.getSlot());
@@ -192,7 +192,7 @@ public class ClusterNode
     }
 
     @Override
-    public void addGate(IPair remote) throws IOException
+    public void setupGate(IPair remote) throws IOException
     {
         final ZSortHolder _Holder = ZSortHolder.WS_CLUSTER_SYMMETRY;
         ISocketConfig socketConfig = getSocketConfig(_Holder.getSlot());
@@ -202,13 +202,13 @@ public class ClusterNode
     private void peerHeartbeat(ISession session)
     {
         _Logger.debug("cluster heartbeat =>%s", session.getRemoteAddress());
-        getCore().send(session, OperatorType.CLUSTER_LOCAL, _PeerPing);
+        send(session, OperatorType.CLUSTER_LOCAL, _PeerPing);
     }
 
     private void gateHeartbeat(ISession session)
     {
         _Logger.debug("gate heartbeat =>%s", session.getRemoteAddress());
-        getCore().send(session, OperatorType.CLUSTER_LOCAL, _GatePing);
+        send(session, OperatorType.CLUSTER_LOCAL, _GatePing);
     }
 
     @Override
@@ -217,15 +217,4 @@ public class ClusterNode
         return _ZUid.getId();
     }
 
-    @Override
-    public ClusterCore getCore()
-    {
-        return super.getCore();
-    }
-
-    @Override
-    public ClusterCore getExternal()
-    {
-        return getCore();
-    }
 }

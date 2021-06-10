@@ -35,6 +35,7 @@ import com.isahl.chess.knight.raft.IRaftDao;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.knight.raft.service.RaftCustom;
+import com.isahl.chess.knight.raft.service.RaftService;
 import com.isahl.chess.pawn.endpoint.device.DeviceNode;
 import com.isahl.chess.pawn.endpoint.device.config.MixConfig;
 import com.isahl.chess.pawn.endpoint.device.spi.IMessageService;
@@ -65,6 +66,7 @@ public class NodeService
     private final ILinkCustom              _LinkCustom;
     private final RaftCustom<DeviceNode>   _RaftCustom;
     private final RaftNode<DeviceNode>     _RaftNode;
+    private final RaftService<DeviceNode>  _RaftService;
     private final LogicHandler<DeviceNode> _LogicHandler;
 
     @Autowired
@@ -102,6 +104,7 @@ public class NodeService
         _RaftNode = new RaftNode<>(timeWheel, raftConfig, raftDao, _DeviceNode);
         _RaftCustom = new RaftCustom<>(_RaftNode);
         _LogicHandler = new LogicHandler<>(_DeviceNode, qttRouter, _RaftNode, messageService);
+        _RaftService = new RaftService<>(_RaftNode);
     }
 
     @PostConstruct
@@ -120,9 +123,9 @@ public class NodeService
     }
 
     @Bean
-    public RaftNode<DeviceNode> getRaftNode()
+    public RaftService<DeviceNode> getRaftNode()
     {
-        return _RaftNode;
+        return _RaftService;
     }
 
 }
