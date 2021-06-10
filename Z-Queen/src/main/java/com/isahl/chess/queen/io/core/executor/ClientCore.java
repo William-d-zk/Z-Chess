@@ -189,18 +189,6 @@ public class ClientCore
         submit(_EncodedProcessor);
     }
 
-    @Override
-    public RingBuffer<QEvent> getConsensusEvent()
-    {
-        return null;
-    }
-
-    @Override
-    public ReentrantLock getConsensusLock()
-    {
-        return null;
-    }
-
     private static int poolSize()
     {
         return 1// aioDispatch

@@ -208,6 +208,12 @@ public class DeviceNode
         return super.getCore();
     }
 
+    @Override
+    public ServerCore getExternal()
+    {
+        return getCore();
+    }
+
     private void peerHeartbeat(ISession session)
     {
         _Logger.debug("device_cluster heartbeat => %s ", session.getRemoteAddress());

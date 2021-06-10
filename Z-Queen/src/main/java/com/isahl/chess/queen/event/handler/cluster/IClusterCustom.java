@@ -73,7 +73,7 @@ public interface IClusterCustom<T extends IStorage>
     List<ITriple> onTimer(ISessionManager manager, T content);
 
     /**
-     * Link -> Cluster.consensus(Link.consensus_data,consensus_data.origin)
+     * Link → Cluster.consensus(Link.consensus_data,consensus_data.origin)
      *
      * @param manager
      *            session 管理器
@@ -84,6 +84,15 @@ public interface IClusterCustom<T extends IStorage>
      *         [托管给集群IoSwitch.write(triples) 或 Transfer → Link.notify(triples)]
      */
     <E extends IConsistent & IControl> List<ITriple> consensus(ISessionManager manager, E request);
+
+    /**
+     * consensus-api-publisher → cluster.change(new-topology)
+     * 
+     * @param manager
+     * @param topology
+     * @return
+     */
+    <E extends IConsistent & IControl> List<ITriple> change(ISessionManager manager, E topology);
 
     /**
      * 用于验证是否需要执行集群commit

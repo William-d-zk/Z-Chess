@@ -23,15 +23,15 @@
 
 package com.isahl.chess.knight.raft.model;
 
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentSkipListMap;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
  * @author william.d.zk
@@ -58,17 +58,11 @@ public class RaftGraph
     }
 
     /**
-     * 删除过程只能forEach
-     *
-     * @param peers
+     * @param peer
      */
-    public void remove(long... peers)
+    public boolean remove(long peer)
     {
-        if (peers != null) {
-            for (long peer : peers) {
-                _NodeMap.remove(peer);
-            }
-        }
+        return _NodeMap.remove(peer) != null;
     }
 
     public NavigableMap<Long,
@@ -83,9 +77,9 @@ public class RaftGraph
         _NodeMap.putAll(map);
     }
 
-    public void append(RaftMachine machine)
+    public boolean append(RaftMachine machine)
     {
-        _NodeMap.put(machine.getPeerId(), machine);
+        return _NodeMap.putIfAbsent(machine.getPeerId(), machine) == machine;
     }
 
     public void merge(RaftGraph other)

@@ -38,7 +38,7 @@ import com.isahl.chess.queen.io.core.async.BaseAioServer;
 import com.isahl.chess.queen.io.core.async.inf.IAioClient;
 import com.isahl.chess.queen.io.core.async.inf.IAioConnector;
 import com.isahl.chess.queen.io.core.async.inf.IAioServer;
-import com.isahl.chess.queen.io.core.executor.IPipeCore;
+import com.isahl.chess.queen.io.core.executor.ILocalPublisher;
 import com.isahl.chess.queen.io.core.inf.*;
 import com.lmax.disruptor.RingBuffer;
 
@@ -51,7 +51,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * 
  * @date 2020/4/23
  */
-public interface IClusterNode<K extends IPipeCore>
+public interface IClusterNode<K extends ILocalPublisher>
         extends
         IClusterPeer,
         IClusterTimer,
@@ -183,13 +183,13 @@ public interface IClusterNode<K extends IPipeCore>
         };
     }
 
-    K getCore();
+    K getExternal();
 
     @Override
     default <T extends IStorage> void timerEvent(T content)
     {
-        final RingBuffer<QEvent> _ConsensusEvent = getCore().getConsensusEvent();
-        final ReentrantLock _ConsensusLock = getCore().getConsensusLock();
+        final RingBuffer<QEvent> _ConsensusEvent = getExternal().getPublisher(OperatorType.CLUSTER_TIMER);
+        final ReentrantLock _ConsensusLock = getExternal().getLock(OperatorType.CLUSTER_TIMER);
         /*
         通过 Schedule thread-pool 进行 timer 执行, 排队执行。
          */
@@ -209,4 +209,24 @@ public interface IClusterNode<K extends IPipeCore>
         }
     }
 
+    @Override
+    default void confChange(IPair confPair)
+    {
+        final RingBuffer<QEvent> _ConsensusApiEvent = getExternal().getPublisher(OperatorType.CONSENSUS);
+        final ReentrantLock _ConsensusApiLock = getExternal().getLock(OperatorType.CONSENSUS);
+        _ConsensusApiLock.lock();
+        try {
+            long sequence = _ConsensusApiEvent.next();
+            try {
+                QEvent event = _ConsensusApiEvent.get(sequence);
+                event.produce(OperatorType.CONSENSUS, confPair, null);
+            }
+            finally {
+                _ConsensusApiEvent.publish(sequence);
+            }
+        }
+        finally {
+            _ConsensusApiLock.unlock();
+        }
+    }
 }

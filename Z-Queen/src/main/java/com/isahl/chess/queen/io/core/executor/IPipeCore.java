@@ -24,14 +24,9 @@
 package com.isahl.chess.queen.io.core.executor;
 
 import com.isahl.chess.queen.event.QEvent;
-import com.lmax.disruptor.LiteBlockingWaitStrategy;
-import com.lmax.disruptor.LiteTimeoutBlockingWaitStrategy;
-import com.lmax.disruptor.RingBuffer;
-import com.lmax.disruptor.WaitStrategy;
-import com.lmax.disruptor.YieldingWaitStrategy;
+import com.lmax.disruptor.*;
 
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author william.d.zk
@@ -40,7 +35,6 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public interface IPipeCore
 {
-
 
     default RingBuffer<QEvent> createPipeline(int size, WaitStrategy waitStrategy)
     {
@@ -61,8 +55,4 @@ public interface IPipeCore
     {
         return createPipeline(size, new LiteTimeoutBlockingWaitStrategy(5, TimeUnit.SECONDS));
     }
-
-    RingBuffer<QEvent> getConsensusEvent();
-
-    ReentrantLock getConsensusLock();
 }

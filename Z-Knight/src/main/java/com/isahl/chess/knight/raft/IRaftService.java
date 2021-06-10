@@ -23,7 +23,6 @@
 
 package com.isahl.chess.knight.raft;
 
-import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.knight.raft.model.RaftGraph;
 import com.isahl.chess.knight.raft.model.RaftMachine;
 
@@ -54,20 +53,20 @@ public interface IRaftService
      * 向集群中添加节点
      * triple [first#peerId|second#address:port]
      * 
-     * @param nodes
+     * @param peer
      * 
      * @return success / failed
      */
-    boolean addNode(IPair... nodes);
+    boolean addPeer(RaftMachine peer);
 
     /**
      * 移除集群节点
      * 
-     * @param nodes
+     * @param peerId
      * 
      * @return success / failed
      */
-    boolean rmNode(IPair... nodes);
+    boolean rmPeer(long peerId);
 
     void setTopology(Map<Long,
                          RaftMachine> peerMap);
