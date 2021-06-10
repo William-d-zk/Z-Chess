@@ -333,7 +333,7 @@ public class ClusterCore
         return switch (type)
         {
             case CLUSTER_LOCAL -> _ClusterLock;
-            case CONSENSUS -> _ConsensusApiLock;
+            case CLUSTER_TOPOLOGY -> _ConsensusApiLock;
             case CLUSTER_TIMER -> _ConsensusLock;
             default -> throw new IllegalArgumentException(String.format("error type:%s", type));
         };
@@ -345,7 +345,7 @@ public class ClusterCore
         return switch (type)
         {
             case CLUSTER_LOCAL -> _ClusterLocalSendEvent;
-            case CONSENSUS -> _ConsensusApiEvent;
+            case CLUSTER_TOPOLOGY -> _ConsensusApiEvent;
             case CLUSTER_TIMER -> _ConsensusEvent;
             default -> throw new IllegalArgumentException(String.format("get publisher type error:%s ", type.name()));
         };
@@ -356,18 +356,6 @@ public class ClusterCore
     {
         if (type == OperatorType.CLUSTER_LOCAL) { return _ClusterLocalCloseEvent; }
         throw new IllegalArgumentException(String.format("get closer type error:%s ", type.name()));
-    }
-
-    @Override
-    public RingBuffer<QEvent> getConsensusEvent()
-    {
-        return _ConsensusEvent;
-    }
-
-    @Override
-    public ReentrantLock getConsensusLock()
-    {
-        return _ConsensusLock;
     }
 
 }

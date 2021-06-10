@@ -468,7 +468,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
      * follower → leader
      * 
      * @return
-     *         first : broadcost to peers
+     *         first : broadcast to peers
      *         second : resp to origin
      */
     public IPair onAccept(long peerId, long term, long index, long leader, ISessionManager manager)
@@ -561,6 +561,20 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                 }
                 break;
         }
+        return null;
+    }
+
+    /**
+     * leader → follower
+     * 
+     * @return first : broadcast to peers
+     *         second : resp to origin
+     */
+    public IPair onDirect(long peerId, long term, long index, long leader, ISessionManager manager)
+    {
+        RaftMachine peerMachine = getMachine(peerId, term);
+        if (peerMachine == null) { return null; }
+
         return null;
     }
 
@@ -1012,6 +1026,11 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
     public long getPeerId()
     {
         return _ZUid.getPeerId();
+    }
+
+    public RaftGraph getRaftGraph()
+    {
+        return _RaftGraph;
     }
 
     private X77_RaftNotify createNotify(LogEntry raftLog)

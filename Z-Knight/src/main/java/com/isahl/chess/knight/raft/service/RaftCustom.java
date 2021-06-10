@@ -65,8 +65,11 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
     /**
      *
      * @param manager
+     *            cluster 管理器 注意与 device 管理器的区分
      * @param session
+     *            来源 session
      * @param content
+     *            需要 raft custom 处理的内容
      *
      * @return IPair
      *         first : list of command implements 'IControl',broadcast to all
@@ -256,6 +259,38 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
         }
         _Logger.fetal("cluster is electing");
         // TODO 返回一个x76.failed 
+        return null;
+    }
+
+    @Override
+    public <E extends IConsistent & IControl> List<ITriple> change(ISessionManager manager, E topology)
+    {
+        _Logger.debug("cluster new topology %s", topology);
+        if (_RaftNode.getMachine()
+                     .getState() == LEADER)
+        {
+            List<ITriple> result = _RaftNode.newLocalLogEntry(topology,
+                                                              _RaftNode.getMachine()
+                                                                       .getPeerId(),
+                                                              manager,
+                                                              cmd -> new Triple<>(cmd,
+                                                                                  cmd.getSession(),
+                                                                                  cmd.getSession()
+                                                                                     .getEncoder()),
+                                                              //从follower来的时候有session,leader
+                                                              topology.getSession());
+            //Accept Machine State
+            return result;
+        }
+        else if (_RaftNode.getMachine()
+                          .getLeader() != ZUID.INVALID_PEER_ID)
+        {
+            ISession leaderSession = manager.findSessionByPrefix(_RaftNode.getMachine()
+                                                                          .getLeader());
+            if (leaderSession != null) {
+                return Collections.singletonList(new Triple<>(topology, leaderSession, leaderSession.getEncoder()));
+            }
+        }
         return null;
     }
 

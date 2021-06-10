@@ -43,6 +43,7 @@ public enum OperatorType
     CLUSTER,
     LOGIC,
     CONSENSUS,
+    CLUSTER_TOPOLOGY,
     NOTIFY,
     CLUSTER_TIMER,
     DISPATCH,

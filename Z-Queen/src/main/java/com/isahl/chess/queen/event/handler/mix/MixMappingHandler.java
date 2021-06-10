@@ -237,6 +237,9 @@ public class MixMappingHandler<T extends IStorage>
                     }
                     break;
                 case CONSENSUS:
+                    /*
+                    core.LinkProcessor → core._ClusterEvent → core.ClusterProcessor → _ClusterCustom
+                    */
                     session = event.getContent()
                                    .getSecond();
                     try {
@@ -249,7 +252,23 @@ public class MixMappingHandler<T extends IStorage>
                     }
                     catch (Exception e) {
                         _Logger.warning("mapping consensus error, link session close", e);
-                        session.innerClose();
+                        if (session != null) session.innerClose();
+                    }
+                    break;
+                case CLUSTER_TOPOLOGY:
+                    /*
+                    core._ConsensusApiEvent → core.ClusterProcessor → _ClusterCustom
+                     */
+                    try {
+                        List<ITriple> result = _ClusterCustom.change(_SessionManager,
+                                                                     event.getContent()
+                                                                          .getFirst());
+                        if (result != null && !result.isEmpty()) {
+                            publish(_Writer, result);
+                        }
+                    }
+                    catch (Exception e) {
+                        _Logger.warning("cluster inner service api ");
                     }
                     break;
                 case NOTIFY:

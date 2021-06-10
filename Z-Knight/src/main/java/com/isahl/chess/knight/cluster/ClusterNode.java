@@ -222,4 +222,10 @@ public class ClusterNode
     {
         return super.getCore();
     }
+
+    @Override
+    public ClusterCore getExternal()
+    {
+        return getCore();
+    }
 }

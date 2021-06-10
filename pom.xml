@@ -213,15 +213,15 @@
         <!--TOOLS-->
         <httpcore-nio.version>4.4.14</httpcore-nio.version>
         <!--TEST TOOLS VERSION-->
-        <junit.jupiter.version>5.7.1</junit.jupiter.version>
-        <junit.platform.verssion>1.7.1</junit.platform.verssion>
-        <mockito.version>3.7.7</mockito.version>
+        <junit.jupiter.version>5.7.2</junit.jupiter.version>
+        <junit.platform.verssion>1.7.2</junit.platform.verssion>
+        <mockito.version>3.11.0</mockito.version>
         <!--CACHE-->
         <ehcache.version>3.9.3</ehcache.version>
         <jcache.version>1.1.1</jcache.version>
         <!--JSON-->
         <jackson.version>2.12.3</jackson.version>
-        <json-schema-validator.version>1.0.52</json-schema-validator.version>
+        <json-schema-validator.version>1.0.53</json-schema-validator.version>
         <!--SECURITY-->
         <jjwt.version>0.11.2</jjwt.version>
         <spring-security-jwt.version>1.1.1.RELEASE</spring-security-jwt.version>
@@ -246,6 +246,11 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
