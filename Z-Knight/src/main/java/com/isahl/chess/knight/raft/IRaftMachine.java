@@ -25,7 +25,7 @@ package com.isahl.chess.knight.raft;
 
 import com.isahl.chess.king.base.inf.IReset;
 import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.knight.raft.model.RaftMachine;
+import com.isahl.chess.queen.db.inf.IStorage;
 
 import java.util.Set;
 
@@ -100,8 +100,6 @@ public interface IRaftMachine
                String,
                Integer>> getGateSet();
 
-    RaftMachine createFollower();
-
     void appendLog(long index, long indexTerm, IRaftDao dao);
 
     void rollBack(long index, long indexTerm, IRaftDao dao);
@@ -120,8 +118,11 @@ public interface IRaftMachine
 
     void follow(long term, IRaftDao dao);
 
-    IRaftMachine createCandidate();
+    <T extends IRaftMachine & IStorage> T createCandidate();
 
-    IRaftMachine createLeader();
+    <T extends IRaftMachine & IStorage> T createLeader();
 
+    <T extends IRaftMachine & IStorage> T createFollower();
+
+    <T extends IRaftMachine & IStorage> T createLearner();
 }

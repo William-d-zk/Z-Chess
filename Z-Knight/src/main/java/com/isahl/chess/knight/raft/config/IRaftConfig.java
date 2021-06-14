@@ -76,6 +76,8 @@ public interface IRaftConfig
 
     boolean isGateNode();
 
+    boolean isBeGate();
+
     ZUID createZUID();
 
     Duration getElectInSecond();
@@ -91,6 +93,8 @@ public interface IRaftConfig
     long getSnapshotFragmentMaxSize();
 
     boolean isClusterMode();
+
+    void update(IRaftConfig source);
 
     class Uid
     {

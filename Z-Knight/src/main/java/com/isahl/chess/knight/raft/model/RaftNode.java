@@ -109,14 +109,6 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
 
     public void init()
     {
-        if (!_RaftConfig.isClusterMode()) {
-            _Logger.info("single model skip init raft node");
-            return;
-        }
-        if (!_RaftConfig.isInCongress()) {
-            _Logger.info("learner reset all");
-            return;
-        }
         /* _RaftDao 启动的时候已经装载了 snapshot */
         _SelfMachine.setTerm(_RaftDao.getLogMeta()
                                      .getTerm());
@@ -136,7 +128,6 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
                                         .getGateSet());
         /* 初始化时，match_index == applied */
         _SelfMachine.setMatchIndex(_SelfMachine.getApplied());
-
         if (_SelfMachine.getPeerSet() == null) {
             /* 首次启动或删除本地状态机重启,仅需要连接node_id < self.node_id的peer */
             _RaftDao.loadDefaultGraphSet();
@@ -145,10 +136,12 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
             _SelfMachine.setGateSet(_RaftDao.getLogMeta()
                                             .getGateSet());
         }
-        // 启动snapshot定时回写计时器
+        if (!_RaftConfig.isClusterMode()) {
+            _Logger.info("single mode , ignore state listen");
+            return;
+        }
         _TimeWheel.acquire(_RaftDao,
                            new ScheduleHandler<>(_RaftConfig.getSnapshotInSecond(), true, this::takeSnapshot));
-        // 初始化为FOLLOWER 状态，等待LEADER的HEARTBEAT
         mTickTask = _TimeWheel.acquire(this, _TickSchedule);
         _Logger.info("raft node init -> %s", _SelfMachine);
     }
@@ -191,6 +184,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
 
     public void takeSnapshot(IRaftDao snapshot)
     {
+
         long localTerm;
         if (_RaftDao.getTotalSize() < _RaftConfig.getSnapshotMinSize()) {
             _Logger.debug("snapshot size less than threshold");
