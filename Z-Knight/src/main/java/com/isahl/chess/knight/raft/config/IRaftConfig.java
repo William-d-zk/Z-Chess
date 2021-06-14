@@ -37,7 +37,7 @@ public interface IRaftConfig
     /**
      * 当前集群的节点列表
      * 
-     * @return
+     * @return cluster peer topology
      */
 
     List<IPair> getPeers();
@@ -45,21 +45,21 @@ public interface IRaftConfig
     /**
      * 与其他独region 进行通讯的网关
      * 
-     * @return
+     * @return gate topology
      */
     List<IPair> getGates();
 
     /**
      * 集群服务绑定的服务地址 host:port
-     * 
-     * @return
+     *
+     * @return local peer bind
      */
     IPair getPeerBind();
 
     /**
      * 集群服务绑定的分区节点地址 host:port
      * 
-     * @return
+     * @return global gate bind
      */
     IPair getGateBind();
 
@@ -68,7 +68,7 @@ public interface IRaftConfig
      * 
      * @see ZUID
      * 
-     * @return
+     * @return cluster uid setting
      */
     Uid getUid();
 
