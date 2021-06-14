@@ -81,14 +81,14 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
     private ICancelable                        mElectTask, mHeartbeatTask, mTickTask;
 
     public RaftNode(TimeWheel timeWheel,
-                    IRaftConfig clusterConfig,
+                    IRaftConfig raftConfig,
                     IRaftDao raftDao,
                     M manager)
     {
         _TimeWheel = timeWheel;
-        _RaftConfig = clusterConfig;
+        _RaftConfig = raftConfig;
         _ClusterPeer = manager;
-        _ZUid = clusterConfig.createZUID();
+        _ZUid = raftConfig.createZUID();
         _RaftDao = raftDao;
         _ElectSchedule = new ScheduleHandler<>(_RaftConfig.getElectInSecond(), RaftNode::stepDown);
         _HeartbeatSchedule = new ScheduleHandler<>(_RaftConfig.getHeartbeatInSecond(), RaftNode::heartbeat);
