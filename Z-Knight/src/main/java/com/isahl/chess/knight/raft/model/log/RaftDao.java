@@ -23,10 +23,12 @@
 
 package com.isahl.chess.knight.raft.model.log;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.knight.raft.IRaftDao;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
@@ -36,10 +38,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
@@ -57,20 +56,24 @@ public class RaftDao
         implements
         IRaftDao
 {
-    private final Logger                 _Logger           = Logger.getLogger("cluster.knight."
-                                                                              + getClass().getSimpleName());
-    private final String                 _LogDataDir;
-    private final String                 _LogMetaDir;
-    private final String                 _SnapshotDir;
-    private final int                    _MaxSegmentSize;
+    private final Logger                     _Logger                    = Logger.getLogger("cluster.knight."
+                                                                                           + getClass().getSimpleName());
+    private final String                     _LogDataDir;
+    private final String                     _LogMetaDir;
+    private final String                     _SnapshotDir;
+    private final String                     _RaftConfigDir;
+    private final int                        _MaxSegmentSize;
     private final TreeMap<Long,
-                          Segment>       _Index2SegmentMap = new TreeMap<>();
-    private final IRaftConfig            _RaftConfig;
-
-    private LogMeta          mLogMeta;
-    private SnapshotMeta     mSnapshotMeta;
-    private volatile long    vTotalSize;
-    private volatile boolean vValid;
+                          Segment>           _Index2SegmentMap          = new TreeMap<>();
+    private final IRaftConfig                _RaftConfig;
+    private final TypeReference<ZRaftConfig> _TypeReferenceOfRaftConfig = new TypeReference<>()
+                                                                        {
+                                                                        };
+    private LogMeta                          mLogMeta;
+    private SnapshotMeta                     mSnapshotMeta;
+    private ZRaftConfig                      mLocalConfig;
+    private volatile long                    vTotalSize;
+    private volatile boolean                 vValid;
     // 表示是否正在安装snapshot，leader向follower安装，leader和follower同时处于installSnapshot状态
     private final AtomicBoolean _InstallSnapshot = new AtomicBoolean(false);
     // 表示节点自己是否在对状态机做snapshot
@@ -82,6 +85,7 @@ public class RaftDao
     {
         _RaftConfig = config;
         String baseDir = config.getBaseDir();
+        _RaftConfigDir = String.format("%s%s.conf", baseDir, File.separator);
         _LogMetaDir = String.format("%s%s.raft", baseDir, File.separator);
         _LogDataDir = String.format("%s%s.data", baseDir, File.separator);
         _SnapshotDir = String.format("%s%s.snapshot", baseDir, File.separator);
@@ -91,7 +95,11 @@ public class RaftDao
     @PostConstruct
     private void init()
     {
-        File file = new File(_LogMetaDir);
+        File file = new File(_RaftConfigDir);
+        if (!file.exists() && !file.mkdirs()) {
+            throw new SecurityException(String.format("%s check mkdir authority", _RaftConfigDir));
+        }
+        file = new File(_LogMetaDir);
         if (!file.exists() && !file.mkdirs()) {
             throw new SecurityException(String.format("%s check mkdir authority", _LogMetaDir));
         }
@@ -125,6 +133,16 @@ public class RaftDao
         catch (FileNotFoundException e) {
             _Logger.warning("meta file not exist, name=%s", metaFileName);
         }
+        String configFileName = _RaftConfigDir + File.separator + ".raft_config";
+        try {
+            File configFile = new File(configFileName);
+            FileInputStream fis = new FileInputStream(configFile);
+            mLocalConfig = JsonUtil.readValue(fis, _TypeReferenceOfRaftConfig);
+            _RaftConfig.update(mLocalConfig);
+        }
+        catch (FileNotFoundException e) {
+            _Logger.warning("config file not exist, name=%s", configFileName);
+        }
         if (checkState()) {
             installSnapshot();
         }
@@ -144,6 +162,16 @@ public class RaftDao
     {
         mLogMeta.close();
         mSnapshotMeta.close();
+        String configFileName = _RaftConfigDir + File.separator + ".raft_config";
+        try {
+            File configFile = new File(configFileName);
+            if (configFile.exists() || configFile.createNewFile()) {
+                JsonUtil.writeValueWithFile(_RaftConfig, configFile);
+            }
+        }
+        catch (IOException e) {
+            _Logger.warning("config file create & write ", e);
+        }
         _Logger.debug("raft dao dispose");
     }
 
@@ -186,6 +214,7 @@ public class RaftDao
     {
         mLogMeta.flush();
         mSnapshotMeta.flush();
+
     }
 
     public void flush()

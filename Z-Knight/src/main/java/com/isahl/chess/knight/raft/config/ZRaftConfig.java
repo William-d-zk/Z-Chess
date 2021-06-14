@@ -84,6 +84,7 @@ public class ZRaftConfig
                 _Logger.info("the node isn't gate");
             }
         }
+        createZUID();
     }
 
     @Override
@@ -94,6 +95,20 @@ public class ZRaftConfig
                                               getUid().getNodeId(),
                                               getUid().getType())
                             : zuid;
+    }
+
+    @Override
+    public void update(IRaftConfig source)
+    {
+        uid = source.getUid();
+        peers.clear();
+        peers.addAll(source.getPeers());
+        gates.clear();
+        gates.addAll(source.getGates());
+        zuid = new ZUID(getUid().getIdcId(), getUid().getClusterId(), getUid().getNodeId(), getUid().getType());
+        inCongress = source.isInCongress();
+        clusterMode = source.isClusterMode();
+        beGate = source.isBeGate();
     }
 
     public void setUid(Uid uid)
@@ -281,6 +296,12 @@ public class ZRaftConfig
     public void setBeGate()
     {
         beGate = true;
+    }
+
+    @Override
+    public boolean isBeGate()
+    {
+        return beGate;
     }
 
     public void setPeerPort(int peerPort)

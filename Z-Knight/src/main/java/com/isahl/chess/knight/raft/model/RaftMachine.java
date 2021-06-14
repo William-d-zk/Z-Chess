@@ -68,7 +68,7 @@ public class RaftMachine
     private long                               mLeader;
     private long                               mCommit;    // 集群中已知的最大CommitIndex
     private long                               mApplied;   // 本地已被应用的Index
-    private int                                mState;
+    private int                                mState     = LEARNER.getCode();
     private Set<Triple<Long,
                        String,
                        Integer>>               mPeerSet;
@@ -409,6 +409,7 @@ public class RaftMachine
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public RaftMachine createCandidate()
     {
         RaftMachine candidate = new RaftMachine(_PeerId);
@@ -424,6 +425,7 @@ public class RaftMachine
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public RaftMachine createLeader()
     {
         RaftMachine leader = new RaftMachine(_PeerId);
@@ -439,6 +441,7 @@ public class RaftMachine
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public RaftMachine createFollower()
     {
         RaftMachine follower = new RaftMachine(_PeerId);
@@ -449,6 +452,22 @@ public class RaftMachine
         follower.setCandidate(INVALID_PEER_ID);
         follower.setLeader(INVALID_PEER_ID);
         follower.setState(FOLLOWER);
+        follower.setOperation(OP_MODIFY);
+        return follower;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public RaftMachine createLearner()
+    {
+        RaftMachine follower = new RaftMachine(_PeerId);
+        follower.setTerm(mTerm);
+        follower.setIndex(mIndex);
+        follower.setIndexTerm(mIndexTerm);
+        follower.setCommit(mCommit);
+        follower.setState(LEARNER);
+        follower.setCandidate(INVALID_PEER_ID);
+        follower.setLeader(INVALID_PEER_ID);
         follower.setOperation(OP_MODIFY);
         return follower;
     }
@@ -473,6 +492,7 @@ public class RaftMachine
     @Override
     public void reset()
     {
+        mState = LEARNER.getCode();
         mIndex = 0;
         mIndexTerm = 0;
         mMatchIndex = INDEX_NAN;
