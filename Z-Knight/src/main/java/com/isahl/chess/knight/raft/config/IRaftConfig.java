@@ -26,6 +26,7 @@ package com.isahl.chess.knight.raft.config;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.topology.ZUID;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 
@@ -76,8 +77,6 @@ public interface IRaftConfig
 
     boolean isGateNode();
 
-    boolean isBeGate();
-
     ZUID createZUID();
 
     Duration getElectInSecond();
@@ -94,7 +93,7 @@ public interface IRaftConfig
 
     boolean isClusterMode();
 
-    void update(IRaftConfig source);
+    void update(IRaftConfig source) throws IOException;
 
     class Uid
     {

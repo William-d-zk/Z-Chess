@@ -177,6 +177,11 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         }
     }
 
+    public void reinstallGraph()
+    {
+
+    }
+
     public void installSnapshot(List<IRaftMessage> snapshot)
     {
 
