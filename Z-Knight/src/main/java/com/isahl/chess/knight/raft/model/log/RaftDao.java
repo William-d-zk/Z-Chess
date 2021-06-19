@@ -143,6 +143,9 @@ public class RaftDao
         catch (FileNotFoundException e) {
             _Logger.warning("config file not exist, name=%s", configFileName);
         }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
         if (checkState()) {
             installSnapshot();
         }

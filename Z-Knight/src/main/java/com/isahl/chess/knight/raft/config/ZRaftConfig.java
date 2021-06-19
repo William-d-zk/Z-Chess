@@ -36,6 +36,7 @@ import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.time.Duration;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -54,34 +55,50 @@ public class ZRaftConfig
     }
 
     @PostConstruct
-    void init() throws IOException
+    public void load() throws IOException
     {
-        if (isClusterMode()) {
-            String hostname = InetAddress.getLocalHost()
-                                         .getHostName();
-            for (int i = 0, size = peers.size(); i < size; i++) {
-                if (hostname.equalsIgnoreCase(peers.get(i)
-                                                   .getFirst()))
-                {
-                    uid.setNodeId(i);
-                    setInCongress(true);
-                    peerBind = new Pair<>(hostname, peerPort);
+        String hostname = InetAddress.getLocalHost()
+                                     .getHostName();
+        if (peers != null && !peers.isEmpty()) {
+            int seq = 0;
+            for (Iterator<IPair> pIt = peers.listIterator(); pIt.hasNext();) {
+                IPair pair = pIt.next();
+                String host = pair.getFirst();
+                if (hostname.equalsIgnoreCase(host)) {
+                    //no support multi boot on same host;
+                    if (!isInCongress() && mPeerBind == null) {
+                        mPeerBind = pair;
+                        uid.setNodeId(seq);
+                    }
+                    else {
+                        _Logger.warning("duplicate peer:%s", pair);
+                        pIt.remove();
+                        continue;
+                    }
                 }
+                seq++;
             }
-            if (!isInCongress()) {
-                _Logger.warning("no set node-id,Learner?");
-            }
-            if (gates != null) {
-                for (IPair gate : gates) {
-                    if (hostname.equalsIgnoreCase(gate.getFirst())) {
-                        setBeGate();
-                        gateBind = new Pair<>(hostname, gatePort);
-                        _Logger.info("the node %s:%d gate", gateBind.getFirst(), gateBind.getSecond());
+        }
+        clusterMode = inCongress || clusterMode;
+        if (isClusterMode()) {
+            if (gates != null && !gates.isEmpty()) {
+                for (Iterator<IPair> gIt = gates.listIterator(); gIt.hasNext();) {
+                    IPair gate = gIt.next();
+                    String host = gate.getFirst();
+                    if (hostname.equalsIgnoreCase(host)) {
+                        if (!isGateNode() && mGateBind == null) {
+                            mGateBind = gate;
+                            beGate = true;
+                        }
+                        else {
+                            _Logger.warning("duplicate gate:%s", gate);
+                            gIt.remove();
+                        }
                     }
                 }
             }
             if (!isGateNode()) {
-                _Logger.info("the node isn't gate");
+                _Logger.info("the node %s isn't gate", hostname);
             }
         }
         createZUID();
@@ -98,17 +115,14 @@ public class ZRaftConfig
     }
 
     @Override
-    public void update(IRaftConfig source)
+    public void update(IRaftConfig source) throws IOException
     {
         uid = source.getUid();
         peers.clear();
         peers.addAll(source.getPeers());
         gates.clear();
         gates.addAll(source.getGates());
-        zuid = new ZUID(getUid().getIdcId(), getUid().getClusterId(), getUid().getNodeId(), getUid().getType());
-        inCongress = source.isInCongress();
-        clusterMode = source.isClusterMode();
-        beGate = source.isBeGate();
+        load();
     }
 
     public void setUid(Uid uid)
@@ -127,10 +141,6 @@ public class ZRaftConfig
     }
 
     private Uid         uid;
-    private IPair       peerBind;
-    private IPair       gateBind;
-    private int         peerPort;
-    private int         gatePort;
     private List<IPair> peers;
     private List<IPair> gates;
     private ZUID        zuid;
@@ -144,7 +154,10 @@ public class ZRaftConfig
     private boolean     beGate;
     private boolean     clusterMode;
     private int         maxSegmentSize;
-    private String      baseDir;
+
+    private IPair  mGateBind;
+    private IPair  mPeerBind;
+    private String mBaseDir;
 
     public int getMaxSegmentSize()
     {
@@ -158,12 +171,12 @@ public class ZRaftConfig
 
     public String getBaseDir()
     {
-        return baseDir;
+        return mBaseDir;
     }
 
-    public void setBaseDir(String baseDir)
+    public void setBaseDir(String dir)
     {
-        this.baseDir = baseDir;
+        mBaseDir = dir;
     }
 
     @Override
@@ -175,13 +188,13 @@ public class ZRaftConfig
     @Override
     public IPair getPeerBind()
     {
-        return peerBind;
+        return mPeerBind;
     }
 
     @Override
     public IPair getGateBind()
     {
-        return gateBind;
+        return mGateBind;
     }
 
     public void setGates(List<String> gates)
@@ -197,6 +210,8 @@ public class ZRaftConfig
                           String[] split = str.split(":", 2);
                           return new Pair<>(split[0], Integer.parseInt(split[1]));
                       })
+                      .distinct()
+                      .sorted()
                       .collect(Collectors.toList());
     }
 
@@ -290,27 +305,6 @@ public class ZRaftConfig
     @Override
     public boolean isGateNode()
     {
-        return gates != null && !gates.isEmpty();
-    }
-
-    public void setBeGate()
-    {
-        beGate = true;
-    }
-
-    @Override
-    public boolean isBeGate()
-    {
         return beGate;
-    }
-
-    public void setPeerPort(int peerPort)
-    {
-        this.peerPort = peerPort;
-    }
-
-    public void setGatePort(int gatePort)
-    {
-        this.gatePort = gatePort;
     }
 }
