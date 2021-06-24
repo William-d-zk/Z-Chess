@@ -40,5 +40,4 @@ public interface ITriple
     <THIRD> THIRD getThird();
 
     ITriple clone();
-
 }

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,10 +21,11 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft;
+package com.isahl.chess.knight.raft.inf;
 
 import com.isahl.chess.king.base.inf.IReset;
 import com.isahl.chess.king.base.util.Triple;
+import com.isahl.chess.knight.raft.model.RaftState;
 import com.isahl.chess.queen.db.inf.IStorage;
 
 import java.util.Set;

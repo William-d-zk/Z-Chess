@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,22 +21,14 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft;
-
-import com.isahl.chess.queen.io.core.inf.IControl;
+package com.isahl.chess.knight.raft.inf;
 
 /**
  * @author william.d.zk
  * 
- * @date 2020/1/4
+ * @date 2020/2/5
  */
-public interface IRaftMessage
-        extends
-        IControl
+public interface IRaftClient
 {
-    long getPeerId();
-
-    long getTerm();
-
-    RaftState getState();
+    void setConsensusData(byte[] payload);
 }

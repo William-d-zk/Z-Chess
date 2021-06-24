@@ -23,13 +23,14 @@
 
 package com.isahl.chess.knight.raft.service;
 
-import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.knight.raft.IRaftService;
-import com.isahl.chess.knight.raft.model.RaftGraph;
-import com.isahl.chess.knight.raft.model.RaftMachine;
-import com.isahl.chess.knight.raft.model.RaftNode;
+import com.isahl.chess.king.base.inf.ITriple;
+import com.isahl.chess.knight.raft.inf.IRaftService;
+import com.isahl.chess.knight.raft.ClusterPeer;
+import com.isahl.chess.queen.db.inf.IStorage;
 import com.isahl.chess.queen.io.core.inf.IClusterPeer;
 import com.isahl.chess.queen.io.core.inf.IClusterTimer;
+
+import java.util.List;
 
 /**
  * @author william.d.zk
@@ -38,48 +39,39 @@ public class RaftService<M extends IClusterPeer & IClusterTimer>
         implements
         IRaftService
 {
-    private final RaftNode<M> _RaftNode;
+    private final ClusterPeer<M> _ClusterPeer;
 
-    public RaftService(RaftNode<M> raftNode)
+    public RaftService(ClusterPeer<M> clusterPeer)
     {
-        _RaftNode = raftNode;
+        _ClusterPeer = clusterPeer;
     }
 
     @Override
     public long getLeader()
     {
-        return _RaftNode.getMachine()
+        return _ClusterPeer.getMachine()
                         .getLeader();
     }
 
     @Override
-    public RaftGraph getTopology()
+    public List<ITriple> getTopology()
     {
-        return _RaftNode.getRaftGraph();
+        return _ClusterPeer.getRaftConfig()
+                        .getPeers();
     }
 
     @Override
-    public void appendPeer(Triple<Long,
-                                  String,
-                                  Integer> peer)
+    public void changeTopology(ITriple peer, IStorage.Operation operation)
     {
-        if (_RaftNode.getMachine()
-                     .getPeerSet()
-                     .add(peer))
-        {
-            getTopology().append(new RaftMachine(peer.getFirst()));
-        }
+        _ClusterPeer.getRaftConfig()
+                 .changeTopology(peer, operation);
     }
 
     @Override
-    public void removePeer(long peerId)
+    public void changGate(ITriple gate, IStorage.Operation operation)
     {
-        if (_RaftNode.getMachine()
-                     .getPeerSet()
-                     .removeIf(t -> t.getFirst() == peerId))
-        {
-            getTopology().remove(peerId);
-        }
+        _ClusterPeer.getRaftConfig()
+                 .changeGate(gate, operation);
     }
 
 }

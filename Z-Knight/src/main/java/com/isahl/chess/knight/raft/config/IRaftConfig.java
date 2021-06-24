@@ -23,8 +23,9 @@
 
 package com.isahl.chess.knight.raft.config;
 
-import com.isahl.chess.king.base.inf.IPair;
+import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.topology.ZUID;
+import com.isahl.chess.queen.db.inf.IStorage;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -41,28 +42,28 @@ public interface IRaftConfig
      * @return cluster peer topology
      */
 
-    List<IPair> getPeers();
+    List<ITriple> getPeers();
 
     /**
      * 与其他独region 进行通讯的网关
      * 
      * @return gate topology
      */
-    List<IPair> getGates();
+    List<ITriple> getGates();
 
     /**
      * 集群服务绑定的服务地址 host:port
      *
      * @return local peer bind
      */
-    IPair getPeerBind();
+    ITriple getPeerBind();
 
     /**
      * 集群服务绑定的分区节点地址 host:port
      * 
      * @return global gate bind
      */
-    IPair getGateBind();
+    ITriple getGateBind();
 
     /**
      * 集群标识UID 集群最大容量为 2^14 (16384) 个节点
@@ -94,6 +95,35 @@ public interface IRaftConfig
     boolean isClusterMode();
 
     void update(IRaftConfig source) throws IOException;
+
+    /**
+     * 调整集群拓扑配置，改变议会成员
+     * 
+     * @param peer
+     *            成员 peer{first:host|second:port}
+     * @param operation
+     *            OP_INSERT,增加集群节点,身份为观察员
+     *            OP_APPEND,增加集群节点,身份为议员，
+     *            OP_REMOVE,削减议员,成为观察员
+     *            OP_DELETE,从集群结构中彻底移除,仅能作为client存在,不参与数据一致选举或一致性分享
+     *            OP_MODIFY,修改peer/learner-listen的端口,不能改变节点身份
+     *            注意修改议会成员组成，要求先加入成员,再删除老成员的两步过程。
+     */
+    void changeTopology(ITriple peer, IStorage.Operation operation);
+
+    /**ra f
+     * 调整多个分区之间通信的端点结构。
+     * 
+     * @param gate
+     *            关卡 gate{first:host|second:port}
+     * @param operation
+     *            OP_APPEND,增加网关 节点
+     *            OP_REMOVE,减少网关 节点
+     *            OP_MODIFY,变更gate-listen的端口
+     */
+    void changeGate(ITriple gate, IStorage.Operation operation);
+
+    ITriple getLearnerBind();
 
     class Uid
     {

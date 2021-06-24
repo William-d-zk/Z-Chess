@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,58 +21,41 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft;
+package com.isahl.chess.knight.raft.inf;
 
-import com.isahl.chess.king.base.inf.IValid;
-import com.isahl.chess.knight.raft.model.log.LogEntry;
-import com.isahl.chess.knight.raft.model.log.LogMeta;
-import com.isahl.chess.knight.raft.model.log.SnapshotMeta;
+import com.isahl.chess.king.base.inf.ITriple;
+import com.isahl.chess.queen.db.inf.IStorage;
+
+import java.util.List;
 
 /**
  * @author william.d.zk
+ * 
+ * @date 2020/2/20
  */
-public interface IRaftDao
-        extends
-        IValid
+public interface IRaftService
 {
-    void flush();
+    /**
+     * 获取集群的leader信息
+     * 
+     * @return leader peer_id
+     */
+    long getLeader();
 
-    void flushAll();
+    /**
+     * 获取集群拓扑
+     * 
+     * @return peers {first:host|second:port}
+     */
+    List<ITriple> getTopology();
 
-    long getEndIndex();
+    /**
+     * 修改 拓扑结构
+     * 
+     * @param peer
+     * @param operation
+     */
+    void changeTopology(ITriple peer, IStorage.Operation operation);
 
-    long getStartIndex();
-
-    LogEntry getEntry(long index);
-
-    long getEntryTerm(long index);
-
-    void updateLogStart(long firstLogIndex);
-
-    void updateLogIndexAndTerm(long index, long indexTerm);
-
-    void updateLogCommit(long commit);
-
-    void updateTerm(long term);
-
-    void updateCandidate(long candidate);
-
-    void updateLogApplied(long applied);
-
-    void updateSnapshotMeta(long lastIncludeIndex, long lastIncludeTerm);
-
-    boolean appendLog(LogEntry entry);
-
-    void truncatePrefix(long newFirstIndex);
-
-    LogEntry truncateSuffix(long newEndIndex);
-
-    LogMeta getLogMeta();
-
-    SnapshotMeta getSnapshotMeta();
-
-    long getTotalSize();
-
-    void loadDefaultGraphSet();
-
+    void changGate(ITriple gate, IStorage.Operation operation);
 }

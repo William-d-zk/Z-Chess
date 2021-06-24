@@ -31,9 +31,9 @@ import com.isahl.chess.king.base.schedule.inf.ICancelable;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.knight.cluster.ClusterNode;
 import com.isahl.chess.knight.cluster.model.ConsistentProtocol;
-import com.isahl.chess.knight.raft.IRaftDao;
+import com.isahl.chess.knight.raft.inf.IRaftDao;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
-import com.isahl.chess.knight.raft.model.RaftNode;
+import com.isahl.chess.knight.raft.ClusterPeer;
 import com.isahl.chess.knight.raft.service.IConsistentService;
 import com.isahl.chess.knight.raft.service.RaftCustom;
 import com.isahl.chess.queen.config.IAioConfig;
@@ -52,7 +52,7 @@ public class ConsistentService
     private final ClusterNode             _ClusterNode;
     private final RaftCustom<ClusterNode> _RaftCustom;
     private final IConsistentCustom       _ConsistentCustom;
-    private final RaftNode<ClusterNode>   _RaftNode;
+    private final ClusterPeer<ClusterNode> _ClusterPeer;
     private final TimeWheel               _TimeWheel;
 
     public ConsistentService(IAioConfig ioConfig,
@@ -63,17 +63,16 @@ public class ConsistentService
     {
         _TimeWheel = new TimeWheel();
         _ClusterNode = new ClusterNode(ioConfig, clusterConfig, raftConfig, _TimeWheel);
-        _RaftNode = new RaftNode<>(_TimeWheel, raftConfig, raftDao, _ClusterNode);
+        _ClusterPeer = new ClusterPeer<>(_TimeWheel, raftConfig, raftDao, _ClusterNode);
         _ConsistentCustom = consistentCustom;
-        _RaftCustom = new RaftCustom<>(_RaftNode);
+        _RaftCustom = new RaftCustom<>(_ClusterPeer);
         start();
     }
 
     private void start() throws IOException
     {
         _ClusterNode.start(new ZClusterMappingCustom<>(_RaftCustom), _ConsistentCustom, new ClusterLogic(_ClusterNode));
-        _RaftNode.init();
-        _RaftNode.start();
+        _ClusterPeer.start();
     }
 
     public void submit(String content, boolean pub, long origin)
@@ -81,7 +80,7 @@ public class ConsistentService
         if (IoUtil.isBlank(content)) return;
         ConsistentProtocol consensus = new ConsistentProtocol(content.getBytes(StandardCharsets.UTF_8),
                                                               pub,
-                                                              _RaftNode.getRaftZUid(),
+                                                              _ClusterPeer.getRaftZUid(),
                                                               origin);
         submit(consensus, _ClusterNode, _ConsistentCustom);
         _Logger.debug("consistent submit %s", consensus);

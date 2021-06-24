@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,50 +21,43 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft;
-
-import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.knight.raft.model.RaftGraph;
+package com.isahl.chess.knight.raft.model;
 
 /**
  * @author william.d.zk
  * 
- * @date 2020/2/20
+ * @date 2019/12/9
  */
-public interface IRaftService
+public enum RaftState
 {
-    /**
-     * 获取集群的leader信息
-     * 
-     * @return leader peer_id
-     */
-    long getLeader();
+    FOLLOWER(0),
+    ELECTOR(1),
+    CANDIDATE(2),
+    LEADER(3),
+    LEARNER(4);
 
-    /**
-     * 获取集群拓扑
-     * 
-     * @return
-     */
-    RaftGraph getTopology();
+    private final int _Code;
 
-    /**
-     * 向集群中添加节点
-     * triple [first#peerId|second#address|third#port]
-     * 
-     * @param peer
-     * 
-     */
-    void appendPeer(Triple<Long,
-                              String,
-                              Integer> peer);
+    RaftState(int code)
+    {
+        _Code = code;
+    }
 
-    /**
-     * 移除集群节点
-     * 
-     * @param peerId
-     * 
-     * @return success / failed
-     */
-    void removePeer(long peerId);
+    public int getCode()
+    {
+        return _Code;
+    }
 
+    public static RaftState valueOf(int code)
+    {
+        return switch (code)
+        {
+            case 0 -> FOLLOWER;
+            case 1 -> ELECTOR;
+            case 2 -> CANDIDATE;
+            case 3 -> LEADER;
+            case 4 -> LEARNER;
+            default -> throw new IllegalArgumentException();
+        };
+    }
 }

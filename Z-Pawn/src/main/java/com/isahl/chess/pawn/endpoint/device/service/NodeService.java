@@ -31,9 +31,9 @@ import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.schedule.TimeWheel;
 import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.knight.raft.IRaftDao;
+import com.isahl.chess.knight.raft.inf.IRaftDao;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
-import com.isahl.chess.knight.raft.model.RaftNode;
+import com.isahl.chess.knight.raft.ClusterPeer;
 import com.isahl.chess.knight.raft.service.RaftCustom;
 import com.isahl.chess.knight.raft.service.RaftService;
 import com.isahl.chess.pawn.endpoint.device.DeviceNode;
@@ -65,7 +65,7 @@ public class NodeService
     private final DeviceNode               _DeviceNode;
     private final ILinkCustom              _LinkCustom;
     private final RaftCustom<DeviceNode>   _RaftCustom;
-    private final RaftNode<DeviceNode>     _RaftNode;
+    private final ClusterPeer<DeviceNode> _ClusterPeer;
     private final RaftService<DeviceNode>  _RaftService;
     private final LogicHandler<DeviceNode> _LogicHandler;
 
@@ -101,18 +101,17 @@ public class NodeService
                                           .collect(Collectors.toList());
         _DeviceNode = new DeviceNode(hosts, deviceConfig.isMultiBind(), ioConfig, raftConfig, mixConfig, timeWheel);
         _LinkCustom = linkCustom;
-        _RaftNode = new RaftNode<>(timeWheel, raftConfig, raftDao, _DeviceNode);
-        _RaftCustom = new RaftCustom<>(_RaftNode);
-        _LogicHandler = new LogicHandler<>(_DeviceNode, qttRouter, _RaftNode, messageService);
-        _RaftService = new RaftService<>(_RaftNode);
+        _ClusterPeer = new ClusterPeer<>(timeWheel, raftConfig, raftDao, _DeviceNode);
+        _RaftCustom = new RaftCustom<>(_ClusterPeer);
+        _LogicHandler = new LogicHandler<>(_DeviceNode, qttRouter, _ClusterPeer, messageService);
+        _RaftService = new RaftService<>(_ClusterPeer);
     }
 
     @PostConstruct
     private void start() throws IOException
     {
-        _RaftNode.init();
         _DeviceNode.start(_LogicHandler, new ZLinkMappingCustom(_LinkCustom), new ZClusterMappingCustom<>(_RaftCustom));
-        _RaftNode.start();
+        _ClusterPeer.start();
         _Logger.info(" device service start ");
     }
 
