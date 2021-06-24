@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.model;
+package com.isahl.chess.knight.raft;
 
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZCommand;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.*;
@@ -35,11 +35,14 @@ import com.isahl.chess.king.base.schedule.inf.ICancelable;
 import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.topology.ZUID;
-import com.isahl.chess.knight.raft.IRaftDao;
-import com.isahl.chess.knight.raft.IRaftMachine;
-import com.isahl.chess.knight.raft.IRaftMessage;
-import com.isahl.chess.knight.raft.RaftState;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
+import com.isahl.chess.knight.raft.inf.IRaftDao;
+import com.isahl.chess.knight.raft.inf.IRaftMachine;
+import com.isahl.chess.knight.raft.inf.IRaftMessage;
+import com.isahl.chess.knight.raft.model.RaftCode;
+import com.isahl.chess.knight.raft.model.RaftGraph;
+import com.isahl.chess.knight.raft.model.RaftMachine;
+import com.isahl.chess.knight.raft.model.RaftState;
 import com.isahl.chess.knight.raft.model.log.LogEntry;
 import com.isahl.chess.queen.db.inf.IStorage;
 import com.isahl.chess.queen.io.core.inf.*;
@@ -50,9 +53,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.isahl.chess.king.topology.ZUID.INVALID_PEER_ID;
-import static com.isahl.chess.knight.raft.IRaftMachine.INDEX_NAN;
-import static com.isahl.chess.knight.raft.IRaftMachine.MIN_START;
-import static com.isahl.chess.knight.raft.RaftState.*;
+import static com.isahl.chess.knight.raft.inf.IRaftMachine.INDEX_NAN;
+import static com.isahl.chess.knight.raft.inf.IRaftMachine.MIN_START;
+import static com.isahl.chess.knight.raft.model.RaftState.*;
 import static com.isahl.chess.knight.raft.model.RaftCode.*;
 import static java.lang.Math.min;
 
@@ -61,7 +64,7 @@ import static java.lang.Math.min;
  * 
  * @date 2020/1/4
  */
-public class RaftNode<M extends IClusterPeer & IClusterTimer>
+public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
         implements
         IValid
 {
@@ -70,31 +73,31 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
     private final ZUID                         _ZUid;
     private final IRaftConfig                  _RaftConfig;
     private final M                            _ClusterPeer;
-    private final IRaftDao                     _RaftDao;
+    private final IRaftDao _RaftDao;
     private final TimeWheel                    _TimeWheel;
-    private final ScheduleHandler<RaftNode<M>> _ElectSchedule, _HeartbeatSchedule, _TickSchedule;
-    private final RaftGraph                    _RaftGraph;
-    private final RaftMachine                  _SelfMachine;
+    private final ScheduleHandler<ClusterPeer<M>> _ElectSchedule, _HeartbeatSchedule, _TickSchedule;
+    private final RaftGraph _RaftGraph;
+    private final RaftMachine _SelfMachine;
     private final Queue<LogEntry>              _AppendLogQueue = new LinkedList<>();
     private final Random                       _Random         = new Random();
     private final long                         _SnapshotFragmentMaxSize;
     private ICancelable                        mElectTask, mHeartbeatTask, mTickTask;
 
-    public RaftNode(TimeWheel timeWheel,
-                    IRaftConfig raftConfig,
-                    IRaftDao raftDao,
-                    M manager)
+    public ClusterPeer(TimeWheel timeWheel,
+                       IRaftConfig raftConfig,
+                       IRaftDao raftDao,
+                       M manager)
     {
         _TimeWheel = timeWheel;
         _RaftConfig = raftConfig;
         _ClusterPeer = manager;
         _ZUid = raftConfig.createZUID();
         _RaftDao = raftDao;
-        _ElectSchedule = new ScheduleHandler<>(_RaftConfig.getElectInSecond(), RaftNode::stepDown);
-        _HeartbeatSchedule = new ScheduleHandler<>(_RaftConfig.getHeartbeatInSecond(), RaftNode::heartbeat);
+        _ElectSchedule = new ScheduleHandler<>(_RaftConfig.getElectInSecond(), ClusterPeer::stepDown);
+        _HeartbeatSchedule = new ScheduleHandler<>(_RaftConfig.getHeartbeatInSecond(), ClusterPeer::heartbeat);
         _TickSchedule = new ScheduleHandler<>(_RaftConfig.getHeartbeatInSecond()
                                                          .multipliedBy(2),
-                                              RaftNode::startVote);
+                                              ClusterPeer::startVote);
         _RaftGraph = new RaftGraph();
         _SelfMachine = new RaftMachine(_ZUid.getPeerId());
         _RaftGraph.append(_SelfMachine);
@@ -107,7 +110,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
         _Logger.debug("leader heartbeat");
     }
 
-    public void init()
+    private void init()
     {
         /* _RaftDao 启动的时候已经装载了 snapshot */
         _SelfMachine.setTerm(_RaftDao.getLogMeta()
@@ -148,6 +151,7 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
 
     public void start() throws IOException
     {
+        init();
         if (_RaftConfig.isClusterMode()) {
             // 启动集群连接
             if (_SelfMachine.getPeerSet() != null) {
@@ -175,6 +179,11 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
             }
             _Logger.info("raft-node : %#x start", _SelfMachine.getPeerId());
         }
+    }
+
+    public IRaftConfig getRaftConfig()
+    {
+        return _RaftConfig;
     }
 
     public void reinstallGraph()
@@ -1025,11 +1034,6 @@ public class RaftNode<M extends IClusterPeer & IClusterTimer>
     public long getPeerId()
     {
         return _ZUid.getPeerId();
-    }
-
-    public RaftGraph getRaftGraph()
-    {
-        return _RaftGraph;
     }
 
     private X77_RaftNotify createNotify(LogEntry raftLog)

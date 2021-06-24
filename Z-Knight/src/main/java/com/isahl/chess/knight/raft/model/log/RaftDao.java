@@ -25,12 +25,11 @@ package com.isahl.chess.knight.raft.model.log;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.knight.raft.IRaftDao;
+import com.isahl.chess.knight.raft.inf.IRaftDao;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.config.ZRaftConfig;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,8 +47,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.isahl.chess.knight.raft.IRaftMachine.MIN_START;
-import static com.isahl.chess.knight.raft.IRaftMachine.TERM_NAN;
+import static com.isahl.chess.knight.raft.inf.IRaftMachine.MIN_START;
+import static com.isahl.chess.knight.raft.inf.IRaftMachine.TERM_NAN;
 
 @Component
 public class RaftDao
@@ -123,7 +122,7 @@ public class RaftDao
             mLogMeta = LogMeta.loadFromFile(metaFile);
         }
         catch (FileNotFoundException e) {
-            _Logger.warning("meta file not exist, name=%s", metaFileName);
+            _Logger.warning("meta file not exist, name= %s", metaFileName);
         }
         metaFileName = _SnapshotDir + File.separator + ".metadata";
         try {
@@ -131,7 +130,7 @@ public class RaftDao
             mSnapshotMeta = SnapshotMeta.loadFromFile(metaFile);
         }
         catch (FileNotFoundException e) {
-            _Logger.warning("meta file not exist, name=%s", metaFileName);
+            _Logger.warning("meta file not exist, name= %s", metaFileName);
         }
         String configFileName = _RaftConfigDir + File.separator + ".raft_config";
         try {
@@ -141,18 +140,18 @@ public class RaftDao
             _RaftConfig.update(mLocalConfig);
         }
         catch (FileNotFoundException e) {
-            _Logger.warning("config file not exist, name=%s", configFileName);
+            _Logger.warning("config file not exist, name= %s", e, configFileName);
         }
         catch (IOException e) {
-            e.printStackTrace();
+            _Logger.warning("update config failed", e);
         }
         if (checkState()) {
             installSnapshot();
         }
         else {
+            _Index2SegmentMap.clear();
             mLogMeta.reset();
             mSnapshotMeta.reset();
-            _Index2SegmentMap.clear();
             clearSegments();
             loadDefaultGraphSet();
             flushAll();
@@ -181,27 +180,27 @@ public class RaftDao
     @Override
     public void loadDefaultGraphSet()
     {
-        List<IPair> peers = _RaftConfig.getPeers();
+        List<ITriple> peers = _RaftConfig.getPeers();
         if (peers != null) {
             Set<Triple<Long,
                        String,
                        Integer>> peerSet = new TreeSet<>(Comparator.comparing(ITriple::getFirst));
             for (int i = 0, size = peers.size(); i < size; i++) {
-                IPair pair = peers.get(i);
+                ITriple triple = peers.get(i);
                 peerSet.add(new Triple<>(_RaftConfig.createZUID()
                                                     .getPeerIdByNode(i),
-                                         pair.getFirst(),
-                                         pair.getSecond()));
+                                         triple.getFirst(),
+                                         triple.getSecond()));
             }
             mLogMeta.setPeerSet(peerSet);
         }
-        List<IPair> gates = _RaftConfig.getGates();
+        List<ITriple> gates = _RaftConfig.getGates();
         if (gates != null) {
             Set<Triple<Long,
                        String,
                        Integer>> gateSet = new TreeSet<>(Comparator.comparing(ITriple::getFirst));
             for (int i = 0, size = gates.size(); i < size; i++) {
-                IPair pair = gates.get(i);
+                ITriple pair = gates.get(i);
                 gateSet.add(new Triple<>(_RaftConfig.createZUID()
                                                     .getClusterId(i),
                                          pair.getFirst(),
@@ -209,7 +208,6 @@ public class RaftDao
             }
             mLogMeta.setGateSet(gateSet);
         }
-
     }
 
     @Override
@@ -217,7 +215,6 @@ public class RaftDao
     {
         mLogMeta.flush();
         mSnapshotMeta.flush();
-
     }
 
     public void flush()

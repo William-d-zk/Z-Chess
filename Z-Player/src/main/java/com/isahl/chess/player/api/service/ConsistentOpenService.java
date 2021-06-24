@@ -26,7 +26,7 @@ package com.isahl.chess.player.api.service;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.knight.cluster.model.ConsistentProtocol;
-import com.isahl.chess.knight.raft.model.RaftNode;
+import com.isahl.chess.knight.raft.ClusterPeer;
 import com.isahl.chess.knight.raft.service.IConsistentService;
 import com.isahl.chess.pawn.endpoint.device.DeviceNode;
 import com.isahl.chess.queen.event.handler.cluster.IConsistentCustom;
@@ -43,16 +43,16 @@ public class ConsistentOpenService
 
     private final Logger               _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
     private final DeviceNode           _DeviceNode;
-    private final RaftNode<DeviceNode> _RaftNode;
+    private final ClusterPeer<DeviceNode> _ClusterPeer;
     private final IConsistentCustom    _ConsistentCustom;
 
     @Autowired
     public ConsistentOpenService(DeviceNode deviceNode,
-                                 RaftNode<DeviceNode> raftNode,
+                                 ClusterPeer<DeviceNode> clusterPeer,
                                  IConsistentCustom consistentCustom)
     {
         _DeviceNode = deviceNode;
-        _RaftNode = raftNode;
+        _ClusterPeer = clusterPeer;
         _ConsistentCustom = consistentCustom;
     }
 
@@ -62,7 +62,7 @@ public class ConsistentOpenService
         if (IoUtil.isBlank(content)) return;
         ConsistentProtocol consensus = new ConsistentProtocol(content.getBytes(StandardCharsets.UTF_8),
                                                               pub,
-                                                              _RaftNode.getRaftZUid(),
+                                                              _ClusterPeer.getRaftZUid(),
                                                               origin);
         submit(consensus, _DeviceNode, _ConsistentCustom);
         _Logger.debug("consistent submit %s", consensus);

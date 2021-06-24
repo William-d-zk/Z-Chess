@@ -21,14 +21,18 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft;
+package com.isahl.chess.knight.raft.model;
 
-/**
- * @author william.d.zk
- * 
- * @date 2020/2/5
- */
-public interface IRaftClient
+import org.junit.jupiter.api.Test;
+
+class ClusterPeerTest
 {
-    void setConsensusData(byte[] payload);
+
+    @Test
+    void raftGraphAdd()
+    {
+        long a = 0x8892301123L;
+        System.out.println(String.format("%#x", a));
+    }
+
 }

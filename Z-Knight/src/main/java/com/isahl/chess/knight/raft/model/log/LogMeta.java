@@ -36,7 +36,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Set;
 
-import static com.isahl.chess.knight.raft.IRaftMachine.MIN_START;
+import static com.isahl.chess.knight.raft.inf.IRaftMachine.MIN_START;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)

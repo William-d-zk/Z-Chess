@@ -42,7 +42,7 @@ import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.schedule.Status;
 import com.isahl.chess.king.base.util.JsonUtil;
-import com.isahl.chess.knight.raft.model.RaftNode;
+import com.isahl.chess.knight.raft.ClusterPeer;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageBody;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageEntity;
 import com.isahl.chess.pawn.endpoint.device.spi.IMessageService;
@@ -84,17 +84,17 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
     private final Logger          _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
     private final T               _Manager;
     private final IQttRouter      _QttRouter;
-    private final RaftNode<T>     _RaftNode;
+    private final ClusterPeer<T> _ClusterPeer;
     private final IMessageService _MessageService;
 
     public LogicHandler(T manager,
                         IQttRouter qttRouter,
-                        RaftNode<T> raftNode,
+                        ClusterPeer<T> clusterPeer,
                         IMessageService messageService)
     {
         _Manager = manager;
         _QttRouter = qttRouter;
-        _RaftNode = raftNode;
+        _ClusterPeer = clusterPeer;
         _MessageService = messageService;
     }
 
@@ -138,7 +138,7 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                 }
                 MessageEntity messageEntity = new MessageEntity();
                 messageEntity.setOrigin(session.getIndex());
-                messageEntity.setDestination(_RaftNode.getPeerId());
+                messageEntity.setDestination(_ClusterPeer.getPeerId());
                 messageEntity.setDirection(CLIENT_TO_SERVER.getShort());
                 messageEntity.setOwner(OWNER_CLIENT);
                 messageEntity.setTopic(x113.getTopic());
@@ -202,7 +202,7 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                                                                   criteriaBuilder.equal(root.get("origin"),
                                                                                         session.getIndex()),
                                                                   criteriaBuilder.equal(root.get("destination"),
-                                                                                        _RaftNode.getPeerId()),
+                                                                                        _ClusterPeer.getPeerId()),
                                                                   criteriaBuilder.equal(root.get("msgId"),
                                                                                         x116.getMsgId()),
                                                                   criteriaBuilder.equal(root.get("owner"),
@@ -265,7 +265,7 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
              })
              .filter(Objects::nonNull)
              .forEach(pushList::add);
-        if (_RaftNode.isClusterMode()) {
+        if (_ClusterPeer.isClusterMode()) {
             //集群模式需要将消息进行广播，集群结构中，每个数据存储单元都设计为独立的。
             //TODO
         }

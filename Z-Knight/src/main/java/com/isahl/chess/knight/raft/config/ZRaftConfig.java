@@ -23,29 +23,34 @@
 
 package com.isahl.chess.knight.raft.config;
 
-import com.isahl.chess.king.base.inf.IPair;
-import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.king.topology.ZUID;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.time.Duration;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.util.unit.DataSize;
 
-import javax.annotation.PostConstruct;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.time.Duration;
-import java.util.Iterator;
-import java.util.List;
-import java.util.stream.Collectors;
+import com.isahl.chess.king.base.inf.IReset;
+import com.isahl.chess.king.base.inf.ITriple;
+import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.base.util.Pair;
+import com.isahl.chess.king.base.util.Triple;
+import com.isahl.chess.king.topology.ZUID;
+import com.isahl.chess.queen.db.inf.IStorage;
 
 @Configuration
 @ConfigurationProperties(prefix = "z.chess.raft")
 @PropertySource("classpath:raft.properties")
 public class ZRaftConfig
         implements
-        IRaftConfig
+        IRaftConfig,
+        IReset
 {
     private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
 
@@ -55,23 +60,43 @@ public class ZRaftConfig
     }
 
     @PostConstruct
-    public void load() throws IOException
+    public void loadLocal() throws IOException
     {
         String hostname = InetAddress.getLocalHost()
                                      .getHostName();
+        final Set<Triple<Long,
+                         String,
+                         Integer>> _NodeSet = new TreeSet<>();
         if (peers != null && !peers.isEmpty()) {
-            int seq = 0;
-            for (Iterator<IPair> pIt = peers.listIterator(); pIt.hasNext();) {
-                IPair pair = pIt.next();
-                String host = pair.getFirst();
+            _NodeSet.addAll(convert(peers));
+        }
+        if (learners != null && !learners.isEmpty()) {
+            _NodeSet.addAll(convert(learners));
+        }
+        if (!_NodeSet.isEmpty()) {
+            for (Iterator<Triple<Long,
+                                 String,
+                                 Integer>> nIt = _NodeSet.iterator(); nIt.hasNext();)
+            {
+                Triple<Long,
+                       String,
+                       Integer> triple = nIt.next();
+                String host = triple.getSecond();
                 if (hostname.equalsIgnoreCase(host)) {
                     //no support multi boot on same host;
                     if (!isInCongress() && mPeerBind == null) {
-                        mPeerBind = pair;
-                        uid.setNodeId(seq);
+                        mPeerBind = triple;
+                        long peerId = triple.getFirst();
+                        if (peerId < 0) {
+                            uid.setNodeId(seq);
+                            triple.setFirst(createZUID().getPeerId());
+                        }
                     }
                     else {
-                        _Logger.warning("duplicate peer:%s", pair);
+                        _Logger.warning("duplicate peer:%#x,%s:%d",
+                                        triple.getFirst(),
+                                        triple.getSecond(),
+                                        triple.getThird());
                         pIt.remove();
                         continue;
                     }
@@ -79,19 +104,62 @@ public class ZRaftConfig
                 seq++;
             }
         }
+        if (learners != null && !learners.isEmpty())
+
+        {
+            int seq = 0;
+            for (Iterator<Triple<Long,
+                                 String,
+                                 Integer>> lIt = learners.listIterator(); lIt.hasNext();)
+            {
+                Triple<Long,
+                       String,
+                       Integer> triple = lIt.next();
+                String host = triple.getSecond();
+                if (hostname.equalsIgnoreCase(host)) {
+                    if (!isInCongress() && mLearnerBind == null) {
+                        mLearnerBind = triple;
+                        long learnerId = triple.getFirst();
+                        if (learnerId < 0) {
+                            uid.setNodeId(seq);
+                            triple.setFirst(createZUID().getPeerId());
+                        }
+                        clusterMode = true;
+                    }
+                    else {
+                        _Logger.warning("duplicate learner %#x,%s:%d",
+                                        triple.getFirst(),
+                                        triple.getSecond(),
+                                        triple.getThird());
+                        lIt.remove();
+                        continue;
+                    }
+                    seq++;
+                }
+            }
+        }
         clusterMode = inCongress || clusterMode;
         if (isClusterMode()) {
             if (gates != null && !gates.isEmpty()) {
-                for (Iterator<IPair> gIt = gates.listIterator(); gIt.hasNext();) {
-                    IPair gate = gIt.next();
-                    String host = gate.getFirst();
+                for (Iterator<Triple<Long,
+                                     String,
+                                     Integer>> gIt = gates.listIterator(); gIt.hasNext();)
+                {
+                    Triple<Long,
+                           String,
+                           Integer> triple = gIt.next();
+                    String host = triple.getSecond();
                     if (hostname.equalsIgnoreCase(host)) {
                         if (!isGateNode() && mGateBind == null) {
-                            mGateBind = gate;
+                            mGateBind = triple;
                             beGate = true;
+                            triple.setFirst(createZUID().getPeerId());
                         }
                         else {
-                            _Logger.warning("duplicate gate:%s", gate);
+                            _Logger.warning("duplicate gate:%#x,%s:%d",
+                                            triple.getFirst(),
+                                            triple.getSecond(),
+                                            triple.getThird());
                             gIt.remove();
                         }
                     }
@@ -101,7 +169,6 @@ public class ZRaftConfig
                 _Logger.info("the node %s isn't gate", hostname);
             }
         }
-        createZUID();
     }
 
     @Override
@@ -119,10 +186,98 @@ public class ZRaftConfig
     {
         uid = source.getUid();
         peers.clear();
-        peers.addAll(source.getPeers());
+        peers.addAll(source.getPeers()
+                           .stream()
+                           .map(t ->
+                           {
+                               long pId = t.getFirst();
+                               String host = t.getSecond();
+                               int port = t.getThird();
+                               return new Triple<>(pId, host, port);
+                           })
+                           .collect(Collectors.toList()));
         gates.clear();
-        gates.addAll(source.getGates());
-        load();
+        gates.addAll(source.getGates()
+                           .stream()
+                           .map(t ->
+                           {
+                               long pId = t.getFirst();
+                               String host = t.getSecond();
+                               int port = t.getThird();
+                               return new Triple<>(pId, host, port);
+                           })
+                           .collect(Collectors.toList()));
+        reset();
+        loadLocal();
+    }
+
+    @Override
+    public void reset()
+    {
+        mInCongress = false;
+        mBeGate = false;
+        mClusterMode = false;
+        mGateBind = null;
+        mPeerBind = null;
+        mLearnerBind = null;
+    }
+
+    @Override
+    public void changeTopology(ITriple peer, IStorage.Operation operation)
+    {
+        /*
+         * 总量有限
+         */
+        boolean present = false;
+        loop:
+        {
+            for (Iterator<Triple<Long,
+                                 String,
+                                 Integer>> it = peers.listIterator(); it.hasNext();)
+            {
+                Triple<Long,
+                       String,
+                       Integer> p = it.next();
+                present = present
+                          || p.getFirst()
+                              .equals(peer.getFirst());
+                switch (operation)
+                {
+                    case OP_APPEND ->
+                        {
+                            if (present) {
+                                break loop;
+                            }
+                        }
+                    case OP_REMOVE ->
+                        {
+                            if (present) {
+                                it.remove();
+                                learners.add();
+                            }
+                        }
+                    case OP_MODIFY ->
+                        {
+                            if (present) {
+                                it.remove();
+                            }
+                        }
+
+                }
+            }
+            if (!present && operation == IStorage.Operation.OP_APPEND) {
+                peers.add(peer);
+            }
+            if (present && operation == IStorage.Operation.OP_MODIFY) {
+                peers.add(peer);
+            }
+        }
+    }
+
+    @Override
+    public void changeGate(ITriple gate, IStorage.Operation operation)
+    {
+
     }
 
     public void setUid(Uid uid)
@@ -130,34 +285,40 @@ public class ZRaftConfig
         this.uid = uid;
     }
 
-    public List<IPair> getPeers()
+    @Override
+    public List<ITriple> getPeers()
     {
-        return peers;
+        return new ArrayList<>(peers);
     }
 
     public void setPeers(List<String> peers)
     {
-        this.peers = convert(peers);
+        this.peers = peers;
     }
 
-    private Uid         uid;
-    private List<IPair> peers;
-    private List<IPair> gates;
-    private ZUID        zuid;
-    private Duration    electInSecond;
-    private Duration    snapshotInSecond;
-    private Duration    heartbeatInSecond;
-    private Duration    clientSubmitInSecond;
-    private DataSize    snapshotMinSize;
-    private DataSize    snapshotFragmentMaxSize;
-    private boolean     inCongress;
-    private boolean     beGate;
-    private boolean     clusterMode;
-    private int         maxSegmentSize;
+    private Uid uid;
 
-    private IPair  mGateBind;
-    private IPair  mPeerBind;
-    private String mBaseDir;
+    private List<String> peers;
+    private List<String> gates;
+    private List<String> learners;
+    private ZUID         zuid;
+    private Duration     electInSecond;
+    private Duration     snapshotInSecond;
+    private Duration     heartbeatInSecond;
+    private Duration     clientSubmitInSecond;
+    private DataSize     snapshotMinSize;
+    private DataSize     snapshotFragmentMaxSize;
+    private int          maxSegmentSize;
+
+    private boolean            mInCongress;
+    private boolean            mBeGate;
+    private boolean            mClusterMode;
+    private Map<Long,
+                ITriple>       mClusterNodeMap;
+    private ITriple            mPeerBind;
+    private ITriple            mLearnerBind;
+    private ITriple            mGateBind;
+    private String             mBaseDir;
 
     public int getMaxSegmentSize()
     {
@@ -180,39 +341,45 @@ public class ZRaftConfig
     }
 
     @Override
-    public List<IPair> getGates()
+    public List<ITriple> getGates()
     {
-        return gates;
+        return new ArrayList<>(gates);
     }
 
     @Override
-    public IPair getPeerBind()
+    public ITriple getPeerBind()
     {
         return mPeerBind;
     }
 
     @Override
-    public IPair getGateBind()
+    public ITriple getGateBind()
     {
         return mGateBind;
     }
 
     public void setGates(List<String> gates)
     {
-        this.gates = convert(gates);
+        this.gates = gates;
     }
 
-    private List<IPair> convert(List<String> content)
+    private List<Triple<Long,
+                        String,
+                        Integer>> convert(List<String> content)
     {
         return content.stream()
-                      .map(str ->
-                      {
-                          String[] split = str.split(":", 2);
-                          return new Pair<>(split[0], Integer.parseInt(split[1]));
-                      })
+                      .map(this::convert1)
                       .distinct()
                       .sorted()
                       .collect(Collectors.toList());
+    }
+
+    private Triple<Long,
+                   String,
+                   Integer> convert1(String content)
+    {
+        String[] split = content.split(":", 2);
+        return new Triple<>(-1L, split[0], Integer.parseInt(split[1]));
     }
 
     public Duration getElectInSecond()
@@ -283,28 +450,29 @@ public class ZRaftConfig
     @Override
     public boolean isInCongress()
     {
-        return inCongress;
-    }
-
-    public void setInCongress(boolean in)
-    {
-        inCongress = in;
+        return mInCongress;
     }
 
     @Override
     public boolean isClusterMode()
     {
-        return clusterMode;
-    }
-
-    public void setClusterMode(boolean mode)
-    {
-        clusterMode = mode;
+        return mClusterMode;
     }
 
     @Override
     public boolean isGateNode()
     {
-        return beGate;
+        return mBeGate;
+    }
+
+    @Override
+    public ITriple getLearnerBind()
+    {
+        return mLearnerBind;
+    }
+
+    public void setLearners(List<String> learners)
+    {
+        this.learners = learners;
     }
 }

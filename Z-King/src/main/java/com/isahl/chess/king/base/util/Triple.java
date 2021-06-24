@@ -22,9 +22,9 @@
  */
 package com.isahl.chess.king.base.util;
 
-import java.util.Objects;
-
 import com.isahl.chess.king.base.inf.ITriple;
+
+import java.util.Objects;
 
 /**
  * @author William.d.zk
@@ -33,7 +33,10 @@ public class Triple<FIRST,
                     SECOND,
                     THIRD>
         implements
-        ITriple
+        ITriple,
+        Comparable<Triple<FIRST,
+                          SECOND,
+                          THIRD>>
 {
     private FIRST  first;
     private SECOND second;
@@ -53,18 +56,21 @@ public class Triple<FIRST,
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public FIRST getFirst()
     {
         return first;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public SECOND getSecond()
     {
         return second;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public THIRD getThird()
     {
         return third;
@@ -119,5 +125,19 @@ public class Triple<FIRST,
     public int hashCode()
     {
         return Objects.hash(first, second, third);
+    }
+
+    @Override
+    public int compareTo(Triple<FIRST,
+                                SECOND,
+                                THIRD> o)
+    {
+        int a = first.toString()
+                     .compareTo(o.first.toString());
+        int b = second.toString()
+                      .compareTo(o.second.toString());
+        int c = third.toString()
+                     .compareTo(o.third.toString());
+        return a == 0 ? b == 0 ? c: b: a;
     }
 }

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,18 +21,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.model;
+package com.isahl.chess.knight.raft.inf;
 
-import org.junit.jupiter.api.Test;
-
-class RaftNodeTest
+/**
+ * @author william.d.zk
+ */
+public interface IRaftLearner
 {
-
-    @Test
-    void raftGraphAdd()
-    {
-        long a = 0x8892301123L;
-        System.out.println(String.format("%#x", a));
-    }
 
 }

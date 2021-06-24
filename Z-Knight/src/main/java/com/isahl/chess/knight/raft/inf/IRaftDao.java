@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,43 +21,58 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft;
+package com.isahl.chess.knight.raft.inf;
+
+import com.isahl.chess.king.base.inf.IValid;
+import com.isahl.chess.knight.raft.model.log.LogEntry;
+import com.isahl.chess.knight.raft.model.log.LogMeta;
+import com.isahl.chess.knight.raft.model.log.SnapshotMeta;
 
 /**
  * @author william.d.zk
- * 
- * @date 2019/12/9
  */
-public enum RaftState
+public interface IRaftDao
+        extends
+        IValid
 {
-    FOLLOWER(0),
-    ELECTOR(1),
-    CANDIDATE(2),
-    LEADER(3),
-    LEARNER(4);
+    void flush();
 
-    private final int _Code;
+    void flushAll();
 
-    RaftState(int code)
-    {
-        _Code = code;
-    }
+    long getEndIndex();
 
-    public int getCode()
-    {
-        return _Code;
-    }
+    long getStartIndex();
 
-    public static RaftState valueOf(int code)
-    {
-        return switch (code)
-        {
-            case 0 -> FOLLOWER;
-            case 1 -> ELECTOR;
-            case 2 -> CANDIDATE;
-            case 3 -> LEADER;
-            case 4 -> LEARNER;
-            default -> throw new IllegalArgumentException();
-        };
-    }
+    LogEntry getEntry(long index);
+
+    long getEntryTerm(long index);
+
+    void updateLogStart(long firstLogIndex);
+
+    void updateLogIndexAndTerm(long index, long indexTerm);
+
+    void updateLogCommit(long commit);
+
+    void updateTerm(long term);
+
+    void updateCandidate(long candidate);
+
+    void updateLogApplied(long applied);
+
+    void updateSnapshotMeta(long lastIncludeIndex, long lastIncludeTerm);
+
+    boolean appendLog(LogEntry entry);
+
+    void truncatePrefix(long newFirstIndex);
+
+    LogEntry truncateSuffix(long newEndIndex);
+
+    LogMeta getLogMeta();
+
+    SnapshotMeta getSnapshotMeta();
+
+    long getTotalSize();
+
+    void loadDefaultGraphSet();
+
 }

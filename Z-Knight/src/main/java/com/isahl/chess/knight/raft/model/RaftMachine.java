@@ -32,15 +32,14 @@ import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.knight.raft.IRaftDao;
-import com.isahl.chess.knight.raft.IRaftMachine;
-import com.isahl.chess.knight.raft.RaftState;
+import com.isahl.chess.knight.raft.inf.IRaftDao;
+import com.isahl.chess.knight.raft.inf.IRaftMachine;
 import com.isahl.chess.queen.db.inf.IStorage;
 
 import java.util.*;
 
 import static com.isahl.chess.king.topology.ZUID.INVALID_PEER_ID;
-import static com.isahl.chess.knight.raft.RaftState.*;
+import static com.isahl.chess.knight.raft.model.RaftState.*;
 import static com.isahl.chess.queen.db.inf.IStorage.Operation.*;
 import static java.lang.Long.min;
 
