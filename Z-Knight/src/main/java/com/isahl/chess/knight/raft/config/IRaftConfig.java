@@ -25,6 +25,7 @@ package com.isahl.chess.knight.raft.config;
 
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.topology.ZUID;
+import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.queen.db.inf.IStorage;
 
 import java.io.IOException;
@@ -42,14 +43,14 @@ public interface IRaftConfig
      * @return cluster peer topology
      */
 
-    List<ITriple> getPeers();
+    List<RaftNode> getPeers();
 
     /**
      * 与其他独region 进行通讯的网关
      * 
      * @return gate topology
      */
-    List<ITriple> getGates();
+    List<RaftNode> getGates();
 
     /**
      * 集群服务绑定的服务地址 host:port
@@ -64,6 +65,8 @@ public interface IRaftConfig
      * @return global gate bind
      */
     ITriple getGateBind();
+
+    ITriple getLearnerBind();
 
     /**
      * 集群标识UID 集群最大容量为 2^14 (16384) 个节点
@@ -111,7 +114,8 @@ public interface IRaftConfig
      */
     void changeTopology(ITriple peer, IStorage.Operation operation);
 
-    /**ra f
+    /**
+     * ra f
      * 调整多个分区之间通信的端点结构。
      * 
      * @param gate
@@ -123,14 +127,12 @@ public interface IRaftConfig
      */
     void changeGate(ITriple gate, IStorage.Operation operation);
 
-    ITriple getLearnerBind();
-
     class Uid
     {
-        private int nodeId;
-        private int idcId;
-        private int clusterId;
-        private int type;
+        private int nodeId    = -1;
+        private int idcId     = -1;
+        private int clusterId = -1;
+        private int type      = -1;
 
         public int getNodeId()
         {

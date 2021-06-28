@@ -26,7 +26,12 @@ package com.isahl.chess.knight.raft.config;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -39,9 +44,10 @@ import org.springframework.util.unit.DataSize;
 import com.isahl.chess.king.base.inf.IReset;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.topology.ZUID;
+import com.isahl.chess.knight.raft.model.RaftNode;
+import com.isahl.chess.knight.raft.model.RaftState;
 import com.isahl.chess.queen.db.inf.IStorage;
 
 @Configuration
@@ -64,103 +70,57 @@ public class ZRaftConfig
     {
         String hostname = InetAddress.getLocalHost()
                                      .getHostName();
-        final Set<Triple<Long,
-                         String,
-                         Integer>> _NodeSet = new TreeSet<>();
+        final Set<RaftNode> _NodeSet = new TreeSet<>();
         if (peers != null && !peers.isEmpty()) {
-            _NodeSet.addAll(convert(peers));
+            //优先加入peer节点，避免learner 覆盖、污染整个集群
+            _NodeSet.addAll(convert(peers, RaftState.FOLLOWER));
         }
         if (learners != null && !learners.isEmpty()) {
-            _NodeSet.addAll(convert(learners));
+            _NodeSet.addAll(convert(learners, RaftState.LEARNER));
         }
         if (!_NodeSet.isEmpty()) {
-            for (Iterator<Triple<Long,
-                                 String,
-                                 Integer>> nIt = _NodeSet.iterator(); nIt.hasNext();)
-            {
-                Triple<Long,
-                       String,
-                       Integer> triple = nIt.next();
-                String host = triple.getSecond();
+            int seq = 0;
+            for (Iterator<RaftNode> nIt = _NodeSet.iterator(); nIt.hasNext();) {
+                RaftNode node = nIt.next();
+                String host = node.getHost();
                 if (hostname.equalsIgnoreCase(host)) {
-                    //no support multi boot on same host;
-                    if (!isInCongress() && mPeerBind == null) {
-                        mPeerBind = triple;
-                        long peerId = triple.getFirst();
-                        if (peerId < 0) {
-                            uid.setNodeId(seq);
-                            triple.setFirst(createZUID().getPeerId());
-                        }
+                    if (node.getId() < 0) {
+                        uid.setNodeId(seq);
+                        node.setId(createZUID().getPeerId());
+                    }
+                    if (node.getState() == RaftState.FOLLOWER && !isInCongress() && mPeerBind == null) {
+                        mPeerBind = new Triple<>(node.getId(), node.getHost(), node.getPort());
+                        mInCongress = true;
+                    }
+                    else if (node.getState() == RaftState.LEARNER && mLearnerBind == null) {
+                        mLearnerBind = new Triple<>(node.getId(), node.getHost(), node.getPort());
+                        mClusterMode = true;
                     }
                     else {
-                        _Logger.warning("duplicate peer:%#x,%s:%d",
-                                        triple.getFirst(),
-                                        triple.getSecond(),
-                                        triple.getThird());
-                        pIt.remove();
+                        _Logger.warning("duplicate peer:%#x,%s:%d", node.getId(), node.getHost(), node.getPort());
+                        nIt.remove();
                         continue;
                     }
                 }
                 seq++;
             }
-        }
-        if (learners != null && !learners.isEmpty())
-
-        {
-            int seq = 0;
-            for (Iterator<Triple<Long,
-                                 String,
-                                 Integer>> lIt = learners.listIterator(); lIt.hasNext();)
-            {
-                Triple<Long,
-                       String,
-                       Integer> triple = lIt.next();
-                String host = triple.getSecond();
-                if (hostname.equalsIgnoreCase(host)) {
-                    if (!isInCongress() && mLearnerBind == null) {
-                        mLearnerBind = triple;
-                        long learnerId = triple.getFirst();
-                        if (learnerId < 0) {
-                            uid.setNodeId(seq);
-                            triple.setFirst(createZUID().getPeerId());
-                        }
-                        clusterMode = true;
-                    }
-                    else {
-                        _Logger.warning("duplicate learner %#x,%s:%d",
-                                        triple.getFirst(),
-                                        triple.getSecond(),
-                                        triple.getThird());
-                        lIt.remove();
-                        continue;
-                    }
-                    seq++;
-                }
+            if (mPeerBind == null && mLearnerBind == null) {
+                _Logger.warning("host: %s is no valid cluster config", hostname);
+                mClusterMode = false;
             }
         }
-        clusterMode = inCongress || clusterMode;
+        mClusterMode = mInCongress || mClusterMode;
         if (isClusterMode()) {
             if (gates != null && !gates.isEmpty()) {
-                for (Iterator<Triple<Long,
-                                     String,
-                                     Integer>> gIt = gates.listIterator(); gIt.hasNext();)
-                {
-                    Triple<Long,
-                           String,
-                           Integer> triple = gIt.next();
-                    String host = triple.getSecond();
-                    if (hostname.equalsIgnoreCase(host)) {
+                for (String str : gates) {
+                    if (hostname.equalsIgnoreCase(str)) {
                         if (!isGateNode() && mGateBind == null) {
-                            mGateBind = triple;
-                            beGate = true;
-                            triple.setFirst(createZUID().getPeerId());
+                            RaftNode gate = convert1(str, RaftState.FOLLOWER);
+                            mGateBind = new Triple<>(mPeerBind.getFirst(), gate.getHost(), gate.getPort());
+                            mBeGate = true;
                         }
                         else {
-                            _Logger.warning("duplicate gate:%#x,%s:%d",
-                                            triple.getFirst(),
-                                            triple.getSecond(),
-                                            triple.getThird());
-                            gIt.remove();
+                            _Logger.warning("duplicate gate:%s", str);
                         }
                     }
                 }
@@ -185,28 +145,9 @@ public class ZRaftConfig
     public void update(IRaftConfig source) throws IOException
     {
         uid = source.getUid();
-        peers.clear();
-        peers.addAll(source.getPeers()
-                           .stream()
-                           .map(t ->
-                           {
-                               long pId = t.getFirst();
-                               String host = t.getSecond();
-                               int port = t.getThird();
-                               return new Triple<>(pId, host, port);
-                           })
-                           .collect(Collectors.toList()));
-        gates.clear();
-        gates.addAll(source.getGates()
-                           .stream()
-                           .map(t ->
-                           {
-                               long pId = t.getFirst();
-                               String host = t.getSecond();
-                               int port = t.getThird();
-                               return new Triple<>(pId, host, port);
-                           })
-                           .collect(Collectors.toList()));
+
+
+
         reset();
         loadLocal();
     }
@@ -310,15 +251,15 @@ public class ZRaftConfig
     private DataSize     snapshotFragmentMaxSize;
     private int          maxSegmentSize;
 
-    private boolean            mInCongress;
-    private boolean            mBeGate;
-    private boolean            mClusterMode;
+    private boolean             mInCongress;
+    private boolean             mBeGate;
+    private boolean             mClusterMode;
     private Map<Long,
-                ITriple>       mClusterNodeMap;
-    private ITriple            mPeerBind;
-    private ITriple            mLearnerBind;
-    private ITriple            mGateBind;
-    private String             mBaseDir;
+                RaftNode>       mRaftNodeMap;
+    private ITriple             mPeerBind;
+    private ITriple             mLearnerBind;
+    private ITriple             mGateBind;
+    private String              mBaseDir;
 
     public int getMaxSegmentSize()
     {
@@ -363,23 +304,19 @@ public class ZRaftConfig
         this.gates = gates;
     }
 
-    private List<Triple<Long,
-                        String,
-                        Integer>> convert(List<String> content)
+    private List<RaftNode> convert(List<String> content, RaftState state)
     {
         return content.stream()
-                      .map(this::convert1)
+                      .map(str -> convert1(str, state))
                       .distinct()
                       .sorted()
                       .collect(Collectors.toList());
     }
 
-    private Triple<Long,
-                   String,
-                   Integer> convert1(String content)
+    private RaftNode convert1(String content, RaftState state)
     {
         String[] split = content.split(":", 2);
-        return new Triple<>(-1L, split[0], Integer.parseInt(split[1]));
+        return new RaftNode(split[0], Integer.parseInt(split[1]), state);
     }
 
     public Duration getElectInSecond()
