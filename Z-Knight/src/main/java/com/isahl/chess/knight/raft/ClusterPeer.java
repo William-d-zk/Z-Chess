@@ -68,20 +68,20 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
         implements
         IValid
 {
-    private final Logger                       _Logger         = Logger.getLogger("cluster.knight."
-                                                                                  + getClass().getSimpleName());
-    private final ZUID                         _ZUid;
-    private final IRaftConfig                  _RaftConfig;
-    private final M                            _ClusterPeer;
-    private final IRaftDao _RaftDao;
-    private final TimeWheel                    _TimeWheel;
+    private final Logger                          _Logger         = Logger.getLogger("cluster.knight."
+                                                                                     + getClass().getSimpleName());
+    private final ZUID                            _ZUid;
+    private final IRaftConfig                     _RaftConfig;
+    private final M                               _ClusterPeer;
+    private final IRaftDao                        _RaftDao;
+    private final TimeWheel                       _TimeWheel;
     private final ScheduleHandler<ClusterPeer<M>> _ElectSchedule, _HeartbeatSchedule, _TickSchedule;
-    private final RaftGraph _RaftGraph;
-    private final RaftMachine _SelfMachine;
-    private final Queue<LogEntry>              _AppendLogQueue = new LinkedList<>();
-    private final Random                       _Random         = new Random();
-    private final long                         _SnapshotFragmentMaxSize;
-    private ICancelable                        mElectTask, mHeartbeatTask, mTickTask;
+    private final RaftGraph                       _RaftGraph;
+    private final RaftMachine                     _SelfMachine;
+    private final Queue<LogEntry>                 _AppendLogQueue = new LinkedList<>();
+    private final Random                          _Random         = new Random();
+    private final long                            _SnapshotFragmentMaxSize;
+    private ICancelable                           mElectTask, mHeartbeatTask, mTickTask;
 
     public ClusterPeer(TimeWheel timeWheel,
                        IRaftConfig raftConfig,
