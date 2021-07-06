@@ -36,6 +36,7 @@ import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.knight.cluster.IClusterNode;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.model.RaftMachine;
+import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.queen.config.IAioConfig;
 import com.isahl.chess.queen.config.IMixConfig;
 import com.isahl.chess.queen.config.ISocketConfig;
@@ -63,11 +64,9 @@ import static com.isahl.chess.king.base.schedule.TimeWheel.IWheelItem.PRIORITY_N
  * @date 2019-05-12
  */
 public class DeviceNode
-        extends
-        MixManager
-        implements
-        ISessionDismiss,
-        IClusterNode
+        extends MixManager
+        implements ISessionDismiss,
+                   IClusterNode
 {
     private final List<IAioServer> _AioServers;
     private final IAioClient       _PeerClient;
@@ -93,10 +92,10 @@ public class DeviceNode
         super(bizIoConfig, new ServerCore(serverConfig));
         _TimeWheel = timeWheel;
         _ZUid = raftConfig.createZUID();
-        if (raftConfig.isInCongress()) {
-            IPair peerBind = raftConfig.getPeerBind();
-            final String _PeerBindHost = peerBind.getFirst();
-            final int _PeerBindPort = peerBind.getSecond();
+        if(raftConfig.isInCongress()) {
+            RaftNode peerBind = raftConfig.getPeerBind();
+            final String _PeerBindHost = peerBind.getHost();
+            final int _PeerBindPort = peerBind.getPort();
             hosts.add(new Triple<>(_PeerBindHost, _PeerBindPort, ZSortHolder.WS_CLUSTER_SYMMETRY));
             _PeerPing = new X103_Ping(String.format("%#x,%s:%d", _ZUid.getPeerId(), _PeerBindHost, _PeerBindPort)
                                             .getBytes(StandardCharsets.UTF_8));
@@ -104,10 +103,10 @@ public class DeviceNode
         else {
             _PeerPing = null;
         }
-        if (raftConfig.isGateNode()) {
-            IPair gateBind = raftConfig.getGateBind();
-            final String _GateBindHost = gateBind.getFirst();
-            final int _GateBindPort = gateBind.getSecond();
+        if(raftConfig.isGateNode()) {
+            RaftNode gateBind = raftConfig.getGateBind();
+            final String _GateBindHost = gateBind.getHost();
+            final int _GateBindPort = gateBind.getPort();
             hosts.add(new Triple<>(_GateBindHost, _GateBindPort, ZSortHolder.WS_CLUSTER_SYMMETRY));
             _GatePing = new X103_Ping(String.format("%#x,%s:%d", _ZUid.getPeerId(), _GateBindHost, _GateBindPort)
                                             .getBytes(StandardCharsets.UTF_8));
@@ -115,22 +114,19 @@ public class DeviceNode
         else {
             _GatePing = null;
         }
-        _AioServers = hosts.stream()
-                           .map(triple ->
-                           {
-                               final String _Host = triple.getFirst();
-                               final int _Port = triple.getSecond();
-                               final ZSortHolder _Holder = triple.getThird();
-                               return buildServer(_Host,
-                                                  _Port,
-                                                  getSocketConfig(_Holder.getSlot()),
-                                                  _Holder,
-                                                  DeviceNode.this,
-                                                  DeviceNode.this,
-                                                  _ZUid,
-                                                  multiBind);
-                           })
-                           .collect(Collectors.toList());
+        _AioServers = hosts.stream().map(triple->{
+            final String _Host = triple.getFirst();
+            final int _Port = triple.getSecond();
+            final ZSortHolder _Holder = triple.getThird();
+            return buildServer(_Host,
+                               _Port,
+                               getSocketConfig(_Holder.getSlot()),
+                               _Holder,
+                               DeviceNode.this,
+                               DeviceNode.this,
+                               _ZUid,
+                               multiBind);
+        }).collect(Collectors.toList());
         _GateClient = new BaseAioClient(_TimeWheel, getClusterChannelGroup())
         {
             @Override
@@ -176,7 +172,7 @@ public class DeviceNode
                       IClusterCustom<RaftMachine> clusterCustom) throws IOException
     {
         build(logicHandler, linkCustom, clusterCustom, EncryptHandler::new);
-        for (IAioServer server : _AioServers) {
+        for(IAioServer server : _AioServers) {
             server.bindAddress(server.getLocalAddress(), getServiceChannelGroup());
             server.pendingAccept();
             _Logger.info(String.format("device node start %s %s @ %s",

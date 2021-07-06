@@ -23,6 +23,7 @@
 
 package com.isahl.chess.knight.raft.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
@@ -43,12 +44,14 @@ public class RaftNode
 
     public RaftNode()
     {
+        mId = -1;
     }
 
     public RaftNode(String host,
                     int port,
                     RaftState state)
     {
+        mId = -1;
         mHost = host;
         mPort = port;
         mState = state;
@@ -94,9 +97,22 @@ public class RaftNode
         mState = RaftState.valueOf(state);
     }
 
+    @JsonIgnore
+    public void setState(RaftState state)
+    {
+        mState = state;
+    }
+
     @Override
     public int compareTo(RaftNode o)
     {
-        return (mHost + ":" + mPort).compareTo(o.mHost + ":" + o.mPort);
+        int a = Long.compare(mId, o.mId);
+        return a == 0 ? (mHost + ":" + mPort).compareTo(o.mHost + ":" + o.mPort): a;
+    }
+
+    @Override
+    public String toString()
+    {
+        return String.format(" RaftNode{%#x,%s:%d,%s}", mId, mHost, mPort, mState);
     }
 }

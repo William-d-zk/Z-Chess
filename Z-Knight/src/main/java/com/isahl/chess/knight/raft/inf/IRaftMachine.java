@@ -24,7 +24,7 @@
 package com.isahl.chess.knight.raft.inf;
 
 import com.isahl.chess.king.base.inf.IReset;
-import com.isahl.chess.king.base.util.Triple;
+import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.knight.raft.model.RaftState;
 import com.isahl.chess.queen.db.inf.IStorage;
 
@@ -32,12 +32,10 @@ import java.util.Set;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019/12/10
  */
 public interface IRaftMachine
-        extends
-        IReset
+        extends IReset
 {
     long INDEX_NAN = -1;
     long TERM_NAN  = -1;
@@ -90,16 +88,12 @@ public interface IRaftMachine
     /**
      * @return 集群中所有节点
      */
-    Set<Triple<Long,
-               String,
-               Integer>> getPeerSet();
+    Set<RaftNode> getPeerSet();
 
     /**
      * @return 跨集群网关
      */
-    Set<Triple<Long,
-               String,
-               Integer>> getGateSet();
+    Set<RaftNode> getGateSet();
 
     void appendLog(long index, long indexTerm, IRaftDao dao);
 

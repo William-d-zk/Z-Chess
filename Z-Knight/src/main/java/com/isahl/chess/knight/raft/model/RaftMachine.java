@@ -28,15 +28,16 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.JsonUtil;
-import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.knight.raft.inf.IRaftDao;
 import com.isahl.chess.knight.raft.inf.IRaftMachine;
 import com.isahl.chess.queen.db.inf.IStorage;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
 
 import static com.isahl.chess.king.topology.ZUID.INVALID_PEER_ID;
 import static com.isahl.chess.knight.raft.model.RaftState.*;
@@ -45,39 +46,32 @@ import static java.lang.Long.min;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019/12/10
  */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class RaftMachine
-        implements
-        IRaftMachine,
-        IStorage
+        implements IRaftMachine,
+                   IStorage
 {
     private final static int RAFT_MACHINE_SERIAL = DB_SERIAL + 3;
 
-    private final Logger                       _Logger    = Logger.getLogger("cluster.knight."
-                                                                             + RaftMachine.class.getSimpleName());
-    private final long                         _PeerId;
-    private long                               mTerm;      // 触发选举时 mTerm > mIndexTerm
-    private long                               mIndex;     // 本地日志Index，Leader：mIndex >= mCommit 其他状态：mIndex <= mCommit
-    private long                               mIndexTerm; // 本地日志对应的Term
-    private long                               mMatchIndex;// Leader: 记录 follower 已经接收的记录
-    private long                               mCandidate;
-    private long                               mLeader;
-    private long                               mCommit;    // 集群中已知的最大CommitIndex
-    private long                               mApplied;   // 本地已被应用的Index
-    private int                                mState     = LEARNER.getCode();
-    private Set<Triple<Long,
-                       String,
-                       Integer>>               mPeerSet;
-    private Set<Triple<Long,
-                       String,
-                       Integer>>               mGateSet;
+    private final Logger        _Logger    = Logger.getLogger("cluster.knight." + RaftMachine.class.getSimpleName());
+    private final long          _PeerId;
+    private       long          mTerm;      // 触发选举时 mTerm > mIndexTerm
+    private       long          mIndex;     // 本地日志Index，Leader：mIndex >= mCommit 其他状态：mIndex <= mCommit
+    private       long          mIndexTerm; // 本地日志对应的Term
+    private       long          mMatchIndex;// Leader: 记录 follower 已经接收的记录
+    private       long          mCandidate;
+    private       long          mLeader;
+    private       long          mCommit;    // 集群中已知的最大CommitIndex
+    private       long          mApplied;   // 本地已被应用的Index
+    private       int           mState     = LEARNER.getCode();
+    private       Set<RaftNode> mPeerSet;
+    private       Set<RaftNode> mGateSet;
     @JsonIgnore
-    private Operation                          mOperation = OP_NULL;
+    private       Operation     mOperation = OP_NULL;
     @JsonIgnore
-    private int                                mLength;
+    private       int           mLength;
 
     @Override
     public int dataLength()
@@ -98,8 +92,7 @@ public class RaftMachine
         mLeader = json.getLeader();
         mCommit = json.getCommit();
         mApplied = json.getApplied();
-        mState = json.getState()
-                     .getCode();
+        mState = json.getState().getCode();
         mPeerSet = json.getPeerSet();
         mGateSet = json.getGateSet();
         mLength = data.length;
@@ -217,17 +210,13 @@ public class RaftMachine
     }
 
     @Override
-    public Set<Triple<Long,
-                      String,
-                      Integer>> getPeerSet()
+    public Set<RaftNode> getPeerSet()
     {
         return mPeerSet;
     }
 
     @Override
-    public Set<Triple<Long,
-                      String,
-                      Integer>> getGateSet()
+    public Set<RaftNode> getGateSet()
     {
         return mGateSet;
     }
@@ -277,52 +266,36 @@ public class RaftMachine
         mApplied = applied;
     }
 
-    public void setPeerSet(Set<Triple<Long,
-                                      String,
-                                      Integer>> peerSet)
+    public void setPeerSet(Set<RaftNode> peerSet)
     {
         mPeerSet = peerSet;
     }
 
-    public void setGateSet(Set<Triple<Long,
-                                      String,
-                                      Integer>> gateSet)
+    public void setGateSet(Set<RaftNode> gateSet)
     {
         mGateSet = gateSet;
     }
 
-    @SafeVarargs
-    public final void appendPeer(Triple<Long,
-                                        String,
-                                        Integer>... peers)
+    public final void appendPeer(RaftNode... peers)
     {
-        if (mPeerSet == null) {
-            mPeerSet = new TreeSet<>(Comparator.comparing(ITriple::getFirst));
+        if(mPeerSet == null) {
+            mPeerSet = new TreeSet<>();
         }
         appendGraph(mPeerSet, peers);
     }
 
-    @SafeVarargs
-    public final void appendGate(Triple<Long,
-                                        String,
-                                        Integer>... gates)
+    public final void appendGate(RaftNode... gates)
     {
-        if (mGateSet == null) {
-            mGateSet = new TreeSet<>(Comparator.comparing(ITriple::getFirst));
+        if(mGateSet == null) {
+            mGateSet = new TreeSet<>();
         }
         appendGraph(mGateSet, gates);
     }
 
-    @SafeVarargs
-    private void appendGraph(Set<Triple<Long,
-                                        String,
-                                        Integer>> set,
-                             Triple<Long,
-                                    String,
-                                    Integer>... a)
+    private void appendGraph(Set<RaftNode> set, RaftNode... a)
     {
         Objects.requireNonNull(set);
-        if (a == null || a.length == 0) { return; }
+        if(a == null || a.length == 0) { return; }
         mPeerSet.addAll(Arrays.asList(a));
     }
 
@@ -330,7 +303,7 @@ public class RaftMachine
     public void apply(IRaftDao dao)
     {
         // TODO 分摊集群读写压力，需要在follower apply的时候notify 那些在follower上订阅了延迟一致的consumer
-        if (mIndex < mApplied) {
+        if(mIndex < mApplied) {
             _Logger.warning(String.format("index %d < apply %d, roll back ", mIndex, mApplied));
         }
         mApplied = min(mIndex, mCommit);
@@ -503,18 +476,7 @@ public class RaftMachine
     @Override
     public String toString()
     {
-        return String.format("\n{\n"
-                             + "\t\tpeerId:%#x\n"
-                             + "\t\tstate:%s\n"
-                             + "\t\tterm:%d\n"
-                             + "\t\tindex:%d\n"
-                             + "\t\tindex_term:%d\n"
-                             + "\t\tmatch_index:%d\n"
-                             + "\t\tcommit:%d\n"
-                             + "\t\tapplied:%d\n"
-                             + "\t\tleader:%#x\n"
-                             + "\t\tcandidate:%#x\n"
-                             + "\t\tpeers:%s\n}",
+        return String.format("\n{\n" + "\t\tpeerId:%#x\n" + "\t\tstate:%s\n" + "\t\tterm:%d\n" + "\t\tindex:%d\n" + "\t\tindex_term:%d\n" + "\t\tmatch_index:%d\n" + "\t\tcommit:%d\n" + "\t\tapplied:%d\n" + "\t\tleader:%#x\n" + "\t\tcandidate:%#x\n" + "\t\tpeers:%s\n}",
                              _PeerId,
                              getState(),
                              mTerm,
@@ -531,11 +493,8 @@ public class RaftMachine
     private String peerSetString()
     {
         StringBuilder sb = new StringBuilder("[\n");
-
-        for (ITriple triple : mPeerSet) {
-            sb.append("\t<")
-              .append(String.format(" %#x, %s, %d ", triple.getFirst(), triple.getSecond(), triple.getThird()))
-              .append(">\n");
+        for(RaftNode node : mPeerSet) {
+            sb.append("\t<").append(String.format(" %s ", node)).append(">\n");
         }
         sb.append(']');
         return sb.toString();

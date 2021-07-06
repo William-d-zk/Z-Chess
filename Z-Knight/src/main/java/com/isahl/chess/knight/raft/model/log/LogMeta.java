@@ -30,48 +30,61 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.king.base.util.JsonUtil;
-import com.isahl.chess.king.base.util.Triple;
+import com.isahl.chess.knight.raft.model.RaftNode;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.Collection;
 import java.util.Set;
+import java.util.TreeSet;
 
 import static com.isahl.chess.knight.raft.inf.IRaftMachine.MIN_START;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class LogMeta
-        extends
-        BaseMeta
+        extends BaseMeta
 {
     private final static int _SERIAL = INTERNAL_SERIAL + 1;
 
     /**
      * 存储日志的 start index，由于有 snapshot的存在 start之前的日志将被抛弃，
-     * 
+     * <p>
      * ``` 1 ``` 为首条日志index
      */
-    private long                               mStart;
-    /** 本机存储日志的 index */
-    private long                               mIndex;
-    /** 本机存储日志的 index-term */
-    private long                               mIndexTerm;
-    /** 已存储的最大任期号 */
-    private long                               mTerm;
-    /** 当前状态机候选人 */
-    private long                               mCandidate;
-    /** 集群中已知的最大的被提交的日志index */
-    private long                               mCommit;
-    /** 已被应用到状态机日志index */
-    private long                               mApplied;
-    /** 集群节点信息 */
-    private Set<Triple<Long,
-                       String,
-                       Integer>>               mPeerSet;
-    /** 集群跨分区网关 */
-    private Set<Triple<Long,
-                       String,
-                       Integer>>               mGateSet;
+    private long          mStart;
+    /**
+     * 本机存储日志的 index
+     */
+    private long          mIndex;
+    /**
+     * 本机存储日志的 index-term
+     */
+    private long          mIndexTerm;
+    /**
+     * 已存储的最大任期号
+     */
+    private long          mTerm;
+    /**
+     * 当前状态机候选人
+     */
+    private long          mCandidate;
+    /**
+     * 集群中已知的最大的被提交的日志index
+     */
+    private long          mCommit;
+    /**
+     * 已被应用到状态机日志index
+     */
+    private long          mApplied;
+    /**
+     * 集群节点信息
+     */
+    private Set<RaftNode> mPeerSet;
+    /**
+     * 集群跨分区网关
+     */
+    private Set<RaftNode> mGateSet;
 
     @Override
     public void reset()
@@ -83,8 +96,8 @@ public class LogMeta
         mCandidate = 0;
         mCommit = 0;
         mApplied = 0;
-        if (mPeerSet != null) mPeerSet.clear();
-        if (mGateSet != null) mGateSet.clear();
+        if(mPeerSet != null) { mPeerSet.clear(); }
+        if(mGateSet != null) { mGateSet.clear(); }
         flush();
     }
 
@@ -96,12 +109,8 @@ public class LogMeta
                    @JsonProperty("candidate") long candidate,
                    @JsonProperty("commit") long commit,
                    @JsonProperty("applied") long applied,
-                   @JsonProperty("peer_set") Set<Triple<Long,
-                                                        String,
-                                                        Integer>> peerSet,
-                   @JsonProperty("gate_set") Set<Triple<Long,
-                                                        String,
-                                                        Integer>> gateSet)
+                   @JsonProperty("peer_set") Set<RaftNode> peerSet,
+                   @JsonProperty("gate_set") Set<RaftNode> gateSet)
     {
         mStart = start;
         mTerm = term;
@@ -122,14 +131,14 @@ public class LogMeta
     public static LogMeta loadFromFile(RandomAccessFile file)
     {
         try {
-            if (file.length() > 0) {
+            if(file.length() > 0) {
                 file.seek(0);
                 int mLength = file.readInt();
-                if (mLength > 0) {
+                if(mLength > 0) {
                     byte[] data = new byte[mLength];
                     file.read(data);
                     LogMeta logMeta = JsonUtil.readValue(data, LogMeta.class);
-                    if (logMeta != null) {
+                    if(logMeta != null) {
                         logMeta.setFile(file);
                         logMeta.decode(data);
                         return logMeta;
@@ -137,7 +146,7 @@ public class LogMeta
                 }
             }
         }
-        catch (IOException e) {
+        catch(IOException e) {
             e.printStackTrace();
         }
         return new LogMeta().setFile(file);
@@ -212,32 +221,28 @@ public class LogMeta
         mApplied = applied;
     }
 
-    public Set<Triple<Long,
-                      String,
-                      Integer>> getPeerSet()
+    public Set<RaftNode> getPeerSet()
     {
         return mPeerSet;
     }
 
-    public void setPeerSet(Set<Triple<Long,
-                                      String,
-                                      Integer>> peerSet)
+    public void setPeerSet(Collection<RaftNode> peers)
     {
-        mPeerSet = peerSet;
+        if(peers != null && !peers.isEmpty()) {
+            mPeerSet = new TreeSet<>(peers);
+        }
     }
 
-    public Set<Triple<Long,
-                      String,
-                      Integer>> getGateSet()
+    public Set<RaftNode> getGateSet()
     {
         return mGateSet;
     }
 
-    public void setGateSet(Set<Triple<Long,
-                                      String,
-                                      Integer>> gateSet)
+    public void setGateSet(Collection<RaftNode> gates)
     {
-        mGateSet = gateSet;
+        if(gates != null && !gates.isEmpty()) {
+            mGateSet = new TreeSet<>(gates);
+        }
     }
 
     public long getIndex()
