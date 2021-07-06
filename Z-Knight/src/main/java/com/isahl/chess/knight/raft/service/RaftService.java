@@ -23,9 +23,9 @@
 
 package com.isahl.chess.knight.raft.service;
 
-import com.isahl.chess.king.base.inf.ITriple;
-import com.isahl.chess.knight.raft.inf.IRaftService;
 import com.isahl.chess.knight.raft.ClusterPeer;
+import com.isahl.chess.knight.raft.inf.IRaftService;
+import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.queen.db.inf.IStorage;
 import com.isahl.chess.queen.io.core.inf.IClusterPeer;
 import com.isahl.chess.queen.io.core.inf.IClusterTimer;
@@ -36,8 +36,7 @@ import java.util.List;
  * @author william.d.zk
  */
 public class RaftService<M extends IClusterPeer & IClusterTimer>
-        implements
-        IRaftService
+        implements IRaftService
 {
     private final ClusterPeer<M> _ClusterPeer;
 
@@ -49,29 +48,25 @@ public class RaftService<M extends IClusterPeer & IClusterTimer>
     @Override
     public long getLeader()
     {
-        return _ClusterPeer.getMachine()
-                        .getLeader();
+        return _ClusterPeer.getMachine().getLeader();
     }
 
     @Override
-    public List<ITriple> getTopology()
+    public List<RaftNode> getTopology()
     {
-        return _ClusterPeer.getRaftConfig()
-                        .getPeers();
+        return _ClusterPeer.getRaftConfig().getPeers();
     }
 
     @Override
-    public void changeTopology(ITriple peer, IStorage.Operation operation)
+    public void changeTopology(RaftNode delta, IStorage.Operation operation)
     {
-        _ClusterPeer.getRaftConfig()
-                 .changeTopology(peer, operation);
+        _ClusterPeer.getRaftConfig().changeTopology(delta, operation);
     }
 
     @Override
-    public void changGate(ITriple gate, IStorage.Operation operation)
+    public void changeGate(RaftNode delta, IStorage.Operation operation)
     {
-        _ClusterPeer.getRaftConfig()
-                 .changeGate(gate, operation);
+        _ClusterPeer.getRaftConfig().changeGate(delta, operation);
     }
 
 }

@@ -30,11 +30,13 @@ package com.isahl.chess.knight.raft.model;
  */
 public enum RaftState
 {
-    FOLLOWER(0),
-    ELECTOR(1),
-    CANDIDATE(2),
-    LEADER(3),
-    LEARNER(4);
+    FOLLOWER(1),
+    ELECTOR(2),
+    CANDIDATE(3),
+    LEADER(4),
+    GATE(7),
+    LEARNER(8),
+    CLIENT(16);
 
     private final int _Code;
 
@@ -52,11 +54,13 @@ public enum RaftState
     {
         return switch (code)
         {
-            case 0 -> FOLLOWER;
-            case 1 -> ELECTOR;
-            case 2 -> CANDIDATE;
-            case 3 -> LEADER;
-            case 4 -> LEARNER;
+            case 1 -> FOLLOWER;
+            case 2 -> ELECTOR;
+            case 3 -> CANDIDATE;
+            case 4 -> LEADER;
+            case 7 -> GATE;
+            case 8 -> LEARNER;
+            case 16 -> CLIENT;
             default -> throw new IllegalArgumentException();
         };
     }

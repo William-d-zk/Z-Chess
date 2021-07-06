@@ -50,8 +50,7 @@ public class MessageOpenService
     private final IMessageJpaRepository _JpaRepository;
 
     @Autowired
-    public MessageOpenService(IRaftConfig clusterConfig,
-                              IMessageJpaRepository jpaRepository)
+    public MessageOpenService(IRaftConfig clusterConfig, IMessageJpaRepository jpaRepository)
     {
         _JpaRepository = jpaRepository;
         _ZUID = clusterConfig.createZUID();
@@ -62,18 +61,13 @@ public class MessageOpenService
         MessageEntity entity = null;
         EXIST:
         {
-            if (message.operation()
-                       .getValue() > OP_INSERT.getValue())
-            {
+            if(message.operation().getValue() > OP_INSERT.getValue()) {
                 try {
-                    entity = _JpaRepository.getOne(message.getId());
+                    entity = _JpaRepository.getById(message.getId());
                     entity.setOwner(message.getOwner());
                     break EXIST;
                 }
-                catch (EntityNotFoundException |
-                       LazyInitializationException |
-                       JpaObjectRetrievalFailureException e)
-                {
+                catch(EntityNotFoundException | LazyInitializationException | JpaObjectRetrievalFailureException e) {
                     _Logger.warning("update failed", e);
                 }
             }
@@ -83,12 +77,12 @@ public class MessageOpenService
                 entity = _JpaRepository.findByOriginAndDestinationAndMsgId(message.getOrigin(),
                                                                            message.getDestination(),
                                                                            message.getMsgId());
-                if (entity != null) {
+                if(entity != null) {
                     entity.setOwner(message.getOwner());
                     break EXIST;
                 }
             }
-            catch (Exception e) {
+            catch(Exception e) {
                 // msg id 重复
                 List<MessageEntity> toDelete = _JpaRepository.findAllByOriginAndDestinationAndMsgId(message.getOrigin(),
                                                                                                     message.getDestination(),
@@ -101,7 +95,7 @@ public class MessageOpenService
                                 message.getDestination(),
                                 message.getMsgId());
             }
-            if (entity == null) {
+            if(entity == null) {
                 entity = new MessageEntity();
                 entity.setOrigin(message.getOrigin());
                 entity.setDestination(message.getDestination());
@@ -121,7 +115,7 @@ public class MessageOpenService
         long msgId = key.getMsgId();
         long origin = key.getOrigin();
         long destination = key.getDestination();
-        if (primary == 0 && (msgId == 0 || origin == 0 || destination == 0)) {
+        if(primary == 0 && (msgId == 0 || origin == 0 || destination == 0)) {
             return null;
         }
         else {
@@ -129,19 +123,18 @@ public class MessageOpenService
             try {
                 entity = _JpaRepository.findByOriginAndDestinationAndMsgId(origin, destination, msgId);
             }
-            catch (EntityNotFoundException e) {
+            catch(EntityNotFoundException e) {
                 _Logger.warning(e);
             }
-            if (entity != null) { return entity; }
+            if(entity != null) { return entity; }
             try {
-                entity = _JpaRepository.getOne(primary);
+                entity = _JpaRepository.getById(primary);
             }
-            catch (EntityNotFoundException e) {
+            catch(EntityNotFoundException e) {
                 _Logger.warning(e);
             }
-            if (entity != null) { return entity; }
+            return entity;
         }
-        return null;
     }
 
     public long generateId()
