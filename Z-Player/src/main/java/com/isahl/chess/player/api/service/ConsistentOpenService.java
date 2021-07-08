@@ -37,14 +37,13 @@ import java.nio.charset.StandardCharsets;
 
 @Service
 public class ConsistentOpenService
-        implements
-        IConsistentService
+        implements IConsistentService
 {
 
-    private final Logger               _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
-    private final DeviceNode           _DeviceNode;
+    private final Logger                  _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+    private final DeviceNode              _DeviceNode;
     private final ClusterPeer<DeviceNode> _ClusterPeer;
-    private final IConsistentCustom    _ConsistentCustom;
+    private final IConsistentCustom       _ConsistentCustom;
 
     @Autowired
     public ConsistentOpenService(DeviceNode deviceNode,
@@ -59,7 +58,7 @@ public class ConsistentOpenService
     @Override
     public void submit(String content, boolean pub, long origin)
     {
-        if (IoUtil.isBlank(content)) return;
+        if(IoUtil.isBlank(content)) { return; }
         ConsistentProtocol consensus = new ConsistentProtocol(content.getBytes(StandardCharsets.UTF_8),
                                                               pub,
                                                               _ClusterPeer.getRaftZUid(),

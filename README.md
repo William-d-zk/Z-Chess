@@ -58,7 +58,7 @@
 ## 数据库
 > 需要手工创建数据库，使用 `PostgreSQL`
 > 
-> 配置文件位置: Z-Rook/src/main/resource/db.properties
+> 配置文件位置: `Z-Rook/src/main/resource/db.properties`
 ## DNS 配置
 需要在集群中配置resolve.conf `search:isahl.com`
 DB-Hostname:db-pg

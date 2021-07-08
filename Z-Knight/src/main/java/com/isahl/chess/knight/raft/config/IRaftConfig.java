@@ -25,6 +25,7 @@ package com.isahl.chess.knight.raft.config;
 
 import com.isahl.chess.king.base.inf.IReset;
 import com.isahl.chess.king.topology.ZUID;
+import com.isahl.chess.knight.raft.model.RaftConfig;
 import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.queen.db.inf.IStorage;
 
@@ -72,11 +73,11 @@ public interface IRaftConfig
      * @return cluster uid setting
      * @see ZUID
      */
-    Uid getUid();
-
     boolean isInCongress();
 
     boolean isGateNode();
+
+    Uid getUid();
 
     ZUID createZUID();
 
@@ -92,9 +93,13 @@ public interface IRaftConfig
 
     long getSnapshotFragmentMaxSize();
 
+    long getMaxSegmentSize();
+
     boolean isClusterMode();
 
-    void update(IRaftConfig source) throws IOException;
+    RaftConfig getConfig();
+
+    void update(RaftConfig source) throws IOException;
 
     /**
      * 调整集群拓扑配置，改变议会成员
@@ -173,18 +178,6 @@ public interface IRaftConfig
         public void setType(int type)
         {
             this.mType = type;
-        }
-
-        /**
-         * from 时不处理nodeId 依然需要进行默认的排序确认流程，用于确定排位
-         *
-         * @param uid
-         */
-        public void from(Uid uid)
-        {
-            mType = uid.mType;
-            mIdcId = uid.mIdcId;
-            mClusterId = uid.mClusterId;
         }
     }
 }

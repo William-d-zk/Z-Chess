@@ -33,8 +33,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
  */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class RaftNode
-        implements
-        Comparable<RaftNode>
+        implements Comparable<RaftNode>
 {
 
     private long      mId;
@@ -47,9 +46,7 @@ public class RaftNode
         mId = -1;
     }
 
-    public RaftNode(String host,
-                    int port,
-                    RaftState state)
+    public RaftNode(String host, int port, RaftState state)
     {
         mId = -1;
         mHost = host;
@@ -107,7 +104,7 @@ public class RaftNode
     public int compareTo(RaftNode o)
     {
         int a = Long.compare(mId, o.mId);
-        return a == 0 ? (mHost + ":" + mPort).compareTo(o.mHost + ":" + o.mPort): a;
+        return a == 0 ? (mHost + ":" + mPort).compareTo(o.mHost + ":" + o.mPort) : a;
     }
 
     @Override
