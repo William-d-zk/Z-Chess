@@ -25,6 +25,7 @@ package com.isahl.chess.knight.raft.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import org.springframework.util.unit.DataSize;
@@ -47,8 +48,11 @@ public class RaftConfig
     private Duration             heartbeatInSecond;
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Duration             clientSubmitInSecond;
+    @JsonDeserialize(converter = LongToDataSizeConverter.class)
     private DataSize             snapshotMinSize;
+    @JsonDeserialize(converter = LongToDataSizeConverter.class)
     private DataSize             snapshotFragmentMaxSize;
+    @JsonDeserialize(converter = LongToDataSizeConverter.class)
     private DataSize             maxSegmentSize;
     private IRaftConfig.Uid      uid;
 
