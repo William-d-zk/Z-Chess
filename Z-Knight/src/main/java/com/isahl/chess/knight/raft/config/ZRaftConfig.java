@@ -26,20 +26,19 @@ package com.isahl.chess.knight.raft.config;
 import com.isahl.chess.king.base.inf.IReset;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.topology.ZUID;
+import com.isahl.chess.knight.raft.model.RaftConfig;
 import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.knight.raft.model.RaftState;
 import com.isahl.chess.queen.db.inf.IStorage;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.util.unit.DataSize;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.time.Duration;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Configuration
 @ConfigurationProperties(prefix = "z.chess.raft")
@@ -50,43 +49,75 @@ public class ZRaftConfig
 {
     private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
 
-    public Uid getUid()
-    {
-        return mUid;
-    }
+    private final Map<Long, RaftNode> _RaftNodeMap = new TreeMap<>();
+
+    private ZUID       mZUid;
+    private boolean    mInCongress;
+    private boolean    mBeGate;
+    private boolean    mClusterMode;
+    private RaftNode   mPeerBind;
+    private RaftNode   mGateBind;
+    private String     mBaseDir;
+    private RaftConfig mConfig;
 
     @PostConstruct
-    public void loadLocal() throws IOException
+    public void load() throws IOException
     {
-        String hostname = InetAddress.getLocalHost().getHostName();
-        if(peers != null && !peers.isEmpty()) {
-            for(Iterator<Map.Entry<Integer, String>> pIt = peers.entrySet().iterator(); pIt.hasNext(); ) {
-                Map.Entry<Integer, String> entry = pIt.next();
-                RaftNode node = convert1(entry.getValue(), RaftState.FOLLOWER);
+        mClusterMode = mConfig.getNodes() != null && !mConfig.getNodes()
+                                                             .isEmpty();
+        if(!mClusterMode) { return; }
+        getUid().setNodeId(-1);
+        String hostname = InetAddress.getLocalHost()
+                                     .getHostName();
+        for(Iterator<Map.Entry<Integer, String>> nIt = mConfig.getNodes()
+                                                              .entrySet()
+                                                              .iterator(); nIt.hasNext(); ) {
+            Map.Entry<Integer, String> entry = nIt.next();
+            String host = entry.getValue();
+            if(hostname.equalsIgnoreCase(host) && getUid().getNodeId() < 0) {
+                getUid().setNodeId(entry.getKey());
+            }
+            else {
+                _Logger.warning("duplicate: %s", host);
+                nIt.remove();
+            }
+        }
+        if(getUid().getNodeId() < 0) {
+            _Logger.warning("hostname [ %s ] isn't one of nodes", hostname);
+            getUid().setNodeId(0);
+            mClusterMode = false;
+            return;
+        }
+        if(mConfig.getPeers() != null && !mConfig.getPeers()
+                                                 .isEmpty())
+        {
+            for(String peer : mConfig.getPeers()
+                                     .values()) {
+                RaftNode node = convert(peer, RaftState.FOLLOWER);
                 String host = node.getHost();
                 if(hostname.equalsIgnoreCase(host)) {
-                    if(mUid.getNodeId() < 0 && !isInCongress() && mPeerBind == null) {
+                    if(!isInCongress() && mPeerBind == null) {
                         //RaftNode 需要对比 host:port 当配置中出现相同当host/port 不同时需要排除
-                        mUid.setNodeId(entry.getKey());
                         node.setId(createZUID().getPeerId());
                         mPeerBind = node;
                         mInCongress = true;
                     }
                     else {
                         _Logger.warning("duplicate:%s", node);
-                        pIt.remove();
                         continue;
                     }
-                    mRaftNodeMap.put(node.getId(), node);
+                    _RaftNodeMap.put(node.getId(), node);
                 }
             }
         }
         mClusterMode = mInCongress || mClusterMode;
         if(isClusterMode()) {
-            if(gates != null && !gates.isEmpty()) {
-                for(String str : gates) {
+            if(mConfig.getGates() != null && !mConfig.getGates()
+                                                     .isEmpty())
+            {
+                for(String str : mConfig.getGates()) {
                     if(hostname.equalsIgnoreCase(str)) {
-                        RaftNode gate = convert1(str, RaftState.GATE);
+                        RaftNode gate = convert(str, RaftState.GATE);
                         if(!isGateNode() && mGateBind == null) {
                             gate.setId(createZUID().getPeerId());
                             mGateBind = gate;
@@ -96,13 +127,29 @@ public class ZRaftConfig
                             _Logger.warning("duplicate gate:%s", str);
                         }
                     }
-
                 }
             }
             if(!isGateNode()) {
                 _Logger.info("the node %s isn't gate", hostname);
             }
         }
+    }
+
+    @Override
+    public RaftConfig getConfig()
+    {
+        return mConfig;
+    }
+
+    public void setConfig(RaftConfig config)
+    {
+        mConfig = config;
+    }
+
+    @Override
+    public Uid getUid()
+    {
+        return mConfig.getUid();
     }
 
     @Override
@@ -115,23 +162,24 @@ public class ZRaftConfig
     }
 
     @Override
-    public void update(IRaftConfig source) throws IOException
+    public void update(RaftConfig source) throws IOException
     {
         reset();
-        mUid.from(source.getUid());
-        loadLocal();
+        setConfig(source);
+        load();
     }
 
     @Override
     public void reset()
     {
-        mUid.reset();
+        mConfig = null;
         mZUid = null;
         mInCongress = false;
         mBeGate = false;
         mClusterMode = false;
         mGateBind = null;
         mPeerBind = null;
+        _RaftNodeMap.clear();
     }
 
     @Override
@@ -151,7 +199,8 @@ public class ZRaftConfig
         {
             LOOP:
             {
-                for(Iterator<RaftNode> it = mRaftNodeMap.values().iterator(); it.hasNext(); ) {
+                for(Iterator<RaftNode> it = _RaftNodeMap.values()
+                                                        .iterator(); it.hasNext(); ) {
                     RaftNode peer = it.next();
                     present = present || delta.compareTo(peer) == 0;
                     switch(operation) {
@@ -177,7 +226,7 @@ public class ZRaftConfig
                     }
                 }
             }
-            mRaftNodeMap.put(delta.getId(), delta);
+            _RaftNodeMap.put(delta.getId(), delta);
         }
     }
 
@@ -195,51 +244,22 @@ public class ZRaftConfig
         }
     }
 
-    public void setUid(Uid uid)
-    {
-        this.mUid = uid;
-    }
-
     @Override
     public List<RaftNode> getPeers()
     {
-        return new ArrayList<>(mRaftNodeMap.values());
+        if(_RaftNodeMap.isEmpty()) { return null; }
+        return new ArrayList<>(_RaftNodeMap.values());
     }
 
-    public void setPeers(Map<Integer, String> peers)
+    @Override
+    public long getMaxSegmentSize()
     {
-        this.peers = peers;
+        return mConfig.getMaxSegmentSize();
     }
 
-    private Uid mUid;
-
-    private Map<Integer, String> peers;
-    private List<String>         gates;
-    private Duration             electInSecond;
-    private Duration             snapshotInSecond;
-    private Duration             heartbeatInSecond;
-    private Duration             clientSubmitInSecond;
-    private DataSize             snapshotMinSize;
-    private DataSize             snapshotFragmentMaxSize;
-    private int                  maxSegmentSize;
-
-    private ZUID                mZUid;
-    private boolean             mInCongress;
-    private boolean             mBeGate;
-    private boolean             mClusterMode;
-    private Map<Long, RaftNode> mRaftNodeMap;
-    private RaftNode            mPeerBind;
-    private RaftNode            mGateBind;
-    private String              mBaseDir;
-
-    public int getMaxSegmentSize()
+    public void setBaseDir(String baseDir)
     {
-        return maxSegmentSize;
-    }
-
-    public void setMaxSegmentSize(int maxSegmentSize)
-    {
-        this.maxSegmentSize = maxSegmentSize;
+        mBaseDir = baseDir;
     }
 
     public String getBaseDir()
@@ -247,14 +267,10 @@ public class ZRaftConfig
         return mBaseDir;
     }
 
-    public void setBaseDir(String dir)
-    {
-        mBaseDir = dir;
-    }
-
     @Override
     public List<RaftNode> getGates()
     {
+        //TODO
         return null;
     }
 
@@ -270,17 +286,7 @@ public class ZRaftConfig
         return mGateBind;
     }
 
-    public void setGates(List<String> gates)
-    {
-        this.gates = gates;
-    }
-
-    private List<RaftNode> convert(List<String> content, RaftState state)
-    {
-        return content.stream().map(str->convert1(str, state)).distinct().sorted().collect(Collectors.toList());
-    }
-
-    private RaftNode convert1(String content, RaftState state)
+    private RaftNode convert(String content, RaftState state)
     {
         String[] split = content.split(":", 2);
         return new RaftNode(split[0], Integer.parseInt(split[1]), state);
@@ -288,67 +294,37 @@ public class ZRaftConfig
 
     public Duration getElectInSecond()
     {
-        return electInSecond;
-    }
-
-    public void setElectInSecond(Duration electInSecond)
-    {
-        this.electInSecond = electInSecond;
+        return mConfig.getElectInSecond();
     }
 
     @Override
     public Duration getSnapshotInSecond()
     {
-        return snapshotInSecond;
-    }
-
-    public void setSnapshotInSecond(Duration snapshotInSecond)
-    {
-        this.snapshotInSecond = snapshotInSecond;
+        return mConfig.getSnapshotInSecond();
     }
 
     @Override
     public long getSnapshotMinSize()
     {
-        return snapshotMinSize.toBytes();
-    }
-
-    public void setSnapshotMinSize(DataSize snapshotMinSize)
-    {
-        this.snapshotMinSize = snapshotMinSize;
+        return mConfig.getSnapshotMinSize();
     }
 
     @Override
     public long getSnapshotFragmentMaxSize()
     {
-        return snapshotFragmentMaxSize.toBytes();
-    }
-
-    public void setSnapshotFragmentMaxSize(DataSize snapshotFragmentMaxSize)
-    {
-        this.snapshotFragmentMaxSize = snapshotFragmentMaxSize;
+        return mConfig.getSnapshotFragmentMaxSize();
     }
 
     @Override
     public Duration getHeartbeatInSecond()
     {
-        return heartbeatInSecond;
-    }
-
-    public void setHeartbeatInSecond(Duration heartbeatInSecond)
-    {
-        this.heartbeatInSecond = heartbeatInSecond;
+        return mConfig.getHeartbeatInSecond();
     }
 
     @Override
     public Duration getClientSubmitInSecond()
     {
-        return clientSubmitInSecond;
-    }
-
-    public void setClientSubmitInSecond(Duration clientSubmitInSecond)
-    {
-        this.clientSubmitInSecond = clientSubmitInSecond;
+        return mConfig.getClientSubmitInSecond();
     }
 
     @Override

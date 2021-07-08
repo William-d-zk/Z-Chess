@@ -65,7 +65,7 @@ public class NodeService
     private final DeviceNode               _DeviceNode;
     private final ILinkCustom              _LinkCustom;
     private final RaftCustom<DeviceNode>   _RaftCustom;
-    private final ClusterPeer<DeviceNode> _ClusterPeer;
+    private final ClusterPeer<DeviceNode>  _ClusterPeer;
     private final RaftService<DeviceNode>  _RaftService;
     private final LogicHandler<DeviceNode> _LogicHandler;
 
@@ -82,10 +82,8 @@ public class NodeService
     {
         List<ITriple> hosts = deviceConfig.getListeners()
                                           .stream()
-                                          .map(listener ->
-                                          {
-                                              ZSortHolder sort = switch (listener.getScheme())
-                                              {
+                                          .map(listener->{
+                                              ZSortHolder sort = switch(listener.getScheme()) {
                                                   case "mqtt" -> ZSortHolder.QTT_SERVER;
                                                   case "ws-mqtt" -> ZSortHolder.WS_QTT_SERVER;
                                                   case "tls-mqtt" -> ZSortHolder.QTT_SERVER_SSL;
@@ -126,5 +124,8 @@ public class NodeService
     {
         return _RaftService;
     }
+
+    @Bean
+    public ClusterPeer<DeviceNode> getClusterPeer() {return _ClusterPeer;}
 
 }
