@@ -50,6 +50,7 @@ import java.util.stream.Stream;
 
 import static com.isahl.chess.knight.raft.inf.IRaftMachine.MIN_START;
 import static com.isahl.chess.knight.raft.inf.IRaftMachine.TERM_NAN;
+import static com.isahl.chess.knight.raft.model.log.Segment.SEGMENT_PREFIX;
 
 @Component
 public class Mapper
@@ -119,7 +120,7 @@ public class Mapper
             mLogMeta = LogMeta.loadFromFile(metaFile);
         }
         catch(FileNotFoundException e) {
-            _Logger.warning("meta file not exist, name= %s", metaFileName);
+            _Logger.warning("meta file not exist, name: %s", metaFileName);
         }
         metaFileName = _SnapshotDir + File.separator + ".metadata";
         try {
@@ -127,7 +128,7 @@ public class Mapper
             mSnapshotMeta = SnapshotMeta.loadFromFile(metaFile);
         }
         catch(FileNotFoundException e) {
-            _Logger.warning("meta file not exist, name= %s", metaFileName);
+            _Logger.warning("meta file not exist, name: %s", metaFileName);
         }
         File configFile = getConfigFile();
         try {
@@ -135,7 +136,7 @@ public class Mapper
             _RaftConfig.update(JsonUtil.readValue(fis, _TypeReferenceOfRaftConfig));
         }
         catch(FileNotFoundException e) {
-            _Logger.warning("config file not exist, name= %s", e, configFile.getName());
+            _Logger.warning("config file not exist, name: %s", configFile.getName());
         }
         catch(IOException e) {
             _Logger.warning("update config failed", e);
@@ -209,9 +210,9 @@ public class Mapper
          * 2、snapshot刚完成，日志正好被清理掉，start = snapshot + 1， end = snapshot
          */
         if(_Index2SegmentMap.isEmpty()) { return getStartIndex() - 1; }
-        Segment lastSegment = _Index2SegmentMap.lastEntry()
-                                               .getValue();
-        return lastSegment.getEndIndex();
+        return _Index2SegmentMap.lastEntry()
+                                .getValue()
+                                .getEndIndex();
     }
 
     @Override
@@ -294,7 +295,7 @@ public class Mapper
         mSnapshotMeta.flush();
     }
 
-    private final static Pattern SEGMENT_NAME = Pattern.compile("z_chess_raft_seg_(\\d+)-(\\d+)_([rw])");
+    private final static Pattern SEGMENT_NAME_PATTERN = Pattern.compile(SEGMENT_PREFIX + "_(\\d+)-(\\d+)_([rw])");
 
     private List<Segment> readSegments()
     {
@@ -308,7 +309,7 @@ public class Mapper
                              try {
                                  String fileName = sub.getName();
                                  _Logger.debug("sub:%s", fileName);
-                                 Matcher matcher = SEGMENT_NAME.matcher(fileName);
+                                 Matcher matcher = SEGMENT_NAME_PATTERN.matcher(fileName);
                                  if(matcher.matches()) {
                                      long start = Long.parseLong(matcher.group(1));
                                      long end = Long.parseLong(matcher.group(2));
@@ -376,8 +377,8 @@ public class Mapper
             }
             Segment targetSegment = null;
             if(isNeedNewSegmentFile) {
-                String newFileName = String.format("z_chess_raft_seg_%020d-%020d_w", newEndIndex, 0);
-                _Logger.debug("new segment file :%s", newFileName);
+                String newFileName = String.format(Segment.newFileName(false), newEndIndex, 0);
+                _Logger.info("new segment file :%s", newFileName);
                 File newFile = new File(_LogDataDir + File.separator + newFileName);
                 if(!newFile.exists()) {
                     try {
@@ -519,9 +520,7 @@ public class Mapper
 
     private boolean checkState()
     {
-        return !_Index2SegmentMap.isEmpty() && mLogMeta.getIndex() == _Index2SegmentMap.lastEntry()
-                                                                                       .getValue()
-                                                                                       .getEndIndex();
+        return mLogMeta.getIndex() == getEndIndex();
     }
 
     @Override
