@@ -73,13 +73,18 @@ public class ZRaftConfig
                                                               .entrySet()
                                                               .iterator(); nIt.hasNext(); ) {
             Map.Entry<Integer, String> entry = nIt.next();
-            String host = entry.getValue();
-            if(hostname.equalsIgnoreCase(host) && getUid().getNodeId() < 0) {
-                getUid().setNodeId(entry.getKey());
+            String nodeHost = entry.getValue();
+            if(hostname.equalsIgnoreCase(nodeHost)) {
+                if(getUid().getNodeId() < 0) {
+                    getUid().setNodeId(entry.getKey());
+                }
+                else {
+                    _Logger.warning("duplicate node: %s", nodeHost);
+                    nIt.remove();
+                }
             }
             else {
-                _Logger.warning("duplicate: %s", host);
-                nIt.remove();
+                _Logger.info("node: %s", nodeHost);
             }
         }
         if(getUid().getNodeId() < 0) {
@@ -103,7 +108,7 @@ public class ZRaftConfig
                         mInCongress = true;
                     }
                     else {
-                        _Logger.warning("duplicate:%s", node);
+                        _Logger.warning("duplicate peer: %s", node);
                         continue;
                     }
                     _RaftNodeMap.put(node.getId(), node);
