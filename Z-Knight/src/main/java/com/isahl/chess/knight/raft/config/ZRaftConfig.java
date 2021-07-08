@@ -96,22 +96,22 @@ public class ZRaftConfig
         if(mConfig.getPeers() != null && !mConfig.getPeers()
                                                  .isEmpty())
         {
-            for(String peer : mConfig.getPeers()
-                                     .values()) {
-                RaftNode node = convert(peer, RaftState.FOLLOWER);
-                String host = node.getHost();
-                if(hostname.equalsIgnoreCase(host)) {
+            for(String peerAddr : mConfig.getPeers()
+                                         .values()) {
+                RaftNode peer = toRaftNode(peerAddr, RaftState.FOLLOWER);
+                String peerHost = peer.getHost();
+                if(hostname.equalsIgnoreCase(peerHost)) {
                     if(!isInCongress() && mPeerBind == null) {
                         //RaftNode 需要对比 host:port 当配置中出现相同当host/port 不同时需要排除
-                        node.setId(createZUID().getPeerId());
-                        mPeerBind = node;
+                        peer.setId(createZUID().getPeerId());
+                        mPeerBind = peer;
                         mInCongress = true;
                     }
                     else {
-                        _Logger.warning("duplicate peer: %s", node);
+                        _Logger.warning("duplicate peer: %s", peer);
                         continue;
                     }
-                    _RaftNodeMap.put(node.getId(), node);
+                    _RaftNodeMap.put(peer.getId(), peer);
                 }
             }
         }
@@ -120,22 +120,22 @@ public class ZRaftConfig
             if(mConfig.getGates() != null && !mConfig.getGates()
                                                      .isEmpty())
             {
-                for(String str : mConfig.getGates()) {
-                    if(hostname.equalsIgnoreCase(str)) {
-                        RaftNode gate = convert(str, RaftState.GATE);
+                for(String gateAddr : mConfig.getGates()) {
+                    if(hostname.equalsIgnoreCase(gateAddr)) {
+                        RaftNode gate = toRaftNode(gateAddr, RaftState.GATE);
                         if(!isGateNode() && mGateBind == null) {
                             gate.setId(createZUID().getPeerId());
                             mGateBind = gate;
                             mBeGate = true;
                         }
                         else {
-                            _Logger.warning("duplicate gate:%s", str);
+                            _Logger.warning("duplicate gate:%s", gateAddr);
                         }
                     }
                 }
             }
             if(!isGateNode()) {
-                _Logger.info("the node %s isn't gate", hostname);
+                _Logger.info("the node [ %s ] isn't gate", hostname);
             }
         }
     }
@@ -291,7 +291,7 @@ public class ZRaftConfig
         return mGateBind;
     }
 
-    private RaftNode convert(String content, RaftState state)
+    private RaftNode toRaftNode(String content, RaftState state)
     {
         String[] split = content.split(":", 2);
         return new RaftNode(split[0], Integer.parseInt(split[1]), state);
