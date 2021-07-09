@@ -25,7 +25,7 @@ package com.isahl.chess.knight.raft.model;
 
 import org.junit.jupiter.api.Test;
 
-class ClusterPeerTest
+class RaftPeerTest
 {
 
     @Test

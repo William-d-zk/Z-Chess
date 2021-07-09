@@ -31,7 +31,7 @@ import com.isahl.chess.knight.raft.model.replicate.SnapshotMeta;
 /**
  * @author william.d.zk
  */
-public interface IRaftDao
+public interface IRaftMapper
         extends IValid
 {
     void flush();

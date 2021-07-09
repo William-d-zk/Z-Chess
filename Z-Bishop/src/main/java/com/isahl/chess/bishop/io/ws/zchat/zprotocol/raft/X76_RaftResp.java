@@ -140,7 +140,7 @@ public class X76_RaftResp
     @Override
     public boolean isByLeader()
     {
-        return false;
+        return true;
     }
 
 }

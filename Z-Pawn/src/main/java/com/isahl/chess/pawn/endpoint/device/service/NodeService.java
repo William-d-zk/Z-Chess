@@ -31,9 +31,9 @@ import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.schedule.TimeWheel;
 import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.knight.raft.inf.IRaftDao;
+import com.isahl.chess.knight.raft.inf.IRaftMapper;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
-import com.isahl.chess.knight.raft.ClusterPeer;
+import com.isahl.chess.knight.raft.RaftPeer;
 import com.isahl.chess.knight.raft.service.RaftCustom;
 import com.isahl.chess.knight.raft.service.RaftService;
 import com.isahl.chess.pawn.endpoint.device.DeviceNode;
@@ -64,9 +64,9 @@ public class NodeService
 
     private final DeviceNode               _DeviceNode;
     private final ILinkCustom              _LinkCustom;
-    private final RaftCustom<DeviceNode>   _RaftCustom;
-    private final ClusterPeer<DeviceNode>  _ClusterPeer;
-    private final RaftService<DeviceNode>  _RaftService;
+    private final RaftCustom<DeviceNode>  _RaftCustom;
+    private final RaftPeer<DeviceNode>    _RaftPeer;
+    private final RaftService<DeviceNode> _RaftService;
     private final LogicHandler<DeviceNode> _LogicHandler;
 
     @Autowired
@@ -75,7 +75,7 @@ public class NodeService
                 IRaftConfig raftConfig,
                 IMixConfig mixConfig,
                 ILinkCustom linkCustom,
-                IRaftDao raftDao,
+                IRaftMapper raftDao,
                 IQttRouter qttRouter,
                 IMessageService messageService,
                 TimeWheel timeWheel) throws IOException
@@ -99,17 +99,17 @@ public class NodeService
                                           .collect(Collectors.toList());
         _DeviceNode = new DeviceNode(hosts, deviceConfig.isMultiBind(), ioConfig, raftConfig, mixConfig, timeWheel);
         _LinkCustom = linkCustom;
-        _ClusterPeer = new ClusterPeer<>(timeWheel, raftConfig, raftDao, _DeviceNode);
-        _RaftCustom = new RaftCustom<>(_ClusterPeer);
-        _LogicHandler = new LogicHandler<>(_DeviceNode, qttRouter, _ClusterPeer, messageService);
-        _RaftService = new RaftService<>(_ClusterPeer);
+        _RaftPeer = new RaftPeer<>(timeWheel, raftConfig, raftDao, _DeviceNode);
+        _RaftCustom = new RaftCustom<>(_RaftPeer);
+        _LogicHandler = new LogicHandler<>(_DeviceNode, qttRouter, _RaftPeer, messageService);
+        _RaftService = new RaftService<>(_RaftPeer);
     }
 
     @PostConstruct
     private void start() throws IOException
     {
         _DeviceNode.start(_LogicHandler, new ZLinkMappingCustom(_LinkCustom), new ZClusterMappingCustom<>(_RaftCustom));
-        _ClusterPeer.start();
+        _RaftPeer.start();
         _Logger.info(" device service start ");
     }
 
@@ -126,6 +126,6 @@ public class NodeService
     }
 
     @Bean
-    public ClusterPeer<DeviceNode> getClusterPeer() {return _ClusterPeer;}
+    public RaftPeer<DeviceNode> getClusterPeer() {return _RaftPeer;}
 
 }

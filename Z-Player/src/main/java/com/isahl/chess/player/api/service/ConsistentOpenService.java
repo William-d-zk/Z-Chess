@@ -26,7 +26,7 @@ package com.isahl.chess.player.api.service;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.knight.cluster.model.ConsistentProtocol;
-import com.isahl.chess.knight.raft.ClusterPeer;
+import com.isahl.chess.knight.raft.RaftPeer;
 import com.isahl.chess.knight.raft.service.IConsistentService;
 import com.isahl.chess.pawn.endpoint.device.DeviceNode;
 import com.isahl.chess.queen.event.handler.cluster.IConsistentCustom;
@@ -41,17 +41,17 @@ public class ConsistentOpenService
 {
 
     private final Logger                  _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
-    private final DeviceNode              _DeviceNode;
-    private final ClusterPeer<DeviceNode> _ClusterPeer;
-    private final IConsistentCustom       _ConsistentCustom;
+    private final DeviceNode           _DeviceNode;
+    private final RaftPeer<DeviceNode> _RaftPeer;
+    private final IConsistentCustom    _ConsistentCustom;
 
     @Autowired
     public ConsistentOpenService(DeviceNode deviceNode,
-                                 ClusterPeer<DeviceNode> clusterPeer,
+                                 RaftPeer<DeviceNode> raftPeer,
                                  IConsistentCustom consistentCustom)
     {
         _DeviceNode = deviceNode;
-        _ClusterPeer = clusterPeer;
+        _RaftPeer = raftPeer;
         _ConsistentCustom = consistentCustom;
     }
 
@@ -61,7 +61,7 @@ public class ConsistentOpenService
         if(IoUtil.isBlank(content)) { return; }
         ConsistentProtocol consensus = new ConsistentProtocol(content.getBytes(StandardCharsets.UTF_8),
                                                               pub,
-                                                              _ClusterPeer.getRaftZUid(),
+                                                              _RaftPeer.getRaftZUid(),
                                                               origin);
         submit(consensus, _DeviceNode, _ConsistentCustom);
         _Logger.debug("consistent submit %s", consensus);

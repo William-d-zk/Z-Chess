@@ -25,6 +25,7 @@ package com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft;
 
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZCommand;
 import com.isahl.chess.king.base.util.IoUtil;
+import com.isahl.chess.queen.io.core.inf.IConsistent;
 import com.isahl.chess.queen.io.core.inf.INotify;
 
 /**
@@ -33,7 +34,8 @@ import com.isahl.chess.queen.io.core.inf.INotify;
  */
 public class X75_RaftReq
         extends ZCommand
-        implements INotify
+        implements IConsistent,
+                   INotify
 {
     public final static int COMMAND = 0x75;
 
@@ -47,11 +49,11 @@ public class X75_RaftReq
         super(COMMAND, msgId);
     }
 
-    private long    mClientId;
-    private int     mPayloadSerial;
-    private long    mOrigin;
-    private boolean mPublic;
+    private long mClientId;
+    private int  mPayloadSerial;
+    private long mOrigin;
 
+    @Override
     public int getPayloadSerial()
     {
         return mPayloadSerial;
@@ -78,7 +80,6 @@ public class X75_RaftReq
     {
         pos += IoUtil.writeLong(mClientId, data, pos);
         pos += IoUtil.writeLong(mOrigin, data, pos);
-        pos += IoUtil.writeByte(mPublic ? 1 : 0, data, pos);
         pos += IoUtil.writeShort(mPayloadSerial, data, pos);
         return pos;
     }
@@ -90,7 +91,6 @@ public class X75_RaftReq
         pos += 8;
         mOrigin = IoUtil.readLong(data, pos);
         pos += 8;
-        mPublic = data[pos++] > 0;
         mPayloadSerial = IoUtil.readUnsignedShort(data, pos);
         pos += 2;
         return pos;
@@ -99,7 +99,7 @@ public class X75_RaftReq
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 19;
+        return super.dataLength() + 18;
     }
 
     public long getClientId()
@@ -121,22 +121,22 @@ public class X75_RaftReq
     @Override
     public boolean isAll()
     {
-        return mPublic;
+        return false;
     }
 
-    public void setPublic(boolean pub)
+    @Override
+    public boolean isByLeader()
     {
-        mPublic = pub;
+        return false;
     }
 
     @Override
     public String toString()
     {
-        return String.format(" X75_RaftRequest { client:%#x, origin:%#x, serial:%#x,payload[%d] public:%s }",
+        return String.format(" X75_RaftRequest { client:%#x, origin:%#x, serial:%#x,payload[%d] }",
                              mClientId,
                              mOrigin,
                              mPayloadSerial,
-                             getPayload() == null ? 0 : getPayload().length,
-                             mPublic ? "all" : "one");
+                             getPayload() == null ? 0 : getPayload().length);
     }
 }

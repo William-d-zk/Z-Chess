@@ -23,7 +23,7 @@
 
 package com.isahl.chess.knight.raft.service;
 
-import com.isahl.chess.knight.raft.ClusterPeer;
+import com.isahl.chess.knight.raft.RaftPeer;
 import com.isahl.chess.knight.raft.inf.IRaftService;
 import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.queen.db.inf.IStorage;
@@ -38,39 +38,39 @@ import java.util.List;
 public class RaftService<M extends IClusterPeer & IClusterTimer>
         implements IRaftService
 {
-    private final ClusterPeer<M> _ClusterPeer;
+    private final RaftPeer<M> _RaftPeer;
 
-    public RaftService(ClusterPeer<M> clusterPeer)
+    public RaftService(RaftPeer<M> raftPeer)
     {
-        _ClusterPeer = clusterPeer;
+        _RaftPeer = raftPeer;
     }
 
     @Override
     public long getLeader()
     {
-        return _ClusterPeer.getMachine()
-                           .getLeader();
+        return _RaftPeer.getMachine()
+                        .getLeader();
     }
 
     @Override
     public List<RaftNode> getTopology()
     {
-        return _ClusterPeer.getRaftConfig()
-                           .getPeers();
+        return _RaftPeer.getRaftConfig()
+                        .getPeers();
     }
 
     @Override
     public void changeTopology(RaftNode delta, IStorage.Operation operation)
     {
-        _ClusterPeer.getRaftConfig()
-                    .changeTopology(delta, operation);
+        _RaftPeer.getRaftConfig()
+                 .changeTopology(delta, operation);
     }
 
     @Override
     public void changeGate(RaftNode delta, IStorage.Operation operation)
     {
-        _ClusterPeer.getRaftConfig()
-                    .changeGate(delta, operation);
+        _RaftPeer.getRaftConfig()
+                 .changeGate(delta, operation);
     }
 
 }

@@ -29,7 +29,7 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.config.ZRaftConfig;
-import com.isahl.chess.knight.raft.inf.IRaftDao;
+import com.isahl.chess.knight.raft.inf.IRaftMapper;
 import com.isahl.chess.knight.raft.model.RaftConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -55,7 +55,7 @@ import static com.isahl.chess.knight.raft.model.replicate.Segment.SEGMENT_SUFFIX
 
 @Component
 public class Mapper
-        implements IRaftDao
+        implements IRaftMapper
 {
     private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
 

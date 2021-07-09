@@ -35,8 +35,8 @@ import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
-import com.isahl.chess.knight.raft.inf.IRaftDao;
 import com.isahl.chess.knight.raft.inf.IRaftMachine;
+import com.isahl.chess.knight.raft.inf.IRaftMapper;
 import com.isahl.chess.knight.raft.inf.IRaftMessage;
 import com.isahl.chess.knight.raft.model.*;
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
@@ -59,35 +59,36 @@ import static java.lang.Math.min;
  * @author william.d.zk
  * @date 2020/1/4
  */
-public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
+public class RaftPeer<M extends IClusterPeer & IClusterTimer>
         implements IValid
 {
-    private final Logger                          _Logger = Logger.getLogger(
-            "cluster.knight." + getClass().getSimpleName());
-    private final ZUID                            _ZUid;
-    private final IRaftConfig                     _RaftConfig;
-    private final M                               _ClusterPeer;
-    private final IRaftDao                        _RaftDao;
-    private final TimeWheel                       _TimeWheel;
-    private final ScheduleHandler<ClusterPeer<M>> _ElectSchedule, _HeartbeatSchedule, _TickSchedule;
-    private final RaftGraph       _RaftGraph;
-    private final RaftMachine     _SelfMachine;
-    private final Queue<LogEntry> _AppendLogQueue = new LinkedList<>();
-    private final Random          _Random         = new Random();
-    private final long            _SnapshotFragmentMaxSize;
-    private       ICancelable     mElectTask, mHeartbeatTask, mTickTask;
+    private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
 
-    public ClusterPeer(TimeWheel timeWheel, IRaftConfig raftConfig, IRaftDao raftDao, M manager)
+    private final ZUID                         _ZUid;
+    private final IRaftConfig                  _RaftConfig;
+    private final M                            _ClusterPeer;
+    private final IRaftMapper                  _RaftMapper;
+    private final TimeWheel                    _TimeWheel;
+    private final RaftGraph                    _RaftGraph;
+    private final RaftMachine                  _SelfMachine;
+    private final Queue<LogEntry>              _AppendLogQueue = new LinkedList<>();
+    private final Random                       _Random         = new Random();
+    private final long                         _SnapshotFragmentMaxSize;
+    private final ScheduleHandler<RaftPeer<M>> _ElectSchedule, _HeartbeatSchedule, _TickSchedule;
+
+    private ICancelable mElectTask, mHeartbeatTask, mTickTask;
+
+    public RaftPeer(TimeWheel timeWheel, IRaftConfig raftConfig, IRaftMapper raftDao, M manager)
     {
         _TimeWheel = timeWheel;
         _RaftConfig = raftConfig;
         _ClusterPeer = manager;
         _ZUid = raftConfig.createZUID();
-        _RaftDao = raftDao;
-        _ElectSchedule = new ScheduleHandler<>(_RaftConfig.getElectInSecond(), ClusterPeer::stepDown);
-        _HeartbeatSchedule = new ScheduleHandler<>(_RaftConfig.getHeartbeatInSecond(), ClusterPeer::heartbeat);
+        _RaftMapper = raftDao;
+        _ElectSchedule = new ScheduleHandler<>(_RaftConfig.getElectInSecond(), RaftPeer::stepDown);
+        _HeartbeatSchedule = new ScheduleHandler<>(_RaftConfig.getHeartbeatInSecond(), RaftPeer::heartbeat);
         _TickSchedule = new ScheduleHandler<>(_RaftConfig.getHeartbeatInSecond()
-                                                         .multipliedBy(2), ClusterPeer::startVote);
+                                                         .multipliedBy(2), RaftPeer::startVote);
         _RaftGraph = new RaftGraph();
         _SelfMachine = new RaftMachine(_ZUid.getPeerId());
         _RaftGraph.append(_SelfMachine);
@@ -103,37 +104,37 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
     private void init()
     {
         /* _RaftDao 启动的时候已经装载了 snapshot */
-        _SelfMachine.setTerm(_RaftDao.getLogMeta()
-                                     .getTerm());
-        _SelfMachine.setCandidate(_RaftDao.getLogMeta()
-                                          .getCandidate());
-        _SelfMachine.setCommit(_RaftDao.getLogMeta()
-                                       .getCommit());
-        _SelfMachine.setApplied(_RaftDao.getLogMeta()
-                                        .getApplied());
-        _SelfMachine.setIndex(_RaftDao.getLogMeta()
-                                      .getIndex());
-        _SelfMachine.setIndexTerm(_RaftDao.getLogMeta()
-                                          .getIndexTerm());
-        _SelfMachine.setPeerSet(_RaftDao.getLogMeta()
-                                        .getPeerSet());
-        _SelfMachine.setGateSet(_RaftDao.getLogMeta()
-                                        .getGateSet());
+        _SelfMachine.setTerm(_RaftMapper.getLogMeta()
+                                        .getTerm());
+        _SelfMachine.setCandidate(_RaftMapper.getLogMeta()
+                                             .getCandidate());
+        _SelfMachine.setCommit(_RaftMapper.getLogMeta()
+                                          .getCommit());
+        _SelfMachine.setApplied(_RaftMapper.getLogMeta()
+                                           .getApplied());
+        _SelfMachine.setIndex(_RaftMapper.getLogMeta()
+                                         .getIndex());
+        _SelfMachine.setIndexTerm(_RaftMapper.getLogMeta()
+                                             .getIndexTerm());
+        _SelfMachine.setPeerSet(_RaftMapper.getLogMeta()
+                                           .getPeerSet());
+        _SelfMachine.setGateSet(_RaftMapper.getLogMeta()
+                                           .getGateSet());
         /* 初始化时，match_index == applied */
         _SelfMachine.setMatchIndex(_SelfMachine.getApplied());
         if(_SelfMachine.getPeerSet() == null) {
             /* 首次启动或删除本地状态机重启,仅需要连接node_id < self.node_id的peer */
-            _RaftDao.loadDefaultGraphSet();
-            _SelfMachine.setPeerSet(_RaftDao.getLogMeta()
-                                            .getPeerSet());
-            _SelfMachine.setGateSet(_RaftDao.getLogMeta()
-                                            .getGateSet());
+            _RaftMapper.loadDefaultGraphSet();
+            _SelfMachine.setPeerSet(_RaftMapper.getLogMeta()
+                                               .getPeerSet());
+            _SelfMachine.setGateSet(_RaftMapper.getLogMeta()
+                                               .getGateSet());
         }
         if(!_RaftConfig.isClusterMode()) {
             _Logger.info("single mode , ignore state listen");
             return;
         }
-        _TimeWheel.acquire(_RaftDao,
+        _TimeWheel.acquire(_RaftMapper,
                            new ScheduleHandler<>(_RaftConfig.getSnapshotInSecond(), true, this::takeSnapshot));
         mTickTask = _TimeWheel.acquire(this, _TickSchedule);
         _Logger.info("raft node init -> %s", _SelfMachine);
@@ -186,11 +187,11 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
 
     }
 
-    public void takeSnapshot(IRaftDao snapshot)
+    public void takeSnapshot(IRaftMapper snapshot)
     {
 
         long localTerm;
-        if(_RaftDao.getTotalSize() < _RaftConfig.getSnapshotMinSize()) {
+        if(_RaftMapper.getTotalSize() < _RaftConfig.getSnapshotMinSize()) {
             _Logger.debug("snapshot size less than threshold");
             return;
         }
@@ -199,17 +200,17 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
             _Logger.debug(" applied < commit sync is running");
             return;
         }
-        if(_SelfMachine.getApplied() >= _RaftDao.getStartIndex() &&
-           _SelfMachine.getApplied() <= _RaftDao.getEndIndex())
+        if(_SelfMachine.getApplied() >= _RaftMapper.getStartIndex() &&
+           _SelfMachine.getApplied() <= _RaftMapper.getEndIndex())
         {
-            localTerm = _RaftDao.getEntryTerm(_SelfMachine.getApplied());
-            _RaftDao.updateSnapshotMeta(_SelfMachine.getApplied(), localTerm);
+            localTerm = _RaftMapper.getEntryTerm(_SelfMachine.getApplied());
+            _RaftMapper.updateSnapshotMeta(_SelfMachine.getApplied(), localTerm);
             _Logger.debug("take snapshot");
         }
-        long lastSnapshotIndex = _RaftDao.getSnapshotMeta()
-                                         .getCommit();
-        if(lastSnapshotIndex > 0 && _RaftDao.getStartIndex() <= lastSnapshotIndex) {
-            _RaftDao.truncatePrefix(lastSnapshotIndex + 1);
+        long lastSnapshotIndex = _RaftMapper.getSnapshotMeta()
+                                            .getCommit();
+        if(lastSnapshotIndex > 0 && _RaftMapper.getStartIndex() <= lastSnapshotIndex) {
+            _RaftMapper.truncatePrefix(lastSnapshotIndex + 1);
             _Logger.debug("snapshot truncate prefix %d", lastSnapshotIndex);
         }
 
@@ -288,7 +289,7 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
     private X71_RaftBallot stepUp(long candidate, long term)
     {
         tickCancel();
-        _SelfMachine.beElector(candidate, term, _RaftDao);
+        _SelfMachine.beElector(candidate, term, _RaftMapper);
         mElectTask = _TimeWheel.acquire(this, _ElectSchedule);
         _Logger.debug("[follower → elector] %s", _SelfMachine);
         return ballot();
@@ -300,7 +301,7 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
                        .getCode() > FOLLOWER.getCode())
         {
             _Logger.debug("step down [%s → follower] %s", _SelfMachine.getState(), _SelfMachine);
-            _SelfMachine.follow(term, _RaftDao);
+            _SelfMachine.follow(term, _RaftMapper);
             mTickTask = _TimeWheel.acquire(this, _TickSchedule);
         }
         else { _Logger.warning("step down [ignore],state has already changed to FOLLOWER"); }
@@ -314,7 +315,7 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
     private IControl follow(long peerId, long term, long commit, long preIndex, long preIndexTerm)
     {
         tickCancel();
-        _SelfMachine.follow(peerId, term, commit, _RaftDao);
+        _SelfMachine.follow(peerId, term, commit, _RaftMapper);
         mTickTask = _TimeWheel.acquire(this, _TickSchedule);
         _Logger.debug("follower %#x @%d => %d", peerId, term, commit);
         if(catchUp(preIndex, preIndexTerm)) {
@@ -330,7 +331,7 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
     private void vote4me()
     {
         tickCancel();
-        _SelfMachine.beCandidate(_RaftDao);
+        _SelfMachine.beCandidate(_RaftMapper);
         mElectTask = _TimeWheel.acquire(this, _ElectSchedule);
         _Logger.debug("follower => candidate %s", _SelfMachine);
     }
@@ -338,7 +339,7 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
     private void beLeader()
     {
         electCancel();
-        _SelfMachine.beLeader(_RaftDao);
+        _SelfMachine.beLeader(_RaftMapper);
         _Logger.info("be leader=>%s", _SelfMachine);
         mHeartbeatTask = _TimeWheel.acquire(this, _HeartbeatSchedule);
     }
@@ -482,9 +483,9 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
            _RaftGraph.isMajorAcceptLeader(_SelfMachine.getPeerId(), _SelfMachine.getTerm(), nextCommit))
         {
             // peerMachine.getIndex() > _SelfMachine.getCommit()时，raftLog 不可能为 null
-            _SelfMachine.commit(nextCommit, _RaftDao);
+            _SelfMachine.commit(nextCommit, _RaftMapper);
             _Logger.debug("leader commit: %d @%d", nextCommit, _SelfMachine.getTerm());
-            LogEntry raftLog = _RaftDao.getEntry(nextCommit);
+            LogEntry raftLog = _RaftMapper.getEntry(nextCommit);
             X77_RaftNotify x77 = createNotify(raftLog);
             x77.setLeader();
             if(raftLog.isAll()) {
@@ -585,7 +586,7 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
             long end = min(current, commit);
             List<LogEntry> result = new ArrayList<>((int) (end - start));
             for(long i = start; i <= end; i++) {
-                LogEntry entry = _RaftDao.getEntry(i);
+                LogEntry entry = _RaftMapper.getEntry(i);
                 if(entry != null) { result.add(entry); }
             }
             return result.isEmpty() ? null : result;
@@ -625,7 +626,7 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
                 else if(_SelfMachine.getIndex() == preIndex) {
                     if(_SelfMachine.getIndexTerm() == preIndexTerm) {
                         // follower 完成与Leader 的同步
-                        _SelfMachine.apply(_RaftDao);
+                        _SelfMachine.apply(_RaftMapper);
                         _Logger.debug("log synchronized ");
                     }
                     else {
@@ -637,17 +638,17 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
                          * 此时集群一定经历了一次不可逆的数据损失。
                          */
                         long newEndIndex = preIndex - 1;
-                        LogEntry rollback = _RaftDao.truncateSuffix(newEndIndex);
+                        LogEntry rollback = _RaftMapper.truncateSuffix(newEndIndex);
                         if(rollback != null) {
-                            _SelfMachine.rollBack(rollback.getIndex(), rollback.getTerm(), _RaftDao);
-                            _SelfMachine.apply(_RaftDao);
+                            _SelfMachine.rollBack(rollback.getIndex(), rollback.getTerm(), _RaftMapper);
+                            _SelfMachine.apply(_RaftMapper);
                             _Logger.debug("machine rollback %d@%d", rollback.getIndex(), rollback.getTerm());
                         }
                         else if(newEndIndex == 0) {
                             _SelfMachine.reset();
                             _Logger.debug("machine reset in heartbeat");
                         }
-                        else if(newEndIndex >= _RaftDao.getStartIndex()) {
+                        else if(newEndIndex >= _RaftMapper.getStartIndex()) {
                             _Logger.fetal("lost data, manual recover");
                         }
                         break ITERATE_APPEND;
@@ -658,8 +659,8 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
                 if(preIndex == _SelfMachine.getIndex() && preIndexTerm == _SelfMachine.getIndexTerm()) {
                     for(Iterator<LogEntry> it = _AppendLogQueue.iterator(); it.hasNext(); ) {
                         LogEntry entry = it.next();
-                        if(_RaftDao.appendLog(entry)) {
-                            _SelfMachine.appendLog(entry.getIndex(), entry.getTerm(), _RaftDao);
+                        if(_RaftMapper.appendLog(entry)) {
+                            _SelfMachine.appendLog(entry.getIndex(), entry.getTerm(), _RaftMapper);
                             _Logger.debug("follower catch up %d@%d", entry.getIndex(), entry.getTerm());
                         }
                         it.remove();
@@ -671,7 +672,7 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
                                     _SelfMachine.getIndexTerm(),
                                     preIndex,
                                     preIndexTerm);
-                    LogEntry old = _RaftDao.getEntry(preIndex);
+                    LogEntry old = _RaftMapper.getEntry(preIndex);
                     if(old == null || old.getTerm() != preIndexTerm) {
                         if(old == null) {
                             _Logger.warning("log %d miss,self %s", preIndex, _SelfMachine);
@@ -681,10 +682,10 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
                          * 上一个term.end_index,能有效减少以-1进行删除的数据量。此种优化的意义不是很大。
                          */
                         long newEndIndex = preIndex - 1;
-                        LogEntry rollback = _RaftDao.truncateSuffix(newEndIndex);
+                        LogEntry rollback = _RaftMapper.truncateSuffix(newEndIndex);
                         if(rollback != null) {
-                            _SelfMachine.rollBack(rollback.getIndex(), rollback.getTerm(), _RaftDao);
-                            _SelfMachine.apply(_RaftDao);
+                            _SelfMachine.rollBack(rollback.getIndex(), rollback.getTerm(), _RaftMapper);
+                            _SelfMachine.apply(_RaftMapper);
                             _Logger.debug("machine rollback %d@%d", rollback.getIndex(), rollback.getTerm());
                         }
                         else if(newEndIndex == 0) {
@@ -692,7 +693,7 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
                             _SelfMachine.reset();
                             _Logger.debug("machine reset in append");
                         }
-                        else if(newEndIndex >= _RaftDao.getStartIndex()) {
+                        else if(newEndIndex >= _RaftMapper.getStartIndex()) {
                             /*
                              * 回滚异常，但是不会出现 newEndIndex < _RaftDao.start 的情况
                              * 否则集群中的大多数都是错误的数据，在此之前一定出现了大规模集群失败
@@ -713,7 +714,7 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
                     }
                 }
                 // 接收了Leader 追加的日志
-                _SelfMachine.apply(_RaftDao);
+                _SelfMachine.apply(_RaftMapper);
             }
             _Logger.debug("catch up %d@%d", _SelfMachine.getIndex(), _SelfMachine.getIndexTerm());
             return true;
@@ -856,8 +857,8 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
                                          payload,
                                          pub);
         newEntry.setOperation(IStorage.Operation.OP_INSERT);
-        if(_RaftDao.appendLog(newEntry)) {
-            _SelfMachine.appendLog(newEntry.getIndex(), newEntry.getTerm(), _RaftDao);
+        if(_RaftMapper.appendLog(newEntry)) {
+            _SelfMachine.appendLog(newEntry.getIndex(), newEntry.getTerm(), _RaftMapper);
             _Logger.debug("leader appended log %d@%d", newEntry.getIndex(), newEntry.getTerm());
             return createBroadcasts(manager, mapper);
         }
@@ -944,7 +945,7 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
             if(next >= MIN_START) {
                 // 存有数据的状态
                 LogEntry nextLog;
-                nextLog = _RaftDao.getEntry(next);
+                nextLog = _RaftMapper.getEntry(next);
                 if(nextLog == null) {
                     _Logger.warning("leader truncate prefix，%#x wait for installing snapshot", follower.getPeerId());
                     break CHECK;
@@ -967,7 +968,7 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
                 if(limit > 0 && entryList.size() >= limit) {
                     break;
                 }
-                LogEntry nextLog = _RaftDao.getEntry(next);
+                LogEntry nextLog = _RaftMapper.getEntry(next);
                 follower.setIndex(nextLog.getIndex());
                 follower.setIndexTerm(nextLog.getTerm());
                 entryList.add(nextLog);
