@@ -156,7 +156,6 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
             // leader → client
             case X77_RaftNotify.COMMAND -> {
                 X77_RaftNotify x77 = (X77_RaftNotify) content;
-                x77.setNotify();
                 return new Pair<>(null, x77);
             }
             // peer *, behind → previous

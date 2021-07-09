@@ -190,9 +190,7 @@ public class ClusterMappingHandler<T extends IStorage>
                                     _Logger.warning("leader - adjudge ", e);
                                 }
                             }
-                            if(notify.doNotify()) {
-                                publishNotify(pair.getSecond(), null, _ConsistentCustom.getOperator());
-                            }
+                            publishNotify(pair.getSecond(), null, _ConsistentCustom.getOperator());
                         }
                     }
                     catch(Exception e) {
