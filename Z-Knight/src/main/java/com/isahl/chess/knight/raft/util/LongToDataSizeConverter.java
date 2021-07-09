@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.model;
+package com.isahl.chess.knight.raft.util;
 
 import com.fasterxml.jackson.databind.util.StdConverter;
 import org.springframework.util.unit.DataSize;

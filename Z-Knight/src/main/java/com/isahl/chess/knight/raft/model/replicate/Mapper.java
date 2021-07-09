@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.model.log;
+package com.isahl.chess.knight.raft.model.replicate;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.isahl.chess.king.base.exception.ZException;
@@ -50,7 +50,7 @@ import java.util.stream.Stream;
 
 import static com.isahl.chess.knight.raft.inf.IRaftMachine.MIN_START;
 import static com.isahl.chess.knight.raft.inf.IRaftMachine.TERM_NAN;
-import static com.isahl.chess.knight.raft.model.log.Segment.SEGMENT_PREFIX;
+import static com.isahl.chess.knight.raft.model.replicate.Segment.*;
 
 @Component
 public class Mapper
@@ -80,8 +80,8 @@ public class Mapper
     @Autowired
     public Mapper(ZRaftConfig config)
     {
-        _RaftConfig = config;
         String baseDir = config.getBaseDir();
+        _RaftConfig = config;
         _RaftConfigDir = String.format("%s%s.conf", baseDir, File.separator);
         _LogMetaDir = String.format("%s%s.raft", baseDir, File.separator);
         _LogDataDir = String.format("%s%s.data", baseDir, File.separator);
@@ -295,6 +295,11 @@ public class Mapper
         mSnapshotMeta.flush();
     }
 
+    /**
+     * @see Segment fileNameFormatter(boolean readonly)
+     * [%s_%s_%s]
+     * SEGMENT_PREFIX,SEGMENT_DATE_FORMATTER,SEGMENT_SUFFIX_{READONLY/WRITE}
+     */
     private final static Pattern SEGMENT_NAME_PATTERN = Pattern.compile(SEGMENT_PREFIX + "_(\\d+)-(\\d+)_([rw])");
 
     private List<Segment> readSegments()
@@ -314,8 +319,8 @@ public class Mapper
                                      long start = Long.parseLong(matcher.group(1));
                                      long end = Long.parseLong(matcher.group(2));
                                      String g3 = matcher.group(3);
-                                     boolean readOnly = !g3.equalsIgnoreCase("w");
-                                     return new Segment(sub, start, end, !readOnly);
+                                     boolean canWrite = SEGMENT_SUFFIX_WRITE.equalsIgnoreCase(g3);
+                                     return new Segment(sub, start, end, canWrite);
                                  }
                              }
                              catch(IOException | IllegalArgumentException e) {
@@ -377,7 +382,7 @@ public class Mapper
             }
             Segment targetSegment = null;
             if(isNeedNewSegmentFile) {
-                String newFileName = String.format(Segment.newFileName(false), newEndIndex, 0);
+                String newFileName = String.format(Segment.fileNameFormatter(false), newEndIndex, 0);
                 _Logger.info("new segment file :%s", newFileName);
                 File newFile = new File(_LogDataDir + File.separator + newFileName);
                 if(!newFile.exists()) {
