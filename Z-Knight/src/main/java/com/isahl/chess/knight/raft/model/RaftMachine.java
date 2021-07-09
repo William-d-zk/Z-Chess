@@ -30,7 +30,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.JsonUtil;
-import com.isahl.chess.knight.raft.inf.IRaftDao;
+import com.isahl.chess.knight.raft.inf.IRaftMapper;
 import com.isahl.chess.knight.raft.inf.IRaftMachine;
 import com.isahl.chess.queen.db.inf.IStorage;
 
@@ -301,7 +301,7 @@ public class RaftMachine
     }
 
     @Override
-    public void apply(IRaftDao dao)
+    public void apply(IRaftMapper dao)
     {
         // TODO 分摊集群读写压力，需要在follower apply的时候notify 那些在follower上订阅了延迟一致的consumer
         if(mIndex < mApplied) {
@@ -313,7 +313,7 @@ public class RaftMachine
     }
 
     @Override
-    public void commit(long index, IRaftDao dao)
+    public void commit(long index, IRaftMapper dao)
     {
         /*
          * 只有Leader 能执行此操作
@@ -326,7 +326,7 @@ public class RaftMachine
     }
 
     @Override
-    public void beLeader(IRaftDao dao)
+    public void beLeader(IRaftMapper dao)
     {
         mState = LEADER.getCode();
         mLeader = _PeerId;
@@ -337,7 +337,7 @@ public class RaftMachine
     }
 
     @Override
-    public void beCandidate(IRaftDao dao)
+    public void beCandidate(IRaftMapper dao)
     {
         mState = CANDIDATE.getCode();
         mLeader = INVALID_PEER_ID;
@@ -347,7 +347,7 @@ public class RaftMachine
     }
 
     @Override
-    public void beElector(long candidate, long term, IRaftDao dao)
+    public void beElector(long candidate, long term, IRaftMapper dao)
     {
         mState = ELECTOR.getCode();
         mLeader = INVALID_PEER_ID;
@@ -358,7 +358,7 @@ public class RaftMachine
     }
 
     @Override
-    public void follow(long leader, long term, long commit, IRaftDao dao)
+    public void follow(long leader, long term, long commit, IRaftMapper dao)
     {
         mState = FOLLOWER.getCode();
         mTerm = term;
@@ -371,7 +371,7 @@ public class RaftMachine
     }
 
     @Override
-    public void follow(long term, IRaftDao dao)
+    public void follow(long term, IRaftMapper dao)
     {
         mState = FOLLOWER.getCode();
         mTerm = term;
@@ -446,7 +446,7 @@ public class RaftMachine
     }
 
     @Override
-    public void appendLog(long index, long indexTerm, IRaftDao dao)
+    public void appendLog(long index, long indexTerm, IRaftMapper dao)
     {
         mIndex = index;
         mMatchIndex = index;
@@ -455,7 +455,7 @@ public class RaftMachine
     }
 
     @Override
-    public void rollBack(long index, long indexTerm, IRaftDao dao)
+    public void rollBack(long index, long indexTerm, IRaftMapper dao)
     {
         appendLog(index, indexTerm, dao);
         mApplied = min(index, mCommit);

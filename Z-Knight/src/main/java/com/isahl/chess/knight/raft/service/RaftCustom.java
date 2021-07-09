@@ -33,7 +33,7 @@ import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.topology.ZUID;
-import com.isahl.chess.knight.raft.ClusterPeer;
+import com.isahl.chess.knight.raft.RaftPeer;
 import com.isahl.chess.knight.raft.model.RaftMachine;
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
 import com.isahl.chess.queen.db.inf.IStorage;
@@ -52,11 +52,11 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
             "cluster.knight." + getClass().getSimpleName());
     private final TypeReference<List<LogEntry>> _TypeReferenceOfLogEntryList = new TypeReference<>()
     {};
-    private final ClusterPeer<T>                _ClusterPeer;
+    private final RaftPeer<T>                   _RaftPeer;
 
-    public RaftCustom(ClusterPeer<T> clusterPeer)
+    public RaftCustom(RaftPeer<T> raftPeer)
     {
-        _ClusterPeer = clusterPeer;
+        _RaftPeer = raftPeer;
     }
 
     /**
@@ -67,10 +67,9 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
      * first : list of command implements 'IControl',broadcast to all
      * cluster peers
      * second : command implements 'IConsistentNotify',
-     * @throws Exception
      */
     @Override
-    public IPair handle(ISessionManager manager, ISession session, IControl content) throws Exception
+    public IPair handle(ISessionManager manager, ISession session, IControl content)
     {
         /*
          * leader -> follow, self::follow
@@ -82,71 +81,71 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
             // follower → elector
             case X70_RaftVote.COMMAND -> {
                 X70_RaftVote x70 = (X70_RaftVote) content;
-                return _ClusterPeer.elect(x70.getTerm(),
-                                          x70.getIndex(),
-                                          x70.getIndexTerm(),
-                                          x70.getCandidateId(),
-                                          x70.getCommit(),
-                                          manager);
+                return _RaftPeer.elect(x70.getTerm(),
+                                       x70.getIndex(),
+                                       x70.getIndexTerm(),
+                                       x70.getCandidateId(),
+                                       x70.getCommit(),
+                                       manager);
             }
             // elector → candidate
             case X71_RaftBallot.COMMAND -> {
                 X71_RaftBallot x71 = (X71_RaftBallot) content;
-                return _ClusterPeer.ballot(x71.getTerm(),
-                                           x71.getIndex(),
-                                           x71.getElectorId(),
-                                           x71.getCandidateId(),
-                                           manager);
+                return _RaftPeer.ballot(x71.getTerm(),
+                                        x71.getIndex(),
+                                        x71.getElectorId(),
+                                        x71.getCandidateId(),
+                                        manager);
             }
             // leader → follower
             case X72_RaftAppend.COMMAND -> {
                 X72_RaftAppend x72 = (X72_RaftAppend) content;
                 if(x72.getPayload() != null) {
-                    _ClusterPeer.appendLogs(JsonUtil.readValue(x72.getPayload(), _TypeReferenceOfLogEntryList));
+                    _RaftPeer.appendLogs(JsonUtil.readValue(x72.getPayload(), _TypeReferenceOfLogEntryList));
                 }
-                return _ClusterPeer.append(x72.getTerm(),
-                                           x72.getPreIndex(),
-                                           x72.getPreIndexTerm(),
-                                           x72.getLeaderId(),
-                                           x72.getCommit());
+                return _RaftPeer.append(x72.getTerm(),
+                                        x72.getPreIndex(),
+                                        x72.getPreIndexTerm(),
+                                        x72.getLeaderId(),
+                                        x72.getCommit());
             }
             // follower → leader
             case X73_RaftAccept.COMMAND -> {
                 X73_RaftAccept x73 = (X73_RaftAccept) content;
-                return _ClusterPeer.onAccept(x73.getFollowerId(),
-                                             x73.getTerm(),
-                                             x73.getCatchUp(),
-                                             x73.getLeaderId(),
-                                             manager);
+                return _RaftPeer.onAccept(x73.getFollowerId(),
+                                          x73.getTerm(),
+                                          x73.getCatchUp(),
+                                          x73.getLeaderId(),
+                                          manager);
             }
             // * → candidate
             case X74_RaftReject.COMMAND -> {
                 X74_RaftReject x74 = (X74_RaftReject) content;
-                return _ClusterPeer.onReject(x74.getPeerId(),
-                                             x74.getTerm(),
-                                             x74.getIndex(),
-                                             x74.getIndexTerm(),
-                                             x74.getCode(),
-                                             x74.getState());
+                return _RaftPeer.onReject(x74.getPeerId(),
+                                          x74.getTerm(),
+                                          x74.getIndex(),
+                                          x74.getIndexTerm(),
+                                          x74.getCode(),
+                                          x74.getState());
             }
             // client → leader
             case X75_RaftReq.COMMAND -> {
-                if(_ClusterPeer.getMachine()
-                               .getState() != LEADER)
+                if(_RaftPeer.getMachine()
+                            .getState() != LEADER)
                 {
                     _Logger.warning("state error,expect:'LEADER',real:%s",
-                                    _ClusterPeer.getMachine()
-                                                .getState());
+                                    _RaftPeer.getMachine()
+                                             .getState());
                     break;
                 }
                 X75_RaftReq x75 = (X75_RaftReq) content;
-                return _ClusterPeer.newLeaderLogEntry(x75.getPayloadSerial(),
-                                                      x75.getPayload(),
-                                                      x75.getClientId(),
-                                                      x75.getOrigin(),
-                                                      x75.isAll(),
-                                                      manager,
-                                                      x75.getSession());
+                return _RaftPeer.newLeaderLogEntry(x75.getPayloadSerial(),
+                                                   x75.getPayload(),
+                                                   x75.getClientId(),
+                                                   x75.getOrigin(),
+                                                   x75.isAll(),
+                                                   manager,
+                                                   x75.getSession());
             }
             // leader → client 
             case X76_RaftResp.COMMAND -> {
@@ -176,23 +175,23 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
     {
         if(machine.operation() == IStorage.Operation.OP_MODIFY) {
             // step down → follower
-            _ClusterPeer.turnToFollower(machine);
+            _RaftPeer.turnToFollower(machine);
         }
         return switch(machine.operation()) {
             // heartbeat
-            case OP_APPEND -> _ClusterPeer.checkLogAppend(machine,
-                                                          manager,
-                                                          cmd->new Triple<>(cmd,
-                                                                            cmd.getSession(),
-                                                                            cmd.getSession()
-                                                                               .getEncoder()));
+            case OP_APPEND -> _RaftPeer.checkLogAppend(machine,
+                                                       manager,
+                                                       cmd->new Triple<>(cmd,
+                                                                         cmd.getSession(),
+                                                                         cmd.getSession()
+                                                                            .getEncoder()));
             // vote
-            case OP_INSERT -> _ClusterPeer.checkVoteState(machine,
-                                                          manager,
-                                                          cmd->new Triple<>(cmd,
-                                                                            cmd.getSession(),
-                                                                            cmd.getSession()
-                                                                               .getEncoder()));
+            case OP_INSERT -> _RaftPeer.checkVoteState(machine,
+                                                       manager,
+                                                       cmd->new Triple<>(cmd,
+                                                                         cmd.getSession(),
+                                                                         cmd.getSession()
+                                                                            .getEncoder()));
             default -> null;
         };
     }
@@ -201,36 +200,35 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
     public <E extends INotify & IControl> List<ITriple> consensus(ISessionManager manager, E request)
     {
         _Logger.debug("cluster consensus %s", request);
-        if(_ClusterPeer.getMachine()
-                       .getState() == LEADER)
+        if(_RaftPeer.getMachine()
+                    .getState() == LEADER)
         {
             /*
              * session belong to Link
              */
-            return _ClusterPeer.newLocalLogEntry(request,
-                                                 _ClusterPeer.getMachine()
-                                                             .getPeerId(),
-                                                 manager,
-                                                 cmd->new Triple<>(cmd,
-                                                                   cmd.getSession(),
-                                                                   cmd.getSession()
-                                                                      .getEncoder()),
-                                                 request.getSession());
+            return _RaftPeer.newLocalLogEntry(request,
+                                              _RaftPeer.getMachine()
+                                                       .getPeerId(),
+                                              manager,
+                                              cmd->new Triple<>(cmd,
+                                                                cmd.getSession(),
+                                                                cmd.getSession()
+                                                                   .getEncoder()),
+                                              request.getSession());
         }
-        else if(_ClusterPeer.getMachine()
-                            .getLeader() != ZUID.INVALID_PEER_ID)
+        else if(_RaftPeer.getMachine()
+                         .getLeader() != ZUID.INVALID_PEER_ID)
         {
 
-            ISession leaderSession = manager.findSessionByPrefix(_ClusterPeer.getMachine()
-                                                                             .getLeader());
+            ISession leaderSession = manager.findSessionByPrefix(_RaftPeer.getMachine()
+                                                                          .getLeader());
             if(leaderSession != null) {
-                X75_RaftReq x75 = new X75_RaftReq(_ClusterPeer.getRaftZUid());
+                X75_RaftReq x75 = new X75_RaftReq(_RaftPeer.getRaftZUid());
                 x75.setPayloadSerial(request.serial());
                 x75.setPayload(request.encode());
                 x75.setOrigin(request.getOrigin());
-                x75.setClientId(_ClusterPeer.getMachine()
-                                            .getPeerId());
-                x75.setPublic(request.isAll());
+                x75.setClientId(_RaftPeer.getMachine()
+                                         .getPeerId());
                 return Collections.singletonList(new Triple<>(x75, leaderSession, leaderSession.getEncoder()));
             }
             else {
@@ -246,27 +244,26 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
     public <E extends INotify & IControl> List<ITriple> change(ISessionManager manager, E topology)
     {
         _Logger.debug("cluster new topology %s", topology);
-        if(_ClusterPeer.getMachine()
-                       .getState() == LEADER)
+        if(_RaftPeer.getMachine()
+                    .getState() == LEADER)
         {
-            List<ITriple> result = _ClusterPeer.newLocalLogEntry(topology,
-                                                                 _ClusterPeer.getMachine()
-                                                                             .getPeerId(),
-                                                                 manager,
-                                                                 cmd->new Triple<>(cmd,
-                                                                                   cmd.getSession(),
-                                                                                   cmd.getSession()
-                                                                                      .getEncoder()),
-                                                                 //从follower来的时候有session,leader
-                                                                 topology.getSession());
             //Accept Machine State
-            return result;
+            return _RaftPeer.newLocalLogEntry(topology,
+                                              _RaftPeer.getMachine()
+                                                       .getPeerId(),
+                                              manager,
+                                              cmd->new Triple<>(cmd,
+                                                                cmd.getSession(),
+                                                                cmd.getSession()
+                                                                   .getEncoder()),
+                                              //从follower来的时候有session,leader
+                                              topology.getSession());
         }
-        else if(_ClusterPeer.getMachine()
-                            .getLeader() != ZUID.INVALID_PEER_ID)
+        else if(_RaftPeer.getMachine()
+                         .getLeader() != ZUID.INVALID_PEER_ID)
         {
-            ISession leaderSession = manager.findSessionByPrefix(_ClusterPeer.getMachine()
-                                                                             .getLeader());
+            ISession leaderSession = manager.findSessionByPrefix(_RaftPeer.getMachine()
+                                                                          .getLeader());
             if(leaderSession != null) {
                 return Collections.singletonList(new Triple<>(topology, leaderSession, leaderSession.getEncoder()));
             }
@@ -277,6 +274,6 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
     @Override
     public boolean waitForCommit()
     {
-        return _ClusterPeer.isClusterMode();
+        return _RaftPeer.isClusterMode();
     }
 }
