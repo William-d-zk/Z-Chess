@@ -20,5 +20,5 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
-z.chess.raft.uid.type=2
-spring.datasource.url=jdbc:postgresql://host.docker.internal:5432/isahl.z-chess
+
+docker run -t z-chess.arena
