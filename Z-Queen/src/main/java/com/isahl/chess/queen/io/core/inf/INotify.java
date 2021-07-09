@@ -25,16 +25,15 @@ package com.isahl.chess.queen.io.core.inf;
 
 /**
  * @author william.d.zk
+ * 
+ * @date 2020/5/6
  */
-public interface IConsistentNotify
+public interface INotify
         extends
-        ITraceable,
-        IProtocol
+        ITraceable
 {
-    boolean byLeader();
-
-    boolean doNotify();
-
-    int getPayloadSerial();
-
+    default boolean isAll()
+    {
+        return false;
+    }
 }

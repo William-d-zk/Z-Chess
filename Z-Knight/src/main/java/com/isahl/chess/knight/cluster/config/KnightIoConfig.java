@@ -34,19 +34,16 @@ import java.util.Map;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/2/1
  */
 @Configuration("knight_io_config")
 @ConfigurationProperties(prefix = "z.chess.knight.io")
 @PropertySource("classpath:knight.io.properties")
 public class KnightIoConfig
-        implements
-        IAioConfig
+        implements IAioConfig
 {
 
-    private Map<String,
-                Integer>         sizePowers;
+    private Map<String, Integer> sizePowers;
     private SocketConfig         cluster;
     private SocketConfig         internal;
 
@@ -59,8 +56,7 @@ public class KnightIoConfig
     @Override
     public int getSizePower(int type)
     {
-        return switch (type)
-        {
+        return switch(type) {
             case ZUID.TYPE_INTERNAL_SLOT -> sizePowers.getOrDefault("internal.1", 7);
             case ZUID.TYPE_CLUSTER_SLOT -> sizePowers.getOrDefault("cluster.3", 7);
             default -> throw new IllegalArgumentException();
@@ -71,16 +67,14 @@ public class KnightIoConfig
     @Override
     public ISocketConfig getSocketConfig(int type)
     {
-        return switch (type)
-        {
+        return switch(type) {
             case ZUID.TYPE_INTERNAL_SLOT -> internal;
             case ZUID.TYPE_CLUSTER_SLOT -> cluster;
             default -> throw new IllegalArgumentException();
         };
     }
 
-    public void setSizePowers(Map<String,
-                                  Integer> sizePowers)
+    public void setSizePowers(Map<String, Integer> sizePowers)
     {
         this.sizePowers = sizePowers;
     }

@@ -31,28 +31,25 @@ import java.util.Map;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-07-09
  */
 public interface IQttRouter
-        extends
-        IRouter
+        extends IRouter
 {
 
     void retain(String topic, MqttProtocol msg);
 
     /**
      * 向特定主题发送消息
-     * 
+     *
      * @param topic
      * @return
      */
-    Map<Long,
-        IQoS.Level> broker(final String topic);
+    Map<Long, IQoS.Level> broker(final String topic);
 
     /**
      * 注册单个主题
-     * 
+     *
      * @param topic
      * @param level
      * @param session
@@ -62,7 +59,7 @@ public interface IQttRouter
 
     /**
      * 注销主题
-     * 
+     *
      * @param topic
      * @param session
      */

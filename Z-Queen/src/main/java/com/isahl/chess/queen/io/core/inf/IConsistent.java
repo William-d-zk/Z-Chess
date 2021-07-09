@@ -25,15 +25,12 @@ package com.isahl.chess.queen.io.core.inf;
 
 /**
  * @author william.d.zk
- * 
- * @date 2020/5/6
  */
 public interface IConsistent
-        extends
-        ITraceable
+        extends ITraceable,
+                IProtocol
 {
-    default boolean isPublic()
-    {
-        return false;
-    }
+    boolean isByLeader();
+
+    int getPayloadSerial();
 }

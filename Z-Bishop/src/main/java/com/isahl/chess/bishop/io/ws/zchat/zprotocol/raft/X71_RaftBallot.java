@@ -28,12 +28,10 @@ import com.isahl.chess.king.base.util.IoUtil;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019/12/10
  */
 public class X71_RaftBallot
-        extends
-        ZCommand
+        extends ZCommand
 {
 
     public final static int COMMAND = 0x71;

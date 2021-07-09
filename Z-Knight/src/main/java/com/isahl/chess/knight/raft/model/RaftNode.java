@@ -100,11 +100,15 @@ public class RaftNode
         mState = state;
     }
 
+    /*
+     * 对比时，仅比较 id 与 host 忽略 port
+     * 不得在相同的host中绑定多个port，禁止这种操作
+     */
     @Override
     public int compareTo(RaftNode o)
     {
         int a = Long.compare(mId, o.mId);
-        return a == 0 ? (mHost + ":" + mPort).compareTo(o.mHost + ":" + o.mPort) : a;
+        return a == 0 ? mHost.compareTo(o.mHost) : a;
     }
 
     @Override

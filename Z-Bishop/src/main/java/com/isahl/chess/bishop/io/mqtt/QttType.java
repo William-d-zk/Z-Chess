@@ -23,10 +23,10 @@
 
 package com.isahl.chess.bishop.io.mqtt;
 
+import com.isahl.chess.bishop.io.Direction;
+
 import static com.isahl.chess.bishop.io.Direction.CLIENT_TO_SERVER;
 import static com.isahl.chess.bishop.io.Direction.SERVER_TO_CLIENT;
-
-import com.isahl.chess.bishop.io.Direction;
 
 public enum QttType
 {
@@ -51,9 +51,7 @@ public enum QttType
     final String      _Description;
     final Direction[] _Directions;
 
-    QttType(int code,
-            String description,
-            Direction... directions)
+    QttType(int code, String description, Direction... directions)
     {
         _Value = code << 4;
         _Directions = directions;
@@ -77,8 +75,7 @@ public enum QttType
 
     public static QttType valueOf(int head)
     {
-        return switch (head & 240)
-        {
+        return switch(head & 240) {
             case 1 << 4 -> CONNECT;
             case 2 << 4 -> CONNACK;
             case 3 << 4 -> PUBLISH;

@@ -48,15 +48,13 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/4/23
  */
 public interface IClusterNode
-        extends
-        IClusterPeer,
-        IClusterTimer,
-        INode,
-        ILocalPublisher
+        extends IClusterPeer,
+                IClusterTimer,
+                INode,
+                ILocalPublisher
 {
     default IAioConnector buildConnector(final IPair _Address,
                                          final ISocketConfig _SocketConfig,
@@ -67,8 +65,8 @@ public interface IClusterNode
     {
         final String _Host = _Address.getFirst();
         final int _Port = _Address.getSecond();
-        if (_ZSortHolder.getSort()
-                        .getMode() != ISort.Mode.CLUSTER)
+        if(_ZSortHolder.getSort()
+                       .getMode() != ISort.Mode.CLUSTER)
         {
             throw new IllegalArgumentException("sort mode is wrong in cluster define");
         }
@@ -97,13 +95,13 @@ public interface IClusterNode
             }
 
             @Override
-            public IControl[] onConnectedCommands(ISession session)
+            public IControl[] response(ISession session)
             {
-                if (_ZSortHolder.getSort()
-                                .getMode() == ISort.Mode.CLUSTER)
+                if(_ZSortHolder.getSort()
+                               .getMode() == ISort.Mode.CLUSTER)
                 {
                     X106_Identity x106 = new X106_Identity(_ZUid.getPeerId(), _ZUid.getId());
-                    return new IControl[]{x106};
+                    return new IControl[]{ x106 };
                 }
                 return null;
             }
@@ -171,13 +169,13 @@ public interface IClusterNode
             }
 
             @Override
-            public IControl[] onConnectedCommands(ISession session)
+            public IControl[] response(ISession session)
             {
-                if (_ZSortHolder.getSort()
-                                .getMode() == ISort.Mode.CLUSTER)
+                if(_ZSortHolder.getSort()
+                               .getMode() == ISort.Mode.CLUSTER)
                 {
                     X106_Identity x106 = new X106_Identity(_ZUid.getPeerId(), _ZUid.getId());
-                    return new IControl[]{x106};
+                    return new IControl[]{ x106 };
                 }
                 return null;
             }

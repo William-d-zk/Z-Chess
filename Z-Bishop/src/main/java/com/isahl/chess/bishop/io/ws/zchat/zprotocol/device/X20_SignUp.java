@@ -23,18 +23,17 @@
 
 package com.isahl.chess.bishop.io.ws.zchat.zprotocol.device;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Objects;
-
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZCommand;
 import com.isahl.chess.king.base.util.IoUtil;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 /**
  * @author william.d.zk
  */
 public class X20_SignUp
-        extends
-        ZCommand
+        extends ZCommand
 {
     public final static int COMMAND = 0x20;
 
@@ -62,11 +61,8 @@ public class X20_SignUp
     @Override
     public int dataLength()
     {
-        return super.dataLength()
-               + 8
-               + sn.getBytes(StandardCharsets.UTF_8).length
-               + (Objects.nonNull(password) ? password.getBytes(StandardCharsets.UTF_8).length
-                                            : 0);
+        return super.dataLength() + 8 + sn.getBytes(StandardCharsets.UTF_8).length +
+               (Objects.nonNull(password) ? password.getBytes(StandardCharsets.UTF_8).length : 0);
     }
 
     @Override

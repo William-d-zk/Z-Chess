@@ -30,13 +30,10 @@ import com.isahl.chess.queen.io.core.inf.IFrame;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-05-08
  */
 public class ZClusterFactory
-        implements
-        ICommandFactory<ICommand,
-                        IFrame>
+        implements ICommandFactory<ICommand, IFrame>
 {
     @Override
     public ICommand create(IFrame frame)
@@ -48,8 +45,7 @@ public class ZClusterFactory
     public ICommand create(int serial)
     {
 
-        return switch (serial)
-        {
+        return switch(serial) {
             case X70_RaftVote.COMMAND -> new X70_RaftVote();
             case X71_RaftBallot.COMMAND -> new X71_RaftBallot();
             case X72_RaftAppend.COMMAND -> new X72_RaftAppend();

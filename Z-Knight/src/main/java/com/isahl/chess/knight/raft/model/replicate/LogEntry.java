@@ -30,15 +30,13 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.bishop.io.json.JsonProtocol;
 import com.isahl.chess.queen.db.inf.IStorage;
-import com.isahl.chess.queen.io.core.inf.IConsistent;
+import com.isahl.chess.queen.io.core.inf.INotify;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class LogEntry
-        extends
-        JsonProtocol
-        implements
-        IConsistent,
-        IStorage
+        extends JsonProtocol
+        implements INotify,
+                   IStorage
 {
     private final static int _LOG_SERIAL = INTERNAL_SERIAL + 2;
 
@@ -105,7 +103,7 @@ public class LogEntry
     @Override
     public byte[] encode()
     {
-        if (tData != null) { return tData; }
+        if(tData != null) { return tData; }
         tData = super.encode();
         return tData;
     }
@@ -133,16 +131,14 @@ public class LogEntry
                              _Index,
                              _Term,
                              _ClientPeer,
-                             _Public ? "all"
-                                     : _ClientPeer,
+                             _Public ? "all" : _ClientPeer,
                              _Origin,
                              _PayloadSerial,
-                             _Payload == null ? 0
-                                              : _Payload.length);
+                             _Payload == null ? 0 : _Payload.length);
     }
 
     @Override
-    public boolean isPublic()
+    public boolean isAll()
     {
         return _Public;
     }

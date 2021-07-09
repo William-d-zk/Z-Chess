@@ -29,29 +29,26 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.bishop.io.json.JsonProtocol;
-import com.isahl.chess.queen.io.core.inf.IConsistent;
+import com.isahl.chess.queen.io.core.inf.INotify;
 
 import java.nio.charset.StandardCharsets;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/4/25
  */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ConsistentProtocol
-        extends
-        JsonProtocol
-        implements
-        IConsistent
+        extends JsonProtocol
+        implements INotify
 {
-    public final static int  _SERIAL = CONSISTENT_SERIAL + 1;
-    private final byte[]     _Content;
-    private final boolean    _Public;
-    private final long       _Origin;
-    private final long       _Zuid;
+    public final static int     _SERIAL = CONSISTENT_SERIAL + 1;
+    private final       byte[]  _Content;
+    private final       boolean _Public;
+    private final       long    _Origin;
+    private final       long    _Zuid;
     @JsonIgnore
-    private transient byte[] tData;
+    private transient   byte[]  tData;
 
     @JsonCreator
     public ConsistentProtocol(@JsonProperty("content") byte[] content,
@@ -80,7 +77,7 @@ public class ConsistentProtocol
     @Override
     public byte[] encode()
     {
-        if (tData != null) { return tData; }
+        if(tData != null) { return tData; }
         tData = super.encode();
         return tData;
     }
@@ -102,7 +99,7 @@ public class ConsistentProtocol
     }
 
     @Override
-    public boolean isPublic()
+    public boolean isAll()
     {
         return _Public;
     }

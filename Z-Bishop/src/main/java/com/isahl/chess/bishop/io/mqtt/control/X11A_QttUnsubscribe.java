@@ -23,28 +23,25 @@
 
 package com.isahl.chess.bishop.io.mqtt.control;
 
-import static com.isahl.chess.queen.io.core.inf.IQoS.Level.AT_LEAST_ONCE;
+import com.isahl.chess.bishop.io.mqtt.QttCommand;
+import com.isahl.chess.bishop.io.mqtt.QttType;
+import com.isahl.chess.king.base.util.IoUtil;
+import com.isahl.chess.queen.io.core.inf.INotify;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.isahl.chess.bishop.io.mqtt.QttCommand;
-import com.isahl.chess.bishop.io.mqtt.QttType;
-import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.queen.io.core.inf.IConsistent;
+import static com.isahl.chess.queen.io.core.inf.IQoS.Level.AT_LEAST_ONCE;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-05-30
  */
 public class X11A_QttUnsubscribe
-        extends
-        QttCommand
-        implements
-        IConsistent
+        extends QttCommand
+        implements INotify
 {
     public final static int COMMAND = 0x11A;
 
@@ -70,7 +67,7 @@ public class X11A_QttUnsubscribe
     public int dataLength()
     {
         int length = super.dataLength();
-        for (String topic : _Topics) {
+        for(String topic : _Topics) {
             length += 2 + topic.getBytes(StandardCharsets.UTF_8).length;
         }
         return length;
@@ -92,7 +89,7 @@ public class X11A_QttUnsubscribe
     public int decodec(byte[] data, int pos)
     {
         pos = super.decodec(data, pos);
-        for (int size = data.length; pos < size;) {
+        for(int size = data.length; pos < size; ) {
             int utfSize = IoUtil.readUnsignedShort(data, pos);
             pos += 2;
             String topic = IoUtil.readString(data, pos, utfSize, StandardCharsets.UTF_8);
@@ -106,7 +103,7 @@ public class X11A_QttUnsubscribe
     public int encodec(byte[] data, int pos)
     {
         pos = super.encodec(data, pos);
-        for (String topic : _Topics) {
+        for(String topic : _Topics) {
             byte[] topicData = topic.getBytes(StandardCharsets.UTF_8);
             pos += IoUtil.writeShort(topicData.length, data, pos);
             pos += IoUtil.write(topicData, data, pos);

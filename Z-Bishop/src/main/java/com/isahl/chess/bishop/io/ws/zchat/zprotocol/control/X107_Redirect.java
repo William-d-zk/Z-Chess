@@ -31,8 +31,7 @@ import com.isahl.chess.king.base.util.IoUtil;
  * @author william.d.zk
  */
 public class X107_Redirect
-        extends
-        WsControl
+        extends WsControl
 {
     public final static int COMMAND = 0x107;
 

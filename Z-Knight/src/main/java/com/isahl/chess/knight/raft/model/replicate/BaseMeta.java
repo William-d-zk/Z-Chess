@@ -31,10 +31,8 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 
 public abstract class BaseMeta
-        extends
-        JsonProtocol
-        implements
-        IReset
+        extends JsonProtocol
+        implements IReset
 {
 
     @JsonIgnore
@@ -50,7 +48,7 @@ public abstract class BaseMeta
             mFile.getFD()
                  .sync();
         }
-        catch (IOException e) {
+        catch(IOException e) {
             e.printStackTrace();
         }
     }
@@ -61,7 +59,7 @@ public abstract class BaseMeta
         try {
             mFile.close();
         }
-        catch (IOException e) {
+        catch(IOException e) {
             e.printStackTrace();
         }
     }

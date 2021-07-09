@@ -25,18 +25,15 @@ package com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft;
 
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZCommand;
 import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.queen.io.core.inf.IConsistentNotify;
+import com.isahl.chess.queen.io.core.inf.IConsistent;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/4/11
  */
 public class X77_RaftNotify
-        extends
-        ZCommand
-        implements
-        IConsistentNotify
+        extends ZCommand
+        implements IConsistent
 {
     public final static int COMMAND = 0x77;
 
@@ -50,10 +47,9 @@ public class X77_RaftNotify
         super(COMMAND, msgId);
     }
 
-    private int               mPayloadSerial;
-    private long              mOrigin;
+    private           int     mPayloadSerial;
+    private           long    mOrigin;
     private transient boolean tLeader;
-    private transient boolean tNotify;
 
     @Override
     public int getPayloadSerial()
@@ -108,7 +104,7 @@ public class X77_RaftNotify
     }
 
     @Override
-    public boolean byLeader()
+    public boolean isByLeader()
     {
         return tLeader;
     }
@@ -118,14 +114,4 @@ public class X77_RaftNotify
         tLeader = true;
     }
 
-    public void setNotify()
-    {
-        tNotify = true;
-    }
-
-    @Override
-    public boolean doNotify()
-    {
-        return tNotify;
-    }
 }

@@ -32,14 +32,11 @@ import java.util.List;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/4/20
  */
 public class ZLinkMappingCustom
-        extends
-        ZBaseMappingCustom<ILinkCustom>
-        implements
-        ILinkCustom
+        extends ZBaseMappingCustom<ILinkCustom>
+        implements ILinkCustom
 {
 
     public ZLinkMappingCustom(ILinkCustom then)
@@ -50,13 +47,13 @@ public class ZLinkMappingCustom
     @Override
     public List<ITriple> notify(ISessionManager manager, IControl request, long origin)
     {
-        return _Then != null ? _Then.notify(manager, request, origin): null;
+        return _Then != null ? _Then.notify(manager, request, origin) : null;
     }
 
     @Override
     public void close(ISession session)
     {
-        if (_Then != null) {
+        if(_Then != null) {
             _Then.close(session);
         }
     }
@@ -64,15 +61,13 @@ public class ZLinkMappingCustom
     @Override
     public void adjudge(IProtocol consensus)
     {
-        if (_Then != null) {
+        if(_Then != null) {
             _Then.adjudge(consensus);
         }
     }
 
     @Override
-    public <T extends ITraceable & IProtocol> IOperator<T,
-                                                        Throwable,
-                                                        Void> getOperator()
+    public <T extends ITraceable & IProtocol> IOperator<T, Throwable, Void> getOperator()
     {
         return this::resolve;
     }
@@ -80,7 +75,7 @@ public class ZLinkMappingCustom
     @Override
     public <T extends ITraceable & IProtocol> Void resolve(T request, Throwable throwable)
     {
-        if (_Then != null) {
+        if(_Then != null) {
             _Then.resolve(request, throwable);
         }
         return null;

@@ -25,18 +25,15 @@ package com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft;
 
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZCommand;
 import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.queen.io.core.inf.IConsistent;
+import com.isahl.chess.queen.io.core.inf.INotify;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/4/11
  */
 public class X75_RaftReq
-        extends
-        ZCommand
-        implements
-        IConsistent
+        extends ZCommand
+        implements INotify
 {
     public final static int COMMAND = 0x75;
 
@@ -81,7 +78,7 @@ public class X75_RaftReq
     {
         pos += IoUtil.writeLong(mClientId, data, pos);
         pos += IoUtil.writeLong(mOrigin, data, pos);
-        pos += IoUtil.writeByte(mPublic ? 1: 0, data, pos);
+        pos += IoUtil.writeByte(mPublic ? 1 : 0, data, pos);
         pos += IoUtil.writeShort(mPayloadSerial, data, pos);
         return pos;
     }
@@ -122,7 +119,7 @@ public class X75_RaftReq
     }
 
     @Override
-    public boolean isPublic()
+    public boolean isAll()
     {
         return mPublic;
     }
@@ -139,7 +136,7 @@ public class X75_RaftReq
                              mClientId,
                              mOrigin,
                              mPayloadSerial,
-                             getPayload() == null ? 0: getPayload().length,
-                             mPublic ? "all": "one");
+                             getPayload() == null ? 0 : getPayload().length,
+                             mPublic ? "all" : "one");
     }
 }

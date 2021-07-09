@@ -25,20 +25,13 @@ package com.isahl.chess.bishop.io.ws.zchat.zfilter;
 import com.isahl.chess.bishop.io.ws.zchat.ZContext;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.async.AioFilterChain;
-import com.isahl.chess.queen.io.core.inf.IEContext;
-import com.isahl.chess.queen.io.core.inf.IPContext;
-import com.isahl.chess.queen.io.core.inf.IPacket;
-import com.isahl.chess.queen.io.core.inf.IProtocol;
-import com.isahl.chess.queen.io.core.inf.IProxyContext;
+import com.isahl.chess.queen.io.core.inf.*;
 
 /**
  * @author William.d.zk
  */
 public class ZEFilter<T extends ZContext & IEContext>
-        extends
-        AioFilterChain<T,
-                       IPacket,
-                       IPacket>
+        extends AioFilterChain<T, IPacket, IPacket>
 {
     public final static String NAME = "z-tls";
 
@@ -50,17 +43,17 @@ public class ZEFilter<T extends ZContext & IEContext>
     @Override
     public IPacket encode(T context, IPacket output)
     {
-        if (context.isOutCrypt() && output.outIdempotent(getLeftIdempotentBit())) {
+        if(context.isOutCrypt() && output.outIdempotent(getLeftIdempotentBit())) {
             context.getSymmetricEncrypt()
                    .digest(output.getBuffer(), context.getSymmetricKeyOut());
             /* cipher with old symmetric key -> new symmetric key */
-            if (context.needUpdateKeyOut()) {
+            if(context.needUpdateKeyOut()) {
                 context.swapKeyOut(context.getReRollKey());
                 context.getSymmetricEncrypt()
                        .reset();
             }
         }
-        else if (context.needUpdateKeyOut()) {
+        else if(context.needUpdateKeyOut()) {
             /* plain -> cipher X04/X05 encoded in command-zfilter */
             _Logger.debug("X04/X05 done,change state from plain to cipher in next encoding conversion");
             context.swapKeyOut(context.getReRollKey());
@@ -74,13 +67,13 @@ public class ZEFilter<T extends ZContext & IEContext>
     @Override
     public IPacket decode(T context, IPacket input)
     {
-        if (context.needUpdateKeyIn()) {
+        if(context.needUpdateKeyIn()) {
             context.swapKeyIn(context.getReRollKey());
             context.getSymmetricDecrypt()
                    .reset();
             context.cryptIn();
         }
-        if (context.isInCrypt() && input.inIdempotent(getRightIdempotentBit())) {
+        if(context.isInCrypt() && input.inIdempotent(getRightIdempotentBit())) {
             context.getSymmetricDecrypt()
                    .digest(input.getBuffer(), context.getSymmetricKeyIn());
         }
@@ -88,13 +81,12 @@ public class ZEFilter<T extends ZContext & IEContext>
     }
 
     @Override
-    public <O extends IProtocol> Pair<ResultType,
-                                      IPContext> pipeSeek(IPContext context, O output)
+    public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
     {
-        if (checkType(output, IProtocol.PACKET_SERIAL)) {
+        if(checkType(output, IProtocol.PACKET_SERIAL)) {
             IPContext acting = context;
-            while (acting.isProxy()) {
-                if (acting instanceof IEContext && acting.isOutConvert()) {
+            while(acting.isProxy()) {
+                if(acting instanceof IEContext && acting.isOutConvert()) {
                     return new Pair<>(ResultType.NEXT_STEP, acting);
                 }
                 acting = ((IProxyContext<?>) acting).getActingContext();
@@ -105,13 +97,12 @@ public class ZEFilter<T extends ZContext & IEContext>
     }
 
     @Override
-    public <I extends IProtocol> Pair<ResultType,
-                                      IPContext> pipePeek(IPContext context, I input)
+    public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
     {
-        if (checkType(input, IProtocol.PACKET_SERIAL)) {
+        if(checkType(input, IProtocol.PACKET_SERIAL)) {
             IPContext acting = context;
-            while (acting.isProxy()) { //EContext 本身就是 ProxyContext
-                if (acting instanceof IEContext && acting.isInConvert()) {
+            while(acting.isProxy()) { //EContext 本身就是 ProxyContext
+                if(acting instanceof IEContext && acting.isInConvert()) {
                     return new Pair<>(ResultType.NEXT_STEP, acting);
                 }
                 acting = ((IProxyContext<?>) acting).getActingContext();
@@ -122,16 +113,14 @@ public class ZEFilter<T extends ZContext & IEContext>
 
     @Override
     @SuppressWarnings("unchecked")
-    public <O extends IProtocol,
-            I extends IProtocol> I pipeEncode(IPContext context, O output)
+    public <O extends IProtocol, I extends IProtocol> I pipeEncode(IPContext context, O output)
     {
         return (I) encode((T) context, (IPacket) output);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <O extends IProtocol,
-            I extends IProtocol> O pipeDecode(IPContext context, I input)
+    public <O extends IProtocol, I extends IProtocol> O pipeDecode(IPContext context, I input)
     {
         return (O) decode((T) context, (IPacket) input);
     }

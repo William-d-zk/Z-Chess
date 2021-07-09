@@ -23,17 +23,16 @@
 
 package com.isahl.chess.bishop.io.json;
 
-import java.util.Objects;
-
 import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.queen.io.core.inf.IProtocol;
+
+import java.util.Objects;
 
 /**
  * @author william.d.zk
  */
 public abstract class JsonProtocol
-        implements
-        IProtocol
+        implements IProtocol
 {
     private int mLength;
 

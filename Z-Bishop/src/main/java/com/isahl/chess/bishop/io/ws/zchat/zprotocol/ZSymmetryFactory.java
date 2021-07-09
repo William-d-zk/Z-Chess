@@ -29,13 +29,10 @@ import com.isahl.chess.queen.io.core.inf.IFrame;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-05-08
  */
 public class ZSymmetryFactory
-        implements
-        ICommandFactory<ICommand,
-                        IFrame>
+        implements ICommandFactory<ICommand, IFrame>
 {
     @Override
     public ICommand create(IFrame frame)
@@ -47,8 +44,7 @@ public class ZSymmetryFactory
     public ICommand create(int serial)
     {
 
-        return switch (serial)
-        {
+        return switch(serial) {
             default -> null;
         };
     }

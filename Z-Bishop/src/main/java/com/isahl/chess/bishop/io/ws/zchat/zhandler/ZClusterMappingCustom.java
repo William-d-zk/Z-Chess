@@ -26,7 +26,7 @@ package com.isahl.chess.bishop.io.ws.zchat.zhandler;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.queen.db.inf.IStorage;
 import com.isahl.chess.queen.event.handler.cluster.IClusterCustom;
-import com.isahl.chess.queen.io.core.inf.IConsistent;
+import com.isahl.chess.queen.io.core.inf.INotify;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISessionManager;
 
@@ -34,14 +34,11 @@ import java.util.List;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/4/20
  */
 public class ZClusterMappingCustom<T extends IStorage>
-        extends
-        ZBaseMappingCustom<IClusterCustom<T>>
-        implements
-        IClusterCustom<T>
+        extends ZBaseMappingCustom<IClusterCustom<T>>
+        implements IClusterCustom<T>
 {
     public ZClusterMappingCustom(IClusterCustom<T> then)
     {
@@ -51,19 +48,19 @@ public class ZClusterMappingCustom<T extends IStorage>
     @Override
     public List<ITriple> onTimer(ISessionManager manager, T content)
     {
-        return _Then != null ? _Then.onTimer(manager, content): null;
+        return _Then != null ? _Then.onTimer(manager, content) : null;
     }
 
     @Override
-    public <E extends IConsistent & IControl> List<ITriple> consensus(ISessionManager manager, E request)
+    public <E extends INotify & IControl> List<ITriple> consensus(ISessionManager manager, E request)
     {
-        return _Then != null ? _Then.consensus(manager, request): null;
+        return _Then != null ? _Then.consensus(manager, request) : null;
     }
 
     @Override
-    public <E extends IConsistent & IControl> List<ITriple> change(ISessionManager manager, E topology)
+    public <E extends INotify & IControl> List<ITriple> change(ISessionManager manager, E topology)
     {
-        return _Then != null ? _Then.change(manager, topology): null;
+        return _Then != null ? _Then.change(manager, topology) : null;
     }
 
     @Override

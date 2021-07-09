@@ -32,13 +32,10 @@ import com.isahl.chess.queen.io.core.inf.IProtocol;
  * @date 2021/3/21
  */
 public abstract class ModbusRtuProtocol
-        implements
-        IProtocol
+        implements IProtocol
 {
 
-    public ModbusRtuProtocol(byte address,
-                             byte ctrl,
-                             byte[] payload)
+    public ModbusRtuProtocol(byte address, byte ctrl, byte[] payload)
     {
         mAddress = address;
         mCtrl = ctrl;
@@ -83,7 +80,7 @@ public abstract class ModbusRtuProtocol
     @Override
     public int dataLength()
     {
-        return mLength > 0 ? mLength: (mLength = 4 + (mPayload == null ? 0: mPayload.length));
+        return mLength > 0 ? mLength : (mLength = 4 + (mPayload == null ? 0 : mPayload.length));
     }
 
     public int getCrc()

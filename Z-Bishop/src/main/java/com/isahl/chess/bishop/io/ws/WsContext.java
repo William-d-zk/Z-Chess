@@ -38,24 +38,20 @@ import static com.isahl.chess.queen.io.core.inf.ISession.CAPACITY;
  * @author William.d.zk
  */
 public class WsContext
-        extends
-        ZContext
-        implements
-        IWsContext
+        extends ZContext
+        implements IWsContext
 {
 
     private final String _SecKey, _SecAcceptExpect;
     private final int    _MaxPayloadSize;
     private final byte[] _Mask;
-    private int          mHandshakeState;
+    private       int    mHandshakeState;
 
-    public WsContext(INetworkOption option,
-                     ISort.Mode mode,
-                     ISort.Type type)
+    public WsContext(INetworkOption option, ISort.Mode mode, ISort.Type type)
     {
         super(option, mode, type);
         _MaxPayloadSize = option.getSnfByte() - 2;
-        if (_Type == ISort.Type.CLIENT) {
+        if(_Type == ISort.Type.CLIENT) {
             Random r = new Random(System.nanoTime());
             byte[] seed = new byte[17];
             r.nextBytes(seed);
@@ -111,18 +107,15 @@ public class WsContext
     public void ready()
     {
 
-        switch (_Mode)
-        {
-            case CLUSTER ->
-                {
-                    advanceState(_DecodeState, DECODE_PAYLOAD, CAPACITY);
-                    advanceState(_EncodeState, ENCODE_PAYLOAD, CAPACITY);
-                }
-            case LINK ->
-                {
-                    advanceState(_DecodeState, DECODE_FRAME, CAPACITY);
-                    advanceState(_EncodeState, ENCODE_FRAME, CAPACITY);
-                }
+        switch(_Mode) {
+            case CLUSTER -> {
+                advanceState(_DecodeState, DECODE_PAYLOAD, CAPACITY);
+                advanceState(_EncodeState, ENCODE_PAYLOAD, CAPACITY);
+            }
+            case LINK -> {
+                advanceState(_DecodeState, DECODE_FRAME, CAPACITY);
+                advanceState(_EncodeState, ENCODE_FRAME, CAPACITY);
+            }
         }
     }
 

@@ -48,25 +48,29 @@ public class RaftService<M extends IClusterPeer & IClusterTimer>
     @Override
     public long getLeader()
     {
-        return _ClusterPeer.getMachine().getLeader();
+        return _ClusterPeer.getMachine()
+                           .getLeader();
     }
 
     @Override
     public List<RaftNode> getTopology()
     {
-        return _ClusterPeer.getRaftConfig().getPeers();
+        return _ClusterPeer.getRaftConfig()
+                           .getPeers();
     }
 
     @Override
     public void changeTopology(RaftNode delta, IStorage.Operation operation)
     {
-        _ClusterPeer.getRaftConfig().changeTopology(delta, operation);
+        _ClusterPeer.getRaftConfig()
+                    .changeTopology(delta, operation);
     }
 
     @Override
     public void changeGate(RaftNode delta, IStorage.Operation operation)
     {
-        _ClusterPeer.getRaftConfig().changeGate(delta, operation);
+        _ClusterPeer.getRaftConfig()
+                    .changeGate(delta, operation);
     }
 
 }

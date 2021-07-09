@@ -28,7 +28,7 @@ import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.knight.cluster.IClusterNode;
 import com.isahl.chess.queen.event.QEvent;
 import com.isahl.chess.queen.event.handler.cluster.IConsistentCustom;
-import com.isahl.chess.queen.io.core.inf.IConsistent;
+import com.isahl.chess.queen.io.core.inf.INotify;
 import com.isahl.chess.queen.io.core.inf.IProtocol;
 import com.lmax.disruptor.RingBuffer;
 
@@ -36,14 +36,14 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public interface IConsistentService
 {
-    default <T extends IConsistent & IProtocol> void submit(T consensus,
-                                                            IClusterNode clusterNode,
-                                                            IConsistentCustom custom)
+    default <T extends INotify & IProtocol> void submit(T consensus,
+                                                        IClusterNode clusterNode,
+                                                        IConsistentCustom custom)
     {
-        if (consensus == null) return;
+        if(consensus == null) { return; }
         final ReentrantLock _Lock = clusterNode.getLock(OperatorType.CONSENSUS);
         final RingBuffer<QEvent> _Publish = clusterNode.getPublisher(OperatorType.CONSENSUS);
-        if (_Lock.tryLock()) {
+        if(_Lock.tryLock()) {
             try {
                 long sequence = _Publish.next();
                 try {

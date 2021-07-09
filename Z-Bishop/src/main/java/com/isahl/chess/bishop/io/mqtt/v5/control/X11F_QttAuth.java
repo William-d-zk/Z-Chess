@@ -23,14 +23,13 @@
 
 package com.isahl.chess.bishop.io.mqtt.v5.control;
 
-import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
-
 import com.isahl.chess.bishop.io.mqtt.QttControl;
 import com.isahl.chess.bishop.io.mqtt.QttType;
 
+import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
+
 public class X11F_QttAuth
-        extends
-        QttControl
+        extends QttControl
 {
     public final static int COMMAND = 0x11F;
 

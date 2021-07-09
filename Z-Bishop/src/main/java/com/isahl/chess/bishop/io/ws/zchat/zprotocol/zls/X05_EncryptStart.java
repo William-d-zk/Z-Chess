@@ -30,12 +30,11 @@ import com.isahl.chess.queen.io.core.inf.IPContext;
  * @author William.d.zk
  */
 public class X05_EncryptStart
-        extends
-        ZCommand
+        extends ZCommand
 {
     public final static int COMMAND = 0x05;
-    public int              symmetricKeyId;
-    public int              salt;
+    public              int symmetricKeyId;
+    public              int salt;
 
     public X05_EncryptStart()
     {

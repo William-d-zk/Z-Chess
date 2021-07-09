@@ -23,10 +23,10 @@
 
 package com.isahl.chess.bishop.io.ws;
 
-import java.util.Base64;
-
 import com.isahl.chess.king.base.util.CryptUtil;
 import com.isahl.chess.queen.io.core.inf.IControl;
+
+import java.util.Base64;
 
 public interface IWsContext
 {
@@ -38,17 +38,14 @@ public interface IWsContext
     int HS_State_ORIGIN       = 1 << 5;
     int HS_State_SEC_PROTOCOL = 1 << 6;
     // public final String mSecProtocol, mSubProtocol; //not support right now
-    int HS_State_SEC_VERSION = 1 << 7;
-    int HS_State_HTTP_101    = 1 << 8;
-    int HS_State_SEC_ACCEPT  = 1 << 9;
-    int HS_State_ACCEPT_OK   = HS_State_HTTP_101 | HS_State_SEC_ACCEPT | HS_State_UPGRADE | HS_State_CONNECTION;
-    int HS_State_CLIENT_OK   = HS_State_GET
-                               | HS_State_HOST
-                               | HS_State_UPGRADE
-                               | HS_State_CONNECTION
-                               | HS_State_SEC_KEY
-                               | HS_State_SEC_VERSION;
-    int HS_State_ERROR       = -1 << 31;
+    int HS_State_SEC_VERSION  = 1 << 7;
+    int HS_State_HTTP_101     = 1 << 8;
+    int HS_State_SEC_ACCEPT   = 1 << 9;
+    int HS_State_ACCEPT_OK    = HS_State_HTTP_101 | HS_State_SEC_ACCEPT | HS_State_UPGRADE | HS_State_CONNECTION;
+    int HS_State_CLIENT_OK    =
+            HS_State_GET | HS_State_HOST | HS_State_UPGRADE | HS_State_CONNECTION | HS_State_SEC_KEY |
+            HS_State_SEC_VERSION;
+    int HS_State_ERROR        = -1 << 31;
 
     int getMaxPayloadSize();
 

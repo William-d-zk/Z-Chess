@@ -27,29 +27,24 @@ import com.isahl.chess.bishop.io.ws.WsHandshake;
 
 /**
  * @author William.d.zk
- * 
  * @date 2017-01-12
  */
 public class X101_HandShake
-        extends
-        WsHandshake
+        extends WsHandshake
 {
     public final static int COMMAND = 0x101;
 
-    public X101_HandShake(String host,
-                          String secKey,
-                          int version)
+    public X101_HandShake(String host, String secKey, int version)
     {
-        this(String.format("GET /ws_service HTTP/1.1\r\nHost: %s\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: %s\r\nOrigin: http://%s\r\nSec-WebSocket-Protocol: z-push, z-chat\r\nSec-WebSocket-Version: %s\r\n\r\n",
-                           host,
-                           secKey,
-                           host,
-                           version),
-             IWsContext.HS_State_CONNECTION);
+        this(String.format(
+                "GET /ws_service HTTP/1.1\r\nHost: %s\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: %s\r\nOrigin: http://%s\r\nSec-WebSocket-Protocol: z-push, z-chat\r\nSec-WebSocket-Version: %s\r\n\r\n",
+                host,
+                secKey,
+                host,
+                version), IWsContext.HS_State_CONNECTION);
     }
 
-    public X101_HandShake(String handshake,
-                          int code)
+    public X101_HandShake(String handshake, int code)
     {
         super(COMMAND, handshake, code);
     }
