@@ -23,12 +23,7 @@
 
 package com.isahl.chess.bishop.io.ws.zchat.zhandler;
 
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.zls.X01_EncryptRequest;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.zls.X02_AsymmetricPub;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.zls.X03_Cipher;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.zls.X04_EncryptConfirm;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.zls.X05_EncryptStart;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.zls.X06_EncryptComp;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.zls.*;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
@@ -39,16 +34,14 @@ import com.isahl.chess.queen.io.core.inf.ISessionManager;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/5/7
  */
 abstract class ZBaseMappingCustom<E extends IMappingCustom>
-        implements
-        IMappingCustom
+        implements IMappingCustom
 {
 
-    private final Logger _Logger = Logger.getLogger("protocol.bishop." + getClass().getSimpleName());
-    protected final E    _Then;
+    private final   Logger _Logger = Logger.getLogger("protocol.bishop." + getClass().getSimpleName());
+    protected final E      _Then;
 
     protected ZBaseMappingCustom(E then)
     {
@@ -59,8 +52,7 @@ abstract class ZBaseMappingCustom<E extends IMappingCustom>
     public IPair handle(ISessionManager manager, ISession session, IControl content) throws Exception
     {
         _Logger.debug("mapping receive %s", content);
-        switch (content.serial())
-        {
+        switch(content.serial()) {
             case X01_EncryptRequest.COMMAND:
             case X02_AsymmetricPub.COMMAND:
             case X03_Cipher.COMMAND:
@@ -71,9 +63,9 @@ abstract class ZBaseMappingCustom<E extends IMappingCustom>
                  * 内嵌逻辑，在ZCommandFilter中已经处理结束
                  * 此处仅执行转发逻辑
                  */
-                return new Pair<>(new IControl[]{content}, null);
+                return new Pair<>(new IControl[]{ content }, null);
             default:
-                if (_Then == null) return null;
+                if(_Then == null) { return null; }
                 return _Then.handle(manager, session, content);
         }
     }

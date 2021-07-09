@@ -24,29 +24,20 @@
 package com.isahl.chess.bishop.io.ws;
 
 import com.isahl.chess.queen.io.core.async.AioPacket;
-import com.isahl.chess.queen.io.core.inf.INetworkOption;
-import com.isahl.chess.queen.io.core.inf.IPContext;
-import com.isahl.chess.queen.io.core.inf.IPacket;
-import com.isahl.chess.queen.io.core.inf.IProxyContext;
-import com.isahl.chess.queen.io.core.inf.ISort;
+import com.isahl.chess.queen.io.core.inf.*;
 
 /**
  * @author william.d.zk
  */
 public class WsProxyContext<A extends IPContext>
-        extends
-        WsContext
-        implements
-        IProxyContext<A>
+        extends WsContext
+        implements IProxyContext<A>
 {
 
-    private final A _ActingContext;
-    private IPacket mTransfer;
+    private final A       _ActingContext;
+    private       IPacket mTransfer;
 
-    public WsProxyContext(INetworkOption option,
-                          ISort.Mode mode,
-                          ISort.Type type,
-                          A actingContext)
+    public WsProxyContext(INetworkOption option, ISort.Mode mode, ISort.Type type, A actingContext)
     {
         super(option, mode, type);
         _ActingContext = actingContext;
@@ -74,21 +65,17 @@ public class WsProxyContext<A extends IPContext>
     /*这是一个协议性代理上下文特有的处理机制，粘包时，这个操作异常重要*/
     public IPacket append(IPacket packet)
     {
-        if (mTransfer == null) {
+        if(mTransfer == null) {
             mTransfer = new AioPacket(1 << 12, false);
         }
-        if (mTransfer.getBuffer()
-                     .capacity() < mTransfer.getBuffer()
-                                            .position()
-                                   + packet.getBuffer()
-                                           .limit())
+        if(mTransfer.getBuffer()
+                    .capacity() < mTransfer.getBuffer()
+                                           .position() + packet.getBuffer()
+                                                               .limit())
         {
             AioPacket newBuf = new AioPacket(mTransfer.getBuffer()
-                                                      .capacity()
-                                             * 2
-                                             + packet.getBuffer()
-                                                     .limit(),
-                                             false);
+                                                      .capacity() * 2 + packet.getBuffer()
+                                                                              .limit(), false);
             newBuf.getBuffer()
                   .put(mTransfer.getBuffer()
                                 .array())

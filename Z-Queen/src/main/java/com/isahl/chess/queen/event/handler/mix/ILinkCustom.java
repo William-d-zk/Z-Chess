@@ -34,28 +34,26 @@ import java.util.List;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/4/20
  */
 public interface ILinkCustom
-        extends
-        IMappingCustom,
-        IConsistentCustom
+        extends IMappingCustom,
+                IConsistentCustom
 {
 
     /*
      *
      * @param manager
-     * 
+     *
      * @param session
-     * 
+     *
      * @param content
-     * 
+     *
      * @return pair
      * first: to_send_array 1:N
      * second: to_transfer
      * Link->Cluster, consensus
-     * 
+     *
      * @throws Exception
      * handle error
      * IPair handle(ISessionManager<C> manager, ISession<C> session,
@@ -66,9 +64,7 @@ public interface ILinkCustom
      * Cluster->Link.notify(Cluster.consensus_result)
      *
      * @param manager
-     * @param request
-     *            link发来 强一致的请求
-     * 
+     * @param request link发来 强一致的请求
      * @return response
      */
     List<ITriple> notify(ISessionManager manager, IControl request, long origin);

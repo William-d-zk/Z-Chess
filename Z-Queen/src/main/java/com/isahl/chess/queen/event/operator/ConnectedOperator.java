@@ -55,7 +55,7 @@ public class ConnectedOperator
             connection.onCreated(session);
             session.ready();
             session.readNext(_AioReader);
-            return new Triple<>(true, session, connection.onConnectedCommands(session));
+            return new Triple<>(true, session, connection.response(session));
         }
         catch (IOException e) {
             try {

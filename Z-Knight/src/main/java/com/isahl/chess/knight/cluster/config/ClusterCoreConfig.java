@@ -23,18 +23,16 @@
 
 package com.isahl.chess.knight.cluster.config;
 
+import com.isahl.chess.queen.config.IClusterConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-
-import com.isahl.chess.queen.config.IClusterConfig;
 
 @Configuration("cluster_core_config")
 @ConfigurationProperties(prefix = "z.chess.knight")
 @PropertySource("classpath:cluster.core.properties")
 public class ClusterCoreConfig
-        implements
-        IClusterConfig
+        implements IClusterConfig
 {
     private int decoderCountPower;
     private int encoderCountPower;

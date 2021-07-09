@@ -44,12 +44,10 @@ import java.util.List;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/2/15
  */
 public class MixMappingHandler<T extends IStorage>
-        implements
-        IPipeEventHandler<QEvent>
+        implements IPipeEventHandler<QEvent>
 {
     private final Logger             _Logger;
     private final RingBuffer<QEvent> _Error;
@@ -79,21 +77,16 @@ public class MixMappingHandler<T extends IStorage>
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch)
     {
-        if (event.hasError()) {
+        if(event.hasError()) {
             _Logger.warning("mapping error → %s ", event);
-            switch (event.getErrorType())
-            {
+            switch(event.getErrorType()) {
                 case ACCEPT_FAILED:
-                    IOperator<Throwable,
-                              IAioServer,
-                              Void> acceptFailedOperator = event.getEventOp();
+                    IOperator<Throwable, IAioServer, Void> acceptFailedOperator = event.getEventOp();
                     IPair errorContent = event.getContent();
                     acceptFailedOperator.handle(errorContent.getFirst(), errorContent.getSecond());
                     break;
                 case CONNECT_FAILED:
-                    IOperator<Throwable,
-                              IAioConnector,
-                              Void> connectFailedOperator = event.getEventOp();
+                    IOperator<Throwable, IAioConnector, Void> connectFailedOperator = event.getEventOp();
                     errorContent = event.getContent();
                     connectFailedOperator.handle(errorContent.getFirst(), errorContent.getSecond());
                     break;
@@ -102,15 +95,13 @@ public class MixMappingHandler<T extends IStorage>
                     _Logger.warning("mapping handle io error,%s",
                                     event.getErrorType()
                                          .getMsg());
-                    IOperator<Void,
-                              ISession,
-                              Void> closeOperator = event.getEventOp();
+                    IOperator<Void, ISession, Void> closeOperator = event.getEventOp();
                     errorContent = event.getContent();
                     ISession session = errorContent.getSecond();
                     ISessionDismiss dismiss = session.getDismissCallback();
                     boolean closed = session.isClosed();
                     closeOperator.handle(null, session);
-                    if (!closed) {
+                    if(!closed) {
                         dismiss.onDismiss(session);
                         _LinkCustom.close(session);
                     }
@@ -121,28 +112,25 @@ public class MixMappingHandler<T extends IStorage>
         }
         else {
             _Logger.trace("mapping:%s", event);
-            switch (event.getEventType())
-            {
+            switch(event.getEventType()) {
                 case CONNECTED:
                     IPair connected = event.getContent();
                     AsynchronousSocketChannel channel = connected.getSecond();
                     IAioConnector connector = connected.getFirst();
-                    IOperator<IConnectActivity,
-                              AsynchronousSocketChannel,
-                              ITriple> connectedOperator = event.getEventOp();
+                    IOperator<IConnectActivity, AsynchronousSocketChannel, ITriple> connectedOperator = event.getEventOp();
                     ITriple handled = connectedOperator.handle(connector, channel);
                     boolean success = handled.getFirst();
-                    if (success) {
+                    if(success) {
                         ISession session = handled.getSecond();
                         IControl[] toSends = handled.getThird();
-                        if (toSends != null) {
+                        if(toSends != null) {
                             publish(_Writer, OperatorType.WRITE, new Pair<>(toSends, session), session.getTransfer());
                         }
                     }
                     else {
                         Throwable throwable = handled.getThird();
                         _Logger.warning("session connect create failed ,channel error %", throwable, channel);
-                        if (handled.getSecond() instanceof AsynchronousSocketChannel) {
+                        if(handled.getSecond() instanceof AsynchronousSocketChannel) {
                             connector.error();
                         }
                         else {
@@ -158,17 +146,17 @@ public class MixMappingHandler<T extends IStorage>
                     connectedOperator = event.getEventOp();
                     handled = connectedOperator.handle(server, channel);
                     success = handled.getFirst();
-                    if (success) {
+                    if(success) {
                         ISession session = handled.getSecond();
                         IControl[] toSends = handled.getThird();
-                        if (toSends != null) {
+                        if(toSends != null) {
                             publish(_Writer, OperatorType.WRITE, new Pair<>(toSends, session), session.getTransfer());
                         }
                     }
                     else {
                         Throwable throwable = handled.getThird();
                         _Logger.warning("session accept create failed ,channel error %", throwable, channel);
-                        if (handled.getSecond() instanceof ISession) {
+                        if(handled.getSecond() instanceof ISession) {
                             ISession session = handled.getSecond();
                             session.innerClose();
                         }
@@ -179,17 +167,17 @@ public class MixMappingHandler<T extends IStorage>
                                              .getFirst();
                     ISession session = event.getContent()
                                             .getSecond();
-                    if (received == null) { return; }
+                    if(received == null) { return; }
                     try {
                         IPair pair = _LinkCustom.handle(_SessionManager, session, received);
-                        if (pair == null) return;
+                        if(pair == null) { return; }
                         IControl[] toSends = pair.getFirst();
-                        if (toSends != null && toSends.length > 0) {
+                        if(toSends != null && toSends.length > 0) {
                             publish(_Writer, OperatorType.WRITE, new Pair<>(toSends, session), session.getTransfer());
                         }
-                        IConsistent transfer = pair.getSecond();
-                        if (transfer != null) {
-                            if (_ClusterCustom.waitForCommit()) {
+                        INotify transfer = pair.getSecond();
+                        if(transfer != null) {
+                            if(_ClusterCustom.waitForCommit()) {
                                 publish(_Transfer,
                                         OperatorType.CONSENSUS,
                                         new Pair<>(pair.getSecond(), session),
@@ -199,13 +187,13 @@ public class MixMappingHandler<T extends IStorage>
                                 List<ITriple> result = _LinkCustom.notify(_SessionManager,
                                                                           pair.getSecond(),
                                                                           transfer.getOrigin());
-                                if (result != null && !result.isEmpty()) {
+                                if(result != null && !result.isEmpty()) {
                                     publish(_Writer, result);
                                 }
                             }
                         }
                     }
-                    catch (Exception e) {
+                    catch(Exception e) {
                         _Logger.warning("link mapping handler error", e);
                         session.innerClose();
                     }
@@ -215,23 +203,23 @@ public class MixMappingHandler<T extends IStorage>
                                     .getFirst();
                     session = event.getContent()
                                    .getSecond();
-                    if (received == null) { return; }
+                    if(received == null) { return; }
                     try {
                         IPair pair = _ClusterCustom.handle(_SessionManager, session, received);
-                        if (pair == null) return;
+                        if(pair == null) { return; }
                         IControl[] toSends = pair.getFirst();
-                        if (toSends != null && toSends.length > 0) {
+                        if(toSends != null && toSends.length > 0) {
                             publish(_Writer, OperatorType.WRITE, new Pair<>(toSends, session), session.getTransfer());
                         }
-                        IConsistentNotify notify = pair.getSecond();
-                        if (notify != null && notify.doNotify()) {
+                        IConsistent notify = pair.getSecond();
+                        if(notify != null) {
                             publish(_Transfer,
                                     OperatorType.NOTIFY,
                                     new Pair<>(notify, null),
                                     _LinkCustom.getOperator());
                         }
                     }
-                    catch (Exception e) {
+                    catch(Exception e) {
                         _Logger.warning("cluster mapping handler error", e);
                         session.innerClose();
                     }
@@ -246,13 +234,13 @@ public class MixMappingHandler<T extends IStorage>
                         List<ITriple> result = _ClusterCustom.consensus(_SessionManager,
                                                                         event.getContent()
                                                                              .getFirst());
-                        if (result != null && !result.isEmpty()) {
+                        if(result != null && !result.isEmpty()) {
                             publish(_Writer, result);
                         }
                     }
-                    catch (Exception e) {
+                    catch(Exception e) {
                         _Logger.warning("mapping consensus error, link session close", e);
-                        if (session != null) session.innerClose();
+                        if(session != null) { session.innerClose(); }
                     }
                     break;
                 case CLUSTER_TOPOLOGY:
@@ -263,46 +251,46 @@ public class MixMappingHandler<T extends IStorage>
                         List<ITriple> result = _ClusterCustom.change(_SessionManager,
                                                                      event.getContent()
                                                                           .getFirst());
-                        if (result != null && !result.isEmpty()) {
+                        if(result != null && !result.isEmpty()) {
                             publish(_Writer, result);
                         }
                     }
-                    catch (Exception e) {
+                    catch(Exception e) {
                         _Logger.warning("cluster inner service api ");
                     }
                     break;
                 case NOTIFY:
-                    IConsistentNotify notify = event.getContent()
-                                                    .getFirst();
-                    if (notify != null) try {
-                        if (notify.byLeader()) {
-                            try {
-                                _LinkCustom.adjudge(notify);
+                    IConsistent notify = event.getContent()
+                                              .getFirst();
+                    if(notify != null) {
+                        try {
+                            if(notify.isByLeader()) {
+                                try {
+                                    _LinkCustom.adjudge(notify);
+                                }
+                                catch(Throwable e) {
+                                    _Logger.warning("leader adjudge", e);
+                                }
                             }
-                            catch (Throwable e) {
-                                _Logger.warning("leader adjudge", e);
-                            }
-                        }
-                        if (notify.doNotify()) {
                             List<ITriple> result = _LinkCustom.notify(_SessionManager,
                                                                       event.getContent()
                                                                            .getFirst(),
                                                                       notify.getOrigin());
-                            if (result != null && !result.isEmpty()) {
+                            if(result != null && !result.isEmpty()) {
                                 publish(_Writer, result);
                             }
                         }
-                    }
-                    catch (Exception e) {
-                        _Logger.warning("mapping notify error, cluster's session keep alive", e);
+                        catch(Exception e) {
+                            _Logger.warning("mapping notify error, cluster's session keep alive", e);
+                        }
                     }
                     break;
                 case CLUSTER_TIMER:// ClusterConsumer Timeout->start_vote,heartbeat-cycle,step down->follower
                     T content = event.getContent()
                                      .getFirst();
-                    if (content != null) {
+                    if(content != null) {
                         List<ITriple> toSends = _ClusterCustom.onTimer(_SessionManager, content);
-                        if (toSends != null && !toSends.isEmpty()) {
+                        if(toSends != null && !toSends.isEmpty()) {
                             publish(_Writer, toSends);
                         }
                     }

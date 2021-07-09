@@ -35,35 +35,31 @@ import com.isahl.chess.queen.io.core.inf.IControl;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/4/11
  */
 public class QttCommandFactory
-        implements
-        ICommandFactory<IControl,
-                        QttFrame>
+        implements ICommandFactory<IControl, QttFrame>
 {
 
     @Override
     public IControl create(QttFrame frame)
     {
         QttCommand qttCommand = createQttCommand(frame);
-        if (qttCommand == null) {
+        if(qttCommand == null) {
             QttControl qttControl = createQttControl(frame);
-            if (qttControl != null) {
+            if(qttControl != null) {
                 return qttControl;
             }
-            else throw new IllegalArgumentException("MQTT type error");
+            else { throw new IllegalArgumentException("MQTT type error"); }
         }
-        else return qttCommand;
+        else { return qttCommand; }
     }
 
     @Override
     public IControl create(int serial)
     {
-        if (serial >= X111_QttConnect.COMMAND && serial <= X11F_QttAuth.COMMAND) {
-            return switch (serial)
-            {
+        if(serial >= X111_QttConnect.COMMAND && serial <= X11F_QttAuth.COMMAND) {
+            return switch(serial) {
                 case X111_QttConnect.COMMAND -> new X111_QttConnect();
                 case X112_QttConnack.COMMAND -> new X112_QttConnack();
                 case X113_QttPublish.COMMAND -> new X113_QttPublish();
@@ -83,8 +79,7 @@ public class QttCommandFactory
             };
         }
         else {
-            return switch (QttType.valueOf(serial))
-            {
+            return switch(QttType.valueOf(serial)) {
                 case CONNECT -> new X111_QttConnect();
                 case CONNACK -> new X112_QttConnack();
                 case PUBLISH -> new X113_QttPublish();
@@ -108,8 +103,7 @@ public class QttCommandFactory
     {
         {
             QttControl qttControl;
-            switch (frame.getType())
-            {
+            switch(frame.getType()) {
                 case CONNECT:
                     qttControl = new X111_QttConnect();
                     break;
@@ -132,7 +126,7 @@ public class QttCommandFactory
                     return null;
             }
             byte[] payload = frame.getPayload();
-            if (payload != null) {
+            if(payload != null) {
                 qttControl.decode(payload);
             }
             return qttControl;
@@ -147,8 +141,7 @@ public class QttCommandFactory
     public static QttCommand createQttCommand(QttFrame frame)
     {
         QttCommand qttCommand;
-        switch (frame.getType())
-        {
+        switch(frame.getType()) {
             case PUBLISH:
                 qttCommand = new X113_QttPublish();
                 break;
@@ -181,7 +174,7 @@ public class QttCommandFactory
         }
         qttCommand.setCtrl(frame.getCtrl());
         byte[] payload = frame.getPayload();
-        if (payload != null) {
+        if(payload != null) {
             qttCommand.decode(payload);
         }
         return qttCommand;

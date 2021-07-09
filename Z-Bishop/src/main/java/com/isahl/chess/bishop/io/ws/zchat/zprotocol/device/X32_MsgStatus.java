@@ -30,8 +30,7 @@ import com.isahl.chess.king.base.util.IoUtil;
  * @author william.d.zk
  */
 public class X32_MsgStatus
-        extends
-        ZCommand
+        extends ZCommand
 {
     public final static int COMMAND = 0x32;
 

@@ -23,8 +23,6 @@
 
 package com.isahl.chess.bishop.io.mqtt.filter;
 
-import java.nio.ByteBuffer;
-
 import com.isahl.chess.bishop.io.mqtt.QttContext;
 import com.isahl.chess.bishop.io.mqtt.QttFrame;
 import com.isahl.chess.king.base.util.Pair;
@@ -35,15 +33,14 @@ import com.isahl.chess.queen.io.core.inf.IPacket;
 import com.isahl.chess.queen.io.core.inf.IProtocol;
 import com.isahl.chess.queen.io.core.inf.IProxyContext;
 
+import java.nio.ByteBuffer;
+
 /**
  * @author william.d.zk
- * 
  * @date 2019-05-07
  */
 public class QttFrameFilter
-        extends
-        AioFilterChain<QttContext, QttFrame,
-                       IPacket>
+        extends AioFilterChain<QttContext, QttFrame, IPacket>
 {
     public final static String NAME = "mqtt_frame";
 
@@ -68,38 +65,36 @@ public class QttFrameFilter
         ByteBuffer cRvBuf = context.getRvBuffer();
         QttFrame carrier = context.getCarrier();
         int lack = context.lack();
-        switch (context.position())
-        {
+        switch(context.position()) {
             case -1:
-                if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
+                if(lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
                 context.setCarrier(carrier = new QttFrame());
                 byte value = recvBuf.get();
                 carrier.setCtrl(value);
                 lack = context.lackLength(1, 1);
             case 0:
-                if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
+                if(lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
                 carrier.setLengthCode(recvBuf.get());
                 lack = context.lackLength(1, carrier.lackLength(context.position()) + context.position() + 1);
             case 1:
             default:
-                if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
+                if(lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
                 int target = context.position() + lack;
                 do {
-                    if (carrier.isLengthCodeLack()) {
+                    if(carrier.isLengthCodeLack()) {
                         carrier.setLengthCode(recvBuf.get());
                         lack = context.lackLength(1,
-                                                  target = carrier.lackLength(context.position())
-                                                           + context.position()
-                                                           + 1);
+                                                  target = carrier.lackLength(context.position()) + context.position() +
+                                                           1);
                     }
                     else {
                         int length = Math.min(recvBuf.remaining(), lack);
-                        for (int i = 0; i < length; i++) {
+                        for(int i = 0; i < length; i++) {
                             cRvBuf.put(recvBuf.get());
                         }
                         lack = context.lackLength(length, target);
-                        if (lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
-                        if (carrier.getPayloadLength() > 0) {
+                        if(lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
+                        if(carrier.getPayloadLength() > 0) {
                             byte[] payload = new byte[carrier.getPayloadLength()];
                             cRvBuf.flip();
                             cRvBuf.get(payload);
@@ -109,7 +104,7 @@ public class QttFrameFilter
                         return ResultType.NEXT_STEP;
                     }
                 }
-                while (recvBuf.hasRemaining());
+                while(recvBuf.hasRemaining());
                 return ResultType.NEED_DATA;
         }
     }
@@ -123,34 +118,32 @@ public class QttFrameFilter
     }
 
     @Override
-    public <O extends IProtocol> Pair<ResultType,
-                                      IPContext> pipeSeek(IPContext context, O output)
+    public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
     {
-        if (checkType(output, IProtocol.FRAME_SERIAL)) {
-            if (context instanceof QttContext && context.isOutFrame()) {
+        if(checkType(output, IProtocol.FRAME_SERIAL)) {
+            if(context instanceof QttContext && context.isOutFrame()) {
                 return new Pair<>(ResultType.NEXT_STEP, context);
             }
             IPContext acting = context;
-            while (acting.isProxy()) {
+            while(acting.isProxy()) {
                 acting = ((IProxyContext<?>) acting).getActingContext();
-                if (acting instanceof QttContext) { return new Pair<>(ResultType.NEXT_STEP, acting); }
+                if(acting instanceof QttContext) { return new Pair<>(ResultType.NEXT_STEP, acting); }
             }
         }
         return new Pair<>(ResultType.IGNORE, context);
     }
 
     @Override
-    public <I extends IProtocol> Pair<ResultType,
-                                      IPContext> pipePeek(IPContext context, I input)
+    public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
     {
-        if (checkType(input, IProtocol.PACKET_SERIAL)) {
-            if (context instanceof QttContext && context.isInFrame()) {
+        if(checkType(input, IProtocol.PACKET_SERIAL)) {
+            if(context instanceof QttContext && context.isInFrame()) {
                 return new Pair<>(peek((QttContext) context, (IPacket) input), context);
             }
             IPContext acting = context;
-            while (acting.isProxy()) {
+            while(acting.isProxy()) {
                 acting = ((IProxyContext<?>) acting).getActingContext();
-                if (acting instanceof QttContext && acting.isInFrame()) {
+                if(acting instanceof QttContext && acting.isInFrame()) {
                     return new Pair<>(peek((QttContext) acting, (IPacket) input), acting);
                 }
             }
@@ -160,16 +153,14 @@ public class QttFrameFilter
 
     @Override
     @SuppressWarnings("unchecked")
-    public <O extends IProtocol,
-            I extends IProtocol> I pipeEncode(IPContext context, O output)
+    public <O extends IProtocol, I extends IProtocol> I pipeEncode(IPContext context, O output)
     {
         return (I) encode((QttContext) context, (QttFrame) output);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <O extends IProtocol,
-            I extends IProtocol> O pipeDecode(IPContext context, I input)
+    public <O extends IProtocol, I extends IProtocol> O pipeDecode(IPContext context, I input)
     {
         return (O) decode((QttContext) context, (IPacket) input);
     }

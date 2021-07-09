@@ -30,8 +30,7 @@ import com.isahl.chess.king.base.util.IoUtil;
  * @author william.d.zk
  */
 public class X30_EventMsg
-        extends
-        ZCommand
+        extends ZCommand
 {
 
     public final static int COMMAND = 0x30;
@@ -56,7 +55,7 @@ public class X30_EventMsg
     /**
      * 取值范围
      * -128 ~ 127;
-     * 
+     * <p>
      * -127: script
      * 0000: text
      */
@@ -77,7 +76,7 @@ public class X30_EventMsg
         ctrl = data[pos++];
         payloadLength = IoUtil.readShort(data, pos);
         pos += 2;
-        if (payloadLength > 0) {
+        if(payloadLength > 0) {
             payload = new byte[payloadLength];
             pos = IoUtil.read(data, pos, payload);
         }

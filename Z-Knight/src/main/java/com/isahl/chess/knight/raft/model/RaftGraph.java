@@ -33,16 +33,14 @@ import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/2/21
- *       Raft 集群的拓扑关系
+ * Raft 集群的拓扑关系
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class RaftGraph
 {
-    private final NavigableMap<Long,
-                               RaftMachine> _NodeMap = new ConcurrentSkipListMap<>();
+    private final NavigableMap<Long, RaftMachine> _NodeMap = new ConcurrentSkipListMap<>();
 
     public boolean contains(long peerId)
     {
@@ -63,15 +61,14 @@ public class RaftGraph
         _NodeMap.remove(peer);
     }
 
-    public NavigableMap<Long,
-                        RaftMachine> getNodeMap()
+    public NavigableMap<Long, RaftMachine> getNodeMap()
     {
         return _NodeMap;
     }
 
     public void append(RaftMachine machine)
     {
-     _NodeMap.putIfAbsent(machine.getPeerId(), machine) ;
+        _NodeMap.putIfAbsent(machine.getPeerId(), machine);
     }
 
     @JsonIgnore
@@ -79,7 +76,7 @@ public class RaftGraph
     {
         return _NodeMap.values()
                        .stream()
-                       .filter(machine -> machine.getTerm() == term && machine.getCandidate() == candidate)
+                       .filter(machine->machine.getTerm() == term && machine.getCandidate() == candidate)
                        .count() > _NodeMap.size() / 2;
     }
 
@@ -88,9 +85,8 @@ public class RaftGraph
     {
         return _NodeMap.values()
                        .stream()
-                       .filter(machine -> machine.getTerm() == term
-                                          && machine.getMatchIndex() >= index
-                                          && machine.getLeader() == leader)
+                       .filter(machine->machine.getTerm() == term && machine.getMatchIndex() >= index &&
+                                        machine.getLeader() == leader)
                        .count() > _NodeMap.size() / 2;
     }
 
@@ -98,7 +94,7 @@ public class RaftGraph
     {
         return _NodeMap.values()
                        .stream()
-                       .filter(machine -> machine.getTerm() >= term && machine.getCandidate() != candidate)
+                       .filter(machine->machine.getTerm() >= term && machine.getCandidate() != candidate)
                        .count() <= _NodeMap.size() / 2;
     }
 

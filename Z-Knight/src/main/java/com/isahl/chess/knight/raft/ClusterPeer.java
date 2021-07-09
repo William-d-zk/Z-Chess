@@ -62,7 +62,8 @@ import static java.lang.Math.min;
 public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
         implements IValid
 {
-    private final Logger                          _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
+    private final Logger                          _Logger = Logger.getLogger(
+            "cluster.knight." + getClass().getSimpleName());
     private final ZUID                            _ZUid;
     private final IRaftConfig                     _RaftConfig;
     private final M                               _ClusterPeer;
@@ -85,8 +86,8 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
         _RaftDao = raftDao;
         _ElectSchedule = new ScheduleHandler<>(_RaftConfig.getElectInSecond(), ClusterPeer::stepDown);
         _HeartbeatSchedule = new ScheduleHandler<>(_RaftConfig.getHeartbeatInSecond(), ClusterPeer::heartbeat);
-        _TickSchedule = new ScheduleHandler<>(_RaftConfig.getHeartbeatInSecond().multipliedBy(2),
-                                              ClusterPeer::startVote);
+        _TickSchedule = new ScheduleHandler<>(_RaftConfig.getHeartbeatInSecond()
+                                                         .multipliedBy(2), ClusterPeer::startVote);
         _RaftGraph = new RaftGraph();
         _SelfMachine = new RaftMachine(_ZUid.getPeerId());
         _RaftGraph.append(_SelfMachine);
@@ -102,21 +103,31 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
     private void init()
     {
         /* _RaftDao 启动的时候已经装载了 snapshot */
-        _SelfMachine.setTerm(_RaftDao.getLogMeta().getTerm());
-        _SelfMachine.setCandidate(_RaftDao.getLogMeta().getCandidate());
-        _SelfMachine.setCommit(_RaftDao.getLogMeta().getCommit());
-        _SelfMachine.setApplied(_RaftDao.getLogMeta().getApplied());
-        _SelfMachine.setIndex(_RaftDao.getLogMeta().getIndex());
-        _SelfMachine.setIndexTerm(_RaftDao.getLogMeta().getIndexTerm());
-        _SelfMachine.setPeerSet(_RaftDao.getLogMeta().getPeerSet());
-        _SelfMachine.setGateSet(_RaftDao.getLogMeta().getGateSet());
+        _SelfMachine.setTerm(_RaftDao.getLogMeta()
+                                     .getTerm());
+        _SelfMachine.setCandidate(_RaftDao.getLogMeta()
+                                          .getCandidate());
+        _SelfMachine.setCommit(_RaftDao.getLogMeta()
+                                       .getCommit());
+        _SelfMachine.setApplied(_RaftDao.getLogMeta()
+                                        .getApplied());
+        _SelfMachine.setIndex(_RaftDao.getLogMeta()
+                                      .getIndex());
+        _SelfMachine.setIndexTerm(_RaftDao.getLogMeta()
+                                          .getIndexTerm());
+        _SelfMachine.setPeerSet(_RaftDao.getLogMeta()
+                                        .getPeerSet());
+        _SelfMachine.setGateSet(_RaftDao.getLogMeta()
+                                        .getGateSet());
         /* 初始化时，match_index == applied */
         _SelfMachine.setMatchIndex(_SelfMachine.getApplied());
         if(_SelfMachine.getPeerSet() == null) {
             /* 首次启动或删除本地状态机重启,仅需要连接node_id < self.node_id的peer */
             _RaftDao.loadDefaultGraphSet();
-            _SelfMachine.setPeerSet(_RaftDao.getLogMeta().getPeerSet());
-            _SelfMachine.setGateSet(_RaftDao.getLogMeta().getGateSet());
+            _SelfMachine.setPeerSet(_RaftDao.getLogMeta()
+                                            .getPeerSet());
+            _SelfMachine.setGateSet(_RaftDao.getLogMeta()
+                                            .getGateSet());
         }
         if(!_RaftConfig.isClusterMode()) {
             _Logger.info("single mode , ignore state listen");
@@ -188,12 +199,15 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
             _Logger.debug(" applied < commit sync is running");
             return;
         }
-        if(_SelfMachine.getApplied() >= _RaftDao.getStartIndex() && _SelfMachine.getApplied() <= _RaftDao.getEndIndex()) {
+        if(_SelfMachine.getApplied() >= _RaftDao.getStartIndex() &&
+           _SelfMachine.getApplied() <= _RaftDao.getEndIndex())
+        {
             localTerm = _RaftDao.getEntryTerm(_SelfMachine.getApplied());
             _RaftDao.updateSnapshotMeta(_SelfMachine.getApplied(), localTerm);
             _Logger.debug("take snapshot");
         }
-        long lastSnapshotIndex = _RaftDao.getSnapshotMeta().getCommit();
+        long lastSnapshotIndex = _RaftDao.getSnapshotMeta()
+                                         .getCommit();
         if(lastSnapshotIndex > 0 && _RaftDao.getStartIndex() <= lastSnapshotIndex) {
             _RaftDao.truncatePrefix(lastSnapshotIndex + 1);
             _Logger.debug("snapshot truncate prefix %d", lastSnapshotIndex);
@@ -258,7 +272,8 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
         reject.setIndexTerm(_SelfMachine.getIndexTerm());
         reject.setReject(rejectTo);
         reject.setCode(raftCode.getCode());
-        reject.setState(_SelfMachine.getState().getCode());
+        reject.setState(_SelfMachine.getState()
+                                    .getCode());
         return reject;
     }
 
@@ -281,7 +296,9 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
 
     private void stepDown(long term)
     {
-        if(_SelfMachine.getState().getCode() > FOLLOWER.getCode()) {
+        if(_SelfMachine.getState()
+                       .getCode() > FOLLOWER.getCode())
+        {
             _Logger.debug("step down [%s → follower] %s", _SelfMachine.getState(), _SelfMachine);
             _SelfMachine.follow(term, _RaftDao);
             mTickTask = _TimeWheel.acquire(this, _TickSchedule);
@@ -371,7 +388,9 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
         IControl[] response = lowTerm(term, candidate);
         if(response != null) { return new Pair<>(response, null); }
         if(highTerm(term) || _SelfMachine.getState() == FOLLOWER) {
-            if(_SelfMachine.getIndex() <= index && _SelfMachine.getIndexTerm() <= indexTerm && _SelfMachine.getCommit() <= commit) {
+            if(_SelfMachine.getIndex() <= index && _SelfMachine.getIndexTerm() <= indexTerm &&
+               _SelfMachine.getCommit() <= commit)
+            {
                 _Logger.debug("new term [follower → elector %d ] | candidate: %#x", term, candidate);
                 X71_RaftBallot vote = stepUp(candidate, term);
                 return new Pair<>(new X71_RaftBallot[]{ vote }, null);
@@ -407,8 +426,8 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
         peerMachine.setIndex(index);
         peerMachine.setCandidate(candidate);
         peerMachine.setState(FOLLOWER);
-        if(_SelfMachine.getState() == CANDIDATE && _RaftGraph.isMajorAcceptCandidate(_SelfMachine.getPeerId(),
-                                                                                     _SelfMachine.getTerm()))
+        if(_SelfMachine.getState() == CANDIDATE &&
+           _RaftGraph.isMajorAcceptCandidate(_SelfMachine.getPeerId(), _SelfMachine.getTerm()))
         {
             beLeader();
             return new Pair<>(createBroadcasts(manager, Function.identity()).toArray(IControl[]::new), null);
@@ -459,9 +478,8 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
          * follower.match_index > leader.commit 完成半数 match 之后只触发一次 leader commit
          */
         long nextCommit = _SelfMachine.getCommit() + 1;
-        if(peerMachine.getMatchIndex() > _SelfMachine.getCommit() && _RaftGraph.isMajorAcceptLeader(_SelfMachine.getPeerId(),
-                                                                                                    _SelfMachine.getTerm(),
-                                                                                                    nextCommit))
+        if(peerMachine.getMatchIndex() > _SelfMachine.getCommit() &&
+           _RaftGraph.isMajorAcceptLeader(_SelfMachine.getPeerId(), _SelfMachine.getTerm(), nextCommit))
         {
             // peerMachine.getIndex() > _SelfMachine.getCommit()时，raftLog 不可能为 null
             _SelfMachine.commit(nextCommit, _RaftDao);
@@ -469,7 +487,7 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
             LogEntry raftLog = _RaftDao.getEntry(nextCommit);
             X77_RaftNotify x77 = createNotify(raftLog);
             x77.setLeader();
-            if(raftLog.isPublic()) {
+            if(raftLog.isAll()) {
                 return new Pair<>(createNotifyStream(manager, raftLog, Function.identity()).toArray(IControl[]::new),
                                   x77);
             }
@@ -524,13 +542,15 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
                 }
                 break;
             case ALREADY_VOTE:
-                if(_SelfMachine.getState() == CANDIDATE && _RaftGraph.isMinorReject(_SelfMachine.getPeerId(),
-                                                                                    _SelfMachine.getTerm()))
+                if(_SelfMachine.getState() == CANDIDATE &&
+                   _RaftGraph.isMinorReject(_SelfMachine.getPeerId(), _SelfMachine.getTerm()))
                 {
                     break;
                 }
             case OBSOLETE:
-                if(_SelfMachine.getState().getCode() > FOLLOWER.getCode()) {
+                if(_SelfMachine.getState()
+                               .getCode() > FOLLOWER.getCode())
+                {
                     electCancel();
                     stepDown(_SelfMachine.getTerm());
                 }
@@ -705,8 +725,8 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
 
     public void turnToFollower(RaftMachine update)
     {
-        if((_SelfMachine.getState() == ELECTOR || _SelfMachine.getState() == CANDIDATE) && update.getState() == FOLLOWER && update.getTerm() >= _SelfMachine
-                .getTerm())
+        if((_SelfMachine.getState() == ELECTOR || _SelfMachine.getState() == CANDIDATE) &&
+           update.getState() == FOLLOWER && update.getTerm() >= _SelfMachine.getTerm())
         {
             _Logger.debug("elect time out");
             stepDown(update.getTerm());
@@ -717,9 +737,10 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
 
     public <T> List<T> checkVoteState(RaftMachine update, ISessionManager manager, Function<ZCommand, T> mapper)
     {
-        if(update.getTerm() == _SelfMachine.getTerm() + 1 && update.getIndex() == _SelfMachine.getIndex() && update.getIndexTerm() == _SelfMachine
-                .getIndexTerm() && update.getCandidate() == _SelfMachine.getPeerId() && update.getCommit() == _SelfMachine
-                .getCommit() && update.getState() == CANDIDATE && _SelfMachine.getState() == FOLLOWER)
+        if(update.getTerm() == _SelfMachine.getTerm() + 1 && update.getIndex() == _SelfMachine.getIndex() &&
+           update.getIndexTerm() == _SelfMachine.getIndexTerm() && update.getCandidate() == _SelfMachine.getPeerId() &&
+           update.getCommit() == _SelfMachine.getCommit() && update.getState() == CANDIDATE &&
+           _SelfMachine.getState() == FOLLOWER)
         {
             vote4me();
             return createVotes(update, manager, mapper);
@@ -730,10 +751,9 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
 
     public <T> List<T> checkLogAppend(RaftMachine update, ISessionManager manager, Function<ZCommand, T> mapper)
     {
-        if(_SelfMachine.getState() == LEADER && _SelfMachine.getPeerId() == update.getPeerId() && _SelfMachine.getTerm() >= update
-                .getTerm() && _SelfMachine.getIndex() >= update.getIndex() && _SelfMachine.getIndexTerm() >= update.getIndexTerm() && _SelfMachine
-                                                                                                                                              .getCommit() >= update
-                                                                                                                                              .getCommit())
+        if(_SelfMachine.getState() == LEADER && _SelfMachine.getPeerId() == update.getPeerId() &&
+           _SelfMachine.getTerm() >= update.getTerm() && _SelfMachine.getIndex() >= update.getIndex() &&
+           _SelfMachine.getIndexTerm() >= update.getIndexTerm() && _SelfMachine.getCommit() >= update.getCommit())
         {
             _Logger.debug("keep lead =>%s", _SelfMachine);
             mHeartbeatTask = _TimeWheel.acquire(this, _HeartbeatSchedule);
@@ -751,18 +771,18 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
         _AppendLogQueue.addAll(entryList);
     }
 
-    public <T extends IConsistent & IControl, R> List<R> newLocalLogEntry(T request,
-                                                                          long client,
-                                                                          ISessionManager manager,
-                                                                          Function<ZCommand, R> mapper,
-                                                                          ISession session)
+    public <T extends INotify & IControl, R> List<R> newLocalLogEntry(T request,
+                                                                      long client,
+                                                                      ISessionManager manager,
+                                                                      Function<ZCommand, R> mapper,
+                                                                      ISession session)
     {
         byte[] payload = request.encode();
         List<R> cmds = createLeaderLogEntry(request.serial(),
                                             payload,
                                             client,
                                             request.getOrigin(),
-                                            request.isPublic(),
+                                            request.isAll(),
                                             manager,
                                             mapper);
         if(cmds == null) {
@@ -942,8 +962,8 @@ public class ClusterPeer<M extends IClusterPeer & IClusterTimer>
                 x72.setPreIndex(0);
                 x72.setPreIndexTerm(0);
             }
-            for(long l = _SelfMachine.getIndex(), payload_size = 0; next <= l && payload_size < _SnapshotFragmentMaxSize; next++)
-            {
+            for(long l = _SelfMachine.getIndex(), payload_size = 0;
+                next <= l && payload_size < _SnapshotFragmentMaxSize; next++) {
                 if(limit > 0 && entryList.size() >= limit) {
                     break;
                 }

@@ -25,7 +25,6 @@ package com.isahl.chess.knight.raft.inf;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/2/5
  */
 public interface IRaftClient

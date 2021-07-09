@@ -92,7 +92,8 @@ public class RaftMachine
         mLeader = json.getLeader();
         mCommit = json.getCommit();
         mApplied = json.getApplied();
-        mState = json.getState().getCode();
+        mState = json.getState()
+                     .getCode();
         mPeerSet = json.getPeerSet();
         mGateSet = json.getGateSet();
         mLength = data.length;
@@ -476,7 +477,9 @@ public class RaftMachine
     @Override
     public String toString()
     {
-        return String.format("\n{\n" + "\t\tpeerId:%#x\n" + "\t\tstate:%s\n" + "\t\tterm:%d\n" + "\t\tindex:%d\n" + "\t\tindex_term:%d\n" + "\t\tmatch_index:%d\n" + "\t\tcommit:%d\n" + "\t\tapplied:%d\n" + "\t\tleader:%#x\n" + "\t\tcandidate:%#x\n" + "\t\tpeers:%s\n}",
+        return String.format("\n{\n" + "\t\tpeerId:%#x\n" + "\t\tstate:%s\n" + "\t\tterm:%d\n" + "\t\tindex:%d\n" +
+                             "\t\tindex_term:%d\n" + "\t\tmatch_index:%d\n" + "\t\tcommit:%d\n" + "\t\tapplied:%d\n" +
+                             "\t\tleader:%#x\n" + "\t\tcandidate:%#x\n" + "\t\tpeers:%s\n}",
                              _PeerId,
                              getState(),
                              mTerm,
@@ -494,7 +497,9 @@ public class RaftMachine
     {
         StringBuilder sb = new StringBuilder("[\n");
         for(RaftNode node : mPeerSet) {
-            sb.append("\t<").append(String.format(" %s ", node)).append(">\n");
+            sb.append("\t<")
+              .append(String.format(" %s ", node))
+              .append(">\n");
         }
         sb.append(']');
         return sb.toString();

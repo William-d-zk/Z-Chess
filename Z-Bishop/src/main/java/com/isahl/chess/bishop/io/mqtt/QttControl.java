@@ -23,25 +23,22 @@
 
 package com.isahl.chess.bishop.io.mqtt;
 
-import java.util.Objects;
-
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISession;
 
+import java.util.Objects;
+
 /**
  * @author william.d.zk
- * 
  * @date 2019-05-13
  */
 public abstract class QttControl
-        extends
-        MqttProtocol
-        implements
-        IControl
+        extends MqttProtocol
+        implements IControl
 {
-    private final int _Command;
-    private byte[]    mPayload;
-    private ISession  mSession;
+    private final int      _Command;
+    private       byte[]   mPayload;
+    private       ISession mSession;
 
     public QttControl(int command)
     {
@@ -51,7 +48,7 @@ public abstract class QttControl
     @Override
     public int dataLength()
     {
-        return Objects.nonNull(mPayload) ? mPayload.length: 0;
+        return Objects.nonNull(mPayload) ? mPayload.length : 0;
     }
 
     @Override

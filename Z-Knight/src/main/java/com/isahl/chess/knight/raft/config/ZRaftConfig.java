@@ -211,7 +211,6 @@ public class ZRaftConfig
                     switch(operation) {
                         case OP_APPEND -> {
                             if(present) {
-                                _Logger.warning("duplicate peer:%s", peer);
                                 break CHECK;
                             }
                             break LOOP;

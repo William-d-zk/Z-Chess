@@ -23,19 +23,17 @@
 
 package com.isahl.chess.bishop.io.mqtt.control;
 
-import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
-
 import com.isahl.chess.bishop.io.mqtt.QttControl;
 import com.isahl.chess.bishop.io.mqtt.QttType;
 
+import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
+
 /**
  * @author william.d.zk
- * 
  * @date 2019-05-30
  */
 public class X11C_QttPingreq
-        extends
-        QttControl
+        extends QttControl
 {
     public final static int COMMAND = 0x11C;
 

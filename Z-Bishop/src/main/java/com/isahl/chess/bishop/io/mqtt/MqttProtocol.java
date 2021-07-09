@@ -29,14 +29,12 @@ import com.isahl.chess.queen.io.core.inf.IQoS;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-05-25
  */
 public abstract class MqttProtocol
-        implements
-        IProtocol,
-        IQoS,
-        IDuplicate
+        implements IProtocol,
+                   IQoS,
+                   IDuplicate
 {
     public final static byte VERSION_V3_1_1 = 4;
     public final static byte VERSION_V5_0   = 5;
@@ -56,7 +54,7 @@ public abstract class MqttProtocol
 
     private void checkOpCode()
     {
-        if (getLevel() == Level.ALMOST_ONCE && mDuplicate) {
+        if(getLevel() == Level.ALMOST_ONCE && mDuplicate) {
             throw new IllegalStateException("level == 0 && duplicate");
         }
     }
@@ -64,8 +62,8 @@ public abstract class MqttProtocol
     public static byte generateCtrl(boolean dup, boolean retain, Level qosLevel, QttType qttType)
     {
         byte ctrl = 0;
-        ctrl |= dup ? DUPLICATE_FLAG: 0;
-        ctrl |= retain ? RETAIN_FLAG: 0;
+        ctrl |= dup ? DUPLICATE_FLAG : 0;
+        ctrl |= retain ? RETAIN_FLAG : 0;
         ctrl |= qosLevel.ordinal() << 1;
         ctrl |= qttType.getValue();
         return ctrl;
@@ -74,7 +72,7 @@ public abstract class MqttProtocol
     public void setDuplicate(boolean duplicate)
     {
         this.mDuplicate = duplicate;
-        if (duplicate) {
+        if(duplicate) {
             mFrameOpCode |= DUPLICATE_FLAG;
         }
         else {
@@ -91,7 +89,7 @@ public abstract class MqttProtocol
     public void setRetain(boolean retain)
     {
         this.mRetain = retain;
-        if (retain) {
+        if(retain) {
             mFrameOpCode |= RETAIN_FLAG;
         }
         else {
@@ -109,7 +107,7 @@ public abstract class MqttProtocol
         mQosLevel = (byte) level.ordinal();
         mFrameOpCode &= ~QOS_MASK;
         mFrameOpCode |= mQosLevel << 1;
-        if (mQosLevel == 0) {
+        if(mQosLevel == 0) {
             setDuplicate(false);
         }
     }
@@ -129,7 +127,7 @@ public abstract class MqttProtocol
     {
         mFrameOpCode = opCode;
         mType = QttType.valueOf(getOpCode());
-        if (mType == null) { throw new IllegalArgumentException(); }
+        if(mType == null) { throw new IllegalArgumentException(); }
         mDuplicate = (mFrameOpCode & DUPLICATE_FLAG) == DUPLICATE_FLAG;
         mRetain = (mFrameOpCode & RETAIN_FLAG) == RETAIN_FLAG;
         mQosLevel = (byte) ((mFrameOpCode & QOS_MASK) >> 1);

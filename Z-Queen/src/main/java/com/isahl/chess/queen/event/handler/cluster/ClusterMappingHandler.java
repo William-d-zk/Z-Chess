@@ -23,12 +23,6 @@
 
 package com.isahl.chess.queen.event.handler.cluster;
 
-import static com.isahl.chess.king.base.inf.IError.Type.MAPPING_ERROR;
-
-import java.nio.channels.AsynchronousSocketChannel;
-import java.util.List;
-import java.util.Objects;
-
 import com.isahl.chess.king.base.disruptor.event.OperatorType;
 import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
 import com.isahl.chess.king.base.disruptor.event.inf.IPipeEventHandler;
@@ -41,24 +35,21 @@ import com.isahl.chess.queen.db.inf.IStorage;
 import com.isahl.chess.queen.event.QEvent;
 import com.isahl.chess.queen.io.core.async.inf.IAioConnector;
 import com.isahl.chess.queen.io.core.async.inf.IAioServer;
-import com.isahl.chess.queen.io.core.inf.IConnectActivity;
-import com.isahl.chess.queen.io.core.inf.IConsistentNotify;
-import com.isahl.chess.queen.io.core.inf.IControl;
-import com.isahl.chess.queen.io.core.inf.IProtocol;
-import com.isahl.chess.queen.io.core.inf.ISession;
-import com.isahl.chess.queen.io.core.inf.ISessionDismiss;
-import com.isahl.chess.queen.io.core.inf.ISessionManager;
-import com.isahl.chess.queen.io.core.inf.ITraceable;
+import com.isahl.chess.queen.io.core.inf.*;
 import com.lmax.disruptor.RingBuffer;
+
+import java.nio.channels.AsynchronousSocketChannel;
+import java.util.List;
+import java.util.Objects;
+
+import static com.isahl.chess.king.base.inf.IError.Type.MAPPING_ERROR;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/2/15
  */
 public class ClusterMappingHandler<T extends IStorage>
-        implements
-        IPipeEventHandler<QEvent>
+        implements IPipeEventHandler<QEvent>
 {
     private final Logger               _Logger;
     private final RingBuffer<QEvent>   _Error;
@@ -90,21 +81,16 @@ public class ClusterMappingHandler<T extends IStorage>
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch)
     {
-        if (event.hasError()) {
+        if(event.hasError()) {
             _Logger.debug(String.format("error type %s,ignore ", event.getErrorType()));
-            switch (event.getErrorType())
-            {
+            switch(event.getErrorType()) {
                 case ACCEPT_FAILED:
-                    IOperator<Throwable,
-                              IAioServer,
-                              Void> acceptFailedOperator = event.getEventOp();
+                    IOperator<Throwable, IAioServer, Void> acceptFailedOperator = event.getEventOp();
                     IPair errorContent = event.getContent();
                     acceptFailedOperator.handle(errorContent.getFirst(), errorContent.getSecond());
                     break;
                 case CONNECT_FAILED:
-                    IOperator<Throwable,
-                              IAioConnector,
-                              Void> connectFailedOperator = event.getEventOp();
+                    IOperator<Throwable, IAioConnector, Void> connectFailedOperator = event.getEventOp();
                     errorContent = event.getContent();
                     connectFailedOperator.handle(errorContent.getFirst(), errorContent.getSecond());
                     break;
@@ -113,15 +99,13 @@ public class ClusterMappingHandler<T extends IStorage>
                     _Logger.warning("mapping handle io error, %s",
                                     event.getErrorType()
                                          .getMsg());
-                    IOperator<Void,
-                              ISession,
-                              Void> closeOperator = event.getEventOp();
+                    IOperator<Void, ISession, Void> closeOperator = event.getEventOp();
                     errorContent = event.getContent();
                     ISession session = errorContent.getSecond();
                     ISessionDismiss dismiss = session.getDismissCallback();
                     boolean closed = session.isClosed();
                     closeOperator.handle(null, session);
-                    if (!closed) {
+                    if(!closed) {
                         dismiss.onDismiss(session);
                     }
                     break;
@@ -133,28 +117,25 @@ public class ClusterMappingHandler<T extends IStorage>
             }
         }
         else {
-            switch (event.getEventType())
-            {
+            switch(event.getEventType()) {
                 case CONNECTED:
                     IPair connected = event.getContent();
                     AsynchronousSocketChannel channel = connected.getSecond();
                     IAioConnector connector = connected.getFirst();
-                    IOperator<IConnectActivity,
-                              AsynchronousSocketChannel,
-                              ITriple> connectedOperator = event.getEventOp();
+                    IOperator<IConnectActivity, AsynchronousSocketChannel, ITriple> connectedOperator = event.getEventOp();
                     ITriple handled = connectedOperator.handle(connector, channel);
                     boolean success = handled.getFirst();
-                    if (success) {
+                    if(success) {
                         ISession session = handled.getSecond();
                         IControl[] toSends = handled.getThird();
-                        if (toSends != null) {
+                        if(toSends != null) {
                             publish(_Writer, OperatorType.WRITE, new Pair<>(toSends, session), session.getTransfer());
                         }
                     }
                     else {
                         Throwable throwable = handled.getThird();
                         _Logger.warning("session connect create failed ,channel error %", throwable, channel);
-                        if (handled.getSecond() instanceof AsynchronousSocketChannel) {
+                        if(handled.getSecond() instanceof AsynchronousSocketChannel) {
                             connector.error();
                         }
                         else {
@@ -170,17 +151,17 @@ public class ClusterMappingHandler<T extends IStorage>
                     connectedOperator = event.getEventOp();
                     handled = connectedOperator.handle(server, channel);
                     success = handled.getFirst();
-                    if (success) {
+                    if(success) {
                         ISession session = handled.getSecond();
                         IControl[] toSends = handled.getThird();
-                        if (toSends != null) {
+                        if(toSends != null) {
                             publish(_Writer, OperatorType.WRITE, new Pair<>(toSends, session), session.getTransfer());
                         }
                     }
                     else {
                         Throwable throwable = handled.getThird();
                         _Logger.warning("session accept create failed ,channel error %", throwable, channel);
-                        if (handled.getSecond() instanceof ISession) {
+                        if(handled.getSecond() instanceof ISession) {
                             ISession session = handled.getSecond();
                             session.innerClose();
                         }
@@ -191,59 +172,55 @@ public class ClusterMappingHandler<T extends IStorage>
                                              .getFirst();
                     ISession session = event.getContent()
                                             .getSecond();
-                    if (received == null) { return; }
+                    if(received == null) { return; }
                     try {
                         IPair pair = _ClusterCustom.handle(_SessionManager, session, received);
-                        if (pair == null) return;
+                        if(pair == null) { return; }
                         IControl[] toSends = pair.getFirst();
-                        if (toSends != null && toSends.length > 0) {
+                        if(toSends != null && toSends.length > 0) {
                             publish(_Writer, OperatorType.WRITE, new Pair<>(toSends, session), session.getTransfer());
                         }
-                        IConsistentNotify notify = pair.getSecond();
-                        if (notify != null) {
-                            if (notify.byLeader()) {
+                        IConsistent notify = pair.getSecond();
+                        if(notify != null) {
+                            if(notify.isByLeader()) {
                                 try {
                                     _ConsistentCustom.adjudge(notify);
                                 }
-                                catch (Throwable e) {
+                                catch(Throwable e) {
                                     _Logger.warning("leader - adjudge ", e);
                                 }
                             }
-                            if (notify.doNotify()) {
+                            if(notify.doNotify()) {
                                 publishNotify(pair.getSecond(), null, _ConsistentCustom.getOperator());
                             }
                         }
                     }
-                    catch (Exception e) {
+                    catch(Exception e) {
                         _Logger.warning("cluster mapping handler error", e);
                         session.innerClose();
                     }
                     break;
                 case CONSENSUS:
-                    if (_ClusterCustom.waitForCommit()) {
+                    if(_ClusterCustom.waitForCommit()) {
                         try {
                             List<ITriple> broadcast = _ClusterCustom.consensus(_SessionManager,
                                                                                event.getContent()
                                                                                     .getFirst());
-                            if (broadcast != null && !broadcast.isEmpty()) {
+                            if(broadcast != null && !broadcast.isEmpty()) {
                                 publish(_Writer, broadcast);
                             }
                         }
-                        catch (Exception e) {
+                        catch(Exception e) {
                             _Logger.warning("mapping consensus error", e);
                             publishNotify(event.getContent()
-                                               .getFirst(),
-                                          e,
-                                          _ConsistentCustom.getOperator());
+                                               .getFirst(), e, _ConsistentCustom.getOperator());
                         }
                     }
                     else {
                         _ConsistentCustom.adjudge(event.getContent()
                                                        .getFirst());
                         publishNotify(event.getContent()
-                                           .getFirst(),
-                                      null,
-                                      _ConsistentCustom.getOperator());
+                                           .getFirst(), null, _ConsistentCustom.getOperator());
                     }
                     break;
                 case CLUSTER_TIMER:// ClusterConsumer Timeout->start_vote
@@ -251,7 +228,7 @@ public class ClusterMappingHandler<T extends IStorage>
                     T content = event.getContent()
                                      .getFirst();
                     List<ITriple> toSends = _ClusterCustom.onTimer(_SessionManager, content);
-                    if (toSends != null && !toSends.isEmpty()) {
+                    if(toSends != null && !toSends.isEmpty()) {
                         publish(_Writer, toSends);
                     }
                     else {
@@ -270,13 +247,11 @@ public class ClusterMappingHandler<T extends IStorage>
 
     private <E extends ITraceable & IProtocol> void publishNotify(E request,
                                                                   Throwable throwable,
-                                                                  IOperator<E,
-                                                                            Throwable,
-                                                                            Void> operator)
+                                                                  IOperator<E, Throwable, Void> operator)
     {
         Objects.requireNonNull(request);
         RingBuffer<QEvent> notifier = _Notifiers[(int) (request.getOrigin() >> ZUID.NODE_SHIFT) & _NotifyModMask];
-        if (throwable == null) {
+        if(throwable == null) {
             publish(notifier, OperatorType.NOTIFY, new Pair<>(request, null), operator);
         }
         else {

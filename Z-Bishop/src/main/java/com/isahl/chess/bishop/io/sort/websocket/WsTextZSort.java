@@ -37,13 +37,11 @@ import com.isahl.chess.queen.io.core.inf.INetworkOption;
  * @date 2021/2/14
  */
 public class WsTextZSort
-        extends
-        BaseSort<WsContext>
+        extends BaseSort<WsContext>
 {
     private final WsHandShakeFilter<WsContext> _Head = new WsHandShakeFilter<>();
 
-    public WsTextZSort(Mode mode,
-                       Type type)
+    public WsTextZSort(Mode mode, Type type)
     {
         super(mode, type, "ws-text");
         _Head.linkFront(new WsFrameFilter<>())

@@ -28,14 +28,11 @@ import com.isahl.chess.queen.io.core.inf.ISession;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-05-25
  */
 public abstract class QttCommand
-        extends
-        MqttProtocol
-        implements
-        ICommand
+        extends MqttProtocol
+        implements ICommand
 {
 
     private final int _Command;
@@ -45,9 +42,9 @@ public abstract class QttCommand
         _Command = command;
     }
 
-    private long       mMsgId = -1;
-    private ISession   mSession;
-    private byte[]     mPayload;
+    private long     mMsgId = -1;
+    private ISession mSession;
+    private byte[]   mPayload;
 
     @Override
     public void setCtrl(byte ctrl)
@@ -139,7 +136,7 @@ public abstract class QttCommand
     @Override
     public int dataLength()
     {
-        return 2 + (mPayload == null ? 0: mPayload.length);
+        return 2 + (mPayload == null ? 0 : mPayload.length);
     }
 
     @Override

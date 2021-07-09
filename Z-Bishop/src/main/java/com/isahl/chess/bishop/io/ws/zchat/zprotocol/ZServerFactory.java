@@ -23,25 +23,17 @@
 
 package com.isahl.chess.bishop.io.ws.zchat.zprotocol;
 
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X20_SignUp;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X22_SignIn;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X24_UpdateToken;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X31_ConfirmMsg;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X32_MsgStatus;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X50_DeviceMsg;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.*;
 import com.isahl.chess.queen.io.core.inf.ICommand;
 import com.isahl.chess.queen.io.core.inf.ICommandFactory;
 import com.isahl.chess.queen.io.core.inf.IFrame;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-05-08
  */
 public class ZServerFactory
-        implements
-        ICommandFactory<ICommand,
-                        IFrame>
+        implements ICommandFactory<ICommand, IFrame>
 {
 
     @Override
@@ -53,8 +45,7 @@ public class ZServerFactory
     @Override
     public ICommand create(int serial)
     {
-        return switch (serial)
-        {
+        return switch(serial) {
             case X20_SignUp.COMMAND -> new X20_SignUp();
             case X22_SignIn.COMMAND -> new X22_SignIn();
             case X24_UpdateToken.COMMAND -> new X24_UpdateToken();

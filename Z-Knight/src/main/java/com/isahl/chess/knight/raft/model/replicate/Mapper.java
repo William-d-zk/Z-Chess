@@ -50,7 +50,8 @@ import java.util.stream.Stream;
 
 import static com.isahl.chess.knight.raft.inf.IRaftMachine.MIN_START;
 import static com.isahl.chess.knight.raft.inf.IRaftMachine.TERM_NAN;
-import static com.isahl.chess.knight.raft.model.replicate.Segment.*;
+import static com.isahl.chess.knight.raft.model.replicate.Segment.SEGMENT_PREFIX;
+import static com.isahl.chess.knight.raft.model.replicate.Segment.SEGMENT_SUFFIX_WRITE;
 
 @Component
 public class Mapper

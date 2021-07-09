@@ -36,14 +36,10 @@ import com.isahl.chess.queen.io.core.inf.IProxyContext;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-05-13
  */
 public class QttControlFilter
-        extends
-        AioFilterChain<QttContext,
-                       QttControl,
-                       QttFrame>
+        extends AioFilterChain<QttContext, QttControl, QttFrame>
 {
     public QttControlFilter()
     {
@@ -58,9 +54,9 @@ public class QttControlFilter
             Qtt Context 自身携带控制状态信息定义在协议之中，也只好在协议处理
             层完成这一操作 [Server]
          */
-        if (output.serial() == X112_QttConnack.COMMAND) {
+        if(output.serial() == X112_QttConnack.COMMAND) {
             X112_QttConnack x112 = (X112_QttConnack) output;
-            if (x112.isOk()) {
+            if(x112.isOk()) {
                 context.updateOut();
                 context.updateIn();
             }
@@ -76,16 +72,16 @@ public class QttControlFilter
     public QttControl decode(QttContext context, QttFrame input)
     {
         QttControl control = QttCommandFactory.createQttControl(input);
-        if (control == null) throw new IllegalArgumentException("MQTT type error");
+        if(control == null) { throw new IllegalArgumentException("MQTT type error"); }
         else {
             control.setContext(context);
             /*
                 Qtt Context 自身携带控制状态信息定义在协议之中，也只好在协议处理
                 层完成这一操作 [Client]
              */
-            if (input.serial() == X112_QttConnack.COMMAND) {
+            if(input.serial() == X112_QttConnack.COMMAND) {
                 X112_QttConnack x112 = (X112_QttConnack) control;
-                if (x112.isOk()) {
+                if(x112.isOk()) {
                     context.updateOut();
                     context.updateIn();
                 }
@@ -96,17 +92,16 @@ public class QttControlFilter
     }
 
     @Override
-    public <O extends IProtocol> Pair<ResultType,
-                                      IPContext> pipeSeek(IPContext context, O output)
+    public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
     {
-        if (checkType(output, IProtocol.CONTROL_SERIAL) && output instanceof QttControl) {
-            if (context instanceof QttContext && context.isOutFrame()) {
+        if(checkType(output, IProtocol.CONTROL_SERIAL) && output instanceof QttControl) {
+            if(context instanceof QttContext && context.isOutFrame()) {
                 return new Pair<>(ResultType.NEXT_STEP, context);
             }
             IPContext acting = context;
-            while (acting.isProxy()) {
+            while(acting.isProxy()) {
                 acting = ((IProxyContext<?>) acting).getActingContext();
-                if (acting instanceof QttContext && acting.isOutFrame()) {
+                if(acting instanceof QttContext && acting.isOutFrame()) {
                     return new Pair<>(ResultType.NEXT_STEP, acting);
                 }
             }
@@ -115,17 +110,16 @@ public class QttControlFilter
     }
 
     @Override
-    public <I extends IProtocol> Pair<ResultType,
-                                      IPContext> pipePeek(IPContext context, I input)
+    public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
     {
-        if (checkType(input, IProtocol.FRAME_SERIAL) && input instanceof QttFrame && ((IFrame) input).isCtrl()) {
-            if (context instanceof QttContext && context.isInFrame()) {
+        if(checkType(input, IProtocol.FRAME_SERIAL) && input instanceof QttFrame && ((IFrame) input).isCtrl()) {
+            if(context instanceof QttContext && context.isInFrame()) {
                 return new Pair<>(ResultType.HANDLED, context);
             }
             IPContext acting = context;
-            while (acting.isProxy()) {
+            while(acting.isProxy()) {
                 acting = ((IProxyContext<?>) acting).getActingContext();
-                if (acting instanceof QttContext && acting.isInFrame()) {
+                if(acting instanceof QttContext && acting.isInFrame()) {
                     return new Pair<>(ResultType.HANDLED, acting);
                 }
             }
@@ -135,16 +129,14 @@ public class QttControlFilter
 
     @Override
     @SuppressWarnings("unchecked")
-    public <O extends IProtocol,
-            I extends IProtocol> I pipeEncode(IPContext context, O output)
+    public <O extends IProtocol, I extends IProtocol> I pipeEncode(IPContext context, O output)
     {
         return (I) encode((QttContext) context, (QttControl) output);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <O extends IProtocol,
-            I extends IProtocol> O pipeDecode(IPContext context, I input)
+    public <O extends IProtocol, I extends IProtocol> O pipeDecode(IPContext context, I input)
     {
         return (O) decode((QttContext) context, (QttFrame) input);
     }

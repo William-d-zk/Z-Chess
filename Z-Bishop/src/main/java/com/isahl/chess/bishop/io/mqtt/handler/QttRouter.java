@@ -43,23 +43,19 @@ import java.util.stream.Collectors;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-07-07
  */
 public class QttRouter
-        implements
-        IQttRouter
+        implements IQttRouter
 {
     private final Logger _Logger = Logger.getLogger("protocol.bishop." + getClass().getName());
 
     private static class Subscribe
     {
         MqttProtocol          retained;
-        Map<Long,
-            IQoS.Level>       sessionMap;
+        Map<Long, IQoS.Level> sessionMap;
 
-        Subscribe(Map<Long,
-                      IQoS.Level> map)
+        Subscribe(Map<Long, IQoS.Level> map)
         {
             sessionMap = map;
         }
@@ -77,35 +73,30 @@ public class QttRouter
         }
     }
 
-    private final Map<Pattern,
-                      Subscribe>                 _Topic2SessionsMap = new TreeMap<>(Comparator.comparing(Pattern::pattern));
+    private final Map<Pattern, Subscribe>        _Topic2SessionsMap = new TreeMap<>(Comparator.comparing(Pattern::pattern));
     private final AtomicLong                     _AtomicIdentity    = new AtomicLong(Long.MIN_VALUE);
-    private final Map<Long,
-                      Map<Long,
-                          IControl>>             _QttIdentifierMap  = new ConcurrentSkipListMap<>();
+    private final Map<Long, Map<Long, IControl>> _QttIdentifierMap  = new ConcurrentSkipListMap<>();
     private final Queue<IPair>                   _SessionIdleQueue  = new ConcurrentLinkedQueue<>();
 
     @Override
     public void retain(String topic, MqttProtocol msg)
     {
         Pattern pattern = topicToRegex(topic);
-        _Topic2SessionsMap.computeIfAbsent(pattern, p -> new Subscribe(new ConcurrentSkipListMap<>())).retained = msg;
+        _Topic2SessionsMap.computeIfAbsent(pattern, p->new Subscribe(new ConcurrentSkipListMap<>())).retained = msg;
     }
 
     @Override
-    public Map<Long,
-               IQoS.Level> broker(final String topic)
+    public Map<Long, IQoS.Level> broker(final String topic)
     {
         _Logger.debug("broker topic: %s", topic);
         return _Topic2SessionsMap.entrySet()
                                  .parallelStream()
-                                 .map(entry ->
-                                 {
+                                 .map(entry->{
                                      Pattern pattern = entry.getKey();
                                      Subscribe subcribe = entry.getValue();
                                      return pattern.matcher(topic)
-                                                   .matches()
-                                            && !subcribe.sessionMap.isEmpty() ? subcribe.sessionMap: null;
+                                                   .matches() && !subcribe.sessionMap.isEmpty() ? subcribe.sessionMap
+                                                                                                : null;
 
                                  })
                                  .filter(Objects::nonNull)
@@ -113,28 +104,23 @@ public class QttRouter
                                  .flatMap(Set::stream)
                                  .collect(Collectors.toMap(Map.Entry::getKey,
                                                            Map.Entry::getValue,
-                                                           (l, r) -> l.getValue() > r.getValue() ? l: r,
+                                                           (l, r)->l.getValue() > r.getValue() ? l : r,
                                                            ConcurrentSkipListMap::new));
     }
 
-    public Map<String,
-               IQoS.Level> groupBy(long session)
+    public Map<String, IQoS.Level> groupBy(long session)
     {
         _Logger.debug("group by :%#x", session);
         return _Topic2SessionsMap.entrySet()
                                  .parallelStream()
-                                 .flatMap(entry ->
-                                 {
+                                 .flatMap(entry->{
                                      Pattern pattern = entry.getKey();
                                      Subscribe subscribe = entry.getValue();
-                                     Map<Long,
-                                         IQoS.Level> sessionsLv = subscribe.sessionMap;
+                                     Map<Long, IQoS.Level> sessionsLv = subscribe.sessionMap;
                                      return sessionsLv.entrySet()
                                                       .stream()
-                                                      .map(e -> new Triple<>(e.getKey(),
-                                                                             pattern.pattern(),
-                                                                             e.getValue()))
-                                                      .filter(t -> t.getFirst() == session);
+                                                      .map(e->new Triple<>(e.getKey(), pattern.pattern(), e.getValue()))
+                                                      .filter(t->t.getFirst() == session);
                                  })
                                  .collect(Collectors.toMap(Triple::getSecond, Triple::getThird));
     }
@@ -146,18 +132,17 @@ public class QttRouter
             Pattern pattern = topicToRegex(topic);
             _Logger.debug("topic %s,pattern %s", topic, pattern);
             Subscribe subscribe = _Topic2SessionsMap.computeIfAbsent(pattern,
-                                                                     p -> new Subscribe(new ConcurrentSkipListMap<>()));
+                                                                     p->new Subscribe(new ConcurrentSkipListMap<>()));
             IQoS.Level lv = subscribe.sessionMap.computeIfPresent(session,
-                                                                  (key,
-                                                                   old) -> old.getValue() > level.getValue() ? old
-                                                                                                             : level);
-            if (lv == null) {
+                                                                  (key, old)->old.getValue() > level.getValue() ? old
+                                                                                                                : level);
+            if(lv == null) {
                 subscribe.sessionMap.put(session, level);
                 return level;
             }
             return lv;
         }
-        catch (IllegalArgumentException e) {
+        catch(IllegalArgumentException e) {
             e.printStackTrace();
             return IQoS.Level.FAILURE;
         }
@@ -170,15 +155,15 @@ public class QttRouter
         topic = topic.replaceAll("#+", "#");
         topic = topic.replaceAll("(/#)+", "/#");
 
-        if (Pattern.compile("#\\+|\\+#")
-                   .asPredicate()
-                   .test(topic))
+        if(Pattern.compile("#\\+|\\+#")
+                  .asPredicate()
+                  .test(topic))
         {
             throw new IllegalArgumentException("topic error " + topic);
         }
-        if (!Pattern.compile("(/\\+)$")
-                    .asPredicate()
-                    .test(topic))
+        if(!Pattern.compile("(/\\+)$")
+                   .asPredicate()
+                   .test(topic))
         {
             topic = topic.replaceAll("(\\+)$", "");
         }
@@ -194,10 +179,9 @@ public class QttRouter
     @Override
     public void unsubscribe(String topic, long session)
     {
-        _Topic2SessionsMap.forEach((pattern, subscribe) ->
-        {
+        _Topic2SessionsMap.forEach((pattern, subscribe)->{
             Matcher matcher = pattern.matcher(topic);
-            if (matcher.matches()) {
+            if(matcher.matches()) {
                 subscribe.remove(session);
             }
         });
@@ -213,17 +197,16 @@ public class QttRouter
     public void register(ICommand stateMessage, long session)
     {
         long msgId = stateMessage.getMsgId();
-        if (_QttIdentifierMap.computeIfPresent(session, (key, _LocalIdMessageMap) ->
-        {
+        if(_QttIdentifierMap.computeIfPresent(session, (key, _LocalIdMessageMap)->{
             IControl old = _LocalIdMessageMap.put(msgId, stateMessage);
-            if (old == null) {
+            if(old == null) {
                 _Logger.debug("retry recv: %s", stateMessage);
             }
             return _LocalIdMessageMap;
-        }) == null) {
+        }) == null)
+        {
             //previous == null
-            final Map<Long,
-                      IControl> _LocalIdMessageMap = new HashMap<>(7);
+            final Map<Long, IControl> _LocalIdMessageMap = new HashMap<>(7);
             _LocalIdMessageMap.put(msgId, stateMessage);
             _QttIdentifierMap.put(session, _LocalIdMessageMap);
             _Logger.debug("first recv: %s", stateMessage);
@@ -236,23 +219,22 @@ public class QttRouter
         int idleMax = stateMessage.getSession()
                                   .getReadTimeOutSeconds();
         long msgId = stateMessage.getMsgId();
-        boolean[] acked = {true,
-                           true};
-        if (acked[0] = _QttIdentifierMap.computeIfPresent(session, (key, old) ->
-        {
+        boolean[] acked = { true, true };
+        if(acked[0] = _QttIdentifierMap.computeIfPresent(session, (key, old)->{
             _Logger.debug("ack %d @ %#x", msgId, session);
             acked[1] = old.remove(msgId) != null;
-            return old.isEmpty() ? old: null;
-        }) != null) {
+            return old.isEmpty() ? old : null;
+        }) != null)
+        {
             _Logger.debug("idle: %#x", session);
             _SessionIdleQueue.offer(new Pair<>(session, Instant.now()));
         }
-        for (Iterator<IPair> it = _SessionIdleQueue.iterator(); it.hasNext();) {
+        for(Iterator<IPair> it = _SessionIdleQueue.iterator(); it.hasNext(); ) {
             IPair pair = it.next();
             long rmSessionIndex = pair.getFirst();
             Instant idle = pair.getSecond();
-            if (Instant.now()
-                       .isAfter(idle.plusSeconds(idleMax)))
+            if(Instant.now()
+                      .isAfter(idle.plusSeconds(idleMax)))
             {
                 _QttIdentifierMap.remove(rmSessionIndex);
                 it.remove();
@@ -267,6 +249,6 @@ public class QttRouter
         Optional.ofNullable(_QttIdentifierMap.remove(session))
                 .ifPresent(Map::clear);
         _Topic2SessionsMap.values()
-                          .forEach(map -> map.remove(session));
+                          .forEach(map->map.remove(session));
     }
 }

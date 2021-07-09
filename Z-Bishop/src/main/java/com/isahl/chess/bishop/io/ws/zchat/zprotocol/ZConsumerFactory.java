@@ -23,25 +23,17 @@
 
 package com.isahl.chess.bishop.io.ws.zchat.zprotocol;
 
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X21_SignUpResult;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X23_SignInResult;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X25_AuthorisedToken;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X30_EventMsg;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X32_MsgStatus;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X51_DeviceMsgAck;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.*;
 import com.isahl.chess.queen.io.core.inf.ICommand;
 import com.isahl.chess.queen.io.core.inf.ICommandFactory;
 import com.isahl.chess.queen.io.core.inf.IFrame;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-05-08
  */
 public class ZConsumerFactory
-        implements
-        ICommandFactory<ICommand,
-                        IFrame>
+        implements ICommandFactory<ICommand, IFrame>
 {
 
     @Override
@@ -53,8 +45,7 @@ public class ZConsumerFactory
     @Override
     public ICommand create(int serial)
     {
-        return switch (serial)
-        {
+        return switch(serial) {
             case X21_SignUpResult.COMMAND -> new X21_SignUpResult();
             case X23_SignInResult.COMMAND -> new X23_SignInResult();
             case X25_AuthorisedToken.COMMAND -> new X25_AuthorisedToken();

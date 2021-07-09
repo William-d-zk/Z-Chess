@@ -23,11 +23,6 @@
 
 package com.isahl.chess.bishop.io.ssl;
 
-import static javax.net.ssl.SSLEngineResult.HandshakeStatus.FINISHED;
-import static javax.net.ssl.SSLEngineResult.HandshakeStatus.NOT_HANDSHAKING;
-
-import java.nio.ByteBuffer;
-
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.async.AioFilterChain;
@@ -36,14 +31,16 @@ import com.isahl.chess.queen.io.core.inf.IPContext;
 import com.isahl.chess.queen.io.core.inf.IPacket;
 import com.isahl.chess.queen.io.core.inf.IProtocol;
 
+import java.nio.ByteBuffer;
+
+import static javax.net.ssl.SSLEngineResult.HandshakeStatus.FINISHED;
+import static javax.net.ssl.SSLEngineResult.HandshakeStatus.NOT_HANDSHAKING;
+
 /**
  * @author william.d.zk
  */
 public class SSLFilter<A extends IPContext>
-        extends
-        AioFilterChain<SSLZContext<A>,
-                       IPacket,
-                       IPacket>
+        extends AioFilterChain<SSLZContext<A>, IPacket, IPacket>
 {
     public final static String NAME = "z-ssl";
 
@@ -55,7 +52,7 @@ public class SSLFilter<A extends IPContext>
     @Override
     public IPacket encode(SSLZContext<A> context, IPacket output)
     {
-        if (output.outIdempotent(getLeftIdempotentBit())) {
+        if(output.outIdempotent(getLeftIdempotentBit())) {
             return new AioPacket(context.doWrap(output.getBuffer())
                                         .flip());
         }
@@ -65,14 +62,14 @@ public class SSLFilter<A extends IPContext>
     @Override
     public ResultType seek(SSLZContext<A> context, IPacket output)
     {
-        if (context.isOutFrame()
-            && (context.getHandShakeStatus() == NOT_HANDSHAKING || context.getHandShakeStatus() == FINISHED))
+        if(context.isOutFrame() &&
+           (context.getHandShakeStatus() == NOT_HANDSHAKING || context.getHandShakeStatus() == FINISHED))
         {
             context.updateOut();
             _Logger.info("SSL ready to write");
             return ResultType.NEXT_STEP;
         }
-        else if (context.isOutConvert()) { return ResultType.NEXT_STEP; }
+        else if(context.isOutConvert()) { return ResultType.NEXT_STEP; }
         return ResultType.IGNORE;
     }
 
@@ -88,14 +85,14 @@ public class SSLFilter<A extends IPContext>
         ByteBuffer appInBuffer;
         ByteBuffer netInBuffer = input.getBuffer();
         ByteBuffer localBuffer = context.getRvBuffer();
-        if (netInBuffer.hasRemaining()) {
-            if (localBuffer.position() > 0) {
+        if(netInBuffer.hasRemaining()) {
+            if(localBuffer.position() > 0) {
                 IoUtil.write(netInBuffer, localBuffer);
                 localBuffer.flip();
                 netInBuffer = localBuffer;
             }
             appInBuffer = context.doUnwrap(netInBuffer);
-            if (netInBuffer == localBuffer && localBuffer.hasRemaining()) {
+            if(netInBuffer == localBuffer && localBuffer.hasRemaining()) {
                 /*
                 ssl 并非流式解码，而是存在块状解码的，所以粘包【半包】需要处理
                 上文中 netInBuffer 的数据转移到了localBuffer里
@@ -104,7 +101,7 @@ public class SSLFilter<A extends IPContext>
                 netInBuffer.position(netInBuffer.position() - localBuffer.remaining());
                 localBuffer.clear();
             }
-            if (appInBuffer != null) {
+            if(appInBuffer != null) {
                 context.setCarrier(new AioPacket(appInBuffer.flip()));
                 return ResultType.NEXT_STEP;
             }
@@ -114,10 +111,9 @@ public class SSLFilter<A extends IPContext>
 
     @Override
     @SuppressWarnings("unchecked")
-    public <O extends IProtocol> Pair<ResultType,
-                                      IPContext> pipeSeek(IPContext context, O output)
+    public <O extends IProtocol> Pair<ResultType, IPContext> pipeSeek(IPContext context, O output)
     {
-        if (checkType(output, IProtocol.PACKET_SERIAL) && context.isProxy() && context instanceof SSLZContext) {
+        if(checkType(output, IProtocol.PACKET_SERIAL) && context.isProxy() && context instanceof SSLZContext) {
             return new Pair<>(seek((SSLZContext<A>) context, (IPacket) output), context);
         }
         return new Pair<>(ResultType.IGNORE, context);
@@ -125,13 +121,10 @@ public class SSLFilter<A extends IPContext>
 
     @Override
     @SuppressWarnings("unchecked")
-    public <I extends IProtocol> Pair<ResultType,
-                                      IPContext> pipePeek(IPContext context, I input)
+    public <I extends IProtocol> Pair<ResultType, IPContext> pipePeek(IPContext context, I input)
     {
-        if (checkType(input, IProtocol.PACKET_SERIAL)
-            && context.isProxy()
-            && context.isInConvert()
-            && context instanceof SSLZContext)
+        if(checkType(input, IProtocol.PACKET_SERIAL) && context.isProxy() && context.isInConvert() &&
+           context instanceof SSLZContext)
         {
             return new Pair<>(peek((SSLZContext<A>) context, (IPacket) input), context);
         }
@@ -140,16 +133,14 @@ public class SSLFilter<A extends IPContext>
 
     @Override
     @SuppressWarnings("unchecked")
-    public <O extends IProtocol,
-            I extends IProtocol> I pipeEncode(IPContext context, O output)
+    public <O extends IProtocol, I extends IProtocol> I pipeEncode(IPContext context, O output)
     {
         return (I) encode((SSLZContext<A>) context, (IPacket) output);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <O extends IProtocol,
-            I extends IProtocol> O pipeDecode(IPContext context, I input)
+    public <O extends IProtocol, I extends IProtocol> O pipeDecode(IPContext context, I input)
     {
         return (O) decode((SSLZContext<A>) context, (IPacket) input);
     }

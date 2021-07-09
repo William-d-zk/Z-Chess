@@ -32,8 +32,7 @@ import static com.isahl.chess.queen.io.core.inf.ISessionManager.INVALID_INDEX;
  * @author William.d.zk
  */
 public class X106_Identity
-        extends
-        WsControl
+        extends WsControl
 {
     public final static int COMMAND = 0x106;
 
@@ -49,28 +48,27 @@ public class X106_Identity
 
     public long getIdentity()
     {
-        if (getPayload() == null) return INVALID_INDEX;
-        if (getPayload().length < 8) throw new ArrayIndexOutOfBoundsException();
+        if(getPayload() == null) { return INVALID_INDEX; }
+        if(getPayload().length < 8) { throw new ArrayIndexOutOfBoundsException(); }
         return IoUtil.readLong(getPayload(), 0);
     }
 
     public long getIndex()
     {
-        if (getPayload() == null) return INVALID_INDEX;
-        if (getPayload().length < 16) throw new ArrayIndexOutOfBoundsException();
+        if(getPayload() == null) { return INVALID_INDEX; }
+        if(getPayload().length < 16) { throw new ArrayIndexOutOfBoundsException(); }
         return IoUtil.readLong(getPayload(), 8);
     }
 
     public long[] getIdentities()
     {
         int size = (getPayload().length >>> 3);
-        if (size > 0) {
+        if(size > 0) {
             long[] result = new long[size];
             IoUtil.readLongArray(getPayload(), 0, result);
             return result;
         }
-        return new long[]{INVALID_INDEX,
-                          INVALID_INDEX};
+        return new long[]{ INVALID_INDEX, INVALID_INDEX };
     }
 
     @Override

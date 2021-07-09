@@ -27,22 +27,18 @@ import com.isahl.chess.queen.io.core.inf.ISession;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-07-14
  */
 public class ZCommand
-        extends
-        ZProtocol
+        extends ZProtocol
 {
 
-    protected ZCommand(int command,
-                       boolean hasMsgId)
+    protected ZCommand(int command, boolean hasMsgId)
     {
-        super(command, hasMsgId, hasMsgId ? 0: -1);
+        super(command, hasMsgId, hasMsgId ? 0 : -1);
     }
 
-    public ZCommand(int command,
-                    long msgId)
+    public ZCommand(int command, long msgId)
     {
         super(command, msgId);
     }
@@ -101,7 +97,7 @@ public class ZCommand
     @Override
     public int dataLength()
     {
-        return minLength() + (mPayload == null ? 0: mPayload.length);
+        return minLength() + (mPayload == null ? 0 : mPayload.length);
     }
 
     @Override

@@ -25,20 +25,17 @@ package com.isahl.chess.bishop.io.mqtt.control;
 
 import com.isahl.chess.bishop.io.mqtt.QttControl;
 import com.isahl.chess.bishop.io.mqtt.QttType;
-import com.isahl.chess.queen.io.core.inf.IConsistent;
+import com.isahl.chess.queen.io.core.inf.INotify;
 
 import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-05-30
  */
 public class X11E_QttDisconnect
-        extends
-        QttControl
-        implements
-        IConsistent
+        extends QttControl
+        implements INotify
 {
     public final static int COMMAND = 0x11E;
 

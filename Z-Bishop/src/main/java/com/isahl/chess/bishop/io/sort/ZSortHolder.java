@@ -104,11 +104,11 @@ public enum ZSortHolder
 
     public static IControl create(int serial)
     {
-        if (serial >= X111_QttConnect.COMMAND && serial <= X11E_QttDisconnect.COMMAND) {
+        if(serial >= X111_QttConnect.COMMAND && serial <= X11E_QttDisconnect.COMMAND) {
             return _QttCommandFactory.create(serial);
         }
-        if (serial >= 0x20 && serial <= 0x6F) { return _ServerFactory.create(serial); }
-        if (serial >= X70_RaftVote.COMMAND && serial <= X77_RaftNotify.COMMAND) {
+        if(serial >= 0x20 && serial <= 0x6F) { return _ServerFactory.create(serial); }
+        if(serial >= X70_RaftVote.COMMAND && serial <= X77_RaftNotify.COMMAND) {
             return _ClusterFactory.create(serial);
         }
         throw new IllegalArgumentException();
@@ -128,19 +128,18 @@ public enum ZSortHolder
     {
         ISort.Mode mode = _Sort.getMode();
         ISort.Type type = _Sort.getType();
-        return mode == ISort.Mode.LINK ? TYPE_CONSUMER_SLOT
-                                       : type == ISort.Type.INNER ? TYPE_INTERNAL_SLOT
-                                                                  : type == ISort.Type.SERVER ? TYPE_PROVIDER_SLOT
-                                                                                              : TYPE_CLUSTER_SLOT;
+        return mode == ISort.Mode.LINK ? TYPE_CONSUMER_SLOT : type == ISort.Type.INNER ? TYPE_INTERNAL_SLOT
+                                                                                       : type == ISort.Type.SERVER
+                                                                                         ? TYPE_PROVIDER_SLOT
+                                                                                         : TYPE_CLUSTER_SLOT;
     }
 
     public long getType()
     {
         ISort.Mode mode = _Sort.getMode();
         ISort.Type type = _Sort.getType();
-        return mode == ISort.Mode.LINK ? TYPE_CONSUMER
-                                       : type == ISort.Type.INNER ? ZUID.TYPE_INTERNAL
-                                                                  : type == ISort.Type.SERVER ? TYPE_PROVIDER
-                                                                                              : TYPE_CLUSTER;
+        return mode == ISort.Mode.LINK ? TYPE_CONSUMER : type == ISort.Type.INNER ? ZUID.TYPE_INTERNAL
+                                                                                  : type == ISort.Type.SERVER
+                                                                                    ? TYPE_PROVIDER : TYPE_CLUSTER;
     }
 }

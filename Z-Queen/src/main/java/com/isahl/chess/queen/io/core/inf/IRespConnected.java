@@ -31,9 +31,9 @@ package com.isahl.chess.queen.io.core.inf;
  * 
  * @see ICommandFactory
  */
-public interface IConnectedCommand
+public interface IRespConnected
 {
-    default IControl[] onConnectedCommands(ISession session)
+    default IControl[] response(ISession session)
     {
         return null;
     }

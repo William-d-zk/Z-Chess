@@ -36,19 +36,17 @@ import static com.isahl.chess.bishop.io.ws.WsFrame.frame_op_code_no_ctrl_txt;
  * @date 2021/2/14
  */
 public class X10A_PlainText
-        implements
-        ICommand
+        implements ICommand
 {
     public final static int COMMAND = 0x10A;
 
-    private final int  _Command;
-    private final byte _CtrlCode;
-    private ISession   mSession;
-    private WsContext  mContext;
-    private byte[]     mPayload;
+    private final int       _Command;
+    private final byte      _CtrlCode;
+    private       ISession  mSession;
+    private       WsContext mContext;
+    private       byte[]    mPayload;
 
-    public X10A_PlainText(int command,
-                          byte code)
+    public X10A_PlainText(int command, byte code)
     {
         _Command = command;
         _CtrlCode = code;
@@ -62,7 +60,7 @@ public class X10A_PlainText
     @Override
     public int dataLength()
     {
-        return (getPayload() != null ? getPayload().length: 0);
+        return (getPayload() != null ? getPayload().length : 0);
     }
 
     @Override
@@ -74,7 +72,7 @@ public class X10A_PlainText
     @Override
     public int encodec(byte[] data, int pos)
     {
-        if (getPayload() != null) {
+        if(getPayload() != null) {
             pos += IoUtil.write(getPayload(), 0, data, pos, getPayload().length);
         }
         return pos;

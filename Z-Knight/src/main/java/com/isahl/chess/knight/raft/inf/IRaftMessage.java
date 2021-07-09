@@ -28,12 +28,10 @@ import com.isahl.chess.queen.io.core.inf.IControl;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/1/4
  */
 public interface IRaftMessage
-        extends
-        IControl
+        extends IControl
 {
     long getPeerId();
 

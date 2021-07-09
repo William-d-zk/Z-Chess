@@ -29,8 +29,7 @@ import com.isahl.chess.bishop.io.ws.WsFrame;
  * @author William.d.zk
  */
 public class X104_Pong
-        extends
-        WsControl
+        extends WsControl
 {
     public final static int COMMAND = 0x104;
 

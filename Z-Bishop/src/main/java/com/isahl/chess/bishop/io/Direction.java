@@ -25,7 +25,6 @@ package com.isahl.chess.bishop.io;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-07-31
  */
 public enum Direction
@@ -52,8 +51,7 @@ public enum Direction
 
     public static Direction parseShort(String value)
     {
-        return switch (value)
-        {
+        return switch(value) {
             case "S->C" -> SERVER_TO_CLIENT;
             case "C->S" -> CLIENT_TO_SERVER;
             case "L->F" -> LEADER_BR_FOLLOWER;

@@ -285,7 +285,7 @@ public class ClientPool
             }
 
             @Override
-            public IControl[] onConnectedCommands(ISession session)
+            public IControl[] response(ISession session)
             {
                 switch (ZSortHolder)
                 {

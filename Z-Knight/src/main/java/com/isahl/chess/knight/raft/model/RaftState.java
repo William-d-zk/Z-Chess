@@ -25,18 +25,11 @@ package com.isahl.chess.knight.raft.model;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019/12/9
  */
 public enum RaftState
 {
-    FOLLOWER(1),
-    ELECTOR(2),
-    CANDIDATE(3),
-    LEADER(4),
-    GATE(7),
-    LEARNER(8),
-    CLIENT(16);
+    FOLLOWER(1), ELECTOR(2), CANDIDATE(3), LEADER(4), GATE(7), LEARNER(8), CLIENT(16);
 
     private final int _Code;
 
@@ -52,8 +45,7 @@ public enum RaftState
 
     public static RaftState valueOf(int code)
     {
-        return switch (code)
-        {
+        return switch(code) {
             case 1 -> FOLLOWER;
             case 2 -> ELECTOR;
             case 3 -> CANDIDATE;

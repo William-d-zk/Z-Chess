@@ -30,12 +30,11 @@ import com.isahl.chess.queen.io.core.inf.IPContext;
  * @author William.d.zk
  */
 public class X04_EncryptConfirm
-        extends
-        ZCommand
+        extends ZCommand
 {
     public final static int COMMAND = 0x04;
-    public int              code;
-    public int              symmetricKeyId;
+    public              int code;
+    public              int symmetricKeyId;
 
     /* SHA256 */
     private byte[] mSign;
