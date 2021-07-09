@@ -39,7 +39,7 @@ import com.isahl.chess.knight.raft.inf.IRaftDao;
 import com.isahl.chess.knight.raft.inf.IRaftMachine;
 import com.isahl.chess.knight.raft.inf.IRaftMessage;
 import com.isahl.chess.knight.raft.model.*;
-import com.isahl.chess.knight.raft.model.log.LogEntry;
+import com.isahl.chess.knight.raft.model.replicate.LogEntry;
 import com.isahl.chess.queen.db.inf.IStorage;
 import com.isahl.chess.queen.io.core.inf.*;
 

@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
+import com.isahl.chess.knight.raft.util.LongToDataSizeConverter;
 import org.springframework.util.unit.DataSize;
 
 import java.time.Duration;

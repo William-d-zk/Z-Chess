@@ -24,9 +24,9 @@
 package com.isahl.chess.knight.raft.inf;
 
 import com.isahl.chess.king.base.inf.IValid;
-import com.isahl.chess.knight.raft.model.log.LogEntry;
-import com.isahl.chess.knight.raft.model.log.LogMeta;
-import com.isahl.chess.knight.raft.model.log.SnapshotMeta;
+import com.isahl.chess.knight.raft.model.replicate.LogEntry;
+import com.isahl.chess.knight.raft.model.replicate.LogMeta;
+import com.isahl.chess.knight.raft.model.replicate.SnapshotMeta;
 
 /**
  * @author william.d.zk

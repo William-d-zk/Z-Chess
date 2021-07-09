@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.model.log;
+package com.isahl.chess.knight.raft.model.replicate;
 
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
@@ -96,7 +96,7 @@ public class Segment
         loadRecord();
     }
 
-    public static String newFileName(boolean readonly)
+    public static String fileNameFormatter(boolean readonly)
     {
         return String.format("%s_%s_%s",
                              SEGMENT_PREFIX,
@@ -187,7 +187,7 @@ public class Segment
 
     public void freeze()
     {
-        String newFileName = String.format(newFileName(true), _StartIndex, mEndIndex);
+        String newFileName = String.format(fileNameFormatter(true), _StartIndex, mEndIndex);
         String newAbsolutePath = _FileDirectory + File.separator + newFileName;
         File newFile = new File(newAbsolutePath);
         File oldFile = new File(mFileName);
@@ -239,7 +239,7 @@ public class Segment
         }
         mRandomAccessFile.close();
         // 缩减后一定处于可write状态
-        String newFileName = String.format(newFileName(false), getStartIndex(), getEndIndex());
+        String newFileName = String.format(fileNameFormatter(false), getStartIndex(), getEndIndex());
         String newFullFileName = _FileDirectory + File.separator + newFileName;
         if(new File(getFileName()).renameTo(new File(newFullFileName))) {
             mRandomAccessFile = new RandomAccessFile(newFullFileName, "rw");
