@@ -22,9 +22,9 @@
  */
 package com.isahl.chess.queen.io.core.inf;
 
-import java.util.Collection;
-
 import com.isahl.chess.king.topology.ZUID;
+
+import java.util.Collection;
 
 /**
  * @author William.d.zk
@@ -41,7 +41,7 @@ public interface ISessionManager
      * 凡是带有登录功能的都必须使用此方法进行管理。
      * prefix 近似 PortChannel 的结构
      * 
-     * @param index
+     * @param sessionIdx
      *            session.index
      * @param session
      *            mapping session
@@ -51,7 +51,7 @@ public interface ISessionManager
      * 
      * @return old mapping session
      */
-    ISession mapSession(long index, ISession session, long... prefixArray);
+    ISession mapSession(long sessionIdx, ISession session, long... prefixArray);
 
     /**
      * 
