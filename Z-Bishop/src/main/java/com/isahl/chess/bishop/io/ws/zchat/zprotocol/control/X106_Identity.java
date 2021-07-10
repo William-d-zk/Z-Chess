@@ -53,7 +53,7 @@ public class X106_Identity
         return IoUtil.readLong(getPayload(), 0);
     }
 
-    public long getIndex()
+    public long getSessionIdx()
     {
         if(getPayload() == null) { return INVALID_INDEX; }
         if(getPayload().length < 16) { throw new ArrayIndexOutOfBoundsException(); }
