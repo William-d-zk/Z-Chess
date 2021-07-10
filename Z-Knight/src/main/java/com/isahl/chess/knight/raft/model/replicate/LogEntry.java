@@ -30,23 +30,22 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.bishop.io.json.JsonProtocol;
 import com.isahl.chess.queen.db.inf.IStorage;
-import com.isahl.chess.queen.io.core.inf.INotify;
+import com.isahl.chess.queen.io.core.inf.ITraceable;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class LogEntry
         extends JsonProtocol
-        implements INotify,
+        implements ITraceable,
                    IStorage
 {
     private final static int _LOG_SERIAL = INTERNAL_SERIAL + 2;
 
-    private final long    _Term;
-    private final long    _Index;
-    private final long    _ClientPeer;
-    private final long    _Origin;
-    private final int     _PayloadSerial;
-    private final byte[]  _Payload;
-    private final boolean _Public;
+    private final long   _Term;
+    private final long   _Index;
+    private final long   _ClientPeer;
+    private final long   _Origin;
+    private final int    _PayloadSerial;
+    private final byte[] _Payload;
 
     @JsonIgnore
     private Operation mOperation = Operation.OP_INSERT;
@@ -60,8 +59,7 @@ public class LogEntry
                     @JsonProperty("client_peer") long clientPeer,
                     @JsonProperty("origin") long origin,
                     @JsonProperty("payload_serial") int payloadSerial,
-                    @JsonProperty("payload") byte[] payload,
-                    @JsonProperty("public") boolean all)
+                    @JsonProperty("payload") byte[] payload)
     {
         _Term = term;
         _Index = index;
@@ -69,7 +67,6 @@ public class LogEntry
         _Origin = origin;
         _PayloadSerial = payloadSerial;
         _Payload = payload;
-        _Public = all;
         encode();
     }
 
@@ -127,20 +124,13 @@ public class LogEntry
     @Override
     public String toString()
     {
-        return String.format("raft_log{ %d@%d, from:%#x, notify:[%s], origin:%#x, payload-serial:%#x, payload-size:%d }",
+        return String.format("raft_log{ %d@%d, from:%#x, origin:%#x, payload-serial:%#x, payload-size:%d }",
                              _Index,
                              _Term,
                              _ClientPeer,
-                             _Public ? "all" : _ClientPeer,
                              _Origin,
                              _PayloadSerial,
                              _Payload == null ? 0 : _Payload.length);
-    }
-
-    @Override
-    public boolean isAll()
-    {
-        return _Public;
     }
 
     @Override

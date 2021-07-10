@@ -143,7 +143,6 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
                                                    x75.getPayload(),
                                                    x75.getClientId(),
                                                    x75.getOrigin(),
-                                                   x75.isAll(),
                                                    manager,
                                                    x75.getSession());
             }
@@ -157,7 +156,7 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
                 X77_RaftNotify x77 = (X77_RaftNotify) content;
                 return new Pair<>(null, x77);
             }
-            // peer *, behind → previous
+            // peer *, behind in config → previous in config
             case X106_Identity.COMMAND -> {
                 X106_Identity x106 = (X106_Identity) content;
                 long peerId = x106.getIdentity();
@@ -197,7 +196,7 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
     }
 
     @Override
-    public <E extends INotify & IControl> List<ITriple> consensus(ISessionManager manager, E request)
+    public <E extends IConsistent & IControl> List<ITriple> consensus(ISessionManager manager, E request)
     {
         _Logger.debug("cluster consensus %s", request);
         if(_RaftPeer.getMachine()
@@ -241,7 +240,7 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
     }
 
     @Override
-    public <E extends INotify & IControl> List<ITriple> change(ISessionManager manager, E topology)
+    public <E extends IConsistent & IControl> List<ITriple> changeTopology(ISessionManager manager, E topology)
     {
         _Logger.debug("cluster new topology %s", topology);
         if(_RaftPeer.getMachine()

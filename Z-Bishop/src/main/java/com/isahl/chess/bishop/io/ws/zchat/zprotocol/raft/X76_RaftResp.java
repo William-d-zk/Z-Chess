@@ -26,12 +26,10 @@ package com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZCommand;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.inf.IConsistent;
-import com.isahl.chess.queen.io.core.inf.ITraceable;
 
 public class X76_RaftResp
         extends ZCommand
-        implements ITraceable,
-                   IConsistent
+        implements IConsistent
 {
 
     public final static int COMMAND = 0x76;

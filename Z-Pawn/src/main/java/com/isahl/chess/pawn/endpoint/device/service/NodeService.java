@@ -31,9 +31,9 @@ import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.schedule.TimeWheel;
 import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.knight.raft.inf.IRaftMapper;
-import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.RaftPeer;
+import com.isahl.chess.knight.raft.config.IRaftConfig;
+import com.isahl.chess.knight.raft.inf.IRaftMapper;
 import com.isahl.chess.knight.raft.service.RaftCustom;
 import com.isahl.chess.knight.raft.service.RaftService;
 import com.isahl.chess.pawn.endpoint.device.DeviceNode;
@@ -64,9 +64,9 @@ public class NodeService
 
     private final DeviceNode               _DeviceNode;
     private final ILinkCustom              _LinkCustom;
-    private final RaftCustom<DeviceNode>  _RaftCustom;
-    private final RaftPeer<DeviceNode>    _RaftPeer;
-    private final RaftService<DeviceNode> _RaftService;
+    private final RaftCustom<DeviceNode>   _RaftCustom;
+    private final RaftPeer<DeviceNode>     _RaftPeer;
+    private final RaftService<DeviceNode>  _RaftService;
     private final LogicHandler<DeviceNode> _LogicHandler;
 
     @Autowired
@@ -102,7 +102,7 @@ public class NodeService
         _RaftPeer = new RaftPeer<>(timeWheel, raftConfig, raftDao, _DeviceNode);
         _RaftCustom = new RaftCustom<>(_RaftPeer);
         _LogicHandler = new LogicHandler<>(_DeviceNode, qttRouter, _RaftPeer, messageService);
-        _RaftService = new RaftService<>(_RaftPeer);
+        _RaftService = new RaftService<>(_DeviceNode, _RaftPeer);
     }
 
     @PostConstruct
@@ -125,7 +125,12 @@ public class NodeService
         return _RaftService;
     }
 
+    /**
+     * for consensus open service
+     *
+     * @return raft peer
+     */
     @Bean
-    public RaftPeer<DeviceNode> getClusterPeer() {return _RaftPeer;}
+    public RaftPeer<DeviceNode> getRaftPeer() {return _RaftPeer;}
 
 }

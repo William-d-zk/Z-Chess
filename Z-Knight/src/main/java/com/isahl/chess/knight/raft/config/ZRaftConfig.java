@@ -29,7 +29,7 @@ import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.knight.raft.model.RaftConfig;
 import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.knight.raft.model.RaftState;
-import com.isahl.chess.queen.db.inf.IStorage;
+import com.isahl.chess.queen.db.inf.IStorage.Operation;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -188,7 +188,7 @@ public class ZRaftConfig
     }
 
     @Override
-    public void changeTopology(RaftNode delta, IStorage.Operation operation)
+    public void changeTopology(RaftNode delta, Operation operation)
     {
         Objects.requireNonNull(delta);
         Objects.requireNonNull(operation);
@@ -197,45 +197,39 @@ public class ZRaftConfig
                                                              delta.getId()));
         }
         /*
-         * 总量有限
+        此处不使用map.computeIf* 的结构是因为判断过于复杂
+        还是for的表达容易理解
          */
         boolean present = false;
         CHECK:
         {
             LOOP:
             {
-                for(Iterator<RaftNode> it = _RaftNodeMap.values()
-                                                        .iterator(); it.hasNext(); ) {
-                    RaftNode peer = it.next();
-                    present = present || delta.compareTo(peer) == 0;
+                for(RaftNode senator : _RaftNodeMap.values()) {
+                    present = present || delta.compareTo(senator) == 0;
                     switch(operation) {
                         case OP_APPEND -> {
                             if(present) {
                                 break CHECK;
                             }
-                            break LOOP;
                         }
-                        case OP_REMOVE -> {
+                        case OP_REMOVE, OP_MODIFY -> {
                             if(present) {
-                                it.remove();
-                                break CHECK;
-                            }
-                        }
-                        case OP_MODIFY -> {
-                            if(present) {
-                                it.remove();
-                                break LOOP;
+                                break LOOP;//map.put:update delta→present
                             }
                         }
                     }
                 }
+            }
+            if(!present && operation == Operation.OP_REMOVE || operation == Operation.OP_MODIFY) {
+                break CHECK;
             }
             _RaftNodeMap.put(delta.getId(), delta);
         }
     }
 
     @Override
-    public void changeGate(RaftNode delta, IStorage.Operation operation)
+    public void changeGate(RaftNode delta, Operation operation)
     {
         Objects.requireNonNull(delta);
         Objects.requireNonNull(operation);
@@ -349,4 +343,9 @@ public class ZRaftConfig
         return mBeGate;
     }
 
+    @Override
+    public RaftNode findById(long peerId)
+    {
+        return _RaftNodeMap.get(peerId);
+    }
 }

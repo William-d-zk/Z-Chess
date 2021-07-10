@@ -250,7 +250,7 @@ public class ClusterMappingHandler<T extends IStorage>
         Objects.requireNonNull(request);
         RingBuffer<QEvent> notifier = _Notifiers[(int) (request.getOrigin() >> ZUID.NODE_SHIFT) & _NotifyModMask];
         if(throwable == null) {
-            publish(notifier, OperatorType.NOTIFY, new Pair<>(request, null), operator);
+            publish(notifier, OperatorType.CONSENSUS_NOTIFY, new Pair<>(request, null), operator);
         }
         else {
             error(notifier, MAPPING_ERROR, new Pair<>(request, throwable), operator);

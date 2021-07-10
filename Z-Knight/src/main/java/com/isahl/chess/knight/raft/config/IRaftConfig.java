@@ -123,6 +123,8 @@ public interface IRaftConfig
      */
     void changeGate(RaftNode delta, IStorage.Operation operation);
 
+    RaftNode findById(long peerId);
+
     class Uid
             implements IReset
     {

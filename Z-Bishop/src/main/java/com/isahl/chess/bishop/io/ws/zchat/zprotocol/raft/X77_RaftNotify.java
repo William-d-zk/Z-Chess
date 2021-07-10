@@ -47,9 +47,8 @@ public class X77_RaftNotify
         super(COMMAND, msgId);
     }
 
-    private           int     mPayloadSerial;
-    private           long    mOrigin;
-    private transient boolean tLeader;
+    private int  mPayloadSerial;
+    private long mOrigin;
 
     @Override
     public int getPayloadSerial()
@@ -106,12 +105,7 @@ public class X77_RaftNotify
     @Override
     public boolean isByLeader()
     {
-        return tLeader;
-    }
-
-    public void setLeader()
-    {
-        tLeader = true;
+        return true;
     }
 
 }

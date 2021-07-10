@@ -26,7 +26,7 @@ package com.isahl.chess.queen.event.handler.cluster;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.queen.db.inf.IStorage;
 import com.isahl.chess.queen.event.handler.IMappingCustom;
-import com.isahl.chess.queen.io.core.inf.INotify;
+import com.isahl.chess.queen.io.core.inf.IConsistent;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISessionManager;
 
@@ -34,28 +34,26 @@ import java.util.List;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/4/20
  */
 public interface IClusterCustom<T extends IStorage>
-        extends
-        IMappingCustom
+        extends IMappingCustom
 {
     /*
      *
      * @param manager
-     * 
+     *
      * @param session
-     * 
+     *
      * @param content
-     * 
+     *
      * @return pair
      * first: to_send_array 1:N
      * second: to_transfer
      * Cluster->Link,consensus_result
-     * 
+     *
      * @throws Exception
-     * 
+     *
      * @see IPair handle(ISessionManager<C> manager, ISession<C> session,
      * IControl<C> content) throws Exception;
      */
@@ -67,7 +65,6 @@ public interface IClusterCustom<T extends IStorage>
      *
      * @param manager
      * @param content
-     * 
      * @return
      */
     List<ITriple> onTimer(ISessionManager manager, T content);
@@ -75,28 +72,25 @@ public interface IClusterCustom<T extends IStorage>
     /**
      * Link → Cluster.consensus(Link.consensus_data,consensus_data.origin)
      *
-     * @param manager
-     *            session 管理器
-     * @param request
-     *            需要进行强一致的指令
-     * 
+     * @param manager session 管理器
+     * @param request 需要进行强一致的指令
      * @return triples
-     *         [托管给集群IoSwitch.write(triples) 或 Transfer → Link.notify(triples)]
+     * [托管给集群IoSwitch.write(triples) 或 Transfer → Link.notify(triples)]
      */
-    <E extends INotify & IControl> List<ITriple> consensus(ISessionManager manager, E request);
+    <E extends IConsistent & IControl> List<ITriple> consensus(ISessionManager manager, E request);
 
     /**
      * consensus-api-publisher → cluster.change(new-topology)
-     * 
+     *
      * @param manager
      * @param topology
      * @return
      */
-    <E extends INotify & IControl> List<ITriple> change(ISessionManager manager, E topology);
+    <E extends IConsistent & IControl> List<ITriple> changeTopology(ISessionManager manager, E topology);
 
     /**
      * 用于验证是否需要执行集群commit
-     * 
+     *
      * @return true 等待集群确认，false 接续执行
      */
     boolean waitForCommit();
