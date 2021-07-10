@@ -23,6 +23,7 @@
 
 package com.isahl.chess.knight.raft.service;
 
+import com.isahl.chess.knight.cluster.IClusterNode;
 import com.isahl.chess.knight.raft.RaftPeer;
 import com.isahl.chess.knight.raft.inf.IRaftService;
 import com.isahl.chess.knight.raft.model.RaftNode;
@@ -38,18 +39,20 @@ import java.util.List;
 public class RaftService<M extends IClusterPeer & IClusterTimer>
         implements IRaftService
 {
-    private final RaftPeer<M> _RaftPeer;
 
-    public RaftService(RaftPeer<M> raftPeer)
+    private final IClusterNode _ClusterNode;
+    private final RaftPeer<M>  _RaftPeer;
+
+    public RaftService(IClusterNode clusterNode, RaftPeer<M> raftPeer)
     {
+        _ClusterNode = clusterNode;
         _RaftPeer = raftPeer;
     }
 
     @Override
-    public long getLeader()
+    public RaftNode getLeader()
     {
-        return _RaftPeer.getMachine()
-                        .getLeader();
+        return _RaftPeer.getLeader();
     }
 
     @Override
@@ -62,8 +65,11 @@ public class RaftService<M extends IClusterPeer & IClusterTimer>
     @Override
     public void changeTopology(RaftNode delta, IStorage.Operation operation)
     {
-        _RaftPeer.getRaftConfig()
-                 .changeTopology(delta, operation);
+        _ClusterNode.changeTopology(delta.getHost(),
+                                    delta.getPort(),
+                                    delta.getState()
+                                         .name(),
+                                    operation);
     }
 
     @Override

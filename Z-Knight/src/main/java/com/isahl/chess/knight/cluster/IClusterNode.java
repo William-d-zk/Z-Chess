@@ -29,8 +29,11 @@ import com.isahl.chess.king.base.disruptor.event.OperatorType;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.topology.ZUID;
+import com.isahl.chess.knight.raft.model.RaftNode;
+import com.isahl.chess.knight.raft.model.RaftState;
 import com.isahl.chess.queen.config.ISocketConfig;
 import com.isahl.chess.queen.db.inf.IStorage;
+import com.isahl.chess.queen.db.inf.IStorage.Operation;
 import com.isahl.chess.queen.event.QEvent;
 import com.isahl.chess.queen.io.core.async.AioSession;
 import com.isahl.chess.queen.io.core.async.BaseAioConnector;
@@ -207,16 +210,18 @@ public interface IClusterNode
     }
 
     @Override
-    default void changeTopology(IPair confPair)
+    default void changeTopology(String host, int port, String state, Operation operation)
     {
-        final RingBuffer<QEvent> _ConsensusApiEvent = getPublisher(OperatorType.CONSENSUS);
-        final ReentrantLock _ConsensusApiLock = getLock(OperatorType.CONSENSUS);
+        final RingBuffer<QEvent> _ConsensusApiEvent = getPublisher(OperatorType.CLUSTER_TOPOLOGY);
+        final ReentrantLock _ConsensusApiLock = getLock(OperatorType.CLUSTER_TOPOLOGY);
         _ConsensusApiLock.lock();
         try {
             long sequence = _ConsensusApiEvent.next();
             try {
                 QEvent event = _ConsensusApiEvent.get(sequence);
-                event.produce(OperatorType.CONSENSUS, confPair, null);
+                event.produce(OperatorType.CONSENSUS,
+                              new Pair<>(new RaftNode(host, port, RaftState.valueOf(state)), operation),
+                              null);
             }
             finally {
                 _ConsensusApiEvent.publish(sequence);

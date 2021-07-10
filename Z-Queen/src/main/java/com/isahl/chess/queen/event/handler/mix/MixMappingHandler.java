@@ -214,7 +214,7 @@ public class MixMappingHandler<T extends IStorage>
                         IConsistent notify = pair.getSecond();
                         if(notify != null) {
                             publish(_Transfer,
-                                    OperatorType.NOTIFY,
+                                    OperatorType.CONSENSUS_NOTIFY,
                                     new Pair<>(notify, null),
                                     _LinkCustom.getOperator());
                         }
@@ -248,8 +248,8 @@ public class MixMappingHandler<T extends IStorage>
                     core._ConsensusApiEvent → core.ClusterProcessor → _ClusterCustom
                      */
                     try {
-                        List<ITriple> result = _ClusterCustom.change(_SessionManager,
-                                                                     event.getContent()
+                        List<ITriple> result = _ClusterCustom.changeTopology(_SessionManager,
+                                                                             event.getContent()
                                                                           .getFirst());
                         if(result != null && !result.isEmpty()) {
                             publish(_Writer, result);
@@ -259,7 +259,7 @@ public class MixMappingHandler<T extends IStorage>
                         _Logger.warning("cluster inner service api ");
                     }
                     break;
-                case NOTIFY:
+                case CONSENSUS_NOTIFY:
                     IConsistent notify = event.getContent()
                                               .getFirst();
                     if(notify != null) {

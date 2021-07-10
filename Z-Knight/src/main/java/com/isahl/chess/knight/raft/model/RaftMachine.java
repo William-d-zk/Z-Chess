@@ -30,8 +30,8 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.JsonUtil;
-import com.isahl.chess.knight.raft.inf.IRaftMapper;
 import com.isahl.chess.knight.raft.inf.IRaftMachine;
+import com.isahl.chess.knight.raft.inf.IRaftMapper;
 import com.isahl.chess.queen.db.inf.IStorage;
 
 import java.util.Arrays;
@@ -55,23 +55,24 @@ public class RaftMachine
 {
     private final static int RAFT_MACHINE_SERIAL = DB_SERIAL + 3;
 
-    private final Logger        _Logger    = Logger.getLogger("cluster.knight." + RaftMachine.class.getSimpleName());
-    private final long          _PeerId;
-    private       long          mTerm;      // 触发选举时 mTerm > mIndexTerm
-    private       long          mIndex;     // 本地日志Index，Leader：mIndex >= mCommit 其他状态：mIndex <= mCommit
-    private       long          mIndexTerm; // 本地日志对应的Term
-    private       long          mMatchIndex;// Leader: 记录 follower 已经接收的记录
-    private       long          mCandidate;
-    private       long          mLeader;
-    private       long          mCommit;    // 集群中已知的最大CommitIndex
-    private       long          mApplied;   // 本地已被应用的Index
-    private       int           mState     = LEARNER.getCode();
-    private       Set<RaftNode> mPeerSet;
-    private       Set<RaftNode> mGateSet;
+    private final Logger _Logger = Logger.getLogger("cluster.knight." + RaftMachine.class.getSimpleName());
+    private final long   _PeerId;
+
+    private long          mTerm;      // 触发选举时 mTerm > mIndexTerm
+    private long          mIndex;     // 本地日志Index，Leader：mIndex >= mCommit 其他状态：mIndex <= mCommit
+    private long          mIndexTerm; // 本地日志对应的Term
+    private long          mMatchIndex;// Leader: 记录 follower 已经接收的记录
+    private long          mCandidate;
+    private long          mLeader;
+    private long          mCommit;    // 集群中已知的最大CommitIndex
+    private long          mApplied;   // 本地已被应用的Index
+    private int           mState     = LEARNER.getCode();
+    private Set<RaftNode> mPeerSet;
+    private Set<RaftNode> mGateSet;
     @JsonIgnore
-    private       Operation     mOperation = OP_NULL;
+    private Operation     mOperation = OP_NULL;
     @JsonIgnore
-    private       int           mLength;
+    private int           mLength;
 
     @Override
     public int dataLength()

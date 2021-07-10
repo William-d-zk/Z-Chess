@@ -24,7 +24,7 @@
 package com.isahl.chess.knight.raft.inf;
 
 import com.isahl.chess.knight.raft.model.RaftNode;
-import com.isahl.chess.queen.db.inf.IStorage;
+import com.isahl.chess.queen.db.inf.IStorage.Operation;
 
 import java.util.List;
 
@@ -39,7 +39,7 @@ public interface IRaftService
      *
      * @return leader peer_id
      */
-    long getLeader();
+    RaftNode getLeader();
 
     /**
      * 获取集群拓扑
@@ -48,7 +48,7 @@ public interface IRaftService
      */
     List<RaftNode> getTopology();
 
-    void changeTopology(RaftNode delta, IStorage.Operation operation);
+    void changeTopology(RaftNode delta, Operation operation);
 
     /**
      * ra f
@@ -59,5 +59,5 @@ public interface IRaftService
      *                  OP_REMOVE,减少网关 节点
      *                  OP_MODIFY,变更gate-listen的端口
      */
-    void changeGate(RaftNode delta, IStorage.Operation operation);
+    void changeGate(RaftNode delta, Operation operation);
 }

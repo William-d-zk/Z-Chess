@@ -71,8 +71,8 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
     private final TimeWheel                    _TimeWheel;
     private final RaftGraph                    _RaftGraph;
     private final RaftMachine                  _SelfMachine;
-    private final Queue<LogEntry>              _AppendLogQueue = new LinkedList<>();
-    private final Random                       _Random         = new Random();
+    private final Queue<LogEntry>              _LogQueue = new LinkedList<>();
+    private final Random                       _Random   = new Random();
     private final long                         _SnapshotFragmentMaxSize;
     private final ScheduleHandler<RaftPeer<M>> _ElectSchedule, _HeartbeatSchedule, _TickSchedule;
 
@@ -487,12 +487,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
             _Logger.debug("leader commit: %d @%d", nextCommit, _SelfMachine.getTerm());
             LogEntry raftLog = _RaftMapper.getEntry(nextCommit);
             X77_RaftNotify x77 = createNotify(raftLog);
-            x77.setLeader();
-            if(raftLog.isAll()) {
-                return new Pair<>(createNotifyStream(manager, raftLog, Function.identity()).toArray(IControl[]::new),
-                                  x77);
-            }
-            else if(raftLog.getClientPeer() != _SelfMachine.getPeerId()) {
+            if(raftLog.getClientPeer() != _SelfMachine.getPeerId()) {
                 // leader -> follower -> client
                 ISession followerSession = manager.findSessionByPrefix(raftLog.getClientPeer());
                 return followerSession != null ? new Pair<>(new IControl[]{ x77 }, x77) : new Pair<>(null, x77);
@@ -597,12 +592,12 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
     {
         if(_SelfMachine.getState() == LEADER) {
             _Logger.warning("leader needn't catch up any log.");
-            _AppendLogQueue.clear();
+            _LogQueue.clear();
             return false;
         }
         ITERATE_APPEND:
         {
-            if(_AppendLogQueue.isEmpty()) {
+            if(_LogQueue.isEmpty()) {
                 /*
                  * 1:follower 未将自身的index 同步给leader，next_index = -1
                  * 2:follower index == leader.index 此时需要确认 双边的index_term是否一致
@@ -657,7 +652,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
             }
             else {
                 if(preIndex == _SelfMachine.getIndex() && preIndexTerm == _SelfMachine.getIndexTerm()) {
-                    for(Iterator<LogEntry> it = _AppendLogQueue.iterator(); it.hasNext(); ) {
+                    for(Iterator<LogEntry> it = _LogQueue.iterator(); it.hasNext(); ) {
                         LogEntry entry = it.next();
                         if(_RaftMapper.appendLog(entry)) {
                             _SelfMachine.appendLog(entry.getIndex(), entry.getTerm(), _RaftMapper);
@@ -720,7 +715,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
             return true;
             // end of IT_APPEND
         }
-        _AppendLogQueue.clear();
+        _LogQueue.clear();
         return false;
     }
 
@@ -769,23 +764,17 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
     {
         if(entryList == null || entryList.isEmpty()) { return; }
         // offer all
-        _AppendLogQueue.addAll(entryList);
+        _LogQueue.addAll(entryList);
     }
 
-    public <T extends INotify & IControl, R> List<R> newLocalLogEntry(T request,
-                                                                      long client,
-                                                                      ISessionManager manager,
-                                                                      Function<ZCommand, R> mapper,
-                                                                      ISession session)
+    public <T extends IConsistent & IControl, R> List<R> newLocalLogEntry(T request,
+                                                                          long client,
+                                                                          ISessionManager manager,
+                                                                          Function<ZCommand, R> mapper,
+                                                                          ISession session)
     {
         byte[] payload = request.encode();
-        List<R> cmds = createLeaderLogEntry(request.serial(),
-                                            payload,
-                                            client,
-                                            request.getOrigin(),
-                                            request.isAll(),
-                                            manager,
-                                            mapper);
+        List<R> cmds = createLeaderLogEntry(request.serial(), payload, client, request.getOrigin(), manager, mapper);
         if(cmds == null) {
             stepDown();
             X76_RaftResp x76 = raftResp(RaftCode.WAL_FAILED,
@@ -803,7 +792,6 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
                                    byte[] payload,
                                    long client,
                                    long origin,
-                                   boolean pub,
                                    ISessionManager manager,
                                    ISession session)
     {
@@ -811,7 +799,6 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
                                                    payload,
                                                    client,
                                                    origin,
-                                                   pub,
                                                    manager,
                                                    Function.identity());
         if(cmds != null && !cmds.isEmpty()) {
@@ -844,7 +831,6 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
                                              byte[] payload,
                                              long client,
                                              long origin,
-                                             boolean pub,
                                              ISessionManager manager,
                                              Function<ZCommand, R> mapper)
     {
@@ -854,8 +840,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
                                          client,
                                          origin,
                                          payloadSerial,
-                                         payload,
-                                         pub);
+                                         payload);
         newEntry.setOperation(IStorage.Operation.OP_INSERT);
         if(_RaftMapper.appendLog(newEntry)) {
             _SelfMachine.appendLog(newEntry.getIndex(), newEntry.getTerm(), _RaftMapper);
@@ -1009,26 +994,12 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
         return x77;
     }
 
-    private <T> List<T> createNotifyStream(ISessionManager manager, LogEntry raftLog, Function<ZCommand, T> mapper)
+    public RaftNode getLeader()
     {
-        return _RaftGraph.getNodeMap()
-                         .values()
-                         .stream()
-                         .filter(node->node.getPeerId() != _SelfMachine.getPeerId())
-                         .map(machine->{
-                             ISession followerSession = manager.findSessionByPrefix(machine.getPeerId());
-                             if(followerSession != null) {
-                                 X77_RaftNotify x77 = createNotify(raftLog);
-                                 x77.setSession(followerSession);
-                                 return x77;
-                             }
-                             else {
-                                 _Logger.debug("not found session %#x", machine.getPeerId());
-                                 return null;
-                             }
-                         })
-                         .filter(Objects::nonNull)
-                         .map(mapper)
-                         .collect(Collectors.toList());
+        if(getMachine().getLeader() != INVALID_PEER_ID) {
+            return _RaftConfig.findById(getMachine().getLeader());
+        }
+        return null;
     }
+
 }

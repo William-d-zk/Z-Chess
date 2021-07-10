@@ -26,7 +26,6 @@ package com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZCommand;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.inf.IConsistent;
-import com.isahl.chess.queen.io.core.inf.INotify;
 
 /**
  * @author william.d.zk
@@ -34,8 +33,7 @@ import com.isahl.chess.queen.io.core.inf.INotify;
  */
 public class X75_RaftReq
         extends ZCommand
-        implements IConsistent,
-                   INotify
+        implements IConsistent
 {
     public final static int COMMAND = 0x75;
 
@@ -116,12 +114,6 @@ public class X75_RaftReq
     public boolean isMapping()
     {
         return true;
-    }
-
-    @Override
-    public boolean isAll()
-    {
-        return false;
     }
 
     @Override
