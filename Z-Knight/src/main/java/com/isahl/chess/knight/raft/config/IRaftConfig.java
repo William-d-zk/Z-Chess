@@ -25,9 +25,9 @@ package com.isahl.chess.knight.raft.config;
 
 import com.isahl.chess.king.base.inf.IReset;
 import com.isahl.chess.king.topology.ZUID;
+import com.isahl.chess.knight.raft.inf.IRaftModify;
 import com.isahl.chess.knight.raft.model.RaftConfig;
 import com.isahl.chess.knight.raft.model.RaftNode;
-import com.isahl.chess.queen.db.inf.IStorage;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -37,6 +37,7 @@ import java.util.List;
  * @author william.d.zk
  */
 public interface IRaftConfig
+        extends IRaftModify
 {
     /**
      * 当前集群的节点列表
@@ -59,13 +60,6 @@ public interface IRaftConfig
      * @return local peer bind
      */
     RaftNode getPeerBind();
-
-    /**
-     * 集群服务绑定的分区节点地址 host:port
-     *
-     * @return global gate bind
-     */
-    RaftNode getGateBind();
 
     /**
      * 集群标识UID 集群最大容量为 2^14 (16384) 个节点
@@ -100,28 +94,6 @@ public interface IRaftConfig
     RaftConfig getConfig();
 
     void update(RaftConfig source) throws IOException;
-
-    /**
-     * 调整集群拓扑配置，改变议会成员
-     *
-     * @param delta     变化量，每次只能有一个node 发生变化，raft协议保障
-     * @param operation OP_APPEND,增加集群节点,身份为议员，
-     *                  OP_REMOVE,删除当前节点,不再参与选举
-     *                  OP_MODIFY,修改peer端口,不能改变节点身份
-     *                  注意修改议会成员组成，要求先加入成员,再删除老成员的两步过程。
-     */
-    void changeTopology(RaftNode delta, IStorage.Operation operation);
-
-    /**
-     * ra f
-     * 调整多个分区之间通信的端点结构。
-     *
-     * @param delta     变化网关节点
-     * @param operation OP_APPEND,增加网关 节点
-     *                  OP_REMOVE,减少网关 节点
-     *                  OP_MODIFY,变更gate-listen的端口
-     */
-    void changeGate(RaftNode delta, IStorage.Operation operation);
 
     RaftNode findById(long peerId);
 

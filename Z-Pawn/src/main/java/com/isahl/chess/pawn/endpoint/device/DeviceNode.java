@@ -103,9 +103,9 @@ public class DeviceNode
             _PeerPing = null;
         }
         if(raftConfig.isGateNode()) {
-            RaftNode gateBind = raftConfig.getGateBind();
-            final String _GateBindHost = gateBind.getHost();
-            final int _GateBindPort = gateBind.getPort();
+            RaftNode gateBind = raftConfig.getPeerBind();
+            final String _GateBindHost = gateBind.getGateHost();
+            final int _GateBindPort = gateBind.getGatePort();
             hosts.add(new Triple<>(_GateBindHost, _GateBindPort, ZSortHolder.WS_CLUSTER_SYMMETRY));
             _GatePing = new X103_Ping(String.format("%#x,%s:%d", _ZUid.getPeerId(), _GateBindHost, _GateBindPort)
                                             .getBytes(StandardCharsets.UTF_8));
