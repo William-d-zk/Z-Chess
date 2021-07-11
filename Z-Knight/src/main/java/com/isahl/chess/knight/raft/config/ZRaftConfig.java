@@ -52,9 +52,6 @@ public class ZRaftConfig
     private final Map<Long, RaftNode> _RaftNodeMap = new TreeMap<>();
 
     private ZUID       mZUid;
-    private boolean    mInCongress;
-    private boolean    mBeGate;
-    private boolean    mClusterMode;
     private RaftNode   mPeerBind;
     private String     mBaseDir;
     private RaftConfig mConfig;
@@ -62,9 +59,9 @@ public class ZRaftConfig
     @PostConstruct
     public void load() throws IOException
     {
-        mClusterMode = mConfig.getNodes() != null && !mConfig.getNodes()
-                                                             .isEmpty();
-        if(!mClusterMode) { return; }
+        if(mConfig.getNodes() == null || mConfig.getNodes()
+                                                .isEmpty())
+        { return; }
         getUid().setNodeId(-1);
         String hostname = InetAddress.getLocalHost()
                                      .getHostName();
@@ -89,7 +86,6 @@ public class ZRaftConfig
         if(getUid().getNodeId() < 0) {
             _Logger.warning("hostname [ %s ] isn't one of nodes", hostname);
             getUid().setNodeId(0);
-            mClusterMode = false;
             return;
         }
         if(mConfig.getPeers() != null && !mConfig.getPeers()
@@ -100,11 +96,10 @@ public class ZRaftConfig
                 RaftNode peer = toRaftNode(peerAddr, RaftState.FOLLOWER);
                 String peerHost = peer.getHost();
                 if(hostname.equalsIgnoreCase(peerHost)) {
-                    if(!isInCongress() && mPeerBind == null) {
+                    if(mPeerBind == null) {
                         //RaftNode 需要对比 host:port 当配置中出现相同当host/port 不同时需要排除
                         peer.setId(createZUID().getPeerId());
                         mPeerBind = peer;
-                        mInCongress = true;
                     }
                     else {
                         _Logger.warning("duplicate peer: %s", peer);
@@ -114,8 +109,7 @@ public class ZRaftConfig
                 }
             }
         }
-        mClusterMode = mInCongress || mClusterMode;
-        if(isClusterMode()) {
+        if(isInCongress()) {
             if(mConfig.getGates() != null && !mConfig.getGates()
                                                      .isEmpty())
             {
@@ -123,7 +117,6 @@ public class ZRaftConfig
                     RaftNode gate = toRaftNode(gateAddr, RaftState.GATE);
                     if(hostname.equalsIgnoreCase(gate.getHost())) {
                         if(!isGateNode()) {
-                            mBeGate = true;
                             mPeerBind.setGateHost(gate.getGateHost());
                             mPeerBind.setGatePort(gate.getGatePort());
                         }
@@ -178,9 +171,6 @@ public class ZRaftConfig
     {
         mConfig = null;
         mZUid = null;
-        mInCongress = false;
-        mBeGate = false;
-        mClusterMode = false;
         mPeerBind = null;
         _RaftNodeMap.clear();
     }
@@ -232,7 +222,6 @@ public class ZRaftConfig
             if(mPeerBind != null) {
                 String hostname = mPeerBind.getHost();
                 if(hostname.equalsIgnoreCase(delta.getHost())) {
-                    mBeGate = true;
                     mPeerBind.setGateHost(delta.getGateHost());
                     mPeerBind.setGatePort(delta.getGatePort());
                 }
@@ -320,19 +309,19 @@ public class ZRaftConfig
     @Override
     public boolean isInCongress()
     {
-        return mInCongress;
+        return mPeerBind != null;
     }
 
     @Override
     public boolean isClusterMode()
     {
-        return mClusterMode;
+        return isInCongress() || mConfig.isBeLearner();
     }
 
     @Override
     public boolean isGateNode()
     {
-        return mBeGate;
+        return mPeerBind != null && mPeerBind.getGateHost() != null;
     }
 
     @Override

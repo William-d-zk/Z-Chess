@@ -56,6 +56,7 @@ public class RaftConfig
     @JsonDeserialize(converter = LongToDataSizeConverter.class)
     private DataSize             maxSegmentSize;
     private IRaftConfig.Uid      uid;
+    private boolean              beLearner;
 
     public Map<Integer, String> getPeers()
     {
@@ -165,6 +166,16 @@ public class RaftConfig
     public void setUid(IRaftConfig.Uid uid)
     {
         this.uid = uid;
+    }
+
+    public boolean isBeLearner()
+    {
+        return beLearner;
+    }
+
+    public void setBeLearner(boolean beLearner)
+    {
+        this.beLearner = beLearner;
     }
 }
 
