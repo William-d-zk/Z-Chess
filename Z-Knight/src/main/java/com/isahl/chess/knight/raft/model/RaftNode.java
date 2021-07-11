@@ -39,6 +39,8 @@ public class RaftNode
     private long      mId;
     private String    mHost;
     private int       mPort;
+    private String    mGateHost;
+    private int       mGatePort;
     private RaftState mState;
 
     public RaftNode()
@@ -114,6 +116,26 @@ public class RaftNode
     @Override
     public String toString()
     {
-        return String.format(" RaftNode{%#x,%s:%d,%s}", mId, mHost, mPort, mState);
+        return String.format(" RaftNode{%#x,%s:%d,%s | %s:%d }", mId, mHost, mPort, mState, mGateHost, mGatePort);
+    }
+
+    public String getGateHost()
+    {
+        return mGateHost;
+    }
+
+    public void setGateHost(String host)
+    {
+        mGateHost = host;
+    }
+
+    public int getGatePort()
+    {
+        return mGatePort;
+    }
+
+    public void setGatePort(int port)
+    {
+        mGatePort = port;
     }
 }

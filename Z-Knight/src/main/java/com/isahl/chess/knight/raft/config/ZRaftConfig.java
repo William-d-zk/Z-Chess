@@ -56,7 +56,6 @@ public class ZRaftConfig
     private boolean    mBeGate;
     private boolean    mClusterMode;
     private RaftNode   mPeerBind;
-    private RaftNode   mGateBind;
     private String     mBaseDir;
     private RaftConfig mConfig;
 
@@ -121,12 +120,12 @@ public class ZRaftConfig
                                                      .isEmpty())
             {
                 for(String gateAddr : mConfig.getGates()) {
-                    if(hostname.equalsIgnoreCase(gateAddr)) {
-                        RaftNode gate = toRaftNode(gateAddr, RaftState.GATE);
-                        if(!isGateNode() && mGateBind == null) {
-                            gate.setId(createZUID().getPeerId());
-                            mGateBind = gate;
+                    RaftNode gate = toRaftNode(gateAddr, RaftState.GATE);
+                    if(hostname.equalsIgnoreCase(gate.getHost())) {
+                        if(!isGateNode()) {
                             mBeGate = true;
+                            mPeerBind.setGateHost(gate.getGateHost());
+                            mPeerBind.setGatePort(gate.getGatePort());
                         }
                         else {
                             _Logger.warning("duplicate gate:%s", gateAddr);
@@ -182,7 +181,6 @@ public class ZRaftConfig
         mInCongress = false;
         mBeGate = false;
         mClusterMode = false;
-        mGateBind = null;
         mPeerBind = null;
         _RaftNodeMap.clear();
     }
@@ -196,49 +194,50 @@ public class ZRaftConfig
             throw new IllegalArgumentException(String.format("change topology : delta's id is wrong %#x",
                                                              delta.getId()));
         }
-        /*
-        此处不使用map.computeIf* 的结构是因为判断过于复杂
-        还是for的表达容易理解
-         */
-        boolean present = false;
-        CHECK:
+        if(delta.getState()
+                .getCode() < RaftState.GATE.getCode())
         {
-            LOOP:
+            /*
+            此处不使用map.computeIf* 的结构是因为判断过于复杂
+            还是for的表达容易理解
+             */
+            boolean present = false;
+            CHECK:
             {
-                for(RaftNode senator : _RaftNodeMap.values()) {
-                    present = present || delta.compareTo(senator) == 0;
-                    switch(operation) {
-                        case OP_APPEND -> {
-                            if(present) {
-                                break CHECK;
+                LOOP:
+                {
+                    for(RaftNode senator : _RaftNodeMap.values()) {
+                        present = present || delta.compareTo(senator) == 0;
+                        switch(operation) {
+                            case OP_APPEND -> {
+                                if(present) {
+                                    break CHECK;
+                                }
                             }
-                        }
-                        case OP_REMOVE, OP_MODIFY -> {
-                            if(present) {
-                                break LOOP;//map.put:update delta→present
+                            case OP_REMOVE, OP_MODIFY -> {
+                                if(present) {
+                                    break LOOP;//map.put:update delta→present
+                                }
                             }
                         }
                     }
                 }
+                if(!present && operation == Operation.OP_REMOVE || operation == Operation.OP_MODIFY) {
+                    break CHECK;
+                }
+                _RaftNodeMap.put(delta.getId(), delta);
             }
-            if(!present && operation == Operation.OP_REMOVE || operation == Operation.OP_MODIFY) {
-                break CHECK;
-            }
-            _RaftNodeMap.put(delta.getId(), delta);
         }
-    }
+        else if(delta.getState() == RaftState.GATE) {
+            if(mPeerBind != null) {
+                String hostname = mPeerBind.getHost();
+                if(hostname.equalsIgnoreCase(delta.getHost())) {
+                    mBeGate = true;
+                    mPeerBind.setGateHost(delta.getGateHost());
+                    mPeerBind.setGatePort(delta.getGatePort());
+                }
+            }
 
-    @Override
-    public void changeGate(RaftNode delta, Operation operation)
-    {
-        Objects.requireNonNull(delta);
-        Objects.requireNonNull(operation);
-        Objects.requireNonNull(mPeerBind);
-        String hostname = mPeerBind.getHost();
-        if(hostname.equalsIgnoreCase(delta.getHost())) {
-            mBeGate = true;
-            delta.setId(mPeerBind.getId());
-            mGateBind = delta;
         }
     }
 
@@ -278,16 +277,16 @@ public class ZRaftConfig
         return mPeerBind;
     }
 
-    @Override
-    public RaftNode getGateBind()
-    {
-        return mGateBind;
-    }
-
     private RaftNode toRaftNode(String content, RaftState state)
     {
         String[] split = content.split(":", 2);
-        return new RaftNode(split[0], Integer.parseInt(split[1]), state);
+        String[] split1 = split[0].split("/", 2);
+        RaftNode node = new RaftNode(split1[0], Integer.parseInt(split[1]), state);
+        if(split1.length == 2) {
+            node.setGateHost(split1[1]);
+            node.setGatePort(Integer.parseInt(split[1]));
+        }
+        return node;
     }
 
     public Duration getElectInSecond()
