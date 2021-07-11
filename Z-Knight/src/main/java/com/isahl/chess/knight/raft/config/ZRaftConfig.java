@@ -184,50 +184,42 @@ public class ZRaftConfig
             throw new IllegalArgumentException(String.format("change topology : delta's id is wrong %#x",
                                                              delta.getId()));
         }
-        if(delta.getState()
-                .getCode() < RaftState.GATE.getCode())
-        {
+
             /*
             此处不使用map.computeIf* 的结构是因为判断过于复杂
             还是for的表达容易理解
              */
-            boolean present = false;
-            CHECK:
+        boolean present = false;
+        CHECK:
+        {
+            LOOP:
             {
-                LOOP:
-                {
-                    for(RaftNode senator : _RaftNodeMap.values()) {
-                        present = present || delta.compareTo(senator) == 0;
-                        switch(operation) {
-                            case OP_APPEND -> {
-                                if(present) {
-                                    break CHECK;
+                for(RaftNode senator : _RaftNodeMap.values()) {
+                    present = present || delta.compareTo(senator) == 0;
+                    switch(operation) {
+                        case OP_APPEND -> {
+                            if(present) {
+                                if(delta.getState() == RaftState.GATE && senator.getGateHost() == null) {
+                                    senator.setGateHost(delta.getGateHost());
+                                    senator.setGatePort(delta.getGatePort());
                                 }
+                                break CHECK;
                             }
-                            case OP_REMOVE, OP_MODIFY -> {
-                                if(present) {
-                                    break LOOP;//map.put:update delta→present
-                                }
+                        }
+                        case OP_REMOVE, OP_MODIFY -> {
+                            if(present) {
+                                break LOOP;//map.put:update delta→present
                             }
                         }
                     }
                 }
-                if(!present && operation == Operation.OP_REMOVE || operation == Operation.OP_MODIFY) {
-                    break CHECK;
-                }
-                _RaftNodeMap.put(delta.getId(), delta);
             }
+            if(!present && operation == Operation.OP_REMOVE || operation == Operation.OP_MODIFY) {
+                break CHECK;
+            }
+            _RaftNodeMap.put(delta.getId(), delta);
         }
-        else if(delta.getState() == RaftState.GATE) {
-            if(mPeerBind != null) {
-                String hostname = mPeerBind.getHost();
-                if(hostname.equalsIgnoreCase(delta.getHost())) {
-                    mPeerBind.setGateHost(delta.getGateHost());
-                    mPeerBind.setGatePort(delta.getGatePort());
-                }
-            }
 
-        }
     }
 
     @Override
