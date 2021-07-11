@@ -21,51 +21,14 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.service;
+package com.isahl.chess.queen.event.handler.cluster;
 
-import com.isahl.chess.knight.raft.RaftPeer;
-import com.isahl.chess.knight.raft.inf.IRaftModify;
-import com.isahl.chess.knight.raft.inf.IRaftService;
-import com.isahl.chess.knight.raft.model.RaftNode;
-import com.isahl.chess.queen.db.inf.IStorage;
-import com.isahl.chess.queen.io.core.inf.IClusterPeer;
-import com.isahl.chess.queen.io.core.inf.IClusterTimer;
-
-import java.util.List;
+import com.isahl.chess.queen.io.core.inf.IProtocol;
 
 /**
  * @author william.d.zk
  */
-public class RaftService<M extends IClusterPeer & IClusterTimer>
-        implements IRaftService
+public interface IConsistencyJudge
 {
-
-    private final IRaftModify _RaftModify;
-    private final RaftPeer<M> _RaftPeer;
-
-    public RaftService(IRaftModify raftModify, RaftPeer<M> raftPeer)
-    {
-        _RaftModify = raftModify;
-        _RaftPeer = raftPeer;
-    }
-
-    @Override
-    public RaftNode getLeader()
-    {
-        return _RaftPeer.getLeader();
-    }
-
-    @Override
-    public List<RaftNode> getTopology()
-    {
-        return _RaftPeer.getRaftConfig()
-                        .getPeers();
-    }
-
-    @Override
-    public void changeTopology(RaftNode delta, IStorage.Operation operation)
-    {
-        _RaftModify.changeTopology(delta, operation);
-    }
-
+    void adjudge(IProtocol consensus);
 }

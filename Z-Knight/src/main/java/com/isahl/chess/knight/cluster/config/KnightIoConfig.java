@@ -42,7 +42,6 @@ import java.util.Map;
 public class KnightIoConfig
         implements IAioConfig
 {
-
     private Map<String, Integer> sizePowers;
     private SocketConfig         cluster;
     private SocketConfig         internal;

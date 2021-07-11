@@ -25,7 +25,7 @@ package com.isahl.chess.queen.event.handler.mix;
 
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.queen.event.handler.IMappingCustom;
-import com.isahl.chess.queen.event.handler.cluster.IConsistentCustom;
+import com.isahl.chess.queen.event.handler.cluster.IConsistencyCustom;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionManager;
@@ -38,7 +38,7 @@ import java.util.List;
  */
 public interface ILinkCustom
         extends IMappingCustom,
-                IConsistentCustom
+                IConsistencyCustom
 {
 
     /*

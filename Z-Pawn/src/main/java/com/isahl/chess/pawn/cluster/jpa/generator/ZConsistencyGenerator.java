@@ -23,19 +23,17 @@
 
 package com.isahl.chess.pawn.cluster.jpa.generator;
 
-import java.io.Serializable;
-
-import javax.annotation.PostConstruct;
-
+import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.topology.ZUID;
+import com.isahl.chess.knight.raft.config.ZRaftConfig;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.id.IdentifierGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.topology.ZUID;
-import com.isahl.chess.knight.raft.config.ZRaftConfig;
+import javax.annotation.PostConstruct;
+import java.io.Serializable;
 
 /**
  * 
@@ -48,7 +46,7 @@ import com.isahl.chess.knight.raft.config.ZRaftConfig;
  * @author william.d.zk
  */
 @Component
-public class ZConsistentGenerator
+public class ZConsistencyGenerator
         implements
         IdentifierGenerator
 {
@@ -57,12 +55,12 @@ public class ZConsistentGenerator
     private final ZRaftConfig _ZClusterConfig;
 
     @Autowired
-    public ZConsistentGenerator(ZRaftConfig config)
+    public ZConsistencyGenerator(ZRaftConfig config)
     {
         _ZClusterConfig = config;
     }
 
-    public ZConsistentGenerator()
+    public ZConsistencyGenerator()
     {
         _ZClusterConfig = null;
     }

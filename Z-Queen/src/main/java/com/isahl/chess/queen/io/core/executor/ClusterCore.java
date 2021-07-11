@@ -37,7 +37,7 @@ import com.isahl.chess.queen.event.handler.WriteDispatcher;
 import com.isahl.chess.queen.event.handler.cluster.ClusterMappingHandler;
 import com.isahl.chess.queen.event.handler.cluster.DecodedDispatcher;
 import com.isahl.chess.queen.event.handler.cluster.IClusterCustom;
-import com.isahl.chess.queen.event.handler.cluster.IConsistentCustom;
+import com.isahl.chess.queen.event.handler.cluster.IConsistencyCustom;
 import com.isahl.chess.queen.event.handler.cluster.IoDispatcher;
 import com.isahl.chess.queen.event.handler.cluster.NotifyHandler;
 import com.isahl.chess.queen.event.handler.mix.ILogicHandler;
@@ -185,7 +185,7 @@ public class ClusterCore
     @SuppressWarnings("unchecked")
     public <T extends IStorage> void build(ClusterManager manager,
                                            IClusterCustom<T> clusterCustom,
-                                           IConsistentCustom consistentCustom,
+                                           IConsistencyCustom consistentCustom,
                                            ILogicHandler logicHandler,
                                            Supplier<IEncryptHandler> encryptSupplier)
     {

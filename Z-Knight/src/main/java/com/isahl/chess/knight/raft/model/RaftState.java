@@ -29,7 +29,13 @@ package com.isahl.chess.knight.raft.model;
  */
 public enum RaftState
 {
-    FOLLOWER(1), ELECTOR(2), CANDIDATE(3), LEADER(4), GATE(7), LEARNER(8), CLIENT(16);
+    FOLLOWER(1),
+    ELECTOR(2),
+    CANDIDATE(3),
+    LEADER(4),
+    GATE(7),
+    LEARNER(8),
+    CLIENT(16);
 
     private final int _Code;
 

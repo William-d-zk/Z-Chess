@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -20,26 +20,40 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package com.isahl.chess.player.api.controller;
 
-package com.isahl.chess.queen.event.handler.cluster;
+import com.isahl.chess.knight.cluster.inf.IConsistencyService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
-import com.isahl.chess.queen.io.core.inf.IProtocol;
-import com.isahl.chess.queen.io.core.inf.ITraceable;
+import java.time.Instant;
 
 /**
  * @author william.d.zk
+ * @date 2019/12/01
  */
-public interface IConsistentCustom
-        extends
-        IConsistentJudge
+@RestController
+public class ConsistencyController
 {
-    default <T extends ITraceable & IProtocol> IOperator<T,
-                                                         Throwable,
-                                                         Void> getOperator()
+
+    private final IConsistencyService _ConsistencyService;
+
+    @Autowired
+    public ConsistencyController(IConsistencyService consistentService)
     {
-        return this::resolve;
+        _ConsistencyService = consistentService;
     }
 
-    <T extends ITraceable & IProtocol> Void resolve(T request, Throwable throwable);
+    @PostMapping("/consistent")
+    public @ResponseBody
+    Object consistency(String input)
+    {
+        _ConsistencyService.submit(input,
+                                   true,
+                                   Instant.now()
+                                          .toEpochMilli());
+        return input;
+    }
 }

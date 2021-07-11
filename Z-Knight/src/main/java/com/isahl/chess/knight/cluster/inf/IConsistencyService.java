@@ -21,24 +21,24 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.knight.raft.service;
+package com.isahl.chess.knight.cluster.inf;
 
 import com.isahl.chess.king.base.disruptor.event.OperatorType;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.knight.cluster.IClusterNode;
 import com.isahl.chess.queen.event.QEvent;
-import com.isahl.chess.queen.event.handler.cluster.IConsistentCustom;
+import com.isahl.chess.queen.event.handler.cluster.IConsistencyCustom;
 import com.isahl.chess.queen.io.core.inf.INotify;
 import com.isahl.chess.queen.io.core.inf.IProtocol;
 import com.lmax.disruptor.RingBuffer;
 
 import java.util.concurrent.locks.ReentrantLock;
 
-public interface IConsistentService
+public interface IConsistencyService
 {
     default <T extends INotify & IProtocol> void submit(T consensus,
                                                         IClusterNode clusterNode,
-                                                        IConsistentCustom custom)
+                                                        IConsistencyCustom custom)
     {
         if(consensus == null) { return; }
         final ReentrantLock _Lock = clusterNode.getLock(OperatorType.CONSENSUS);

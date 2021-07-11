@@ -24,7 +24,6 @@
 package com.isahl.chess.knight.raft.inf;
 
 import com.isahl.chess.knight.raft.model.RaftNode;
-import com.isahl.chess.queen.db.inf.IStorage.Operation;
 
 import java.util.List;
 
@@ -33,6 +32,7 @@ import java.util.List;
  * @date 2020/2/20
  */
 public interface IRaftService
+        extends IRaftModify
 {
     /**
      * 获取集群的leader信息
@@ -48,16 +48,4 @@ public interface IRaftService
      */
     List<RaftNode> getTopology();
 
-    void changeTopology(RaftNode delta, Operation operation);
-
-    /**
-     * ra f
-     * 调整多个分区之间通信的端点结构。
-     *
-     * @param delta     变化网关节点
-     * @param operation OP_APPEND,增加网关 节点
-     *                  OP_REMOVE,减少网关 节点
-     *                  OP_MODIFY,变更gate-listen的端口
-     */
-    void changeGate(RaftNode delta, Operation operation);
 }
