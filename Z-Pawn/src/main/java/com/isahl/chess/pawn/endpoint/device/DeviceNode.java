@@ -27,7 +27,6 @@ import com.isahl.chess.bishop.io.sort.ZSortHolder;
 import com.isahl.chess.bishop.io.ws.control.X103_Ping;
 import com.isahl.chess.bishop.io.ws.zchat.zcrypt.EncryptHandler;
 import com.isahl.chess.king.base.disruptor.event.OperatorType;
-import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.schedule.ScheduleHandler;
 import com.isahl.chess.king.base.schedule.TimeWheel;
@@ -114,19 +113,21 @@ public class DeviceNode
         else {
             _GatePing = null;
         }
-        _AioServers = hosts.stream().map(triple->{
-            final String _Host = triple.getFirst();
-            final int _Port = triple.getSecond();
-            final ZSortHolder _Holder = triple.getThird();
-            return buildServer(_Host,
-                               _Port,
-                               getSocketConfig(_Holder.getSlot()),
-                               _Holder,
-                               DeviceNode.this,
-                               DeviceNode.this,
-                               _ZUid,
-                               multiBind);
-        }).collect(Collectors.toList());
+        _AioServers = hosts.stream()
+                           .map(triple->{
+                               final String _Host = triple.getFirst();
+                               final int _Port = triple.getSecond();
+                               final ZSortHolder _Holder = triple.getThird();
+                               return buildServer(_Host,
+                                                  _Port,
+                                                  getSocketConfig(_Holder.getSlot()),
+                                                  _Holder,
+                                                  DeviceNode.this,
+                                                  DeviceNode.this,
+                                                  _ZUid,
+                                                  multiBind);
+                           })
+                           .collect(Collectors.toList());
         _GateClient = new BaseAioClient(_TimeWheel, getClusterChannelGroup())
         {
             @Override
@@ -183,19 +184,19 @@ public class DeviceNode
     }
 
     @Override
-    public void setupPeer(IPair remote) throws IOException
+    public void setupPeer(String host, int port) throws IOException
     {
         final ZSortHolder _Holder = ZSortHolder.WS_CLUSTER_SYMMETRY;
         ISocketConfig socketConfig = getSocketConfig(_Holder.getSlot());
-        _PeerClient.connect(buildConnector(remote, socketConfig, _PeerClient, DeviceNode.this, _Holder, _ZUid));
+        _PeerClient.connect(buildConnector(host, port, socketConfig, _PeerClient, DeviceNode.this, _Holder, _ZUid));
     }
 
     @Override
-    public void setupGate(IPair remote) throws IOException
+    public void setupGate(String host, int port) throws IOException
     {
         final ZSortHolder _Holder = ZSortHolder.WS_CLUSTER_SYMMETRY;
         ISocketConfig socketConfig = getSocketConfig(_Holder.getSlot());
-        _GateClient.connect(buildConnector(remote, socketConfig, _GateClient, DeviceNode.this, _Holder, _ZUid));
+        _GateClient.connect(buildConnector(host, port, socketConfig, _GateClient, DeviceNode.this, _Holder, _ZUid));
     }
 
     private void peerHeartbeat(ISession session)

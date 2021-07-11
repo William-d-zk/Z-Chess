@@ -23,9 +23,6 @@
 
 package com.isahl.chess.queen.io.core.inf;
 
-import com.isahl.chess.king.base.inf.IPair;
-import com.isahl.chess.queen.db.inf.IStorage.Operation;
-
 import java.io.IOException;
 
 /**
@@ -34,9 +31,7 @@ import java.io.IOException;
  */
 public interface IClusterPeer
 {
-    void setupPeer(IPair remote) throws IOException;
+    void setupPeer(String host, int port) throws IOException;
 
-    void setupGate(IPair remote) throws IOException;
-
-    void changeTopology(String host, int port, String state, Operation operation);
+    void setupGate(String host, int port) throws IOException;
 }
