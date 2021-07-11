@@ -144,7 +144,9 @@ public class RaftMachine
     }
 
     @JsonCreator
-    public RaftMachine(@JsonProperty("peer_id") long peerId)
+    public RaftMachine(
+            @JsonProperty("peer_id")
+                    long peerId)
     {
         _PeerId = peerId;
         mMatchIndex = INDEX_NAN;
@@ -496,13 +498,16 @@ public class RaftMachine
 
     private String peerSetString()
     {
-        StringBuilder sb = new StringBuilder("[\n");
-        for(RaftNode node : mPeerSet) {
-            sb.append("\t<")
-              .append(String.format(" %s ", node))
-              .append(">\n");
+        if(mPeerSet != null) {
+            StringBuilder sb = new StringBuilder("[\n");
+            for(RaftNode node : mPeerSet) {
+                sb.append("\t<")
+                  .append(String.format(" %s ", node))
+                  .append(">\n");
+            }
+            sb.append(']');
+            return sb.toString();
         }
-        sb.append(']');
-        return sb.toString();
+        return null;
     }
 }
