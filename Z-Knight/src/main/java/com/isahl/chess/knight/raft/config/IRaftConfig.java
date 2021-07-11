@@ -48,13 +48,6 @@ public interface IRaftConfig
     List<RaftNode> getPeers();
 
     /**
-     * 与其他独region 进行通讯的网关
-     *
-     * @return gate topology
-     */
-    List<RaftNode> getGates();
-
-    /**
      * 集群服务绑定的服务地址 host:port
      *
      * @return local peer bind

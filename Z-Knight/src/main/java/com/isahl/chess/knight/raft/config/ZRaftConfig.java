@@ -265,13 +265,6 @@ public class ZRaftConfig
     }
 
     @Override
-    public List<RaftNode> getGates()
-    {
-        //TODO
-        return null;
-    }
-
-    @Override
     public RaftNode getPeerBind()
     {
         return mPeerBind;
