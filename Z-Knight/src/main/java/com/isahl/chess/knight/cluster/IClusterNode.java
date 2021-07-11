@@ -205,7 +205,7 @@ public interface IClusterNode
             long sequence = _ConsensusApiEvent.next();
             try {
                 QEvent event = _ConsensusApiEvent.get(sequence);
-                event.produce(OperatorType.CONSENSUS, new Pair<>(delta, operation), null);
+                event.produce(OperatorType.CLUSTER_TOPOLOGY, new Pair<>(delta, operation), null);
             }
             finally {
                 _ConsensusApiEvent.publish(sequence);
