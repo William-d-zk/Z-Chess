@@ -26,11 +26,9 @@ package com.isahl.chess.knight.cluster;
 import com.isahl.chess.bishop.io.sort.ZSortHolder;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X106_Identity;
 import com.isahl.chess.king.base.disruptor.event.OperatorType;
-import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.knight.raft.model.RaftNode;
-import com.isahl.chess.knight.raft.model.RaftState;
 import com.isahl.chess.queen.config.ISocketConfig;
 import com.isahl.chess.queen.db.inf.IStorage;
 import com.isahl.chess.queen.db.inf.IStorage.Operation;
@@ -59,15 +57,14 @@ public interface IClusterNode
                 INode,
                 ILocalPublisher
 {
-    default IAioConnector buildConnector(final IPair _Address,
+    default IAioConnector buildConnector(final String _Host,
+                                         final int _Port,
                                          final ISocketConfig _SocketConfig,
                                          final IAioClient _Client,
                                          final ISessionManager _Manager,
                                          final ZSortHolder _ZSortHolder,
                                          final ZUID _ZUid)
     {
-        final String _Host = _Address.getFirst();
-        final int _Port = _Address.getSecond();
         if(_ZSortHolder.getSort()
                        .getMode() != ISort.Mode.CLUSTER)
         {
@@ -116,19 +113,6 @@ public interface IClusterNode
                                    .getProtocol();
             }
         };
-    }
-
-    default IAioServer buildServer(final IPair _Address,
-                                   final ISocketConfig _SocketConfig,
-                                   final ZSortHolder _ZSortHolder,
-                                   final ISessionManager _Manager,
-                                   final ISessionDismiss _Dismiss,
-                                   final ZUID _ZUid,
-                                   final boolean _MultiBind)
-    {
-        final String _Host = _Address.getFirst();
-        final int _Port = _Address.getSecond();
-        return buildServer(_Host, _Port, _SocketConfig, _ZSortHolder, _Manager, _Dismiss, _ZUid, _MultiBind);
     }
 
     default IAioServer buildServer(final String _Host,
@@ -209,8 +193,7 @@ public interface IClusterNode
         }
     }
 
-    @Override
-    default void changeTopology(String host, int port, String state, Operation operation)
+    default void changeTopology(RaftNode delta, Operation operation)
     {
         final RingBuffer<QEvent> _ConsensusApiEvent = getPublisher(OperatorType.CLUSTER_TOPOLOGY);
         final ReentrantLock _ConsensusApiLock = getLock(OperatorType.CLUSTER_TOPOLOGY);
@@ -219,9 +202,7 @@ public interface IClusterNode
             long sequence = _ConsensusApiEvent.next();
             try {
                 QEvent event = _ConsensusApiEvent.get(sequence);
-                event.produce(OperatorType.CONSENSUS,
-                              new Pair<>(new RaftNode(host, port, RaftState.valueOf(state)), operation),
-                              null);
+                event.produce(OperatorType.CONSENSUS, new Pair<>(delta, operation), null);
             }
             finally {
                 _ConsensusApiEvent.publish(sequence);

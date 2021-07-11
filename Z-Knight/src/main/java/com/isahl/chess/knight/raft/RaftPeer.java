@@ -154,7 +154,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
                     }
                     // 仅连接NodeId<自身的节点
                     if(peerId < _SelfMachine.getPeerId()) {
-                        _ClusterPeer.setupPeer(new Pair<>(remote.getHost(), remote.getPort()));
+                        _ClusterPeer.setupPeer(remote.getHost(), remote.getPort());
                         _Logger.info("->peer : %s:%d", remote.getHost(), remote.getPort());
                     }
                 }
@@ -163,7 +163,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
                 for(RaftNode remote : _SelfMachine.getGateSet()) {
                     long gateId = remote.getId();
                     if(gateId != _ZUid.getClusterId()) {
-                        _ClusterPeer.setupGate(new Pair<>(remote.getHost(), remote.getPort()));
+                        _ClusterPeer.setupGate(remote.getHost(), remote.getPort());
                         _Logger.info("->gate : %s:%d", remote.getHost(), remote.getPort());
                     }
                 }

@@ -65,11 +65,7 @@ public class RaftService<M extends IClusterPeer & IClusterTimer>
     @Override
     public void changeTopology(RaftNode delta, IStorage.Operation operation)
     {
-        _ClusterNode.changeTopology(delta.getHost(),
-                                    delta.getPort(),
-                                    delta.getState()
-                                         .name(),
-                                    operation);
+        _ClusterNode.changeTopology(delta, operation);
     }
 
     @Override
