@@ -28,6 +28,7 @@ import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X106_Identity;
 import com.isahl.chess.king.base.disruptor.event.OperatorType;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.topology.ZUID;
+import com.isahl.chess.knight.raft.inf.IRaftModify;
 import com.isahl.chess.knight.raft.model.RaftNode;
 import com.isahl.chess.queen.config.ISocketConfig;
 import com.isahl.chess.queen.db.inf.IStorage;
@@ -55,7 +56,8 @@ public interface IClusterNode
         extends IClusterPeer,
                 IClusterTimer,
                 INode,
-                ILocalPublisher
+                ILocalPublisher,
+                IRaftModify
 {
     default IAioConnector buildConnector(final String _Host,
                                          final int _Port,
@@ -193,6 +195,7 @@ public interface IClusterNode
         }
     }
 
+    @Override
     default void changeTopology(RaftNode delta, Operation operation)
     {
         final RingBuffer<QEvent> _ConsensusApiEvent = getPublisher(OperatorType.CLUSTER_TOPOLOGY);

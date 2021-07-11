@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,14 +21,25 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.queen.event.handler.cluster;
+package com.isahl.chess.knight.raft.inf;
 
-import com.isahl.chess.queen.io.core.inf.IProtocol;
+import com.isahl.chess.knight.raft.model.RaftNode;
+import com.isahl.chess.queen.db.inf.IStorage;
 
-/**
- * @author william.d.zk
- */
-public interface IConsistentJudge
+public interface IRaftModify
 {
-    void adjudge(IProtocol consensus);
+
+    /**
+     * raft
+     * 调整拓扑结构
+     *
+     * @param delta     变化的节点
+     *                  state == GATE，进行 网关节点操作，
+     *                  state.code < GATE.code 进行节点操作，一般使用 FOLLOWER
+     * @param operation OP_APPEND,增加节点
+     *                  OP_REMOVE,减少节点
+     *                  OP_MODIFY,变更listen的端口
+     */
+    void changeTopology(RaftNode delta, IStorage.Operation operation);
+
 }

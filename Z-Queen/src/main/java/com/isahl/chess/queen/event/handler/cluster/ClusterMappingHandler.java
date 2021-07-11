@@ -57,7 +57,7 @@ public class ClusterMappingHandler<T extends IStorage>
     private final RingBuffer<QEvent>[] _Notifiers;
     private final ISessionManager      _SessionManager;
     private final IClusterCustom<T>    _ClusterCustom;
-    private final IConsistentCustom    _ConsistentCustom;
+    private final IConsistencyCustom   _ConsistencyCustom;
     private final int                  _NotifyModMask;
 
     public ClusterMappingHandler(String mapper,
@@ -66,7 +66,7 @@ public class ClusterMappingHandler<T extends IStorage>
                                  RingBuffer<QEvent> writer,
                                  RingBuffer<QEvent>[] notifiers,
                                  IClusterCustom<T> clusterCustom,
-                                 IConsistentCustom consistentCustom)
+                                 IConsistencyCustom consistentCustom)
     {
         _Logger = Logger.getLogger("io.queen.dispatcher." + mapper);
         _SessionManager = manager;
@@ -74,7 +74,7 @@ public class ClusterMappingHandler<T extends IStorage>
         _Error = error;
         _Notifiers = notifiers;
         _ClusterCustom = clusterCustom;
-        _ConsistentCustom = consistentCustom;
+        _ConsistencyCustom = consistentCustom;
         _NotifyModMask = _Notifiers.length - 1;
     }
 
@@ -184,13 +184,13 @@ public class ClusterMappingHandler<T extends IStorage>
                         if(notify != null) {
                             if(notify.isByLeader()) {
                                 try {
-                                    _ConsistentCustom.adjudge(notify);
+                                    _ConsistencyCustom.adjudge(notify);
                                 }
                                 catch(Throwable e) {
                                     _Logger.warning("leader - adjudge ", e);
                                 }
                             }
-                            publishNotify(pair.getSecond(), null, _ConsistentCustom.getOperator());
+                            publishNotify(pair.getSecond(), null, _ConsistencyCustom.getOperator());
                         }
                     }
                     catch(Exception e) {
@@ -211,14 +211,14 @@ public class ClusterMappingHandler<T extends IStorage>
                         catch(Exception e) {
                             _Logger.warning("mapping consensus error", e);
                             publishNotify(event.getContent()
-                                               .getFirst(), e, _ConsistentCustom.getOperator());
+                                               .getFirst(), e, _ConsistencyCustom.getOperator());
                         }
                     }
                     else {
-                        _ConsistentCustom.adjudge(event.getContent()
-                                                       .getFirst());
+                        _ConsistencyCustom.adjudge(event.getContent()
+                                                        .getFirst());
                         publishNotify(event.getContent()
-                                           .getFirst(), null, _ConsistentCustom.getOperator());
+                                           .getFirst(), null, _ConsistencyCustom.getOperator());
                     }
                     break;
                 case CLUSTER_TIMER:// ClusterConsumer Timeout->start_vote

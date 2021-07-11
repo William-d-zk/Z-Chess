@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2021. Z-Chess
+ * Copyright (c) 2016~2020. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -20,39 +20,25 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.isahl.chess.player.api.controller;
 
-import com.isahl.chess.knight.raft.service.IConsistentService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+package com.isahl.chess.queen.event.handler.cluster;
 
-import java.time.Instant;
+import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
+import com.isahl.chess.queen.io.core.inf.IProtocol;
+import com.isahl.chess.queen.io.core.inf.ITraceable;
 
 /**
  * @author william.d.zk
- * @date 2019/12/01
  */
-@RestController
-public class ConsistentController
+public interface IConsistencyCustom
+        extends IConsistencyJudge
 {
-
-    private final IConsistentService _ConsistentService;
-
-    @Autowired
-    public ConsistentController(IConsistentService consistentService)
+    default <T extends ITraceable & IProtocol> IOperator<T,
+                                                         Throwable,
+                                                         Void> getOperator()
     {
-        _ConsistentService = consistentService;
+        return this::resolve;
     }
 
-    @PostMapping("/consistent")
-    public @ResponseBody Object consistent(String input)
-    {
-        _ConsistentService.submit(input,
-                                  true,
-                                  Instant.now()
-                                         .toEpochMilli());
-        return input;
-    }
+    <T extends ITraceable & IProtocol> Void resolve(T request, Throwable throwable);
 }

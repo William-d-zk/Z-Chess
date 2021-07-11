@@ -27,32 +27,33 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.knight.cluster.model.ConsistentProtocol;
 import com.isahl.chess.knight.raft.RaftPeer;
-import com.isahl.chess.knight.raft.service.IConsistentService;
+import com.isahl.chess.knight.cluster.inf.IConsistencyService;
 import com.isahl.chess.pawn.endpoint.device.DeviceNode;
-import com.isahl.chess.queen.event.handler.cluster.IConsistentCustom;
+import com.isahl.chess.queen.event.handler.cluster.IConsistencyCustom;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 
 @Service
-public class ConsistentOpenService
-        implements IConsistentService
+public class ConsistencyOpenService
+        implements IConsistencyService
 {
 
-    private final Logger                  _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+    private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
+
     private final DeviceNode           _DeviceNode;
     private final RaftPeer<DeviceNode> _RaftPeer;
-    private final IConsistentCustom    _ConsistentCustom;
+    private final IConsistencyCustom   _ConsistencyCustom;
 
     @Autowired
-    public ConsistentOpenService(DeviceNode deviceNode,
-                                 RaftPeer<DeviceNode> raftPeer,
-                                 IConsistentCustom consistentCustom)
+    public ConsistencyOpenService(DeviceNode deviceNode,
+                                  RaftPeer<DeviceNode> raftPeer,
+                                  IConsistencyCustom consistentCustom)
     {
         _DeviceNode = deviceNode;
         _RaftPeer = raftPeer;
-        _ConsistentCustom = consistentCustom;
+        _ConsistencyCustom = consistentCustom;
     }
 
     @Override
@@ -63,7 +64,7 @@ public class ConsistentOpenService
                                                               pub,
                                                               _RaftPeer.getRaftZUid(),
                                                               origin);
-        submit(consensus, _DeviceNode, _ConsistentCustom);
+        submit(consensus, _DeviceNode, _ConsistencyCustom);
         _Logger.debug("consistent submit %s", consensus);
     }
 }

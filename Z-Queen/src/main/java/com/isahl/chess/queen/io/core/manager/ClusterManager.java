@@ -28,7 +28,7 @@ import com.isahl.chess.queen.config.IAioConfig;
 import com.isahl.chess.queen.db.inf.IStorage;
 import com.isahl.chess.queen.event.QEvent;
 import com.isahl.chess.queen.event.handler.cluster.IClusterCustom;
-import com.isahl.chess.queen.event.handler.cluster.IConsistentCustom;
+import com.isahl.chess.queen.event.handler.cluster.IConsistencyCustom;
 import com.isahl.chess.queen.event.handler.mix.ILogicHandler;
 import com.isahl.chess.queen.io.core.async.AioManager;
 import com.isahl.chess.queen.io.core.executor.ClusterCore;
@@ -93,7 +93,7 @@ public class ClusterManager
     }
 
     public <T extends IStorage> void build(IClusterCustom<T> clusterCustom,
-                                           IConsistentCustom consistentCustom,
+                                           IConsistencyCustom consistentCustom,
                                            ILogicHandler logicHandler,
                                            Supplier<IEncryptHandler> encryptSupplier)
     {
