@@ -34,7 +34,7 @@ import com.isahl.chess.queen.io.core.inf.INotify;
  * @date 2020/7/13
  */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class Snapshot
+public class SnapshotEntry
         extends JsonProtocol
         implements INotify,
                    IStorage
