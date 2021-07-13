@@ -20,5 +20,5 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
-
-docker build -f ./Dockerfile -t z-chess.arena ~/Z-Chess
+mvn -P dev clean package
+docker build -f ./Dockerfile -t img.z-chess.arena ~/Z-Chess

@@ -91,22 +91,26 @@ public class ZRaftConfig
         if(mConfig.getPeers() != null && !mConfig.getPeers()
                                                  .isEmpty())
         {
-            for(String peerAddr : mConfig.getPeers()
-                                         .values()) {
-                RaftNode peer = toRaftNode(peerAddr, RaftState.FOLLOWER);
+            for(Map.Entry<Integer, String> peerEntry : mConfig.getPeers()
+                                                              .entrySet()) {
+                RaftNode peer = toRaftNode(peerEntry.getValue(), RaftState.FOLLOWER);
                 String peerHost = peer.getHost();
                 if(hostname.equalsIgnoreCase(peerHost)) {
                     if(mPeerBind == null) {
                         //RaftNode 需要对比 host:port 当配置中出现相同当host/port 不同时需要排除
                         peer.setId(createZUID().getPeerId());
                         mPeerBind = peer;
+                        _Logger.info("peer: %s ", mPeerBind);
                     }
                     else {
                         _Logger.warning("duplicate peer: %s", peer);
                         continue;
                     }
-                    _RaftNodeMap.put(peer.getId(), peer);
                 }
+                else {
+                    peer.setId(createZUID().getPeerIdByNode(peerEntry.getKey()));
+                }
+                _RaftNodeMap.put(peer.getId(), peer);
             }
         }
         if(isInCongress()) {
