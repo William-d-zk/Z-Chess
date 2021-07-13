@@ -21,4 +21,4 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
- docker build -f ./Dockerfile -t z-chess.arena ~/Z-Chess
+docker build -f ./Dockerfile -t z-chess.arena ~/Z-Chess
