@@ -21,4 +21,9 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-docker run -t z-chess.arena
+docker run -it --rm \
+-p 1883:1883 \
+--name arena-docker \
+--dns-search=isahl.com \
+--hostname=raft10 \
+z-chess.arena
