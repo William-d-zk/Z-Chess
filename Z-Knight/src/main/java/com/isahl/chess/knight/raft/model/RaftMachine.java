@@ -66,7 +66,7 @@ public class RaftMachine
     private long          mLeader;
     private long          mCommit;    // 集群中已知的最大CommitIndex
     private long          mApplied;   // 本地已被应用的Index
-    private int           mState     = LEARNER.getCode();
+    private int           mState     = FOLLOWER.getCode();
     private Set<RaftNode> mPeerSet;
     private Set<RaftNode> mGateSet;
     @JsonIgnore
@@ -468,7 +468,7 @@ public class RaftMachine
     @Override
     public void reset()
     {
-        mState = LEARNER.getCode();
+        mState = FOLLOWER.getCode();
         mIndex = 0;
         mIndexTerm = 0;
         mMatchIndex = INDEX_NAN;
@@ -501,11 +501,11 @@ public class RaftMachine
         if(mPeerSet != null) {
             StringBuilder sb = new StringBuilder("[\n");
             for(RaftNode node : mPeerSet) {
-                sb.append("\t<")
+                sb.append("\t\t\t<")
                   .append(String.format(" %s ", node))
                   .append(">\n");
             }
-            sb.append(']');
+            sb.append("\t\t]");
             return sb.toString();
         }
         return null;

@@ -71,7 +71,8 @@ public class NodeService
 
     @Autowired
     NodeService(MixConfig deviceConfig,
-                @Qualifier("pawn_io_config") IAioConfig ioConfig,
+                @Qualifier("pawn_io_config")
+                        IAioConfig ioConfig,
                 IRaftConfig raftConfig,
                 IMixConfig mixConfig,
                 ILinkCustom linkCustom,
