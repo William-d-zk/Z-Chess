@@ -150,6 +150,12 @@ public class ZRaftConfig
     public void setConfig(RaftConfig config)
     {
         mConfig = config;
+        if(mConfig != null && mConfig.getGates() != null) {
+            mConfig.getGates()
+                   .forEach((k, v)->{
+                       _Logger.info("gate-key:%#x → %s", k, v);
+                   });
+        }
     }
 
     @Override
