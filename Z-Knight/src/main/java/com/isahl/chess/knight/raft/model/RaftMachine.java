@@ -34,10 +34,7 @@ import com.isahl.chess.knight.raft.inf.IRaftMachine;
 import com.isahl.chess.knight.raft.inf.IRaftMapper;
 import com.isahl.chess.queen.db.inf.IStorage;
 
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 import static com.isahl.chess.king.topology.ZUID.INVALID_PEER_ID;
 import static com.isahl.chess.knight.raft.model.RaftState.*;
@@ -482,7 +479,7 @@ public class RaftMachine
     {
         return String.format("\n{\n" + "\t\tpeerId:%#x\n" + "\t\tstate:%s\n" + "\t\tterm:%d\n" + "\t\tindex:%d\n" +
                              "\t\tindex_term:%d\n" + "\t\tmatch_index:%d\n" + "\t\tcommit:%d\n" + "\t\tapplied:%d\n" +
-                             "\t\tleader:%#x\n" + "\t\tcandidate:%#x\n" + "\t\tpeers:%s\n}",
+                             "\t\tleader:%#x\n" + "\t\tcandidate:%#x\n" + "\t\tpeers:%s\n" + "\t\tgates:%s\n" + "\n}",
                              _PeerId,
                              getState(),
                              mTerm,
@@ -493,16 +490,17 @@ public class RaftMachine
                              mApplied,
                              mLeader,
                              mCandidate,
-                             peerSetString());
+                             set2String(mPeerSet),
+                             set2String(mGateSet));
     }
 
-    private String peerSetString()
+    private <T> String set2String(Collection<T> set)
     {
-        if(mPeerSet != null) {
+        if(set != null) {
             StringBuilder sb = new StringBuilder("[\n");
-            for(RaftNode node : mPeerSet) {
+            for(T t : set) {
                 sb.append("\t\t\t<")
-                  .append(String.format(" %s ", node))
+                  .append(String.format(" %s ", t))
                   .append(">\n");
             }
             sb.append("\t\t]");

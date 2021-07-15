@@ -102,15 +102,25 @@ public class LogMeta
     }
 
     @JsonCreator
-    public LogMeta(@JsonProperty("start") long start,
-                   @JsonProperty("term") long term,
-                   @JsonProperty("index") long index,
-                   @JsonProperty("index_term") long indexTerm,
-                   @JsonProperty("candidate") long candidate,
-                   @JsonProperty("commit") long commit,
-                   @JsonProperty("applied") long applied,
-                   @JsonProperty("peer_set") Set<RaftNode> peerSet,
-                   @JsonProperty("gate_set") Set<RaftNode> gateSet)
+    public LogMeta(
+            @JsonProperty("start")
+                    long start,
+            @JsonProperty("term")
+                    long term,
+            @JsonProperty("index")
+                    long index,
+            @JsonProperty("index_term")
+                    long indexTerm,
+            @JsonProperty("candidate")
+                    long candidate,
+            @JsonProperty("commit")
+                    long commit,
+            @JsonProperty("applied")
+                    long applied,
+            @JsonProperty("peer_set")
+                    Set<RaftNode> peerSet,
+            @JsonProperty("gate_set")
+                    Set<RaftNode> gateSet)
     {
         mStart = start;
         mTerm = term;

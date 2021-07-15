@@ -80,6 +80,8 @@ public interface IRaftConfig
 
     long getSnapshotFragmentMaxSize();
 
+    List<RaftNode> getGates();
+
     long getMaxSegmentSize();
 
     boolean isClusterMode();

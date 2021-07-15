@@ -80,6 +80,8 @@ public class ZUID
     public static final  long           TYPE_INTERNAL      = 1L << TYPE_SHIFT;
     public static final  long           TYPE_PROVIDER      = 2L << TYPE_SHIFT;
     public static final  long           TYPE_CLUSTER       = 3L << TYPE_SHIFT;
+    public static final  long           CLUSTER_MASK       =
+            (((1L << IDC_BITS) - 1) << IDC_SHIFT) | (((1L << CLUSTER_BITS) - 1) << CLUSTER_SHIFT);
     public static final  int            TYPE_CONSUMER_SLOT = 0;
     public static final  int            TYPE_INTERNAL_SLOT = 1;
     public static final  int            TYPE_PROVIDER_SLOT = 2;
@@ -200,21 +202,9 @@ public class ZUID
         return (_IdcId << IDC_SHIFT) | (_ClusterId << CLUSTER_SHIFT) | (nodeId << NODE_SHIFT) | (_Type << TYPE_SHIFT);
     }
 
-    public long getPeerIdByType(long type)
+    public boolean isTheGate(long id)
     {
-        type &= TYPE_MASK;
-        return (_IdcId << IDC_SHIFT) | (_ClusterId << CLUSTER_SHIFT) | (_NodeId << NODE_SHIFT) | type;
-    }
-
-    public long getClusterId(long clusterId)
-    {
-        clusterId &= (1L << CLUSTER_BITS) - 1;
-        return (_IdcId << IDC_SHIFT) | (clusterId << CLUSTER_SHIFT) | (_Type << TYPE_SHIFT);
-    }
-
-    public long getClusterId()
-    {
-        return (_IdcId << IDC_SHIFT) | (_ClusterId << CLUSTER_SHIFT) | (_Type << TYPE_SHIFT);
+        return (id & CLUSTER_MASK) != _ClusterId && _NodeId == 0;
     }
 
     public final static long INVALID_PEER_ID = 0;
