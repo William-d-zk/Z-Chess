@@ -27,14 +27,12 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
 import com.isahl.chess.knight.raft.util.LongToDataSizeConverter;
 import org.springframework.util.unit.DataSize;
 
 import java.time.Duration;
 import java.util.Map;
-import java.util.TreeMap;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class RaftConfig
@@ -84,14 +82,9 @@ public class RaftConfig
         return gates;
     }
 
-    public void setGates(Map<String, String> gates)
+    public void setGates(Map<Long, String> gates)
     {
-        if(gates != null && !gates.isEmpty()) {
-            this.gates = new TreeMap<>();
-            for(Map.Entry<String, String> entry : gates.entrySet()) {
-                this.gates.put(Long.parseLong(entry.getKey(), 16) << ZUID.NODE_SHIFT, entry.getValue());
-            }
-        }
+        this.gates = gates;
     }
 
     public Duration getElectInSecond()
