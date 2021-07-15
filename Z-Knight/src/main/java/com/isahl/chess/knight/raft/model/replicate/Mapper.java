@@ -185,6 +185,7 @@ public class Mapper
     public void loadDefaultGraphSet()
     {
         mLogMeta.setPeerSet(_RaftConfig.getPeers());
+        mLogMeta.setGateSet(_RaftConfig.getGates());
     }
 
     @Override

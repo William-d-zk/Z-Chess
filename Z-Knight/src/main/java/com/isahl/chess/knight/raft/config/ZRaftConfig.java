@@ -50,6 +50,7 @@ public class ZRaftConfig
     private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
 
     private final Map<Long, RaftNode> _RaftNodeMap = new TreeMap<>();
+    private final Map<Long, RaftNode> _GateMap     = new TreeMap<>();
 
     private ZUID       mZUid;
     private RaftNode   mPeerBind;
@@ -117,17 +118,21 @@ public class ZRaftConfig
             if(mConfig.getGates() != null && !mConfig.getGates()
                                                      .isEmpty())
             {
-                for(String gateAddr : mConfig.getGates()) {
-                    RaftNode gate = toRaftNode(gateAddr, RaftState.GATE);
+                for(Map.Entry<Long, String> gateEntry : mConfig.getGates()
+                                                               .entrySet()) {
+                    RaftNode gate = toRaftNode(gateEntry.getValue(), RaftState.GATE);
+                    gate.setId(gateEntry.getKey());
                     if(hostname.equalsIgnoreCase(gate.getHost())) {
                         if(!isGateNode()) {
                             mPeerBind.setGateHost(gate.getGateHost());
                             mPeerBind.setGatePort(gate.getGatePort());
                         }
                         else {
-                            _Logger.warning("duplicate gate:%s", gateAddr);
+                            _Logger.warning("duplicate gate:%s", gateEntry);
+                            continue;
                         }
                     }
+                    _GateMap.put(gate.getId(), gate);
                 }
             }
             if(!isGateNode()) {
@@ -231,6 +236,13 @@ public class ZRaftConfig
     {
         if(_RaftNodeMap.isEmpty()) { return null; }
         return new ArrayList<>(_RaftNodeMap.values());
+    }
+
+    @Override
+    public List<RaftNode> getGates()
+    {
+        if(_GateMap.isEmpty()) { return null; }
+        return new ArrayList<>(_GateMap.values());
     }
 
     @Override

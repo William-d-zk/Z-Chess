@@ -2,43 +2,48 @@ version: '3'
 services:
   raft10:
     image: img.z-chess.arena
-    container_name: raft10
-    hostname: raft10
+    container_name: raft00
+    hostname: raft00
     ports:
       - "1883:1883"
     networks:
       endpoint:
         ipv4_address: 192.168.10.110
+      gate:
+        ipv4_address: 192.168.11.110
     extra_hosts:
-      - "raft10:192.168.10.110"
-      - "raft11:192.168.10.111"
-      - "raft12:192.168.10.112"
+      - "raft00:192.168.10.110"
+      - "raft01:192.168.10.111"
+      - "raft02:192.168.10.112"
+      - "gate00:192.168.11.110"
   raft11:
     image: img.z-chess.arena
-    container_name: raft11
-    hostname: raft11
+    container_name: raft01
+    hostname: raft01
     ports:
       - "1884:1883"
     networks:
       endpoint:
         ipv4_address: 192.168.10.111
     extra_hosts:
-      - "raft10:192.168.10.110"
-      - "raft11:192.168.10.111"
-      - "raft12:192.168.10.112"
+      - "raft00:192.168.10.110"
+      - "raft01:192.168.10.111"
+      - "raft02:192.168.10.112"
+      - "gate00:192.168.11.110"
   raft12:
     image: img.z-chess.arena
-    container_name: raft12
-    hostname: raft12
+    container_name: raft02
+    hostname: raft02
     ports:
       - "1885:1883"
     networks:
       endpoint:
         ipv4_address: 192.168.10.112
     extra_hosts:
-      - "raft10:192.168.10.110"
-      - "raft11:192.168.10.111"
-      - "raft12:192.168.10.112"
+      - "raft00:192.168.10.110"
+      - "raft01:192.168.10.111"
+      - "raft02:192.168.10.112"
+      - "gate00:192.168.11.110"
 networks:
   endpoint:
     driver: bridge
@@ -46,3 +51,9 @@ networks:
       config:
         - subnet: 192.168.10.0/24
           gateway: 192.168.10.1
+  gate:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.11.0/24
+          gateway: 192.168.11.1

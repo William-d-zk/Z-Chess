@@ -162,9 +162,9 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
             if(_SelfMachine.getGateSet() != null) {
                 for(RaftNode remote : _SelfMachine.getGateSet()) {
                     long gateId = remote.getId();
-                    if(gateId != _ZUid.getClusterId()) {
-                        _ClusterPeer.setupGate(remote.getHost(), remote.getPort());
-                        _Logger.info("->gate : %s:%d", remote.getHost(), remote.getPort());
+                    if(_ZUid.isTheGate(gateId)) {
+                        _ClusterPeer.setupGate(remote.getGateHost(), remote.getGatePort());
+                        _Logger.info("->gate : %s:%d", remote.getGateHost(), remote.getGatePort());
                     }
                 }
             }
