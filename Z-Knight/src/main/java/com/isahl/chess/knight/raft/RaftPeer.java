@@ -130,7 +130,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
             _SelfMachine.setGateSet(_RaftMapper.getLogMeta()
                                                .getGateSet());
         }
-        if(!_RaftConfig.isClusterMode()) {
+        if(!_RaftConfig.isInCongress()) {
             _Logger.info("single mode , ignore state listen");
             return;
         }
