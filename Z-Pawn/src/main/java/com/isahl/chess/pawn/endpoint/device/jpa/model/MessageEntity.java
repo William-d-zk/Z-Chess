@@ -26,7 +26,6 @@ package com.isahl.chess.pawn.endpoint.device.jpa.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.isahl.chess.king.base.schedule.Status;
 import com.isahl.chess.queen.db.inf.IStorage;
 import com.isahl.chess.rook.storage.jpa.model.AuditModel;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
@@ -34,34 +33,27 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import java.io.Serial;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-07-22
  */
 @Entity(name = "message")
-@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
-@Table(indexes = {@Index(name = "msg_id_idx", columnList = "msgId"),
-                  @Index(name = "origin_idx", columnList = "origin"),
-                  @Index(name = "destination_idx", columnList = "destination"),
-                  @Index(name = "topic_idx", columnList = "topic")})
+@TypeDef(name = "jsonb",
+         typeClass = JsonBinaryType.class)
+@Table(indexes = { @Index(name = "origin_idx",
+                          columnList = "origin"),
+                   @Index(name = "destination_idx",
+                          columnList = "destination"),
+                   @Index(name = "topic_idx",
+                          columnList = "topic")
+})
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class MessageEntity
-        extends
-        AuditModel
-        implements
-        IStorage
+        extends AuditModel
+        implements IStorage
 {
     @Serial
     private static final long serialVersionUID = -6502547239976531057L;
@@ -71,25 +63,17 @@ public class MessageEntity
     @GeneratedValue(generator = "ZMessageGenerator")
     @GenericGenerator(name = "ZMessageGenerator",
                       strategy = "com.isahl.chess.pawn.endpoint.device.jpa.generator.ZMessageGenerator")
-    private long   id;
-    @Column(updatable = false, nullable = false)
-    private long   origin;
-    @Column(updatable = false, nullable = false)
-    private long   destination;
-    @Column(nullable = false)
-    private int    cmd;
-    @Column(length = 4, updatable = false, nullable = false)
-    private String direction;
-    @Column(length = 10, nullable = false)
-    private String owner;
-    @Column(updatable = false, nullable = false)
-    private long   msgId;
-    @Column(nullable = false, length = 10)
-    @Enumerated(EnumType.STRING)
-    private Status status;
-    @Column(length = 511, nullable = false, updatable = false)
-    private String topic;
-
+    private long        id;
+    @Column(updatable = false,
+            nullable = false)
+    private long        origin;
+    @Column(updatable = false,
+            nullable = false)
+    private long        destination;
+    @Column(length = 511,
+            nullable = false,
+            updatable = false)
+    private String      topic;
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb")
     private MessageBody body;
@@ -118,36 +102,6 @@ public class MessageEntity
         this.body = body;
     }
 
-    public String getDirection()
-    {
-        return direction;
-    }
-
-    public void setDirection(String direction)
-    {
-        this.direction = direction;
-    }
-
-    public String getOwner()
-    {
-        return owner;
-    }
-
-    public void setOwner(String owner)
-    {
-        this.owner = owner;
-    }
-
-    public int getCmd()
-    {
-        return cmd;
-    }
-
-    public void setCmd(int cmd)
-    {
-        this.cmd = cmd;
-    }
-
     public long getOrigin()
     {
         return origin;
@@ -156,16 +110,6 @@ public class MessageEntity
     public void setOrigin(long origin)
     {
         this.origin = origin;
-    }
-
-    public long getMsgId()
-    {
-        return msgId;
-    }
-
-    public void setMsgId(long msgId)
-    {
-        this.msgId = msgId;
     }
 
     public long getDestination()
@@ -206,16 +150,6 @@ public class MessageEntity
     public IStorage.Strategy strategy()
     {
         return IStorage.Strategy.RETAIN;
-    }
-
-    public Status getStatus()
-    {
-        return status;
-    }
-
-    public void setStatus(Status status)
-    {
-        this.status = status;
     }
 
     private final static int MESSAGE_ENTITY_SERIAL = AUDIT_MODEL_SERIAL + 2;

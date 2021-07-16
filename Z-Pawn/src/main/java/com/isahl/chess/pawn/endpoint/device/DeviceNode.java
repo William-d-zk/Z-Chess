@@ -207,7 +207,7 @@ public class DeviceNode
 
     private void gateHeartbeat(ISession session)
     {
-        _Logger.debug("device_cluster heartbeat => %s ", session.getRemoteAddress());
+        _Logger.debug("gate_cluster heartbeat => %s ", session.getRemoteAddress());
         send(session, OperatorType.CLUSTER_LOCAL, _GatePing);
     }
 

@@ -40,30 +40,40 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-07-31
  */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class MessageBody
-        implements
-        Serializable
+        implements Serializable
 {
-    private static final Logger _Logger          = Logger.getLogger("endpoint.pawn."
-                                                                    + MessageBody.class.getSimpleName());
+    private static final Logger _Logger          = Logger.getLogger(
+            "endpoint.pawn." + MessageBody.class.getSimpleName());
     @Serial
     private static final long   serialVersionUID = -8904730289818144372L;
 
+    private final int    _MsgId;
     private final String _Topic;
     private final byte[] _Content;
 
     @JsonCreator
-    public MessageBody(@JsonProperty("topic") String topic,
-                       @JsonProperty("content") JsonNode content)
+    public MessageBody(
+            @JsonProperty("msg_id")
+                    int msgId,
+            @JsonProperty("topic")
+                    String topic,
+            @JsonProperty("content")
+                    JsonNode content)
     {
+        _MsgId = msgId;
         _Topic = topic;
         _Content = content.toString()
                           .getBytes(StandardCharsets.UTF_8);
+    }
+
+    public int getMsgId()
+    {
+        return _MsgId;
     }
 
     public String getTopic()
@@ -73,27 +83,27 @@ public class MessageBody
 
     public JsonNode getContent()
     {
-        if (_Content == null || _Content.length == 0) {
+        if(_Content == null || _Content.length == 0) {
             _Logger.warning("content null");
             return null;
         }
         try {
             return JsonUtil.readTree(_Content);
         }
-        catch (Exception e) {
+        catch(Exception e) {
             try {
                 RawContent content = new RawContent();
                 content.setPayload(_Content);
                 try {
                     content.setRaw(new String(_Content, StandardCharsets.UTF_8));
                 }
-                catch (Exception stre) {
+                catch(Exception stre) {
                     _Logger.debug(String.format("content:%s", IoUtil.bin2Hex(_Content, ":")));
                     // ignore
                 }
                 return JsonUtil.valueToTree(content);
             }
-            catch (Exception e1) {
+            catch(Exception e1) {
                 e1.printStackTrace();
             }
         }
@@ -102,7 +112,7 @@ public class MessageBody
 
     public byte[] contentBinary()
     {
-        if (_Content == null || _Content.length == 0) {
+        if(_Content == null || _Content.length == 0) {
             _Logger.warning("content null");
             return null;
         }

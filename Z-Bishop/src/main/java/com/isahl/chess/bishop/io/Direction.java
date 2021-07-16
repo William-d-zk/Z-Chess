@@ -61,7 +61,4 @@ public enum Direction
             default -> throw new IllegalArgumentException();
         };
     }
-
-    public final static String OWNER_CLIENT = "CLIENT";
-    public final static String OWNER_SERVER = "SERVER";
 }

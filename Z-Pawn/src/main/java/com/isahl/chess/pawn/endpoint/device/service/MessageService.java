@@ -124,9 +124,12 @@ public class MessageService
     @Override
     public long generateMsgId(long origin, long destination)
     {
-        return getNew(String.format("%#x->%#x", origin, destination));
+        return getNew(String.format("%#x → %#x", origin, destination));
     }
 
+    /*
+     * message_cache_msg_id 中通过 origin → destination 形成的 key
+     */
     @Cacheable(key = "#odKey", value = "message_cache_msg_id", unless = "#odKey == null")
     public long getLast(String odKey)
     {
