@@ -31,62 +31,34 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-07-31
  */
 @Repository
 public interface IMessageJpaRepository
-        extends
-        BaseRepository<MessageEntity>
+        extends BaseRepository<MessageEntity>
 {
-    Optional<MessageEntity> findByOriginAndDestinationAndTopicAndMsgIdAndCreatedAtAfter(long origin,
-                                                                                        long destination,
-                                                                                        String topic,
-                                                                                        long msgId,
-                                                                                        LocalDateTime time);
 
-    MessageEntity findByOriginAndDestinationAndMsgId(long origin, long destination, long msgId);
-
-    MessageEntity findByOriginAndDestinationAndMsgIdAndCreatedAtAfter(long origin,
-                                                                      long destination,
-                                                                      long msgId,
-                                                                      LocalDateTime time);
-
-    List<MessageEntity> findAllByOriginAndDestinationAndMsgId(long origin, long destination, long msgId);
-
-    List<MessageEntity> findAllByDestinationAndOwner(long destination, String owner);
-
-    List<MessageEntity> findAllByOriginOrDestination(long origin, long destination);
-
-    List<MessageEntity> findAllByOriginAndMsgIdAndDirectionAndOwner(long origin,
-                                                                    long msgId,
-                                                                    String direction,
-                                                                    String owner);
-
-    List<MessageEntity> findAllByDestinationAndMsgIdAndDirectionAndOwner(long destination,
-                                                                         long msgId,
-                                                                         String direction,
-                                                                         String owner);
-
-    List<MessageEntity> findAllByDestinationAndMsgIdBefore(long destination, long msgId);
-
-    List<MessageEntity> findAllByOriginAndMsgIdBefore(long origin, long msgId);
-
-    List<MessageEntity> findAllByOriginAndMsgIdAfter(long origin, long msgId);
+    List<MessageEntity> findAllByOriginAndDestinationAndTopic(long origin, long destination, String topic);
 
     @Query(value = "select * from \"z-chess\".message m where m.body->>'topic'=:p_topic order by id desc limit :p_limit",
            nativeQuery = true)
-    List<MessageEntity> listByTopic(@Param("p_topic") String topic, @Param("p_limit") int limit);
+    List<MessageEntity> listByTopic(
+            @Param("p_topic")
+                    String topic,
+            @Param("p_limit")
+                    int limit);
 
     @Transactional
     @Modifying
     @Query(value = "delete from \"z-chess\".message m where m.destination=:p_dest and m.owner=:p_owner",
            nativeQuery = true)
-    void deleteAllByDestination(@Param("p_dest") long destination, @Param("p_owner") String owner);
+    void deleteAllByDestination(
+            @Param("p_dest")
+                    long destination,
+            @Param("p_owner")
+                    String owner);
 }
