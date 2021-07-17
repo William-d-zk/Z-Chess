@@ -121,7 +121,6 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                                                       x113.getTopic(),
                                                       JsonUtil.readTree(x113.getPayload())));
                 messageEntity.setOperation(OP_INSERT);
-
                 List<IControl> pushList = new LinkedList<>();
                 switch(x113.getLevel()) {
                     case ALMOST_ONCE:
@@ -223,7 +222,7 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
              })
              .filter(Objects::nonNull)
              .forEach(pushList::add);
-        if(_RaftPeer.isClusterMode()) {
+        if(_RaftPeer.isInCongress()) {
             //集群模式需要将消息进行广播，集群结构中，每个数据存储单元都设计为独立的。
             //TODO
         }

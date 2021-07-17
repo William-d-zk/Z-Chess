@@ -107,7 +107,7 @@ public class NodeService
     }
 
     @PostConstruct
-    private void start() throws IOException
+    private void start()
     {
         _DeviceNode.start(_LogicHandler, new ZLinkMappingCustom(_LinkCustom), new ZClusterMappingCustom<>(_RaftCustom));
         _RaftPeer.start();

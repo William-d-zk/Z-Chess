@@ -140,7 +140,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
         _Logger.info("raft node init -> %s", _SelfMachine);
     }
 
-    public void start() throws IOException
+    public void start()
     {
         init();
         if(_RaftConfig.isClusterMode()) {
@@ -154,8 +154,13 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
                     }
                     // 仅连接NodeId<自身的节点
                     if(peerId < _SelfMachine.getPeerId()) {
-                        _ClusterPeer.setupPeer(remote.getHost(), remote.getPort());
-                        _Logger.info("->peer : %s:%d", remote.getHost(), remote.getPort());
+                        try {
+                            _ClusterPeer.setupPeer(remote.getHost(), remote.getPort());
+                            _Logger.info("->peer : %s:%d", remote.getHost(), remote.getPort());
+                        }
+                        catch(IOException e) {
+                            _Logger.warning("peer connect error: %s:%d", e, remote.getHost(), remote.getPort());
+                        }
                     }
                 }
             }
@@ -163,8 +168,14 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
                 for(RaftNode remote : _SelfMachine.getGateSet()) {
                     long gateId = remote.getId();
                     if(_ZUid.isTheGate(gateId)) {
-                        _ClusterPeer.setupGate(remote.getGateHost(), remote.getGatePort());
-                        _Logger.info("->gate : %s:%d", remote.getGateHost(), remote.getGatePort());
+                        try {
+                            _ClusterPeer.setupGate(remote.getGateHost(), remote.getGatePort());
+                            _Logger.info("->gate : %s:%d", remote.getGateHost(), remote.getGatePort());
+                        }
+                        catch(IOException e) {
+                            _Logger.warning("gate connect error: %s:%d", e, remote.getGateHost(), remote.getGatePort());
+                        }
+
                     }
                 }
             }
@@ -964,9 +975,9 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
         return x72;
     }
 
-    public boolean isClusterMode()
+    public boolean isInCongress()
     {
-        return _RaftConfig.isClusterMode();
+        return _RaftConfig.isInCongress();
     }
 
     @Override
