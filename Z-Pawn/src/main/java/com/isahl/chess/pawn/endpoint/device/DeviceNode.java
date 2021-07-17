@@ -168,13 +168,16 @@ public class DeviceNode
         _Logger.debug("Device Node Bean Load");
     }
 
-    public void start(ILogicHandler logicHandler,
-                      ILinkCustom linkCustom,
-                      IClusterCustom<RaftMachine> clusterCustom) throws IOException
+    public void start(ILogicHandler logicHandler, ILinkCustom linkCustom, IClusterCustom<RaftMachine> clusterCustom)
     {
         build(logicHandler, linkCustom, clusterCustom, EncryptHandler::new);
         for(IAioServer server : _AioServers) {
-            server.bindAddress(server.getLocalAddress(), getServiceChannelGroup());
+            try {
+                server.bindAddress(server.getLocalAddress(), getServiceChannelGroup());
+            }
+            catch(IOException e) {
+                _Logger.warning("server bind error %s", e, server.getLocalAddress());
+            }
             server.pendingAccept();
             _Logger.info(String.format("device node start %s %s @ %s",
                                        server.getLocalAddress(),

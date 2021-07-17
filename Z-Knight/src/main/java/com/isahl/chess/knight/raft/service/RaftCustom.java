@@ -48,10 +48,9 @@ import static com.isahl.chess.knight.raft.model.RaftState.LEADER;
 public class RaftCustom<T extends IClusterPeer & IClusterTimer>
         implements IClusterCustom<RaftMachine>
 {
-    private final Logger                        _Logger                      = Logger.getLogger(
-            "cluster.knight." + getClass().getSimpleName());
-    private final TypeReference<List<LogEntry>> _TypeReferenceOfLogEntryList = new TypeReference<>()
-    {};
+    private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
+
+    private final TypeReference<List<LogEntry>> _TypeReferenceOfLogEntryList = new TypeReference<>() {};
     private final RaftPeer<T>                   _RaftPeer;
 
     public RaftCustom(RaftPeer<T> raftPeer)
@@ -273,6 +272,7 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
     @Override
     public boolean waitForCommit()
     {
-        return _RaftPeer.isClusterMode();
+        //TODO learner 的情景需要处理
+        return _RaftPeer.isInCongress();
     }
 }

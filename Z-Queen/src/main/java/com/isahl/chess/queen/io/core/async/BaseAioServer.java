@@ -42,19 +42,15 @@ import java.nio.channels.AsynchronousSocketChannel;
  * @author william.d.zk
  */
 public abstract class BaseAioServer
-        extends
-        AioCreator
-        implements
-        IAioServer
+        extends AioCreator
+        implements IAioServer
 {
-    private final AcceptFailedOperator _AcceptFailedOperator = new AcceptFailedOperator();
-    private final ConnectedOperator    _ConnectedOperator    = new ConnectedOperator();
-    private final InetSocketAddress    _LocalBind;
-    private volatile boolean           vValid;
+    private final    AcceptFailedOperator _AcceptFailedOperator = new AcceptFailedOperator();
+    private final    ConnectedOperator    _ConnectedOperator    = new ConnectedOperator();
+    private final    InetSocketAddress    _LocalBind;
+    private volatile boolean              vValid;
 
-    protected BaseAioServer(String serverHost,
-                            int serverPort,
-                            ISocketConfig socketConfig)
+    protected BaseAioServer(String serverHost, int serverPort, ISocketConfig socketConfig)
     {
         super(socketConfig);
         _LocalBind = new InetSocketAddress(serverHost, serverPort);
@@ -73,7 +69,7 @@ public abstract class BaseAioServer
     @Override
     public void pendingAccept()
     {
-        if (mServerChannel.isOpen()) {
+        if(mServerChannel != null && mServerChannel.isOpen()) {
             mServerChannel.accept(this, this);
             vValid = true;
         }
@@ -92,17 +88,13 @@ public abstract class BaseAioServer
     }
 
     @Override
-    public IOperator<Throwable,
-                     IAioServer,
-                     Void> getErrorOperator()
+    public IOperator<Throwable, IAioServer, Void> getErrorOperator()
     {
         return _AcceptFailedOperator;
     }
 
     @Override
-    public IOperator<IAioConnection,
-                     AsynchronousSocketChannel,
-                     ITriple> getConnectedOperator()
+    public IOperator<IAioConnection, AsynchronousSocketChannel, ITriple> getConnectedOperator()
     {
         return _ConnectedOperator;
     }

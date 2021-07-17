@@ -5,6 +5,7 @@ services:
     container_name: raft00
     hostname: raft00
     ports:
+      - "8080:8080"
       - "1883:1883"
     networks:
       endpoint:
