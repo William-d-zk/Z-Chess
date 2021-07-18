@@ -71,6 +71,9 @@ public class RaftMachine
     @JsonIgnore
     private int           mLength;
 
+    @JsonIgnore
+    private transient byte[] tPayload;
+
     @Override
     public int dataLength()
     {
@@ -80,6 +83,7 @@ public class RaftMachine
     @Override
     public int decode(byte[] data)
     {
+        tPayload = data;
         RaftMachine json = JsonUtil.readValue(data, getClass());
         Objects.requireNonNull(json);
         assert (_PeerId == json.getPeerId());
@@ -101,10 +105,16 @@ public class RaftMachine
     @Override
     public byte[] encode()
     {
-        byte[] payload = JsonUtil.writeValueAsBytes(this);
-        Objects.requireNonNull(payload);
-        mLength = payload.length;
-        return payload;
+        tPayload = JsonUtil.writeValueAsBytes(this);
+        Objects.requireNonNull(tPayload);
+        mLength = tPayload.length;
+        return tPayload;
+    }
+
+    @Override
+    public byte[] getPayload()
+    {
+        return tPayload;
     }
 
     @Override
@@ -508,4 +518,5 @@ public class RaftMachine
         }
         return null;
     }
+
 }

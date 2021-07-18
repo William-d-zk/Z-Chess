@@ -26,7 +26,7 @@ package com.isahl.chess.queen.event.handler.mix;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.queen.event.handler.IMappingCustom;
 import com.isahl.chess.queen.event.handler.cluster.IConsistencyCustom;
-import com.isahl.chess.queen.io.core.inf.IControl;
+import com.isahl.chess.queen.io.core.inf.IConsistent;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionManager;
 
@@ -67,7 +67,7 @@ public interface ILinkCustom
      * @param request link发来 强一致的请求
      * @return response
      */
-    List<ITriple> notify(ISessionManager manager, IControl request, long origin);
+    List<ITriple> notify(ISessionManager manager, IConsistent request, long origin);
 
     void close(ISession session);
 }

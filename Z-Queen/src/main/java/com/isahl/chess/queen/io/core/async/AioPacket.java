@@ -22,17 +22,16 @@
  */
 package com.isahl.chess.queen.io.core.async;
 
-import java.nio.ByteBuffer;
-
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.inf.IPacket;
+
+import java.nio.ByteBuffer;
 
 /**
  * @author William.d.zk
  */
 public class AioPacket
-        implements
-        IPacket
+        implements IPacket
 {
     public final static int SERIAL = PACKET_SERIAL + 1;
 
@@ -41,17 +40,20 @@ public class AioPacket
     private int        mRightIdempotentBit;
     private int        mLeftIdempotentBit;
 
-    public AioPacket(int size,
-                     boolean direct)
+    public AioPacket(int size, boolean direct)
     {
-        mBuf = size > 0 ? (direct ? ByteBuffer.allocateDirect(size)
-                                  : ByteBuffer.allocate(size))
-                        : null;
+        mBuf = size > 0 ? (direct ? ByteBuffer.allocateDirect(size) : ByteBuffer.allocate(size)) : null;
     }
 
     public AioPacket(ByteBuffer buf)
     {
         mBuf = buf;
+    }
+
+    @Override
+    public byte[] getPayload()
+    {
+        return mBuf.array();
     }
 
     @Override
@@ -162,10 +164,9 @@ public class AioPacket
     @Override
     public void put(ByteBuffer src)
     {
-        if (mBuf.capacity() < src.remaining()) {
+        if(mBuf.capacity() < src.remaining()) {
             int size = src.remaining();
-            mBuf = mBuf.isDirect() ? ByteBuffer.allocateDirect(size)
-                                   : ByteBuffer.allocate(size);
+            mBuf = mBuf.isDirect() ? ByteBuffer.allocateDirect(size) : ByteBuffer.allocate(size);
         }
         else {
             mBuf.clear();

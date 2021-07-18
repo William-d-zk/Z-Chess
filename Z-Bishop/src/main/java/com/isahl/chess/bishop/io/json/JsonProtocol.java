@@ -34,21 +34,29 @@ import java.util.Objects;
 public abstract class JsonProtocol
         implements IProtocol
 {
-    private int mLength;
+    private           int    mLength;
+    private transient byte[] tPayload;
 
     @Override
     public byte[] encode()
     {
-        byte[] b = JsonUtil.writeValueAsBytes(this);
-        Objects.requireNonNull(b);
-        mLength = b.length;
-        return b;
+        tPayload = JsonUtil.writeValueAsBytes(this);
+        Objects.requireNonNull(tPayload);
+        mLength = tPayload.length;
+        return tPayload;
     }
 
     @Override
     public int decode(byte[] data)
     {
+        tPayload = data;
         return mLength = data.length;
+    }
+
+    @Override
+    public byte[] getPayload()
+    {
+        return tPayload;
     }
 
     @Override

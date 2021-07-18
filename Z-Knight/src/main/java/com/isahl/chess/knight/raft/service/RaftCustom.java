@@ -171,6 +171,7 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
     @Override
     public List<ITriple> onTimer(ISessionManager manager, RaftMachine machine)
     {
+        if(machine == null) {return null;}
         if(machine.operation() == IStorage.Operation.OP_MODIFY) {
             // step down → follower
             _RaftPeer.turnToFollower(machine);
@@ -221,7 +222,8 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
             ISession leaderSession = manager.findSessionByPrefix(_RaftPeer.getMachine()
                                                                           .getLeader());
             if(leaderSession != null) {
-                X75_RaftReq x75 = new X75_RaftReq(_RaftPeer.getRaftZUid());
+                _Logger.info("client → leader x75");
+                X75_RaftReq x75 = new X75_RaftReq(_RaftPeer.generateId());
                 x75.setPayloadSerial(request.serial());
                 x75.setPayload(request.encode());
                 x75.setOrigin(request.getOrigin());
@@ -234,8 +236,16 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
             }
         }
         _Logger.fetal("cluster is electing");
-        // TODO 返回一个x76.failed 
         return null;
+        /*
+        //TODO x76 需要解决 peer → raft-client → device-client的链路
+        X76_RaftResp x76 = new X76_RaftResp();
+        x76.setClientId(_RaftPeer.getPeerId());
+        x76.setOrigin(request.getOrigin());
+        x76.setCode((byte) Status.FAILED.getCode());
+        return Collections.singletonList(new Triple<>(x76, null, null));
+
+         */
     }
 
     @Override

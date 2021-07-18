@@ -43,7 +43,6 @@ import com.isahl.chess.knight.raft.model.replicate.LogEntry;
 import com.isahl.chess.queen.db.inf.IStorage;
 import com.isahl.chess.queen.io.core.inf.*;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -158,7 +157,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
                             _ClusterPeer.setupPeer(remote.getHost(), remote.getPort());
                             _Logger.info("->peer : %s:%d", remote.getHost(), remote.getPort());
                         }
-                        catch(IOException e) {
+                        catch(Exception e) {
                             _Logger.warning("peer connect error: %s:%d", e, remote.getHost(), remote.getPort());
                         }
                     }
@@ -172,7 +171,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
                             _ClusterPeer.setupGate(remote.getGateHost(), remote.getGatePort());
                             _Logger.info("->gate : %s:%d", remote.getGateHost(), remote.getGatePort());
                         }
-                        catch(IOException e) {
+                        catch(Exception e) {
                             _Logger.warning("gate connect error: %s:%d", e, remote.getGateHost(), remote.getGatePort());
                         }
 
@@ -986,7 +985,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
         return true;
     }
 
-    public long getRaftZUid()
+    public long generateId()
     {
         return _ZUid.getId();
     }

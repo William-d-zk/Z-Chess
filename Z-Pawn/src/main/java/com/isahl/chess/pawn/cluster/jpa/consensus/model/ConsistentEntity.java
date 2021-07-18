@@ -23,37 +23,29 @@
 
 package com.isahl.chess.pawn.cluster.jpa.consensus.model;
 
-import java.util.Date;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.isahl.chess.knight.cluster.model.ConsistentProtocol;
 import com.isahl.chess.rook.storage.jpa.model.AuditModel;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+
+import javax.persistence.*;
+import java.util.Date;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/4/23
  */
 @Entity(name = "Consistent")
-@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
-@Table(indexes = {@Index(name = "consistent_idx_consensus_id", columnList = "consensusId")})
+@TypeDef(name = "jsonb",
+         typeClass = JsonBinaryType.class)
+@Table(indexes = { @Index(name = "consistent_idx_consensus_id",
+                          columnList = "consensusId")
+})
 public class ConsistentEntity
-        extends
-        AuditModel
+        extends AuditModel
 {
     @Id
     @GeneratedValue(generator = "ZConsistentGenerator")
@@ -62,13 +54,16 @@ public class ConsistentEntity
     private long id;
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "invalid_at", nullable = false)
+    @Column(name = "invalid_at",
+            nullable = false)
     @JsonIgnore
     private Date               invalidAt;
     @Type(type = "jsonb")
-    @Column(columnDefinition = "jsonb")
-    private ConsistentProtocol payload;
-    @Column(updatable = false, nullable = false)
+    @Column(columnDefinition = "jsonb",
+            name = "data")
+    private ConsistentProtocol subData;
+    @Column(updatable = false,
+            nullable = false)
     private long               consensusId;
 
     public long getId()
@@ -91,14 +86,20 @@ public class ConsistentEntity
         this.invalidAt = invalidAt;
     }
 
-    public ConsistentProtocol getPayload()
+    @Override
+    public byte[] getPayload()
     {
-        return payload;
+        return subData.encode();
     }
 
-    public void setPayload(ConsistentProtocol payload)
+    public ConsistentProtocol getSubData()
     {
-        this.payload = payload;
+        return subData;
+    }
+
+    public void setPayload(ConsistentProtocol data)
+    {
+        subData = data;
     }
 
     public long getConsensusId()
