@@ -54,26 +54,31 @@ import java.util.Objects;
 /**
  * @author william.d.zk
  */
-@TypeDefs({@TypeDef(name = "string-array", typeClass = StringArrayType.class),
-           @TypeDef(name = "int-array", typeClass = IntArrayType.class),
-           @TypeDef(name = "list-array", typeClass = ListArrayType.class)})
+@TypeDefs({ @TypeDef(name = "string-array",
+                     typeClass = StringArrayType.class),
+            @TypeDef(name = "int-array",
+                     typeClass = IntArrayType.class),
+            @TypeDef(name = "list-array",
+                     typeClass = ListArrayType.class)
+          })
 
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-@JsonIgnoreProperties(value = {"created_at",
-                               "updated_at"},
+@JsonIgnoreProperties(value = { "created_at", "updated_at" },
                       allowGetters = true)
 public abstract class AuditModel
-        implements
-        IProtocol,
-        Serializable
+        implements IProtocol,
+                   Serializable
 {
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at",
+            nullable = false,
+            updatable = false)
     @CreatedDate
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at",
+            nullable = false)
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
@@ -105,6 +110,9 @@ public abstract class AuditModel
         this.updatedAt = updatedAt;
     }
 
+    @Transient
+    private transient byte[] tPayload;
+
     @Override
     public String toString()
     {
@@ -117,15 +125,16 @@ public abstract class AuditModel
     @Override
     public byte[] encode()
     {
-        byte[] b = JsonUtil.writeValueAsBytes(this);
-        Objects.requireNonNull(b);
-        mLength = b.length;
-        return b;
+        tPayload = JsonUtil.writeValueAsBytes(this);
+        Objects.requireNonNull(tPayload);
+        mLength = tPayload.length;
+        return tPayload;
     }
 
     @Override
     public int decode(byte[] data)
     {
+        tPayload = data;
         return mLength = data.length;
     }
 
@@ -139,6 +148,12 @@ public abstract class AuditModel
     public int superSerial()
     {
         return AUDIT_MODEL_SERIAL;
+    }
+
+    @Override
+    public byte[] getPayload()
+    {
+        return tPayload;
     }
 
     public final static int AUDIT_MODEL_SERIAL = IStorage.DB_SERIAL + 100;

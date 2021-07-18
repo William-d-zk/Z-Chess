@@ -45,7 +45,7 @@ public class ZLinkMappingCustom
     }
 
     @Override
-    public List<ITriple> notify(ISessionManager manager, IControl request, long origin)
+    public List<ITriple> notify(ISessionManager manager, IConsistent request, long origin)
     {
         return _Then != null ? _Then.notify(manager, request, origin) : null;
     }

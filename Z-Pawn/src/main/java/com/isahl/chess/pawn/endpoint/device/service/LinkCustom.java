@@ -152,14 +152,14 @@ public class LinkCustom
     }
 
     @Override
-    public List<ITriple> notify(ISessionManager manager, IControl response, long origin)
+    public List<ITriple> notify(ISessionManager manager, IConsistent response, long origin)
     {
         /*
          * origin
          * 在非集群情况下是 client-request.session_index
          * 在集群处理时 x76 携带了cluster 领域的session_index 作为入参，并在此处转换为 client-request.session_index
          */
-        IControl clientRequest;
+        IProtocol clientRequest;
         boolean strongConsistent = false;
         switch(response.serial()) {
             case X77_RaftNotify.COMMAND, X76_RaftResp.COMMAND -> {
@@ -167,13 +167,12 @@ public class LinkCustom
                  * raft_client -> Link, session belong to cluster
                  * ignore session
                  */
-                IConsistent notify = (IConsistent) response;
-                int cmd = notify.getPayloadSerial();
+                int cmd = response.getPayloadSerial();
                 _Logger.debug("client-request cmd:%#x", cmd);
                 strongConsistent = response.serial() == X77_RaftNotify.COMMAND;
                 clientRequest = ZSortHolder.create(cmd);
                 clientRequest.decode(response.getPayload());
-                _Logger.info("notify cluster client by leader %s", notify.isByLeader());
+                _Logger.info("notify cluster client by leader %s", response.isByLeader());
                 if(!strongConsistent) { return null; }
             }
             default -> {
