@@ -25,7 +25,6 @@ package com.isahl.chess.bishop.io.mqtt.control;
 import com.isahl.chess.bishop.io.mqtt.QttControl;
 import com.isahl.chess.bishop.io.mqtt.QttType;
 import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.queen.io.core.inf.INotify;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
@@ -39,7 +38,6 @@ import static com.isahl.chess.queen.io.core.inf.IQoS.Level.ALMOST_ONCE;
  */
 public class X111_QttConnect
         extends QttControl
-        implements INotify
 {
     private final static int MAX_USER_NAME_LENGTH = 127;
     private final static int MAX_PASSWORD_LENGTH  = 127;
@@ -438,11 +436,5 @@ public class X111_QttConnect
             pos += IoUtil.write(pwd, data, pos);
         }
         return pos;
-    }
-
-    @Override
-    public long getOrigin()
-    {
-        return getSession().getIndex();
     }
 }

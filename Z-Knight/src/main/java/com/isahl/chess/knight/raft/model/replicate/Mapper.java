@@ -32,6 +32,7 @@ import com.isahl.chess.knight.raft.config.ZRaftConfig;
 import com.isahl.chess.knight.raft.inf.IRaftMapper;
 import com.isahl.chess.knight.raft.model.RaftConfig;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -222,6 +223,9 @@ public class Mapper
         return mLogMeta.getStart();
     }
 
+    @Cacheable(value = "raft_log_entry",
+               unless = "#result == null",
+               key = "#index")
     @Override
     public LogEntry getEntry(long index)
     {

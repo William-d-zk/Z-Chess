@@ -24,6 +24,7 @@
 package com.isahl.chess.knight.raft.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZCommand;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X106_Identity;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.*;
 import com.isahl.chess.king.base.inf.IPair;
@@ -38,15 +39,18 @@ import com.isahl.chess.knight.raft.model.RaftMachine;
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
 import com.isahl.chess.queen.db.inf.IStorage;
 import com.isahl.chess.queen.event.handler.cluster.IClusterCustom;
+import com.isahl.chess.queen.event.handler.cluster.IConsistencyCustom;
 import com.isahl.chess.queen.io.core.inf.*;
 
 import java.util.Collections;
 import java.util.List;
 
+import static com.isahl.chess.knight.raft.model.RaftCode.WAL_FAILED;
 import static com.isahl.chess.knight.raft.model.RaftState.LEADER;
 
 public class RaftCustom<T extends IClusterPeer & IClusterTimer>
-        implements IClusterCustom<RaftMachine>
+        implements IClusterCustom<RaftMachine>,
+                   IConsistencyCustom
 {
     private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
 
@@ -130,20 +134,22 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
             // client → leader
             case X75_RaftReq.COMMAND -> {
                 if(_RaftPeer.getMachine()
-                            .getState() != LEADER)
+                            .getState() == LEADER)
                 {
+
+                    X75_RaftReq x75 = (X75_RaftReq) content;
+                    return _RaftPeer.newLeaderLogEntry(x75.getSubSerial(),
+                                                       x75.getPayload(),
+                                                       x75.getClientId(),
+                                                       x75.getOrigin(),
+                                                       manager,
+                                                       x75.getSession());
+                }
+                else {
                     _Logger.warning("state error,expect:'LEADER',real:%s",
                                     _RaftPeer.getMachine()
                                              .getState());
-                    break;
                 }
-                X75_RaftReq x75 = (X75_RaftReq) content;
-                return _RaftPeer.newLeaderLogEntry(x75.getPayloadSerial(),
-                                                   x75.getPayload(),
-                                                   x75.getClientId(),
-                                                   x75.getOrigin(),
-                                                   manager,
-                                                   x75.getSession());
             }
             // leader → client 
             case X76_RaftResp.COMMAND -> {
@@ -195,36 +201,35 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
         };
     }
 
+    private Triple<ZCommand, ISession, IPipeEncoder> tMapper(ZCommand in)
+    {
+        return new Triple<>(in, in.getSession(),//此处已执行完毕 manager.find
+                            in.getSession()
+                              .getEncoder());
+    }
+
     @Override
-    public <E extends IConsistent & IControl> List<ITriple> consensus(ISessionManager manager, E request)
+    public <E extends IConsistent> List<ITriple> consensus(ISessionManager manager, E request)
     {
         _Logger.debug("cluster consensus %s", request);
         if(_RaftPeer.getMachine()
                     .getState() == LEADER)
         {
-            /*
-             * session belong to Link
-             */
             return _RaftPeer.newLocalLogEntry(request,
                                               _RaftPeer.getMachine()
                                                        .getPeerId(),
                                               manager,
-                                              cmd->new Triple<>(cmd,
-                                                                cmd.getSession(),
-                                                                cmd.getSession()
-                                                                   .getEncoder()),
-                                              request.getSession());
+                                              this::tMapper);
         }
         else if(_RaftPeer.getMachine()
                          .getLeader() != ZUID.INVALID_PEER_ID)
         {
-
             ISession leaderSession = manager.findSessionByPrefix(_RaftPeer.getMachine()
                                                                           .getLeader());
             if(leaderSession != null) {
                 _Logger.info("client → leader x75");
                 X75_RaftReq x75 = new X75_RaftReq(_RaftPeer.generateId());
-                x75.setPayloadSerial(request.serial());
+                x75.setSubSerial(request.serial());
                 x75.setPayload(request.encode());
                 x75.setOrigin(request.getOrigin());
                 x75.setClientId(_RaftPeer.getMachine()
@@ -237,19 +242,10 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
         }
         _Logger.fetal("cluster is electing");
         return null;
-        /*
-        //TODO x76 需要解决 peer → raft-client → device-client的链路
-        X76_RaftResp x76 = new X76_RaftResp();
-        x76.setClientId(_RaftPeer.getPeerId());
-        x76.setOrigin(request.getOrigin());
-        x76.setCode((byte) Status.FAILED.getCode());
-        return Collections.singletonList(new Triple<>(x76, null, null));
-
-         */
     }
 
     @Override
-    public <E extends IConsistent & IControl> List<ITriple> changeTopology(ISessionManager manager, E topology)
+    public <E extends IConsistent> List<ITriple> changeTopology(ISessionManager manager, E topology)
     {
         _Logger.debug("cluster new topology %s", topology);
         if(_RaftPeer.getMachine()
@@ -260,12 +256,7 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
                                               _RaftPeer.getMachine()
                                                        .getPeerId(),
                                               manager,
-                                              cmd->new Triple<>(cmd,
-                                                                cmd.getSession(),
-                                                                cmd.getSession()
-                                                                   .getEncoder()),
-                                              //从follower来的时候有session,leader
-                                              topology.getSession());
+                                              this::tMapper);
         }
         else if(_RaftPeer.getMachine()
                          .getLeader() != ZUID.INVALID_PEER_ID)
@@ -284,5 +275,27 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
     {
         //TODO learner 的情景需要处理
         return _RaftPeer.isInCongress();
+    }
+
+    /*
+    device → LINK → ClusterEvent → ClusterProcessor (MixMapping.CLUSTER) →
+    {
+
+    }
+
+    1: throwable
+    2: ISessionError
+    3: List<ITriple> 集群广播数据
+     */
+
+    @Override
+    public IPair resolve(IConsistent request, ISession session)
+    {
+        X76_RaftResp x76 = _RaftPeer.raftResp(WAL_FAILED,
+                                              _RaftPeer.getPeerId(),
+                                              request.getOrigin(),
+                                              request.serial(),
+                                              request.encode());
+        return new Pair<>(x76, session);
     }
 }

@@ -24,21 +24,19 @@
 package com.isahl.chess.queen.event.handler.cluster;
 
 import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
-import com.isahl.chess.queen.io.core.inf.IProtocol;
-import com.isahl.chess.queen.io.core.inf.ITraceable;
+import com.isahl.chess.king.base.inf.IPair;
+import com.isahl.chess.queen.io.core.inf.IConsistent;
+import com.isahl.chess.queen.io.core.inf.ISession;
 
 /**
  * @author william.d.zk
  */
 public interface IConsistencyCustom
-        extends IConsistencyJudge
 {
-    default <T extends ITraceable & IProtocol> IOperator<T,
-                                                         Throwable,
-                                                         Void> getOperator()
+    default IOperator<IConsistent, ISession, IPair> getOperator()
     {
         return this::resolve;
     }
 
-    <T extends ITraceable & IProtocol> Void resolve(T request, Throwable throwable);
+    IPair resolve(IConsistent request, ISession session);
 }

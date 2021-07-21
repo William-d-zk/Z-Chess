@@ -47,6 +47,11 @@ public interface IProtocol
 
     int superSerial();
 
+    default int getSubSerial()
+    {
+        return -1;
+    }
+
     byte[] getPayload();
 
     default byte[] encode()

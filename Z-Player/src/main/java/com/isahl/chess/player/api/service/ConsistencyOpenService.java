@@ -25,9 +25,9 @@ package com.isahl.chess.player.api.service;
 
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.IoUtil;
+import com.isahl.chess.knight.cluster.inf.IConsistencyService;
 import com.isahl.chess.knight.cluster.model.ConsistentProtocol;
 import com.isahl.chess.knight.raft.RaftPeer;
-import com.isahl.chess.knight.cluster.inf.IConsistencyService;
 import com.isahl.chess.pawn.endpoint.device.DeviceNode;
 import com.isahl.chess.queen.event.handler.cluster.IConsistencyCustom;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,11 +57,11 @@ public class ConsistencyOpenService
     }
 
     @Override
-    public void submit(String content, boolean pub, long origin)
+    public void submit(String content, boolean all, long origin)
     {
         if(IoUtil.isBlank(content)) { return; }
         ConsistentProtocol consensus = new ConsistentProtocol(content.getBytes(StandardCharsets.UTF_8),
-                                                              pub,
+                                                              all,
                                                               _RaftPeer.generateId(),
                                                               origin);
         submit(consensus, _DeviceNode, _ConsistencyCustom);

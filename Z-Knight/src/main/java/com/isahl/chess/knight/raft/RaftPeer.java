@@ -497,19 +497,19 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
             _Logger.debug("leader commit: %d @%d", nextCommit, _SelfMachine.getTerm());
             LogEntry raftLog = _RaftMapper.getEntry(nextCommit);
             X77_RaftNotify x77 = createNotify(raftLog);
-            if(raftLog.getClientPeer() != _SelfMachine.getPeerId()) {
+            if(raftLog.getClient() != _SelfMachine.getPeerId()) {
                 // leader -> follower -> client
-                ISession followerSession = manager.findSessionByPrefix(raftLog.getClientPeer());
-                return followerSession != null ? new Pair<>(new IControl[]{ x77 }, x77) : new Pair<>(null, x77);
+                ISession cSession = manager.findSessionByPrefix(raftLog.getClient());
+                if(cSession != null) {
+                    return new Pair<>(new IControl[]{ x77 }, x77);
+                }
             }
-            else {
-                /*
-                 * leader -> client
-                 * 作为client 收到 notify
-                 * x77 投递给notify-custom
-                 */
-                return new Pair<>(null, x77);
-            }
+            /*
+             * leader -> client
+             * 作为client 收到 notify
+             * x77 投递给notify-custom
+             */
+            return new Pair<>(null, x77);
         }
         return null;
     }
@@ -777,67 +777,52 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
         _LogQueue.addAll(entryList);
     }
 
-    public <T extends IConsistent & IControl, R> List<R> newLocalLogEntry(T request,
-                                                                          long client,
-                                                                          ISessionManager manager,
-                                                                          Function<ZCommand, R> mapper,
-                                                                          ISession session)
+    public <T extends IConsistent, R> List<R> newLocalLogEntry(T request,
+                                                               long client,
+                                                               ISessionManager manager,
+                                                               Function<ZCommand, R> mapper)
     {
         byte[] payload = request.encode();
         List<R> cmds = createLeaderLogEntry(request.serial(), payload, client, request.getOrigin(), manager, mapper);
         if(cmds == null) {
             stepDown();
-            X76_RaftResp x76 = raftResp(RaftCode.WAL_FAILED,
-                                        client,
-                                        request.getOrigin(),
-                                        request.serial(),
-                                        payload,
-                                        session);
-            return Collections.singletonList(mapper.apply(x76));
+            return null;
         }
         else { return cmds; }
     }
 
-    public IPair newLeaderLogEntry(int payloadSerial,
+    public IPair newLeaderLogEntry(int subSerial,
                                    byte[] payload,
                                    long client,
                                    long origin,
                                    ISessionManager manager,
-                                   ISession session)
+                                   ISession cSession)
     {
-        List<ZCommand> cmds = createLeaderLogEntry(payloadSerial,
-                                                   payload,
-                                                   client,
-                                                   origin,
-                                                   manager,
-                                                   Function.identity());
+        List<ZCommand> cmds = createLeaderLogEntry(subSerial, payload, client, origin, manager, Function.identity());
         if(cmds != null && !cmds.isEmpty()) {
-            return new Pair<>(cmds.toArray(ZCommand[]::new),
-                              raftResp(SUCCESS, client, origin, payloadSerial, payload, session));
+            X76_RaftResp x76 = raftResp(SUCCESS, client, origin, subSerial, payload);
+            x76.setSession(cSession);
+            return new Pair<>(cmds.toArray(ZCommand[]::new), x76);
         }
         else {
-            return new Pair<>(null, raftResp(RaftCode.WAL_FAILED, client, origin, payloadSerial, payload, session));
+            X76_RaftResp x76 = raftResp(WAL_FAILED, client, origin, subSerial, payload);
+            x76.setSession(cSession);
+            return new Pair<>(null, x76);
         }
     }
 
-    private X76_RaftResp raftResp(RaftCode code,
-                                  long client,
-                                  long origin,
-                                  int payloadSerial,
-                                  byte[] payload,
-                                  ISession session)
+    public X76_RaftResp raftResp(RaftCode code, long client, long origin, int subSerial, byte[] payload)
     {
         X76_RaftResp x76 = new X76_RaftResp();
         x76.setClientId(client);
         x76.setOrigin(origin);
-        x76.setPayloadSerial(payloadSerial);
+        x76.setSubSerial(subSerial);
         x76.setPayload(payload);
         x76.setCode((byte) code.getCode());
-        x76.setSession(session);
         return x76;
     }
 
-    private <R> List<R> createLeaderLogEntry(int payloadSerial,
+    private <R> List<R> createLeaderLogEntry(int subSerial,
                                              byte[] payload,
                                              long client,
                                              long origin,
@@ -849,7 +834,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
                                          _SelfMachine.getIndex() + 1,
                                          client,
                                          origin,
-                                         payloadSerial,
+                                         subSerial,
                                          payload);
         newEntry.setOperation(IStorage.Operation.OP_INSERT);
         if(_RaftMapper.appendLog(newEntry)) {
@@ -998,7 +983,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
     private X77_RaftNotify createNotify(LogEntry raftLog)
     {
         X77_RaftNotify x77 = new X77_RaftNotify(_ZUid.getId());
-        x77.setPayloadSerial(raftLog.getPayloadSerial());
+        x77.setSubSerial(raftLog.getSubSerial());
         x77.setPayload(raftLog.getPayload());
         x77.setOrigin(raftLog.getOrigin());
         return x77;

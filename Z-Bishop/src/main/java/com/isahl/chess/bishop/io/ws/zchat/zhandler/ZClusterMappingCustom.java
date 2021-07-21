@@ -23,11 +23,13 @@
 
 package com.isahl.chess.bishop.io.ws.zchat.zhandler;
 
+import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
+import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.queen.db.inf.IStorage;
 import com.isahl.chess.queen.event.handler.cluster.IClusterCustom;
 import com.isahl.chess.queen.io.core.inf.IConsistent;
-import com.isahl.chess.queen.io.core.inf.IControl;
+import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionManager;
 
 import java.util.List;
@@ -52,13 +54,13 @@ public class ZClusterMappingCustom<T extends IStorage>
     }
 
     @Override
-    public <E extends IConsistent & IControl> List<ITriple> consensus(ISessionManager manager, E request)
+    public <E extends IConsistent> List<ITriple> consensus(ISessionManager manager, E request)
     {
         return _Then != null ? _Then.consensus(manager, request) : null;
     }
 
     @Override
-    public <E extends IConsistent & IControl> List<ITriple> changeTopology(ISessionManager manager, E topology)
+    public <E extends IConsistent> List<ITriple> changeTopology(ISessionManager manager, E topology)
     {
         return _Then != null ? _Then.changeTopology(manager, topology) : null;
     }
@@ -67,5 +69,17 @@ public class ZClusterMappingCustom<T extends IStorage>
     public boolean waitForCommit()
     {
         return _Then != null && _Then.waitForCommit();
+    }
+
+    @Override
+    public IOperator<IConsistent, ISession, IPair> getOperator()
+    {
+        return this::resolve;
+    }
+
+    @Override
+    public IPair resolve(IConsistent request, ISession session)
+    {
+        return _Then == null ? null : _Then.resolve(request, session);
     }
 }

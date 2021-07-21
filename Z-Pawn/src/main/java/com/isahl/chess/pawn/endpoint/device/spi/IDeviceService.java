@@ -23,12 +23,9 @@
 
 package com.isahl.chess.pawn.endpoint.device.spi;
 
-import com.isahl.chess.bishop.io.IRouter;
-import com.isahl.chess.bishop.io.mqtt.handler.IQttRouter;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.ShadowEntity;
-import com.isahl.chess.queen.io.core.inf.IQoS;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -36,8 +33,6 @@ import java.util.List;
 
 public interface IDeviceService
 {
-
-
 
     DeviceEntity upsertDevice(DeviceEntity device) throws ZException;
 
@@ -50,6 +45,5 @@ public interface IDeviceService
     DeviceEntity getOneDevice(long id);
 
     List<ShadowEntity> getOnlineDevices(Specification<ShadowEntity> specification, Pageable pageable) throws ZException;
-
 
 }

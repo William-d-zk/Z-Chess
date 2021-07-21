@@ -45,28 +45,28 @@ public class X76_RaftResp
     }
 
     private long mClientId;
-    private int  mPayloadSerial;
+    private int  mSubSerial;
     private long mOrigin;
     private byte mCode;
 
     @Override
     public String toString()
     {
-        return String.format("X76_RaftResp { client:%#x,payload_serial:%#x,origin:%#x }",
+        return String.format("X76_RaftResp { client:%#x,payload-serial:%#x,origin:%#x }",
                              mClientId,
-                             mPayloadSerial,
+                             mSubSerial,
                              mOrigin);
     }
 
     @Override
-    public int getPayloadSerial()
+    public int getSubSerial()
     {
-        return mPayloadSerial;
+        return mSubSerial;
     }
 
-    public void setPayloadSerial(int payloadSerial)
+    public void setSubSerial(int payloadSerial)
     {
-        mPayloadSerial = payloadSerial;
+        mSubSerial = payloadSerial;
     }
 
     public void setOrigin(long origin)
@@ -95,7 +95,7 @@ public class X76_RaftResp
     {
         pos += IoUtil.writeLong(mClientId, data, pos);
         pos += IoUtil.writeLong(mOrigin, data, pos);
-        pos += IoUtil.writeShort(mPayloadSerial, data, pos);
+        pos += IoUtil.writeShort(mSubSerial, data, pos);
         pos += IoUtil.writeByte(mCode, data, pos);
         return pos;
     }
@@ -107,7 +107,7 @@ public class X76_RaftResp
         pos += 8;
         mOrigin = IoUtil.readLong(data, pos);
         pos += 8;
-        mPayloadSerial = IoUtil.readUnsignedShort(data, pos);
+        mSubSerial = IoUtil.readUnsignedShort(data, pos);
         pos += 2;
         mCode = data[pos++];
         return pos;
@@ -131,12 +131,6 @@ public class X76_RaftResp
 
     @Override
     public boolean isMapping()
-    {
-        return true;
-    }
-
-    @Override
-    public boolean isByLeader()
     {
         return true;
     }

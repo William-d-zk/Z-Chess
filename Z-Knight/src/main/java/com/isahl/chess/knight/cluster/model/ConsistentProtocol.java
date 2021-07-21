@@ -44,22 +44,27 @@ public class ConsistentProtocol
 {
     public final static int     _SERIAL = CONSISTENT_SERIAL + 1;
     private final       byte[]  _Content;
-    private final       boolean _Public;
+    private final       boolean _All;
     private final       long    _Origin;
-    private final       long    _Zuid;
+    private final       long    _ZUid;
     @JsonIgnore
     private transient   byte[]  tData;
 
     @JsonCreator
-    public ConsistentProtocol(@JsonProperty("content") byte[] content,
-                              @JsonProperty("public") boolean all,
-                              @JsonProperty("zuid") long zuid,
-                              @JsonProperty("origin") long origin)
+    public ConsistentProtocol(
+            @JsonProperty("content")
+                    byte[] content,
+            @JsonProperty("all")
+                    boolean all,
+            @JsonProperty("zuid")
+                    long zuid,
+            @JsonProperty("origin")
+                    long origin)
     {
         _Content = content;
-        _Public = all;
+        _All = all;
         _Origin = origin;
-        _Zuid = zuid;
+        _ZUid = zuid;
     }
 
     @Override
@@ -89,7 +94,7 @@ public class ConsistentProtocol
 
     public long getZuid()
     {
-        return _Zuid;
+        return _ZUid;
     }
 
     @Override
@@ -101,17 +106,17 @@ public class ConsistentProtocol
     @Override
     public boolean isAll()
     {
-        return _Public;
+        return _All;
     }
 
     @Override
     public String toString()
     {
-        return String.format("ConsistentProtocol{content:%s,public:%s,origin:%#x,zuid:%#x||%d}",
+        return String.format("ConsistentProtocol{content:%s,notify-all:%s,origin:%#x,zuid:%#x||%d}",
                              new String(_Content, StandardCharsets.UTF_8),
-                             _Public,
+                             _All,
                              _Origin,
-                             _Zuid,
-                             _Zuid);
+                             _ZUid,
+                             _ZUid);
     }
 }

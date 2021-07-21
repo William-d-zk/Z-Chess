@@ -39,13 +39,13 @@ public class ErrorOperator
         ISessionError
 
 {
+    private final Logger _Logger = Logger.getLogger("io.queen.operator." + ISessionError.class.getSimpleName());
+
     @Override
     public String getName()
     {
         return "operator.error";
     }
-
-    private final Logger _Logger = Logger.getLogger("io.queen.operator." + ISessionError.class.getSimpleName());
 
     @Override
     public IPair handle(Throwable throwable, ISession session)

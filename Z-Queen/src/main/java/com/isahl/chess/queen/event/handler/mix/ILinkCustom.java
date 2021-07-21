@@ -25,7 +25,7 @@ package com.isahl.chess.queen.event.handler.mix;
 
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.queen.event.handler.IMappingCustom;
-import com.isahl.chess.queen.event.handler.cluster.IConsistencyCustom;
+import com.isahl.chess.queen.event.handler.cluster.IConsistencyJudge;
 import com.isahl.chess.queen.io.core.inf.IConsistent;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionManager;
@@ -38,7 +38,7 @@ import java.util.List;
  */
 public interface ILinkCustom
         extends IMappingCustom,
-                IConsistencyCustom
+                IConsistencyJudge
 {
 
     /*
@@ -69,5 +69,15 @@ public interface ILinkCustom
      */
     List<ITriple> notify(ISessionManager manager, IConsistent request, long origin);
 
+    /**
+     * 当出现了关闭 session 的需要时
+     * 除了session dismiss 之外，还需要对现有链路进行关闭
+     * 触发映射处理机制
+     * @param session
+     */
     void close(ISession session);
+
+
+
+
 }

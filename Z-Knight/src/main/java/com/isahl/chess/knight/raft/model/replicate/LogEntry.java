@@ -42,9 +42,9 @@ public class LogEntry
 
     private final long   _Term;
     private final long   _Index;
-    private final long   _ClientPeer;
-    private final long   _Origin;
-    private final int    _PayloadSerial;
+    private final long   _Client;//raft-client-id
+    private final long   _Origin;//request-id → client
+    private final int    _SubSerial;
     private final byte[] _Payload;
 
     @JsonIgnore
@@ -54,18 +54,25 @@ public class LogEntry
     private transient byte[] tData;
 
     @JsonCreator
-    public LogEntry(@JsonProperty("term") long term,
-                    @JsonProperty("index") long index,
-                    @JsonProperty("client_peer") long clientPeer,
-                    @JsonProperty("origin") long origin,
-                    @JsonProperty("payload_serial") int payloadSerial,
-                    @JsonProperty("payload") byte[] payload)
+    public LogEntry(
+            @JsonProperty("term")
+                    long term,
+            @JsonProperty("index")
+                    long index,
+            @JsonProperty("client")
+                    long client,
+            @JsonProperty("origin")
+                    long origin,
+            @JsonProperty("sub_serial")
+                    int subSerial,
+            @JsonProperty("payload")
+                    byte[] payload)
     {
         _Term = term;
         _Index = index;
-        _ClientPeer = clientPeer;
+        _Client = client;
         _Origin = origin;
-        _PayloadSerial = payloadSerial;
+        _SubSerial = subSerial;
         _Payload = payload;
         encode();
     }
@@ -105,14 +112,14 @@ public class LogEntry
         return tData;
     }
 
-    public int getPayloadSerial()
+    public int getSubSerial()
     {
-        return _PayloadSerial;
+        return _SubSerial;
     }
 
-    public long getClientPeer()
+    public long getClient()
     {
-        return _ClientPeer;
+        return _Client;
     }
 
     @Override
@@ -127,9 +134,9 @@ public class LogEntry
         return String.format("raft_log{ %d@%d, from:%#x, origin:%#x, payload-serial:%#x, payload-size:%d }",
                              _Index,
                              _Term,
-                             _ClientPeer,
+                             _Client,
                              _Origin,
-                             _PayloadSerial,
+                             _SubSerial,
                              _Payload == null ? 0 : _Payload.length);
     }
 

@@ -27,7 +27,6 @@ import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.queen.db.inf.IStorage;
 import com.isahl.chess.queen.event.handler.IMappingCustom;
 import com.isahl.chess.queen.io.core.inf.IConsistent;
-import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISessionManager;
 
 import java.util.List;
@@ -37,7 +36,8 @@ import java.util.List;
  * @date 2020/4/20
  */
 public interface IClusterCustom<T extends IStorage>
-        extends IMappingCustom
+        extends IMappingCustom,
+                IConsistencyCustom
 {
     /*
      *
@@ -77,7 +77,7 @@ public interface IClusterCustom<T extends IStorage>
      * @return triples
      * [托管给集群IoSwitch.write(triples) 或 Transfer → Link.notify(triples)]
      */
-    <E extends IConsistent & IControl> List<ITriple> consensus(ISessionManager manager, E request);
+    <E extends IConsistent> List<ITriple> consensus(ISessionManager manager, E request);
 
     /**
      * consensus-api-publisher → cluster.change(new-topology)
@@ -86,7 +86,7 @@ public interface IClusterCustom<T extends IStorage>
      * @param topology
      * @return
      */
-    <E extends IConsistent & IControl> List<ITriple> changeTopology(ISessionManager manager, E topology);
+    <E extends IConsistent> List<ITriple> changeTopology(ISessionManager manager, E topology);
 
     /**
      * 用于验证是否需要执行集群commit

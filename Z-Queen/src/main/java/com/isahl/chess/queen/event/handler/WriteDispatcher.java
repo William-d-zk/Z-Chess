@@ -23,11 +23,6 @@
 
 package com.isahl.chess.queen.event.handler;
 
-import static com.isahl.chess.king.base.inf.IError.Type.HANDLE_DATA;
-import static com.isahl.chess.king.base.inf.IError.Type.INITIATIVE_CLOSE;
-
-import java.util.List;
-
 import com.isahl.chess.king.base.disruptor.event.OperatorType;
 import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
 import com.isahl.chess.king.base.disruptor.event.inf.IPipeEventHandler;
@@ -41,12 +36,16 @@ import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.lmax.disruptor.RingBuffer;
 
+import java.util.List;
+
+import static com.isahl.chess.king.base.inf.IError.Type.HANDLE_DATA;
+import static com.isahl.chess.king.base.inf.IError.Type.INITIATIVE_CLOSE;
+
 /**
  * @author william.d.zk
  */
 public class WriteDispatcher
-        implements
-        IPipeEventHandler<QEvent>
+        implements IPipeEventHandler<QEvent>
 {
     private final Logger               _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
     private final RingBuffer<QEvent>[] _Encoders;
@@ -54,8 +53,7 @@ public class WriteDispatcher
     private final int                  _Mask;
 
     @SafeVarargs
-    public WriteDispatcher(RingBuffer<QEvent> error,
-                           RingBuffer<QEvent>... workers)
+    public WriteDispatcher(RingBuffer<QEvent> error, RingBuffer<QEvent>... workers)
     {
         _Error = error;
         _Encoders = workers;
@@ -70,8 +68,8 @@ public class WriteDispatcher
     @Override
     public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
     {
-        if (event.hasError()) {
-            if (event.getErrorType() == HANDLE_DATA) {// from logic handler
+        if(event.hasError()) {
+            if(event.getErrorType() == HANDLE_DATA) {// from logic handler
                 /*
                  * logic 处理错误，转换为shutdown目标投递给 _Error
                  * 交由 IoDispatcher转发给对应的MappingHandler 执行close
@@ -79,82 +77,87 @@ public class WriteDispatcher
                 error(_Error, HANDLE_DATA, event.getContent(), event.getEventOp());
             }
         }
-        else switch (event.getEventType())
-        {
-            case NULL:// 在前一个处理器event.reset().
-            case IGNORE:// 没有任何时间需要跨 Barrier 投递向下一层 Pipeline
-                break;
-            case BIZ_LOCAL:// from biz local
-            case CLUSTER_LOCAL:// from cluster local
-            case WRITE:// from LinkIo/Cluster
-            case LOGIC:// from read->logic
-                IPair writeContent = event.getContent();
-                IControl[] commands = writeContent.getFirst();
-                ISession session = writeContent.getSecond();
-                IOperator<IControl[],
-                          ISession,
-                          List<ITriple>> transferOperator = event.getEventOp();
-                if (commands != null && commands.length > 0) {
-                    List<ITriple> triples = transferOperator.handle(commands, session);
-                    for (ITriple triple : triples) {
-                        ISession targetSession = triple.getSecond();
-                        IControl content = triple.getFirst();
-                        _Logger.debug("write %s", content);
-                        if (content.isShutdown()) {
-                            if (targetSession.isValid()) {
-                                error(_Error,
-                                      INITIATIVE_CLOSE,
-                                      new Pair<>(new ZException("session to shutdown"), targetSession),
-                                      targetSession.getError());
+        else {
+            switch(event.getEventType()) {
+                case NULL:// 在前一个处理器event.reset().
+                case IGNORE:// 没有任何时间需要跨 Barrier 投递向下一层 Pipeline
+                    break;
+                case BIZ_LOCAL:// from biz local
+                case CLUSTER_LOCAL:// from cluster local
+                case WRITE:// from LinkIo/Cluster
+                case LOGIC:// from read->logic
+                    IPair writeContent = event.getContent();
+                    IControl[] commands = writeContent.getFirst();
+                    ISession session = writeContent.getSecond();
+                    IOperator<IControl[], ISession, List<ITriple>> transferOperator = event.getEventOp();
+                    if(commands != null && commands.length > 0) {
+                        List<ITriple> triples = transferOperator.handle(commands, session);
+                        for(ITriple triple : triples) {
+                            ISession targetSession = triple.getSecond();
+                            IControl content = triple.getFirst();
+                            _Logger.debug("write %s", content);
+                            if(content.isShutdown()) {
+                                if(targetSession.isValid()) {
+                                    error(_Error,
+                                          INITIATIVE_CLOSE,
+                                          new Pair<>(new ZException("session to shutdown"), targetSession),
+                                          targetSession.getError());
+                                }
+                            }
+                            else {
+                                publish(dispatchEncoder(targetSession.hashCode()),
+                                        OperatorType.WRITE,
+                                        new Pair<>(content, targetSession),
+                                        triple.getThird());
                             }
                         }
-                        else publish(dispatchEncoder(targetSession.hashCode()),
-                                OperatorType. WRITE,
-                                     new Pair<>(content, targetSession),
-                                     triple.getThird());
+                        _Logger.debug("write_dispatcher, source %s, transfer:%d",
+                                      event.getEventType(),
+                                      commands.length);
                     }
-                    _Logger.debug("write_dispatcher, source %s, transfer:%d", event.getEventType(), commands.length);
-                }
-                break;
-            case WROTE:// from io-wrote
-                IPair wroteContent = event.getContent();
-                int wroteCount = wroteContent.getFirst();
-                session = wroteContent.getSecond();
-                if (session.isValid()) {
-                    publish(dispatchEncoder(session.hashCode()),
-                            OperatorType. WROTE,
-                            new Pair<>(wroteCount, session),
-                            event.getEventOp());
-                }
-                break;
-            case DISPATCH:
-                List<ITriple> writeContents = event.getContentList();
-                for (ITriple content : writeContents) {
-                    IControl command = content.getFirst();
-                    session = content.getSecond();
-                    if (command.isShutdown()) {
-                        if (session != null && session.isValid()) {
-                            error(_Error,
-                                  INITIATIVE_CLOSE,
-                                  new Pair<>(new ZException("session to shutdown"), session),
-                                  session.getError());
+                    break;
+                case WROTE:// from io-wrote
+                    IPair wroteContent = event.getContent();
+                    int wroteCount = wroteContent.getFirst();
+                    session = wroteContent.getSecond();
+                    if(session.isValid()) {
+                        publish(dispatchEncoder(session.hashCode()),
+                                OperatorType.WROTE,
+                                new Pair<>(wroteCount, session),
+                                event.getEventOp());
+                    }
+                    break;
+                case DISPATCH:
+                    List<ITriple> writeContents = event.getContentList();
+                    for(ITriple content : writeContents) {
+                        IControl command = content.getFirst();
+                        session = content.getSecond();
+                        if(command.isShutdown()) {
+                            if(session != null && session.isValid()) {
+                                error(_Error,
+                                      INITIATIVE_CLOSE,
+                                      new Pair<>(new ZException("session to shutdown"), session),
+                                      session.getError());
+                            }
+                            /*
+                             * session == null 意味着 _SessionManager.find..失败
+                             * !session.isValid 意味着 session 已经被关闭
+                             * 这两种情形都忽略执行即可
+                             */
+                            else {
+                                _Logger.warning("dispatch failed [ %s ]", session);
+                            }
                         }
-                        /*
-                         * session == null 意味着 _SessionManager.find..失败
-                         * !session.isValid 意味着 session 已经被关闭
-                         * 这两种情形都忽略执行即可
-                         */
                         else {
-                            _Logger.warning("dispatch failed [ %s ]", session);
+                            publish(dispatchEncoder(session.hashCode()),
+                                    OperatorType.WRITE,
+                                    new Pair<>(command, session),
+                                    content.getThird());
                         }
                     }
-                    else publish(dispatchEncoder(session.hashCode()),
-                            OperatorType.   WRITE,
-                                 new Pair<>(command, session),
-                                 content.getThird());
-                }
-            default:
-                break;
+                default:
+                    break;
+            }
         }
         event.reset();
     }

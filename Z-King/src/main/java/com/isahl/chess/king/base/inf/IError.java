@@ -35,8 +35,7 @@ public interface IError
     String getMsg(Object... args);
 
     enum Type
-            implements
-            IError
+            implements IError
     {
 
         CONNECT_FAILED(300, " 连接失败 "),
@@ -59,15 +58,16 @@ public interface IError
         FIND_DATA(904, " 查询数据失败 %s "),
         MAPPING_LOGIN_ERROR(905, " mapping 准入失败 %s"),
         HANDLE_DATA(906, " 数据处理失败 %s "),
+        CONSISTENCY_REJECT(909, " 一致性请求 %s 拒绝"),
         MAPPING_ERROR(910, " mapping %s"),
         TIME_OUT(101, " 超时 "),
-        NO_ERROR(200, " 成功 "),;
+        NO_ERROR(200, " 成功 "),
+        ;
 
         private final int    _Code;
         private final String _MsgFormatter;
 
-        Type(int code,
-             String formatter)
+        Type(int code, String formatter)
         {
             _Code = code;
             _MsgFormatter = formatter;
@@ -82,7 +82,7 @@ public interface IError
         @Override
         public String getMsg(Object... args)
         {
-            return Objects.isNull(args) || args.length == 0 ? _MsgFormatter: String.format(_MsgFormatter, args);
+            return Objects.isNull(args) || args.length == 0 ? _MsgFormatter : String.format(_MsgFormatter, args);
         }
 
     }

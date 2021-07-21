@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -27,22 +27,19 @@ import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZCommand;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.inf.IConsistent;
 
-/**
- * @author william.d.zk
- * @date 2020/4/11
- */
-public class X75_RaftReq
+public class X79_RaftAdjudge
         extends ZCommand
         implements IConsistent
 {
-    public final static int COMMAND = 0x75;
 
-    public X75_RaftReq()
+    public final static int COMMAND = 0x76;
+
+    public X79_RaftAdjudge()
     {
         super(COMMAND, true);
     }
 
-    public X75_RaftReq(long msgId)
+    public X79_RaftAdjudge(long msgId)
     {
         super(COMMAND, msgId);
     }
@@ -50,6 +47,17 @@ public class X75_RaftReq
     private long mClientId;
     private int  mSubSerial;
     private long mOrigin;
+    private byte mCode;
+
+    @Override
+    public String toString()
+    {
+        return String.format("X79_RaftResp { client:%#x,payload-serial:%#x,origin:%#x,%s}",
+                             mClientId,
+                             mSubSerial,
+                             mOrigin,
+                             mCode);
+    }
 
     @Override
     public int getSubSerial()
@@ -67,6 +75,16 @@ public class X75_RaftReq
         mOrigin = origin;
     }
 
+    public int getCode()
+    {
+        return mCode;
+    }
+
+    public void setCode(byte code)
+    {
+        mCode = code;
+    }
+
     @Override
     public long getOrigin()
     {
@@ -79,6 +97,7 @@ public class X75_RaftReq
         pos += IoUtil.writeLong(mClientId, data, pos);
         pos += IoUtil.writeLong(mOrigin, data, pos);
         pos += IoUtil.writeShort(mSubSerial, data, pos);
+        pos += IoUtil.writeByte(mCode, data, pos);
         return pos;
     }
 
@@ -91,13 +110,14 @@ public class X75_RaftReq
         pos += 8;
         mSubSerial = IoUtil.readUnsignedShort(data, pos);
         pos += 2;
+        mCode = data[pos++];
         return pos;
     }
 
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 18;
+        return super.dataLength() + 19;
     }
 
     public long getClientId()
@@ -116,13 +136,4 @@ public class X75_RaftReq
         return true;
     }
 
-    @Override
-    public String toString()
-    {
-        return String.format(" X75_RaftRequest { client:%#x, origin:%#x,sub-serial:%#x,payload[%d] }",
-                             mClientId,
-                             mOrigin,
-                             mSubSerial,
-                             getPayload() == null ? 0 : getPayload().length);
-    }
 }

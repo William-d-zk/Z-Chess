@@ -36,11 +36,9 @@ import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X77_RaftNotify;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.topology.ZUID;
-import com.isahl.chess.knight.cluster.model.ConsistentProtocol;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.spi.IDeviceService;
 import com.isahl.chess.pawn.endpoint.device.spi.ILinkService;
@@ -167,12 +165,11 @@ public class LinkCustom
                  * raft_client -> Link, session belong to cluster
                  * ignore session
                  */
-                int cmd = response.getPayloadSerial();
+                int cmd = response.getSubSerial();
                 _Logger.debug("client-request cmd:%#x", cmd);
                 strongConsistent = response.serial() == X77_RaftNotify.COMMAND;
                 clientRequest = ZSortHolder.create(cmd);
                 clientRequest.decode(response.getPayload());
-                _Logger.info("notify cluster client by leader %s", response.isByLeader());
                 if(!strongConsistent) { return null; }
             }
             default -> {
@@ -268,7 +265,9 @@ public class LinkCustom
     @Override
     public void close(ISession session)
     {
-        _LinkService.offline(session.getIndex(), _QttRouter);
+        if((ZUID.TYPE_MASK & session.getIndex()) == ZUID.TYPE_CONSUMER) {
+            _LinkService.offline(session.getIndex(), _QttRouter);
+        }
     }
 
     @Override
@@ -280,35 +279,6 @@ public class LinkCustom
             case X118_QttSubscribe.COMMAND -> {}
             case X11A_QttUnsubscribe.COMMAND -> {}
         }
-    }
-
-    @Override
-    public <T extends ITraceable & IProtocol> Void resolve(T request, Throwable throwable)
-    {
-        if(throwable == null) {
-            _Logger.debug("notify---consistent");
-            if(request.serial() == X77_RaftNotify.COMMAND) {
-                _Logger.debug("cluster mode");
-                X77_RaftNotify x76 = (X77_RaftNotify) request;
-                byte[] data = x76.getPayload();
-                if(x76.getPayloadSerial() == ConsistentProtocol._SERIAL) {
-                    ConsistentProtocol consistentProtocol = JsonUtil.readValue(data, ConsistentProtocol.class);
-                    consistentProtocol.decode(data);
-                    _Logger.debug("notify ok");
-                }
-                else {
-                    _Logger.fetal("consistent notify failed");
-                }
-            }
-            else {
-                _Logger.debug("single mode");
-                _Logger.debug("notify ok");
-            }
-        }
-        else {
-            _Logger.warning("request:%s", throwable, request);
-        }
-        return null;
     }
 
     @Bean
