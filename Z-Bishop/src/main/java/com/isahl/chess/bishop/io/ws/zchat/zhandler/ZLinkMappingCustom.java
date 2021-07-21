@@ -23,10 +23,12 @@
 
 package com.isahl.chess.bishop.io.ws.zchat.zhandler;
 
-import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.queen.event.handler.mix.ILinkCustom;
-import com.isahl.chess.queen.io.core.inf.*;
+import com.isahl.chess.queen.io.core.inf.IConsistent;
+import com.isahl.chess.queen.io.core.inf.IProtocol;
+import com.isahl.chess.queen.io.core.inf.ISession;
+import com.isahl.chess.queen.io.core.inf.ISessionManager;
 
 import java.util.List;
 
@@ -64,20 +66,5 @@ public class ZLinkMappingCustom
         if(_Then != null) {
             _Then.adjudge(consensus);
         }
-    }
-
-    @Override
-    public <T extends ITraceable & IProtocol> IOperator<T, Throwable, Void> getOperator()
-    {
-        return this::resolve;
-    }
-
-    @Override
-    public <T extends ITraceable & IProtocol> Void resolve(T request, Throwable throwable)
-    {
-        if(_Then != null) {
-            _Then.resolve(request, throwable);
-        }
-        return null;
     }
 }

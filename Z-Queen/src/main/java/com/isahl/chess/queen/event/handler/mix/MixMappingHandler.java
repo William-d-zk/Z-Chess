@@ -26,6 +26,7 @@ package com.isahl.chess.queen.event.handler.mix;
 import com.isahl.chess.king.base.disruptor.event.OperatorType;
 import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
 import com.isahl.chess.king.base.disruptor.event.inf.IPipeEventHandler;
+import com.isahl.chess.king.base.inf.IError;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
@@ -40,6 +41,7 @@ import com.isahl.chess.queen.io.core.manager.MixManager;
 import com.lmax.disruptor.RingBuffer;
 
 import java.nio.channels.AsynchronousSocketChannel;
+import java.util.List;
 
 /**
  * @author william.d.zk
@@ -168,22 +170,22 @@ public class MixMappingHandler<T extends IStorage>
                                             .getSecond();
                     if(received != null && session != null) {
                         try {
-                            IPair pair = _LinkCustom.handle(_SessionManager, session, received);
-                            if(pair == null) { return; }
-                            IControl[] toSends = pair.getFirst();
+                            IPair result = _LinkCustom.handle(_SessionManager, session, received);
+                            if(result == null) { return; }
+                            IControl[] toSends = result.getFirst();
+                            IConsistent consistent = result.getSecond();
                             if(toSends != null && toSends.length > 0) {
                                 publish(_Writer,
                                         OperatorType.WRITE,
                                         new Pair<>(toSends, session),
                                         session.getTransfer());
                             }
-                            IConsistent consistent = pair.getSecond();
                             if(consistent != null) {
                                 if(_ClusterCustom.waitForCommit()) {
                                     publish(_Transfer,
-                                            OperatorType.CONSENSUS,
+                                            OperatorType.CONSISTENCY,
                                             new Pair<>(consistent, session),
-                                            _LinkCustom.getOperator());
+                                            _ClusterCustom.getOperator());
                                 }
                                 else {
                                     publish(_Writer,
@@ -204,21 +206,21 @@ public class MixMappingHandler<T extends IStorage>
                                    .getSecond();
                     if(received != null && session != null) {
                         try {
-                            IPair pair = _ClusterCustom.handle(_SessionManager, session, received);
-                            if(pair == null) { return; }
-                            IControl[] toSends = pair.getFirst();
+                            IPair result = _ClusterCustom.handle(_SessionManager, session, received);
+                            if(result == null) { return; }
+                            IControl[] toSends = result.getFirst();
                             if(toSends != null && toSends.length > 0) {
                                 publish(_Writer,
                                         OperatorType.WRITE,
                                         new Pair<>(toSends, session),
                                         session.getTransfer());
                             }
-                            IConsistent notify = pair.getSecond();
-                            if(notify != null) {
+                            IConsistent consistent = result.getSecond();
+                            if(consistent != null) {
                                 publish(_Transfer,
                                         OperatorType.CONSENSUS_NOTIFY,
-                                        new Pair<>(notify, null),
-                                        _LinkCustom.getOperator());
+                                        new Pair<>(consistent, session),
+                                        _ClusterCustom.getOperator());
                             }
                         }
                         catch(Exception e) {
@@ -227,26 +229,30 @@ public class MixMappingHandler<T extends IStorage>
                         }
                     }
                     break;
-                case CONSENSUS:
+                case CONSISTENCY://Cluster Processor
                     /*
-                    core.LinkProcessor → core._ClusterEvent → core.ClusterProcessor → _ClusterCustom
+                        core.LinkProcessor → core._ClusterEvent → core.ClusterProcessor → _ClusterCustom
                     */
+                    IConsistent request = event.getContent()
+                                               .getFirst();
                     session = event.getContent()
                                    .getSecond();
+                    IOperator<IConsistent, ISession, IPair> consistencyOp = event.getEventOp();
                     try {
-                        publish(_Writer,
-                                _ClusterCustom.consensus(_SessionManager,
-                                                         event.getContent()
-                                                              .getFirst()));
+                        List<ITriple> contents = _ClusterCustom.consensus(_SessionManager, request);
+                        if(contents != null) { publish(_Writer, contents); }
+                        else {
+                            IPair resp = consistencyOp.handle(request, session);
+                            error(_Error, IError.Type.CONSISTENCY_REJECT, resp, session.getError());
+                        }
                     }
                     catch(Exception e) {
                         _Logger.warning("mapping consensus error, link session close", e);
-                        if(session != null) { session.innerClose(); }
                     }
                     break;
                 case CLUSTER_TOPOLOGY:
                     /*
-                    core._ConsensusApiEvent → core.ClusterProcessor → _ClusterCustom
+                        core._ConsensusApiEvent → core.ClusterProcessor → _ClusterCustom
                      */
                     try {
                         publish(_Writer,

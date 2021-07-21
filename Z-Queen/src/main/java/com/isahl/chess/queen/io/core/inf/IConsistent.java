@@ -29,8 +29,4 @@ package com.isahl.chess.queen.io.core.inf;
 public interface IConsistent
         extends ITraceable,
                 IProtocol
-{
-    boolean isByLeader();
-
-    int getPayloadSerial();
-}
+{}

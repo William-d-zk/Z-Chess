@@ -36,31 +36,29 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public interface IConsistencyService
 {
-    default <T extends INotify & IProtocol> void submit(T consensus,
-                                                        IClusterNode clusterNode,
-                                                        IConsistencyCustom custom)
+    default <T extends INotify & IProtocol> void submit(T consensus, IClusterNode node, IConsistencyCustom custom)
     {
-        if(consensus == null) { return; }
-        final ReentrantLock _Lock = clusterNode.getLock(OperatorType.CONSENSUS);
-        final RingBuffer<QEvent> _Publish = clusterNode.getPublisher(OperatorType.CONSENSUS);
-        if(_Lock.tryLock()) {
+        if(consensus == null || node == null || custom == null) { return; }
+        final ReentrantLock _Lock = node.getLock(OperatorType.CONSISTENCY);
+        final RingBuffer<QEvent> _Publish = node.getPublisher(OperatorType.CONSISTENCY);
+        _Lock.lock();
+        try {
+            long sequence = _Publish.next();
             try {
-                long sequence = _Publish.next();
-                try {
-                    QEvent event = _Publish.get(sequence);
-                    event.produce(OperatorType.CONSENSUS,
-                                  new Pair<>(consensus, consensus.getOrigin()),
-                                  custom.getOperator());
-                }
-                finally {
-                    _Publish.publish(sequence);
-                }
+                QEvent event = _Publish.get(sequence);
+                event.produce(OperatorType.CONSISTENCY,
+                              new Pair<>(consensus, consensus.getOrigin()),
+                              custom.getOperator());
             }
             finally {
-                _Lock.unlock();
+                _Publish.publish(sequence);
             }
         }
+        finally {
+            _Lock.unlock();
+        }
+
     }
 
-    void submit(String content, boolean pub, long origin);
+    void submit(String content, boolean all, long origin);
 }

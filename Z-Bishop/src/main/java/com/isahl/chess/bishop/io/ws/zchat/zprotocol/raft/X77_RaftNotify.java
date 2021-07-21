@@ -25,7 +25,7 @@ package com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft;
 
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZCommand;
 import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.queen.io.core.inf.IConsistent;
+import com.isahl.chess.queen.io.core.inf.INotify;
 
 /**
  * @author william.d.zk
@@ -33,7 +33,7 @@ import com.isahl.chess.queen.io.core.inf.IConsistent;
  */
 public class X77_RaftNotify
         extends ZCommand
-        implements IConsistent
+        implements INotify
 {
     public final static int COMMAND = 0x77;
 
@@ -47,42 +47,49 @@ public class X77_RaftNotify
         super(COMMAND, msgId);
     }
 
-    private int  mPayloadSerial;
-    private long mOrigin;
+    private long    mClient;
+    private int     mSubSerial;
+    private long    mOrigin;
+    private boolean mAll;
 
     @Override
-    public int getPayloadSerial()
+    public int getSubSerial()
     {
-        return mPayloadSerial;
+        return mSubSerial;
     }
 
-    public void setPayloadSerial(int payloadSerial)
+    public void setSubSerial(int subSerial)
     {
-        mPayloadSerial = payloadSerial;
+        mSubSerial = subSerial;
     }
 
     @Override
     public int encodec(byte[] data, int pos)
     {
-        pos += IoUtil.writeShort(mPayloadSerial, data, pos);
+        pos += IoUtil.writeLong(mClient, data, pos);
+        pos += IoUtil.writeShort(mSubSerial, data, pos);
         pos += IoUtil.writeLong(mOrigin, data, pos);
+        pos += IoUtil.writeByte(mAll ? 1 : 0, data, pos);
         return pos;
     }
 
     @Override
     public int decodec(byte[] data, int pos)
     {
-        mPayloadSerial = IoUtil.readUnsignedShort(data, pos);
+        mClient = IoUtil.readLong(data, pos);
+        pos += 8;
+        mSubSerial = IoUtil.readUnsignedShort(data, pos);
         pos += 2;
         mOrigin = IoUtil.readLong(data, pos);
         pos += 8;
+        mAll = data[pos++] > 0;
         return pos;
     }
 
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 10;
+        return super.dataLength() + 19;
     }
 
     @Override
@@ -103,9 +110,13 @@ public class X77_RaftNotify
     }
 
     @Override
-    public boolean isByLeader()
+    public boolean isAll()
     {
-        return true;
+        return mAll;
     }
 
+    public void setAll()
+    {
+        mAll = true;
+    }
 }

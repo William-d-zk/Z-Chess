@@ -42,7 +42,7 @@ public enum OperatorType
     LINK,
     CLUSTER,
     LOGIC,
-    CONSENSUS,
+    CONSISTENCY,
     CONSENSUS_NOTIFY,
     CLUSTER_TOPOLOGY,
     CLUSTER_TIMER,
