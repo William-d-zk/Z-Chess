@@ -27,7 +27,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.bishop.io.json.JsonProtocol;
 import com.isahl.chess.queen.db.inf.IStorage;
-import com.isahl.chess.queen.io.core.inf.INotify;
+import com.isahl.chess.queen.io.core.inf.ITraceable;
 
 /**
  * @author william.d.zk
@@ -36,7 +36,7 @@ import com.isahl.chess.queen.io.core.inf.INotify;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class SnapshotEntry
         extends JsonProtocol
-        implements INotify,
+        implements ITraceable,
                    IStorage
 {
 

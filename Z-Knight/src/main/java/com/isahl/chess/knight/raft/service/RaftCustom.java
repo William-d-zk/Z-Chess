@@ -136,7 +136,6 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
                 if(_RaftPeer.getMachine()
                             .getState() == LEADER)
                 {
-
                     X75_RaftReq x75 = (X75_RaftReq) content;
                     return _RaftPeer.newLeaderLogEntry(x75.getSubSerial(),
                                                        x75.getPayload(),

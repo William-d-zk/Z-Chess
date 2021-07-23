@@ -215,12 +215,12 @@ public class MixMappingHandler<T extends IStorage>
                                         new Pair<>(toSends, session),
                                         session.getTransfer());
                             }
-                            IConsistent consistent = result.getSecond();
-                            if(consistent != null) {
+                            IConsistent adjudge = result.getSecond();
+                            if(adjudge != null) {
                                 publish(_Transfer,
-                                        OperatorType.CONSENSUS_NOTIFY,
-                                        new Pair<>(consistent, session),
-                                        _ClusterCustom.getOperator());
+                                        OperatorType.CONSENSUS_ADJUDGE,
+                                        new Pair<>(adjudge, session),
+                                        _LinkCustom.getOperator());
                             }
                         }
                         catch(Exception e) {
@@ -264,24 +264,16 @@ public class MixMappingHandler<T extends IStorage>
                         _Logger.warning("cluster inner service api ");
                     }
                     break;
-                case CONSENSUS_NOTIFY:
-                    IConsistent notify = event.getContent()
-                                              .getFirst();
-                    if(notify != null) {
+                case CONSENSUS_ADJUDGE:
+                    IConsistent consensus = event.getContent()
+                                                 .getFirst();
+                    session = event.getContent()
+                                   .getSecond();
+                    IOperator<IConsistent, ISession, Void> adjudgeOperator = event.getEventOp();
+                    if(consensus != null) {
                         try {
-                            if(notify.isByLeader()) {
-                                try {
-                                    _LinkCustom.adjudge(notify);
-                                }
-                                catch(Throwable e) {
-                                    _Logger.warning("leader adjudge", e);
-                                }
-                            }
-                            publish(_Writer,
-                                    _LinkCustom.notify(_SessionManager,
-                                                       event.getContent()
-                                                            .getFirst(),
-                                                       notify.getOrigin()));
+                            adjudgeOperator.handle(consensus, session);
+                            publish(_Writer, _LinkCustom.notify(_SessionManager, consensus, consensus.getOrigin()));
                         }
                         catch(Exception e) {
                             _Logger.warning("mapping notify error, cluster's session keep alive", e);
