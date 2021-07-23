@@ -23,10 +23,10 @@
 
 package com.isahl.chess.bishop.io.ws.zchat.zhandler;
 
+import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.queen.event.handler.mix.ILinkCustom;
 import com.isahl.chess.queen.io.core.inf.IConsistent;
-import com.isahl.chess.queen.io.core.inf.IProtocol;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionManager;
 
@@ -47,9 +47,9 @@ public class ZLinkMappingCustom
     }
 
     @Override
-    public List<ITriple> notify(ISessionManager manager, IConsistent request, long origin)
+    public List<ITriple> notify(ISessionManager manager, IConsistent request)
     {
-        return _Then != null ? _Then.notify(manager, request, origin) : null;
+        return _Then != null ? _Then.notify(manager, request) : null;
     }
 
     @Override
@@ -61,10 +61,14 @@ public class ZLinkMappingCustom
     }
 
     @Override
-    public void adjudge(IProtocol consensus)
+    public IOperator<IConsistent, ISession, Void> getOperator()
     {
-        if(_Then != null) {
-            _Then.adjudge(consensus);
-        }
+        return this::adjudge;
+    }
+
+    @Override
+    public Void adjudge(IConsistent consensus, ISession session)
+    {
+        return _Then != null ? _Then.adjudge(consensus, session) : null;
     }
 }

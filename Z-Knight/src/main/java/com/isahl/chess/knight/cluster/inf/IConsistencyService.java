@@ -28,15 +28,14 @@ import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.knight.cluster.IClusterNode;
 import com.isahl.chess.queen.event.QEvent;
 import com.isahl.chess.queen.event.handler.cluster.IConsistencyCustom;
-import com.isahl.chess.queen.io.core.inf.INotify;
-import com.isahl.chess.queen.io.core.inf.IProtocol;
+import com.isahl.chess.queen.io.core.inf.IConsistent;
 import com.lmax.disruptor.RingBuffer;
 
 import java.util.concurrent.locks.ReentrantLock;
 
 public interface IConsistencyService
 {
-    default <T extends INotify & IProtocol> void submit(T consensus, IClusterNode node, IConsistencyCustom custom)
+    default <T extends IConsistent> void submit(T consensus, IClusterNode node, IConsistencyCustom custom)
     {
         if(consensus == null || node == null || custom == null) { return; }
         final ReentrantLock _Lock = node.getLock(OperatorType.CONSISTENCY);
@@ -60,5 +59,5 @@ public interface IConsistencyService
 
     }
 
-    void submit(String content, boolean all, long origin);
+    void submit(String content, long origin);
 }

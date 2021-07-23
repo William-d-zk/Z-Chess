@@ -23,12 +23,24 @@
 
 package com.isahl.chess.queen.event.handler.cluster;
 
-import com.isahl.chess.queen.io.core.inf.IProtocol;
+import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
+import com.isahl.chess.queen.io.core.inf.IConsistent;
+import com.isahl.chess.queen.io.core.inf.ISession;
 
 /**
  * @author william.d.zk
  */
 public interface IConsistencyJudge
 {
-    void adjudge(IProtocol consensus);
+    default IOperator<IConsistent, ISession, Void> getOperator()
+    {
+        return this::adjudge;
+    }
+
+    /**
+     * @param consensus
+     * @param session cluster 通讯用的
+     * @return
+     */
+    Void adjudge(IConsistent consensus, ISession session);
 }

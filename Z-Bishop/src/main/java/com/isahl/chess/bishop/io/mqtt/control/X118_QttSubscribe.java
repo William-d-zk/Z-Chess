@@ -26,7 +26,7 @@ package com.isahl.chess.bishop.io.mqtt.control;
 import com.isahl.chess.bishop.io.mqtt.QttCommand;
 import com.isahl.chess.bishop.io.mqtt.QttType;
 import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.queen.io.core.inf.INotify;
+import com.isahl.chess.queen.io.core.inf.IConsistent;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -40,7 +40,7 @@ import static com.isahl.chess.queen.io.core.inf.IQoS.Level.AT_LEAST_ONCE;
  */
 public class X118_QttSubscribe
         extends QttCommand
-        implements INotify
+        implements IConsistent
 {
 
     public final static int COMMAND = 0x118;

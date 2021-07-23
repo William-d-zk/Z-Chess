@@ -29,7 +29,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.bishop.io.json.JsonProtocol;
-import com.isahl.chess.queen.io.core.inf.INotify;
+import com.isahl.chess.queen.io.core.inf.IConsistent;
 
 import java.nio.charset.StandardCharsets;
 
@@ -40,29 +40,25 @@ import java.nio.charset.StandardCharsets;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ConsistentProtocol
         extends JsonProtocol
-        implements INotify
+        implements IConsistent
 {
-    public final static int     _SERIAL = CONSISTENT_SERIAL + 1;
-    private final       byte[]  _Content;
-    private final       boolean _All;
-    private final       long    _Origin;
-    private final       long    _ZUid;
+    public final static int    _SERIAL = CONSISTENT_SERIAL + 1;
+    private final       byte[] _Content;
+    private final       long   _Origin;
+    private final       long   _ZUid;
     @JsonIgnore
-    private transient   byte[]  tData;
+    private transient   byte[] tData;
 
     @JsonCreator
     public ConsistentProtocol(
             @JsonProperty("content")
                     byte[] content,
-            @JsonProperty("all")
-                    boolean all,
             @JsonProperty("zuid")
                     long zuid,
             @JsonProperty("origin")
                     long origin)
     {
         _Content = content;
-        _All = all;
         _Origin = origin;
         _ZUid = zuid;
     }
@@ -104,17 +100,10 @@ public class ConsistentProtocol
     }
 
     @Override
-    public boolean isAll()
-    {
-        return _All;
-    }
-
-    @Override
     public String toString()
     {
-        return String.format("ConsistentProtocol{content:%s,notify-all:%s,origin:%#x,zuid:%#x||%d}",
+        return String.format("ConsistentProtocol{content:%s,origin:%#x,zuid:%#x||%d}",
                              new String(_Content, StandardCharsets.UTF_8),
-                             _All,
                              _Origin,
                              _ZUid,
                              _ZUid);

@@ -67,7 +67,7 @@ public interface ILinkCustom
      * @param request link发来 强一致的请求
      * @return response
      */
-    List<ITriple> notify(ISessionManager manager, IConsistent request, long origin);
+    List<ITriple> notify(ISessionManager manager, IConsistent request);
 
     /**
      * 当出现了关闭 session 的需要时

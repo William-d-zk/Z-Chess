@@ -25,11 +25,11 @@ package com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft;
 
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZCommand;
 import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.queen.io.core.inf.INotify;
+import com.isahl.chess.queen.io.core.inf.IConsistent;
 
 public class X78_RaftChange
         extends ZCommand
-        implements INotify
+        implements IConsistent
 {
     public final static int COMMAND = 0x78;
 
@@ -67,11 +67,5 @@ public class X78_RaftChange
     public long getOrigin()
     {
         return mOrigin;
-    }
-
-    @Override
-    public boolean isAll()
-    {
-        return true;
     }
 }

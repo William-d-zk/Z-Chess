@@ -51,7 +51,6 @@ public class ConsistencyController
     Object consistency(String input)
     {
         _ConsistencyService.submit(input,
-                                   true,
                                    Instant.now()
                                           .toEpochMilli());
         return input;

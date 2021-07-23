@@ -42,8 +42,16 @@ public class LogEntry
 
     private final long   _Term;
     private final long   _Index;
-    private final long   _Client;//raft-client-id
-    private final long   _Origin;//request-id → client
+    /*
+    纪录哪个Raft-Client发起的当前这次一致性记录
+     */
+    private final long   _Client;
+    /*
+    完成一致性记录后，成功的消息反馈给哪个请求人
+    在Z-Chat体系中表达了device 终端，
+    web api 中表达了某次请求的session
+     */
+    private final long   _Origin;
     private final int    _SubSerial;
     private final byte[] _Payload;
 

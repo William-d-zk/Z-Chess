@@ -32,7 +32,7 @@ public class X79_RaftAdjudge
         implements IConsistent
 {
 
-    public final static int COMMAND = 0x76;
+    public final static int COMMAND = 0x79;
 
     public X79_RaftAdjudge()
     {
@@ -44,45 +44,19 @@ public class X79_RaftAdjudge
         super(COMMAND, msgId);
     }
 
-    private long mClientId;
-    private int  mSubSerial;
+    private long mIndex;
+    private long mClient;
     private long mOrigin;
-    private byte mCode;
 
     @Override
     public String toString()
     {
-        return String.format("X79_RaftResp { client:%#x,payload-serial:%#x,origin:%#x,%s}",
-                             mClientId,
-                             mSubSerial,
-                             mOrigin,
-                             mCode);
-    }
-
-    @Override
-    public int getSubSerial()
-    {
-        return mSubSerial;
-    }
-
-    public void setSubSerial(int serial)
-    {
-        mSubSerial = serial;
+        return String.format("X79_RaftResp { log-entry-idx:%d, client:%#x,origin:%#x}", mIndex, mClient, mOrigin);
     }
 
     public void setOrigin(long origin)
     {
         mOrigin = origin;
-    }
-
-    public int getCode()
-    {
-        return mCode;
-    }
-
-    public void setCode(byte code)
-    {
-        mCode = code;
     }
 
     @Override
@@ -94,40 +68,48 @@ public class X79_RaftAdjudge
     @Override
     public int encodec(byte[] data, int pos)
     {
-        pos += IoUtil.writeLong(mClientId, data, pos);
+        pos += IoUtil.writeLong(mIndex, data, pos);
+        pos += IoUtil.writeLong(mClient, data, pos);
         pos += IoUtil.writeLong(mOrigin, data, pos);
-        pos += IoUtil.writeShort(mSubSerial, data, pos);
-        pos += IoUtil.writeByte(mCode, data, pos);
         return pos;
     }
 
     @Override
     public int decodec(byte[] data, int pos)
     {
-        mClientId = IoUtil.readLong(data, pos);
+        mIndex = IoUtil.readLong(data, pos);
+        pos += 8;
+        mClient = IoUtil.readLong(data, pos);
         pos += 8;
         mOrigin = IoUtil.readLong(data, pos);
         pos += 8;
-        mSubSerial = IoUtil.readUnsignedShort(data, pos);
-        pos += 2;
-        mCode = data[pos++];
         return pos;
     }
 
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 19;
+        return super.dataLength() + 24;
     }
 
-    public long getClientId()
+    public long getClient()
     {
-        return mClientId;
+        return mClient;
     }
 
-    public void setClientId(long clientId)
+    public void setClient(long client)
     {
-        mClientId = clientId;
+        mClient = client;
+    }
+
+    public long getIndex()
+    {
+        return mIndex;
+    }
+
+    public void setIndex(long index)
+    {
+        this.mIndex = index;
     }
 
     @Override

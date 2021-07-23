@@ -496,12 +496,12 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
             _SelfMachine.commit(nextCommit, _RaftMapper);
             _Logger.debug("leader commit: %d @%d", nextCommit, _SelfMachine.getTerm());
             LogEntry raftLog = _RaftMapper.getEntry(nextCommit);
-            X77_RaftNotify x77 = createNotify(raftLog);
+            X79_RaftAdjudge x79 = createAdjudge(raftLog);
             if(raftLog.getClient() != _SelfMachine.getPeerId()) {
                 // leader -> follower -> client
                 ISession cSession = manager.findSessionByPrefix(raftLog.getClient());
                 if(cSession != null) {
-                    return new Pair<>(new IControl[]{ x77 }, x77);
+                    return new Pair<>(new IControl[]{ createNotify(raftLog, cSession) }, x79);
                 }
             }
             /*
@@ -509,7 +509,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
              * 作为client 收到 notify
              * x77 投递给notify-custom
              */
-            return new Pair<>(null, x77);
+            return new Pair<>(null, x79);
         }
         return null;
     }
@@ -980,15 +980,6 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
         return _ZUid.getPeerId();
     }
 
-    private X77_RaftNotify createNotify(LogEntry raftLog)
-    {
-        X77_RaftNotify x77 = new X77_RaftNotify(_ZUid.getId());
-        x77.setSubSerial(raftLog.getSubSerial());
-        x77.setPayload(raftLog.getPayload());
-        x77.setOrigin(raftLog.getOrigin());
-        return x77;
-    }
-
     public RaftNode getLeader()
     {
         if(getMachine().getLeader() != INVALID_PEER_ID) {
@@ -997,4 +988,22 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
         return null;
     }
 
+    private X79_RaftAdjudge createAdjudge(LogEntry raftLog)
+    {
+        X79_RaftAdjudge x79 = new X79_RaftAdjudge(_ZUid.getId());
+        x79.setOrigin(raftLog.getOrigin());
+        x79.setIndex(raftLog.getIndex());
+        x79.setClient(raftLog.getClient());
+        return x79;
+    }
+
+    private X77_RaftNotify createNotify(LogEntry raftLog, ISession session)
+    {
+        X77_RaftNotify x77 = new X77_RaftNotify(_ZUid.getId());
+        x77.setOrigin(raftLog.getOrigin());
+        x77.setIndex(raftLog.getIndex());
+        x77.setClient(raftLog.getClient());
+        x77.setSession(session);
+        return x77;
+    }
 }

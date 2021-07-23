@@ -25,7 +25,7 @@ package com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft;
 
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZCommand;
 import com.isahl.chess.king.base.util.IoUtil;
-import com.isahl.chess.queen.io.core.inf.INotify;
+import com.isahl.chess.queen.io.core.inf.IConsistent;
 
 /**
  * @author william.d.zk
@@ -33,7 +33,7 @@ import com.isahl.chess.queen.io.core.inf.INotify;
  */
 public class X77_RaftNotify
         extends ZCommand
-        implements INotify
+        implements IConsistent
 {
     public final static int COMMAND = 0x77;
 
@@ -47,49 +47,44 @@ public class X77_RaftNotify
         super(COMMAND, msgId);
     }
 
-    private long    mClient;
-    private int     mSubSerial;
-    private long    mOrigin;
-    private boolean mAll;
-
-    @Override
-    public int getSubSerial()
-    {
-        return mSubSerial;
-    }
-
-    public void setSubSerial(int subSerial)
-    {
-        mSubSerial = subSerial;
-    }
+    /*
+    raft-log-index
+     */
+    private long mIndex;
+    /*
+    raft-client
+     */
+    private long mClient;
+    /*
+     request.& → raft-client
+     */
+    private long mOrigin;
 
     @Override
     public int encodec(byte[] data, int pos)
     {
+        pos += IoUtil.writeLong(mIndex, data, pos);
         pos += IoUtil.writeLong(mClient, data, pos);
-        pos += IoUtil.writeShort(mSubSerial, data, pos);
         pos += IoUtil.writeLong(mOrigin, data, pos);
-        pos += IoUtil.writeByte(mAll ? 1 : 0, data, pos);
         return pos;
     }
 
     @Override
     public int decodec(byte[] data, int pos)
     {
+        mIndex = IoUtil.readLong(data, pos);
+        pos += 8;
         mClient = IoUtil.readLong(data, pos);
         pos += 8;
-        mSubSerial = IoUtil.readUnsignedShort(data, pos);
-        pos += 2;
         mOrigin = IoUtil.readLong(data, pos);
         pos += 8;
-        mAll = data[pos++] > 0;
         return pos;
     }
 
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 19;
+        return super.dataLength() + 24;
     }
 
     @Override
@@ -103,20 +98,30 @@ public class X77_RaftNotify
         mOrigin = origin;
     }
 
+    public long getIndex()
+    {
+        return mIndex;
+    }
+
+    public void setIndex(long index)
+    {
+        this.mIndex = index;
+    }
+
+    public long getClient()
+    {
+        return mClient;
+    }
+
+    public void setClient(long client)
+    {
+        this.mClient = client;
+    }
+
     @Override
     public boolean isMapping()
     {
         return true;
     }
 
-    @Override
-    public boolean isAll()
-    {
-        return mAll;
-    }
-
-    public void setAll()
-    {
-        mAll = true;
-    }
 }

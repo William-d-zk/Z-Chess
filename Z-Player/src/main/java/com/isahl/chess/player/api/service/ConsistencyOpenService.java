@@ -57,11 +57,10 @@ public class ConsistencyOpenService
     }
 
     @Override
-    public void submit(String content, boolean all, long origin)
+    public void submit(String content, long origin)
     {
         if(IoUtil.isBlank(content)) { return; }
         ConsistentProtocol consensus = new ConsistentProtocol(content.getBytes(StandardCharsets.UTF_8),
-                                                              all,
                                                               _RaftPeer.generateId(),
                                                               origin);
         submit(consensus, _DeviceNode, _ConsistencyCustom);
