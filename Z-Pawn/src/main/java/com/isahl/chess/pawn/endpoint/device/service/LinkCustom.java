@@ -150,17 +150,13 @@ public class LinkCustom
     }
 
     @Override
-    public List<ITriple> notify(ISessionManager manager, IConsistent response)
+    public List<ITriple> notify(ISessionManager manager, IControl response, long origin)
     {
-        long origin = response.getOrigin();
 
         IProtocol clientRequest;
         boolean strongConsistent = false;
         switch(response.serial()) {
             case X77_RaftNotify.COMMAND, X76_RaftResp.COMMAND -> {
-
-
-
 
                 int cmd = response.getSubSerial();
                 _Logger.debug("client-request cmd:%#x", cmd);
@@ -268,7 +264,7 @@ public class LinkCustom
     }
 
     @Override
-    public Void adjudge(IConsistent consensus, ISession session)
+    public IControl adjudge(IConsistent consensus, ISession session)
     {
         _Logger.info("link custom by leader %s", consensus);
         return switch(consensus.serial()) {

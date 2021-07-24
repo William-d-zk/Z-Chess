@@ -25,6 +25,7 @@ package com.isahl.chess.queen.event.handler.cluster;
 
 import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
 import com.isahl.chess.queen.io.core.inf.IConsistent;
+import com.isahl.chess.queen.io.core.inf.IProtocol;
 import com.isahl.chess.queen.io.core.inf.ISession;
 
 /**
@@ -32,15 +33,15 @@ import com.isahl.chess.queen.io.core.inf.ISession;
  */
 public interface IConsistencyJudge
 {
-    default IOperator<IConsistent, ISession, Void> getOperator()
+    default <T extends IProtocol> IOperator<IConsistent, ISession, T> getOperator()
     {
         return this::adjudge;
     }
 
     /**
      * @param consensus
-     * @param session cluster 通讯用的
+     * @param session   cluster 通讯用的
      * @return
      */
-    Void adjudge(IConsistent consensus, ISession session);
+    <T extends IProtocol> T adjudge(IConsistent consensus, ISession session);
 }

@@ -26,7 +26,7 @@ package com.isahl.chess.queen.event.handler.mix;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.queen.event.handler.IMappingCustom;
 import com.isahl.chess.queen.event.handler.cluster.IConsistencyJudge;
-import com.isahl.chess.queen.io.core.inf.IConsistent;
+import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionManager;
 
@@ -41,43 +41,22 @@ public interface ILinkCustom
                 IConsistencyJudge
 {
 
-    /*
-     *
-     * @param manager
-     *
-     * @param session
-     *
-     * @param content
-     *
-     * @return pair
-     * first: to_send_array 1:N
-     * second: to_transfer
-     * Link->Cluster, consensus
-     *
-     * @throws Exception
-     * handle error
-     * IPair handle(ISessionManager<C> manager, ISession<C> session,
-     * IControl<C> content) throws Exception;
-     */
-
     /**
      * Cluster->Link.notify(Cluster.consensus_result)
      *
      * @param manager
-     * @param request link发来 强一致的请求
+     * @param response link发来 强一致的请求
      * @return response
      */
-    List<ITriple> notify(ISessionManager manager, IConsistent request);
+    List<ITriple> notify(ISessionManager manager, IControl response, long origin);
 
     /**
      * 当出现了关闭 session 的需要时
      * 除了session dismiss 之外，还需要对现有链路进行关闭
      * 触发映射处理机制
+     *
      * @param session
      */
     void close(ISession session);
-
-
-
 
 }
