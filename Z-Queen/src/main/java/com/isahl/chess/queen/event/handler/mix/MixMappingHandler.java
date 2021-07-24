@@ -189,7 +189,9 @@ public class MixMappingHandler<T extends IStorage>
                                 }
                                 else {
                                     publish(_Writer,
-                                            _LinkCustom.notify(_SessionManager, consistent, consistent.getOrigin()));
+                                            _LinkCustom.notify(_SessionManager,
+                                                               result.getSecond(),
+                                                               consistent.getOrigin()));
                                 }
                             }
                         }
@@ -269,11 +271,13 @@ public class MixMappingHandler<T extends IStorage>
                                                  .getFirst();
                     session = event.getContent()
                                    .getSecond();
-                    IOperator<IConsistent, ISession, Void> adjudgeOperator = event.getEventOp();
+                    IOperator<IConsistent, ISession, IControl> adjudgeOperator = event.getEventOp();
                     if(consensus != null) {
                         try {
-                            adjudgeOperator.handle(consensus, session);
-                            publish(_Writer, _LinkCustom.notify(_SessionManager, consensus, consensus.getOrigin()));
+                            publish(_Writer,
+                                    _LinkCustom.notify(_SessionManager,
+                                                       adjudgeOperator.handle(consensus, session),
+                                                       consensus.getOrigin()));
                         }
                         catch(Exception e) {
                             _Logger.warning("mapping notify error, cluster's session keep alive", e);
