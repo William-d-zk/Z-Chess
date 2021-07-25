@@ -47,6 +47,11 @@ public class X79_RaftAdjudge
     private long mIndex;
     private long mClient;
     private long mOrigin;
+    /*
+    X79在单节点内部流转，需要将所有信息附加在结构上，便于传递，
+    Link & Cluster 之间存在 线程隔离
+     */
+    private int  mSubSerial;
 
     @Override
     public String toString()
@@ -71,6 +76,7 @@ public class X79_RaftAdjudge
         pos += IoUtil.writeLong(mIndex, data, pos);
         pos += IoUtil.writeLong(mClient, data, pos);
         pos += IoUtil.writeLong(mOrigin, data, pos);
+        pos += IoUtil.writeShort(mSubSerial, data, pos);
         return pos;
     }
 
@@ -83,13 +89,15 @@ public class X79_RaftAdjudge
         pos += 8;
         mOrigin = IoUtil.readLong(data, pos);
         pos += 8;
+        mSubSerial = IoUtil.readUnsignedShort(data, pos);
+        pos += 2;
         return pos;
     }
 
     @Override
     public int dataLength()
     {
-        return super.dataLength() + 24;
+        return super.dataLength() + 26;
     }
 
     public long getClient()
@@ -118,4 +126,14 @@ public class X79_RaftAdjudge
         return true;
     }
 
+    @Override
+    public int getSubSerial()
+    {
+        return mSubSerial;
+    }
+
+    public void setSubSerial(int subSerial)
+    {
+        mSubSerial = subSerial;
+    }
 }

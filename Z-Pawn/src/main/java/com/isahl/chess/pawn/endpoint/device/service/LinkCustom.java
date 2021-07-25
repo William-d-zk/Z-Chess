@@ -32,13 +32,14 @@ import com.isahl.chess.bishop.io.sort.ZSortHolder;
 import com.isahl.chess.bishop.io.ws.control.X102_Close;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X108_Shutdown;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X76_RaftResp;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X77_RaftNotify;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.X79_RaftAdjudge;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.topology.ZUID;
+import com.isahl.chess.knight.raft.model.RaftCode;
 import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.spi.IDeviceService;
 import com.isahl.chess.pawn.endpoint.device.spi.ILinkService;
@@ -153,56 +154,64 @@ public class LinkCustom
     public List<ITriple> notify(ISessionManager manager, IControl response, long origin)
     {
 
-        IProtocol clientRequest;
-        boolean strongConsistent = false;
+        IProtocol consensusBody;
+        boolean isConsistency = true;
         switch(response.serial()) {
-            case X77_RaftNotify.COMMAND, X76_RaftResp.COMMAND -> {
-
+            case X76_RaftResp.COMMAND, X79_RaftAdjudge.COMMAND -> {
+                if(response.serial() == X76_RaftResp.COMMAND) {
+                    X76_RaftResp x76 = (X76_RaftResp) response;
+                    isConsistency = x76.getCode() == RaftCode.SUCCESS.getCode();
+                }
                 int cmd = response.getSubSerial();
-                _Logger.debug("client-request cmd:%#x", cmd);
-                strongConsistent = response.serial() == X77_RaftNotify.COMMAND;
-                clientRequest = ZSortHolder.create(cmd);
-                clientRequest.decode(response.getPayload());
-                if(!strongConsistent) { return null; }
+                consensusBody = ZSortHolder.create(cmd);
+                consensusBody.decode(response.getPayload());
+                _Logger.debug("consensus : %s", consensusBody);
             }
             default -> {
                 /*
                  * single mode
                  */
-                clientRequest = response;
+                consensusBody = response;
                 _Logger.info("notify client single mode");
             }
         }
         ISession session = manager.findSessionByIndex(origin);
-        switch(clientRequest.serial()) {
+        switch(consensusBody.serial()) {
             case X111_QttConnect.COMMAND -> {
-                X111_QttConnect x111 = (X111_QttConnect) clientRequest;
-                _Logger.info("%s login ok -> %#x", x111.getClientId(), origin);
-                if(x111.isClean()) {
-                    _LinkService.clean(origin, _QttRouter);
+                X111_QttConnect x111 = (X111_QttConnect) consensusBody;
+                if(isConsistency) {
+                    _Logger.info("%s login ok -> %#x", x111.getClientId(), origin);
+                    if(x111.isClean()) {
+                        _LinkService.clean(origin, _QttRouter);
+                    }
+                    else {
+                        _LinkService.load(origin, _QttRouter);
+                    }
+                    _LinkService.onLogin(origin,
+                                         x111.hasWill(),
+                                         x111.getWillTopic(),
+                                         x111.getWillQoS(),
+                                         x111.isWillRetain(),
+                                         x111.getWillMessage());
                 }
-                else {
-                    _LinkService.load(origin, _QttRouter);
-                }
-                _LinkService.onLogin(origin,
-                                     x111.hasWill(),
-                                     x111.getWillTopic(),
-                                     x111.getWillQoS(),
-                                     x111.isWillRetain(),
-                                     x111.getWillMessage());
                 if(session != null) {
                     QttContext qttContext = session.getContext(QttContext.class);
                     X112_QttConnack x112 = new X112_QttConnack();
                     x112.setVersion(qttContext.getVersion());
-                    x112.responseOk();
+                    if(isConsistency) {
+                        x112.responseOk();
+                    }
+                    else {
+                        x112.rejectServerUnavailable();
+                    }
                     x112.setSession(session);
                     return Collections.singletonList(new Triple<>(x112, session, session.getEncoder()));
                 }
             }
             case X118_QttSubscribe.COMMAND -> {
-                X118_QttSubscribe x118 = (X118_QttSubscribe) clientRequest;
+                X118_QttSubscribe x118 = (X118_QttSubscribe) consensusBody;
                 Map<String, IQoS.Level> subscribes = x118.getSubscribes();
-                if(subscribes != null) {
+                if(subscribes != null && isConsistency) {
                     X119_QttSuback x119 = new X119_QttSuback();
                     x119.setMsgId(x118.getMsgId());
                     _LinkService.subscribe(subscribes, origin, optional->(topic, level)->{
@@ -218,9 +227,9 @@ public class LinkCustom
                 }
             }
             case X11A_QttUnsubscribe.COMMAND -> {
-                X11A_QttUnsubscribe x11A = (X11A_QttUnsubscribe) clientRequest;
+                X11A_QttUnsubscribe x11A = (X11A_QttUnsubscribe) consensusBody;
                 List<String> topics = x11A.getTopics();
-                if(topics != null) {
+                if(topics != null && isConsistency) {
                     _LinkService.unsubscribe(topics, origin, optional->topic->{
                         _QttRouter.unsubscribe(topic, origin);
                         optional.ifPresent(device->device.unsubscribe(topic));
@@ -264,15 +273,26 @@ public class LinkCustom
     }
 
     @Override
-    public IControl adjudge(IConsistent consensus, ISession session)
+    public <T extends IProtocol> T adjudge(IConsistent consensus, ISession session)
     {
-        _Logger.info("link custom by leader %s", consensus);
-        return switch(consensus.serial()) {
-            case X111_QttConnect.COMMAND -> null;
-            case X118_QttSubscribe.COMMAND -> null;
-            case X11A_QttUnsubscribe.COMMAND -> null;
-            default -> null;
-        };
+        _Logger.debug("link custom by leader %s", consensus);
+        switch(consensus.serial()) {
+            case X76_RaftResp.COMMAND:
+            case X79_RaftAdjudge.COMMAND:
+        }
+
+
+
+
+        /*
+        int cmd = consensus.getSubSerial();
+        IControl consensusBody = ZSortHolder.create(cmd);
+        consensusBody.decode(consensus.getPayload());
+        switch(consensusBody.serial()) {
+
+        }
+         */
+        return (T) consensus;
     }
 
     @Bean

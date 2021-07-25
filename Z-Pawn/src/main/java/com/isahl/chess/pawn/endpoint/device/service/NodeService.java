@@ -134,4 +134,10 @@ public class NodeService
     @Bean
     public RaftPeer<DeviceNode> getRaftPeer() {return _RaftPeer;}
 
+    @Bean
+    public RaftCustom<DeviceNode> getConsistencyCustom()
+    {
+        return _RaftCustom;
+    }
+
 }

@@ -1,8 +1,8 @@
 FROM bellsoft/liberica-openjdk-alpine-musl
 ARG JAR_FILE=Z-Arena/target/*.jar
 COPY ${JAR_FILE} app.jar
-ENTRYPOINT ["java","-jar","/app.jar","--spring.profiles.active=local"]
 EXPOSE 8080
+EXPOSE 8000
 EXPOSE 1883
 EXPOSE 1884
 EXPOSE 1885

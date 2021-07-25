@@ -32,12 +32,19 @@ import com.isahl.chess.bishop.io.json.JsonProtocol;
 import com.isahl.chess.queen.db.inf.IStorage;
 import com.isahl.chess.queen.io.core.inf.ITraceable;
 
+import java.io.Serial;
+import java.io.Serializable;
+
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class LogEntry
         extends JsonProtocol
         implements ITraceable,
-                   IStorage
+                   IStorage,
+                   Serializable
 {
+    @Serial
+    private final static long serialVersionUID = -3944638115324945253L;
+
     private final static int _LOG_SERIAL = INTERNAL_SERIAL + 2;
 
     private final long   _Term;
