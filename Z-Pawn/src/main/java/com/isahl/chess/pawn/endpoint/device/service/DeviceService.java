@@ -120,11 +120,7 @@ public class DeviceService
                                   Long.class,
                                   DeviceEntity.class,
                                   Duration.of(15, MINUTES));
-        EhcacheConfig.createCache(_CacheManager,
-                                  "raft_log_entry",
-                                  Long.class,
-                                  LogEntry.class,
-                                  Duration.of(5, MINUTES));
+        EhcacheConfig.createCache(_CacheManager, "raft_log_entry", Long.class, LogEntry.class, Duration.of(5, MINUTES));
         _TimeWheel.acquire(_BatchHandleLogin,
                            new ScheduleHandler<>(Duration.ofSeconds(10),
                                                  true,
@@ -320,17 +316,18 @@ public class DeviceService
     {
         DeviceEntity device = findDeviceById(deviceId);
         if(device != null) {
-            ShadowDevice shadow = _ShadowDevices.computeIfAbsent(deviceId,
-                                                                 (id)->new ShadowDevice(deviceId,
-                                                                                        device.getSubscribe(),
-                                                                                        new LinkedList<>(),
-                                                                                        hasWill ? new Subscribe(willQoS,
-                                                                                                                willTopic)
-                                                                                                : null,
-                                                                                        hasWill ? payload : null,
-                                                                                        !hasWill && willRetain,
-                                                                                        device.getUsername()));
-            _BatchHandleLogin.add(shadow.convert());
+            _ShadowDevices.computeIfAbsent(deviceId, id->{
+                ShadowDevice shadow = new ShadowDevice(deviceId,
+                                                       device.getSubscribe(),
+                                                       new LinkedList<>(),
+                                                       hasWill ? new Subscribe(willQoS, willTopic) : null,
+                                                       hasWill ? payload : null,
+                                                       !hasWill && willRetain,
+                                                       device.getUsername());
+                _BatchHandleLogin.add(shadow.convert());
+                return shadow;
+            });
+
         }
     }
 

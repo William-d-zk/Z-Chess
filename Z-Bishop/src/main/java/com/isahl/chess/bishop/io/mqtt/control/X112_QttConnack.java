@@ -154,5 +154,4 @@ public class X112_QttConnack
     {
         return String.format("%#x connack:[present:%s,result:%s]", COMMAND, mPresent, getCode());
     }
-
 }

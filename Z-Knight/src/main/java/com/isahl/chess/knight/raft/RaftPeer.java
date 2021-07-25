@@ -77,13 +77,13 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
 
     private ICancelable mElectTask, mHeartbeatTask, mTickTask;
 
-    public RaftPeer(TimeWheel timeWheel, IRaftConfig raftConfig, IRaftMapper raftDao, M manager)
+    public RaftPeer(TimeWheel timeWheel, IRaftConfig raftConfig, IRaftMapper raftMapper, M manager)
     {
         _TimeWheel = timeWheel;
         _RaftConfig = raftConfig;
         _ClusterPeer = manager;
         _ZUid = raftConfig.createZUID();
-        _RaftMapper = raftDao;
+        _RaftMapper = raftMapper;
         _ElectSchedule = new ScheduleHandler<>(_RaftConfig.getElectInSecond(), RaftPeer::stepDown);
         _HeartbeatSchedule = new ScheduleHandler<>(_RaftConfig.getHeartbeatInSecond(), RaftPeer::heartbeat);
         _TickSchedule = new ScheduleHandler<>(_RaftConfig.getHeartbeatInSecond()
@@ -97,7 +97,6 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
     private void heartbeat()
     {
         _ClusterPeer.timerEvent(_SelfMachine.createLeader());
-        _Logger.debug("leader heartbeat");
     }
 
     private void init()
@@ -324,16 +323,21 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
 
     private IControl follow(long peerId, long term, long commit, long preIndex, long preIndexTerm)
     {
+        boolean change = _SelfMachine.getState() != FOLLOWER;
+        if(change) {
+            _Logger.debug("[ %s → follower ]", _SelfMachine.getState());
+        }
         tickCancel();
         _SelfMachine.follow(peerId, term, commit, _RaftMapper);
+        if(change) {
+            _Logger.debug("[ → follower ] %s", _SelfMachine);
+        }
         mTickTask = _TimeWheel.acquire(this, _TickSchedule);
-        _Logger.debug("follower %#x @%d => %d", peerId, term, commit);
         if(catchUp(preIndex, preIndexTerm)) {
-            _Logger.debug("follower appended from %#x@%d-^%d=> %s", peerId, term, commit, _SelfMachine);
             return accept();
         }
         else {
-            _Logger.debug("roll back =>%s ", _SelfMachine);
+            _Logger.debug("roll back → %s ", _SelfMachine);
             return reject(CONFLICT, peerId);
         }
     }
@@ -357,7 +361,6 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
     private void tickCancel()
     {
         if(mTickTask != null) {
-            _Logger.debug("cancel tick");
             mTickTask.cancel();
         }
     }
@@ -365,7 +368,6 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
     private void leadCancel()
     {
         if(mHeartbeatTask != null) {
-            _Logger.debug("cancel heartbeat");
             mHeartbeatTask.cancel();
         }
     }
@@ -373,7 +375,6 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
     private void electCancel()
     {
         if(mElectTask != null) {
-            _Logger.debug("cancel elect");
             mElectTask.cancel();
         }
     }
@@ -386,7 +387,6 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
     private boolean highTerm(long term)
     {
         if(term > _SelfMachine.getTerm()) {
-            _Logger.debug("new term > self [%d > %d]", term, _SelfMachine.getTerm());
             leadCancel();
             electCancel();
             return true;
@@ -451,7 +451,6 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
         IControl[] response = lowTerm(term, leader);
         if(response != null) { return new Pair<>(response, null); }
         if(highTerm(term) || _SelfMachine.getState() != LEADER) {
-            _Logger.debug("follow leader %#x leader_commit: %d", leader, leaderCommit);
             return new Pair<>(new IControl[]{ follow(leader, term, leaderCommit, preIndex, preIndexTerm) }, null);
         }
         // leader
@@ -472,10 +471,15 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
         return peerMachine;
     }
 
+    public LogEntry getLogEntry(long index)
+    {
+        return _RaftMapper.getEntry(index);
+    }
     /**
      * follower → leader
      *
-     * @return first : broadcast to peers
+     * @return result- pair
+     * first : broadcast to peers
      * second : resp to origin
      */
     public IPair onAccept(long peerId, long term, long index, long leader, ISessionManager manager)
@@ -615,7 +619,6 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
                  */
                 if(_SelfMachine.getIndex() == 0 && preIndex == 0) {
                     // 初始态，raft-machine 中不包含任何 log 记录
-                    _Logger.debug("no log append");
                 }
                 else if(_SelfMachine.getIndex() < preIndex) {
                     /*
@@ -632,7 +635,6 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
                     if(_SelfMachine.getIndexTerm() == preIndexTerm) {
                         // follower 完成与Leader 的同步
                         _SelfMachine.apply(_RaftMapper);
-                        _Logger.debug("log synchronized ");
                     }
                     else {
                         /*
@@ -720,8 +722,8 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
                 }
                 // 接收了Leader 追加的日志
                 _SelfMachine.apply(_RaftMapper);
+
             }
-            _Logger.debug("catch up %d@%d", _SelfMachine.getIndex(), _SelfMachine.getIndexTerm());
             return true;
             // end of IT_APPEND
         }
@@ -761,7 +763,6 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
            _SelfMachine.getTerm() >= update.getTerm() && _SelfMachine.getIndex() >= update.getIndex() &&
            _SelfMachine.getIndexTerm() >= update.getIndexTerm() && _SelfMachine.getCommit() >= update.getCommit())
         {
-            _Logger.debug("keep lead =>%s", _SelfMachine);
             mHeartbeatTask = _TimeWheel.acquire(this, _HeartbeatSchedule);
             return createBroadcasts(manager, mapper);
         }
@@ -994,6 +995,8 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
         x79.setOrigin(raftLog.getOrigin());
         x79.setIndex(raftLog.getIndex());
         x79.setClient(raftLog.getClient());
+        x79.setSubSerial(raftLog.getSubSerial());
+        x79.setPayload(raftLog.getPayload());
         return x79;
     }
 

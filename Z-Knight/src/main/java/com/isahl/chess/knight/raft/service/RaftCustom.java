@@ -35,6 +35,7 @@ import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.knight.raft.RaftPeer;
+import com.isahl.chess.knight.raft.model.RaftCode;
 import com.isahl.chess.knight.raft.model.RaftMachine;
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
 import com.isahl.chess.queen.db.inf.IStorage;
@@ -45,6 +46,7 @@ import com.isahl.chess.queen.io.core.inf.*;
 import java.util.Collections;
 import java.util.List;
 
+import static com.isahl.chess.knight.raft.model.RaftCode.SUCCESS;
 import static com.isahl.chess.knight.raft.model.RaftCode.WAL_FAILED;
 import static com.isahl.chess.knight.raft.model.RaftState.LEADER;
 
@@ -150,15 +152,25 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
                                              .getState());
                 }
             }
-            // leader → client 
+            // client.received:x76
             case X76_RaftResp.COMMAND -> {
                 X76_RaftResp x76 = (X76_RaftResp) content;
+                _Logger.debug("received: %s, %s", x76, RaftCode.valueOf(x76.getCode()));
                 return new Pair<>(null, x76);
             }
             // leader → client
             case X77_RaftNotify.COMMAND -> {
                 X77_RaftNotify x77 = (X77_RaftNotify) content;
-                return new Pair<>(null, x77);
+                LogEntry entry = _RaftPeer.getLogEntry(x77.getIndex());
+                if(entry != null) {
+                    X76_RaftResp x76 = _RaftPeer.raftResp(SUCCESS,
+                                                          entry.getClient(),
+                                                          entry.getOrigin(),
+                                                          entry.getSubSerial(),
+                                                          entry.getPayload());
+                    return new Pair<>(null, x76);
+                }
+                return null;
             }
             // peer *, behind in config → previous in config
             case X106_Identity.COMMAND -> {

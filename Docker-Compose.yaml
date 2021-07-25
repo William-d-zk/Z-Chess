@@ -6,6 +6,7 @@ services:
     hostname: raft00
     ports:
       - "8080:8080"
+      - "8000:8000"
       - "1883:1883"
     networks:
       endpoint:
@@ -17,12 +18,14 @@ services:
       - "raft01:192.168.10.111"
       - "raft02:192.168.10.112"
       - "gate00:192.168.11.110"
+    entrypoint: java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000 -jar /app.jar --spring.profiles.active=local
   raft11:
     image: img.z-chess.arena
     container_name: raft01
     hostname: raft01
     ports:
       - "1884:1883"
+      - "8100:8000"
     networks:
       endpoint:
         ipv4_address: 192.168.10.111
@@ -31,12 +34,14 @@ services:
       - "raft01:192.168.10.111"
       - "raft02:192.168.10.112"
       - "gate00:192.168.11.110"
+    entrypoint: java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000 -jar /app.jar --spring.profiles.active=local
   raft12:
     image: img.z-chess.arena
     container_name: raft02
     hostname: raft02
     ports:
       - "1885:1883"
+      - "8200:8000"
     networks:
       endpoint:
         ipv4_address: 192.168.10.112
@@ -45,6 +50,7 @@ services:
       - "raft01:192.168.10.111"
       - "raft02:192.168.10.112"
       - "gate00:192.168.11.110"
+    entrypoint: java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000 -jar /app.jar --spring.profiles.active=local
 networks:
   endpoint:
     driver: bridge

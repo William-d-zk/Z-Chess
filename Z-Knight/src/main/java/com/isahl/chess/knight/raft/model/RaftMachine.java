@@ -313,13 +313,15 @@ public class RaftMachine
     @Override
     public void apply(IRaftMapper dao)
     {
-        // TODO 分摊集群读写压力，需要在follower apply的时候notify 那些在follower上订阅了延迟一致的consumer
-        if(mIndex < mApplied) {
-            _Logger.warning(String.format("index %d < apply %d, roll back ", mIndex, mApplied));
+        if(mIndex != mApplied) {
+            if(mIndex < mApplied) {
+                _Logger.warning(String.format("index %d < apply %d, roll back ", mIndex, mApplied));
+            }
+            mApplied = min(mIndex, mCommit);
+            dao.updateLogApplied(mApplied);
+            _Logger.debug("apply : %d | [index %d commit %d]", mApplied, mIndex, mCommit);
         }
-        mApplied = min(mIndex, mCommit);
-        dao.updateLogApplied(mApplied);
-        _Logger.debug("apply => %d | [index %d commit %d]", mApplied, mIndex, mCommit);
+        //ignore
     }
 
     @Override

@@ -242,6 +242,7 @@ public class MixMappingHandler<T extends IStorage>
                     IOperator<IConsistent, ISession, IPair> consistencyOp = event.getEventOp();
                     try {
                         List<ITriple> contents = _ClusterCustom.consensus(_SessionManager, request);
+                        _Logger.debug("consistency request: %s ; cluster: %s ", request, contents);
                         if(contents != null) { publish(_Writer, contents); }
                         else {
                             IPair resp = consistencyOp.handle(request, session);

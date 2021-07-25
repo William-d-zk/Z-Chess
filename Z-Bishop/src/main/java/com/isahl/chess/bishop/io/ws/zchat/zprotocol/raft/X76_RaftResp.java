@@ -52,10 +52,10 @@ public class X76_RaftResp
     @Override
     public String toString()
     {
-        return String.format("X76_RaftResp { client:%#x,payload-serial:%#x,origin:%#x }",
+        return String.format("X76_RaftResp { client:%#x,origin:%#x,payload-serial:%#x }",
                              mClientId,
-                             mSubSerial,
-                             mOrigin);
+                             mOrigin,
+                             mSubSerial);
     }
 
     @Override
@@ -64,9 +64,9 @@ public class X76_RaftResp
         return mSubSerial;
     }
 
-    public void setSubSerial(int payloadSerial)
+    public void setSubSerial(int subSerial)
     {
-        mSubSerial = payloadSerial;
+        mSubSerial = subSerial;
     }
 
     public void setOrigin(long origin)

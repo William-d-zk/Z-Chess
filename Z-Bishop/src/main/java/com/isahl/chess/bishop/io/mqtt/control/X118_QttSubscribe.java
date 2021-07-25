@@ -26,6 +26,7 @@ package com.isahl.chess.bishop.io.mqtt.control;
 import com.isahl.chess.bishop.io.mqtt.QttCommand;
 import com.isahl.chess.bishop.io.mqtt.QttType;
 import com.isahl.chess.king.base.util.IoUtil;
+import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.queen.io.core.inf.IConsistent;
 
 import java.nio.charset.StandardCharsets;
@@ -136,6 +137,6 @@ public class X118_QttSubscribe
     @Override
     public long getOrigin()
     {
-        return getSession().getIndex();
+        return getSession() == null ? ZUID.INVALID_PEER_ID : getSession().getIndex();
     }
 }
