@@ -23,7 +23,9 @@
 
 package com.isahl.chess.queen.event.handler;
 
+import com.isahl.chess.king.base.disruptor.event.inf.IHealth;
 import com.isahl.chess.king.base.disruptor.event.inf.IPipeEventHandler;
+import com.isahl.chess.king.base.disruptor.processor.Health;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.queen.event.QEvent;
@@ -34,12 +36,12 @@ import com.lmax.disruptor.RingBuffer;
  * @author william.d.zk
  */
 public class EncodedHandler
-        implements
-        IPipeEventHandler<QEvent>
+        implements IPipeEventHandler<QEvent>
 {
     private final Logger _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
 
     private final RingBuffer<QEvent> _Error;
+    private final IHealth            _Health = new Health(-1);
 
     public EncodedHandler(RingBuffer<QEvent> error)
     {
@@ -47,12 +49,18 @@ public class EncodedHandler
     }
 
     @Override
-    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
+    public IHealth getHealth()
     {
-        if (event.hasError()) {
+        return _Health;
+    }
+
+    @Override
+    public void onEvent(QEvent event, long sequence) throws Exception
+    {
+        if(event.hasError()) {
             IPair errorContent = event.getContent();
             ISession session = errorContent.getSecond();
-            if (session.isValid()) {
+            if(session.isValid()) {
                 error(_Error, event.getErrorType(), errorContent, event.getEventOp());
             }
         }

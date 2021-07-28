@@ -35,9 +35,9 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public interface IConsistencyService
 {
-    default <T extends IConsistent> void submit(T consensus, IClusterNode node, IConsistencyCustom custom)
+    default <T extends IConsistent> void submit(T consistency, IClusterNode node, IConsistencyCustom custom)
     {
-        if(consensus == null || node == null || custom == null) { return; }
+        if(consistency == null || node == null || custom == null) { return; }
         final ReentrantLock _Lock = node.getLock(OperatorType.CONSISTENCY);
         final RingBuffer<QEvent> _Publish = node.getPublisher(OperatorType.CONSISTENCY);
         _Lock.lock();
@@ -46,7 +46,7 @@ public interface IConsistencyService
             try {
                 QEvent event = _Publish.get(sequence);
                 event.produce(OperatorType.CONSISTENCY,
-                              new Pair<>(consensus, consensus.getOrigin()),
+                              new Pair<>(consistency, consistency.getOrigin()),
                               custom.getOperator());
             }
             finally {

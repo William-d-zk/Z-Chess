@@ -24,8 +24,10 @@
 package com.isahl.chess.queen.event.handler.mix;
 
 import com.isahl.chess.king.base.disruptor.event.OperatorType;
+import com.isahl.chess.king.base.disruptor.event.inf.IHealth;
 import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
 import com.isahl.chess.king.base.disruptor.event.inf.IPipeEventHandler;
+import com.isahl.chess.king.base.disruptor.processor.Health;
 import com.isahl.chess.king.base.inf.IError;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
@@ -57,6 +59,7 @@ public class MixMappingHandler<T extends IStorage>
     private final ISessionManager    _SessionManager;
     private final ILinkCustom        _LinkCustom;
     private final IClusterCustom<T>  _ClusterCustom;
+    private final IHealth            _Health = new Health(-1);
 
     public MixMappingHandler(String mapper,
                              MixManager manager,
@@ -76,7 +79,13 @@ public class MixMappingHandler<T extends IStorage>
     }
 
     @Override
-    public void onEvent(QEvent event, long sequence, boolean endOfBatch)
+    public IHealth getHealth()
+    {
+        return _Health;
+    }
+
+    @Override
+    public void onEvent(QEvent event, long sequence)
     {
         if(event.hasError()) {
             _Logger.warning("mapping error → %s ", event);
@@ -171,7 +180,7 @@ public class MixMappingHandler<T extends IStorage>
                     if(received != null && session != null) {
                         try {
                             IPair result = _LinkCustom.handle(_SessionManager, session, received);
-                            if(result == null) { return; }
+                            if(result == null) {return;}
                             IControl[] toSends = result.getFirst();
                             IConsistent consistent = result.getSecond();
                             if(toSends != null && toSends.length > 0) {
@@ -209,7 +218,7 @@ public class MixMappingHandler<T extends IStorage>
                     if(received != null && session != null) {
                         try {
                             IPair result = _ClusterCustom.handle(_SessionManager, session, received);
-                            if(result == null) { return; }
+                            if(result == null) {return;}
                             IControl[] toSends = result.getFirst();
                             if(toSends != null && toSends.length > 0) {
                                 publish(_Writer,
@@ -220,7 +229,7 @@ public class MixMappingHandler<T extends IStorage>
                             IConsistent adjudge = result.getSecond();
                             if(adjudge != null) {
                                 publish(_Transfer,
-                                        OperatorType.CONSENSUS_ADJUDGE,
+                                        OperatorType.CONSISTENT_RESULT,
                                         new Pair<>(adjudge, session),
                                         _LinkCustom.getOperator());
                             }
@@ -241,9 +250,9 @@ public class MixMappingHandler<T extends IStorage>
                                    .getSecond();
                     IOperator<IConsistent, ISession, IPair> consistencyOp = event.getEventOp();
                     try {
-                        List<ITriple> contents = _ClusterCustom.consensus(_SessionManager, request);
+                        List<ITriple> contents = _ClusterCustom.consistent(_SessionManager, request);
                         _Logger.debug("consistency request: %s ; cluster: %s ", request, contents);
-                        if(contents != null) { publish(_Writer, contents); }
+                        if(contents != null) {publish(_Writer, contents);}
                         else {
                             IPair resp = consistencyOp.handle(request, session);
                             error(_Error, IError.Type.CONSISTENCY_REJECT, resp, session.getError());
@@ -267,18 +276,18 @@ public class MixMappingHandler<T extends IStorage>
                         _Logger.warning("cluster inner service api ");
                     }
                     break;
-                case CONSENSUS_ADJUDGE:
-                    IConsistent consensus = event.getContent()
-                                                 .getFirst();
+                case CONSISTENT_RESULT:
+                    IConsistent consistency = event.getContent()
+                                                   .getFirst();
                     session = event.getContent()
                                    .getSecond();
                     IOperator<IConsistent, ISession, IControl> adjudgeOperator = event.getEventOp();
-                    if(consensus != null) {
+                    if(consistency != null) {
                         try {
                             publish(_Writer,
                                     _LinkCustom.notify(_SessionManager,
-                                                       adjudgeOperator.handle(consensus, session),
-                                                       consensus.getOrigin()));
+                                                       adjudgeOperator.handle(consistency, session),
+                                                       consistency.getOrigin()));
                         }
                         catch(Exception e) {
                             _Logger.warning("mapping notify error, cluster's session keep alive", e);

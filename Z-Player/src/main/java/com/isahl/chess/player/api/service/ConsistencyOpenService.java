@@ -60,10 +60,10 @@ public class ConsistencyOpenService
     public void submit(String content, long origin)
     {
         if(IoUtil.isBlank(content)) { return; }
-        ConsistentProtocol consensus = new ConsistentProtocol(content.getBytes(StandardCharsets.UTF_8),
+        ConsistentProtocol consistency = new ConsistentProtocol(content.getBytes(StandardCharsets.UTF_8),
                                                               _RaftPeer.generateId(),
                                                               origin);
-        submit(consensus, _DeviceNode, _ConsistencyCustom);
-        _Logger.debug("consistent submit %s", consensus);
+        submit(consistency, _DeviceNode, _ConsistencyCustom);
+        _Logger.debug("consistent submit %s", consistency);
     }
 }

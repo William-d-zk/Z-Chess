@@ -54,9 +54,9 @@ public class ZClusterMappingCustom<T extends IStorage>
     }
 
     @Override
-    public <E extends IConsistent> List<ITriple> consensus(ISessionManager manager, E request)
+    public <E extends IConsistent> List<ITriple> consistent(ISessionManager manager, E request)
     {
-        return _Then != null ? _Then.consensus(manager, request) : null;
+        return _Then != null ? _Then.consistent(manager, request) : null;
     }
 
     @Override

@@ -29,5 +29,5 @@ package com.isahl.chess.knight.raft.inf;
  */
 public interface IRaftClient
 {
-    void setConsensusData(byte[] payload);
+    void setConsistentData(byte[] payload);
 }

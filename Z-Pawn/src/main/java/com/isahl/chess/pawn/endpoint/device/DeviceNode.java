@@ -168,9 +168,9 @@ public class DeviceNode
         _Logger.debug("Device Node Bean Load");
     }
 
-    public void start(ILogicHandler logicHandler, ILinkCustom linkCustom, IClusterCustom<RaftMachine> clusterCustom)
+    public void start(ILogicHandler.factory logicFactory, ILinkCustom linkCustom, IClusterCustom<RaftMachine> clusterCustom)
     {
-        build(logicHandler, linkCustom, clusterCustom, EncryptHandler::new);
+        build(logicFactory, linkCustom, clusterCustom, EncryptHandler::new);
         for(IAioServer server : _AioServers) {
             try {
                 server.bindAddress(server.getLocalAddress(), getServiceChannelGroup());

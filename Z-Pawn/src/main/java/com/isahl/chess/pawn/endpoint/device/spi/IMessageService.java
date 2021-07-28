@@ -43,7 +43,7 @@ public interface IMessageService
 
     long generateMsgId(long origin, long destination);
 
-    MessageEntity handleMessage(MessageEntity msgEntity);
+    void handleMessage(MessageEntity msgEntity);
 
     Optional<MessageEntity> find1Msg(Specification<MessageEntity> specification);
 

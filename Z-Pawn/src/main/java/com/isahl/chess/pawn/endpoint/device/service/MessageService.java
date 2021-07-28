@@ -108,10 +108,9 @@ public class MessageService
     }
 
     @Override
-    public MessageEntity handleMessage(MessageEntity msgEntity)
+    public void handleMessage(MessageEntity msgEntity)
     {
         _MessagePlugins.forEach(plugin -> plugin.handleMessage(msgEntity));
-        return msgEntity;
     }
 
     @Override

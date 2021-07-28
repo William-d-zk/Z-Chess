@@ -220,7 +220,7 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
     }
 
     @Override
-    public <E extends IConsistent> List<ITriple> consensus(ISessionManager manager, E request)
+    public <E extends IConsistent> List<ITriple> consistent(ISessionManager manager, E request)
     {
         _Logger.debug("cluster consensus %s", request);
         if(_RaftPeer.getMachine()

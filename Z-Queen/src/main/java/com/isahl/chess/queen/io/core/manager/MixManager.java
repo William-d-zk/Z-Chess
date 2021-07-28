@@ -50,18 +50,15 @@ import java.util.function.Supplier;
  * @author william.d.zk
  */
 public class MixManager
-        extends
-        AioManager
-        implements
-        IActivity,
-        IBizCore,
-        IClusterCore,
-        ILocalPublisher
+        extends AioManager
+        implements IActivity,
+                   IBizCore,
+                   IClusterCore,
+                   ILocalPublisher
 {
     private final ServerCore _ServerCore;
 
-    public MixManager(IAioConfig config,
-                      ServerCore serverCore)
+    public MixManager(IAioConfig config, ServerCore serverCore)
     {
         super(config);
         _ServerCore = serverCore;
@@ -97,12 +94,12 @@ public class MixManager
         return _ServerCore.send(session, type, commands);
     }
 
-    public <T extends IStorage> void build(ILogicHandler logicHandler,
+    public <T extends IStorage> void build(ILogicHandler.factory logicFactory,
                                            ILinkCustom linkCustom,
                                            IClusterCustom<T> clusterCustom,
                                            Supplier<IEncryptHandler> encryptSupplier)
     {
-        _ServerCore.build(this, logicHandler, linkCustom, clusterCustom, encryptSupplier);
+        _ServerCore.build(this, logicFactory, linkCustom, clusterCustom, encryptSupplier);
     }
 
     @Override
