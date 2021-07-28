@@ -65,8 +65,8 @@ public class ZLinkMappingCustom
     }
 
     @Override
-    public <T extends IProtocol> T adjudge(IConsistent consensus, ISession session)
+    public <T extends IProtocol> T adjudge(IConsistent consistency, ISession session)
     {
-        return _Then != null ? _Then.adjudge(consensus, session) : null;
+        return _Then != null ? _Then.adjudge(consistency, session) : null;
     }
 }

@@ -23,9 +23,8 @@
 
 package com.isahl.chess.queen.event.handler.mix;
 
-import java.util.Objects;
-
 import com.isahl.chess.king.base.disruptor.event.OperatorType;
+import com.isahl.chess.king.base.disruptor.event.inf.IBatchEventHandler;
 import com.isahl.chess.king.base.inf.IError;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
@@ -33,40 +32,35 @@ import com.isahl.chess.queen.event.QEvent;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISessionManager;
-import com.lmax.disruptor.EventHandler;
+
+import java.util.Objects;
 
 public interface ILogicHandler
-        extends
-        EventHandler<QEvent>
+        extends IBatchEventHandler<QEvent>
 {
     Logger getLogger();
 
     ISessionManager getISessionManager();
 
     @Override
-    default void onEvent(QEvent event, long sequence, boolean endOfBatch)
+    default void onEvent(QEvent event, long sequence)
     {
-        doEvent(event, sequence, endOfBatch);
-    }
-
-    default void doEvent(QEvent event, long sequence, boolean endOfBatch)
-    {
-        if (event.getEventType() == OperatorType.LOGIC) {
+        if(event.getEventType() == OperatorType.LOGIC) {
             IControl content = event.getContent()
                                     .getFirst();
             ISession session = event.getContent()
                                     .getSecond();
-            if (content != null) {
+            if(content != null) {
                 try {
                     IControl[] response = handle(getISessionManager(), session, content);
-                    if (Objects.nonNull(response) && response.length > 0) {
+                    if(Objects.nonNull(response) && response.length > 0) {
                         event.produce(OperatorType.LOGIC, new Pair<>(response, session), session.getTransfer());
                     }
                     else {
                         event.ignore();
                     }
                 }
-                catch (Exception e) {
+                catch(Exception e) {
                     getLogger().warning("logic handler interface", e);
                     event.error(IError.Type.HANDLE_DATA, new Pair<>(e, session), session.getError());
                 }
@@ -78,5 +72,10 @@ public interface ILogicHandler
     }
 
     IControl[] handle(ISessionManager manager, ISession session, IControl content) throws Exception;
+
+    interface factory
+    {
+        ILogicHandler create(int slot);
+    }
 
 }

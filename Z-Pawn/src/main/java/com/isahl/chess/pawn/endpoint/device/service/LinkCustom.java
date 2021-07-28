@@ -273,12 +273,13 @@ public class LinkCustom
     }
 
     @Override
-    public <T extends IProtocol> T adjudge(IConsistent consensus, ISession session)
+    public <T extends IProtocol> T adjudge(IConsistent consistency, ISession session)
     {
-        _Logger.debug("link custom by leader %s", consensus);
-        switch(consensus.serial()) {
+        _Logger.debug("link custom by leader %s", consistency);
+        switch(consistency.serial()) {
             case X76_RaftResp.COMMAND:
             case X79_RaftAdjudge.COMMAND:
+                //TODO X79 是在 leader's Linker 进行处理，
         }
 
 
@@ -292,7 +293,7 @@ public class LinkCustom
 
         }
          */
-        return (T) consensus;
+        return (T) consistency;
     }
 
     @Bean

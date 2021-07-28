@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,49 +21,41 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.king.base.disruptor;
+package com.isahl.chess.king.base.disruptor.processor;
+
+import com.isahl.chess.king.base.disruptor.event.inf.IBatchEventHandler;
+import com.isahl.chess.king.base.disruptor.event.inf.IEvent;
+import com.lmax.disruptor.*;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.LockSupport;
 
-import com.isahl.chess.king.base.disruptor.event.inf.IEvent;
-import com.lmax.disruptor.AlertException;
-import com.lmax.disruptor.DataProvider;
-import com.lmax.disruptor.EventHandler;
-import com.lmax.disruptor.EventProcessor;
-import com.lmax.disruptor.Sequence;
-import com.lmax.disruptor.SequenceBarrier;
-import com.lmax.disruptor.TimeoutException;
-
 /**
  * @author William.d.zk
  */
-public class MultiBufferBatchEventProcessor<T extends IEvent>
-        implements
-        EventProcessor
+public class Z2Processor<T extends IEvent>
+        implements EventProcessor
 {
     private static final int IDLE    = 0;
     private static final int HALTED  = IDLE + 1;
     private static final int RUNNING = HALTED + 1;
 
-    private final AtomicInteger     _Running = new AtomicInteger(IDLE);
-    private final DataProvider<T>[] _Providers;
-    private final SequenceBarrier[] _Barriers;
-    private final EventHandler<T>   _Handler;
-    private final Sequence[]        _Sequences;
-    private String                  threadName;
+    private final AtomicInteger         _Running = new AtomicInteger(IDLE);
+    private final DataProvider<T>[]     _Providers;
+    private final SequenceBarrier[]     _Barriers;
+    private final IBatchEventHandler<T> _Handler;
+    private final Sequence[]            _Sequences;
+    private       String                threadName;
 
-    public MultiBufferBatchEventProcessor(DataProvider<T>[] providers,
-                                          SequenceBarrier[] barriers,
-                                          EventHandler<T> handler)
+    public Z2Processor(DataProvider<T>[] providers, SequenceBarrier[] barriers, IBatchEventHandler<T> handler)
     {
-        if (providers.length != barriers.length) { throw new IllegalArgumentException(); }
+        if(providers.length != barriers.length) { throw new IllegalArgumentException(); }
         _Providers = providers;
         _Barriers = barriers;
         _Handler = handler;
         _Sequences = new Sequence[providers.length];
-        for (int i = 0; i < _Sequences.length; i++) {
+        for(int i = 0; i < _Sequences.length; i++) {
             _Sequences[i] = new Sequence(-1);
         }
     }
@@ -76,31 +68,35 @@ public class MultiBufferBatchEventProcessor<T extends IEvent>
     @Override
     public void run()
     {
-        if (_Running.compareAndSet(IDLE, RUNNING)) {
-            if (threadName != null) Thread.currentThread()
-                                          .setName(threadName);
-            for (SequenceBarrier barrier : _Barriers) {
+        if(_Running.compareAndSet(IDLE, RUNNING)) {
+            if(threadName != null) {
+                Thread.currentThread()
+                      .setName(threadName);
+            }
+            for(SequenceBarrier barrier : _Barriers) {
                 barrier.clearAlert();
             }
             final int barrierLength = _Barriers.length;
             int count = 0;
-            for (int i = 0, c = 0; i < barrierLength; i = i == barrierLength - 1 ? 0: i + 1, c = c == 100 ? 0: c + 1) {
+            for(int i = 0, c = 0; i < barrierLength; i = i == barrierLength - 1 ? 0 : i + 1, c = c == 100 ? 0 : c + 1) {
                 DataProvider<T> provider = _Providers[i];
                 SequenceBarrier barrier = _Barriers[i];
                 Sequence sequence = _Sequences[i];
                 count += processEvents(provider, barrier, sequence);
                 // 没有任何 前置生产者的存在事件的时候暂停 5ms 释放 CPU，不超过100个事件，将释放 CPU
-                if (c == 50 && count < 50) {
-                    LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(5));
+                if(c == 50 && count < 50) {
+                    LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(1));
                 }
-                else if (c == 99) {
+                else if(c == 99) {
                     count = 0;
-                    Thread.yield();
                 }
             }
         }
         else {
-            if (_Running.get() == RUNNING) { throw new IllegalStateException("Thread is already running"); }
+            if(_Running.get() == RUNNING) { throw new IllegalStateException("Thread is already running"); }
+            else {
+                halt();
+            }
         }
 
     }
@@ -120,7 +116,7 @@ public class MultiBufferBatchEventProcessor<T extends IEvent>
     public void halt()
     {
         _Running.set(HALTED);
-        for (SequenceBarrier barrier : _Barriers) {
+        for(SequenceBarrier barrier : _Barriers) {
             barrier.alert();
         }
     }
@@ -137,21 +133,21 @@ public class MultiBufferBatchEventProcessor<T extends IEvent>
         long available = -1;
         try {
             available = barrier.waitFor(-1);
-            while (nextSequence <= available) {
-                _Handler.onEvent(provider.get(nextSequence), nextSequence, nextSequence == available);
+            _Handler.onBatchStart(available - nextSequence + 1);
+            while(nextSequence <= available) {
+                _Handler.onEvent(provider.get(nextSequence), nextSequence);
                 nextSequence++;
             }
+            _Handler.onBatchComplete();
             sequence.set(available);
         }
-        catch (TimeoutException |
-               AlertException e)
-        {
+        catch(TimeoutException | AlertException e) {
             /*
              * AlertException设计是为了动态终止processor，多路归并的场景中，reduce 不能被终止
              * TimeoutException 在多路归并的场景中不适用，waitFor(-1）一定会取得当前最后一个可用
              */
         }
-        catch (Throwable ex) {
+        catch(Throwable ex) {
             sequence.set(nextSequence);
             nextSequence++;
         }

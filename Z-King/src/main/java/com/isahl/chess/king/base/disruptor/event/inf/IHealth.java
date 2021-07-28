@@ -21,31 +21,23 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.king.base.disruptor.event;
+package com.isahl.chess.king.base.disruptor.event.inf;
+
+import java.time.Duration;
 
 /**
- * @author william.d.zk
- * @date 2021/2/16
+ * @author William.d.zk
+ * @date 2021/07/27
  */
-public enum OperatorType
+public interface IHealth
 {
-    NULL,
-    CONNECTED,
-    ACCEPTED,
-    LOCAL_CLOSE,
-    READ,
-    WRITE,
-    WROTE,
-    DECODE,
-    BIZ_LOCAL,
-    CLUSTER_LOCAL,
-    LINK,
-    CLUSTER,
-    LOGIC,
-    CONSISTENCY,
-    CONSISTENT_RESULT,
-    CLUSTER_TOPOLOGY,
-    CLUSTER_TIMER,
-    DISPATCH,
-    IGNORE;
+    boolean isEnabled();
+
+    void collectOn();
+
+    void collectOff();
+
+    boolean isHealthy();
+
+    Duration averageEventHandling(long size);
 }

@@ -24,8 +24,10 @@
 package com.isahl.chess.queen.event.handler;
 
 import com.isahl.chess.king.base.disruptor.event.OperatorType;
+import com.isahl.chess.king.base.disruptor.event.inf.IHealth;
 import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
 import com.isahl.chess.king.base.disruptor.event.inf.IPipeEventHandler;
+import com.isahl.chess.king.base.disruptor.processor.Health;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
@@ -51,6 +53,7 @@ public class WriteDispatcher
     private final RingBuffer<QEvent>[] _Encoders;
     private final RingBuffer<QEvent>   _Error;
     private final int                  _Mask;
+    private final IHealth              _Health = new Health(-1);
 
     @SafeVarargs
     public WriteDispatcher(RingBuffer<QEvent> error, RingBuffer<QEvent>... workers)
@@ -60,13 +63,19 @@ public class WriteDispatcher
         _Mask = _Encoders.length - 1;
     }
 
+    @Override
+    public IHealth getHealth()
+    {
+        return _Health;
+    }
+
     private RingBuffer<QEvent> dispatchEncoder(int code)
     {
         return _Encoders[code & _Mask];
     }
 
     @Override
-    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
+    public void onEvent(QEvent event, long sequence) throws Exception
     {
         if(event.hasError()) {
             if(event.getErrorType() == HANDLE_DATA) {// from logic handler

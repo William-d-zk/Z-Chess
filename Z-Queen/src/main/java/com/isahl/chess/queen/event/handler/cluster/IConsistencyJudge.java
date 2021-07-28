@@ -39,9 +39,9 @@ public interface IConsistencyJudge
     }
 
     /**
-     * @param consensus
+     * @param consistency
      * @param session   cluster 通讯用的
      * @return
      */
-    <T extends IProtocol> T adjudge(IConsistent consensus, ISession session);
+    <T extends IProtocol> T adjudge(IConsistent consistency, ISession session);
 }

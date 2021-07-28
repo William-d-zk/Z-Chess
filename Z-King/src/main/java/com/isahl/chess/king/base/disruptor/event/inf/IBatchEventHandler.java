@@ -21,31 +21,34 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.king.base.disruptor.event;
+package com.isahl.chess.king.base.disruptor.event.inf;
 
 /**
  * @author william.d.zk
- * @date 2021/2/16
+ * @date 2021/07/27
  */
-public enum OperatorType
+public interface IBatchEventHandler<T extends IEvent>
 {
-    NULL,
-    CONNECTED,
-    ACCEPTED,
-    LOCAL_CLOSE,
-    READ,
-    WRITE,
-    WROTE,
-    DECODE,
-    BIZ_LOCAL,
-    CLUSTER_LOCAL,
-    LINK,
-    CLUSTER,
-    LOGIC,
-    CONSISTENCY,
-    CONSISTENT_RESULT,
-    CLUSTER_TOPOLOGY,
-    CLUSTER_TIMER,
-    DISPATCH,
-    IGNORE;
+    IHealth getHealth();
+
+    default void onBatchStart(long size)
+    {
+        IHealth health = getHealth();
+        if(health.isEnabled()) {
+            health.collectOn();
+        }
+    }
+
+    void onEvent(T event, long sequence) throws Exception;
+
+    default void onBatchComplete()
+    {
+        IHealth health = getHealth();
+        if(health.isEnabled()) {
+            health.collectOff();
+        }
+    }
+
+    default void onTimeout(long sequence)
+    {}
 }

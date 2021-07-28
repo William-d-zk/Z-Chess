@@ -42,25 +42,27 @@ public class ConsistentProtocol
         extends JsonProtocol
         implements IConsistent
 {
-    public final static int    _SERIAL = CONSISTENT_SERIAL + 1;
-    private final       byte[] _Content;
-    private final       long   _Origin;
-    private final       long   _ZUid;
+    public final static int _SERIAL = CONSISTENT_SERIAL + 1;
+
+    private final byte[] _Content;
+    private final long   _Origin;
+    private final long   _Uid;
+
     @JsonIgnore
-    private transient   byte[] tData;
+    private transient byte[] tData;
 
     @JsonCreator
     public ConsistentProtocol(
             @JsonProperty("content")
                     byte[] content,
-            @JsonProperty("zuid")
-                    long zuid,
+            @JsonProperty("uid")
+                    long uid,
             @JsonProperty("origin")
                     long origin)
     {
         _Content = content;
         _Origin = origin;
-        _ZUid = zuid;
+        _Uid = uid;
     }
 
     @Override
@@ -88,9 +90,9 @@ public class ConsistentProtocol
         return _Content;
     }
 
-    public long getZuid()
+    public long getUid()
     {
-        return _ZUid;
+        return _Uid;
     }
 
     @Override
@@ -102,10 +104,10 @@ public class ConsistentProtocol
     @Override
     public String toString()
     {
-        return String.format("ConsistentProtocol{content:%s,origin:%#x,zuid:%#x||%d}",
+        return String.format("ConsistentProtocol{content:%s,origin:%#x,uid:%#x||%d}",
                              new String(_Content, StandardCharsets.UTF_8),
                              _Origin,
-                             _ZUid,
-                             _ZUid);
+                             _Uid,
+                             _Uid);
     }
 }

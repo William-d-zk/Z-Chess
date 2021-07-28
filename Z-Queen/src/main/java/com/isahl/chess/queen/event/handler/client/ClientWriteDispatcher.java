@@ -23,13 +23,11 @@
 
 package com.isahl.chess.queen.event.handler.client;
 
-
-import java.util.List;
-import java.util.Objects;
-
 import com.isahl.chess.king.base.disruptor.event.OperatorType;
+import com.isahl.chess.king.base.disruptor.event.inf.IHealth;
 import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
 import com.isahl.chess.king.base.disruptor.event.inf.IPipeEventHandler;
+import com.isahl.chess.king.base.disruptor.processor.Health;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
@@ -39,61 +37,63 @@ import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.ISession;
 import com.lmax.disruptor.RingBuffer;
 
+import java.util.List;
+import java.util.Objects;
+
 /**
  * @author william.d.zk
  */
 public class ClientWriteDispatcher
-        implements
-        IPipeEventHandler<QEvent>
+        implements IPipeEventHandler<QEvent>
 {
     private final Logger _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
 
     final RingBuffer<QEvent> _Error;
     final RingBuffer<QEvent> _Encoder;
 
-    public ClientWriteDispatcher(RingBuffer<QEvent> error,
-                                 RingBuffer<QEvent> encoder)
+    private final IHealth _Health = new Health(-1);
+
+    public ClientWriteDispatcher(RingBuffer<QEvent> error, RingBuffer<QEvent> encoder)
     {
         _Error = error;
         _Encoder = encoder;
     }
 
     @Override
-    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
+    public IHealth getHealth()
     {
-        if (event.hasError()) {
-            switch (event.getErrorType())
-            {
-                case FILTER_DECODE:
-                case ILLEGAL_STATE:
-                case ILLEGAL_BIZ_STATE:
-                default:
-                    error(_Error, event.getErrorType(), event.getContent(), event.getEventOp());
-            }
+        return _Health;
+    }
+
+    @Override
+    public void onEvent(QEvent event, long sequence) throws Exception
+    {
+        if(event.hasError()) {
+            error(_Error, event.getErrorType(), event.getContent(), event.getEventOp());
         }
         else {
-            switch (event.getEventType())
-            {
+            switch(event.getEventType()) {
                 case BIZ_LOCAL:// from biz local
                 case WRITE:// from LinkIo
                 case LOGIC:// from read->logic
                     IPair writeContent = event.getContent();
                     IControl[] commands = writeContent.getFirst();
                     ISession session = writeContent.getSecond();
-                    if (session.isValid() && Objects.nonNull(commands)) {
-                        IOperator<IControl[],
-                                  ISession,
-                                  List<ITriple>> transferOperator = event.getEventOp();
+                    if(session.isValid() && Objects.nonNull(commands)) {
+                        IOperator<IControl[], ISession, List<ITriple>> transferOperator = event.getEventOp();
                         List<ITriple> triples = transferOperator.handle(commands, session);
-                        for (ITriple triple : triples) {
-                            publish(_Encoder, OperatorType.WRITE, new Pair<>(triple.getFirst(), session), triple.getThird());
+                        for(ITriple triple : triples) {
+                            publish(_Encoder,
+                                    OperatorType.WRITE,
+                                    new Pair<>(triple.getFirst(), session),
+                                    triple.getThird());
                         }
                     }
                     break;
                 case WROTE:// from io-wrote
                     IPair wroteContent = event.getContent();
                     session = wroteContent.getSecond();
-                    if (session.isValid()) {
+                    if(session.isValid()) {
                         publish(_Encoder, OperatorType.WROTE, wroteContent, event.getEventOp());
                     }
                     break;

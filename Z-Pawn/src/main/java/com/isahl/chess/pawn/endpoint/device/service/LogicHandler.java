@@ -34,6 +34,8 @@ import com.isahl.chess.bishop.io.ws.control.X103_Ping;
 import com.isahl.chess.bishop.io.ws.control.X104_Pong;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X105_SslHandShake;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X10A_PlainText;
+import com.isahl.chess.king.base.disruptor.event.inf.IHealth;
+import com.isahl.chess.king.base.disruptor.processor.Health;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.JsonUtil;
@@ -67,13 +69,21 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
     private final IQttRouter      _QttRouter;
     private final RaftPeer<T>     _RaftPeer;
     private final IMessageService _MessageService;
+    private final IHealth         _Health;
 
-    public LogicHandler(T manager, IQttRouter qttRouter, RaftPeer<T> raftPeer, IMessageService messageService)
+    public LogicHandler(T manager, IQttRouter qttRouter, RaftPeer<T> raftPeer, IMessageService messageService, int slot)
     {
         _Manager = manager;
         _QttRouter = qttRouter;
         _RaftPeer = raftPeer;
         _MessageService = messageService;
+        _Health = new Health(slot);
+    }
+
+    @Override
+    public IHealth getHealth()
+    {
+        return _Health;
     }
 
     @Override
@@ -85,12 +95,15 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
     @Override
     public IControl[] handle(ISessionManager manager, ISession session, IControl content) throws ZException
     {
+        IControl[] result = null;
         switch(content.serial()) {
             case X101_HandShake.COMMAND:
-                return new IControl[]{ content };
+                result = new IControl[]{ content };
+                break;
             case X103_Ping.COMMAND:
                 X103_Ping x103 = (X103_Ping) content;
-                return new IControl[]{ new X104_Pong(x103.getPayload()) };
+                result = new IControl[]{ new X104_Pong(x103.getPayload()) };
+                break;
             case X105_SslHandShake.COMMAND:
                 X105_SslHandShake x105 = (X105_SslHandShake) content;
                 if(x105.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.NEED_WRAP) {
@@ -99,38 +112,43 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                 else {
                     break;
                 }
-                return new IControl[]{ content };
+                result = new IControl[]{ content };
+                break;
             case X10A_PlainText.COMMAND:
+                /*
+                X10A 纯作为文本消息进行回应，可以做出简单的ECHO功能
+                 */
                 X10A_PlainText x10A = (X10A_PlainText) content;
                 String jsonStr = new String(x10A.getPayload(), StandardCharsets.UTF_8);
-                _Logger.info("x10A:%s", jsonStr);
+                _Logger.info("[0x10A]:%s", jsonStr);
                 JsonNode json = JsonUtil.readTree(jsonStr);
-                ((ObjectNode) json).put("response", "hello");
+                ((ObjectNode) json).put("response", "ok");
                 x10A.setPayload(JsonUtil.writeNodeAsBytes(json));
-                return new IControl[]{ content };
+                result = new IControl[]{ content };
+                break;
             case X113_QttPublish.COMMAND:
                 X113_QttPublish x113 = (X113_QttPublish) content;
                 if(x113.isRetain()) {
                     _QttRouter.retain(x113.getTopic(), x113);
                 }
-                MessageEntity messageEntity = new MessageEntity();
-                messageEntity.setOrigin(session.getIndex());
-                messageEntity.setDestination(_RaftPeer.getPeerId());
-                messageEntity.setTopic(x113.getTopic());
-                messageEntity.setBody(new MessageBody((int) x113.getMsgId(),
-                                                      x113.getTopic(),
-                                                      JsonUtil.readTree(x113.getPayload())));
-                messageEntity.setOperation(OP_INSERT);
+                MessageEntity msgEntity = new MessageEntity();
+                msgEntity.setOrigin(session.getIndex());
+                msgEntity.setDestination(_RaftPeer.getPeerId());
+                msgEntity.setTopic(x113.getTopic());
+                msgEntity.setBody(new MessageBody((int) x113.getMsgId(),
+                                                  x113.getTopic(),
+                                                  JsonUtil.readTree(x113.getPayload())));
+                msgEntity.setOperation(OP_INSERT);
                 List<IControl> pushList = new LinkedList<>();
                 switch(x113.getLevel()) {
                     case ALMOST_ONCE:
-                        brokerTopic(manager, messageEntity, pushList);
+                        brokerTopic(manager, msgEntity, pushList);
                         break;
                     case AT_LEAST_ONCE:
                         X114_QttPuback x114 = new X114_QttPuback();
                         x114.setMsgId(x113.getMsgId());
                         pushList.add(x114);
-                        brokerTopic(manager, messageEntity, pushList);
+                        brokerTopic(manager, msgEntity, pushList);
                         break;
                     case EXACTLY_ONCE:
                         X115_QttPubrec x115 = new X115_QttPubrec();
@@ -141,8 +159,8 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                     default:
                         break;
                 }
-
-                return pushList.isEmpty() ? null : pushList.toArray(new IControl[0]);
+                result = pushList.isEmpty() ? null : pushList.toArray(new IControl[0]);
+                break;
             case X114_QttPuback.COMMAND:
                 //x113.QoS1 → client → x114, 服务端不存储需要client持有的消息
                 X114_QttPuback x114 = (X114_QttPuback) content;
@@ -153,7 +171,8 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                 X115_QttPubrec x115 = (X115_QttPubrec) content;
                 X116_QttPubrel x116 = new X116_QttPubrel();
                 x116.setMsgId(x115.getMsgId());
-                return new IControl[]{ x116 };
+                result = new IControl[]{ x116 };
+                break;
             case X116_QttPubrel.COMMAND:
                 //x113 → server → x115 → client → x116 , 服务段收到 x116,需要注意
                 x116 = (X116_QttPubrel) content;
@@ -182,15 +201,17 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                         brokerTopic(manager, msg, pushList);
                     });
                 }
-                return pushList.toArray(new IControl[0]);
+                result = pushList.toArray(new IControl[0]);
+                break;
             case X117_QttPubcomp.COMMAND:
                 x117 = (X117_QttPubcomp) content;
                 _QttRouter.ack(x117, session.getIndex());
                 break;
             case X11C_QttPingreq.COMMAND:
-                return new IControl[]{ new X11D_QttPingresp() };
+                result = new IControl[]{ new X11D_QttPingresp() };
+                break;
         }
-        return null;
+        return result;
     }
 
     private void brokerTopic(ISessionManager manager, MessageEntity message, List<IControl> pushList)
@@ -213,7 +234,7 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                                              .contentBinary();
                      x113.setPayload(payload);
                      x113.setSession(targetSession);
-                     if(x113.getLevel() == ALMOST_ONCE) { return x113; }
+                     if(x113.getLevel() == ALMOST_ONCE) {return x113;}
                      x113.setMsgId(_MessageService.generateMsgId(sessionIndex, targetSession.getIndex()));
                      _QttRouter.register(x113, sessionIndex);
                      return x113;

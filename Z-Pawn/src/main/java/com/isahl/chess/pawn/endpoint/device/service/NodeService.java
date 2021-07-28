@@ -42,6 +42,7 @@ import com.isahl.chess.pawn.endpoint.device.spi.IMessageService;
 import com.isahl.chess.queen.config.IAioConfig;
 import com.isahl.chess.queen.config.IMixConfig;
 import com.isahl.chess.queen.event.handler.mix.ILinkCustom;
+import com.isahl.chess.queen.event.handler.mix.ILogicHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -62,12 +63,12 @@ public class NodeService
 {
     private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
-    private final DeviceNode               _DeviceNode;
-    private final ILinkCustom              _LinkCustom;
-    private final RaftCustom<DeviceNode>   _RaftCustom;
-    private final RaftPeer<DeviceNode>     _RaftPeer;
-    private final RaftService<DeviceNode>  _RaftService;
-    private final LogicHandler<DeviceNode> _LogicHandler;
+    private final DeviceNode              _DeviceNode;
+    private final ILinkCustom             _LinkCustom;
+    private final RaftCustom<DeviceNode>  _RaftCustom;
+    private final RaftPeer<DeviceNode>    _RaftPeer;
+    private final RaftService<DeviceNode> _RaftService;
+    private final ILogicHandler.factory   _LogicFactory;
 
     @Autowired
     NodeService(MixConfig deviceConfig,
@@ -102,14 +103,21 @@ public class NodeService
         _LinkCustom = linkCustom;
         _RaftPeer = new RaftPeer<>(timeWheel, raftConfig, raftDao, _DeviceNode);
         _RaftCustom = new RaftCustom<>(_RaftPeer);
-        _LogicHandler = new LogicHandler<>(_DeviceNode, qttRouter, _RaftPeer, messageService);
+        _LogicFactory = new ILogicHandler.factory()
+        {
+            @Override
+            public ILogicHandler create(int slot)
+            {
+                return new LogicHandler<>(_DeviceNode, qttRouter, _RaftPeer, messageService, slot);
+            }
+        };
         _RaftService = new RaftService<>(_DeviceNode, _RaftPeer);
     }
 
     @PostConstruct
     private void start()
     {
-        _DeviceNode.start(_LogicHandler, new ZLinkMappingCustom(_LinkCustom), new ZClusterMappingCustom<>(_RaftCustom));
+        _DeviceNode.start(_LogicFactory, new ZLinkMappingCustom(_LinkCustom), new ZClusterMappingCustom<>(_RaftCustom));
         _RaftPeer.start();
         _Logger.info(" device service start ");
     }
