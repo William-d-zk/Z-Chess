@@ -50,7 +50,7 @@ public class Z2Processor<T extends IEvent>
 
     public Z2Processor(DataProvider<T>[] providers, SequenceBarrier[] barriers, IBatchEventHandler<T> handler)
     {
-        if(providers.length != barriers.length) { throw new IllegalArgumentException(); }
+        if(providers.length != barriers.length) {throw new IllegalArgumentException();}
         _Providers = providers;
         _Barriers = barriers;
         _Handler = handler;
@@ -93,7 +93,7 @@ public class Z2Processor<T extends IEvent>
             }
         }
         else {
-            if(_Running.get() == RUNNING) { throw new IllegalStateException("Thread is already running"); }
+            if(_Running.get() == RUNNING) {throw new IllegalStateException("Thread is already running");}
             else {
                 halt();
             }
@@ -129,16 +129,15 @@ public class Z2Processor<T extends IEvent>
 
     private long processEvents(DataProvider<T> provider, SequenceBarrier barrier, Sequence sequence)
     {
-        long nextSequence = sequence.get() + 1;
-        long available = -1;
+        long nextSequence = sequence.get() + 1L;
+        long available = -1L;
         try {
             available = barrier.waitFor(-1);
-            _Handler.onBatchStart(available - nextSequence + 1);
+            _Handler.onBatchStart(nextSequence - 1);
             while(nextSequence <= available) {
                 _Handler.onEvent(provider.get(nextSequence), nextSequence);
                 nextSequence++;
             }
-            _Handler.onBatchComplete();
             sequence.set(available);
         }
         catch(TimeoutException | AlertException e) {
@@ -150,6 +149,9 @@ public class Z2Processor<T extends IEvent>
         catch(Throwable ex) {
             sequence.set(nextSequence);
             nextSequence++;
+        }
+        finally {
+            _Handler.onBatchComplete(sequence.get());
         }
         return available - nextSequence + 1;
     }

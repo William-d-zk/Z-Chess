@@ -31,21 +31,21 @@ public interface IBatchEventHandler<T extends IEvent>
 {
     IHealth getHealth();
 
-    default void onBatchStart(long size)
+    default void onBatchStart(long start)
     {
         IHealth health = getHealth();
         if(health.isEnabled()) {
-            health.collectOn();
+            health.collectOn(start);
         }
     }
 
     void onEvent(T event, long sequence) throws Exception;
 
-    default void onBatchComplete()
+    default void onBatchComplete(long end)
     {
         IHealth health = getHealth();
         if(health.isEnabled()) {
-            health.collectOff();
+            health.collectOff(end);
         }
     }
 

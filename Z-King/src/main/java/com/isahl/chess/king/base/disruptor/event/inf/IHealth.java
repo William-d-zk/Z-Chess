@@ -33,11 +33,11 @@ public interface IHealth
 {
     boolean isEnabled();
 
-    void collectOn();
+    void collectOn(long start);
 
-    void collectOff();
+    void collectOff(long end);
 
     boolean isHealthy();
 
-    Duration averageEventHandling(long size);
+    Duration averageEventHandling();
 }
