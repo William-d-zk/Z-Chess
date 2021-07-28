@@ -134,13 +134,12 @@ public class Z1Processor<T extends IEvent>
         while(true) {
             try {
                 final long availableSequence = _SequenceBarrier.waitFor(nextSequence);
-                _BatchEventHandler.onBatchStart(availableSequence - nextSequence + 1);
+                _BatchEventHandler.onBatchStart(nextSequence - 1);
                 while(nextSequence <= availableSequence) {
                     event = _DataProvider.get(nextSequence);
                     _BatchEventHandler.onEvent(event, nextSequence);
                     nextSequence++;
                 }
-                _BatchEventHandler.onBatchComplete();
                 _Sequence.set(availableSequence);
             }
             catch(final TimeoutException e) {
@@ -155,6 +154,9 @@ public class Z1Processor<T extends IEvent>
                 handleEventException(ex, nextSequence, event);
                 _Sequence.set(nextSequence);
                 nextSequence++;
+            }
+            finally {
+                _BatchEventHandler.onBatchComplete(_Sequence.get());
             }
         }
     }

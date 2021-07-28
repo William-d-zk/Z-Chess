@@ -46,6 +46,8 @@ public class Health
     private long     mStartTime;
     private long     mCount;
     private long     mNumber;
+    private long     mStart;
+    private long     mEnd;
 
     public void enable()
     {
@@ -73,16 +75,18 @@ public class Health
     }
 
     @Override
-    public void collectOn()
+    public void collectOn(long start)
     {
         mStartTime = System.nanoTime();
+        mStart = start;
         mNumber++;
     }
 
     @Override
-    public void collectOff()
+    public void collectOff(long end)
     {
         mDuration = Duration.ofNanos(System.nanoTime() - mStartTime);
+        mEnd = end;
         if(mNumber > Long.MAX_VALUE - 1) {
             mNumber = 0;
         }
@@ -95,9 +99,9 @@ public class Health
     }
 
     @Override
-    public Duration averageEventHandling(long size)
+    public Duration averageEventHandling()
     {
-        mCount += size;
+        mCount += mEnd - mStart;
         attenuation();
         if(mCount > 0) {
             mAverageDuration = mStatisticDuration.dividedBy(mCount);
