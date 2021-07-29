@@ -50,13 +50,13 @@ public class QttFrame
     }
 
     @Override
-    public void setCtrl(byte ctrl)
+    public void putCtrl(byte ctrl)
     {
         setOpCode(ctrl);
     }
 
     @Override
-    public byte getCtrl()
+    public byte ctrl()
     {
         return getOpCode();
     }
@@ -97,7 +97,7 @@ public class QttFrame
     }
 
     @Override
-    public void setPayload(byte[] payload)
+    public void putPayload(byte[] payload)
     {
         if(payload != null && (payload.length > 268435455 || payload.length < 2)) {
             throw new IndexOutOfBoundsException();
@@ -107,7 +107,7 @@ public class QttFrame
     }
 
     @Override
-    public byte[] getPayload()
+    public byte[] payload()
     {
         return mPayload;
     }

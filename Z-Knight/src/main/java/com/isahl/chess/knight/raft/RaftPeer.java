@@ -313,7 +313,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
             _SelfMachine.follow(term, _RaftMapper);
             mTickTask = _TimeWheel.acquire(this, _TickSchedule);
         }
-        else { _Logger.warning("step down [ignore],state has already changed to FOLLOWER"); }
+        else {_Logger.warning("step down [ignore],state has already changed to FOLLOWER");}
     }
 
     private void stepDown()
@@ -397,7 +397,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
     public IPair elect(long term, long index, long indexTerm, long candidate, long commit, ISessionManager manager)
     {
         IControl[] response = lowTerm(term, candidate);
-        if(response != null) { return new Pair<>(response, null); }
+        if(response != null) {return new Pair<>(response, null);}
         if(highTerm(term) || _SelfMachine.getState() == FOLLOWER) {
             if(_SelfMachine.getIndex() <= index && _SelfMachine.getIndexTerm() <= indexTerm &&
                _SelfMachine.getCommit() <= commit)
@@ -426,14 +426,14 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
     public IPair ballot(long term, long index, long elector, long candidate, ISessionManager manager)
     {
         IControl[] response = lowTerm(term, elector);
-        if(response != null) { return new Pair<>(response, null); }
+        if(response != null) {return new Pair<>(response, null);}
         if(highTerm(term)) {
             _Logger.warning("high term of ballot; %d->%d");
             stepDown(term);
             return null;
         }
         RaftMachine peerMachine = getMachine(elector, term);
-        if(peerMachine == null) { return null; }
+        if(peerMachine == null) {return null;}
         peerMachine.setIndex(index);
         peerMachine.setCandidate(candidate);
         peerMachine.setState(FOLLOWER);
@@ -449,7 +449,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
     public IPair append(long term, long preIndex, long preIndexTerm, long leader, long leaderCommit)
     {
         IControl[] response = lowTerm(term, leader);
-        if(response != null) { return new Pair<>(response, null); }
+        if(response != null) {return new Pair<>(response, null);}
         if(highTerm(term) || _SelfMachine.getState() != LEADER) {
             return new Pair<>(new IControl[]{ follow(leader, term, leaderCommit, preIndex, preIndexTerm) }, null);
         }
@@ -473,8 +473,10 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
 
     public LogEntry getLogEntry(long index)
     {
+        _Logger.debug("peer get log entry: %d", index);
         return _RaftMapper.getEntry(index);
     }
+
     /**
      * follower → leader
      *
@@ -485,7 +487,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
     public IPair onAccept(long peerId, long term, long index, long leader, ISessionManager manager)
     {
         RaftMachine peerMachine = getMachine(peerId, term);
-        if(peerMachine == null) { return null; }
+        if(peerMachine == null) {return null;}
         peerMachine.setState(FOLLOWER);
         peerMachine.setLeader(leader);
         peerMachine.setMatchIndex(index);
@@ -525,7 +527,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
             return null;
         }
         RaftMachine peerMachine = getMachine(peerId, term);
-        if(peerMachine == null) { return null; }
+        if(peerMachine == null) {return null;}
         peerMachine.setIndex(index);
         peerMachine.setIndexTerm(indexTerm);
         peerMachine.setCandidate(INVALID_PEER_ID);
@@ -578,7 +580,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
     public IPair onDirect(long peerId, long term, long index, long leader, ISessionManager manager)
     {
         RaftMachine peerMachine = getMachine(peerId, term);
-        if(peerMachine == null) { return null; }
+        if(peerMachine == null) {return null;}
 
         return null;
     }
@@ -596,7 +598,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
             List<LogEntry> result = new ArrayList<>((int) (end - start));
             for(long i = start; i <= end; i++) {
                 LogEntry entry = _RaftMapper.getEntry(i);
-                if(entry != null) { result.add(entry); }
+                if(entry != null) {result.add(entry);}
             }
             return result.isEmpty() ? null : result;
         }
@@ -773,8 +775,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
 
     public void appendLogs(List<LogEntry> entryList)
     {
-        if(entryList == null || entryList.isEmpty()) { return; }
-        // offer all
+        if(entryList == null || entryList.isEmpty()) {return;}
         _LogQueue.addAll(entryList);
     }
 
@@ -789,7 +790,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
             stepDown();
             return null;
         }
-        else { return cmds; }
+        else {return cmds;}
     }
 
     public IPair newLeaderLogEntry(int subSerial,
@@ -802,12 +803,12 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
         List<ZCommand> cmds = createLeaderLogEntry(subSerial, payload, client, origin, manager, Function.identity());
         if(cmds != null && !cmds.isEmpty()) {
             X76_RaftResp x76 = raftResp(SUCCESS, client, origin, subSerial, payload);
-            x76.setSession(cSession);
+            x76.putSession(cSession);
             return new Pair<>(cmds.toArray(ZCommand[]::new), x76);
         }
         else {
             X76_RaftResp x76 = raftResp(WAL_FAILED, client, origin, subSerial, payload);
-            x76.setSession(cSession);
+            x76.putSession(cSession);
             return new Pair<>(null, x76);
         }
     }
@@ -818,7 +819,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
         x76.setClientId(client);
         x76.setOrigin(origin);
         x76.setSubSerial(subSerial);
-        x76.setPayload(payload);
+        x76.putPayload(payload);
         x76.setCode((byte) code.getCode());
         return x76;
     }
@@ -863,7 +864,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
                                  x70.setIndex(update.getIndex());
                                  x70.setIndexTerm(update.getIndexTerm());
                                  x70.setCommit(update.getCommit());
-                                 x70.setSession(session);
+                                 x70.putSession(session);
                                  return x70;
                              }
                              _Logger.debug("elector :%#x session has not found", peerId);
@@ -888,7 +889,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
                                  return null;
                              }
                              else {
-                                 x72.setSession(session);
+                                 x72.putSession(session);
                                  return x72;
                              }
                          })
@@ -955,7 +956,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
                 entryList.add(nextLog);
                 payload_size += nextLog.dataLength();
             }
-            x72.setPayload(JsonUtil.writeValueAsBytes(entryList));
+            x72.putPayload(JsonUtil.writeValueAsBytes(entryList));
         }
         return x72;
     }
@@ -995,8 +996,8 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
         x79.setOrigin(raftLog.getOrigin());
         x79.setIndex(raftLog.getIndex());
         x79.setClient(raftLog.getClient());
-        x79.setSubSerial(raftLog.getSubSerial());
-        x79.setPayload(raftLog.getPayload());
+        x79.setSubSerial(raftLog.subSerial());
+        x79.putPayload(raftLog.getContent());
         return x79;
     }
 
@@ -1006,7 +1007,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
         x77.setOrigin(raftLog.getOrigin());
         x77.setIndex(raftLog.getIndex());
         x77.setClient(raftLog.getClient());
-        x77.setSession(session);
+        x77.putSession(session);
         return x77;
     }
 }

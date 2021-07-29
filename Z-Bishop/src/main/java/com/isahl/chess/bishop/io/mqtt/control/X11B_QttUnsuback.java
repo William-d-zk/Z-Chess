@@ -40,6 +40,6 @@ public class X11B_QttUnsuback
     public X11B_QttUnsuback()
     {
         super(COMMAND);
-        setCtrl(generateCtrl(false, false, ALMOST_ONCE, QttType.UNSUBACK));
+        putCtrl(generateCtrl(false, false, ALMOST_ONCE, QttType.UNSUBACK));
     }
 }

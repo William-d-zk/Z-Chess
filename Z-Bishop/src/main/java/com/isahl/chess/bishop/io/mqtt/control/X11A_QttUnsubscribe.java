@@ -49,7 +49,7 @@ public class X11A_QttUnsubscribe
     public X11A_QttUnsubscribe()
     {
         super(COMMAND);
-        setCtrl(generateCtrl(false, false, AT_LEAST_ONCE, QttType.UNSUBSCRIBE));
+        putCtrl(generateCtrl(false, false, AT_LEAST_ONCE, QttType.UNSUBSCRIBE));
     }
 
     @Override
@@ -59,7 +59,7 @@ public class X11A_QttUnsubscribe
     }
 
     @Override
-    public int getPriority()
+    public int priority()
     {
         return QOS_PRIORITY_06_META_CREATE;
     }
@@ -115,7 +115,7 @@ public class X11A_QttUnsubscribe
     @Override
     public long getOrigin()
     {
-        return getSession() == null ? ZUID.INVALID_PEER_ID : getSession().getIndex();
+        return session() == null ? ZUID.INVALID_PEER_ID : session().getIndex();
     }
 
     @Override

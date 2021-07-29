@@ -112,7 +112,7 @@ public class RaftMachine
     }
 
     @Override
-    public byte[] getPayload()
+    public byte[] payload()
     {
         return tPayload;
     }

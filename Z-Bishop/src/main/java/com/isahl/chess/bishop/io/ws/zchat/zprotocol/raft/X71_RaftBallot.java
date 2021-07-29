@@ -47,7 +47,7 @@ public class X71_RaftBallot
     }
 
     @Override
-    public int getPriority()
+    public int priority()
     {
         return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
     }

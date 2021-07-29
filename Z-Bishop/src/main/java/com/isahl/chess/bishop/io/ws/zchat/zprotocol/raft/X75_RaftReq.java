@@ -52,7 +52,7 @@ public class X75_RaftReq
     private long mOrigin;
 
     @Override
-    public int getSubSerial()
+    public int subSerial()
     {
         return mSubSerial;
     }
@@ -123,6 +123,6 @@ public class X75_RaftReq
                              mClientId,
                              mOrigin,
                              mSubSerial,
-                             getPayload() == null ? 0 : getPayload().length);
+                             payload() == null ? 0 : payload().length);
     }
 }

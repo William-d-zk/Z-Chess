@@ -70,7 +70,7 @@ public class WsFrameFilter<T extends ZContext & IWsContext>
                 if(lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
                 context.setCarrier(carrier = new WsFrame());
                 byte value = recvBuf.get();
-                carrier.setCtrl(WsFrame.getOpCode(value));
+                carrier.putCtrl(WsFrame.getOpCode(value));
                 carrier.frame_fin = WsFrame.isFrameFin(value);
                 lack = context.lackLength(1, 1);
             case 0:
@@ -142,7 +142,7 @@ public class WsFrameFilter<T extends ZContext & IWsContext>
                         if(carrier.getPayloadLength() > 0) {
                             byte[] payload = new byte[(int) carrier.getPayloadLength()];
                             cRvBuf.get(payload);
-                            carrier.setPayload(payload);
+                            carrier.putPayload(payload);
                         }
                         cRvBuf.clear();
                         return ResultType.NEXT_STEP;
@@ -161,7 +161,7 @@ public class WsFrameFilter<T extends ZContext & IWsContext>
             byte[] mask = frame.getMask();
             for(int i = 0, size = (int) frame.getPayloadLength(); i < size; i++) {
                 int maskIndex = i & 3;
-                frame.getPayload()[i] ^= mask[maskIndex];
+                frame.payload()[i] ^= mask[maskIndex];
             }
         }
         context.finish();

@@ -29,10 +29,7 @@ import com.isahl.chess.bishop.io.mqtt.QttFrame;
 import com.isahl.chess.bishop.io.mqtt.control.X112_QttConnack;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.queen.io.core.async.AioFilterChain;
-import com.isahl.chess.queen.io.core.inf.IFrame;
-import com.isahl.chess.queen.io.core.inf.IPContext;
-import com.isahl.chess.queen.io.core.inf.IProtocol;
-import com.isahl.chess.queen.io.core.inf.IProxyContext;
+import com.isahl.chess.queen.io.core.inf.*;
 
 /**
  * @author william.d.zk
@@ -49,7 +46,7 @@ public class QttControlFilter
     @Override
     public QttFrame encode(QttContext context, QttControl output)
     {
-        output.setContext(context);
+        output.putContext(context);
         /*
             Qtt Context 自身携带控制状态信息定义在协议之中，也只好在协议处理
             层完成这一操作 [Server]
@@ -58,23 +55,20 @@ public class QttControlFilter
             X112_QttConnack x112 = (X112_QttConnack) output;
             if(x112.isOk()) {
                 context.updateOut();
-                context.updateIn();
             }
         }
         /*======================================================*/
         QttFrame frame = new QttFrame();
-        frame.setCtrl(output.getCtrl());
-        frame.setPayload(output.encode());
+        frame.putCtrl(output.ctrl());
+        frame.putPayload(output.encode());
         return frame;
     }
 
     @Override
     public QttControl decode(QttContext context, QttFrame input)
     {
-        QttControl control = QttCommandFactory.createQttControl(input);
-        if(control == null) { throw new IllegalArgumentException("MQTT type error"); }
-        else {
-            control.setContext(context);
+        IControl control = QttCommandFactory.CREATE(input, context);
+        if(control != null) {
             /*
                 Qtt Context 自身携带控制状态信息定义在协议之中，也只好在协议处理
                 层完成这一操作 [Client]
@@ -82,13 +76,13 @@ public class QttControlFilter
             if(input.serial() == X112_QttConnack.COMMAND) {
                 X112_QttConnack x112 = (X112_QttConnack) control;
                 if(x112.isOk()) {
-                    context.updateOut();
                     context.updateIn();
                 }
             }
             /*======================================================*/
-            return control;
+            return (QttControl) control;
         }
+        throw new IllegalArgumentException("MQTT decode error");
     }
 
     @Override

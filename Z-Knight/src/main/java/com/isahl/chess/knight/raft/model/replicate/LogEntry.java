@@ -60,7 +60,7 @@ public class LogEntry
      */
     private final long   _Origin;
     private final int    _SubSerial;
-    private final byte[] _Payload;
+    private final byte[] _Content;
 
     @JsonIgnore
     private Operation mOperation = Operation.OP_INSERT;
@@ -80,16 +80,20 @@ public class LogEntry
                     long origin,
             @JsonProperty("sub_serial")
                     int subSerial,
-            @JsonProperty("payload")
-                    byte[] payload)
+            @JsonProperty("content")
+                    byte[] content)
     {
         _Term = term;
         _Index = index;
         _Client = client;
         _Origin = origin;
         _SubSerial = subSerial;
-        _Payload = payload;
-        encode();
+        _Content = content;
+    }
+
+    public int getSubSerial()
+    {
+        return _SubSerial;
     }
 
     @Override
@@ -114,20 +118,27 @@ public class LogEntry
         return _Index;
     }
 
-    public byte[] getPayload()
+    public byte[] getContent()
     {
-        return _Payload;
+        return _Content;
+    }
+
+    @Override
+    public byte[] payload()
+    {
+        return _Content;
     }
 
     @Override
     public byte[] encode()
     {
-        if(tData != null) { return tData; }
+        if(tData != null) {return tData;}
         tData = super.encode();
         return tData;
     }
 
-    public int getSubSerial()
+    @Override
+    public int subSerial()
     {
         return _SubSerial;
     }
@@ -152,7 +163,7 @@ public class LogEntry
                              _Client,
                              _Origin,
                              _SubSerial,
-                             _Payload == null ? 0 : _Payload.length);
+                             _Content == null ? 0 : _Content.length);
     }
 
     @Override

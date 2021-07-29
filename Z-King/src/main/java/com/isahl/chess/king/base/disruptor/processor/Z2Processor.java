@@ -25,6 +25,7 @@ package com.isahl.chess.king.base.disruptor.processor;
 
 import com.isahl.chess.king.base.disruptor.event.inf.IBatchEventHandler;
 import com.isahl.chess.king.base.disruptor.event.inf.IEvent;
+import com.isahl.chess.king.base.log.Logger;
 import com.lmax.disruptor.*;
 
 import java.util.concurrent.TimeUnit;
@@ -37,6 +38,8 @@ import java.util.concurrent.locks.LockSupport;
 public class Z2Processor<T extends IEvent>
         implements EventProcessor
 {
+    private final Logger _Logger;
+
     private static final int IDLE    = 0;
     private static final int HALTED  = IDLE + 1;
     private static final int RUNNING = HALTED + 1;
@@ -51,6 +54,10 @@ public class Z2Processor<T extends IEvent>
     public Z2Processor(DataProvider<T>[] providers, SequenceBarrier[] barriers, IBatchEventHandler<T> handler)
     {
         if(providers.length != barriers.length) {throw new IllegalArgumentException();}
+        _Logger = Logger.getLogger(String.format("base.king.%s.%s",
+                                                 getClass().getSimpleName(),
+                                                 handler.getClass()
+                                                        .getSimpleName()));
         _Providers = providers;
         _Barriers = barriers;
         _Handler = handler;
@@ -147,6 +154,7 @@ public class Z2Processor<T extends IEvent>
              */
         }
         catch(Throwable ex) {
+            _Logger.warning(ex);
             sequence.set(nextSequence);
             nextSequence++;
         }

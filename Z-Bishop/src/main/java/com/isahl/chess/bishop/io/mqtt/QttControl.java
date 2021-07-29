@@ -52,13 +52,13 @@ public abstract class QttControl
     }
 
     @Override
-    public byte getCtrl()
+    public byte ctrl()
     {
         return getOpCode();
     }
 
     @Override
-    public void setCtrl(byte ctrl)
+    public void putCtrl(byte ctrl)
     {
         setOpCode(ctrl);
     }
@@ -70,7 +70,7 @@ public abstract class QttControl
     }
 
     @Override
-    public void setSession(ISession session)
+    public void putSession(ISession session)
     {
         mSession = session;
     }
@@ -82,18 +82,19 @@ public abstract class QttControl
     }
 
     @Override
-    public ISession getSession()
+    public ISession session()
     {
         return mSession;
     }
 
-    public byte[] getPayload()
+    @Override
+    public byte[] payload()
     {
         return mPayload;
     }
 
     @Override
-    public void setPayload(byte[] payload)
+    public void putPayload(byte[] payload)
     {
         mPayload = payload;
     }
@@ -107,7 +108,7 @@ public abstract class QttControl
 
     @Override
     @SuppressWarnings("unchecked")
-    public QttContext getContext()
+    public QttContext context()
     {
         return mContext;
     }

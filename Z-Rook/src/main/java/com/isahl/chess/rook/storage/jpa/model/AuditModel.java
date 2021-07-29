@@ -151,7 +151,7 @@ public abstract class AuditModel
     }
 
     @Override
-    public byte[] getPayload()
+    public byte[] payload()
     {
         return tPayload;
     }

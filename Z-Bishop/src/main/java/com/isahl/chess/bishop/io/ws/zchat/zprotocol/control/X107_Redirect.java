@@ -42,17 +42,17 @@ public class X107_Redirect
 
     public String getHost()
     {
-        return IoUtil.readIpAdr(getPayload());
+        return IoUtil.readIpAdr(payload());
     }
 
     public int getPort()
     {
-        return IoUtil.readUnsignedShort(getPayload(), 4);
+        return IoUtil.readUnsignedShort(payload(), 4);
     }
 
     @Override
     public X107_Redirect duplicate()
     {
-        return new X107_Redirect(getPayload());
+        return new X107_Redirect(payload());
     }
 }

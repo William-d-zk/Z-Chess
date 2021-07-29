@@ -40,6 +40,6 @@ public class X11D_QttPingresp
     public X11D_QttPingresp()
     {
         super(COMMAND);
-        setCtrl(generateCtrl(false, false, ALMOST_ONCE, QttType.PINGRESP));
+        putCtrl(generateCtrl(false, false, ALMOST_ONCE, QttType.PINGRESP));
     }
 }

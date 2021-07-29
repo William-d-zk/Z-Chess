@@ -49,7 +49,7 @@ public class X118_QttSubscribe
     public X118_QttSubscribe()
     {
         super(COMMAND);
-        setCtrl(generateCtrl(false, false, AT_LEAST_ONCE, QttType.SUBSCRIBE));
+        putCtrl(generateCtrl(false, false, AT_LEAST_ONCE, QttType.SUBSCRIBE));
     }
 
     private Map<String, Level> mSubscribes;
@@ -61,7 +61,7 @@ public class X118_QttSubscribe
     }
 
     @Override
-    public int getPriority()
+    public int priority()
     {
         return QOS_PRIORITY_06_META_CREATE;
     }
@@ -137,6 +137,6 @@ public class X118_QttSubscribe
     @Override
     public long getOrigin()
     {
-        return getSession() == null ? ZUID.INVALID_PEER_ID : getSession().getIndex();
+        return session() == null ? ZUID.INVALID_PEER_ID : session().getIndex();
     }
 }

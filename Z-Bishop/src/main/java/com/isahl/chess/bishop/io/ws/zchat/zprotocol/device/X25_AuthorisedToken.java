@@ -39,7 +39,7 @@ public class X25_AuthorisedToken
     }
 
     @Override
-    public int getPriority()
+    public int priority()
     {
         return QOS_PRIORITY_09_CONFIRM_MESSAGE;
     }

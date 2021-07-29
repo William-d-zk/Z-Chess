@@ -40,9 +40,9 @@ public class ZCommandFilter<T extends ZContext>
         extends AioFilterChain<T, ICommand, IFrame>
 {
 
-    private final ICommandFactory<ICommand, IFrame> _CommandFactory;
+    private final ICommandFactory<ICommand, IFrame, T> _CommandFactory;
 
-    public ZCommandFilter(ICommandFactory<ICommand, IFrame> factory)
+    public ZCommandFilter(ICommandFactory<ICommand, IFrame, T> factory)
     {
         super("z_command");
         _CommandFactory = factory;
@@ -52,8 +52,8 @@ public class ZCommandFilter<T extends ZContext>
     public WsFrame encode(T context, ICommand output)
     {
         WsFrame frame = new WsFrame();
-        frame.setPayload(output.encode(context));
-        frame.setCtrl(WsFrame.frame_op_code_no_ctrl_bin);
+        frame.putPayload(output.encode(context));
+        frame.putCtrl(WsFrame.frame_op_code_no_ctrl_bin);
         return frame;
     }
 
@@ -68,17 +68,16 @@ public class ZCommandFilter<T extends ZContext>
             case X04_EncryptConfirm.COMMAND -> new X04_EncryptConfirm();
             case X05_EncryptStart.COMMAND -> new X05_EncryptStart();
             case X06_EncryptComp.COMMAND -> new X06_EncryptComp();
-            default -> _CommandFactory == null ? null : _CommandFactory.create(serial);
+            default -> _CommandFactory == null ? null : _CommandFactory.create(serial, input.payload(), context);
         };
-        if(command == null) { throw new ZException("no define:%d ", input.getPayload()[0] & 0xFF); }
-        command.decode(input.getPayload(), context);
+        if(command == null) {throw new ZException("no define:%d ", input.payload()[0] & 0xFF);}
         switch(command.serial()) {
             case X01_EncryptRequest.COMMAND:
                 if(context instanceof IEContext) {
                     IEContext ec = (IEContext) context;
                     X01_EncryptRequest x01 = (X01_EncryptRequest) command;
                     IEncryptHandler encryptHandler = ec.getEncryptHandler();
-                    if(encryptHandler == null) { return new X06_EncryptComp(Code.PLAIN_UNSUPPORTED.getCode()); }
+                    if(encryptHandler == null) {return new X06_EncryptComp(Code.PLAIN_UNSUPPORTED.getCode());}
                     Pair<Integer, byte[]> keyPair = encryptHandler.getAsymmetricPubKey(x01.pubKeyId);
                     if(keyPair != null) {
                         X02_AsymmetricPub x02 = new X02_AsymmetricPub();
@@ -86,7 +85,7 @@ public class ZCommandFilter<T extends ZContext>
                         x02.setPubKey(keyPair.getFirst(), keyPair.getSecond());
                         return x02;
                     }
-                    else { throw new NullPointerException("create public-key failed!"); }
+                    else {throw new NullPointerException("create public-key failed!");}
                 }
                 throw new UnsupportedOperationException(String.format("context: %s is not a IEContext", context));
             case X02_AsymmetricPub.COMMAND:
@@ -96,7 +95,7 @@ public class ZCommandFilter<T extends ZContext>
                     IEncryptHandler encryptHandler = ec.getEncryptHandler();
                     byte[] symmetricKey = ec.getSymmetricEncrypt()
                                             .createKey("z-tls-rc4");
-                    if(symmetricKey == null) { throw new NullPointerException("create symmetric-key failed!"); }
+                    if(symmetricKey == null) {throw new NullPointerException("create symmetric-key failed!");}
                     Pair<Integer, byte[]> keyPair = encryptHandler.getCipher(x02.pubKey, symmetricKey);
                     if(keyPair != null) {
                         ec.setPubKeyId(x02.pubKeyId);
@@ -108,7 +107,7 @@ public class ZCommandFilter<T extends ZContext>
                         x03.cipher = keyPair.getSecond();
                         return x03;
                     }
-                    else { throw new NullPointerException("encrypt symmetric-key failed!"); }
+                    else {throw new NullPointerException("encrypt symmetric-key failed!");}
 
                 }
                 throw new UnsupportedOperationException(String.format("context: %s is not a IEContext", context));
@@ -119,7 +118,7 @@ public class ZCommandFilter<T extends ZContext>
                     IEncryptHandler encryptHandler = ec.getEncryptHandler();
                     if(ec.getPubKeyId() == x03.pubKeyId) {
                         byte[] symmetricKey = encryptHandler.getSymmetricKey(x03.pubKeyId, x03.cipher);
-                        if(symmetricKey == null) { throw new NullPointerException("decrypt symmetric-key failed!"); }
+                        if(symmetricKey == null) {throw new NullPointerException("decrypt symmetric-key failed!");}
                         ec.setSymmetricKeyId(x03.symmetricKeyId);
                         ec.reRollKey(symmetricKey);
                         X04_EncryptConfirm x04 = new X04_EncryptConfirm();
@@ -136,7 +135,7 @@ public class ZCommandFilter<T extends ZContext>
                             x02.setPubKey(keyPair.getFirst(), keyPair.getSecond());
                             return x02;
                         }
-                        else { throw new NullPointerException("create public-key failed!"); }
+                        else {throw new NullPointerException("create public-key failed!");}
                     }
 
                 }

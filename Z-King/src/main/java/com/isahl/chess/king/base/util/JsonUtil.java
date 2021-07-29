@@ -86,7 +86,7 @@ public class JsonUtil
 
     public static <T> T readValue(byte[] input, Class<T> clazz)
     {
-        if(input == null) { return null; }
+        if(input == null) {return null;}
         try {
             return OBJECT_MAPPER.readValue(input, clazz);
         }
@@ -101,7 +101,7 @@ public class JsonUtil
 
     public static <T> T readValue(String input, Class<T> clazz)
     {
-        if(IoUtil.isBlank(input)) { return null; }
+        if(IoUtil.isBlank(input)) {return null;}
         try {
             return OBJECT_MAPPER.readValue(input, clazz);
         }
@@ -116,7 +116,7 @@ public class JsonUtil
 
     public static <T> T readValue(byte[] input, TypeReference<T> type)
     {
-        if(input == null) { return null; }
+        if(input == null) {return null;}
         try {
             return OBJECT_MAPPER.readValue(input, type);
         }
@@ -131,7 +131,7 @@ public class JsonUtil
 
     public static <T> T readValue(String input, TypeReference<T> type)
     {
-        if(IoUtil.isBlank(input)) { return null; }
+        if(IoUtil.isBlank(input)) {return null;}
         try {
             return OBJECT_MAPPER.readValue(input, type);
         }
@@ -146,7 +146,7 @@ public class JsonUtil
 
     public static <T> T readValue(InputStream input, TypeReference<T> type)
     {
-        if(input == null) { return null; }
+        if(input == null) {return null;}
         try {
             return OBJECT_MAPPER.readValue(input, type);
         }
@@ -161,7 +161,7 @@ public class JsonUtil
 
     public static JsonNode readTree(byte[] input)
     {
-        if(input == null) { return OBJECT_MAPPER.nullNode(); }
+        if(input == null) {return OBJECT_MAPPER.nullNode();}
         try {
             return OBJECT_MAPPER.readTree(input);
         }
@@ -173,7 +173,7 @@ public class JsonUtil
 
     public static JsonNode readTree(String input)
     {
-        if(IoUtil.isBlank(input)) { return OBJECT_MAPPER.nullNode(); }
+        if(IoUtil.isBlank(input)) {return OBJECT_MAPPER.nullNode();}
         try {
             return OBJECT_MAPPER.readTree(input);
         }
@@ -185,7 +185,7 @@ public class JsonUtil
 
     public static JsonNode readTree(InputStream input)
     {
-        if(input == null) { return OBJECT_MAPPER.nullNode(); }
+        if(input == null) {return OBJECT_MAPPER.nullNode();}
         try {
             return OBJECT_MAPPER.readTree(input);
         }
@@ -202,11 +202,11 @@ public class JsonUtil
 
     public static <T> byte[] writeValueAsBytes(T input)
     {
-        if(input == null) { return null; }
+        if(input == null) {return null;}
         try {
             return OBJECT_MAPPER.writeValueAsBytes(input);
         }
-        catch(JsonProcessingException e) {
+        catch(Throwable e) {
             _Logger.warning("write json error", e);
         }
         return null;
@@ -214,7 +214,7 @@ public class JsonUtil
 
     public static <T> String writeValueAsString(T input)
     {
-        if(input == null) { return null; }
+        if(input == null) {return null;}
         try {
             return OBJECT_MAPPER.writeValueAsString(input);
         }
@@ -226,7 +226,7 @@ public class JsonUtil
 
     public static byte[] writeNodeAsBytes(JsonNode input)
     {
-        if(input == null) { return null; }
+        if(input == null) {return null;}
         try {
             return OBJECT_MAPPER.writeValueAsBytes(input);
         }
@@ -238,7 +238,7 @@ public class JsonUtil
 
     public static void writeValueWithFile(Object input, File file)
     {
-        if(input == null || file == null || file.isDirectory()) { return; }
+        if(input == null || file == null || file.isDirectory()) {return;}
         try {
             if((file.exists() || file.createNewFile()) && file.canWrite()) {
                 OBJECT_MAPPER.writeValue(file, input);

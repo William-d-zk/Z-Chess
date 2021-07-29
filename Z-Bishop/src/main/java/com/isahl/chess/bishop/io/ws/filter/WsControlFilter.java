@@ -55,8 +55,8 @@ public class WsControlFilter<T extends ZContext & IWsContext>
     {
         WsFrame frame = new WsFrame();
         _Logger.debug("control %s", output);
-        frame.setPayload(output.getPayload());
-        frame.setCtrl(output.getCtrl());
+        frame.putPayload(output.payload());
+        frame.putCtrl(output.ctrl());
         return frame;
     }
 
@@ -70,11 +70,11 @@ public class WsControlFilter<T extends ZContext & IWsContext>
     public WsControl decode(T context, WsFrame input)
     {
         return switch(input.frame_op_code & 0x0F) {
-            case WsFrame.frame_op_code_ctrl_close -> new X102_Close(input.getPayload());
-            case WsFrame.frame_op_code_ctrl_ping -> new X103_Ping(input.getPayload());
-            case WsFrame.frame_op_code_ctrl_pong -> new X104_Pong(input.getPayload());
-            case WsFrame.frame_op_code_ctrl_cluster -> new X106_Identity(input.getPayload());
-            case WsFrame.frame_op_code_ctrl_redirect -> new X107_Redirect(input.getPayload());
+            case WsFrame.frame_op_code_ctrl_close -> new X102_Close(input.payload());
+            case WsFrame.frame_op_code_ctrl_ping -> new X103_Ping(input.payload());
+            case WsFrame.frame_op_code_ctrl_pong -> new X104_Pong(input.payload());
+            case WsFrame.frame_op_code_ctrl_cluster -> new X106_Identity(input.payload());
+            case WsFrame.frame_op_code_ctrl_redirect -> new X107_Redirect(input.payload());
             default -> throw new UnsupportedOperationException(String.format("web socket frame with control code %d.",
                                                                              input.frame_op_code & 0x0F));
         };

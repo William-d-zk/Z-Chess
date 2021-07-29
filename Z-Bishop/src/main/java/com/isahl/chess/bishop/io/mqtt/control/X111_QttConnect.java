@@ -50,7 +50,7 @@ public class X111_QttConnect
     public X111_QttConnect()
     {
         super(COMMAND);
-        setCtrl(generateCtrl(false, false, ALMOST_ONCE, QttType.CONNECT));
+        putCtrl(generateCtrl(false, false, ALMOST_ONCE, QttType.CONNECT));
     }
 
     @Override
@@ -66,7 +66,7 @@ public class X111_QttConnect
     }
 
     @Override
-    public int getPriority()
+    public int priority()
     {
         return QOS_PRIORITY_00_NETWORK_CONTROL;
     }
@@ -444,6 +444,6 @@ public class X111_QttConnect
     @Override
     public long getOrigin()
     {
-        return getSession() == null ? ZUID.INVALID_PEER_ID : getSession().getIndex();
+        return session() == null ? ZUID.INVALID_PEER_ID : session().getIndex();
     }
 }

@@ -39,7 +39,7 @@ public abstract class WsHandshake
     @Override
     public String toString()
     {
-        return String.format("%s", new String(getPayload(), StandardCharsets.UTF_8));
+        return String.format("%s", new String(payload(), StandardCharsets.UTF_8));
     }
 
     private final int _Code;

@@ -24,7 +24,6 @@
 package com.isahl.chess.knight.cluster.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -48,8 +47,7 @@ public class ConsistentProtocol
     private final long   _Origin;
     private final long   _Uid;
 
-    @JsonIgnore
-    private transient byte[] tData;
+    private transient byte[] tPayload;
 
     @JsonCreator
     public ConsistentProtocol(
@@ -77,14 +75,6 @@ public class ConsistentProtocol
         return CONSISTENT_SERIAL;
     }
 
-    @Override
-    public byte[] encode()
-    {
-        if(tData != null) { return tData; }
-        tData = super.encode();
-        return tData;
-    }
-
     public byte[] getContent()
     {
         return _Content;
@@ -102,6 +92,18 @@ public class ConsistentProtocol
     }
 
     @Override
+    public byte[] payload()
+    {
+        return tPayload;
+    }
+
+    @Override
+    public byte[] encode()
+    {
+        return tPayload = super.encode();
+    }
+
+    @Override
     public String toString()
     {
         return String.format("ConsistentProtocol{content:%s,origin:%#x,uid:%#x||%d}",
@@ -110,4 +112,5 @@ public class ConsistentProtocol
                              _Uid,
                              _Uid);
     }
+
 }

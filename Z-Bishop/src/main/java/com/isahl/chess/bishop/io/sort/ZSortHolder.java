@@ -102,14 +102,14 @@ public enum ZSortHolder
         _Sort = sort;
     }
 
-    public static IControl create(int serial)
+    public static IControl CREATE(int serial, byte[] data)
     {
         if(serial >= X111_QttConnect.COMMAND && serial <= X11E_QttDisconnect.COMMAND) {
-            return _QttCommandFactory.create(serial);
+            return _QttCommandFactory.create(serial, data, null);
         }
-        if(serial >= 0x20 && serial <= 0x6F) { return _ServerFactory.create(serial); }
+        if(serial >= 0x20 && serial <= 0x6F) {return _ServerFactory.create(serial, data, null);}
         if(serial >= X70_RaftVote.COMMAND && serial <= X77_RaftNotify.COMMAND) {
-            return _ClusterFactory.create(serial);
+            return _ClusterFactory.create(serial, data, null);
         }
         throw new IllegalArgumentException();
     }

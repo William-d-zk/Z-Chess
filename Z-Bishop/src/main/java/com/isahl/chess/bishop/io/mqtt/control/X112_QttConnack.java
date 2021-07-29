@@ -46,7 +46,7 @@ public class X112_QttConnack
     public X112_QttConnack()
     {
         super(COMMAND);
-        setCtrl(generateCtrl(false, false, ALMOST_ONCE, QttType.CONNACK));
+        putCtrl(generateCtrl(false, false, ALMOST_ONCE, QttType.CONNACK));
     }
 
     @Override
@@ -56,7 +56,7 @@ public class X112_QttConnack
     }
 
     @Override
-    public int getPriority()
+    public int priority()
     {
         return QOS_PRIORITY_00_NETWORK_CONTROL;
     }

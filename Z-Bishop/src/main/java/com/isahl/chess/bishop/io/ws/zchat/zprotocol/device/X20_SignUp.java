@@ -49,7 +49,7 @@ public class X20_SignUp
     }
 
     @Override
-    public int getPriority()
+    public int priority()
     {
         return QOS_PRIORITY_06_META_CREATE;
     }

@@ -45,7 +45,7 @@ public class X32_MsgStatus
     }
 
     @Override
-    public int getPriority()
+    public int priority()
     {
         return QOS_PRIORITY_08_IMMEDIATE_MESSAGE;
     }

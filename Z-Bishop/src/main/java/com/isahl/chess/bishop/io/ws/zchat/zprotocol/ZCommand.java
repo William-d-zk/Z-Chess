@@ -47,13 +47,13 @@ public class ZCommand
     private byte[]   mPayload;
 
     @Override
-    public void setSession(ISession session)
+    public void putSession(ISession session)
     {
         mSession = session;
     }
 
     @Override
-    public ISession getSession()
+    public ISession session()
     {
         return mSession;
     }
@@ -65,25 +65,25 @@ public class ZCommand
     }
 
     @Override
-    public void setCtrl(byte ctrl)
+    public void putCtrl(byte ctrl)
     {
         setCtrlCode(ctrl);
     }
 
     @Override
-    public void setPayload(byte[] payload)
+    public void putPayload(byte[] payload)
     {
         mPayload = payload;
     }
 
     @Override
-    public byte[] getPayload()
+    public byte[] payload()
     {
         return mPayload;
     }
 
     @Override
-    public byte getCtrl()
+    public byte ctrl()
     {
         return getCtrlCode();
     }

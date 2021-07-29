@@ -40,7 +40,7 @@ public class X114_QttPuback
     public X114_QttPuback()
     {
         super(COMMAND);
-        setCtrl(generateCtrl(false, false, ALMOST_ONCE, QttType.PUBACK));
+        putCtrl(generateCtrl(false, false, ALMOST_ONCE, QttType.PUBACK));
     }
 
     @Override

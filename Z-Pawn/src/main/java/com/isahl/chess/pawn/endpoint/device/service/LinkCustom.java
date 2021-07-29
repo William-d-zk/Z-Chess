@@ -123,7 +123,7 @@ public class LinkCustom
                     ISession old = manager.mapSession(deviceId, session);
                     if(old != null) {
                         X108_Shutdown x108 = new X108_Shutdown();
-                        x108.setSession(old);
+                        x108.putSession(old);
                         _Logger.info("re-login ok %s, wait for consistent notify", x111.getClientId());
                         return new Pair<>(new X108_Shutdown[]{ x108 }, x111);
                     }
@@ -162,9 +162,8 @@ public class LinkCustom
                     X76_RaftResp x76 = (X76_RaftResp) response;
                     isConsistency = x76.getCode() == RaftCode.SUCCESS.getCode();
                 }
-                int cmd = response.getSubSerial();
-                consensusBody = ZSortHolder.create(cmd);
-                consensusBody.decode(response.getPayload());
+                int cmd = response.subSerial();
+                consensusBody = ZSortHolder.CREATE(cmd, response.payload());
                 _Logger.debug("consensus : %s", consensusBody);
             }
             default -> {
@@ -204,7 +203,7 @@ public class LinkCustom
                     else {
                         x112.rejectServerUnavailable();
                     }
-                    x112.setSession(session);
+                    x112.putSession(session);
                     return Collections.singletonList(new Triple<>(x112, session, session.getEncoder()));
                 }
             }
@@ -220,7 +219,7 @@ public class LinkCustom
                         optional.ifPresent(device->device.subscribe(topic, level));
                     });
                     if(session != null) {
-                        x119.setSession(session);
+                        x119.putSession(session);
                         _Logger.info("subscribes :%s", x118.getSubscribes());
                         return Collections.singletonList(new Triple<>(x119, session, session.getEncoder()));
                     }
@@ -237,7 +236,7 @@ public class LinkCustom
                     if(session != null) {
                         X11B_QttUnsuback x11B = new X11B_QttUnsuback();
                         x11B.setMsgId(x11A.getMsgId());
-                        x11B.setSession(session);
+                        x11B.putSession(session);
                         _Logger.info("unsubscribe topic:%s", x11A.getTopics());
                         return Collections.singletonList(new Triple<>(x11B, session, session.getEncoder()));
                     }
