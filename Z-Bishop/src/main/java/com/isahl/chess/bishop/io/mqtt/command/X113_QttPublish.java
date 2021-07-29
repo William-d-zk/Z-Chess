@@ -44,7 +44,7 @@ public class X113_QttPublish
     public X113_QttPublish()
     {
         super(COMMAND);
-        setCtrl(generateCtrl(false, false, ALMOST_ONCE, QttType.PUBLISH));
+        putCtrl(generateCtrl(false, false, ALMOST_ONCE, QttType.PUBLISH));
     }
 
     private String mTopic;
@@ -53,8 +53,8 @@ public class X113_QttPublish
     public int dataLength()
     {
         return (getLevel().ordinal() > ALMOST_ONCE.ordinal() ? super.dataLength()
-                                                             : Objects.nonNull(getPayload()) ? getPayload().length
-                                                                                             : 0) + 2 +
+                                                             : Objects.nonNull(this.payload()) ? this.payload().length
+                                                                                               : 0) + 2 +
                (Objects.nonNull(mTopic) ? mTopic.getBytes(StandardCharsets.UTF_8).length : 0);
     }
 
@@ -79,8 +79,8 @@ public class X113_QttPublish
         if(getLevel().ordinal() > ALMOST_ONCE.ordinal()) {
             pos = super.decodec(data, pos);
         }
-        setPayload(new byte[data.length - pos]);
-        pos = IoUtil.read(data, pos, getPayload());
+        putPayload(new byte[data.length - pos]);
+        pos = IoUtil.read(data, pos, this.payload());
         return pos;
     }
 
@@ -93,7 +93,7 @@ public class X113_QttPublish
         if(getLevel().ordinal() > ALMOST_ONCE.ordinal()) {
             pos = super.encodec(data, pos);
         }
-        pos += IoUtil.write(getPayload(), data, pos);
+        pos += IoUtil.write(this.payload(), data, pos);
         return pos;
     }
 
@@ -106,6 +106,6 @@ public class X113_QttPublish
                              getLevel(),
                              getMsgId(),
                              getTopic(),
-                             getPayload() == null ? "NULL" : new String(getPayload(), StandardCharsets.UTF_8));
+                             this.payload() == null ? "NULL" : new String(this.payload(), StandardCharsets.UTF_8));
     }
 }

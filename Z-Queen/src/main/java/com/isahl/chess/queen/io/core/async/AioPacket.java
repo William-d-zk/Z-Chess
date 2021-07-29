@@ -51,7 +51,7 @@ public class AioPacket
     }
 
     @Override
-    public byte[] getPayload()
+    public byte[] payload()
     {
         return mBuf.array();
     }

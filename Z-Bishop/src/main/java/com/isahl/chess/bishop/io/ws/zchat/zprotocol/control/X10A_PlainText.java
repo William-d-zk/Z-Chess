@@ -60,7 +60,7 @@ public class X10A_PlainText
     @Override
     public int dataLength()
     {
-        return (getPayload() != null ? getPayload().length : 0);
+        return (payload() != null ? payload().length : 0);
     }
 
     @Override
@@ -72,8 +72,8 @@ public class X10A_PlainText
     @Override
     public int encodec(byte[] data, int pos)
     {
-        if(getPayload() != null) {
-            pos += IoUtil.write(getPayload(), 0, data, pos, getPayload().length);
+        if(payload() != null) {
+            pos += IoUtil.write(payload(), 0, data, pos, payload().length);
         }
         return pos;
     }
@@ -83,7 +83,7 @@ public class X10A_PlainText
     {
         byte[] payload = new byte[data.length - pos];
         pos += IoUtil.write(data, pos, payload, 0, payload.length);
-        setPayload(payload);
+        putPayload(payload);
         return pos;
     }
 
@@ -96,7 +96,7 @@ public class X10A_PlainText
     @Override
     public void reset()
     {
-        setSession(null);
+        putSession(null);
     }
 
     @Override
@@ -118,43 +118,43 @@ public class X10A_PlainText
 
     @Override
     @SuppressWarnings("unchecked")
-    public <C extends IContext> C getContext()
+    public <C extends IContext> C context()
     {
         return (C) mContext;
     }
 
     @Override
-    public void setCtrl(byte ctrl)
+    public void putCtrl(byte ctrl)
     {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void setPayload(byte[] payload)
+    public void putPayload(byte[] payload)
     {
         mPayload = payload;
     }
 
     @Override
-    public byte[] getPayload()
+    public byte[] payload()
     {
         return mPayload;
     }
 
     @Override
-    public void setSession(ISession session)
+    public void putSession(ISession session)
     {
         mSession = session;
     }
 
     @Override
-    public ISession getSession()
+    public ISession session()
     {
         return mSession;
     }
 
     @Override
-    public byte getCtrl()
+    public byte ctrl()
     {
         return _CtrlCode;
     }

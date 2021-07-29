@@ -40,7 +40,7 @@ public class X117_QttPubcomp
     public X117_QttPubcomp()
     {
         super(COMMAND);
-        setCtrl(generateCtrl(false, false, ALMOST_ONCE, QttType.PUBCOMP));
+        putCtrl(generateCtrl(false, false, ALMOST_ONCE, QttType.PUBCOMP));
     }
 
     @Override

@@ -46,7 +46,7 @@ public class X119_QttSuback
     public X119_QttSuback()
     {
         super(COMMAND);
-        setCtrl(generateCtrl(false, false, ALMOST_ONCE, QttType.SUBACK));
+        putCtrl(generateCtrl(false, false, ALMOST_ONCE, QttType.SUBACK));
     }
 
     private List<Level> mResultList;
@@ -96,6 +96,6 @@ public class X119_QttSuback
     @Override
     public String toString()
     {
-        return String.format("suback msg-id %d, %s", getMsgId(), getQosLevels());
+        return String.format("%#x suback msg-id %d, %s", COMMAND, getMsgId(), getQosLevels());
     }
 }

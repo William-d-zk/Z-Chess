@@ -42,7 +42,7 @@ public class X11E_QttDisconnect
     public X11E_QttDisconnect()
     {
         super(COMMAND);
-        setCtrl(generateCtrl(false, false, ALMOST_ONCE, QttType.DISCONNECT));
+        putCtrl(generateCtrl(false, false, ALMOST_ONCE, QttType.DISCONNECT));
     }
 
     @Override
@@ -54,6 +54,6 @@ public class X11E_QttDisconnect
     @Override
     public long getOrigin()
     {
-        return getSession().getIndex();
+        return session().getIndex();
     }
 }

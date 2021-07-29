@@ -47,13 +47,13 @@ public interface IQoS
     int QOS_PRIORITY_14_NO_CONFIRM_MESSAGE = 4 << 14;
     int QOS_PRIORITY_15_INNER_CMD          = 4 << 15;
 
-    int getPriority();
+    int priority();
 
     @Override
     default int compareTo(IQoS o)
     {
         long seqDiff = getSequence() - o.getSequence();
-        int priorityDiff = getPriority() - o.getPriority();
+        int priorityDiff = priority() - o.priority();
         return priorityDiff == 0 ? (seqDiff == 0 ? hashCode() - o.hashCode()
                                                  : (seqDiff > 0 ? 1
                                                                 : -1))

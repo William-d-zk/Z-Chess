@@ -48,24 +48,24 @@ public class X106_Identity
 
     public long getIdentity()
     {
-        if(getPayload() == null) { return INVALID_INDEX; }
-        if(getPayload().length < 8) { throw new ArrayIndexOutOfBoundsException(); }
-        return IoUtil.readLong(getPayload(), 0);
+        if(payload() == null) { return INVALID_INDEX; }
+        if(payload().length < 8) { throw new ArrayIndexOutOfBoundsException(); }
+        return IoUtil.readLong(payload(), 0);
     }
 
     public long getSessionIdx()
     {
-        if(getPayload() == null) { return INVALID_INDEX; }
-        if(getPayload().length < 16) { throw new ArrayIndexOutOfBoundsException(); }
-        return IoUtil.readLong(getPayload(), 8);
+        if(payload() == null) { return INVALID_INDEX; }
+        if(payload().length < 16) { throw new ArrayIndexOutOfBoundsException(); }
+        return IoUtil.readLong(payload(), 8);
     }
 
     public long[] getIdentities()
     {
-        int size = (getPayload().length >>> 3);
+        int size = (payload().length >>> 3);
         if(size > 0) {
             long[] result = new long[size];
-            IoUtil.readLongArray(getPayload(), 0, result);
+            IoUtil.readLongArray(payload(), 0, result);
             return result;
         }
         return new long[]{ INVALID_INDEX, INVALID_INDEX };
@@ -80,7 +80,7 @@ public class X106_Identity
     @Override
     public X106_Identity duplicate()
     {
-        return new X106_Identity(getPayload());
+        return new X106_Identity(payload());
     }
 
     @Override

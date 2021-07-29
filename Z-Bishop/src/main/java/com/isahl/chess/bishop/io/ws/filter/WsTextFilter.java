@@ -47,8 +47,8 @@ public class WsTextFilter<T extends ZContext & IWsContext>
     public WsFrame encode(T context, ICommand output)
     {
         WsFrame frame = new WsFrame();
-        frame.setPayload(output.getPayload());
-        frame.setCtrl(output.getCtrl());
+        frame.putPayload(output.payload());
+        frame.putCtrl(output.ctrl());
         return frame;
     }
 
@@ -56,7 +56,7 @@ public class WsTextFilter<T extends ZContext & IWsContext>
     public ICommand decode(T context, IFrame input)
     {
         ICommand command = new X10A_PlainText();
-        command.setPayload(input.getPayload());
+        command.putPayload(input.payload());
         return command;
     }
 

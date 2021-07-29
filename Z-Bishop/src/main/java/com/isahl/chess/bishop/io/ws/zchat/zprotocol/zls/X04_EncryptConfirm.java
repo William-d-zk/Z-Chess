@@ -26,6 +26,8 @@ import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZCommand;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.io.core.inf.IPContext;
 
+import java.util.Objects;
+
 /**
  * @author William.d.zk
  */
@@ -90,13 +92,15 @@ public class X04_EncryptConfirm
     @Override
     public <C extends IPContext> void afterEncode(C ctx)
     {
-        ctx.updateOut();
+        Objects.requireNonNull(ctx)
+               .updateOut();
     }
 
     @Override
     public <C extends IPContext> void afterDecode(C ctx)
     {
-        ctx.updateIn();
+        Objects.requireNonNull(ctx)
+               .updateIn();
     }
 
     @Override

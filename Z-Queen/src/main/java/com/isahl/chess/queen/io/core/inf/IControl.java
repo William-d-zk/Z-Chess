@@ -26,19 +26,17 @@ import com.isahl.chess.king.base.inf.IDisposable;
 
 /**
  * 用于ISession 发送的指令最小单元 需要满足如下的行为特征
- * 
+ *
  * @author William.d.zk
- * 
  * @see ISession
  */
 public interface IControl
-        extends
-        IFrame,
-        IQoS,
-        IMappingMessage,
-        IDisposable
+        extends IFrame,
+                IQoS,
+                IMappingMessage,
+                IDisposable
 {
-    <C extends IContext> C getContext();
+    <C extends IContext> C context();
 
     @Override
     default int superSerial()
@@ -47,7 +45,7 @@ public interface IControl
     }
 
     @Override
-    default int getPriority()
+    default int priority()
     {
         return QOS_PRIORITY_00_NETWORK_CONTROL;
     }

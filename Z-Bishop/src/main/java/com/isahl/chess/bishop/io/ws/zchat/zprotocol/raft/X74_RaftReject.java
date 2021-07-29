@@ -46,7 +46,7 @@ public class X74_RaftReject
     }
 
     @Override
-    public int getPriority()
+    public int priority()
     {
         return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
     }

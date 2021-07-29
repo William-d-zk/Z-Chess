@@ -51,16 +51,16 @@ public class WsProxyFilter<A extends IPContext>
     public WsFrame encode(WsProxyContext<A> context, IPacket output)
     {
         WsFrame frame = new WsFrame();
-        frame.setPayload(output.getBuffer()
+        frame.putPayload(output.getBuffer()
                                .array());
-        frame.setCtrl(WsFrame.frame_op_code_no_ctrl_bin);
+        frame.putCtrl(WsFrame.frame_op_code_no_ctrl_bin);
         return frame;
     }
 
     @Override
     public IPacket decode(WsProxyContext<A> context, WsFrame input)
     {
-        return new AioPacket(ByteBuffer.wrap(input.getPayload()));
+        return new AioPacket(ByteBuffer.wrap(input.payload()));
     }
 
     @Override

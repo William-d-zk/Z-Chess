@@ -47,7 +47,6 @@ public class Health
     private long     mCount;
     private long     mNumber;
     private long     mStart;
-    private long     mEnd;
 
     public void enable()
     {
@@ -65,7 +64,7 @@ public class Health
     private void attenuation()
     {
         mStatisticDuration = mStatisticDuration.plus(mDuration);
-        //TODO count 和 统计的总数都进行衰减
+        //TODO count 和 统计的总次数都进行衰减
     }
 
     @Override
@@ -85,10 +84,14 @@ public class Health
     @Override
     public void collectOff(long end)
     {
-        mDuration = Duration.ofNanos(System.nanoTime() - mStartTime);
-        mEnd = end;
         if(mNumber > Long.MAX_VALUE - 1) {
             mNumber = 0;
+        }
+        mCount += end - mStart;
+        mDuration = Duration.ofNanos(System.nanoTime() - mStartTime);
+        attenuation();
+        if(mCount > 0) {
+            mAverageDuration = mStatisticDuration.dividedBy(mCount);
         }
     }
 
@@ -101,11 +104,6 @@ public class Health
     @Override
     public Duration averageEventHandling()
     {
-        mCount += mEnd - mStart;
-        attenuation();
-        if(mCount > 0) {
-            mAverageDuration = mStatisticDuration.dividedBy(mCount);
-        }
         return mAverageDuration;
     }
 }

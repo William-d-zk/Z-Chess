@@ -47,7 +47,7 @@ public class X50_DeviceMsg
     }
 
     @Override
-    public int getPriority()
+    public int priority()
     {
         return QOS_PRIORITY_08_IMMEDIATE_MESSAGE;
     }
@@ -58,7 +58,7 @@ public class X50_DeviceMsg
         return super.dataLength() + 2 + payloadLength;
     }
 
-    public void setPayload(byte[] payload)
+    public void putPayload(byte[] payload)
     {
         this.payload = payload;
         if(payload.length > 4096) { throw new IllegalArgumentException("payload length is over 4096"); }

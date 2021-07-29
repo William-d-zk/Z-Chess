@@ -216,7 +216,7 @@ public class QttRouter
     @Override
     public boolean ack(ICommand stateMessage, long session)
     {
-        int idleMax = stateMessage.getSession()
+        int idleMax = stateMessage.session()
                                   .getReadTimeOutSeconds();
         long msgId = stateMessage.getMsgId();
         boolean[] acked = { true, true };

@@ -25,18 +25,16 @@ package com.isahl.chess.queen.io.core.inf;
 /**
  * stream protocol 存在stream control的状态更新机制
  * 状态机由 IContext 进行管理。
- * 
- * @see IContext
- * 
+ *
  * @author William.d.zk
+ * @see IContext
  */
 public interface IStreamProtocol
-        extends
-        IProtocol
+        extends IProtocol
 {
     /**
      * 编码结束后 更新状态机状态
-     * 
+     *
      * @param ctx
      */
     default <C extends IPContext> void afterEncode(C ctx)
@@ -45,7 +43,7 @@ public interface IStreamProtocol
 
     /**
      * 解码结束后更新状态机状态
-     * 
+     *
      * @param ctx
      */
     default <C extends IPContext> void afterDecode(C ctx)
@@ -55,9 +53,8 @@ public interface IStreamProtocol
     /**
      * 扩展IProtocol 未对IContext进行约定
      * 编码过程
-     * 
+     *
      * @param ctx
-     * 
      * @return
      */
     default <C extends IPContext> byte[] encode(C ctx)
@@ -70,7 +67,7 @@ public interface IStreamProtocol
     /**
      * 扩展IProtocol 未对IContext进行约定
      * 解码过程
-     * 
+     *
      * @param data
      * @param ctx
      */

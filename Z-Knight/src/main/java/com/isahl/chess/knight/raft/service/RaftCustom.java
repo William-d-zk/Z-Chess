@@ -105,8 +105,8 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
             // leader → follower
             case X72_RaftAppend.COMMAND -> {
                 X72_RaftAppend x72 = (X72_RaftAppend) content;
-                if(x72.getPayload() != null) {
-                    _RaftPeer.appendLogs(JsonUtil.readValue(x72.getPayload(), _TypeReferenceOfLogEntryList));
+                if(x72.payload() != null) {
+                    _RaftPeer.appendLogs(JsonUtil.readValue(x72.payload(), _TypeReferenceOfLogEntryList));
                 }
                 return _RaftPeer.append(x72.getTerm(),
                                         x72.getPreIndex(),
@@ -139,12 +139,12 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
                             .getState() == LEADER)
                 {
                     X75_RaftReq x75 = (X75_RaftReq) content;
-                    return _RaftPeer.newLeaderLogEntry(x75.getSubSerial(),
-                                                       x75.getPayload(),
+                    return _RaftPeer.newLeaderLogEntry(x75.subSerial(),
+                                                       x75.payload(),
                                                        x75.getClientId(),
                                                        x75.getOrigin(),
                                                        manager,
-                                                       x75.getSession());
+                                                       x75.session());
                 }
                 else {
                     _Logger.warning("state error,expect:'LEADER',real:%s",
@@ -166,8 +166,8 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
                     X76_RaftResp x76 = _RaftPeer.raftResp(SUCCESS,
                                                           entry.getClient(),
                                                           entry.getOrigin(),
-                                                          entry.getSubSerial(),
-                                                          entry.getPayload());
+                                                          entry.subSerial(),
+                                                          entry.getContent());
                     return new Pair<>(null, x76);
                 }
                 return null;
@@ -198,15 +198,15 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
             case OP_APPEND -> _RaftPeer.checkLogAppend(machine,
                                                        manager,
                                                        cmd->new Triple<>(cmd,
-                                                                         cmd.getSession(),
-                                                                         cmd.getSession()
+                                                                         cmd.session(),
+                                                                         cmd.session()
                                                                             .getEncoder()));
             // vote
             case OP_INSERT -> _RaftPeer.checkVoteState(machine,
                                                        manager,
                                                        cmd->new Triple<>(cmd,
-                                                                         cmd.getSession(),
-                                                                         cmd.getSession()
+                                                                         cmd.session(),
+                                                                         cmd.session()
                                                                             .getEncoder()));
             default -> null;
         };
@@ -214,8 +214,8 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
 
     private Triple<ZCommand, ISession, IPipeEncoder> tMapper(ZCommand in)
     {
-        return new Triple<>(in, in.getSession(),//此处已执行完毕 manager.find
-                            in.getSession()
+        return new Triple<>(in, in.session(),//此处已执行完毕 manager.find
+                            in.session()
                               .getEncoder());
     }
 
@@ -241,7 +241,7 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
                 _Logger.info("client → leader x75");
                 X75_RaftReq x75 = new X75_RaftReq(_RaftPeer.generateId());
                 x75.setSubSerial(request.serial());
-                x75.setPayload(request.encode());
+                x75.putPayload(request.encode());
                 x75.setOrigin(request.getOrigin());
                 x75.setClientId(_RaftPeer.getMachine()
                                          .getPeerId());

@@ -59,7 +59,7 @@ public class X76_RaftResp
     }
 
     @Override
-    public int getSubSerial()
+    public int subSerial()
     {
         return mSubSerial;
     }

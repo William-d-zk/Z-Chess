@@ -46,7 +46,7 @@ public class X30_EventMsg
     }
 
     @Override
-    public int getPriority()
+    public int priority()
     {
         return QOS_PRIORITY_08_IMMEDIATE_MESSAGE;
     }
@@ -93,13 +93,13 @@ public class X30_EventMsg
         return pos;
     }
 
-    public void setPayload(byte[] payload)
+    public void putPayload(byte[] payload)
     {
         this.payload = payload;
         payloadLength = payload.length;
     }
 
-    public byte[] getPayload()
+    public byte[] payload()
     {
         return payload;
     }
@@ -129,7 +129,7 @@ public class X30_EventMsg
         return ctrl == CTRL_TEXT;
     }
 
-    public void setCtrl(byte ctrl)
+    public void putCtrl(byte ctrl)
     {
         this.ctrl = ctrl;
     }

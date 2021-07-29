@@ -44,7 +44,7 @@ public class X51_DeviceMsgAck
     }
 
     @Override
-    public int getPriority()
+    public int priority()
     {
         return QOS_PRIORITY_09_CONFIRM_MESSAGE;
     }

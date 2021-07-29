@@ -119,12 +119,12 @@ public class WsFrame
         }
     }
 
-    public byte[] getPayload()
+    public byte[] payload()
     {
         return mPayload;
     }
 
-    public void setPayload(byte[] payload)
+    public void putPayload(byte[] payload)
     {
         mPayload = payload;
         mPayloadLength = payload == null ? 0 : payload.length;
@@ -240,13 +240,13 @@ public class WsFrame
     }
 
     @Override
-    public void setCtrl(byte frame_ctrl_code)
+    public void putCtrl(byte frame_ctrl_code)
     {
         frame_op_code = frame_ctrl_code;
     }
 
     @Override
-    public byte getCtrl()
+    public byte ctrl()
     {
         return (byte) (frame_op_code & 0x0F);
     }
@@ -325,13 +325,13 @@ public class WsFrame
         if(getMaskLength() > 0) { pos += IoUtil.write(getMask(), data, pos); }
         if(getPayloadLength() > 0) {
             doMask();
-            pos += IoUtil.write(getPayload(), data, pos);
+            pos += IoUtil.write(payload(), data, pos);
         }
         return pos;
     }
 
     public int command()
     {
-        return getPayload()[1] & 0xFF;
+        return payload()[1] & 0xFF;
     }
 }

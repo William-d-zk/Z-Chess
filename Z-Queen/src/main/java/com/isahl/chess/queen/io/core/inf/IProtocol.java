@@ -47,12 +47,12 @@ public interface IProtocol
 
     int superSerial();
 
-    default int getSubSerial()
+    default int subSerial()
     {
         return -1;
     }
 
-    byte[] getPayload();
+    byte[] payload();
 
     default byte[] encode()
     {
@@ -77,7 +77,7 @@ public interface IProtocol
 
     default int decode(byte[] input, int pos, int length)
     {
-        if(input == null || input.length == 0) { return 0; }
+        if(input == null || input.length == 0) {return 0;}
         // dataLength 此处表达了最短长度值
         int len = dataLength();
         if(len > length || (input.length < len || pos + length > input.length)) {
@@ -88,7 +88,7 @@ public interface IProtocol
 
     default int decode(byte[] data)
     {
-        if(data == null || data.length == 0) { return 0; }
+        if(data == null || data.length == 0) {return 0;}
         return decode(data, 0, data.length);
     }
 

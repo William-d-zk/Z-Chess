@@ -60,15 +60,15 @@ public abstract class WsControl
     @Override
     public void reset()
     {
-        setSession(null);
+        putSession(null);
     }
 
-    public byte[] getPayload()
+    public byte[] payload()
     {
         return _Payload;
     }
 
-    public void setPayload(byte[] payload)
+    public void putPayload(byte[] payload)
     {
         throw new UnsupportedOperationException();
     }
@@ -87,13 +87,13 @@ public abstract class WsControl
     }
 
     @Override
-    public void setCtrl(byte ctrl)
+    public void putCtrl(byte ctrl)
     {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public byte getCtrl()
+    public byte ctrl()
     {
         return _CtrlCode;
     }
@@ -105,13 +105,13 @@ public abstract class WsControl
     }
 
     @Override
-    public ISession getSession()
+    public ISession session()
     {
         return mSession;
     }
 
     @Override
-    public void setSession(ISession session)
+    public void putSession(ISession session)
     {
         mSession = session;
     }
@@ -144,7 +144,7 @@ public abstract class WsControl
 
     @Override
     @SuppressWarnings("unchecked")
-    public WsContext getContext()
+    public WsContext context()
     {
         return mContext;
     }

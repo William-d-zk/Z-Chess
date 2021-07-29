@@ -40,7 +40,7 @@ public class X116_QttPubrel
     public X116_QttPubrel()
     {
         super(COMMAND);
-        setCtrl(generateCtrl(false, false, AT_LEAST_ONCE, QttType.PUBREL));
+        putCtrl(generateCtrl(false, false, AT_LEAST_ONCE, QttType.PUBREL));
     }
 
     @Override

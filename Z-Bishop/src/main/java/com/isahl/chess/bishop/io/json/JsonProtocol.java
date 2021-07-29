@@ -26,37 +26,32 @@ package com.isahl.chess.bishop.io.json;
 import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.queen.io.core.inf.IProtocol;
 
-import java.util.Objects;
-
 /**
  * @author william.d.zk
  */
 public abstract class JsonProtocol
         implements IProtocol
 {
-    private           int    mLength;
-    private transient byte[] tPayload;
+    protected int mLength;
 
     @Override
     public byte[] encode()
     {
-        tPayload = JsonUtil.writeValueAsBytes(this);
-        Objects.requireNonNull(tPayload);
-        mLength = tPayload.length;
-        return tPayload;
+        byte[] data = JsonUtil.writeValueAsBytes(this);
+        mLength = data == null ? 0 : data.length;
+        return data;
     }
 
     @Override
     public int decode(byte[] data)
     {
-        tPayload = data;
         return mLength = data.length;
     }
 
     @Override
-    public byte[] getPayload()
+    public byte[] payload()
     {
-        return tPayload;
+        return null;
     }
 
     @Override

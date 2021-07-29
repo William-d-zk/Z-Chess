@@ -39,7 +39,7 @@ public class X24_UpdateToken
     }
 
     @Override
-    public int getPriority()
+    public int priority()
     {
         return QOS_PRIORITY_06_META_CREATE;
     }

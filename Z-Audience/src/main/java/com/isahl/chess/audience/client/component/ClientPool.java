@@ -187,7 +187,7 @@ public class ClientPool
                                                  case X30_EventMsg.COMMAND:
                                                      X30_EventMsg x30 = (X30_EventMsg) cmd;
                                                      _Logger.debug("x30 payload: %s",
-                                                                   new String(x30.getPayload(),
+                                                                   new String(x30.payload(),
                                                                               StandardCharsets.UTF_8));
                                                      X31_ConfirmMsg x31 = new X31_ConfirmMsg(x30.getMsgId());
                                                      x31.setStatus(X31_ConfirmMsg.STATUS_RECEIVED);

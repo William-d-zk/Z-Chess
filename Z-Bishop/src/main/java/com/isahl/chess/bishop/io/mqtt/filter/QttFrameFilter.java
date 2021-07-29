@@ -70,7 +70,7 @@ public class QttFrameFilter
                 if(lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
                 context.setCarrier(carrier = new QttFrame());
                 byte value = recvBuf.get();
-                carrier.setCtrl(value);
+                carrier.putCtrl(value);
                 lack = context.lackLength(1, 1);
             case 0:
                 if(lack > 0 && !recvBuf.hasRemaining()) { return ResultType.NEED_DATA; }
@@ -98,7 +98,7 @@ public class QttFrameFilter
                             byte[] payload = new byte[carrier.getPayloadLength()];
                             cRvBuf.flip();
                             cRvBuf.get(payload);
-                            carrier.setPayload(payload);
+                            carrier.putPayload(payload);
                         }
                         cRvBuf.clear();
                         return ResultType.NEXT_STEP;

@@ -40,7 +40,7 @@ public class X11C_QttPingreq
     public X11C_QttPingreq()
     {
         super(COMMAND);
-        setCtrl(generateCtrl(false, false, ALMOST_ONCE, QttType.PINGREQ));
+        putCtrl(generateCtrl(false, false, ALMOST_ONCE, QttType.PINGREQ));
     }
 
 }

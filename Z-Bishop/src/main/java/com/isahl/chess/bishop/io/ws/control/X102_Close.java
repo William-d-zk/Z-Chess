@@ -46,7 +46,7 @@ public class X102_Close
     @Override
     public X102_Close duplicate()
     {
-        return new X102_Close(getPayload());
+        return new X102_Close(payload());
     }
 
     @Override

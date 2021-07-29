@@ -53,7 +53,7 @@ public class X72_RaftAppend
     private long mFollowerId;
 
     @Override
-    public int getPriority()
+    public int priority()
     {
         return QOS_PRIORITY_03_CLUSTER_EXCHANGE;
     }
@@ -169,6 +169,6 @@ public class X72_RaftAppend
                              mPreIndex,
                              mPreIndexTerm,
                              mCommit,
-                             getPayload() == null ? 0 : getPayload().length);
+                             payload() == null ? 0 : payload().length);
     }
 }

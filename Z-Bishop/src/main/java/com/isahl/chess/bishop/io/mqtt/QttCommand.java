@@ -47,7 +47,7 @@ public abstract class QttCommand
     private byte[]   mPayload;
 
     @Override
-    public void setCtrl(byte ctrl)
+    public void putCtrl(byte ctrl)
     {
         setOpCode(ctrl);
     }
@@ -65,19 +65,19 @@ public abstract class QttCommand
     }
 
     @Override
-    public void setPayload(byte[] payload)
+    public void putPayload(byte[] payload)
     {
         mPayload = payload;
     }
 
     @Override
-    public byte[] getPayload()
+    public byte[] payload()
     {
         return mPayload;
     }
 
     @Override
-    public byte getCtrl()
+    public byte ctrl()
     {
         return getOpCode();
     }
@@ -101,19 +101,19 @@ public abstract class QttCommand
     }
 
     @Override
-    public void setSession(ISession session)
+    public void putSession(ISession session)
     {
         mSession = session;
     }
 
     @Override
-    public ISession getSession()
+    public ISession session()
     {
         return mSession;
     }
 
     @Override
-    public int getPriority()
+    public int priority()
     {
         return QOS_PRIORITY_08_IMMEDIATE_MESSAGE;
     }
@@ -141,7 +141,7 @@ public abstract class QttCommand
 
     @Override
     @SuppressWarnings("unchecked")
-    public QttContext getContext()
+    public QttContext context()
     {
         return mContext;
     }

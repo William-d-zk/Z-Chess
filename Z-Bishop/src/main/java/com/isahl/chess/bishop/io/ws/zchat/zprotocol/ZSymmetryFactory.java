@@ -23,6 +23,7 @@
 
 package com.isahl.chess.bishop.io.ws.zchat.zprotocol;
 
+import com.isahl.chess.bishop.io.ws.zchat.ZContext;
 import com.isahl.chess.queen.io.core.inf.ICommand;
 import com.isahl.chess.queen.io.core.inf.ICommandFactory;
 import com.isahl.chess.queen.io.core.inf.IFrame;
@@ -32,21 +33,24 @@ import com.isahl.chess.queen.io.core.inf.IFrame;
  * @date 2019-05-08
  */
 public class ZSymmetryFactory
-        implements ICommandFactory<ICommand, IFrame>
+        implements ICommandFactory<ICommand, IFrame, ZContext>
 {
     @Override
-    public ICommand create(IFrame frame)
+    public ICommand create(IFrame frame, ZContext context)
     {
-        return create(frame.getPayload()[1] & 0xFF);
+        return create(frame.payload()[1] & 0xFF, frame.payload(), context);
     }
 
     @Override
-    public ICommand create(int serial)
+    public ICommand create(int serial, byte[] data, ZContext context)
     {
-
-        return switch(serial) {
+        ICommand command = switch(serial) {
             default -> null;
         };
+        if(command != null) {
+            command.decode(data, context);
+        }
+        return command;
     }
 
 }

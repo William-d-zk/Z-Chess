@@ -140,7 +140,7 @@ public abstract class MqttProtocol
     }
 
     @Override
-    public int getPriority()
+    public int priority()
     {
         return QOS_PRIORITY_00_NETWORK_CONTROL;
     }
@@ -160,7 +160,7 @@ public abstract class MqttProtocol
         mVersion = version;
     }
 
-    public void setContext(QttContext context)
+    public void putContext(QttContext context)
     {
         mContext = context;
     }

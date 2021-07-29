@@ -29,18 +29,17 @@ import com.isahl.chess.king.base.inf.IReset;
  * @author william.d.zk
  */
 public interface IFrame
-        extends
-        IReset,
-        IProtocol
+        extends IReset,
+                IProtocol
 {
 
-    void setCtrl(byte ctrl);
+    void putCtrl(byte ctrl);
 
-    void setPayload(byte[] payload);
+    void putPayload(byte[] payload);
 
-    byte[] getPayload();
+    byte[] payload();
 
-    byte getCtrl();
+    byte ctrl();
 
     boolean isCtrl();
 

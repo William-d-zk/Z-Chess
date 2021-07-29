@@ -28,15 +28,13 @@ package com.isahl.chess.queen.io.core.inf;
  * 根据命令字 创建具体的通讯指令
  * 通讯指令 必须是 IRouteLv4 & IStreamProtocol & IControl 的子集
  * IControl 作为 ISession 的最基本的指令单元，严格化的支持 Route 和 Stream 处理
- * 
+ *
  * @author william.d.zk
- * 
  * @see IRespConnected
  */
-public interface ICommandFactory<T extends IProtocol,
-                                 I extends IFrame>
+public interface ICommandFactory<T extends IProtocol, I extends IFrame, C extends IContext>
 {
-    T create(I frame);
+    T create(I frame, C context);
 
-    T create(int serial);
+    T create(int serial, byte[] payload, C context);
 }

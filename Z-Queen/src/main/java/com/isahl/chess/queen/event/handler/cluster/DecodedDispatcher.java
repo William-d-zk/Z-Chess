@@ -101,7 +101,7 @@ public class DecodedDispatcher
 
     private void dispatch(IControl cmd, ISession session, IOperator<IControl, ISession, ITriple> op)
     {
-        cmd.setSession(session);
+        cmd.putSession(session);
         IPair nextPipe = getNextPipe(session.getMode(), cmd);
         publish(nextPipe.getFirst(), nextPipe.getSecond(), new Pair<>(cmd, session), op);
     }
@@ -115,7 +115,7 @@ public class DecodedDispatcher
 
     protected RingBuffer<QEvent> dispatchWorker(IControl cmd)
     {
-        return _LogicWorkers[cmd.getSession()
+        return _LogicWorkers[cmd.session()
                                 .hashCode() & _WorkerMask];
     }
 

@@ -127,7 +127,7 @@ public class X79_RaftAdjudge
     }
 
     @Override
-    public int getSubSerial()
+    public int subSerial()
     {
         return mSubSerial;
     }

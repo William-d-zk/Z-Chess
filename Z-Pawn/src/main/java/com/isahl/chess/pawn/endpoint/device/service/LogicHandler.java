@@ -102,12 +102,12 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                 break;
             case X103_Ping.COMMAND:
                 X103_Ping x103 = (X103_Ping) content;
-                result = new IControl[]{ new X104_Pong(x103.getPayload()) };
+                result = new IControl[]{ new X104_Pong(x103.payload()) };
                 break;
             case X105_SslHandShake.COMMAND:
                 X105_SslHandShake x105 = (X105_SslHandShake) content;
                 if(x105.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.NEED_WRAP) {
-                    x105.setPayload("hello".getBytes(StandardCharsets.UTF_8));
+                    x105.putPayload("hello".getBytes(StandardCharsets.UTF_8));
                 }
                 else {
                     break;
@@ -119,11 +119,11 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                 X10A 纯作为文本消息进行回应，可以做出简单的ECHO功能
                  */
                 X10A_PlainText x10A = (X10A_PlainText) content;
-                String jsonStr = new String(x10A.getPayload(), StandardCharsets.UTF_8);
+                String jsonStr = new String(x10A.payload(), StandardCharsets.UTF_8);
                 _Logger.info("[0x10A]:%s", jsonStr);
                 JsonNode json = JsonUtil.readTree(jsonStr);
                 ((ObjectNode) json).put("response", "ok");
-                x10A.setPayload(JsonUtil.writeNodeAsBytes(json));
+                x10A.putPayload(JsonUtil.writeNodeAsBytes(json));
                 result = new IControl[]{ content };
                 break;
             case X113_QttPublish.COMMAND:
@@ -137,7 +137,7 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                 msgEntity.setTopic(x113.getTopic());
                 msgEntity.setBody(new MessageBody((int) x113.getMsgId(),
                                                   x113.getTopic(),
-                                                  JsonUtil.readTree(x113.getPayload())));
+                                                  JsonUtil.readTree(x113.payload())));
                 msgEntity.setOperation(OP_INSERT);
                 List<IControl> pushList = new LinkedList<>();
                 switch(x113.getLevel()) {
@@ -232,8 +232,8 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                                           .getTopic());
                      byte[] payload = message.getBody()
                                              .contentBinary();
-                     x113.setPayload(payload);
-                     x113.setSession(targetSession);
+                     x113.putPayload(payload);
+                     x113.putSession(targetSession);
                      if(x113.getLevel() == ALMOST_ONCE) {return x113;}
                      x113.setMsgId(_MessageService.generateMsgId(sessionIndex, targetSession.getIndex()));
                      _QttRouter.register(x113, sessionIndex);

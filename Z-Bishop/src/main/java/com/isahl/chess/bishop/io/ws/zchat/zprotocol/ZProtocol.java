@@ -82,7 +82,7 @@ public abstract class ZProtocol
     }
 
     @Override
-    public int getPriority()
+    public int priority()
     {
         return QOS_PRIORITY_00_NETWORK_CONTROL;
     }
@@ -194,7 +194,7 @@ public abstract class ZProtocol
         pos += IoUtil.writeByte(mTypeByte, output, pos);
         pos = encodec(output, pos);
         if(pos < output.length - 5) {
-            pos += IoUtil.write(getPayload(), output, pos);
+            pos += IoUtil.write(payload(), output, pos);
         }
         return addCrc(output, pos);
     }
@@ -229,7 +229,7 @@ public abstract class ZProtocol
         if(pos < input.length - 5) {
             byte[] payload = new byte[input.length - 4 - pos];
             pos = IoUtil.read(input, pos, payload);
-            setPayload(payload);
+            putPayload(payload);
         }
         return checkCrc(input, pos);
     }
@@ -319,7 +319,7 @@ public abstract class ZProtocol
 
     @Override
     @SuppressWarnings("unchecked")
-    public ZContext getContext()
+    public ZContext context()
     {
         return mContext;
     }

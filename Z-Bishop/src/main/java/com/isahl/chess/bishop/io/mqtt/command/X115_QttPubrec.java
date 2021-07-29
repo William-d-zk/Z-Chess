@@ -40,7 +40,7 @@ public class X115_QttPubrec
     public X115_QttPubrec()
     {
         super(COMMAND);
-        setCtrl(generateCtrl(false, false, ALMOST_ONCE, QttType.PUBREC));
+        putCtrl(generateCtrl(false, false, ALMOST_ONCE, QttType.PUBREC));
     }
 
     @Override
