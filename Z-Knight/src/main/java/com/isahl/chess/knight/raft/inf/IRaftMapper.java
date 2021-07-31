@@ -60,7 +60,7 @@ public interface IRaftMapper
 
     void updateSnapshotMeta(long lastIncludeIndex, long lastIncludeTerm);
 
-    boolean appendLog(LogEntry entry);
+    boolean append(LogEntry entry);
 
     void truncatePrefix(long newFirstIndex);
 

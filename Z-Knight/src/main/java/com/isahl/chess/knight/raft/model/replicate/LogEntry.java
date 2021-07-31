@@ -65,9 +65,6 @@ public class LogEntry
     @JsonIgnore
     private Operation mOperation = Operation.OP_INSERT;
 
-    @JsonIgnore
-    private transient byte[] tData;
-
     @JsonCreator
     public LogEntry(
             @JsonProperty("term")
@@ -127,14 +124,6 @@ public class LogEntry
     public byte[] payload()
     {
         return _Content;
-    }
-
-    @Override
-    public byte[] encode()
-    {
-        if(tData != null) {return tData;}
-        tData = super.encode();
-        return tData;
     }
 
     @Override

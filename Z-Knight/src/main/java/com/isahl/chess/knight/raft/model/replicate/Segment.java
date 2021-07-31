@@ -77,8 +77,8 @@ public class Segment
 
     public LogEntry getEntry(long index)
     {
-        if(_StartIndex == 0 || mEndIndex == 0) { return null; }
-        if(index < _StartIndex || index > mEndIndex) { return null; }
+        if(_StartIndex == 0 || mEndIndex == 0) {return null;}
+        if(index < _StartIndex || index > mEndIndex) {return null;}
         int indexInList = (int) (index - _StartIndex);
         return _Records.get(indexInList)
                        .getEntry();
@@ -160,7 +160,7 @@ public class Segment
         long offset = 0;
         long startIndex = -1;
         long endIndex = 0;
-        if(mFileSize == 0) { return; }
+        if(mFileSize == 0) {return;}
         while(offset < mFileSize) {
             int length = mRandomAccessFile.readInt();
             long entryStart = mRandomAccessFile.getFilePointer();
@@ -202,15 +202,15 @@ public class Segment
         }
     }
 
-    public void addRecord(LogEntry entry)
+    public void add(byte[] data, LogEntry entry)
     {
         try {
             long offset = mRandomAccessFile.getFilePointer();
-            byte[] entryData = entry.encode();
-            mRandomAccessFile.writeInt(entry.dataLength());
-            mRandomAccessFile.write(entryData);
+            mRandomAccessFile.writeInt(data.length);
+            mRandomAccessFile.write(data);
             _Records.add(new Record(offset, entry));
             mEndIndex = entry.getIndex();
+            mFileSize += data.length + 4;
         }
         catch(IOException e) {
             throw new ZException("add record failed ", e);

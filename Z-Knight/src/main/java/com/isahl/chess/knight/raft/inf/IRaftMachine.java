@@ -95,7 +95,7 @@ public interface IRaftMachine
      */
     Set<RaftNode> getGateSet();
 
-    void appendLog(long index, long indexTerm, IRaftMapper dao);
+    void append(long index, long indexTerm, IRaftMapper dao);
 
     void rollBack(long index, long indexTerm, IRaftMapper dao);
 
