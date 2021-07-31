@@ -446,7 +446,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
         return null;
     }
 
-    public IPair append(long term, long preIndex, long preIndexTerm, long leader, long leaderCommit)
+    public IPair onResponse(long term, long preIndex, long preIndexTerm, long leader, long leaderCommit)
     {
         IControl[] response = lowTerm(term, leader);
         if(response != null) {return new Pair<>(response, null);}
@@ -574,7 +574,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
     /**
      * leader → follower
      *
-     * @return first : broadcast to peers
+     * @return first : broadcast to peer
      * second : resp to origin
      */
     public IPair onDirect(long peerId, long term, long index, long leader, ISessionManager manager)
@@ -668,8 +668,8 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
                 if(preIndex == _SelfMachine.getIndex() && preIndexTerm == _SelfMachine.getIndexTerm()) {
                     for(Iterator<LogEntry> it = _LogQueue.iterator(); it.hasNext(); ) {
                         LogEntry entry = it.next();
-                        if(_RaftMapper.appendLog(entry)) {
-                            _SelfMachine.appendLog(entry.getIndex(), entry.getTerm(), _RaftMapper);
+                        if(_RaftMapper.append(entry)) {
+                            _SelfMachine.append(entry.getIndex(), entry.getTerm(), _RaftMapper);
                             _Logger.debug("follower catch up %d@%d", entry.getIndex(), entry.getTerm());
                         }
                         it.remove();
@@ -719,15 +719,18 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
                          * 启动协商之后是不会出现此类情况的。
                          * 2.old.term==entry.term已经完成了日志存储，不再重复append
                          */
-                        _Logger.fetal(" pre_index & pre_index_term already check, impossible go in here ");
+                        _Logger.fetal(" pre_index & pre_index_term already check, impossible go in here; %d@%d → %s",
+                                      preIndex,
+                                      preIndexTerm,
+                                      old);
+                        return false;
                     }
                 }
                 // 接收了Leader 追加的日志
                 _SelfMachine.apply(_RaftMapper);
-
             }
             return true;
-            // end of IT_APPEND
+            // end of ITERATE_APPEND
         }
         _LogQueue.clear();
         return false;
@@ -825,7 +828,7 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
     }
 
     private <R> List<R> createLeaderLogEntry(int subSerial,
-                                             byte[] payload,
+                                             byte[] content,
                                              long client,
                                              long origin,
                                              ISessionManager manager,
@@ -837,10 +840,10 @@ public class RaftPeer<M extends IClusterPeer & IClusterTimer>
                                          client,
                                          origin,
                                          subSerial,
-                                         payload);
+                                         content);
         newEntry.setOperation(IStorage.Operation.OP_INSERT);
-        if(_RaftMapper.appendLog(newEntry)) {
-            _SelfMachine.appendLog(newEntry.getIndex(), newEntry.getTerm(), _RaftMapper);
+        if(_RaftMapper.append(newEntry)) {
+            _SelfMachine.append(newEntry.getIndex(), newEntry.getTerm(), _RaftMapper);
             _Logger.debug("leader appended log %d@%d", newEntry.getIndex(), newEntry.getTerm());
             return createBroadcasts(manager, mapper);
         }

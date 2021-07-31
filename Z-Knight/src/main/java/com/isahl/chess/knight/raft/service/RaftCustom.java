@@ -108,11 +108,11 @@ public class RaftCustom<T extends IClusterPeer & IClusterTimer>
                 if(x72.payload() != null) {
                     _RaftPeer.appendLogs(JsonUtil.readValue(x72.payload(), _TypeReferenceOfLogEntryList));
                 }
-                return _RaftPeer.append(x72.getTerm(),
-                                        x72.getPreIndex(),
-                                        x72.getPreIndexTerm(),
-                                        x72.getLeaderId(),
-                                        x72.getCommit());
+                return _RaftPeer.onResponse(x72.getTerm(),
+                                            x72.getPreIndex(),
+                                            x72.getPreIndexTerm(),
+                                            x72.getLeaderId(),
+                                            x72.getCommit());
             }
             // follower → leader
             case X73_RaftAccept.COMMAND -> {

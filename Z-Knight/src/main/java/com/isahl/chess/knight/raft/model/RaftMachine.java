@@ -458,20 +458,20 @@ public class RaftMachine
     }
 
     @Override
-    public void appendLog(long index, long indexTerm, IRaftMapper dao)
+    public void append(long index, long indexTerm, IRaftMapper mapper)
     {
         mIndex = index;
         mMatchIndex = index;
         mIndexTerm = indexTerm;
-        dao.updateLogIndexAndTerm(mIndex, mIndexTerm);
+        mapper.updateLogIndexAndTerm(mIndex, mIndexTerm);
     }
 
     @Override
-    public void rollBack(long index, long indexTerm, IRaftMapper dao)
+    public void rollBack(long index, long indexTerm, IRaftMapper mapper)
     {
-        appendLog(index, indexTerm, dao);
+        append(index, indexTerm, mapper);
         mApplied = min(index, mCommit);
-        dao.updateLogApplied(mApplied);
+        mapper.updateLogApplied(mApplied);
     }
 
     @Override

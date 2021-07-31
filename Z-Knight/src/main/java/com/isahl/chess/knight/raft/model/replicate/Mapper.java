@@ -24,7 +24,6 @@
 package com.isahl.chess.knight.raft.model.replicate;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.knight.raft.config.IRaftConfig;
@@ -211,7 +210,7 @@ public class Mapper
          * 1、第一次初始化，start = 1，end = 0
          * 2、snapshot刚完成，日志正好被清理掉，start = snapshot + 1， end = snapshot
          */
-        if(_Index2SegmentMap.isEmpty()) { return getStartIndex() - 1; }
+        if(_Index2SegmentMap.isEmpty()) {return getStartIndex() - 1;}
         return _Index2SegmentMap.lastEntry()
                                 .getValue()
                                 .getEndIndex();
@@ -240,7 +239,7 @@ public class Mapper
             }
             return null;
         }
-        if(_Index2SegmentMap.isEmpty()) { return null; }
+        if(_Index2SegmentMap.isEmpty()) {return null;}
         Segment segment = _Index2SegmentMap.floorEntry(index)
                                            .getValue();
         return segment.getEntry(index);
@@ -310,7 +309,7 @@ public class Mapper
     private List<Segment> readSegments()
     {
         File dataDir = new File(_LogDataDir);
-        if(!dataDir.isDirectory()) { throw new IllegalArgumentException("_LogDataDir doesn't point to a directory"); }
+        if(!dataDir.isDirectory()) {throw new IllegalArgumentException("_LogDataDir doesn't point to a directory");}
         File[] subs = dataDir.listFiles();
         if(subs != null) {
             return Stream.of(subs)
@@ -362,31 +361,32 @@ public class Mapper
     }
 
     @Override
-    public boolean appendLog(LogEntry entry)
+    public boolean append(LogEntry entry)
     {
         _Logger.debug("wait to append %s", entry);
-        Objects.requireNonNull(entry);
+        if(entry == null) {return false;}
         long newEndIndex = getEndIndex() + 1;
         if(entry.getIndex() == newEndIndex) {
-            int entrySize = entry.dataLength() + 4;
-            boolean isNeedNewSegmentFile = false;
+            byte[] data = entry.encode();
+            int size = data.length + 4;
+            boolean needNewFile = false;
             if(_Index2SegmentMap.isEmpty()) {
-                isNeedNewSegmentFile = true;
+                needNewFile = true;
             }
             else {
                 Segment segment = _Index2SegmentMap.lastEntry()
                                                    .getValue();
                 if(!segment.isCanWrite()) {
-                    isNeedNewSegmentFile = true;
+                    needNewFile = true;
                 }
-                else if(segment.getFileSize() + entrySize >= _MaxSegmentSize) {
-                    isNeedNewSegmentFile = true;
+                else if(segment.getFileSize() + size >= _MaxSegmentSize) {
+                    needNewFile = true;
                     // segment的文件close并改名
                     segment.freeze();
                 }
             }
             Segment targetSegment = null;
-            if(isNeedNewSegmentFile) {
+            if(needNewFile) {
                 String newFileName = String.format(Segment.fileNameFormatter(false), newEndIndex, 0);
                 _Logger.info("new segment file :%s", newFileName);
                 File newFile = new File(_LogDataDir + File.separator + newFileName);
@@ -396,11 +396,11 @@ public class Mapper
                             targetSegment = new Segment(newFile, newEndIndex, 0, true);
                             _Index2SegmentMap.put(newEndIndex, targetSegment);
                         }
-                        else { throw new IOException(); }
+                        else {throw new IOException("create file failed");}
                     }
                     catch(IOException e) {
                         _Logger.warning("create segment file failed %s", e, newFileName);
-                        throw new ZException("raft local segment failed");
+                        return false;
                     }
                 }
             }
@@ -408,11 +408,12 @@ public class Mapper
                 targetSegment = _Index2SegmentMap.lastEntry()
                                                  .getValue();
             }
-            Objects.requireNonNull(targetSegment);
-            targetSegment.addRecord(entry);
-            vTotalSize += entrySize;
-            _Logger.debug("append ok: %d", newEndIndex);
-            return true;
+            if(targetSegment != null) {
+                targetSegment.add(data, entry);
+                vTotalSize += size;
+                _Logger.debug("append ok: %d", newEndIndex);
+                return true;
+            }
         }
         _Logger.warning("append failed: [new end %d|expect %d]", newEndIndex, entry.getIndex());
         return false;
@@ -421,7 +422,7 @@ public class Mapper
     @Override
     public void truncatePrefix(long newFirstIndex)
     {
-        if(newFirstIndex <= getStartIndex()) { return; }
+        if(newFirstIndex <= getStartIndex()) {return;}
         long oldFirstIndex = getStartIndex();
         while(!_Index2SegmentMap.isEmpty()) {
             Segment segment = _Index2SegmentMap.firstEntry()
@@ -459,7 +460,7 @@ public class Mapper
     public LogEntry truncateSuffix(long newEndIndex)
     {
         long endIndex = getEndIndex();
-        if(newEndIndex >= endIndex) { return null; }
+        if(newEndIndex >= endIndex) {return null;}
         _Logger.debug("Truncating log from old end index %d to new end index %d", getEndIndex(), newEndIndex);
         while(!_Index2SegmentMap.isEmpty()) {
             Segment segment = _Index2SegmentMap.lastEntry()
