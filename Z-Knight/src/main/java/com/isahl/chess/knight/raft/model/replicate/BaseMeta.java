@@ -24,7 +24,7 @@
 package com.isahl.chess.knight.raft.model.replicate;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.isahl.chess.bishop.io.json.JsonProtocol;
+import com.isahl.chess.queen.model.JsonProtocol;
 import com.isahl.chess.king.base.inf.IReset;
 
 import java.io.IOException;

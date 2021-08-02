@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,9 +21,9 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.jpa.repository;
+package com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.repository;
 
-import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageEntity;
+import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.MessageEntity;
 import com.isahl.chess.rook.storage.jpa.repository.BaseRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -37,7 +37,7 @@ import java.util.List;
  * @author william.d.zk
  * @date 2019-07-31
  */
-@Repository
+@Repository("remote-message-jpa-repository")
 public interface IMessageJpaRepository
         extends BaseRepository<MessageEntity>
 {

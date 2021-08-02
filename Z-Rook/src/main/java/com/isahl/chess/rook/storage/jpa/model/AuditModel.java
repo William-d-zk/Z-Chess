@@ -31,9 +31,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import com.isahl.chess.king.base.util.JsonUtil;
-import com.isahl.chess.queen.db.inf.IStorage;
-import com.isahl.chess.queen.io.core.inf.IProtocol;
+import com.isahl.chess.queen.model.JsonProtocol;
 import com.vladmihalcea.hibernate.type.array.IntArrayType;
 import com.vladmihalcea.hibernate.type.array.ListArrayType;
 import com.vladmihalcea.hibernate.type.array.StringArrayType;
@@ -46,10 +44,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.Column;
 import javax.persistence.EntityListeners;
 import javax.persistence.MappedSuperclass;
-import javax.persistence.Transient;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 /**
  * @author william.d.zk
@@ -60,7 +56,7 @@ import java.util.Objects;
                      typeClass = IntArrayType.class),
             @TypeDef(name = "list-array",
                      typeClass = ListArrayType.class)
-          })
+})
 
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
@@ -68,8 +64,8 @@ import java.util.Objects;
 @JsonIgnoreProperties(value = { "created_at", "updated_at" },
                       allowGetters = true)
 public abstract class AuditModel
-        implements IProtocol,
-                   Serializable
+        extends JsonProtocol
+        implements Serializable
 {
     @Column(name = "created_at",
             nullable = false,
@@ -110,38 +106,10 @@ public abstract class AuditModel
         this.updatedAt = updatedAt;
     }
 
-    @Transient
-    private transient byte[] tPayload;
-
     @Override
     public String toString()
     {
         return String.format("create@ %s update@ %s", getCreatedAt(), getUpdatedAt());
-    }
-
-    @Transient
-    private int mLength;
-
-    @Override
-    public byte[] encode()
-    {
-        tPayload = JsonUtil.writeValueAsBytes(this);
-        Objects.requireNonNull(tPayload);
-        mLength = tPayload.length;
-        return tPayload;
-    }
-
-    @Override
-    public int decode(byte[] data)
-    {
-        tPayload = data;
-        return mLength = data.length;
-    }
-
-    @Override
-    public int dataLength()
-    {
-        return mLength;
     }
 
     @Override
@@ -150,11 +118,5 @@ public abstract class AuditModel
         return AUDIT_MODEL_SERIAL;
     }
 
-    @Override
-    public byte[] payload()
-    {
-        return tPayload;
-    }
-
-    public final static int AUDIT_MODEL_SERIAL = IStorage.DB_SERIAL + 100;
+    public final static int AUDIT_MODEL_SERIAL = DB_SERIAL + 100;
 }

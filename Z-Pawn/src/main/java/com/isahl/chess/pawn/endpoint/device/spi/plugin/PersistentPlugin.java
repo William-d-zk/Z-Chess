@@ -23,8 +23,8 @@
 
 package com.isahl.chess.pawn.endpoint.device.spi.plugin;
 
-import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageEntity;
-import com.isahl.chess.pawn.endpoint.device.jpa.repository.IMessageJpaRepository;
+import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.MessageEntity;
+import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.repository.IMessageJpaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

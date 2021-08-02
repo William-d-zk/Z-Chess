@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,42 +21,29 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.bishop.io.json;
+package com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.repository;
 
-import com.isahl.chess.king.base.util.JsonUtil;
-import com.isahl.chess.queen.io.core.inf.IProtocol;
+import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.ShadowEntity;
+import com.isahl.chess.rook.storage.jpa.repository.BaseRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import javax.transaction.Transactional;
 
 /**
  * @author william.d.zk
+ * @date 2021/5/13
  */
-public abstract class JsonProtocol
-        implements IProtocol
-{
-    protected int mLength;
+@Repository
+public interface IShadowJpaRepository
+        extends
+        BaseRepository<ShadowEntity> {
+    @Transactional
+    @Modifying
+    @Query(value = "delete from \"z-chess\".shadow m where m.device_id=:p_device_id", nativeQuery = true)
+    void deleteByDevice(@Param("p_device_id") long deviceId);
 
-    @Override
-    public byte[] encode()
-    {
-        byte[] data = JsonUtil.writeValueAsBytes(this);
-        mLength = data == null ? 0 : data.length;
-        return data;
-    }
-
-    @Override
-    public int decode(byte[] data)
-    {
-        return mLength = data.length;
-    }
-
-    @Override
-    public byte[] payload()
-    {
-        return null;
-    }
-
-    @Override
-    public int dataLength()
-    {
-        return mLength;
-    }
+    ShadowEntity findByDeviceId(long deviceId);
 }

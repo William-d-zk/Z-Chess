@@ -25,8 +25,8 @@ package com.isahl.chess.player.api.service;
 
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
-import com.isahl.chess.pawn.endpoint.device.jpa.model.ShadowEntity;
+import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.DeviceEntity;
+import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.ShadowEntity;
 import com.isahl.chess.pawn.endpoint.device.spi.IDeviceService;
 import com.isahl.chess.player.api.model.DeviceDo;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,11 +21,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.jpa.model;
+package com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.isahl.chess.pawn.endpoint.device.model.MessageBody;
 import com.isahl.chess.queen.db.inf.IStorage;
 import com.isahl.chess.rook.storage.jpa.model.AuditModel;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
@@ -35,6 +36,8 @@ import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.*;
 import java.io.Serial;
+
+import static com.isahl.chess.pawn.endpoint.device.jpa.PawnConstants.DB_SERIAL_REMOTE_MSG_ENTITY;
 
 /**
  * @author william.d.zk
@@ -125,7 +128,7 @@ public class MessageEntity
     @Override
     public int serial()
     {
-        return MESSAGE_ENTITY_SERIAL;
+        return DB_SERIAL_REMOTE_MSG_ENTITY;
     }
 
     @Override
@@ -151,8 +154,6 @@ public class MessageEntity
     {
         return IStorage.Strategy.RETAIN;
     }
-
-    private final static int MESSAGE_ENTITY_SERIAL = AUDIT_MODEL_SERIAL + 2;
 
     public String getTopic()
     {

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,44 +21,28 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.jpa.model;
+package com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.repository;
 
-import java.io.Serial;
-import java.io.Serializable;
+import org.springframework.stereotype.Repository;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.isahl.chess.queen.io.core.inf.IQoS;
+import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.DeviceEntity;
+import com.isahl.chess.rook.storage.jpa.repository.BaseRepository;
 
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class Subscribe
-        implements
-        Serializable
+/**
+ * @author william.d.zk
+ * 
+ * @date 2020-1-20
+ */
+@Repository
+public interface IDeviceJpaRepository
+        extends
+        BaseRepository<DeviceEntity>
 {
+    DeviceEntity findByToken(String token);
 
-    @Serial
-    private static final long serialVersionUID = 2015588893664180796L;
+    DeviceEntity findBySn(String sn);
 
-    private final IQoS.Level _Level;
-    private final String     _Topic;
+    DeviceEntity findBySnOrToken(String sn, String token);
 
-    @JsonCreator
-    public Subscribe(@JsonProperty("level") IQoS.Level level,
-                     @JsonProperty("topic") String topic)
-    {
-        _Level = level;
-        _Topic = topic;
-    }
-
-    public IQoS.Level getLevel()
-    {
-        return _Level;
-    }
-
-    public String getTopic()
-    {
-        return _Topic;
-    }
+    DeviceEntity findByIdAndUsername(long id, String username);
 }

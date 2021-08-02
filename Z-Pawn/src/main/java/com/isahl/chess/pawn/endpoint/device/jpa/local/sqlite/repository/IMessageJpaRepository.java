@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,23 +21,15 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.jpa;
+package com.isahl.chess.pawn.endpoint.device.jpa.local.sqlite.repository;
 
-import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import com.isahl.chess.pawn.endpoint.device.jpa.local.sqlite.model.BrokerMsgEntity;
+import com.isahl.chess.rook.storage.jpa.repository.BaseRepository;
+import org.springframework.stereotype.Repository;
 
-import com.isahl.chess.rook.storage.jpa.config.BaseJpaConfig;
-
-/**
- * @author william.d.zk
- */
-@EnableJpaRepositories(basePackages = {"com.isahl.chess.pawn.endpoint.device.jpa.repository"})
-@EntityScan({"com.isahl.chess.pawn.endpoint.device.jpa.model"})
-@Configuration
-public class EndpointJpaConfig
-        extends
-        BaseJpaConfig
+@Repository("local-message-jpa-repository")
+public interface IMessageJpaRepository
+        extends BaseRepository<BrokerMsgEntity>
 {
-
+    BrokerMsgEntity findById(int id);
 }

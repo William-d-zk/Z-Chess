@@ -23,11 +23,10 @@
 
 package com.isahl.chess.referee.security.jpa.repository;
 
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Repository;
-
 import com.isahl.chess.referee.security.jpa.model.UserEntity;
 import com.isahl.chess.rook.storage.jpa.repository.BaseRepository;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Repository;
 
 /**
  * @author william.d.zk

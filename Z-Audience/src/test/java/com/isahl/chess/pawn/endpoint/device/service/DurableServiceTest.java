@@ -30,8 +30,8 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceSubscribe;
-import com.isahl.chess.pawn.endpoint.device.jpa.model.Subscribe;
+import com.isahl.chess.pawn.endpoint.device.model.DeviceSubscribe;
+import com.isahl.chess.pawn.endpoint.device.model.Subscribe;
 import com.isahl.chess.queen.io.core.inf.IQoS;
 
 class DurableServiceTest

@@ -27,7 +27,6 @@ import com.isahl.chess.bishop.io.mqtt.MqttProtocol;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.queen.io.core.inf.ICommand;
 import com.isahl.chess.queen.io.core.inf.IControl;
 import com.isahl.chess.queen.io.core.inf.IQoS;
@@ -52,37 +51,28 @@ public class QttRouter
 
     private static class Subscribe
     {
-        MqttProtocol          retained;
-        Map<Long, IQoS.Level> sessionMap;
+        MqttProtocol mRetained;
+        final Map<Long, IQoS.Level> _SessionMap = new ConcurrentSkipListMap<>();
+        final Pattern               _Pattern;
 
-        Subscribe(Map<Long, IQoS.Level> map)
-        {
-            sessionMap = map;
-        }
+        Subscribe(Pattern pattern) {_Pattern = pattern;}
 
         void remove(long session)
         {
-            sessionMap.remove(session);
-            /*
-            此处持续持有 map，避免多次new map的开销，如遇到内存大量管理成本放开如下
-            
-            if (sessionMap.isEmpty()) {
-                sessionMap = null;
-            }
-            */
+            _SessionMap.remove(session);
         }
     }
 
     private final Map<Pattern, Subscribe>        _Topic2SessionsMap = new TreeMap<>(Comparator.comparing(Pattern::pattern));
     private final AtomicLong                     _AtomicIdentity    = new AtomicLong(Long.MIN_VALUE);
     private final Map<Long, Map<Long, IControl>> _QttIdentifierMap  = new ConcurrentSkipListMap<>();
-    private final Queue<IPair>                   _SessionIdleQueue  = new ConcurrentLinkedQueue<>();
+    private final Queue<Pair<Long, Instant>>     _SessionIdleQueue  = new ConcurrentLinkedQueue<>();
 
     @Override
     public void retain(String topic, MqttProtocol msg)
     {
         Pattern pattern = topicToRegex(topic);
-        _Topic2SessionsMap.computeIfAbsent(pattern, p->new Subscribe(new ConcurrentSkipListMap<>())).retained = msg;
+        _Topic2SessionsMap.computeIfAbsent(pattern, Subscribe::new).mRetained = msg;
     }
 
     @Override
@@ -93,10 +83,10 @@ public class QttRouter
                                  .parallelStream()
                                  .map(entry->{
                                      Pattern pattern = entry.getKey();
-                                     Subscribe subcribe = entry.getValue();
+                                     Subscribe subscribe = entry.getValue();
                                      return pattern.matcher(topic)
-                                                   .matches() && !subcribe.sessionMap.isEmpty() ? subcribe.sessionMap
-                                                                                                : null;
+                                                   .matches() && !subscribe._SessionMap.isEmpty()
+                                            ? subscribe._SessionMap : null;
 
                                  })
                                  .filter(Objects::nonNull)
@@ -116,13 +106,13 @@ public class QttRouter
                                  .flatMap(entry->{
                                      Pattern pattern = entry.getKey();
                                      Subscribe subscribe = entry.getValue();
-                                     Map<Long, IQoS.Level> sessionsLv = subscribe.sessionMap;
+                                     Map<Long, IQoS.Level> sessionsLv = subscribe._SessionMap;
                                      return sessionsLv.entrySet()
                                                       .stream()
-                                                      .map(e->new Triple<>(e.getKey(), pattern.pattern(), e.getValue()))
-                                                      .filter(t->t.getFirst() == session);
+                                                      .filter(e->e.getKey() == session)
+                                                      .map(e->new Pair<>(pattern.pattern(), e.getValue()));
                                  })
-                                 .collect(Collectors.toMap(Triple::getSecond, Triple::getThird));
+                                 .collect(Collectors.toMap(IPair::getFirst, IPair::getSecond));
     }
 
     @Override
@@ -131,13 +121,12 @@ public class QttRouter
         try {
             Pattern pattern = topicToRegex(topic);
             _Logger.debug("topic %s,pattern %s", topic, pattern);
-            Subscribe subscribe = _Topic2SessionsMap.computeIfAbsent(pattern,
-                                                                     p->new Subscribe(new ConcurrentSkipListMap<>()));
-            IQoS.Level lv = subscribe.sessionMap.computeIfPresent(session,
-                                                                  (key, old)->old.getValue() > level.getValue() ? old
-                                                                                                                : level);
+            Subscribe subscribe = _Topic2SessionsMap.computeIfAbsent(pattern, p->new Subscribe(pattern));
+            IQoS.Level lv = subscribe._SessionMap.computeIfPresent(session,
+                                                                   (key, old)->old.getValue() > level.getValue() ? old
+                                                                                                                 : level);
             if(lv == null) {
-                subscribe.sessionMap.put(session, level);
+                subscribe._SessionMap.put(session, level);
                 return level;
             }
             return lv;
@@ -229,7 +218,7 @@ public class QttRouter
             _Logger.debug("idle: %#x", session);
             _SessionIdleQueue.offer(new Pair<>(session, Instant.now()));
         }
-        for(Iterator<IPair> it = _SessionIdleQueue.iterator(); it.hasNext(); ) {
+        for(Iterator<Pair<Long, Instant>> it = _SessionIdleQueue.iterator(); it.hasNext(); ) {
             IPair pair = it.next();
             long rmSessionIndex = pair.getFirst();
             Instant idle = pair.getSecond();
