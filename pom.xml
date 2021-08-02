@@ -207,8 +207,11 @@
         <commons-io.version>2.9.0</commons-io.version>
         <commons-codec.version>1.15</commons-codec.version>
         <!--DB-->
+        <sqlite.driver.version>3.36.0.1</sqlite.driver.version>
+        <sqllite.hibernate.dialect.version>0.1.2</sqllite.hibernate.dialect.version>
         <postgresql.driver.version>42.2.20</postgresql.driver.version>
         <hibernate-types-52.version>2.11.1</hibernate-types-52.version>
+
         <!--PIPELINE-->
         <disruptor.version>3.4.4</disruptor.version>
         <!--TOOLS-->
@@ -395,6 +398,17 @@
                 <groupId>com.vladmihalcea</groupId>
                 <artifactId>hibernate-types-52</artifactId>
                 <version>${hibernate-types-52.version}</version>
+            </dependency>
+            <!--SQLite DB-->
+            <dependency>
+                <groupId>org.xerial</groupId>
+                <artifactId>sqlite-jdbc</artifactId>
+                <version>${sqlite.driver.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.gwenn</groupId>
+                <artifactId>sqlite-dialect</artifactId>
+                <version>${sqllite.hibernate.dialect.version}</version>
             </dependency>
             <!--Cache-->
             <dependency>

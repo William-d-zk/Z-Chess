@@ -25,7 +25,7 @@ package com.isahl.chess.pawn.endpoint.device.spi;
 
 import com.isahl.chess.bishop.io.IRouter;
 import com.isahl.chess.bishop.io.mqtt.handler.IQttRouter;
-import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
+import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.DeviceEntity;
 import com.isahl.chess.queen.io.core.inf.IQoS;
 
 import java.util.List;

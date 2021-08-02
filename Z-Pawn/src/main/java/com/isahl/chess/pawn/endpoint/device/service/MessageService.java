@@ -24,9 +24,9 @@
 package com.isahl.chess.pawn.endpoint.device.service;
 
 import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageBody;
-import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageEntity;
-import com.isahl.chess.pawn.endpoint.device.jpa.repository.IMessageJpaRepository;
+import com.isahl.chess.pawn.endpoint.device.model.MessageBody;
+import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.MessageEntity;
+import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.repository.IMessageJpaRepository;
 import com.isahl.chess.pawn.endpoint.device.spi.IMessageService;
 import com.isahl.chess.pawn.endpoint.device.spi.plugin.IMessagePlugin;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;

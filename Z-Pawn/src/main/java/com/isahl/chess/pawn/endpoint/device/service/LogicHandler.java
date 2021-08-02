@@ -40,8 +40,8 @@ import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.knight.raft.RaftPeer;
-import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageBody;
-import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageEntity;
+import com.isahl.chess.pawn.endpoint.device.model.MessageBody;
+import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.MessageEntity;
 import com.isahl.chess.pawn.endpoint.device.spi.IMessageService;
 import com.isahl.chess.queen.event.handler.mix.ILogicHandler;
 import com.isahl.chess.queen.io.core.inf.*;
@@ -135,9 +135,7 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                 msgEntity.setOrigin(session.getIndex());
                 msgEntity.setDestination(_RaftPeer.getPeerId());
                 msgEntity.setTopic(x113.getTopic());
-                msgEntity.setBody(new MessageBody((int) x113.getMsgId(),
-                                                  x113.getTopic(),
-                                                  JsonUtil.readTree(x113.payload())));
+                msgEntity.setBody(new MessageBody(x113.getTopic(), JsonUtil.readTree(x113.payload())));
                 msgEntity.setOperation(OP_INSERT);
                 List<IControl> pushList = new LinkedList<>();
                 switch(x113.getLevel()) {
@@ -174,7 +172,7 @@ public class LogicHandler<T extends IActivity & IClusterPeer & IClusterTimer & I
                 result = new IControl[]{ x116 };
                 break;
             case X116_QttPubrel.COMMAND:
-                //x113 → server → x115 → client → x116 , 服务段收到 x116,需要注意
+                //x113 → server → x115 → client → x116 , 服务端收到 x116,需要注意
                 x116 = (X116_QttPubrel) content;
                 X117_QttPubcomp x117 = new X117_QttPubcomp();
                 x117.setMsgId(x116.getMsgId());

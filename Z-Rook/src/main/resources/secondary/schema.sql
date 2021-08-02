@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -20,29 +20,3 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
-package com.isahl.chess.pawn.endpoint.device.jpa.repository;
-
-import org.springframework.stereotype.Repository;
-
-import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
-import com.isahl.chess.rook.storage.jpa.repository.BaseRepository;
-
-/**
- * @author william.d.zk
- * 
- * @date 2020-1-20
- */
-@Repository
-public interface IDeviceJpaRepository
-        extends
-        BaseRepository<DeviceEntity>
-{
-    DeviceEntity findByToken(String token);
-
-    DeviceEntity findBySn(String sn);
-
-    DeviceEntity findBySnOrToken(String sn, String token);
-
-    DeviceEntity findByIdAndUsername(long id, String username);
-}

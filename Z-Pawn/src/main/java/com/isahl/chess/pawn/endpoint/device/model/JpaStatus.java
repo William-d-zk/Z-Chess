@@ -21,29 +21,13 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.jpa.repository;
-
-import com.isahl.chess.pawn.endpoint.device.jpa.model.ShadowEntity;
-import com.isahl.chess.rook.storage.jpa.repository.BaseRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
-
-import javax.transaction.Transactional;
+package com.isahl.chess.pawn.endpoint.device.model;
 
 /**
  * @author william.d.zk
- * @date 2021/5/13
+ * 
+ * @date 2019-06-15
  */
-@Repository
-public interface IShadowJpaRepository
-        extends
-        BaseRepository<ShadowEntity> {
-    @Transactional
-    @Modifying
-    @Query(value = "delete from \"z-chess\".shadow m where m.device_id=:p_device_id", nativeQuery = true)
-    void deleteByDevice(@Param("p_device_id") long deviceId);
-
-    ShadowEntity findByDeviceId(long deviceId);
+public enum JpaStatus
+{
 }

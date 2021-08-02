@@ -40,7 +40,7 @@ import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.knight.raft.model.RaftCode;
-import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
+import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.DeviceEntity;
 import com.isahl.chess.pawn.endpoint.device.spi.IDeviceService;
 import com.isahl.chess.pawn.endpoint.device.spi.ILinkService;
 import com.isahl.chess.queen.event.handler.mix.ILinkCustom;

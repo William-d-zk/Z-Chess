@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,31 +21,44 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.spi;
+package com.isahl.chess.pawn.endpoint.device.model;
 
-import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.pawn.endpoint.device.model.MessageBody;
-import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.MessageEntity;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.isahl.chess.queen.io.core.inf.IQoS;
 
-import java.util.List;
-import java.util.Optional;
+import java.io.Serial;
+import java.io.Serializable;
 
-/**
- * @author william.d.zk
- * 
- * @date 2020/2/21
- */
-public interface IMessageService
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+public class Subscribe
+        implements
+        Serializable
 {
-    List<MessageBody> listByTopic(String topic, int limit) throws ZException;
 
-    long generateMsgId(long origin, long destination);
+    @Serial
+    private static final long serialVersionUID = 2015588893664180796L;
 
-    void handleMessage(MessageEntity msgEntity);
+    private final IQoS.Level _Level;
+    private final String     _Topic;
 
-    Optional<MessageEntity> find1Msg(Specification<MessageEntity> specification);
+    @JsonCreator
+    public Subscribe(@JsonProperty("level") IQoS.Level level,
+                     @JsonProperty("topic") String topic)
+    {
+        _Level = level;
+        _Topic = topic;
+    }
 
-    List<MessageEntity> findAllMsg(Specification<MessageEntity> specification, Pageable pageable);
+    public IQoS.Level getLevel()
+    {
+        return _Level;
+    }
+
+    public String getTopic()
+    {
+        return _Topic;
+    }
 }

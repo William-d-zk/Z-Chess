@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.jpa.model;
+package com.isahl.chess.pawn.endpoint.device.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -32,7 +32,6 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.king.base.util.JsonUtil;
-import com.isahl.chess.pawn.endpoint.device.model.RawContent;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -47,33 +46,24 @@ import java.nio.charset.StandardCharsets;
 public class MessageBody
         implements Serializable
 {
-    private static final Logger _Logger          = Logger.getLogger(
-            "endpoint.pawn." + MessageBody.class.getSimpleName());
-    @Serial
-    private static final long   serialVersionUID = -8904730289818144372L;
+    private static final Logger _Logger = Logger.getLogger("endpoint.pawn." + MessageBody.class.getSimpleName());
 
-    private final int    _MsgId;
+    @Serial
+    private static final long serialVersionUID = -8904730289818144372L;
+
     private final String _Topic;
     private final byte[] _Content;
 
     @JsonCreator
     public MessageBody(
-            @JsonProperty("msg_id")
-                    int msgId,
             @JsonProperty("topic")
                     String topic,
             @JsonProperty("content")
                     JsonNode content)
     {
-        _MsgId = msgId;
         _Topic = topic;
         _Content = content.toString()
                           .getBytes(StandardCharsets.UTF_8);
-    }
-
-    public int getMsgId()
-    {
-        return _MsgId;
     }
 
     public String getTopic()

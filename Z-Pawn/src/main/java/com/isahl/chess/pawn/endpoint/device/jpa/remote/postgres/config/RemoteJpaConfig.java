@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.referee.security.jpa.config;
+package com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.config;
 
 import com.isahl.chess.rook.storage.jpa.config.BaseJpaConfig;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -35,30 +35,29 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 
-/**
- * @author william.d.zk
- * @date 2021/2/5
- */
-@Configuration("security_jpa_config")
-@EnableJpaRepositories(basePackages = { "com.isahl.chess.referee.security.jpa.repository" },
-                       entityManagerFactoryRef = "security-entity-manager",
-                       transactionManagerRef = "security-transaction-manager")
-public class SecurityJpaConfig
+@Configuration
+@EnableJpaRepositories(basePackages = "com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.repository",
+                       entityManagerFactoryRef = "remote-entity-manager",
+                       transactionManagerRef = "remote-transaction-manager")
+public class RemoteJpaConfig
         extends BaseJpaConfig
 {
-    @Bean("security-entity-manager")
-    public LocalContainerEntityManagerFactoryBean createSecurityEntityManager(
+
+    @Bean("remote-entity-manager")
+    public LocalContainerEntityManagerFactoryBean createRemoteEntityManager(
             @Qualifier("primary-data-source")
                     DataSource dataSource,
             @Qualifier("primary-jpa-properties")
                     JpaProperties jpaProperties)
     {
-        return getEntityManager(dataSource, jpaProperties, "com.isahl.chess.referee.security.jpa.model");
+        return getEntityManager(dataSource,
+                                jpaProperties,
+                                "com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model");
     }
 
-    @Bean("security-transaction-manager")
-    public PlatformTransactionManager createSecurityTransactionManager(
-            @Qualifier("security-entity-manager")
+    @Bean("remote-transaction-manager")
+    public PlatformTransactionManager createRemoteTransactionManager(
+            @Qualifier("remote-entity-manager")
                     LocalContainerEntityManagerFactoryBean factory)
     {
         JpaTransactionManager tm = new JpaTransactionManager();

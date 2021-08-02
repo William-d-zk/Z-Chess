@@ -23,10 +23,9 @@
 
 package com.isahl.chess.referee.security.jpa.repository;
 
-import org.springframework.stereotype.Repository;
-
 import com.isahl.chess.referee.security.jpa.model.PermissionEntity;
 import com.isahl.chess.rook.storage.jpa.repository.BaseRepository;
+import org.springframework.stereotype.Repository;
 
 /**
  * @author william.d.zk

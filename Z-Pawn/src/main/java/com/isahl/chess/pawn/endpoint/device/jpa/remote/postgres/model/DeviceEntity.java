@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.jpa.model;
+package com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -31,6 +31,8 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.isahl.chess.pawn.endpoint.device.model.DeviceProfile;
+import com.isahl.chess.pawn.endpoint.device.model.DeviceSubscribe;
 import com.isahl.chess.queen.db.inf.IStorage;
 import com.isahl.chess.queen.io.core.inf.IQoS;
 import com.isahl.chess.rook.storage.jpa.model.AuditModel;
@@ -40,34 +42,35 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.validator.constraints.Length;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import java.io.Serial;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+import static com.isahl.chess.pawn.endpoint.device.jpa.PawnConstants.DB_SERIAL_REMOTE_DEVICE_ENTITY;
+
 /**
  * @author william.d.zk
  */
 @Entity(name = "device")
-@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
-@Table(indexes = {@Index(name = "device_idx_token_pwd_id", columnList = "token,password,passwordId"),
-                  @Index(name = "device_idx_token_pwd", columnList = "token,password"),
-                  @Index(name = "device_idx_sn", columnList = "sn"),
-                  @Index(name = "device_idx_token", columnList = "token"),
-                  @Index(name = "device_idx_username", columnList = "username")})
+@TypeDef(name = "jsonb",
+         typeClass = JsonBinaryType.class)
+@Table(indexes = { @Index(name = "device_idx_token_pwd_id",
+                          columnList = "token,password,password_id"),
+                   @Index(name = "device_idx_token_pwd",
+                          columnList = "token,password"),
+                   @Index(name = "device_idx_sn",
+                          columnList = "sn"),
+                   @Index(name = "device_idx_token",
+                          columnList = "token"),
+                   @Index(name = "device_idx_username",
+                          columnList = "username")
+})
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class DeviceEntity
-        extends
-        AuditModel
-        implements
-        IStorage
+        extends AuditModel
+        implements IStorage
 {
     @Serial
     private static final long serialVersionUID = -6645586986057373344L;
@@ -78,21 +81,33 @@ public class DeviceEntity
     @GenericGenerator(name = "ZDeviceGenerator",
                       strategy = "com.isahl.chess.pawn.endpoint.device.jpa.generator.ZDeviceGenerator")
     private long          id;
-    @Column(length = 32, nullable = false, updatable = false)
+    @Column(length = 32,
+            nullable = false,
+            updatable = false)
     private String        sn;
-    @Column(length = 32, nullable = false)
-    @Length(min = 17, max = 32, message = "*Your password must have at least 17 characters less than 33 characters")
+    @Column(length = 32,
+            nullable = false)
+    @Length(min = 17,
+            max = 32,
+            message = "*Your password must have at least 17 characters less than 33 characters")
     @NotBlank(message = "*Please provide your password")
     private String        password;
-    @Column(length = 32, nullable = false)
-    @Length(min = 8, max = 32, message = "* Your Username must have at least 8 characters less than 33 characters")
+    @Column(length = 32,
+            nullable = false)
+    @Length(min = 8,
+            max = 32,
+            message = "* Your Username must have at least 8 characters less than 33 characters")
     @NotBlank(message = "*Please provide your username")
     private String        username;
     @JsonIgnore
+    @Column(name = "password_id")
     private int           passwordId;
-    @Column(length = 64, nullable = false, unique = true)
+    @Column(length = 64,
+            nullable = false,
+            unique = true)
     private String        token;
-    @Column(name = "invalid_at", nullable = false)
+    @Column(name = "invalid_at",
+            nullable = false)
     private LocalDateTime invalidAt;
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb")
@@ -143,17 +158,18 @@ public class DeviceEntity
     @Override
     public String toString()
     {
-        return String.format("device{id:%s,token:%s,user:%s,pwdId:%d,pwd:%s,sn:%s,profile:%s,create:%s,update:%s,invalid:%s}",
-                             getId(),
-                             getToken(),
-                             getUsername(),
-                             getPasswordId(),
-                             getPassword(),
-                             getSn(),
-                             getProfile(),
-                             getCreatedAt(),
-                             getUpdatedAt(),
-                             getInvalidAt());
+        return String.format(
+                "device{id:%s,token:%s,user:%s,pwdId:%d,pwd:%s,sn:%s,profile:%s,create:%s,update:%s,invalid:%s}",
+                getId(),
+                getToken(),
+                getUsername(),
+                getPasswordId(),
+                getPassword(),
+                getSn(),
+                getProfile(),
+                getCreatedAt(),
+                getUpdatedAt(),
+                getInvalidAt());
     }
 
     public int getPasswordId()
@@ -206,22 +222,21 @@ public class DeviceEntity
     }
 
     @JsonIgnore
-    public Map<String,
-               IQoS.Level> getSubscribes()
+    public Map<String, IQoS.Level> getSubscribes()
     {
-        return subscribe == null ? null: subscribe.getSubscribes();
+        return subscribe == null ? null : subscribe.getSubscribes();
     }
 
     public void subscribe(String topic, IQoS.Level level)
     {
-        if (subscribe != null) {
+        if(subscribe != null) {
             subscribe.subscribe(topic, level);
         }
     }
 
     public void unsubscribe(String topic)
     {
-        if (subscribe != null) {
+        if(subscribe != null) {
             subscribe.unsubscribe(topic);
         }
     }
@@ -267,8 +282,7 @@ public class DeviceEntity
     @Override
     public int serial()
     {
-        return DEVICE_ENTITY_SERIAL;
+        return DB_SERIAL_REMOTE_DEVICE_ENTITY;
     }
 
-    private final static int DEVICE_ENTITY_SERIAL = AUDIT_MODEL_SERIAL + 1;
 }

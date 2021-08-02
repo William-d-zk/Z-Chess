@@ -28,10 +28,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceSubscribe;
-import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageBody;
-import com.isahl.chess.pawn.endpoint.device.jpa.model.ShadowEntity;
-import com.isahl.chess.pawn.endpoint.device.jpa.model.Subscribe;
+import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.ShadowEntity;
 
 import java.io.Serial;
 import java.io.Serializable;

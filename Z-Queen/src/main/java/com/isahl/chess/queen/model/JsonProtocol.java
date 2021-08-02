@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,13 +21,42 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.jpa.model;
+package com.isahl.chess.queen.model;
+
+import com.isahl.chess.king.base.util.JsonUtil;
+import com.isahl.chess.queen.io.core.inf.IProtocol;
 
 /**
  * @author william.d.zk
- * 
- * @date 2019-06-15
  */
-public enum JpaStatus
+public abstract class JsonProtocol
+        implements IProtocol
 {
+    protected int mLength;
+
+    @Override
+    public byte[] encode()
+    {
+        byte[] data = JsonUtil.writeValueAsBytes(this);
+        mLength = data == null ? 0 : data.length;
+        return data;
+    }
+
+    @Override
+    public int decode(byte[] data)
+    {
+        return mLength = data.length;
+    }
+
+    @Override
+    public byte[] payload()
+    {
+        return null;
+    }
+
+    @Override
+    public int dataLength()
+    {
+        return mLength;
+    }
 }

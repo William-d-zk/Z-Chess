@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,31 +21,15 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.spi;
+package com.isahl.chess.pawn.endpoint.device.jpa;
 
-import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.pawn.endpoint.device.model.MessageBody;
-import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.MessageEntity;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
+import static com.isahl.chess.rook.storage.jpa.model.AuditModel.AUDIT_MODEL_SERIAL;
 
-import java.util.List;
-import java.util.Optional;
-
-/**
- * @author william.d.zk
- * 
- * @date 2020/2/21
- */
-public interface IMessageService
+public interface PawnConstants
 {
-    List<MessageBody> listByTopic(String topic, int limit) throws ZException;
+    int DB_SERIAL_LOCAL_MSG_ENTITY     = AUDIT_MODEL_SERIAL + 1;
+    int DB_SERIAL_REMOTE_DEVICE_ENTITY = DB_SERIAL_LOCAL_MSG_ENTITY + 1;
+    int DB_SERIAL_REMOTE_MSG_ENTITY    = DB_SERIAL_REMOTE_DEVICE_ENTITY + 1;
+    int DB_SERIAL_REMOTE_SHADOW_ENTITY = DB_SERIAL_REMOTE_MSG_ENTITY + 1;
 
-    long generateMsgId(long origin, long destination);
-
-    void handleMessage(MessageEntity msgEntity);
-
-    Optional<MessageEntity> find1Msg(Specification<MessageEntity> specification);
-
-    List<MessageEntity> findAllMsg(Specification<MessageEntity> specification, Pageable pageable);
 }

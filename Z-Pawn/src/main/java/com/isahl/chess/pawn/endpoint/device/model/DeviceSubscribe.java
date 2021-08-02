@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.jpa.model;
+package com.isahl.chess.pawn.endpoint.device.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -34,26 +34,31 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.Map;
 
+/**
+ * @author william.d.zk
+ * @date 2020/07/28
+ * @see Subscribe
+ * Map<String, IQoS.Level> 比 List<Subscribe> json化之后体积小
+ */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class DeviceSubscribe
-        implements
-        Serializable
+        implements Serializable
 {
     @Serial
-    private static final long             serialVersionUID = -3075846478370159363L;
-    private final Map<String,
-                      IQoS.Level>         _Subscribes;
+    private static final long serialVersionUID = -3075846478370159363L;
+
+    private final Map<String, IQoS.Level> _Subscribes;
 
     @JsonCreator
-    public DeviceSubscribe(@JsonProperty("subscribes") Map<String,
-                                                           IQoS.Level> subscribes)
+    public DeviceSubscribe(
+            @JsonProperty("subscribes")
+                    Map<String, IQoS.Level> subscribes)
     {
         _Subscribes = subscribes;
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public Map<String,
-               IQoS.Level> getSubscribes()
+    public Map<String, IQoS.Level> getSubscribes()
     {
         return _Subscribes;
     }
@@ -65,21 +70,21 @@ public class DeviceSubscribe
 
     public void subscribe(String topic, IQoS.Level level)
     {
-        if (_Subscribes.computeIfPresent(topic, (t, o) -> level.getValue() > o.getValue() ? level: o) == null) {
+        if(_Subscribes.computeIfPresent(topic, (t, o)->level.getValue() > o.getValue() ? level : o) == null) {
             _Subscribes.put(topic, level);
         }
     }
 
     public void unsubscribe(String topic)
     {
-        if (_Subscribes != null) {
+        if(_Subscribes != null) {
             _Subscribes.remove(topic);
         }
     }
 
     public void clean()
     {
-        if (_Subscribes != null) {
+        if(_Subscribes != null) {
             _Subscribes.clear();
         }
     }
