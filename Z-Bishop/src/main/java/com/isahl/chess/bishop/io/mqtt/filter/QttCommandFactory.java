@@ -30,7 +30,6 @@ import com.isahl.chess.bishop.io.mqtt.QttFrame;
 import com.isahl.chess.bishop.io.mqtt.command.*;
 import com.isahl.chess.bishop.io.mqtt.control.*;
 import com.isahl.chess.bishop.io.mqtt.v5.control.X11F_QttAuth;
-import com.isahl.chess.queen.io.core.inf.ICommand;
 import com.isahl.chess.queen.io.core.inf.ICommandFactory;
 import com.isahl.chess.queen.io.core.inf.IControl;
 
@@ -54,7 +53,7 @@ public class QttCommandFactory
         if(serial < X111_QttConnect.COMMAND || serial > X11F_QttAuth.COMMAND) {
             return null;
         }
-        ICommand qttCommand = switch(serial) {
+        QttCommand qttCommand = switch(serial) {
             case X113_QttPublish.COMMAND -> new X113_QttPublish();
             case X114_QttPuback.COMMAND -> new X114_QttPuback();
             case X115_QttPubrec.COMMAND -> new X115_QttPubrec();
@@ -67,10 +66,11 @@ public class QttCommandFactory
             default -> null;
         };
         if(qttCommand != null) {
+            qttCommand.putContext(context);
             qttCommand.decode(data, context);
             return qttCommand;
         }
-        IControl qttControl = switch(serial) {
+        QttControl qttControl = switch(serial) {
             case X111_QttConnect.COMMAND -> new X111_QttConnect();
             case X112_QttConnack.COMMAND -> new X112_QttConnack();
             case X11C_QttPingreq.COMMAND -> new X11C_QttPingreq();
@@ -79,6 +79,7 @@ public class QttCommandFactory
             case X11F_QttAuth.COMMAND -> new X11F_QttAuth();
             default -> null;
         };
+        qttControl.putContext(context);
         qttControl.decode(data);
         return qttControl;
     }
@@ -98,9 +99,9 @@ public class QttCommandFactory
             default -> null;
         };
         if(qttCommand != null) {
+            qttCommand.putContext(context);
             qttCommand.putCtrl(frame.ctrl());
             qttCommand.decode(frame.payload(), context);
-            qttCommand.putContext(context);
             return qttCommand;
         }
         QttControl qttControl = switch(frame.getType()) {
@@ -113,8 +114,8 @@ public class QttCommandFactory
             default -> null;
         };
         if(qttControl != null) {
-            qttControl.decode(frame.payload());
             qttControl.putContext(context);
+            qttControl.decode(frame.payload());
         }
         return qttControl;
     }
