@@ -28,57 +28,51 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.JsonUtil;
-import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.knight.raft.IRaftDao;
-import com.isahl.chess.knight.raft.IRaftMachine;
-import com.isahl.chess.knight.raft.RaftState;
+import com.isahl.chess.knight.raft.inf.IRaftMachine;
+import com.isahl.chess.knight.raft.inf.IRaftMapper;
 import com.isahl.chess.queen.db.inf.IStorage;
 
 import java.util.*;
 
 import static com.isahl.chess.king.topology.ZUID.INVALID_PEER_ID;
-import static com.isahl.chess.knight.raft.RaftState.*;
+import static com.isahl.chess.knight.raft.model.RaftState.*;
 import static com.isahl.chess.queen.db.inf.IStorage.Operation.*;
 import static java.lang.Long.min;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019/12/10
  */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class RaftMachine
-        implements
-        IRaftMachine,
-        IStorage
+        implements IRaftMachine,
+                   IStorage
 {
     private final static int RAFT_MACHINE_SERIAL = DB_SERIAL + 3;
 
-    private final Logger                       _Logger    = Logger.getLogger("cluster.knight."
-                                                                             + RaftMachine.class.getSimpleName());
-    private final long                         _PeerId;
-    private long                               mTerm;      // 触发选举时 mTerm > mIndexTerm
-    private long                               mIndex;     // 本地日志Index，Leader：mIndex >= mCommit 其他状态：mIndex <= mCommit
-    private long                               mIndexTerm; // 本地日志对应的Term
-    private long                               mMatchIndex;// Leader: 记录 follower 已经接收的记录
-    private long                               mCandidate;
-    private long                               mLeader;
-    private long                               mCommit;    // 集群中已知的最大CommitIndex
-    private long                               mApplied;   // 本地已被应用的Index
-    private int                                mState;
-    private Set<Triple<Long,
-                       String,
-                       Integer>>               mPeerSet;
-    private Set<Triple<Long,
-                       String,
-                       Integer>>               mGateSet;
+    private final Logger _Logger = Logger.getLogger("cluster.knight." + RaftMachine.class.getSimpleName());
+    private final long   _PeerId;
+
+    private long          mTerm;      // 触发选举时 mTerm > mIndexTerm
+    private long          mIndex;     // 本地日志Index，Leader：mIndex >= mCommit 其他状态：mIndex <= mCommit
+    private long          mIndexTerm; // 本地日志对应的Term
+    private long          mMatchIndex;// Leader: 记录 follower 已经接收的记录
+    private long          mCandidate;
+    private long          mLeader;
+    private long          mCommit;    // 集群中已知的最大CommitIndex
+    private long          mApplied;   // 本地已被应用的Index
+    private int           mState     = FOLLOWER.getCode();
+    private Set<RaftNode> mPeerSet;
+    private Set<RaftNode> mGateSet;
     @JsonIgnore
-    private Operation                          mOperation = OP_NULL;
+    private Operation     mOperation = OP_NULL;
     @JsonIgnore
-    private int                                mLength;
+    private int           mLength;
+
+    @JsonIgnore
+    private transient byte[] tPayload;
 
     @Override
     public int dataLength()
@@ -89,6 +83,7 @@ public class RaftMachine
     @Override
     public int decode(byte[] data)
     {
+        tPayload = data;
         RaftMachine json = JsonUtil.readValue(data, getClass());
         Objects.requireNonNull(json);
         assert (_PeerId == json.getPeerId());
@@ -110,10 +105,16 @@ public class RaftMachine
     @Override
     public byte[] encode()
     {
-        byte[] payload = JsonUtil.writeValueAsBytes(this);
-        Objects.requireNonNull(payload);
-        mLength = payload.length;
-        return payload;
+        tPayload = JsonUtil.writeValueAsBytes(this);
+        Objects.requireNonNull(tPayload);
+        mLength = tPayload.length;
+        return tPayload;
+    }
+
+    @Override
+    public byte[] payload()
+    {
+        return tPayload;
     }
 
     @Override
@@ -150,7 +151,9 @@ public class RaftMachine
     }
 
     @JsonCreator
-    public RaftMachine(@JsonProperty("peer_id") long peerId)
+    public RaftMachine(
+            @JsonProperty("peer_id")
+                    long peerId)
     {
         _PeerId = peerId;
         mMatchIndex = INDEX_NAN;
@@ -218,17 +221,13 @@ public class RaftMachine
     }
 
     @Override
-    public Set<Triple<Long,
-                      String,
-                      Integer>> getPeerSet()
+    public Set<RaftNode> getPeerSet()
     {
         return mPeerSet;
     }
 
     @Override
-    public Set<Triple<Long,
-                      String,
-                      Integer>> getGateSet()
+    public Set<RaftNode> getGateSet()
     {
         return mGateSet;
     }
@@ -278,69 +277,55 @@ public class RaftMachine
         mApplied = applied;
     }
 
-    public void setPeerSet(Set<Triple<Long,
-                                      String,
-                                      Integer>> peerSet)
+    public void setPeerSet(Set<RaftNode> peerSet)
     {
         mPeerSet = peerSet;
     }
 
-    public void setGateSet(Set<Triple<Long,
-                                      String,
-                                      Integer>> gateSet)
+    public void setGateSet(Set<RaftNode> gateSet)
     {
         mGateSet = gateSet;
     }
 
-    @SafeVarargs
-    public final void appendPeer(Triple<Long,
-                                        String,
-                                        Integer>... peers)
+    public final void appendPeer(RaftNode... peers)
     {
-        if (mPeerSet == null) {
-            mPeerSet = new TreeSet<>(Comparator.comparing(ITriple::getFirst));
+        if(mPeerSet == null) {
+            mPeerSet = new TreeSet<>();
         }
         appendGraph(mPeerSet, peers);
     }
 
-    @SafeVarargs
-    public final void appendGate(Triple<Long,
-                                        String,
-                                        Integer>... gates)
+    public final void appendGate(RaftNode... gates)
     {
-        if (mGateSet == null) {
-            mGateSet = new TreeSet<>(Comparator.comparing(ITriple::getFirst));
+        if(mGateSet == null) {
+            mGateSet = new TreeSet<>();
         }
         appendGraph(mGateSet, gates);
     }
 
-    @SafeVarargs
-    private void appendGraph(Set<Triple<Long,
-                                        String,
-                                        Integer>> set,
-                             Triple<Long,
-                                    String,
-                                    Integer>... a)
+    private void appendGraph(Set<RaftNode> set, RaftNode... a)
     {
         Objects.requireNonNull(set);
-        if (a == null || a.length == 0) { return; }
+        if(a == null || a.length == 0) { return; }
         mPeerSet.addAll(Arrays.asList(a));
     }
 
     @Override
-    public void apply(IRaftDao dao)
+    public void apply(IRaftMapper dao)
     {
-        // TODO 分摊集群读写压力，需要在follower apply的时候notify 那些在follower上订阅了延迟一致的consumer
-        if (mIndex < mApplied) {
-            _Logger.warning(String.format("index %d < apply %d, roll back ", mIndex, mApplied));
+        if(mIndex != mApplied) {
+            if(mIndex < mApplied) {
+                _Logger.warning(String.format("index %d < apply %d, roll back ", mIndex, mApplied));
+            }
+            mApplied = min(mIndex, mCommit);
+            dao.updateLogApplied(mApplied);
+            _Logger.debug("apply : %d | [index %d commit %d]", mApplied, mIndex, mCommit);
         }
-        mApplied = min(mIndex, mCommit);
-        dao.updateLogApplied(mApplied);
-        _Logger.debug("apply => %d | [index %d commit %d]", mApplied, mIndex, mCommit);
+        //ignore
     }
 
     @Override
-    public void commit(long index, IRaftDao dao)
+    public void commit(long index, IRaftMapper dao)
     {
         /*
          * 只有Leader 能执行此操作
@@ -353,7 +338,7 @@ public class RaftMachine
     }
 
     @Override
-    public void beLeader(IRaftDao dao)
+    public void beLeader(IRaftMapper dao)
     {
         mState = LEADER.getCode();
         mLeader = _PeerId;
@@ -364,7 +349,7 @@ public class RaftMachine
     }
 
     @Override
-    public void beCandidate(IRaftDao dao)
+    public void beCandidate(IRaftMapper dao)
     {
         mState = CANDIDATE.getCode();
         mLeader = INVALID_PEER_ID;
@@ -374,7 +359,7 @@ public class RaftMachine
     }
 
     @Override
-    public void beElector(long candidate, long term, IRaftDao dao)
+    public void beElector(long candidate, long term, IRaftMapper dao)
     {
         mState = ELECTOR.getCode();
         mLeader = INVALID_PEER_ID;
@@ -385,7 +370,7 @@ public class RaftMachine
     }
 
     @Override
-    public void follow(long leader, long term, long commit, IRaftDao dao)
+    public void follow(long leader, long term, long commit, IRaftMapper dao)
     {
         mState = FOLLOWER.getCode();
         mTerm = term;
@@ -398,7 +383,7 @@ public class RaftMachine
     }
 
     @Override
-    public void follow(long term, IRaftDao dao)
+    public void follow(long term, IRaftMapper dao)
     {
         mState = FOLLOWER.getCode();
         mTerm = term;
@@ -409,6 +394,7 @@ public class RaftMachine
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public RaftMachine createCandidate()
     {
         RaftMachine candidate = new RaftMachine(_PeerId);
@@ -424,6 +410,7 @@ public class RaftMachine
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public RaftMachine createLeader()
     {
         RaftMachine leader = new RaftMachine(_PeerId);
@@ -439,6 +426,7 @@ public class RaftMachine
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public RaftMachine createFollower()
     {
         RaftMachine follower = new RaftMachine(_PeerId);
@@ -454,28 +442,46 @@ public class RaftMachine
     }
 
     @Override
-    public void appendLog(long index, long indexTerm, IRaftDao dao)
+    @SuppressWarnings("unchecked")
+    public RaftMachine createLearner()
+    {
+        RaftMachine follower = new RaftMachine(_PeerId);
+        follower.setTerm(mTerm);
+        follower.setIndex(mIndex);
+        follower.setIndexTerm(mIndexTerm);
+        follower.setCommit(mCommit);
+        follower.setState(LEARNER);
+        follower.setCandidate(INVALID_PEER_ID);
+        follower.setLeader(INVALID_PEER_ID);
+        follower.setOperation(OP_MODIFY);
+        return follower;
+    }
+
+    @Override
+    public void append(long index, long indexTerm, IRaftMapper mapper)
     {
         mIndex = index;
         mMatchIndex = index;
         mIndexTerm = indexTerm;
-        dao.updateLogIndexAndTerm(mIndex, mIndexTerm);
+        mapper.updateLogIndexAndTerm(mIndex, mIndexTerm);
     }
 
     @Override
-    public void rollBack(long index, long indexTerm, IRaftDao dao)
+    public void rollBack(long index, long indexTerm, IRaftMapper mapper)
     {
-        appendLog(index, indexTerm, dao);
+        append(index, indexTerm, mapper);
         mApplied = min(index, mCommit);
-        dao.updateLogApplied(mApplied);
+        mapper.updateLogApplied(mApplied);
     }
 
     @Override
     public void reset()
     {
+        mState = FOLLOWER.getCode();
         mIndex = 0;
-        mMatchIndex = INDEX_NAN;
         mIndexTerm = 0;
+        mMatchIndex = INDEX_NAN;
+        mTerm = 0;
         mApplied = 0;
         mCommit = 0;
     }
@@ -483,18 +489,9 @@ public class RaftMachine
     @Override
     public String toString()
     {
-        return String.format("\n{\n"
-                             + "\t\tpeerId:%#x\n"
-                             + "\t\tstate:%s\n"
-                             + "\t\tterm:%d\n"
-                             + "\t\tindex:%d\n"
-                             + "\t\tindex_term:%d\n"
-                             + "\t\tmatch_index:%d\n"
-                             + "\t\tcommit:%d\n"
-                             + "\t\tapplied:%d\n"
-                             + "\t\tleader:%#x\n"
-                             + "\t\tcandidate:%#x\n"
-                             + "\t\tpeers:%s\n}",
+        return String.format("\n{\n" + "\t\tpeerId:%#x\n" + "\t\tstate:%s\n" + "\t\tterm:%d\n" + "\t\tindex:%d\n" +
+                             "\t\tindex_term:%d\n" + "\t\tmatch_index:%d\n" + "\t\tcommit:%d\n" + "\t\tapplied:%d\n" +
+                             "\t\tleader:%#x\n" + "\t\tcandidate:%#x\n" + "\t\tpeers:%s\n" + "\t\tgates:%s\n" + "\n}",
                              _PeerId,
                              getState(),
                              mTerm,
@@ -505,19 +502,23 @@ public class RaftMachine
                              mApplied,
                              mLeader,
                              mCandidate,
-                             peerSetString());
+                             set2String(mPeerSet),
+                             set2String(mGateSet));
     }
 
-    private String peerSetString()
+    private <T> String set2String(Collection<T> set)
     {
-        StringBuilder sb = new StringBuilder("[\n");
-
-        for (ITriple triple : mPeerSet) {
-            sb.append("\t<")
-              .append(String.format(" %#x, %s, %d ", triple.getFirst(), triple.getSecond(), triple.getThird()))
-              .append(">\n");
+        if(set != null) {
+            StringBuilder sb = new StringBuilder("[\n");
+            for(T t : set) {
+                sb.append("\t\t\t<")
+                  .append(String.format(" %s ", t))
+                  .append(">\n");
+            }
+            sb.append("\t\t]");
+            return sb.toString();
         }
-        sb.append(']');
-        return sb.toString();
+        return null;
     }
+
 }

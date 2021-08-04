@@ -24,45 +24,43 @@
 package com.isahl.chess.knight.cluster.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.isahl.chess.bishop.io.json.JsonProtocol;
+import com.isahl.chess.queen.model.JsonProtocol;
 import com.isahl.chess.queen.io.core.inf.IConsistent;
 
 import java.nio.charset.StandardCharsets;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/4/25
  */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ConsistentProtocol
-        extends
-        JsonProtocol
-        implements
-        IConsistent
+        extends JsonProtocol
+        implements IConsistent
 {
-    public final static int  _SERIAL = CONSISTENT_SERIAL + 1;
-    private final byte[]     _Content;
-    private final boolean    _Public;
-    private final long       _Origin;
-    private final long       _Zuid;
-    @JsonIgnore
-    private transient byte[] tData;
+    public final static int _SERIAL = CONSISTENT_SERIAL + 1;
+
+    private final byte[] _Content;
+    private final long   _Origin;
+    private final long   _Uid;
+
+    private transient byte[] tPayload;
 
     @JsonCreator
-    public ConsistentProtocol(@JsonProperty("content") byte[] content,
-                              @JsonProperty("public") boolean all,
-                              @JsonProperty("zuid") long zuid,
-                              @JsonProperty("origin") long origin)
+    public ConsistentProtocol(
+            @JsonProperty("content")
+                    byte[] content,
+            @JsonProperty("uid")
+                    long uid,
+            @JsonProperty("origin")
+                    long origin)
     {
         _Content = content;
-        _Public = all;
         _Origin = origin;
-        _Zuid = zuid;
+        _Uid = uid;
     }
 
     @Override
@@ -77,22 +75,14 @@ public class ConsistentProtocol
         return CONSISTENT_SERIAL;
     }
 
-    @Override
-    public byte[] encode()
-    {
-        if (tData != null) { return tData; }
-        tData = super.encode();
-        return tData;
-    }
-
     public byte[] getContent()
     {
         return _Content;
     }
 
-    public long getZuid()
+    public long getUid()
     {
-        return _Zuid;
+        return _Uid;
     }
 
     @Override
@@ -102,19 +92,25 @@ public class ConsistentProtocol
     }
 
     @Override
-    public boolean isPublic()
+    public byte[] payload()
     {
-        return _Public;
+        return tPayload;
+    }
+
+    @Override
+    public byte[] encode()
+    {
+        return tPayload = super.encode();
     }
 
     @Override
     public String toString()
     {
-        return String.format("ConsistentProtocol{content:%s,public:%s,origin:%#x,zuid:%#x||%d}",
+        return String.format("ConsistentProtocol{content:%s,origin:%#x,uid:%#x||%d}",
                              new String(_Content, StandardCharsets.UTF_8),
-                             _Public,
                              _Origin,
-                             _Zuid,
-                             _Zuid);
+                             _Uid,
+                             _Uid);
     }
+
 }

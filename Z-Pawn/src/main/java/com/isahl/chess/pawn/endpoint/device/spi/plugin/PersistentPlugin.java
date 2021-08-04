@@ -23,28 +23,32 @@
 
 package com.isahl.chess.pawn.endpoint.device.spi.plugin;
 
+import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.MessageEntity;
+import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.repository.IMessageJpaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageEntity;
-import com.isahl.chess.pawn.endpoint.device.jpa.repository.IMessageJpaRepository;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Component
 public class PersistentPlugin
-        implements
-        IMessagePlugin
+        implements IMessagePlugin
 {
-    private final IMessageJpaRepository _Repository;
+    private final IMessageJpaRepository                _Repository;
+    private final ConcurrentLinkedQueue<MessageEntity> _AsyncMessageQueue;
 
     @Autowired
     public PersistentPlugin(IMessageJpaRepository repository)
     {
         _Repository = repository;
+        _AsyncMessageQueue = new ConcurrentLinkedQueue<>();
     }
 
     @Override
     public void handleMessage(MessageEntity msgEntity)
     {
+
         _Repository.save(msgEntity);
     }
+
 }

@@ -37,30 +37,27 @@ import java.util.Objects;
  * @author William.d.zk
  */
 public abstract class ZProtocol
-        implements
-        ICommand,
-        IQoS,
-        IDuplicate
+        implements ICommand,
+                   IQoS,
+                   IDuplicate
 {
-    public final static int  version                 = 0x3;
-    private final static int g_msg_uid_size          = 8;
-    private final static int min_no_msg_uid_size     = 1 + 1 + 1 + 4;
-    private final static int min_msg_uid_size        = min_no_msg_uid_size + g_msg_uid_size;
-    private final static int ctrl_mask_qos_left_bits = 4;
-    private final static int ctrl_mask_qos           = 3 << ctrl_mask_qos_left_bits;
-    private final int        _Command;
-    private final boolean    _HasMsgId;
-    private byte             mTypeByte;
-    private byte             mHAttr;
-    private long             mMsgId                  = -1;
-    private long             mSequence               = -1;
-    private transient long   tTransactionKey         = -1;
-    private byte             mCtrlCode;
-    private ZContext         mContext;
+    public final static  int      version                 = 0x3;
+    private final static int      g_msg_uid_size          = 8;
+    private final static int      min_no_msg_uid_size     = 1 + 1 + 1 + 4;
+    private final static int      min_msg_uid_size        = min_no_msg_uid_size + g_msg_uid_size;
+    private final static int      ctrl_mask_qos_left_bits = 4;
+    private final static int      ctrl_mask_qos           = 3 << ctrl_mask_qos_left_bits;
+    private final        int      _Command;
+    private final        boolean  _HasMsgId;
+    private              byte     mTypeByte;
+    private              byte     mHAttr;
+    private              long     mMsgId                  = -1;
+    private              long     mSequence               = -1;
+    private transient    long     tTransactionKey         = -1;
+    private              byte     mCtrlCode;
+    private              ZContext mContext;
 
-    protected ZProtocol(int command,
-                        boolean hasMsgId,
-                        long msgId)
+    protected ZProtocol(int command, boolean hasMsgId, long msgId)
     {
         _Command = command;
         initGUid(msgId, _HasMsgId = hasMsgId);
@@ -68,8 +65,7 @@ public abstract class ZProtocol
         mTypeByte = I18nUtil.getCharsetSerial(I18nUtil.CHARSET_UTF_8, I18nUtil.SERIAL_BINARY);
     }
 
-    public ZProtocol(int command,
-                     long msgId)
+    public ZProtocol(int command, long msgId)
     {
         this(command, true, msgId);
     }
@@ -86,7 +82,7 @@ public abstract class ZProtocol
     }
 
     @Override
-    public int getPriority()
+    public int priority()
     {
         return QOS_PRIORITY_00_NETWORK_CONTROL;
     }
@@ -143,13 +139,13 @@ public abstract class ZProtocol
 
     private void initGUid(long _uid, boolean flag)
     {
-        if (flag) {
+        if(flag) {
             mHAttr &= ~0x40;
         }
         else {
             mHAttr |= 0x40;
         }
-        mMsgId = flag ? _uid: 0;
+        mMsgId = flag ? _uid : 0;
     }
 
     public final void setCharset(Charset charset)
@@ -174,7 +170,7 @@ public abstract class ZProtocol
     {
         int l_crc = CryptUtil.crc32(data, 0, lastPos);
         int crc = IoUtil.readInt(data, lastPos);
-        if (l_crc != crc) { throw new SecurityException("crc check failed!  =" + data[1]); }
+        if(l_crc != crc) { throw new SecurityException("crc check failed!  =" + data[1]); }
         return lastPos + 4;
     }
 
@@ -182,7 +178,7 @@ public abstract class ZProtocol
     public final byte[] encode()
     {
         int length = dataLength();
-        if (length == 0) { throw new ArrayIndexOutOfBoundsException("data_length == 0"); }
+        if(length == 0) { throw new ArrayIndexOutOfBoundsException("data_length == 0"); }
         byte[] output = new byte[length];
         prefix(output, 0);
         return output;
@@ -192,13 +188,13 @@ public abstract class ZProtocol
     {
         pos += IoUtil.writeByte(mHAttr, output, pos);
         pos += IoUtil.writeByte(_Command, output, pos);
-        if (isGlobalMsg()) {
+        if(isGlobalMsg()) {
             pos += IoUtil.writeLong(mMsgId, output, pos);
         }
         pos += IoUtil.writeByte(mTypeByte, output, pos);
         pos = encodec(output, pos);
-        if (pos < output.length - 5) {
-            pos += IoUtil.write(getPayload(), output, pos);
+        if(pos < output.length - 5) {
+            pos += IoUtil.write(payload(), output, pos);
         }
         return addCrc(output, pos);
     }
@@ -207,7 +203,7 @@ public abstract class ZProtocol
     public final int encode(byte[] output, int pos, int length)
     {
         Objects.requireNonNull(output);
-        if (output.length < length || pos + length > output.length) {
+        if(output.length < length || pos + length > output.length) {
             throw new ArrayIndexOutOfBoundsException("data length is too long for input buf");
         }
         return prefix(output, pos);
@@ -216,24 +212,24 @@ public abstract class ZProtocol
     @Override
     public final int decode(byte[] input, int pos, int length)
     {
-        if (input == null || input.length == 0 || length == 0) { return 0; }
+        if(input == null || input.length == 0 || length == 0) { return 0; }
         // dataLength 此处表达了最短长度值
         int len = dataLength();
-        if (len > length || (input.length < len || pos + length > input.length)) {
+        if(len > length || (input.length < len || pos + length > input.length)) {
             throw new ArrayIndexOutOfBoundsException();
         }
         mHAttr = input[pos++];
         pos += 1;// skip [_Command] position
-        if (isGlobalMsg()) {
+        if(isGlobalMsg()) {
             mMsgId = IoUtil.readLong(input, pos);
             pos += 8;
         }
         mTypeByte = input[pos++];
         pos = decodec(input, pos);
-        if (pos < input.length - 5) {
+        if(pos < input.length - 5) {
             byte[] payload = new byte[input.length - 4 - pos];
             pos = IoUtil.read(input, pos, payload);
-            setPayload(payload);
+            putPayload(payload);
         }
         return checkCrc(input, pos);
     }
@@ -245,7 +241,7 @@ public abstract class ZProtocol
 
     protected int minLength()
     {
-        return isGlobalMsg() ? min_msg_uid_size: min_no_msg_uid_size;
+        return isGlobalMsg() ? min_msg_uid_size : min_no_msg_uid_size;
     }
 
     @Override
@@ -257,7 +253,7 @@ public abstract class ZProtocol
     @Override
     public void setSequence(long sequence)
     {
-        mSequence = mSequence < 0 ? sequence: mSequence;
+        mSequence = mSequence < 0 ? sequence : mSequence;
     }
 
     public long getTransactionKey()
@@ -267,7 +263,7 @@ public abstract class ZProtocol
 
     public void setTransactionKey(long _key)
     {
-        tTransactionKey = tTransactionKey < 0 ? _key: tTransactionKey;
+        tTransactionKey = tTransactionKey < 0 ? _key : tTransactionKey;
     }
 
     public byte getTypeCode()
@@ -277,10 +273,10 @@ public abstract class ZProtocol
 
     public ZProtocol setMsgId(String hexGUid, long longGUid)
     {
-        if (longGUid != -1) {
+        if(longGUid != -1) {
             setMsgId(longGUid);
         }
-        else if (Objects.nonNull(hexGUid)) {
+        else if(Objects.nonNull(hexGUid)) {
             setMsgId(Long.parseLong(hexGUid, 16));
         }
         else {
@@ -298,7 +294,7 @@ public abstract class ZProtocol
     @Override
     public void setMsgId(long uid)
     {
-        if (!_HasMsgId) { throw new UnsupportedOperationException(); }
+        if(!_HasMsgId) { throw new UnsupportedOperationException(); }
         mMsgId = uid;
     }
 
@@ -323,7 +319,7 @@ public abstract class ZProtocol
 
     @Override
     @SuppressWarnings("unchecked")
-    public ZContext getContext()
+    public ZContext context()
     {
         return mContext;
     }

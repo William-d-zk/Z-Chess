@@ -23,7 +23,7 @@
 
 package com.isahl.chess.pawn.endpoint.device.spi.plugin;
 
-import com.isahl.chess.pawn.endpoint.device.jpa.model.MessageEntity;
+import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.MessageEntity;
 
 /**
  * @author william.d.zk

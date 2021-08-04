@@ -22,37 +22,31 @@
  */
 package com.isahl.chess.king.base.disruptor.event.inf;
 
-import java.util.List;
-
 import com.isahl.chess.king.base.disruptor.event.OperatorType;
 import com.isahl.chess.king.base.inf.IError;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
-import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
+
+import java.util.List;
 
 /**
  * @author William.d.zk
  */
 public interface IPipeEventHandler<E extends IEvent>
-        extends
-        EventHandler<E>
+        extends IBatchEventHandler<E>
 {
 
     Logger getLogger();
 
-    default <V,
-             A,
-             R> void publish(RingBuffer<E> publisher,
-                             OperatorType type,
-                             IPair content,
-                             IOperator<V,
-                                       A,
-                                       R> operator)
+    default <V, A, R> void publish(RingBuffer<E> publisher,
+                                   OperatorType type,
+                                   IPair content,
+                                   IOperator<V, A, R> operator)
     {
-        if (publisher == null) { return; }
-        if (publisher.remainingCapacity() == 0) {
+        if(publisher == null || type == null || content == null) {return;}
+        if(publisher.remainingCapacity() == 0) {
             getLogger().warning("publish block with %s", type.name());
         }
         long sequence = publisher.next();
@@ -67,8 +61,8 @@ public interface IPipeEventHandler<E extends IEvent>
 
     default void publish(RingBuffer<E> publisher, List<ITriple> contents)
     {
-        if (publisher == null) { return; }
-        if (publisher.remainingCapacity() == 0) {
+        if(publisher == null || contents == null || contents.isEmpty()) {return;}
+        if(publisher.remainingCapacity() == 0) {
             getLogger().warning("publish block with writer");
         }
         long sequence = publisher.next();
@@ -81,17 +75,10 @@ public interface IPipeEventHandler<E extends IEvent>
         }
     }
 
-    default <V,
-             A,
-             R> void error(RingBuffer<E> publisher,
-                           IError.Type type,
-                           IPair content,
-                           IOperator<V,
-                                     A,
-                                     R> operator)
+    default <V, A, R> void error(RingBuffer<E> publisher, IError.Type type, IPair content, IOperator<V, A, R> operator)
     {
-        if (publisher == null) { return; }
-        if (publisher.remainingCapacity() == 0) {
+        if(publisher == null || type == null || content == null) {return;}
+        if(publisher.remainingCapacity() == 0) {
             getLogger().warning("error block with %s", type.name());
         }
         long sequence = publisher.next();

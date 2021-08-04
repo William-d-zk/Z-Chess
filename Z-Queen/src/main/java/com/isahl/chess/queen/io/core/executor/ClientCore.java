@@ -23,8 +23,9 @@
 
 package com.isahl.chess.queen.io.core.executor;
 
-import com.isahl.chess.king.base.disruptor.MultiBufferBatchEventProcessor;
 import com.isahl.chess.king.base.disruptor.event.OperatorType;
+import com.isahl.chess.king.base.disruptor.processor.Z1Processor;
+import com.isahl.chess.king.base.disruptor.processor.Z2Processor;
 import com.isahl.chess.king.base.schedule.TimeWheel;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.event.QEvent;
@@ -34,21 +35,16 @@ import com.isahl.chess.queen.event.handler.client.ClientDecodeHandler;
 import com.isahl.chess.queen.event.handler.client.ClientIoDispatcher;
 import com.isahl.chess.queen.event.handler.client.ClientLinkHandler;
 import com.isahl.chess.queen.event.handler.client.ClientWriteDispatcher;
+import com.isahl.chess.queen.event.handler.mix.ILogicHandler;
 import com.isahl.chess.queen.io.core.async.AioWorker;
 import com.isahl.chess.queen.io.core.inf.IEncryptHandler;
-import com.lmax.disruptor.BatchEventProcessor;
-import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.SequenceBarrier;
 
 import java.io.IOException;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.util.Arrays;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
@@ -56,11 +52,9 @@ import java.util.function.Supplier;
  * @author william.d.zk
  */
 public class ClientCore
-        extends
-        ThreadPoolExecutor
-        implements
-        IBizCore,
-        ILocalPublisher
+        extends ThreadPoolExecutor
+        implements IBizCore,
+                   ILocalPublisher
 
 {
     private final RingBuffer<QEvent>[]                      _AioProducerEvents;
@@ -69,19 +63,18 @@ public class ClientCore
     private final ConcurrentLinkedQueue<RingBuffer<QEvent>> _AioCacheConcurrentQueue;
     private final int                                       _IoCount;
     private final ThreadFactory                             _WorkerThreadFactory = new ThreadFactory()
-                                                                                 {
-                                                                                     int count;
+    {
+        int count;
 
-                                                                                     @Override
-                                                                                     public Thread newThread(Runnable r)
-                                                                                     {
-                                                                                         return new AioWorker(r,
-                                                                                                              String.format("AioWorker.client.%d",
-                                                                                                                            count++),
-                                                                                                              _AioCacheConcurrentQueue::offer,
-                                                                                                              _AioCacheConcurrentQueue.poll());
-                                                                                     }
-                                                                                 };
+        @Override
+        public Thread newThread(Runnable r)
+        {
+            return new AioWorker(r,
+                                 String.format("AioWorker.client.%d", count++),
+                                 _AioCacheConcurrentQueue::offer,
+                                 _AioCacheConcurrentQueue.poll());
+        }
+    };
     private final ReentrantLock                             _LocalLock           = new ReentrantLock();
     private final TimeWheel                                 _TimeWheel           = new TimeWheel();
 
@@ -90,7 +83,7 @@ public class ClientCore
     {
         super(poolSize(), poolSize(), 15, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
         _AioProducerEvents = new RingBuffer[_IoCount = ioCount];
-        Arrays.setAll(_AioProducerEvents, slot -> createPipelineYield(1 << 6));
+        Arrays.setAll(_AioProducerEvents, slot->createPipelineYield(1 << 6));
         _AioCacheConcurrentQueue = new ConcurrentLinkedQueue<>(Arrays.asList(_AioProducerEvents));
         _BizLocalCloseEvent = createPipelineLite(1 << 5);
         _BizLocalSendEvent = createPipelineLite(1 << 5);
@@ -113,7 +106,7 @@ public class ClientCore
      * @formatter:on
      */
     @SuppressWarnings("unchecked")
-    public void build(final EventHandler<QEvent> _LogicHandler, Supplier<IEncryptHandler> encryptSupplier)
+    public void build(final ILogicHandler.factory factory, Supplier<IEncryptHandler> encryptSupplier)
     {
         final RingBuffer<QEvent> _WroteEvent = createPipelineYield(1 << 7);
         final RingBuffer<QEvent> _LinkIoEvent = createPipelineLite(1 << 2);
@@ -124,58 +117,61 @@ public class ClientCore
         final SequenceBarrier[] _DispatchIoBarriers = new SequenceBarrier[_DispatchIo.length];
         final SequenceBarrier[] _ErrorBarriers = new SequenceBarrier[_ErrorEvents.length];
         final SequenceBarrier[] _AioProducerBarriers = new SequenceBarrier[_IoCount];
-        Arrays.setAll(_ErrorEvents, slot -> createPipelineLite(1 << 5));
-        Arrays.setAll(_ErrorBarriers, slot -> _ErrorEvents[slot].newBarrier());
-        Arrays.setAll(_AioProducerBarriers, slot -> _AioProducerEvents[slot].newBarrier());
+        Arrays.setAll(_ErrorEvents, slot->createPipelineLite(1 << 5));
+        Arrays.setAll(_ErrorBarriers, slot->_ErrorEvents[slot].newBarrier());
+        Arrays.setAll(_AioProducerBarriers, slot->_AioProducerEvents[slot].newBarrier());
         IoUtil.addArray(_AioProducerEvents, _DispatchIo, _BizLocalCloseEvent);
         IoUtil.addArray(_AioProducerBarriers, _DispatchIoBarriers, _BizLocalCloseEvent.newBarrier());
         IoUtil.addArray(_ErrorEvents, _DispatchIo, _IoCount + 1);
         IoUtil.addArray(_ErrorBarriers, _DispatchIoBarriers, _IoCount + 1);
-        final MultiBufferBatchEventProcessor<QEvent> _IoDispatcher = new MultiBufferBatchEventProcessor<>(_DispatchIo,
-                                                                                                          _DispatchIoBarriers,
-                                                                                                          new ClientIoDispatcher(_LinkIoEvent,
-                                                                                                                                 _ReadAndLogicEvent,
-                                                                                                                                 _WroteEvent,
-                                                                                                                                 _ErrorEvents[0]));
+        final Z2Processor<QEvent> _IoDispatcher = new Z2Processor<>(_DispatchIo,
+                                                                    _DispatchIoBarriers,
+                                                                    new ClientIoDispatcher(_LinkIoEvent,
+                                                                                           _ReadAndLogicEvent,
+                                                                                           _WroteEvent,
+                                                                                           _ErrorEvents[0]));
         _IoDispatcher.setThreadName("IoDispatcher");
-        for (int i = 0, size = _DispatchIo.length; i < size; i++) {
+        for(int i = 0, size = _DispatchIo.length; i < size; i++) {
             _DispatchIo[i].addGatingSequences(_IoDispatcher.getSequences()[i]);
         }
-        final BatchEventProcessor<QEvent> _DecodeProcessor = new BatchEventProcessor<>(_ReadAndLogicEvent,
-                                                                                       _ReadAndLogicEvent.newBarrier(),
-                                                                                       new ClientDecodeHandler(encryptSupplier.get()));
+        final Z1Processor<QEvent> _DecodeProcessor = new Z1Processor<>(_ReadAndLogicEvent,
+                                                                       _ReadAndLogicEvent.newBarrier(),
+                                                                       new ClientDecodeHandler(encryptSupplier.get(),
+                                                                                               0));
         /*
          * 相对 server core 做了精简，decode 错误将在 logic processor 中按照 Ignore 进行处理
          * 最终被
          */
-        final BatchEventProcessor<QEvent> _LogicProcessor = new BatchEventProcessor<>(_ReadAndLogicEvent,
-                                                                                      _ReadAndLogicEvent.newBarrier(_DecodeProcessor.getSequence()),
-                                                                                      _LogicHandler);
-        final BatchEventProcessor<QEvent> _LinkProcessor = new BatchEventProcessor<>(_LinkIoEvent,
-                                                                                     _LinkIoEvent.newBarrier(),
-                                                                                     new ClientLinkHandler());
-        final RingBuffer<QEvent>[] _SendEvents = new RingBuffer[]{_BizLocalSendEvent,
-                                                                  _LinkIoEvent,
-                                                                  _ReadAndLogicEvent,
-                                                                  _WroteEvent};
-        final SequenceBarrier[] _SendBarriers = new SequenceBarrier[]{_BizLocalSendEvent.newBarrier(),
-                                                                      _LinkIoEvent.newBarrier(_LinkProcessor.getSequence()),
-                                                                      _ReadAndLogicEvent.newBarrier(_LogicProcessor.getSequence()),
-                                                                      _WroteEvent.newBarrier()};
-        final MultiBufferBatchEventProcessor<QEvent> _WriteDispatcher = new MultiBufferBatchEventProcessor<>(_SendEvents,
-                                                                                                             _SendBarriers,
-                                                                                                             new ClientWriteDispatcher(_ErrorEvents[1],
-                                                                                                                                       _EncodeEvent));
+        final Z1Processor<QEvent> _LogicProcessor = new Z1Processor<>(_ReadAndLogicEvent,
+                                                                      _ReadAndLogicEvent.newBarrier(_DecodeProcessor.getSequence()),
+                                                                      factory.create(0));
+        final Z1Processor<QEvent> _LinkProcessor = new Z1Processor<>(_LinkIoEvent,
+                                                                     _LinkIoEvent.newBarrier(),
+                                                                     new ClientLinkHandler());
+        final RingBuffer<QEvent>[] _SendEvents = new RingBuffer[]{ _BizLocalSendEvent,
+                                                                   _LinkIoEvent,
+                                                                   _ReadAndLogicEvent,
+                                                                   _WroteEvent
+        };
+        final SequenceBarrier[] _SendBarriers = new SequenceBarrier[]{ _BizLocalSendEvent.newBarrier(),
+                                                                       _LinkIoEvent.newBarrier(_LinkProcessor.getSequence()),
+                                                                       _ReadAndLogicEvent.newBarrier(_LogicProcessor.getSequence()),
+                                                                       _WroteEvent.newBarrier()
+        };
+        final Z2Processor<QEvent> _WriteDispatcher = new Z2Processor<>(_SendEvents,
+                                                                       _SendBarriers,
+                                                                       new ClientWriteDispatcher(_ErrorEvents[1],
+                                                                                                 _EncodeEvent));
         _WriteDispatcher.setThreadName("WriteDispatcher");
-        for (int i = 0, size = _SendEvents.length; i < size; i++) {
+        for(int i = 0, size = _SendEvents.length; i < size; i++) {
             _SendEvents[i].addGatingSequences(_WriteDispatcher.getSequences()[i]);
         }
-        final BatchEventProcessor<QEvent> _EncodeProcessor = new BatchEventProcessor<>(_EncodeEvent,
-                                                                                       _EncodeEvent.newBarrier(),
-                                                                                       new EncodeHandler(encryptSupplier.get()));
-        final BatchEventProcessor<QEvent> _EncodedProcessor = new BatchEventProcessor<>(_EncodeEvent,
-                                                                                        _EncodeEvent.newBarrier(_EncodeProcessor.getSequence()),
-                                                                                        new EncodedHandler(_ErrorEvents[2]));
+        final Z1Processor<QEvent> _EncodeProcessor = new Z1Processor<>(_EncodeEvent,
+                                                                       _EncodeEvent.newBarrier(),
+                                                                       new EncodeHandler(encryptSupplier.get(), 0));
+        final Z1Processor<QEvent> _EncodedProcessor = new Z1Processor<>(_EncodeEvent,
+                                                                        _EncodeEvent.newBarrier(_EncodeProcessor.getSequence()),
+                                                                        new EncodedHandler(_ErrorEvents[2]));
 
         _EncodeEvent.addGatingSequences(_EncodedProcessor.getSequence());
         /* -------------------------------------------------------------------------------------------------*/
@@ -189,18 +185,6 @@ public class ClientCore
         submit(_EncodedProcessor);
     }
 
-    @Override
-    public RingBuffer<QEvent> getConsensusEvent()
-    {
-        return null;
-    }
-
-    @Override
-    public ReentrantLock getConsensusLock()
-    {
-        return null;
-    }
-
     private static int poolSize()
     {
         return 1// aioDispatch
@@ -210,7 +194,7 @@ public class ClientCore
                + 1// write-dispatcher
                + 1// write-encode
                + 1// write-end
-        ;
+                ;
     }
 
     public ThreadFactory getWorkerThreadFactory()

@@ -23,6 +23,7 @@
 
 package com.isahl.chess.bishop.io.ws.zchat.zprotocol;
 
+import com.isahl.chess.bishop.io.ws.zchat.ZContext;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.raft.*;
 import com.isahl.chess.queen.io.core.inf.ICommand;
 import com.isahl.chess.queen.io.core.inf.ICommandFactory;
@@ -30,26 +31,21 @@ import com.isahl.chess.queen.io.core.inf.IFrame;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-05-08
  */
 public class ZClusterFactory
-        implements
-        ICommandFactory<ICommand,
-                        IFrame>
+        implements ICommandFactory<ICommand, IFrame, ZContext>
 {
     @Override
-    public ICommand create(IFrame frame)
+    public ICommand create(IFrame frame, ZContext context)
     {
-        return create(frame.getPayload()[1] & 0xFF);
+        return create(frame.payload()[1] & 0xFF, frame.payload(), context);
     }
 
     @Override
-    public ICommand create(int serial)
+    public ICommand create(int serial, byte[] input, ZContext context)
     {
-
-        return switch (serial)
-        {
+        ZCommand cmd = switch(serial) {
             case X70_RaftVote.COMMAND -> new X70_RaftVote();
             case X71_RaftBallot.COMMAND -> new X71_RaftBallot();
             case X72_RaftAppend.COMMAND -> new X72_RaftAppend();
@@ -58,8 +54,12 @@ public class ZClusterFactory
             case X75_RaftReq.COMMAND -> new X75_RaftReq();
             case X76_RaftResp.COMMAND -> new X76_RaftResp();
             case X77_RaftNotify.COMMAND -> new X77_RaftNotify();
+            case X78_RaftChange.COMMAND -> new X78_RaftChange();
+            case X79_RaftAdjudge.COMMAND -> new X79_RaftAdjudge();
             default -> null;
         };
+        if(cmd != null) {cmd.decode(input, context);}
+        return cmd;
     }
 
 }

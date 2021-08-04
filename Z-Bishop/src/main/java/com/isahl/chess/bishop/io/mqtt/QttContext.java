@@ -33,26 +33,19 @@ import java.util.stream.IntStream;
 
 import static com.isahl.chess.bishop.io.mqtt.MqttProtocol.VERSION_V3_1_1;
 import static com.isahl.chess.bishop.io.mqtt.MqttProtocol.VERSION_V5_0;
-import static com.isahl.chess.king.base.schedule.inf.ITask.advanceState;
-import static com.isahl.chess.king.base.schedule.inf.ITask.stateAtLeast;
-import static com.isahl.chess.king.base.schedule.inf.ITask.stateLessThan;
+import static com.isahl.chess.king.base.schedule.inf.ITask.*;
 import static com.isahl.chess.queen.io.core.inf.ISession.CAPACITY;
 
 /**
  * @author william.d.zk
  */
 public class QttContext
-        extends
-        ZContext
+        extends ZContext
 {
-    private final static IPair SUPPORT_VERSION = new Pair<>(new String[]{"5.0",
-                                                                         "3.1.1"},
-                                                            new int[]{VERSION_V5_0,
-                                                                      VERSION_V3_1_1});
+    private final static IPair SUPPORT_VERSION = new Pair<>(new String[]{ "5.0", "3.1.1" },
+                                                            new int[]{ VERSION_V5_0, VERSION_V3_1_1 });
 
-    public QttContext(INetworkOption option,
-                      ISort.Mode mode,
-                      ISort.Type type)
+    public QttContext(INetworkOption option, ISort.Mode mode, ISort.Type type)
     {
         super(option, mode, type);
     }
@@ -66,7 +59,7 @@ public class QttContext
     {
         int[] supportedVersions = SUPPORT_VERSION.getSecond();
         return IntStream.of(supportedVersions)
-                        .noneMatch(v -> v == version);
+                        .noneMatch(v->v == version);
     }
 
     private int mVersion;
@@ -89,8 +82,8 @@ public class QttContext
     }
 
     /*MQTT 协议对filter chain来说只有一个in frame 阶段所以 override isInFrame 与 outInFrame
-    * 避免filter 中 seek 和peek 方法多次判断 InFrame & InConvert OutFrame & OutConvert状态
-    * */
+     * 避免filter 中 seek 和peek 方法多次判断 InFrame & InConvert OutFrame & OutConvert状态
+     * */
     @Override
     public boolean isInFrame()
     {

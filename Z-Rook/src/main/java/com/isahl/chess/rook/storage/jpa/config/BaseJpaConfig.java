@@ -23,18 +23,125 @@
 
 package com.isahl.chess.rook.storage.jpa.config;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateProperties;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateSettings;
+import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.boot.jdbc.init.DataSourceScriptDatabaseInitializer;
+import org.springframework.boot.sql.init.DatabaseInitializationSettings;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import javax.sql.DataSource;
 
 @EnableJpaAuditing
 @EnableTransactionManagement
 @Configuration("base_jpa_config")
-@ConditionalOnMissingBean(name = {"jpaAuditingHandler"})
-@PropertySource({"classpath:db.properties"})
+@ConditionalOnMissingBean(name = { "jpaAuditingHandler" })
+@PropertySource({ "classpath:db.properties" })
 public class BaseJpaConfig
 {
+    @Bean("primary-data-source")
+    @ConfigurationProperties(prefix = "z.rook.primary.datasource")
+    public DataSource getPrimaryDataSource()
+    {
+        return DataSourceBuilder.create()
+                                .build();
+    }
 
+    @Bean("secondary-data-source")
+    @ConfigurationProperties(prefix = "z.rook.secondary.datasource")
+    public DataSource getSecondaryDataSource()
+    {
+        return DataSourceBuilder.create()
+                                .build();
+    }
+
+    @Bean("primary-jpa-properties")
+    @ConfigurationProperties(prefix = "z.rook.primary.jpa")
+    public JpaProperties primaryJpaProperties()
+    {
+        return new JpaProperties();
+    }
+
+    @Bean("primary-jpa-hibernate-properties")
+    @ConfigurationProperties(prefix = "z.rook.primary.jpa.hibernate")
+    public HibernateProperties primaryJpaHibernateProperties()
+    {
+        return new HibernateProperties();
+    }
+
+    @Bean("secondary-jpa-hibernate-properties")
+    @ConfigurationProperties(prefix = "z.rook.secondary.jpa.hibernate")
+    public HibernateProperties secondaryJpaHibernateProperties()
+    {
+        return new HibernateProperties();
+    }
+
+    @Bean("secondary-jpa-properties")
+    @ConfigurationProperties(prefix = "z.rook.secondary.jpa")
+    public JpaProperties secondaryJpaProperties()
+    {
+        return new JpaProperties();
+    }
+
+    protected LocalContainerEntityManagerFactoryBean getEntityManager(DataSource dataSource,
+                                                                      JpaProperties jpaProperties,
+                                                                      HibernateProperties hibernateProperties,
+                                                                      String... packagesToScan)
+    {
+        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
+        em.setDataSource(dataSource);
+        HibernateJpaVendorAdapter jpaVendorAdapter = new HibernateJpaVendorAdapter();
+        jpaVendorAdapter.setShowSql(jpaProperties.isShowSql());
+        jpaVendorAdapter.setGenerateDdl(jpaProperties.isGenerateDdl());
+        jpaVendorAdapter.setDatabase(jpaProperties.getDatabase());
+        em.setJpaVendorAdapter(jpaVendorAdapter);
+        em.setJpaPropertyMap(hibernateProperties.determineHibernateProperties(jpaProperties.getProperties(),
+                                                                              new HibernateSettings()));
+        em.setPackagesToScan(packagesToScan);
+        return em;
+    }
+
+    @Bean("primary-sql-init-settings")
+    @ConfigurationProperties("z.rook.primary.sql.init")
+    public DatabaseInitializationSettings getPrimarySqlInitializationSettings()
+    {
+        return new DatabaseInitializationSettings();
+    }
+
+    @Bean("secondary-sql-init-settings")
+    @ConfigurationProperties("z.rook.secondary.sql.init")
+    public DatabaseInitializationSettings getSecondarySqlInitializationSettings()
+    {
+        return new DatabaseInitializationSettings();
+    }
+
+    @Bean("primary-sql-initializer")
+    public DataSourceScriptDatabaseInitializer getPrimarySqlInitializer(
+            @Qualifier("primary-data-source")
+                    DataSource dataSource,
+            @Qualifier("primary-sql-init-settings")
+                    DatabaseInitializationSettings settings)
+    {
+        return new DataSourceScriptDatabaseInitializer(dataSource, settings);
+    }
+
+    @Bean("secondary-sql-initializer")
+    public DataSourceScriptDatabaseInitializer getSecondarySqlInitializer(
+            @Qualifier("secondary-data-source")
+                    DataSource dataSource,
+            @Qualifier("secondary-sql-init-settings")
+                    DatabaseInitializationSettings settings)
+    {
+        return new DataSourceScriptDatabaseInitializer(dataSource, settings);
+    }
 }

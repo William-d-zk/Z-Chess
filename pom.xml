@@ -29,7 +29,7 @@
     <groupId>com.isahl.chess</groupId>
     <artifactId>framework.z-chess</artifactId>
     <name>Z-Chess</name>
-    <version>1.0.13</version>
+    <version>1.0.14-SNAPSHOT</version>
     <packaging>pom</packaging>
     <url>https://github.com/William-d-zk/Z-Chess</url>
     <developers>
@@ -130,7 +130,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.6</version>
+                        <version>3.0.1</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -155,7 +155,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.2.0</version>
+                        <version>3.3.0</version>
                         <configuration>
                             <show>private</show>
                             <nohelp>true</nohelp>
@@ -199,33 +199,37 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>${java.encoding}</project.build.sourceEncoding>
         <!--LOG-->
-        <slf4j.version>1.7.30</slf4j.version>
-        <logback.version>1.2.3</logback.version>
+        <slf4j.version>1.7.32</slf4j.version>
+        <logback.version>1.2.5</logback.version>
         <!--SPRING-BOOT-->
-        <spring-boot.version>2.5.0</spring-boot.version>
+        <spring-boot.version>2.5.2</spring-boot.version>
         <!--Commons-IO-->
-        <commons-io.version>2.9.0</commons-io.version>
+        <commons-io.version>2.11.0</commons-io.version>
+        <commons-codec.version>1.15</commons-codec.version>
         <!--DB-->
-        <postgresql.driver.version>42.2.20</postgresql.driver.version>
-        <hibernate-types-52.version>2.11.1</hibernate-types-52.version>
+        <sqlite.driver.version>3.36.0.1</sqlite.driver.version>
+        <sqllite.hibernate.dialect.version>0.1.2</sqllite.hibernate.dialect.version>
+        <postgresql.driver.version>42.2.23</postgresql.driver.version>
+        <hibernate-types-52.version>2.12.1</hibernate-types-52.version>
+
         <!--PIPELINE-->
         <disruptor.version>3.4.4</disruptor.version>
         <!--TOOLS-->
         <httpcore-nio.version>4.4.14</httpcore-nio.version>
         <!--TEST TOOLS VERSION-->
-        <junit.jupiter.version>5.7.1</junit.jupiter.version>
-        <junit.platform.verssion>1.7.1</junit.platform.verssion>
-        <mockito.version>3.7.7</mockito.version>
+        <junit.jupiter.version>5.7.2</junit.jupiter.version>
+        <junit.platform.verssion>1.7.2</junit.platform.verssion>
+        <mockito.version>3.11.0</mockito.version>
         <!--CACHE-->
-        <ehcache.version>3.9.3</ehcache.version>
+        <ehcache.version>3.9.4</ehcache.version>
         <jcache.version>1.1.1</jcache.version>
         <!--JSON-->
-        <jackson.version>2.12.3</jackson.version>
-        <json-schema-validator.version>1.0.52</json-schema-validator.version>
+        <jackson.version>2.12.4</jackson.version>
+        <json-schema-validator.version>1.0.57</json-schema-validator.version>
         <!--SECURITY-->
         <jjwt.version>0.11.2</jjwt.version>
         <spring-security-jwt.version>1.1.1.RELEASE</spring-security-jwt.version>
-        <spring-security-oauth2-autoconfigure.version>2.5.0</spring-security-oauth2-autoconfigure.version>
+        <spring-security-oauth2-autoconfigure.version>2.5.2</spring-security-oauth2-autoconfigure.version>
         <spring-security-oauth2.version>2.5.1.RELEASE</spring-security-oauth2.version>
     </properties>
     <dependencies>
@@ -246,6 +250,11 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -282,6 +291,11 @@
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
                 <version>${commons-io.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-codec</groupId>
+                <artifactId>commons-codec</artifactId>
+                <version>${commons-codec.version}</version>
             </dependency>
             <!--SpringBoot-->
             <dependency>
@@ -384,6 +398,17 @@
                 <groupId>com.vladmihalcea</groupId>
                 <artifactId>hibernate-types-52</artifactId>
                 <version>${hibernate-types-52.version}</version>
+            </dependency>
+            <!--SQLite DB-->
+            <dependency>
+                <groupId>org.xerial</groupId>
+                <artifactId>sqlite-jdbc</artifactId>
+                <version>${sqlite.driver.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.gwenn</groupId>
+                <artifactId>sqlite-dialect</artifactId>
+                <version>${sqllite.hibernate.dialect.version}</version>
             </dependency>
             <!--Cache-->
             <dependency>

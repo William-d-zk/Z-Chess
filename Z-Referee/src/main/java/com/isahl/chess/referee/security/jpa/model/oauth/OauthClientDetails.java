@@ -42,7 +42,8 @@ public class OauthClientDetails
     private String[] authorities;
     private boolean  accessTokenValidity;
     private boolean  refreshTokenValidity;
-    @Column(length = 4096, nullable = false)
+    @Column(length = 4096,
+            nullable = false)
     private byte[]   additionalInformation;
     private String   autoapprove;
 

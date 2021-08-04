@@ -23,28 +23,24 @@
 
 package com.isahl.chess.knight.raft.model;
 
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentSkipListMap;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
+import java.util.NavigableMap;
+import java.util.concurrent.ConcurrentSkipListMap;
+
 /**
  * @author william.d.zk
- * 
  * @date 2020/2/21
- *       Raft 集群的拓扑关系
+ * Raft 集群的拓扑关系
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class RaftGraph
 {
-    private final NavigableMap<Long,
-                               RaftMachine> _NodeMap = new ConcurrentSkipListMap<>();
+    private final NavigableMap<Long, RaftMachine> _NodeMap = new ConcurrentSkipListMap<>();
 
     public boolean contains(long peerId)
     {
@@ -58,40 +54,21 @@ public class RaftGraph
     }
 
     /**
-     * 删除过程只能forEach
-     *
-     * @param peers
+     * @param peer
      */
-    public void remove(long... peers)
+    public void remove(long peer)
     {
-        if (peers != null) {
-            for (long peer : peers) {
-                _NodeMap.remove(peer);
-            }
-        }
+        _NodeMap.remove(peer);
     }
 
-    public NavigableMap<Long,
-                        RaftMachine> getNodeMap()
+    public NavigableMap<Long, RaftMachine> getNodeMap()
     {
         return _NodeMap;
     }
 
-    public void setNodeMap(Map<Long,
-                               RaftMachine> map)
-    {
-        _NodeMap.putAll(map);
-    }
-
     public void append(RaftMachine machine)
     {
-        _NodeMap.put(machine.getPeerId(), machine);
-    }
-
-    public void merge(RaftGraph other)
-    {
-        Objects.requireNonNull(other);
-        _NodeMap.putAll(other._NodeMap);
+        _NodeMap.putIfAbsent(machine.getPeerId(), machine);
     }
 
     @JsonIgnore
@@ -99,7 +76,7 @@ public class RaftGraph
     {
         return _NodeMap.values()
                        .stream()
-                       .filter(machine -> machine.getTerm() == term && machine.getCandidate() == candidate)
+                       .filter(machine->machine.getTerm() == term && machine.getCandidate() == candidate)
                        .count() > _NodeMap.size() / 2;
     }
 
@@ -108,9 +85,8 @@ public class RaftGraph
     {
         return _NodeMap.values()
                        .stream()
-                       .filter(machine -> machine.getTerm() == term
-                                          && machine.getMatchIndex() >= index
-                                          && machine.getLeader() == leader)
+                       .filter(machine->machine.getTerm() == term && machine.getMatchIndex() >= index &&
+                                        machine.getLeader() == leader)
                        .count() > _NodeMap.size() / 2;
     }
 
@@ -118,7 +94,7 @@ public class RaftGraph
     {
         return _NodeMap.values()
                        .stream()
-                       .filter(machine -> machine.getTerm() >= term && machine.getCandidate() != candidate)
+                       .filter(machine->machine.getTerm() >= term && machine.getCandidate() != candidate)
                        .count() <= _NodeMap.size() / 2;
     }
 

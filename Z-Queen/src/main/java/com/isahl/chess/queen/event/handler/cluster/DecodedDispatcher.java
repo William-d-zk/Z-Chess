@@ -23,11 +23,11 @@
 
 package com.isahl.chess.queen.event.handler.cluster;
 
-import java.util.Objects;
-
 import com.isahl.chess.king.base.disruptor.event.OperatorType;
+import com.isahl.chess.king.base.disruptor.event.inf.IHealth;
 import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
 import com.isahl.chess.king.base.disruptor.event.inf.IPipeEventHandler;
+import com.isahl.chess.king.base.disruptor.processor.Health;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.isahl.chess.king.base.log.Logger;
@@ -38,23 +38,23 @@ import com.isahl.chess.queen.io.core.inf.ISession;
 import com.isahl.chess.queen.io.core.inf.ISort;
 import com.lmax.disruptor.RingBuffer;
 
+import java.util.Objects;
+
 /**
  * @author william.d.zk
  */
 public class DecodedDispatcher
-        implements
-        IPipeEventHandler<QEvent>
+        implements IPipeEventHandler<QEvent>
 {
     private final Logger               _Logger = Logger.getLogger("io.queen.dispatcher." + getClass().getSimpleName());
     private final RingBuffer<QEvent>   _Cluster;
     private final RingBuffer<QEvent>   _Error;
     private final RingBuffer<QEvent>[] _LogicWorkers;
     private final int                  _WorkerMask;
+    private final IHealth              _Health = new Health(-1);
 
     @SafeVarargs
-    public DecodedDispatcher(RingBuffer<QEvent> cluster,
-                             RingBuffer<QEvent> error,
-                             RingBuffer<QEvent>... workers)
+    public DecodedDispatcher(RingBuffer<QEvent> cluster, RingBuffer<QEvent> error, RingBuffer<QEvent>... workers)
     {
         _Cluster = cluster;
         _Error = error;
@@ -63,28 +63,34 @@ public class DecodedDispatcher
     }
 
     @Override
-    public void onEvent(QEvent event, long sequence, boolean endOfBatch) throws Exception
+    public IHealth getHealth()
     {
-        if (event.hasError()) {// 错误处理
+        return _Health;
+    }
+
+    @Override
+    public void onEvent(QEvent event, long sequence) throws Exception
+    {
+        if(event.hasError()) {// 错误处理
             IPair dispatchError = event.getContent();
             ISession session = dispatchError.getSecond();
-            if (!session.isClosed()) {
+            if(!session.isClosed()) {
                 error(_Error, event.getErrorType(), dispatchError, event.getEventOp());
             }
         }
         else {
-            if (event.getEventType() == OperatorType.DISPATCH) {
+            if(event.getEventType() == OperatorType.DISPATCH) {
                 IPair dispatchContent = event.getContent();
                 ISession session = dispatchContent.getSecond();
                 IControl[] commands = dispatchContent.getFirst();
-                if (Objects.nonNull(commands)) {
-                    for (IControl cmd : commands) {
+                if(Objects.nonNull(commands)) {
+                    for(IControl cmd : commands) {
                         // dispatch 到对应的 处理器里
                         dispatch(cmd, session, event.getEventOp());
                     }
                 }
             }
-            else if (event.getEventType() != OperatorType.NULL) {
+            else if(event.getEventType() != OperatorType.NULL) {
                 _Logger.warning("decoded dispatcher event type error: %s",
                                 event.getEventType()
                                      .name());
@@ -93,13 +99,9 @@ public class DecodedDispatcher
         event.reset();
     }
 
-    private void dispatch(IControl cmd,
-                          ISession session,
-                          IOperator<IControl,
-                                    ISession,
-                                    ITriple> op)
+    private void dispatch(IControl cmd, ISession session, IOperator<IControl, ISession, ITriple> op)
     {
-        cmd.setSession(session);
+        cmd.putSession(session);
         IPair nextPipe = getNextPipe(session.getMode(), cmd);
         publish(nextPipe.getFirst(), nextPipe.getSecond(), new Pair<>(cmd, session), op);
     }
@@ -113,9 +115,8 @@ public class DecodedDispatcher
 
     protected RingBuffer<QEvent> dispatchWorker(IControl cmd)
     {
-        return _LogicWorkers[cmd.getSession()
-                                .hashCode()
-                             & _WorkerMask];
+        return _LogicWorkers[cmd.session()
+                                .hashCode() & _WorkerMask];
     }
 
     @Override

@@ -23,24 +23,12 @@
 
 package com.isahl.chess.bishop.io.sort;
 
-import com.isahl.chess.queen.event.operator.AioWriter;
-import com.isahl.chess.queen.event.operator.CloseOperator;
-import com.isahl.chess.queen.event.operator.ErrorOperator;
-import com.isahl.chess.queen.event.operator.IgnoreOperator;
-import com.isahl.chess.queen.event.operator.PipeDecoder;
-import com.isahl.chess.queen.event.operator.PipeEncoder;
-import com.isahl.chess.queen.event.operator.TransferOperator;
+import com.isahl.chess.queen.event.operator.*;
 import com.isahl.chess.queen.io.core.async.inf.IAioSort;
-import com.isahl.chess.queen.io.core.inf.IPContext;
-import com.isahl.chess.queen.io.core.inf.IPipeDecoder;
-import com.isahl.chess.queen.io.core.inf.IPipeEncoder;
-import com.isahl.chess.queen.io.core.inf.IPipeTransfer;
-import com.isahl.chess.queen.io.core.inf.ISessionCloser;
-import com.isahl.chess.queen.io.core.inf.ISessionError;
+import com.isahl.chess.queen.io.core.inf.*;
 
 public abstract class BaseSort<C extends IPContext>
-        implements
-        IAioSort<C>
+        implements IAioSort<C>
 {
     private final AioWriter      _AioWriter     = new AioWriter();
     private final ISessionCloser _CloseOperator = new CloseOperator();
@@ -53,9 +41,7 @@ public abstract class BaseSort<C extends IPContext>
     private final Type           _Type;
     private final String         _Protocol;
 
-    protected BaseSort(Mode mode,
-                       Type type,
-                       String protocol)
+    protected BaseSort(Mode mode, Type type, String protocol)
     {
         _Mode = mode;
         _Type = type;

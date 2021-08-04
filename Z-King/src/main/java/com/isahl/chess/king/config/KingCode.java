@@ -28,4 +28,5 @@ package com.isahl.chess.king.config;
  */
 public interface KingCode
 {
+    int LOCAL_FILE_SYSTEM_WRITE_ERROR = 9010;
 }

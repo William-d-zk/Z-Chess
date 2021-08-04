@@ -22,10 +22,6 @@
  */
 package com.isahl.chess.queen.event;
 
-import static com.isahl.chess.king.base.inf.IError.Type.NO_ERROR;
-
-import java.util.List;
-
 import com.isahl.chess.king.base.disruptor.event.OperatorType;
 import com.isahl.chess.king.base.disruptor.event.inf.IEvent;
 import com.isahl.chess.king.base.disruptor.event.inf.IOperator;
@@ -35,22 +31,23 @@ import com.isahl.chess.king.base.inf.IReset;
 import com.isahl.chess.king.base.inf.ITriple;
 import com.lmax.disruptor.EventFactory;
 
+import java.util.List;
+
+import static com.isahl.chess.king.base.inf.IError.Type.NO_ERROR;
+
 /**
  * @author William.d.zk
  */
 public class QEvent
-        implements
-        IReset,
-        IEvent
+        implements IReset,
+                   IEvent
 {
     public static final EventFactory<QEvent> EVENT_FACTORY = new QEventFactory();
-    private IError.Type                      mErrType      = NO_ERROR;
-    private OperatorType mType         = OperatorType.NULL;
-    private IPair                            mContent;
-    private IOperator<?,
-                      ?,
-                      ?>                     mOperator;
-    private List<ITriple>                    mContentList;
+    private             IError.Type          mErrType      = NO_ERROR;
+    private             OperatorType         mType         = OperatorType.NULL;
+    private             IPair                mContent;
+    private             IOperator<?, ?, ?>   mOperator;
+    private             List<ITriple>        mContentList;
 
     @Override
     public String toString()
@@ -104,13 +101,7 @@ public class QEvent
     }
 
     @Override
-    public <V,
-            A,
-            R> void produce(OperatorType t,
-                            IPair content,
-                            IOperator<V,
-                                      A,
-                                      R> operator)
+    public <V, A, R> void produce(OperatorType t, IPair content, IOperator<V, A, R> operator)
     {
         mErrType = NO_ERROR;
         mType = t;
@@ -130,13 +121,7 @@ public class QEvent
     }
 
     @Override
-    public <E,
-            H,
-            R> void error(IError.Type t,
-                          IPair content,
-                          IOperator<E,
-                                    H,
-                                    R> operator)
+    public <E, H, R> void error(IError.Type t, IPair content, IOperator<E, H, R> operator)
     {
         mType = OperatorType.NULL;
         mErrType = t;
@@ -147,15 +132,9 @@ public class QEvent
 
     @SuppressWarnings("unchecked")
     @Override
-    public <V,
-            A,
-            R> IOperator<V,
-                         A,
-                         R> getEventOp()
+    public <V, A, R> IOperator<V, A, R> getEventOp()
     {
-        return (IOperator<V,
-                          A,
-                          R>) mOperator;
+        return (IOperator<V, A, R>) mOperator;
     }
 
     @Override
@@ -171,8 +150,7 @@ public class QEvent
     }
 
     private static class QEventFactory
-            implements
-            EventFactory<QEvent>
+            implements EventFactory<QEvent>
     {
         @Override
         public QEvent newInstance()

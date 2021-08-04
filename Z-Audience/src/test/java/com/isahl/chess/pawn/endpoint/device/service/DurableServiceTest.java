@@ -23,28 +23,26 @@
 
 package com.isahl.chess.pawn.endpoint.device.service;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.junit.jupiter.api.Test;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceSubscribe;
-import com.isahl.chess.pawn.endpoint.device.jpa.model.Subscribe;
+import com.isahl.chess.bishop.io.mqtt.model.DeviceSubscribe;
+import com.isahl.chess.bishop.io.mqtt.model.SubscribeEntry;
 import com.isahl.chess.queen.io.core.inf.IQoS;
+import org.junit.jupiter.api.Test;
+
+import java.util.HashMap;
+import java.util.Map;
 
 class DurableServiceTest
 {
     @Test
     public void testList2Map() throws JsonProcessingException
     {
-        Map<String,
-            IQoS.Level> subscribes = new HashMap<>();
+        Map<String, IQoS.Level> subscribes = new HashMap<>();
         DeviceSubscribe subscribe = new DeviceSubscribe(subscribes);
-        subscribe.subscribe(new Subscribe(IQoS.Level.ALMOST_ONCE, "topic0"));
-        subscribe.subscribe(new Subscribe(IQoS.Level.EXACTLY_ONCE, "topic1"));
-        subscribe.subscribe(new Subscribe(IQoS.Level.AT_LEAST_ONCE, "topic2"));
+        subscribe.subscribe(new SubscribeEntry("topic0", IQoS.Level.ALMOST_ONCE));
+        subscribe.subscribe(new SubscribeEntry("topic1", IQoS.Level.EXACTLY_ONCE));
+        subscribe.subscribe(new SubscribeEntry("topic2", IQoS.Level.AT_LEAST_ONCE));
         ObjectMapper mapper = new ObjectMapper();
         System.out.println(mapper.writeValueAsString(subscribe));
     }

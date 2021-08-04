@@ -29,8 +29,7 @@ import com.isahl.chess.bishop.io.ws.WsFrame;
  * @author William.d.zk
  */
 public class X102_Close
-        extends
-        WsControl
+        extends WsControl
 {
     public final static int COMMAND = 0x102;
 
@@ -47,7 +46,7 @@ public class X102_Close
     @Override
     public X102_Close duplicate()
     {
-        return new X102_Close(getPayload());
+        return new X102_Close(payload());
     }
 
     @Override

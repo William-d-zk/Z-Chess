@@ -22,22 +22,21 @@
  */
 package com.isahl.chess.bishop.io.ws.zchat.zprotocol.zls;
 
-import java.util.Objects;
-
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.ZCommand;
 import com.isahl.chess.king.base.util.IoUtil;
+
+import java.util.Objects;
 
 /**
  * @author William.d.zk
  */
 public class X03_Cipher
-        extends
-        ZCommand
+        extends ZCommand
 {
-    public final static int COMMAND = 0x03;
-    public int              pubKeyId;
-    public int              symmetricKeyId;
-    public byte[]           cipher;
+    public final static int    COMMAND = 0x03;
+    public              int    pubKeyId;
+    public              int    symmetricKeyId;
+    public              byte[] cipher;
 
     public X03_Cipher()
     {
@@ -65,10 +64,7 @@ public class X03_Cipher
     @Override
     public int dataLength()
     {
-        return super.dataLength()
-               + 6
-               + (Objects.isNull(cipher) ? 0
-                                         : cipher.length);
+        return super.dataLength() + 6 + (Objects.isNull(cipher) ? 0 : cipher.length);
     }
 
     @Override

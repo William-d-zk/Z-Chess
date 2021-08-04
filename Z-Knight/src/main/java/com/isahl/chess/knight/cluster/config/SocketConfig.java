@@ -23,32 +23,19 @@
 
 package com.isahl.chess.knight.cluster.config;
 
-import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
-import java.time.Duration;
-
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-
-import org.springframework.util.unit.DataSize;
-
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.queen.config.ISocketConfig;
+import org.springframework.util.unit.DataSize;
+
+import javax.net.ssl.*;
+import java.io.IOException;
+import java.security.*;
+import java.security.cert.CertificateException;
+import java.time.Duration;
 
 public class SocketConfig
-        implements
-        ISocketConfig
+        implements ISocketConfig
 {
     private boolean        keepAlive;
     private Duration       connectTimeoutInSecond;
@@ -170,26 +157,21 @@ public class SocketConfig
 
     public void setKeyStorePath(String keyStorePath)
     {
-        this.keyStorePath = IoUtil.isBlank(keyStorePath) ? null
-                                                         : keyStorePath;
+        this.keyStorePath = IoUtil.isBlank(keyStorePath) ? null : keyStorePath;
     }
 
-    private KeyStore loadKeyStore(String path, String password) throws KeyStoreException,
-                                                                IOException,
-                                                                NoSuchAlgorithmException,
-                                                                CertificateException
+    private KeyStore loadKeyStore(String path,
+                                  String password) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException
     {
         KeyStore keyStore = KeyStore.getInstance("PKCS12");
         keyStore.load(getClass().getClassLoader()
-                                .getResourceAsStream(path),
-                      password.toCharArray());
+                                .getResourceAsStream(path), password.toCharArray());
         return keyStore;
     }
 
     public void setTrustKeyStorePath(String trustKeyStorePath)
     {
-        this.trustKeyStorePath = IoUtil.isBlank(trustKeyStorePath) ? null
-                                                                   : trustKeyStorePath;
+        this.trustKeyStorePath = IoUtil.isBlank(trustKeyStorePath) ? null : trustKeyStorePath;
     }
 
     public void setKeyPassword(String keyPassword)
@@ -205,19 +187,14 @@ public class SocketConfig
     @Override
     public TrustManager[] getTrustManagers()
     {
-        if (trustManagers == null && trustKeyStorePath != null && trustKeyPassword != null) {
+        if(trustManagers == null && trustKeyStorePath != null && trustKeyPassword != null) {
             try {
                 KeyStore keyStore = loadKeyStore(trustKeyStorePath, trustKeyPassword);
                 TrustManagerFactory factory = TrustManagerFactory.getInstance("PKIX", "SunJSSE");
                 factory.init(keyStore);
                 return trustManagers = factory.getTrustManagers();
             }
-            catch (KeyStoreException |
-                   IOException |
-                   NoSuchAlgorithmException |
-                   CertificateException |
-                   NoSuchProviderException e)
-            {
+            catch(KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException | NoSuchProviderException e) {
                 e.printStackTrace();
                 return null;
             }
@@ -228,20 +205,14 @@ public class SocketConfig
     @Override
     public KeyManager[] getKeyManagers()
     {
-        if (keyManagers == null && keyStorePath != null && keyPassword != null) {
+        if(keyManagers == null && keyStorePath != null && keyPassword != null) {
             try {
                 KeyStore keyStore = loadKeyStore(keyStorePath, keyPassword);
                 KeyManagerFactory factory = KeyManagerFactory.getInstance("SunX509", "SunJSSE");
                 factory.init(keyStore, keyPassword.toCharArray());
                 return keyManagers = factory.getKeyManagers();
             }
-            catch (KeyStoreException |
-                   IOException |
-                   NoSuchAlgorithmException |
-                   CertificateException |
-                   NoSuchProviderException |
-                   UnrecoverableKeyException e)
-            {
+            catch(KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException | NoSuchProviderException | UnrecoverableKeyException e) {
                 e.printStackTrace();
                 return null;
             }
@@ -261,9 +232,7 @@ public class SocketConfig
             sslPacketBufferSize = sslSession.getPacketBufferSize();
             sslAppBufferSize = sslSession.getApplicationBufferSize();
         }
-        catch (NoSuchAlgorithmException |
-               KeyManagementException e)
-        {
+        catch(NoSuchAlgorithmException | KeyManagementException e) {
             throw new ZException(e, "ssl static init failed");
         }
     }

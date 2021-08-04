@@ -25,49 +25,36 @@ package com.isahl.chess.knight.cluster;
 
 import com.isahl.chess.bishop.io.sort.ZSortHolder;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.control.X106_Identity;
-import com.isahl.chess.king.base.disruptor.event.OperatorType;
-import com.isahl.chess.king.base.inf.IPair;
-import com.isahl.chess.king.base.util.Pair;
-import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.queen.config.ISocketConfig;
-import com.isahl.chess.queen.db.inf.IStorage;
-import com.isahl.chess.queen.event.QEvent;
 import com.isahl.chess.queen.io.core.async.AioSession;
 import com.isahl.chess.queen.io.core.async.BaseAioConnector;
 import com.isahl.chess.queen.io.core.async.BaseAioServer;
 import com.isahl.chess.queen.io.core.async.inf.IAioClient;
 import com.isahl.chess.queen.io.core.async.inf.IAioConnector;
 import com.isahl.chess.queen.io.core.async.inf.IAioServer;
-import com.isahl.chess.queen.io.core.executor.IPipeCore;
+import com.isahl.chess.queen.io.core.executor.ILocalPublisher;
 import com.isahl.chess.queen.io.core.inf.*;
-import com.lmax.disruptor.RingBuffer;
 
 import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/4/23
  */
-public interface IClusterNode<K extends IPipeCore>
-        extends
-        IClusterPeer,
-        IClusterTimer,
-        INode
+public interface IClusterNode
+        extends ILocalPublisher
 {
-    default IAioConnector buildConnector(final IPair _Address,
+    default IAioConnector buildConnector(final String _Host,
+                                         final int _Port,
                                          final ISocketConfig _SocketConfig,
                                          final IAioClient _Client,
                                          final ISessionManager _Manager,
                                          final ZSortHolder _ZSortHolder,
-                                         final ZUID _ZUid)
+                                         final IClusterPeer _ClusterPeer)
     {
-        final String _Host = _Address.getFirst();
-        final int _Port = _Address.getSecond();
-        if (_ZSortHolder.getSort()
-                        .getMode() != ISort.Mode.CLUSTER)
+        if(_ZSortHolder.getSort()
+                       .getMode() != ISort.Mode.CLUSTER)
         {
             throw new IllegalArgumentException("sort mode is wrong in cluster define");
         }
@@ -96,13 +83,13 @@ public interface IClusterNode<K extends IPipeCore>
             }
 
             @Override
-            public IControl[] onConnectedCommands(ISession session)
+            public IControl[] response(ISession session)
             {
-                if (_ZSortHolder.getSort()
-                                .getMode() == ISort.Mode.CLUSTER)
+                if(_ZSortHolder.getSort()
+                               .getMode() == ISort.Mode.CLUSTER)
                 {
-                    X106_Identity x106 = new X106_Identity(_ZUid.getPeerId(), _ZUid.getId());
-                    return new IControl[]{x106};
+                    X106_Identity x106 = new X106_Identity(_ClusterPeer.getPeerId(), _ClusterPeer.generateId());
+                    return new IControl[]{ x106 };
                 }
                 return null;
             }
@@ -116,27 +103,14 @@ public interface IClusterNode<K extends IPipeCore>
         };
     }
 
-    default IAioServer buildServer(final IPair _Address,
-                                   final ISocketConfig _SocketConfig,
-                                   final ZSortHolder _ZSortHolder,
-                                   final ISessionManager _Manager,
-                                   final ISessionDismiss _Dismiss,
-                                   final ZUID _ZUid,
-                                   final boolean _MultiBind)
-    {
-        final String _Host = _Address.getFirst();
-        final int _Port = _Address.getSecond();
-        return buildServer(_Host, _Port, _SocketConfig, _ZSortHolder, _Manager, _Dismiss, _ZUid, _MultiBind);
-    }
-
     default IAioServer buildServer(final String _Host,
                                    final int _Port,
                                    final ISocketConfig _SocketConfig,
                                    final ZSortHolder _ZSortHolder,
                                    final ISessionManager _Manager,
                                    final ISessionDismiss _Dismiss,
-                                   final ZUID _ZUid,
-                                   final boolean _MultiBind)
+                                   final boolean _MultiBind,
+                                   final IClusterPeer _ClusterPeer)
     {
 
         return new BaseAioServer(_Host, _Port, _SocketConfig)
@@ -170,43 +144,20 @@ public interface IClusterNode<K extends IPipeCore>
             }
 
             @Override
-            public IControl[] onConnectedCommands(ISession session)
+            public IControl[] response(ISession session)
             {
-                if (_ZSortHolder.getSort()
-                                .getMode() == ISort.Mode.CLUSTER)
+                if(_ZSortHolder.getSort()
+                               .getMode() == ISort.Mode.CLUSTER)
                 {
-                    X106_Identity x106 = new X106_Identity(_ZUid.getPeerId(), _ZUid.getId());
-                    return new IControl[]{x106};
+                    X106_Identity x106 = new X106_Identity(_ClusterPeer.getPeerId(), _ClusterPeer.generateId());
+                    return new IControl[]{ x106 };
                 }
                 return null;
             }
         };
     }
 
-    K getCore();
+    void setupPeer(String host, int port) throws IOException;
 
-    @Override
-    default <T extends IStorage> void timerEvent(T content)
-    {
-        final RingBuffer<QEvent> _ConsensusEvent = getCore().getConsensusEvent();
-        final ReentrantLock _ConsensusLock = getCore().getConsensusLock();
-        /*
-        通过 Schedule thread-pool 进行 timer 执行, 排队执行。
-         */
-        _ConsensusLock.lock();
-        try {
-            long sequence = _ConsensusEvent.next();
-            try {
-                QEvent event = _ConsensusEvent.get(sequence);
-                event.produce(OperatorType.CLUSTER_TIMER, new Pair<>(content, null), null);
-            }
-            finally {
-                _ConsensusEvent.publish(sequence);
-            }
-        }
-        finally {
-            _ConsensusLock.unlock();
-        }
-    }
-
+    void setupGate(String host, int port) throws IOException;
 }

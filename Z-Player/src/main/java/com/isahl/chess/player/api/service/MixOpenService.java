@@ -25,9 +25,9 @@ package com.isahl.chess.player.api.service;
 
 import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.pawn.endpoint.device.jpa.model.DeviceEntity;
-import com.isahl.chess.pawn.endpoint.device.jpa.model.ShadowEntity;
-import com.isahl.chess.pawn.endpoint.device.spi.IDeviceService;
+import com.isahl.chess.pawn.endpoint.device.api.IDeviceService;
+import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.DeviceEntity;
+import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.ShadowEntity;
 import com.isahl.chess.player.api.model.DeviceDo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -64,35 +64,33 @@ public class MixOpenService
         return _DeviceService.upsertDevice(device);
     }
 
-    public DeviceEntity findDevice(String sn, String token)
+    public DeviceEntity findByToken(String token)
     {
-        return _DeviceService.queryDevice(sn, token);
+        return _DeviceService.findByToken(token);
+    }
+
+    public DeviceEntity findBySn(String sn)
+    {
+        return _DeviceService.findBySn(sn);
     }
 
     @SafeVarargs
     public final List<DeviceEntity> findAllByColumnsAfter(Pageable pageable,
                                                           LocalDateTime dateTime,
-                                                          Triple<String,
-                                                                 Object,
-                                                                 Predicate.BooleanOperator>... columns)
+                                                          Triple<String, Object, Predicate.BooleanOperator>... columns)
     {
-        return _DeviceService.findDevices((Specification<DeviceEntity>) (root, criteriaQuery, criteriaBuilder) ->
-        {
+        return _DeviceService.findDevices((Specification<DeviceEntity>) (root, criteriaQuery, criteriaBuilder)->{
             criteriaBuilder.greaterThan(root.get("create_at"), dateTime);
-            if (columns != null && columns.length > 0) {
+            if(columns != null && columns.length > 0) {
                 Predicate.BooleanOperator last = Predicate.BooleanOperator.AND;
                 List<Predicate> predicates = new LinkedList<>();
-                for (Triple<String,
-                            Object,
-                            Predicate.BooleanOperator> triple : columns)
-                {
+                for(Triple<String, Object, Predicate.BooleanOperator> triple : columns) {
                     String column = triple.getFirst();
                     Object key = triple.getSecond();
                     Predicate.BooleanOperator op = triple.getThird();
                     Predicate predicate = criteriaBuilder.equal(root.get(column), key);
-                    if (last != null) {
-                        switch (last)
-                        {
+                    if(last != null) {
+                        switch(last) {
                             case AND -> criteriaBuilder.and(predicate);
                             case OR -> criteriaBuilder.or(predicate);
                         }
@@ -116,7 +114,7 @@ public class MixOpenService
 
     private List<DeviceDo> shadows2DeviceDo(List<ShadowEntity> shadows)
     {
-        if (shadows == null || shadows.isEmpty()) { return new LinkedList<>(); }
+        if(shadows == null || shadows.isEmpty()) {return new LinkedList<>();}
         List<DeviceEntity> devices = _DeviceService.findDevicesIn(shadows.stream()
                                                                          .map(ShadowEntity::getDeviceId)
                                                                          .collect(Collectors.toList()));
@@ -127,9 +125,8 @@ public class MixOpenService
 
     public List<DeviceDo> getOnlineDevicesGroupByUsername(String username, Pageable pageable)
     {
-        if (isBlank(username)) { return getOnlineDevice(pageable); }
-        return shadows2DeviceDo(_DeviceService.getOnlineDevices((Specification<ShadowEntity>) (r, q, builder) ->
-        {
+        if(isBlank(username)) {return getOnlineDevice(pageable);}
+        return shadows2DeviceDo(_DeviceService.getOnlineDevices((Specification<ShadowEntity>) (r, q, builder)->{
             return q.where(builder.equal(r.get("username"), username))
                     .getRestriction();
         }, pageable));

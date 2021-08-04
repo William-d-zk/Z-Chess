@@ -27,22 +27,18 @@ import com.isahl.chess.queen.io.core.inf.ISession;
 
 /**
  * @author william.d.zk
- * 
  * @date 2019-07-14
  */
 public class ZCommand
-        extends
-        ZProtocol
+        extends ZProtocol
 {
 
-    protected ZCommand(int command,
-                       boolean hasMsgId)
+    protected ZCommand(int command, boolean hasMsgId)
     {
-        super(command, hasMsgId, hasMsgId ? 0: -1);
+        super(command, hasMsgId, hasMsgId ? 0 : -1);
     }
 
-    public ZCommand(int command,
-                    long msgId)
+    public ZCommand(int command, long msgId)
     {
         super(command, msgId);
     }
@@ -51,13 +47,13 @@ public class ZCommand
     private byte[]   mPayload;
 
     @Override
-    public void setSession(ISession session)
+    public void putSession(ISession session)
     {
         mSession = session;
     }
 
     @Override
-    public ISession getSession()
+    public ISession session()
     {
         return mSession;
     }
@@ -69,25 +65,25 @@ public class ZCommand
     }
 
     @Override
-    public void setCtrl(byte ctrl)
+    public void putCtrl(byte ctrl)
     {
         setCtrlCode(ctrl);
     }
 
     @Override
-    public void setPayload(byte[] payload)
+    public void putPayload(byte[] payload)
     {
         mPayload = payload;
     }
 
     @Override
-    public byte[] getPayload()
+    public byte[] payload()
     {
         return mPayload;
     }
 
     @Override
-    public byte getCtrl()
+    public byte ctrl()
     {
         return getCtrlCode();
     }
@@ -101,7 +97,7 @@ public class ZCommand
     @Override
     public int dataLength()
     {
-        return minLength() + (mPayload == null ? 0: mPayload.length);
+        return minLength() + (mPayload == null ? 0 : mPayload.length);
     }
 
     @Override

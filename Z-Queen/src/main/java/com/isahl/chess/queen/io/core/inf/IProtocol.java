@@ -26,10 +26,9 @@ package com.isahl.chess.queen.io.core.inf;
  * @author William.d.zk
  */
 public interface IProtocol
-        extends
-        IEncode,
-        IDecode,
-        IPortChannel
+        extends IEncode,
+                IDecode,
+                IPortChannel
 {
     int PACKET_SERIAL     = 0x008;// 0x08~0x0F(8~15)
     int COMMAND_SERIAL    = 0x0FF;// 0x10~0xFE(16~254)
@@ -48,10 +47,17 @@ public interface IProtocol
 
     int superSerial();
 
+    default int subSerial()
+    {
+        return -1;
+    }
+
+    byte[] payload();
+
     default byte[] encode()
     {
         int len = dataLength();
-        if (len > 0) {
+        if(len > 0) {
             byte[] a = new byte[len];
             encodec(a, 0);
             return a;
@@ -62,10 +68,7 @@ public interface IProtocol
     default int encode(byte[] buf, int pos, int length)
     {
         int len = dataLength();
-        if (len > length
-            || len > 0 && buf == null
-            || (buf != null && (buf.length < len || pos + length > buf.length)))
-        {
+        if(len > length || len > 0 && buf == null || (buf != null && (buf.length < len || pos + length > buf.length))) {
             throw new ArrayIndexOutOfBoundsException("data length is too long for input buf");
         }
         pos = encodec(buf, pos);
@@ -74,10 +77,10 @@ public interface IProtocol
 
     default int decode(byte[] input, int pos, int length)
     {
-        if (input == null || input.length == 0) { return 0; }
+        if(input == null || input.length == 0) {return 0;}
         // dataLength 此处表达了最短长度值
         int len = dataLength();
-        if (len > length || (input.length < len || pos + length > input.length)) {
+        if(len > length || (input.length < len || pos + length > input.length)) {
             throw new ArrayIndexOutOfBoundsException();
         }
         return decodec(input, pos);
@@ -85,7 +88,7 @@ public interface IProtocol
 
     default int decode(byte[] data)
     {
-        if (data == null || data.length == 0) { return 0; }
+        if(data == null || data.length == 0) {return 0;}
         return decode(data, 0, data.length);
     }
 

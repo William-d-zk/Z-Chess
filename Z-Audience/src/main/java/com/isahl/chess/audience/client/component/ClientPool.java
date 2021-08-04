@@ -36,14 +36,12 @@ import com.isahl.chess.bishop.io.ws.control.X102_Close;
 import com.isahl.chess.bishop.io.ws.control.X103_Ping;
 import com.isahl.chess.bishop.io.ws.control.X104_Pong;
 import com.isahl.chess.bishop.io.ws.zchat.zcrypt.EncryptHandler;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X21_SignUpResult;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X22_SignIn;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X23_SignInResult;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X30_EventMsg;
-import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.X31_ConfirmMsg;
+import com.isahl.chess.bishop.io.ws.zchat.zprotocol.device.*;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.zls.X03_Cipher;
 import com.isahl.chess.bishop.io.ws.zchat.zprotocol.zls.X05_EncryptStart;
 import com.isahl.chess.king.base.disruptor.event.OperatorType;
+import com.isahl.chess.king.base.disruptor.event.inf.IHealth;
+import com.isahl.chess.king.base.disruptor.processor.Health;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.inf.IPair;
 import com.isahl.chess.king.base.log.Logger;
@@ -55,17 +53,14 @@ import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.topology.ZUID;
 import com.isahl.chess.queen.config.IAioConfig;
 import com.isahl.chess.queen.event.QEvent;
+import com.isahl.chess.queen.event.handler.mix.ILogicHandler;
 import com.isahl.chess.queen.io.core.async.AioManager;
 import com.isahl.chess.queen.io.core.async.AioSession;
 import com.isahl.chess.queen.io.core.async.BaseAioConnector;
 import com.isahl.chess.queen.io.core.async.inf.IAioClient;
 import com.isahl.chess.queen.io.core.async.inf.IAioConnector;
 import com.isahl.chess.queen.io.core.executor.ClientCore;
-import com.isahl.chess.queen.io.core.inf.IConnectActivity;
-import com.isahl.chess.queen.io.core.inf.IControl;
-import com.isahl.chess.queen.io.core.inf.ISession;
-import com.isahl.chess.queen.io.core.inf.ISessionDismiss;
-import com.isahl.chess.queen.io.core.inf.ISort;
+import com.isahl.chess.queen.io.core.inf.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -92,11 +87,9 @@ import static com.isahl.chess.king.base.schedule.TimeWheel.IWheelItem.PRIORITY_N
  */
 @Component
 public class ClientPool
-        extends
-        AioManager<ClientCore>
-        implements
-        IAioClient,
-        ISessionDismiss
+        extends AioManager
+        implements IAioClient,
+                   ISessionDismiss
 {
     private final Logger                   _Logger = Logger.getLogger(getClass().getSimpleName());
     private final ClientConfig             _ClientConfig;
@@ -104,13 +97,13 @@ public class ClientPool
     private final ClientCore               _ClientCore;
     private final TimeWheel                _TimeWheel;
     private final ZUID                     _ZUid   = new ZUID();
-    private final Map<Long,
-                      Client>              _ZClientMap;
+    private final Map<Long, Client>        _ZClientMap;
     private final X103_Ping                _Ping   = new X103_Ping();
 
     @Autowired
-    public ClientPool(@Qualifier("io_consumer_config") IAioConfig bizIoConfig,
-                      ClientConfig clientConfig) throws IOException
+    public ClientPool(
+            @Qualifier("io_consumer_config")
+                    IAioConfig bizIoConfig, ClientConfig clientConfig) throws IOException
     {
         super(bizIoConfig);
         _ZClientMap = new HashMap<>(1 << getConfigPower(getSlot(ZUID.TYPE_CONSUMER)));
@@ -119,88 +112,119 @@ public class ClientPool
         _ClientCore = new ClientCore(ioCount);
         _TimeWheel = _ClientCore.getTimeWheel();
         _ChannelGroup = AsynchronousChannelGroup.withFixedThreadPool(ioCount, _ClientCore.getWorkerThreadFactory());
-        _ClientCore.build((QEvent event, long sequence, boolean endOfBatch) ->
+        _ClientCore.build(slot->new ILogicHandler()
         {
-            IControl[] commands;
-            final ISession session;
-            if (event.getEventType() == OperatorType.LOGIC) {// 与 Server Node 处理过程存在较大的差异，中间去掉一个decoded dispatcher 所以此处入参为 IControl[]
-                IPair logicContent = event.getContent();
-                commands = logicContent.getFirst();
-                session = logicContent.getSecond();
-                if (Objects.nonNull(commands)) {
-                    commands = Stream.of(commands)
-                                     .map(cmd ->
-                                     {
-                                         _Logger.debug("recv:{ %s }", cmd);
-                                         switch (cmd.serial())
-                                         {
-                                             case X03_Cipher.COMMAND:
-                                             case X05_EncryptStart.COMMAND:
-                                                 return cmd;
-                                             case X21_SignUpResult.COMMAND:
-                                                 X21_SignUpResult x21 = (X21_SignUpResult) cmd;
-                                                 X22_SignIn x22 = new X22_SignIn();
-                                                 byte[] token = x22.getToken();
-                                                 Client client = _ZClientMap.get(session.getIndex());
-                                                 if (client == null) {
-                                                     _Logger.warning("client %#x not found", session.getIndex());
-                                                 }
-                                                 else {
-                                                     client.setToken(IoUtil.bin2Hex(token));
-                                                 }
-                                                 x22.setToken(token);
-                                                 x22.setPassword("password");
-                                                 return x22;
-                                             case X23_SignInResult.COMMAND:
-                                                 X23_SignInResult x23 = (X23_SignInResult) cmd;
-                                                 if (x23.isSuccess()) {
-                                                     _Logger.debug("sign in success token invalid @ %s",
-                                                                   Instant.ofEpochMilli(x23.getInvalidTime())
-                                                                          .atZone(ZoneId.of("GMT+8")));
-                                                 }
-                                                 else {
-                                                     return new X102_Close("sign in failed! ws_close".getBytes());
-                                                 }
-                                                 break;
-                                             case X30_EventMsg.COMMAND:
-                                                 X30_EventMsg x30 = (X30_EventMsg) cmd;
-                                                 _Logger.debug("x30 payload: %s",
-                                                               new String(x30.getPayload(), StandardCharsets.UTF_8));
-                                                 X31_ConfirmMsg x31 = new X31_ConfirmMsg(x30.getMsgId());
-                                                 x31.setStatus(X31_ConfirmMsg.STATUS_RECEIVED);
-                                                 x31.setToken(x30.getToken());
-                                                 return x31;
-                                             case X101_HandShake.COMMAND:
-                                                 _Logger.debug("ws_handshake ok");
-                                                 break;
-                                             case X104_Pong.COMMAND:
-                                                 _Logger.debug("ws_heartbeat ok");
-                                                 break;
-                                             case X102_Close.COMMAND:
-                                                 close(session.getIndex());
-                                                 break;
-                                             case X112_QttConnack.COMMAND:
-                                                 _Logger.debug("qtt connack %s", cmd);
-                                                 break;
-                                             default:
-                                                 break;
-                                         }
-                                         return null;
-                                     })
-                                     .filter(Objects::nonNull)
-                                     .toArray(IControl[]::new);
+            private final IHealth _Health = new Health(0);
+
+            @Override
+            public Logger getLogger()
+            {
+                return _Logger;
+            }
+
+            @Override
+            public ISessionManager getISessionManager()
+            {
+                return ClientPool.this;
+            }
+
+            @Override
+            public IControl[] handle(ISessionManager manager, ISession session, IControl content) throws Exception
+            {
+                return new IControl[0];
+            }
+
+            @Override
+            public IHealth getHealth()
+            {
+                return _Health;
+            }
+
+            @Override
+            public void onEvent(QEvent event, long sequence)
+            {
+                IControl[] commands;
+                final ISession session;
+                if(event.getEventType() ==
+                   OperatorType.LOGIC)
+                {// 与 Server Node 处理过程存在较大的差异，中间去掉一个decoded dispatcher 所以此处入参为 IControl[]
+                    IPair logicContent = event.getContent();
+                    commands = logicContent.getFirst();
+                    session = logicContent.getSecond();
+                    if(Objects.nonNull(commands)) {
+                        commands = Stream.of(commands)
+                                         .map(cmd->{
+                                             _Logger.debug("recv:{ %s }", cmd);
+                                             switch(cmd.serial()) {
+                                                 case X03_Cipher.COMMAND:
+                                                 case X05_EncryptStart.COMMAND:
+                                                     return cmd;
+                                                 case X21_SignUpResult.COMMAND:
+                                                     X21_SignUpResult x21 = (X21_SignUpResult) cmd;
+                                                     X22_SignIn x22 = new X22_SignIn();
+                                                     byte[] token = x22.getToken();
+                                                     Client client = _ZClientMap.get(session.getIndex());
+                                                     if(client == null) {
+                                                         _Logger.warning("client %#x not found", session.getIndex());
+                                                     }
+                                                     else {
+                                                         client.setToken(IoUtil.bin2Hex(token));
+                                                     }
+                                                     x22.setToken(token);
+                                                     x22.setPassword("password");
+                                                     return x22;
+                                                 case X23_SignInResult.COMMAND:
+                                                     X23_SignInResult x23 = (X23_SignInResult) cmd;
+                                                     if(x23.isSuccess()) {
+                                                         _Logger.debug("sign in success token invalid @ %s",
+                                                                       Instant.ofEpochMilli(x23.getInvalidTime())
+                                                                              .atZone(ZoneId.of("GMT+8")));
+                                                     }
+                                                     else {
+                                                         return new X102_Close("sign in failed! ws_close".getBytes());
+                                                     }
+                                                     break;
+                                                 case X30_EventMsg.COMMAND:
+                                                     X30_EventMsg x30 = (X30_EventMsg) cmd;
+                                                     _Logger.debug("x30 payload: %s",
+                                                                   new String(x30.payload(),
+                                                                              StandardCharsets.UTF_8));
+                                                     X31_ConfirmMsg x31 = new X31_ConfirmMsg(x30.getMsgId());
+                                                     x31.setStatus(X31_ConfirmMsg.STATUS_RECEIVED);
+                                                     x31.setToken(x30.getToken());
+                                                     return x31;
+                                                 case X101_HandShake.COMMAND:
+                                                     _Logger.debug("ws_handshake ok");
+                                                     break;
+                                                 case X104_Pong.COMMAND:
+                                                     _Logger.debug("ws_heartbeat ok");
+                                                     break;
+                                                 case X102_Close.COMMAND:
+                                                     close(session.getIndex());
+                                                     break;
+                                                 case X112_QttConnack.COMMAND:
+                                                     _Logger.debug("qtt connack %s", cmd);
+                                                     break;
+                                                 default:
+                                                     break;
+                                             }
+                                             return null;
+                                         })
+                                         .filter(Objects::nonNull)
+                                         .toArray(IControl[]::new);
+                    }
                 }
-            }
-            else {
-                _Logger.warning("event type no mappingHandle %s", event.getEventType());
-                commands = null;
-                session = null;
-            }
-            if (Objects.nonNull(commands) && commands.length > 0 && Objects.nonNull(session)) {
-                event.produce(OperatorType.WRITE, new Pair<>(commands, session), session.getTransfer());
-            }
-            else {
-                event.ignore();
+                else {
+                    _Logger.warning("event type no mappingHandle %s", event.getEventType());
+                    commands = null;
+                    session = null;
+                }
+                if(Objects.nonNull(commands) && commands.length > 0 && Objects.nonNull(session)) {
+                    event.produce(OperatorType.WRITE, new Pair<>(commands, session), session.getTransfer());
+                }
+                else {
+                    event.ignore();
+                }
             }
         }, EncryptHandler::new);
         _Logger.debug("device consumer created");
@@ -215,7 +239,7 @@ public class ClientPool
     @Override
     public void connect(IAioConnector connector) throws IOException
     {
-        if (_ChannelGroup.isShutdown() || connector.isShutdown()) return;
+        if(_ChannelGroup.isShutdown() || connector.isShutdown()) {return;}
         AsynchronousSocketChannel socketChannel = AsynchronousSocketChannel.open(_ChannelGroup);
         socketChannel.connect(connector.getRemoteAddress(), socketChannel, connector);
     }
@@ -230,22 +254,19 @@ public class ClientPool
     {
         final String host;
         final int port;
-        switch (ZSortHolder)
-        {
-            case WS_ZCHAT_CONSUMER ->
-                {
-                    host = _ClientConfig.getWs()
-                                        .getHost();
-                    port = _ClientConfig.getWs()
-                                        .getPort();
-                }
-            case QTT_SYMMETRY ->
-                {
-                    host = _ClientConfig.getQtt()
-                                        .getHost();
-                    port = _ClientConfig.getQtt()
-                                        .getPort();
-                }
+        switch(ZSortHolder) {
+            case WS_ZCHAT_CONSUMER -> {
+                host = _ClientConfig.getWs()
+                                    .getHost();
+                port = _ClientConfig.getWs()
+                                    .getPort();
+            }
+            case QTT_SYMMETRY -> {
+                host = _ClientConfig.getQtt()
+                                    .getHost();
+                port = _ClientConfig.getQtt()
+                                    .getPort();
+            }
             default -> throw new UnsupportedOperationException();
         }
         BaseAioConnector connector = new BaseAioConnector(host,
@@ -281,28 +302,22 @@ public class ClientPool
                                           IConnectActivity activity) throws IOException
             {
 
-                return new AioSession<>(socketChannel,
-                                        this,
-                                        ZSortHolder.getSort(),
-                                        activity,
-                                        ClientPool.this,
-                                        false);
+                return new AioSession<>(socketChannel, this, ZSortHolder.getSort(), activity, ClientPool.this, false);
             }
 
             @Override
-            public IControl[] onConnectedCommands(ISession session)
+            public IControl[] response(ISession session)
             {
-                switch (ZSortHolder)
-                {
+                switch(ZSortHolder) {
                     case WS_ZCHAT_CONSUMER:
                     case WS_QTT_CONSUMER:
                         IWsContext wsContext = session.getContext();
-                        return new IControl[]{wsContext.handshake(host)};
+                        return new IControl[]{ wsContext.handshake(host) };
                     case WS_ZCHAT_CONSUMER_SSL:
                     case WS_QTT_CONSUMER_SSL:
                         SSLZContext<WsContext> sslContext = session.getContext();
                         wsContext = sslContext.getActingContext();
-                        return new IControl[]{wsContext.handshake(host)};
+                        return new IControl[]{ wsContext.handshake(host) };
                     case QTT_SYMMETRY:
                         try {
                             X111_QttConnect x111 = new X111_QttConnect();
@@ -310,9 +325,9 @@ public class ClientPool
                             x111.setUserName(client.getUsername());
                             x111.setPassword(client.getPassword());
                             x111.setClean();
-                            return new IControl[]{x111};
+                            return new IControl[]{ x111 };
                         }
-                        catch (Exception e) {
+                        catch(Exception e) {
                             _Logger.warning("create init commands fetal", e);
                             return null;
                         }
@@ -348,13 +363,13 @@ public class ClientPool
 
     private void heartbeat(ISession session)
     {
-        getCore().send(session, OperatorType.BIZ_LOCAL, _Ping);
+        _ClientCore.send(session, OperatorType.BIZ_LOCAL, _Ping);
     }
 
     public final void sendLocal(long sessionIndex, IControl... toSends)
     {
         ISession session = findSessionByIndex(sessionIndex);
-        if (Objects.nonNull(session)) {
+        if(Objects.nonNull(session)) {
             _ClientCore.send(session, OperatorType.BIZ_LOCAL, toSends);
         }
         else {
@@ -365,7 +380,7 @@ public class ClientPool
     public void close(long sessionIndex)
     {
         ISession session = findSessionByIndex(sessionIndex);
-        if (Objects.nonNull(session)) {
+        if(Objects.nonNull(session)) {
             _ClientCore.close(session, OperatorType.BIZ_LOCAL);
         }
         else {
@@ -384,24 +399,17 @@ public class ClientPool
     {
         _TimeWheel.acquire(connector,
                            new ScheduleHandler<>(connector.getConnectTimeout()
-                                                          .multipliedBy(3),
-                                                 c ->
-                                                 {
-                                                     try {
-                                                         _Logger.debug("%s retry connect",
-                                                                       Thread.currentThread()
-                                                                             .getName());
-                                                         connect(c);
-                                                     }
-                                                     catch (IOException e) {
-                                                         e.printStackTrace();
-                                                     }
-                                                 }));
+                                                          .multipliedBy(3), c->{
+                               try {
+                                   _Logger.debug("%s retry connect",
+                                                 Thread.currentThread()
+                                                       .getName());
+                                   connect(c);
+                               }
+                               catch(IOException e) {
+                                   e.printStackTrace();
+                               }
+                           }));
     }
 
-    @Override
-    protected ClientCore getCore()
-    {
-        return _ClientCore;
-    }
 }

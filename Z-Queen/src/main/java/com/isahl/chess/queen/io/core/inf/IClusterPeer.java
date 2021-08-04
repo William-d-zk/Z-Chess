@@ -23,18 +23,13 @@
 
 package com.isahl.chess.queen.io.core.inf;
 
-import java.io.IOException;
-
-import com.isahl.chess.king.base.inf.IPair;
-
 /**
  * @author william.d.zk
- * 
  * @date 2020/3/25
  */
 public interface IClusterPeer
 {
-    void addPeer(IPair remote) throws IOException;
+    long getPeerId();
 
-    void addGate(IPair remote) throws IOException;
+    long generateId();
 }

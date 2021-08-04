@@ -22,17 +22,16 @@
  */
 package com.isahl.chess.bishop.io.ws.control;
 
-import static com.isahl.chess.queen.io.core.inf.IQoS.Level.AT_LEAST_ONCE;
-
 import com.isahl.chess.bishop.io.ws.WsControl;
 import com.isahl.chess.bishop.io.ws.WsFrame;
+
+import static com.isahl.chess.queen.io.core.inf.IQoS.Level.AT_LEAST_ONCE;
 
 /**
  * @author William.d.zk
  */
 public class X103_Ping
-        extends
-        WsControl
+        extends WsControl
 {
 
     public final static int COMMAND = 0x103;
@@ -50,7 +49,7 @@ public class X103_Ping
     @Override
     public X103_Ping duplicate()
     {
-        return new X103_Ping(getPayload());
+        return new X103_Ping(payload());
     }
 
     @Override

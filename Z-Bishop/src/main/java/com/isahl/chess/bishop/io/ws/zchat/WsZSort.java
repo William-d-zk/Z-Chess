@@ -37,22 +37,21 @@ import com.isahl.chess.queen.io.core.inf.IFilterChain;
 import com.isahl.chess.queen.io.core.inf.INetworkOption;
 
 public class WsZSort
-        extends
-        BaseSort<WsContext >
+        extends BaseSort<WsContext>
 {
 
     private final WsHandShakeFilter<WsContext> _Head = new WsHandShakeFilter<>();
 
-    public WsZSort(Mode mode,
-                   Type type)
+    public WsZSort(Mode mode, Type type)
     {
         super(mode, type, "ws-zchat");
         _Head.linkFront(new WsFrameFilter<>())
              .linkFront(new WsControlFilter<>())
              .linkFront(new ZCommandFilter<>(mode == Mode.CLUSTER ? new ZClusterFactory()
                                                                   : type == Type.SERVER ? new ZServerFactory()
-                                                                                        : type == Type.SYMMETRY ? new ZSymmetryFactory()
-                                                                                                                : new ZConsumerFactory()));
+                                                                                        : type == Type.SYMMETRY
+                                                                                          ? new ZSymmetryFactory()
+                                                                                          : new ZConsumerFactory()));
     }
 
     @Override

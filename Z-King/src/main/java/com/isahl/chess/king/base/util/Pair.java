@@ -22,9 +22,9 @@
  */
 package com.isahl.chess.king.base.util;
 
-import java.util.Objects;
-
 import com.isahl.chess.king.base.inf.IPair;
+
+import java.util.Objects;
 
 /**
  * @author William.d.zk
@@ -32,7 +32,9 @@ import com.isahl.chess.king.base.inf.IPair;
 public class Pair<FIRST,
                   SECOND>
         implements
-        IPair
+        IPair,
+        Comparable<Pair<FIRST,
+                        SECOND>>
 {
     private FIRST  first;
     private SECOND second;
@@ -103,4 +105,14 @@ public class Pair<FIRST,
         return Objects.hash(first, second);
     }
 
+    @Override
+    public int compareTo(Pair<FIRST,
+                              SECOND> o)
+    {
+        int a = first.toString()
+                     .compareTo(o.first.toString());
+        int b = second.toString()
+                      .compareTo(o.second.toString());
+        return a == 0 ? b: a;
+    }
 }
