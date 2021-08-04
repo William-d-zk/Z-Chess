@@ -52,7 +52,7 @@ public class X113_QttPublish
     @Override
     public int dataLength()
     {
-        return (getLevel().ordinal() > ALMOST_ONCE.ordinal() ? super.dataLength()
+        return (getLevel().getValue() > ALMOST_ONCE.getValue() ? super.dataLength()
                                                              : Objects.nonNull(this.payload()) ? this.payload().length
                                                                                                : 0) + 2 +
                (Objects.nonNull(mTopic) ? mTopic.getBytes(StandardCharsets.UTF_8).length : 0);
@@ -76,7 +76,7 @@ public class X113_QttPublish
         pos += 2;
         mTopic = new String(data, pos, topicSize, StandardCharsets.UTF_8);
         pos += topicSize;
-        if(getLevel().ordinal() > ALMOST_ONCE.ordinal()) {
+        if(getLevel().getValue() > ALMOST_ONCE.getValue()) {
             pos = super.decodec(data, pos);
         }
         putPayload(new byte[data.length - pos]);
@@ -90,7 +90,7 @@ public class X113_QttPublish
         byte[] topicBytes = mTopic.getBytes(StandardCharsets.UTF_8);
         pos += IoUtil.writeShort(topicBytes.length, data, pos);
         pos += IoUtil.write(topicBytes, data, pos);
-        if(getLevel().ordinal() > ALMOST_ONCE.ordinal()) {
+        if(getLevel().getValue() > ALMOST_ONCE.getValue()) {
             pos = super.encodec(data, pos);
         }
         pos += IoUtil.write(this.payload(), data, pos);
@@ -100,7 +100,7 @@ public class X113_QttPublish
     @Override
     public String toString()
     {
-        return String.format("[publish | dup:%s,retain:%s,qos:%s | local-id:%d topic:\"%s\" payload: \"%s\" ]",
+        return String.format("[publish | dup:%s,retain:%s,qos:%s | msg-id:%d topic:\"%s\" payload: \"%s\" ]",
                              isDuplicate(),
                              isRetain(),
                              getLevel(),

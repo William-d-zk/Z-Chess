@@ -120,7 +120,7 @@ public class X118_QttSubscribe
                 Level level = entry.getValue();
                 pos += IoUtil.writeShort(topic.length, data, pos);
                 pos += IoUtil.write(topic, data, pos);
-                pos += IoUtil.writeByte(level.ordinal(), data, pos);
+                pos += IoUtil.writeByte(level.getValue(), data, pos);
             }
         }
         return pos;

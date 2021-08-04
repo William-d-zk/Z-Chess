@@ -75,6 +75,7 @@ public class RaftCustom
     @Override
     public IPair handle(ISessionManager manager, ISession session, IControl content)
     {
+        _Logger.debug("raft custom: %#x <- %#x", content.serial(), session.getIndex());
         /*
          * leader -> follow, self::follow
          * 由于x76.origin == request.session.sessionIndex
