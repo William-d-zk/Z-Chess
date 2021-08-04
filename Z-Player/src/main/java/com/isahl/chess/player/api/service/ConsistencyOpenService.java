@@ -27,7 +27,7 @@ import com.isahl.chess.king.base.log.Logger;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.knight.cluster.inf.IConsistencyService;
 import com.isahl.chess.knight.cluster.model.ConsistentProtocol;
-import com.isahl.chess.knight.raft.RaftPeer;
+import com.isahl.chess.knight.raft.service.RaftPeer;
 import com.isahl.chess.pawn.endpoint.device.DeviceNode;
 import com.isahl.chess.queen.event.handler.cluster.IConsistencyCustom;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,14 +42,12 @@ public class ConsistencyOpenService
 
     private final Logger _Logger = Logger.getLogger("biz.player." + getClass().getSimpleName());
 
-    private final DeviceNode           _DeviceNode;
-    private final RaftPeer<DeviceNode> _RaftPeer;
-    private final IConsistencyCustom   _ConsistencyCustom;
+    private final DeviceNode         _DeviceNode;
+    private final RaftPeer           _RaftPeer;
+    private final IConsistencyCustom _ConsistencyCustom;
 
     @Autowired
-    public ConsistencyOpenService(DeviceNode deviceNode,
-                                  RaftPeer<DeviceNode> raftPeer,
-                                  IConsistencyCustom consistentCustom)
+    public ConsistencyOpenService(DeviceNode deviceNode, RaftPeer raftPeer, IConsistencyCustom consistentCustom)
     {
         _DeviceNode = deviceNode;
         _RaftPeer = raftPeer;
@@ -59,10 +57,10 @@ public class ConsistencyOpenService
     @Override
     public void submit(String content, long origin)
     {
-        if(IoUtil.isBlank(content)) { return; }
+        if(IoUtil.isBlank(content)) {return;}
         ConsistentProtocol consistency = new ConsistentProtocol(content.getBytes(StandardCharsets.UTF_8),
-                                                              _RaftPeer.generateId(),
-                                                              origin);
+                                                                _RaftPeer.generateId(),
+                                                                origin);
         submit(consistency, _DeviceNode, _ConsistencyCustom);
         _Logger.debug("consistent submit %s", consistency);
     }

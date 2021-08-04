@@ -30,22 +30,18 @@ import com.isahl.chess.queen.io.core.inf.ISessionManager;
 
 /**
  * @author william.d.zk
- * 
  * @date 2020/5/7
  */
 public interface IMappingCustom
 {
     /**
-     * 
      * @param manager
      * @param session
      * @param content
-     * 
      * @return pair
-     *         first: response ->
-     *         second: protocol to other domain,LINK->CLUSTER;CLUSTER->LINK
-     * 
+     * first: response ->
+     * second: protocol to other domain,LINK->CLUSTER;CLUSTER->LINK
      * @throws Exception
      */
-    IPair handle(ISessionManager manager, ISession session, IControl content) throws Exception;
+    IPair handle(ISessionManager manager, ISession session, IControl content);
 }

@@ -24,13 +24,11 @@
 package com.isahl.chess.referee.security.jpa.model.oauth;
 
 import javax.persistence.Column;
-import javax.persistence.Table;
 
 /**
  * @author william.d.zk
  * @date 2021/3/5
  */
-@Table
 public class OauthRefreshToken
 {
 

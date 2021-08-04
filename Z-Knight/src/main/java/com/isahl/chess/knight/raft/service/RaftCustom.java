@@ -34,7 +34,6 @@ import com.isahl.chess.king.base.util.JsonUtil;
 import com.isahl.chess.king.base.util.Pair;
 import com.isahl.chess.king.base.util.Triple;
 import com.isahl.chess.king.topology.ZUID;
-import com.isahl.chess.knight.raft.RaftPeer;
 import com.isahl.chess.knight.raft.model.RaftCode;
 import com.isahl.chess.knight.raft.model.RaftMachine;
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
@@ -50,16 +49,16 @@ import static com.isahl.chess.knight.raft.model.RaftCode.SUCCESS;
 import static com.isahl.chess.knight.raft.model.RaftCode.WAL_FAILED;
 import static com.isahl.chess.knight.raft.model.RaftState.LEADER;
 
-public class RaftCustom<T extends IClusterPeer & IClusterTimer>
+public class RaftCustom
         implements IClusterCustom<RaftMachine>,
                    IConsistencyCustom
 {
     private final Logger _Logger = Logger.getLogger("cluster.knight." + getClass().getSimpleName());
 
     private final TypeReference<List<LogEntry>> _TypeReferenceOfLogEntryList = new TypeReference<>() {};
-    private final RaftPeer<T>                   _RaftPeer;
+    private final RaftPeer                      _RaftPeer;
 
-    public RaftCustom(RaftPeer<T> raftPeer)
+    public RaftCustom(RaftPeer raftPeer)
     {
         _RaftPeer = raftPeer;
     }

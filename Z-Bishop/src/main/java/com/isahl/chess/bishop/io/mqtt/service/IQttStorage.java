@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2016~2020. Z-Chess
+ * Copyright (c) 2016~2021. Z-Chess
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,29 +21,35 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.spi;
+package com.isahl.chess.bishop.io.mqtt.service;
 
-import com.isahl.chess.king.base.exception.ZException;
-import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.DeviceEntity;
-import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.ShadowEntity;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
+import com.isahl.chess.bishop.io.mqtt.command.X113_QttPublish;
+import com.isahl.chess.bishop.io.mqtt.control.X111_QttConnect;
+import com.isahl.chess.queen.io.core.inf.IQoS;
 
-import java.util.List;
+/**
+ * @author william.d.zk
+ */
+public interface IQttStorage
 
-public interface IDeviceService
 {
+    boolean brokerStorage(int msgId, String topic, byte[] content, long target);
 
-    DeviceEntity upsertDevice(DeviceEntity device) throws ZException;
+    boolean deleteMessage(int msgId, long target);
 
-    DeviceEntity queryDevice(String sn, String token) throws ZException;
+    int generateMsgId(long target);
 
-    List<DeviceEntity> findDevices(Specification<DeviceEntity> condition, Pageable pageable) throws ZException;
+    void sessionOnLogin(long session, IQttRouter router, X111_QttConnect x111);
 
-    List<DeviceEntity> findDevicesIn(List<Long> deviceIdList);
+    void sessionOnSubscribe(long session, String topic, IQoS.Level level);
 
-    DeviceEntity getOneDevice(long id);
+    void sessionOnUnsubscribe(long session, String topic);
 
-    List<ShadowEntity> getOnlineDevices(Specification<ShadowEntity> specification, Pageable pageable) throws ZException;
+    void cleanSession(long session);
 
+    boolean hasReceived(int msgId, long origin);
+
+    void receivedStorage(int msgId, String topic, byte[] content, long origin);
+
+    X113_QttPublish takeStorage(int msgId, long origin);
 }

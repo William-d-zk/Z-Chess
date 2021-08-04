@@ -40,13 +40,11 @@ import java.io.Serializable;
  * @date 2021/3/5
  */
 
-@Entity
+@Entity(name = "client_detail")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ClientDetail
-        extends
-        AuditModel
-        implements
-        Serializable
+        extends AuditModel
+        implements Serializable
 {
     @Serial
     private static final long serialVersionUID = -3639493262081429501L;
@@ -56,26 +54,33 @@ public class ClientDetail
     @Id
     private String   appId;
     @Type(type = "string-array")
-    @Column(name = "resource_ids", columnDefinition = "text[]")
+    @Column(name = "resource_ids",
+            columnDefinition = "text[]")
     private String[] resourceIds       = {};
     @Column(nullable = false)
     private String   appSecret;
     @Column(nullable = false)
     private String   scope;
     @Type(type = "string-array")
-    @Column(name = "grant_types", columnDefinition = "text[]")
+    @Column(name = "grant_types",
+            columnDefinition = "text[]")
     private String[] grantTypes;
     @Column(nullable = false)
     private String   redirectUrl;
     @Type(type = "string-array")
-    @Column(name = "authorities", columnDefinition = "text[]")
+    @Column(name = "authorities",
+            columnDefinition = "text[]")
     private String[] authorities       = {};
+    @Column(name = "access_token_validity")
     private boolean  accessTokenValidity;
+    @Column(name = "refresh_token_validity")
     private boolean  refreshTokenValidity;
-    @Column(nullable = false)
+    @Column(nullable = false,
+            name = "additional_information")
     private byte[]   additionalInformation;
     @Type(type = "string-array")
-    @Column(name = "auto_approve_scopes", columnDefinition = "text[]")
+    @Column(name = "auto_approve_scopes",
+            columnDefinition = "text[]")
     private String[] autoApproveScopes = {};
 
     @Override

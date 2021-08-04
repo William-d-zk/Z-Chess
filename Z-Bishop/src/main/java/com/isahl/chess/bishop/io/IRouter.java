@@ -31,12 +31,6 @@ import com.isahl.chess.queen.io.core.inf.ICommand;
  */
 public interface IRouter
 {
-    /**
-     * generate message id
-     *
-     * @return id
-     */
-    long nextId();
 
     /**
      * register message with state for session by id

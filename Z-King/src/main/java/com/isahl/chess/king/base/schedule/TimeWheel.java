@@ -23,47 +23,39 @@
 
 package com.isahl.chess.king.base.schedule;
 
-import static java.lang.Thread.sleep;
+import com.isahl.chess.king.base.inf.IValid;
+import com.isahl.chess.king.base.log.Logger;
+import com.isahl.chess.king.base.schedule.inf.ICancelable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
-import com.isahl.chess.king.base.inf.IValid;
-import com.isahl.chess.king.base.log.Logger;
-import com.isahl.chess.king.base.schedule.inf.ICancelable;
+import static java.lang.Thread.sleep;
 
 /**
  * @author William.d.zk
  */
 public class TimeWheel
-        extends
-        ForkJoinPool
+        extends ForkJoinPool
 {
-    private final Logger        _Logger = Logger.getLogger(getClass().getSimpleName());
-    private final int           _SlotBitLeft;// must <= 10
-    private final int           _HashMod;
-    private final long          _Tick;
-    private final TickSlot<?>[] _ModHashEntryArray;
-    private final ReentrantLock _Lock;
-    private volatile int        vCtxSlot, vCtxLoop;
+    private final    Logger        _Logger = Logger.getLogger("base.king." + getClass().getSimpleName());
+    private final    int           _SlotBitLeft;// must <= 10
+    private final    int           _HashMod;
+    private final    long          _Tick;
+    private final    TickSlot<?>[] _ModHashEntryArray;
+    private final    ReentrantLock _Lock;
+    private volatile int           vCtxSlot, vCtxLoop;
 
     public TimeWheel()
     {
         this(1, TimeUnit.SECONDS, 3);
     }
 
-    public TimeWheel(long tick,
-                     TimeUnit timeUnit,
-                     int bitLeft)
+    public TimeWheel(long tick, TimeUnit timeUnit, int bitLeft)
     {
         super(bitLeft, ForkJoinPool.defaultForkJoinWorkerThreadFactory, null, true);
         _Lock = new ReentrantLock();
@@ -75,18 +67,17 @@ public class TimeWheel
         // 5~20
         // ignore 没有地方执行interrupt操作
         // 此处-sleep 计算当期这次过程的偏差值
-        final Thread _Timer = new Thread(() ->
-        {
+        final Thread _Timer = new Thread(()->{
             int correction = 13;// 5~20
-            for (long align = 0, t, sleep, expect; !isShutdown();) {
+            for(long align = 0, t, sleep, expect; !isShutdown(); ) {
                 t = System.currentTimeMillis();
                 sleep = _Tick - align;
                 expect = t + sleep;
-                if (sleep > correction) {
+                if(sleep > correction) {
                     try {
                         sleep(sleep - correction);
                     }
-                    catch (InterruptedException e) {
+                    catch(InterruptedException e) {
                         // ignore 没有地方执行interrupt操作
                     }
                 }
@@ -94,13 +85,13 @@ public class TimeWheel
                 _Lock.lock();
                 try {
                     List<HandleTask<?>> readyList = filterReady();
-                    if (!readyList.isEmpty()) {
-                        for (HandleTask<?> ready : readyList) {
+                    if(!readyList.isEmpty()) {
+                        for(HandleTask<?> ready : readyList) {
                             submit(ready);
                         }
                     }
                     vCtxSlot++;
-                    if ((vCtxSlot &= _HashMod) == 0) {
+                    if((vCtxSlot &= _HashMod) == 0) {
                         vCtxLoop++;
                     }
                 }
@@ -140,7 +131,7 @@ public class TimeWheel
             int slot = task.acquire(getCurrentLoop(), getCurrentSlot());
             TickSlot<A> tickSlot = (TickSlot<A>) _ModHashEntryArray[slot & _HashMod];
             int index = Collections.binarySearch(tickSlot, task);
-            tickSlot.add(index < 0 ? -index - 1: index, task);
+            tickSlot.add(index < 0 ? -index - 1 : index, task);
             item.setup();
         }
         finally {
@@ -152,12 +143,11 @@ public class TimeWheel
     private List<HandleTask<?>> filterReady()
     {
         List<HandleTask<?>> readyList = new LinkedList<>();
-        for (Iterator<? extends HandleTask<?>> it = _ModHashEntryArray[getCurrentSlot()
-                                                                       & _HashMod].iterator(); it.hasNext();)
-        {
+        for(Iterator<? extends HandleTask<?>> it = _ModHashEntryArray[getCurrentSlot() &
+                                                                      _HashMod].iterator(); it.hasNext(); ) {
             HandleTask<?> handleTask = it.next();
-            if (handleTask.getLoop() == getCurrentLoop()) {
-                if (handleTask.isValid()) {
+            if(handleTask.getLoop() == getCurrentLoop()) {
+                if(handleTask.isValid()) {
                     readyList.add(handleTask);
                 }
                 it.remove();
@@ -167,9 +157,8 @@ public class TimeWheel
     }
 
     public interface IWheelItem<V extends IValid>
-            extends
-            Comparable<IWheelItem<V>>,
-            ITimeoutHandler<V>
+            extends Comparable<IWheelItem<V>>,
+                    ITimeoutHandler<V>
     {
 
         int PRIORITY_NORMAL = 0;
@@ -193,7 +182,7 @@ public class TimeWheel
         default int compareTo(IWheelItem o)
         {
             int loopCmp = Long.compare(getTick(), o.getTick());
-            return loopCmp == 0 ? Integer.compare(getPriority(), o.getPriority()): loopCmp;
+            return loopCmp == 0 ? Integer.compare(getPriority(), o.getPriority()) : loopCmp;
         }
     }
 
@@ -206,9 +195,8 @@ public class TimeWheel
     }
 
     interface ITimeoutHandler<A extends IValid>
-            extends
-            Supplier<A>,
-            ICycle
+            extends Supplier<A>,
+                    ICycle
     {
         void beforeCall();
 
@@ -216,8 +204,7 @@ public class TimeWheel
     }
 
     private class TickSlot<V extends IValid>
-            extends
-            ArrayList<HandleTask<V>>
+            extends ArrayList<HandleTask<V>>
     {
         private final int _Slot;
 
@@ -229,17 +216,16 @@ public class TimeWheel
     }
 
     private class HandleTask<V extends IValid>
-            implements
-            Callable<IWheelItem<V>>,
-            Comparable<HandleTask<V>>,
-            ICancelable,
-            IValid
+            implements Callable<IWheelItem<V>>,
+                       Comparable<HandleTask<V>>,
+                       ICancelable,
+                       IValid
     {
-        private final IWheelItem<V> _Item;
-        private final int           _Slot;
-        private final int           _Loop;
-        private int                 loop;
-        private volatile boolean    vCancel;
+        private final    IWheelItem<V> _Item;
+        private final    int           _Slot;
+        private final    int           _Loop;
+        private          int           loop;
+        private volatile boolean       vCancel;
 
         HandleTask(IWheelItem<V> wheelItem)
         {
@@ -257,7 +243,7 @@ public class TimeWheel
         int acquire(int currentLoop, int currentSlot)
         {
             int slot;
-            if (currentSlot + _Slot > _HashMod) {
+            if(currentSlot + _Slot > _HashMod) {
                 loop = _Loop + currentLoop + 1;
                 slot = _Slot + currentSlot - _HashMod - 1;
             }
@@ -275,9 +261,9 @@ public class TimeWheel
             try {
                 V attach = _Item.get();
                 _Item.beforeCall();
-                if (isValid() && (attach == null || attach.isValid())) {
+                if(isValid() && (attach == null || attach.isValid())) {
                     _Item.onCall();
-                    if (_Item.isCycle()) {
+                    if(_Item.isCycle()) {
                         TimeWheel.this.acquire(HandleTask.this);
                     }
                 }

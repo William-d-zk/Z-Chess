@@ -25,6 +25,7 @@ package com.isahl.chess.pawn.endpoint.device.jpa.local.sqlite.config;
 
 import com.isahl.chess.rook.storage.jpa.config.BaseJpaConfig;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateProperties;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -47,10 +48,13 @@ public class LocalJpaConfig
             @Qualifier("secondary-data-source")
                     DataSource dataSource,
             @Qualifier("secondary-jpa-properties")
-                    JpaProperties jpaProperties)
+                    JpaProperties jpaProperties,
+            @Qualifier("secondary-jpa-hibernate-properties")
+                    HibernateProperties hibernateProperties)
     {
         return getEntityManager(dataSource,
                                 jpaProperties,
+                                hibernateProperties,
                                 "com.isahl.chess.pawn.endpoint.device.jpa.local.sqlite.model");
     }
 

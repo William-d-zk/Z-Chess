@@ -23,8 +23,6 @@
 
 package com.isahl.chess.pawn.endpoint.device.service;
 
-import com.isahl.chess.bishop.io.IRouter;
-import com.isahl.chess.bishop.io.mqtt.handler.IQttRouter;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.inf.IValid;
 import com.isahl.chess.king.base.log.Logger;
@@ -33,18 +31,13 @@ import com.isahl.chess.king.base.schedule.TimeWheel;
 import com.isahl.chess.king.base.util.CryptUtil;
 import com.isahl.chess.king.base.util.IoUtil;
 import com.isahl.chess.knight.raft.model.replicate.LogEntry;
+import com.isahl.chess.pawn.endpoint.device.api.IDeviceService;
 import com.isahl.chess.pawn.endpoint.device.config.MixConfig;
 import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.DeviceEntity;
-import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.MessageEntity;
 import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.ShadowEntity;
 import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.repository.IDeviceJpaRepository;
 import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.repository.IShadowJpaRepository;
-import com.isahl.chess.pawn.endpoint.device.model.DeviceSubscribe;
 import com.isahl.chess.pawn.endpoint.device.model.ShadowDevice;
-import com.isahl.chess.pawn.endpoint.device.model.Subscribe;
-import com.isahl.chess.pawn.endpoint.device.spi.IDeviceService;
-import com.isahl.chess.pawn.endpoint.device.spi.ILinkService;
-import com.isahl.chess.queen.io.core.inf.IQoS;
 import com.isahl.chess.rook.storage.cache.config.EhcacheConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CachePut;
@@ -60,11 +53,11 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 import static com.isahl.chess.king.base.schedule.TimeWheel.IWheelItem.PRIORITY_NORMAL;
 import static com.isahl.chess.king.base.util.IoUtil.isBlank;
@@ -77,8 +70,7 @@ import static java.time.temporal.ChronoUnit.MINUTES;
  */
 @Service
 public class DeviceService
-        implements IDeviceService,
-                   ILinkService
+        implements IDeviceService
 {
     private final Logger _Logger = Logger.getLogger("endpoint.pawn." + getClass().getSimpleName());
 
@@ -134,49 +126,6 @@ public class DeviceService
                            new ScheduleHandler<>(Duration.ofSeconds(20), true, this::batchHandleIdle, PRIORITY_NORMAL));
     }
 
-    public void saveMessageState(MessageEntity message, long session)
-    {
-
-    }
-
-    public void clean(long deviceId, IRouter router)
-    {
-        router.clean(deviceId);
-        _DeviceJpaRepository.findById(deviceId)
-                            .ifPresent(device->{
-                                DeviceSubscribe subscribe = device.getSubscribe();
-                                if(subscribe != null) {
-                                    subscribe.clean();
-                                }
-                                saveDevice(device);
-                            });
-
-    }
-
-    @Override
-    public boolean offline(long deviceId, IRouter router)
-    {
-        ShadowDevice shadow = _ShadowDevices.remove(deviceId);
-        ShadowEntity entity = shadow != null ? shadow.convert() : new ShadowEntity(deviceId);
-        _BatchHandleIdle.add(entity);
-        return shadow != null;
-    }
-
-    @Override
-    public void load(long session, IQttRouter qttRouter)
-    {
-        DeviceEntity device = findDeviceById(session);
-        if(device != null) {
-            DeviceSubscribe subscribe = device.getSubscribe();
-            if(subscribe != null && !subscribe.getSubscribes()
-                                              .isEmpty())
-            {
-                subscribe.getSubscribes()
-                         .forEach((topic, level)->qttRouter.subscribe(topic, level, session));
-            }
-        }
-    }
-
     @Cacheable(value = "device_id_cache",
                key = "#session",
                unless = "#session == 0 || #result == null")
@@ -192,26 +141,6 @@ public class DeviceService
     public DeviceEntity findDeviceByToken(String token)
     {
         return _DeviceJpaRepository.findByToken(token);
-    }
-
-    @Override
-    public void subscribe(Map<String, IQoS.Level> subscribes,
-                          long deviceId,
-                          Function<Optional<DeviceEntity>, BiConsumer<String, IQoS.Level>> function)
-    {
-        Optional<DeviceEntity> deviceOptional = _DeviceJpaRepository.findById(deviceId);
-        subscribes.forEach(function.apply(deviceOptional));
-        deviceOptional.ifPresent(this::saveDevice);
-    }
-
-    @Override
-    public void unsubscribe(List<String> topics,
-                            long deviceId,
-                            Function<Optional<DeviceEntity>, Consumer<String>> function)
-    {
-        Optional<DeviceEntity> deviceOptional = _DeviceJpaRepository.findById(deviceId);
-        topics.forEach(function.apply(deviceOptional));
-        deviceOptional.ifPresent(this::saveDevice);
     }
 
     @CachePut(value = "device_token_cache",
@@ -266,7 +195,6 @@ public class DeviceService
                 entity.setToken(IoUtil.bin2Hex(_CryptUtil.sha256(source.getBytes(StandardCharsets.UTF_8))));
                 entity.setSn(device.getSn());
                 entity.setUsername(device.getUsername());
-                entity.setSubscribe(device.getSubscribe());
                 entity.setProfile(device.getProfile());
             }
             if(exist == null || exist.getInvalidAt()
@@ -285,9 +213,15 @@ public class DeviceService
     @Cacheable(value = "device_token_cache",
                key = "#token",
                unless = "#token == null")
-    public DeviceEntity queryDevice(String sn, String token) throws ZException
+    public DeviceEntity findByToken(String token) throws ZException
     {
-        return _DeviceJpaRepository.findBySnOrToken(sn, token);
+        return _DeviceJpaRepository.findByToken(token);
+    }
+
+    @Override
+    public DeviceEntity findBySn(String sn) throws ZException
+    {
+        return _DeviceJpaRepository.findBySn(sn);
     }
 
     @Override
@@ -311,30 +245,6 @@ public class DeviceService
                                    .toList();
     }
 
-    public void onLogin(long deviceId,
-                        boolean hasWill,
-                        String willTopic,
-                        IQoS.Level willQoS,
-                        boolean willRetain,
-                        byte[] payload)
-    {
-        DeviceEntity device = findDeviceById(deviceId);
-        if(device != null) {
-            _ShadowDevices.computeIfAbsent(deviceId, id->{
-                ShadowDevice shadow = new ShadowDevice(deviceId,
-                                                       device.getSubscribe(),
-                                                       new LinkedList<>(),
-                                                       hasWill ? new Subscribe(willQoS, willTopic) : null,
-                                                       hasWill ? payload : null,
-                                                       !hasWill && willRetain,
-                                                       device.getUsername());
-                _BatchHandleLogin.add(shadow.convert());
-                return shadow;
-            });
-
-        }
-    }
-
     @Override
     public List<DeviceEntity> findDevicesIn(List<Long> deviceIdList)
     {
@@ -343,7 +253,7 @@ public class DeviceService
 
     private void batchHandleLogin(ShadowBatch batch)
     {
-        if(batch.isEmpty()) { return; }
+        if(batch.isEmpty()) {return;}
         _Logger.info("batch login: %d", batch.size());
         try {
             for(Iterator<ShadowEntity> it = batch.iterator(); it.hasNext(); ) {
@@ -363,7 +273,7 @@ public class DeviceService
 
     private void batchHandleIdle(ShadowBatch batch)
     {
-        if(batch.isEmpty()) { return; }
+        if(batch.isEmpty()) {return;}
         _Logger.info("batch handle idle: %d", batch.size());
         try {
             for(Iterator<ShadowEntity> it = batch.iterator(); it.hasNext(); ) {

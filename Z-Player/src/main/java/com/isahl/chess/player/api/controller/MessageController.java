@@ -25,7 +25,7 @@ package com.isahl.chess.player.api.controller;
 
 import com.isahl.chess.king.base.response.ZResponse;
 import com.isahl.chess.pawn.endpoint.device.model.MessageBody;
-import com.isahl.chess.pawn.endpoint.device.spi.IMessageService;
+import com.isahl.chess.pawn.endpoint.device.api.IMessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

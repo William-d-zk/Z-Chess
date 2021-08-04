@@ -62,7 +62,7 @@ public class ZRaftConfig
     {
         if(mConfig.getNodes() == null || mConfig.getNodes()
                                                 .isEmpty())
-        { return; }
+        {return;}
         getUid().setNodeId(-1);
         String hostname = InetAddress.getLocalHost()
                                      .getHostName();
@@ -200,10 +200,9 @@ public class ZRaftConfig
                                                              delta.getId()));
         }
 
-            /*
-            此处不使用map.computeIf* 的结构是因为判断过于复杂
-            还是for的表达容易理解
-             */
+        /*
+          此处不使用map.computeIf* 的结构是因为判断过于复杂还是for的表达容易理解
+         */
         boolean present = false;
         CHECK:
         {
@@ -240,14 +239,14 @@ public class ZRaftConfig
     @Override
     public List<RaftNode> getPeers()
     {
-        if(_RaftNodeMap.isEmpty()) { return null; }
+        if(_RaftNodeMap.isEmpty()) {return null;}
         return new ArrayList<>(_RaftNodeMap.values());
     }
 
     @Override
     public List<RaftNode> getGates()
     {
-        if(_GateMap.isEmpty()) { return null; }
+        if(_GateMap.isEmpty()) {return null;}
         return new ArrayList<>(_GateMap.values());
     }
 

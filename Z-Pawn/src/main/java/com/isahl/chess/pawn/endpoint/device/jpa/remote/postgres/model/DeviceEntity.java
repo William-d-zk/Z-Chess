@@ -32,9 +32,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.isahl.chess.pawn.endpoint.device.model.DeviceProfile;
-import com.isahl.chess.pawn.endpoint.device.model.DeviceSubscribe;
 import com.isahl.chess.queen.db.inf.IStorage;
-import com.isahl.chess.queen.io.core.inf.IQoS;
 import com.isahl.chess.rook.storage.jpa.model.AuditModel;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import org.hibernate.annotations.GenericGenerator;
@@ -46,7 +44,6 @@ import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import java.io.Serial;
 import java.time.LocalDateTime;
-import java.util.Map;
 
 import static com.isahl.chess.pawn.endpoint.device.jpa.PawnConstants.DB_SERIAL_REMOTE_DEVICE_ENTITY;
 
@@ -112,10 +109,6 @@ public class DeviceEntity
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb")
     private DeviceProfile profile;
-
-    @Type(type = "jsonb")
-    @Column(columnDefinition = "jsonb")
-    private DeviceSubscribe subscribe;
 
     @Transient
     private Operation mOperation = Operation.OP_NULL;
@@ -216,31 +209,6 @@ public class DeviceEntity
         this.username = username;
     }
 
-    public DeviceSubscribe getSubscribe()
-    {
-        return subscribe;
-    }
-
-    @JsonIgnore
-    public Map<String, IQoS.Level> getSubscribes()
-    {
-        return subscribe == null ? null : subscribe.getSubscribes();
-    }
-
-    public void subscribe(String topic, IQoS.Level level)
-    {
-        if(subscribe != null) {
-            subscribe.subscribe(topic, level);
-        }
-    }
-
-    public void unsubscribe(String topic)
-    {
-        if(subscribe != null) {
-            subscribe.unsubscribe(topic);
-        }
-    }
-
     public DeviceProfile getProfile()
     {
         return profile;
@@ -249,11 +217,6 @@ public class DeviceEntity
     public void setProfile(DeviceProfile profile)
     {
         this.profile = profile;
-    }
-
-    public void setSubscribe(DeviceSubscribe subscribe)
-    {
-        this.subscribe = subscribe;
     }
 
     @Override

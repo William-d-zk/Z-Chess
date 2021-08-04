@@ -24,12 +24,12 @@
 package com.isahl.chess.pawn.endpoint.device.jpa.local.sqlite.repository;
 
 import com.isahl.chess.pawn.endpoint.device.jpa.local.sqlite.model.BrokerMsgEntity;
-import com.isahl.chess.rook.storage.jpa.repository.BaseRepository;
+import com.isahl.chess.rook.storage.jpa.repository.BaseStringRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository("local-message-jpa-repository")
 public interface IMessageJpaRepository
-        extends BaseRepository<BrokerMsgEntity>
+        extends BaseStringRepository<BrokerMsgEntity>
 {
-    BrokerMsgEntity findById(int id);
+
 }

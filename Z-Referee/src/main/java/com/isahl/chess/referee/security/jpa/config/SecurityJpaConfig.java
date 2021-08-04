@@ -25,6 +25,7 @@ package com.isahl.chess.referee.security.jpa.config;
 
 import com.isahl.chess.rook.storage.jpa.config.BaseJpaConfig;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateProperties;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -51,9 +52,14 @@ public class SecurityJpaConfig
             @Qualifier("primary-data-source")
                     DataSource dataSource,
             @Qualifier("primary-jpa-properties")
-                    JpaProperties jpaProperties)
+                    JpaProperties jpaProperties,
+            @Qualifier("primary-jpa-hibernate-properties")
+                    HibernateProperties hibernateProperties)
     {
-        return getEntityManager(dataSource, jpaProperties, "com.isahl.chess.referee.security.jpa.model");
+        return getEntityManager(dataSource,
+                                jpaProperties,
+                                hibernateProperties,
+                                "com.isahl.chess.referee.security.jpa.model");
     }
 
     @Bean("security-transaction-manager")

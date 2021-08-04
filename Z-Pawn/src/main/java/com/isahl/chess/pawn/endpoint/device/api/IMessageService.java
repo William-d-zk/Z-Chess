@@ -21,44 +21,28 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.model;
+package com.isahl.chess.pawn.endpoint.device.api;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.isahl.chess.queen.io.core.inf.IQoS;
+import com.isahl.chess.king.base.exception.ZException;
+import com.isahl.chess.pawn.endpoint.device.jpa.remote.postgres.model.MessageEntity;
+import com.isahl.chess.pawn.endpoint.device.model.MessageBody;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
-import java.io.Serial;
-import java.io.Serializable;
+import java.util.List;
+import java.util.Optional;
 
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class Subscribe
-        implements
-        Serializable
+/**
+ * @author william.d.zk
+ * @date 2020/2/21
+ */
+public interface IMessageService
 {
+    List<MessageBody> listByTopic(String topic, int limit) throws ZException;
 
-    @Serial
-    private static final long serialVersionUID = 2015588893664180796L;
+    void handleMessage(MessageEntity msgEntity);
 
-    private final IQoS.Level _Level;
-    private final String     _Topic;
+    Optional<MessageEntity> find1Msg(Specification<MessageEntity> specification);
 
-    @JsonCreator
-    public Subscribe(@JsonProperty("level") IQoS.Level level,
-                     @JsonProperty("topic") String topic)
-    {
-        _Level = level;
-        _Topic = topic;
-    }
-
-    public IQoS.Level getLevel()
-    {
-        return _Level;
-    }
-
-    public String getTopic()
-    {
-        return _Topic;
-    }
+    List<MessageEntity> findAllMsg(Specification<MessageEntity> specification, Pageable pageable);
 }

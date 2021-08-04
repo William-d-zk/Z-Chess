@@ -44,7 +44,7 @@ public interface ILinkCustom
     /**
      * Cluster->Link.notify(Cluster.consensus_result)
      *
-     * @param manager
+     * @param manager  session - manager
      * @param response link发来 强一致的请求
      * @return response
      */
@@ -55,7 +55,7 @@ public interface ILinkCustom
      * 除了session dismiss 之外，还需要对现有链路进行关闭
      * 触发映射处理机制
      *
-     * @param session
+     * @param session target session
      */
     void close(ISession session);
 

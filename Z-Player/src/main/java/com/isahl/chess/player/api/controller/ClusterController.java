@@ -26,8 +26,7 @@ package com.isahl.chess.player.api.controller;
 import com.isahl.chess.king.base.exception.ZException;
 import com.isahl.chess.king.base.response.ZResponse;
 import com.isahl.chess.king.base.util.Triple;
-import com.isahl.chess.knight.raft.service.RaftService;
-import com.isahl.chess.pawn.endpoint.device.DeviceNode;
+import com.isahl.chess.knight.raft.inf.IRaftService;
 import com.isahl.chess.player.api.model.ClusterDo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -42,21 +41,22 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController("cluster")
 public class ClusterController
 {
-    private final RaftService<DeviceNode> _RaftService;
+    private final IRaftService _RaftService;
 
     @Autowired
-    public ClusterController(RaftService<DeviceNode> raftService)
+    public ClusterController(IRaftService raftService)
     {
         _RaftService = raftService;
     }
 
     @PostMapping("change")
     public @ResponseBody
-    ZResponse<?> changeTopology(@RequestBody ClusterDo peer)
+    ZResponse<?> changeTopology(
+            @RequestBody
+                    ClusterDo peer)
     {
         Triple<Long, String, Integer> triple = new Triple<>(peer.getPeerId(), peer.getHost(), peer.getPort());
         try {
-            //            _RaftService.appendPeer(triple);
             return ZResponse.success(_RaftService.getTopology());
         }
         catch(ZException e) {

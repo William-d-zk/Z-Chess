@@ -21,11 +21,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.pawn.endpoint.device.model;
+package com.isahl.chess.bishop.io.mqtt.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.isahl.chess.queen.io.core.inf.IQoS;
@@ -33,11 +34,12 @@ import com.isahl.chess.queen.io.core.inf.IQoS;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * @author william.d.zk
  * @date 2020/07/28
- * @see Subscribe
+ * @see SubscribeEntry
  * Map<String, IQoS.Level> 比 List<Subscribe> json化之后体积小
  */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
@@ -47,7 +49,14 @@ public class DeviceSubscribe
     @Serial
     private static final long serialVersionUID = -3075846478370159363L;
 
+    public static TypeReference<Map<String, IQoS.Level>> TYPE_SUBSCRIBES = new TypeReference<>() {};
+
     private final Map<String, IQoS.Level> _Subscribes;
+
+    private boolean    mFlagWillRetain;
+    private byte[]     mWillPayload;
+    private String     mWillTopic;
+    private IQoS.Level mWillLevel;
 
     @JsonCreator
     public DeviceSubscribe(
@@ -57,13 +66,18 @@ public class DeviceSubscribe
         _Subscribes = subscribes;
     }
 
+    public DeviceSubscribe()
+    {
+        this(new TreeMap<>());
+    }
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Map<String, IQoS.Level> getSubscribes()
     {
         return _Subscribes;
     }
 
-    public void subscribe(Subscribe subscribe)
+    public void subscribe(SubscribeEntry subscribe)
     {
         subscribe(subscribe.getTopic(), subscribe.getLevel());
     }
@@ -87,5 +101,49 @@ public class DeviceSubscribe
         if(_Subscribes != null) {
             _Subscribes.clear();
         }
+        mFlagWillRetain = false;
+        mWillTopic = null;
+        mWillLevel = null;
+        mWillPayload = null;
+    }
+
+    public boolean isWillRetain()
+    {
+        return mFlagWillRetain;
+    }
+
+    public void setWillRetain(boolean retained)
+    {
+        mFlagWillRetain = retained;
+    }
+
+    public String getWillTopic()
+    {
+        return mWillTopic;
+    }
+
+    public IQoS.Level getWillLevel()
+    {
+        return mWillLevel;
+    }
+
+    public void setWillTopic(String topic)
+    {
+        mWillTopic = topic;
+    }
+
+    public void setWillLevel(IQoS.Level level)
+    {
+        mWillLevel = level;
+    }
+
+    public void setWillPayload(byte[] payload)
+    {
+        mWillPayload = payload;
+    }
+
+    public byte[] getWillPayload()
+    {
+        return mWillPayload;
     }
 }

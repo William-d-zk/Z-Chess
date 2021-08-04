@@ -25,11 +25,15 @@ package com.isahl.chess.pawn.endpoint.device.jpa.local.sqlite.model;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.isahl.chess.king.base.inf.IValid;
+import com.isahl.chess.king.base.schedule.inf.ICancelable;
 import com.isahl.chess.rook.storage.jpa.model.AuditModel;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 import java.io.Serial;
 
 import static com.isahl.chess.pawn.endpoint.device.jpa.PawnConstants.DB_SERIAL_LOCAL_MSG_ENTITY;
@@ -38,19 +42,44 @@ import static com.isahl.chess.pawn.endpoint.device.jpa.PawnConstants.DB_SERIAL_L
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class BrokerMsgEntity
         extends AuditModel
+        implements IValid,
+                   ICancelable
 {
     @Serial
     private static final long serialVersionUID = -7454808074804600508L;
 
-    private int    mId;
-    private String mTopic;
-    private int    mTopicAlias;
-    private byte[] mContent;
+    private String  id;
+    private int     msgId;
+    private long    target;
+    private long    origin;
+    private String  topic;
+    private int     topicAlias;
+    private byte[]  content;
+    @Transient
+    private boolean valid = true;
 
     @Id
-    public int getId()
+    public String getId()
     {
-        return mId;
+        return id;
+    }
+
+    @Column(name = "msg_id")
+    public int getMsgId()
+    {
+        return msgId;
+    }
+
+    @Column(name = "origin")
+    public long getOrigin()
+    {
+        return origin;
+    }
+
+    @Column(name = "target")
+    public long getTarget()
+    {
+        return target;
     }
 
     @Column(length = 511,
@@ -59,39 +88,66 @@ public class BrokerMsgEntity
             name = "topic")
     public String getTopic()
     {
-        return mTopic;
+        return topic;
     }
 
     @Column(name = "topic_alias")
     public int getTopicAlias()
     {
-        return mTopicAlias;
+        return topicAlias;
     }
 
     @Column(name = "content")
+    @Type(type = "org.hibernate.type.BinaryType")
     public byte[] getContent()
     {
-        return mContent;
+        return content;
     }
 
-    public void setId(int id)
+    @Transient
+    public boolean isValid()
     {
-        mId = id;
+        return valid;
+    }
+
+    public void cancel()
+    {
+        valid = false;
+    }
+
+    public void setId(String id)
+    {
+        this.id = id;
+    }
+
+    public void setMsgId(int msgId)
+    {
+        this.msgId = msgId;
+    }
+
+    public void setOrigin(long origin)
+    {
+        this.origin = origin;
+    }
+
+    public void setTarget(long target)
+    {
+        this.target = target;
     }
 
     public void setTopic(String topic)
     {
-        mTopic = topic;
+        this.topic = topic;
     }
 
     public void setTopicAlias(int alias)
     {
-        mTopicAlias = alias;
+        topicAlias = alias;
     }
 
     public void setContent(byte[] content)
     {
-        mContent = content;
+        this.content = content;
     }
 
     @Override
@@ -100,4 +156,6 @@ public class BrokerMsgEntity
         return DB_SERIAL_LOCAL_MSG_ENTITY;
     }
 
+    public final static String BROKER_PRIMARY_FORMAT   = "%#20x-%7d-B";
+    public final static String RECEIVER_PRIMARY_FORMAT = "%#20x-%7d-R";
 }

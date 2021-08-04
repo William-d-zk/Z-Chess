@@ -21,61 +21,52 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.referee.security.jpa.model.oauth;
+package com.isahl.chess.bishop.io.mqtt.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.isahl.chess.rook.storage.jpa.model.AuditModel;
+import com.isahl.chess.queen.io.core.inf.IQoS;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
 import java.io.Serial;
 import java.io.Serializable;
 
-/**
- * @author william.d.zk
- * @date 2021/3/5
- */
-@Entity(name = "oauth_access_token")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class OauthAccessToken
-        extends AuditModel
+public class SubscribeEntry
         implements Serializable
-
 {
+
     @Serial
-    private static final long serialVersionUID = 3470254183734664175L;
+    private static final long serialVersionUID = 2015588893664180796L;
 
-    public static int SERIAL_OAUTH_ACCESS_TOKEN = ClientDetail.SERIAL_CLIENT_DETAIL + 1;
+    private final IQoS.Level _Level;
+    private final String     _Topic;
+    private       int        mAlias;
 
-    @Id
-    private String authenticationId;
-    @Column(nullable = false)
-    private byte[] authentication;
-    @Column(nullable = false)
-    private String tokenId;
-    @Column(nullable = false)
-    private byte[] token;
-    @Column(nullable = false)
-    private String username;
-    @Column(nullable = false)
-    private String clientId;
-    private String refreshToken;
-
-    @Override
-    public int serial()
+    @JsonCreator
+    public SubscribeEntry(
+            @JsonProperty("topic")
+                    String topic,
+            @JsonProperty("level")
+                    IQoS.Level level)
     {
-        return SERIAL_OAUTH_ACCESS_TOKEN;
+        _Level = level;
+        _Topic = topic;
     }
 
-    public String getAuthenticationId()
+    public IQoS.Level getLevel()
     {
-        return authenticationId;
+        return _Level;
     }
 
-    public void setAuthenticationId(String authenticationId)
+    public String getTopic()
     {
-        this.authenticationId = authenticationId;
+        return _Topic;
+    }
+
+    public int getAlias()
+    {
+        return mAlias;
     }
 }

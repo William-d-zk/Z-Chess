@@ -21,28 +21,38 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.isahl.chess.rook.storage.cache.ehcache;
+package com.isahl.chess.pawn.endpoint.device.spi;
 
-import com.isahl.chess.king.base.log.Logger;
-import org.ehcache.event.CacheEvent;
-import org.ehcache.event.CacheEventListener;
+import com.isahl.chess.king.base.inf.IPair;
+import com.isahl.chess.king.base.inf.ITriple;
+import com.isahl.chess.knight.cluster.IClusterNode;
+import com.isahl.chess.queen.io.core.inf.IControl;
+import com.isahl.chess.queen.io.core.inf.IProtocol;
+import com.isahl.chess.queen.io.core.inf.ISession;
+import com.isahl.chess.queen.io.core.inf.ISessionManager;
+
+import java.util.List;
 
 /**
  * @author william.d.zk
- * @date 2020/6/6
  */
-public class CacheLogger
-        implements CacheEventListener<Object, Object>
+public interface IAccessService
 {
-    private final Logger _Logger = Logger.getLogger("rook.ehcache." + getClass().getSimpleName());
+    boolean isHandleProtocol(IProtocol protocol);
 
-    @Override
-    public void onEvent(CacheEvent<?, ?> cacheEvent)
-    {
-        _Logger.info("Rook-Cache Key: {%s} | EventType: {%s} | Old value: {%s} | New value: {%s}",
-                     cacheEvent.getKey(),
-                     cacheEvent.getType(),
-                     cacheEvent.getOldValue(),
-                     cacheEvent.getNewValue());
-    }
+    List<? extends IControl> handle(ISessionManager manager, ISession session, IControl content);
+
+    IPair onLink(ISessionManager manager, ISession session, IControl input);
+
+    void onOffline(ISession session);
+
+    List<ITriple> onConsistentNotify(ISessionManager manager,
+                                     long origin,
+                                     IProtocol consensusBody,
+                                     boolean isConsistency);
+
+    void clusterHandle(ISessionManager manager,
+                       IControl content,
+                       IClusterNode cluster,
+                       List<? extends IControl> pushList);
 }

@@ -127,7 +127,7 @@ public abstract class MqttProtocol
     {
         mFrameOpCode = opCode;
         mType = QttType.valueOf(getOpCode());
-        if(mType == null) { throw new IllegalArgumentException(); }
+        if(mType == null) {throw new IllegalArgumentException();}
         mDuplicate = (mFrameOpCode & DUPLICATE_FLAG) == DUPLICATE_FLAG;
         mRetain = (mFrameOpCode & RETAIN_FLAG) == RETAIN_FLAG;
         mQosLevel = (byte) ((mFrameOpCode & QOS_MASK) >> 1);
@@ -163,6 +163,7 @@ public abstract class MqttProtocol
     public void putContext(QttContext context)
     {
         mContext = context;
+        mVersion = context.getVersion();
     }
 
 }
