@@ -50,17 +50,21 @@ public class OauthAccessToken
     public static int SERIAL_OAUTH_ACCESS_TOKEN = ClientDetail.SERIAL_CLIENT_DETAIL + 1;
 
     @Id
+    @Column(name = "authentication_id")
     private String authenticationId;
     @Column(nullable = false)
     private byte[] authentication;
-    @Column(nullable = false)
+    @Column(nullable = false,
+            name = "token_id")
     private String tokenId;
     @Column(nullable = false)
     private byte[] token;
     @Column(nullable = false)
     private String username;
-    @Column(nullable = false)
+    @Column(nullable = false,
+            name = "client_id")
     private String clientId;
+    @Column(name = "refresh_token")
     private String refreshToken;
 
     @Override

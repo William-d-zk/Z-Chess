@@ -59,7 +59,8 @@ public class OauthApprovals
     private String        scope;
     @Enumerated(EnumType.STRING)
     private Status        status = Status.COMMON;
-    @Column(nullable = false)
+    @Column(nullable = false,
+            name = "invalid_at")
     private LocalDateTime invalidAt;
 
     @Override
